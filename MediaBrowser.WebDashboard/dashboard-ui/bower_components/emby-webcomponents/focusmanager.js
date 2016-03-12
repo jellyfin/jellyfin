@@ -120,36 +120,37 @@ define([], function () {
         return elem;
     }
 
-    function getOffset(elem, doc) {
+    function getWindowData(win, documentElement) {
+
+        return {
+            pageYOffset: win.pageYOffset,
+            pageXOffset: win.pageXOffset,
+            clientTop: documentElement.clientTop,
+            clientLeft: documentElement.clientLeft
+        };
+    }
+
+    function getOffset(elem, windowData) {
 
         var box = { top: 0, left: 0 };
-
-        if (!doc) {
-            return box;
-        }
-
-        var docElem = doc.documentElement;
 
         // Support: BlackBerry 5, iOS 3 (original iPhone)
         // If we don't have gBCR, just use 0,0 rather than error
         if (elem.getBoundingClientRect) {
             box = elem.getBoundingClientRect();
         }
-        var win = doc.defaultView;
         return {
-            top: box.top + win.pageYOffset - docElem.clientTop,
-            left: box.left + win.pageXOffset - docElem.clientLeft
+            top: box.top + windowData.pageYOffset - windowData.clientTop,
+            left: box.left + windowData.pageXOffset - windowData.clientLeft
         };
     }
 
-    function getViewportBoundingClientRect(elem) {
+    function getViewportBoundingClientRect(elem, windowData) {
 
-        var doc = elem.ownerDocument;
-        var offset = getOffset(elem, doc);
-        var win = doc.defaultView;
+        var offset = getOffset(elem, windowData);
 
-        var posY = offset.top - win.pageXOffset;
-        var posX = offset.left - win.pageYOffset;
+        var posY = offset.top - windowData.pageXOffset;
+        var posX = offset.left - windowData.pageYOffset;
 
         var width = elem.offsetWidth;
         var height = elem.offsetHeight;
@@ -162,11 +163,6 @@ define([], function () {
             right: posX + width,
             bottom: posY + height
         };
-        var scrollLeft = (((t = document.documentElement) || (t = document.body.parentNode))
-            && typeof t.scrollLeft == 'number' ? t : document.body).scrollLeft;
-
-        var scrollTop = (((t = document.documentElement) || (t = document.body.parentNode))
-            && typeof t.scrollTop == 'number' ? t : document.body).scrollTop;
     }
 
     function nav(activeElement, direction) {
@@ -186,7 +182,9 @@ define([], function () {
 
         var focusableContainer = parentWithClass(activeElement, 'focusable');
 
-        var rect = getViewportBoundingClientRect(activeElement);
+        var doc = activeElement.ownerDocument;
+        var windowData = getWindowData(doc.defaultView, doc.documentElement);
+        var rect = getViewportBoundingClientRect(activeElement, windowData);
         var focusableElements = [];
 
         var focusable = container.querySelectorAll(focusableQuery);
@@ -205,7 +203,7 @@ define([], function () {
                 continue;
             }
 
-            var elementRect = getViewportBoundingClientRect(curr);
+            var elementRect = getViewportBoundingClientRect(curr, windowData);
 
             switch (direction) {
 
