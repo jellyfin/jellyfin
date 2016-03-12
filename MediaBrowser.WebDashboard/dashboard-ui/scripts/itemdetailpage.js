@@ -73,7 +73,9 @@
             // For these types, make the backdrop a little smaller so that the items are more quickly accessible
             if (item.Type == 'MusicArtist' || item.Type == "MusicAlbum" || item.Type == "Playlist" || item.Type == "BoxSet" || item.Type == "Audio") {
                 $('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
-                Backdrops.setBackdrops(page, [item]);
+                require(['backdrop'], function (backdrop) {
+                    backdrop.setBackdrops([item]);
+                });
             }
             else {
                 //$('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
@@ -1116,7 +1118,7 @@
 
     function renderUserDataIcons(page, item) {
 
-        $('.userDataIcons', page).html(LibraryBrowser.getUserDataIconsHtml(item, true, 'fab'));
+        $('.userDataIcons', page).html(LibraryBrowser.getUserDataIconsHtml(item, true, 'icon-button'));
     }
 
     function renderCriticReviews(page, item, limit) {

@@ -196,7 +196,9 @@
             // But for now, if you change songs but keep the same artist, the backdrop will flicker because in-between songs it clears out the image
             if (!browser.mobile) {
                 // Exclude from mobile because it just doesn't perform well
-                Backdrops.setBackdropUrl(context, backdropUrl);
+                require(['backdrop'], function (backdrop) {
+                    backdrop.setBackdrop(backdropUrl);
+                });
             }
 
             ApiClient.getItem(Dashboard.getCurrentUserId(), item.Id).then(function (fullItem) {

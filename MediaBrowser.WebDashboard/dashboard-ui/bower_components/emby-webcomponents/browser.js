@@ -99,6 +99,7 @@
     browser.web0s = userAgent.toLowerCase().indexOf('Web0S'.toLowerCase()) != -1;
 
     browser.tv = isTv();
+    browser.operaTv = browser.tv && userAgent.toLowerCase().indexOf('opr/') != -1;
 
     return browser;
 });

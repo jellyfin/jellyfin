@@ -30,8 +30,7 @@
     background-color: transparent !important;
 }
 
-.backdropContainer .pageBackground {
-    background-color: rgba(20, 20,20, .92);
+.backdropContainer {
     position: fixed;
     top: 0;
     left: 0;
@@ -40,15 +39,23 @@
     z-index: -1;
 }
 
-.pageWithAbsoluteTabs neon-animatable {
-    z-index: 2;
+.pageBackground {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
 }
 
-.backdropContainer {
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: cover;
-    background-attachment: fixed;
+.withBackdrop .pageBackground {
+    background-color: rgba(20, 20,20, .92);
+    display: block;
+}
+
+.pageWithAbsoluteTabs neon-animatable {
+    z-index: 2;
 }
 
 .libraryPage .header {
@@ -389,7 +396,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-top: 0 !important;
 }
 
-.backdropPage .noBackdrop {
+.withBackdrop .noBackdrop {
     background-color: transparent;
 }
 

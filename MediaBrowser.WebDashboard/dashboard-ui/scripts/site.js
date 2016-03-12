@@ -1767,6 +1767,8 @@ var AppInfo = {};
             define("actionsheet", [embyWebComponentsBowerPath + "/actionsheet/actionsheet"], returnFirstDependency);
         }
 
+        define("backdrop", [embyWebComponentsBowerPath + "/backdrop/backdrop"], returnFirstDependency);
+
         // hack for an android test before browserInfo is loaded
         if (Dashboard.isRunningInCordova() && window.MainActivity) {
             paths.appStorage = "cordova/android/appstorage";
@@ -2242,7 +2244,6 @@ var AppInfo = {};
 
         deps.push('scripts/search');
         deps.push('scripts/librarylist');
-        deps.push('scripts/backdrops');
         deps.push('scripts/librarymenu');
         deps.push('scripts/librarybrowser');
         deps.push('jqm');
@@ -2262,6 +2263,7 @@ var AppInfo = {};
             postInitDependencies.push('scripts/remotecontrol');
             postInitDependencies.push('css!css/notifications.css');
             postInitDependencies.push('css!css/chromecast.css');
+            postInitDependencies.push('scripts/autobackdrops');
 
             if (Dashboard.isRunningInCordova()) {
 

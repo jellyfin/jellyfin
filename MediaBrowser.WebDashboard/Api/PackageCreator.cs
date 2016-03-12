@@ -295,7 +295,7 @@ namespace MediaBrowser.WebDashboard.Api
                         }
                     }
 
-                    html = html.Replace("<body>", "<body><paper-drawer-panel class=\"mainDrawerPanel mainDrawerPanelPreInit\" forceNarrow><div class=\"mainDrawer\" drawer></div><div class=\"mainDrawerPanelContent\" main><!--<div class=\"pageContainer\">")
+                    html = html.Replace("<body>", "<body><paper-drawer-panel class=\"mainDrawerPanel mainDrawerPanelPreInit skinContainer\" forceNarrow><div class=\"mainDrawer\" drawer></div><div class=\"mainDrawerPanelContent\" main><!--<div class=\"pageBackground\"></div><div class=\"pageContainer\">")
                         .Replace("</body>", "</div>--></div></paper-drawer-panel></body>");
                 }
 
