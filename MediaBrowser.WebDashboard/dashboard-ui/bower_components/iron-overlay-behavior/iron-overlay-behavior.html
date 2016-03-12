@@ -136,6 +136,11 @@ context. You should place this element as a child of `<body>` whenever possible.
         value: false
       },
 
+      /**
+       * Shortcut to access to the overlay manager.
+       * @private
+       * @type {Polymer.IronOverlayManagerClass}
+       */
       _manager: {
         type: Object,
         value: Polymer.IronOverlayManager
@@ -176,7 +181,7 @@ context. You should place this element as a child of `<body>` whenever possible.
 
     /**
      * The backdrop element.
-     * @type {Node}
+     * @type {Element}
      */
     get backdropElement() {
       return this._manager.backdropElement;
@@ -197,7 +202,7 @@ context. You should place this element as a child of `<body>` whenever possible.
      *
      * If you know what is your content (specifically the first and last focusable children),
      * you can override this method to return only `[firstFocusable, lastFocusable];`
-     * @type {[Node]}
+     * @type {Array<Node>}
      * @protected
      */
     get _focusableNodes() {
@@ -295,7 +300,7 @@ context. You should place this element as a child of `<body>` whenever possible.
 
     /**
      * Cancels the overlay.
-     * @param {?Event} event The original event
+     * @param {Event=} event The original event
      */
     cancel: function(event) {
       var cancelEvent = this.fire('iron-overlay-canceled', event, {cancelable: true});

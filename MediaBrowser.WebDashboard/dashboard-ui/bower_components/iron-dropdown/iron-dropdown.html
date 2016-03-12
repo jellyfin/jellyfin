@@ -143,8 +143,7 @@ method is called on the element.
            * it is opened.
            */
           positionTarget: {
-            type: Object,
-            observer: '_positionTargetChanged'
+            type: Object
           },
 
           /**
@@ -189,15 +188,6 @@ method is called on the element.
           allowOutsideScroll: {
             type: Boolean,
             value: false
-          },
-
-          /**
-           * We memoize the positionTarget bounding rectangle so that we can
-           * limit the number of times it is queried per resize / relayout.
-           * @type {?Object}
-           */
-          _positionRectMemo: {
-            type: Object
           }
         },
 
@@ -206,13 +196,13 @@ method is called on the element.
         },
 
         observers: [
-          '_updateOverlayPosition(verticalAlign, horizontalAlign, verticalOffset, horizontalOffset)'
+          '_updateOverlayPosition(positionTarget, verticalAlign, horizontalAlign, verticalOffset, horizontalOffset)'
         ],
 
         attached: function() {
-          if (this.positionTarget === undefined) {
-            this.positionTarget = this._defaultPositionTarget;
-          }
+          this.positionTarget = this.positionTarget || this._defaultPositionTarget;
+          // Memoize this to avoid expensive calculations & relayouts.
+          this._isRTL = window.getComputedStyle(this).direction == 'rtl';
         },
 
         /**
@@ -231,13 +221,6 @@ method is called on the element.
         },
 
         /**
-         * Whether the text direction is RTL
-         */
-        _isRTL: function() {
-          return window.getComputedStyle(this).direction == 'rtl';
-        },
-
-        /**
          * The element that should be used to position the dropdown when
          * it opens, if no position target is configured.
          */
@@ -252,31 +235,32 @@ method is called on the element.
         },
 
         /**
-         * The bounding rect of the position target.
+         * The horizontal align value, accounting for the RTL/LTR text direction.
          */
-        get _positionRect() {
-          if (!this._positionRectMemo && this.positionTarget) {
-            this._positionRectMemo = this.positionTarget.getBoundingClientRect();
+        get _localeHorizontalAlign() {
+          // In RTL, "left" becomes "right".
+          if (this._isRTL) {
+            return this.horizontalAlign === 'right' ? 'left' : 'right';
+          } else {
+            return this.horizontalAlign;
           }
-
-          return this._positionRectMemo;
         },
 
         /**
          * The horizontal offset value used to position the dropdown.
+         * @param {ClientRect} dropdownRect
+         * @param {ClientRect} positionRect
+         * @param {boolean=false} fromRight
+         * @return {number} pixels
+         * @private
          */
-        get _horizontalAlignTargetValue() {
+        _horizontalAlignTargetValue: function(dropdownRect, positionRect, fromRight) {
           var target;
-
-          // In RTL, the direction flips, so what is "right" in LTR becomes "left".
-          var isRTL = this._isRTL();
-          if ((!isRTL && this.horizontalAlign === 'right') ||
-              (isRTL && this.horizontalAlign === 'left')) {
-            target = document.documentElement.clientWidth - this._positionRect.right;
+          if (fromRight) {
+            target = document.documentElement.clientWidth - positionRect.right - (this._fitWidth - dropdownRect.right);
           } else {
-            target = this._positionRect.left;
+            target = positionRect.left - dropdownRect.left;
           }
-
           target += this.horizontalOffset;
 
           return Math.max(target, 0);
@@ -284,31 +268,22 @@ method is called on the element.
 
         /**
          * The vertical offset value used to position the dropdown.
+         * @param {ClientRect} dropdownRect
+         * @param {ClientRect} positionRect
+         * @param {boolean=false} fromBottom
+         * @return {number} pixels
+         * @private
          */
-        get _verticalAlignTargetValue() {
+        _verticalAlignTargetValue: function(dropdownRect, positionRect, fromBottom) {
           var target;
-
-          if (this.verticalAlign === 'bottom') {
-            target = document.documentElement.clientHeight - this._positionRect.bottom;
+          if (fromBottom) {
+            target = document.documentElement.clientHeight - positionRect.bottom - (this._fitHeight - dropdownRect.bottom);
           } else {
-            target = this._positionRect.top;
+            target = positionRect.top - dropdownRect.top;
           }
-
           target += this.verticalOffset;
 
           return Math.max(target, 0);
-        },
-
-        /**
-         * The horizontal align value, accounting for the RTL/LTR text direction.
-         */
-        get _localeHorizontalAlign() {
-          // In RTL, "left" becomes "right".
-          if (this._isRTL()) {
-            return this.horizontalAlign === 'right' ? 'left' : 'right';
-          } else {
-            return this.horizontalAlign;
-          }
         },
 
         /**
@@ -321,7 +296,8 @@ method is called on the element.
             this.cancel();
           } else {
             this.cancelAnimation();
-            this._prepareDropdown();
+            this.sizingTarget = this.containedElement || this.sizingTarget;
+            this._updateAnimationConfig();
             Polymer.IronOverlayBehaviorImpl._openedChanged.apply(this, arguments);
           }
         },
@@ -335,6 +311,9 @@ method is called on the element.
           }
 
           if (!this.noAnimations && this.animationConfig && this.animationConfig.open) {
+            if (this.withBackdrop) {
+              this.backdropElement.open();
+            }
             this.$.contentWrapper.classList.add('animating');
             this.playAnimation('open');
           } else {
@@ -348,6 +327,9 @@ method is called on the element.
         _renderClosed: function() {
           Polymer.IronDropdownScrollManager.removeScrollLock(this);
           if (!this.noAnimations && this.animationConfig && this.animationConfig.close) {
+            if (this.withBackdrop) {
+              this.backdropElement.close();
+            }
             this.$.contentWrapper.classList.add('animating');
             this.playAnimation('close');
           } else {
@@ -364,42 +346,10 @@ method is called on the element.
         _onNeonAnimationFinish: function() {
           this.$.contentWrapper.classList.remove('animating');
           if (this.opened) {
-            Polymer.IronOverlayBehaviorImpl._renderOpened.apply(this);
+            Polymer.IronOverlayBehaviorImpl._finishRenderOpened.apply(this);
           } else {
-            Polymer.IronOverlayBehaviorImpl._renderClosed.apply(this);
+            Polymer.IronOverlayBehaviorImpl._finishRenderClosed.apply(this);
           }
-        },
-
-        /**
-         * Called when an `iron-resize` event fires.
-         */
-        _onIronResize: function() {
-          var containedElement = this.containedElement;
-          var scrollTop;
-          var scrollLeft;
-
-          if (this.opened && containedElement) {
-            scrollTop = containedElement.scrollTop;
-            scrollLeft = containedElement.scrollLeft;
-          }
-
-          if (this.opened) {
-            this._updateOverlayPosition();
-          }
-
-          Polymer.IronOverlayBehaviorImpl._onIronResize.apply(this, arguments);
-
-          if (this.opened && containedElement) {
-            containedElement.scrollTop = scrollTop;
-            containedElement.scrollLeft = scrollLeft;
-          }
-        },
-
-        /**
-         * Called when the `positionTarget` property changes.
-         */
-        _positionTargetChanged: function() {
-          this._updateOverlayPosition();
         },
 
         /**
@@ -434,43 +384,73 @@ method is called on the element.
         },
 
         /**
-         * Prepares the dropdown for opening by updating measured layout
-         * values.
+         * Updates the overlay position based on configured horizontal
+         * and vertical alignment.
          */
-        _prepareDropdown: function() {
-          this.sizingTarget = this.containedElement || this.sizingTarget;
-          this._updateAnimationConfig();
-          this._updateOverlayPosition();
+        _updateOverlayPosition: function() {
+          if (this.isAttached) {
+            // This triggers iron-resize, and iron-overlay-behavior will call refit if needed.
+            this.notifyResize();
+          }
         },
 
         /**
-         * Updates the overlay position based on configured horizontal
-         * and vertical alignment, and re-memoizes these values for the sake
-         * of behavior in `IronFitBehavior`.
+         * Useful to call this after the element, the window, or the `fitInfo`
+         * element has been resized. Will maintain the scroll position.
          */
-        _updateOverlayPosition: function() {
-          this._positionRectMemo = null;
-
-          if (!this.positionTarget) {
-            return;
+        refit: function () {
+          if (!this.opened) {
+            return
           }
+          var containedElement = this.containedElement;
+          var scrollTop;
+          var scrollLeft;
 
-          this.style[this._localeHorizontalAlign] =
-            this._horizontalAlignTargetValue + 'px';
-
-          this.style[this.verticalAlign] =
-            this._verticalAlignTargetValue + 'px';
-
-          // NOTE(cdata): We re-memoize inline styles here, otherwise
-          // calling `refit` from `IronFitBehavior` will reset inline styles
-          // to whatever they were when the dropdown first opened.
-          if (this._fitInfo) {
-            this._fitInfo.inlineStyle[this.horizontalAlign] =
-              this.style[this.horizontalAlign];
-
-            this._fitInfo.inlineStyle[this.verticalAlign] =
-              this.style[this.verticalAlign];
+          if (containedElement) {
+            scrollTop = containedElement.scrollTop;
+            scrollLeft = containedElement.scrollLeft;
           }
+          Polymer.IronFitBehavior.refit.apply(this, arguments);
+
+          if (containedElement) {
+            containedElement.scrollTop = scrollTop;
+            containedElement.scrollLeft = scrollLeft;
+          }
+        },
+
+        /**
+         * Resets the target element's position and size constraints, and clear
+         * the memoized data.
+         */
+        resetFit: function() {
+          Polymer.IronFitBehavior.resetFit.apply(this, arguments);
+
+          var hAlign = this._localeHorizontalAlign;
+          var vAlign = this.verticalAlign;
+          // Set to 0, 0 in order to discover any offset caused by parent stacking contexts.
+          this.style[hAlign] = this.style[vAlign] = '0px';
+
+          var dropdownRect = this.getBoundingClientRect();
+          var positionRect = this.positionTarget.getBoundingClientRect();
+          var horizontalValue = this._horizontalAlignTargetValue(dropdownRect, positionRect, hAlign === 'right');
+          var verticalValue = this._verticalAlignTargetValue(dropdownRect, positionRect, vAlign === 'bottom');
+
+          this.style[hAlign] = horizontalValue + 'px';
+          this.style[vAlign] = verticalValue + 'px';
+        },
+
+        /**
+         * Overridden from `IronFitBehavior`.
+         * Ensure positionedBy has correct values for horizontally & vertically.
+         */
+        _discoverInfo: function() {
+          Polymer.IronFitBehavior._discoverInfo.apply(this, arguments);
+          // Note(valdrin): in Firefox, an element with style `position: fixed; bottom: 90vh; height: 20vh`
+          // would have `getComputedStyle(element).top < 0` (instead of being `auto`) http://jsbin.com/cofired/3/edit?html,output
+          // This would cause IronFitBehavior's `constrain` to wrongly calculate sizes
+          // (it would use `top` instead of `bottom`), so we ensure we give the correct values.
+          this._fitInfo.positionedBy.horizontally = this._localeHorizontalAlign;
+          this._fitInfo.positionedBy.vertically = this.verticalAlign;
         },
 
         /**
