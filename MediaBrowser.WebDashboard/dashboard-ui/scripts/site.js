@@ -1633,9 +1633,13 @@ var AppInfo = {};
 
     }
 
-    function setDocumentClasses() {
+    function setDocumentClasses(browser) {
 
         var elem = document.documentElement;
+
+        if (!browser.android && !browser.mobile) {
+            elem.classList.add('smallerDefault');
+        }
 
         if (AppInfo.isTouchPreferred) {
             elem.classList.add('touch');
@@ -1909,6 +1913,10 @@ var AppInfo = {};
         define("appSettings", [embyWebComponentsBowerPath + "/appsettings"], updateAppSettings);
         define("userSettings", [embyWebComponentsBowerPath + "/usersettings"], returnFirstDependency);
         define("material-design-lite", [bowerPath + "/material-design-lite/material.min", "css!" + bowerPath + "/material-design-lite/material"]);
+
+        define("robotoFont", ['css!' + embyWebComponentsBowerPath + '/fonts/roboto/style']);
+        define("opensansFont", ['css!' + embyWebComponentsBowerPath + '/fonts/opensans/style']);
+        define("montserratFont", ['css!' + embyWebComponentsBowerPath + '/fonts/montserrat/style']);
 
         // alias
         define("historyManager", [], function () {
@@ -2302,6 +2310,11 @@ var AppInfo = {};
 
             postInitDependencies.push('components/remotecontrolautoplay');
 
+            // Prefer OpenSans over Segoe if on desktop windows
+            if (!browserInfo.mobile && navigator.userAgent.toLowerCase().indexOf('windows') != -1) {
+                postInitDependencies.push('opensansFont');
+            }
+
             require(postInitDependencies);
         });
     }
@@ -2427,7 +2440,7 @@ var AppInfo = {};
             window.browserInfo = browser;
 
             setAppInfo();
-            setDocumentClasses();
+            setDocumentClasses(browser);
 
             getHostingAppInfo().then(init);
         });

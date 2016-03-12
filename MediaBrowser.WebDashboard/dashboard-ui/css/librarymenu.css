@@ -120,7 +120,6 @@
 .libraryMenuButtonText {
     text-decoration: none;
     font-weight: 400 !important;
-    font-size: 15px;
     display: inline-block;
     vertical-align: middle;
     padding-left: 0 !important;
@@ -181,7 +180,6 @@
     top: 50px;
     z-index: 999;
     text-align: center;
-    font-size: 14px;
     text-transform: uppercase;
     white-space: nowrap;
     padding: 0 0 0;
@@ -357,7 +355,6 @@
 .drawerUserPanel {
     color: #fff;
     padding: 1em 1.2em;
-    font-size: 14px;
     display: flex;
     align-items: center;
 }

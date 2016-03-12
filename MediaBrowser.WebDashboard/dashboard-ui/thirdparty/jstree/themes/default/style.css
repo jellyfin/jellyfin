@@ -220,7 +220,6 @@
   border-left: 1px solid #e2e3e3;
 }
 .vakata-context .vakata-contextmenu-shortcut {
-  font-size: 0.8em;
   color: silver;
   opacity: 0.5;
   display: none;
@@ -879,7 +878,6 @@
   #jstree-dnd.jstree-dnd-responsive {
     line-height: 40px;
     font-weight: bold;
-    font-size: 1.1em;
     text-shadow: 1px 1px white;
   }
   #jstree-dnd.jstree-dnd-responsive > i {
@@ -981,7 +979,6 @@
   }
   .jstree-default-responsive .jstree-anchor {
     font-weight: bold;
-    font-size: 1.1em;
     text-shadow: 1px 1px white;
   }
   .jstree-default-responsive > .jstree-striped {
