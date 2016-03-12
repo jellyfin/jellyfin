@@ -16,12 +16,14 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Common;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Providers.Movies
 {
@@ -279,6 +281,20 @@ namespace MediaBrowser.Providers.Movies
             return string.Join(",", languages.ToArray());
         }
 
+        public static string NormalizeLanguage(string language)
+        {
+            // They require this to be uppercase
+            // http://emby.media/community/index.php?/topic/32454-fr-follow-tmdbs-new-language-api-update/?p=311148
+            var parts = language.Split('-');
+
+            if (parts.Length == 2)
+            {
+                language = parts[0] + "-" + parts[1].ToUpper();
+            }
+
+            return language;
+        }
+
         /// <summary>
         /// Fetches the main result.
         /// </summary>
@@ -293,7 +309,7 @@ namespace MediaBrowser.Providers.Movies
 
             if (!string.IsNullOrEmpty(language))
             {
-                url += string.Format("&language={0}", language);
+                url += string.Format("&language={0}", NormalizeLanguage(language));
 
                 // Get images in english and with no language
                 url += "&include_image_language=" + GetImageLanguagesParam(language);
