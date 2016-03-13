@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CommonIO;
-using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 {
@@ -35,9 +34,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 if (_items == null)
                 {
+                    Logger.Info("Loading live tv data from {0}", _dataPath);
                     _items = GetItemsFromFile(_dataPath);
                 }
-                return _items;
+                return _items.ToList();
             }
         }
 
@@ -58,7 +58,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             catch (IOException ex)
             {
                 Logger.ErrorException("Error deserializing {0}", ex, jsonFile);
-                throw;
             }
             catch (Exception ex)
             {
