@@ -4,7 +4,7 @@
     <title>${TitleLiveTV}</title>
 </head>
 <body>
-    <div id="liveTvTunerProviderHdHomerunPage" data-role="page" class="page type-interior liveTvSettingsPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvtunerprovider-hdhomerun,paper-input,paper-checkbox">
+    <div id="liveTvTunerProviderSatPage" data-role="page" class="page type-interior liveTvSettingsPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvtunerprovider-satip,paper-input">
 
         <div data-role="content">
             <div class="content-primary">
@@ -17,22 +17,12 @@
 
                 <div class="readOnlyContent" style="margin-top: 2em;">
 
-                    <h1>HD Homerun</h1>
+                    <h1>DVB</h1>
 
                     <form>
                         <div>
                             <div>
-                                <paper-input class="txtDevicePath" label="${LabelTunerIpAddress}" required="required"></paper-input>
-                            </div>
-                            <div>
-                                <br />
-                                <paper-checkbox class="chkEnabled" checked>${LabelEnableThisTuner}</paper-checkbox>
-                                <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableThisTunerHelp}</div>
-                            </div>
-                            <div>
-                                <br />
-                                <paper-checkbox class="chkFavorite">${LabelImportOnlyFavoriteChannels}</paper-checkbox>
-                                <div class="fieldDescription paperCheckboxFieldDescription">${ImportFavoriteChannelsHelp}</div>
+                                <paper-input class="txtDevicePath" label="${LabelPath}" required="required" readonly></paper-input>
                             </div>
                             <br />
                             <div>

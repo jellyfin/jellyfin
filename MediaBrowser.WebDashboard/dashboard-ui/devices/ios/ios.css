@@ -2,15 +2,6 @@
     font-size: 15px;
 }
 
-.ui-body-b a:visited {
-    color: #007AFF /*{b-link-visited}*/;
-}
-
-.ui-body-b a {
-    color: #007AFF /*{b-link-color}*/;
-    font-weight: 500;
-}
-
 .ui-body-b select {
     -webkit-appearance: none;
 }

@@ -13,38 +13,74 @@
         return elem;
     }
 
+    function getOffsets(elems) {
+
+        var doc = document;
+        var results = [];
+
+        if (!doc) {
+            return results;
+        }
+
+        var docElem = doc.documentElement;
+        var docElemValues = {
+            clientTop: docElem.clientTop,
+            clientLeft: docElem.clientLeft
+        };
+
+        var win = doc.defaultView;
+        var winValues = {
+            pageXOffset: win.pageXOffset,
+            pageYOffset: win.pageYOffset
+        };
+
+        var box;
+        var elem;
+
+        for (var i = 0, length = elems.length; i < length; i++) {
+
+            elem = elems[i];
+            // Support: BlackBerry 5, iOS 3 (original iPhone)
+            // If we don't have gBCR, just use 0,0 rather than error
+            if (elem.getBoundingClientRect) {
+                box = elem.getBoundingClientRect();
+            } else {
+                box = { top: 0, left: 0 };
+            }
+
+            results[i] = {
+                top: box.top,
+                left: box.left
+            };
+        }
+
+        return results;
+    }
+
     function getPosition(options) {
 
-        var windowHeight = $(window).height();
+        var windowHeight = window.innerHeight;
 
         if (windowHeight < 540) {
             return null;
         }
 
-        var pos = $(options.positionTo).offset();
+        var pos = getOffsets([options.positionTo])[0];
 
-        pos.top += $(options.positionTo).innerHeight() / 2;
-        pos.left += $(options.positionTo).innerWidth() / 2;
-
-        // Account for margins
-        pos.top -= 24;
-        pos.left -= 24;
+        pos.top += options.positionTo.offsetHeight / 2;
+        pos.left += options.positionTo.offsetWidth / 2;
 
         // Account for popup size - we can't predict this yet so just estimate
         pos.top -= (55 * options.items.length) / 2;
         pos.left -= 80;
 
-        // Account for scroll position
-        pos.top -= $(window).scrollTop();
-        pos.left -= $(window).scrollLeft();
-
         // Avoid showing too close to the bottom
         pos.top = Math.min(pos.top, windowHeight - 300);
-        pos.left = Math.min(pos.left, $(window).width() - 300);
+        pos.left = Math.min(pos.left, window.innerWidth - 300);
 
         // Do some boundary checking
-        pos.top = Math.max(pos.top, 0);
-        pos.left = Math.max(pos.left, 0);
+        pos.top = Math.max(pos.top, 10);
+        pos.left = Math.max(pos.left, 10);
 
         return pos;
     }
@@ -58,13 +94,16 @@
 
     function show(options) {
 
+        var pos = options.positionTo ? getPosition(options) : null;
+
         // items
         // positionTo
         // showCancel
         // title
         var dialogOptions = {
             removeOnClose: true,
-            enableHistory: options.enableHistory
+            enableHistory: options.enableHistory,
+            refit: pos == null
         };
 
         var backButton = false;
@@ -82,7 +121,6 @@
         }
 
         var dlg = paperdialoghelper.createDialog(dialogOptions);
-        var pos = options.positionTo ? getPosition(options) : null;
 
         dlg.classList.add('actionSheet');
 
@@ -155,12 +193,6 @@
 
         dlg.innerHTML = html;
 
-        if (pos) {
-            dlg.style.position = 'fixed';
-            dlg.style.left = pos.left + 'px';
-            dlg.style.top = pos.top + 'px';
-        }
-
         if (layoutManager.tv) {
             addCenterFocus(dlg);
         }
@@ -198,6 +230,12 @@
             });
 
             paperdialoghelper.open(dlg);
+
+            if (pos) {
+                dlg.style.position = 'fixed';
+                dlg.style.left = pos.left + 'px';
+                dlg.style.top = pos.top + 'px';
+            }
         });
     }
 
