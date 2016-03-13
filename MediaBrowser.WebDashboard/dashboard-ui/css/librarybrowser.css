@@ -266,10 +266,9 @@
 }
 
 .metascore {
-    font-family: Arial;
     color: #fff;
     display: inline-block;
-    font-size: 12px;
+    font-size: 84%;
     text-align: center;
     padding: 1px 6px 0;
     border-radius: 2px;
@@ -316,8 +315,6 @@
 }
 
 .criticRatingScore {
-    font-weight: bold;
-    font-size: 18px;
     margin-bottom: .5em;
 }
 
@@ -516,7 +513,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .parentName {
-    font-size: 14px;
     display: block;
     margin-bottom: .5em;
 }
@@ -978,7 +974,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     display: block;
     color: #fff;
     margin-bottom: 1em;
-    font-size: 16px;
+    font-size: 120%;
 }
 
 .mediaInfoAttribute {
@@ -1182,7 +1178,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     bottom: 5px;
     z-index: 999;
     text-align: center;
-    font-size: 13px;
+    font-size: 90%;
     display: none;
     line-height: 1;
 }
@@ -1513,12 +1509,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-.tapHoldMenu li a, .playFlyout li a {
-    font-size: 14px;
-    font-weight: 500 !important;
-    color: #000 !important;
-}
-
 .userProfileSettingsForm {
     max-width: 700px;
 }
@@ -1552,270 +1542,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .homeFavoritesDisabled .homeFavoritesTab {
     display: none !important;
-}
-
-.detailsMenu {
-    width: 280px;
-}
-
-@media all and (min-width: 360px) {
-
-    .detailsMenu {
-        width: 320px;
-    }
-}
-
-@media all and (min-width: 400px) {
-
-    .detailsMenu {
-        width: 340px;
-    }
-}
-
-@media all and (min-width: 500px) {
-
-    .detailsMenu {
-        width: 440px;
-    }
-}
-
-@media all and (min-width: 600px) {
-
-    .detailsMenu {
-        width: 540px;
-    }
-}
-
-@media all and (min-width: 700px) {
-
-    .detailsMenu {
-        width: 640px;
-    }
-}
-
-@media all and (min-width:800px) {
-
-    .detailsMenu {
-        width: 740px;
-    }
-}
-
-.detailsMenuLeftButton {
-    position: absolute;
-    left: 0;
-    top: 0;
-    padding: 32px 15px;
-}
-
-.detailsMenuRightButton {
-    position: absolute;
-    right: 0;
-    top: 0;
-    padding: 32px 15px;
-}
-
-.detailsMenuHeaderWithLogo .detailsMenuLeftButton, .detailsMenuHeaderWithLogo .detailsMenuRightButton {
-    padding-top: 30px;
-    padding-bottom: 30px;
-}
-
-.detailsMenuContentInner {
-    height: 220px;
-}
-
-.detailsMenuOverview {
-    max-height: 30px;
-    text-overflow: ellipsis;
-    overflow-y: hidden;
-}
-
-.detailsMenuButtons {
-    padding: 1em 0 .5em;
-    text-transform: uppercase;
-    text-align: center;
-}
-
-    .detailsMenuButtons .btn {
-        font-size: 14px;
-    }
-
-.detailsMenuButtonContainer {
-    display: inline-block;
-    margin-left: .5em;
-    margin-right: .5em;
-}
-
-    .detailsMenuButtonContainer span {
-        padding-left: 1em;
-    }
-
-.detailsMenu h3 {
-    padding: .7em 30px;
-}
-
-.detailsMenuHeaderWithLogo h3 {
-    padding: 0 30px;
-    line-height: .5;
-}
-
-@media all and (max-height:500px) {
-
-    .detailsMenuUserData {
-        display: none;
-    }
-}
-
-@media all and (min-height:500px) {
-
-    .detailsMenuContentInner {
-        height: 300px;
-    }
-
-    .detailsMenuOverview {
-        max-height: 60px;
-    }
-}
-
-@media all and (min-height:540px) {
-
-    .detailsMenuContentInner {
-        height: 340px;
-    }
-
-    .detailsMenuOverview {
-        max-height: 100px;
-    }
-}
-
-@media all and (min-height:600px) {
-
-    .detailsMenuContentInner {
-        height: 400px;
-    }
-
-    .detailsMenuOverview {
-        max-height: 160px;
-    }
-}
-
-.slideshowContainer {
-    background: #000;
-    position: fixed;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
-    z-index: 1000;
-    overflow: hidden;
-}
-
-.slideshowImage {
-    position: fixed;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
-    z-index: 1001;
-    background-position: center center;
-    background-size: contain;
-    background-repeat: no-repeat;
-}
-
-    .slideshowImage.cover {
-        background-size: cover;
-    }
-
-.slideshowImageText {
-    position: fixed;
-    bottom: .25em;
-    right: .5em;
-    color: #fff;
-    z-index: 1002;
-    font-size: 100px;
-}
-
-.btnStopSlideshow {
-    position: fixed;
-    top: 1em;
-    right: 1em;
-    color: #fff;
-    z-index: 1002;
-}
-
-.btnStopSlideshow {
-    width: 40px;
-    height: 40px;
-}
-
-@media all and (max-width:1200px) {
-
-    .slideshowImageText {
-        font-size: 40px;
-    }
-}
-
-@-webkit-keyframes spin {
-    0% {
-        -moz-transform: rotateZ(0deg);
-        -webkit-transform: rotateZ(0deg);
-        -o-transform: rotateZ(0deg);
-        -ms-transform: rotateZ(0deg);
-    }
-
-    100% {
-        -moz-transform: rotateZ(360deg);
-        -webkit-transform: rotateZ(360deg);
-        -o-transform: rotateZ(360deg);
-        -ms-transform: rotateZ(360deg);
-    }
-}
-
-@-moz-keyframes spin {
-    0% {
-        -moz-transform: rotateZ(0deg);
-        -webkit-transform: rotateZ(0deg);
-        -o-transform: rotateZ(0deg);
-        -ms-transform: rotateZ(0deg);
-    }
-
-    100% {
-        -moz-transform: rotateZ(360deg);
-        -webkit-transform: rotateZ(360deg);
-        -o-transform: rotateZ(360deg);
-        -ms-transform: rotateZ(360deg);
-    }
-}
-
-@-o-keyframes spin {
-    0% {
-        -moz-transform: rotateZ(0deg);
-        -webkit-transform: rotateZ(0deg);
-        -o-transform: rotateZ(0deg);
-        -ms-transform: rotateZ(0deg);
-    }
-
-    100% {
-        -moz-transform: rotateZ(360deg);
-        -webkit-transform: rotateZ(360deg);
-        -o-transform: rotateZ(360deg);
-        -ms-transform: rotateZ(360deg);
-    }
-}
-
-@-ms-keyframes spin {
-    0% {
-        -moz-transform: rotateZ(0deg);
-        -webkit-transform: rotateZ(0deg);
-        -o-transform: rotateZ(0deg);
-        -ms-transform: rotateZ(0deg);
-    }
-
-    100% {
-        -moz-transform: rotateZ(360deg);
-        -webkit-transform: rotateZ(360deg);
-        -o-transform: rotateZ(360deg);
-        -ms-transform: rotateZ(360deg);
-    }
 }
 
 #criticReviewsContent.hiddenScrollX {

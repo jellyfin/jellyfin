@@ -41,11 +41,6 @@ namespace MediaBrowser.Model.ApiClient
                 {
                     existing.DateLastAccessed = server.DateLastAccessed;
                 }
-
-                if (server.DateLastLocalConnection > existing.DateLastLocalConnection)
-                {
-                    existing.DateLastLocalConnection = server.DateLastLocalConnection;
-                }
                 
                 existing.UserLinkType = server.UserLinkType;
 
