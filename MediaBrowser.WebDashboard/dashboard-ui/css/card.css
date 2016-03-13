@@ -47,14 +47,14 @@
     margin: 4px;
 }
 
-@media all and (max-width: 600px) {
+@media all and (max-width: 500px) {
 
     .cardBox {
         margin: 1px;
     }
 }
 
-@media all and (min-width: 800px) {
+@media all and (min-width: 500px) {
 
     .cardImage {
         border-radius: 3px;

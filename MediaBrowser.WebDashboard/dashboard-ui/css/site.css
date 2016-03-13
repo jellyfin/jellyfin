@@ -278,7 +278,7 @@ html {
     margin: 0;
     padding: 0;
     height: 100%;
-    font-family: 'San Francisco', 'Helvetica Neue', 'Open Sans', 'Segoe UI', sans-serif;
+    font-family: 'San Francisco', 'Helvetica Neue', Roboto, 'Open Sans', 'Segoe UI', sans-serif;
     font-size: 14px;
 }
 

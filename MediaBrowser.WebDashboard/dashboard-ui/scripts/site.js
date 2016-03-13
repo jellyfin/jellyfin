@@ -2310,9 +2310,10 @@ var AppInfo = {};
 
             postInitDependencies.push('components/remotecontrolautoplay');
 
-            // Prefer OpenSans over Segoe if on desktop windows
+            // Prefer custom font over Segoe if on desktop windows
             if (!browserInfo.mobile && navigator.userAgent.toLowerCase().indexOf('windows') != -1) {
-                postInitDependencies.push('opensansFont');
+                //postInitDependencies.push('opensansFont');
+                postInitDependencies.push('robotoFont');
             }
 
             require(postInitDependencies);
