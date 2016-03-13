@@ -74,7 +74,11 @@
                 html += '</div>';
 
                 html += '</paper-item-body>';
-                html += '<paper-icon-button icon="refresh" data-tunerid="' + tuner.Id + '" title="' + Globalize.translate('ButtonResetTuner') + '" class="btnResetTuner"></paper-icon-button>';
+
+                if (tuner.CanReset) {
+                    html += '<paper-icon-button icon="refresh" data-tunerid="' + tuner.Id + '" title="' + Globalize.translate('ButtonResetTuner') + '" class="btnResetTuner"></paper-icon-button>';
+                }
+
                 html += '</paper-icon-item>';
             }
 
@@ -201,7 +205,7 @@
                 html += '<paper-item-body two-line>';
                 html += '<a class="clearLink" href="' + href + '">';
                 html += '<div>';
-                html += getTunerName(device.Type);
+                html += device.FriendlyName || getTunerName(device.Type);
                 html += '</div>';
 
                 html += '<div secondary>';
@@ -367,6 +371,8 @@
                 return 'M3U Playlist';
             case 'hdhomerun':
                 return 'HDHomerun';
+            case 'satip':
+                return 'DVB';
             default:
                 return 'Unknown';
         }
@@ -444,6 +450,11 @@
     function addDevice(button) {
 
         var menuItems = [];
+
+        //menuItems.push({
+        //    name: getTunerName('satip'),
+        //    id: 'satip'
+        //});
 
         menuItems.push({
             name: 'HDHomerun',

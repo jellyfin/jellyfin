@@ -67,13 +67,6 @@
         dlg.addEventListener('iron-overlay-closed', onDialogClosed);
         dlg.open();
 
-        // It's not being positioned properly in firefox
-        if (!browser.chrome && !dlg.classList.contains('fixedSize')) {
-            setTimeout(function () {
-                dlg.refit();
-            }, 100);
-        }
-
         if (dlg.getAttribute('data-lockscroll') == 'true' && !document.body.classList.contains('noScroll')) {
             document.body.classList.add('noScroll');
             removeScrollLockOnClose = true;
@@ -211,49 +204,9 @@
         return dlg;
     }
 
-    function positionTo(dlg, elem) {
-
-        var windowHeight = $(window).height();
-
-        // If the window height is under a certain amount, don't bother trying to position
-        // based on an element.
-        if (windowHeight >= 540) {
-
-            var pos = $(elem).offset();
-
-            pos.top += elem.offsetHeight / 2;
-            pos.left += elem.offsetWidth / 2;
-
-            // Account for margins
-            pos.top -= 24;
-            pos.left -= 24;
-
-            // Account for popup size - we can't predict this yet so just estimate
-            pos.top -= $(dlg).height() / 2;
-            pos.left -= $(dlg).width() / 2;
-
-            // Account for scroll position
-            pos.top -= $(window).scrollTop();
-            pos.left -= $(window).scrollLeft();
-
-            // Avoid showing too close to the bottom
-            pos.top = Math.min(pos.top, windowHeight - 300);
-            pos.left = Math.min(pos.left, $(window).width() - 300);
-
-            // Do some boundary checking
-            pos.top = Math.max(pos.top, 0);
-            pos.left = Math.max(pos.left, 0);
-
-            dlg.style.position = 'fixed';
-            dlg.style.left = pos.left + 'px';
-            dlg.style.top = pos.top + 'px';
-        }
-    }
-
     return {
         open: open,
         close: close,
-        createDialog: createDialog,
-        positionTo: positionTo
+        createDialog: createDialog
     };
 });

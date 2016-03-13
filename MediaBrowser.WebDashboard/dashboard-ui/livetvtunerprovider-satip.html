@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>${TitleLiveTV}</title>
+</head>
+<body>
+    <div id="liveTvTunerProviderSatPage" data-role="page" class="page type-interior liveTvSettingsPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvtunerprovider-satip,paper-input">
+
+        <div data-role="content">
+            <div class="content-primary">
+
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="livetvstatus.html" data-role="button" class="ui-btn-active">${TabTuners}</a>
+                    <a href="livetvsettings.html" data-role="button">${TabSettings}</a>
+                    <a href="appservices.html?context=livetv" data-role="button">${TabExternalServices}</a>
+                </div>
+
+                <div class="readOnlyContent" style="margin-top: 2em;">
+
+                    <h1>DVB</h1>
+
+                    <form>
+                        <div>
+                            <div>
+                                <paper-input class="txtDevicePath" label="${LabelPath}" required="required" readonly></paper-input>
+                            </div>
+                            <br />
+                            <div>
+                                <button type="submit" data-role="none" class="clearButton">
+                                    <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+                                </button>
+                                <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1008,6 +1008,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private IEnumerable<TimerInfo> GetTimersForSeries(SeriesTimerInfo seriesTimer, IEnumerable<ProgramInfo> allPrograms, IReadOnlyList<RecordingInfo> currentRecordings)
         {
+            if (seriesTimer == null)
+            {
+                throw new ArgumentNullException("seriesTimer");
+            }
+            if (allPrograms == null)
+            {
+                throw new ArgumentNullException("allPrograms");
+            }
+            if (currentRecordings == null)
+            {
+                throw new ArgumentNullException("currentRecordings");
+            }
+
             // Exclude programs that have already ended
             allPrograms = allPrograms.Where(i => i.EndDate > DateTime.UtcNow && i.StartDate > DateTime.UtcNow);
 

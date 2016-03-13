@@ -1,6 +1,5 @@
 ﻿.nowPlayingText {
     display: inline-block;
-    font-weight: normal;
     position: relative;
     top: -7px;
     margin: 0 0 0 3px;
@@ -9,7 +8,6 @@
     text-overflow: ellipsis;
     vertical-align: middle;
     text-align: left;
-    font-size: 15px;
     max-width: 130px;
 }
 
@@ -119,13 +117,11 @@
 
 .nowPlayingBarText {
     display: inline-block;
-    font-weight: normal;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     vertical-align: middle;
     text-align: left;
-    font-size: 15px;
     max-width: 130px;
 }
 

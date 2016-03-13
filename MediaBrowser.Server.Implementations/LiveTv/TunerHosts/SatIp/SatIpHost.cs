@@ -35,9 +35,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 
         protected override async Task<IEnumerable<ChannelInfo>> GetChannelsInternal(TunerHostInfo tuner, CancellationToken cancellationToken)
         {
-            var satInfo = (SatIpTunerHostInfo)tuner;
-
-            return await new M3uParser(Logger, _fileSystem, _httpClient).Parse(satInfo.M3UUrl, ChannelIdPrefix, tuner.Id, cancellationToken).ConfigureAwait(false);
+            return await new M3uParser(Logger, _fileSystem, _httpClient).Parse(tuner.M3UUrl, ChannelIdPrefix, tuner.Id, cancellationToken).ConfigureAwait(false);
         }
 
         public static string DeviceType
@@ -128,11 +126,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
             return channelId.StartsWith(ChannelIdPrefix, StringComparison.OrdinalIgnoreCase);
         }
 
-        protected override List<TunerHostInfo> GetTunerHosts()
-        {
-            return SatIpDiscovery.Current.DiscoveredHosts;
-        }
-
         public string Name
         {
             get { return "Sat IP"; }
@@ -149,15 +142,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 
         public List<LiveTvTunerInfo> GetTunerInfos(TunerHostInfo info, CancellationToken cancellationToken)
         {
-            var satInfo = (SatIpTunerHostInfo)info;
-
             var list = new List<LiveTvTunerInfo>();
 
-            for (var i = 0; i < satInfo.Tuners; i++)
+            for (var i = 0; i < info.Tuners; i++)
             {
                 list.Add(new LiveTvTunerInfo
                 {
-                    Name = satInfo.FriendlyName ?? Name,
+                    Name = info.FriendlyName ?? Name,
                     SourceType = Type,
                     Status = LiveTvTunerStatus.Available,
                     Id = info.Url.GetMD5().ToString("N") + i.ToString(CultureInfo.InvariantCulture),

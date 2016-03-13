@@ -361,15 +361,15 @@
             html += '<li data-mini="true" class="localReaderOption" data-pluginname="' + plugin.Name + '">';
 
             if (i > 0) {
-                html += '<a href="#" style="font-size:13px;font-weight:normal;">' + plugin.Name + '</a>';
+                html += '<a href="#" style="font-weight:normal;">' + plugin.Name + '</a>';
 
-                html += '<a class="btnLocalReaderUp btnLocalReaderMove" data-pluginindex="' + i + '" href="#" style="font-size:13px;font-weight:normal;" data-icon="arrow-u">' + Globalize.translate('ButtonUp') + '</a>';
+                html += '<a class="btnLocalReaderUp btnLocalReaderMove" data-pluginindex="' + i + '" href="#" style="font-weight:normal;" data-icon="arrow-u">' + Globalize.translate('ButtonUp') + '</a>';
             }
             else if (plugins.length > 1) {
 
-                html += '<a href="#" style="font-size:13px;font-weight:normal;">' + plugin.Name + '</a>';
+                html += '<a href="#" style="font-weight:normal;">' + plugin.Name + '</a>';
 
-                html += '<a class="btnLocalReaderDown btnLocalReaderMove" data-pluginindex="' + i + '" href="#" style="font-size:13px;font-weight:normal;" data-icon="arrow-d">' + Globalize.translate('ButtonDown') + '</a>';
+                html += '<a class="btnLocalReaderDown btnLocalReaderMove" data-pluginindex="' + i + '" href="#" style="font-weight:normal;" data-icon="arrow-d">' + Globalize.translate('ButtonDown') + '</a>';
             }
             else {
 
