@@ -22,15 +22,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly ILiveTvManager _liveTvManager;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private readonly IHttpClient _httpClient;
-        private IJsonSerializer _json;
+        private readonly IJsonSerializer _json;
 
-        public HdHomerunDiscovery(IDeviceDiscovery deviceDiscovery, IServerConfigurationManager config, ILogger logger, ILiveTvManager liveTvManager, IHttpClient httpClient)
+        public HdHomerunDiscovery(IDeviceDiscovery deviceDiscovery, IServerConfigurationManager config, ILogger logger, ILiveTvManager liveTvManager, IHttpClient httpClient, IJsonSerializer json)
         {
             _deviceDiscovery = deviceDiscovery;
             _config = config;
             _logger = logger;
             _liveTvManager = liveTvManager;
             _httpClient = httpClient;
+            _json = json;
         }
 
         public void Run()

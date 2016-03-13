@@ -195,8 +195,20 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 item.SetProviderId(MetadataProviders.Imdb, m.Value);
             }
 
-            // TODO: Support Tmdb
+            // Support Tmdb
             // http://www.themoviedb.org/movie/36557
+            var srch = "themoviedb.org/movie/";
+            var index = xml.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
+
+            if (index != -1)
+            {
+                var tmdbId = xml.Substring(index + srch.Length).TrimEnd('/');
+                int value;
+                if (!string.IsNullOrWhiteSpace(tmdbId) && int.TryParse(tmdbId, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+                {
+                    item.SetProviderId(MetadataProviders.Tmdb, tmdbId);
+                }
+            }
         }
 
         protected virtual void FetchDataFromXmlNode(XmlReader reader, MetadataResult<T> itemResult)

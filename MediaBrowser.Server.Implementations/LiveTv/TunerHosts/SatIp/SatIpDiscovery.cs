@@ -14,7 +14,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -32,13 +31,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
         private readonly IJsonSerializer _json;
 
         public static SatIpDiscovery Current;
-
-        private readonly List<TunerHostInfo> _discoveredHosts = new List<TunerHostInfo>();
-
-        public List<TunerHostInfo> DiscoveredHosts
-        {
-            get { return _discoveredHosts.ToList(); }
-        }
 
         public SatIpDiscovery(IDeviceDiscovery deviceDiscovery, IServerConfigurationManager config, ILogger logger, ILiveTvManager liveTvManager, IHttpClient httpClient, IJsonSerializer json)
         {
@@ -83,15 +75,43 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 
             try
             {
-                if (_discoveredHosts.Any(i => string.Equals(i.Type, SatIpHost.DeviceType, StringComparison.OrdinalIgnoreCase) && string.Equals(location, i.Url, StringComparison.OrdinalIgnoreCase)))
+                var options = GetConfiguration();
+                
+                if (options.TunerHosts.Any(i => string.Equals(i.Type, SatIpHost.DeviceType, StringComparison.OrdinalIgnoreCase) && UriEquals(i.Url, location)))
                 {
                     return;
                 }
-
+                
                 _logger.Debug("Will attempt to add SAT device {0}", location);
                 var info = await GetInfo(location, CancellationToken.None).ConfigureAwait(false);
 
-                _discoveredHosts.Add(info);
+                var existing = GetConfiguration().TunerHosts
+                    .FirstOrDefault(i => string.Equals(i.Type, SatIpHost.DeviceType, StringComparison.OrdinalIgnoreCase) && string.Equals(i.DeviceId, info.DeviceId, StringComparison.OrdinalIgnoreCase));
+
+                if (existing == null)
+                {
+                    await _liveTvManager.SaveTunerHost(new TunerHostInfo
+                    {
+                        Type = SatIpHost.DeviceType,
+                        Url = location,
+                        DataVersion = 1,
+                        DeviceId = info.DeviceId,
+                        FriendlyName = info.FriendlyName,
+                        Tuners = info.Tuners
+
+                    }).ConfigureAwait(false);
+                }
+                else
+                {
+                    if (!string.Equals(existing.Url, location, StringComparison.OrdinalIgnoreCase))
+                    {
+                        existing.Url = location;
+                        existing.M3UUrl = info.M3UUrl;
+                        existing.FriendlyName = info.FriendlyName;
+                        existing.Tuners = info.Tuners;
+                        await _liveTvManager.SaveTunerHost(existing).ConfigureAwait(false);
+                    }
+                }
             }
             catch (OperationCanceledException)
             {
@@ -109,6 +129,29 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
             {
                 _semaphore.Release();
             }
+        }
+
+        private bool UriEquals(string savedUri, string location)
+        {
+            return string.Equals(NormalizeUrl(location), NormalizeUrl(savedUri), StringComparison.OrdinalIgnoreCase);
+        }
+
+        private string NormalizeUrl(string url)
+        {
+            if (!url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                url = "http://" + url;
+            }
+
+            url = url.TrimEnd('/');
+
+            // Strip off the port
+            return new Uri(url).GetComponents(UriComponents.AbsoluteUri & ~UriComponents.Port, UriFormat.UriEscaped);
+        }
+
+        private LiveTvOptions GetConfiguration()
+        {
+            return _config.GetConfiguration<LiveTvOptions>("livetv");
         }
 
         public void Dispose()
@@ -158,7 +201,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                 }
             }
 
-            if (string.IsNullOrWhiteSpace(result.Id))
+            if (string.IsNullOrWhiteSpace(result.DeviceId))
             {
                 throw new NotImplementedException();
             }
@@ -192,7 +235,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                     {
                         case "UDN":
                             {
-                                info.Id = reader.ReadElementContentAsString();
+                                info.DeviceId = reader.ReadElementContentAsString();
                                 break;
                             }
 
@@ -243,9 +286,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 
     public class SatIpTunerHostInfo : TunerHostInfo
     {
-        public int Tuners { get; set; }
         public int TunersAvailable { get; set; }
-        public string M3UUrl { get; set; }
-        public string FriendlyName { get; set; }
     }
 }
