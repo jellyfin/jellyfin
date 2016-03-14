@@ -1,4 +1,4 @@
-define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'browser'], function (loading, viewManager, skinManager, pluginManager, backdrop, browser) {
+define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'browser', 'pageJs'], function (loading, viewManager, skinManager, pluginManager, backdrop, browser, page) {
 
     var connectionManager;
 

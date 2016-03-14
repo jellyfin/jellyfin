@@ -1,11 +1,11 @@
 'use strict';
-var strictUriEncode = require('strict-uri-encode');
 
-exports.extract = function (str) {
-	return str.split('?')[1] || '';
+window.queryString = {};
+window.queryString.extract = function (maybeUrl) {
+	return maybeUrl.split('?')[1] || '';
 };
 
-exports.parse = function (str) {
+window.queryString.parse = function (str) {
 	if (typeof str !== 'string') {
 		return {};
 	}
@@ -18,13 +18,10 @@ exports.parse = function (str) {
 
 	return str.split('&').reduce(function (ret, param) {
 		var parts = param.replace(/\+/g, ' ').split('=');
-		// Firefox (pre 40) decodes `%3D` to `=`
-		// https://github.com/sindresorhus/query-string/pull/37
-		var key = parts.shift();
-		var val = parts.length > 0 ? parts.join('=') : undefined;
+		var key = parts[0];
+		var val = parts[1];
 
 		key = decodeURIComponent(key);
-
 		// missing `=` should be `null`:
 		// http://w3.org/TR/2012/WD-url-20120524/#collect-url-parameters
 		val = val === undefined ? null : decodeURIComponent(val);
@@ -41,26 +38,16 @@ exports.parse = function (str) {
 	}, {});
 };
 
-exports.stringify = function (obj) {
+window.queryString.stringify = function (obj) {
 	return obj ? Object.keys(obj).sort().map(function (key) {
 		var val = obj[key];
 
-		if (val === undefined) {
-			return '';
-		}
-
-		if (val === null) {
-			return key;
-		}
-
 		if (Array.isArray(val)) {
-			return val.slice().sort().map(function (val2) {
-				return strictUriEncode(key) + '=' + strictUriEncode(val2);
+			return val.sort().map(function (val2) {
+				return encodeURIComponent(key) + '=' + encodeURIComponent(val2);
 			}).join('&');
 		}
 
-		return strictUriEncode(key) + '=' + strictUriEncode(val);
-	}).filter(function (x) {
-		return x.length > 0;
+		return encodeURIComponent(key) + '=' + encodeURIComponent(val);
 	}).join('&') : '';
 };

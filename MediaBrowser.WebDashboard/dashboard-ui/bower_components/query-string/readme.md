@@ -13,19 +13,19 @@ $ npm install --save query-string
 ## Usage
 
 ```js
-const queryString = require('query-string');
+var queryString = require('query-string');
 
 console.log(location.search);
-//=> '?foo=bar'
+//=> ?foo=bar
 
-const parsed = queryString.parse(location.search);
+var parsed = queryString.parse(location.search);
 console.log(parsed);
 //=> {foo: 'bar'}
 
 console.log(location.hash);
-//=> '#token=bada55cafe'
+//=> #token=bada55cafe
 
-const parsedHash = queryString.parse(location.hash);
+var parsedHash = queryString.parse(location.hash);
 console.log(parsedHash);
 //=> {token: 'bada55cafe'}
 
@@ -35,7 +35,7 @@ parsed.ilike = 'pizza';
 location.search = queryString.stringify(parsed);
 
 console.log(location.search);
-//=> '?foo=unicorn&ilike=pizza'
+//=> ?foo=unicorn&ilike=pizza
 ```
 
 
@@ -56,7 +56,7 @@ Extract a query string from a URL that can be passed into `.parse()`.
 
 ## Nesting
 
-This module intentionally doesn't support nesting as it's not spec'd and varies between implementations, which causes a lot of [edge cases](https://github.com/visionmedia/node-querystring/issues).
+This module intentionally doesn't support nesting as it's not specced and varies between implementations, which causes a lot of [edge cases](https://github.com/visionmedia/node-querystring/issues).
 
 You're much better off just converting the object to a JSON string:
 
@@ -67,7 +67,7 @@ queryString.stringify({
 		unicorn: 'cake'
 	})
 });
-//=> 'foo=bar&nested=%7B%22unicorn%22%3A%22cake%22%7D'
+//=> foo=bar&nested=%7B%22unicorn%22%3A%22cake%22%7D
 ```
 
 
