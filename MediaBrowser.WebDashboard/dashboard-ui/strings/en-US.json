@@ -2429,6 +2429,6 @@
     "OptionEnableAnonymousUsageReporting": "Enable anonymous usage reporting",
     "OptionEnableAnonymousUsageReportingHelp": "Allow Emby to collect anonymous data such as installed plugins, the version numbers of your Emby apps, etc. This information is only used for the purpose of improving the software.",
     "LabelFileOrUrl": "File or url:",
-    "OptionEnableForAllTuners": "Enable for all tuners",
-    "HeaderTuners": "Tuners"
+    "OptionEnableForAllTuners": "Enable for all tuner devices",
+    "HeaderSelectTuners": "SelectTuners"
 }
