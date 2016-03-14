@@ -107,11 +107,21 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private string GetAudioImagePath(Audio item)
         {
-            var album = item.AlbumEntity;
-
             var filename = item.Album ?? string.Empty;
             filename += string.Join(",", item.Artists.ToArray());
-            filename += album == null ? item.Id.ToString("N") + "_primary" + item.DateModified.Ticks : album.Id.ToString("N") + album.DateModified.Ticks + "_primary";
+
+            if (!string.IsNullOrWhiteSpace(item.Album))
+            {
+                filename += "_" + item.Album;
+            }
+            else if (!string.IsNullOrWhiteSpace(item.Name))
+            {
+                filename += "_" + item.Name;
+            }
+            else
+            {
+                filename += "_" + item.Id.ToString("N");
+            }
 
             filename = filename.GetMD5() + ".jpg";
 

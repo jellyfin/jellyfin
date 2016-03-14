@@ -37,9 +37,9 @@ namespace MediaBrowser.Providers.Movies
             var sourceItem = source.Item;
             var targetItem = target.Item;
 
-            if (replaceData || string.IsNullOrEmpty(targetItem.TmdbCollectionName))
+            if (replaceData || string.IsNullOrEmpty(targetItem.CollectionName))
             {
-                targetItem.TmdbCollectionName = sourceItem.TmdbCollectionName;
+                targetItem.CollectionName = sourceItem.CollectionName;
             }
         }
     }

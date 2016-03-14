@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
@@ -85,6 +86,13 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// <value>The name of the TMDB collection.</value>
         public string TmdbCollectionName { get; set; }
 
+        [IgnoreDataMember]
+        public string CollectionName
+        {
+            get { return TmdbCollectionName; }
+            set { TmdbCollectionName = value; }
+        }
+        
         /// <summary>
         /// Gets the trailer ids.
         /// </summary>
