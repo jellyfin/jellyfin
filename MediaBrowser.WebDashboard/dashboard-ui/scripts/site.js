@@ -1744,6 +1744,7 @@ var AppInfo = {};
             hammer: bowerPath + "/hammerjs/hammer.min",
             layoutManager: embyWebComponentsBowerPath + "/layoutmanager",
             focusManager: embyWebComponentsBowerPath + "/focusmanager",
+            viewManager: embyWebComponentsBowerPath + "/viewmanager",
             globalize: embyWebComponentsBowerPath + "/globalize",
             imageLoader: embyWebComponentsBowerPath + "/images/imagehelper"
         };
