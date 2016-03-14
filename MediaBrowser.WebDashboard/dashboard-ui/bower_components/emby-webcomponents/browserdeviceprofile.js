@@ -61,7 +61,7 @@ define(['browser'], function (browser) {
                 var version = (browser.version || '').toString().split('.')[0];
                 try {
                     version = parseInt(version);
-                    if (version >= 48) {
+                    if (version >= 49) {
                         return true;
                     }
                 } catch (err) {
