@@ -358,8 +358,11 @@
                 overlayPlayButton: true
             });
 
-            section.querySelector('.nextUpItems').innerHTML = html;
-            ImageLoader.lazyChildren(section);
+            var itemsContainer = section.querySelector('.nextUpItems');
+            
+            itemsContainer.innerHTML = html;
+            ImageLoader.lazyChildren(itemsContainer);
+            $(itemsContainer).createCardMenus();
         });
     }
 
