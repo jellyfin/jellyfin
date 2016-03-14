@@ -33,7 +33,7 @@
 
         html += '<paper-button class="headerButton headerButtonRight btnNotifications subdued" type="button" title="Notifications"><div class="btnNotificationsInner">0</div></paper-button>';
 
-        html += '<paper-icon-button icon="person" class="headerButton headerButtonRight headerUserButton" onclick="return Dashboard.showUserFlyout(this);"></paper-icon-button>';
+        html += '<paper-icon-button icon="person" class="headerButton headerButtonRight headerUserButton"></paper-icon-button>';
 
         if (!browserInfo.mobile && !Dashboard.isConnectMode()) {
             html += '<paper-icon-button icon="settings" class="headerButton headerButtonRight dashboardEntryHeaderButton" onclick="return LibraryMenu.onSettingsClicked(event);"></paper-icon-button>';
@@ -83,31 +83,45 @@
                 }
 
                 if (headerUserButton) {
-                    headerUserButton.src = url;
-                    headerUserButton.icon = null;
-                    headerUserButton.classList.add('headerUserButtonRound');
+                    updateHeaderUserButton(headerUserButton, url, null);
                     hasImage = true;
                 }
             }
         }
 
         if (headerUserButton && !hasImage) {
-            headerUserButton.icon = 'person';
-            headerUserButton.src = null;
-            headerUserButton.removeAttribute('src');
-            headerUserButton.classList.remove('headerUserButtonRound');
 
-            // Looks like a bug in paper-icon-button that this doesn't get removed
-            var headerUserButtonImg = headerUserButton.querySelector('img');
-            if (headerUserButtonImg) {
-                headerUserButtonImg.parentNode.removeChild(headerUserButtonImg);
-            }
+            updateHeaderUserButton(headerUserButton, null, 'person');
         }
         if (user) {
             updateLocalUser(user.localUser);
         }
 
         requiresUserRefresh = false;
+    }
+
+    function updateHeaderUserButton(headerUserButton, src, icon) {
+
+        var oldButton = headerUserButton;
+
+        // There seems to be a bug in paper-icon-button where it doesn't refresh it's display after switching between icon and src image
+        // So work around that by just replacing the element altogether
+
+        var headerUserButton = document.createElement('paper-icon-button');
+        headerUserButton.className = oldButton.className;
+        headerUserButton.addEventListener('click', onHeaderUserButtonClick);
+
+        if (src) {
+            headerUserButton.classList.add('headerUserButtonRound');
+            headerUserButton.src = src;
+        } else if (icon) {
+            headerUserButton.classList.remove('headerUserButtonRound');
+            header.icon = icon;
+        } else {
+            headerUserButton.classList.remove('headerUserButtonRound');
+        }
+
+        oldButton.parentNode.replaceChild(headerUserButton, oldButton);
     }
 
     function updateLocalUser(user) {
@@ -162,6 +176,10 @@
         });
     }
 
+    function onHeaderUserButtonClick(e) {
+        Dashboard.showUserFlyout(e.target);
+    }
+
     function bindMenuEvents() {
 
         var mainDrawerButton = document.querySelector('.mainDrawerButton');
@@ -178,6 +196,11 @@
         var headerVoiceButton = document.querySelector('.headerVoiceButton');
         if (headerVoiceButton) {
             headerVoiceButton.addEventListener('click', showVoice);
+        }
+
+        var headerUserButton = document.querySelector('.headerUserButton');
+        if (headerUserButton) {
+            headerUserButton.addEventListener('click', onHeaderUserButtonClick);
         }
 
         var viewMenuBar = document.querySelector(".viewMenuBar");
