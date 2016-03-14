@@ -1378,16 +1378,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
             }
 
-            // Add MovieInfo
-            var movie = item as Movie;
-            if (movie != null)
-            {
-                if (fields.Contains(ItemFields.TmdbCollectionName))
-                {
-                    dto.TmdbCollectionName = movie.TmdbCollectionName;
-                }
-            }
-
             var hasSpecialFeatures = item as IHasSpecialFeatures;
             if (hasSpecialFeatures != null)
             {

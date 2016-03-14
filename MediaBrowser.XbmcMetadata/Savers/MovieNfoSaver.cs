@@ -101,9 +101,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             if (movie != null)
             {
-                if (!string.IsNullOrEmpty(movie.TmdbCollectionName))
+                if (!string.IsNullOrEmpty(movie.CollectionName))
                 {
-                    writer.WriteElementString("set", movie.TmdbCollectionName);
+                    writer.WriteElementString("set", movie.CollectionName);
                 }
             }
         }

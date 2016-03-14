@@ -1044,11 +1044,6 @@ namespace MediaBrowser.Server.Implementations.Library
             return names;
         }
 
-        private void SetPropertiesFromSongs(MusicArtist artist, IEnumerable<IHasMetadata> items)
-        {
-
-        }
-
         /// <summary>
         /// Validate and refresh the People sub-set of the IBN.
         /// The items are stored in the db but not loaded into memory until actually requested by an operation.

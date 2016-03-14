@@ -207,12 +207,6 @@ namespace MediaBrowser.Model.Dto
         public string ShortOverview { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the TMDB collection.
-        /// </summary>
-        /// <value>The name of the TMDB collection.</value>
-        public string TmdbCollectionName { get; set; }
-
-        /// <summary>
         /// Gets or sets the taglines.
         /// </summary>
         /// <value>The taglines.</value>

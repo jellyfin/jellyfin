@@ -207,7 +207,8 @@ namespace MediaBrowser.Model.Configuration
         public bool DownloadImagesInAdvance { get; set; }
 
         public bool EnableAnonymousUsageReporting { get; set; }
-        
+        public bool EnableStandaloneMusicKeys { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>

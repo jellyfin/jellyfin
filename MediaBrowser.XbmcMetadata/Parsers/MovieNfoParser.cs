@@ -11,7 +11,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 {
     class MovieNfoParser : BaseNfoParser<Video>
     {
-        public MovieNfoParser(ILogger logger, IConfigurationManager config) : base(logger, config)
+        public MovieNfoParser(ILogger logger, IConfigurationManager config)
+            : base(logger, config)
         {
         }
 
@@ -44,12 +45,18 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "set":
                     {
-                        var val = reader.ReadElementContentAsString();
                         var movie = item as Movie;
 
+                        var tmdbcolid = reader.GetAttribute("tmdbcolid");
+                        if (!string.IsNullOrWhiteSpace(tmdbcolid) && movie != null)
+                        {
+                            movie.SetProviderId(MetadataProviders.TmdbCollection, tmdbcolid);
+                        }
+
+                        var val = reader.ReadElementContentAsString();
                         if (!string.IsNullOrWhiteSpace(val) && movie != null)
                         {
-                            movie.TmdbCollectionName = val;
+                            movie.CollectionName = val;
                         }
 
                         break;
