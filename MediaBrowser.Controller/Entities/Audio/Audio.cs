@@ -153,6 +153,31 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <returns>System.String.</returns>
         protected override string CreateUserDataKey()
         {
+            if (ConfigurationManager.Configuration.EnableStandaloneMusicKeys)
+            {
+                var songKey = IndexNumber.HasValue ? IndexNumber.Value.ToString("0000") : string.Empty;
+
+
+                if (ParentIndexNumber.HasValue)
+                {
+                    songKey = ParentIndexNumber.Value.ToString("0000") + "-" + songKey;
+                }
+                songKey+= Name;
+
+                if (!string.IsNullOrWhiteSpace(Album))
+                {
+                    songKey = Album + "-" + songKey;
+                }
+
+                var albumArtist = AlbumArtists.FirstOrDefault();
+                if (!string.IsNullOrWhiteSpace(albumArtist))
+                {
+                    songKey = albumArtist + "-" + songKey;
+                }
+
+                return songKey;
+            }
+
             var parent = AlbumEntity;
 
             if (parent != null)

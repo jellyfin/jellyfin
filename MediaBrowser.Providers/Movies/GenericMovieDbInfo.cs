@@ -179,7 +179,7 @@ namespace MediaBrowser.Providers.Movies
 
                 if (movieItem != null)
                 {
-                    movieItem.TmdbCollectionName = movieData.belongs_to_collection.name;
+                    movieItem.CollectionName = movieData.belongs_to_collection.name;
                 }
             }
 

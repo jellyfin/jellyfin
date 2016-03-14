@@ -180,7 +180,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
                     catch (XmlException)
                     {
-                        
+
                     }
                 }
             }
@@ -661,7 +661,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             if (!string.IsNullOrWhiteSpace(val))
                             {
                                 val = val.Replace("plugin://plugin.video.youtube/?action=play_video&videoid=", "http://www.youtube.com/watch?v=", StringComparison.OrdinalIgnoreCase);
-                                
+
                                 hasTrailer.AddTrailerUrl(val, false);
                             }
                         }
@@ -860,6 +860,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     break;
 
                 case "collectionnumber":
+                case "tmdbcolid":
                     var tmdbCollection = reader.ReadElementContentAsString();
                     if (!string.IsNullOrWhiteSpace(tmdbCollection))
                     {
