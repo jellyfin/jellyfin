@@ -344,6 +344,7 @@ namespace MediaBrowser.WebDashboard.Api
             DeleteFoldersByName(bowerPath, "guides");
             DeleteFoldersByName(bowerPath, "grunt");
             DeleteFoldersByName(bowerPath, "rollups");
+            DeleteFoldersByName(Path.Combine(bowerPath, "emby-webcomponents"), "fonts");
 
             _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "jquery", "src"), true);
           
