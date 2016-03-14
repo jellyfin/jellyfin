@@ -1919,6 +1919,10 @@ var AppInfo = {};
         define("opensansFont", ['css!' + embyWebComponentsBowerPath + '/fonts/opensans/style']);
         define("montserratFont", ['css!' + embyWebComponentsBowerPath + '/fonts/montserrat/style']);
 
+        define('queryString', ['bower_components/query-string/index'], function () {
+            return queryString;
+        });
+
         // alias
         define("historyManager", [], function () {
             return {
