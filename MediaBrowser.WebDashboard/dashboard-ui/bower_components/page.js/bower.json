@@ -1,0 +1,23 @@
+{
+  "name": "page",
+  "description": "Tiny client-side router",
+  "keywords": ["page", "route", "router", "routes", "pushState"],
+  "main": "page.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/visionmedia/page.js"
+  },
+  "ignore": [
+    ".gitignore",
+    ".npmignore",
+    ".travis.yml",
+    "component.json",
+    "examples",
+    "History.md",
+    "Makefile",
+    "package.json",
+    "Readme.md",
+    "test"
+  ],
+  "license": "MIT"
+}
