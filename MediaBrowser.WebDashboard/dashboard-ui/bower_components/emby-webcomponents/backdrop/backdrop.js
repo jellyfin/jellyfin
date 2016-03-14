@@ -1,12 +1,12 @@
 ﻿define(['browser', 'css!./style'], function (browser) {
 
-    function enableAnimation() {
+    function enableAnimation(elem) {
 
         if (browser.mobile) {
             return false;
         }
 
-        return true;
+        return elem.animate;
     }
 
     function backdrop() {
@@ -31,7 +31,7 @@
 
                 parent.appendChild(backdropImage);
 
-                if (!enableAnimation()) {
+                if (!enableAnimation(backdropImage)) {
                     if (existingBackdropImage && existingBackdropImage.parentNode) {
                         existingBackdropImage.parentNode.removeChild(existingBackdropImage);
                     }

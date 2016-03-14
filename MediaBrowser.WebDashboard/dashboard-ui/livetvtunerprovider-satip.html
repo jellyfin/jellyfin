@@ -4,7 +4,7 @@
     <title>${TitleLiveTV}</title>
 </head>
 <body>
-    <div id="liveTvTunerProviderSatPage" data-role="page" class="page type-interior liveTvSettingsPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvtunerprovider-satip,paper-input">
+    <div id="liveTvTunerProviderSatPage" data-role="page" class="page type-interior liveTvSettingsPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvtunerprovider-satip,paper-input,paper-checkbox">
 
         <div data-role="content">
             <div class="content-primary">
@@ -22,9 +22,51 @@
                     <form>
                         <div>
                             <div>
-                                <paper-input class="txtDevicePath" label="${LabelPath}" required="required" readonly></paper-input>
+                                <paper-input class="txtDevicePath" label="${LabelTunerIpAddress}" required="required"></paper-input>
                             </div>
-                            <br />
+                            <div>
+                                <br />
+                                <label class="selectLabel">Diseq C</label>
+                                <select class="selectDiseqC">
+                                    <option value="">${OptionNone}</option>
+                                    <option value="tone">22 KHz (Tone Switch)</option>
+                                    <option value="diseqc1">Diseq c 1.x (A/B/C/D)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <br />
+                                <label class="selectLabel">Source A</label>
+                                <select class="selectSourceA">
+                                    <option value="">${OptionNone}</option>
+                                </select>
+                            </div>
+                            <div class="fldSourceB hide">
+                                <br />
+                                <label class="selectLabel">Source B</label>
+                                <select class="selectSourceB">
+                                    <option value="">${OptionNone}</option>
+                                </select>
+                            </div>
+                            <div class="fldSourceC hide">
+                                <br />
+                                <label class="selectLabel">Source C</label>
+                                <select class="selectSourceC">
+                                    <option value="">${OptionNone}</option>
+                                </select>
+                            </div>
+                            <div class="fldSourceD hide">
+                                <br />
+                                <label class="selectLabel">Source D</label>
+                                <select class="selectSourceD">
+                                    <option value="">${OptionNone}</option>
+                                </select>
+                            </div>
+                            <div>
+                                <br />
+                                <paper-checkbox class="chkEnabled" checked>${LabelEnableThisTuner}</paper-checkbox>
+                                <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableThisTunerHelp}</div>
+                            </div>
+                            <br /><br />
                             <div>
                                 <button type="submit" data-role="none" class="clearButton">
                                     <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>

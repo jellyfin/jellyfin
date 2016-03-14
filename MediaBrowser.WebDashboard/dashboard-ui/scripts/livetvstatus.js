@@ -451,10 +451,10 @@
 
         var menuItems = [];
 
-        //menuItems.push({
-        //    name: getTunerName('satip'),
-        //    id: 'satip'
-        //});
+        menuItems.push({
+            name: getTunerName('satip'),
+            id: 'satip'
+        });
 
         menuItems.push({
             name: 'HDHomerun',

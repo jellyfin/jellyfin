@@ -1022,8 +1022,8 @@ namespace MediaBrowser.Providers.Manager
                                         .ToList();
 
             var musicArtists = albums
-                .Select(i => i.GetParent())
-                .OfType<MusicArtist>()
+                .Select(i => i.MusicArtist)
+                .Where(i => i != null)
                 .ToList();
 
             var musicArtistRefreshTasks = musicArtists.Select(i => i.ValidateChildren(new Progress<double>(), cancellationToken, options, true));

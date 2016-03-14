@@ -308,9 +308,6 @@
             var existingServer = existingServers.length ? existingServers[0] : {};
             existingServer.DateLastAccessed = new Date().getTime();
             existingServer.LastConnectionMode = ConnectionMode.Manual;
-            if (existingServer.LastConnectionMode == ConnectionMode.Local) {
-                existingServer.DateLastLocalConnection = new Date().getTime();
-            }
             existingServer.ManualAddress = apiClient.serverAddress();
             apiClient.serverInfo(existingServer);
 
@@ -412,10 +409,6 @@
 
             if (options.updateDateLastAccessed !== false) {
                 server.DateLastAccessed = new Date().getTime();
-
-                if (server.LastConnectionMode == ConnectionMode.Local) {
-                    server.DateLastLocalConnection = new Date().getTime();
-                }
             }
             server.Id = result.ServerId;
 
@@ -869,8 +862,7 @@
                         var info = {
                             Id: foundServer.Id,
                             LocalAddress: convertEndpointAddressToManualAddress(foundServer) || foundServer.Address,
-                            Name: foundServer.Name,
-                            DateLastLocalConnection: new Date().getTime()
+                            Name: foundServer.Name
                         };
 
                         info.LastConnectionMode = info.ManualAddress ? ConnectionMode.Manual : ConnectionMode.Local;
@@ -1165,10 +1157,6 @@
 
             if (options.updateDateLastAccessed !== false) {
                 server.DateLastAccessed = new Date().getTime();
-
-                if (connectionMode == ConnectionMode.Local) {
-                    server.DateLastLocalConnection = new Date().getTime();
-                }
             }
             credentialProvider.addOrUpdateServer(credentials.Servers, server);
             credentialProvider.credentials(credentials);
@@ -1517,33 +1505,7 @@
                 });
             }
 
-            return self.getAvailableServers().then(function (servers) {
-
-                var currentServerId = apiClient.serverInfo().Id;
-                var matchedServers = servers.filter(function (s) {
-                    return stringEqualsIgnoreCase(s.Id, currentServerId);
-                });
-
-                var match = matchedServers.length ? matchedServers[0] : null;
-                var dateLastLocalConnection = match ? match.DateLastLocalConnection : null;
-                if (!dateLastLocalConnection) {
-
-                    return apiClient.getJSON(apiClient.getUrl('System/Endpoint')).then(function (info) {
-
-                        if (info.IsInNetwork) {
-
-                            updateDateLastLocalConnection(currentServerId);
-                            return apiClient.getRegistrationInfo(feature);
-                        } else {
-                            return {};
-                        }
-
-                    });
-
-                } else {
-                    return apiClient.getRegistrationInfo(feature);
-                }
-            });
+            return apiClient.getRegistrationInfo(feature);
         };
 
         function isConnectUserSupporter() {
@@ -1557,22 +1519,6 @@
                 }
             }
             return false;
-        }
-
-        function updateDateLastLocalConnection(serverId) {
-
-            var credentials = credentialProvider.credentials();
-            var servers = credentials.Servers.filter(function (s) {
-                return s.Id == serverId;
-            });
-
-            var server = servers.length ? servers[0] : null;
-
-            if (server) {
-                server.DateLastLocalConnection = new Date().getTime();
-                credentialProvider.addOrUpdateServer(credentials.Servers, server);
-                credentialProvider.credentials(credentials);
-            }
         }
 
         function addAppInfoToConnectRequest(request) {
