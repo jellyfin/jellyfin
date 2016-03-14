@@ -90,6 +90,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 
                 if (existing == null)
                 {
+                    if (string.IsNullOrWhiteSpace(info.M3UUrl))
+                    {
+                        return;
+                    }
+
                     await _liveTvManager.SaveTunerHost(new TunerHostInfo
                     {
                         Type = SatIpHost.DeviceType,
@@ -97,7 +102,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                         DataVersion = 1,
                         DeviceId = info.DeviceId,
                         FriendlyName = info.FriendlyName,
-                        Tuners = info.Tuners
+                        Tuners = info.Tuners,
+                        M3UUrl = info.M3UUrl,
+                        IsEnabled = true
 
                     }).ConfigureAwait(false);
                 }

@@ -12,6 +12,7 @@
                 })[0];
 
                 page.querySelector('.txtDevicePath').value = info.Url || '';
+                page.querySelector('.chkEnabled').checked = info.IsEnabled;
             });
         }
     }
@@ -30,19 +31,23 @@
                     return i.Id == id;
                 })[0];
 
-                info.Url = page.querySelector('.txtDevicePath').value;
-
+                fillInfoFromPage(page, info);
                 submitTunerInfo(page, info);
             });
 
         } else {
             var info = {
-                Type: 'satip',
-                Url: page.querySelector('.txtDevicePath').value
+                Type: 'satip'
             };
 
+            fillInfoFromPage(page, info);
             submitTunerInfo(page, info);
         }
+    }
+
+    function fillInfoFromPage(page, info) {
+        info.Url = page.querySelector('.txtDevicePath').value;
+        info.IsEnabled = page.querySelector('.chkEnabled').checked;
     }
 
     function submitTunerInfo(page, info) {
@@ -65,6 +70,28 @@
         });
     }
 
+    function onSelectDiseqCChange(e) {
+
+        var select = e.target;
+        var value = select.value;
+        var page = $(select).parents('.page')[0];
+
+        if (value) {
+            page.querySelector('.fldSourceB').classList.remove('hide');
+        } else {
+            page.querySelector('.fldSourceB').classList.add('hide');
+        }
+
+        if (value == 'diseqc1') {
+
+            page.querySelector('.fldSourceC').classList.remove('hide');
+            page.querySelector('.fldSourceD').classList.remove('hide');
+        } else {
+            page.querySelector('.fldSourceC').classList.add('hide');
+            page.querySelector('.fldSourceD').classList.add('hide');
+        }
+    }
+
     $(document).on('pageinit', "#liveTvTunerProviderSatPage", function () {
 
         var page = this;
@@ -73,6 +100,8 @@
             submitForm(page);
             return false;
         });
+
+        page.querySelector('.selectDiseqC').addEventListener('change', onSelectDiseqCChange);
 
     }).on('pageshow', "#liveTvTunerProviderSatPage", function () {
 
