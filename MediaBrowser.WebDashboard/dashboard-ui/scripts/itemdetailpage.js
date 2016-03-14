@@ -731,7 +731,7 @@
 
         var options = {
             userId: Dashboard.getCurrentUserId(),
-            limit: screenWidth > 800 && shape == "detailPagePortrait" ? 5 : 4,
+            limit: screenWidth > 800 && shape == "detailPagePortrait" ? 4 : 4,
             fields: "PrimaryImageAspectRatio,UserData,SyncInfo"
         };
 

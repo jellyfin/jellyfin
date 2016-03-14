@@ -599,6 +599,8 @@ full list of Events available below :
 
 full list of Errors is described below:
 
+
+### Network Errors
   - ```Hls.ErrorDetails.MANIFEST_LOAD_ERROR``` - raised when manifest loading fails because of a network error
     - data: { type : ```NETWORK_ERROR```, details : ```Hls.ErrorDetails.MANIFEST_LOAD_ERROR```, fatal : ```true```,url : manifest URL, response : xhr response, loader : URL loader}
   - ```Hls.ErrorDetails.MANIFEST_LOAD_TIMEOUT``` - raised when manifest loading fails because of a timeout
@@ -619,6 +621,11 @@ full list of Errors is described below:
     - data: { type : ```NETWORK_ERROR```, details : ```Hls.ErrorDetails.FRAG_LOAD_TIMEOUT```, fatal : ```true/false```,frag : fragment object}
   - ```Hls.ErrorDetails.FRAG_PARSING_ERROR```raised when fragment parsing fails
     - data: { type : ```NETWORK_ERROR```, details : ```Hls.ErrorDetails.FRAG_PARSING_ERROR```, fatal : ```true/false```, reason : failure reason}
+
+
+### Media Errors
+  - ```Hls.ErrorDetails.MANIFEST_INCOMPATIBLE_CODECS_ERROR```raised when manifest only contains quality level with codecs incompatible with MediaSource Engine.
+    - data: { type : ```MEDIA_ERROR```, details : ```Hls.ErrorDetails.MANIFEST_INCOMPATIBLE_CODECS_ERROR```, fatal : ```true```, url : manifest URL}
   - ```Hls.ErrorDetails.BUFFER_APPEND_ERROR```raised when exception is raised while calling buffer append
     - data: { type : ```MEDIA_ERROR```, details : ```Hls.ErrorDetails.BUFFER_APPEND_ERROR```, fatal : ```true```, frag : fragment object}
   - ```Hls.ErrorDetails.BUFFER_APPENDING_ERROR```raised when exception is raised during buffer appending
