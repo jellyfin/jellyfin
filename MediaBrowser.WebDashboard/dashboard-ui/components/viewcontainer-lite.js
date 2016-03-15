@@ -20,51 +20,69 @@ define([], function () {
                 pageIndex = 0;
             }
 
+            var newView = normalizeNewView(options);
+
+            var dependencies = typeof (newView) == 'string' ? null : newView.getAttribute('data-require');
+            dependencies = dependencies ? dependencies.split(',') : [];
+
+            require(dependencies, function () {
+                var allPages = animatedPages.querySelectorAll('.mainAnimatedPage');
+                var animatable = allPages[pageIndex];
+
+                var currentPage = animatable.querySelector('.page-view');
+
+                if (currentPage) {
+                    triggerDestroy(currentPage);
+                }
+
+                for (var i = 0, length = allPages.length; i < length; i++) {
+                    if (pageIndex == i) {
+                        allPages[i].classList.remove('hide');
+                    } else {
+                        allPages[i].classList.add('hide');
+                    }
+                }
+
+                if (typeof (newView) == 'string') {
+                    animatable.innerHTML = newView;
+                } else {
+                    animatable.innerHTML = '';
+                    animatable.appendChild(newView);
+                }
+
+                var view = animatable.querySelector('.page-view');
+
+                if (onBeforeChange) {
+                    onBeforeChange(view, false, options);
+                }
+
+                $.mobile = $.mobile || {};
+                $.mobile.activePage = view;
+
+                resolve(view);
+            });
+        });
+    }
+
+    function normalizeNewView(options) {
+
+        if (options.view.indexOf('data-role="page"') == -1) {
             var html = '<div class="page-view" data-type="' + (options.type || '') + '" data-url="' + options.url + '">';
             html += options.view;
             html += '</div>';
+            return html;
+        }
 
-            var allPages = animatedPages.querySelectorAll('.mainAnimatedPage');
-            var animatable = allPages[pageIndex];
-
-            var currentPage = animatable.querySelector('.page-view');
-
-            if (currentPage) {
-                triggerDestroy(currentPage);
-            }
-
-            for (var i = 0, length = allPages.length; i < length; i++) {
-                if (pageIndex == i) {
-                    allPages[i].classList.remove('hide');
-                } else {
-                    allPages[i].classList.add('hide');
-                }
-            }
-            animatable.innerHTML = html;
-
-            var view = animatable.querySelector('.page-view');
-
-            if (onBeforeChange) {
-                onBeforeChange(view, false, options);
-            }
-
-            sendResolve(resolve, view);
-        });
+        var elem = $(options.view)[0];
+        elem.classList.add('page-view');
+        elem.setAttribute('data-type', options.type || '');
+        elem.setAttribute('data-url', options.url);
+        return elem;
     }
 
     var onBeforeChange;
     function setOnBeforeChange(fn) {
         onBeforeChange = fn;
-    }
-
-    function sendResolve(resolve, view) {
-
-        // Don't report completion until the animation has finished, otherwise rendering may not perform well
-        setTimeout(function () {
-
-            resolve(view);
-
-        }, animationDuration);
     }
 
     function getSelectedIndex(animatedPages) {
@@ -132,7 +150,10 @@ define([], function () {
                         }
                     }
 
-                    sendResolve(resolve, view);
+                    $.mobile = $.mobile || {};
+                    $.mobile.activePage = view;
+
+                    resolve(view);
                     return;
                 }
             }

@@ -185,7 +185,7 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
                 loading.hide();
 
                 page({
-                    click: false,
+                    click: true,
                     hashbang: true,
                     enableHistory: enableHistory()
                 });

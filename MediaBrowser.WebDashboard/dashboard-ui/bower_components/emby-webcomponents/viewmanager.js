@@ -1,6 +1,7 @@
 define(['viewcontainer', 'focusManager', 'queryString', 'connectionManager', 'events'], function (viewcontainer, focusManager, queryString, connectionManager, events) {
 
     var currentView;
+    var dispatchPageEvents;
 
     viewcontainer.setOnBeforeChange(function (newView, isRestored, options) {
 
@@ -18,7 +19,8 @@ define(['viewcontainer', 'focusManager', 'queryString', 'connectionManager', 'ev
 
                 // Use controller method
                 var controller = new options.controllerFactory(newView, eventDetail.detail.params);
-
+            } else if (dispatchPageEvents) {
+                dispatchViewEvent(newView, 'viewinit');
             }
         }
 
@@ -45,7 +47,11 @@ define(['viewcontainer', 'focusManager', 'queryString', 'connectionManager', 'ev
             view.activeElement.focus();
         }
 
-        view.dispatchEvent(new CustomEvent("viewshow", eventDetail));
+        view.dispatchEvent(new CustomEvent('viewshow', eventDetail));
+
+        if (dispatchPageEvents) {
+            view.dispatchEvent(new CustomEvent('pageshow', eventDetail));
+        }
     }
 
     function dispatchViewEvent(view, eventName, isRestored) {
@@ -58,6 +64,17 @@ define(['viewcontainer', 'focusManager', 'queryString', 'connectionManager', 'ev
             bubbles: true,
             cancelable: false
         }));
+
+        if (dispatchPageEvents) {
+            view.dispatchEvent(new CustomEvent(eventName.replace('view', 'page'), {
+                detail: {
+                    type: view.getAttribute('data-type'),
+                    isRestored: isRestored
+                },
+                bubbles: true,
+                cancelable: false
+            }));
+        }
     }
 
     function getViewEventDetail(view, options, isRestore) {
@@ -143,6 +160,10 @@ define(['viewcontainer', 'focusManager', 'queryString', 'connectionManager', 'ev
 
                 tryRestoreInternal(viewcontainer, options, resolve, reject);
             });
+        };
+
+        self.dispatchPageEvents = function (value) {
+            dispatchPageEvents = value;
         };
     }
 
