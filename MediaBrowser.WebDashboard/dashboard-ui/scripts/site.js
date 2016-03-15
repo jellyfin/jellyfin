@@ -1543,6 +1543,12 @@ var AppInfo = {};
         $.ajax = newApiClient.ajax;
     }
 
+    function defineConnectionManager(connectionManager) {
+        define('connectionManager', [], function () {
+            return connectionManager;
+        });
+    }
+
     //localStorage.clear();
     function createConnectionManager(credentialProviderFactory, capabilities) {
 
@@ -1554,6 +1560,8 @@ var AppInfo = {};
             capabilities.DeviceProfile = deviceProfile;
 
             window.ConnectionManager = new MediaBrowser.ConnectionManager(credentialProvider, AppInfo.appName, AppInfo.appVersion, AppInfo.deviceName, AppInfo.deviceId, capabilities, window.devicePixelRatio);
+
+            defineConnectionManager(window.ConnectionManager);
 
             if (window.location.href.toLowerCase().indexOf('wizardstart.html') != -1) {
                 window.ConnectionManager.clearData();
@@ -1743,6 +1751,7 @@ var AppInfo = {};
             connectservice: apiClientBowerPath + '/connectservice',
             hammer: bowerPath + "/hammerjs/hammer.min",
             layoutManager: embyWebComponentsBowerPath + "/layoutmanager",
+            pageJs: bowerPath + '/page.js/page',
             focusManager: embyWebComponentsBowerPath + "/focusmanager",
             viewManager: embyWebComponentsBowerPath + "/viewmanager",
             globalize: embyWebComponentsBowerPath + "/globalize",
@@ -1854,7 +1863,7 @@ var AppInfo = {};
 
         define("jstree", [bowerPath + "/jstree/dist/jstree", "css!thirdparty/jstree/themes/default/style.min.css"]);
 
-        define('jqm', ['thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js'], function() {
+        define('jqm', ['thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js'], function () {
             $.mobile.filterHtml = Dashboard.filterHtml;
         });
         define("jqmbase", ['css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.css']);
@@ -1920,7 +1929,8 @@ var AppInfo = {};
         define("opensansFont", ['css!' + embyWebComponentsBowerPath + '/fonts/opensans/style']);
         define("montserratFont", ['css!' + embyWebComponentsBowerPath + '/fonts/montserrat/style']);
 
-        define('queryString', ['bower_components/query-string/index'], function () {
+        define("viewcontainer", ['components/viewcontainer-lite'], returnFirstDependency);
+        define('queryString', [bowerPath + '/query-string/index'], function () {
             return queryString;
         });
 
@@ -1945,6 +1955,18 @@ var AppInfo = {};
                 },
                 off: function () {
                 }
+            };
+        });
+
+        // mock this for now. not used in this app
+        define("skinManager", [], function () {
+            return {
+            };
+        });
+
+        // mock this for now. not used in this app
+        define("pluginManager", [], function () {
+            return {
             };
         });
 
@@ -2219,6 +2241,7 @@ var AppInfo = {};
         var deps = [];
 
         deps.push('imageLoader');
+        //deps.push('bower_components/emby-webcomponents/router');
 
         if (!(AppInfo.isNativeApp && browserInfo.android)) {
             document.documentElement.classList.add('minimumSizeTabs');
@@ -2264,12 +2287,16 @@ var AppInfo = {};
 
         deps.push('css!css/card.css');
 
-        require(deps, function (imageLoader) {
+        require(deps, function (imageLoader, pageObjects) {
 
             imageLoader.enableFade = browserInfo.animate && !browserInfo.mobile;
             window.ImageLoader = imageLoader;
 
             $.mobile.initializePage();
+            //window.Emby = {};
+            //window.Emby.Page = pageObjects;
+            //window.Emby.TransparencyLevel = pageObjects.TransparencyLevel;
+            //Emby.Page.start();
 
             var postInitDependencies = [];
 
