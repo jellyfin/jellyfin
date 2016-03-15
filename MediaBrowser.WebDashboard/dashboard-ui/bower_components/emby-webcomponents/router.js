@@ -2,45 +2,6 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
 
     var connectionManager;
 
-    function isStartup(ctx) {
-        var path = ctx.pathname;
-
-        if (path.indexOf('welcome') != -1) {
-            return true;
-        }
-
-        if (path.indexOf('connectlogin') != -1) {
-            return true;
-        }
-
-        if (path.indexOf('login') != -1) {
-            return true;
-        }
-
-        if (path.indexOf('manuallogin') != -1) {
-            return true;
-        }
-
-        if (path.indexOf('manualserver') != -1) {
-            return true;
-        }
-
-        if (path.indexOf('selectserver') != -1) {
-            return true;
-        }
-
-        if (path.indexOf('localpin') != -1) {
-            return true;
-        }
-
-        return false;
-    }
-
-    function allowAnonymous(ctx) {
-
-        return isStartup(ctx);
-    }
-
     function redirectToLogin() {
 
         backdrop.clear();
@@ -283,7 +244,7 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
 
         console.log('Emby.Page - user is not authenticated');
 
-        if (!allowAnonymous(ctx)) {
+        if (!route.anonymous) {
 
             console.log('Emby.Page - route does not allow anonymous access, redirecting to login');
             redirectToLogin();
