@@ -1,4 +1,4 @@
-define(['viewcontainer', 'focusManager', 'queryString'], function (viewcontainer, focusManager, queryString) {
+define(['viewcontainer', 'focusManager', 'queryString', 'connectionManager', 'events'], function (viewcontainer, focusManager, queryString, connectionManager, events) {
 
     var currentView;
 
@@ -88,8 +88,9 @@ define(['viewcontainer', 'focusManager', 'queryString'], function (viewcontainer
     }
 
     document.addEventListener('skinunload', resetCachedViews);
-    document.addEventListener('usersignedin', resetCachedViews);
-    document.addEventListener('usersignedout', resetCachedViews);
+
+    events.on(connectionManager, 'localusersignedin', resetCachedViews);
+    events.on(connectionManager, 'localusersignedout', resetCachedViews);
 
     function tryRestoreInternal(viewcontainer, options, resolve, reject) {
 

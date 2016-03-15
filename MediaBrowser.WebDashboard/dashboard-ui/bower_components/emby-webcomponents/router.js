@@ -259,12 +259,12 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
             }
         }
 
-        var server = connectionManager.currentLoggedInServer();
+        var apiClient = connectionManager.currentApiClient();
         var pathname = ctx.pathname.toLowerCase();
 
         console.log('Emby.Page - processing path request ' + pathname);
 
-        if (server) {
+        if (apiClient && apiClient.isLoggedIn()) {
 
             console.log('Emby.Page - user is authenticated');
 
@@ -494,6 +494,19 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
 
         page.pushState(state, title, url);
     }
+
+    function setBaseRoute() {
+        var baseRoute = window.location.pathname.replace('/index.html', '');
+        if (baseRoute.lastIndexOf('/') == baseRoute.length - 1) {
+            baseRoute = baseRoute.substring(0, baseRoute.length - 1);
+        }
+
+        console.log('Setting page base to ' + baseRoute);
+
+        page.base(baseRoute);
+    }
+
+    setBaseRoute();
 
     return {
         addRoute: addRoute,
