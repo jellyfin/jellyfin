@@ -13,8 +13,8 @@ define([], function () {
                 return;
             }
 
-            var selected = animatedPages.selected;
-            var pageIndex = selected == null ? 0 : (selected + 1);
+            var selected = getSelectedIndex(animatedPages);
+            var pageIndex = selected + 1;
 
             if (pageIndex >= pageContainerCount) {
                 pageIndex = 0;
@@ -24,7 +24,8 @@ define([], function () {
             html += options.view;
             html += '</div>';
 
-            var animatable = animatedPages.querySelectorAll('.mainAnimatedPage')[pageIndex];
+            var allPages = animatedPages.querySelectorAll('.mainAnimatedPage');
+            var animatable = allPages[pageIndex];
 
             var currentPage = animatable.querySelector('.page-view');
 
@@ -32,6 +33,13 @@ define([], function () {
                 triggerDestroy(currentPage);
             }
 
+            for (var i = 0, length = allPages.length; i < length; i++) {
+                if (pageIndex == i) {
+                    allPages[i].classList.remove('hide');
+                } else {
+                    allPages[i].classList.add('hide');
+                }
+            }
             animatable.innerHTML = html;
 
             var view = animatable.querySelector('.page-view');
@@ -59,6 +67,17 @@ define([], function () {
         }, animationDuration);
     }
 
+    function getSelectedIndex(animatedPages) {
+        var allPages = animatedPages.querySelectorAll('.mainAnimatedPage');
+        for (var i = 0, length = allPages.length; i < length; i++) {
+            if (!allPages[i].classList.contains('hide')) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     function replaceAnimatedPages() {
         var elem = document.querySelector('neon-animated-pages.mainAnimatedPages');
 
@@ -66,11 +85,11 @@ define([], function () {
             var div = document.createElement('div');
             div.classList.add('mainAnimatedPages');
             div.classList.add('skinBody');
-            div.innerHTML = '<div class="mainAnimatedPage"></div><div class="mainAnimatedPage"></div><div class="mainAnimatedPage"></div>';
+            div.innerHTML = '<div class="mainAnimatedPage hide"></div><div class="mainAnimatedPage hide"></div><div class="mainAnimatedPage hide"></div>';
             elem.parentNode.replaceChild(div, elem);
-
-            pageContainerCount = document.querySelectorAll('.mainAnimatedPage').length;
         }
+
+        pageContainerCount = document.querySelectorAll('.mainAnimatedPage').length;
     }
 
     function tryRestoreView(options) {
@@ -97,14 +116,22 @@ define([], function () {
                         return;
                     }
 
-                    var animatable = animatedPages.querySelectorAll('.mainAnimatedPage')[index];
+                    var allPages = animatedPages.querySelectorAll('.mainAnimatedPage');
+                    var animatable = allPages[index];
                     var view = animatable.querySelector('.page-view');
 
                     if (onBeforeChange) {
                         onBeforeChange(view, true, options);
                     }
 
-                    animatedPages.selected = index;
+                    for (var i = 0, length = allPages.length; i < length; i++) {
+                        if (index == i) {
+                            allPages[i].classList.remove('hide');
+                        } else {
+                            allPages[i].classList.add('hide');
+                        }
+                    }
+
                     sendResolve(resolve, view);
                     return;
                 }
@@ -120,7 +147,7 @@ define([], function () {
 
     function reset() {
 
-        var views = document.querySelectorAll(".mainAnimatedPage:not(.iron-selected) .page-view");
+        var views = document.querySelectorAll(".mainAnimatedPage.hide .page-view");
 
         for (var i = 0, length = views.length; i < length; i++) {
 
