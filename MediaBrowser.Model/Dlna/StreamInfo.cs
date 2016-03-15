@@ -345,6 +345,11 @@ namespace MediaBrowser.Model.Dlna
                         StringHelper.ToStringCultureInvariant(startPositionTicks),
                         subtitleProfile.Format);
 
+                    if (!string.IsNullOrWhiteSpace(accessToken))
+                    {
+                        info.Url += "?api_key=" + accessToken;
+                    }
+
                     info.IsExternalUrl = false;
                 }
                 else
