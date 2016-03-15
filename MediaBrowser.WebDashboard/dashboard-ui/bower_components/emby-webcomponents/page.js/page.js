@@ -619,6 +619,10 @@ define([], function () {
 
         // ensure non-hash for the same path
         var link = el.getAttribute('href');
+        if (link == '#') {
+            e.preventDefault();
+            return;
+        }
         if (!hashbang && el.pathname === location.pathname && (el.hash || '#' === link)) return;
 
 

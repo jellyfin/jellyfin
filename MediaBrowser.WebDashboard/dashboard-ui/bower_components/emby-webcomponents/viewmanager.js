@@ -41,7 +41,9 @@ define(['viewcontainer', 'focusManager', 'queryString', 'connectionManager', 'ev
         var eventDetail = getViewEventDetail(view, options, isRestore);
 
         if (!isRestore) {
-            focusManager.autoFocus(view);
+            if (options.autoFocus !== false) {
+                focusManager.autoFocus(view);
+            }
         }
         else if (view.activeElement) {
             view.activeElement.focus();
