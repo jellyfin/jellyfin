@@ -70,7 +70,13 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         var url = route.contentPath || route.path;
 
         if (url.toLowerCase().indexOf('http') != 0 && url.indexOf('file:') != 0) {
-            url = baseUrl() + '/' + url;
+
+            if (url.indexOf('/') != 0) {
+
+                url = '/' + url;
+            }
+
+            url = baseUrl() + url;
         }
 
         url += url.indexOf('?') == -1 ? '?' : '&';
@@ -188,8 +194,8 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
                 options = options || {};
 
                 page({
-                    click: options.click || false,
-                    hashbang: true,
+                    click: options.click !== false,
+                    hashbang: options.hashbang !== false,
                     enableHistory: enableHistory()
                 });
             });
