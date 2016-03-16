@@ -231,15 +231,30 @@ class StreamController extends EventHandler {
             }
           }
           if (!frag) {
-            var foundFrag;
+            let foundFrag;
+            let maxFragLookUpTolerance = config.maxFragLookUpTolerance;
             if (bufferEnd < end) {
+              if (bufferEnd > end - maxFragLookUpTolerance) {
+                maxFragLookUpTolerance = 0;
+              }
               foundFrag = BinarySearch.search(fragments, (candidate) => {
+                // offset should be within fragment boundary - config.maxFragLookUpTolerance
+                // this is to cope with situations like
+                // bufferEnd = 9.991
+                // frag[Ø] : [0,10]
+                // frag[1] : [10,20]
+                // bufferEnd is within frag[0] range ... although what we are expecting is to return frag[1] here
+                    //              frag start               frag start+duration
+                    //                  |-----------------------------|
+                    //              <--->                         <--->
+                    //  ...--------><-----------------------------><---------....
+                    // previous frag         matching fragment         next frag
+                    //  return -1             return 0                 return 1
                 //logger.log(`level/sn/start/end/bufEnd:${level}/${candidate.sn}/${candidate.start}/${(candidate.start+candidate.duration)}/${bufferEnd}`);
-                // offset should be within fragment boundary
-                if ((candidate.start + candidate.duration) <= bufferEnd) {
+                if ((candidate.start + candidate.duration - maxFragLookUpTolerance) <= bufferEnd) {
                   return 1;
                 }
-                else if (candidate.start > bufferEnd) {
+                else if (candidate.start - maxFragLookUpTolerance > bufferEnd) {
                   return -1;
                 }
                 return 0;
@@ -323,28 +338,49 @@ class StreamController extends EventHandler {
         /* only monitor frag retrieval time if
         (video not paused OR first fragment being loaded) AND autoswitching enabled AND not lowest level AND multiple levels */
         if (v && (!v.paused || this.loadedmetadata === false) && frag.autoLevel && this.level && this.levels.length > 1) {
-          var requestDelay = performance.now() - frag.trequest;
+          let requestDelay = performance.now() - frag.trequest;
           // monitor fragment load progress after half of expected fragment duration,to stabilize bitrate
           if (requestDelay > (500 * frag.duration)) {
-            var loadRate = frag.loaded * 1000 / requestDelay; // byte/s
+            let loadRate = Math.max(1,frag.loaded * 1000 / requestDelay); // byte/s; at least 1 byte/s to avoid division by zero
             if (frag.expectedLen < frag.loaded) {
               frag.expectedLen = frag.loaded;
             }
             pos = v.currentTime;
-            var fragLoadedDelay = (frag.expectedLen - frag.loaded) / loadRate;
-            var bufferStarvationDelay = this.bufferInfo(pos,config.maxBufferHole).end - pos;
-            var fragLevelNextLoadedDelay = frag.duration * this.levels[hls.nextLoadLevel].bitrate / (8 * loadRate); //bps/Bps
-            /* if we have less than 2 frag duration in buffer and if frag loaded delay is greater than buffer starvation delay
-              ... and also bigger than duration needed to load fragment at next level ...*/
-            if (bufferStarvationDelay < (2 * frag.duration) && fragLoadedDelay > bufferStarvationDelay && fragLoadedDelay > fragLevelNextLoadedDelay) {
-              // abort fragment loading ...
-              logger.warn('loading too slow, abort fragment loading');
-              logger.log(`fragLoadedDelay/bufferStarvationDelay/fragLevelNextLoadedDelay :${fragLoadedDelay.toFixed(1)}/${bufferStarvationDelay.toFixed(1)}/${fragLevelNextLoadedDelay.toFixed(1)}`);
-              //abort fragment loading
-              frag.loader.abort();
-              hls.trigger(Event.FRAG_LOAD_EMERGENCY_ABORTED, {frag: frag});
-              // switch back to IDLE state to request new fragment at lowest level
-              this.state = State.IDLE;
+            let fragLoadedDelay = (frag.expectedLen - frag.loaded) / loadRate;
+            let bufferStarvationDelay = this.bufferInfo(pos,config.maxBufferHole).end - pos;
+            // consider emergency switch down only if we have less than 2 frag buffered AND
+            // time to finish loading current fragment is bigger than buffer starvation delay
+            // ie if we risk buffer starvation if bw does not increase quickly
+            if (bufferStarvationDelay < 2*frag.duration && fragLoadedDelay > bufferStarvationDelay) {
+              let fragLevelNextLoadedDelay, nextLoadLevel;
+              // lets iterate through lower level and try to find the biggest one that could avoid rebuffering
+              // we start from current level - 1 and we step down , until we find a matching level
+              for (nextLoadLevel = this.level - 1 ; nextLoadLevel >=0 ; nextLoadLevel--) {
+                // compute time to load next fragment at lower level
+                // 0.8 : consider only 80% of current bw to be conservative
+                // 8 = bits per byte (bps/Bps)
+                fragLevelNextLoadedDelay = frag.duration * this.levels[nextLoadLevel].bitrate / (8 * 0.8 * loadRate);
+                logger.log(`fragLoadedDelay/bufferStarvationDelay/fragLevelNextLoadedDelay[${nextLoadLevel}] :${fragLoadedDelay.toFixed(1)}/${bufferStarvationDelay.toFixed(1)}/${fragLevelNextLoadedDelay.toFixed(1)}`);
+                if (fragLevelNextLoadedDelay < bufferStarvationDelay) {
+                  // we found a lower level that be rebuffering free with current estimated bw !
+                  break;
+                }
+              }
+              // only emergency switch down if it takes less time to load new fragment at lowest level instead
+              // of finishing loading current one ...
+              if (fragLevelNextLoadedDelay < fragLoadedDelay) {
+                // ensure nextLoadLevel is not negative
+                nextLoadLevel = Math.max(0,nextLoadLevel);
+                // force next load level in auto mode
+                hls.nextLoadLevel = nextLoadLevel;
+                // abort fragment loading ...
+                logger.warn(`loading too slow, abort fragment loading and switch to level ${nextLoadLevel}`);
+                //abort fragment loading
+                frag.loader.abort();
+                hls.trigger(Event.FRAG_LOAD_EMERGENCY_ABORTED, {frag: frag});
+                // switch back to IDLE state to request new fragment at lower level
+                this.state = State.IDLE;
+              }
             }
           }
         }

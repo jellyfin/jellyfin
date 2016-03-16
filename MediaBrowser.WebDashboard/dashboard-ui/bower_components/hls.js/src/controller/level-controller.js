@@ -241,11 +241,18 @@ class LevelController extends EventHandler {
     }
   }
 
-  nextLoadLevel() {
+  get nextLoadLevel() {
     if (this._manualLevel !== -1) {
       return this._manualLevel;
     } else {
      return this.hls.abrController.nextAutoLevel;
+    }
+  }
+
+  set nextLoadLevel(nextLevel) {
+    this.level = nextLevel;
+    if (this._manualLevel === -1) {
+      this.hls.abrController.nextAutoLevel = nextLevel;
     }
   }
 }

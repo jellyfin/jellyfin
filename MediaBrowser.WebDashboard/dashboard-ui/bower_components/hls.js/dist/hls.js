@@ -1126,15 +1126,6 @@ var LevelController = function (_EventHandler) {
       }
     }
   }, {
-    key: 'nextLoadLevel',
-    value: function nextLoadLevel() {
-      if (this._manualLevel !== -1) {
-        return this._manualLevel;
-      } else {
-        return this.hls.abrController.nextAutoLevel;
-      }
-    }
-  }, {
     key: 'levels',
     get: function get() {
       return this._levels;
@@ -1179,6 +1170,21 @@ var LevelController = function (_EventHandler) {
     },
     set: function set(newLevel) {
       this._startLevel = newLevel;
+    }
+  }, {
+    key: 'nextLoadLevel',
+    get: function get() {
+      if (this._manualLevel !== -1) {
+        return this._manualLevel;
+      } else {
+        return this.hls.abrController.nextAutoLevel;
+      }
+    },
+    set: function set(nextLevel) {
+      this.level = nextLevel;
+      if (this._manualLevel === -1) {
+        this.hls.abrController.nextAutoLevel = nextLevel;
+      }
     }
   }]);
 
@@ -1333,6 +1339,8 @@ var StreamController = function (_EventHandler) {
   }, {
     key: 'doTick',
     value: function doTick() {
+      var _this2 = this;
+
       var pos,
           level,
           levelDetails,
@@ -1453,40 +1461,57 @@ var StreamController = function (_EventHandler) {
               }
             }
             if (!_frag) {
-              var foundFrag;
-              if (bufferEnd < end) {
-                foundFrag = _binarySearch2.default.search(fragments, function (candidate) {
-                  //logger.log(`level/sn/start/end/bufEnd:${level}/${candidate.sn}/${candidate.start}/${(candidate.start+candidate.duration)}/${bufferEnd}`);
-                  // offset should be within fragment boundary
-                  if (candidate.start + candidate.duration <= bufferEnd) {
-                    return 1;
-                  } else if (candidate.start > bufferEnd) {
-                    return -1;
+              (function () {
+                var foundFrag = undefined;
+                var maxFragLookUpTolerance = config.maxFragLookUpTolerance;
+                if (bufferEnd < end) {
+                  if (bufferEnd > end - maxFragLookUpTolerance) {
+                    maxFragLookUpTolerance = 0;
                   }
-                  return 0;
-                });
-              } else {
-                // reach end of playlist
-                foundFrag = fragments[fragLen - 1];
-              }
-              if (foundFrag) {
-                _frag = foundFrag;
-                start = foundFrag.start;
-                //logger.log('find SN matching with pos:' +  bufferEnd + ':' + frag.sn);
-                if (fragPrevious && _frag.level === fragPrevious.level && _frag.sn === fragPrevious.sn) {
-                  if (_frag.sn < levelDetails.endSN) {
-                    _frag = fragments[_frag.sn + 1 - levelDetails.startSN];
-                    _logger.logger.log('SN just loaded, load next one: ' + _frag.sn);
-                  } else {
-                    // have we reached end of VOD playlist ?
-                    if (!levelDetails.live) {
-                      this.hls.trigger(_events2.default.BUFFER_EOS);
-                      this.state = State.ENDED;
+                  foundFrag = _binarySearch2.default.search(fragments, function (candidate) {
+                    // offset should be within fragment boundary - config.maxFragLookUpTolerance
+                    // this is to cope with situations like
+                    // bufferEnd = 9.991
+                    // frag[Ø] : [0,10]
+                    // frag[1] : [10,20]
+                    // bufferEnd is within frag[0] range ... although what we are expecting is to return frag[1] here
+                    //              frag start               frag start+duration
+                    //                  |-----------------------------|
+                    //              <--->                         <--->
+                    //  ...--------><-----------------------------><---------....
+                    // previous frag         matching fragment         next frag
+                    //  return -1             return 0                 return 1
+                    //logger.log(`level/sn/start/end/bufEnd:${level}/${candidate.sn}/${candidate.start}/${(candidate.start+candidate.duration)}/${bufferEnd}`);
+                    if (candidate.start + candidate.duration - maxFragLookUpTolerance <= bufferEnd) {
+                      return 1;
+                    } else if (candidate.start - maxFragLookUpTolerance > bufferEnd) {
+                      return -1;
                     }
-                    _frag = null;
+                    return 0;
+                  });
+                } else {
+                  // reach end of playlist
+                  foundFrag = fragments[fragLen - 1];
+                }
+                if (foundFrag) {
+                  _frag = foundFrag;
+                  start = foundFrag.start;
+                  //logger.log('find SN matching with pos:' +  bufferEnd + ':' + frag.sn);
+                  if (fragPrevious && _frag.level === fragPrevious.level && _frag.sn === fragPrevious.sn) {
+                    if (_frag.sn < levelDetails.endSN) {
+                      _frag = fragments[_frag.sn + 1 - levelDetails.startSN];
+                      _logger.logger.log('SN just loaded, load next one: ' + _frag.sn);
+                    } else {
+                      // have we reached end of VOD playlist ?
+                      if (!levelDetails.live) {
+                        _this2.hls.trigger(_events2.default.BUFFER_EOS);
+                        _this2.state = State.ENDED;
+                      }
+                      _frag = null;
+                    }
                   }
                 }
-              }
+              })();
             }
             if (_frag) {
               //logger.log('      loading frag ' + i +',pos/bufEnd:' + pos.toFixed(3) + '/' + bufferEnd.toFixed(3));
@@ -1548,25 +1573,47 @@ var StreamController = function (_EventHandler) {
             var requestDelay = performance.now() - frag.trequest;
             // monitor fragment load progress after half of expected fragment duration,to stabilize bitrate
             if (requestDelay > 500 * frag.duration) {
-              var loadRate = frag.loaded * 1000 / requestDelay; // byte/s
+              var loadRate = Math.max(1, frag.loaded * 1000 / requestDelay); // byte/s; at least 1 byte/s to avoid division by zero
               if (frag.expectedLen < frag.loaded) {
                 frag.expectedLen = frag.loaded;
               }
               pos = v.currentTime;
               var fragLoadedDelay = (frag.expectedLen - frag.loaded) / loadRate;
               var bufferStarvationDelay = this.bufferInfo(pos, config.maxBufferHole).end - pos;
-              var fragLevelNextLoadedDelay = frag.duration * this.levels[hls.nextLoadLevel].bitrate / (8 * loadRate); //bps/Bps
-              /* if we have less than 2 frag duration in buffer and if frag loaded delay is greater than buffer starvation delay
-                ... and also bigger than duration needed to load fragment at next level ...*/
-              if (bufferStarvationDelay < 2 * frag.duration && fragLoadedDelay > bufferStarvationDelay && fragLoadedDelay > fragLevelNextLoadedDelay) {
-                // abort fragment loading ...
-                _logger.logger.warn('loading too slow, abort fragment loading');
-                _logger.logger.log('fragLoadedDelay/bufferStarvationDelay/fragLevelNextLoadedDelay :' + fragLoadedDelay.toFixed(1) + '/' + bufferStarvationDelay.toFixed(1) + '/' + fragLevelNextLoadedDelay.toFixed(1));
-                //abort fragment loading
-                frag.loader.abort();
-                hls.trigger(_events2.default.FRAG_LOAD_EMERGENCY_ABORTED, { frag: frag });
-                // switch back to IDLE state to request new fragment at lowest level
-                this.state = State.IDLE;
+              // consider emergency switch down only if we have less than 2 frag buffered AND
+              // time to finish loading current fragment is bigger than buffer starvation delay
+              // ie if we risk buffer starvation if bw does not increase quickly
+              if (bufferStarvationDelay < 2 * frag.duration && fragLoadedDelay > bufferStarvationDelay) {
+                var fragLevelNextLoadedDelay = undefined,
+                    nextLoadLevel = undefined;
+                // lets iterate through lower level and try to find the biggest one that could avoid rebuffering
+                // we start from current level - 1 and we step down , until we find a matching level
+                for (nextLoadLevel = this.level - 1; nextLoadLevel >= 0; nextLoadLevel--) {
+                  // compute time to load next fragment at lower level
+                  // 0.8 : consider only 80% of current bw to be conservative
+                  // 8 = bits per byte (bps/Bps)
+                  fragLevelNextLoadedDelay = frag.duration * this.levels[nextLoadLevel].bitrate / (8 * 0.8 * loadRate);
+                  _logger.logger.log('fragLoadedDelay/bufferStarvationDelay/fragLevelNextLoadedDelay[' + nextLoadLevel + '] :' + fragLoadedDelay.toFixed(1) + '/' + bufferStarvationDelay.toFixed(1) + '/' + fragLevelNextLoadedDelay.toFixed(1));
+                  if (fragLevelNextLoadedDelay < bufferStarvationDelay) {
+                    // we found a lower level that be rebuffering free with current estimated bw !
+                    break;
+                  }
+                }
+                // only emergency switch down if it takes less time to load new fragment at lowest level instead
+                // of finishing loading current one ...
+                if (fragLevelNextLoadedDelay < fragLoadedDelay) {
+                  // ensure nextLoadLevel is not negative
+                  nextLoadLevel = Math.max(0, nextLoadLevel);
+                  // force next load level in auto mode
+                  hls.nextLoadLevel = nextLoadLevel;
+                  // abort fragment loading ...
+                  _logger.logger.warn('loading too slow, abort fragment loading and switch to level ' + nextLoadLevel);
+                  //abort fragment loading
+                  frag.loader.abort();
+                  hls.trigger(_events2.default.FRAG_LOAD_EMERGENCY_ABORTED, { frag: frag });
+                  // switch back to IDLE state to request new fragment at lower level
+                  this.state = State.IDLE;
+                }
               }
             }
           }
@@ -2151,7 +2198,7 @@ var StreamController = function (_EventHandler) {
   }, {
     key: 'onFragParsingData',
     value: function onFragParsingData(data) {
-      var _this2 = this;
+      var _this3 = this;
 
       if (this.state === State.PARSING) {
         this.tparse2 = Date.now();
@@ -2166,7 +2213,7 @@ var StreamController = function (_EventHandler) {
 
         [data.data1, data.data2].forEach(function (buffer) {
           if (buffer) {
-            _this2.pendingAppending++;
+            _this3.pendingAppending++;
             hls.trigger(_events2.default.BUFFER_APPENDING, { type: data.type, data: buffer });
           }
         });
@@ -5356,6 +5403,7 @@ var Hls = function () {
           maxBufferSize: 60 * 1000 * 1000,
           maxBufferHole: 0.5,
           maxSeekHole: 2,
+          maxFragLookUpTolerance: 0.2,
           liveSyncDurationCount: 3,
           liveMaxLatencyDurationCount: Infinity,
           liveSyncDuration: undefined,
@@ -5574,13 +5622,13 @@ var Hls = function () {
   }, {
     key: 'nextLoadLevel',
     get: function get() {
-      return this.levelController.nextLoadLevel();
+      return this.levelController.nextLoadLevel;
     }
 
     /** set quality level of next loaded fragment **/
     ,
     set: function set(level) {
-      this.levelController.level = level;
+      this.levelController.nextLoadLevel = level;
     }
 
     /** Return first level (index of first level referenced in manifest)

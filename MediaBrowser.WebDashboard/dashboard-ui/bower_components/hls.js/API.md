@@ -190,6 +190,7 @@ configuration parameters could be provided to hls.js upon instantiation of Hls O
       maxBufferSize : 60*1000*1000,
       maxBufferHole : 0.3,
       maxSeekHole : 2,
+      maxFragLookUpTolerance : 0.2,
       liveSyncDurationCount : 3,
       liveMaxLatencyDurationCount: 10,
       enableWorker : true,
@@ -267,6 +268,25 @@ This could result in small overlapping or hole in media buffer. This tolerance f
 in case playback is stalled, and a buffered range is available upfront, less than maxSeekHole seconds from current media position,
 hls.js will jump over this buffer hole to reach the beginning of this following buffered range.
 ```maxSeekHole``` allows to configure this jumpable threshold.
+
+#### ```maxFragLookUpTolerance```
+(default 0.2s)
+
+this tolerance factor is used during fragment lookup.
+instead of checking whether buffered.end is located within [start, end] range, frag lookup will be done by checking  within [start-maxFragLookUpTolerance, end-maxFragLookUpTolerance] range
+
+this tolerance factor is used to cope with situations like
+buffered.end = 9.991
+frag[Ø] : [0,10]
+frag[1] : [10,20]
+=> buffered.end is within frag[0] range, but as we are close to frag[1], frag[1] should be choosen instead
+
+
+if maxFragLookUpTolerance=0.2, 
+this lookup will be adjusted to 
+frag[Ø] : [-0.2,9.8]
+frag[1] : [9.8,19.8]
+=> this time, buffered.end is within frag[1] range, and frag[1] will be the next fragment to be loaded, as expected.
 
 #### ```maxMaxBufferLength```
 (default 600s)
@@ -494,6 +514,12 @@ get : return last loaded fragment quality level.
 
 set : set quality level for next loaded fragment
 set to -1 for automatic level selection
+
+#### ```hls.nextLoadLevel```
+get : return quality level that will be used to load next fragment
+
+set : force quality level for next loaded fragment. quality level will be forced only for that fragment.
+after a fragment at this quality level has been loaded, ```hls.loadLevel``` will prevail.
 
 #### ```hls.firstLevel```
 
