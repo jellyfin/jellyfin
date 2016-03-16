@@ -591,8 +591,8 @@ Custom property | Description | Default
             this.notifyResize();
           }
           if (e.propertyName === 'transform' && this.selected === 'drawer') {
-            var focusedChild = this._getAutoFocusedNode();
-            focusedChild && focusedChild.focus();
+            //var focusedChild = this._getAutoFocusedNode();
+            //focusedChild && focusedChild.focus();
           }
         },
 
@@ -761,6 +761,12 @@ Custom property | Description | Default
               }
               this._setPeeking(false);
             }
+            var dy = event.detail.dy;
+            var absDy = Math.abs(dy);
+            if (absDy >= 70) {
+                // Ignore trackx until we move past the edge peek.
+                return;
+            }
 
             this._moveDrawer(this._translateXForDeltaX(dx));
           }
@@ -775,10 +781,13 @@ Custom property | Description | Default
             sharedPanel = null;
             this._moveDrawer(null);
 
+            var dx = event.detail.dx;
+            var dy = event.detail.dy;
+            var absDy = Math.abs(dy);
             if (this.rightDrawer) {
-              this[xDirection ? 'closeDrawer' : 'openDrawer']();
+                this[xDirection ? 'closeDrawer' : 'openDrawer']();
             } else {
-              this[xDirection ? 'openDrawer' : 'closeDrawer']();
+                this[xDirection || dx > -80 || absDy >= 70 ? 'openDrawer' : 'closeDrawer']();
             }
           }
         },
@@ -827,7 +836,7 @@ Custom property | Description | Default
 
           if (!focusedChildCameFromDrawer) {
             event.stopPropagation();
-            autoFocusedNode.focus();
+            //autoFocusedNode.focus();
           }
         },
 
