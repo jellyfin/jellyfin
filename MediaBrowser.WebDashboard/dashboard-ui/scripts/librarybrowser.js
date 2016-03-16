@@ -84,7 +84,7 @@
 
                     values = JSON.parse(values);
 
-                    return $.extend(query, values);
+                    return Object.assign(query, values);
                 }
 
                 return query;
@@ -492,7 +492,7 @@
 
                 if (window.location.href.toLowerCase().indexOf(url.toLowerCase()) != -1) {
 
-                    afterNavigate.call($($.mobile.activePage)[0]);
+                    afterNavigate.call($.mobile.activePage);
                 } else {
                     $(document).one('pagebeforeshow', '.page', afterNavigate);
                     Dashboard.navigate(url);
@@ -1581,7 +1581,7 @@
                 return !item.CollectionType && invalidTypes.indexOf(item.Type) == -1 && item.MediaType != 'Photo';
             },
 
-            enableSync: function(item, user) {
+            enableSync: function (item, user) {
                 if (AppInfo.isNativeApp && !Dashboard.capabilities().SupportsSync) {
                     return false;
                 }
@@ -2805,11 +2805,6 @@
 
             },
 
-            openViewPanel: function (btn, className) {
-
-                $('.' + className, jQuery(btn).parents('.page')).removeClass('hide').panel('toggle');
-            },
-
             getQueryPagingHtml: function (options) {
 
                 var startIndex = options.startIndex;
@@ -2860,14 +2855,6 @@
                     if (options.sortButton) {
 
                         html += '<paper-icon-button class="btnSort" title="' + Globalize.translate('ButtonSort') + '" icon="sort-by-alpha"></paper-icon-button>';
-                    }
-
-                    if (options.viewButton) {
-
-                        //html += '<paper-button raised class="subdued notext"><iron-icon icon="view-comfy"></iron-icon></paper-button>';
-                        var viewPanelClass = options.viewPanelClass || 'viewPanel';
-                        var title = options.viewIcon == 'filter-list' ? Globalize.translate('ButtonFilter') : Globalize.translate('ButtonMenu');
-                        html += '<paper-icon-button title="' + title + '" icon="' + (options.viewIcon || AppInfo.moreIcon) + '" onclick="LibraryBrowser.openViewPanel(this, \'' + viewPanelClass + '\');"></paper-icon-button>';
                     }
 
                     if (options.filterButton) {
@@ -2953,11 +2940,11 @@
 
                     // Seeing an issue in Firefox and IE where it's initially visible in the bottom right, then moves to the center
                     var delay = browserInfo.animate ? 0 : 100;
-                    setTimeout(function() {
+                    setTimeout(function () {
                         paperDialogHelper.open(dlg);
                     }, delay);
 
-                    $('.groupSortBy', dlg).on('iron-select', function () {
+                    dlg.querySelector('.groupSortBy').addEventListener('iron-select', function () {
 
                         var newValue = this.selected.replace('_', ',');
                         var changed = options.query.SortBy != newValue;
@@ -2970,7 +2957,7 @@
                         }
                     });
 
-                    $('.groupSortOrder', dlg).on('iron-select', function () {
+                    dlg.querySelector('.groupSortOrder').addEventListener('iron-select', function () {
 
                         var newValue = this.selected;
                         var changed = options.query.SortOrder != newValue;

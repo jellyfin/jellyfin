@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['jQuery'], function ($) {
 
     var currentPlayer;
 

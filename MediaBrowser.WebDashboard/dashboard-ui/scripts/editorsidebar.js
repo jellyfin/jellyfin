@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     function getNode(item, folderState, selected) {
 
@@ -463,4 +463,4 @@
         setCurrentItemId: setCurrentItemId
     };
 
-})(jQuery, document, window);
+});
