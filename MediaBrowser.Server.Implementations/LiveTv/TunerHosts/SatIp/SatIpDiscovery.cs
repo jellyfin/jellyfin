@@ -17,6 +17,7 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 {
@@ -64,26 +65,33 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                     _logger.Debug("SAT IP found at {0}", location);
 
                     // Just get the beginning of the url
-                    AddDevice(location);
+                    Uri uri;
+                    if (Uri.TryCreate(location, UriKind.Absolute, out uri))
+                    {
+                        var apiUrl = location.Replace(uri.LocalPath, String.Empty, StringComparison.OrdinalIgnoreCase)
+                                .TrimEnd('/');
+
+                        AddDevice(apiUrl, location);
+                    }
                 }
             }
         }
 
-        private async void AddDevice(string location)
+        private async void AddDevice(string deviceUrl, string infoUrl)
         {
             await _semaphore.WaitAsync().ConfigureAwait(false);
 
             try
             {
                 var options = GetConfiguration();
-                
-                if (options.TunerHosts.Any(i => string.Equals(i.Type, SatIpHost.DeviceType, StringComparison.OrdinalIgnoreCase) && UriEquals(i.Url, location)))
+
+                if (options.TunerHosts.Any(i => string.Equals(i.Type, SatIpHost.DeviceType, StringComparison.OrdinalIgnoreCase) && UriEquals(i.Url, deviceUrl)))
                 {
                     return;
                 }
-                
-                _logger.Debug("Will attempt to add SAT device {0}", location);
-                var info = await GetInfo(location, CancellationToken.None).ConfigureAwait(false);
+
+                _logger.Debug("Will attempt to add SAT device {0}", deviceUrl);
+                var info = await GetInfo(infoUrl, CancellationToken.None).ConfigureAwait(false);
 
                 var existing = GetConfiguration().TunerHosts
                     .FirstOrDefault(i => string.Equals(i.Type, SatIpHost.DeviceType, StringComparison.OrdinalIgnoreCase) && string.Equals(i.DeviceId, info.DeviceId, StringComparison.OrdinalIgnoreCase));
@@ -98,7 +106,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                     await _liveTvManager.SaveTunerHost(new TunerHostInfo
                     {
                         Type = SatIpHost.DeviceType,
-                        Url = location,
+                        Url = deviceUrl,
+                        InfoUrl = infoUrl,
                         DataVersion = 1,
                         DeviceId = info.DeviceId,
                         FriendlyName = info.FriendlyName,
@@ -110,14 +119,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                 }
                 else
                 {
-                    if (!string.Equals(existing.Url, location, StringComparison.OrdinalIgnoreCase))
-                    {
-                        existing.Url = location;
-                        existing.M3UUrl = info.M3UUrl;
-                        existing.FriendlyName = info.FriendlyName;
-                        existing.Tuners = info.Tuners;
-                        await _liveTvManager.SaveTunerHost(existing).ConfigureAwait(false);
-                    }
+                    existing.Url = deviceUrl;
+                    existing.InfoUrl = infoUrl;
+                    existing.M3UUrl = info.M3UUrl;
+                    existing.FriendlyName = info.FriendlyName;
+                    existing.Tuners = info.Tuners;
+                    await _liveTvManager.SaveTunerHost(existing).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException)

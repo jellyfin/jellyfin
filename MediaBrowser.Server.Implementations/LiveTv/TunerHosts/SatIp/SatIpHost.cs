@@ -116,7 +116,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 
         protected override async Task<bool> IsAvailableInternal(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken)
         {
-            var updatedInfo = await SatIpDiscovery.Current.GetInfo(tuner.Url, cancellationToken).ConfigureAwait(false);
+            var updatedInfo = await SatIpDiscovery.Current.GetInfo(tuner.InfoUrl, cancellationToken).ConfigureAwait(false);
 
             return updatedInfo.TunersAvailable > 0;
         }
