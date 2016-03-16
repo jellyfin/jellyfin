@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'searchmenu'], function ($) {
+﻿define(['libraryBrowser'], function (libraryBrowser) {
 
     var searchHintTimeout;
 
@@ -84,7 +84,7 @@
             return i;
         });
 
-        var html = LibraryBrowser.getPosterViewHtml({
+        var html = libraryBrowser.getPosterViewHtml({
             items: hints,
             shape: "auto",
             lazy: true,
@@ -151,12 +151,13 @@
 
         if (createIfNeeded && !elem) {
 
-            var html = '<div class="searchResultsOverlay ui-body-b smoothScrollY background-theme-b">';
+            var div = document.createElement('div');
+            div.className = 'searchResultsOverlay ui-body-b smoothScrollY background-theme-b';
 
-            html += '<div class="searchResultsContainer"><div class="itemsContainer"></div></div></div>';
+            div.innerHTML = '<div class="searchResultsContainer"><div class="itemsContainer"></div></div></div>';
 
-            elem = $(html).appendTo(document.body)[0];
-            $(elem).createCardMenus();
+            document.body.appendChild(div);
+            libraryBrowser.createCardMenus(div);
         }
 
         return elem;

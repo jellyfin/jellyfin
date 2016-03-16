@@ -335,18 +335,20 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
     }
 
     function getRequestFile() {
-        var path = window.location.pathname;
-        
-        if (path == '/') {
-            path = '/index.html';
-        }
+        var path = window.location.pathname || '';
 
         var index = path.lastIndexOf('/');
         if (index != -1) {
-            return path.substring(index);
+            path = path.substring(index);
+        } else {
+            path = '/' + path;
         }
 
-        return '/' + path;
+        if (!path || path == '/') {
+            path = '/index.html';
+        }
+
+        return path;
     }
 
     var baseRoute = window.location.href.split('?')[0].replace(getRequestFile(), '');

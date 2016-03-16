@@ -1598,7 +1598,7 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
                 NowPlayingItem: state.NowPlayingItem
             };
 
-            info = $.extend(info, state.PlayState);
+            info = Object.assign(info, state.PlayState);
             console.log('repeat mode ' + info.RepeatMode);
             ApiClient.reportPlaybackProgress(info);
         }

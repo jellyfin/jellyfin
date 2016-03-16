@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'paper-slider', 'paper-button'], function (appSettings) {
+﻿define(['appSettings', 'jQuery', 'paper-slider', 'paper-button'], function (appSettings, $) {
 
     function getDeviceProfile(serverAddress, deviceId, item, startPositionTicks, maxBitrate, mediaSourceId, audioStreamIndex, subtitleStreamIndex) {
 

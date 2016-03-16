@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['jQuery'], function ($) {
 
     var supportsTextTracks;
     var hlsPlayer;
@@ -781,4 +781,4 @@
         };
     }
 
-})();
+});

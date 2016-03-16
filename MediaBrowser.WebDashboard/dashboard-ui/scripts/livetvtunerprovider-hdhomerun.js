@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     function reload(page, providerId) {
 
@@ -75,4 +75,4 @@
         reload(page, providerId);
     });
 
-})(jQuery, document, window);
+});

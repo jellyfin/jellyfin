@@ -1,4 +1,4 @@
-﻿(function (window, document, $) {
+﻿define(['jQuery'], function ($) {
 
     function getPickerHtml() {
 
@@ -110,4 +110,4 @@
         return this.alphaValue('');
     };
 
-})(window, document, jQuery);
+});

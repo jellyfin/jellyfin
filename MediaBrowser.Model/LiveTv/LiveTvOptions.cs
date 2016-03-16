@@ -33,6 +33,7 @@ namespace MediaBrowser.Model.LiveTv
         public bool ImportFavoritesOnly { get; set; }
         public bool IsEnabled { get; set; }
         public string M3UUrl { get; set; }
+        public string InfoUrl { get; set; }
         public string FriendlyName { get; set; }
         public int Tuners { get; set; }
         public string DiseqC { get; set; }

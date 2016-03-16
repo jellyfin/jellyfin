@@ -219,7 +219,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 {
                     try
                     {
-                        await provider.Item1.AddMetadata(provider.Item2, list, cancellationToken).ConfigureAwait(false);
+                        await provider.Item1.AddMetadata(provider.Item2, enabledChannels, cancellationToken).ConfigureAwait(false);
                     }
                     catch (NotSupportedException)
                     {

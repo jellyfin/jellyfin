@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'appStorage', 'libraryBrowser'], function (appSettings, appStorage, LibraryBrowser) {
+﻿define(['appSettings', 'appStorage', 'libraryBrowser', 'jQuery'], function (appSettings, appStorage, LibraryBrowser, $) {
 
     var showOverlayTimeout;
 

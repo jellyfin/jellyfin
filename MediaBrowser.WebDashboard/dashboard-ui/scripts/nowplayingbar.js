@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['jQuery'], function ($) {
 
     var currentPlayer;
 
@@ -273,7 +273,7 @@
                 return;
             }
 
-            require(['css!css/nowplayingbar.css', 'paper-slider'], function () {
+            require(['jQuery', 'css!css/nowplayingbar.css', 'paper-slider'], function ($) {
 
                 nowPlayingBarElement = document.querySelector('.nowPlayingBar');
 
