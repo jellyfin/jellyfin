@@ -20,7 +20,8 @@ define([], function () {
                 pageIndex = 0;
             }
 
-            var newView = normalizeNewView(options);
+            var newViewInfo = normalizeNewView(options);
+            var newView = newViewInfo.elem;
 
             var dependencies = typeof (newView) == 'string' ? null : newView.getAttribute('data-require');
             dependencies = dependencies ? dependencies.split(',') : [];
@@ -62,7 +63,12 @@ define([], function () {
                     animatable.innerHTML = newView;
                 } else {
                     animatable.innerHTML = '';
-                    animatable.appendChild(newView);
+                    if (newViewInfo.hasScript) {
+                        // TODO: figure this out without jQuery
+                        $(newView).appendTo(animatable);
+                    } else {
+                        animatable.appendChild(newView);
+                    }
                     enhanceNewView(dependencies, newView);
                 }
 
@@ -96,6 +102,13 @@ define([], function () {
         }
     }
 
+    function parseHtml(html) {
+
+        var wrapper = document.createElement('div');
+        wrapper.innerHTML = html;
+        return wrapper.querySelector('div[data-role="page"]');
+    }
+
     function normalizeNewView(options) {
 
         if (options.view.indexOf('data-role="page"') == -1) {
@@ -105,15 +118,14 @@ define([], function () {
             return html;
         }
 
-        // TODO: This won't be able to support executing embedded script tags
-        var wrapper = document.createElement('div');
-        wrapper.innerHTML = options.view;
-
-        var elem = wrapper.querySelector('div[data-role="page"]');
+        var elem = parseHtml(options.view);
         elem.classList.add('page-view');
         elem.setAttribute('data-type', options.type || '');
         elem.setAttribute('data-url', options.url);
-        return elem;
+        return {
+            elem: elem,
+            hasScript: options.view.indexOf('<script') != -1
+        };
     }
 
     var onBeforeChange;

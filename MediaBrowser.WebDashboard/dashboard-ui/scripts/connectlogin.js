@@ -35,7 +35,7 @@
                     var apiClient = result.ApiClient;
 
                     Dashboard.onServerChanged(apiClient.getCurrentUserId(), apiClient.accessToken(), apiClient);
-                    Dashboard.navigate('index.html');
+                    Dashboard.navigate('home.html');
                 }
                 break;
             case MediaBrowser.ConnectionState.ServerSignIn:

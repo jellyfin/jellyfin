@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['historyManager'], function (historyManager) {
 
     var currentItemId;
 
@@ -26,12 +26,13 @@
 
         var page = this;
 
+        MetadataEditor.setCurrentItemId(null);
+
         $('.libraryTree', page).on('itemclicked', function (event, data) {
 
             if (data.id != currentItemId) {
 
-                //$.mobile.urlHistory.ignoreNextHashChange = true;
-                window.location.hash = 'editItemMetadataPage?id=' + data.id;
+                MetadataEditor.setCurrentItemId(data.id);
                 reload(page);
             }
         });
@@ -47,5 +48,4 @@
         var page = this;
     });
 
-})(jQuery, document, window);
-
+});

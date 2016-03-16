@@ -104,7 +104,7 @@
             if (user.Policy.IsAdministrator && !serverId) {
                 newUrl = "dashboard.html";
             } else {
-                newUrl = "index.html";
+                newUrl = "home.html";
             }
 
             Dashboard.hideLoadingMsg();

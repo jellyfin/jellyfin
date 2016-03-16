@@ -1,71 +1,63 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>${TitleMetadata}</title>
-</head>
-<body>
-    <div id="metadataSubtitlesPage" data-role="page" class="page type-interior metadataConfigurationPage" data-require="scripts/metadatasubtitles,paper-input,paper-checkbox">
+﻿<div id="metadataSubtitlesPage" data-role="page" class="page type-interior metadataConfigurationPage" data-require="scripts/metadatasubtitles,paper-input,paper-checkbox">
 
-        <div data-role="content">
+    <div data-role="content">
 
-            <div class="content-primary">
-                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="metadata.html" data-role="button">${TabBasics}</a>
-                    <a href="metadataimages.html" data-role="button">${TabServices}</a>
-                    <a href="#" class="ui-btn-active" data-role="button">${TabSubtitles}</a>
-                    <a href="metadatanfo.html" data-role="button">${TabNfo}</a>
-                    <a href="metadataadvanced.html" data-role="button">${TabAdvanced}</a>
-                </div>
-
-                <form class="metadataSubtitlesForm">
-
-                    <div style="display: none;">
-                        <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete" autocomplete="address-level4" />
-                    </div>
-
-                    <p>${HeaderSubtitleDownloadingHelp}</p>
-                    <br />
-                    <div class="paperCheckboxListLabel">${HeaderDownloadSubtitlesFor}</div>
-                    <div class="paperCheckboxList">
-                        <paper-checkbox id="chkSubtitlesMovies">${OptionMovies}</paper-checkbox>
-                        <paper-checkbox id="chkSubtitlesEpisodes">${OptionEpisodes}</paper-checkbox>
-                    </div>
-                    <br />
-                    <div>
-                        <div class="paperCheckboxListLabel">${LabelDownloadLanguages}</div>
-                        <div class="downloadLanguages paperList paperCheckboxList" style="max-height: 150px; overflow-y: auto; padding: .5em 1em;">
-                        </div>
-                    </div>
-                    <br /><br />
-
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <paper-checkbox id="chkSkipIfAudioTrackPresent">${LabelSkipIfAudioTrackPresent}</paper-checkbox>
-                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelSkipIfAudioTrackPresentHelp}</div>
-                        </li>
-                        <li>
-                            <paper-checkbox id="chkSkipIfGraphicalSubsPresent">${LabelSkipIfGraphicalSubsPresent}</paper-checkbox>
-                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelSkipIfGraphicalSubsPresentHelp}</div>
-                        </li>
-                        <li>
-                            <paper-input type="text" id="txtOpenSubtitleUsername" autocomplete="off" required label="${LabelOpenSubtitlesUsername}"></paper-input>
-                            <div class="fieldDescription"><a target="_blank" href="http://www.opensubtitles.org/">${ButtonRegister}</a></div>
-                        </li>
-                        <li>
-                            <paper-input type="password" id="txtOpenSubtitlePassword" autocomplete="off" label="${LabelOpenSubtitlesPassword}"></paper-input>
-                        </li>
-                    </ul>
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <button type="submit" data-role="none" class="clearButton">
-                                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                            </button>
-                        </li>
-                    </ul>
-                </form>
+        <div class="content-primary">
+            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                <a href="metadata.html" data-role="button">${TabBasics}</a>
+                <a href="metadataimages.html" data-role="button">${TabServices}</a>
+                <a href="#" class="ui-btn-active" data-role="button">${TabSubtitles}</a>
+                <a href="metadatanfo.html" data-role="button">${TabNfo}</a>
+                <a href="metadataadvanced.html" data-role="button">${TabAdvanced}</a>
             </div>
 
+            <form class="metadataSubtitlesForm">
+
+                <div style="display: none;">
+                    <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete" autocomplete="address-level4" />
+                </div>
+
+                <p>${HeaderSubtitleDownloadingHelp}</p>
+                <br />
+                <div class="paperCheckboxListLabel">${HeaderDownloadSubtitlesFor}</div>
+                <div class="paperCheckboxList">
+                    <paper-checkbox id="chkSubtitlesMovies">${OptionMovies}</paper-checkbox>
+                    <paper-checkbox id="chkSubtitlesEpisodes">${OptionEpisodes}</paper-checkbox>
+                </div>
+                <br />
+                <div>
+                    <div class="paperCheckboxListLabel">${LabelDownloadLanguages}</div>
+                    <div class="downloadLanguages paperList paperCheckboxList" style="max-height: 150px; overflow-y: auto; padding: .5em 1em;">
+                    </div>
+                </div>
+                <br /><br />
+
+                <ul data-role="listview" class="ulForm">
+                    <li>
+                        <paper-checkbox id="chkSkipIfAudioTrackPresent">${LabelSkipIfAudioTrackPresent}</paper-checkbox>
+                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelSkipIfAudioTrackPresentHelp}</div>
+                    </li>
+                    <li>
+                        <paper-checkbox id="chkSkipIfGraphicalSubsPresent">${LabelSkipIfGraphicalSubsPresent}</paper-checkbox>
+                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelSkipIfGraphicalSubsPresentHelp}</div>
+                    </li>
+                    <li>
+                        <paper-input type="text" id="txtOpenSubtitleUsername" autocomplete="off" required label="${LabelOpenSubtitlesUsername}"></paper-input>
+                        <div class="fieldDescription"><a target="_blank" href="http://www.opensubtitles.org/">${ButtonRegister}</a></div>
+                    </li>
+                    <li>
+                        <paper-input type="password" id="txtOpenSubtitlePassword" autocomplete="off" label="${LabelOpenSubtitlesPassword}"></paper-input>
+                    </li>
+                </ul>
+                <ul data-role="listview" class="ulForm">
+                    <li>
+                        <button type="submit" data-role="none" class="clearButton">
+                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+                        </button>
+                    </li>
+                </ul>
+            </form>
         </div>
+
     </div>
-</body>
-</html>
+</div>

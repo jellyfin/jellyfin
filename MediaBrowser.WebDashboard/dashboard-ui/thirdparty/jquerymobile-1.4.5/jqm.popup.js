@@ -170,7 +170,7 @@
                 // Define instance variables
                 $.extend(this, {
                     _scrollTop: 0,
-                    _page: theElement.closest(".ui-page"),
+                    _page: theElement.parents("div[data-role='page']"),
                     _ui: null,
                     _fallbackTransition: "",
                     _currentTransition: false,

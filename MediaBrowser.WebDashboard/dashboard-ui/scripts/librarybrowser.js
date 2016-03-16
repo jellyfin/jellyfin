@@ -141,10 +141,10 @@
                     return true;
                 }
 
-                if (NavHelper.isBack()) {
-                    console.log('Not refreshing data because IsBack=true');
-                    return false;
-                }
+                //if (NavHelper.isBack()) {
+                //    console.log('Not refreshing data because IsBack=true');
+                //    return false;
+                //}
 
                 var now = new Date().getTime();
                 var cacheDuration;
@@ -337,7 +337,7 @@
                     $('.libraryViewNav', ownerpage).removeClass('libraryViewNavWithMinHeight');
                 }
 
-                $(ownerpage).on('pagebeforeshow', LibraryBrowser.onTabbedpagebeforeshow);
+                ownerpage.addEventListener('viewbeforeshow', LibraryBrowser.onTabbedpagebeforeshow);
 
                 pages.addEventListener('iron-select', function () {
                     // When transition animations are used, add a content loading delay to allow the animations to finish
@@ -378,9 +378,9 @@
                 }
             },
 
-            onTabbedpagebeforeshow: function () {
+            onTabbedpagebeforeshow: function (e) {
 
-                var page = this;
+                var page = e.target;
                 var delay = 0;
                 var isFirstLoad = false;
 
@@ -393,14 +393,14 @@
                 if (delay) {
                     setTimeout(function () {
 
-                        LibraryBrowser.onTabbedpagebeforeshowInternal(page, isFirstLoad);
+                        LibraryBrowser.onTabbedpagebeforeshowInternal(page, e, isFirstLoad);
                     }, delay);
                 } else {
-                    LibraryBrowser.onTabbedpagebeforeshowInternal(page, isFirstLoad);
+                    LibraryBrowser.onTabbedpagebeforeshowInternal(page, e, isFirstLoad);
                 }
             },
 
-            onTabbedpagebeforeshowInternal: function (page, isFirstLoad) {
+            onTabbedpagebeforeshowInternal: function (page, e, isFirstLoad) {
 
                 if (isFirstLoad) {
 
@@ -428,7 +428,7 @@
                     var pages = page.querySelector('neon-animated-pages');
 
                     // Go back to the first tab
-                    if (LibraryBrowser.enableFullPaperTabs() && !NavHelper.isBack()) {
+                    if (LibraryBrowser.enableFullPaperTabs() && !e.detail.isRestored) {
                         if (pages.selected) {
 
                             var entryAnimation = pages.entryAnimation;

@@ -1,29 +1,21 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>${TitleNotifications}</title>
-</head>
-<body>
-    <div id="notificationSettingsPage" data-role="page" class="page type-interior notificationConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Notifications" data-require="scripts/notificationsettings">
+﻿<div id="notificationSettingsPage" data-role="page" class="page type-interior notificationConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Notifications" data-require="scripts/notificationsettings">
 
-        <div data-role="content">
-            <div class="content-primary">
+    <div data-role="content">
+        <div class="content-primary">
 
-                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="#" data-role="button" class="ui-btn-active">${TabNotifications}</a>
-                    <a href="appservices.html?context=notifications" data-role="button">${TabServices}</a>
+            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                <a href="#" data-role="button" class="ui-btn-active">${TabNotifications}</a>
+                <a href="appservices.html?context=notifications" data-role="button">${TabServices}</a>
+            </div>
+
+            <div class="readOnlyContent">
+                <p>${HeaderNotificationList}</p>
+                <p>${HeaderSendNotificationHelp}</p>
+
+                <div class="notificationList" style="margin-top: 2em;">
                 </div>
 
-                <div class="readOnlyContent">
-                    <p>${HeaderNotificationList}</p>
-                    <p>${HeaderSendNotificationHelp}</p>
-
-                    <div class="notificationList" style="margin-top: 2em;">
-                    </div>
-
-                </div>
             </div>
         </div>
     </div>
-</body>
-</html>
+</div>

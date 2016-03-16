@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'appStorage'], function (appSettings, appStorage) {
+﻿define(['appSettings', 'appStorage', 'libraryBrowser'], function (appSettings, appStorage, LibraryBrowser) {
 
     var showOverlayTimeout;
 
@@ -715,7 +715,7 @@
         return elem;
     }
 
-    $.fn.createCardMenus = function (options) {
+    LibraryBrowser.createCardMenus = function (curr, options) {
 
         var preventHover = false;
 
@@ -802,32 +802,37 @@
             preventHover = true;
         }
 
+        curr.removeEventListener('click', onCardClick);
+        curr.addEventListener('click', onCardClick);
+
+        if (AppInfo.isTouchPreferred) {
+
+            curr.removeEventListener('contextmenu', disableEvent);
+            curr.addEventListener('contextmenu', disableEvent);
+        }
+        else {
+            curr.removeEventListener('contextmenu', onContextMenu);
+            curr.addEventListener('contextmenu', onContextMenu);
+
+            curr.removeEventListener('mouseenter', onHoverIn);
+            curr.addEventListener('mouseenter', onHoverIn, true);
+
+            curr.removeEventListener('mouseleave', onHoverOut);
+            curr.addEventListener('mouseleave', onHoverOut, true);
+
+            curr.removeEventListener("touchstart", preventTouchHover);
+            curr.addEventListener("touchstart", preventTouchHover);
+        }
+
+        initTapHoldMenus(curr);
+    };
+
+    $.fn.createCardMenus = function (options) {
+
         for (var i = 0, length = this.length; i < length; i++) {
 
             var curr = this[i];
-            curr.removeEventListener('click', onCardClick);
-            curr.addEventListener('click', onCardClick);
-
-            if (AppInfo.isTouchPreferred) {
-
-                curr.removeEventListener('contextmenu', disableEvent);
-                curr.addEventListener('contextmenu', disableEvent);
-            }
-            else {
-                curr.removeEventListener('contextmenu', onContextMenu);
-                curr.addEventListener('contextmenu', onContextMenu);
-
-                curr.removeEventListener('mouseenter', onHoverIn);
-                curr.addEventListener('mouseenter', onHoverIn, true);
-
-                curr.removeEventListener('mouseleave', onHoverOut);
-                curr.addEventListener('mouseleave', onHoverOut, true);
-
-                curr.removeEventListener("touchstart", preventTouchHover);
-                curr.addEventListener("touchstart", preventTouchHover);
-            }
-
-            initTapHoldMenus(curr);
+            LibraryBrowser.createCardMenus(curr, options);
         }
 
         return this;
@@ -1177,7 +1182,7 @@
                                 break;
                             case 'delete':
                                 LibraryBrowser.deleteItems(items).then(function () {
-                                    Dashboard.navigate('index.html');
+                                    Dashboard.navigate('home.html');
                                 });
                                 hideSelections();
                                 break;

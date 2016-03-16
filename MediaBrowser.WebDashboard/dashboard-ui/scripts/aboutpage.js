@@ -1,12 +1,13 @@
-﻿(function ($, document) {
+﻿define([], function () {
 
-    $(document).on('pageshow', "#aboutPage", function () {
+    return function (view, params) {
 
-        var page = this;
-        
-        var elem = $('#appVersionNumber', page);
+        var self = this;
 
-        elem.html(elem.html().replace('{0}', ConnectionManager.appVersion()));
-    });
+        view.addEventListener('viewbeforeshow', function (e) {
+            var elem = view.querySelector('#appVersionNumber');
 
-})(jQuery, document);
+            elem.innerHTML = elem.innerHTML.replace('{0}', ConnectionManager.appVersion());
+        });
+    }
+});

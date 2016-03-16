@@ -8,10 +8,10 @@
             <paper-tab>${TabUpcoming}</paper-tab>
         </paper-tabs>
         <div class="legacyTabs">
-            <a href="index.html">${TabHome}</a>
-            <a href="index.html?tab=1">${TabNextUp}</a>
-            <a href="index.html?tab=2" class="homeFavoritesTab">${TabFavorites}</a>
-            <a href="index.html?tab=3">${TabUpcoming}</a>
+            <a href="home.html">${TabHome}</a>
+            <a href="home.html?tab=1">${TabNextUp}</a>
+            <a href="home.html?tab=2" class="homeFavoritesTab">${TabFavorites}</a>
+            <a href="home.html?tab=3">${TabUpcoming}</a>
         </div>
     </div>
 
@@ -33,7 +33,7 @@
                 <div class="pageTabContent homeNextUpTabContent" data-index="1">
                     <div class="homePageSection">
                         <div>
-                            <h1 class="listHeader nextUpHeader" style="display:inline-block;vertical-align:middle;">${HeaderNextUp}</h1>
+                            <h1 class="listHeader nextUpHeader" style="display: inline-block; vertical-align: middle;">${HeaderNextUp}</h1>
                             <paper-button raised class="submit mini categorySyncButton" data-category="NextUp"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
                         </div>
                         <div id="nextUpItems" class="itemsContainer">
@@ -53,7 +53,9 @@
                     </div>
                     <div class="noItemsMessage" style="display: none;">
                         <p>${MessageNothingHere}</p>
-                        <p><a href="metadata.html">${MessagePleaseEnsureInternetMetadata}</a></p>
+                        <p>
+                            <a href="metadata.html">${MessagePleaseEnsureInternetMetadata}</a>
+                        </p>
                     </div>
                 </div>
             </neon-animatable>

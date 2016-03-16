@@ -77,6 +77,7 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         }
     }
 
+    var htmlCache = {};
     var cacheParam = new Date().getTime();
     function loadContentUrl(ctx, next, route, request) {
 
@@ -93,13 +94,29 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
             url = baseUrl() + url;
         }
 
+        if (ctx.querystring && route.enableContentQueryString) {
+            url += '?' + ctx.querystring;
+        }
+
+        if (route.enableCache !== false) {
+            var cachedHtml = htmlCache[url];
+            if (cachedHtml) {
+                loadContent(ctx, route, cachedHtml, request);
+                return;
+            }
+        }
+
         url += url.indexOf('?') == -1 ? '?' : '&';
         url += 'v=' + cacheParam;
 
         var xhr = new XMLHttpRequest();
         xhr.onload = xhr.onerror = function () {
             if (this.status < 400) {
-                loadContent(ctx, route, this.response, request);
+                var html = this.response;
+                if (route.enableCache !== false) {
+                    htmlCache[url.split('?')[0]] = html;
+                }
+                loadContent(ctx, route, html, request);
             } else {
                 next();
             }

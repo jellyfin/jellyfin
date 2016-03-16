@@ -1,730 +1,722 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>${TitleDlna}</title>
-</head>
-<body>
-    <div id="dlnaProfilePage" data-role="page" class="page type-interior dlnaPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Dlna%20profiles" data-require="jqmcollapsible,jqmpopup,scripts/dlnaprofile,jqmcheckbox">
+﻿<div id="dlnaProfilePage" data-role="page" class="page type-interior dlnaPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Dlna%20profiles" data-require="jqmcollapsible,jqmpopup,scripts/dlnaprofile,jqmcheckbox">
 
-        <div data-role="content">
-            <div class="content-primary">
+    <div data-role="content">
+        <div class="content-primary">
 
-                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="dlnasettings.html" data-role="button">${TabPlayTo}</a>
-                    <a href="dlnaserversettings.html" data-role="button">${TabServer}</a>
-                    <a href="dlnaprofiles.html" data-role="button" class="ui-btn-active">${TabProfiles}</a>
+            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                <a href="dlnasettings.html" data-role="button">${TabPlayTo}</a>
+                <a href="dlnaserversettings.html" data-role="button">${TabServer}</a>
+                <a href="dlnaprofiles.html" data-role="button" class="ui-btn-active">${TabProfiles}</a>
+            </div>
+
+            <form class="dlnaProfileForm" style="max-width: 650px;">
+
+                <p>${HeaderProfileInformation}</p>
+                <div data-role="controlgroup" data-type="horizontal" data-mini="true">
+                    <a href="#" data-role="button" class="radioTabButton" id="radioInfo" data-value="tabInfo">${TabInfo}</a>
+                    <a href="#" data-role="button" class="radioTabButton" id="radioDirectPlay" data-value="tabDirectPlayProfiles">${TabDirectPlay}</a>
+                    <a href="#" data-role="button" class="radioTabButton" id="radioTranscoding" data-value="tabTranscodingProfiles">${TabTranscoding}</a>
+                    <a href="#" data-role="button" class="radioTabButton" id="radioContainers" data-value="tabContainerProfiles">${TabContainers}</a>
+                    <a href="#" data-role="button" class="radioTabButton" id="radioCodecs" data-value="tabCodecProfiles">${TabCodecs}</a>
+                    <a href="#" data-role="button" class="radioTabButton" id="radioMediaProfiles" data-value="tabMediaProfiles">${TabResponses}</a>
                 </div>
+                <br />
+                <div class="tabContent tabInfo">
 
-                <form class="dlnaProfileForm" style="max-width: 650px;">
-
-                    <p>${HeaderProfileInformation}</p>
-                    <div data-role="controlgroup" data-type="horizontal" data-mini="true">
-                        <a href="#" data-role="button" class="radioTabButton" id="radioInfo" data-value="tabInfo">${TabInfo}</a>
-                        <a href="#" data-role="button" class="radioTabButton" id="radioDirectPlay" data-value="tabDirectPlayProfiles">${TabDirectPlay}</a>
-                        <a href="#" data-role="button" class="radioTabButton" id="radioTranscoding" data-value="tabTranscodingProfiles">${TabTranscoding}</a>
-                        <a href="#" data-role="button" class="radioTabButton" id="radioContainers" data-value="tabContainerProfiles">${TabContainers}</a>
-                        <a href="#" data-role="button" class="radioTabButton" id="radioCodecs" data-value="tabCodecProfiles">${TabCodecs}</a>
-                        <a href="#" data-role="button" class="radioTabButton" id="radioMediaProfiles" data-value="tabMediaProfiles">${TabResponses}</a>
-                    </div>
-                    <br />
-                    <div class="tabContent tabInfo">
-
-                        <ul data-role="listview" class="ulForm">
-                            <li>
-                                <label for="txtName">${LabelName}</label>
-                                <input type="text" id="txtName" required="required" />
-                            </li>
-                        </ul>
-
-                        <ul data-role="listview" class="ulForm">
-                            <li>
-                                <label for="selectUser">${LabelUserLibrary}</label>
-                                <select id="selectUser" data-mini="true"></select>
-                                <div class="fieldDescription">${LabelUserLibraryHelp}</div>
-                            </li>
-                        </ul>
-
-                        <fieldset data-role="controlgroup">
-                            <legend>${LabelSupportedMediaTypes}</legend>
-                            <input type="checkbox" id="chkAudio" data-value="Audio" class="chkMediaType" />
-                            <label for="chkAudio">${OptionProfileAudio}</label>
-
-                            <input type="checkbox" id="chkPhoto" data-value="Photo" class="chkMediaType" />
-                            <label for="chkPhoto">${OptionProfilePhoto}</label>
-
-                            <input type="checkbox" id="chkVideo" data-value="Video" class="chkMediaType" />
-                            <label for="chkVideo">${OptionProfileVideo}</label>
-                        </fieldset>
-
-
-                        <br />
-                        <div data-role="collapsible">
-                            <h2>${HeaderIdentification}</h2>
-                            <div>
-                                <br />
-                                <p>${HeaderIdentificationCriteriaHelp}</p>
-                                <br />
-                                <ul data-role="listview" class="ulForm">
-                                    <li>
-                                        <label for="txtIdFriendlyName">${LabelFriendlyName}</label>
-                                        <input type="text" id="txtIdFriendlyName" />
-                                        <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                                    </li>
-                                    <li>
-                                        <label for="txtIdManufacturer">${LabelManufacturer}</label>
-                                        <input type="text" id="txtIdManufacturer" />
-                                        <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                                    </li>
-                                    <li>
-                                        <label for="txtIdManufacturerUrl">${LabelManufacturerUrl}</label>
-                                        <input type="text" id="txtIdManufacturerUrl" />
-                                        <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                                    </li>
-                                    <li>
-                                        <label for="txtIdModelName">${LabelModelName}</label>
-                                        <input type="text" id="txtIdModelName" />
-                                        <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                                    </li>
-                                    <li>
-                                        <label for="txtIdModelNumber">${LabelModelNumber}</label>
-                                        <input type="text" id="txtIdModelNumber" />
-                                        <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                                    </li>
-                                    <li>
-                                        <label for="txtIdModelDesription">${LabelModelDescription}</label>
-                                        <input type="text" id="txtIdModelDesription" />
-                                        <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                                    </li>
-                                    <li>
-                                        <label for="txtIdModelUrl">${LabelModelUrl}</label>
-                                        <input type="text" id="txtIdModelUrl" />
-                                        <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                                    </li>
-                                    <li>
-                                        <label for="txtIdSerialNumber">${LabelSerialNumber}</label>
-                                        <input type="text" id="txtIdSerialNumber" />
-                                        <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                                    </li>
-                                    <li>
-                                        <label for="txtIdDeviceDescription">${LabelDeviceDescription}</label>
-                                        <input type="text" id="txtIdDeviceDescription" />
-                                        <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                                    </li>
-                                </ul>
-
-                                <div>
-                                    <h2 style="vertical-align:middle;display:inline-block;">${HeaderHttpHeaders}</h2>
-                                    <paper-button raised class="submit mini btnAddIdentificationHttpHeader" style="margin-left:1em;">
-                                        <iron-icon icon="add"></iron-icon>
-                                        <span>${ButtonNew}</span>
-                                    </paper-button>
-                                </div>
-                                <div class="httpHeaderIdentificationList"></div>
-                            </div>
-                        </div>
-                        <div data-role="collapsible">
-                            <h2>${HeaderDisplaySettings}</h2>
-                            <div>
-                                <br />
-                                <ul data-role="listview" class="ulForm">
-                                    <li>
-                                        <label for="chkRequiresPlainFolders">${OptionPlainStorageFolders}</label>
-                                        <input type="checkbox" id="chkRequiresPlainFolders" data-mini="true" />
-                                        <div class="fieldDescription">${OptionPlainStorageFoldersHelp}</div>
-                                    </li>
-                                    <li>
-                                        <label for="chkRequiresPlainVideoItems">${OptionPlainVideoItems}</label>
-                                        <input type="checkbox" id="chkRequiresPlainVideoItems" data-mini="true" />
-                                        <div class="fieldDescription">${OptionPlainVideoItemsHelp}</div>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div data-role="collapsible">
-                            <h2>${HeaderImageSettings}</h2>
-                            <div>
-                                <br />
-                                <ul data-role="listview" class="ulForm">
-                                    <li>
-                                        <label for="chkEnableAlbumArtInDidl">${LabelEmbedAlbumArtDidl}</label>
-                                        <input type="checkbox" id="chkEnableAlbumArtInDidl" data-mini="true" />
-                                        <div class="fieldDescription">${LabelEmbedAlbumArtDidlHelp}</div>
-                                    </li>
-                                    <li>
-                                        <label for="chkEnableSingleImageLimit">${LabelEnableSingleImageInDidlLimit}</label>
-                                        <input type="checkbox" id="chkEnableSingleImageLimit" data-mini="true" />
-                                        <div class="fieldDescription">${LabelEnableSingleImageInDidlLimitHelp}</div>
-                                    </li>
-                                    <li>
-                                        <label for="txtAlbumArtPn">${LabelAlbumArtPN}</label>
-                                        <input type="text" id="txtAlbumArtPn" />
-                                        <div class="fieldDescription">${LabelAlbumArtHelp}</div>
-                                    </li>
-                                    <li>
-                                        <label for="txtAlbumArtMaxWidth">${LabelAlbumArtMaxWidth}</label>
-                                        <input type="number" id="txtAlbumArtMaxWidth" pattern="[0-9]*" min="1" />
-                                        <div class="fieldDescription">${LabelAlbumArtMaxWidthHelp}</div>
-                                    </li>
-                                    <li>
-                                        <label for="txtAlbumArtMaxHeight">${LabelAlbumArtMaxHeight}</label>
-                                        <input type="number" id="txtAlbumArtMaxHeight" pattern="[0-9]*" min="1" />
-                                        <div class="fieldDescription">${LabelAlbumArtMaxHeightHelp}</div>
-                                    </li>
-                                    <li>
-                                        <label for="txtIconMaxWidth">${LabelIconMaxWidth}</label>
-                                        <input type="number" id="txtIconMaxWidth" pattern="[0-9]*" min="1" />
-                                        <div class="fieldDescription">${LabelIconMaxWidthHelp}</div>
-                                    </li>
-                                    <li>
-                                        <label for="txtIconMaxHeight">${LabelIconMaxHeight}</label>
-                                        <input type="number" id="txtIconMaxHeight" pattern="[0-9]*" min="1" />
-                                        <div class="fieldDescription">${LabelIconMaxHeightHelp}</div>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div data-role="collapsible">
-                            <h2>${HeaderPlaybackSettings}</h2>
-                            <div>
-                                <br />
-                                <ul data-role="listview" class="ulForm">
-                                    <li>
-                                        <label for="txtMaxAllowedBitrate">${LabelMaxStreamingBitrate}</label>
-                                        <input type="number" id="txtMaxAllowedBitrate" pattern="[0-9]*" min="1" />
-                                        <div class="fieldDescription">${LabelMaxStreamingBitrateHelp}</div>
-                                    </li>
-                                    <li>
-                                        <label for="txtMusicStreamingTranscodingBitrate">${LabelMusicStreamingTranscodingBitrate}</label>
-                                        <input type="number" id="txtMusicStreamingTranscodingBitrate" pattern="[0-9]*" min="1" />
-                                        <div class="fieldDescription">${LabelMusicStreamingTranscodingBitrateHelp}</div>
-                                    </li>
-                                    <li>
-                                        <label for="chkIgnoreTranscodeByteRangeRequests">${OptionIgnoreTranscodeByteRangeRequests}</label>
-                                        <input type="checkbox" id="chkIgnoreTranscodeByteRangeRequests" data-mini="true" />
-                                        <div class="fieldDescription">${OptionIgnoreTranscodeByteRangeRequestsHelp}</div>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div data-role="collapsible">
-                            <h2>${HeaderServerSettings}</h2>
-                            <div>
-                                <p>${HeaderProfileServerSettingsHelp}</p>
-                                <br />
-                                <ul data-role="listview" class="ulForm">
-                                    <li>
-                                        <label for="txtInfoFriendlyName">${LabelFriendlyName}</label>
-                                        <input type="text" id="txtInfoFriendlyName" required="required" />
-                                    </li>
-                                    <li>
-                                        <label for="txtInfoManufacturer">${LabelManufacturer}</label>
-                                        <input type="text" id="txtInfoManufacturer" />
-                                    </li>
-                                    <li>
-                                        <label for="txtInfoManufacturerUrl">${LabelManufacturerUrl}</label>
-                                        <input type="text" id="txtInfoManufacturerUrl" />
-                                    </li>
-                                    <li>
-                                        <label for="txtInfoModelName">${LabelModelName}</label>
-                                        <input type="text" id="txtInfoModelName" />
-                                    </li>
-                                    <li>
-                                        <label for="txtInfoModelNumber">${LabelModelNumber}</label>
-                                        <input type="text" id="txtInfoModelNumber" />
-                                    </li>
-                                    <li>
-                                        <label for="txtInfoModelDesription">${LabelModelDescription}</label>
-                                        <input type="text" id="txtInfoModelDesription" />
-                                    </li>
-                                    <li>
-                                        <label for="txtInfoModelUrl">${LabelModelUrl}</label>
-                                        <input type="text" id="txtInfoModelUrl" />
-                                    </li>
-                                    <li>
-                                        <label for="txtInfoSerialNumber">${LabelSerialNumber}</label>
-                                        <input type="text" id="txtInfoSerialNumber" />
-                                    </li>
-                                    <li>
-                                        <label for="txtProtocolInfo">${LabelProtocolInfo}</label>
-                                        <input type="text" id="txtProtocolInfo" />
-                                        <div class="fieldDescription">${LabelProtocolInfoHelp}</div>
-                                    </li>
-                                    <li>
-                                        <label for="txtXDlnaCap">${LabelXDlnaCap}</label>
-                                        <input type="text" id="txtXDlnaCap" />
-                                        <div class="fieldDescription">${LabelXDlnaCapHelp}</div>
-                                    </li>
-                                    <li>
-                                        <label for="txtXDlnaDoc">${LabelXDlnaDoc}</label>
-                                        <input type="text" id="txtXDlnaDoc" />
-                                        <div class="fieldDescription">${LabelXDlnaDocHelp}</div>
-                                    </li>
-                                    <li>
-                                        <label for="txtSonyAggregationFlags">${LabelSonyAggregationFlags}</label>
-                                        <input type="text" id="txtSonyAggregationFlags" />
-                                        <div class="fieldDescription">${LabelSonyAggregationFlagsHelp}</div>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div data-role="collapsible">
-                            <h2>${HeaderSubtitleProfiles}</h2>
-                            <div>
-                                <p>${HeaderSubtitleProfilesHelp}</p>
-                                <p><button type="button" class="btnAddSubtitleProfile" data-icon="plus">${ButtonAdd}</button></p>
-                                <div class="subtitleProfileList"></div>
-                                <br />
-                            </div>
-                        </div>
-
-                        <div data-role="collapsible">
-                            <h2>${HeaderXmlSettings}</h2>
-                            <div>
-                                <div>
-                                    <h2 style="vertical-align:middle;display:inline-block;">${HeaderXmlDocumentAttributes}</h2>
-                                    <paper-button raised class="submit mini btnAddXmlDocumentAttribute" style="margin-left:1em;">
-                                        <iron-icon icon="add"></iron-icon>
-                                        <span>${ButtonNew}</span>
-                                    </paper-button>
-                                </div>
-                                <div class="xmlDocumentAttributeList"></div>
-                                <div class="fieldDescription">${XmlDocumentAttributeListHelp}</div>
-                                <br />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="tabContent tabDirectPlayProfiles">
-                        <p>${HeaderDirectPlayProfileHelp}</p>
-                        <button class="btnAddDirectPlayProfile" type="button" data-mini="true" data-icon="plus">${ButtonNew}</button>
-                        <br />
-                        <div class="directPlayProfiles"></div>
-                    </div>
-                    <div class="tabContent tabTranscodingProfiles">
-                        <p>${HeaderTranscodingProfileHelp}</p>
-                        <button class="btnAddTranscodingProfile" type="button" data-mini="true" data-icon="plus">${ButtonNew}</button>
-                        <br />
-                        <div class="transcodingProfiles"></div>
-                    </div>
-                    <div class="tabContent tabContainerProfiles">
-                        <p>${HeaderContainerProfileHelp}</p>
-                        <button class="btnAddContainerProfile" type="button" data-mini="true" data-icon="plus">${ButtonNew}</button>
-                        <br />
-                        <div class="containerProfiles"></div>
-                    </div>
-                    <div class="tabContent tabCodecProfiles">
-                        <p>${HeaderCodecProfileHelp}</p>
-                        <button class="btnAddCodecProfile" type="button" data-mini="true" data-icon="plus">${ButtonNew}</button>
-                        <br />
-                        <div class="codecProfiles"></div>
-                    </div>
-                    <div class="tabContent tabMediaProfiles">
-                        <p>${HeaderResponseProfileHelp}</p>
-                        <button class="btnAddResponseProfile" type="button" data-mini="true" data-icon="plus">${ButtonNew}</button>
-                        <br />
-                        <div class="mediaProfiles"></div>
-                    </div>
-                    <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <button class="btnSave" type="submit" data-theme="b" data-icon="check" data-mini="true">
-                                ${ButtonSave}
-                            </button>
-                            <button type="button" onclick="Dashboard.navigate('dlnaprofiles.html');" data-icon="delete" data-mini="true">
-                                ${ButtonCancel}
-                            </button>
+                            <label for="txtName">${LabelName}</label>
+                            <input type="text" id="txtName" required="required" />
                         </li>
-
                     </ul>
-                </form>
 
-            </div>
-        </div>
-        <div data-role="popup" id="popupEditDirectPlayProfile" class="popup">
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <label for="selectUser">${LabelUserLibrary}</label>
+                            <select id="selectUser" data-mini="true"></select>
+                            <div class="fieldDescription">${LabelUserLibraryHelp}</div>
+                        </li>
+                    </ul>
 
-            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3>${HeaderDirectPlayProfile}</h3>
-            </div>
+                    <fieldset data-role="controlgroup">
+                        <legend>${LabelSupportedMediaTypes}</legend>
+                        <input type="checkbox" id="chkAudio" data-value="Audio" class="chkMediaType" />
+                        <label for="chkAudio">${OptionProfileAudio}</label>
 
-            <div data-role="content">
-                <form class="editDirectPlayProfileForm">
+                        <input type="checkbox" id="chkPhoto" data-value="Photo" class="chkMediaType" />
+                        <label for="chkPhoto">${OptionProfilePhoto}</label>
 
-                    <div style="margin: 1em 0;">
-                        <label for="selectDirectPlayProfileType">${LabelType}</label>
-                        <select id="selectDirectPlayProfileType" data-mini="true">
-                            <option value="Audio">${OptionProfileAudio}</option>
-                            <option value="Photo">${OptionProfilePhoto}</option>
-                            <option value="Video">${OptionProfileVideo}</option>
-                        </select>
-                    </div>
+                        <input type="checkbox" id="chkVideo" data-value="Video" class="chkMediaType" />
+                        <label for="chkVideo">${OptionProfileVideo}</label>
+                    </fieldset>
 
-                    <div style="margin: 1em 0;">
-                        <label for="txtDirectPlayContainer">${LabelProfileContainer}</label>
-                        <input type="text" id="txtDirectPlayContainer" />
-                        <div class="fieldDescription">${LabelProfileContainersHelp}</div>
-                    </div>
 
-                    <div id="fldDirectPlayVideoCodec" style="margin: 1em 0;">
-                        <label for="txtDirectPlayVideoCodec">${LabelProfileVideoCodecs}</label>
-                        <input type="text" id="txtDirectPlayVideoCodec" />
-                        <div class="fieldDescription">${LabelProfileCodecsHelp}</div>
-                    </div>
-
-                    <div id="fldDirectPlayAudioCodec" style="margin: 1em 0 2em;">
-                        <label for="txtDirectPlayAudioCodec">${LabelProfileAudioCodecs}</label>
-                        <input type="text" id="txtDirectPlayAudioCodec" />
-                        <div class="fieldDescription">${LabelProfileCodecsHelp}</div>
-                    </div>
-
-                    <p>
-                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            ${ButtonOk}
-                        </button>
-                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
-                            ${ButtonCancel}
-                        </button>
-                    </p>
-                </form>
-            </div>
-
-        </div>
-        <div data-role="popup" id="transcodingProfilePopup" class="popup">
-
-            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3>${HeaderTranscodingProfile}</h3>
-            </div>
-
-            <div data-role="content">
-                <form class="transcodingProfileForm" style="min-width: 250px;">
-
-                    <div data-role="controlgroup" data-type="horizontal" data-mini="true">
-                        <input type="radio" name="radioTranscodingTab" class="radioTabButton" id="radioTranscodingBasics" value="tabTranscodingBasics">
-                        <label for="radioTranscodingBasics">${TabInfo}</label>
-                        <input type="radio" name="radioTranscodingTab" class="radioTabButton" id="radioTranscodingAdvanced" value="tabTranscodingAdvanced">
-                        <label for="radioTranscodingAdvanced">${TabAdvanced}</label>
-                    </div>
                     <br />
-                    <div class="tabContent tabTranscodingBasics" style="display: none;">
-                        <div style="margin: 1em 0;">
-                            <label for="selectTranscodingProfileType">${LabelType}</label>
-                            <select id="selectTranscodingProfileType" data-mini="true">
-                                <option value="Audio">${OptionProfileAudio}</option>
-                                <option value="Photo">${OptionProfilePhoto}</option>
-                                <option value="Video">${OptionProfileVideo}</option>
-                            </select>
-                        </div>
+                    <div data-role="collapsible">
+                        <h2>${HeaderIdentification}</h2>
+                        <div>
+                            <br />
+                            <p>${HeaderIdentificationCriteriaHelp}</p>
+                            <br />
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <label for="txtIdFriendlyName">${LabelFriendlyName}</label>
+                                    <input type="text" id="txtIdFriendlyName" />
+                                    <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                                </li>
+                                <li>
+                                    <label for="txtIdManufacturer">${LabelManufacturer}</label>
+                                    <input type="text" id="txtIdManufacturer" />
+                                    <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                                </li>
+                                <li>
+                                    <label for="txtIdManufacturerUrl">${LabelManufacturerUrl}</label>
+                                    <input type="text" id="txtIdManufacturerUrl" />
+                                    <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                                </li>
+                                <li>
+                                    <label for="txtIdModelName">${LabelModelName}</label>
+                                    <input type="text" id="txtIdModelName" />
+                                    <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                                </li>
+                                <li>
+                                    <label for="txtIdModelNumber">${LabelModelNumber}</label>
+                                    <input type="text" id="txtIdModelNumber" />
+                                    <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                                </li>
+                                <li>
+                                    <label for="txtIdModelDesription">${LabelModelDescription}</label>
+                                    <input type="text" id="txtIdModelDesription" />
+                                    <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                                </li>
+                                <li>
+                                    <label for="txtIdModelUrl">${LabelModelUrl}</label>
+                                    <input type="text" id="txtIdModelUrl" />
+                                    <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                                </li>
+                                <li>
+                                    <label for="txtIdSerialNumber">${LabelSerialNumber}</label>
+                                    <input type="text" id="txtIdSerialNumber" />
+                                    <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                                </li>
+                                <li>
+                                    <label for="txtIdDeviceDescription">${LabelDeviceDescription}</label>
+                                    <input type="text" id="txtIdDeviceDescription" />
+                                    <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                                </li>
+                            </ul>
 
-                        <div id="fldTranscodingProtocol" style="margin: 1em 0;">
-                            <label for="selectTranscodingProtocol">${LabelProtocol}</label>
-                            <select id="selectTranscodingProtocol" data-mini="true">
-                                <option value="Http">${OptionProtocolHttp}</option>
-                                <option value="Hls">${OptionProtocolHls}</option>
-                            </select>
-                        </div>
-
-                        <div style="margin: 1em 0;">
-                            <label for="txtTranscodingContainer">${LabelTranscodingContainer}</label>
-                            <input type="text" id="txtTranscodingContainer" required="required" />
-                        </div>
-
-                        <div id="fldTranscodingVideoCodec" style="margin: 1em 0;">
-                            <label for="txtTranscodingVideoCodec">${LabelTranscodingVideoCodec}</label>
-                            <input type="text" id="txtTranscodingVideoCodec" />
-                        </div>
-
-                        <div id="fldTranscodingAudioCodec" style="margin: 1em 0;">
-                            <label for="txtTranscodingAudioCodec">${LabelTranscodingAudioCodec}</label>
-                            <input type="text" id="txtTranscodingAudioCodec" />
+                            <div>
+                                <h2 style="vertical-align:middle;display:inline-block;">${HeaderHttpHeaders}</h2>
+                                <paper-button raised class="submit mini btnAddIdentificationHttpHeader" style="margin-left:1em;">
+                                    <iron-icon icon="add"></iron-icon>
+                                    <span>${ButtonNew}</span>
+                                </paper-button>
+                            </div>
+                            <div class="httpHeaderIdentificationList"></div>
                         </div>
                     </div>
-                    <div class="tabContent tabTranscodingAdvanced" style="display: none;">
-
-                        <div id="fldEnableMpegtsM2TsMode" style="margin: 1em 0;">
-                            <label for="chkEnableMpegtsM2TsMode">${OptionEnableM2tsMode}</label>
-                            <input type="checkbox" id="chkEnableMpegtsM2TsMode" data-mini="true" />
-                            <div class="fieldDescription">${OptionEnableM2tsModeHelp}</div>
-                        </div>
-
-                        <div id="fldEstimateContentLength" style="margin: 1em 0;">
-                            <label for="chkEstimateContentLength">${OptionEstimateContentLength}</label>
-                            <input type="checkbox" id="chkEstimateContentLength" data-mini="true" />
-                        </div>
-
-                        <div id="fldReportByteRangeRequests" style="margin: 1em 0;">
-                            <label for="chkReportByteRangeRequests">${OptionReportByteRangeSeekingWhenTranscoding}</label>
-                            <input type="checkbox" id="chkReportByteRangeRequests" data-mini="true" />
-                            <div class="fieldDescription">${OptionReportByteRangeSeekingWhenTranscodingHelp}</div>
+                    <div data-role="collapsible">
+                        <h2>${HeaderDisplaySettings}</h2>
+                        <div>
+                            <br />
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <label for="chkRequiresPlainFolders">${OptionPlainStorageFolders}</label>
+                                    <input type="checkbox" id="chkRequiresPlainFolders" data-mini="true" />
+                                    <div class="fieldDescription">${OptionPlainStorageFoldersHelp}</div>
+                                </li>
+                                <li>
+                                    <label for="chkRequiresPlainVideoItems">${OptionPlainVideoItems}</label>
+                                    <input type="checkbox" id="chkRequiresPlainVideoItems" data-mini="true" />
+                                    <div class="fieldDescription">${OptionPlainVideoItemsHelp}</div>
+                                </li>
+                            </ul>
                         </div>
                     </div>
 
-                    <p>
-                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            ${ButtonOk}
-                        </button>
-                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
-                            ${ButtonCancel}
-                        </button>
-                    </p>
-                </form>
-            </div>
+                    <div data-role="collapsible">
+                        <h2>${HeaderImageSettings}</h2>
+                        <div>
+                            <br />
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <label for="chkEnableAlbumArtInDidl">${LabelEmbedAlbumArtDidl}</label>
+                                    <input type="checkbox" id="chkEnableAlbumArtInDidl" data-mini="true" />
+                                    <div class="fieldDescription">${LabelEmbedAlbumArtDidlHelp}</div>
+                                </li>
+                                <li>
+                                    <label for="chkEnableSingleImageLimit">${LabelEnableSingleImageInDidlLimit}</label>
+                                    <input type="checkbox" id="chkEnableSingleImageLimit" data-mini="true" />
+                                    <div class="fieldDescription">${LabelEnableSingleImageInDidlLimitHelp}</div>
+                                </li>
+                                <li>
+                                    <label for="txtAlbumArtPn">${LabelAlbumArtPN}</label>
+                                    <input type="text" id="txtAlbumArtPn" />
+                                    <div class="fieldDescription">${LabelAlbumArtHelp}</div>
+                                </li>
+                                <li>
+                                    <label for="txtAlbumArtMaxWidth">${LabelAlbumArtMaxWidth}</label>
+                                    <input type="number" id="txtAlbumArtMaxWidth" pattern="[0-9]*" min="1" />
+                                    <div class="fieldDescription">${LabelAlbumArtMaxWidthHelp}</div>
+                                </li>
+                                <li>
+                                    <label for="txtAlbumArtMaxHeight">${LabelAlbumArtMaxHeight}</label>
+                                    <input type="number" id="txtAlbumArtMaxHeight" pattern="[0-9]*" min="1" />
+                                    <div class="fieldDescription">${LabelAlbumArtMaxHeightHelp}</div>
+                                </li>
+                                <li>
+                                    <label for="txtIconMaxWidth">${LabelIconMaxWidth}</label>
+                                    <input type="number" id="txtIconMaxWidth" pattern="[0-9]*" min="1" />
+                                    <div class="fieldDescription">${LabelIconMaxWidthHelp}</div>
+                                </li>
+                                <li>
+                                    <label for="txtIconMaxHeight">${LabelIconMaxHeight}</label>
+                                    <input type="number" id="txtIconMaxHeight" pattern="[0-9]*" min="1" />
+                                    <div class="fieldDescription">${LabelIconMaxHeightHelp}</div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
 
-        </div>
-        <div data-role="popup" id="containerProfilePopup" class="popup">
+                    <div data-role="collapsible">
+                        <h2>${HeaderPlaybackSettings}</h2>
+                        <div>
+                            <br />
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <label for="txtMaxAllowedBitrate">${LabelMaxStreamingBitrate}</label>
+                                    <input type="number" id="txtMaxAllowedBitrate" pattern="[0-9]*" min="1" />
+                                    <div class="fieldDescription">${LabelMaxStreamingBitrateHelp}</div>
+                                </li>
+                                <li>
+                                    <label for="txtMusicStreamingTranscodingBitrate">${LabelMusicStreamingTranscodingBitrate}</label>
+                                    <input type="number" id="txtMusicStreamingTranscodingBitrate" pattern="[0-9]*" min="1" />
+                                    <div class="fieldDescription">${LabelMusicStreamingTranscodingBitrateHelp}</div>
+                                </li>
+                                <li>
+                                    <label for="chkIgnoreTranscodeByteRangeRequests">${OptionIgnoreTranscodeByteRangeRequests}</label>
+                                    <input type="checkbox" id="chkIgnoreTranscodeByteRangeRequests" data-mini="true" />
+                                    <div class="fieldDescription">${OptionIgnoreTranscodeByteRangeRequestsHelp}</div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div data-role="collapsible">
+                        <h2>${HeaderServerSettings}</h2>
+                        <div>
+                            <p>${HeaderProfileServerSettingsHelp}</p>
+                            <br />
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <label for="txtInfoFriendlyName">${LabelFriendlyName}</label>
+                                    <input type="text" id="txtInfoFriendlyName" required="required" />
+                                </li>
+                                <li>
+                                    <label for="txtInfoManufacturer">${LabelManufacturer}</label>
+                                    <input type="text" id="txtInfoManufacturer" />
+                                </li>
+                                <li>
+                                    <label for="txtInfoManufacturerUrl">${LabelManufacturerUrl}</label>
+                                    <input type="text" id="txtInfoManufacturerUrl" />
+                                </li>
+                                <li>
+                                    <label for="txtInfoModelName">${LabelModelName}</label>
+                                    <input type="text" id="txtInfoModelName" />
+                                </li>
+                                <li>
+                                    <label for="txtInfoModelNumber">${LabelModelNumber}</label>
+                                    <input type="text" id="txtInfoModelNumber" />
+                                </li>
+                                <li>
+                                    <label for="txtInfoModelDesription">${LabelModelDescription}</label>
+                                    <input type="text" id="txtInfoModelDesription" />
+                                </li>
+                                <li>
+                                    <label for="txtInfoModelUrl">${LabelModelUrl}</label>
+                                    <input type="text" id="txtInfoModelUrl" />
+                                </li>
+                                <li>
+                                    <label for="txtInfoSerialNumber">${LabelSerialNumber}</label>
+                                    <input type="text" id="txtInfoSerialNumber" />
+                                </li>
+                                <li>
+                                    <label for="txtProtocolInfo">${LabelProtocolInfo}</label>
+                                    <input type="text" id="txtProtocolInfo" />
+                                    <div class="fieldDescription">${LabelProtocolInfoHelp}</div>
+                                </li>
+                                <li>
+                                    <label for="txtXDlnaCap">${LabelXDlnaCap}</label>
+                                    <input type="text" id="txtXDlnaCap" />
+                                    <div class="fieldDescription">${LabelXDlnaCapHelp}</div>
+                                </li>
+                                <li>
+                                    <label for="txtXDlnaDoc">${LabelXDlnaDoc}</label>
+                                    <input type="text" id="txtXDlnaDoc" />
+                                    <div class="fieldDescription">${LabelXDlnaDocHelp}</div>
+                                </li>
+                                <li>
+                                    <label for="txtSonyAggregationFlags">${LabelSonyAggregationFlags}</label>
+                                    <input type="text" id="txtSonyAggregationFlags" />
+                                    <div class="fieldDescription">${LabelSonyAggregationFlagsHelp}</div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
 
-            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3>${HeaderContainerProfile}</h3>
-            </div>
+                    <div data-role="collapsible">
+                        <h2>${HeaderSubtitleProfiles}</h2>
+                        <div>
+                            <p>${HeaderSubtitleProfilesHelp}</p>
+                            <p><button type="button" class="btnAddSubtitleProfile" data-icon="plus">${ButtonAdd}</button></p>
+                            <div class="subtitleProfileList"></div>
+                            <br />
+                        </div>
+                    </div>
 
-            <div data-role="content">
-                <form class="containerProfileForm" style="min-width: 250px;">
+                    <div data-role="collapsible">
+                        <h2>${HeaderXmlSettings}</h2>
+                        <div>
+                            <div>
+                                <h2 style="vertical-align:middle;display:inline-block;">${HeaderXmlDocumentAttributes}</h2>
+                                <paper-button raised class="submit mini btnAddXmlDocumentAttribute" style="margin-left:1em;">
+                                    <iron-icon icon="add"></iron-icon>
+                                    <span>${ButtonNew}</span>
+                                </paper-button>
+                            </div>
+                            <div class="xmlDocumentAttributeList"></div>
+                            <div class="fieldDescription">${XmlDocumentAttributeListHelp}</div>
+                            <br />
+                        </div>
+                    </div>
+                </div>
 
+                <div class="tabContent tabDirectPlayProfiles">
+                    <p>${HeaderDirectPlayProfileHelp}</p>
+                    <button class="btnAddDirectPlayProfile" type="button" data-mini="true" data-icon="plus">${ButtonNew}</button>
+                    <br />
+                    <div class="directPlayProfiles"></div>
+                </div>
+                <div class="tabContent tabTranscodingProfiles">
+                    <p>${HeaderTranscodingProfileHelp}</p>
+                    <button class="btnAddTranscodingProfile" type="button" data-mini="true" data-icon="plus">${ButtonNew}</button>
+                    <br />
+                    <div class="transcodingProfiles"></div>
+                </div>
+                <div class="tabContent tabContainerProfiles">
                     <p>${HeaderContainerProfileHelp}</p>
-
-                    <!--                    <div data-role="controlgroup" data-type="horizontal" data-mini="true">
-                        <input type="radio" name="radioContainerProfileTab" class="radioTabButton" id="radioContainerProfileInfo" value="tabContainerBasics">
-                        <label for="radioContainerProfileInfo">${TabInfo}</label>
-                        <input type="radio" name="radioContainerProfileTab" class="radioTabButton" id="radioContainerProfileConditions" value="tabContainerConditions">
-                        <label for="radioContainerProfileConditions">Conditions</label>
-                    </div>-->
-
-                    <div class="tabContent tabContainerBasics">
-                        <div style="margin: 1em 0;">
-                            <label for="selectContainerProfileType">${LabelType}</label>
-                            <select id="selectContainerProfileType" data-mini="true">
-                                <option value="Audio">${OptionProfileAudio}</option>
-                                <option value="Photo">${OptionProfilePhoto}</option>
-                                <option value="Video">${OptionProfileVideo}</option>
-                            </select>
-                        </div>
-
-                        <div style="margin: 1em 0;">
-                            <label for="txtContainerProfileContainer">Containers:</label>
-                            <input type="text" id="txtContainerProfileContainer" />
-                            <div class="fieldDescription">${LabelProfileContainersHelp}</div>
-                        </div>
-
-                    </div>
-
-                    <div class="tabContent tabContainerConditions" style="display: none;">
-                    </div>
-
-                    <p>
-                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            ${ButtonOk}
-                        </button>
-                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
-                            ${ButtonCancel}
-                        </button>
-                    </p>
-                </form>
-            </div>
-
-        </div>
-        <div data-role="popup" id="codecProfilePopup" class="popup">
-
-            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3>${HeaderCodecProfile}</h3>
-            </div>
-
-            <div data-role="content">
-                <form class="codecProfileForm" style="min-width: 250px;">
-
+                    <button class="btnAddContainerProfile" type="button" data-mini="true" data-icon="plus">${ButtonNew}</button>
+                    <br />
+                    <div class="containerProfiles"></div>
+                </div>
+                <div class="tabContent tabCodecProfiles">
                     <p>${HeaderCodecProfileHelp}</p>
-
-                    <div style="margin: 1em 0;">
-                        <label for="selectCodecProfileType">${LabelType}</label>
-                        <select id="selectCodecProfileType" data-mini="true">
-                            <option value="Video">${OptionProfileVideo}</option>
-                            <option value="VideoAudio">${OptionProfileVideoAudio}</option>
-                            <option value="Audio">${OptionProfileAudio}</option>
-                        </select>
-                    </div>
-
-                    <div style="margin: 1em 0;">
-                        <label for="txtCodecProfileCodec">${LabelProfileCodecs}</label>
-                        <input type="text" id="txtCodecProfileCodec" />
-                        <div class="fieldDescription">${LabelProfileCodecsHelp}</div>
-                    </div>
-
-                    <p>
-                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            ${ButtonOk}
+                    <button class="btnAddCodecProfile" type="button" data-mini="true" data-icon="plus">${ButtonNew}</button>
+                    <br />
+                    <div class="codecProfiles"></div>
+                </div>
+                <div class="tabContent tabMediaProfiles">
+                    <p>${HeaderResponseProfileHelp}</p>
+                    <button class="btnAddResponseProfile" type="button" data-mini="true" data-icon="plus">${ButtonNew}</button>
+                    <br />
+                    <div class="mediaProfiles"></div>
+                </div>
+                <br />
+                <ul data-role="listview" class="ulForm">
+                    <li>
+                        <button class="btnSave" type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            ${ButtonSave}
                         </button>
-                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                        <button type="button" onclick="Dashboard.navigate('dlnaprofiles.html');" data-icon="delete" data-mini="true">
                             ${ButtonCancel}
                         </button>
-                    </p>
-                </form>
-            </div>
+                    </li>
 
-        </div>
-        <div data-role="popup" id="responseProfilePopup" class="popup">
-
-            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3>${HeaderResponseProfile}</h3>
-            </div>
-
-            <div data-role="content">
-                <form class="editResponseProfileForm">
-
-                    <div style="margin: 1em 0;">
-                        <label for="selectResponseProfileType">${LabelType}</label>
-                        <select id="selectResponseProfileType" data-mini="true">
-                            <option value="Audio">${OptionProfileAudio}</option>
-                            <option value="Photo">${OptionProfilePhoto}</option>
-                            <option value="Video">${OptionProfileVideo}</option>
-                        </select>
-                    </div>
-
-                    <div style="margin: 1em 0;">
-                        <label for="txtResponseProfileContainer">${LabelProfileContainer}</label>
-                        <input type="text" id="txtResponseProfileContainer" />
-                        <div class="fieldDescription">${LabelProfileContainersHelp}</div>
-                    </div>
-
-                    <div id="fldResponseProfileVideoCodec" style="margin: 1em 0;">
-                        <label for="txtResponseProfileVideoCodec">${LabelProfileVideoCodecs}</label>
-                        <input type="text" id="txtResponseProfileVideoCodec" />
-                        <div class="fieldDescription">${LabelProfileCodecsHelp}</div>
-                    </div>
-
-                    <div id="fldResponseProfileAudioCodec" style="margin: 1em 0 2em;">
-                        <label for="txtResponseProfileAudioCodec">${LabelProfileAudioCodecs}</label>
-                        <input type="text" id="txtResponseProfileAudioCodec" />
-                        <div class="fieldDescription">${LabelProfileCodecsHelp}</div>
-                    </div>
-
-                    <p>
-                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            ${ButtonOk}
-                        </button>
-                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
-                            ${ButtonCancel}
-                        </button>
-                    </p>
-                </form>
-            </div>
-
-        </div>
-        <div data-role="popup" id="identificationHeaderPopup" class="popup">
-
-            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3>${HeaderIdentificationHeader}</h3>
-            </div>
-
-            <div data-role="content">
-                <form class="identificationHeaderForm">
-
-                    <div style="margin: 1em 0;">
-                        <label for="txtIdentificationHeaderName">${LabelName}</label>
-                        <input type="text" id="txtIdentificationHeaderName" required="required" />
-                    </div>
-
-                    <div style="margin: 1em 0;">
-                        <label for="txtIdentificationHeaderValue">${LabelValue}</label>
-                        <input type="text" id="txtIdentificationHeaderValue" required="required" />
-                    </div>
-
-                    <div style="margin: 1em 0;">
-                        <label for="selectMatchType">${LabelMatchType}</label>
-                        <select id="selectMatchType" data-mini="true">
-                            <option value="Equals">${OptionEquals}</option>
-                            <option value="Regex">${OptionRegex}</option>
-                            <option value="Substring">${OptionSubstring}</option>
-                        </select>
-                    </div>
-
-                    <p>
-                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            ${ButtonOk}
-                        </button>
-                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
-                            ${ButtonCancel}
-                        </button>
-                    </p>
-                </form>
-            </div>
-
-        </div>
-        <div data-role="popup" id="xmlAttributePopup" class="popup">
-
-            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3>${HeaderXmlDocumentAttribute}</h3>
-            </div>
-
-            <div data-role="content">
-                <form class="xmlAttributeForm">
-
-                    <div style="margin: 1em 0;">
-                        <label for="txtXmlAttributeName">${LabelName}</label>
-                        <input type="text" id="txtXmlAttributeName" required="required" />
-                    </div>
-
-                    <div style="margin: 1em 0;">
-                        <label for="txtXmlAttributeValue">${LabelValue}</label>
-                        <input type="text" id="txtXmlAttributeValue" required="required" />
-                    </div>
-
-                    <p>
-                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            ${ButtonOk}
-                        </button>
-                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
-                            ${ButtonCancel}
-                        </button>
-                    </p>
-                </form>
-            </div>
-
-        </div>
-
-        <div data-role="popup" id="subtitleProfilePopup" class="popup">
-
-            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3>${HeaderSubtitleProfile}</h3>
-            </div>
-
-            <div data-role="content">
-                <form class="subtitleProfileForm">
-
-                    <div style="margin: 1em 0;">
-                        <label for="txtSubtitleProfileFormat">${LabelFormat}</label>
-                        <input type="text" id="txtSubtitleProfileFormat" required="required" />
-                        <div class="fieldDescription">${LabelSubtitleFormatHelp}</div>
-                    </div>
-
-                    <div style="margin: 1em 0;">
-                        <label for="selectSubtitleProfileMethod">${LabelMethod}</label>
-                        <select id="selectSubtitleProfileMethod" data-mini="true" required="required">
-                            <option value="Embed">${OptionEmbedSubtitles}</option>
-                            <option value="External">${OptionExternallyDownloaded}</option>
-                            <option value="Hls">${OptionHlsSegmentedSubtitles}</option>
-                        </select>
-                    </div>
-
-                    <div style="margin: 1em 0;">
-                        <label for="selectSubtitleProfileDidlMode">${LabelDidlMode}</label>
-                        <select id="selectSubtitleProfileDidlMode" data-mini="true">
-                            <option value="">${OptionResElement}</option>
-                            <option value="CaptionInfoEx">${OptionCaptionInfoExSamsung}</option>
-                        </select>
-                    </div>
-
-                    <p>
-                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            ${ButtonOk}
-                        </button>
-                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
-                            ${ButtonCancel}
-                        </button>
-                    </p>
-                </form>
-            </div>
+                </ul>
+            </form>
 
         </div>
     </div>
-</body>
-</html>
+    <div data-role="popup" id="popupEditDirectPlayProfile" class="popup">
+
+        <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+            <h3>${HeaderDirectPlayProfile}</h3>
+        </div>
+
+        <div data-role="content">
+            <form class="editDirectPlayProfileForm">
+
+                <div style="margin: 1em 0;">
+                    <label for="selectDirectPlayProfileType">${LabelType}</label>
+                    <select id="selectDirectPlayProfileType" data-mini="true">
+                        <option value="Audio">${OptionProfileAudio}</option>
+                        <option value="Photo">${OptionProfilePhoto}</option>
+                        <option value="Video">${OptionProfileVideo}</option>
+                    </select>
+                </div>
+
+                <div style="margin: 1em 0;">
+                    <label for="txtDirectPlayContainer">${LabelProfileContainer}</label>
+                    <input type="text" id="txtDirectPlayContainer" />
+                    <div class="fieldDescription">${LabelProfileContainersHelp}</div>
+                </div>
+
+                <div id="fldDirectPlayVideoCodec" style="margin: 1em 0;">
+                    <label for="txtDirectPlayVideoCodec">${LabelProfileVideoCodecs}</label>
+                    <input type="text" id="txtDirectPlayVideoCodec" />
+                    <div class="fieldDescription">${LabelProfileCodecsHelp}</div>
+                </div>
+
+                <div id="fldDirectPlayAudioCodec" style="margin: 1em 0 2em;">
+                    <label for="txtDirectPlayAudioCodec">${LabelProfileAudioCodecs}</label>
+                    <input type="text" id="txtDirectPlayAudioCodec" />
+                    <div class="fieldDescription">${LabelProfileCodecsHelp}</div>
+                </div>
+
+                <p>
+                    <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                        ${ButtonOk}
+                    </button>
+                    <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                        ${ButtonCancel}
+                    </button>
+                </p>
+            </form>
+        </div>
+
+    </div>
+    <div data-role="popup" id="transcodingProfilePopup" class="popup">
+
+        <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+            <h3>${HeaderTranscodingProfile}</h3>
+        </div>
+
+        <div data-role="content">
+            <form class="transcodingProfileForm" style="min-width: 250px;">
+
+                <div data-role="controlgroup" data-type="horizontal" data-mini="true">
+                    <input type="radio" name="radioTranscodingTab" class="radioTabButton" id="radioTranscodingBasics" value="tabTranscodingBasics">
+                    <label for="radioTranscodingBasics">${TabInfo}</label>
+                    <input type="radio" name="radioTranscodingTab" class="radioTabButton" id="radioTranscodingAdvanced" value="tabTranscodingAdvanced">
+                    <label for="radioTranscodingAdvanced">${TabAdvanced}</label>
+                </div>
+                <br />
+                <div class="tabContent tabTranscodingBasics" style="display: none;">
+                    <div style="margin: 1em 0;">
+                        <label for="selectTranscodingProfileType">${LabelType}</label>
+                        <select id="selectTranscodingProfileType" data-mini="true">
+                            <option value="Audio">${OptionProfileAudio}</option>
+                            <option value="Photo">${OptionProfilePhoto}</option>
+                            <option value="Video">${OptionProfileVideo}</option>
+                        </select>
+                    </div>
+
+                    <div id="fldTranscodingProtocol" style="margin: 1em 0;">
+                        <label for="selectTranscodingProtocol">${LabelProtocol}</label>
+                        <select id="selectTranscodingProtocol" data-mini="true">
+                            <option value="Http">${OptionProtocolHttp}</option>
+                            <option value="Hls">${OptionProtocolHls}</option>
+                        </select>
+                    </div>
+
+                    <div style="margin: 1em 0;">
+                        <label for="txtTranscodingContainer">${LabelTranscodingContainer}</label>
+                        <input type="text" id="txtTranscodingContainer" required="required" />
+                    </div>
+
+                    <div id="fldTranscodingVideoCodec" style="margin: 1em 0;">
+                        <label for="txtTranscodingVideoCodec">${LabelTranscodingVideoCodec}</label>
+                        <input type="text" id="txtTranscodingVideoCodec" />
+                    </div>
+
+                    <div id="fldTranscodingAudioCodec" style="margin: 1em 0;">
+                        <label for="txtTranscodingAudioCodec">${LabelTranscodingAudioCodec}</label>
+                        <input type="text" id="txtTranscodingAudioCodec" />
+                    </div>
+                </div>
+                <div class="tabContent tabTranscodingAdvanced" style="display: none;">
+
+                    <div id="fldEnableMpegtsM2TsMode" style="margin: 1em 0;">
+                        <label for="chkEnableMpegtsM2TsMode">${OptionEnableM2tsMode}</label>
+                        <input type="checkbox" id="chkEnableMpegtsM2TsMode" data-mini="true" />
+                        <div class="fieldDescription">${OptionEnableM2tsModeHelp}</div>
+                    </div>
+
+                    <div id="fldEstimateContentLength" style="margin: 1em 0;">
+                        <label for="chkEstimateContentLength">${OptionEstimateContentLength}</label>
+                        <input type="checkbox" id="chkEstimateContentLength" data-mini="true" />
+                    </div>
+
+                    <div id="fldReportByteRangeRequests" style="margin: 1em 0;">
+                        <label for="chkReportByteRangeRequests">${OptionReportByteRangeSeekingWhenTranscoding}</label>
+                        <input type="checkbox" id="chkReportByteRangeRequests" data-mini="true" />
+                        <div class="fieldDescription">${OptionReportByteRangeSeekingWhenTranscodingHelp}</div>
+                    </div>
+                </div>
+
+                <p>
+                    <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                        ${ButtonOk}
+                    </button>
+                    <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                        ${ButtonCancel}
+                    </button>
+                </p>
+            </form>
+        </div>
+
+    </div>
+    <div data-role="popup" id="containerProfilePopup" class="popup">
+
+        <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+            <h3>${HeaderContainerProfile}</h3>
+        </div>
+
+        <div data-role="content">
+            <form class="containerProfileForm" style="min-width: 250px;">
+
+                <p>${HeaderContainerProfileHelp}</p>
+
+                <!--                    <div data-role="controlgroup" data-type="horizontal" data-mini="true">
+                    <input type="radio" name="radioContainerProfileTab" class="radioTabButton" id="radioContainerProfileInfo" value="tabContainerBasics">
+                    <label for="radioContainerProfileInfo">${TabInfo}</label>
+                    <input type="radio" name="radioContainerProfileTab" class="radioTabButton" id="radioContainerProfileConditions" value="tabContainerConditions">
+                    <label for="radioContainerProfileConditions">Conditions</label>
+                </div>-->
+
+                <div class="tabContent tabContainerBasics">
+                    <div style="margin: 1em 0;">
+                        <label for="selectContainerProfileType">${LabelType}</label>
+                        <select id="selectContainerProfileType" data-mini="true">
+                            <option value="Audio">${OptionProfileAudio}</option>
+                            <option value="Photo">${OptionProfilePhoto}</option>
+                            <option value="Video">${OptionProfileVideo}</option>
+                        </select>
+                    </div>
+
+                    <div style="margin: 1em 0;">
+                        <label for="txtContainerProfileContainer">Containers:</label>
+                        <input type="text" id="txtContainerProfileContainer" />
+                        <div class="fieldDescription">${LabelProfileContainersHelp}</div>
+                    </div>
+
+                </div>
+
+                <div class="tabContent tabContainerConditions" style="display: none;">
+                </div>
+
+                <p>
+                    <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                        ${ButtonOk}
+                    </button>
+                    <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                        ${ButtonCancel}
+                    </button>
+                </p>
+            </form>
+        </div>
+
+    </div>
+    <div data-role="popup" id="codecProfilePopup" class="popup">
+
+        <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+            <h3>${HeaderCodecProfile}</h3>
+        </div>
+
+        <div data-role="content">
+            <form class="codecProfileForm" style="min-width: 250px;">
+
+                <p>${HeaderCodecProfileHelp}</p>
+
+                <div style="margin: 1em 0;">
+                    <label for="selectCodecProfileType">${LabelType}</label>
+                    <select id="selectCodecProfileType" data-mini="true">
+                        <option value="Video">${OptionProfileVideo}</option>
+                        <option value="VideoAudio">${OptionProfileVideoAudio}</option>
+                        <option value="Audio">${OptionProfileAudio}</option>
+                    </select>
+                </div>
+
+                <div style="margin: 1em 0;">
+                    <label for="txtCodecProfileCodec">${LabelProfileCodecs}</label>
+                    <input type="text" id="txtCodecProfileCodec" />
+                    <div class="fieldDescription">${LabelProfileCodecsHelp}</div>
+                </div>
+
+                <p>
+                    <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                        ${ButtonOk}
+                    </button>
+                    <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                        ${ButtonCancel}
+                    </button>
+                </p>
+            </form>
+        </div>
+
+    </div>
+    <div data-role="popup" id="responseProfilePopup" class="popup">
+
+        <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+            <h3>${HeaderResponseProfile}</h3>
+        </div>
+
+        <div data-role="content">
+            <form class="editResponseProfileForm">
+
+                <div style="margin: 1em 0;">
+                    <label for="selectResponseProfileType">${LabelType}</label>
+                    <select id="selectResponseProfileType" data-mini="true">
+                        <option value="Audio">${OptionProfileAudio}</option>
+                        <option value="Photo">${OptionProfilePhoto}</option>
+                        <option value="Video">${OptionProfileVideo}</option>
+                    </select>
+                </div>
+
+                <div style="margin: 1em 0;">
+                    <label for="txtResponseProfileContainer">${LabelProfileContainer}</label>
+                    <input type="text" id="txtResponseProfileContainer" />
+                    <div class="fieldDescription">${LabelProfileContainersHelp}</div>
+                </div>
+
+                <div id="fldResponseProfileVideoCodec" style="margin: 1em 0;">
+                    <label for="txtResponseProfileVideoCodec">${LabelProfileVideoCodecs}</label>
+                    <input type="text" id="txtResponseProfileVideoCodec" />
+                    <div class="fieldDescription">${LabelProfileCodecsHelp}</div>
+                </div>
+
+                <div id="fldResponseProfileAudioCodec" style="margin: 1em 0 2em;">
+                    <label for="txtResponseProfileAudioCodec">${LabelProfileAudioCodecs}</label>
+                    <input type="text" id="txtResponseProfileAudioCodec" />
+                    <div class="fieldDescription">${LabelProfileCodecsHelp}</div>
+                </div>
+
+                <p>
+                    <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                        ${ButtonOk}
+                    </button>
+                    <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                        ${ButtonCancel}
+                    </button>
+                </p>
+            </form>
+        </div>
+
+    </div>
+    <div data-role="popup" id="identificationHeaderPopup" class="popup">
+
+        <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+            <h3>${HeaderIdentificationHeader}</h3>
+        </div>
+
+        <div data-role="content">
+            <form class="identificationHeaderForm">
+
+                <div style="margin: 1em 0;">
+                    <label for="txtIdentificationHeaderName">${LabelName}</label>
+                    <input type="text" id="txtIdentificationHeaderName" required="required" />
+                </div>
+
+                <div style="margin: 1em 0;">
+                    <label for="txtIdentificationHeaderValue">${LabelValue}</label>
+                    <input type="text" id="txtIdentificationHeaderValue" required="required" />
+                </div>
+
+                <div style="margin: 1em 0;">
+                    <label for="selectMatchType">${LabelMatchType}</label>
+                    <select id="selectMatchType" data-mini="true">
+                        <option value="Equals">${OptionEquals}</option>
+                        <option value="Regex">${OptionRegex}</option>
+                        <option value="Substring">${OptionSubstring}</option>
+                    </select>
+                </div>
+
+                <p>
+                    <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                        ${ButtonOk}
+                    </button>
+                    <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                        ${ButtonCancel}
+                    </button>
+                </p>
+            </form>
+        </div>
+
+    </div>
+    <div data-role="popup" id="xmlAttributePopup" class="popup">
+
+        <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+            <h3>${HeaderXmlDocumentAttribute}</h3>
+        </div>
+
+        <div data-role="content">
+            <form class="xmlAttributeForm">
+
+                <div style="margin: 1em 0;">
+                    <label for="txtXmlAttributeName">${LabelName}</label>
+                    <input type="text" id="txtXmlAttributeName" required="required" />
+                </div>
+
+                <div style="margin: 1em 0;">
+                    <label for="txtXmlAttributeValue">${LabelValue}</label>
+                    <input type="text" id="txtXmlAttributeValue" required="required" />
+                </div>
+
+                <p>
+                    <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                        ${ButtonOk}
+                    </button>
+                    <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                        ${ButtonCancel}
+                    </button>
+                </p>
+            </form>
+        </div>
+
+    </div>
+
+    <div data-role="popup" id="subtitleProfilePopup" class="popup">
+
+        <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+            <h3>${HeaderSubtitleProfile}</h3>
+        </div>
+
+        <div data-role="content">
+            <form class="subtitleProfileForm">
+
+                <div style="margin: 1em 0;">
+                    <label for="txtSubtitleProfileFormat">${LabelFormat}</label>
+                    <input type="text" id="txtSubtitleProfileFormat" required="required" />
+                    <div class="fieldDescription">${LabelSubtitleFormatHelp}</div>
+                </div>
+
+                <div style="margin: 1em 0;">
+                    <label for="selectSubtitleProfileMethod">${LabelMethod}</label>
+                    <select id="selectSubtitleProfileMethod" data-mini="true" required="required">
+                        <option value="Embed">${OptionEmbedSubtitles}</option>
+                        <option value="External">${OptionExternallyDownloaded}</option>
+                        <option value="Hls">${OptionHlsSegmentedSubtitles}</option>
+                    </select>
+                </div>
+
+                <div style="margin: 1em 0;">
+                    <label for="selectSubtitleProfileDidlMode">${LabelDidlMode}</label>
+                    <select id="selectSubtitleProfileDidlMode" data-mini="true">
+                        <option value="">${OptionResElement}</option>
+                        <option value="CaptionInfoEx">${OptionCaptionInfoExSamsung}</option>
+                    </select>
+                </div>
+
+                <p>
+                    <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                        ${ButtonOk}
+                    </button>
+                    <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
+                        ${ButtonCancel}
+                    </button>
+                </p>
+            </form>
+        </div>
+
+    </div>
+</div>

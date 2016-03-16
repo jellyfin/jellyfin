@@ -1,47 +1,39 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>${TitleUsers}</title>
-</head>
-<body>
-    <div id="userProfilesPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/userprofilespage">
+﻿<div id="userProfilesPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/userprofilespage">
 
-        <div data-role="content">
-            <div class="content-primary">
-                <br />
-                <div class="detailSectionHeader">
-                    <h3 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
-                        <span style="vertical-align:middle;">${HeaderUsers}</span>
-                    </h3>
-                    <paper-button raised class="btnAddUser submit mini" style="margin-left:1em;" title="${ButtonAddUser}">
-                        <iron-icon icon="add"></iron-icon>
-                        <span>${ButtonAdd}</span>
-                    </paper-button>
-                </div>
-                <div class="localUsers" style="text-align:left;margin-top:.5em;"></div>
+    <div data-role="content">
+        <div class="content-primary">
+            <br />
+            <div class="detailSectionHeader">
+                <h3 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
+                    <span style="vertical-align:middle;">${HeaderUsers}</span>
+                </h3>
+                <paper-button raised class="btnAddUser submit mini" style="margin-left:1em;" title="${ButtonAddUser}">
+                    <iron-icon icon="add"></iron-icon>
+                    <span>${ButtonAdd}</span>
+                </paper-button>
+            </div>
+            <div class="localUsers" style="text-align:left;margin-top:.5em;"></div>
 
+            <div class="detailSectionHeader" style="margin-top:2.5em;">
+                <h3 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
+                    ${HeaderGuests}
+                </h3>
+                <paper-button raised class="btnInvite submit mini" style="margin-left:1em;" title="${ButtonInviteUser}">
+                    <iron-icon icon="add"></iron-icon>
+                    <span>${ButtonAdd}</span>
+                </paper-button>
+            </div>
+            <div class="connectUsers" style="text-align:left;margin-top:.5em;"></div>
+
+            <div class="sectionPendingGuests" style="display:none;margin-top:2.5em;">
                 <div class="detailSectionHeader" style="margin-top:2.5em;">
                     <h3 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
-                        ${HeaderGuests}
+                        ${HeaderPendingInvitations}
                     </h3>
-                    <paper-button raised class="btnInvite submit mini" style="margin-left:1em;" title="${ButtonInviteUser}">
-                        <iron-icon icon="add"></iron-icon>
-                        <span>${ButtonAdd}</span>
-                    </paper-button>
                 </div>
-                <div class="connectUsers" style="text-align:left;margin-top:.5em;"></div>
-
-                <div class="sectionPendingGuests" style="display:none;margin-top:2.5em;">
-                    <div class="detailSectionHeader" style="margin-top:2.5em;">
-                        <h3 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
-                            ${HeaderPendingInvitations}
-                        </h3>
-                    </div>
-                    <div class="itemsContainer pending" style="text-align:left;margin-top:.5em;"></div>
-                </div>
+                <div class="itemsContainer pending" style="text-align:left;margin-top:.5em;"></div>
             </div>
-
         </div>
+
     </div>
-</body>
-</html>
+</div>

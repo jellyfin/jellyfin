@@ -1,140 +1,132 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>Emby</title>
-</head>
-<body>
-    <div id="publicSharedItemPage" data-role="page" class="page standalonePage noSecondaryNavPage" data-theme="b" data-require="scripts/shared,scripts/itemdetailpage,tileitemcss,scripts/livetvcomponents,paper-fab">
+﻿<div id="publicSharedItemPage" data-role="page" class="page standalonePage noSecondaryNavPage" data-theme="b" data-require="scripts/shared,scripts/itemdetailpage,tileitemcss,scripts/livetvcomponents,paper-fab">
 
-        <style>
-            #publicSharedItemPage .header {
-                position: absolute;
-                top: 0;
-                left: 0;
-                padding: 1.5em 1em 1.5em 1em;
-                z-index: 1;
-                background: rgba(0, 0, 0, .6);
-                border-bottom-right-radius: 10px;
-            }
-        </style>
-        <div class="header"><a class="logo" href="http://emby.media" style="text-decoration:none;font-size: 22px;" target="_blank"><img class="imgLogoIcon" src="css/images/mblogoicon.png"><span class="logoLibraryMenuButtonText">EMBY</span></a></div>
+    <style>
+        #publicSharedItemPage .header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 1.5em 1em 1.5em 1em;
+            z-index: 1;
+            background: rgba(0, 0, 0, .6);
+            border-bottom-right-radius: 10px;
+        }
+    </style>
+    <div class="header"><a class="logo" href="http://emby.media" style="text-decoration:none;font-size: 22px;" target="_blank"><img class="imgLogoIcon" src="css/images/mblogoicon.png"><span class="logoLibraryMenuButtonText">EMBY</span></a></div>
 
-        <div id="itemBackdrop" class="itemBackdrop noBackdrop">
-            <div class="itemBackdropContent">
+    <div id="itemBackdrop" class="itemBackdrop noBackdrop">
+        <div class="itemBackdropContent">
+        </div>
+    </div>
+
+    <div class="detailPageContent" style="position:relative;">
+
+        <paper-fab class="btnPlay detailFloatingButton hide" icon="play-arrow" title="${ButtonPlay}"></paper-fab>
+        <paper-fab class="btnFloatingRecord detailFloatingButton hide" icon="videocam" title="${ButtonRecord}"></paper-fab>
+
+        <div class="detailImageContainer">
+        </div>
+        <div class="primaryDetailsContainer">
+            <div class="detailNameContainer">
+                <div><span class="parentName"></span><span class="itemName inlineItemName"></span></div>
+                <div class="desktopDetails" style="margin-top:1em;">
+
+                    <span class="itemMiscInfo"></span>
+                    <span class="itemCommunityRating" style="margin-left:1em;"></span>
+                </div>
+            </div>
+            <div class="desktopDetails" style="padding-top:5px;">
+
+                <p class="artist"></p>
+                <p class="itemGenres"></p>
             </div>
         </div>
+    </div>
 
-        <div class="detailPageContent" style="position:relative;">
+    <div class="mobileDetails" style="text-align:center;clear:both;">
+        <div style="height:10px;"></div>
+        <div>
+            <span class="itemMiscInfo"></span>
+            <span class="itemCommunityRating" style="margin-left:1em;"></span>
+        </div>
+    </div>
 
-            <paper-fab class="btnPlay detailFloatingButton hide" icon="play-arrow" title="${ButtonPlay}"></paper-fab>
-            <paper-fab class="btnFloatingRecord detailFloatingButton hide" icon="videocam" title="${ButtonRecord}"></paper-fab>
+    <div data-role="content" style="padding-top:0;clear:both;">
+        <div class="detailPageContent">
 
-            <div class="detailImageContainer">
-            </div>
-            <div class="primaryDetailsContainer">
-                <div class="detailNameContainer">
-                    <div><span class="parentName"></span><span class="itemName inlineItemName"></span></div>
-                    <div class="desktopDetails" style="margin-top:1em;">
-
-                        <span class="itemMiscInfo"></span>
-                        <span class="itemCommunityRating" style="margin-left:1em;"></span>
-                    </div>
-                </div>
-                <div class="desktopDetails" style="padding-top:5px;">
-
+            <div class="detailSection">
+                <div class="mobileDetails">
                     <p class="artist"></p>
                     <p class="itemGenres"></p>
                 </div>
+                <h2 class="tagline"></h2>
+                <p id="itemBirthday"></p>
+                <p id="itemBirthLocation"></p>
+                <p id="itemDeathDate"></p>
+                <p id="seriesAirTime"></p>
+                <p class="airDate"></p>
+                <p class="itemOverview topOverview"></p>
             </div>
-        </div>
-
-        <div class="mobileDetails" style="text-align:center;clear:both;">
-            <div style="height:10px;"></div>
-            <div>
-                <span class="itemMiscInfo"></span>
-                <span class="itemCommunityRating" style="margin-left:1em;"></span>
+            <div id="castCollapsible" style="display: none;" class="detailSection">
+                <h1 id="peopleHeader">
+                    ${HeaderCastCrew}
+                </h1>
+                <div id="castContent"></div>
             </div>
-        </div>
 
-        <div data-role="content" style="padding-top:0;clear:both;">
-            <div class="detailPageContent">
-
-                <div class="detailSection">
-                    <div class="mobileDetails">
-                        <p class="artist"></p>
-                        <p class="itemGenres"></p>
-                    </div>
-                    <h2 class="tagline"></h2>
-                    <p id="itemBirthday"></p>
-                    <p id="itemBirthLocation"></p>
-                    <p id="itemDeathDate"></p>
-                    <p id="seriesAirTime"></p>
-                    <p class="airDate"></p>
-                    <p class="itemOverview topOverview"></p>
+            <div class="detailSection photoInfo hide">
+                <h1>
+                    ${HeaderPhotoInfo}
+                </h1>
+                <div>
+                    <div class="photoInfoContent"></div>
                 </div>
-                <div id="castCollapsible" style="display: none;" class="detailSection">
-                    <h1 id="peopleHeader">
-                        ${HeaderCastCrew}
-                    </h1>
-                    <div id="castContent"></div>
-                </div>
-
-                <div class="detailSection photoInfo hide">
-                    <h1>
-                        ${HeaderPhotoInfo}
-                    </h1>
-                    <div>
-                        <div class="photoInfoContent"></div>
-                    </div>
-                </div>
-                <div id="criticReviewsCollapsible" style="display: none;" class="detailSection">
-                    <h1>
-                        ${HeaderAwardsAndReviews}
-                    </h1>
-                    <div>
-                        <p id="awardSummary"></p>
-                        <div id="criticRatingSummary" class="criticReview criticRatingSummary" style="display: none;">
-                            <p style="margin: 0 0 .5em -40px; font-weight: bold;">TOMATOMETER®</p>
-                            <div class="reviewScore">
-                                <img src="css/images/fresh.png">
-                            </div>
-                            <div class="criticRatingScore"></div>
-                            <div class="criticRatingSummaryText"></div>
+            </div>
+            <div id="criticReviewsCollapsible" style="display: none;" class="detailSection">
+                <h1>
+                    ${HeaderAwardsAndReviews}
+                </h1>
+                <div>
+                    <p id="awardSummary"></p>
+                    <div id="criticRatingSummary" class="criticReview criticRatingSummary" style="display: none;">
+                        <p style="margin: 0 0 .5em -40px; font-weight: bold;">TOMATOMETER®</p>
+                        <div class="reviewScore">
+                            <img src="css/images/fresh.png">
                         </div>
-                        <div id="criticReviewsContent"></div>
+                        <div class="criticRatingScore"></div>
+                        <div class="criticRatingSummaryText"></div>
+                    </div>
+                    <div id="criticReviewsContent"></div>
+                </div>
+            </div>
+            <div class="detailSection detailsSection">
+                <h1>
+                    ${HeaderDetails}
+                </h1>
+                <div>
+                    <div class="tabDetails">
+                        <p class="itemOverview bottomOverview"></p>
+                        <p id="players"></p>
+                        <p class="itemExternalLinks"></p>
+                        <p class="itemStudios"></p>
+                        <p class="itemTags"></p>
                     </div>
                 </div>
-                <div class="detailSection detailsSection">
-                    <h1>
-                        ${HeaderDetails}
-                    </h1>
-                    <div>
-                        <div class="tabDetails">
-                            <p class="itemOverview bottomOverview"></p>
-                            <p id="players"></p>
-                            <p class="itemExternalLinks"></p>
-                            <p class="itemStudios"></p>
-                            <p class="itemTags"></p>
-                        </div>
-                    </div>
-                </div>
+            </div>
 
-                <div id="scenesCollapsible" style="display: none;" class="detailSection">
-                    <h1>
-                        ${HeaderScenes}
-                        <a class="detailSectionHeaderButton chapterSettingsButton clearLink" style="margin-top:-8px;display:inline-block;" href="metadataadvanced.html" title="${ButtonSettings}" style="display:none;"><paper-icon-button icon="settings"></paper-icon-button></a>
-                    </h1>
-                    <div id="scenesContent" class="smallItemsContainer"></div>
-                </div>
+            <div id="scenesCollapsible" style="display: none;" class="detailSection">
+                <h1>
+                    ${HeaderScenes}
+                    <a class="detailSectionHeaderButton chapterSettingsButton clearLink" style="margin-top:-8px;display:inline-block;" href="metadataadvanced.html" title="${ButtonSettings}" style="display:none;"><paper-icon-button icon="settings"></paper-icon-button></a>
+                </h1>
+                <div id="scenesContent" class="smallItemsContainer"></div>
+            </div>
 
-                <div class="detailSection audioVideoMediaInfo hide">
-                    <h1>${HeaderMediaInfo}</h1>
-                    <div>
-                        <div id="mediaInfoContent" class="mediaInfoContent"></div>
-                    </div>
+            <div class="detailSection audioVideoMediaInfo hide">
+                <h1>${HeaderMediaInfo}</h1>
+                <div>
+                    <div id="mediaInfoContent" class="mediaInfoContent"></div>
                 </div>
             </div>
         </div>
     </div>
-</body>
-</html>
+</div>
