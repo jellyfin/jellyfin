@@ -294,9 +294,6 @@ namespace MediaBrowser.WebDashboard.Api
                             _logger.ErrorException("Error minifying html", ex);
                         }
                     }
-
-                    html = html.Replace("<body>", "<body><paper-drawer-panel class=\"mainDrawerPanel mainDrawerPanelPreInit skinContainer\" forceNarrow><div class=\"mainDrawer\" drawer></div><div class=\"mainDrawerPanelContent\" main><!--<div class=\"pageBackground\"></div><div class=\"pageContainer\">")
-                        .Replace("</body>", "</div>--></div></paper-drawer-panel></body>");
                 }
 
                 html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, appVersion));

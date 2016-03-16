@@ -49,7 +49,7 @@ namespace MediaBrowser.Server.Startup.Common.Browser
         /// <param name="logger">The logger.</param>
         public static void OpenDashboard(IServerApplicationHost appHost, ILogger logger)
         {
-            OpenDashboardPage("dashboard.html", appHost, logger);
+            OpenDashboardPage("index.html#!/dashboard.html", appHost, logger);
         }
 
         /// <summary>
