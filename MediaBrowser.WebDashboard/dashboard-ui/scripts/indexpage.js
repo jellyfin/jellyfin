@@ -272,47 +272,10 @@
         });
     }
 
-    pageIdOn('pageinit', "indexPage", function () {
-
-        var page = this;
-
-        var tabs = page.querySelector('paper-tabs');
-        var pages = page.querySelector('neon-animated-pages');
-
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, 'home.html');
-
-        pages.addEventListener('tabchange', function (e) {
-            loadTab(page, parseInt(e.target.selected));
-        });
-
-        page.querySelector('.btnTakeTour').addEventListener('click', function () {
-            takeTour(page, Dashboard.getCurrentUserId());
-        });
-
-        if (AppInfo.enableHomeTabs) {
-            page.classList.remove('noSecondaryNavPage');
-            page.querySelector('.libraryViewNav').classList.remove('hide');
-        } else {
-            page.classList.add('noSecondaryNavPage');
-            page.querySelector('.libraryViewNav').classList.add('hide');
-        }
-    });
-
-    pageIdOn('pageshow', "indexPage", function () {
-        var page = this;
-        Events.on(MediaController, 'playbackstop', onPlaybackStop);
-    });
-
-    pageIdOn('pagebeforehide', "indexPage", function () {
-
-        var page = this;
-        Events.off(MediaController, 'playbackstop', onPlaybackStop);
-    });
-
     function onPlaybackStop(e, state) {
 
         if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
-            var page = $($.mobile.activePage)[0];
+            var page = $.mobile.activePage;
             var pages = page.querySelector('neon-animated-pages');
 
             pages.dispatchEvent(new CustomEvent("tabchange", {}));
@@ -328,4 +291,36 @@
         renderHomeTab: loadHomeTab
     };
 
+    return function (view, params) {
+
+        var self = this;
+
+        var pages = view.querySelector('neon-animated-pages');
+
+        LibraryBrowser.configurePaperLibraryTabs(view, view.querySelector('paper-tabs'), pages, 'home.html');
+
+        pages.addEventListener('tabchange', function (e) {
+            loadTab(view, parseInt(e.target.selected));
+        });
+
+        view.querySelector('.btnTakeTour').addEventListener('click', function () {
+            takeTour(view, Dashboard.getCurrentUserId());
+        });
+
+        if (AppInfo.enableHomeTabs) {
+            view.classList.remove('noSecondaryNavPage');
+            view.querySelector('.libraryViewNav').classList.remove('hide');
+        } else {
+            view.classList.add('noSecondaryNavPage');
+            view.querySelector('.libraryViewNav').classList.add('hide');
+        }
+
+        view.addEventListener('viewshow', function (e) {
+            Events.on(MediaController, 'playbackstop', onPlaybackStop);
+        });
+
+        view.addEventListener('viewbeforehide', function (e) {
+            Events.off(MediaController, 'playbackstop', onPlaybackStop);
+        });
+    }
 });

@@ -1854,6 +1854,7 @@ var AppInfo = {};
         define("slideshow", [embyWebComponentsBowerPath + "/slideshow/slideshow"], returnFirstDependency);
 
         define('fetch', [bowerPath + '/fetch/fetch']);
+        define('objectassign', ['legacy/objectassign']);
         define('webcomponentsjs', [bowerPath + '/webcomponentsjs/webcomponents-lite.min.js']);
         define('native-promise-only', [bowerPath + '/native-promise-only/lib/npo.src']);
 
@@ -2133,6 +2134,10 @@ var AppInfo = {};
             deps.push('fetch');
         }
 
+        if (typeof Object.assign != 'function') {
+            deps.push('objectassign');
+        }
+
         require(deps, function (connectionManagerExports, credentialProviderFactory) {
 
             window.MediaBrowser = window.MediaBrowser || {};
@@ -2403,13 +2408,14 @@ var AppInfo = {};
 
         defineRoute({
             path: '/home.html',
-            dependencies: ['jQuery'],
-            autoFocus: false
+            dependencies: ['paper-tabs', 'neon-animated-pages'],
+            autoFocus: false,
+            controller: 'scripts/indexpage'
         });
 
         defineRoute({
             path: '/index.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             isDefaultRoute: true
         });

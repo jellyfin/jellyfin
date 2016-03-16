@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define([], function () {
 
     function fadeIn(elem, iterations) {
 
@@ -16,15 +16,25 @@
         self.show = function () {
 
             require(['css!css/search.css'], function () {
-                $('.headerSearchInput').val('');
 
-                $('.btnCloseSearch').hide();
-                var elem = $('.viewMenuSearch').removeClass('hide')[0];
+                document.querySelector('.headerSearchInput').value = '';
 
-                fadeIn(elem, 1).onfinish = function () {
-                    $('.headerSearchInput').focus();
-                    $('.btnCloseSearch').show();
+                document.querySelector('.btnCloseSearch').classList.add('hide');
+                var elem = document.querySelector('.viewMenuSearch');
+
+                elem.classList.remove('hide');
+
+                var onFinish = function() {
+                    document.querySelector('.headerSearchInput').focus();
+                    document.querySelector('.btnCloseSearch').classList.remove('hide');
                 };
+
+                if (elem.animate) {
+                    fadeIn(elem, 1).onfinish = onFinish;
+                } else {
+                    onFinish();
+                }
+
             });
         };
 
@@ -37,48 +47,40 @@
             }
 
             if (!viewMenuSearch.classList.contains('hide')) {
-                $('.btnCloseSearch').hide();
+                document.querySelector('.btnCloseSearch').classList.add('hide');
                 viewMenuSearch.classList.add('hide');
             }
         };
 
-        $('.viewMenuSearchForm').on('submit', function () {
-
+        document.querySelector('.viewMenuSearchForm').addEventListener('submit', function (e) {
+            e.preventDefault();
             return false;
         });
 
-        $('.btnCloseSearch').on('click', function () {
+        document.querySelector('.btnCloseSearch').addEventListener('click', function () {
             self.hide();
             Events.trigger(self, 'closed');
         });
 
-        $('.headerSearchInput').on("keyup", function (e) {
+        document.querySelector('.headerSearchInput').addEventListener('keyup', function (e) {
 
             // Down key
             if (e.keyCode == 40) {
 
-                //var first = $('.card', panel)[0];
-
-                //if (first) {
-                //    first.focus();
-                //}
-
+                e.preventDefault();
                 return false;
 
             } else {
 
                 Events.trigger(self, 'change', [this.value]);
             }
-
-        }).on("search", function (e) {
-
-            if (!this.value) {
-
-                Events.trigger(self, 'change', ['']);
-            }
-
         });
 
+        document.querySelector('.headerSearchInput').addEventListener('search', function (e) {
+            if (!this.value) {
+                Events.trigger(self, 'change', ['']);
+            }
+        });
     }
 
     window.SearchMenu = new searchMenu();

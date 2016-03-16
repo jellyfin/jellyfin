@@ -343,7 +343,7 @@
             receiverName = castPlayer.session.receiver.friendlyName;
         }
 
-        message = $.extend(message, {
+        message = Object.assign(message, {
             userId: Dashboard.getCurrentUserId(),
             deviceId: ApiClient.deviceId(),
             accessToken: ApiClient.accessToken(),

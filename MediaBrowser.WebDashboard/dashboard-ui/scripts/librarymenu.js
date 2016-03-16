@@ -244,7 +244,7 @@
             document.body.classList.add('bodyWithPopupOpen');
         }
 
-        var pageElem = $($.mobile.activePage)[0];
+        var pageElem = $.mobile.activePage;
 
         if (requiresDrawerRefresh || requiresDashboardDrawerRefresh) {
 
@@ -435,7 +435,7 @@
                     view.icon = 'live-tv';
                     view.onclick = "LibraryBrowser.showTab('livetv.html', 0);";
 
-                    var guideView = $.extend({}, view);
+                    var guideView = Object.assign({}, view);
                     guideView.Name = Globalize.translate('ButtonGuide');
                     guideView.ImageTags = {};
                     guideView.icon = 'dvr';
@@ -443,7 +443,7 @@
                     guideView.onclick = "LibraryBrowser.showTab('livetv.html', 1);";
                     list.push(guideView);
 
-                    var recordedTvView = $.extend({}, view);
+                    var recordedTvView = Object.assign({}, view);
                     recordedTvView.Name = Globalize.translate('ButtonRecordedTv');
                     recordedTvView.ImageTags = {};
                     recordedTvView.icon = 'video-library';
@@ -457,13 +457,25 @@
         });
     }
 
+    function showBySelector(selector, show) {
+        var elem = document.querySelector(selector);
+
+        if (elem) {
+            if (show) {
+                elem.classList.remove('hide');
+            } else {
+                elem.classList.add('hide');
+            }
+        }
+    }
+
     function updateLibraryMenu(user) {
 
         if (!user) {
 
-            $('.adminMenuOptions').addClass('hide');
-            $('.lnkMySync').addClass('hide');
-            $('.userMenuOptions').addClass('hide');
+            showBySelector('.adminMenuOptions', false);
+            showBySelector('.lnkMySync', false);
+            showBySelector('.userMenuOptions', false);
             return;
         }
 
@@ -541,19 +553,23 @@
             libraryMenuOptions.innerHTML = html;
             var elem = libraryMenuOptions;
 
-            $('.sidebarLink', elem).off('click', onSidebarLinkClick).on('click', onSidebarLinkClick);
+            var sidebarLinks = elem.querySelectorAll('.sidebarLink');
+            for (var i = 0, length = sidebarLinks.length; i < length; i++) {
+                sidebarLinks[i].removeEventListener('click', onSidebarLinkClick);
+                sidebarLinks[i].addEventListener('click', onSidebarLinkClick);
+            }
         });
 
         if (user.Policy.IsAdministrator) {
-            $('.adminMenuOptions').removeClass('hide');
+            showBySelector('.adminMenuOptions', true);
         } else {
-            $('.adminMenuOptions').addClass('hide');
+            showBySelector('.adminMenuOptions', false);
         }
 
         if (user.Policy.EnableSync) {
-            $('.lnkMySync').removeClass('hide');
+            showBySelector('.lnkMySync', true);
         } else {
-            $('.lnkMySync').addClass('hide');
+            showBySelector('.lnkMySync', false);
         }
     }
 
