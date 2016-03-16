@@ -288,6 +288,36 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             return Path.GetExtension(parts[0]);
         }
 
+        public static string RemoveQueryStringByKey(string url, string key)
+        {
+            var uri = new Uri(url);
+
+            // this gets all the query string key value pairs as a collection
+            var newQueryString = MyHttpUtility.ParseQueryString(uri.Query);
+
+            if (newQueryString.Count == 0)
+            {
+                return url;
+            }
+
+            // this removes the key if exists
+            newQueryString.Remove(key);
+
+            // this gets the page path from root without QueryString
+            string pagePathWithoutQueryString = uri.GetLeftPart(UriPartial.Path);
+
+            return newQueryString.Count > 0
+                ? String.Format("{0}?{1}", pagePathWithoutQueryString, newQueryString)
+                : pagePathWithoutQueryString;
+        }
+
+        private string GetUrlToLog(string url)
+        {
+            url = RemoveQueryStringByKey(url, "api_key");
+
+            return url;
+        }
+
         /// <summary>
         /// Overridable method that can be used to implement a custom hnandler
         /// </summary>
@@ -305,10 +335,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             var urlString = url.OriginalString;
             var enableLog = EnableLogging(urlString, localPath);
+            var urlToLog = urlString;
 
             if (enableLog)
             {
-                LoggerUtils.LogRequest(_logger, urlString, httpReq.HttpMethod, httpReq.UserAgent);
+                urlToLog = GetUrlToLog(urlString);
+                LoggerUtils.LogRequest(_logger, urlToLog, httpReq.HttpMethod, httpReq.UserAgent);
             }
             
             if (string.Equals(localPath, "/mediabrowser/", StringComparison.OrdinalIgnoreCase) ||
@@ -390,7 +422,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                     if (enableLog)
                     {
-                        LoggerUtils.LogResponse(_logger, statusCode, urlString, remoteIp, duration);
+                        LoggerUtils.LogResponse(_logger, statusCode, urlToLog, remoteIp, duration);
                     }
 
                 }, TaskContinuationOptions.None);

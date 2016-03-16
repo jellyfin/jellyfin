@@ -142,7 +142,7 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var page = ServerEntryPoint.Instance.PluginConfigurationPages.First(p => p.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
 
-            return ResultFactory.GetStaticResult(Request, page.Plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator().ModifyHtml(page.GetHtmlStream(), null, _appHost.ApplicationVersion.ToString(), null, false));
+            return ResultFactory.GetStaticResult(Request, page.Plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator().ModifyHtml(null, page.GetHtmlStream(), null, _appHost.ApplicationVersion.ToString(), null, false));
         }
 
         /// <summary>
