@@ -1,93 +1,85 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>${TitleLiveTV}</title>
-</head>
-<body>
-    <div id="liveTvSettingsPage" data-role="page" class="page type-interior liveTvSettingsPage liveTvPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvsettings,paper-checkbox,paper-input">
+﻿<div id="liveTvSettingsPage" data-role="page" class="page type-interior liveTvSettingsPage liveTvPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvsettings,paper-checkbox,paper-input">
 
-        <div data-role="content">
-            <div class="content-primary">
+    <div data-role="content">
+        <div class="content-primary">
 
-                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="livetvstatus.html" data-role="button">${TabTuners}</a>
-                    <a href="#" data-role="button" class="ui-btn-active">${TabSettings}</a>
-                    <a href="appservices.html?context=livetv" data-role="button">${TabExternalServices}</a>
-                </div>
-
-                <form class="liveTvSettingsForm">
-
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <label for="selectGuideDays" class="selectLabel">${LabelNumberOfGuideDays}</label>
-                            <select id="selectGuideDays" data-mini="true">
-                                <option value="">${OptionAutomatic}</option>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="6">6</option>
-                                <option value="7">7</option>
-                                <option value="8">8</option>
-                                <option value="9">9</option>
-                                <option value="10">10</option>
-                                <option value="11">11</option>
-                                <option value="12">12</option>
-                                <option value="13">13</option>
-                                <option value="14">14</option>
-                            </select>
-                            <div class="fieldDescription">${LabelNumberOfGuideDaysHelp}</div>
-                        </li>
-                    </ul>
-                    <div class="paperCheckboxList">
-                        <label>${LabelEnableInternetMetadataForTvPrograms}</label>
-                        <paper-checkbox id="chkMovies">${OptionTVMovies}</paper-checkbox>
-                    </div>
-                    <div>
-                        <br />
-                        <paper-input id="txtRecordingPath" label="${LabelRecordingPath}" style="width:84%;display:inline-block;"></paper-input>
-                        <paper-icon-button id="btnSelectRecordingPath" icon="search"></paper-icon-button>
-                        <div class="fieldDescription">${LabelRecordingPathHelp}</div>
-                    </div>
-                    <br />
-                    <br />
-                    <div>
-                        <paper-checkbox id="chkConvertRecordings">${OptionConvertRecordingsToStreamingFormat}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${OptionConvertRecordingsToStreamingFormatHelp}</div>
-                        <div class="fieldDescription paperCheckboxFieldDescription btnSupporterForConverting"><a href="https://emby.media/premiere" target="_blank" class="accent">${FeatureRequiresEmbyPremiere}</a></div>
-                    </div>
-                    <br />
-                    <br />
-                    <div>
-                        <paper-checkbox id="chkOrganize">${OptionSendRecordingsToAutoOrganize}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${OptionSendRecordingsToAutoOrganizeHelp}</div>
-                    </div>
-                    <br />
-                    <br />
-                    <div>
-                        <h1>${HeaderDefaultPadding}</h1>
-                        <div>
-                            <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
-                        </div>
-                        <div>
-                            <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
-                        </div>
-
-                    </div>
-                    <br />
-                    <br />
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <button type="submit" data-role="none" class="clearButton">
-                                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                            </button>
-                        </li>
-                    </ul>
-
-                </form>
+            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                <a href="livetvstatus.html" data-role="button">${TabTuners}</a>
+                <a href="#" data-role="button" class="ui-btn-active">${TabSettings}</a>
+                <a href="appservices.html?context=livetv" data-role="button">${TabExternalServices}</a>
             </div>
+
+            <form class="liveTvSettingsForm">
+
+                <ul data-role="listview" class="ulForm">
+                    <li>
+                        <label for="selectGuideDays" class="selectLabel">${LabelNumberOfGuideDays}</label>
+                        <select id="selectGuideDays" data-mini="true">
+                            <option value="">${OptionAutomatic}</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                            <option value="13">13</option>
+                            <option value="14">14</option>
+                        </select>
+                        <div class="fieldDescription">${LabelNumberOfGuideDaysHelp}</div>
+                    </li>
+                </ul>
+                <div class="paperCheckboxList">
+                    <label>${LabelEnableInternetMetadataForTvPrograms}</label>
+                    <paper-checkbox id="chkMovies">${OptionTVMovies}</paper-checkbox>
+                </div>
+                <div>
+                    <br />
+                    <paper-input id="txtRecordingPath" label="${LabelRecordingPath}" style="width:84%;display:inline-block;"></paper-input>
+                    <paper-icon-button id="btnSelectRecordingPath" icon="search"></paper-icon-button>
+                    <div class="fieldDescription">${LabelRecordingPathHelp}</div>
+                </div>
+                <br />
+                <br />
+                <div>
+                    <paper-checkbox id="chkConvertRecordings">${OptionConvertRecordingsToStreamingFormat}</paper-checkbox>
+                    <div class="fieldDescription paperCheckboxFieldDescription">${OptionConvertRecordingsToStreamingFormatHelp}</div>
+                    <div class="fieldDescription paperCheckboxFieldDescription btnSupporterForConverting"><a href="https://emby.media/premiere" target="_blank" class="accent">${FeatureRequiresEmbyPremiere}</a></div>
+                </div>
+                <br />
+                <br />
+                <div>
+                    <paper-checkbox id="chkOrganize">${OptionSendRecordingsToAutoOrganize}</paper-checkbox>
+                    <div class="fieldDescription paperCheckboxFieldDescription">${OptionSendRecordingsToAutoOrganizeHelp}</div>
+                </div>
+                <br />
+                <br />
+                <div>
+                    <h1>${HeaderDefaultPadding}</h1>
+                    <div>
+                        <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
+                    </div>
+                    <div>
+                        <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
+                    </div>
+
+                </div>
+                <br />
+                <br />
+                <ul data-role="listview" class="ulForm">
+                    <li>
+                        <button type="submit" data-role="none" class="clearButton">
+                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+                        </button>
+                    </li>
+                </ul>
+
+            </form>
         </div>
     </div>
-</body>
-</html>
+</div>

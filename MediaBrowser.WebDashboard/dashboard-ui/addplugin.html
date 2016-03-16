@@ -1,130 +1,122 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>${TitlePlugins}</title>
-</head>
-<body>
-    <div id="addPluginPage" data-role="page" class="page type-interior pluginConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Plugins" data-require="jqmcollapsible,registrationservices,scripts/ratingdialog,scripts/addpluginpage">
+﻿<div id="addPluginPage" data-role="page" class="page type-interior pluginConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Plugins" data-require="jqmcollapsible,registrationservices,scripts/ratingdialog,scripts/addpluginpage">
 
-        <div data-role="content">
-            <div class="content-primary">
-                <div data-role="controlgroup" data-type="horizontal" class="localnav pluginTabs" data-mini="true" style="display:none;">
-                    <a href="plugins.html" data-role="button">${TabMyPlugins}</a>
-                    <a href="plugincatalog.html" data-role="button" class="ui-btn-active">${TabCatalog}</a>
-                    <a href="channelsettings.html" data-role="button">${TabChannels}</a>
-                </div>
-                <div data-role="controlgroup" data-type="horizontal" class="localnav syncTabs" data-mini="true" style="display:none;">
-                    <a href="syncactivity.html" data-role="button">${TabActivity}</a>
-                    <a href="appservices.html?context=sync" data-role="button" class="ui-btn-active">${TabServices}</a>
-                    <a href="syncsettings.html" data-role="button">${TabSettings}</a>
-                </div>
-                <div data-role="controlgroup" data-type="horizontal" class="localnav livetvTabs" data-mini="true" style="display:none;">
-                    <a href="livetvstatus.html" data-role="button">${TabTuners}</a>
-                    <a href="livetvsettings.html" data-role="button">${TabSettings}</a>
-                    <a href="#" data-role="button" class="ui-btn-active">${TabExternalServices}</a>
-                </div>
+    <div data-role="content">
+        <div class="content-primary">
+            <div data-role="controlgroup" data-type="horizontal" class="localnav pluginTabs" data-mini="true" style="display:none;">
+                <a href="plugins.html" data-role="button">${TabMyPlugins}</a>
+                <a href="plugincatalog.html" data-role="button" class="ui-btn-active">${TabCatalog}</a>
+                <a href="channelsettings.html" data-role="button">${TabChannels}</a>
+            </div>
+            <div data-role="controlgroup" data-type="horizontal" class="localnav syncTabs" data-mini="true" style="display:none;">
+                <a href="syncactivity.html" data-role="button">${TabActivity}</a>
+                <a href="appservices.html?context=sync" data-role="button" class="ui-btn-active">${TabServices}</a>
+                <a href="syncsettings.html" data-role="button">${TabSettings}</a>
+            </div>
+            <div data-role="controlgroup" data-type="horizontal" class="localnav livetvTabs" data-mini="true" style="display:none;">
+                <a href="livetvstatus.html" data-role="button">${TabTuners}</a>
+                <a href="livetvsettings.html" data-role="button">${TabSettings}</a>
+                <a href="#" data-role="button" class="ui-btn-active">${TabExternalServices}</a>
+            </div>
 
-                <div data-role="controlgroup" data-type="horizontal" class="localnav notificationsTabs" data-mini="true" style="display:none;">
-                    <a href="notificationsettings.html" data-role="button">${TabNotifications}</a>
-                    <a href="#" data-role="button" class="ui-btn-active">${TabServices}</a>
-                </div>
+            <div data-role="controlgroup" data-type="horizontal" class="localnav notificationsTabs" data-mini="true" style="display:none;">
+                <a href="notificationsettings.html" data-role="button">${TabNotifications}</a>
+                <a href="#" data-role="button" class="ui-btn-active">${TabServices}</a>
+            </div>
 
-                <div class="readOnlyContent">
+            <div class="readOnlyContent">
 
-                    <h2 class="pluginName"></h2>
-                    <p id="tagline" style="font-style: italic;"></p>
-                    <p id="pPreviewImage"></p>
+                <h2 class="pluginName"></h2>
+                <p id="tagline" style="font-style: italic;"></p>
+                <p id="pPreviewImage"></p>
 
-                    <p id="overview"></p>
+                <p id="overview"></p>
 
-                    <div data-role="collapsible" data-collapsed="false" style="margin-top: 2em;">
-                        <h3>${HeaderInstall}</h3>
+                <div data-role="collapsible" data-collapsed="false" style="margin-top: 2em;">
+                    <h3>${HeaderInstall}</h3>
 
-                        <div>
-                            <form class="addPluginForm">
-                                <p id="pCurrentVersion"></p>
-                                <p id="pSelectVersion" class="hide">
-                                    <label for="selectVersion">${LabelSelectVersionToInstall}</label>
-                                    <select id="selectVersion" name="selectVersion"></select>
-                                </p>
+                    <div>
+                        <form class="addPluginForm">
+                            <p id="pCurrentVersion"></p>
+                            <p id="pSelectVersion" class="hide">
+                                <label for="selectVersion">${LabelSelectVersionToInstall}</label>
+                                <select id="selectVersion" name="selectVersion"></select>
+                            </p>
 
-                                <p id="btnInstallDiv" class="hide">
-                                    <button id="btnInstall" type="submit" data-icon="arrow-d" data-theme="b">Install</button>
-                                </p>
-                                <p id="nonServerMsg"></p>
-                            </form>
+                            <p id="btnInstallDiv" class="hide">
+                                <button id="btnInstall" type="submit" data-icon="arrow-d" data-theme="b">Install</button>
+                            </p>
+                            <p id="nonServerMsg"></p>
+                        </form>
 
-                            <div class="premiumPackage" style="display: none; margin-top: 1.5em;">
-                                <div>
-                                    <form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr" method="post">
-                                        <p id="regStatus">
+                        <div class="premiumPackage" style="display: none; margin-top: 1.5em;">
+                            <div>
+                                <form name="_xclick" action="https://www.paypal.com/cgi-bin/webscr" method="post">
+                                    <p id="regStatus">
+                                    </p>
+                                    <p id="regInfo">
+                                    </p>
+                                    <div class="supporterDescription">
+
+                                        <p>${MessagePluginRequiresSubscription}</p>
+
+                                        <p><a href="http://emby.media/premiere" target="_blank">${LinkLearnMoreAboutSubscription}</a></p>
+
+                                    </div>
+                                    <div class="premiumDescription">
+
+                                        <p>${MessagePremiumPluginRequiresMembership}</p>
+
+                                        <p><a href="http://emby.media/premiere" target="_blank">${LinkLearnMoreAboutSubscription}</a></p>
+                                    </div>
+                                    <div class="premiumHasPrice" style="display: none">
+                                        <p id="regPrice">
                                         </p>
-                                        <p id="regInfo">
-                                        </p>
-                                        <div class="supporterDescription">
+                                        <input type="hidden" name="cmd" value="_xclick">
+                                        <input type="hidden" id="payPalEmail" name="business" value="mb_1358534950_biz@reedsplace.com">
+                                        <input type="hidden" name="currency_code" value="USD">
+                                        <input type="hidden" id="featureName" name="item_name" value="">
+                                        <input type="hidden" id="amount" name="amount" value="10">
+                                        <input type="hidden" id="featureId" name="item_number" value="">
+                                        <input type="hidden" name="notify_url" value="https://mb3admin.com/admin/service/services/ppipn.php">
+                                        <input type="hidden" name="return" id="paypalReturnUrl" value="#">
+                                        <button type="submit" id="ppButton" class="clearButton">
+                                            <paper-button raised class="block" style="background-color: #179BD7;color:#fff;">
+                                                <iron-icon icon="check"></iron-icon>
+                                                <span>${RegisterWithPayPal}</span>
+                                            </paper-button>
+                                        </button>
 
-                                            <p>${MessagePluginRequiresSubscription}</p>
-
-                                            <p><a href="http://emby.media/premiere" target="_blank">${LinkLearnMoreAboutSubscription}</a></p>
-
-                                        </div>
-                                        <div class="premiumDescription">
-
-                                            <p>${MessagePremiumPluginRequiresMembership}</p>
-
-                                            <p><a href="http://emby.media/premiere" target="_blank">${LinkLearnMoreAboutSubscription}</a></p>
-                                        </div>
-                                        <div class="premiumHasPrice" style="display: none">
-                                            <p id="regPrice">
-                                            </p>
-                                            <input type="hidden" name="cmd" value="_xclick">
-                                            <input type="hidden" id="payPalEmail" name="business" value="mb_1358534950_biz@reedsplace.com">
-                                            <input type="hidden" name="currency_code" value="USD">
-                                            <input type="hidden" id="featureName" name="item_name" value="">
-                                            <input type="hidden" id="amount" name="amount" value="10">
-                                            <input type="hidden" id="featureId" name="item_number" value="">
-                                            <input type="hidden" name="notify_url" value="https://mb3admin.com/admin/service/services/ppipn.php">
-                                            <input type="hidden" name="return" id="paypalReturnUrl" value="#">
-                                            <button type="submit" id="ppButton" class="clearButton">
-                                                <paper-button raised class="block" style="background-color: #179BD7;color:#fff;">
-                                                    <iron-icon icon="check"></iron-icon>
-                                                    <span>${RegisterWithPayPal}</span>
-                                                </paper-button>
-                                            </button>
-
-                                        </div>
-                                    </form>
-                                </div>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="readOnlyContent">
-                    <div data-role="collapsible" data-collapsed="false" style="margin-top: 2em;">
-                        <h3>${HeaderReviews}</h3>
-                        <div>
-                            <br />
-                            <div id="ratingLine"></div>
-                            <div id="latestReviews"></div>
-                        </div>
+            <div class="readOnlyContent">
+                <div data-role="collapsible" data-collapsed="false" style="margin-top: 2em;">
+                    <h3>${HeaderReviews}</h3>
+                    <div>
+                        <br />
+                        <div id="ratingLine"></div>
+                        <div id="latestReviews"></div>
                     </div>
+                </div>
 
-                    <div data-role="collapsible" data-collapsed="false" style="margin-top: 2em;">
-                        <h3>${HeaderDeveloperInfo}</h3>
-                        <p id="developer"></p>
-                        <p id="pViewWebsite" style="display: none;">
-                            <a href="#" data-rel="external" target="_blank">${ButtonViewWebsite}</a>
-                        </p>
-                    </div>
+                <div data-role="collapsible" data-collapsed="false" style="margin-top: 2em;">
+                    <h3>${HeaderDeveloperInfo}</h3>
+                    <p id="developer"></p>
+                    <p id="pViewWebsite" style="display: none;">
+                        <a href="#" data-rel="external" target="_blank">${ButtonViewWebsite}</a>
+                    </p>
+                </div>
 
-                    <div data-role="collapsible" style="margin-top: 2em;">
-                        <h3>${HeaderRevisionHistory}</h3>
-                        <div id="revisionHistory"></div>
-                    </div>
+                <div data-role="collapsible" style="margin-top: 2em;">
+                    <h3>${HeaderRevisionHistory}</h3>
+                    <div id="revisionHistory"></div>
                 </div>
             </div>
         </div>
     </div>
-</body>
-</html>
+</div>

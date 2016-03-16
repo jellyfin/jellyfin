@@ -1,125 +1,117 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>Emby</title>
-</head>
-<body>
-    <div id="moviesPage" data-role="page" data-dom-cache="true" class="page libraryPage backdropPage pageWithAbsoluteTabs collectionEditorPage" data-backdroptype="movie" data-require="scripts/moviesrecommended,paper-tabs,neon-animated-pages,paper-checkbox,paper-fab,scripts/alphapicker">
+﻿<div id="moviesPage" data-role="page" data-dom-cache="true" class="page libraryPage backdropPage pageWithAbsoluteTabs collectionEditorPage" data-backdroptype="movie" data-require="scripts/moviesrecommended,paper-tabs,neon-animated-pages,paper-checkbox,paper-fab,scripts/alphapicker">
 
-        <div class="libraryViewNav libraryViewNavWithMinHeight">
-            <paper-tabs hidescrollbuttons noink>
-                <paper-tab>${TabSuggestions}</paper-tab>
-                <paper-tab>${TabMovies}</paper-tab>
-                <paper-tab class="movieTrailersTab">${TabTrailers}</paper-tab>
-                <paper-tab>${TabCollections}</paper-tab>
-                <paper-tab>${TabGenres}</paper-tab>
-                <paper-tab class="movieStudiosTab">${TabStudios}</paper-tab>
-            </paper-tabs>
-            <div class="legacyTabs scopedLibraryViewNav">
-                <a href="movies.html">${TabSuggestions}</a>
-                <a href="movies.html?tab=1">${TabMovies}</a>
-                <a href="movies.html?tab=2" class="movieTrailersTab">${TabTrailers}</a>
-                <a href="movies.html?tab=3">${TabCollections}</a>
-                <a href="movies.html?tab=4">${TabGenres}</a>
-                <a href="movies.html?tab=5" class="movieStudiosTab">${TabStudios}</a>
-            </div>
-        </div>
-
-        <div class="ehsContent fullWidth">
-            <neon-animated-pages>
-                <neon-animatable>
-                    <div class="pageTabContent" data-index="0">
-                        <div id="resumableSection" style="display: none;" class="homePageSection">
-                            <div>
-                                <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderResume}</h1>
-                                <paper-button raised class="submit mini categorySyncButton" data-category="Resume"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
-                            </div>
-
-                            <div id="resumableItems" class="itemsContainer noautoinit">
-                            </div>
-                        </div>
-
-                        <div class="homePageSection">
-                            <div>
-                                <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderLatestMovies}</h1>
-                                <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
-                            </div>
-
-                            <div id="recentlyAddedItems" class="itemsContainer noautoinit">
-                            </div>
-                        </div>
-
-                        <div class="recommendations homePageSection">
-                        </div>
-                        <div class="noItemsMessage" style="display: none;">
-                            <br />
-                            <p>${MessageNoMovieSuggestionsAvailable}</p>
-                        </div>
-                    </div>
-                </neon-animatable>
-                <neon-animatable>
-                    <div class="pageTabContent" data-index="1">
-                        <div class="alphabetPicker">
-                        </div>
-                        <div class="viewSettings">
-                            <div class="listTopPaging">
-                            </div>
-                        </div>
-                        <div class="itemsContainer" style="text-align:center;"></div>
-                    </div>
-                </neon-animatable>
-                <neon-animatable>
-                    <div class="pageTabContent" data-index="2">
-                        <div class="alphabetPicker">
-                        </div>
-                        <div class="viewSettings">
-                            <div class="listTopPaging">
-                            </div>
-                        </div>
-                        <div class="itemsContainer" style="text-align:center;"></div>
-                        <p class="noItemsMessage" style="display:none;text-align:center;">${MessageNoTrailersFound}</p>
-                    </div>
-                </neon-animatable>
-                <neon-animatable>
-                    <div class="pageTabContent" data-index="3">
-                        <div class="viewSettings">
-
-                            <div class="listTopPaging">
-                                &nbsp;
-                            </div>
-                        </div>
-                        <div class="itemsContainer" style="text-align:center;"></div>
-                        <div class="noItemsMessage" style="display: none; text-align: center;">
-                            <p>${MessageNoCollectionsAvailable}</p>
-                        </div>
-
-                        <paper-fab class="btnNewCollection bottomFab" icon="add" style="position:fixed;right:20px;background-color:#db4437;"></paper-fab>
-                    </div>
-                </neon-animatable>
-                <neon-animatable>
-                    <div class="pageTabContent" data-index="4">
-                        <div class="viewSettings">
-                            <div class="listTopPaging">
-                            </div>
-                        </div>
-                        <div class="itemsContainer"></div>
-                    </div>
-                </neon-animatable>
-                <neon-animatable>
-                    <div class="pageTabContent" data-index="5">
-                        <div class="viewSettings">
-                            <div class="listTopPaging">
-                            </div>
-                        </div>
-                        <div class="itemsContainer" style="text-align:center;"></div>
-                    </div>
-                </neon-animatable>
-            </neon-animated-pages>
-        </div>
-
-        <div data-role="content">
-
+    <div class="libraryViewNav libraryViewNavWithMinHeight">
+        <paper-tabs hidescrollbuttons noink>
+            <paper-tab>${TabSuggestions}</paper-tab>
+            <paper-tab>${TabMovies}</paper-tab>
+            <paper-tab class="movieTrailersTab">${TabTrailers}</paper-tab>
+            <paper-tab>${TabCollections}</paper-tab>
+            <paper-tab>${TabGenres}</paper-tab>
+            <paper-tab class="movieStudiosTab">${TabStudios}</paper-tab>
+        </paper-tabs>
+        <div class="legacyTabs scopedLibraryViewNav">
+            <a href="movies.html">${TabSuggestions}</a>
+            <a href="movies.html?tab=1">${TabMovies}</a>
+            <a href="movies.html?tab=2" class="movieTrailersTab">${TabTrailers}</a>
+            <a href="movies.html?tab=3">${TabCollections}</a>
+            <a href="movies.html?tab=4">${TabGenres}</a>
+            <a href="movies.html?tab=5" class="movieStudiosTab">${TabStudios}</a>
         </div>
     </div>
-</body>
-</html>
+
+    <div class="ehsContent fullWidth">
+        <neon-animated-pages>
+            <neon-animatable>
+                <div class="pageTabContent" data-index="0">
+                    <div id="resumableSection" style="display: none;" class="homePageSection">
+                        <div>
+                            <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderResume}</h1>
+                            <paper-button raised class="submit mini categorySyncButton" data-category="Resume"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
+                        </div>
+
+                        <div id="resumableItems" class="itemsContainer noautoinit">
+                        </div>
+                    </div>
+
+                    <div class="homePageSection">
+                        <div>
+                            <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderLatestMovies}</h1>
+                            <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
+                        </div>
+
+                        <div id="recentlyAddedItems" class="itemsContainer noautoinit">
+                        </div>
+                    </div>
+
+                    <div class="recommendations homePageSection">
+                    </div>
+                    <div class="noItemsMessage" style="display: none;">
+                        <br />
+                        <p>${MessageNoMovieSuggestionsAvailable}</p>
+                    </div>
+                </div>
+            </neon-animatable>
+            <neon-animatable>
+                <div class="pageTabContent" data-index="1">
+                    <div class="alphabetPicker">
+                    </div>
+                    <div class="viewSettings">
+                        <div class="listTopPaging">
+                        </div>
+                    </div>
+                    <div class="itemsContainer" style="text-align:center;"></div>
+                </div>
+            </neon-animatable>
+            <neon-animatable>
+                <div class="pageTabContent" data-index="2">
+                    <div class="alphabetPicker">
+                    </div>
+                    <div class="viewSettings">
+                        <div class="listTopPaging">
+                        </div>
+                    </div>
+                    <div class="itemsContainer" style="text-align:center;"></div>
+                    <p class="noItemsMessage" style="display:none;text-align:center;">${MessageNoTrailersFound}</p>
+                </div>
+            </neon-animatable>
+            <neon-animatable>
+                <div class="pageTabContent" data-index="3">
+                    <div class="viewSettings">
+
+                        <div class="listTopPaging">
+                            &nbsp;
+                        </div>
+                    </div>
+                    <div class="itemsContainer" style="text-align:center;"></div>
+                    <div class="noItemsMessage" style="display: none; text-align: center;">
+                        <p>${MessageNoCollectionsAvailable}</p>
+                    </div>
+
+                    <paper-fab class="btnNewCollection bottomFab" icon="add" style="position:fixed;right:20px;background-color:#db4437;"></paper-fab>
+                </div>
+            </neon-animatable>
+            <neon-animatable>
+                <div class="pageTabContent" data-index="4">
+                    <div class="viewSettings">
+                        <div class="listTopPaging">
+                        </div>
+                    </div>
+                    <div class="itemsContainer"></div>
+                </div>
+            </neon-animatable>
+            <neon-animatable>
+                <div class="pageTabContent" data-index="5">
+                    <div class="viewSettings">
+                        <div class="listTopPaging">
+                        </div>
+                    </div>
+                    <div class="itemsContainer" style="text-align:center;"></div>
+                </div>
+            </neon-animatable>
+        </neon-animated-pages>
+    </div>
+
+    <div data-role="content">
+
+    </div>
+</div>

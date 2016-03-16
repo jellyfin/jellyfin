@@ -1,81 +1,73 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>${TitleMediaLibrary}</title>
-</head>
-<body>
-    <div id="librarySettingsPage" data-role="page" class="page type-interior librarySectionPage" data-require="jqmcollapsible,scripts/librarysettings,paper-input,paper-checkbox">
+﻿<div id="librarySettingsPage" data-role="page" class="page type-interior librarySectionPage" data-require="jqmcollapsible,scripts/librarysettings,paper-input,paper-checkbox">
 
-        <div data-role="content">
-            <div class="content-primary">
-                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="library.html" data-role="button">${TabFolders}</a>
-                    <a href="librarypathmapping.html" data-role="button">${TabPathSubstitution}</a>
-                    <a href="#" data-role="button" class="ui-btn-active">${TabAdvanced}</a>
+    <div data-role="content">
+        <div class="content-primary">
+            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                <a href="library.html" data-role="button">${TabFolders}</a>
+                <a href="librarypathmapping.html" data-role="button">${TabPathSubstitution}</a>
+                <a href="#" data-role="button" class="ui-btn-active">${TabAdvanced}</a>
+            </div>
+
+            <form class="librarySettingsForm">
+
+                <div data-role="collapsible">
+                    <h2>${HeaderAudio}</h2>
+                    <div>
+                        <br />
+                        <div>
+                            <paper-checkbox id="chkEnableAudioArchiveFiles">${OptionDetectArchiveFilesAsMedia}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${OptionDetectArchiveFilesAsMediaHelp}</div>
+                        </div>
+                        <br />
+                    </div>
                 </div>
 
-                <form class="librarySettingsForm">
-
-                    <div data-role="collapsible">
-                        <h2>${HeaderAudio}</h2>
+                <div data-role="collapsible">
+                    <h2>${HeaderVideo}</h2>
+                    <div>
+                        <br />
                         <div>
-                            <br />
-                            <div>
-                                <paper-checkbox id="chkEnableAudioArchiveFiles">${OptionDetectArchiveFilesAsMedia}</paper-checkbox>
-                                <div class="fieldDescription paperCheckboxFieldDescription">${OptionDetectArchiveFilesAsMediaHelp}</div>
-                            </div>
-                            <br />
+                            <paper-checkbox id="chkEnableVideoArchiveFiles">${OptionDetectArchiveFilesAsMedia}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${OptionDetectArchiveFilesAsMediaHelp}</div>
                         </div>
+                        <br />
                     </div>
+                </div>
 
-                    <div data-role="collapsible">
-                        <h2>${HeaderVideo}</h2>
+                <div data-role="collapsible">
+                    <h2>${HeaderTV}</h2>
+                    <div>
+                        <br />
                         <div>
-                            <br />
-                            <div>
-                                <paper-checkbox id="chkEnableVideoArchiveFiles">${OptionDetectArchiveFilesAsMedia}</paper-checkbox>
-                                <div class="fieldDescription paperCheckboxFieldDescription">${OptionDetectArchiveFilesAsMediaHelp}</div>
-                            </div>
-                            <br />
+                            <label for="txtSeasonZeroName">${LabelSeasonZeroDisplayName}</label>
+                            <paper-input type="text" id="txtSeasonZeroName" required></paper-input>
                         </div>
+                        <br />
                     </div>
-
-                    <div data-role="collapsible">
-                        <h2>${HeaderTV}</h2>
-                        <div>
-                            <br />
-                            <div>
-                                <label for="txtSeasonZeroName">${LabelSeasonZeroDisplayName}</label>
-                                <paper-input type="text" id="txtSeasonZeroName" required></paper-input>
-                            </div>
-                            <br />
+                </div>
+                <br />
+                <br />
+                <ul data-role="listview" class="ulForm">
+                    <li class="fldLibraryMonitor hide">
+                        <label for="selectEnableRealtimeMonitor" class="selectLabel">${LabelEnableRealtimeMonitor}</label>
+                        <select id="selectEnableRealtimeMonitor" data-mini="true">
+                            <option value="Auto">${OptionAuto}</option>
+                            <option value="Enabled">${OptionYes}</option>
+                            <option value="Disabled">${OptionNo}</option>
+                        </select>
+                        <div class="fieldDescription">
+                            ${LabelEnableRealtimeMonitorHelp}
                         </div>
-                    </div>
-                    <br />
-                    <br />
-                    <ul data-role="listview" class="ulForm">
-                        <li class="fldLibraryMonitor hide">
-                            <label for="selectEnableRealtimeMonitor" class="selectLabel">${LabelEnableRealtimeMonitor}</label>
-                            <select id="selectEnableRealtimeMonitor" data-mini="true">
-                                <option value="Auto">${OptionAuto}</option>
-                                <option value="Enabled">${OptionYes}</option>
-                                <option value="Disabled">${OptionNo}</option>
-                            </select>
-                            <div class="fieldDescription">
-                                ${LabelEnableRealtimeMonitorHelp}
-                            </div>
-                        </li>
-                        <li>
-                            <button type="submit" data-role="none" class="clearButton">
-                                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                            </button>
-                        </li>
-                    </ul>
+                    </li>
+                    <li>
+                        <button type="submit" data-role="none" class="clearButton">
+                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+                        </button>
+                    </li>
+                </ul>
 
-                </form>
+            </form>
 
-            </div>
         </div>
     </div>
-</body>
-</html>
+</div>

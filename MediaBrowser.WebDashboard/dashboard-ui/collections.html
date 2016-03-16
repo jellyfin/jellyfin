@@ -1,25 +1,17 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>Emby</title>
-</head>
-<body>
-    <div id="boxsetsPage" data-role="page" class="page libraryPage backdropPage collectionEditorPage noSecondaryNavPage" data-backdroptype="movie,boxset" data-require="scripts/moviecollections,paper-fab">
+﻿<div id="boxsetsPage" data-role="page" class="page libraryPage backdropPage collectionEditorPage noSecondaryNavPage" data-backdroptype="movie,boxset" data-require="scripts/moviecollections,paper-fab">
 
-        <div data-role="content">
-            <div class="viewSettings">
+    <div data-role="content">
+        <div class="viewSettings">
 
-                <div class="listTopPaging">
-                    &nbsp;
-                </div>
+            <div class="listTopPaging">
+                &nbsp;
             </div>
-            <div class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
-            <div class="noItemsMessage" style="display: none; text-align: center;">
-                <p>${MessageNoCollectionsAvailable}</p>
-            </div>
-
-            <paper-fab class="btnNewCollection bottomFab" icon="add" style="position:fixed;right:20px;background-color:#db4437;"></paper-fab>
         </div>
+        <div class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
+        <div class="noItemsMessage" style="display: none; text-align: center;">
+            <p>${MessageNoCollectionsAvailable}</p>
+        </div>
+
+        <paper-fab class="btnNewCollection bottomFab" icon="add" style="position:fixed;right:20px;background-color:#db4437;"></paper-fab>
     </div>
-</body>
-</html>
+</div>

@@ -80,6 +80,18 @@
             });
         };
 
+        self.isLoggedIn = function() {
+
+            var info = self.serverInfo();
+            if (info) {
+                if (info.UserId && info.AccessToken) {
+                    return true;
+                }
+            }
+
+            return false;
+        };
+
         /**
          * Gets or sets the current user id.
          */

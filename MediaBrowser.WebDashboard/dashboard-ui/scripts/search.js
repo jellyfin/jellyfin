@@ -1,4 +1,4 @@
-﻿(function ($, document, window, clearTimeout, setTimeout) {
+﻿define(['jQuery', 'searchmenu'], function ($) {
 
     var searchHintTimeout;
 
@@ -128,7 +128,10 @@
 
         if (!searchTerm) {
 
-            $('.itemsContainer', elem).empty();
+            var itemsContainer = elem.querySelector('.itemsContainer');
+            if (itemsContainer) {
+                itemsContainer.innerHTML = '';
+            }
             clearSearchHintTimeout();
             return;
         }
@@ -214,9 +217,9 @@
 
     function bindSearchEvents() {
 
-        require(['searchmenu'], function () {
-            Events.on(SearchMenu, 'closed', closeSearchResults);
-            Events.on(SearchMenu, 'change', function (e, value) {
+        require(['searchmenu'], function (searchmenu) {
+            Events.on(window.SearchMenu, 'closed', closeSearchResults);
+            Events.on(window.SearchMenu, 'change', function (e, value) {
 
                 onHeaderSearchChange(value);
             });
@@ -230,14 +233,14 @@
     }
 
     function showSearchMenu() {
-        require(['searchmenu'], function () {
-            SearchMenu.show();
+        require(['searchmenu'], function (searchmenu) {
+            window.SearchMenu.show();
         });
     }
 
     function hideSearchMenu() {
-        require(['searchmenu'], function () {
-            SearchMenu.hide();
+        require(['searchmenu'], function (searchmenu) {
+            window.SearchMenu.hide();
         });
     }
 
@@ -248,4 +251,4 @@
         bindSearchEvents();
     });
 
-})(jQuery, document, window, clearTimeout, setTimeout);
+});

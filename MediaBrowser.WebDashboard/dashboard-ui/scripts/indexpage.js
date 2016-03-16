@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['libraryBrowser'], function (LibraryBrowser) {
 
     var defaultFirstSection = 'smalllibrarytiles';
 
@@ -215,7 +215,6 @@
         if (LibraryBrowser.needsRefresh(tabContent)) {
             if (window.ApiClient) {
                 var userId = Dashboard.getCurrentUserId();
-
                 Dashboard.showLoadingMsg();
 
                 getDisplayPreferences('home', userId).then(function (result) {
@@ -264,13 +263,12 @@
                 method = 'renderUpcoming';
                 break;
             default:
+                return;
                 break;
         }
 
         require(depends, function () {
-
             window[scope][method](page, tabContent);
-
         });
     }
 
@@ -281,7 +279,7 @@
         var tabs = page.querySelector('paper-tabs');
         var pages = page.querySelector('neon-animated-pages');
 
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, 'index.html');
+        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, 'home.html');
 
         pages.addEventListener('tabchange', function (e) {
             loadTab(page, parseInt(e.target.selected));
@@ -301,7 +299,6 @@
     });
 
     pageIdOn('pageshow', "indexPage", function () {
-
         var page = this;
         Events.on(MediaController, 'playbackstop', onPlaybackStop);
     });
@@ -331,4 +328,4 @@
         renderHomeTab: loadHomeTab
     };
 
-})(jQuery, document);
+});

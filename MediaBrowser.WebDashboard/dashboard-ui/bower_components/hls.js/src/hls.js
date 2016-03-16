@@ -45,6 +45,7 @@ class Hls {
           maxBufferSize: 60 * 1000 * 1000,
           maxBufferHole: 0.5,
           maxSeekHole: 2,
+          maxFragLookUpTolerance : 0.2,
           liveSyncDurationCount:3,
           liveMaxLatencyDurationCount: Infinity,
           liveSyncDuration: undefined,
@@ -223,12 +224,12 @@ class Hls {
 
   /** Return the quality level of next loaded fragment **/
   get nextLoadLevel() {
-    return this.levelController.nextLoadLevel();
+    return this.levelController.nextLoadLevel;
   }
 
   /** set quality level of next loaded fragment **/
   set nextLoadLevel(level) {
-    this.levelController.level = level;
+    this.levelController.nextLoadLevel = level;
   }
 
   /** Return first level (index of first level referenced in manifest)

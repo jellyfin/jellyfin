@@ -1,83 +1,75 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>${TitleLiveTV}</title>
-</head>
-<body>
-    <div id="liveTvTunerProviderSatPage" data-role="page" class="page type-interior liveTvSettingsPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvtunerprovider-satip,paper-input,paper-checkbox">
+﻿<div id="liveTvTunerProviderSatPage" data-role="page" class="page type-interior liveTvSettingsPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvtunerprovider-satip,paper-input,paper-checkbox">
 
-        <div data-role="content">
-            <div class="content-primary">
+    <div data-role="content">
+        <div class="content-primary">
 
-                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="livetvstatus.html" data-role="button" class="ui-btn-active">${TabTuners}</a>
-                    <a href="livetvsettings.html" data-role="button">${TabSettings}</a>
-                    <a href="appservices.html?context=livetv" data-role="button">${TabExternalServices}</a>
-                </div>
+            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                <a href="livetvstatus.html" data-role="button" class="ui-btn-active">${TabTuners}</a>
+                <a href="livetvsettings.html" data-role="button">${TabSettings}</a>
+                <a href="appservices.html?context=livetv" data-role="button">${TabExternalServices}</a>
+            </div>
 
-                <div class="readOnlyContent" style="margin-top: 2em;">
+            <div class="readOnlyContent" style="margin-top: 2em;">
 
-                    <h1>DVB</h1>
+                <h1>DVB</h1>
 
-                    <form>
+                <form>
+                    <div>
                         <div>
-                            <div>
-                                <paper-input class="txtDevicePath" label="${LabelTunerIpAddress}" required="required"></paper-input>
-                            </div>
-                            <div>
-                                <br />
-                                <label class="selectLabel">Diseq C</label>
-                                <select class="selectDiseqC">
-                                    <option value="">${OptionNone}</option>
-                                    <option value="tone">22 KHz (Tone Switch)</option>
-                                    <option value="diseqc1">Diseq c 1.x (A/B/C/D)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <br />
-                                <label class="selectLabel">Source A</label>
-                                <select class="selectSourceA">
-                                    <option value="">${OptionNone}</option>
-                                </select>
-                            </div>
-                            <div class="fldSourceB hide">
-                                <br />
-                                <label class="selectLabel">Source B</label>
-                                <select class="selectSourceB">
-                                    <option value="">${OptionNone}</option>
-                                </select>
-                            </div>
-                            <div class="fldSourceC hide">
-                                <br />
-                                <label class="selectLabel">Source C</label>
-                                <select class="selectSourceC">
-                                    <option value="">${OptionNone}</option>
-                                </select>
-                            </div>
-                            <div class="fldSourceD hide">
-                                <br />
-                                <label class="selectLabel">Source D</label>
-                                <select class="selectSourceD">
-                                    <option value="">${OptionNone}</option>
-                                </select>
-                            </div>
-                            <div>
-                                <br />
-                                <paper-checkbox class="chkEnabled" checked>${LabelEnableThisTuner}</paper-checkbox>
-                                <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableThisTunerHelp}</div>
-                            </div>
-                            <br /><br />
-                            <div>
-                                <button type="submit" data-role="none" class="clearButton">
-                                    <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                                </button>
-                                <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
-                            </div>
+                            <paper-input class="txtDevicePath" label="${LabelTunerIpAddress}" required="required"></paper-input>
                         </div>
-                    </form>
-                </div>
+                        <div>
+                            <br />
+                            <label class="selectLabel">Diseq C</label>
+                            <select class="selectDiseqC">
+                                <option value="">${OptionNone}</option>
+                                <option value="tone">22 KHz (Tone Switch)</option>
+                                <option value="diseqc1">Diseq c 1.x (A/B/C/D)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <br />
+                            <label class="selectLabel">Source A</label>
+                            <select class="selectSourceA">
+                                <option value="">${OptionNone}</option>
+                            </select>
+                        </div>
+                        <div class="fldSourceB hide">
+                            <br />
+                            <label class="selectLabel">Source B</label>
+                            <select class="selectSourceB">
+                                <option value="">${OptionNone}</option>
+                            </select>
+                        </div>
+                        <div class="fldSourceC hide">
+                            <br />
+                            <label class="selectLabel">Source C</label>
+                            <select class="selectSourceC">
+                                <option value="">${OptionNone}</option>
+                            </select>
+                        </div>
+                        <div class="fldSourceD hide">
+                            <br />
+                            <label class="selectLabel">Source D</label>
+                            <select class="selectSourceD">
+                                <option value="">${OptionNone}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <br />
+                            <paper-checkbox class="chkEnabled" checked>${LabelEnableThisTuner}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableThisTunerHelp}</div>
+                        </div>
+                        <br /><br />
+                        <div>
+                            <button type="submit" data-role="none" class="clearButton">
+                                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+                            </button>
+                            <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-</body>
-</html>
+</div>

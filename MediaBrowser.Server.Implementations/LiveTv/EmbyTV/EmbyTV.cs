@@ -498,7 +498,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private bool IsListingProviderEnabledForTuner(ListingsProviderInfo info, string tunerHostId)
         {
-            return info.EnableAllTuners || info.EnabledTuners.Contains(tunerHostId ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+            if (info.EnableAllTuners)
+            {
+                return true;
+            }
+
+            if (string.IsNullOrWhiteSpace(tunerHostId))
+            {
+                throw new ArgumentNullException("tunerHostId");
+            }
+
+            return info.EnabledTuners.Contains(tunerHostId, StringComparer.OrdinalIgnoreCase);
         }
 
         private async Task<IEnumerable<ProgramInfo>> GetProgramsAsyncInternal(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)

@@ -1391,7 +1391,7 @@
 
             var onclick = item.PlayAccess == 'Full' && !isStatic ? ' onclick="ItemDetailPage.play(' + chapter.StartPositionTicks + ');"' : '';
 
-            html += '<a class="card ' + getThumbShape() + 'Card" href="#play-Chapter-' + i + '"' + onclick + '>';
+            html += '<a class="card ' + getThumbShape() + 'Card" href="#"' + onclick + '>';
 
             html += '<div class="cardBox">';
             html += '<div class="cardScalable">';
@@ -1972,7 +1972,7 @@
             if (currentItem.Type == 'Recording') {
                 LibraryBrowser.showTab('livetv.html', 3);
             } else {
-                Dashboard.navigate('index.html');
+                Dashboard.navigate('home.html');
             }
         }
     }

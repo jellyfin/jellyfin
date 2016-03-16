@@ -1,36 +1,28 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>${TitleSync}</title>
-</head>
-<body>
-    <div id="mySyncActivityPage" data-role="page" class="page libraryPage syncActivityPage mySyncPage noSecondaryNavPage" data-contextname="${TitleSync}" data-require="scripts/syncactivity,scripts/taskbutton,scripts/mysync,paper-spinner,paper-fab">
+﻿<div id="mySyncActivityPage" data-role="page" class="page libraryPage syncActivityPage mySyncPage noSecondaryNavPage" data-contextname="${TitleSync}" data-require="scripts/syncactivity,scripts/taskbutton,scripts/mysync,paper-spinner,paper-fab">
 
-        <div data-role="content">
+    <div data-role="content">
 
-            <div class="supporterPromotionContainer" style="display:none;text-align: right;">
-                <div class="customSupporterPromotion supporterPromotion inlineSupporterPromotion">
-                    <paper-button raised class="accent block btnSyncSupporter">
-                        <div class="mainText">
-                        </div>
-                        <div class="btnLearnMore" style="font-weight: normal; margin-top: .25em;">
-                            ${ButtonLearnMore}
-                        </div>
-                    </paper-button>
-                </div>
+        <div class="supporterPromotionContainer" style="display:none;text-align: right;">
+            <div class="customSupporterPromotion supporterPromotion inlineSupporterPromotion">
+                <paper-button raised class="accent block btnSyncSupporter">
+                    <div class="mainText">
+                    </div>
+                    <div class="btnLearnMore" style="font-weight: normal; margin-top: .25em;">
+                        ${ButtonLearnMore}
+                    </div>
+                </paper-button>
             </div>
-            <div class="ehsContent" style="clear:both;">
-                <br />
-                <div class="localSyncStatus hide" style="text-align:right;margin:0 0 1em;">
-                    <span style="vertical-align: middle;margin-right:.5em;" class="labelSyncStatus"></span>
-                    <paper-spinner class="syncSpinner" active style="vertical-align: middle;"></paper-spinner>
-                    <paper-fab class="btnSyncNow mini accent" icon="sync" style="margin-right:.5em;"></paper-fab>
-                </div>
-                <div class="syncActivity">
+        </div>
+        <div class="ehsContent" style="clear:both;">
+            <br />
+            <div class="localSyncStatus hide" style="text-align:right;margin:0 0 1em;">
+                <span style="vertical-align: middle;margin-right:.5em;" class="labelSyncStatus"></span>
+                <paper-spinner class="syncSpinner" active style="vertical-align: middle;"></paper-spinner>
+                <paper-fab class="btnSyncNow mini accent" icon="sync" style="margin-right:.5em;"></paper-fab>
+            </div>
+            <div class="syncActivity">
 
-                </div>
             </div>
         </div>
     </div>
-</body>
-</html>
+</div>

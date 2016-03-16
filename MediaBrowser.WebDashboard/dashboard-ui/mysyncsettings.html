@@ -1,51 +1,42 @@
-﻿<!DOCTYPE html>
+﻿<div id="syncPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${ButtonSyncSettings}" data-require="scripts/mysyncsettings,paper-checkbox,paper-input" data-backbutton="true" data-menubutton="false">
 
-<html>
-<head>
-    <title>Emby</title>
-</head>
-<body>
-    <div id="syncPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${ButtonSyncSettings}" data-require="scripts/mysyncsettings,paper-checkbox,paper-input" data-backbutton="true" data-menubutton="false">
+    <div data-role="content">
+        <form class="userProfileSettingsForm" style="margin: 0 auto;">
 
-        <div data-role="content">
-            <form class="userProfileSettingsForm" style="margin: 0 auto;">
+            <h1>
+                ${HeaderSync}
+            </h1>
+            <div class="detailSectionContent">
 
-                <h1>
-                    ${HeaderSync}
-                </h1>
-                <div class="detailSectionContent">
-
-                    <div class="fldSyncPath hide">
-                        <paper-input type="text" id="txtSyncPath" label="${LabelSyncPath}" style="display:inline-block;width:80%;" readonly></paper-input>
-                        <paper-icon-button class="btnSelectSyncPath" icon="search"></paper-icon-button>
-                    </div>
-
-                    <br />
-                    <div>
-                        <paper-checkbox id="chkWifi">${OptionSyncOnlyOnWifi}</paper-checkbox>
-                    </div>
+                <div class="fldSyncPath hide">
+                    <paper-input type="text" id="txtSyncPath" label="${LabelSyncPath}" style="display:inline-block;width:80%;" readonly></paper-input>
+                    <paper-icon-button class="btnSelectSyncPath" icon="search"></paper-icon-button>
                 </div>
 
                 <br />
-                <h1>
-                    ${HeaderCameraUpload}
-                </h1>
-                <div class="detailSectionContent">
-
-                    <p>${SelectCameraUploadServers}</p>
-
-                    <br />
-                    <div class="paperCheckboxList uploadServerList">
-                    </div>
+                <div>
+                    <paper-checkbox id="chkWifi">${OptionSyncOnlyOnWifi}</paper-checkbox>
                 </div>
+            </div>
+
+            <br />
+            <h1>
+                ${HeaderCameraUpload}
+            </h1>
+            <div class="detailSectionContent">
+
+                <p>${SelectCameraUploadServers}</p>
 
                 <br />
-                <br />
-                <button type="submit" data-role="none" class="clearButton">
-                    <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                </button>
-            </form>
-        </div>
+                <div class="paperCheckboxList uploadServerList">
+                </div>
+            </div>
+
+            <br />
+            <br />
+            <button type="submit" data-role="none" class="clearButton">
+                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+            </button>
+        </form>
     </div>
-</body>
-</html>
+</div>

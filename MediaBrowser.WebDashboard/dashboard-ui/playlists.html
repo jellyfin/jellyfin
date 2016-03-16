@@ -1,23 +1,15 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>Emby</title>
-</head>
-<body>
-    <div id="playlistsPage" data-dom-cache="true" data-role="page" class="page libraryPage noSecondaryNavPage" data-require="scripts/playlists" data-title="${HeaderPlaylists}">
+﻿<div id="playlistsPage" data-dom-cache="true" data-role="page" class="page libraryPage noSecondaryNavPage" data-require="scripts/playlists" data-title="${HeaderPlaylists}">
 
-        <div data-role="content">
-            <div class="viewSettings">
+    <div data-role="content">
+        <div class="viewSettings">
 
-                <div class="listTopPaging">
-                    &nbsp;
-                </div>
-            </div>
-            <div id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
-            <div class="noItemsMessage" style="display: none; text-align: center;">
-                <p>${MessageNoPlaylistsAvailable}</p>
+            <div class="listTopPaging">
+                &nbsp;
             </div>
         </div>
+        <div id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
+        <div class="noItemsMessage" style="display: none; text-align: center;">
+            <p>${MessageNoPlaylistsAvailable}</p>
+        </div>
     </div>
-</body>
-</html>
+</div>

@@ -1,4 +1,13 @@
-﻿(function () {
+﻿define(['jQuery'], function ($) {
+
+    function fadeIn(elem, iterations) {
+
+        var keyframes = [
+          { opacity: '0', offset: 0 },
+          { opacity: '1', offset: 1 }];
+        var timing = { duration: 200, iterations: iterations };
+        return elem.animate(keyframes, timing);
+    }
 
     function searchMenu() {
 
@@ -6,7 +15,7 @@
 
         self.show = function () {
 
-            require(['css!css/search.css'], function() {
+            require(['css!css/search.css'], function () {
                 $('.headerSearchInput').val('');
 
                 $('.btnCloseSearch').hide();
@@ -18,15 +27,6 @@
                 };
             });
         };
-
-        function fadeIn(elem, iterations) {
-
-            var keyframes = [
-              { opacity: '0', offset: 0 },
-              { opacity: '1', offset: 1 }];
-            var timing = { duration: 200, iterations: iterations };
-            return elem.animate(keyframes, timing);
-        }
 
         self.hide = function () {
 
@@ -82,5 +82,5 @@
     }
 
     window.SearchMenu = new searchMenu();
-
-})();
+    return Window.SearchMenu;
+});

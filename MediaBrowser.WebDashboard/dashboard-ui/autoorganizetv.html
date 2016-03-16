@@ -1,177 +1,169 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>${TitleAutoOrganize}</title>
-</head>
-<body>
-    <div id="libraryFileOrganizerPage" data-role="page" class="page type-interior organizePage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Auto-Organize" data-require="emby-collapsible,jqmtable,scripts/autoorganizetv,paper-input,paper-checkbox">
+﻿<div id="libraryFileOrganizerPage" data-role="page" class="page type-interior organizePage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Auto-Organize" data-require="emby-collapsible,jqmtable,scripts/autoorganizetv,paper-input,paper-checkbox">
 
-        <div data-role="content">
-            <div class="content-primary">
-                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="autoorganizelog.html" data-role="button">${TabActivityLog}</a>
-                    <a href="#" data-role="button" class="ui-btn-active">${TabTV}</a>
-                    <a href="autoorganizesmart.html" data-role="button">${TabSmartMatches}</a>
-                </div>
-
-                <form class="libraryFileOrganizerForm">
-
-                    <p>${AutoOrganizeHelp}</p>
-
-                    <p>${AutoOrganizeTvHelp}</p>
-                    <ul data-role="listview" class="ulForm" style="margin-bottom: 0!important;">
-                        <li>
-                            <br />
-                            <paper-checkbox id="chkEnableTvSorting">${OptionEnableEpisodeOrganization}</paper-checkbox>
-                        </li>
-                        <li>
-                            <paper-input id="txtWatchFolder" label="${LabelWatchFolder}" style="width:85%;display:inline-block;"></paper-input>
-                            <paper-icon-button id="btnSelectWatchFolder" icon="search"></paper-icon-button>
-                            <div class="fieldDescription">
-                                <div>${LabelWatchFolderHelp}</div>
-                            </div>
-                        </li>
-                        <li>
-                            <paper-input type="number" id="txtMinFileSize" name="txtMinFileSize" label="${LabelMinFileSizeForOrganize}" pattern="[0-9]*" min="0" required></paper-input>
-                            <div class="fieldDescription">${LabelMinFileSizeForOrganizeHelp}</div>
-                        </li>
-                        <li>
-                            <paper-input type="text" id="txtSeasonFolderPattern" name="txtSeasonFolderPattern" label="${LabelSeasonFolderPattern}" required></paper-input>
-                            <div class="fieldDescription seasonFolderFieldDescription"></div>
-                        </li>
-                        <li>
-                            <paper-input type="text" id="txtSeasonZeroName" name="txtSeasonZeroName" label="${LabelSeasonZeroFolderName}" required></paper-input>
-                        </li>
-                    </ul><br />
-
-                    <emby-collapsible title="${HeaderEpisodeFilePattern}">
-                        <br />
-                        <div>
-                            <paper-input type="text" id="txtEpisodePattern" name="txtEpisodePattern" label="${LabelEpisodePattern}" required></paper-input>
-                            <div class="fieldDescription episodePatternDescription"></div>
-                        </div>
-                        <br />
-                        <div>
-                            <paper-input type="text" id="txtMultiEpisodePattern" name="txtMultiEpisodePattern" label="${LabelMultiEpisodePattern}" required></paper-input>
-                            <div class="fieldDescription multiEpisodePatternDescription"></div>
-                        </div>
-
-                        <br />
-                        <p>${HeaderSupportedPatterns}</p>
-
-                        <table data-role="table" id="movie-table" data-mode="reflow" class="ui-responsive">
-                            <thead>
-                                <tr>
-                                    <th>${HeaderTerm}</th>
-                                    <th>${HeaderPattern}</th>
-                                    <th>${HeaderResult}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>${LabelSeriesNamePlain}</td>
-                                    <td>%sn</td>
-                                    <td>${LabelSeriesNamePlain}</td>
-                                </tr>
-                                <tr>
-                                    <td>${LabelSeriesNamePlain}</td>
-                                    <td>%s.n</td>
-                                    <td>${ValueSeriesNamePeriod}</td>
-                                </tr>
-                                <tr>
-                                    <td>${LabelSeriesNamePlain}</td>
-                                    <td>%s_n</td>
-                                    <td>${ValueSeriesNameUnderscore}</td>
-                                </tr>
-                                <tr>
-                                    <td>${LabelSeasonNumberPlain}</td>
-                                    <td>%s</td>
-                                    <td>1</td>
-                                </tr>
-                                <tr>
-                                    <td>${LabelSeasonNumberPlain}</td>
-                                    <td>%0s</td>
-                                    <td>01</td>
-                                </tr>
-                                <tr>
-                                    <td>${LabelEpisodeNumberPlain}</td>
-                                    <td>%e</td>
-                                    <td>4</td>
-                                </tr>
-                                <tr>
-                                    <td>${LabelEpisodeNumberPlain}</td>
-                                    <td>%0e</td>
-                                    <td>04</td>
-                                </tr>
-                                <tr>
-                                    <td>${LabelEndingEpisodeNumberPlain}</td>
-                                    <td>%ed</td>
-                                    <td>5</td>
-                                </tr>
-                                <tr>
-                                    <td>${LabelEndingEpisodeNumberPlain}</td>
-                                    <td>%0ed</td>
-                                    <td>05</td>
-                                </tr>
-                                <tr>
-                                    <td>${LabelEpisodeNamePlain}</td>
-                                    <td>%en</td>
-                                    <td>${LabelEpisodeNamePlain}</td>
-                                </tr>
-                                <tr>
-                                    <td>${LabelEpisodeNamePlain}</td>
-                                    <td>%e.n</td>
-                                    <td>${ValueEpisodeNamePeriod}</td>
-                                </tr>
-                                <tr>
-                                    <td>${LabelEpisodeNamePlain}</td>
-                                    <td>%e_n</td>
-                                    <td>${ValueEpisodeNameUnderscore}</td>
-                                </tr>
-                                <tr>
-                                    <td>${FileExtension}</td>
-                                    <td>%ext</td>
-                                    <td>mkv</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </emby-collapsible>
-                    <br /><br />
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <label for="copyOrMoveFile" class="selectLabel">${LabelTransferMethod}</label>
-                            <select id="copyOrMoveFile" data-mini="true">
-                                <option value="true">${OptionCopy}</option>
-                                <option value="false">${OptionMove}</option>
-                            </select>
-                            <div class="fieldDescription">${LabelTransferMethodHelp}</div>
-                        </li>
-                        <li>
-                            <br />
-                            <paper-checkbox type="checkbox" id="chkOverwriteExistingEpisodes">${OptionOverwriteExistingEpisodes}</paper-checkbox>
-                        </li>
-                        <li>
-                            <paper-input type="text" id="txtDeleteLeftOverFiles" name="txtDeleteLeftOverFiles" label="${LabelDeleteLeftOverFiles}"></paper-input>
-                            <div class="fieldDescription">${LabelDeleteLeftOverFilesHelp}</div>
-                        </li>
-                        <li>
-                            <paper-checkbox id="chkDeleteEmptyFolders">${LabelDeleteEmptyFolders}</paper-checkbox>
-                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelDeleteEmptyFoldersHelp}</div>
-                        </li>
-                    </ul>
-
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <button type="submit" data-role="none" class="clearButton">
-                                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                            </button>
-                        </li>
-
-                    </ul>
-                </form>
-
+    <div data-role="content">
+        <div class="content-primary">
+            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                <a href="autoorganizelog.html" data-role="button">${TabActivityLog}</a>
+                <a href="#" data-role="button" class="ui-btn-active">${TabTV}</a>
+                <a href="autoorganizesmart.html" data-role="button">${TabSmartMatches}</a>
             </div>
+
+            <form class="libraryFileOrganizerForm">
+
+                <p>${AutoOrganizeHelp}</p>
+
+                <p>${AutoOrganizeTvHelp}</p>
+                <ul data-role="listview" class="ulForm" style="margin-bottom: 0!important;">
+                    <li>
+                        <br />
+                        <paper-checkbox id="chkEnableTvSorting">${OptionEnableEpisodeOrganization}</paper-checkbox>
+                    </li>
+                    <li>
+                        <paper-input id="txtWatchFolder" label="${LabelWatchFolder}" style="width:85%;display:inline-block;"></paper-input>
+                        <paper-icon-button id="btnSelectWatchFolder" icon="search"></paper-icon-button>
+                        <div class="fieldDescription">
+                            <div>${LabelWatchFolderHelp}</div>
+                        </div>
+                    </li>
+                    <li>
+                        <paper-input type="number" id="txtMinFileSize" name="txtMinFileSize" label="${LabelMinFileSizeForOrganize}" pattern="[0-9]*" min="0" required></paper-input>
+                        <div class="fieldDescription">${LabelMinFileSizeForOrganizeHelp}</div>
+                    </li>
+                    <li>
+                        <paper-input type="text" id="txtSeasonFolderPattern" name="txtSeasonFolderPattern" label="${LabelSeasonFolderPattern}" required></paper-input>
+                        <div class="fieldDescription seasonFolderFieldDescription"></div>
+                    </li>
+                    <li>
+                        <paper-input type="text" id="txtSeasonZeroName" name="txtSeasonZeroName" label="${LabelSeasonZeroFolderName}" required></paper-input>
+                    </li>
+                </ul><br />
+
+                <emby-collapsible title="${HeaderEpisodeFilePattern}">
+                    <br />
+                    <div>
+                        <paper-input type="text" id="txtEpisodePattern" name="txtEpisodePattern" label="${LabelEpisodePattern}" required></paper-input>
+                        <div class="fieldDescription episodePatternDescription"></div>
+                    </div>
+                    <br />
+                    <div>
+                        <paper-input type="text" id="txtMultiEpisodePattern" name="txtMultiEpisodePattern" label="${LabelMultiEpisodePattern}" required></paper-input>
+                        <div class="fieldDescription multiEpisodePatternDescription"></div>
+                    </div>
+
+                    <br />
+                    <p>${HeaderSupportedPatterns}</p>
+
+                    <table data-role="table" id="movie-table" data-mode="reflow" class="ui-responsive">
+                        <thead>
+                            <tr>
+                                <th>${HeaderTerm}</th>
+                                <th>${HeaderPattern}</th>
+                                <th>${HeaderResult}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${LabelSeriesNamePlain}</td>
+                                <td>%sn</td>
+                                <td>${LabelSeriesNamePlain}</td>
+                            </tr>
+                            <tr>
+                                <td>${LabelSeriesNamePlain}</td>
+                                <td>%s.n</td>
+                                <td>${ValueSeriesNamePeriod}</td>
+                            </tr>
+                            <tr>
+                                <td>${LabelSeriesNamePlain}</td>
+                                <td>%s_n</td>
+                                <td>${ValueSeriesNameUnderscore}</td>
+                            </tr>
+                            <tr>
+                                <td>${LabelSeasonNumberPlain}</td>
+                                <td>%s</td>
+                                <td>1</td>
+                            </tr>
+                            <tr>
+                                <td>${LabelSeasonNumberPlain}</td>
+                                <td>%0s</td>
+                                <td>01</td>
+                            </tr>
+                            <tr>
+                                <td>${LabelEpisodeNumberPlain}</td>
+                                <td>%e</td>
+                                <td>4</td>
+                            </tr>
+                            <tr>
+                                <td>${LabelEpisodeNumberPlain}</td>
+                                <td>%0e</td>
+                                <td>04</td>
+                            </tr>
+                            <tr>
+                                <td>${LabelEndingEpisodeNumberPlain}</td>
+                                <td>%ed</td>
+                                <td>5</td>
+                            </tr>
+                            <tr>
+                                <td>${LabelEndingEpisodeNumberPlain}</td>
+                                <td>%0ed</td>
+                                <td>05</td>
+                            </tr>
+                            <tr>
+                                <td>${LabelEpisodeNamePlain}</td>
+                                <td>%en</td>
+                                <td>${LabelEpisodeNamePlain}</td>
+                            </tr>
+                            <tr>
+                                <td>${LabelEpisodeNamePlain}</td>
+                                <td>%e.n</td>
+                                <td>${ValueEpisodeNamePeriod}</td>
+                            </tr>
+                            <tr>
+                                <td>${LabelEpisodeNamePlain}</td>
+                                <td>%e_n</td>
+                                <td>${ValueEpisodeNameUnderscore}</td>
+                            </tr>
+                            <tr>
+                                <td>${FileExtension}</td>
+                                <td>%ext</td>
+                                <td>mkv</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </emby-collapsible>
+                <br /><br />
+                <ul data-role="listview" class="ulForm">
+                    <li>
+                        <label for="copyOrMoveFile" class="selectLabel">${LabelTransferMethod}</label>
+                        <select id="copyOrMoveFile" data-mini="true">
+                            <option value="true">${OptionCopy}</option>
+                            <option value="false">${OptionMove}</option>
+                        </select>
+                        <div class="fieldDescription">${LabelTransferMethodHelp}</div>
+                    </li>
+                    <li>
+                        <br />
+                        <paper-checkbox type="checkbox" id="chkOverwriteExistingEpisodes">${OptionOverwriteExistingEpisodes}</paper-checkbox>
+                    </li>
+                    <li>
+                        <paper-input type="text" id="txtDeleteLeftOverFiles" name="txtDeleteLeftOverFiles" label="${LabelDeleteLeftOverFiles}"></paper-input>
+                        <div class="fieldDescription">${LabelDeleteLeftOverFilesHelp}</div>
+                    </li>
+                    <li>
+                        <paper-checkbox id="chkDeleteEmptyFolders">${LabelDeleteEmptyFolders}</paper-checkbox>
+                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelDeleteEmptyFoldersHelp}</div>
+                    </li>
+                </ul>
+
+                <ul data-role="listview" class="ulForm">
+                    <li>
+                        <button type="submit" data-role="none" class="clearButton">
+                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+                        </button>
+                    </li>
+
+                </ul>
+            </form>
+
         </div>
     </div>
-</body>
-</html>
+</div>

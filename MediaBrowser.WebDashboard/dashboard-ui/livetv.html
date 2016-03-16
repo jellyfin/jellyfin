@@ -1,123 +1,115 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>Emby</title>
-</head>
-<body>
-    <div id="liveTvSuggestedPage" data-dom-cache="true" data-role="page" class="page libraryPage liveTvPage pageWithAbsoluteTabs" data-contextname="${HeaderLiveTv}" data-backdroptype="series,movie" data-require="scripts/livetvsuggested,livetvcss,scripts/livetvcomponents,paper-tabs,neon-animated-pages,paper-checkbox">
+﻿<div id="liveTvSuggestedPage" data-dom-cache="true" data-role="page" class="page libraryPage liveTvPage pageWithAbsoluteTabs" data-contextname="${HeaderLiveTv}" data-backdroptype="series,movie" data-require="scripts/livetvsuggested,livetvcss,scripts/livetvcomponents,paper-tabs,neon-animated-pages,paper-checkbox">
 
-        <div class="libraryViewNav libraryViewNavWithMinHeight">
-            <paper-tabs hidescrollbuttons noink>
-                <paper-tab>${TabSuggestions}</paper-tab>
-                <paper-tab>${TabGuide}</paper-tab>
-                <paper-tab>${TabChannels}</paper-tab>
-                <paper-tab>${TabRecordings}</paper-tab>
-                <paper-tab>${TabScheduled}</paper-tab>
-                <paper-tab>${TabSeries}</paper-tab>
-            </paper-tabs>
-            <div class="legacyTabs">
-                <a href="livetv.html">${TabSuggestions}</a>
-                <a href="livetv.html?tab=1">${TabGuide}</a>
-                <a href="livetv.html?tab=2">${TabChannels}</a>
-                <a href="livetv.html?tab=3">${TabRecordings}</a>
-                <a href="livetv.html?tab=4">${TabScheduled}</a>
-                <a href="livetv.html?tab=5">${TabSeries}</a>
-            </div>
-        </div>
-
-        <div class="ehsContent fullWidth">
-            <neon-animated-pages>
-                <neon-animatable>
-                    <div class="pageTabContent suggestedTabContent" data-index="0">
-                        <div id="activePrograms" class="homePageSection">
-                            <h1 class="listHeader">${HeaderWhatsOnTV}</h1>
-                            <div class="activeProgramItems itemsContainer noautoinit"></div>
-                            <br />
-                        </div>
-                        <div id="upcomingPrograms" class="homePageSection" style="margin-top: 1em;">
-                            <h1 class="listHeader">${HeaderUpcomingPrograms}</h1>
-                            <div class="upcomingProgramItems itemsContainer noautoinit"></div>
-                            <br />
-                        </div>
-                        <div id="upcomingTvMovies" class="homePageSection" style="margin-top: 1em;">
-                            <div>
-                                <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderUpcomingMovies}</h1>
-                                <a href="livetvitems.html?type=movies" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
-                            </div>
-                            <div class="upcomingTvMovieItems itemsContainer noautoinit"></div>
-                            <br />
-                        </div>
-                        <div id="upcomingSports" class="homePageSection" style="margin-top: 1em;">
-                            <div>
-                                <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderUpcomingSports}</h1>
-                                <a href="livetvitems.html?type=sports" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
-                            </div>
-                            <div class="upcomingSportsItems itemsContainer noautoinit"></div>
-                            <br />
-                        </div>
-                        <div id="upcomingKids" class="homePageSection" style="margin-top: 1em;">
-                            <div>
-                                <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderUpcomingForKids}</h1>
-                                <a href="livetvitems.html?type=kids" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
-                            </div>
-                            <div class="upcomingKidsItems itemsContainer noautoinit"></div>
-                            <br />
-                        </div>
-                    </div>
-                </neon-animatable>
-                <neon-animatable>
-                    <div class="pageTabContent guideTabContent" style="width: auto;" data-index="1">
-                    </div>
-                </neon-animatable>
-                <neon-animatable>
-                    <div class="pageTabContent channelsTabContent" data-index="2">
-                        <div class="viewSettings">
-                            <div class="listTopPaging">
-                            </div>
-                        </div>
-                        <div id="items" class="itemsContainer" style="max-width: 800px; margin: 0 auto;"></div>
-                    </div>
-                </neon-animatable>
-                <neon-animatable>
-                    <div class="pageTabContent recordingsTabContent" data-index="3">
-                        <div id="activeRecordings" class="homePageSection hide">
-                            <h1 class="listHeader">${HeaderActiveRecordings}</h1>
-                            <div class="recordingItems itemsContainer"></div>
-                            <br />
-                        </div>
-                        <div id="latestRecordings" class="homePageSection hide">
-                            <div>
-                                <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderLatestRecordings}</h1>
-                                <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
-                            </div>
-                            <div class="recordingItems itemsContainer"></div>
-                            <br />
-                        </div>
-                        <div id="recordingGroups" style="display: none;" class="homePageSection">
-                            <h1 class="listHeader">
-                                <a href="livetvrecordinglist.html">${HeaderAllRecordings}<img src="css/images/rightarrow.png" class="headerArrowImage" /></a>
-                            </h1>
-                            <div id="recordingGroupItems"></div>
-                        </div>
-                    </div>
-                </neon-animatable>
-                <neon-animatable>
-                    <div class="pageTabContent timersTabContent" data-index="4">
-                        <div style="max-width: 700px; margin: 0 auto;" id="items">
-                        </div>
-                    </div>
-                </neon-animatable>
-                <neon-animatable>
-                    <div class="pageTabContent seriesTimersTabContent" data-index="5">
-                        <div style="max-width: 700px; margin: 0 auto;" id="items">
-                        </div>
-                    </div>
-                </neon-animatable>
-            </neon-animated-pages>
-        </div>
-
-        <div data-role="content">
+    <div class="libraryViewNav libraryViewNavWithMinHeight">
+        <paper-tabs hidescrollbuttons noink>
+            <paper-tab>${TabSuggestions}</paper-tab>
+            <paper-tab>${TabGuide}</paper-tab>
+            <paper-tab>${TabChannels}</paper-tab>
+            <paper-tab>${TabRecordings}</paper-tab>
+            <paper-tab>${TabScheduled}</paper-tab>
+            <paper-tab>${TabSeries}</paper-tab>
+        </paper-tabs>
+        <div class="legacyTabs">
+            <a href="livetv.html">${TabSuggestions}</a>
+            <a href="livetv.html?tab=1">${TabGuide}</a>
+            <a href="livetv.html?tab=2">${TabChannels}</a>
+            <a href="livetv.html?tab=3">${TabRecordings}</a>
+            <a href="livetv.html?tab=4">${TabScheduled}</a>
+            <a href="livetv.html?tab=5">${TabSeries}</a>
         </div>
     </div>
-</body>
-</html>
+
+    <div class="ehsContent fullWidth">
+        <neon-animated-pages>
+            <neon-animatable>
+                <div class="pageTabContent suggestedTabContent" data-index="0">
+                    <div id="activePrograms" class="homePageSection">
+                        <h1 class="listHeader">${HeaderWhatsOnTV}</h1>
+                        <div class="activeProgramItems itemsContainer noautoinit"></div>
+                        <br />
+                    </div>
+                    <div id="upcomingPrograms" class="homePageSection" style="margin-top: 1em;">
+                        <h1 class="listHeader">${HeaderUpcomingPrograms}</h1>
+                        <div class="upcomingProgramItems itemsContainer noautoinit"></div>
+                        <br />
+                    </div>
+                    <div id="upcomingTvMovies" class="homePageSection" style="margin-top: 1em;">
+                        <div>
+                            <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderUpcomingMovies}</h1>
+                            <a href="livetvitems.html?type=movies" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
+                        </div>
+                        <div class="upcomingTvMovieItems itemsContainer noautoinit"></div>
+                        <br />
+                    </div>
+                    <div id="upcomingSports" class="homePageSection" style="margin-top: 1em;">
+                        <div>
+                            <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderUpcomingSports}</h1>
+                            <a href="livetvitems.html?type=sports" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
+                        </div>
+                        <div class="upcomingSportsItems itemsContainer noautoinit"></div>
+                        <br />
+                    </div>
+                    <div id="upcomingKids" class="homePageSection" style="margin-top: 1em;">
+                        <div>
+                            <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderUpcomingForKids}</h1>
+                            <a href="livetvitems.html?type=kids" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
+                        </div>
+                        <div class="upcomingKidsItems itemsContainer noautoinit"></div>
+                        <br />
+                    </div>
+                </div>
+            </neon-animatable>
+            <neon-animatable>
+                <div class="pageTabContent guideTabContent" style="width: auto;" data-index="1">
+                </div>
+            </neon-animatable>
+            <neon-animatable>
+                <div class="pageTabContent channelsTabContent" data-index="2">
+                    <div class="viewSettings">
+                        <div class="listTopPaging">
+                        </div>
+                    </div>
+                    <div id="items" class="itemsContainer" style="max-width: 800px; margin: 0 auto;"></div>
+                </div>
+            </neon-animatable>
+            <neon-animatable>
+                <div class="pageTabContent recordingsTabContent" data-index="3">
+                    <div id="activeRecordings" class="homePageSection hide">
+                        <h1 class="listHeader">${HeaderActiveRecordings}</h1>
+                        <div class="recordingItems itemsContainer"></div>
+                        <br />
+                    </div>
+                    <div id="latestRecordings" class="homePageSection hide">
+                        <div>
+                            <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderLatestRecordings}</h1>
+                            <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
+                        </div>
+                        <div class="recordingItems itemsContainer"></div>
+                        <br />
+                    </div>
+                    <div id="recordingGroups" style="display: none;" class="homePageSection">
+                        <h1 class="listHeader">
+                            <a href="livetvrecordinglist.html">${HeaderAllRecordings}<img src="css/images/rightarrow.png" class="headerArrowImage" /></a>
+                        </h1>
+                        <div id="recordingGroupItems"></div>
+                    </div>
+                </div>
+            </neon-animatable>
+            <neon-animatable>
+                <div class="pageTabContent timersTabContent" data-index="4">
+                    <div style="max-width: 700px; margin: 0 auto;" id="items">
+                    </div>
+                </div>
+            </neon-animatable>
+            <neon-animatable>
+                <div class="pageTabContent seriesTimersTabContent" data-index="5">
+                    <div style="max-width: 700px; margin: 0 auto;" id="items">
+                    </div>
+                </div>
+            </neon-animatable>
+        </neon-animated-pages>
+    </div>
+
+    <div data-role="content">
+    </div>
+</div>

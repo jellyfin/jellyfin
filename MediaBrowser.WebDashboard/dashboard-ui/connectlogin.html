@@ -1,116 +1,108 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>${TitleSignIn}</title>
-</head>
-<body>
-    <div id="connectLoginPage" data-role="page" class="page standalonePage connectLoginPage" data-theme="b" data-require="scripts/connectlogin,paper-input">
+﻿<div id="connectLoginPage" data-role="page" class="page standalonePage connectLoginPage" data-theme="b" data-require="scripts/connectlogin,paper-input">
 
-        <div data-role="content">
+    <div data-role="content">
 
-            <form class="connectLoginForm" style="margin: 0 auto;display:none;">
+        <form class="connectLoginForm" style="margin: 0 auto;display:none;">
 
-                <div style="display: none;">
-                    <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete" autocomplete="address-level4" />
-                </div>
+            <div style="display: none;">
+                <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete" autocomplete="address-level4" />
+            </div>
 
-                <h1 style="text-align: left;">${HeaderSignInWithConnect}</h1>
-                <div>
-                    <paper-input type="text" id="txtManualName" required="required" label="${LabelUser}" autocomplete="off"></paper-input>
-                    <div class="fieldDescription" style="text-align:left;">${LabelEnterConnectUserNameHelp}</div>
-                </div>
-                <div>
-                    <paper-input type="password" id="txtManualPassword" required="required" label="${LabelPassword}" autocomplete="off"></paper-input>
-                </div>
-                <br />
-                <button type="submit" data-role="none" class="clearButton">
-                    <paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${ButtonSignIn}</span></paper-button>
-                </button>
-                <div class="forgotPassword">
-                    <a href="https://emby.media/community/index.php?app=core&module=global&section=lostpass" target="_blank" class="clearLink">
-                        <paper-button raised class="cancel block"><iron-icon icon="close"></iron-icon><span>${ButtonForgotPassword}</span></paper-button>
-                    </a>
-                </div>
-                <div class="skip">
-                    <paper-button raised class="cancel block btnSkipConnect"><iron-icon icon="close"></iron-icon><span>${ButtonSkip}</span></paper-button>
-                    <div class="fieldDescription" style="text-align:center;">${TextConnectToServerManually}</div>
-                </div>
+            <h1 style="text-align: left;">${HeaderSignInWithConnect}</h1>
+            <div>
+                <paper-input type="text" id="txtManualName" required="required" label="${LabelUser}" autocomplete="off"></paper-input>
+                <div class="fieldDescription" style="text-align:left;">${LabelEnterConnectUserNameHelp}</div>
+            </div>
+            <div>
+                <paper-input type="password" id="txtManualPassword" required="required" label="${LabelPassword}" autocomplete="off"></paper-input>
+            </div>
+            <br />
+            <button type="submit" data-role="none" class="clearButton">
+                <paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${ButtonSignIn}</span></paper-button>
+            </button>
+            <div class="forgotPassword">
+                <a href="https://emby.media/community/index.php?app=core&module=global&section=lostpass" target="_blank" class="clearLink">
+                    <paper-button raised class="cancel block"><iron-icon icon="close"></iron-icon><span>${ButtonForgotPassword}</span></paper-button>
+                </a>
+            </div>
+            <div class="skip">
+                <paper-button raised class="cancel block btnSkipConnect"><iron-icon icon="close"></iron-icon><span>${ButtonSkip}</span></paper-button>
+                <div class="fieldDescription" style="text-align:center;">${TextConnectToServerManually}</div>
+            </div>
 
-                <div class="newUsers" style="margin-top: 2em;">
-                    <h2 style="text-align: left;">${HeaderNewUsers}</h2>
-                    <a href="https://emby.media/community/index.php?app=core&module=global&section=register" target="_blank" class="clearLink">
-                        <paper-button raised class="submit block btnSignupForConnect"><iron-icon icon="add"></iron-icon><span>${ButtonSignUp}</span></paper-button>
-                    </a>
-                </div>
-                <div class="terms hide fieldDescription" style="margin-top: 2em; color: #ccc;"></div>
-                <div class="hide tvAppInfo"><br/><br/><iron-icon icon="new-releases" style="color: #52B54B"></iron-icon> Try the new <a href="//tv.emby.media" target="_blank">Emby Theater at tv.emby.media</a>, a remote-friendly app designed for your TV or large screen monitor.</div>
-            </form>
+            <div class="newUsers" style="margin-top: 2em;">
+                <h2 style="text-align: left;">${HeaderNewUsers}</h2>
+                <a href="https://emby.media/community/index.php?app=core&module=global&section=register" target="_blank" class="clearLink">
+                    <paper-button raised class="submit block btnSignupForConnect"><iron-icon icon="add"></iron-icon><span>${ButtonSignUp}</span></paper-button>
+                </a>
+            </div>
+            <div class="terms hide fieldDescription" style="margin-top: 2em; color: #ccc;"></div>
+            <div class="hide tvAppInfo"><br /><br /><iron-icon icon="new-releases" style="color: #52B54B"></iron-icon> Try the new <a href="//tv.emby.media" target="_blank">Emby Theater at tv.emby.media</a>, a remote-friendly app designed for your TV or large screen monitor.</div>
+        </form>
 
-            <form class="manualServerForm" style="margin: 0 auto;display:none;">
+        <form class="manualServerForm" style="margin: 0 auto;display:none;">
 
-                <div style="display: none;">
-                    <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete" autocomplete="address-level4" />
-                </div>
+            <div style="display: none;">
+                <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete" autocomplete="address-level4" />
+            </div>
 
-                <h1 style="text-align: left;">${HeaderConnectToServer}</h1>
-                <div>
-                    <paper-input type="text" id="txtServerHost" required="required" label="${LabelServerHost}"></paper-input>
-                    <div class="fieldDescription" style="text-align:left;">${LabelServerHostHelp}</div>
-                </div>
-                <br />
-                <div>
-                    <paper-input type="number" id="txtServerPort" step="1" min="0" value="8096" label="${LabelServerPort}"></paper-input>
-                </div>
-                <br />
+            <h1 style="text-align: left;">${HeaderConnectToServer}</h1>
+            <div>
+                <paper-input type="text" id="txtServerHost" required="required" label="${LabelServerHost}"></paper-input>
+                <div class="fieldDescription" style="text-align:left;">${LabelServerHostHelp}</div>
+            </div>
+            <br />
+            <div>
+                <paper-input type="number" id="txtServerPort" step="1" min="0" value="8096" label="${LabelServerPort}"></paper-input>
+            </div>
+            <br />
 
-                <button type="submit" data-role="none" class="clearButton">
-                    <paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${ButtonConnect}</span></paper-button>
-                </button>
-                <paper-button raised class="cancel block btnCancelManualServer"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
-            </form>
+            <button type="submit" data-role="none" class="clearButton">
+                <paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${ButtonConnect}</span></paper-button>
+            </button>
+            <paper-button raised class="cancel block btnCancelManualServer"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+        </form>
 
-            <form class="signupForm" style="margin: 0 auto;display:none;">
+        <form class="signupForm" style="margin: 0 auto;display:none;">
 
-                <div style="display: none;">
-                    <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete" autocomplete="address-level4" />
-                </div>
+            <div style="display: none;">
+                <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete" autocomplete="address-level4" />
+            </div>
 
-                <h1 style="text-align: left;">${HeaderSignUp}</h1>
-                <br />
-                <div>
-                    <paper-input type="text" id="txtSignupEmail" required="required" label="${LabelEmail}"></paper-input>
-                </div>
-                <div>
-                    <paper-input type="text" id="txtSignupUsername" required="required" label="${LabelUsername}"></paper-input>
-                </div>
-                <div>
-                    <paper-input type="password" id="txtSignupPassword" required="required" label="${LabelPassword}" autocomplete="off"></paper-input>
-                </div>
-                <div>
-                    <paper-input type="password" id="txtSignupPasswordConfirm" required="required" label="${LabelPasswordConfirm}" autocomplete="off"></paper-input>
-                </div>
+            <h1 style="text-align: left;">${HeaderSignUp}</h1>
+            <br />
+            <div>
+                <paper-input type="text" id="txtSignupEmail" required="required" label="${LabelEmail}"></paper-input>
+            </div>
+            <div>
+                <paper-input type="text" id="txtSignupUsername" required="required" label="${LabelUsername}"></paper-input>
+            </div>
+            <div>
+                <paper-input type="password" id="txtSignupPassword" required="required" label="${LabelPassword}" autocomplete="off"></paper-input>
+            </div>
+            <div>
+                <paper-input type="password" id="txtSignupPasswordConfirm" required="required" label="${LabelPasswordConfirm}" autocomplete="off"></paper-input>
+            </div>
 
-                <div class="g-recaptcha" id="recaptchaWidget" data-sitekey="6Le2LAgTAAAAAK06Wvttt_yUnbISTy6q3Azqp9po" data-theme="dark"></div>
-                <br />
+            <div class="g-recaptcha" id="recaptchaWidget" data-sitekey="6Le2LAgTAAAAAK06Wvttt_yUnbISTy6q3Azqp9po" data-theme="dark"></div>
+            <br />
 
-                <button type="submit" data-role="none" class="clearButton">
-                    <paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${ButtonSignUp}</span></paper-button>
-                </button>
-                <paper-button raised class="cancel block btnCancelSignup"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
-            </form>
+            <button type="submit" data-role="none" class="clearButton">
+                <paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${ButtonSignUp}</span></paper-button>
+            </button>
+            <paper-button raised class="cancel block btnCancelSignup"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+        </form>
 
-            <div class="welcomeContainer readOnlyContent" style="text-align: center; margin: 0 auto; display: none;">
+        <div class="welcomeContainer readOnlyContent" style="text-align: center; margin: 0 auto; display: none;">
 
-                <div style="text-align: left;">
-                    <h1>${HeaderWelcomeToEmby}</h1>
-                    <p style="margin: 2em 0;">${EmbyIntroMessage}</p>
-                    <p style="margin: 2em 0;" class="embyIntroDownloadMessage"></p>
+            <div style="text-align: left;">
+                <h1>${HeaderWelcomeToEmby}</h1>
+                <p style="margin: 2em 0;">${EmbyIntroMessage}</p>
+                <p style="margin: 2em 0;" class="embyIntroDownloadMessage"></p>
 
 
-                    <paper-button raised class="accent block btnWelcomeNext iconRight"><iron-icon icon="arrow-forward"></iron-icon><span>${ButtonNext}</span></paper-button>
-                </div>
+                <paper-button raised class="accent block btnWelcomeNext iconRight"><iron-icon icon="arrow-forward"></iron-icon><span>${ButtonNext}</span></paper-button>
             </div>
         </div>
     </div>
-</body>
-</html>
+</div>

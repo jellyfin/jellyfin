@@ -21,21 +21,6 @@ window.Logger = {
 
 var Dashboard = {
 
-    filterHtml: function (html) {
-
-        // replace the first instance
-        html = html.replace('<!--', '');
-
-        // replace the last instance
-        var lastIndex = html.lastIndexOf('-->');
-
-        if (lastIndex != -1) {
-            html = html.substring(0, lastIndex) + html.substring(lastIndex + 3);
-        }
-
-        return Globalize.translateDocument(html, 'core');
-    },
-
     isConnectMode: function () {
 
         if (AppInfo.isNativeApp) {
@@ -346,18 +331,7 @@ var Dashboard = {
 
     reloadPage: function () {
 
-        var currentUrl = window.location.href.toLowerCase();
-        var newUrl;
-
-        // If they're on a plugin config page just go back to the dashboard
-        // The plugin may not have been loaded yet, or could have been uninstalled
-        if (currentUrl.indexOf('configurationpage') != -1) {
-            newUrl = "dashboard.html";
-        } else {
-            newUrl = window.location.href;
-        }
-
-        window.location.href = newUrl;
+        window.location.reload(true);
     },
 
     hideDashboardVersionWarning: function () {
@@ -436,7 +410,7 @@ var Dashboard = {
     },
 
     getConfigurationPageUrl: function (name) {
-        return "ConfigurationPage?name=" + encodeURIComponent(name);
+        return "configurationpage?name=" + encodeURIComponent(name);
     },
 
     navigate: function (url, preserveQueryString) {
@@ -450,9 +424,12 @@ var Dashboard = {
             url += queryString;
         }
 
-        var options = {};
-
-        $.mobile.changePage(url, options);
+        if (url.indexOf('/') != 0) {
+            if (url.indexOf('http') != 0 && url.indexOf('file:') != 0) {
+                url = '/' + url;
+            }
+        }
+        Emby.Page.show(url);
     },
 
     showLoadingMsg: function () {
@@ -616,35 +593,6 @@ var Dashboard = {
         Dashboard.navigate('mypreferencesmenu.html?userId=' + ApiClient.getCurrentUserId());
     },
 
-    updateUserFlyout: function (elem, user) {
-
-        var html = '';
-        var imgWidth = 48;
-
-        if (user.imageUrl) {
-            var url = user.imageUrl;
-
-            if (user.supportsImageParams) {
-                url += "&width=" + (imgWidth * Math.max(window.devicePixelRatio || 1, 2));
-            }
-
-            html += '<div style="background-image:url(\'' + url + '\');width:' + imgWidth + 'px;height:' + imgWidth + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin-right:.8em;display:inline-block;"></div>';
-        }
-        html += user.name;
-
-        var userHeader = elem.querySelector('.userHeader');
-        userHeader.innerHTML = html;
-        ImageLoader.lazyChildren(userHeader);
-
-        html = '';
-
-        if (user.localUser) {
-            html += '<p><a data-mini="true" data-role="button" href="mypreferencesmenu.html?userId=' + user.localUser.Id + '" data-icon="gear">' + Globalize.translate('ButtonSettings') + '</button></a>';
-        }
-
-        $('.preferencesContainer', elem).html(html);
-    },
-
     getPluginSecurityInfo: function () {
 
         var apiClient = ApiClient;
@@ -695,7 +643,7 @@ var Dashboard = {
 
             headerHtml += '<div class="header">';
 
-            headerHtml += '<a class="logo" href="index.html" style="text-decoration:none;font-size: 22px;">';
+            headerHtml += '<a class="logo" href="home.html" style="text-decoration:none;font-size: 22px;">';
 
             if (page.classList.contains('standalonePage')) {
 
@@ -903,7 +851,7 @@ var Dashboard = {
         switch (cmd.Name) {
 
             case 'GoHome':
-                Dashboard.navigate('index.html');
+                Dashboard.navigate('home.html');
                 break;
             case 'GoToSettings':
                 Dashboard.navigate('dashboard.html');
@@ -1431,6 +1379,7 @@ var AppInfo = {};
         AppInfo.enableHomeTabs = true;
         AppInfo.enableNowPlayingPageBottomTabs = true;
         AppInfo.enableAutoSave = browserInfo.mobile;
+        AppInfo.enableHashBang = Dashboard.isRunningInCordova();
 
         AppInfo.enableAppStorePolicy = isCordova;
 
@@ -1540,7 +1489,39 @@ var AppInfo = {};
         initializeApiClient(newApiClient);
 
         // This is not included in jQuery slim
-        $.ajax = newApiClient.ajax;
+        if (window.$) {
+            $.ajax = newApiClient.ajax;
+        }
+    }
+
+    function defineConnectionManager(connectionManager) {
+        define('connectionManager', [], function () {
+            return connectionManager;
+        });
+    }
+
+    var localApiClient;
+    function bindConnectionManagerEvents(connectionManager, events) {
+
+        connectionManager.currentApiClient = function () {
+
+            if (!localApiClient) {
+                var server = connectionManager.getLastUsedServer();
+                localApiClient = connectionManager.getApiClient(server.Id);
+            }
+            return localApiClient;
+        };
+
+        //events.on(connectionManager, 'apiclientcreated', function (e, newApiClient) {
+
+        //    //$(newApiClient).on("websocketmessage", Dashboard.onWebSocketMessageReceived).on('requestfail', Dashboard.onRequestFail);
+        //    newApiClient.normalizeImageOptions = normalizeImageOptions;
+        //});
+
+        events.on(connectionManager, 'localusersignedin', function (e, user) {
+            localApiClient = connectionManager.getApiClient(user.ServerId);
+            window.ApiClient = localApiClient;
+        });
     }
 
     //localStorage.clear();
@@ -1555,6 +1536,9 @@ var AppInfo = {};
 
             window.ConnectionManager = new MediaBrowser.ConnectionManager(credentialProvider, AppInfo.appName, AppInfo.appVersion, AppInfo.deviceName, AppInfo.deviceId, capabilities, window.devicePixelRatio);
 
+            defineConnectionManager(window.ConnectionManager);
+            bindConnectionManagerEvents(window.ConnectionManager, Events);
+
             if (window.location.href.toLowerCase().indexOf('wizardstart.html') != -1) {
                 window.ConnectionManager.clearData();
             }
@@ -1564,22 +1548,7 @@ var AppInfo = {};
 
             if (Dashboard.isConnectMode()) {
 
-                var server = ConnectionManager.getLastUsedServer();
-
-                if (!Dashboard.isServerlessPage()) {
-
-                    if (server && server.UserId && server.AccessToken) {
-                        Dashboard.showLoadingMsg();
-
-                        return ConnectionManager.connectToServer(server).then(function (result) {
-                            Dashboard.hideLoadingMsg();
-
-                            if (result.State == MediaBrowser.ConnectionState.SignedIn) {
-                                window.ApiClient = result.ApiClient;
-                            }
-                        });
-                    }
-                }
+                return Promise.resolve();
 
             } else {
 
@@ -1729,8 +1698,8 @@ var AppInfo = {};
             headroom: bowerPath + '/headroom.js/dist/headroom.min',
             masonry: bowerPath + '/masonry/dist/masonry.pkgd.min',
             humanedate: 'components/humanedate',
+            libraryBrowser: 'scripts/librarybrowser',
             chromecasthelpers: 'components/chromecasthelpers',
-            jQuery: bowerPath + '/jquery/dist/jquery.slim.min',
             fastclick: bowerPath + '/fastclick/lib/fastclick',
             events: apiClientBowerPath + '/events',
             credentialprovider: apiClientBowerPath + '/credentials',
@@ -1743,6 +1712,7 @@ var AppInfo = {};
             connectservice: apiClientBowerPath + '/connectservice',
             hammer: bowerPath + "/hammerjs/hammer.min",
             layoutManager: embyWebComponentsBowerPath + "/layoutmanager",
+            pageJs: embyWebComponentsBowerPath + '/page.js/page',
             focusManager: embyWebComponentsBowerPath + "/focusmanager",
             globalize: embyWebComponentsBowerPath + "/globalize",
             imageLoader: embyWebComponentsBowerPath + "/images/imagehelper"
@@ -1772,7 +1742,10 @@ var AppInfo = {};
         }
 
         define("backdrop", [embyWebComponentsBowerPath + "/backdrop/backdrop"], returnFirstDependency);
-        define("fetchHelper", [embyWebComponentsBowerPath + "/fetchhelper"], returnFirstDependency);
+        define("viewManager", [embyWebComponentsBowerPath + "/viewmanager"], function (viewManager) {
+            viewManager.dispatchPageEvents(true);
+            return viewManager;
+        });
 
         // hack for an android test before browserInfo is loaded
         if (Dashboard.isRunningInCordova() && window.MainActivity) {
@@ -1853,9 +1826,8 @@ var AppInfo = {};
 
         define("jstree", [bowerPath + "/jstree/dist/jstree", "css!thirdparty/jstree/themes/default/style.min.css"]);
 
-        define('jqm', ['thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js'], function() {
-            $.mobile.filterHtml = Dashboard.filterHtml;
-        });
+        define('jqm', ['thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js']);
+
         define("jqmbase", ['css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.css']);
         define("jqmicons", ['jqmbase', 'css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css']);
         define("jqmtable", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.table", 'css!thirdparty/jquerymobile-1.4.5/jqm.table.css']);
@@ -1919,18 +1891,23 @@ var AppInfo = {};
         define("opensansFont", ['css!' + embyWebComponentsBowerPath + '/fonts/opensans/style']);
         define("montserratFont", ['css!' + embyWebComponentsBowerPath + '/fonts/montserrat/style']);
 
+        define("viewcontainer", ['components/viewcontainer-lite'], returnFirstDependency);
+        define('queryString', [bowerPath + '/query-string/index'], function () {
+            return queryString;
+        });
+
+        define("jQuery", [bowerPath + '/jquery/dist/jquery.slim.min'], function () {
+
+            require(['legacy/fnchecked']);
+            if (window.ApiClient) {
+                jQuery.ajax = ApiClient.ajax;
+            }
+            return jQuery;
+        });
+
         // alias
         define("historyManager", [], function () {
-            return {
-                pushState: function (state, title, url) {
-                    state.navigate = false;
-                    history.pushState(state, title, url);
-                    jQuery.onStatePushed(state);
-                },
-                enableNativeHistory: function () {
-                    return true;
-                }
-            };
+            return Emby.Page;
         });
 
         // mock this for now. not used in this app
@@ -1940,6 +1917,23 @@ var AppInfo = {};
                 },
                 off: function () {
                 }
+            };
+        });
+
+        // mock this for now. not used in this app
+        define("skinManager", [], function () {
+
+            return {
+                loadUserSkin: function () {
+
+                    Emby.Page.show('/home.html');
+                }
+            };
+        });
+
+        // mock this for now. not used in this app
+        define("pluginManager", [], function () {
+            return {
             };
         });
 
@@ -1954,6 +1948,32 @@ var AppInfo = {};
         });
 
         define('dialogText', ['globalize'], getDialogText());
+
+        define("router", [embyWebComponentsBowerPath + '/router'], function (embyRouter) {
+
+            embyRouter.showLocalLogin = function (apiClient, serverId, manualLogin) {
+                Dashboard.navigate('login.html?serverid=' + serverId);
+            };
+
+            embyRouter.showSelectServer = function () {
+                Dashboard.navigate('selectserver.html');
+            };
+
+            embyRouter.showWelcome = function () {
+
+                if (Dashboard.isConnectMode()) {
+                    Dashboard.navigate('connectlogin.html?mode=welcome');
+                } else {
+                    Dashboard.navigate('login.html');
+                }
+            };
+
+            embyRouter.showSettings = function () {
+                Dashboard.navigate('mypreferencesmenu.html?userId=' + ApiClient.getCurrentUserId());
+            };
+
+            return embyRouter;
+        });
     }
 
     function updateAppSettings(appSettings) {
@@ -2118,15 +2138,7 @@ var AppInfo = {};
                 MediaBrowser[i] = connectionManagerExports[i];
             }
 
-            var promises = [];
-            deps = [];
-            deps.push('jQuery');
-
-            promises.push(getRequirePromise(deps));
-
-            promises.push(createConnectionManager(credentialProviderFactory, Dashboard.capabilities()));
-
-            Promise.all(promises).then(function () {
+            createConnectionManager(credentialProviderFactory, Dashboard.capabilities()).then(function () {
 
                 console.log('initAfterDependencies promises resolved');
                 MediaController.init();
@@ -2163,57 +2175,722 @@ var AppInfo = {};
     }
 
     function onGlobalizeInit() {
+
         document.title = Globalize.translateDocument(document.title, 'core');
-
-        var mainDrawerPanelContent = document.querySelector('.mainDrawerPanelContent');
-
-        if (mainDrawerPanelContent) {
-
-            var newHtml = mainDrawerPanelContent.innerHTML.substring(4);
-            newHtml = newHtml.substring(0, newHtml.length - 3);
-
-            var srch = 'data-require=';
-            var index = newHtml.indexOf(srch);
-            var depends;
-
-            if (index != -1) {
-
-                var requireAttribute = newHtml.substring(index + srch.length + 1);
-
-                requireAttribute = requireAttribute.substring(0, requireAttribute.indexOf('"'));
-                depends = requireAttribute.split(',');
-            }
-
-            depends = depends || [];
-
-            depends.push('scripts/mediaplayer');
-            depends.push('legacy/fnchecked');
-
-            if (newHtml.indexOf('type-interior') != -1) {
-                addLegacyDependencies(depends, window.location.href);
-            }
-
-            require(depends, function () {
-
-                MediaPlayer.init();
-
-                // Don't like having to use jQuery here, but it takes care of making sure that embedded script executes
-                $(mainDrawerPanelContent).html(Globalize.translateDocument(newHtml, 'core'));
-                onAppReady();
-            });
-            return;
-        }
 
         onAppReady();
     }
 
+    function defineRoute(newRoute, dictionary) {
+
+        var baseRoute = Emby.Page.baseUrl();
+
+        var path = newRoute.path;
+
+        path = path.replace(baseRoute, '');
+
+        console.log('Defining route: ' + path);
+
+        newRoute.dictionary = newRoute.dictionary || dictionary || 'core';
+        Emby.Page.addRoute(path, newRoute);
+    }
+
+    function defineCoreRoutes() {
+
+        console.log('Defining core routes');
+
+        defineRoute({
+            path: '/about.html',
+            dependencies: ['jQuery'],
+            autoFocus: false,
+            controller: 'scripts/aboutpage'
+        });
+
+        defineRoute({
+            path: '/addplugin.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/advanced.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/appservices.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/autoorganizelog.html',
+            dependencies: ['jQuery']
+        });
+
+        defineRoute({
+            path: '/autoorganizesmart.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/autoorganizetv.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/channelitems.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/channels.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/channelsettings.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/cinemamodeconfiguration.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/collections.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/connectlogin.html',
+            dependencies: ['jQuery'],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/dashboard.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/dashboardgeneral.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/dashboardhosting.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/device.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/devices.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/devicesupload.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/dlnaprofile.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/dlnaprofiles.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/dlnaserversettings.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/dlnasettings.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/edititemmetadata.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/encodingsettings.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/favorites.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/forgotpassword.html',
+            dependencies: ['jQuery'],
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/forgotpasswordpin.html',
+            dependencies: ['jQuery'],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/gamegenres.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/games.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/gamesrecommended.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/gamestudios.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/gamesystems.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/home.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/index.html',
+            dependencies: ['jQuery'],
+            autoFocus: false,
+            isDefaultRoute: true
+        });
+
+        defineRoute({
+            path: '/itemdetails.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/itemlist.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/kids.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/library.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/librarypathmapping.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/librarysettings.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/livetv.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/livetvguideprovider.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/livetvitems.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/livetvrecordinglist.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/livetvseriestimer.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/livetvsettings.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/livetvstatus.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/livetvtimer.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/livetvtunerprovider-hdhomerun.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/livetvtunerprovider-m3u.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/livetvtunerprovider-satip.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/log.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/login.html',
+            dependencies: ['jQuery'],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/metadata.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/metadataadvanced.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/metadataimages.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/metadatanfo.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/metadatasubtitles.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/movies.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/music.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/mypreferencesdisplay.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/mypreferenceshome.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/mypreferenceslanguages.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/mypreferencesmenu.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/myprofile.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/mysync.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/mysyncjob.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/mysyncsettings.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/notificationlist.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/notificationsetting.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/notificationsettings.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/nowplaying.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/photos.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/playbackconfiguration.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/playlists.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/plugincatalog.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/plugins.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/reports.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/scheduledtask.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/scheduledtasks.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/search.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/secondaryitems.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/selectserver.html',
+            dependencies: ['jQuery'],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/serversecurity.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/shared.html',
+            dependencies: ['jQuery'],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/streamingsettings.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/support.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/supporterkey.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/syncactivity.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/syncjob.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/syncsettings.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/tv.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/useredit.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/userlibraryaccess.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/usernew.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/userparentalcontrol.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/userpassword.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/userprofiles.html',
+            dependencies: ['jQuery'],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/wizardagreement.html',
+            dependencies: ['jQuery'],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/wizardfinish.html',
+            dependencies: ['jQuery'],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/wizardlibrary.html',
+            dependencies: ['jQuery'],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/wizardlivetvguide.html',
+            dependencies: ['jQuery'],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/wizardlivetvtuner.html',
+            dependencies: ['jQuery'],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/wizardservice.html',
+            dependencies: ['jQuery'],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/wizardsettings.html',
+            dependencies: ['jQuery'],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/wizardstart.html',
+            dependencies: ['jQuery'],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/wizarduser.html',
+            dependencies: ['jQuery'],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/configurationpage',
+            dependencies: ['jQuery'],
+            autoFocus: false,
+            enableCache: false,
+            enableContentQueryString: true
+        });
+
+        defineRoute({
+            path: '/',
+            isDefaultRoute: true,
+            autoFocus: false,
+            dependencies: []
+        });
+    }
+
     function onAppReady() {
+
+        require(['scripts/mediaplayer'], function () {
+
+            MediaPlayer.init();
+        });
 
         console.log('Begin onAppReady');
 
         var deps = [];
 
         deps.push('imageLoader');
+        deps.push('router');
 
         if (!(AppInfo.isNativeApp && browserInfo.android)) {
             document.documentElement.classList.add('minimumSizeTabs');
@@ -2254,17 +2931,23 @@ var AppInfo = {};
         deps.push('scripts/search');
         deps.push('scripts/librarylist');
         deps.push('scripts/librarymenu');
-        deps.push('scripts/librarybrowser');
-        deps.push('jqm');
 
         deps.push('css!css/card.css');
 
-        require(deps, function (imageLoader) {
+        require(deps, function (imageLoader, pageObjects) {
 
             imageLoader.enableFade = browserInfo.animate && !browserInfo.mobile;
             window.ImageLoader = imageLoader;
 
-            $.mobile.initializePage();
+            //$.mobile.initializePage();
+            window.Emby = {};
+            window.Emby.Page = pageObjects;
+            window.Emby.TransparencyLevel = pageObjects.TransparencyLevel;
+            defineCoreRoutes();
+            Emby.Page.start({
+                click: true,
+                hashbang: AppInfo.enableHashBang
+            });
 
             var postInitDependencies = [];
 
@@ -2458,22 +3141,6 @@ var AppInfo = {};
 
 })();
 
-function addLegacyDependencies(depends, url) {
-
-    var isPluginpage = url.toLowerCase().indexOf('/configurationpage?') != -1;
-
-    if (isPluginpage) {
-        depends.push('jqmpopup');
-        depends.push('jqmcollapsible');
-        depends.push('jqmcheckbox');
-        depends.push('legacy/dashboard');
-    }
-
-    depends.push('jqmcontrolgroup');
-    depends.push('jqmlistview');
-    depends.push('scripts/notifications');
-}
-
 function pageClassOn(eventName, className, fn) {
 
     document.addEventListener(eventName, function (e) {
@@ -2496,7 +3163,7 @@ function pageIdOn(eventName, id, fn) {
     });
 }
 
-pageClassOn('pagecreate', "page", function () {
+pageClassOn('viewinit', "page", function () {
 
     var page = this;
 
@@ -2513,11 +3180,29 @@ pageClassOn('pagecreate', "page", function () {
         }
 
         page.setAttribute("data-theme", newTheme);
+        current = newTheme;
     }
 
+    page.classList.add("ui-page");
+    page.classList.add("ui-page-theme-" + current);
+
+    var contents = page.querySelectorAll("div[data-role='content']");
+
+    for (var i = 0, length = contents.length; i < length; i++) {
+        var content = contents[i];
+        //var theme = content.getAttribute("theme") || undefined;
+
+        //content.classList.add("ui-content");
+        //if (self.options.contentTheme) {
+        //    content.classList.add("ui-body-" + (self.options.contentTheme));
+        //}
+        // Add ARIA role
+        content.setAttribute("role", "main");
+        content.classList.add("ui-content");
+    }
 });
 
-pageClassOn('pageshow', "page", function () {
+pageClassOn('viewshow', "page", function () {
 
     var page = this;
 
@@ -2546,7 +3231,7 @@ pageClassOn('pageshow', "page", function () {
 
     var apiClient = window.ApiClient;
 
-    if (apiClient && apiClient.accessToken() && Dashboard.getCurrentUserId()) {
+    if (apiClient && apiClient.isLoggedIn()) {
 
         var isSettingsPage = page.classList.contains('type-interior');
 
@@ -2563,29 +3248,9 @@ pageClassOn('pageshow', "page", function () {
         }
     }
 
-    else {
-
-        var isConnectMode = Dashboard.isConnectMode();
-
-        if (isConnectMode) {
-
-            if (!Dashboard.isServerlessPage()) {
-                Dashboard.logout();
-                return;
-            }
-        }
-
-        if (!isConnectMode && this.id !== "loginPage" && !page.classList.contains('forgotPasswordPage') && !page.classList.contains('forgotPasswordPinPage') && !page.classList.contains('wizardPage') && this.id !== 'publicSharedItemPage') {
-
-            console.log('Not logged into server. Redirecting to login.');
-            Dashboard.logout();
-            return;
-        }
-    }
-
     Dashboard.ensureHeader(page);
 
-    if (apiClient && !apiClient.isWebSocketOpen()) {
+    if (apiClient && apiClient.isLoggedIn() && !apiClient.isWebSocketOpen()) {
         Dashboard.refreshSystemInfoFromServer();
     }
 

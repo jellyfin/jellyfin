@@ -116,7 +116,7 @@
             headerUserButton.src = src;
         } else if (icon) {
             headerUserButton.classList.remove('headerUserButtonRound');
-            header.icon = icon;
+            headerUserButton.icon = icon;
         } else {
             headerUserButton.classList.remove('headerUserButtonRound');
         }
@@ -319,7 +319,7 @@
 
         var html = '';
 
-        var homeHref = window.ApiClient ? 'index.html' : 'selectserver.html?showuser=1';
+        var homeHref = window.ApiClient ? 'home.html' : 'selectserver.html?showuser=1';
 
         html += '<div style="margin-top:5px;"></div>';
 
@@ -829,11 +829,11 @@
         updateTabLinks(page);
     });
 
-    pageClassOn('pageshow', 'page', function () {
+    pageClassOn('pageshow', 'page', function (e) {
 
         var page = this;
 
-        if (!NavHelper.isBack()) {
+        if (!e.detail.isRestored) {
             // Scroll back up so in case vertical scroll was messed with
             window.scrollTo(0, 0);
         }
@@ -977,26 +977,3 @@
     setDrawerClass();
 
 });
-
-(function () {
-
-    var isCurrentNavBack = false;
-
-    window.addEventListener("navigate", function (e) {
-
-        var data = e.detail.state || {};
-        var direction = data.direction;
-
-        isCurrentNavBack = direction == 'back';
-    });
-
-    function isBack() {
-
-        return isCurrentNavBack;
-    }
-
-    window.NavHelper = {
-        isBack: isBack
-    };
-
-})();
