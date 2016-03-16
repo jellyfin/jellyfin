@@ -1507,7 +1507,9 @@ var AppInfo = {};
 
             if (!localApiClient) {
                 var server = connectionManager.getLastUsedServer();
-                localApiClient = connectionManager.getApiClient(server.Id);
+                if (server) {
+                    localApiClient = connectionManager.getApiClient(server.Id);
+                }
             }
             return localApiClient;
         };
