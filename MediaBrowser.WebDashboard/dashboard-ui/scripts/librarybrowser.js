@@ -402,6 +402,8 @@
 
             onTabbedpagebeforeshowInternal: function (page, e, isFirstLoad) {
 
+                var pages = page.querySelector('neon-animated-pages');
+
                 if (isFirstLoad) {
 
                     console.log('selected tab is null, checking query string');
@@ -420,12 +422,10 @@
                         tabs.selected = selected;
 
                     } else {
-                        page.querySelector('neon-animated-pages').selected = selected;
+                        pages.selected = selected;
                     }
 
                 } else {
-
-                    var pages = page.querySelector('neon-animated-pages');
 
                     // Go back to the first tab
                     if (LibraryBrowser.enableFullPaperTabs() && !e.detail.isRestored) {

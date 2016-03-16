@@ -215,7 +215,6 @@
         if (LibraryBrowser.needsRefresh(tabContent)) {
             if (window.ApiClient) {
                 var userId = Dashboard.getCurrentUserId();
-
                 Dashboard.showLoadingMsg();
 
                 getDisplayPreferences('home', userId).then(function (result) {

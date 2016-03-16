@@ -1518,8 +1518,8 @@ var AppInfo = {};
         //});
 
         events.on(connectionManager, 'localusersignedin', function (e, user) {
-
             localApiClient = connectionManager.getApiClient(user.ServerId);
+            window.ApiClient = localApiClient;
         });
     }
 
@@ -2942,7 +2942,8 @@ var AppInfo = {};
             window.Emby.TransparencyLevel = pageObjects.TransparencyLevel;
             defineCoreRoutes();
             Emby.Page.start({
-                click: true
+                click: true,
+                hashbang: true
             });
 
             var postInitDependencies = [];
@@ -3227,7 +3228,7 @@ pageClassOn('viewshow', "page", function () {
 
     var apiClient = window.ApiClient;
 
-    if (apiClient && apiClient.accessToken() && Dashboard.getCurrentUserId()) {
+    if (apiClient && apiClient.isLoggedIn()) {
 
         var isSettingsPage = page.classList.contains('type-interior');
 
@@ -3244,29 +3245,9 @@ pageClassOn('viewshow', "page", function () {
         }
     }
 
-    else {
-
-        var isConnectMode = Dashboard.isConnectMode();
-
-        if (isConnectMode) {
-
-            if (!Dashboard.isServerlessPage()) {
-                Dashboard.logout();
-                return;
-            }
-        }
-
-        if (!isConnectMode && this.id !== "loginPage" && !page.classList.contains('forgotPasswordPage') && !page.classList.contains('forgotPasswordPinPage') && !page.classList.contains('wizardPage') && this.id !== 'publicSharedItemPage') {
-
-            console.log('Not logged into server. Redirecting to login.');
-            Dashboard.logout();
-            return;
-        }
-    }
-
     Dashboard.ensureHeader(page);
 
-    if (apiClient && !apiClient.isWebSocketOpen()) {
+    if (apiClient && apiClient.isLoggedIn() && !apiClient.isWebSocketOpen()) {
         Dashboard.refreshSystemInfoFromServer();
     }
 
