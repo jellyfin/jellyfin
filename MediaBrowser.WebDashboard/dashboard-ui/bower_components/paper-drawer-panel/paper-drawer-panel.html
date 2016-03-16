@@ -479,6 +479,8 @@ Custom property | Description | Default
           /**
            * The panel that is being selected. `drawer` for the drawer panel and
            * `main` for the main panel.
+           *
+           * @type {string|null}
            */
           selected: {
             reflectToAttribute: true,
@@ -500,6 +502,9 @@ Custom property | Description | Default
            * The CSS selector for the element that should receive focus when the drawer is open.
            * By default, when the drawer opens, it focuses the first tabbable element. That is,
            * the first element that can receive focus.
+           *
+           * To disable this behavior, you can set `drawerFocusSelector` to `null` or an empty string.
+           *
            */
           drawerFocusSelector: {
             type: String,
@@ -586,8 +591,8 @@ Custom property | Description | Default
             this.notifyResize();
           }
           if (e.propertyName === 'transform' && this.selected === 'drawer') {
-            //var focusedChild = this._getAutoFocusedNode();
-            //focusedChild && focusedChild.focus();
+            var focusedChild = this._getAutoFocusedNode();
+            focusedChild && focusedChild.focus();
           }
         },
 
@@ -756,12 +761,6 @@ Custom property | Description | Default
               }
               this._setPeeking(false);
             }
-            var dy = event.detail.dy;
-            var absDy = Math.abs(dy);
-            if (absDy >= 70) {
-                // Ignore trackx until we move past the edge peek.
-                return;
-            }
 
             this._moveDrawer(this._translateXForDeltaX(dx));
           }
@@ -776,13 +775,10 @@ Custom property | Description | Default
             sharedPanel = null;
             this._moveDrawer(null);
 
-            var dx = event.detail.dx;
-            var dy = event.detail.dy;
-            var absDy = Math.abs(dy);
             if (this.rightDrawer) {
-                this[xDirection ? 'closeDrawer' : 'openDrawer']();
+              this[xDirection ? 'closeDrawer' : 'openDrawer']();
             } else {
-                this[xDirection || dx > -80 || absDy >= 70 ? 'openDrawer' : 'closeDrawer']();
+              this[xDirection ? 'openDrawer' : 'closeDrawer']();
             }
           }
         },
@@ -805,29 +801,33 @@ Custom property | Description | Default
 
         _getAutoFocusedNode: function() {
           var drawerContent = this._getDrawerContent();
-          return Polymer.dom(drawerContent).querySelector(this.drawerFocusSelector) || drawerContent;
+
+          return this.drawerFocusSelector ? 
+              Polymer.dom(drawerContent).querySelector(this.drawerFocusSelector) || drawerContent : null;
         },
 
         _toggleFocusListener: function(selected) {
           if (selected === 'drawer') {
-            document.addEventListener('focus', this._boundFocusListener, true);
+            this.addEventListener('focus', this._boundFocusListener, true);
           } else {
-            document.removeEventListener('focus', this._boundFocusListener, true);
+            this.removeEventListener('focus', this._boundFocusListener, true);
           }
         },
 
         _didFocus: function(event) {
+          var autoFocusedNode = this._getAutoFocusedNode();
+          if (!autoFocusedNode) {
+            return;
+          }
+
           var path = Polymer.dom(event).path;
           var focusedChild = path[0];
           var drawerContent = this._getDrawerContent();
-          var focusedChildCameFromDrawer = false;
-          var autoFocusedNode = this._getAutoFocusedNode();
+          var focusedChildCameFromDrawer = path.indexOf(drawerContent) !== -1;
 
-          while (!focusedChildCameFromDrawer && path[0] && path[0].hasAttribute) {
-            focusedChildCameFromDrawer = path.shift() === drawerContent;
-          }
-          if (!focusedChildCameFromDrawer && autoFocusedNode) {
-            //autoFocusedNode.focus();
+          if (!focusedChildCameFromDrawer) {
+            event.stopPropagation();
+            autoFocusedNode.focus();
           }
         },
 

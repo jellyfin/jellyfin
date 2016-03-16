@@ -171,7 +171,7 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
     }
 
     var firstConnectionResult;
-    function start() {
+    function start(options) {
 
         loading.show();
 
@@ -185,8 +185,10 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
 
                 loading.hide();
 
+                options = options || {};
+
                 page({
-                    click: true,
+                    click: options.click || false,
                     hashbang: true,
                     enableHistory: enableHistory()
                 });
