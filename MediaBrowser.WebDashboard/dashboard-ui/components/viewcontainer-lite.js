@@ -25,6 +25,21 @@ define([], function () {
             var dependencies = typeof (newView) == 'string' ? null : newView.getAttribute('data-require');
             dependencies = dependencies ? dependencies.split(',') : [];
 
+            var isPluginpage = options.url.toLowerCase().indexOf('/configurationpage?') != -1;
+
+            if (isPluginpage) {
+                dependencies.push('jqmpopup');
+                dependencies.push('jqmcollapsible');
+                dependencies.push('jqmcheckbox');
+                dependencies.push('legacy/dashboard');
+            }
+
+            if (isPluginpage || (newView.classList && newView.classList.contains('type-interior'))) {
+                dependencies.push('jqmcontrolgroup');
+                dependencies.push('jqmlistview');
+                dependencies.push('scripts/notifications');
+            }
+
             require(dependencies, function () {
                 var allPages = animatedPages.querySelectorAll('.mainAnimatedPage');
                 var animatable = allPages[pageIndex];
@@ -48,6 +63,7 @@ define([], function () {
                 } else {
                     animatable.innerHTML = '';
                     animatable.appendChild(newView);
+                    enhanceNewView(dependencies, newView);
                 }
 
                 var view = animatable.querySelector('.page-view');
@@ -64,6 +80,22 @@ define([], function () {
         });
     }
 
+    function enhanceNewView(dependencies, newView) {
+
+        var hasJqm = false;
+
+        for (var i = 0, length = dependencies.length; i < length; i++) {
+            if (dependencies[i].indexOf('jqm') == 0) {
+                hasJqm = true;
+                break;
+            }
+        }
+
+        if (hasJqm) {
+            $(newView).trigger('create');
+        }
+    }
+
     function normalizeNewView(options) {
 
         if (options.view.indexOf('data-role="page"') == -1) {
@@ -73,7 +105,11 @@ define([], function () {
             return html;
         }
 
-        var elem = $(options.view)[0];
+        // TODO: This won't be able to support executing embedded script tags
+        var wrapper = document.createElement('div');
+        wrapper.innerHTML = options.view;
+
+        var elem = wrapper.querySelector('div[data-role="page"]');
         elem.classList.add('page-view');
         elem.setAttribute('data-type', options.type || '');
         elem.setAttribute('data-url', options.url);
