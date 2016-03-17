@@ -232,7 +232,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 }
             }
 
-            _channelCache = list;
+            _channelCache = list.ToList();
             return list;
         }
 
@@ -520,9 +520,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 if (!IsListingProviderEnabledForTuner(provider.Item2, channel.TunerHostId))
                 {
+                    _logger.Debug("Skipping getting programs for channel {0}-{1} from {2}-{3}, because it's not enabled for this tuner.", channel.Number, channel.Name, provider.Item1.Name, provider.Item2.ListingsId ?? string.Empty);
                     continue;
                 }
 
+                _logger.Debug("Getting programs for channel {0}-{1} from {2}-{3}", channel.Number, channel.Name, provider.Item1.Name, provider.Item2.ListingsId ?? string.Empty);
+                
                 var programs = await provider.Item1.GetProgramsAsync(provider.Item2, channel.Number, channel.Name, startDateUtc, endDateUtc, cancellationToken)
                         .ConfigureAwait(false);
 
