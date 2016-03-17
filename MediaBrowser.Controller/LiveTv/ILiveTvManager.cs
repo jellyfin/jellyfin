@@ -397,5 +397,11 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="recording">The recording.</param>
         /// <returns>Task.</returns>
         Task OnRecordingFileDeleted(ILiveTvRecording recording);
+
+        /// <summary>
+        /// Gets the sat ini mappings.
+        /// </summary>
+        /// <returns>List&lt;NameValuePair&gt;.</returns>
+        List<NameValuePair> GetSatIniMappings();
     }
 }
