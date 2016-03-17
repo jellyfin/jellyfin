@@ -558,15 +558,6 @@
 
     tab.show = selectTab;
 
-    tab.addEventListener('click', function(e) {
-      e.preventDefault();
-      var href = tab.href.split('#')[1];
-      var panel = layout.content_.querySelector('#' + href);
-      layout.resetTabState_(tabs);
-      layout.resetPanelState_(panels);
-      tab.classList.add(layout.CssClasses_.IS_ACTIVE);
-      panel.classList.add(layout.CssClasses_.IS_ACTIVE);
-    });
   }
   window['MaterialLayoutTab'] = MaterialLayoutTab;
 

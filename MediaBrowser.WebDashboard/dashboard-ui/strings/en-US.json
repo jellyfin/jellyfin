@@ -2430,5 +2430,7 @@
     "OptionEnableAnonymousUsageReportingHelp": "Allow Emby to collect anonymous data such as installed plugins, the version numbers of your Emby apps, etc. This information is only used for the purpose of improving the software.",
     "LabelFileOrUrl": "File or url:",
     "OptionEnableForAllTuners": "Enable for all tuner devices",
-    "HeaderSelectTuners": "SelectTuners"
+    "HeaderTuners": "Tuners",
+    "LabelOptionalM3uUrl": "M3U url (optional):",
+    "LabelOptionalM3uUrlHelp": "Some devices support an M3U channel listing."
 }

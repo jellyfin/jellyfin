@@ -12,6 +12,7 @@
                 })[0];
 
                 page.querySelector('.txtDevicePath').value = info.Url || '';
+                page.querySelector('.txtM3uUrl').value = info.M3UUrl || '';
                 page.querySelector('.chkEnabled').checked = info.IsEnabled;
             });
         }
@@ -47,6 +48,7 @@
 
     function fillInfoFromPage(page, info) {
         info.Url = page.querySelector('.txtDevicePath').value;
+        info.M3UUrl = page.querySelector('.txtM3uUrl').value;
         info.IsEnabled = page.querySelector('.chkEnabled').checked;
     }
 
