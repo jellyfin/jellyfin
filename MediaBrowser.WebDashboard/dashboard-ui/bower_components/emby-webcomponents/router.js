@@ -20,7 +20,7 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
 
     var connectionManager;
 
-    function redirectToLogin() {
+    function beginConnectionWizard() {
 
         backdrop.clear();
 
@@ -265,35 +265,56 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
 
         console.log('Emby.Page - processing path request ' + pathname);
 
+        if ((!apiClient || !apiClient.isLoggedIn()) && !route.anonymous) {
+            alert(JSON.stringify(route));
+            console.log('Emby.Page - route does not allow anonymous access, redirecting to login');
+            beginConnectionWizard();
+            return;
+        }
+
         if (apiClient && apiClient.isLoggedIn()) {
 
             console.log('Emby.Page - user is authenticated');
 
             if (ctx.isBack && (route.isDefaultRoute /*|| isStartup(ctx)*/)) {
                 handleBackToDefault();
+                return;
             }
             else if (route.isDefaultRoute) {
                 console.log('Emby.Page - loading skin home page');
                 skinManager.loadUserSkin();
-            } else {
-                console.log('Emby.Page - next()');
-                callback();
+                return;
+            } else if (route.roles) {
+                validateRoles(apiClient, route.roles, callback).then(callback, beginConnectionWizard);
+                return;
             }
-            return;
         }
 
-        console.log('Emby.Page - user is not authenticated');
+        console.log('Emby.Page - proceeding to ' + pathname);
+        callback();
+    }
 
-        if (!route.anonymous) {
+    function validateRoles(apiClient, roles) {
 
-            console.log('Emby.Page - route does not allow anonymous access, redirecting to login');
-            redirectToLogin();
+        return Promise.all(roles.split(',').map(function (role) {
+            return validateRole(apiClient, role);
+        }));
+    }
+
+    function validateRole(apiClient, role) {
+
+        if (role == 'admin') {
+
+            return apiClient.getCurrentUser().then(function (user) {
+                if (user.Policy.IsAdministrator) {
+                    return Promise.resolve();
+                }
+                return Promise.reject();
+            });
         }
-        else {
 
-            console.log('Emby.Page - proceeding to ' + pathname);
-            callback();
-        }
+        // Unknown role
+        return Promise.resolve();
     }
 
     var isHandlingBackToDefault;
@@ -526,7 +547,7 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
     embyRouter.baseUrl = baseUrl;
     embyRouter.canGoBack = canGoBack;
     embyRouter.current = current;
-    embyRouter.redirectToLogin = redirectToLogin;
+    embyRouter.beginConnectionWizard = beginConnectionWizard;
     embyRouter.goHome = goHome;
     embyRouter.showItem = showItem;
     embyRouter.setTitle = setTitle;

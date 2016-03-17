@@ -67,6 +67,7 @@ class BufferController extends EventHandler {
       this.mediaSource = null;
       this.media = null;
       this.pendingTracks = null;
+      this.sourceBuffer = null;
     }
     this.onmso = this.onmse = this.onmsc = null;
     this.hls.trigger(Event.MEDIA_DETACHED);

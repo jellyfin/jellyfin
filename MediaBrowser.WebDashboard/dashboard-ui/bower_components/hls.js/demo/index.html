@@ -111,8 +111,9 @@ header {
       <button type="button" class="btn btn-sm btn-info" onclick="$('#video')[0].currentTime=$('#seek_pos').val()">seek to </button>
        <input type="text" id='seek_pos' size="8" onkeydown="if(window.event.keyCode=='13'){$('#video')[0].currentTime=$('#seek_pos').val();}"><br><br>
       <button type="button" class="btn btn-xs btn-warning" onclick="hls.attachMedia($('#video')[0])">attach Video</button>
-      <button type="button" class="btn btn-xs btn-warning" onclick="hls.detachVideo()">detach Video</button><br>
-      <button type="button" class="btn btn-xs btn-warning" onclick="hls.startLoad()">recover Network Error</button>
+      <button type="button" class="btn btn-xs btn-warning" onclick="hls.detachMedia()">detach Video</button><br>
+      <button type="button" class="btn btn-xs btn-warning" onclick="hls.startLoad()">start Load</button>
+      <button type="button" class="btn btn-xs btn-warning" onclick="hls.stopLoad()">stop Load</button>
       <button type="button" class="btn btn-xs btn-warning" onclick="hls.recoverMediaError()">recover Media Error</button><br>
     </div>
 

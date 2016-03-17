@@ -582,6 +582,7 @@ var BufferController = function (_EventHandler) {
         this.mediaSource = null;
         this.media = null;
         this.pendingTracks = null;
+        this.sourceBuffer = null;
       }
       this.onmso = this.onmse = this.onmsc = null;
       this.hls.trigger(_events2.default.MEDIA_DETACHED);
@@ -935,6 +936,20 @@ var LevelController = function (_EventHandler) {
       this._manualLevel = -1;
     }
   }, {
+    key: 'startLoad',
+    value: function startLoad() {
+      this.canload = true;
+      // speed up live playlist refresh if timer exists
+      if (this.timer) {
+        this.tick();
+      }
+    }
+  }, {
+    key: 'stopLoad',
+    value: function stopLoad() {
+      this.canload = false;
+    }
+  }, {
     key: 'onManifestLoaded',
     value: function onManifestLoaded(data) {
       var levels0 = [],
@@ -1119,7 +1134,7 @@ var LevelController = function (_EventHandler) {
     key: 'tick',
     value: function tick() {
       var levelId = this._level;
-      if (levelId !== undefined) {
+      if (levelId !== undefined && this.canload) {
         var level = this._levels[levelId],
             urlId = level.urlId;
         this.hls.trigger(_events2.default.LEVEL_LOADING, { url: level.url[urlId], level: levelId, id: urlId });
@@ -1237,7 +1252,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
 
 var State = {
-  ERROR: 'ERROR',
+  STOPPED: 'STOPPED',
   STARTING: 'STARTING',
   IDLE: 'IDLE',
   PAUSED: 'PAUSED',
@@ -1247,7 +1262,8 @@ var State = {
   WAITING_LEVEL: 'WAITING_LEVEL',
   PARSING: 'PARSING',
   PARSED: 'PARSED',
-  ENDED: 'ENDED'
+  ENDED: 'ENDED',
+  ERROR: 'ERROR'
 };
 
 var StreamController = function (_EventHandler) {
@@ -1256,7 +1272,7 @@ var StreamController = function (_EventHandler) {
   function StreamController(hls) {
     _classCallCheck(this, StreamController);
 
-    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(StreamController).call(this, hls, _events2.default.MEDIA_ATTACHED, _events2.default.MEDIA_DETACHING, _events2.default.MANIFEST_PARSED, _events2.default.LEVEL_LOADED, _events2.default.KEY_LOADED, _events2.default.FRAG_LOADED, _events2.default.FRAG_PARSING_INIT_SEGMENT, _events2.default.FRAG_PARSING_DATA, _events2.default.FRAG_PARSED, _events2.default.ERROR, _events2.default.BUFFER_APPENDED, _events2.default.BUFFER_FLUSHED));
+    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(StreamController).call(this, hls, _events2.default.MEDIA_ATTACHED, _events2.default.MEDIA_DETACHING, _events2.default.MANIFEST_LOADING, _events2.default.MANIFEST_PARSED, _events2.default.LEVEL_LOADED, _events2.default.KEY_LOADED, _events2.default.FRAG_LOADED, _events2.default.FRAG_PARSING_INIT_SEGMENT, _events2.default.FRAG_PARSING_DATA, _events2.default.FRAG_PARSED, _events2.default.ERROR, _events2.default.BUFFER_APPENDED, _events2.default.BUFFER_FLUSHED));
 
     _this.config = hls.config;
     _this.audioCodecSwap = false;
@@ -1268,19 +1284,27 @@ var StreamController = function (_EventHandler) {
   _createClass(StreamController, [{
     key: 'destroy',
     value: function destroy() {
-      this.stop();
+      this.stopLoad();
+      if (this.timer) {
+        clearInterval(this.timer);
+        this.timer = null;
+      }
       _eventHandler2.default.prototype.destroy.call(this);
-      this.state = State.IDLE;
+      this.state = State.STOPPED;
     }
   }, {
     key: 'startLoad',
     value: function startLoad() {
+      var startPosition = arguments.length <= 0 || arguments[0] === undefined ? 0 : arguments[0];
+
       if (this.levels) {
         var media = this.media,
             lastCurrentTime = this.lastCurrentTime;
-        this.stop();
+        this.stopLoad();
         this.demuxer = new _demuxer2.default(this.hls);
-        this.timer = setInterval(this.ontick, 100);
+        if (!this.timer) {
+          this.timer = setInterval(this.ontick, 100);
+        }
         this.level = -1;
         this.fragLoadError = 0;
         if (media && lastCurrentTime) {
@@ -1291,20 +1315,19 @@ var StreamController = function (_EventHandler) {
           }
           this.state = State.IDLE;
         } else {
-          this.lastCurrentTime = this.startPosition ? this.startPosition : 0;
+          this.lastCurrentTime = this.startPosition ? this.startPosition : startPosition;
           this.state = State.STARTING;
         }
         this.nextLoadPosition = this.startPosition = this.lastCurrentTime;
         this.tick();
       } else {
         _logger.logger.warn('cannot start loading as manifest not parsed yet');
+        this.state = State.STOPPED;
       }
     }
   }, {
-    key: 'stop',
-    value: function stop() {
-      this.bufferRange = [];
-      this.stalled = false;
+    key: 'stopLoad',
+    value: function stopLoad() {
       var frag = this.fragCurrent;
       if (frag) {
         if (frag.loader) {
@@ -1313,16 +1336,11 @@ var StreamController = function (_EventHandler) {
         this.fragCurrent = null;
       }
       this.fragPrevious = null;
-      _logger.logger.log('trigger BUFFER_RESET');
-      this.hls.trigger(_events2.default.BUFFER_RESET);
-      if (this.timer) {
-        clearInterval(this.timer);
-        this.timer = null;
-      }
       if (this.demuxer) {
         this.demuxer.destroy();
         this.demuxer = null;
       }
+      this.state = State.STOPPED;
     }
   }, {
     key: 'tick',
@@ -1935,7 +1953,7 @@ var StreamController = function (_EventHandler) {
       }
       this.media = null;
       this.loadedmetadata = false;
-      this.stop();
+      this.stopLoad();
     }
   }, {
     key: 'onMediaSeeking',
@@ -1982,6 +2000,15 @@ var StreamController = function (_EventHandler) {
       _logger.logger.log('media ended');
       // reset startPosition and lastCurrentTime to restart playback @ stream beginning
       this.startPosition = this.lastCurrentTime = 0;
+    }
+  }, {
+    key: 'onManifestLoading',
+    value: function onManifestLoading() {
+      // reset buffer on manifest loading
+      _logger.logger.log('trigger BUFFER_RESET');
+      this.hls.trigger(_events2.default.BUFFER_RESET);
+      this.bufferRange = [];
+      this.stalled = false;
     }
   }, {
     key: 'onManifestParsed',
@@ -2361,6 +2388,7 @@ var StreamController = function (_EventHandler) {
 
           if (this.stalled && playheadMoving) {
             this.stalled = false;
+            _logger.logger.log('playback not stuck anymore @' + currentTime);
           }
           // check buffer upfront
           // if less than 200ms is buffered, and media is expected to play but playhead is not moving,
@@ -2371,8 +2399,8 @@ var StreamController = function (_EventHandler) {
               jumpThreshold = 0;
             } else {
               // playhead not moving AND media expected to play
-              _logger.logger.log('playback seems stuck @' + currentTime);
               if (!this.stalled) {
+                _logger.logger.log('playback seems stuck @' + currentTime);
                 this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.MEDIA_ERROR, details: _errors.ErrorDetails.BUFFER_STALLED_ERROR, fatal: false });
                 this.stalled = true;
               }
@@ -3304,9 +3332,9 @@ var ADTS = function () {
             // multiply frequency by 2 (see table below, equivalent to substract 3)
             adtsExtensionSampleingIndex = adtsSampleingIndex - 3;
           } else {
-            // if (manifest codec is AAC) AND (frequency less than 24kHz OR nb channel is 1) OR (manifest codec not specified and mono audio)
-            // Chrome fails to play back with AAC LC mono when initialized with HE-AAC.  This is not a problem with stereo.
-            if (audioCodec && audioCodec.indexOf('mp4a.40.2') !== -1 && (adtsSampleingIndex >= 6 || adtsChanelConfig === 1) || !audioCodec && adtsChanelConfig === 1) {
+            // if (manifest codec is AAC) AND (frequency less than 24kHz AND nb channel is 1) OR (manifest codec not specified and mono audio)
+            // Chrome fails to play back with low frequency AAC LC mono when initialized with HE-AAC.  This is not a problem with stereo.
+            if (audioCodec && audioCodec.indexOf('mp4a.40.2') !== -1 && adtsSampleingIndex >= 6 && adtsChanelConfig === 1 || !audioCodec && adtsChanelConfig === 1) {
               adtsObjectType = 2;
               config = new Array(2);
             }
@@ -5544,8 +5572,18 @@ var Hls = function () {
   }, {
     key: 'startLoad',
     value: function startLoad() {
+      var startPosition = arguments.length <= 0 || arguments[0] === undefined ? 0 : arguments[0];
+
       _logger.logger.log('startLoad');
-      this.streamController.startLoad();
+      this.levelController.startLoad();
+      this.streamController.startLoad(startPosition);
+    }
+  }, {
+    key: 'stopLoad',
+    value: function stopLoad() {
+      _logger.logger.log('stopLoad');
+      this.levelController.stopLoad();
+      this.streamController.stopLoad();
     }
   }, {
     key: 'swapAudioCodec',
