@@ -266,6 +266,19 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         continue;
                     }
 
+                    var hasDualAccess = libraryItem as IHasDualAccess;
+                    if (hasDualAccess != null && hasDualAccess.IsAccessedByName)
+                    {
+                        continue;
+                    }
+
+                    var libraryItemPath = libraryItem.Path;
+                    if (!string.Equals(libraryItemPath, path, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _logger.Error("CleanDeletedItems aborting delete for item {0}-{1} because paths don't match. {2}---{3}", libraryItem.Id, libraryItem.Name, libraryItem.Path ?? string.Empty, path ?? string.Empty);
+                        continue;
+                    }
+
                     if (Folder.IsPathOffline(path))
                     {
                         libraryItem.IsOffline = true;
@@ -273,7 +286,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         continue;
                     }
 
-                    _logger.Info("Deleting item from database {0} because path no longer exists. type: {1} path: {2}", libraryItem.Name, libraryItem.GetType().Name, libraryItem.Path ?? string.Empty);
+                    _logger.Info("Deleting item from database {0} because path no longer exists. type: {1} path: {2}", libraryItem.Name, libraryItem.GetType().Name, libraryItemPath ?? string.Empty);
 
                     await libraryItem.OnFileDeleted().ConfigureAwait(false);
                 }
