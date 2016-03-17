@@ -30,6 +30,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using IniParser;
+using IniParser.Model;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
 {
@@ -2487,6 +2489,39 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 IsValid = true,
                 IsRegistered = true
             });
+        }
+
+        public List<NameValuePair> GetSatIniMappings()
+        {
+            var names = GetType().Assembly.GetManifestResourceNames().Where(i => i.IndexOf("SatIp.ini.satellite", StringComparison.OrdinalIgnoreCase) != -1).ToList();
+
+            return names.Select(GetSatIniMappings).Where(i => i != null).DistinctBy(i => i.Value.Split('|')[0]).ToList();
+        }
+
+        public NameValuePair GetSatIniMappings(string resource)
+        {
+            using (var stream = GetType().Assembly.GetManifestResourceStream(resource))
+            {
+                using (var reader = new StreamReader(stream))
+                {
+                    var parser = new StreamIniDataParser();
+                    IniData data = parser.ReadData(reader);
+
+                    var satType1 = data["SATTYPE"]["1"];
+                    var satType2 = data["SATTYPE"]["2"];
+
+                    if (string.IsNullOrWhiteSpace(satType2))
+                    {
+                        return null;
+                    }
+
+                    return new NameValuePair
+                    {
+                        Name = satType1 + " " + satType2,
+                        Value = satType2 + "|" + Path.GetFileName(resource)
+                    };
+                }
+            }
         }
     }
 }
