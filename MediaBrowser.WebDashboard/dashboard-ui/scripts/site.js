@@ -1741,6 +1741,8 @@ var AppInfo = {};
         }
 
         define("backdrop", [embyWebComponentsBowerPath + "/backdrop/backdrop"], returnFirstDependency);
+        define("fetchHelper", [embyWebComponentsBowerPath + "/fetchhelper"], returnFirstDependency);
+
         define("viewManager", [embyWebComponentsBowerPath + "/viewmanager"], function (viewManager) {
             viewManager.dispatchPageEvents(true);
             return viewManager;

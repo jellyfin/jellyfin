@@ -26,6 +26,9 @@
 
                 <form id="supporterKeyForm">
 
+                    <!-- Terrible, but this hidden field prevents the yellow background in chrome -->
+                    <div style="height:0; overflow: hidden;"><input type="text" name="fakeusernameremembered" tabindex="-1" /><input type="password" name="fakepasswordremembered" tabindex="-1" /></div>
+
                     <div style="margin: 3em 0 1em;">
 
                         <h1>${TabSupporterKey}</h1>
