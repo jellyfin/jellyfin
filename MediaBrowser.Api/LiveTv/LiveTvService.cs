@@ -478,6 +478,13 @@ namespace MediaBrowser.Api.LiveTv
         public string Feature { get; set; }
     }
 
+    [Route("/LiveTv/TunerHosts/Satip/IniMappings", "GET", Summary = "Gets available mappings")]
+    [Authenticated(AllowBeforeStartupWizard = true)]
+    public class GetSatIniMappings : IReturn<List<NameValuePair>>
+    {
+        
+    }
+
     public class LiveTvService : BaseApiService
     {
         private readonly ILiveTvManager _liveTvManager;
@@ -498,6 +505,11 @@ namespace MediaBrowser.Api.LiveTv
             var result = await _liveTvManager.GetRegistrationInfo(request.ChannelId, request.ProgramId, request.Feature).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
+        }
+
+        public object Get(GetSatIniMappings request)
+        {
+            return ToOptimizedResult(_liveTvManager.GetSatIniMappings());
         }
 
         public async Task<object> Get(GetSchedulesDirectCountries request)

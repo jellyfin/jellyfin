@@ -1,5 +1,4 @@
 {
-    "EmbyIntroDownloadMessageWithoutLink": "To download and install Emby Server visit the Emby website.",
     "LabelExit": "Esci",
     "LabelVisitCommunity": "Visita la Community",
     "LabelGithub": "Github",
@@ -736,7 +735,6 @@
     "NotificationOptionPluginError": "Plugin fallito",
     "ButtonVolumeUp": "Aumenta Volume",
     "ButtonVolumeDown": "Diminuisci volume",
-    "ButtonMute": "Muto",
     "HeaderLatestMedia": "Ultimi Media",
     "OptionNoSubtitles": "Nessun Sottotitolo",
     "OptionSpecialFeatures": "Contenuti Speciali",
@@ -1648,6 +1646,7 @@
     "LabelDefaultForcedStream": "(Predefinito\/Forzato)",
     "LabelUnknownLanguage": "Lingua Sconosciuta",
     "MessageConfirmSyncJobItemCancellation": "Sei sicuro di voler cancellare questo elemento?",
+    "ButtonMute": "Muto",
     "ButtonUnmute": "Togli muto",
     "ButtonQueue": "In coda",
     "ButtonPlaylist": "Playlist",
@@ -2178,6 +2177,7 @@
     "LabelProfile": "Profilo:",
     "LabelBitrateMbps": "Bitrate (Mbps):",
     "EmbyIntroDownloadMessage": "Per scaricare e installare Emby server visita {0}.",
+    "EmbyIntroDownloadMessageWithoutLink": "To download and install Emby Server visit the Emby website.",
     "ButtonNewServer": "Nuovo Server",
     "MyDevice": "Mio dispositivo",
     "ButtonRemote": "Remoto",
@@ -2318,5 +2318,10 @@
     "ValueExample": "1:00 PM",
     "ButtonGotIt": "Got It",
     "OptionEnableAnonymousUsageReporting": "Enable anonymous usage reporting",
-    "OptionEnableAnonymousUsageReportingHelp": "Allow Emby to collect anonymous data such as installed plugins, the version numbers of your Emby apps, etc. This information is only used for the purpose of improving the software."
+    "OptionEnableAnonymousUsageReportingHelp": "Allow Emby to collect anonymous data such as installed plugins, the version numbers of your Emby apps, etc. This information is only used for the purpose of improving the software.",
+    "LabelFileOrUrl": "File or url:",
+    "OptionEnableForAllTuners": "Enable for all tuner devices",
+    "HeaderTuners": "Tuners",
+    "LabelOptionalM3uUrl": "M3U url (optional):",
+    "LabelOptionalM3uUrlHelp": "Some devices support an M3U channel listing."
 }

@@ -49,6 +49,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Emby.XmlTv.1.0.0.48\lib\net45\Emby.XmlTv.dll</HintPath>
     </Reference>
+    <Reference Include="INIFileParser">
+      <HintPath>..\packages\ini-parser.2.2.4\lib\net20\INIFileParser.dll</HintPath>
+    </Reference>
     <Reference Include="Interfaces.IO">
       <HintPath>..\packages\Interfaces.IO.1.0.0.5\lib\portable-net45+sl4+wp71+win8+wpa81\Interfaces.IO.dll</HintPath>
     </Reference>
@@ -588,6 +591,7 @@
     <EmbeddedResource Include="LiveTv\TunerHosts\SatIp\ini\satellite\3560.ini" />
     <EmbeddedResource Include="LiveTv\TunerHosts\SatIp\ini\satellite\3592.ini" />
     <EmbeddedResource Include="LiveTv\TunerHosts\SatIp\ini\satellite\3594.ini" />
+    <EmbeddedResource Include="Localization\Core\fr-CA.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

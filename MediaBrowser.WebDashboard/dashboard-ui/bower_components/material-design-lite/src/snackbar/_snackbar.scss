@@ -29,7 +29,7 @@
   justify-content: space-between;
   font-family: $preferred_font;
   will-change: transform;
-  transform: translate(-50%, 80px);
+  transform: translate(0, 80px);
   transition: transform 0.25s $animation-curve-fast-out-linear-in;
   pointer-events: none;
   @media(max-width: $snackbar-tablet-breakpoint - 1) {
@@ -42,11 +42,16 @@
     min-width: 288px;
     max-width: 568px;
     border-radius: 2px;
+    transform: translate(-50%, 80px);
   }
   &--active {
-    transform: translate(-50%, 0);
+    transform: translate(0, 0);
     pointer-events: auto;
     transition: transform 0.25s $animation-curve-linear-out-slow-in;
+
+    @media(min-width: $snackbar-tablet-breakpoint) {
+      transform: translate(-50%, 0);
+    }
   }
 
   &__text {

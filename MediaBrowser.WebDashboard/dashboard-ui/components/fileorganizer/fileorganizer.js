@@ -160,9 +160,11 @@
 
         if (seriesId == "##NEW##") {
             dlg.querySelector('.fldSelectSeriesFolder').classList.remove('hide');
+            dlg.querySelector('#selectSeriesFolder').setAttribute('required', 'required');
         }
         else {
             dlg.querySelector('.fldSelectSeriesFolder').classList.add('hide');
+            dlg.querySelector('#selectSeriesFolder').removeAttribute('required');
         }
     }
 

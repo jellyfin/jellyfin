@@ -1,5 +1,4 @@
 {
-    "EmbyIntroDownloadMessageWithoutLink": "To download and install Emby Server visit the Emby website.",
     "LabelExit": "Tho\u00e1t",
     "LabelVisitCommunity": "Gh\u00e9 th\u0103m trang C\u1ed9ng \u0111\u1ed3ng",
     "LabelGithub": "Github",
@@ -736,7 +735,6 @@
     "NotificationOptionPluginError": "Plugin failure",
     "ButtonVolumeUp": "Volume up",
     "ButtonVolumeDown": "Volume down",
-    "ButtonMute": "Mute",
     "HeaderLatestMedia": "Latest Media",
     "OptionNoSubtitles": "No Subtitles",
     "OptionSpecialFeatures": "Special Features",
@@ -1565,7 +1563,7 @@
     "LabelFromHelp": "Example: {0} (on the server)",
     "HeaderMyMedia": "My Media",
     "ButtonRemoveFromCollection": "Remove from Collection",
-    "LabelAutomaticUpdateLevel": "T\u1ef1 \u0111\u1ed9ng c\u1eadp nh\u1eadt c\u1ea5p \u0111\u1ed9",
+    "LabelAutomaticUpdateLevel": "Automatic update level:",
     "LabelAutomaticUpdateLevelForPlugins": "Automatic update level for plugins:",
     "ErrorLaunchingChromecast": "There was an error launching chromecast. Please ensure your device is connected to your wireless network.",
     "MessageErrorLoadingSupporterInfo": "There was an error loading Emby Premiere information. Please try again later.",
@@ -1648,6 +1646,7 @@
     "LabelDefaultForcedStream": "(Default\/Forced)",
     "LabelUnknownLanguage": "Unknown language",
     "MessageConfirmSyncJobItemCancellation": "Are you sure you wish to cancel this item?",
+    "ButtonMute": "Mute",
     "ButtonUnmute": "Unmute",
     "ButtonQueue": "Queue",
     "ButtonPlaylist": "Playlist",
@@ -2178,6 +2177,7 @@
     "LabelProfile": "Profile:",
     "LabelBitrateMbps": "Bitrate (Mbps):",
     "EmbyIntroDownloadMessage": "To download and install Emby Server visit {0}.",
+    "EmbyIntroDownloadMessageWithoutLink": "To download and install Emby Server visit the Emby website.",
     "ButtonNewServer": "New Server",
     "MyDevice": "My Device",
     "ButtonRemote": "Remote",
@@ -2318,5 +2318,10 @@
     "ValueExample": "1:00 PM",
     "ButtonGotIt": "Got It",
     "OptionEnableAnonymousUsageReporting": "Enable anonymous usage reporting",
-    "OptionEnableAnonymousUsageReportingHelp": "Allow Emby to collect anonymous data such as installed plugins, the version numbers of your Emby apps, etc. This information is only used for the purpose of improving the software."
+    "OptionEnableAnonymousUsageReportingHelp": "Allow Emby to collect anonymous data such as installed plugins, the version numbers of your Emby apps, etc. This information is only used for the purpose of improving the software.",
+    "LabelFileOrUrl": "File or url:",
+    "OptionEnableForAllTuners": "Enable for all tuner devices",
+    "HeaderTuners": "Tuners",
+    "LabelOptionalM3uUrl": "M3U url (optional):",
+    "LabelOptionalM3uUrlHelp": "Some devices support an M3U channel listing."
 }

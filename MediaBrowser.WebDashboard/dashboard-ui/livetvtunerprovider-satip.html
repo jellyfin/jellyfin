@@ -1,4 +1,4 @@
-﻿<div id="liveTvTunerProviderSatPage" data-role="page" class="page type-interior liveTvSettingsPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvtunerprovider-satip,paper-input,paper-checkbox">
+﻿<div id="liveTvTunerProviderSatPage" data-role="page" class="page type-interior liveTvSettingsPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV">
 
     <div data-role="content">
         <div class="content-primary">
@@ -18,6 +18,11 @@
                         <div>
                             <paper-input class="txtDevicePath" label="${LabelTunerIpAddress}" required="required"></paper-input>
                         </div>
+                        <div>
+                            <paper-input class="txtM3uUrl" label="${LabelOptionalM3uUrl}" required="required"></paper-input>
+                            <div class="fieldDescription">${LabelOptionalM3uUrlHelp}</div>
+                        </div>
+                        <br />
                         <div>
                             <br />
                             <label class="selectLabel">Diseq C</label>
