@@ -72,44 +72,59 @@
         });
     }
 
-    function onSelectDiseqCChange(e) {
+    function populateMappings(view) {
 
-        var select = e.target;
-        var value = select.value;
-        var page = $(select).parents('.page')[0];
+        ApiClient.getJSON(ApiClient.getUrl('LiveTv/TunerHosts/Satip/IniMappings')).then(function (mappings) {
 
-        if (value) {
-            page.querySelector('.fldSourceB').classList.remove('hide');
-        } else {
-            page.querySelector('.fldSourceB').classList.add('hide');
-        }
+            var optionsHtml = mappings.map(function (m) {
+                return '<option value="' + m.Value + '">' + m.Name + '</option>';
+            }).join('');
 
-        if (value == 'diseqc1') {
+            optionsHtml = '<option value="">' + Globalize.translate('OptionNone') + '</option>' + optionsHtml;
 
-            page.querySelector('.fldSourceC').classList.remove('hide');
-            page.querySelector('.fldSourceD').classList.remove('hide');
-        } else {
-            page.querySelector('.fldSourceC').classList.add('hide');
-            page.querySelector('.fldSourceD').classList.add('hide');
-        }
+            view.querySelector('.selectSourceA').innerHTML = optionsHtml;
+            view.querySelector('.selectSourceB').innerHTML = optionsHtml;
+            view.querySelector('.selectSourceC').innerHTML = optionsHtml;
+            view.querySelector('.selectSourceD').innerHTML = optionsHtml;
+        });
     }
 
-    $(document).on('pageinit', "#liveTvTunerProviderSatPage", function () {
+    return function (view, params) {
 
-        var page = this;
+        function onSelectDiseqCChange(e) {
 
-        $('form', page).on('submit', function () {
-            submitForm(page);
+            var select = e.target;
+            var value = select.value;
+
+            if (value) {
+                view.querySelector('.fldSourceB').classList.remove('hide');
+            } else {
+                view.querySelector('.fldSourceB').classList.add('hide');
+            }
+
+            if (value == 'diseqc1') {
+
+                view.querySelector('.fldSourceC').classList.remove('hide');
+                view.querySelector('.fldSourceD').classList.remove('hide');
+            } else {
+                view.querySelector('.fldSourceC').classList.add('hide');
+                view.querySelector('.fldSourceD').classList.add('hide');
+            }
+        }
+
+        view.querySelector('form').addEventListener('submit', function (e) {
+            submitForm(view);
+            e.preventDefault();
             return false;
         });
 
-        page.querySelector('.selectDiseqC').addEventListener('change', onSelectDiseqCChange);
+        view.querySelector('.selectDiseqC').addEventListener('change', onSelectDiseqCChange);
 
-    }).on('pageshow', "#liveTvTunerProviderSatPage", function () {
+        populateMappings(view);
 
-        var providerId = getParameterByName('id');
-        var page = this;
-        reload(page, providerId);
-    });
-
+        view.addEventListener('viewshow', function (e) {
+            var providerId = params.id;
+            reload(view, providerId);
+        });
+    }
 });

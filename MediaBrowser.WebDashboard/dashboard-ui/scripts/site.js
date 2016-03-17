@@ -2544,9 +2544,10 @@ var AppInfo = {};
 
         defineRoute({
             path: '/livetvtunerprovider-satip.html',
-            dependencies: ['jQuery'],
+            dependencies: ['paper-input', 'paper-checkbox'],
             autoFocus: false,
-            roles: 'admin'
+            roles: 'admin',
+            controller: 'scripts/livetvtunerprovider-satip'
         });
 
         defineRoute({
