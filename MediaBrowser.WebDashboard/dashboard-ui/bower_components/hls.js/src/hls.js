@@ -165,9 +165,16 @@ class Hls {
     this.trigger(Event.MANIFEST_LOADING, {url: url});
   }
 
-  startLoad() {
+  startLoad(startPosition=0) {
     logger.log('startLoad');
-    this.streamController.startLoad();
+    this.levelController.startLoad();
+    this.streamController.startLoad(startPosition);
+  }
+
+  stopLoad() {
+    logger.log('stopLoad');
+    this.levelController.stopLoad();
+    this.streamController.stopLoad();
   }
 
   swapAudioCodec() {

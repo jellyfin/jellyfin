@@ -46,6 +46,9 @@
 
         $('.wizardStartForm').off('submit', onSubmit).on('submit', onSubmit);
 
+        window.ConnectionManager.clearData();
+
+
     }).on('pageshow', "#wizardStartPage", function () {
 
         Dashboard.showLoadingMsg();

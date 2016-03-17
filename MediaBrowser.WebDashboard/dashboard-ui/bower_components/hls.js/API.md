@@ -554,6 +554,8 @@ however if ```config.autoStartLoad``` is set to ```false```, the following metho
 #### ```hls.startLoad()```
 start/restart playlist/fragment loading. this is only effective if MANIFEST_PARSED event has been triggered and video element has been attached to hls object.
 
+#### ```hls.stopLoad()```
+stop playlist/fragment loading. could be resumed later on by calling ```hls.startLoad()```
 
 ## Runtime Events
 
