@@ -35,7 +35,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 
         protected override async Task<IEnumerable<ChannelInfo>> GetChannelsInternal(TunerHostInfo tuner, CancellationToken cancellationToken)
         {
-            return await new M3uParser(Logger, _fileSystem, _httpClient).Parse(tuner.M3UUrl, ChannelIdPrefix, tuner.Id, cancellationToken).ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(tuner.M3UUrl))
+            {
+                return await new M3uParser(Logger, _fileSystem, _httpClient).Parse(tuner.M3UUrl, ChannelIdPrefix, tuner.Id, cancellationToken).ConfigureAwait(false);
+            }
+
+            return new List<ChannelInfo>();
         }
 
         public static string DeviceType
