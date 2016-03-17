@@ -1,5 +1,5 @@
 {
-    "DbUpgradeMessage": "Por favor, aguarde enquanto a base de dados do Servidor Emby \u00e9 atualizada. {0}% completado.",
+    "DbUpgradeMessage": "Por favor, aguarde enquanto a base de dados do Servidor Emby \u00e9 atualizada. {0}% completo.",
     "AppDeviceValues": "App: {0}, Dispositivo: {1}",
     "UserDownloadingItemWithValues": "{0} est\u00e1 fazendo download de {1}",
     "FolderTypeMixed": "Conte\u00fado misto",

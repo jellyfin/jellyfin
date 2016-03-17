@@ -1,5 +1,5 @@
 {
-    "DbUpgradeMessage": "Please wait while your Emby Server database is upgraded. {0}% complete.",
+    "DbUpgradeMessage": "Po\u010dkejte pros\u00edm, datab\u00e1ze Emby Serveru je aktualizov\u00e1na na novou verzi. Hotovo {0}%.",
     "AppDeviceValues": "Aplikace: {0}, Za\u0159\u00edzen\u00ed: {1}",
     "UserDownloadingItemWithValues": "{0} pr\u00e1v\u011b stahuje {1}",
     "FolderTypeMixed": "Sm\u00ed\u0161en\u00fd obsah",
