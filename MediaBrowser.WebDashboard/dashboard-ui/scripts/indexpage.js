@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser'], function (LibraryBrowser) {
+﻿define(['libraryBrowser'], function (libraryBrowser) {
 
     var defaultFirstSection = 'smalllibrarytiles';
 
@@ -212,7 +212,7 @@
 
     function loadHomeTab(page, tabContent) {
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
+        if (libraryBrowser.needsRefresh(tabContent)) {
             if (window.ApiClient) {
                 var userId = Dashboard.getCurrentUserId();
                 Dashboard.showLoadingMsg();
@@ -228,7 +228,7 @@
                             }
                             Dashboard.hideLoadingMsg();
 
-                            LibraryBrowser.setLastRefreshed(tabContent);
+                            libraryBrowser.setLastRefreshed(tabContent);
                         });
 
                     });
@@ -297,7 +297,7 @@
 
         var pages = view.querySelector('neon-animated-pages');
 
-        LibraryBrowser.configurePaperLibraryTabs(view, view.querySelector('paper-tabs'), pages, 'home.html');
+        libraryBrowser.configurePaperLibraryTabs(view, view.querySelector('paper-tabs'), pages, 'home.html');
 
         pages.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.target.selected));
@@ -322,5 +322,5 @@
         view.addEventListener('viewbeforehide', function (e) {
             Events.off(MediaController, 'playbackstop', onPlaybackStop);
         });
-    }
+    };
 });

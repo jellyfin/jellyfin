@@ -1,4 +1,4 @@
-﻿define(['playlistManager', 'appSettings', 'appStorage', 'jQuery'], function (playlistManager, appSettings, appStorage, $) {
+﻿define(['playlistManager', 'appSettings', 'appStorage'], function (playlistManager, appSettings, appStorage) {
 
     var libraryBrowser = (function (window, document, screen) {
 
@@ -310,6 +310,7 @@
                     tabs.noink = true;
                 }
 
+                var libraryViewNav = ownerpage.querySelector('.libraryViewNav');
                 if (LibraryBrowser.enableFullPaperTabs()) {
 
                     if (browserInfo.safari) {
@@ -319,22 +320,36 @@
                         LibraryBrowser.configureSwipeTabs(ownerpage, tabs, pages);
                     }
 
-                    $('.libraryViewNav', ownerpage).addClass('paperLibraryViewNav').removeClass('libraryViewNavWithMinHeight');
+                    if (libraryViewNav) {
+                        libraryViewNav.classList.add('paperLibraryViewNav');
+                        libraryViewNav.classList.remove('libraryViewNavWithMinHeight');
+                    }
 
                 } else {
 
                     tabs.noSlide = true;
                     tabs.noBar = true;
 
-                    var legacyTabs = $('.legacyTabs', ownerpage);
+                    var legacyTabs = ownerpage.querySelector('.legacyTabs');
 
-                    pages.addEventListener('iron-select', function (e) {
+                    if (legacyTabs) {
+                        pages.addEventListener('iron-select', function (e) {
 
-                        var selected = pages.selected;
-                        $('a', legacyTabs).removeClass('ui-btn-active')[selected].classList.add('ui-btn-active');
-                    });
+                            var selected = pages.selected;
+                            var anchors = legacyTabs.querySelectorAll('a');
+                            for (var i = 0, length = anchors.length; i < length; i++) {
+                                if (i == selected) {
+                                    anchors[i].classList.add('ui-btn-active');
+                                } else {
+                                    anchors[i].classList.remove('ui-btn-active');
+                                }
+                            }
+                        });
+                    }
 
-                    $('.libraryViewNav', ownerpage).removeClass('libraryViewNavWithMinHeight');
+                    if (libraryViewNav) {
+                        libraryViewNav.classList.remove('libraryViewNavWithMinHeight');
+                    }
                 }
 
                 ownerpage.addEventListener('viewbeforeshow', LibraryBrowser.onTabbedpagebeforeshow);
@@ -460,6 +475,8 @@
                 }
 
                 var afterNavigate = function () {
+
+                    document.removeEventListener('pagebeforeshow', afterNavigate);
                     if (window.location.href.toLowerCase().indexOf(url.toLowerCase()) != -1) {
 
                         var pages = this.querySelector('neon-animated-pages');
@@ -494,7 +511,7 @@
 
                     afterNavigate.call($.mobile.activePage);
                 } else {
-                    $(document).one('pagebeforeshow', '.page', afterNavigate);
+                    pageClassOn('pagebeforeshow', 'page', afterNavigate);
                     Dashboard.navigate(url);
                 }
             },
@@ -1662,19 +1679,48 @@
                 return itemCommands;
             },
 
-            screenWidth: function () {
-
-                var screenWidth = $(window).width();
-
-                return screenWidth;
-            },
-
             shapes: ['square', 'portrait', 'banner', 'smallBackdrop', 'homePageSmallBackdrop', 'backdrop', 'overflowBackdrop', 'overflowPortrait', 'overflowSquare'],
 
             getPostersPerRow: function (screenWidth) {
 
                 var cache = true;
                 function getValue(shape) {
+
+                    switch (shape) {
+                    
+                        case 'portrait':
+                            if (screenWidth >= 2200) return 10;
+                            if (screenWidth >= 2100) return 9;
+                            if (screenWidth >= 1600) return 8;
+                            if (screenWidth >= 1400) return 7;
+                            if (screenWidth >= 1200) return 6;
+                            if (screenWidth >= 800) return 5;
+                            if (screenWidth >= 640) return 4;
+                            return 3;
+                        case 'square':
+                            if (screenWidth >= 2100) return 9;
+                            if (screenWidth >= 1800) return 8;
+                            if (screenWidth >= 1400) return 7;
+                            if (screenWidth >= 1200) return 6;
+                            if (screenWidth >= 900) return 5;
+                            if (screenWidth >= 700) return 4;
+                            if (screenWidth >= 500) return 3;
+                            return 2;
+                        case 'banner':
+                            if (screenWidth >= 2200) return 4;
+                            if (screenWidth >= 1200) return 3;
+                            if (screenWidth >= 800) return 2;
+                            return 1;
+                        case 'backdrop':
+                            if (screenWidth >= 2500) return 6;
+                            if (screenWidth >= 2100) return 5;
+                            if (screenWidth >= 1200) return 4;
+                            if (screenWidth >= 770) return 3;
+                            if (screenWidth >= 420) return 2;
+                            return 1;
+                        default:
+                            break;
+                    }
                     var div = $('<div class="card ' + shape + 'Card"><div class="cardBox"><div class="cardImage"></div></div></div>').appendTo(document.body);
                     var innerWidth = $('.cardImage', div).innerWidth();
 
@@ -1702,7 +1748,7 @@
 
             getPosterViewInfo: function () {
 
-                var screenWidth = LibraryBrowser.screenWidth();
+                var screenWidth = window.innerWidth;
 
                 var cachedResults = LibraryBrowser.posterSizes;
 
@@ -2762,11 +2808,10 @@
                     html = Globalize.translate('ValueLinks', html);
 
                     linksElem.innerHTML = html;
-                    $(linksElem);
-                    $(linksElem).show();
+                    linksElem.classList.remove('hide');
 
                 } else {
-                    $(linksElem).hide();
+                    linksElem.classList.add('hide');
                 }
             },
 
@@ -2797,7 +2842,10 @@
                         positionTo: button,
                         callback: function (id) {
 
-                            $(button).trigger('layoutchange', [id]);
+                            // TODO: remove jQuery
+                            require(['jQuery'], function ($) {
+                                $(button).trigger('layoutchange', [id]);
+                            });
                         }
                     });
 
@@ -3102,63 +3150,72 @@
 
             markFavorite: function (link) {
 
-                var id = link.getAttribute('data-itemid');
+                // TODO: remove jQuery
+                require(['jQuery'], function ($) {
+                    var id = link.getAttribute('data-itemid');
 
-                var $link = $(link);
+                    var $link = $(link);
 
-                var markAsFavorite = !$link.hasClass('btnUserItemRatingOn');
+                    var markAsFavorite = !$link.hasClass('btnUserItemRatingOn');
 
-                ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
+                    ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
 
-                if (markAsFavorite) {
-                    $link.addClass('btnUserItemRatingOn');
-                } else {
-                    $link.removeClass('btnUserItemRatingOn');
-                }
+                    if (markAsFavorite) {
+                        $link.addClass('btnUserItemRatingOn');
+                    } else {
+                        $link.removeClass('btnUserItemRatingOn');
+                    }
+                });
             },
 
             markLike: function (link) {
 
-                var id = link.getAttribute('data-itemid');
+                // TODO: remove jQuery
+                require(['jQuery'], function ($) {
+                    var id = link.getAttribute('data-itemid');
 
-                var $link = $(link);
+                    var $link = $(link);
 
-                if (!$link.hasClass('btnUserItemRatingOn')) {
+                    if (!$link.hasClass('btnUserItemRatingOn')) {
 
-                    ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, true);
+                        ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, true);
 
-                    $link.addClass('btnUserItemRatingOn');
+                        $link.addClass('btnUserItemRatingOn');
 
-                } else {
+                    } else {
 
-                    ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
+                        ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
 
-                    $link.removeClass('btnUserItemRatingOn');
-                }
+                        $link.removeClass('btnUserItemRatingOn');
+                    }
 
-                $link.prev().removeClass('btnUserItemRatingOn');
+                    $link.prev().removeClass('btnUserItemRatingOn');
+                });
             },
 
             markDislike: function (link) {
 
-                var id = link.getAttribute('data-itemid');
+                // TODO: remove jQuery
+                require(['jQuery'], function($) {
+                    var id = link.getAttribute('data-itemid');
 
-                var $link = $(link);
+                    var $link = $(link);
 
-                if (!$link.hasClass('btnUserItemRatingOn')) {
+                    if (!$link.hasClass('btnUserItemRatingOn')) {
 
-                    ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, false);
+                        ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, false);
 
-                    $link.addClass('btnUserItemRatingOn');
+                        $link.addClass('btnUserItemRatingOn');
 
-                } else {
+                    } else {
 
-                    ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
+                        ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
 
-                    $link.removeClass('btnUserItemRatingOn');
-                }
+                        $link.removeClass('btnUserItemRatingOn');
+                    }
 
-                $link.next().removeClass('btnUserItemRatingOn');
+                    $link.next().removeClass('btnUserItemRatingOn');
+                });
             },
 
             renderDetailImage: function (elem, item, editable, preferThumb) {
@@ -3548,25 +3605,26 @@
 
             renderOverview: function (elems, item) {
 
-                $(elems).each(function () {
-                    var elem = this;
+                for (var i = 0, length = elems.length; i < length; i++) {
+                    var elem = elems[i];
                     var overview = item.Overview || '';
-
-                    $('a', elem).each(function () {
-                        this.setAttribute("target", "_blank");
-                    });
 
                     if (overview) {
                         elem.innerHTML = overview;
 
                         elem.classList.remove('empty');
+
+                        var anchors = elem.querySelectorAll('a');
+                        for (var j = 0, length2 = anchors.length; j < length2; j++) {
+                            anchors[j].setAttribute("target", "_blank");
+                        }
+
                     } else {
                         elem.innerHTML = '';
 
                         elem.classList.add('empty');
                     }
-                });
-
+                }
             },
 
             renderStudios: function (elem, item, isStatic) {
@@ -3665,6 +3723,8 @@
                 var imgUrl;
                 var hasbackdrop = false;
 
+                var itemBackdropElement = page.querySelector('#itemBackdrop');
+
                 if (item.BackdropImageTags && item.BackdropImageTags.length) {
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
@@ -3674,7 +3734,9 @@
                         tag: item.BackdropImageTags[0]
                     });
 
-                    ImageLoader.lazyImage($('#itemBackdrop', page).addClass('noFade').removeClass('noBackdrop')[0], imgUrl);
+                    itemBackdropElement.classList.add('noFade');
+                    itemBackdropElement.classList.remove('noBackdrop');
+                    ImageLoader.lazyImage(itemBackdropElement, imgUrl);
                     hasbackdrop = true;
                 }
                 else if (item.ParentBackdropItemId && item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
@@ -3686,12 +3748,15 @@
                         maxWidth: screenWidth
                     });
 
-                    ImageLoader.lazyImage($('#itemBackdrop', page).addClass('noFade').removeClass('noBackdrop')[0], imgUrl);
+                    itemBackdropElement.classList.add('noFade');
+                    itemBackdropElement.classList.remove('noBackdrop');
+                    ImageLoader.lazyImage(itemBackdropElement, imgUrl);
                     hasbackdrop = true;
                 }
                 else {
 
-                    $('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
+                    itemBackdropElement.classList.add('noBackdrop');
+                    itemBackdropElement.style.backgroundImage = '';
                 }
 
                 return hasbackdrop;

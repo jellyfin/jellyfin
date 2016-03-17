@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['libraryBrowser', 'scripts/alphapicker'], function (libraryBrowser) {
 
     function getView() {
 
@@ -14,16 +14,7 @@
 
         Dashboard.showLoadingMsg();
 
-        if (LibraryMenu.getTopParentId()) {
-
-            $('.scopedContent', page).show();
-
-            loadResume(page);
-
-        } else {
-            $('.scopedContent', page).hide();
-        }
-
+        loadResume(page);
         loadNextUp(page);
     }
 
@@ -47,9 +38,9 @@
         ApiClient.getNextUpEpisodes(query).then(function (result) {
 
             if (result.Items.length) {
-                $('.noNextUpItems', page).hide();
+                page.querySelector('.noNextUpItems').classList.add('hide');
             } else {
-                $('.noNextUpItems', page).show();
+                page.querySelector('.noNextUpItems').classList.remove('hide');
             }
 
             var view = getView();
@@ -57,7 +48,7 @@
 
             if (view == 'ThumbCard') {
 
-                html += LibraryBrowser.getPosterViewHtml({
+                html += libraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "backdrop",
                     showTitle: true,
@@ -70,7 +61,7 @@
 
             } else if (view == 'Thumb') {
 
-                html += LibraryBrowser.getPosterViewHtml({
+                html += libraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "backdrop",
                     showTitle: true,
@@ -89,7 +80,7 @@
             ImageLoader.lazyChildren(elem);
             Dashboard.hideLoadingMsg();
 
-            LibraryBrowser.setLastRefreshed(page);
+            libraryBrowser.setLastRefreshed(page);
         });
     }
 
@@ -125,9 +116,9 @@
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
 
             if (result.Items.length) {
-                $('#resumableSection', page).show();
+                page.querySelector('#resumableSection').classList.remove('hide');
             } else {
-                $('#resumableSection', page).hide();
+                page.querySelector('#resumableSection').classList.add('hide');
             }
 
             var view = getResumeView();
@@ -135,7 +126,7 @@
 
             if (view == 'PosterCard') {
 
-                html += LibraryBrowser.getPosterViewHtml({
+                html += libraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: getThumbShape(),
                     showTitle: true,
@@ -148,7 +139,7 @@
 
             } else if (view == 'Poster') {
 
-                html += LibraryBrowser.getPosterViewHtml({
+                html += libraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: getThumbShape(),
                     showTitle: true,
@@ -174,12 +165,12 @@
         } else {
             tabContent.querySelector('#resumableItems').classList.remove('hiddenScrollX');
         }
-        $(tabContent.querySelector('#resumableItems')).createCardMenus();
+        libraryBrowser.createCardMenus(tabContent.querySelector('#resumableItems'));
     }
 
     function loadSuggestionsTab(page, tabContent) {
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
+        if (libraryBrowser.needsRefresh(tabContent)) {
             reload(tabContent);
         }
     }
@@ -245,14 +236,20 @@
     window.TvPage.renderSuggestedTab = loadSuggestionsTab;
     window.TvPage.initSuggestedTab = initSuggestedTab;
 
-    pageIdOn('pageinit', "tvRecommendedPage", function () {
+    function onPlaybackStop(e, state) {
 
-        var page = this;
+        if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
+            var page = $.mobile.activePage;
+            var pages = page.querySelector('neon-animated-pages');
 
-        $('.recommendations', page).createCardMenus();
+            pages.dispatchEvent(new CustomEvent("tabchange", {}));
+        }
+    }
 
-        var tabs = page.querySelector('paper-tabs');
-        var pages = page.querySelector('neon-animated-pages');
+    return function (view, params) {
+
+        var tabs = view.querySelector('paper-tabs');
+        var pages = view.querySelector('neon-animated-pages');
 
         var baseUrl = 'tv.html';
         var topParentId = LibraryMenu.getTopParentId();
@@ -261,60 +258,48 @@
         }
 
         if (enableScrollX()) {
-            page.querySelector('#resumableItems').classList.add('hiddenScrollX');
+            view.querySelector('#resumableItems').classList.add('hiddenScrollX');
         } else {
-            page.querySelector('#resumableItems').classList.remove('hiddenScrollX');
+            view.querySelector('#resumableItems').classList.remove('hiddenScrollX');
         }
-        $(page.querySelector('#resumableItems')).createCardMenus();
+        libraryBrowser.createCardMenus(view.querySelector('#resumableItems'));
 
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, baseUrl);
+        libraryBrowser.configurePaperLibraryTabs(view, tabs, pages, baseUrl);
 
         pages.addEventListener('tabchange', function (e) {
-            loadTab(page, parseInt(this.selected));
+            loadTab(view, parseInt(this.selected));
         });
-    });
 
-    pageIdOn('pagebeforeshow', "tvRecommendedPage", function () {
+        view.addEventListener('viewbeforeshow', function (e) {
 
-        var page = this;
+            var page = this;
 
-        if (!page.getAttribute('data-title')) {
+            if (!page.getAttribute('data-title')) {
 
-            var parentId = LibraryMenu.getTopParentId();
+                var parentId = LibraryMenu.getTopParentId();
 
-            if (parentId) {
+                if (parentId) {
 
-                ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).then(function (item) {
+                    ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).then(function (item) {
 
-                    page.setAttribute('data-title', item.Name);
-                    LibraryMenu.setTitle(item.Name);
-                });
+                        page.setAttribute('data-title', item.Name);
+                        LibraryMenu.setTitle(item.Name);
+                    });
 
 
-            } else {
-                page.setAttribute('data-title', Globalize.translate('TabShows'));
-                LibraryMenu.setTitle(Globalize.translate('TabShows'));
+                } else {
+                    page.setAttribute('data-title', Globalize.translate('TabShows'));
+                    LibraryMenu.setTitle(Globalize.translate('TabShows'));
+                }
             }
-        }
 
-        Events.on(MediaController, 'playbackstop', onPlaybackStop);
-    });
+            Events.on(MediaController, 'playbackstop', onPlaybackStop);
+        });
 
-    pageIdOn('pagebeforehide', "tvRecommendedPage", function () {
+        view.addEventListener('viewbeforehide', function (e) {
 
-        var page = this;
-        Events.off(MediaController, 'playbackstop', onPlaybackStop);
-    });
-
-    function onPlaybackStop(e, state) {
-
-        if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
-            var page = $($.mobile.activePage)[0];
-            var pages = page.querySelector('neon-animated-pages');
-
-            pages.dispatchEvent(new CustomEvent("tabchange", {}));
-        }
-    }
-
-
-})(jQuery, document);
+            var page = this;
+            Events.off(MediaController, 'playbackstop', onPlaybackStop);
+        });
+    };
+});
