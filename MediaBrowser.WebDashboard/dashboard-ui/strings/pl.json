@@ -1,5 +1,4 @@
 {
-    "EmbyIntroDownloadMessageWithoutLink": "To download and install Emby Server visit the Emby website.",
     "LabelExit": "Wyj\u015bcie",
     "LabelVisitCommunity": "Odwied\u017a spo\u0142eczno\u015b\u0107",
     "LabelGithub": "Github",
@@ -736,7 +735,6 @@
     "NotificationOptionPluginError": "Niepowodzenie wtyczki",
     "ButtonVolumeUp": "G\u0142o\u015bno\u015b\u0107 w g\u00f3re",
     "ButtonVolumeDown": "G\u0142o\u015bno\u015b\u0107 w d\u00f3\u0142",
-    "ButtonMute": "Wycisz",
     "HeaderLatestMedia": "Ostatnie Media",
     "OptionNoSubtitles": "Bez Napis\u00f3w",
     "OptionSpecialFeatures": "Zawarto\u015b\u0107 Dodatkowa",
@@ -1648,6 +1646,7 @@
     "LabelDefaultForcedStream": "(Domy\u015blny\/Wymuszony)",
     "LabelUnknownLanguage": "Nieznany j\u0119zyk",
     "MessageConfirmSyncJobItemCancellation": "Czy na pewno chcesz usun\u0105\u0107 t\u0105 pozycj\u0119?",
+    "ButtonMute": "Wycisz",
     "ButtonUnmute": "(OD)Wycisz",
     "ButtonQueue": "Kolejka",
     "ButtonPlaylist": "Playlista",
@@ -2178,6 +2177,7 @@
     "LabelProfile": "Profil:",
     "LabelBitrateMbps": "Przep\u0142ywno\u015b\u0107 (Mbps):",
     "EmbyIntroDownloadMessage": "Aby pobra\u0107 i zainstalowa\u0107 serwer Emby odwied\u017a {0}.",
+    "EmbyIntroDownloadMessageWithoutLink": "To download and install Emby Server visit the Emby website.",
     "ButtonNewServer": "Nowy serwer",
     "MyDevice": "Moje urz\u0105dzenie",
     "ButtonRemote": "Zdalny",
@@ -2318,5 +2318,10 @@
     "ValueExample": "1:00 PM",
     "ButtonGotIt": "Got It",
     "OptionEnableAnonymousUsageReporting": "Enable anonymous usage reporting",
-    "OptionEnableAnonymousUsageReportingHelp": "Allow Emby to collect anonymous data such as installed plugins, the version numbers of your Emby apps, etc. This information is only used for the purpose of improving the software."
+    "OptionEnableAnonymousUsageReportingHelp": "Allow Emby to collect anonymous data such as installed plugins, the version numbers of your Emby apps, etc. This information is only used for the purpose of improving the software.",
+    "LabelFileOrUrl": "File or url:",
+    "OptionEnableForAllTuners": "Enable for all tuner devices",
+    "HeaderTuners": "Tuners",
+    "LabelOptionalM3uUrl": "M3U url (optional):",
+    "LabelOptionalM3uUrlHelp": "Some devices support an M3U channel listing."
 }

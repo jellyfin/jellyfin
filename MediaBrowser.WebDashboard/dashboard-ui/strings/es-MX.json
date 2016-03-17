@@ -1,5 +1,4 @@
 {
-    "EmbyIntroDownloadMessageWithoutLink": "Para descargar e instalar el Servidor Emby visite el sitio web de Emby",
     "LabelExit": "Salir",
     "LabelVisitCommunity": "Visitar la Comunidad",
     "LabelGithub": "Github",
@@ -736,7 +735,6 @@
     "NotificationOptionPluginError": "Falla de complemento",
     "ButtonVolumeUp": "Subir Volumen",
     "ButtonVolumeDown": "Bajar Volumen",
-    "ButtonMute": "Mudo",
     "HeaderLatestMedia": "Agregadas Recientemente",
     "OptionNoSubtitles": "Sin Subtitulos",
     "OptionSpecialFeatures": "Caracter\u00edsticas Especiales",
@@ -1648,6 +1646,7 @@
     "LabelDefaultForcedStream": "(Por Defecto\/Forzado)",
     "LabelUnknownLanguage": "Idioma Desconocido",
     "MessageConfirmSyncJobItemCancellation": "\u00bfEsta seguro que desea cancelar este \u00edtem?",
+    "ButtonMute": "Mudo",
     "ButtonUnmute": "Quitar mudo",
     "ButtonQueue": "A cola",
     "ButtonPlaylist": "Lista de Reprod.",
@@ -2178,6 +2177,7 @@
     "LabelProfile": "Perf\u00edl:",
     "LabelBitrateMbps": "Tasa de bits (Mbps):",
     "EmbyIntroDownloadMessage": "Para descargar e instalar el Servidor Emby visite {0}.",
+    "EmbyIntroDownloadMessageWithoutLink": "Para descargar e instalar el Servidor Emby visite el sitio web de Emby",
     "ButtonNewServer": "Nuevo Servidor",
     "MyDevice": "Mi Dispositivo",
     "ButtonRemote": "Remoto",
@@ -2318,5 +2318,10 @@
     "ValueExample": "1:00 PM",
     "ButtonGotIt": "Hecho",
     "OptionEnableAnonymousUsageReporting": "Habilitar envi\u00f3 de reportes an\u00f3nimo",
-    "OptionEnableAnonymousUsageReportingHelp": "Permite a Emby colectar informaci\u00f3n an\u00f3nima como los complementos instalados, el numero de versi\u00f3n de sus apps Emby, etc. Esta informaci\u00f3n sera usada con el \u00fanico prop\u00f3sito de mejorar el software."
+    "OptionEnableAnonymousUsageReportingHelp": "Permite a Emby colectar informaci\u00f3n an\u00f3nima como los complementos instalados, el numero de versi\u00f3n de sus apps Emby, etc. Esta informaci\u00f3n sera usada con el \u00fanico prop\u00f3sito de mejorar el software.",
+    "LabelFileOrUrl": "Archivo o url:",
+    "OptionEnableForAllTuners": "Habilitar para todos los dispositivos sintonizadores",
+    "HeaderTuners": "Sintonizador",
+    "LabelOptionalM3uUrl": "M3U url (optional):",
+    "LabelOptionalM3uUrlHelp": "Some devices support an M3U channel listing."
 }

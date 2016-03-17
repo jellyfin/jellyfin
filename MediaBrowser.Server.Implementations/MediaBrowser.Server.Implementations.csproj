@@ -588,6 +588,7 @@
     <EmbeddedResource Include="LiveTv\TunerHosts\SatIp\ini\satellite\3560.ini" />
     <EmbeddedResource Include="LiveTv\TunerHosts\SatIp\ini\satellite\3592.ini" />
     <EmbeddedResource Include="LiveTv\TunerHosts\SatIp\ini\satellite\3594.ini" />
+    <EmbeddedResource Include="Localization\Core\fr-CA.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
