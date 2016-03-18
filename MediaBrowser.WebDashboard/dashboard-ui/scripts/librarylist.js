@@ -196,7 +196,7 @@
 
     function onMoreButtonClick() {
 
-        var card = $(this).parents('.card')[0];
+        var card = parentWithClass(this, 'card');
 
         showContextMenu(card, {
             showPlayOptions: false
@@ -522,7 +522,7 @@
                                 MediaController.play(itemId);
                                 break;
                             case 'playallfromhere':
-                                playAllFromHere(index, $(card).parents('.itemsContainer'), 'play');
+                                playAllFromHere(index, parentWithClass(card, 'itemsContainer'), 'play');
                                 break;
                             case 'queue':
                                 MediaController.queue(itemId);
@@ -539,7 +539,7 @@
                                 });
                                 break;
                             case 'queueallfromhere':
-                                playAllFromHere(index, $(card).parents('.itemsContainer'), 'queue');
+                                playAllFromHere(index, parentWithClass(card, 'itemsContainer'), 'queue');
                                 break;
                             case 'sync':
                                 require(['syncDialog'], function (syncDialog) {
@@ -884,7 +884,7 @@
 
     function showTapHoldHelp(element) {
 
-        var page = $(element).parents('.page')[0];
+        var page = parentWithClass(element, 'page');
 
         if (!page) {
             return;
@@ -1187,7 +1187,7 @@
                                 hideSelections();
                                 break;
                             case 'groupvideos':
-                                combineVersions($($.mobile.activePage)[0], items);
+                                combineVersions($.mobile.activePage, items);
                                 break;
                             case 'refresh':
                                 items.map(function (itemId) {
@@ -1291,7 +1291,7 @@
 
             index = elemWithAttributes.getAttribute('data-index');
 
-            itemsContainer = $(elem).parents('.itemsContainer');
+            itemsContainer = parentWithClass(elem, 'itemsContainer');
 
             playAllFromHere(index, itemsContainer, 'play');
         }
@@ -1377,7 +1377,7 @@
 
         var itemsContainers = page.querySelectorAll('.itemsContainer:not(.noautoinit)');
         for (var i = 0, length = itemsContainers.length; i < length; i++) {
-            $(itemsContainers[i]).createCardMenus();
+            LibraryBrowser.createCardMenus(itemsContainers[i]);
         }
 
         $('.categorySyncButton', page).on('click', function () {
@@ -1458,7 +1458,7 @@
             if (mediaType == 'Video') {
                 this.setAttribute('data-positionticks', (userData.PlaybackPositionTicks || 0));
 
-                if ($(this).hasClass('card')) {
+                if (this.classList.contains('card')) {
                     renderUserDataChanges(this, userData);
                 }
             }

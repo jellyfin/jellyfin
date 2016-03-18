@@ -201,10 +201,10 @@ namespace MediaBrowser.Api.Library
             var rootFolderPath = _appPaths.DefaultUserViewsPath;
 
             var virtualFolderPath = Path.Combine(rootFolderPath, name);
-
-            if (_fileSystem.DirectoryExists(virtualFolderPath))
+            while (_fileSystem.DirectoryExists(virtualFolderPath))
             {
-                throw new ArgumentException("There is already a media library with the name " + name + ".");
+                name += "1";
+                virtualFolderPath = Path.Combine(rootFolderPath, name);
             }
 
             if (request.Paths != null)
@@ -236,7 +236,7 @@ namespace MediaBrowser.Api.Library
                 {
                     foreach (var path in request.Paths)
                     {
-                        LibraryHelpers.AddMediaPath(_fileSystem, request.Name, path, _appPaths);
+                        LibraryHelpers.AddMediaPath(_fileSystem, name, path, _appPaths);
                     }
                 }
             }

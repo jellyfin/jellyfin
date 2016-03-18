@@ -108,7 +108,7 @@ Custom property                               | Description                     
 
       #progressContainer,
       .indeterminate::after {
-        background-color: var(--paper-progress-container-color, --google-grey-300);
+        background: var(--paper-progress-container-color, --google-grey-300);
       }
 
       :host(.transiting) #primaryProgress,
@@ -140,20 +140,19 @@ Custom property                               | Description                     
       }
 
       #primaryProgress {
-        background-color: var(--paper-progress-active-color, --google-green-500);
+        background: var(--paper-progress-active-color, --google-green-500);
       }
 
       #secondaryProgress {
-        position: relative;
-        background-color: var(--paper-progress-secondary-color, --google-green-100);
+        background: var(--paper-progress-secondary-color, --google-green-100);
       }
 
       :host([disabled]) #primaryProgress {
-        background-color: var(--paper-progress-disabled-active-color, --google-grey-500);
+        background: var(--paper-progress-disabled-active-color, --google-grey-500);
       }
 
       :host([disabled]) #secondaryProgress {
-        background-color: var(--paper-progress-disabled-secondary-color, --google-grey-300);
+        background: var(--paper-progress-disabled-secondary-color, --google-grey-300);
       }
 
       :host(:not([disabled])) #primaryProgress.indeterminate {
