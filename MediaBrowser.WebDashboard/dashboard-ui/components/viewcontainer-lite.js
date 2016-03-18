@@ -102,7 +102,15 @@ define([], function () {
         }
     }
 
+    function replaceAll(str, find, replace) {
+
+        return str.split(find).join(replace);
+    }
+
     function parseHtml(html) {
+
+        html = replaceAll(html, '<!--<script', '<script');
+        html = replaceAll(html, '</script>-->', '</script>');
 
         var wrapper = document.createElement('div');
         wrapper.innerHTML = html;

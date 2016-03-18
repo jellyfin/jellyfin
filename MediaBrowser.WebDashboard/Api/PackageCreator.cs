@@ -315,15 +315,14 @@ namespace MediaBrowser.WebDashboard.Api
 
                 html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, appVersion));
 
-                // Inject sripts before any embedded scripts
+                // Disable embedded scripts from plugins. We'll run them later once resources have loaded
                 if (html.IndexOf("<script", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    html = ReplaceFirst(html, "<script", GetCommonJavascript(mode, appVersion, false) + "<script");
+                    html = html.Replace("<script", "<!--<script");
+                    html = html.Replace("</script>", "</script>-->");
                 }
-                else
-                {
-                    html = html.Replace("</body>", GetCommonJavascript(mode, appVersion, true) + "</body>");
-                }
+
+                html = html.Replace("</body>", GetCommonJavascript(mode, appVersion) + "</body>");
 
                 var bytes = Encoding.UTF8.GetBytes(html);
 
@@ -446,9 +445,8 @@ namespace MediaBrowser.WebDashboard.Api
         /// </summary>
         /// <param name="mode">The mode.</param>
         /// <param name="version">The version.</param>
-        /// <param name="async">if set to <c>true</c> [asynchronous].</param>
         /// <returns>System.String.</returns>
-        private string GetCommonJavascript(string mode, string version, bool async)
+        private string GetCommonJavascript(string mode, string version)
         {
             var builder = new StringBuilder();
 
@@ -482,11 +480,7 @@ namespace MediaBrowser.WebDashboard.Api
             {
                 if (s.IndexOf("require", StringComparison.OrdinalIgnoreCase) == -1)
                 {
-                    if (async)
-                    {
-                        return string.Format("<script src=\"{0}\" async></script>", s);
-                    }
-                    return string.Format("<script src=\"{0}\"></script>", s);
+                    return string.Format("<script src=\"{0}\" async></script>", s);
                 }
                 return string.Format("<script src=\"{0}\"></script>", s);
 
