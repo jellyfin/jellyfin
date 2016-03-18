@@ -107,10 +107,12 @@ define([], function () {
         return str.split(find).join(replace);
     }
 
-    function parseHtml(html) {
+    function parseHtml(html, hasScript) {
 
-        html = replaceAll(html, '<!--<script', '<script');
-        html = replaceAll(html, '</script>-->', '</script>');
+        if (hasScript) {
+            html = replaceAll(html, '<!--<script', '<script');
+            html = replaceAll(html, '</script>-->', '</script>');
+        }
 
         var wrapper = document.createElement('div');
         wrapper.innerHTML = html;
@@ -126,13 +128,15 @@ define([], function () {
             return html;
         }
 
-        var elem = parseHtml(options.view);
+        var hasScript = options.view.indexOf('<script') != -1;
+
+        var elem = parseHtml(options.view, hasScript);
         elem.classList.add('page-view');
         elem.setAttribute('data-type', options.type || '');
         elem.setAttribute('data-url', options.url);
         return {
             elem: elem,
-            hasScript: options.view.indexOf('<script') != -1
+            hasScript: hasScript
         };
     }
 
