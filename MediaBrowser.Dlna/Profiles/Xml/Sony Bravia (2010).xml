@@ -24,10 +24,10 @@
   <MaxAlbumArtHeight>480</MaxAlbumArtHeight>
   <MaxIconWidth>48</MaxIconWidth>
   <MaxIconHeight>48</MaxIconHeight>
-  <MaxStreamingBitrate>12000000</MaxStreamingBitrate>
-  <MaxStaticBitrate>12000000</MaxStaticBitrate>
-  <MusicStreamingTranscodingBitrate>128000</MusicStreamingTranscodingBitrate>
-  <MusicSyncBitrate>128000</MusicSyncBitrate>
+  <MaxStreamingBitrate>15000000</MaxStreamingBitrate>
+  <MaxStaticBitrate>15000000</MaxStaticBitrate>
+  <MusicStreamingTranscodingBitrate>192000</MusicStreamingTranscodingBitrate>
+  <MusicSyncBitrate>192000</MusicSyncBitrate>
   <XDlnaDoc>DMS-1.50</XDlnaDoc>
   <SonyAggregationFlags>10</SonyAggregationFlags>
   <ProtocolInfo>http-get:*:audio/mpeg:DLNA.ORG_PN=MP3;DLNA.ORG_OP=01;DLNA.ORG_FLAGS=81500000000000000000000000000000,http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_SM;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=00D00000000000000000000000000000,http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_PS_PAL;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=81500000000000000000000000000000</ProtocolInfo>
