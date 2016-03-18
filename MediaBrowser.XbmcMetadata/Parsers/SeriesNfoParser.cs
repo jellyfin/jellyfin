@@ -27,13 +27,29 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             switch (reader.Name)
             {
                 case "id":
-                    string id = reader.ReadElementContentAsString();
-                    if (!string.IsNullOrWhiteSpace(id))
                     {
-                        item.SetProviderId(MetadataProviders.Tvdb, id);
-                    }
-                    break;
+                        string imdbId = reader.GetAttribute("IMDB");
+                        string tmdbId = reader.GetAttribute("TMDB");
+                        string tvdbId = reader.GetAttribute("TVDB");
 
+                        if (string.IsNullOrWhiteSpace(tvdbId))
+                        {
+                            tvdbId = reader.ReadElementContentAsString();
+                        }
+                        if (!string.IsNullOrWhiteSpace(imdbId))
+                        {
+                            item.SetProviderId(MetadataProviders.Imdb, imdbId);
+                        }
+                        if (!string.IsNullOrWhiteSpace(tmdbId))
+                        {
+                            item.SetProviderId(MetadataProviders.Tmdb, tmdbId);
+                        }
+                        if (!string.IsNullOrWhiteSpace(tvdbId))
+                        {
+                            item.SetProviderId(MetadataProviders.Tvcom, tvdbId);
+                        }
+                        break;
+                    }
                 case "airs_dayofweek":
                     {
                         item.AirDays = TVUtils.GetAirDays(reader.ReadElementContentAsString());
