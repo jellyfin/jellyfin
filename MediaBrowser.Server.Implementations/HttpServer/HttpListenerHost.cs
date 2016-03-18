@@ -21,6 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Security;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
 {
@@ -342,16 +343,26 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 urlToLog = GetUrlToLog(urlString);
                 LoggerUtils.LogRequest(_logger, urlToLog, httpReq.HttpMethod, httpReq.UserAgent);
             }
-            
+
             if (string.Equals(localPath, "/mediabrowser/", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(localPath, "/emby/", StringComparison.OrdinalIgnoreCase))
+                string.Equals(localPath, "/mediabrowser", StringComparison.OrdinalIgnoreCase) ||
+                localPath.IndexOf("mediabrowser/web", StringComparison.OrdinalIgnoreCase) != -1 ||
+                localPath.IndexOf("dashboard/", StringComparison.OrdinalIgnoreCase) != -1)
             {
-                httpRes.RedirectToUrl(DefaultRedirectPath);
+                httpRes.StatusCode = 200;
+                httpRes.ContentType = "text/plain";
+                var newUrl = urlString.Replace("mediabrowser", "emby", StringComparison.OrdinalIgnoreCase)
+                    .Replace("/dashboard/", "/web/", StringComparison.OrdinalIgnoreCase);
+
+                httpRes.Write("Please update your Emby bookmark to " + newUrl);
+
+                httpRes.Close();
                 return Task.FromResult(true);
             }
-            if (string.Equals(localPath, "/mediabrowser", StringComparison.OrdinalIgnoreCase))
+      
+            if (string.Equals(localPath, "/emby/", StringComparison.OrdinalIgnoreCase))
             {
-                httpRes.RedirectToUrl("mediabrowser/" + DefaultRedirectPath);
+                httpRes.RedirectToUrl(DefaultRedirectPath);
                 return Task.FromResult(true);
             }
             if (string.Equals(localPath, "/emby", StringComparison.OrdinalIgnoreCase))
@@ -461,6 +472,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     Priority = route.Priority,
                     Summary = route.Summary
                 });
+
                 routes.Add(new RouteAttribute(NormalizeRoutePath(route.Path), route.Verbs)
                 {
                     Notes = route.Notes,
@@ -468,13 +480,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     Summary = route.Summary
                 });
 
-                // TODO: This is a hack for iOS. Remove it asap.
-                routes.Add(new RouteAttribute(DoubleNormalizeRoutePath(route.Path), route.Verbs)
-                {
-                    Notes = route.Notes,
-                    Priority = route.Priority,
-                    Summary = route.Summary
-                });
                 routes.Add(new RouteAttribute(DoubleNormalizeEmbyRoutePath(route.Path), route.Verbs)
                 {
                     Notes = route.Notes,
@@ -514,16 +519,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
 
             return "mediabrowser/" + path;
-        }
-
-        private string DoubleNormalizeRoutePath(string path)
-        {
-            if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
-            {
-                return "/mediabrowser/mediabrowser" + path;
-            }
-
-            return "mediabrowser/mediabrowser/" + path;
         }
 
         /// <summary>
