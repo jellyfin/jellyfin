@@ -261,11 +261,21 @@ namespace MediaBrowser.WebDashboard.Api
                     {
                         html = ModifyForCordova(html);
                     }
-                    else if (!string.IsNullOrWhiteSpace(path) && !string.Equals(path, "index.html", StringComparison.OrdinalIgnoreCase) && html.IndexOf("<html", StringComparison.OrdinalIgnoreCase) == -1)
+                    else if (!string.IsNullOrWhiteSpace(path) && !string.Equals(path, "index.html", StringComparison.OrdinalIgnoreCase))
                     {
-                        var indexFile = File.ReadAllText(GetDashboardResourcePath("index.html"));
+                        var index = html.IndexOf("<body", StringComparison.OrdinalIgnoreCase);
+                        if (index != -1)
+                        {
+                            html = html.Substring(index);
+                            index = html.IndexOf("</body>", StringComparison.OrdinalIgnoreCase);
+                            if (index != -1)
+                            {
+                                html = html.Substring(0, index+7);
+                            }
+                        }
+                        var mainFile = File.ReadAllText(GetDashboardResourcePath("index.html"));
 
-                        html = ReplaceFirst(indexFile, "<div class=\"mainAnimatedPage hide\"></div>", "<div class=\"mainAnimatedPage hide\">" + html + "</div>");
+                        html = ReplaceFirst(mainFile, "<div class=\"mainAnimatedPage hide\"></div>", "<div class=\"mainAnimatedPage hide\">" + html + "</div>");
                     }
 
                     if (!string.IsNullOrWhiteSpace(localizationCulture))
@@ -305,7 +315,15 @@ namespace MediaBrowser.WebDashboard.Api
 
                 html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, appVersion));
 
-                html = html.Replace("</body>", GetCommonJavascript(mode, appVersion) + "</body>");
+                // Inject sripts before any embedded scripts
+                if (html.IndexOf("<script", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    html = ReplaceFirst(html, "<script", GetCommonJavascript(mode, appVersion, false) + "<script");
+                }
+                else
+                {
+                    html = html.Replace("</body>", GetCommonJavascript(mode, appVersion, true) + "</body>");
+                }
 
                 var bytes = Encoding.UTF8.GetBytes(html);
 
@@ -428,8 +446,9 @@ namespace MediaBrowser.WebDashboard.Api
         /// </summary>
         /// <param name="mode">The mode.</param>
         /// <param name="version">The version.</param>
+        /// <param name="async">if set to <c>true</c> [asynchronous].</param>
         /// <returns>System.String.</returns>
-        private string GetCommonJavascript(string mode, string version)
+        private string GetCommonJavascript(string mode, string version, bool async)
         {
             var builder = new StringBuilder();
 
@@ -463,7 +482,11 @@ namespace MediaBrowser.WebDashboard.Api
             {
                 if (s.IndexOf("require", StringComparison.OrdinalIgnoreCase) == -1)
                 {
-                    return string.Format("<script src=\"{0}\" async></script>", s);
+                    if (async)
+                    {
+                        return string.Format("<script src=\"{0}\" async></script>", s);
+                    }
+                    return string.Format("<script src=\"{0}\"></script>", s);
                 }
                 return string.Format("<script src=\"{0}\"></script>", s);
 

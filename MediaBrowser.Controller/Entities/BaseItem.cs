@@ -57,7 +57,9 @@ namespace MediaBrowser.Controller.Entities
         public static string ThemeSongFilename = "theme";
         public static string ThemeVideosFolderName = "backdrops";
 
+        [IgnoreDataMember]
         public string PreferredMetadataCountryCode { get; set; }
+        [IgnoreDataMember]
         public string PreferredMetadataLanguage { get; set; }
 
         public List<ItemImageInfo> ImageInfos { get; set; }
@@ -88,6 +90,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets a value indicating whether this instance is in mixed folder.
         /// </summary>
         /// <value><c>true</c> if this instance is in mixed folder; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
         public bool IsInMixedFolder { get; set; }
 
         [IgnoreDataMember]
@@ -342,6 +345,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public DateTime DateModified { get; set; }
 
+        [IgnoreDataMember]
         public DateTime DateLastSaved { get; set; }
 
         [IgnoreDataMember]
@@ -380,6 +384,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the locked fields.
         /// </summary>
         /// <value>The locked fields.</value>
+        [IgnoreDataMember]
         public List<MetadataFields> LockedFields { get; set; }
 
         /// <summary>
@@ -620,6 +625,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the studios.
         /// </summary>
         /// <value>The studios.</value>
+        [IgnoreDataMember]
         public List<string> Studios { get; set; }
 
         /// <summary>
@@ -633,6 +639,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the tags.
         /// </summary>
         /// <value>The tags.</value>
+        [IgnoreDataMember]
         public List<string> Tags { get; set; }
 
         /// <summary>
