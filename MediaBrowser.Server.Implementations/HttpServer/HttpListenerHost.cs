@@ -350,16 +350,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 localPath.IndexOf("dashboard/", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 httpRes.StatusCode = 200;
-                httpRes.ContentType = "text/plain";
+                httpRes.ContentType = "text/html";
                 var newUrl = urlString.Replace("mediabrowser", "emby", StringComparison.OrdinalIgnoreCase)
                     .Replace("/dashboard/", "/web/", StringComparison.OrdinalIgnoreCase);
 
-                httpRes.Write("Please update your Emby bookmark to " + newUrl);
+                httpRes.Write("<!doctype html><html><head><title>Emby</title></head><body>Please update your Emby bookmark to <a href=\"" + newUrl + "\">" + newUrl + "</a></body></html>");
 
                 httpRes.Close();
                 return Task.FromResult(true);
             }
-      
+
             if (string.Equals(localPath, "/emby/", StringComparison.OrdinalIgnoreCase))
             {
                 httpRes.RedirectToUrl(DefaultRedirectPath);
@@ -396,7 +396,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 httpRes.RedirectToUrl("web/pin.html");
                 return Task.FromResult(true);
             }
-            
+
             if (!string.IsNullOrWhiteSpace(GlobalResponse))
             {
                 httpRes.StatusCode = 503;
