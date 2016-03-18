@@ -1,9 +1,9 @@
-﻿(function ($, document) {
+﻿define([], function () {
 
     // The base query options
     var data = {};
 
-    function getQuery() {
+    function getQuery(params) {
 
         var key = getSavedQueryKey();
         var pageData = data[key];
@@ -21,7 +21,7 @@
                 }
             };
 
-            pageData.query.ParentId = LibraryMenu.getTopParentId();
+            pageData.query.ParentId = params.topParentId;
             LibraryBrowser.loadSavedQueryValues(key, pageData.query);
         }
         return pageData.query;
@@ -32,9 +32,9 @@
         return LibraryBrowser.getSavedQueryKey('studios');
     }
 
-    function reloadItems(page) {
+    function reloadItems(context, params) {
 
-        var query = getQuery();
+        var query = getQuery(params);
 
         Dashboard.showLoadingMsg();
 
@@ -45,7 +45,7 @@
 
             var html = '';
 
-            $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
+            $('.listTopPaging', context).html(LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
@@ -64,32 +64,35 @@
 
             });
 
-            var elem = page.querySelector('#items');
+            var elem = context.querySelector('#items');
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
 
-            $('.btnNextPage', page).on('click', function () {
+            $('.btnNextPage', context).on('click', function () {
                 query.StartIndex += query.Limit;
-                reloadItems(page);
+                reloadItems(context, params);
             });
 
-            $('.btnPreviousPage', page).on('click', function () {
+            $('.btnPreviousPage', context).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
+                reloadItems(context, params);
             });
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
-            LibraryBrowser.setLastRefreshed(page);
+            LibraryBrowser.setLastRefreshed(context);
             Dashboard.hideLoadingMsg();
         });
     }
+    return function (view, params, tabContent) {
 
-    window.TvPage.renderStudiosTab = function (page, tabContent) {
+        var self = this;
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
-            reloadItems(tabContent);
-        }
+        self.renderTab = function () {
+
+            if (LibraryBrowser.needsRefresh(tabContent)) {
+                reloadItems(tabContent, params);
+            }
+        };
     };
-
-})(jQuery, document);
+});

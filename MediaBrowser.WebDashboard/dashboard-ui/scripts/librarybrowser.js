@@ -1157,7 +1157,7 @@
                     }
                 }
                 if (item.Type == 'CollectionFolder') {
-                    return 'itemlist.html?topParentId=' + item.Id + '&parentid=' + item.Id;
+                    return 'itemlist.html?topParentId=' + item.Id + '&parentId=' + item.Id;
                 }
 
                 if (item.Type == "PhotoAlbum") {

@@ -1,17 +1,17 @@
-﻿(function ($, document) {
+﻿define([], function () {
 
     function getView() {
 
         return 'Thumb';
     }
 
-    function loadLatest(page) {
+    function loadLatest(context, params) {
 
         Dashboard.showLoadingMsg();
 
         var userId = Dashboard.getCurrentUserId();
 
-        var parentId = LibraryMenu.getTopParentId();
+        var parentId = params.topParentId;
 
         var limit = 30;
 
@@ -68,20 +68,23 @@
                 });
             }
 
-            var elem = page.querySelector('#latestEpisodes');
+            var elem = context.querySelector('#latestEpisodes');
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
 
             Dashboard.hideLoadingMsg();
-            LibraryBrowser.setLastRefreshed(page);
+            LibraryBrowser.setLastRefreshed(context);
         });
     }
+    return function (view, params, tabContent) {
 
-    window.TvPage.renderLatestTab = function (page, tabContent) {
+        var self = this;
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
-            loadLatest(tabContent);
-        }
+        self.renderTab = function() {
+
+            if (LibraryBrowser.needsRefresh(tabContent)) {
+                loadLatest(tabContent, params);
+            }
+        };
     };
-
-})(jQuery, document);
+});

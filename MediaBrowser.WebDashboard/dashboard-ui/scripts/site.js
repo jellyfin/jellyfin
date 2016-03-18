@@ -2447,8 +2447,9 @@ var AppInfo = {};
 
         defineRoute({
             path: '/itemlist.html',
-            dependencies: ['jQuery'],
-            autoFocus: false
+            dependencies: ['paper-checkbox', 'scripts/alphapicker'],
+            autoFocus: false,
+            controller: 'scripts/itemlistpage'
         });
 
         defineRoute({
@@ -2746,8 +2747,9 @@ var AppInfo = {};
 
         defineRoute({
             path: '/secondaryitems.html',
-            dependencies: ['jQuery'],
-            autoFocus: false
+            dependencies: [],
+            autoFocus: false,
+            controller: 'scripts/secondaryitems'
         });
 
         defineRoute({

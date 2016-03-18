@@ -1,6 +1,6 @@
-﻿(function ($, document) {
+﻿define([], function () {
 
-    function loadUpcoming(page) {
+    function loadUpcoming(context, params) {
 
         Dashboard.showLoadingMsg();
 
@@ -17,24 +17,24 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        query.ParentId = LibraryMenu.getTopParentId();
+        query.ParentId = params.topParentId;
 
         ApiClient.getJSON(ApiClient.getUrl("Shows/Upcoming", query)).then(function (result) {
 
             var items = result.Items;
 
             if (items.length) {
-                page.querySelector('.noItemsMessage').style.display = 'none';
+                context.querySelector('.noItemsMessage').style.display = 'none';
             } else {
-                page.querySelector('.noItemsMessage').style.display = 'block';
+                context.querySelector('.noItemsMessage').style.display = 'block';
             }
 
-            var elem = page.querySelector('#upcomingItems');
+            var elem = context.querySelector('#upcomingItems');
             renderUpcoming(elem, items);
 
             Dashboard.hideLoadingMsg();
 
-            LibraryBrowser.setLastRefreshed(page);
+            LibraryBrowser.setLastRefreshed(context);
 
         });
     }
@@ -122,12 +122,15 @@
         elem.innerHTML = html;
         ImageLoader.lazyChildren(elem);
     }
+    return function (view, params, tabContent) {
 
-    window.TvPage.renderUpcomingTab = function (page, tabContent) {
+        var self = this;
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
-            loadUpcoming(tabContent);
-        }
+        self.renderTab = function () {
+
+            if (LibraryBrowser.needsRefresh(tabContent)) {
+                loadUpcoming(tabContent, params);
+            }
+        };
     };
-
-})(jQuery, document);
+});
