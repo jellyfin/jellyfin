@@ -488,7 +488,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             var itemsResult = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
                 Person = person.Name,
-                IncludeItemTypes = new[] { typeof(Movie).Name, typeof(Series).Name, typeof(ChannelVideoItem).Name },
+                IncludeItemTypes = new[] { typeof(Movie).Name, typeof(Series).Name, typeof(Trailer).Name, typeof(ChannelVideoItem).Name },
                 SortBy = new[] { ItemSortBy.SortName },
                 Limit = limit,
                 StartIndex = startIndex

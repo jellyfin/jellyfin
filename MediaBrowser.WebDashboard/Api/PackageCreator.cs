@@ -261,11 +261,21 @@ namespace MediaBrowser.WebDashboard.Api
                     {
                         html = ModifyForCordova(html);
                     }
-                    else if (!string.IsNullOrWhiteSpace(path) && !string.Equals(path, "index.html", StringComparison.OrdinalIgnoreCase) && html.IndexOf("<html", StringComparison.OrdinalIgnoreCase) == -1)
+                    else if (!string.IsNullOrWhiteSpace(path) && !string.Equals(path, "index.html", StringComparison.OrdinalIgnoreCase))
                     {
-                        var indexFile = File.ReadAllText(GetDashboardResourcePath("index.html"));
+                        var index = html.IndexOf("<body", StringComparison.OrdinalIgnoreCase);
+                        if (index != -1)
+                        {
+                            html = html.Substring(index);
+                            index = html.IndexOf("</body>", StringComparison.OrdinalIgnoreCase);
+                            if (index != -1)
+                            {
+                                html = html.Substring(0, index+7);
+                            }
+                        }
+                        var mainFile = File.ReadAllText(GetDashboardResourcePath("index.html"));
 
-                        html = ReplaceFirst(indexFile, "<div class=\"mainAnimatedPage hide\"></div>", "<div class=\"mainAnimatedPage hide\">" + html + "</div>");
+                        html = ReplaceFirst(mainFile, "<div class=\"mainAnimatedPage hide\"></div>", "<div class=\"mainAnimatedPage hide\">" + html + "</div>");
                     }
 
                     if (!string.IsNullOrWhiteSpace(localizationCulture))
@@ -304,6 +314,13 @@ namespace MediaBrowser.WebDashboard.Api
                 }
 
                 html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, appVersion));
+
+                // Disable embedded scripts from plugins. We'll run them later once resources have loaded
+                if (html.IndexOf("<script", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    html = html.Replace("<script", "<!--<script");
+                    html = html.Replace("</script>", "</script>-->");
+                }
 
                 html = html.Replace("</body>", GetCommonJavascript(mode, appVersion) + "</body>");
 

@@ -348,7 +348,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "Genres",
             "ParentId",
             "Audio",
-            "ExternalServiceId"
+            "ExternalServiceId",
+            "IsInMixedFolder",
+            "DateLastSaved",
+            "LockedFields",
+            "Studios",
+            "Tags"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -1077,6 +1082,31 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     tvItem.ServiceName = reader.GetString(43);
                 }
+            }
+
+            if (!reader.IsDBNull(44))
+            {
+                item.IsInMixedFolder = reader.GetBoolean(44);
+            }
+
+            if (!reader.IsDBNull(45))
+            {
+                item.DateLastSaved = reader.GetDateTime(45).ToUniversalTime();
+            }
+
+            if (!reader.IsDBNull(46))
+            {
+                item.LockedFields = reader.GetString(46).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => (MetadataFields)Enum.Parse(typeof(MetadataFields), i, true)).ToList();
+            }
+
+            if (!reader.IsDBNull(47))
+            {
+                item.Studios = reader.GetString(47).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+            }
+
+            if (!reader.IsDBNull(48))
+            {
+                item.Tags = reader.GetString(48).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
             }
 
             return item;
@@ -2013,6 +2043,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             typeof(MusicGenre),
             typeof(MusicVideo),
             typeof(Movie),
+            typeof(Trailer),
             typeof(BoxSet),
             typeof(Episode),
             typeof(ChannelVideoItem),
