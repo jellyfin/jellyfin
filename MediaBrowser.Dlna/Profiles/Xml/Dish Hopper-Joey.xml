@@ -24,10 +24,10 @@
   <MaxAlbumArtHeight>480</MaxAlbumArtHeight>
   <MaxIconWidth>48</MaxIconWidth>
   <MaxIconHeight>48</MaxIconHeight>
-  <MaxStreamingBitrate>12000000</MaxStreamingBitrate>
-  <MaxStaticBitrate>12000000</MaxStaticBitrate>
-  <MusicStreamingTranscodingBitrate>128000</MusicStreamingTranscodingBitrate>
-  <MusicSyncBitrate>128000</MusicSyncBitrate>
+  <MaxStreamingBitrate>15000000</MaxStreamingBitrate>
+  <MaxStaticBitrate>15000000</MaxStaticBitrate>
+  <MusicStreamingTranscodingBitrate>192000</MusicStreamingTranscodingBitrate>
+  <MusicSyncBitrate>192000</MusicSyncBitrate>
   <XDlnaDoc>DMS-1.50</XDlnaDoc>
   <ProtocolInfo>http-get:*:video/mp2t:*,http-get:*:video/MP1S:*,http-get:*:video/mpeg2:*,http-get:*:video/mp4:*,http-get:*:video/x-matroska:*,http-get:*:audio/mpeg:*,http-get:*:audio/mpeg3:*,http-get:*:audio/mp3:*,http-get:*:audio/mp4:*,http-get:*:audio/mp4a-latm:*,http-get:*:image/jpeg:*</ProtocolInfo>
   <TimelineOffsetSeconds>0</TimelineOffsetSeconds>
