@@ -25,7 +25,6 @@ namespace MediaBrowser.WebDashboard.Api
     /// <summary>
     /// Class GetDashboardConfigurationPages
     /// </summary>
-    [Route("/dashboard/ConfigurationPages", "GET")]
     [Route("/web/ConfigurationPages", "GET")]
     public class GetDashboardConfigurationPages : IReturn<List<ConfigurationPageInfo>>
     {
@@ -39,7 +38,6 @@ namespace MediaBrowser.WebDashboard.Api
     /// <summary>
     /// Class GetDashboardConfigurationPage
     /// </summary>
-    [Route("/dashboard/ConfigurationPage", "GET")]
     [Route("/web/ConfigurationPage", "GET")]
     public class GetDashboardConfigurationPage
     {
@@ -51,7 +49,6 @@ namespace MediaBrowser.WebDashboard.Api
     }
 
     [Route("/web/Package", "GET")]
-    [Route("/dashboard/Package", "GET")]
     public class GetDashboardPackage
     {
         public string Mode { get; set; }
@@ -66,7 +63,6 @@ namespace MediaBrowser.WebDashboard.Api
     /// Class GetDashboardResource
     /// </summary>
     [Route("/web/{ResourceName*}", "GET")]
-    [Route("/dashboard/{ResourceName*}", "GET")]
     public class GetDashboardResource
     {
         /// <summary>
@@ -142,7 +138,7 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var page = ServerEntryPoint.Instance.PluginConfigurationPages.First(p => p.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
 
-            return ResultFactory.GetStaticResult(Request, page.Plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator().ModifyHtml(null, page.GetHtmlStream(), null, _appHost.ApplicationVersion.ToString(), null, false));
+            return ResultFactory.GetStaticResult(Request, page.Plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator().ModifyHtml("dummy.html", page.GetHtmlStream(), null, _appHost.ApplicationVersion.ToString(), null, false));
         }
 
         /// <summary>
