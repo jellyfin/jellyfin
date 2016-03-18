@@ -9,13 +9,8 @@ class PassThroughRemuxer {
     this.ISGenerated = false;
   }
 
-
   get passthrough() {
     return true;
-  }
-
-  get timescale() {
-    return 0;
   }
 
   destroy() {

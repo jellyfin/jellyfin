@@ -21,10 +21,6 @@ class MP4Remuxer {
     return false;
   }
 
-  get timescale() {
-    return this.MP4_TIMESCALE;
-  }
-
   destroy() {
   }
 
@@ -74,8 +70,22 @@ class MP4Remuxer {
     if (computePTSDTS) {
       initPTS = initDTS = Infinity;
     }
-
     if (audioTrack.config && audioSamples.length) {
+      audioTrack.timescale = audioTrack.audiosamplerate;
+      // MP4 duration (track duration in seconds multiplied by timescale) is coded on 32 bits
+      // we know that each AAC sample contains 1024 frames....
+      // in order to avoid overflowing the 32 bit counter for large duration, we use smaller timescale (timescale/gcd)
+      // we just need to ensure that AAC sample duration will still be an integer (will be 1024/gcd)
+      if (audioTrack.timescale * audioTrack.duration > Math.pow(2, 32)) {
+        let greatestCommonDivisor = function(a, b) {
+            if ( ! b) {
+                return a;
+            }
+            return greatestCommonDivisor(b, a % b);
+        };
+        audioTrack.timescale = audioTrack.audiosamplerate / greatestCommonDivisor(audioTrack.audiosamplerate,1024);
+      }
+      logger.log ('audio mp4 timescale :'+ audioTrack.timescale);
       tracks.audio = {
         container : 'audio/mp4',
         codec :  audioTrack.codec,
@@ -91,6 +101,7 @@ class MP4Remuxer {
     }
 
     if (videoTrack.sps && videoTrack.pps && videoSamples.length) {
+      videoTrack.timescale = this.MP4_TIMESCALE;
       tracks.video = {
         container : 'video/mp4',
         codec :  videoTrack.codec,
@@ -167,7 +178,12 @@ class MP4Remuxer {
         }
         mp4Sample.duration = sampleDuration;
       } else {
-        var nextAvcDts = this.nextAvcDts,delta;
+        let nextAvcDts, delta;
+        if (contiguous) {
+          nextAvcDts = this.nextAvcDts;
+        } else {
+          nextAvcDts = timeOffset*pesTimeScale;
+        }
         // first AVC sample of video track, normalize PTS/DTS
         ptsnorm = this._PTSNormalize(pts, nextAvcDts);
         dtsnorm = this._PTSNormalize(dts, nextAvcDts);
@@ -252,6 +268,7 @@ class MP4Remuxer {
         pesTimeScale = this.PES_TIMESCALE,
         mp4timeScale = track.timescale,
         pes2mp4ScaleFactor = pesTimeScale/mp4timeScale,
+        expectedSampleDuration = track.timescale * 1024 / track.audiosamplerate,
         aacSample, mp4Sample,
         unit,
         mdat, moof,
@@ -276,16 +293,22 @@ class MP4Remuxer {
         ptsnorm = this._PTSNormalize(pts, lastDTS);
         dtsnorm = this._PTSNormalize(dts, lastDTS);
         // let's compute sample duration.
-        // there should be 1024 audio samples in one AAC frame
+        // sample Duration should be close to expectedSampleDuration
         mp4Sample.duration = (dtsnorm - lastDTS) / pes2mp4ScaleFactor;
-        if(Math.abs(mp4Sample.duration - 1024) > 10) {
-          // not expected to happen ...
-          logger.log(`invalid AAC sample duration at PTS ${Math.round(pts/90)},should be 1024,found :${Math.round(mp4Sample.duration)}`);
+        if(Math.abs(mp4Sample.duration - expectedSampleDuration) > expectedSampleDuration/10) {
+          // more than 10% diff between sample duration and expectedSampleDuration .... lets log that
+          logger.log(`invalid AAC sample duration at PTS ${Math.round(pts/90)},should be 1024,found :${Math.round(mp4Sample.duration*track.audiosamplerate/track.timescale)}`);
         }
-        mp4Sample.duration = 1024;
-        dtsnorm = 1024 * pes2mp4ScaleFactor + lastDTS;
+        // always adjust sample duration to avoid av sync issue
+        mp4Sample.duration = expectedSampleDuration;
+        dtsnorm = expectedSampleDuration * pes2mp4ScaleFactor + lastDTS;
       } else {
-        var nextAacPts = this.nextAacPts,delta;
+        let nextAacPts, delta;
+        if (contiguous) {
+          nextAacPts = this.nextAacPts;
+        } else {
+          nextAacPts = timeOffset*pesTimeScale;
+        }
         ptsnorm = this._PTSNormalize(pts, nextAacPts);
         dtsnorm = this._PTSNormalize(dts, nextAacPts);
         delta = Math.round(1000 * (ptsnorm - nextAacPts) / pesTimeScale);

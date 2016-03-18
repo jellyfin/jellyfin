@@ -1920,7 +1920,7 @@ var StreamController = function (_EventHandler) {
       media.addEventListener('seeked', this.onvseeked);
       media.addEventListener('ended', this.onvended);
       if (this.levels && this.config.autoStartLoad) {
-        this.startLoad();
+        this.hls.startLoad();
       }
     }
   }, {
@@ -2036,7 +2036,7 @@ var StreamController = function (_EventHandler) {
       this.startLevelLoaded = false;
       this.startFragRequested = false;
       if (this.config.autoStartLoad) {
-        this.startLoad();
+        this.hls.startLoad();
       }
     }
   }, {
@@ -3191,8 +3191,7 @@ var AACDemuxer = function () {
         track.audiosamplerate = config.samplerate;
         track.channelCount = config.channelCount;
         track.codec = config.codec;
-        track.timescale = config.samplerate;
-        track.duration = config.samplerate * duration;
+        track.duration = duration;
         _logger.logger.log('parsed codec:' + track.codec + ',rate:' + config.samplerate + ',nb channel:' + config.channelCount);
       }
       frameIndex = 0;
@@ -4699,8 +4698,7 @@ var TSDemuxer = function () {
               track.width = config.width;
               track.height = config.height;
               track.sps = [unit.data];
-              track.timescale = _this.remuxer.timescale;
-              track.duration = _this.remuxer.timescale * _this._duration;
+              track.duration = _this._duration;
               var codecarray = unit.data.subarray(1, 4);
               var codecstring = 'avc1.';
               for (i = 0; i < 3; i++) {
@@ -4887,8 +4885,7 @@ var TSDemuxer = function () {
         track.audiosamplerate = config.samplerate;
         track.channelCount = config.channelCount;
         track.codec = config.codec;
-        track.timescale = config.samplerate;
-        track.duration = config.samplerate * duration;
+        track.duration = duration;
         _logger.logger.log('parsed codec:' + track.codec + ',rate:' + config.samplerate + ',nb channel:' + config.channelCount);
       }
       frameIndex = 0;
@@ -6468,6 +6465,7 @@ var MP4 = function () {
   }, {
     key: 'mdhd',
     value: function mdhd(timescale, duration) {
+      duration *= timescale;
       return MP4.box(MP4.types.mdhd, new Uint8Array([0x00, // version 0
       0x00, 0x00, 0x00, // flags
       0x00, 0x00, 0x00, 0x02, // creation_time
@@ -6533,6 +6531,7 @@ var MP4 = function () {
   }, {
     key: 'mvhd',
     value: function mvhd(timescale, duration) {
+      duration *= timescale;
       var bytes = new Uint8Array([0x00, // version 0
       0x00, 0x00, 0x00, // flags
       0x00, 0x00, 0x00, 0x01, // creation_time
@@ -6681,7 +6680,7 @@ var MP4 = function () {
     key: 'tkhd',
     value: function tkhd(track) {
       var id = track.id,
-          duration = track.duration,
+          duration = track.duration * track.timescale,
           width = track.width,
           height = track.height;
       return MP4.box(MP4.types.tkhd, new Uint8Array([0x00, // version 0
@@ -6892,8 +6891,24 @@ var MP4Remuxer = function () {
       if (computePTSDTS) {
         initPTS = initDTS = Infinity;
       }
-
       if (audioTrack.config && audioSamples.length) {
+        audioTrack.timescale = audioTrack.audiosamplerate;
+        // MP4 duration (track duration in seconds multiplied by timescale) is coded on 32 bits
+        // we know that each AAC sample contains 1024 frames....
+        // in order to avoid overflowing the 32 bit counter for large duration, we use smaller timescale (timescale/gcd)
+        // we just need to ensure that AAC sample duration will still be an integer (will be 1024/gcd)
+        if (audioTrack.timescale * audioTrack.duration > Math.pow(2, 32)) {
+          (function () {
+            var greatestCommonDivisor = function greatestCommonDivisor(a, b) {
+              if (!b) {
+                return a;
+              }
+              return greatestCommonDivisor(b, a % b);
+            };
+            audioTrack.timescale = audioTrack.audiosamplerate / greatestCommonDivisor(audioTrack.audiosamplerate, 1024);
+          })();
+        }
+        _logger.logger.log('audio mp4 timescale :' + audioTrack.timescale);
         tracks.audio = {
           container: 'audio/mp4',
           codec: audioTrack.codec,
@@ -6909,6 +6924,7 @@ var MP4Remuxer = function () {
       }
 
       if (videoTrack.sps && videoTrack.pps && videoSamples.length) {
+        videoTrack.timescale = this.MP4_TIMESCALE;
         tracks.video = {
           container: 'video/mp4',
           codec: videoTrack.codec,
@@ -6992,8 +7008,13 @@ var MP4Remuxer = function () {
           }
           mp4Sample.duration = sampleDuration;
         } else {
-          var nextAvcDts = this.nextAvcDts,
-              delta;
+          var nextAvcDts = undefined,
+              delta = undefined;
+          if (contiguous) {
+            nextAvcDts = this.nextAvcDts;
+          } else {
+            nextAvcDts = timeOffset * pesTimeScale;
+          }
           // first AVC sample of video track, normalize PTS/DTS
           ptsnorm = this._PTSNormalize(pts, nextAvcDts);
           dtsnorm = this._PTSNormalize(dts, nextAvcDts);
@@ -7079,6 +7100,7 @@ var MP4Remuxer = function () {
           pesTimeScale = this.PES_TIMESCALE,
           mp4timeScale = track.timescale,
           pes2mp4ScaleFactor = pesTimeScale / mp4timeScale,
+          expectedSampleDuration = track.timescale * 1024 / track.audiosamplerate,
           aacSample,
           mp4Sample,
           unit,
@@ -7110,17 +7132,23 @@ var MP4Remuxer = function () {
           ptsnorm = this._PTSNormalize(pts, lastDTS);
           dtsnorm = this._PTSNormalize(dts, lastDTS);
           // let's compute sample duration.
-          // there should be 1024 audio samples in one AAC frame
+          // sample Duration should be close to expectedSampleDuration
           mp4Sample.duration = (dtsnorm - lastDTS) / pes2mp4ScaleFactor;
-          if (Math.abs(mp4Sample.duration - 1024) > 10) {
-            // not expected to happen ...
-            _logger.logger.log('invalid AAC sample duration at PTS ' + Math.round(pts / 90) + ',should be 1024,found :' + Math.round(mp4Sample.duration));
+          if (Math.abs(mp4Sample.duration - expectedSampleDuration) > expectedSampleDuration / 10) {
+            // more than 10% diff between sample duration and expectedSampleDuration .... lets log that
+            _logger.logger.log('invalid AAC sample duration at PTS ' + Math.round(pts / 90) + ',should be 1024,found :' + Math.round(mp4Sample.duration * track.audiosamplerate / track.timescale));
           }
-          mp4Sample.duration = 1024;
-          dtsnorm = 1024 * pes2mp4ScaleFactor + lastDTS;
+          // always adjust sample duration to avoid av sync issue
+          mp4Sample.duration = expectedSampleDuration;
+          dtsnorm = expectedSampleDuration * pes2mp4ScaleFactor + lastDTS;
         } else {
-          var nextAacPts = this.nextAacPts,
-              delta;
+          var nextAacPts = undefined,
+              delta = undefined;
+          if (contiguous) {
+            nextAacPts = this.nextAacPts;
+          } else {
+            nextAacPts = timeOffset * pesTimeScale;
+          }
           ptsnorm = this._PTSNormalize(pts, nextAacPts);
           dtsnorm = this._PTSNormalize(dts, nextAacPts);
           delta = Math.round(1000 * (ptsnorm - nextAacPts) / pesTimeScale);
@@ -7275,11 +7303,6 @@ var MP4Remuxer = function () {
     get: function get() {
       return false;
     }
-  }, {
-    key: 'timescale',
-    get: function get() {
-      return this.MP4_TIMESCALE;
-    }
   }]);
 
   return MP4Remuxer;
@@ -7373,11 +7396,6 @@ var PassThroughRemuxer = function () {
     key: 'passthrough',
     get: function get() {
       return true;
-    }
-  }, {
-    key: 'timescale',
-    get: function get() {
-      return 0;
     }
   }]);
 
