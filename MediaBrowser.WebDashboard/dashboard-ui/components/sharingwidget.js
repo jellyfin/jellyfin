@@ -1,4 +1,4 @@
-﻿define(['thirdparty/social-share-kit-1.0.4/dist/js/social-share-kit.min', 'css!thirdparty/social-share-kit-1.0.4/dist/css/social-share-kit.css', 'fade-in-animation', 'fade-out-animation', 'paper-dialog'], function () {
+﻿define(['jQuery', 'thirdparty/social-share-kit-1.0.4/dist/js/social-share-kit.min', 'css!thirdparty/social-share-kit-1.0.4/dist/css/social-share-kit.css', 'fade-in-animation', 'fade-out-animation', 'paper-dialog'], function ($) {
 
     function showMenu(options, successCallback, cancelCallback) {
 

@@ -1,4 +1,4 @@
-﻿define(['browser', 'paper-fab', 'paper-tabs', 'paper-slider', 'paper-icon-button'], function (browser) {
+﻿define(['browser', 'jQuery', 'paper-fab', 'paper-tabs', 'paper-slider', 'paper-icon-button'], function (browser, $) {
 
     function showSlideshowMenu(context) {
         require(['scripts/slideshow'], function () {

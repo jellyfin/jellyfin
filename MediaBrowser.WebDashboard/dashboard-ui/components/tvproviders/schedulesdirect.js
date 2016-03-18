@@ -1,4 +1,4 @@
-﻿define(['paper-checkbox', 'paper-input', 'paper-item-body', 'paper-icon-item'], function () {
+﻿define(['jQuery','paper-checkbox', 'paper-input', 'paper-item-body', 'paper-icon-item'], function ($) {
 
     return function (page, providerId, options) {
 
