@@ -83,7 +83,6 @@
     <Compile Include="Channels\ChannelSearchInfo.cs" />
     <Compile Include="Channels\IChannel.cs" />
     <Compile Include="Channels\IChannelManager.cs" />
-    <Compile Include="Channels\ChannelVideoItem.cs" />
     <Compile Include="Channels\Channel.cs" />
     <Compile Include="Channels\IHasCacheKey.cs" />
     <Compile Include="Channels\IIndexableChannel.cs" />
@@ -268,7 +267,6 @@
     <Compile Include="Providers\ArtistInfo.cs" />
     <Compile Include="Providers\BookInfo.cs" />
     <Compile Include="Providers\BoxSetInfo.cs" />
-    <Compile Include="Providers\ChannelItemLookupInfo.cs" />
     <Compile Include="Providers\DirectoryService.cs" />
     <Compile Include="Providers\DynamicImageInfo.cs" />
     <Compile Include="Providers\DynamicImageResponse.cs" />

@@ -1891,6 +1891,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var inClause = string.Join(",", query.SourceTypes.Select(i => "'" + i + "'").ToArray());
                 whereClauses.Add(string.Format("SourceType in ({0})", inClause));
             }
+
+            if (query.ExcludeSourceTypes.Length == 1)
+            {
+                whereClauses.Add("SourceType<>@SourceType");
+                cmd.Parameters.Add(cmd, "@SourceType", DbType.String).Value = query.SourceTypes[0];
+            }
+            else if (query.ExcludeSourceTypes.Length > 1)
+            {
+                var inClause = string.Join(",", query.ExcludeSourceTypes.Select(i => "'" + i + "'").ToArray());
+                whereClauses.Add(string.Format("SourceType not in ({0})", inClause));
+            }
             
             if (query.IsAiring.HasValue)
             {
@@ -2067,7 +2078,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             typeof(Trailer),
             typeof(BoxSet),
             typeof(Episode),
-            typeof(ChannelVideoItem),
             typeof(Season),
             typeof(Series),
             typeof(Book),

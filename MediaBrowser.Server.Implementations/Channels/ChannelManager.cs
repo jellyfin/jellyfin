@@ -27,6 +27,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 
 namespace MediaBrowser.Server.Implementations.Channels
 {
@@ -252,7 +254,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         public async Task<IEnumerable<MediaSourceInfo>> GetStaticMediaSources(BaseItem item, bool includeCachedVersions, CancellationToken cancellationToken)
         {
             IEnumerable<ChannelMediaInfo> results = new List<ChannelMediaInfo>();
-            var video = item as ChannelVideoItem;
+            var video = item as Video;
             if (video != null)
             {
                 results = video.ChannelMediaSources;
@@ -1263,7 +1265,22 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
             else
             {
-                item = GetItemById<ChannelVideoItem>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                if (info.ContentType == ChannelMediaContentType.Episode)
+                {
+                    item = GetItemById<Episode>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                }
+                else if (info.ContentType == ChannelMediaContentType.Movie)
+                {
+                    item = GetItemById<Movie>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                }
+                else if (info.ContentType == ChannelMediaContentType.Trailer || info.ExtraType == ExtraType.Trailer)
+                {
+                    item = GetItemById<Trailer>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                }
+                else
+                {
+                    item = GetItemById<Video>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                }
             }
 
             item.RunTimeTicks = info.RunTimeTicks;
@@ -1309,10 +1326,9 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.Path = mediaSource == null ? null : mediaSource.Path;
             }
 
-            var channelVideoItem = item as ChannelVideoItem;
+            var channelVideoItem = item as Video;
             if (channelVideoItem != null)
             {
-                channelVideoItem.ContentType = info.ContentType;
                 channelVideoItem.ExtraType = info.ExtraType;
                 channelVideoItem.ChannelMediaSources = info.MediaSources;
 
