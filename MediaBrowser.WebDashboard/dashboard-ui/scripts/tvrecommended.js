@@ -180,6 +180,7 @@
             }
         };
 
+        var tabControllers = [];
         function loadTab(page, index) {
 
             var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
@@ -216,11 +217,14 @@
                 if (index == 0) {
                     self.tabContent = tabContent;
                 }
-                var controller = index ? new controllerFactory(view, params, tabContent) : self;
+                var controller = tabControllers[index];
+                if (!controller) {
+                    controller = index ? new controllerFactory(view, params, tabContent) : self;
+                    tabControllers[index] = controller;
 
-                if (controller.initTab) {
-                    controller.initTab();
-                    tabContent.initComplete = true;
+                    if (controller.initTab) {
+                        controller.initTab();
+                    }
                 }
 
                 controller.renderTab();

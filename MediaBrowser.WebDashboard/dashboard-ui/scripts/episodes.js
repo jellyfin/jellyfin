@@ -232,10 +232,7 @@
             });
         }
 
-        self.initTab = function () {
-
-            initPage(tabContent);
-        };
+        initPage(tabContent);
         self.renderTab = function () {
 
             if (LibraryBrowser.needsRefresh(tabContent)) {
