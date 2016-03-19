@@ -29,11 +29,11 @@
         }
 
         if (item.TrailerCount) {
-
-            sections.push({
-                name: Globalize.translate('TabTrailers'),
-                type: 'Trailer'
-            });
+            // TODO: Can't do this until the items endpoint is converted
+            //    sections.push({
+            //        name: Globalize.translate('TabTrailers'),
+            //        type: 'Trailer'
+            //    });
         }
 
         if (item.GameCount) {

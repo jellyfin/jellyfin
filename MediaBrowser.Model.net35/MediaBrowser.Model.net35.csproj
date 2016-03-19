@@ -444,9 +444,6 @@
     <Compile Include="..\MediaBrowser.Model\Dto\ImageOptions.cs">
       <Link>Dto\ImageOptions.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Dto\ItemByNameCounts.cs">
-      <Link>Dto\ItemByNameCounts.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\ItemCounts.cs">
       <Link>Dto\ItemCounts.cs</Link>
     </Compile>

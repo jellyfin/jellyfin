@@ -419,36 +419,31 @@
         });
     });
 
+    window.WizardLibraryPage = {
+
+        next: function () {
+
+            Dashboard.showLoadingMsg();
+
+            var apiClient = ApiClient;
+
+            apiClient.ajax({
+                type: "POST",
+                url: apiClient.getUrl('System/Configuration/MetadataPlugins/Autoset')
+
+            }).then(function () {
+
+                Dashboard.hideLoadingMsg();
+                Dashboard.navigate('wizardsettings.html');
+            });
+        }
+    };
     pageClassOn('pageshow', "mediaLibraryPage", function () {
 
         var page = this;
         reloadLibrary(page);
 
     });
-
-})();
-
-var WizardLibraryPage = {
-
-    next: function () {
-
-        Dashboard.showLoadingMsg();
-
-        var apiClient = ApiClient;
-
-        apiClient.ajax({
-            type: "POST",
-            url: apiClient.getUrl('System/Configuration/MetadataPlugins/Autoset')
-
-        }).then(function () {
-
-            Dashboard.hideLoadingMsg();
-            Dashboard.navigate('wizardsettings.html');
-        });
-    }
-};
-
-(function ($, document, window) {
 
     pageIdOn('pageshow', "mediaLibraryPage", function () {
 

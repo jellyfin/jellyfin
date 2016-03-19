@@ -5,7 +5,7 @@
         $('#chkSubtitlesMovies', page).checked(config.DownloadMovieSubtitles);
         $('#chkSubtitlesEpisodes', page).checked(config.DownloadEpisodeSubtitles);
 
-        $('#chkSkipIfGraphicalSubsPresent', page).checked(config.SkipIfGraphicalSubtitlesPresent);
+        $('#chkSkipIfGraphicalSubsPresent', page).checked(config.SkipIfEmbeddedSubtitlesPresent);
         $('#chkSkipIfAudioTrackPresent', page).checked(config.SkipIfAudioTrackMatches);
 
         $('#txtOpenSubtitleUsername', page).val(config.OpenSubtitlesUsername);
@@ -48,7 +48,7 @@
             config.DownloadMovieSubtitles = $('#chkSubtitlesMovies', form).checked();
             config.DownloadEpisodeSubtitles = $('#chkSubtitlesEpisodes', form).checked();
 
-            config.SkipIfGraphicalSubtitlesPresent = $('#chkSkipIfGraphicalSubsPresent', form).checked();
+            config.SkipIfEmbeddedSubtitlesPresent = $('#chkSkipIfGraphicalSubsPresent', form).checked();
             config.SkipIfAudioTrackMatches = $('#chkSkipIfAudioTrackPresent', form).checked();
 
             config.OpenSubtitlesUsername = $('#txtOpenSubtitleUsername', form).val();

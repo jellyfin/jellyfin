@@ -300,7 +300,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return _libraryManager.GetItemById(id) as LiveTvProgram;
         }
 
-        public async Task<ILiveTvRecording> GetInternalRecording(string id, CancellationToken cancellationToken)
+        public async Task<BaseItem> GetInternalRecording(string id, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
@@ -313,7 +313,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             }, cancellationToken).ConfigureAwait(false);
 
-            return result.Items.FirstOrDefault() as ILiveTvRecording;
+            return result.Items.FirstOrDefault();
         }
 
         private readonly SemaphoreSlim _liveStreamSemaphore = new SemaphoreSlim(1, 1);
@@ -358,7 +358,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return list;
         }
 
-        private ILiveTvService GetService(ILiveTvItem item)
+        private ILiveTvService GetService(ILiveTvRecording item)
+        {
+            return GetService(item.ServiceName);
+        }
+
+        private ILiveTvService GetService(BaseItem item)
         {
             return GetService(item.ServiceName);
         }
@@ -1693,7 +1698,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             };
         }
 
-        public Task OnRecordingFileDeleted(ILiveTvRecording recording)
+        public Task OnRecordingFileDeleted(BaseItem recording)
         {
             var service = GetService(recording);
 
@@ -1715,10 +1720,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 throw new ResourceNotFoundException(string.Format("Recording with Id {0} not found", recordingId));
             }
 
-            await DeleteRecording(recording).ConfigureAwait(false);
+            await DeleteRecording((BaseItem)recording).ConfigureAwait(false);
         }
 
-        public async Task DeleteRecording(ILiveTvRecording recording)
+        public async Task DeleteRecording(BaseItem recording)
         {
             var service = GetService(recording.ServiceName);
 

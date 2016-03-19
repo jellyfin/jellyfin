@@ -457,6 +457,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.EpisodeCount = taggedItems.Count(i => i is Episode);
                 dto.GameCount = taggedItems.Count(i => i is Game);
                 dto.MovieCount = taggedItems.Count(i => i is Movie);
+                dto.TrailerCount = taggedItems.Count(i => i is Trailer);
                 dto.MusicVideoCount = taggedItems.Count(i => i is MusicVideo);
                 dto.SeriesCount = taggedItems.Count(i => i is Series);
                 dto.SongCount = taggedItems.Count(i => i is Audio);

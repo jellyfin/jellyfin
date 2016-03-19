@@ -11,7 +11,7 @@ using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.LiveTv
 {
-    public class LiveTvChannel : BaseItem, IHasMediaSources, ILiveTvItem
+    public class LiveTvChannel : BaseItem, IHasMediaSources
     {
         /// <summary>
         /// Gets the user data key.
@@ -58,12 +58,6 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The type of the channel.</value>
         public ChannelType ChannelType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the service.
-        /// </summary>
-        /// <value>The name of the service.</value>
-        public string ServiceName { get; set; }
 
         [IgnoreDataMember]
         public override LocationType LocationType

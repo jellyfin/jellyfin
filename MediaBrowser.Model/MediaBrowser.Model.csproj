@@ -215,7 +215,6 @@
     <Compile Include="Dto\IItemDto.cs" />
     <Compile Include="Dto\ImageByNameInfo.cs" />
     <Compile Include="Dto\ImageInfo.cs" />
-    <Compile Include="Dto\ItemByNameCounts.cs" />
     <Compile Include="Dto\ItemCounts.cs" />
     <Compile Include="Dto\ItemIndex.cs" />
     <Compile Include="Dto\RatingType.cs" />

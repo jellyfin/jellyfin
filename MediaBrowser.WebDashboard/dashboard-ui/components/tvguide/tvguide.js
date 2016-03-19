@@ -289,10 +289,6 @@
             programGrid.innerHTML = html.join('');
 
             $(programGrid).scrollTop(0).scrollLeft(0);
-
-            if (options.enableHoverMenu) {
-                $(programGrid).createGuideHoverMenu('.programCell');
-            }
         }
 
         function renderChannelHeaders(page, channels) {

@@ -1668,7 +1668,7 @@ var AppInfo = {};
         // Put the version into the bower path since we can't easily put a query string param on html imports
         // Emby server will handle this
         if (Dashboard.isConnectMode() && !Dashboard.isRunningInCordova()) {
-            bowerPath += window.dashboardVersion;
+            //bowerPath += window.dashboardVersion;
         }
 
         return bowerPath;

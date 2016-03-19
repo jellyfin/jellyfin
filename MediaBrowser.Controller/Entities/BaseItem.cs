@@ -191,6 +191,13 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
+        /// Gets or sets the name of the service.
+        /// </summary>
+        /// <value>The name of the service.</value>
+        [IgnoreDataMember]
+        public string ServiceName { get; set; }
+
+        /// <summary>
         /// If this content came from an external service, the id of the content on that service
         /// </summary>
         [IgnoreDataMember]
