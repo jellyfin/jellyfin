@@ -282,7 +282,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 return false;
             }
 
-            return !(item is IChannelItem) && !(item is ILiveTvItem);
+            return item.SourceType == SourceType.Library;
         }
 
         /// <summary>

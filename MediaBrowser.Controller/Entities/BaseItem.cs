@@ -169,6 +169,9 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public bool IsOffline { get; set; }
 
+        [IgnoreDataMember]
+        public SourceType SourceType { get; set; }
+
         /// <summary>
         /// Returns the folder containing the item.
         /// If the item is a folder, it returns the folder itself

@@ -1079,7 +1079,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
                 if (!string.IsNullOrWhiteSpace(folderId))
                 {
-                    var categoryItem = (IChannelItem)_libraryManager.GetItemById(new Guid(folderId));
+                    var categoryItem = _libraryManager.GetItemById(new Guid(folderId));
 
                     query.FolderId = categoryItem.ExternalId;
                 }
@@ -1195,7 +1195,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         }
 
         private T GetItemById<T>(string idString, string channelName, string channnelDataVersion, out bool isNew)
-            where T : BaseItem, IChannelItem, new()
+            where T : BaseItem, new()
         {
             var id = GetIdToHash(idString, channelName).GetMBId(typeof(T));
 
@@ -1263,9 +1263,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.Tags = info.Tags;
             }
 
-            var channelItem = (IChannelItem)item;
-
-            channelItem.ChannelId = internalChannelId.ToString("N");
+            item.ChannelId = internalChannelId.ToString("N");
 
             if (item.ParentId != internalChannelId)
             {
@@ -1273,11 +1271,11 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
             item.ParentId = internalChannelId;
 
-            if (!string.Equals(channelItem.ExternalId, info.Id, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(item.ExternalId, info.Id, StringComparison.OrdinalIgnoreCase))
             {
                 forceUpdate = true;
             }
-            channelItem.ExternalId = info.Id;
+            item.ExternalId = info.Id;
 
             var channelMediaItem = item as IChannelMediaItem;
 
