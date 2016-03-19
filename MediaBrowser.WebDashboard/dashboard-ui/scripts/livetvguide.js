@@ -15,8 +15,7 @@
 
                 page.guideInstance = new tvguide({
                     element: tabContent,
-                    enableHeadRoom: true,
-                    enableHoverMenu: true
+                    enableHeadRoom: true
                 });
             });
         }
