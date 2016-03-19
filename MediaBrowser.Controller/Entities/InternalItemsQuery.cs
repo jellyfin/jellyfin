@@ -117,6 +117,8 @@ namespace MediaBrowser.Controller.Entities
         public string[] PresetViews { get; set; }
         public SourceType[] SourceTypes { get; set; }
         public SourceType[] ExcludeSourceTypes { get; set; }
+        public TrailerType[] TrailerTypes { get; set; }
+        public TrailerType[] ExcludeTrailerTypes { get; set; }
 
         public InternalItemsQuery()
         {
@@ -145,6 +147,8 @@ namespace MediaBrowser.Controller.Entities
             PresetViews = new string[] { };
             SourceTypes = new SourceType[] { };
             ExcludeSourceTypes = new SourceType[] { };
+            TrailerTypes = new TrailerType[] { };
+            ExcludeTrailerTypes = new TrailerType[] { };
         }
 
         public InternalItemsQuery(User user)

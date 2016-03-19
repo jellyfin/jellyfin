@@ -67,6 +67,11 @@ namespace MediaBrowser.Providers.Movies
         protected override void MergeData(MetadataResult<Trailer> source, MetadataResult<Trailer> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+
+            if (replaceData || target.Item.TrailerTypes.Count == 0)
+            {
+                target.Item.TrailerTypes = source.Item.TrailerTypes;
+            }
         }
     }
 

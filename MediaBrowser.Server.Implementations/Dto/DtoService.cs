@@ -316,6 +316,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 ServerId = _appHost.SystemId
             };
 
+            if (item.SourceType == SourceType.Channel)
+            {
+                dto.SourceType = item.SourceType.ToString();
+            }
+
             if (fields.Contains(ItemFields.People))
             {
                 AttachPeople(dto, item);
