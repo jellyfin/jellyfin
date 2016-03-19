@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading;
+using MediaBrowser.Controller.Channels;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -24,6 +26,8 @@ namespace MediaBrowser.Controller.Entities.Audio
         IThemeMedia,
         IArchivable
     {
+        public List<ChannelMediaInfo> ChannelMediaSources { get; set; }
+        
         public long? Size { get; set; }
         public string Container { get; set; }
         public int? TotalBitrate { get; set; }
@@ -198,7 +202,11 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public override UnratedItem GetBlockUnratedType()
         {
-            return UnratedItem.Music;
+            if (SourceType == SourceType.Library)
+            {
+                return UnratedItem.Music;
+            }
+            return base.GetBlockUnratedType();
         }
 
         public SongInfo GetLookupInfo()
@@ -214,6 +222,32 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public virtual IEnumerable<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
         {
+            if (SourceType == SourceType.Channel)
+            {
+                var sources = ChannelManager.GetStaticMediaSources(this, false, CancellationToken.None)
+                           .Result.ToList();
+
+                if (sources.Count > 0)
+                {
+                    return sources;
+                }
+
+                var list = new List<MediaSourceInfo>
+                {
+                    GetVersionInfo(this, enablePathSubstitution)
+                };
+
+                foreach (var mediaSource in list)
+                {
+                    if (string.IsNullOrWhiteSpace(mediaSource.Path))
+                    {
+                        mediaSource.Type = MediaSourceType.Placeholder;
+                    }
+                }
+
+                return list;
+            }
+
             var result = new List<MediaSourceInfo>
             {
                 GetVersionInfo(this, enablePathSubstitution)
