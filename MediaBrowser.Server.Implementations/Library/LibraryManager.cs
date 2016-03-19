@@ -347,11 +347,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private void RegisterItem(Guid id, BaseItem item)
         {
-            if (item is LiveTvProgram)
-            {
-                return;
-            }
-            if (item is IChannelItem)
+            if (item.SourceType != SourceType.Library)
             {
                 return;
             }

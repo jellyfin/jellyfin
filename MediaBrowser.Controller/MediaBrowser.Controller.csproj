@@ -84,7 +84,6 @@
     <Compile Include="Channels\ChannelSearchInfo.cs" />
     <Compile Include="Channels\IChannel.cs" />
     <Compile Include="Channels\IChannelManager.cs" />
-    <Compile Include="Channels\IChannelItem.cs" />
     <Compile Include="Channels\ChannelAudioItem.cs" />
     <Compile Include="Channels\ChannelVideoItem.cs" />
     <Compile Include="Channels\Channel.cs" />
@@ -180,6 +179,7 @@
     <Compile Include="Entities\Photo.cs" />
     <Compile Include="Entities\PhotoAlbum.cs" />
     <Compile Include="Entities\Share.cs" />
+    <Compile Include="Entities\SourceType.cs" />
     <Compile Include="Entities\UserView.cs" />
     <Compile Include="Entities\UserViewBuilder.cs" />
     <Compile Include="FileOrganization\IFileOrganizationService.cs" />

@@ -480,7 +480,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 var folder = (Folder)item;
 
-                if (!(folder is IChannelItem) && !(folder is Channel))
+                if (item.SourceType == SourceType.Library)
                 {
                     dto.ChildCount = GetChildCount(folder, user);
 
@@ -1531,10 +1531,9 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             dto.ChannelId = item.ChannelId;
 
-            var channelItem = item as IChannelItem;
-            if (channelItem != null)
+            if (item.SourceType == SourceType.Channel)
             {
-                dto.ChannelName = _channelManagerFactory().GetChannel(channelItem.ChannelId).Name;
+                dto.ChannelName = _channelManagerFactory().GetChannel(item.ChannelId).Name;
             }
 
             var channelMediaItem = item as IChannelMediaItem;
