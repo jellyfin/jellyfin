@@ -1,4 +1,4 @@
-﻿(function (window, $) {
+﻿define(['jQuery'], function ($) {
 
     function onSubmit() {
 
@@ -22,4 +22,4 @@
         $('.wizardAgreementForm').off('submit', onSubmit).on('submit', onSubmit);
     });
 
-})(window, jQuery);
+});

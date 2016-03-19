@@ -1,4 +1,4 @@
-(function ($, document) {
+define(['jQuery'], function ($) {
 
     // The base query options
     var query = {
@@ -73,4 +73,4 @@
         updateFilterControls(this);
     });
 
-})(jQuery, document);
+});

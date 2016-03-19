@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     var currentItem;
 
@@ -87,4 +87,4 @@
 
     });
 
-})(jQuery, document, window);
+});

@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     var query = {
 
@@ -144,4 +144,4 @@
         currentResult = null;
     });
 
-})(jQuery, document, window);
+});

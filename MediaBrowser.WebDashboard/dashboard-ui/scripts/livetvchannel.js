@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     function renderPrograms(page, result) {
 
@@ -120,4 +120,4 @@
         renderPrograms: loadPrograms
     };
 
-})(jQuery, document);
+});

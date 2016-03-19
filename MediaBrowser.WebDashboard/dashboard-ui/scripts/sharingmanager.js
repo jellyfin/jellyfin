@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define([], function () {
 
     function onSharingSuccess(options) {
 
@@ -56,4 +56,4 @@
         showMenu: showMenu
     };
 
-})();
+});

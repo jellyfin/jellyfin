@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     var query = {
 
@@ -335,4 +335,4 @@
         Events.off(ApiClient, "websocketmessage", onWebSocketMessage);
     });
 
-})(jQuery, document, window);
+});

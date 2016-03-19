@@ -1,4 +1,4 @@
-﻿(function ($, window) {
+﻿define(['jQuery'], function ($) {
 
     function deletePlugin(page, uniqueid, name) {
 
@@ -233,4 +233,4 @@
         renderPlugins: renderPlugins
     };
 
-})(jQuery, window);
+});

@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     function loadPage(page, config) {
 
@@ -83,4 +83,4 @@
         $('.dashboardHostingForm').off('submit', onSubmit).on('submit', onSubmit);
     });
 
-})(jQuery, document, window);
+});

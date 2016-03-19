@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     var view = 'Poster';
 
@@ -213,4 +213,4 @@
         startSlideshow: startSlideshow
     };
 
-})(jQuery, document);
+});

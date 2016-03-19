@@ -1,4 +1,4 @@
-﻿(function (window, document, $, setTimeout, clearTimeout) {
+﻿define(['jQuery'], function ($) {
 
     pageIdOn('pageinit', "nowPlayingPage", function () {
 
@@ -40,4 +40,4 @@
         document.body.classList.remove('hiddenNowPlayingBar');
     });
 
-})(window, document, jQuery, setTimeout, clearTimeout);
+});

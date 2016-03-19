@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     function getView() {
 
@@ -390,4 +390,4 @@
         }
     }
 
-})(jQuery, document);
+});

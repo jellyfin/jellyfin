@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define([], function () {
 
     function reloadItems(page) {
 
@@ -34,4 +34,4 @@
 
     });
 
-})(jQuery, document);
+});

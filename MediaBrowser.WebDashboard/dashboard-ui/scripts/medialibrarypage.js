@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['jQuery'], function ($) {
 
     function changeCollectionType(page, virtualFolder) {
 
@@ -474,4 +474,4 @@ var WizardLibraryPage = {
 
     });
 
-})(jQuery, document, window);
+});

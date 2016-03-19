@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['jQuery'], function ($) {
 
     $(document).on('pagebeforeshow', "#logPage", function () {
 
@@ -62,4 +62,4 @@
         });
     });
 
-})();
+});

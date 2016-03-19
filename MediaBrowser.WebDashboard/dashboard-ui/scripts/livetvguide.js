@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define([], function () {
 
     window.LiveTvPage.initGuideTab = function (page, tabContent) {
 
@@ -22,4 +22,4 @@
         }
     };
 
-})(jQuery, document);
+});
