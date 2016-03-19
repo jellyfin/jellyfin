@@ -72,8 +72,6 @@ namespace MediaBrowser.Controller.LiveTv
             return base.CreateUserDataKey();
         }
 
-        public string ServiceName { get; set; }
-
         [IgnoreDataMember]
         public override string MediaType
         {

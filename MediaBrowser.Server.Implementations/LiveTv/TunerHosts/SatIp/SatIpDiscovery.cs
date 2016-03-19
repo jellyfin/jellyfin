@@ -100,7 +100,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                 {
                     if (string.IsNullOrWhiteSpace(info.M3UUrl))
                     {
-                        return;
+                        //return;
                     }
 
                     await _liveTvManager.SaveTunerHost(new TunerHostInfo

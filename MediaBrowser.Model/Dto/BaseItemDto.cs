@@ -793,6 +793,11 @@ namespace MediaBrowser.Model.Dto
         public List<MetadataFields> LockedFields { get; set; }
 
         /// <summary>
+        /// Gets or sets the trailer count.
+        /// </summary>
+        /// <value>The trailer count.</value>
+        public int? TrailerCount { get; set; }
+        /// <summary>
         /// Gets or sets the movie count.
         /// </summary>
         /// <value>The movie count.</value>

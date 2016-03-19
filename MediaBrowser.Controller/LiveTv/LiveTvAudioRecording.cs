@@ -57,8 +57,6 @@ namespace MediaBrowser.Controller.LiveTv
             return name + "-" + Name + (EpisodeTitle ?? string.Empty);
         }
 
-        public string ServiceName { get; set; }
-
         /// <summary>
         /// Gets a value indicating whether this instance is owned item.
         /// </summary>

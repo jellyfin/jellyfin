@@ -63,12 +63,6 @@ namespace MediaBrowser.Model.Configuration
         public bool IsPortAuthorized { get; set; }
 
         /// <summary>
-        /// Gets or sets the item by name path.
-        /// </summary>
-        /// <value>The item by name path.</value>
-        public string ItemsByNamePath { get; set; }
-
-        /// <summary>
         /// Gets or sets the metadata path.
         /// </summary>
         /// <value>The metadata path.</value>

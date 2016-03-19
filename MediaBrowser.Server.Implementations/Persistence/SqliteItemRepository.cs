@@ -719,15 +719,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         _saveItemCommand.GetParameter(index++).Value = null;
                     }
 
-                    var tvItem = item as ILiveTvItem;
-                    if (tvItem != null)
-                    {
-                        _saveItemCommand.GetParameter(index++).Value = tvItem.ServiceName;
-                    }
-                    else
-                    {
-                        _saveItemCommand.GetParameter(index++).Value = null;
-                    }
+                    _saveItemCommand.GetParameter(index++).Value = item.ServiceName;
 
                     _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.Tags.ToArray());
                     _saveItemCommand.GetParameter(index++).Value = item.IsFolder;
@@ -1095,11 +1087,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (!reader.IsDBNull(43))
             {
-                var tvItem = item as ILiveTvItem;
-                if (tvItem != null)
-                {
-                    tvItem.ServiceName = reader.GetString(43);
-                }
+                item.ServiceName = reader.GetString(43);
             }
 
             if (!reader.IsDBNull(44))
