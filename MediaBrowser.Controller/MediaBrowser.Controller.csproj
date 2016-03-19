@@ -85,8 +85,10 @@
     <Compile Include="Channels\ChannelSearchInfo.cs" />
     <Compile Include="Channels\ChannelVideoItem.cs" />
     <Compile Include="Channels\IChannel.cs" />
+    <Compile Include="Channels\IChannelItem.cs" />
     <Compile Include="Channels\IChannelManager.cs" />
     <Compile Include="Channels\Channel.cs" />
+    <Compile Include="Channels\IChannelMediaItem.cs" />
     <Compile Include="Channels\IHasCacheKey.cs" />
     <Compile Include="Channels\IIndexableChannel.cs" />
     <Compile Include="Channels\InternalAllChannelMediaQuery.cs" />
