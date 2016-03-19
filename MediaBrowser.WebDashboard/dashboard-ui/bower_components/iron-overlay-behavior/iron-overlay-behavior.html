@@ -9,7 +9,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
 <link rel="import" href="../iron-fit-behavior/iron-fit-behavior.html">
 <link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="iron-overlay-backdrop.html">
@@ -120,15 +119,6 @@ context. You should place this element as a child of `<body>` whenever possible.
       },
 
       /**
-       * The HTMLElement that will be firing relevant KeyboardEvents.
-       * Used for capturing esc and tab. Overridden from `IronA11yKeysBehavior`.
-       */
-      keyEventTarget: {
-        type: Object,
-        value: document
-      },
-
-      /**
        * Set to true to enable restoring of focus when overlay is closed.
        */
       restoreFocusOnClose: {
@@ -146,20 +136,6 @@ context. You should place this element as a child of `<body>` whenever possible.
         value: Polymer.IronOverlayManager
       },
 
-      _boundOnCaptureClick: {
-        type: Function,
-        value: function() {
-          return this._onCaptureClick.bind(this);
-        }
-      },
-
-      _boundOnCaptureFocus: {
-        type: Function,
-        value: function() {
-          return this._onCaptureFocus.bind(this);
-        }
-      },
-
       /**
        * The node being focused.
        * @type {?Node}
@@ -168,11 +144,6 @@ context. You should place this element as a child of `<body>` whenever possible.
         type: Object
       }
 
-    },
-
-    keyBindings: {
-      'esc': '__onEsc',
-      'tab': '__onTab'
     },
 
     listeners: {
@@ -270,8 +241,10 @@ context. You should place this element as a child of `<body>` whenever possible.
       Polymer.dom(this).unobserveNodes(this._observer);
       this._observer = null;
       this.opened = false;
-      this._manager.trackBackdrop(this);
-      this._manager.removeOverlay(this);
+      if (this.withBackdrop) {
+        // Allow user interactions right away.
+        this.backdropElement.close();
+      }
     },
 
     /**
@@ -333,18 +306,20 @@ context. You should place this element as a child of `<body>` whenever possible.
         return;
       }
 
-      this._manager.trackBackdrop(this);
-
       this.__isAnimating = true;
+
       if (this.opened) {
         this._prepareRenderOpened();
+      } else {
+        this._manager.removeOverlay(this);
       }
+
+      this._manager.trackBackdrop(this);
 
       if (this._openChangedAsync) {
         this.cancelAsync(this._openChangedAsync);
       }
-      // Async here to allow overlay layer to become visible, and to avoid
-      // listeners to immediately close via a click.
+      // Async here to allow overlay layer to become visible.
       this._openChangedAsync = this.async(function() {
         // overlay becomes visible here
         this.style.display = '';
@@ -356,7 +331,6 @@ context. You should place this element as a child of `<body>` whenever possible.
         } else {
           this._renderClosed();
         }
-        this._toggleListeners();
         this._openChangedAsync = null;
       }, 1);
     },
@@ -389,28 +363,10 @@ context. You should place this element as a child of `<body>` whenever possible.
       }
     },
 
-    _toggleListener: function(enable, node, event, boundListener, capture) {
-      if (enable) {
-        // enable document-wide tap recognizer
-        if (event === 'tap') {
-          Polymer.Gestures.add(document, 'tap', null);
-        }
-        node.addEventListener(event, boundListener, capture);
-      } else {
-        // disable document-wide tap recognizer
-        if (event === 'tap') {
-          Polymer.Gestures.remove(document, 'tap', null);
-        }
-        node.removeEventListener(event, boundListener, capture);
-      }
-    },
-
-    _toggleListeners: function() {
-      this._toggleListener(this.opened, document, 'tap', this._boundOnCaptureClick, true);
-      this._toggleListener(this.opened, document, 'focus', this._boundOnCaptureFocus, true);
-    },
-
-    // tasks which must occur before opening; e.g. making the element visible
+    /**
+     * tasks which must occur before opening; e.g. making the element visible.
+     * @protected
+     */
     _prepareRenderOpened: function() {
 
       this._manager.addOverlay(this);
@@ -432,8 +388,10 @@ context. You should place this element as a child of `<body>` whenever possible.
       }
     },
 
-    // tasks which cause the overlay to actually open; typically play an
-    // animation
+    /**
+     * Tasks which cause the overlay to actually open; typically play an animation.
+     * @protected
+     */
     _renderOpened: function() {
       if (this.withBackdrop) {
         this.backdropElement.open();
@@ -441,6 +399,10 @@ context. You should place this element as a child of `<body>` whenever possible.
       this._finishRenderOpened();
     },
 
+    /**
+     * Tasks which cause the overlay to actually close; typically play an animation.
+     * @protected
+     */
     _renderClosed: function() {
       if (this.withBackdrop) {
         this.backdropElement.close();
@@ -448,6 +410,10 @@ context. You should place this element as a child of `<body>` whenever possible.
       this._finishRenderClosed();
     },
 
+    /**
+     * Tasks to be performed at the end of open action. Will fire `iron-overlay-opened`.
+     * @protected
+     */
     _finishRenderOpened: function() {
       // Focus the child node with [autofocus]
       this._applyFocus();
@@ -457,10 +423,13 @@ context. You should place this element as a child of `<body>` whenever possible.
       this.fire('iron-overlay-opened');
     },
 
+    /**
+     * Tasks to be performed at the end of close action. Will fire `iron-overlay-closed`.
+     * @protected
+     */
     _finishRenderClosed: function() {
       // Hide the overlay and remove the backdrop.
       this.style.display = 'none';
-      this._manager.removeOverlay(this);
 
       this._applyFocus();
 
@@ -484,6 +453,10 @@ context. You should place this element as a child of `<body>` whenever possible.
       this.style.transition = this.style.webkitTransition = '';
     },
 
+    /**
+     * Applies focus according to the opened state.
+     * @protected
+     */
     _applyFocus: function() {
       if (this.opened) {
         if (!this.noAutoFocus) {
@@ -496,29 +469,69 @@ context. You should place this element as a child of `<body>` whenever possible.
       }
     },
 
+    /**
+     * Cancels (closes) the overlay. Call when click happens outside the overlay.
+     * @param {!Event} event
+     * @protected
+     */
     _onCaptureClick: function(event) {
-      if (this._manager.currentOverlay() === this &&
-          Polymer.dom(event).path.indexOf(this) === -1) {
-        if (this.noCancelOnOutsideClick) {
-          this._applyFocus();
-        } else {
-          this.cancel(event);
-        }
+      if (!this.noCancelOnOutsideClick) {
+        this.cancel(event);
       }
     },
 
+    /**
+     * Keeps track of the focused child. If withBackdrop, traps focus within overlay.
+     * @param {!Event} event
+     * @protected
+     */
     _onCaptureFocus: function (event) {
-      if (this._manager.currentOverlay() === this && this.withBackdrop) {
-        var path = Polymer.dom(event).path;
-        if (path.indexOf(this) === -1) {
-          event.stopPropagation();
-          this._applyFocus();
-        } else {
-          this._focusedChild = path[0];
-        }
+      if (!this.withBackdrop) {
+        return;
+      }
+      var path = Polymer.dom(event).path;
+      if (path.indexOf(this) === -1) {
+        event.stopPropagation();
+        this._applyFocus();
+      } else {
+        this._focusedChild = path[0];
       }
     },
 
+    /**
+     * Handles the ESC key event and cancels (closes) the overlay.
+     * @param {!Event} event
+     * @protected
+     */
+    _onCaptureEsc: function(event) {
+      if (!this.noCancelOnEscKey) {
+        this.cancel(event);
+      }
+    },
+
+    /**
+     * Handles TAB key events to track focus changes.
+     * Will wrap focus for overlays withBackdrop.
+     * @param {!Event} event
+     * @protected
+     */
+    _onCaptureTab: function(event) {
+      // TAB wraps from last to first focusable.
+      // Shift + TAB wraps from first to last focusable.
+      var shift = event.shiftKey;
+      var nodeToCheck = shift ? this.__firstFocusableNode : this.__lastFocusableNode;
+      var nodeToSet = shift ? this.__lastFocusableNode : this.__firstFocusableNode;
+      if (this.withBackdrop && this._focusedChild === nodeToCheck) {
+        // We set here the _focusedChild so that _onCaptureFocus will handle the
+        // wrapping of the focus (the next event after tab is focus).
+        this._focusedChild = nodeToSet;
+      }
+    },
+
+    /**
+     * Refits if the overlay is opened and not animating.
+     * @protected
+     */
     _onIronResize: function() {
       if (this.__isAnimating) {
         return;
@@ -530,9 +543,9 @@ context. You should place this element as a child of `<body>` whenever possible.
     },
 
     /**
-     * @protected
      * Will call notifyResize if overlay is opened.
      * Can be overridden in order to avoid multiple observers on the same node.
+     * @protected
      */
     _onNodesChange: function() {
       if (this.opened && !this.__isAnimating) {
@@ -542,33 +555,6 @@ context. You should place this element as a child of `<body>` whenever possible.
       var focusableNodes = this._focusableNodes;
       this.__firstFocusableNode = focusableNodes[0];
       this.__lastFocusableNode = focusableNodes[focusableNodes.length - 1];
-    },
-
-    __onEsc: function(event) {
-      // Not opened or not on top, so return.
-      if (this._manager.currentOverlay() !== this) {
-        return;
-      }
-      if (!this.noCancelOnEscKey) {
-        this.cancel(event);
-      }
-    },
-
-    __onTab: function(event) {
-      // Not opened or not on top, so return.
-      if (this._manager.currentOverlay() !== this) {
-        return;
-      }
-      // TAB wraps from last to first focusable.
-      // Shift + TAB wraps from first to last focusable.
-      var shift = event.detail.keyboardEvent.shiftKey;
-      var nodeToCheck = shift ? this.__firstFocusableNode : this.__lastFocusableNode;
-      var nodeToSet = shift ? this.__lastFocusableNode : this.__firstFocusableNode;
-      if (this.withBackdrop && this._focusedChild === nodeToCheck) {
-        // We set here the _focusedChild so that _onCaptureFocus will handle the
-        // wrapping of the focus (the next event after tab is focus).
-        this._focusedChild = nodeToSet;
-      }
     }
   };
 
