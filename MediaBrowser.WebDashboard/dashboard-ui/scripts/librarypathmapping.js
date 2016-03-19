@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     var currentConfig;
 
@@ -138,4 +138,4 @@
 
     });
 
-})(jQuery, document, window);
+});

@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     $(document).on('pageinit', "#wizardServicePage", function () {
 
@@ -10,4 +10,4 @@
         });
     });
 
-})(jQuery, document, window);
+});

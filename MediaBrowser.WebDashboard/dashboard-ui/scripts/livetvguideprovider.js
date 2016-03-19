@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     function init(page, type, providerId) {
 
@@ -40,4 +40,4 @@
         loadTemplate(page, type, providerId);
     });
 
-})(jQuery, document, window);
+});

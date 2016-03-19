@@ -1,4 +1,4 @@
-﻿(function (document, window, $) {
+﻿define(['jQuery'], function ($) {
 
     function deleteUser(page, id) {
 
@@ -379,4 +379,4 @@
         loadData(page);
     });
 
-})(document, window, jQuery);
+});

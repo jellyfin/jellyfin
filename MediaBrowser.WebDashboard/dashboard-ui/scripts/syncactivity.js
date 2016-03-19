@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['jQuery'], function ($) {
 
     function cancelJob(page, id) {
 
@@ -432,4 +432,4 @@
         Events.off(ApiClient, "websocketmessage", onWebSocketMessage);
     });
 
-})();
+});

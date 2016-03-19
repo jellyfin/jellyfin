@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     function deleteTimer(page, id) {
 
@@ -55,4 +55,4 @@
         }
     };
 
-})(jQuery, document);
+});

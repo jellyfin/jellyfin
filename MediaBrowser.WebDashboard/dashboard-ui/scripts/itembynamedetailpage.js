@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     function renderItems(page, item) {
 
@@ -337,4 +337,4 @@
         renderItems: renderItems
     };
 
-})(jQuery, document);
+});

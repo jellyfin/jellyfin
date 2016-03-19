@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     var data = {};
     function getPageData() {
@@ -235,4 +235,4 @@
         initPage(tabContent);
     };
 
-})(jQuery, document);
+});

@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define([], function () {
 
     function loadSuggestions(page) {
 
@@ -38,4 +38,4 @@
     });
 
 
-})();
+});

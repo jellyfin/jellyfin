@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     function itemsPerRow() {
 
@@ -329,4 +329,4 @@
     });
 
 
-})(jQuery, document);
+});

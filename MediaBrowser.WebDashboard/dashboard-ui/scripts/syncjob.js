@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['jQuery'], function ($) {
 
     function renderJob(page, job, dialogOptions) {
 
@@ -428,4 +428,4 @@
         Events.off(ApiClient, "websocketmessage", onWebSocketMessage);
     });
 
-})();
+});

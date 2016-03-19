@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     var guideController;
 
@@ -98,4 +98,4 @@
         reload(page);
     });
 
-})(jQuery, document, window);
+});

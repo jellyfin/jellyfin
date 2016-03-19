@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     function showSignIn(page) {
 
@@ -120,4 +120,4 @@
         $('.kidsOptionsForm').off('submit', onOptionsSubmit).on('submit', onOptionsSubmit);
     });
 
-})(jQuery, document, window);
+});

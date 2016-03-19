@@ -1,4 +1,4 @@
-﻿define(['historyManager'], function (historyManager) {
+﻿define(['historyManager', 'jQuery'], function (historyManager, $) {
 
     var currentItemId;
 

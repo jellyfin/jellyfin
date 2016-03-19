@@ -1,4 +1,4 @@
-﻿define(['layoutManager'], function (layoutManager) {
+﻿define(['layoutManager', 'jQuery'], function (layoutManager, $) {
 
     var currentItem;
 

@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
     var defaultSortBy = "SortName";
     var topItems = 5;
 
@@ -910,9 +910,9 @@
 	    updateFilterControls(this);
 	});
 
-})(jQuery, document);
+});
 
-(function (window) {
+define(['jQuery'], function ($) {
 
     function renderOptions(page, selector, cssClass, items) {
 
@@ -1145,4 +1145,4 @@
         loadColumns: loadColumns,
         onPageShow: onPageReportColumnsShow
     };
-})(window);
+});
