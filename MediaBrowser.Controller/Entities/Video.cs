@@ -6,13 +6,16 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Channels;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -33,6 +36,7 @@ namespace MediaBrowser.Controller.Entities
         public List<string> AdditionalParts { get; set; }
         public List<string> LocalAlternateVersions { get; set; }
         public List<LinkedChild> LinkedAlternateVersions { get; set; }
+        public List<ChannelMediaInfo> ChannelMediaSources { get; set; }
 
         [IgnoreDataMember]
         public bool IsThemeMedia
@@ -76,6 +80,23 @@ namespace MediaBrowser.Controller.Entities
             var locationType = LocationType;
             return locationType != LocationType.Remote &&
                    locationType != LocationType.Virtual;
+        }
+
+        [IgnoreDataMember]
+        public override LocationType LocationType
+        {
+            get
+            {
+                if (SourceType == SourceType.Channel)
+                {
+                    if (string.IsNullOrEmpty(Path))
+                    {
+                        return LocationType.Remote;
+                    }
+                }
+
+                return base.LocationType;
+            }
         }
 
         [IgnoreDataMember]
@@ -128,6 +149,29 @@ namespace MediaBrowser.Controller.Entities
         public IEnumerable<Guid> GetLocalAlternateVersionIds()
         {
             return LocalAlternateVersions.Select(i => LibraryManager.GetNewItemId(i, typeof(Video)));
+        }
+
+        protected override string CreateUserDataKey()
+        {
+            if (ExtraType.HasValue)
+            {
+                var key = this.GetProviderId(MetadataProviders.Imdb) ?? this.GetProviderId(MetadataProviders.Tmdb);
+
+                if (!string.IsNullOrWhiteSpace(key))
+                {
+                    key = key + "-" + ExtraType.ToString().ToLower();
+
+                    // Make sure different trailers have their own data.
+                    if (RunTimeTicks.HasValue)
+                    {
+                        key += "-" + RunTimeTicks.Value.ToString(CultureInfo.InvariantCulture);
+                    }
+
+                    return key;
+                }
+            }
+
+            return base.CreateUserDataKey();
         }
 
         /// <summary>
@@ -441,6 +485,22 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual IEnumerable<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
         {
+            if (SourceType == SourceType.Channel)
+            {
+                var sources = ChannelManager.GetStaticMediaSources(this, false, CancellationToken.None)
+                           .Result.ToList();
+
+                if (sources.Count > 0)
+                {
+                    return sources;
+                }
+
+                return new List<MediaSourceInfo>
+                {
+                    GetVersionInfo(enablePathSubstitution, this, MediaSourceType.Placeholder)
+                };
+            }
+
             var item = this;
 
             var result = item.GetAlternateVersions()

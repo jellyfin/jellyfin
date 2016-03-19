@@ -1,4 +1,4 @@
-﻿(function ($, window, document, FileReader) {
+﻿define(['jQuery'], function ($) {
 
     var currentFile;
 
@@ -224,9 +224,9 @@
     });
 
 
-})(jQuery, window, document, window.FileReader);
+});
 
-(function ($, document, window) {
+define(['jQuery'], function ($) {
 
     function loadUser(page) {
 
@@ -465,4 +465,4 @@
 
     });
 
-})(jQuery, document, window);
+});

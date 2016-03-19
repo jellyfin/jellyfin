@@ -223,6 +223,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "UnratedType", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "TopParentId", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "IsItemByName", "BIT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "SourceType", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "TrailerTypes", "Text");
 
             PrepareStatements();
 
@@ -353,7 +355,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "DateLastSaved",
             "LockedFields",
             "Studios",
-            "Tags"
+            "Tags",
+            "SourceType",
+            "TrailerTypes"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -453,7 +457,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "IsFolder",
                 "UnratedType",
                 "TopParentId",
-                "IsItemByName"
+                "IsItemByName",
+                "SourceType",
+                "TrailerTypes"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -746,6 +752,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         isByName = dualAccess == null || dualAccess.IsAccessedByName;
                     }
                     _saveItemCommand.GetParameter(index++).Value = isByName;
+
+                    _saveItemCommand.GetParameter(index++).Value = item.SourceType.ToString();
+
+                    var trailer = item as Trailer;
+                    if (trailer != null)
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = string.Join("|", trailer.TrailerTypes.Select(i => i.ToString()).ToArray());
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
 
                     _saveItemCommand.Transaction = transaction;
 
@@ -1107,6 +1125,20 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!reader.IsDBNull(48))
             {
                 item.Tags = reader.GetString(48).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+            }
+
+            if (!reader.IsDBNull(49))
+            {
+                item.SourceType = (SourceType)Enum.Parse(typeof(SourceType), reader.GetString(49), true);
+            }
+
+            var trailer = item as Trailer;
+            if (trailer != null)
+            {
+                if (!reader.IsDBNull(50))
+                {
+                    trailer.TrailerTypes = reader.GetString(50).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => (TrailerType)Enum.Parse(typeof(TrailerType), i, true)).ToList();
+                }
             }
 
             return item;
@@ -1871,6 +1903,56 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 cmd.Parameters.Add(cmd, "@MaxStartDate", DbType.Date).Value = query.MaxStartDate.Value;
             }
 
+            if (query.SourceTypes.Length == 1)
+            {
+                whereClauses.Add("SourceType=@SourceType");
+                cmd.Parameters.Add(cmd, "@SourceType", DbType.String).Value = query.SourceTypes[0];
+            }
+            else if (query.SourceTypes.Length > 1)
+            {
+                var inClause = string.Join(",", query.SourceTypes.Select(i => "'" + i + "'").ToArray());
+                whereClauses.Add(string.Format("SourceType in ({0})", inClause));
+            }
+
+            if (query.ExcludeSourceTypes.Length == 1)
+            {
+                whereClauses.Add("SourceType<>@SourceType");
+                cmd.Parameters.Add(cmd, "@SourceType", DbType.String).Value = query.SourceTypes[0];
+            }
+            else if (query.ExcludeSourceTypes.Length > 1)
+            {
+                var inClause = string.Join(",", query.ExcludeSourceTypes.Select(i => "'" + i + "'").ToArray());
+                whereClauses.Add(string.Format("SourceType not in ({0})", inClause));
+            }
+
+            if (query.TrailerTypes.Length > 0)
+            {
+                var clauses = new List<string>();
+                var index = 0;
+                foreach (var type in query.TrailerTypes)
+                {
+                    clauses.Add("TrailerTypes like @TrailerTypes" + index);
+                    cmd.Parameters.Add(cmd, "@TrailerTypes" + index, DbType.String).Value = "%" + type + "%";
+                    index++;
+                }
+                var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
+                whereClauses.Add(clause);
+            }
+
+            if (query.ExcludeTrailerTypes.Length > 0)
+            {
+                var clauses = new List<string>();
+                var index = 0;
+                foreach (var type in query.ExcludeTrailerTypes)
+                {
+                    clauses.Add("TrailerTypes not like @TrailerTypes" + index);
+                    cmd.Parameters.Add(cmd, "@TrailerTypes" + index, DbType.String).Value = "%" + type + "%";
+                    index++;
+                }
+                var clause = "(" + string.Join(" AND ", clauses.ToArray()) + ")";
+                whereClauses.Add(clause);
+            }
+            
             if (query.IsAiring.HasValue)
             {
                 if (query.IsAiring.Value)
@@ -2046,7 +2128,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             typeof(Trailer),
             typeof(BoxSet),
             typeof(Episode),
-            typeof(ChannelVideoItem),
             typeof(Season),
             typeof(Series),
             typeof(Book),
@@ -2152,8 +2233,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 dict[t.Name] = new[] { t.FullName };
             }
 
-            dict["ChannelItem"] = new[] { typeof(ChannelVideoItem).FullName, typeof(ChannelAudioItem).FullName, typeof(ChannelFolderItem).FullName };
-            dict["LiveTvItem"] = new[] { typeof(LiveTvAudioRecording).FullName, typeof(LiveTvVideoRecording).FullName, typeof(LiveTvChannel).FullName, typeof(LiveTvProgram).FullName };
             dict["Recording"] = new[] { typeof(LiveTvAudioRecording).FullName, typeof(LiveTvVideoRecording).FullName };
             dict["Program"] = new[] { typeof(LiveTvProgram).FullName };
             dict["TvChannel"] = new[] { typeof(LiveTvChannel).FullName };

@@ -1,4 +1,4 @@
-﻿define(['playlistManager', 'appSettings', 'appStorage'], function (playlistManager, appSettings, appStorage) {
+﻿define(['playlistManager', 'appSettings', 'appStorage', 'jQuery'], function (playlistManager, appSettings, appStorage, $) {
 
     var libraryBrowser = (function (window, document, screen) {
 
@@ -1157,7 +1157,7 @@
                     }
                 }
                 if (item.Type == 'CollectionFolder') {
-                    return 'itemlist.html?topParentId=' + item.Id + '&parentid=' + item.Id;
+                    return 'itemlist.html?topParentId=' + item.Id + '&parentId=' + item.Id;
                 }
 
                 if (item.Type == "PhotoAlbum") {
@@ -1172,7 +1172,7 @@
                 if (item.Type == "Channel") {
                     return "channelitems.html?id=" + id;
                 }
-                if (item.Type == "ChannelFolderItem") {
+                if ((item.IsFolder && item.SourceType == 'Channel') || item.Type == 'ChannelFolderItem') {
                     return "channelitems.html?id=" + item.ChannelId + '&folderId=' + item.Id;
                 }
                 if (item.Type == "Program") {

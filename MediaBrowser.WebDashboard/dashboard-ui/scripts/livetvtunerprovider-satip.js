@@ -18,34 +18,6 @@
         }
     }
 
-    function submitForm(page) {
-
-        Dashboard.showLoadingMsg();
-
-        var id = getParameterByName('id');
-
-        if (id) {
-
-            ApiClient.getNamedConfiguration("livetv").then(function (config) {
-
-                var info = config.TunerHosts.filter(function (i) {
-                    return i.Id == id;
-                })[0];
-
-                fillInfoFromPage(page, info);
-                submitTunerInfo(page, info);
-            });
-
-        } else {
-            var info = {
-                Type: 'satip'
-            };
-
-            fillInfoFromPage(page, info);
-            submitTunerInfo(page, info);
-        }
-    }
-
     function fillInfoFromPage(page, info) {
         info.Url = page.querySelector('.txtDevicePath').value;
         info.M3UUrl = page.querySelector('.txtM3uUrl').value;
@@ -91,6 +63,34 @@
 
     return function (view, params) {
 
+        function submitForm() {
+
+            Dashboard.showLoadingMsg();
+
+            var id = params.id;
+
+            if (id) {
+
+                ApiClient.getNamedConfiguration("livetv").then(function (config) {
+
+                    var info = config.TunerHosts.filter(function (i) {
+                        return i.Id == id;
+                    })[0];
+
+                    fillInfoFromPage(view, info);
+                    submitTunerInfo(view, info);
+                });
+
+            } else {
+                var info = {
+                    Type: 'satip'
+                };
+
+                fillInfoFromPage(view, info);
+                submitTunerInfo(view, info);
+            }
+        }
+
         function onSelectDiseqCChange(e) {
 
             var select = e.target;
@@ -113,7 +113,7 @@
         }
 
         view.querySelector('form').addEventListener('submit', function (e) {
-            submitForm(view);
+            submitForm();
             e.preventDefault();
             return false;
         });

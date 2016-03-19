@@ -1,4 +1,4 @@
-define([], function () {
+define(['jQuery'], function ($) {
 
     var pageContainerCount;
     var animationDuration = 500;

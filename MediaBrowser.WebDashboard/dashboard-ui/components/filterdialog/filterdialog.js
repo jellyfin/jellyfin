@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'events', 'browser', 'paper-checkbox', 'emby-collapsible', 'css!components/filterdialog/style', 'paper-radio-button', 'paper-radio-group'], function (paperDialogHelper, events, browser) {
+﻿define(['paperdialoghelper', 'events', 'browser', 'jQuery', 'paper-checkbox', 'emby-collapsible', 'css!components/filterdialog/style', 'paper-radio-button', 'paper-radio-group'], function (paperDialogHelper, events, browser, $) {
 
     function renderOptions(context, selector, cssClass, items, isCheckedFn) {
 

@@ -186,27 +186,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           });
         });
 
-        test('closed overlay does not trigger iron-resize when its content changes', function(done) {
+        test('closed overlay does not trigger iron-resize when its content changes', function() {
           // Ignore iron-resize triggered by window resize.
           var callCount = 0;
           window.addEventListener('resize', function() { callCount--; }, true);
           overlay.addEventListener('iron-resize', function() { callCount++; });
           Polymer.dom(overlay).appendChild(document.createElement('div'));
-          overlay.async(function() {
-            assert.equal(callCount, 0, 'iron-resize should not be called');
-            done();
-          }, 10);
+          Polymer.dom.flush();
+          assert.equal(callCount, 0, 'iron-resize should not be called');
         });
 
-        test('open overlay triggers iron-resize when its content changes', function(done) {
+        test('open overlay triggers iron-resize when its content changes', function() {
           runAfterOpen(overlay, function() {
             var spy = sinon.stub();
             overlay.addEventListener('iron-resize', spy);
             Polymer.dom(overlay).appendChild(document.createElement('div'));
-            overlay.async(function() {
-              assert.equal(spy.callCount, 1, 'iron-resize should be called once');
-              done();
-            }, 10);
+            Polymer.dom.flush();
+            assert.equal(spy.callCount, 1, 'iron-resize should be called once');
           });
         });
 
@@ -334,6 +330,38 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       });
 
+      suite('keyboard event listener', function() {
+        var overlay;
+
+        var preventKeyDown = function(event) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+
+        suiteSetup(function() {
+          // Worst case scenario: listener with useCapture = true that prevents & stops propagation
+          // added before the overlay is initialized.
+          document.addEventListener('keydown', preventKeyDown, true);
+        });
+
+        setup(function() {
+          overlay = fixture('basic');
+        });
+
+        suiteTeardown(function() {
+          document.removeEventListener('keydown', preventKeyDown, true);
+        });
+
+        test('cancel an overlay with esc key even if event is prevented by other listeners', function(done) {
+          runAfterOpen(overlay, function() {
+            overlay.addEventListener('iron-overlay-canceled', function(event) {
+              done();
+            });
+            MockInteractions.pressAndReleaseKeyOn(document, 27);
+          });
+        });
+      });
+
       suite('opened overlay', function() {
         var overlay;
 
@@ -369,7 +397,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             done();
           });
         });
-
       });
 
       suite('focus handling', function() {
@@ -632,7 +659,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           runAfterOpen(overlay, function() {
             runAfterClose(overlay, function() {
               assert.isFalse(overlay.backdropElement.opened, 'backdrop is closed');
-              assert.isNull(overlay.backdropElement.parentNode, 'backdrop is removed from the DOM');
+              assert.isNotOk(overlay.backdropElement.parentNode, 'backdrop is removed from the DOM');
               assert.lengthOf(document.querySelectorAll('iron-overlay-backdrop'), 0, 'no backdrop elements on body');
               done();
             });
@@ -642,12 +669,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         test('backdrop is removed when the element is removed from DOM', function(done) {
           runAfterOpen(overlay, function() {
             Polymer.dom(overlay).parentNode.removeChild(overlay);
-            // Wait enough so detached is executed.
-            Polymer.Base.async(function() {
-              assert.isNull(overlay.backdropElement.parentNode, 'backdrop is removed from the DOM');
-              assert.lengthOf(document.querySelectorAll('iron-overlay-backdrop'), 0, 'no backdrop elements on body');
-              done();
-            }, 100);
+            // Ensure detached is executed.
+            Polymer.dom.flush();
+            assert.isFalse(overlay.backdropElement.opened, 'backdrop is closed');
+            assert.isNotOk(overlay.backdropElement.parentNode, 'backdrop is removed from the DOM');
+            assert.lengthOf(document.querySelectorAll('iron-overlay-backdrop'), 0, 'no backdrop elements on body');
+            assert.isNotOk(overlay._manager.currentOverlay(), 'currentOverlay ok');
+            done();
           });
         });
 
@@ -676,7 +704,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             done();
           });
         });
-
       });
 
       suite('multiple overlays', function() {
@@ -814,6 +841,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               var bgStyleZ = parseInt(window.getComputedStyle(overlay1.backdropElement).zIndex, 10);
               assert.isTrue(style1Z > styleZ, 'overlay2 has higher z-index than overlay1');
               assert.isTrue(styleZ > bgStyleZ, 'overlay1 has higher z-index than backdrop');
+              done();
+            });
+          });
+        });
+
+        test('click events handled only by top overlay', function(done) {
+          var btn = document.createElement('button');
+          btn.addEventListener('tap', overlay2.close.bind(overlay2));
+          Polymer.dom(overlay2).appendChild(btn);
+          runAfterOpen(overlay1, function() {
+            runAfterOpen(overlay2, function() {
+              MockInteractions.tap(btn);
+              assert.isFalse(overlay2.opened, 'overlay2 closed');
+              assert.isTrue(overlay1.opened, 'overlay1 still opened');
               done();
             });
           });

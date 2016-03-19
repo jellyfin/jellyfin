@@ -346,7 +346,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
                 return false;
             }
 
-            return !(item is IChannelItem) && !(item is ILiveTvItem);
+            return item.SourceType == SourceType.Library;
         }
 
         private async void LibraryUpdateTimerCallback(object state)

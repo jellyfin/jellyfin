@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'paper-input', 'paper-button', 'emby-collapsible', 'paper-checkbox'], function (paperDialogHelper) {
+﻿define(['paperdialoghelper', 'jQuery', 'paper-input', 'paper-button', 'emby-collapsible', 'paper-checkbox'], function (paperDialogHelper, $) {
 
     function renderLibrarySharingList(context, result) {
 

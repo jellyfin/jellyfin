@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     // The base query options
     var query = {
@@ -85,4 +85,4 @@
 
     });
 
-})(jQuery, document);
+});

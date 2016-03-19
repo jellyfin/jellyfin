@@ -2319,9 +2319,9 @@
     "ButtonGotIt": "Begrepen",
     "OptionEnableAnonymousUsageReporting": "Activeer anonieme gebruiksgegevens rapportage",
     "OptionEnableAnonymousUsageReportingHelp": "Sta Emby toe anonieme gegevens zoals ge\u00efnstalleerde plugins, de versienummers van Emby toepassingen, etc. te verzamelen. Deze informatie wordt alleen gebruikt met het doel de software te verbeteren.",
-    "LabelFileOrUrl": "File or url:",
-    "OptionEnableForAllTuners": "Enable for all tuner devices",
+    "LabelFileOrUrl": "Bstand of URL:",
+    "OptionEnableForAllTuners": "Inschakelen voor alle tuners",
     "HeaderTuners": "Tuners",
-    "LabelOptionalM3uUrl": "M3U url (optional):",
-    "LabelOptionalM3uUrlHelp": "Some devices support an M3U channel listing."
+    "LabelOptionalM3uUrl": "M3U url (optioneel):",
+    "LabelOptionalM3uUrlHelp": "Sommige apparaten ondersteunen een M3U-kanaal lijst."
 }

@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     var brandingConfigKey = "branding";
     var currentBrandingOptions;
@@ -132,4 +132,4 @@
 
     });
 
-})(jQuery, document, window);
+});

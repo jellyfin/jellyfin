@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     function loadProfiles(page) {
 
@@ -108,4 +108,4 @@
 
     });
 
-})(jQuery, document, window);
+});

@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'paper-checkbox', 'paper-dialog', 'paper-input', 'paper-item-body', 'paper-icon-item', 'paper-textarea', 'paper-fab'], function (paperDialogHelper) {
+﻿define(['paperdialoghelper', 'jQuery', 'paper-checkbox', 'paper-dialog', 'paper-input', 'paper-item-body', 'paper-icon-item', 'paper-textarea', 'paper-fab'], function (paperDialogHelper, $) {
 
     var currentContext;
     var metadataEditorInfo;

@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'paper-checkbox', 'paper-dialog', 'paper-input'], function (paperDialogHelper) {
+﻿define(['paperdialoghelper', 'jQuery', 'paper-checkbox', 'paper-dialog', 'paper-input'], function (paperDialogHelper, $) {
 
     function onSubmit() {
         Dashboard.showLoadingMsg();

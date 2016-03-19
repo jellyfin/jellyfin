@@ -1,4 +1,4 @@
-﻿define(['imageLoader', 'paper-icon-button', 'paper-button', 'emby-icons'], function (imageLoader) {
+﻿define(['imageLoader', 'jQuery', 'paper-icon-button', 'paper-button', 'emby-icons'], function (imageLoader, $) {
 
     function renderHeader() {
 

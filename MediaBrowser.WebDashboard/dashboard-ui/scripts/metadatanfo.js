@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     var metadataKey = "xbmcmetadata";
 
@@ -60,4 +60,4 @@
         });
     });
 
-})(jQuery, document, window);
+});

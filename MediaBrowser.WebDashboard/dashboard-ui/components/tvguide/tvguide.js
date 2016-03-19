@@ -1,4 +1,4 @@
-﻿define(['livetvcss', 'scripts/livetvcomponents'], function () {
+﻿define(['jQuery', 'livetvcss', 'scripts/livetvcomponents'], function ($) {
 
     return function (options) {
 

@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
 
@@ -109,4 +109,4 @@
         reloadItems(page);
     });
 
-})(jQuery, document);
+});

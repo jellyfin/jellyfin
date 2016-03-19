@@ -40,6 +40,13 @@ namespace MediaBrowser.Controller.LiveTv
             }
         }
 
+        [IgnoreDataMember]
+        public override SourceType SourceType
+        {
+            get { return SourceType.LiveTV; }
+            set { }
+        }
+
         /// <summary>
         /// Gets or sets the number.
         /// </summary>

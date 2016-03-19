@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['jQuery'], function ($) {
 
     function load(page, device, capabilities) {
 
@@ -92,4 +92,4 @@
         loadData(page);
     });
 
-})();
+});

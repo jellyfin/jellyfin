@@ -24,8 +24,11 @@ namespace MediaBrowser.Controller.Entities
             Taglines = new List<string>();
             Keywords = new List<string>();
             ProductionLocations = new List<string>();
+            TrailerTypes = new List<TrailerType>();
         }
 
+        public List<TrailerType> TrailerTypes { get; set; }
+        
         public float? Metascore { get; set; }
 
         public List<MediaUrl> RemoteTrailers { get; set; }
@@ -62,20 +65,6 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The critic rating summary.</value>
         public string CriticRatingSummary { get; set; }
 
-        /// <summary>
-        /// Gets a value indicating whether this instance is local trailer.
-        /// </summary>
-        /// <value><c>true</c> if this instance is local trailer; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public bool IsLocalTrailer
-        {
-            get
-            {
-                // Local trailers are not part of children
-                return GetParent() == null;
-            }
-        }
-
         protected override string CreateUserDataKey()
         {
             var key = Movie.GetMovieUserDataKey(this);
@@ -105,9 +94,50 @@ namespace MediaBrowser.Controller.Entities
         {
             var info = GetItemLookupInfo<TrailerInfo>();
 
-            info.IsLocalTrailer = IsLocalTrailer;
+            info.IsLocalTrailer = TrailerTypes.Contains(TrailerType.LocalTrailer);
+            
+            if (!IsInMixedFolder)
+            {
+                info.Name = System.IO.Path.GetFileName(ContainingFolderPath);
+            }
 
             return info;
+        }
+
+        public override bool BeforeMetadataRefresh()
+        {
+            var hasChanges = base.BeforeMetadataRefresh();
+
+            if (!ProductionYear.HasValue)
+            {
+                var info = LibraryManager.ParseName(Name);
+
+                var yearInName = info.Year;
+
+                if (yearInName.HasValue)
+                {
+                    ProductionYear = yearInName;
+                    hasChanges = true;
+                }
+                else
+                {
+                    // Try to get the year from the folder name
+                    if (!IsInMixedFolder)
+                    {
+                        info = LibraryManager.ParseName(System.IO.Path.GetFileName(ContainingFolderPath));
+
+                        yearInName = info.Year;
+
+                        if (yearInName.HasValue)
+                        {
+                            ProductionYear = yearInName;
+                            hasChanges = true;
+                        }
+                    }
+                }
+            }
+
+            return hasChanges;
         }
     }
 }

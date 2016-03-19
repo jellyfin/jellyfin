@@ -38,7 +38,7 @@
 
         if (seconds < 0) {
             seconds = Math.abs(seconds);
-            token = '';
+            //token = '';
         }
 
         while (format = time_formats[i++]) {

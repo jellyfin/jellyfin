@@ -42,23 +42,6 @@ namespace MediaBrowser.Providers.Movies
 
         public bool Supports(IHasImages item)
         {
-            var channelItem = item as IChannelMediaItem;
-
-            if (channelItem != null)
-            {
-                if (channelItem.ContentType == ChannelMediaContentType.Movie)
-                {
-                    return true;
-                }
-                if (channelItem.ContentType == ChannelMediaContentType.MovieExtra)
-                {
-                    if (channelItem.ExtraType == ExtraType.Trailer)
-                    {
-                        return true;
-                    }
-                }
-            }
-
             // Supports images for tv movies
             var tvProgram = item as LiveTvProgram;
             if (tvProgram != null && tvProgram.IsMovie)
@@ -66,7 +49,7 @@ namespace MediaBrowser.Providers.Movies
                 return true;
             }
 
-            return item is Movie || item is MusicVideo;
+            return item is Movie || item is MusicVideo || item is Trailer;
         }
 
         public IEnumerable<ImageType> GetSupportedImages(IHasImages item)

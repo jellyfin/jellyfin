@@ -2207,7 +2207,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/about.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             controller: 'scripts/aboutpage',
             roles: 'admin'
@@ -2215,213 +2215,213 @@ var AppInfo = {};
 
         defineRoute({
             path: '/addplugin.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/advanced.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/appservices.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/autoorganizelog.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             roles: 'admin'
         });
 
         defineRoute({
             path: '/autoorganizesmart.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/autoorganizetv.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/channelitems.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/channels.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/channelsettings.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/cinemamodeconfiguration.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/collections.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/connectlogin.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             anonymous: true
         });
 
         defineRoute({
             path: '/dashboard.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/dashboardgeneral.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/dashboardhosting.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/device.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/devices.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/devicesupload.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/dlnaprofile.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/dlnaprofiles.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/dlnaserversettings.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/dlnasettings.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/edititemmetadata.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/encodingsettings.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/favorites.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/forgotpassword.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             anonymous: true
         });
 
         defineRoute({
             path: '/forgotpasswordpin.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             anonymous: true
         });
 
         defineRoute({
             path: '/gamegenres.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/games.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/gamesrecommended.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/gamestudios.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/gamesystems.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
@@ -2441,103 +2441,104 @@ var AppInfo = {};
 
         defineRoute({
             path: '/itemdetails.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/itemlist.html',
-            dependencies: ['jQuery'],
-            autoFocus: false
+            dependencies: ['paper-checkbox', 'scripts/alphapicker'],
+            autoFocus: false,
+            controller: 'scripts/itemlistpage'
         });
 
         defineRoute({
             path: '/kids.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/library.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/librarypathmapping.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/librarysettings.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/livetv.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/livetvguideprovider.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/livetvitems.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/livetvrecordinglist.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/livetvseriestimer.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/livetvsettings.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/livetvstatus.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/livetvtimer.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/livetvtunerprovider-hdhomerun.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/livetvtunerprovider-m3u.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
@@ -2552,261 +2553,262 @@ var AppInfo = {};
 
         defineRoute({
             path: '/log.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/login.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             anonymous: true
         });
 
         defineRoute({
             path: '/metadata.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/metadataadvanced.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/metadataimages.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/metadatanfo.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/metadatasubtitles.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/movies.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/music.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/mypreferencesdisplay.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/mypreferenceshome.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/mypreferenceslanguages.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/mypreferencesmenu.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/myprofile.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/mysync.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/mysyncjob.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/mysyncsettings.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/notificationlist.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/notificationsetting.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/notificationsettings.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/nowplaying.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/photos.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/playbackconfiguration.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/playlists.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/plugincatalog.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/plugins.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/reports.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/scheduledtask.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/scheduledtasks.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/search.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/secondaryitems.html',
-            dependencies: ['jQuery'],
-            autoFocus: false
+            dependencies: [],
+            autoFocus: false,
+            controller: 'scripts/secondaryitems'
         });
 
         defineRoute({
             path: '/selectserver.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             anonymous: true
         });
 
         defineRoute({
             path: '/serversecurity.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/shared.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             anonymous: true
         });
 
         defineRoute({
             path: '/streamingsettings.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/support.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/supporterkey.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/syncactivity.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/syncjob.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/syncsettings.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
@@ -2819,104 +2821,104 @@ var AppInfo = {};
 
         defineRoute({
             path: '/useredit.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/userlibraryaccess.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/usernew.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/userparentalcontrol.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/userpassword.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false
         });
 
         defineRoute({
             path: '/userprofiles.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/wizardagreement.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             anonymous: true
         });
 
         defineRoute({
             path: '/wizardfinish.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             anonymous: true
         });
 
         defineRoute({
             path: '/wizardlibrary.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             anonymous: true
         });
 
         defineRoute({
             path: '/wizardlivetvguide.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             anonymous: true
         });
 
         defineRoute({
             path: '/wizardlivetvtuner.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             anonymous: true
         });
 
         defineRoute({
             path: '/wizardservice.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             anonymous: true
         });
 
         defineRoute({
             path: '/wizardsettings.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             anonymous: true
         });
 
         defineRoute({
             path: '/wizardstart.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             anonymous: true
         });
 
         defineRoute({
             path: '/wizarduser.html',
-            dependencies: ['jQuery'],
+            dependencies: [],
             autoFocus: false,
             anonymous: true
         });

@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'paper-dialog', 'paper-input', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper) {
+﻿define(['paperdialoghelper', 'jQuery', 'paper-dialog', 'paper-input', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper, $) {
 
     var currentDeferred;
     var hasChanges;

@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     function getRecordingGroupHtml(group) {
 
@@ -125,4 +125,4 @@
         }
     };
 
-})(jQuery, document);
+});

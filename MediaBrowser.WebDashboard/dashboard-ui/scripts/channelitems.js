@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     var data = {};
 
@@ -280,4 +280,4 @@
         updateFilterControls(page);
     });
 
-})(jQuery, document);
+});

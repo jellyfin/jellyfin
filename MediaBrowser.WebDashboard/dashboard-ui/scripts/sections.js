@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser'], function (LibraryBrowser) {
+﻿define(['libraryBrowser', 'jQuery'], function (LibraryBrowser, $) {
 
     function getUserViews(userId) {
 

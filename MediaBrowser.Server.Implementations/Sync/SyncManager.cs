@@ -536,7 +536,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                     }
                 }
 
-                if (item is LiveTvChannel || item is IChannelItem)
+                if (item.SourceType != SourceType.Library)
                 {
                     return false;
                 }

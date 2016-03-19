@@ -91,22 +91,21 @@ namespace MediaBrowser.Api.Movies
         private readonly IItemRepository _itemRepo;
         private readonly IDtoService _dtoService;
 
-        private readonly IChannelManager _channelManager;
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="MoviesService"/> class.
+        /// Initializes a new instance of the <see cref="MoviesService" /> class.
         /// </summary>
         /// <param name="userManager">The user manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public MoviesService(IUserManager userManager, IUserDataManager userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService, IChannelManager channelManager)
+        /// <param name="itemRepo">The item repo.</param>
+        /// <param name="dtoService">The dto service.</param>
+        public MoviesService(IUserManager userManager, IUserDataManager userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService)
         {
             _userManager = userManager;
             _userDataRepository = userDataRepository;
             _libraryManager = libraryManager;
             _itemRepo = itemRepo;
             _dtoService = dtoService;
-            _channelManager = channelManager;
         }
 
         /// <summary>
@@ -138,6 +137,14 @@ namespace MediaBrowser.Api.Movies
             {
                 IncludeItemTypes = new[] { typeof(Movie).Name }
             };
+
+            if (user.Configuration.IncludeTrailersInSuggestions)
+            {
+                var includeList = query.IncludeItemTypes.ToList();
+                includeList.Add(typeof(Trailer).Name);
+                query.IncludeItemTypes = includeList.ToArray();
+            }
+
             var parentIds = string.IsNullOrWhiteSpace(request.ParentId) ? new string[] { } : new[] { request.ParentId };
             var movies = _libraryManager.GetItems(query, parentIds);
             movies = _libraryManager.ReplaceVideosWithPrimaryVersions(movies);
@@ -149,19 +156,6 @@ namespace MediaBrowser.Api.Movies
 
             listEligibleForCategories.AddRange(list);
             listEligibleForSuggestion.AddRange(list);
-
-            if (user.Configuration.IncludeTrailersInSuggestions)
-            {
-                var trailerResult = await _channelManager.GetAllMediaInternal(new AllChannelMediaQuery
-                {
-                    ContentTypes = new[] { ChannelMediaContentType.MovieExtra },
-                    ExtraTypes = new[] { ExtraType.Trailer },
-                    UserId = user.Id.ToString("N")
-
-                }, CancellationToken.None).ConfigureAwait(false);
-
-                listEligibleForSuggestion.AddRange(trailerResult.Items);
-            }
 
             listEligibleForCategories = listEligibleForCategories
                 .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
@@ -194,6 +188,14 @@ namespace MediaBrowser.Api.Movies
             {
                 IncludeItemTypes = new[] { typeof(Movie).Name }
             };
+
+            if (user == null || user.Configuration.IncludeTrailersInSuggestions)
+            {
+                var includeList = query.IncludeItemTypes.ToList();
+                includeList.Add(typeof(Trailer).Name);
+                query.IncludeItemTypes = includeList.ToArray();
+            }
+
             var parentIds = new string[] { };
             var list = _libraryManager.GetItems(query, parentIds)
                 .Where(i =>
@@ -202,27 +204,8 @@ namespace MediaBrowser.Api.Movies
                     var v = i as Video;
                     return v != null && !v.PrimaryVersionId.HasValue;
                 })
+                .DistinctBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N"))
                 .ToList();
-
-            if (user != null && user.Configuration.IncludeTrailersInSuggestions)
-            {
-                var trailerResult = await _channelManager.GetAllMediaInternal(new AllChannelMediaQuery
-                {
-                    ContentTypes = new[] { ChannelMediaContentType.MovieExtra },
-                    ExtraTypes = new[] { ExtraType.Trailer },
-                    UserId = user.Id.ToString("N")
-
-                }, CancellationToken.None).ConfigureAwait(false);
-
-                var newTrailers = trailerResult.Items;
-
-                list.AddRange(newTrailers);
-
-                list = list
-                    .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
-                    .DistinctBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString(), StringComparer.OrdinalIgnoreCase)
-                    .ToList();
-            }
 
             if (item is Video)
             {
