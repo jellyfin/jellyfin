@@ -13,7 +13,7 @@ using System.Threading;
 
 namespace MediaBrowser.Controller.Channels
 {
-    public class ChannelVideoItem : Video, IChannelMediaItem, IHasLookupInfo<ChannelItemLookupInfo>
+    public class ChannelVideoItem : Video, IHasLookupInfo<ChannelItemLookupInfo>
     {
         public ChannelMediaContentType ContentType { get; set; }
 

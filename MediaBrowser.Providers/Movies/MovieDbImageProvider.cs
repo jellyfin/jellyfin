@@ -42,7 +42,7 @@ namespace MediaBrowser.Providers.Movies
 
         public bool Supports(IHasImages item)
         {
-            var channelItem = item as IChannelMediaItem;
+            var channelItem = item as ChannelVideoItem;
 
             if (channelItem != null)
             {

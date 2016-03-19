@@ -248,9 +248,19 @@ namespace MediaBrowser.Server.Implementations.Channels
             return item;
         }
 
-        public async Task<IEnumerable<MediaSourceInfo>> GetStaticMediaSources(IChannelMediaItem item, bool includeCachedVersions, CancellationToken cancellationToken)
+        public async Task<IEnumerable<MediaSourceInfo>> GetStaticMediaSources(BaseItem item, bool includeCachedVersions, CancellationToken cancellationToken)
         {
-            IEnumerable<ChannelMediaInfo> results = item.ChannelMediaSources;
+            IEnumerable<ChannelMediaInfo> results = new List<ChannelMediaInfo>();
+            var video = item as ChannelVideoItem;
+            if (video != null)
+            {
+                results = video.ChannelMediaSources;
+            }
+            var audio = item as ChannelAudioItem;
+            if (audio != null)
+            {
+                results = audio.ChannelMediaSources;
+            }
 
             var sources = SortMediaInfoResults(results)
                 .Select(i => GetMediaSource(item, i))
@@ -265,7 +275,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             return sources;
         }
 
-        public async Task<IEnumerable<MediaSourceInfo>> GetDynamicMediaSources(IChannelMediaItem item, CancellationToken cancellationToken)
+        public async Task<IEnumerable<MediaSourceInfo>> GetDynamicMediaSources(BaseItem item, CancellationToken cancellationToken)
         {
             var channel = GetChannel(item.ChannelId);
             var channelPlugin = GetChannelProvider(channel);
@@ -319,7 +329,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             return list;
         }
 
-        private IEnumerable<MediaSourceInfo> GetCachedChannelItemMediaSources(IChannelMediaItem item)
+        private IEnumerable<MediaSourceInfo> GetCachedChannelItemMediaSources(BaseItem item)
         {
             var filenamePrefix = item.Id.ToString("N");
             var parentPath = Path.Combine(ChannelDownloadPath, item.ChannelId);
@@ -368,7 +378,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             return new List<MediaSourceInfo>();
         }
 
-        private MediaSourceInfo GetMediaSource(IChannelMediaItem item, ChannelMediaInfo info)
+        private MediaSourceInfo GetMediaSource(BaseItem item, ChannelMediaInfo info)
         {
             var source = info.ToMediaSource();
 
@@ -1277,16 +1287,25 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
             item.ExternalId = info.Id;
 
-            var channelMediaItem = item as IChannelMediaItem;
-
-            if (channelMediaItem != null)
+            var channelAudioItem = item as ChannelAudioItem;
+            if (channelAudioItem != null)
             {
-                channelMediaItem.ContentType = info.ContentType;
-                channelMediaItem.ExtraType = info.ExtraType;
-                channelMediaItem.ChannelMediaSources = info.MediaSources;
+                channelAudioItem.ContentType = info.ContentType;
+                channelAudioItem.ExtraType = info.ExtraType;
+                channelAudioItem.ChannelMediaSources = info.MediaSources;
 
                 var mediaSource = info.MediaSources.FirstOrDefault();
+                item.Path = mediaSource == null ? null : mediaSource.Path;
+            }
 
+            var channelVideoItem = item as ChannelVideoItem;
+            if (channelVideoItem != null)
+            {
+                channelVideoItem.ContentType = info.ContentType;
+                channelVideoItem.ExtraType = info.ExtraType;
+                channelVideoItem.ChannelMediaSources = info.MediaSources;
+
+                var mediaSource = info.MediaSources.FirstOrDefault();
                 item.Path = mediaSource == null ? null : mediaSource.Path;
             }
 
@@ -1439,7 +1458,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             return await _libraryManager.GetNamedView(name, "channels", "zz_" + name, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task DownloadChannelItem(IChannelMediaItem item, string destination,
+        public async Task DownloadChannelItem(BaseItem item, string destination,
             IProgress<double> progress, CancellationToken cancellationToken)
         {
             var sources = await GetDynamicMediaSources(item, cancellationToken)
@@ -1455,7 +1474,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         }
 
         private async Task TryDownloadChannelItem(MediaSourceInfo source,
-            IChannelMediaItem item,
+            BaseItem item,
             string destination,
             IProgress<double> progress,
             CancellationToken cancellationToken)

@@ -1250,6 +1250,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (audio != null)
             {
                 dto.Album = audio.Album;
+                dto.ExtraType = audio.ExtraType;
 
                 var albumParent = audio.AlbumEntity;
 
@@ -1352,6 +1353,8 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     dto.Chapters = GetChapterInfoDtos(item);
                 }
+
+                dto.ExtraType = video.ExtraType;
             }
 
             if (fields.Contains(ItemFields.MediaStreams))
@@ -1534,12 +1537,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (item.SourceType == SourceType.Channel)
             {
                 dto.ChannelName = _channelManagerFactory().GetChannel(item.ChannelId).Name;
-            }
-
-            var channelMediaItem = item as IChannelMediaItem;
-            if (channelMediaItem != null)
-            {
-                dto.ExtraType = channelMediaItem.ExtraType;
             }
         }
 

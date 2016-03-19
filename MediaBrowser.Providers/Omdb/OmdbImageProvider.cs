@@ -81,7 +81,7 @@ namespace MediaBrowser.Providers.Omdb
                 return false;
             }
 
-            var channelItem = item as IChannelMediaItem;
+            var channelItem = item as ChannelVideoItem;
 
             if (channelItem != null)
             {
