@@ -1534,9 +1534,13 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             dto.ChannelId = item.ChannelId;
 
-            if (item.SourceType == SourceType.Channel)
+            if (item.SourceType == SourceType.Channel && !string.IsNullOrWhiteSpace(item.ChannelId))
             {
-                dto.ChannelName = _channelManagerFactory().GetChannel(item.ChannelId).Name;
+                var channel = _libraryManager.GetItemById(item.ChannelId);
+                if (channel != null)
+                {
+                    dto.ChannelName = channel.Name;
+                }
             }
         }
 

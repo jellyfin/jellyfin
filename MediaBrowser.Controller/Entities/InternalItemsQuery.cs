@@ -115,6 +115,7 @@ namespace MediaBrowser.Controller.Entities
 
         public LocationType[] ExcludeLocationTypes { get; set; }
         public string[] PresetViews { get; set; }
+        public SourceType[] SourceTypes { get; set; }
 
         public InternalItemsQuery()
         {
@@ -141,6 +142,7 @@ namespace MediaBrowser.Controller.Entities
             ExcludeTags = new string[] { };
             ExcludeLocationTypes = new LocationType[] { };
             PresetViews = new string[] { };
+            SourceTypes = new SourceType[] { };
         }
 
         public InternalItemsQuery(User user)

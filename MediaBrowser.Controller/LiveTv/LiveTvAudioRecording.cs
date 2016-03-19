@@ -39,6 +39,13 @@ namespace MediaBrowser.Controller.LiveTv
         [IgnoreDataMember]
         public bool IsPremiere { get; set; }
 
+        [IgnoreDataMember]
+        public override SourceType SourceType
+        {
+            get { return SourceType.LiveTV; }
+            set { }
+        }
+
         /// <summary>
         /// Gets the user data key.
         /// </summary>

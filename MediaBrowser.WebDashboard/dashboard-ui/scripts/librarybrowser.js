@@ -1172,7 +1172,7 @@
                 if (item.Type == "Channel") {
                     return "channelitems.html?id=" + id;
                 }
-                if (item.Type == "ChannelFolderItem") {
+                if (item.IsFolder && item.SourceType == 'Channel') {
                     return "channelitems.html?id=" + item.ChannelId + '&folderId=' + item.Id;
                 }
                 if (item.Type == "Program") {

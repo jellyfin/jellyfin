@@ -26,6 +26,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Entities.Audio;
 
 namespace MediaBrowser.Server.Implementations.Channels
 {
@@ -1243,7 +1244,18 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             if (info.Type == ChannelItemType.Folder)
             {
-                item = GetItemById<ChannelFolderItem>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                if (info.FolderType == ChannelFolderType.MusicAlbum)
+                {
+                    item = GetItemById<MusicAlbum>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                }
+                else if (info.FolderType == ChannelFolderType.PhotoAlbum)
+                {
+                    item = GetItemById<PhotoAlbum>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                }
+                else
+                {
+                    item = GetItemById<Folder>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                }
             }
             else if (info.MediaType == ChannelMediaType.Audio)
             {
@@ -1312,6 +1324,12 @@ namespace MediaBrowser.Server.Implementations.Channels
             if (!string.IsNullOrWhiteSpace(info.ImageUrl) && !item.HasImage(ImageType.Primary))
             {
                 item.SetImagePath(ImageType.Primary, info.ImageUrl);
+            }
+
+            if (item.SourceType != SourceType.Channel)
+            {
+                item.SourceType = SourceType.Channel;
+                forceUpdate = true;
             }
 
             if (isNew)
