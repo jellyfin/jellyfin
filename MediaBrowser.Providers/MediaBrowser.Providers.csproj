@@ -92,7 +92,6 @@
     <Compile Include="Folders\FolderMetadataService.cs" />
     <Compile Include="Folders\UserViewMetadataService.cs" />
     <Compile Include="GameGenres\GameGenreMetadataService.cs" />
-    <Compile Include="Channels\VideoChannelItemMetadataService.cs" />
     <Compile Include="Games\GameMetadataService.cs" />
     <Compile Include="Games\GameSystemMetadataService.cs" />
     <Compile Include="Genres\GenreMetadataService.cs" />

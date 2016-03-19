@@ -108,20 +108,10 @@ namespace MediaBrowser.Api.Movies
 
         private async Task<QueryResult<BaseItem>> GetAllTrailers(User user)
         {
-            var trailerResult = await _channelManager.GetAllMediaInternal(new AllChannelMediaQuery
+            return _libraryManager.GetItems(new InternalItemsQuery(user)
             {
-                ContentTypes = new[] { ChannelMediaContentType.MovieExtra },
-                ExtraTypes = new[] { ExtraType.Trailer },
-                UserId = user.Id.ToString("N")
-
-            }, CancellationToken.None).ConfigureAwait(false);
-
-
-            return new QueryResult<BaseItem>
-            {
-                Items = trailerResult.Items,
-                TotalRecordCount = trailerResult.TotalRecordCount
-            };
+                IncludeItemTypes = new[] {typeof (Trailer).Name}
+            });
         }
     }
 }
