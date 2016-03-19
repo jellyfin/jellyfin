@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'paper-item', 'paper-input', 'paper-fab', 'paper-item-body'], function (paperDialogHelper) {
+﻿define(['paperdialoghelper', 'jQuery', 'paper-item', 'paper-input', 'paper-fab', 'paper-item-body'], function (paperDialogHelper, $) {
 
     var systemInfo;
     function getSystemInfo() {
