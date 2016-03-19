@@ -52,6 +52,12 @@
     <SubtitleProfile format="srt" method="External" />
     <SubtitleProfile format="sub" method="External" />
     <SubtitleProfile format="srt" method="Embed" didlMode="" />
+    <SubtitleProfile format="ass" method="Embed" didlMode="" />
+    <SubtitleProfile format="ssa" method="Embed" didlMode="" />
+    <SubtitleProfile format="smi" method="Embed" didlMode="" />
+    <SubtitleProfile format="dvdsub" method="Embed" didlMode="" />
+    <SubtitleProfile format="pgs" method="Embed" didlMode="" />
+    <SubtitleProfile format="pgssub" method="Embed" didlMode="" />
     <SubtitleProfile format="sub" method="Embed" didlMode="" />
   </SubtitleProfiles>
 </Profile>
