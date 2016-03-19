@@ -31,7 +31,10 @@ namespace MediaBrowser.Server.Implementations.Library
             var trailerResult = _libraryManager.GetItems(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(Trailer).Name },
-                //IsLocalTrailer = false
+                ExcludeTrailerTypes = new[]
+                {
+                    TrailerType.LocalTrailer
+                }
 
             });
             var trailers = trailerResult.Items;

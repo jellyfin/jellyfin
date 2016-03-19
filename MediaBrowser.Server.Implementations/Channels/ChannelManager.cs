@@ -424,6 +424,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             var parentFolderId = parentFolder.Id;
 
             var id = GetInternalChannelId(channelInfo.Name);
+            var idString = id.ToString("N");
 
             var path = Channel.GetInternalMetadataPath(_config.ApplicationPaths.InternalMetadataPath, id);
 
@@ -431,7 +432,6 @@ namespace MediaBrowser.Server.Implementations.Channels
             var forceUpdate = false;
 
             var item = _libraryManager.GetItemById(id) as Channel;
-            var channelId = channelInfo.Name.GetMD5().ToString("N");
 
             if (item == null)
             {
@@ -452,11 +452,11 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
             item.Path = path;
 
-            if (!string.Equals(item.ChannelId, channelId, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(item.ChannelId, idString, StringComparison.OrdinalIgnoreCase))
             {
                 forceUpdate = true;
             }
-            item.ChannelId = channelId;
+            item.ChannelId = idString;
 
             if (item.ParentId != parentFolderId)
             {
@@ -505,7 +505,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         public Channel GetChannel(string id)
         {
-            return _libraryManager.GetItemById(new Guid(id)) as Channel;
+            return _libraryManager.GetItemById(id) as Channel;
         }
 
         public IEnumerable<ChannelFeatures> GetAllChannelFeatures()
@@ -523,6 +523,11 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         public ChannelFeatures GetChannelFeatures(string id)
         {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
             var channel = GetChannel(id);
             var channelProvider = GetChannelProvider(channel);
 
@@ -1261,7 +1266,14 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
             else if (info.MediaType == ChannelMediaType.Audio)
             {
-                item = GetItemById<Audio>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                if (info.ContentType == ChannelMediaContentType.Podcast)
+                {
+                    item = GetItemById<AudioPodcast>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                }
+                else
+                {
+                    item = GetItemById<Audio>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                }
             }
             else
             {
@@ -1300,6 +1312,16 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.OfficialRating = info.OfficialRating;
                 item.DateCreated = info.DateCreated ?? DateTime.UtcNow;
                 item.Tags = info.Tags;
+            }
+
+            var trailer = item as Trailer;
+            if (trailer != null)
+            {
+                if (!info.TrailerTypes.SequenceEqual(trailer.TrailerTypes))
+                {
+                    forceUpdate = true;
+                }
+                trailer.TrailerTypes = info.TrailerTypes;
             }
 
             item.ChannelId = internalChannelId.ToString("N");
@@ -1384,7 +1406,12 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         internal IChannel GetChannelProvider(Channel channel)
         {
-            var result = GetAllChannels().FirstOrDefault(i => string.Equals(i.Name.GetMD5().ToString("N"), channel.ChannelId, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, channel.Name, StringComparison.OrdinalIgnoreCase));
+            if (channel == null)
+            {
+                throw new ArgumentNullException("channel");
+            }
+
+            var result = GetAllChannels().FirstOrDefault(i => string.Equals(GetInternalChannelId(i.Name).ToString("N"), channel.ChannelId, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, channel.Name, StringComparison.OrdinalIgnoreCase));
 
             if (result == null)
             {
@@ -1519,7 +1546,6 @@ namespace MediaBrowser.Server.Implementations.Channels
                 Progress = new Progress<double>()
             };
 
-            var host = new Uri(source.Path).Host.ToLower();
             var channel = GetChannel(item.ChannelId);
             var channelProvider = GetChannelProvider(channel);
             var features = channelProvider.GetChannelFeatures();

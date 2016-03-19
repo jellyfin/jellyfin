@@ -224,6 +224,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "TopParentId", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "IsItemByName", "BIT");
             _connection.AddColumn(Logger, "TypedBaseItems", "SourceType", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "TrailerTypes", "Text");
 
             PrepareStatements();
 
@@ -355,7 +356,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "LockedFields",
             "Studios",
             "Tags",
-            "SourceType"
+            "SourceType",
+            "TrailerTypes"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -456,7 +458,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "UnratedType",
                 "TopParentId",
                 "IsItemByName",
-                "SourceType"
+                "SourceType",
+                "TrailerTypes"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -751,7 +754,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveItemCommand.GetParameter(index++).Value = isByName;
 
                     _saveItemCommand.GetParameter(index++).Value = item.SourceType.ToString();
-                    
+
+                    var trailer = item as Trailer;
+                    if (trailer != null)
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = string.Join("|", trailer.TrailerTypes.Select(i => i.ToString()).ToArray());
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
+
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();
@@ -1117,6 +1130,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!reader.IsDBNull(49))
             {
                 item.SourceType = (SourceType)Enum.Parse(typeof(SourceType), reader.GetString(49), true);
+            }
+
+            var trailer = item as Trailer;
+            if (trailer != null)
+            {
+                if (!reader.IsDBNull(50))
+                {
+                    trailer.TrailerTypes = reader.GetString(50).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => (TrailerType)Enum.Parse(typeof(TrailerType), i, true)).ToList();
+                }
             }
 
             return item;
@@ -1901,6 +1923,34 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 var inClause = string.Join(",", query.ExcludeSourceTypes.Select(i => "'" + i + "'").ToArray());
                 whereClauses.Add(string.Format("SourceType not in ({0})", inClause));
+            }
+
+            if (query.TrailerTypes.Length > 0)
+            {
+                var clauses = new List<string>();
+                var index = 0;
+                foreach (var type in query.TrailerTypes)
+                {
+                    clauses.Add("TrailerTypes like @TrailerTypes" + index);
+                    cmd.Parameters.Add(cmd, "@TrailerTypes" + index, DbType.String).Value = "%" + type + "%";
+                    index++;
+                }
+                var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
+                whereClauses.Add(clause);
+            }
+
+            if (query.ExcludeTrailerTypes.Length > 0)
+            {
+                var clauses = new List<string>();
+                var index = 0;
+                foreach (var type in query.ExcludeTrailerTypes)
+                {
+                    clauses.Add("TrailerTypes not like @TrailerTypes" + index);
+                    cmd.Parameters.Add(cmd, "@TrailerTypes" + index, DbType.String).Value = "%" + type + "%";
+                    index++;
+                }
+                var clause = "(" + string.Join(" AND ", clauses.ToArray()) + ")";
+                whereClauses.Add(clause);
             }
             
             if (query.IsAiring.HasValue)
