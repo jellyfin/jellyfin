@@ -95,6 +95,8 @@
 
             html += '</a>';
         }
+
+        $('#childrenContent', page).html(html);
     }
 
     function loadPrograms(page, channelId) {
@@ -109,7 +111,6 @@
         }).then(function (result) {
 
             renderPrograms(page, result);
-
             Dashboard.hideLoadingMsg();
         });
     }
