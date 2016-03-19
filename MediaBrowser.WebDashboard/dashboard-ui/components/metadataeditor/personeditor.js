@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper'], function (paperDialogHelper) {
+﻿define(['paperdialoghelper', 'jQuery'], function (paperDialogHelper, $) {
 
     return {
         show: function (person) {
