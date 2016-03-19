@@ -1,4 +1,4 @@
-﻿(function ($, window, document) {
+﻿define(['jQuery'], function ($) {
 
     var currentUser;
 
@@ -238,4 +238,4 @@
 
     });
 
-})(jQuery, window, document);
+});

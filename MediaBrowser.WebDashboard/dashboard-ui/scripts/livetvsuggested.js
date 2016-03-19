@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
@@ -212,4 +212,4 @@
         initSuggestedTab: initSuggestedTab
     };
 
-})(jQuery, document);
+});

@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define([], function () {
 
     function getTimersHtml(timers) {
 
@@ -145,9 +145,9 @@
         getTimersHtml: getTimersHtml
 
     };
-})();
+});
 
-(function ($, document, window) {
+define(['jQuery'], function ($) {
 
     var showOverlayTimeout;
     var hideOverlayTimeout;
@@ -405,4 +405,4 @@
             .on('click', childSelector, onProgramClicked);
     };
 
-})(jQuery, document, window);
+});

@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     function updateSeasonPatternHelp(page, value) {
 
@@ -164,5 +164,4 @@
             loadPage(page, config);
         });
     });
-
-})(jQuery, document, window);
+});

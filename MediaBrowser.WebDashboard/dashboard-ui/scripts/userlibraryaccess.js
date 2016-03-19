@@ -1,4 +1,4 @@
-﻿(function ($, window, document) {
+﻿define(['jQuery'], function ($) {
 
     function loadMediaFolders(page, user, mediaFolders) {
 
@@ -247,4 +247,4 @@
         });
     });
 
-})(jQuery, window, document);
+});

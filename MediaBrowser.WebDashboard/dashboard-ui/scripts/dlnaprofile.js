@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     var currentProfile;
 
@@ -1174,4 +1174,4 @@
         }
     };
 
-})(jQuery, document, window);
+});

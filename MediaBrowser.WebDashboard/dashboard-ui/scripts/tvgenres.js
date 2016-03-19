@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['jQuery'], function ($) {
 
     return function (view, params, tabContent) {
 

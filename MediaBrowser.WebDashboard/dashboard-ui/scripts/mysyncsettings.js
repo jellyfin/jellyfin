@@ -1,4 +1,4 @@
-﻿define(['appSettings'], function (appSettings) {
+﻿define(['appSettings', 'jQuery'], function (appSettings, $) {
 
     function loadForm(page, user) {
 

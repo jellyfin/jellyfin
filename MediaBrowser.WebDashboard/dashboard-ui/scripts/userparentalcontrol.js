@@ -1,4 +1,4 @@
-﻿(function ($, window, document) {
+﻿define(['jQuery'], function ($) {
 
     function populateRatings(allParentalRatings, page) {
 
@@ -397,4 +397,4 @@
         });
     });
 
-})(jQuery, window, document);
+});

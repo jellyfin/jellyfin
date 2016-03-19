@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     var data = {};
     function getPageData() {
@@ -168,4 +168,4 @@
         reloadItems(page);
     });
 
-})(jQuery, document);
+});

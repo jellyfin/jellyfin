@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['jQuery'], function ($) {
 
     function connectToServer(page, server) {
 
@@ -357,4 +357,4 @@
         loadPage(page);
     });
 
-})();
+});

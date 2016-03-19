@@ -1,4 +1,4 @@
-﻿(function(){
+﻿define(['jQuery'], function ($) {
 
 	function onFinish() {
 
@@ -18,4 +18,4 @@
     	$('.btnWizardNext', this).on('click', onFinish);
     });
 
-})();
+});

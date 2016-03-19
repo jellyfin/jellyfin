@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     // The base query options
     var query = {
@@ -297,4 +297,4 @@
         renderCatalog: populateList
     };
 
-})(jQuery, document);
+});

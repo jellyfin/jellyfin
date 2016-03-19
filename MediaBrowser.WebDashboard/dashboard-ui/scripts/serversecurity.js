@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     function revoke(page, key) {
 
@@ -141,4 +141,4 @@
         loadData(page);
     });
 
-})(jQuery, document);
+});

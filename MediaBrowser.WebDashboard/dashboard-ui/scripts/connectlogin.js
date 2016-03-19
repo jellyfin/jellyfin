@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['jQuery'], function ($) {
 
     function login(page, username, password) {
 
@@ -316,4 +316,4 @@
         login(page, user, password);
     }
 
-})();
+});

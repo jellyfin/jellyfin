@@ -1,4 +1,4 @@
-﻿define(['fetchHelper'], function (fetchHelper) {
+﻿define(['fetchHelper', 'jQuery'], function (fetchHelper, $) {
 
     function load(page) {
         Dashboard.showLoadingMsg();

@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     var data = {};
 
@@ -119,4 +119,4 @@
         }
     };
 
-})(jQuery, document);
+});

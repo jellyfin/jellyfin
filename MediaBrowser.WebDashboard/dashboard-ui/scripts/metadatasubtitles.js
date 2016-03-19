@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     function loadPage(page, config, languages) {
 
@@ -97,4 +97,4 @@
 
     });
 
-})(jQuery, document, window);
+});

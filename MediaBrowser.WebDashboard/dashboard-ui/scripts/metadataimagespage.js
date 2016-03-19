@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     var currentType;
 
@@ -562,4 +562,4 @@
         loadPage(page);
     });
 
-})(jQuery, document, window);
+});

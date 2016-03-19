@@ -1,4 +1,4 @@
-﻿(function (window, $) {
+﻿define(['jQuery'], function ($) {
 
     function loadAdvancedConfig(page, config) {
 
@@ -218,4 +218,4 @@
         });
     }
 
-})(window, jQuery);
+});

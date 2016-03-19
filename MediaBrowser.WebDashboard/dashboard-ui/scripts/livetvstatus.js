@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     function resetTuner(page, id) {
 
@@ -532,4 +532,4 @@
 
     });
 
-})(jQuery, document, window);
+});
