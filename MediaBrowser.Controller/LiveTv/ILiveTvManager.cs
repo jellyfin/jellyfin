@@ -50,7 +50,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <param name="recording">The recording.</param>
         /// <returns>Task.</returns>
-        Task DeleteRecording(ILiveTvRecording recording);
+        Task DeleteRecording(BaseItem recording);
         
         /// <summary>
         /// Cancels the timer.
@@ -156,7 +156,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="id">The identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>LiveTvRecording.</returns>
-        Task<ILiveTvRecording> GetInternalRecording(string id, CancellationToken cancellationToken);
+        Task<BaseItem> GetInternalRecording(string id, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the recording stream.
@@ -396,7 +396,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <param name="recording">The recording.</param>
         /// <returns>Task.</returns>
-        Task OnRecordingFileDeleted(ILiveTvRecording recording);
+        Task OnRecordingFileDeleted(BaseItem recording);
 
         /// <summary>
         /// Gets the sat ini mappings.
