@@ -79,8 +79,6 @@
             });
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
-
-            LibraryBrowser.setLastRefreshed(context);
             Dashboard.hideLoadingMsg();
         });
     }
@@ -90,9 +88,7 @@
 
         self.renderTab = function () {
 
-            if (LibraryBrowser.needsRefresh(tabContent)) {
-                reloadItems(tabContent, params);
-            }
+            reloadItems(tabContent, params);
         };
     };
 });

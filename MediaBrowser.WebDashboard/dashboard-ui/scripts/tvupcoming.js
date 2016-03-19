@@ -33,9 +33,6 @@
             renderUpcoming(elem, items);
 
             Dashboard.hideLoadingMsg();
-
-            LibraryBrowser.setLastRefreshed(context);
-
         });
     }
 
@@ -128,9 +125,7 @@
 
         self.renderTab = function () {
 
-            if (LibraryBrowser.needsRefresh(tabContent)) {
-                loadUpcoming(tabContent, params);
-            }
+            loadUpcoming(tabContent, params);
         };
     };
 });

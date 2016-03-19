@@ -139,9 +139,7 @@
         }
         self.renderTab = function () {
 
-            if (LibraryBrowser.needsRefresh(tabContent)) {
-                reloadItems(tabContent);
-            }
+            reloadItems(tabContent);
         };
     };
 });

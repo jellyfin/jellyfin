@@ -235,10 +235,8 @@
         initPage(tabContent);
         self.renderTab = function () {
 
-            if (LibraryBrowser.needsRefresh(tabContent)) {
-                reloadItems(tabContent);
-                updateFilterControls(tabContent);
-            }
+            reloadItems(tabContent);
+            updateFilterControls(tabContent);
         };
     };
 });

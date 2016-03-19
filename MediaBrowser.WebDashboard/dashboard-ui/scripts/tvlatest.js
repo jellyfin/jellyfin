@@ -73,7 +73,6 @@
             ImageLoader.lazyChildren(elem);
 
             Dashboard.hideLoadingMsg();
-            LibraryBrowser.setLastRefreshed(context);
         });
     }
     return function (view, params, tabContent) {
@@ -82,9 +81,7 @@
 
         self.renderTab = function() {
 
-            if (LibraryBrowser.needsRefresh(tabContent)) {
-                loadLatest(tabContent, params);
-            }
+            loadLatest(tabContent, params);
         };
     };
 });

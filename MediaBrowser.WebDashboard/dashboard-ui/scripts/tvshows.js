@@ -211,7 +211,6 @@
 
                 LibraryBrowser.saveQueryValues(getSavedQueryKey(page), query);
 
-                LibraryBrowser.setLastRefreshed(page);
                 Dashboard.hideLoadingMsg();
             });
         }
@@ -261,10 +260,8 @@
         initPage(tabContent);
         self.renderTab = function () {
 
-            if (LibraryBrowser.needsRefresh(tabContent)) {
-                reloadItems(tabContent);
-                updateFilterControls(tabContent);
-            }
+            reloadItems(tabContent);
+            updateFilterControls(tabContent);
         };
     };
 });

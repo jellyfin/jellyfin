@@ -83,8 +83,6 @@
                 elem.innerHTML = html;
                 ImageLoader.lazyChildren(elem);
                 Dashboard.hideLoadingMsg();
-
-                libraryBrowser.setLastRefreshed(view);
             });
         }
 
@@ -174,13 +172,12 @@
         };
 
         self.renderTab = function () {
-            var tabContent = self.tabContent;
-            if (libraryBrowser.needsRefresh(tabContent)) {
-                reload();
-            }
+            reload();
         };
 
         var tabControllers = [];
+        var renderedTabs = [];
+
         function loadTab(page, index) {
 
             var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
@@ -227,8 +224,10 @@
                     }
                 }
 
-                controller.renderTab();
-
+                if (renderedTabs.indexOf(index) == -1) {
+                    renderedTabs.push(index);
+                    controller.renderTab();
+                }
             });
         }
 
