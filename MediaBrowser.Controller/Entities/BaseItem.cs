@@ -169,6 +169,9 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public bool IsOffline { get; set; }
 
+        [IgnoreDataMember]
+        public virtual SourceType SourceType { get; set; }
+
         /// <summary>
         /// Returns the folder containing the item.
         /// If the item is a folder, it returns the folder itself
@@ -255,6 +258,11 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
+                if (SourceType == SourceType.Channel)
+                {
+                    return false;
+                }
+
                 var locationType = LocationType;
 
                 return locationType != LocationType.Remote && locationType != LocationType.Virtual;
@@ -301,6 +309,11 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool CanDelete()
         {
+            if (SourceType == SourceType.Channel)
+            {
+                return false;
+            }
+
             var locationType = LocationType;
             return locationType != LocationType.Remote &&
                    locationType != LocationType.Virtual;
@@ -460,6 +473,11 @@ namespace MediaBrowser.Controller.Entities
 
         protected virtual string GetInternalMetadataPath(string basePath)
         {
+            if (SourceType == SourceType.Channel)
+            {
+                return System.IO.Path.Combine(basePath, "channels", ChannelId, Id.ToString("N"));
+            }
+            
             var idString = Id.ToString("N");
 
             basePath = System.IO.Path.Combine(basePath, "library");
@@ -1032,6 +1050,13 @@ namespace MediaBrowser.Controller.Entities
 
         protected virtual string CreateUserDataKey()
         {
+            if (SourceType == SourceType.Channel)
+            {
+                if (!string.IsNullOrWhiteSpace(ExternalId))
+                {
+                    return ExternalId;
+                }
+            }
             return Id.ToString();
         }
 
@@ -1110,6 +1135,11 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool IsSaveLocalMetadataEnabled()
         {
+            if (SourceType == SourceType.Channel)
+            {
+                return false;
+            }
+            
             return ConfigurationManager.Configuration.SaveLocalMeta;
         }
 
@@ -1225,6 +1255,11 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual UnratedItem GetBlockUnratedType()
         {
+            if (SourceType == SourceType.Channel)
+            {
+                return UnratedItem.ChannelContent;
+            }
+
             return UnratedItem.Other;
         }
 
@@ -1268,6 +1303,11 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool IsVisibleStandalone(User user)
         {
+            if (SourceType == SourceType.Channel)
+            {
+                return IsVisibleStandaloneInternal(user, false) && Channel.IsChannelVisible(this, user);
+            }
+
             return IsVisibleStandaloneInternal(user, true);
         }
 
@@ -1319,6 +1359,11 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual string GetClientTypeName()
         {
+            if (IsFolder && SourceType == SourceType.Channel)
+            {
+                return "ChannelFolderItem";
+            }
+
             return GetType().Name;
         }
 

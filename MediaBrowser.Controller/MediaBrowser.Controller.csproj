@@ -75,6 +75,7 @@
     </Compile>
     <Compile Include="Activity\IActivityManager.cs" />
     <Compile Include="Activity\IActivityRepository.cs" />
+    <Compile Include="Channels\ChannelAudioItem.cs" />
     <Compile Include="Channels\ChannelFolderItem.cs" />
     <Compile Include="Channels\ChannelItemInfo.cs" />
     <Compile Include="Channels\ChannelItemResult.cs" />
@@ -82,13 +83,10 @@
     <Compile Include="Channels\ChannelMediaInfo.cs" />
     <Compile Include="Channels\ChannelParentalRating.cs" />
     <Compile Include="Channels\ChannelSearchInfo.cs" />
+    <Compile Include="Channels\ChannelVideoItem.cs" />
     <Compile Include="Channels\IChannel.cs" />
     <Compile Include="Channels\IChannelManager.cs" />
-    <Compile Include="Channels\IChannelItem.cs" />
-    <Compile Include="Channels\ChannelAudioItem.cs" />
-    <Compile Include="Channels\ChannelVideoItem.cs" />
     <Compile Include="Channels\Channel.cs" />
-    <Compile Include="Channels\IChannelMediaItem.cs" />
     <Compile Include="Channels\IHasCacheKey.cs" />
     <Compile Include="Channels\IIndexableChannel.cs" />
     <Compile Include="Channels\InternalAllChannelMediaQuery.cs" />
@@ -128,6 +126,7 @@
     <Compile Include="Drawing\ImageStream.cs" />
     <Compile Include="Dto\DtoOptions.cs" />
     <Compile Include="Dto\IDtoService.cs" />
+    <Compile Include="Entities\Audio\AudioPodcast.cs" />
     <Compile Include="Entities\Audio\IHasAlbumArtist.cs" />
     <Compile Include="Entities\Audio\IHasMusicGenres.cs" />
     <Compile Include="Entities\Book.cs" />
@@ -180,6 +179,7 @@
     <Compile Include="Entities\Photo.cs" />
     <Compile Include="Entities\PhotoAlbum.cs" />
     <Compile Include="Entities\Share.cs" />
+    <Compile Include="Entities\SourceType.cs" />
     <Compile Include="Entities\UserView.cs" />
     <Compile Include="Entities\UserViewBuilder.cs" />
     <Compile Include="FileOrganization\IFileOrganizationService.cs" />
@@ -271,7 +271,6 @@
     <Compile Include="Providers\ArtistInfo.cs" />
     <Compile Include="Providers\BookInfo.cs" />
     <Compile Include="Providers\BoxSetInfo.cs" />
-    <Compile Include="Providers\ChannelItemLookupInfo.cs" />
     <Compile Include="Providers\DirectoryService.cs" />
     <Compile Include="Providers\DynamicImageInfo.cs" />
     <Compile Include="Providers\DynamicImageResponse.cs" />

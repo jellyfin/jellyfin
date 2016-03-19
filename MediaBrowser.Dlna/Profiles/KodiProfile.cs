@@ -101,6 +101,48 @@ namespace MediaBrowser.Dlna.Profiles
 
                 new SubtitleProfile
                 {
+                    Format = "ass",
+                    Method = SubtitleDeliveryMethod.Embed,
+                    DidlMode = "",
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "ssa",
+                    Method = SubtitleDeliveryMethod.Embed,
+                    DidlMode = "",
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "smi",
+                    Method = SubtitleDeliveryMethod.Embed,
+                    DidlMode = "",
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "dvdsub",
+                    Method = SubtitleDeliveryMethod.Embed,
+                    DidlMode = "",
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "pgs",
+                    Method = SubtitleDeliveryMethod.Embed,
+                    DidlMode = "",
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "pgssub",
+                    Method = SubtitleDeliveryMethod.Embed,
+                    DidlMode = "",
+                },
+
+                new SubtitleProfile
+                {
                     Format = "sub",
                     Method = SubtitleDeliveryMethod.Embed,
                     DidlMode = "",

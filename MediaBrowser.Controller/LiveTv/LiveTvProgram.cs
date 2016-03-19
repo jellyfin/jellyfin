@@ -46,6 +46,13 @@ namespace MediaBrowser.Controller.LiveTv
         [IgnoreDataMember]
         public string ServiceName { get; set; }
 
+        [IgnoreDataMember]
+        public override SourceType SourceType
+        {
+            get { return SourceType.LiveTV; }
+            set { }
+        }
+
         /// <summary>
         /// The start date of the program, in UTC.
         /// </summary>

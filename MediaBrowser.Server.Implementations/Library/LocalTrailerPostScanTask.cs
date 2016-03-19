@@ -28,12 +28,16 @@ namespace MediaBrowser.Server.Implementations.Library
                 .Cast<IHasTrailers>()
                 .ToList();
 
-            var channelTrailerResult = await _channelManager.GetAllMediaInternal(new AllChannelMediaQuery
+            var trailerResult = _libraryManager.GetItems(new InternalItemsQuery
             {
-                ExtraTypes = new[] { ExtraType.Trailer }
+                IncludeItemTypes = new[] { typeof(Trailer).Name },
+                ExcludeTrailerTypes = new[]
+                {
+                    TrailerType.LocalTrailer
+                }
 
-            }, CancellationToken.None);
-            var channelTrailers = channelTrailerResult.Items;
+            });
+            var trailers = trailerResult.Items;
 
             var numComplete = 0;
 
@@ -41,7 +45,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await AssignTrailers(item, channelTrailers).ConfigureAwait(false);
+                await AssignTrailers(item, trailers).ConfigureAwait(false);
 
                 numComplete++;
                 double percent = numComplete;

@@ -12,7 +12,7 @@ using System.Threading;
 
 namespace MediaBrowser.Controller.Channels
 {
-    public class ChannelAudioItem : Audio, IChannelMediaItem
+    public class ChannelAudioItem : Audio
     {
         public ChannelMediaContentType ContentType { get; set; }
 

@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Providers.Omdb
 {
     public class OmdbItemProvider : IRemoteMetadataProvider<Series, SeriesInfo>,
-        IRemoteMetadataProvider<Movie, MovieInfo>, IRemoteMetadataProvider<ChannelVideoItem, ChannelItemLookupInfo>, IRemoteMetadataProvider<LiveTvProgram, LiveTvProgramLookupInfo>
+        IRemoteMetadataProvider<Movie, MovieInfo>, IRemoteMetadataProvider<Trailer, TrailerInfo>, IRemoteMetadataProvider<LiveTvProgram, LiveTvProgramLookupInfo>
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
@@ -196,23 +196,13 @@ namespace MediaBrowser.Providers.Omdb
             return list;
         }
 
-        public Task<MetadataResult<ChannelVideoItem>> GetMetadata(ChannelItemLookupInfo info, CancellationToken cancellationToken)
+        public Task<MetadataResult<Trailer>> GetMetadata(TrailerInfo info, CancellationToken cancellationToken)
         {
-            if (info.ContentType != ChannelMediaContentType.MovieExtra || info.ExtraType != ExtraType.Trailer)
-            {
-                return Task.FromResult(new MetadataResult<ChannelVideoItem>());
-            }
-
-            return GetMovieResult<ChannelVideoItem>(info, cancellationToken);
+            return GetMovieResult<Trailer>(info, cancellationToken);
         }
 
-        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ChannelItemLookupInfo searchInfo, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(TrailerInfo searchInfo, CancellationToken cancellationToken)
         {
-            if (searchInfo.ContentType != ChannelMediaContentType.MovieExtra || searchInfo.ExtraType != ExtraType.Trailer)
-            {
-                return Task.FromResult<IEnumerable<RemoteSearchResult>>(new List<RemoteSearchResult>());
-            }
-
             return GetSearchResults(searchInfo, "movie", cancellationToken);
         }
 

@@ -81,23 +81,6 @@ namespace MediaBrowser.Providers.Omdb
                 return false;
             }
 
-            var channelItem = item as IChannelMediaItem;
-
-            if (channelItem != null)
-            {
-                if (channelItem.ContentType == ChannelMediaContentType.Movie)
-                {
-                    return true;
-                }
-                if (channelItem.ContentType == ChannelMediaContentType.MovieExtra)
-                {
-                    if (channelItem.ExtraType == ExtraType.Trailer)
-                    {
-                        return true;
-                    }
-                }
-            }
-
             // Supports images for tv movies
             var tvProgram = item as LiveTvProgram;
             if (tvProgram != null && tvProgram.IsMovie)
@@ -105,7 +88,7 @@ namespace MediaBrowser.Providers.Omdb
                 return true;
             }
 
-            return item is Movie;
+            return item is Movie || item is Trailer;
         }
 
         public int Order

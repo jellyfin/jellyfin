@@ -316,6 +316,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 ServerId = _appHost.SystemId
             };
 
+            if (item.SourceType == SourceType.Channel)
+            {
+                dto.SourceType = item.SourceType.ToString();
+            }
+
             if (fields.Contains(ItemFields.People))
             {
                 AttachPeople(dto, item);
@@ -480,7 +485,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 var folder = (Folder)item;
 
-                if (!(folder is IChannelItem) && !(folder is Channel))
+                if (item.SourceType == SourceType.Library)
                 {
                     dto.ChildCount = GetChildCount(folder, user);
 
@@ -1250,6 +1255,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (audio != null)
             {
                 dto.Album = audio.Album;
+                dto.ExtraType = audio.ExtraType;
 
                 var albumParent = audio.AlbumEntity;
 
@@ -1352,6 +1358,8 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     dto.Chapters = GetChapterInfoDtos(item);
                 }
+
+                dto.ExtraType = video.ExtraType;
             }
 
             if (fields.Contains(ItemFields.MediaStreams))
@@ -1531,16 +1539,13 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             dto.ChannelId = item.ChannelId;
 
-            var channelItem = item as IChannelItem;
-            if (channelItem != null)
+            if (item.SourceType == SourceType.Channel && !string.IsNullOrWhiteSpace(item.ChannelId))
             {
-                dto.ChannelName = _channelManagerFactory().GetChannel(channelItem.ChannelId).Name;
-            }
-
-            var channelMediaItem = item as IChannelMediaItem;
-            if (channelMediaItem != null)
-            {
-                dto.ExtraType = channelMediaItem.ExtraType;
+                var channel = _libraryManager.GetItemById(item.ChannelId);
+                if (channel != null)
+                {
+                    dto.ChannelName = channel.Name;
+                }
             }
         }
 

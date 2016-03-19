@@ -2957,6 +2957,18 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\dist\jquery.slim.min.map">
       <Link>Resources\dashboard-ui\bower_components\jquery\dist\jquery.slim.min.map</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\sizzle\LICENSE.txt">
+      <Link>Resources\dashboard-ui\bower_components\jquery\sizzle\LICENSE.txt</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\sizzle\dist\sizzle.js">
+      <Link>Resources\dashboard-ui\bower_components\jquery\sizzle\dist\sizzle.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\sizzle\dist\sizzle.min.js">
+      <Link>Resources\dashboard-ui\bower_components\jquery\sizzle\dist\sizzle.min.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\sizzle\dist\sizzle.min.map">
+      <Link>Resources\dashboard-ui\bower_components\jquery\sizzle\dist\sizzle.min.map</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\src\.jshintrc">
       <Link>Resources\dashboard-ui\bower_components\jquery\src\.jshintrc</Link>
     </BundleResource>
@@ -8690,6 +8702,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\requirejs\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\requirejs\.bower.json</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\requirejs\LICENSE">
+      <Link>Resources\dashboard-ui\bower_components\requirejs\LICENSE</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\requirejs\README.md">
       <Link>Resources\dashboard-ui\bower_components\requirejs\README.md</Link>
     </BundleResource>
@@ -9811,6 +9826,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\fi.json">
       <Link>Resources\dashboard-ui\strings\fi.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\fr-CA.json">
+      <Link>Resources\dashboard-ui\strings\fr-CA.json</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\fr.json">
       <Link>Resources\dashboard-ui\strings\fr.json</Link>

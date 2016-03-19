@@ -80,7 +80,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     list.Add(folder);
                     continue;
                 }
-                
+
                 if (collectionFolder != null && UserView.IsEligibleForGrouping(folder) && user.IsFolderGrouped(folder.Id))
                 {
                     groupedFolders.Add(collectionFolder);
@@ -272,7 +272,11 @@ namespace MediaBrowser.Server.Implementations.Library
                     .ToArray();
             }
 
-            var excludeItemTypes = includeItemTypes.Length == 0 ? new[] { "ChannelItem", "LiveTvItem", typeof(Person).Name, typeof(Studio).Name, typeof(Year).Name, typeof(GameGenre).Name, typeof(MusicGenre).Name, typeof(Genre).Name } : new string[] { };
+            var excludeItemTypes = includeItemTypes.Length == 0 ? new[]
+            {
+                typeof(Person).Name, typeof(Studio).Name, typeof(Year).Name, typeof(GameGenre).Name, typeof(MusicGenre).Name, typeof(Genre).Name
+
+            } : new string[] { };
 
             return _libraryManager.GetItems(new InternalItemsQuery(user)
             {
@@ -282,7 +286,8 @@ namespace MediaBrowser.Server.Implementations.Library
                 IsFolder = includeItemTypes.Length == 0 ? false : (bool?)null,
                 ExcludeItemTypes = excludeItemTypes,
                 ExcludeLocationTypes = new[] { LocationType.Virtual },
-                Limit = limit * 20
+                Limit = limit * 20,
+                ExcludeSourceTypes = parentIds.Length == 0 ? new[] { SourceType.Channel, SourceType.LiveTV } : new SourceType[] { }
 
             }, parentIds);
         }

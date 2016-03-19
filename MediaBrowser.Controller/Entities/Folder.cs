@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Model.Channels;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -794,8 +795,35 @@ namespace MediaBrowser.Controller.Entities
             return item;
         }
 
-        public virtual Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
+        public virtual async Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
         {
+            if (SourceType == SourceType.Channel)
+            {
+                try
+                {
+                    // Don't blow up here because it could cause parent screens with other content to fail
+                    return await ChannelManager.GetChannelItemsInternal(new ChannelItemQuery
+                    {
+                        ChannelId = ChannelId,
+                        FolderId = Id.ToString("N"),
+                        Limit = query.Limit,
+                        StartIndex = query.StartIndex,
+                        UserId = query.User.Id.ToString("N"),
+                        SortBy = query.SortBy,
+                        SortOrder = query.SortOrder
+
+                    }, new Progress<double>(), CancellationToken.None);
+                }
+                catch
+                {
+                    // Already logged at lower levels
+                    return new QueryResult<BaseItem>
+                    {
+
+                    };
+                }
+            }
+            
             var user = query.User;
 
             Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
@@ -817,7 +845,7 @@ namespace MediaBrowser.Controller.Entities
 
             var result = PostFilterAndSort(items, query);
 
-            return Task.FromResult(result);
+            return result;
         }
 
         protected QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items, InternalItemsQuery query)

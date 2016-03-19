@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Movies
 {
-    public class MovieDbTrailerProvider : IHasOrder, IRemoteMetadataProvider<ChannelVideoItem, ChannelItemLookupInfo>
+    public class MovieDbTrailerProvider : IHasOrder, IRemoteMetadataProvider<Trailer, TrailerInfo>
     {
         private readonly IHttpClient _httpClient;
 
@@ -26,24 +26,9 @@ namespace MediaBrowser.Providers.Movies
             return MovieDbProvider.Current.GetMovieSearchResults(searchInfo, cancellationToken);
         }
 
-        public Task<MetadataResult<ChannelVideoItem>> GetMetadata(ChannelItemLookupInfo info, CancellationToken cancellationToken)
+        public Task<MetadataResult<Trailer>> GetMetadata(TrailerInfo info, CancellationToken cancellationToken)
         {
-            if (info.ContentType != ChannelMediaContentType.MovieExtra || info.ExtraType != ExtraType.Trailer)
-            {
-                return Task.FromResult(new MetadataResult<ChannelVideoItem>());
-            }
-
-            return MovieDbProvider.Current.GetItemMetadata<ChannelVideoItem>(info, cancellationToken);
-        }
-
-        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ChannelItemLookupInfo info, CancellationToken cancellationToken)
-        {
-            if (info.ContentType != ChannelMediaContentType.MovieExtra || info.ExtraType != ExtraType.Trailer)
-            {
-                return Task.FromResult<IEnumerable<RemoteSearchResult>>(new List<RemoteSearchResult>());
-            }
-
-            return MovieDbProvider.Current.GetMovieSearchResults(info, cancellationToken);
+            return MovieDbProvider.Current.GetItemMetadata<Trailer>(info, cancellationToken);
         }
 
         public string Name

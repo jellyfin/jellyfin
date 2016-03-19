@@ -115,6 +115,10 @@ namespace MediaBrowser.Controller.Entities
 
         public LocationType[] ExcludeLocationTypes { get; set; }
         public string[] PresetViews { get; set; }
+        public SourceType[] SourceTypes { get; set; }
+        public SourceType[] ExcludeSourceTypes { get; set; }
+        public TrailerType[] TrailerTypes { get; set; }
+        public TrailerType[] ExcludeTrailerTypes { get; set; }
 
         public InternalItemsQuery()
         {
@@ -141,6 +145,10 @@ namespace MediaBrowser.Controller.Entities
             ExcludeTags = new string[] { };
             ExcludeLocationTypes = new LocationType[] { };
             PresetViews = new string[] { };
+            SourceTypes = new SourceType[] { };
+            ExcludeSourceTypes = new SourceType[] { };
+            TrailerTypes = new TrailerType[] { };
+            ExcludeTrailerTypes = new TrailerType[] { };
         }
 
         public InternalItemsQuery(User user)

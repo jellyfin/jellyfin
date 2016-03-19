@@ -289,7 +289,6 @@ namespace MediaBrowser.Api.Library
         private readonly IActivityManager _activityManager;
         private readonly ILocalizationManager _localization;
         private readonly ILiveTvManager _liveTv;
-        private readonly IChannelManager _channelManager;
         private readonly ITVSeriesManager _tvManager;
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly IFileSystem _fileSystem;
@@ -298,7 +297,7 @@ namespace MediaBrowser.Api.Library
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         public LibraryService(IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager,
-                              IDtoService dtoService, IUserDataManager userDataManager, IAuthorizationContext authContext, IActivityManager activityManager, ILocalizationManager localization, ILiveTvManager liveTv, IChannelManager channelManager, ITVSeriesManager tvManager, ILibraryMonitor libraryMonitor, IFileSystem fileSystem)
+                              IDtoService dtoService, IUserDataManager userDataManager, IAuthorizationContext authContext, IActivityManager activityManager, ILocalizationManager localization, ILiveTvManager liveTv, ITVSeriesManager tvManager, ILibraryMonitor libraryMonitor, IFileSystem fileSystem)
         {
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
@@ -309,7 +308,6 @@ namespace MediaBrowser.Api.Library
             _activityManager = activityManager;
             _localization = localization;
             _liveTv = liveTv;
-            _channelManager = channelManager;
             _tvManager = tvManager;
             _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
@@ -379,11 +377,10 @@ namespace MediaBrowser.Api.Library
             }
 
             var program = item as IHasProgramAttributes;
-            var channelItem = item as ChannelVideoItem;
 
-            if (item is Movie || (program != null && program.IsMovie) || (channelItem != null && channelItem.ContentType == ChannelMediaContentType.Movie) || (channelItem != null && channelItem.ContentType == ChannelMediaContentType.MovieExtra))
+            if (item is Movie || (program != null && program.IsMovie) || item is Trailer)
             {
-                return new MoviesService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService, _channelManager)
+                return new MoviesService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService)
                 {
                     AuthorizationContext = AuthorizationContext,
                     Logger = Logger,
@@ -400,7 +397,7 @@ namespace MediaBrowser.Api.Library
                 });
             }
 
-            if (item is Series || (program != null && program.IsSeries) || (channelItem != null && channelItem.ContentType == ChannelMediaContentType.Episode))
+            if (item is Series || (program != null && program.IsSeries) )
             {
                 return new TvShowsService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService, _tvManager)
                 {
