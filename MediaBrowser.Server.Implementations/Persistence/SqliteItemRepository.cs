@@ -223,6 +223,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "UnratedType", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "TopParentId", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "IsItemByName", "BIT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "SourceType", "Text");
 
             PrepareStatements();
 
@@ -353,7 +354,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "DateLastSaved",
             "LockedFields",
             "Studios",
-            "Tags"
+            "Tags",
+            "SourceType"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -453,7 +455,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "IsFolder",
                 "UnratedType",
                 "TopParentId",
-                "IsItemByName"
+                "IsItemByName",
+                "SourceType"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -747,6 +750,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     }
                     _saveItemCommand.GetParameter(index++).Value = isByName;
 
+                    _saveItemCommand.GetParameter(index++).Value = item.SourceType.ToString();
+                    
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();
@@ -1107,6 +1112,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!reader.IsDBNull(48))
             {
                 item.Tags = reader.GetString(48).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+            }
+
+            if (!reader.IsDBNull(49))
+            {
+                item.SourceType = (SourceType)Enum.Parse(typeof(SourceType), reader.GetString(49), true);
             }
 
             return item;
@@ -1871,6 +1881,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 cmd.Parameters.Add(cmd, "@MaxStartDate", DbType.Date).Value = query.MaxStartDate.Value;
             }
 
+            if (query.SourceTypes.Length == 1)
+            {
+                whereClauses.Add("SourceType=@SourceType");
+                cmd.Parameters.Add(cmd, "@SourceType", DbType.String).Value = query.SourceTypes[0];
+            }
+            else if (query.SourceTypes.Length > 1)
+            {
+                var inClause = string.Join(",", query.SourceTypes.Select(i => "'" + i + "'").ToArray());
+                whereClauses.Add(string.Format("SourceType in ({0})", inClause));
+            }
+            
             if (query.IsAiring.HasValue)
             {
                 if (query.IsAiring.Value)
@@ -2152,8 +2173,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 dict[t.Name] = new[] { t.FullName };
             }
 
-            dict["ChannelItem"] = new[] { typeof(ChannelVideoItem).FullName, typeof(ChannelAudioItem).FullName, typeof(ChannelFolderItem).FullName };
-            dict["LiveTvItem"] = new[] { typeof(LiveTvAudioRecording).FullName, typeof(LiveTvVideoRecording).FullName, typeof(LiveTvChannel).FullName, typeof(LiveTvProgram).FullName };
             dict["Recording"] = new[] { typeof(LiveTvAudioRecording).FullName, typeof(LiveTvVideoRecording).FullName };
             dict["Program"] = new[] { typeof(LiveTvProgram).FullName };
             dict["TvChannel"] = new[] { typeof(LiveTvChannel).FullName };

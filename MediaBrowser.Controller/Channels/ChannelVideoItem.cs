@@ -48,6 +48,13 @@ namespace MediaBrowser.Controller.Channels
         }
 
         [IgnoreDataMember]
+        public override SourceType SourceType
+        {
+            get { return SourceType.Channel; }
+            set { }
+        }
+
+        [IgnoreDataMember]
         public override bool SupportsLocalMetadata
         {
             get
