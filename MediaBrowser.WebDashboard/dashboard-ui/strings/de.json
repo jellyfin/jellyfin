@@ -40,9 +40,9 @@
     "ButtonPrivacyPolicy": "Datenschutzbestimmungen",
     "ButtonTermsOfService": "Nutzungsbedingungen",
     "HeaderDeveloperOptions": "Entwickleroptionen",
-    "OptionEnableWebClientResponseCache": "Aktiviere das zwischenspeichern von Antworten des Web Clients",
+    "OptionEnableWebClientResponseCache": "Aktiviere das Zwischenspeichern von Web-Antworten",
     "OptionDisableForDevelopmentHelp": "Konfiguriere diese Einstellungen f\u00fcr die ben\u00f6tigten Entwicklungszwecke des Web Clients.",
-    "OptionEnableWebClientResourceMinification": "Aktiviere die Ressourcenminimierung des Web Clients",
+    "OptionEnableWebClientResourceMinification": "Aktiviere Web-Ressourcenminimierung",
     "LabelDashboardSourcePath": "Web Client Quellverzeichnis:",
     "LabelDashboardSourcePathHelp": "Wenn der Server vom Quellverzeichnis aus ausgef\u00fchrt wird, gib den Pfad zur Dashboard Oberfl\u00e4che an. Alle Web-Client-Dateien werden von diesem Pfad aus bedient werden.",
     "ButtonConvertMedia": "Konvertiere Medien",
@@ -1563,7 +1563,7 @@
     "LabelFromHelp": "Beispiel: {0} (auf dem Server)",
     "HeaderMyMedia": "Meine Medien",
     "ButtonRemoveFromCollection": "Aus Sammlung entfernen",
-    "LabelAutomaticUpdateLevel": "Automatisches Update Level",
+    "LabelAutomaticUpdateLevel": "Automatisches Update Level:",
     "LabelAutomaticUpdateLevelForPlugins": "Automatische Updates f\u00fcr Plugins:",
     "ErrorLaunchingChromecast": "W\u00e4hrend des startens von Chromecast ist ein Fehler aufgetreten. Bitte stelle sicher, dass dein Ger\u00e4te mit dem WLAN verbunden ist.",
     "MessageErrorLoadingSupporterInfo": "Es gab einen Fehler beim Verarbeiten von Daten f\u00fcr Emby Premium. Bitte versuche es sp\u00e4ter erneut.",
@@ -2322,6 +2322,6 @@
     "LabelFileOrUrl": "Datei oder URL:",
     "OptionEnableForAllTuners": "Aktiviere f\u00fcr alle Tuner",
     "HeaderTuners": "Tuner",
-    "LabelOptionalM3uUrl": "M3U url (optional):",
-    "LabelOptionalM3uUrlHelp": "Some devices support an M3U channel listing."
+    "LabelOptionalM3uUrl": "M3U URL (optional):",
+    "LabelOptionalM3uUrlHelp": "Einige Ger\u00e4te unterst\u00fctzen eine M3U Kanalanzeige."
 }

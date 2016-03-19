@@ -2322,6 +2322,6 @@
     "LabelFileOrUrl": "Arquivo ou url:",
     "OptionEnableForAllTuners": "Ativar para todos os sintonizadores",
     "HeaderTuners": "Sintonizadores",
-    "LabelOptionalM3uUrl": "M3U url (optional):",
-    "LabelOptionalM3uUrlHelp": "Some devices support an M3U channel listing."
+    "LabelOptionalM3uUrl": "Url M3U (opcional):",
+    "LabelOptionalM3uUrlHelp": "Alguns dispositivos suportam uma lista de canais M3U."
 }
