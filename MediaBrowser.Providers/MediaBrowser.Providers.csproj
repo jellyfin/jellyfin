@@ -90,7 +90,6 @@
     <Compile Include="Chapters\ChapterManager.cs" />
     <Compile Include="Folders\DefaultImageProvider.cs" />
     <Compile Include="Folders\FolderMetadataService.cs" />
-    <Compile Include="Channels\AudioChannelItemMetadataService.cs" />
     <Compile Include="Folders\UserViewMetadataService.cs" />
     <Compile Include="GameGenres\GameGenreMetadataService.cs" />
     <Compile Include="Channels\VideoChannelItemMetadataService.cs" />

@@ -83,5 +83,12 @@ namespace MediaBrowser.Controller.Channels
         {
             return false;
         }
+
+        internal static bool IsChannelVisible(BaseItem channelItem, User user)
+        {
+            var channel = ChannelManager.GetChannel(channelItem.ChannelId);
+
+            return channel.IsVisible(user);
+        }
     }
 }

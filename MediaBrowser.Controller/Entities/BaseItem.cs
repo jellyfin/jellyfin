@@ -1305,7 +1305,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (SourceType == SourceType.Channel)
             {
-                return IsVisibleStandaloneInternal(user, false) && ChannelVideoItem.IsChannelVisible(this, user);
+                return IsVisibleStandaloneInternal(user, false) && Channel.IsChannelVisible(this, user);
             }
 
             return IsVisibleStandaloneInternal(user, true);

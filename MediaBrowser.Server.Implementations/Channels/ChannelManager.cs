@@ -257,10 +257,10 @@ namespace MediaBrowser.Server.Implementations.Channels
             {
                 results = video.ChannelMediaSources;
             }
-            var audio = item as ChannelAudioItem;
+            var audio = item as Audio;
             if (audio != null)
             {
-                results = audio.ChannelMediaSources;
+                results = audio.ChannelMediaSources ?? new List<ChannelMediaInfo>();
             }
 
             var sources = SortMediaInfoResults(results)
@@ -1259,7 +1259,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
             else if (info.MediaType == ChannelMediaType.Audio)
             {
-                item = GetItemById<ChannelAudioItem>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                item = GetItemById<Audio>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
             }
             else
             {
@@ -1299,10 +1299,9 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
             item.ExternalId = info.Id;
 
-            var channelAudioItem = item as ChannelAudioItem;
+            var channelAudioItem = item as Audio;
             if (channelAudioItem != null)
             {
-                channelAudioItem.ContentType = info.ContentType;
                 channelAudioItem.ExtraType = info.ExtraType;
                 channelAudioItem.ChannelMediaSources = info.MediaSources;
 

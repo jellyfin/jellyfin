@@ -83,7 +83,6 @@
     <Compile Include="Channels\ChannelSearchInfo.cs" />
     <Compile Include="Channels\IChannel.cs" />
     <Compile Include="Channels\IChannelManager.cs" />
-    <Compile Include="Channels\ChannelAudioItem.cs" />
     <Compile Include="Channels\ChannelVideoItem.cs" />
     <Compile Include="Channels\Channel.cs" />
     <Compile Include="Channels\IHasCacheKey.cs" />
