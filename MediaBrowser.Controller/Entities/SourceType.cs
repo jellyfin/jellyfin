@@ -3,8 +3,8 @@ namespace MediaBrowser.Controller.Entities
 {
     public enum SourceType
     {
-        Library = 1,
-        Channel = 2,
-        LiveTV = 3
+        Library = 0,
+        Channel = 1,
+        LiveTV = 2
     }
 }
