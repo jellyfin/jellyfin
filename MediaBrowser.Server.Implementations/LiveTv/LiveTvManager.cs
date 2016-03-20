@@ -135,11 +135,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
 
-            var channels = _libraryManager.GetItems(new InternalItemsQuery
+            var channels = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(LiveTvChannel).Name }
 
-            }).Items.Cast<LiveTvChannel>();
+            }).Cast<LiveTvChannel>();
 
             if (user != null)
             {
@@ -1430,7 +1430,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 internalQuery.ChannelIds = new[] { query.ChannelId };
             }
 
-            var queryResult = _libraryManager.GetItems(internalQuery, new string[] { });
+            var queryResult = _libraryManager.GetItemList(internalQuery, new string[] { });
             IEnumerable<ILiveTvRecording> recordings = queryResult.Cast<ILiveTvRecording>();
 
             if (!string.IsNullOrWhiteSpace(query.Id))
@@ -1865,7 +1865,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var now = DateTime.UtcNow;
 
-            var programs = _libraryManager.GetItems(new InternalItemsQuery(user)
+            var programs = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
                 ChannelIds = new[] { id },
@@ -1889,7 +1889,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var now = DateTime.UtcNow;
 
-            var programs = _libraryManager.GetItems(new InternalItemsQuery(user)
+            var programs = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
                 ChannelIds = new[] { channel.Id.ToString("N") },

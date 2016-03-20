@@ -83,6 +83,7 @@ namespace MediaBrowser.Controller.Entities
         public string[] OfficialRatings { get; set; }
 
         public DateTime? MinPremiereDate { get; set; }
+        public DateTime? MaxPremiereDate { get; set; }
         public DateTime? MinStartDate { get; set; }
         public DateTime? MaxStartDate { get; set; }
         public DateTime? MinEndDate { get; set; }

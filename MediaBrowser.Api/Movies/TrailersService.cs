@@ -12,6 +12,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Collections;
+using MediaBrowser.Controller.Localization;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Api.Movies
 {
@@ -41,77 +44,37 @@ namespace MediaBrowser.Api.Movies
         private readonly ILibraryManager _libraryManager;
 
         private readonly IDtoService _dtoService;
-        private readonly IChannelManager _channelManager;
+        private readonly ICollectionManager _collectionManager;
+        private readonly ILocalizationManager _localizationManager;
+        private readonly IJsonSerializer _json;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TrailersService"/> class.
-        /// </summary>
-        /// <param name="userManager">The user manager.</param>
-        /// <param name="userDataRepository">The user data repository.</param>
-        /// <param name="libraryManager">The library manager.</param>
-        public TrailersService(IUserManager userManager, IUserDataManager userDataRepository, ILibraryManager libraryManager, IDtoService dtoService, IChannelManager channelManager)
+        public TrailersService(IUserManager userManager, IUserDataManager userDataRepository, ILibraryManager libraryManager, IDtoService dtoService, ICollectionManager collectionManager, ILocalizationManager localizationManager, IJsonSerializer json)
         {
             _userManager = userManager;
             _userDataRepository = userDataRepository;
             _libraryManager = libraryManager;
             _dtoService = dtoService;
-            _channelManager = channelManager;
+            _collectionManager = collectionManager;
+            _localizationManager = localizationManager;
+            _json = json;
         }
 
-        public async Task<object> Get(Getrailers request)
+        public object Get(Getrailers request)
         {
-            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
-            var result = await GetAllTrailers(user).ConfigureAwait(false);
+            var json = _json.SerializeToString(request);
+            var getItems = _json.DeserializeFromString<GetItems>(json);
 
-            IEnumerable<BaseItem> items = result.Items;
+            getItems.IncludeItemTypes = "Trailer";
 
-            // Apply filters
-            // Run them starting with the ones that are likely to reduce the list the most
-            foreach (var filter in request.GetFilters().OrderByDescending(f => (int)f))
+            return new ItemsService(_userManager, _libraryManager, _userDataRepository, _localizationManager, _dtoService, _collectionManager)
             {
-                items = ItemsService.ApplyFilter(items, filter, user, _userDataRepository);
-            }
+                AuthorizationContext = AuthorizationContext,
+                Logger = Logger,
+                Request = Request,
+                ResultFactory = ResultFactory,
+                SessionContext = SessionContext
 
-            items = _libraryManager.Sort(items, user, request.GetOrderBy(), request.SortOrder ?? SortOrder.Ascending);
-
-            var itemsArray = items.ToList();
-
-            var pagedItems = ApplyPaging(request, itemsArray);
-
-            var dtoOptions = GetDtoOptions(request);
-
-            var returnItems = _dtoService.GetBaseItemDtos(pagedItems, dtoOptions, user).ToArray();
-
-            return new ItemsResult
-            {
-                TotalRecordCount = itemsArray.Count,
-                Items = returnItems
-            };
-        }
-
-        private IEnumerable<BaseItem> ApplyPaging(Getrailers request, IEnumerable<BaseItem> items)
-        {
-            // Start at
-            if (request.StartIndex.HasValue)
-            {
-                items = items.Skip(request.StartIndex.Value);
-            }
-
-            // Return limit
-            if (request.Limit.HasValue)
-            {
-                items = items.Take(request.Limit.Value);
-            }
-
-            return items;
-        }
-
-        private async Task<QueryResult<BaseItem>> GetAllTrailers(User user)
-        {
-            return _libraryManager.GetItems(new InternalItemsQuery(user)
-            {
-                IncludeItemTypes = new[] {typeof (Trailer).Name}
-            });
+            }.Get(getItems);
         }
     }
 }

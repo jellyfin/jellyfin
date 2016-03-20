@@ -278,7 +278,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             } : new string[] { };
 
-            return _libraryManager.GetItems(new InternalItemsQuery(user)
+            return _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = includeItemTypes,
                 SortOrder = SortOrder.Descending,

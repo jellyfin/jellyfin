@@ -19,6 +19,7 @@ using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Server.Implementations.Persistence
@@ -729,10 +730,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     var topParent = item.GetTopParent();
                     if (topParent != null)
                     {
+                        //Logger.Debug("Item {0} has top parent {1}", item.Id, topParent.Id);
                         _saveItemCommand.GetParameter(index++).Value = topParent.Id.ToString("N");
                     }
                     else
                     {
+                        //Logger.Debug("Item {0} has null top parent", item.Id);
                         _saveItemCommand.GetParameter(index++).Value = null;
                     }
 
@@ -1583,10 +1586,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private string MapOrderByField(string name)
         {
-            if (string.Equals(name, "airtime", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(name, ItemSortBy.AirTime, StringComparison.OrdinalIgnoreCase))
             {
                 // TODO
                 return "SortName";
+            }
+            if (string.Equals(name, ItemSortBy.Runtime, StringComparison.OrdinalIgnoreCase))
+            {
+                return "RuntimeTicks";
+            }
+            if (string.Equals(name, ItemSortBy.Random, StringComparison.OrdinalIgnoreCase))
+            {
+                return "RANDOM()";
             }
 
             return name;
@@ -1783,6 +1794,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
                 cmd.Parameters.Add(cmd, "@SchemaVersion", DbType.Int32).Value = LatestSchemaVersion;
             }
+            if (query.IsHD.HasValue)
+            {
+                whereClauses.Add("IsHD=@IsHD");
+                cmd.Parameters.Add(cmd, "@IsHD", DbType.Boolean).Value = query.IsHD;
+            }
+            if (query.IsLocked.HasValue)
+            {
+                whereClauses.Add("IsLocked=@IsLocked");
+                cmd.Parameters.Add(cmd, "@IsLocked", DbType.Boolean).Value = query.IsLocked;
+            }
             if (query.IsOffline.HasValue)
             {
                 whereClauses.Add("IsOffline=@IsOffline");
@@ -1861,6 +1882,30 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 cmd.Parameters.Add(cmd, "@Path", DbType.String).Value = query.Path;
             }
 
+            if (query.MinCommunityRating.HasValue)
+            {
+                whereClauses.Add("CommunityRating>=@MinCommunityRating");
+                cmd.Parameters.Add(cmd, "@MinCommunityRating", DbType.Double).Value = query.MinCommunityRating.Value;
+            }
+
+            if (query.MinIndexNumber.HasValue)
+            {
+                whereClauses.Add("IndexNumber>=@MinIndexNumber");
+                cmd.Parameters.Add(cmd, "@MinIndexNumber", DbType.Int32).Value = query.MinIndexNumber.Value;
+            }
+
+            //if (query.MinPlayers.HasValue)
+            //{
+            //    whereClauses.Add("Players>=@MinPlayers");
+            //    cmd.Parameters.Add(cmd, "@MinPlayers", DbType.Int32).Value = query.MinPlayers.Value;
+            //}
+
+            //if (query.MaxPlayers.HasValue)
+            //{
+            //    whereClauses.Add("Players<=@MaxPlayers");
+            //    cmd.Parameters.Add(cmd, "@MaxPlayers", DbType.Int32).Value = query.MaxPlayers.Value;
+            //}
+
             if (query.MinEndDate.HasValue)
             {
                 whereClauses.Add("EndDate>=@MinEndDate");
@@ -1879,16 +1924,21 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 cmd.Parameters.Add(cmd, "@MinStartDate", DbType.Date).Value = query.MinStartDate.Value;
             }
 
+            if (query.MaxStartDate.HasValue)
+            {
+                whereClauses.Add("StartDate<=@MaxStartDate");
+                cmd.Parameters.Add(cmd, "@MaxStartDate", DbType.Date).Value = query.MaxStartDate.Value;
+            }
+
             if (query.MinPremiereDate.HasValue)
             {
                 whereClauses.Add("PremiereDate>=@MinPremiereDate");
                 cmd.Parameters.Add(cmd, "@MinPremiereDate", DbType.Date).Value = query.MinPremiereDate.Value;
             }
-
-            if (query.MaxStartDate.HasValue)
+            if (query.MaxPremiereDate.HasValue)
             {
-                whereClauses.Add("StartDate<=@MaxStartDate");
-                cmd.Parameters.Add(cmd, "@MaxStartDate", DbType.Date).Value = query.MaxStartDate.Value;
+                whereClauses.Add("PremiereDate<=@MaxPremiereDate");
+                cmd.Parameters.Add(cmd, "@MaxPremiereDate", DbType.Date).Value = query.MaxPremiereDate.Value;
             }
 
             if (query.SourceTypes.Length == 1)
@@ -1972,16 +2022,44 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (query.Genres.Length > 0)
             {
-                var genres = new List<string>();
+                var clauses = new List<string>();
                 var index = 0;
-                foreach (var genre in query.Genres)
+                foreach (var item in query.Genres)
                 {
-                    genres.Add("Genres like @Genres" + index);
-                    cmd.Parameters.Add(cmd, "@Genres" + index, DbType.String).Value = "%" + genre + "%";
+                    clauses.Add("Genres like @Genres" + index);
+                    cmd.Parameters.Add(cmd, "@Genres" + index, DbType.String).Value = "%" + item + "%";
                     index++;
                 }
-                var genreCaluse = "(" + string.Join(" OR ", genres.ToArray()) + ")";
-                whereClauses.Add(genreCaluse);
+                var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
+                whereClauses.Add(clause);
+            }
+
+            if (query.Tags.Length > 0)
+            {
+                var clauses = new List<string>();
+                var index = 0;
+                foreach (var item in query.Tags)
+                {
+                    clauses.Add("Tags like @Tags" + index);
+                    cmd.Parameters.Add(cmd, "@Tags" + index, DbType.String).Value = "%" + item + "%";
+                    index++;
+                }
+                var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
+                whereClauses.Add(clause);
+            }
+
+            if (query.Studios.Length > 0)
+            {
+                var clauses = new List<string>();
+                var index = 0;
+                foreach (var item in query.Studios)
+                {
+                    clauses.Add("Studios like @Studios" + index);
+                    cmd.Parameters.Add(cmd, "@Studios" + index, DbType.String).Value = "%" + item + "%";
+                    index++;
+                }
+                var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
+                whereClauses.Add(clause);
             }
 
             if (query.MaxParentalRating.HasValue)
@@ -2019,6 +2097,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var val = string.Join(",", query.ExcludeLocationTypes.Select(i => "'" + i + "'").ToArray());
 
                 whereClauses.Add("LocationType not in (" + val + ")");
+            }
+            if (query.MediaTypes.Length == 1)
+            {
+                whereClauses.Add("MediaType=@MediaTypes");
+                cmd.Parameters.Add(cmd, "@MediaTypes", DbType.String).Value = query.MediaTypes[0].ToString();
+            }
+            if (query.MediaTypes.Length > 1)
+            {
+                var val = string.Join(",", query.MediaTypes.Select(i => "'" + i + "'").ToArray());
+
+                whereClauses.Add("MediaType in (" + val + ")");
             }
 
             var enableItemsByName = query.IncludeItemsByName ?? query.IncludeItemTypes.Length > 0;
@@ -2113,6 +2202,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             typeof(MusicGenre),
             typeof(MusicVideo),
             typeof(Movie),
+            typeof(Playlist),
+            typeof(AudioPodcast),
             typeof(Trailer),
             typeof(BoxSet),
             typeof(Episode),

@@ -282,7 +282,7 @@ namespace MediaBrowser.WebDashboard.Api
                     {
                         var lang = localizationCulture.Split('-').FirstOrDefault();
 
-                        html = html.Replace("<html>", "<html data-culture=\"" + localizationCulture + "\" lang=\"" + lang + "\">");
+                        html = html.Replace("<html", "<html data-culture=\"" + localizationCulture + "\" lang=\"" + lang + "\"");
                     }
 
                     if (enableMinification)
