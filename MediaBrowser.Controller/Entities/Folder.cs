@@ -148,7 +148,7 @@ namespace MediaBrowser.Controller.Entities
                 item.DateModified = DateTime.UtcNow;
             }
 
-            AddChildInternal(item);
+            AddChildInternal(item.Id);
 
             await LibraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
 
@@ -163,45 +163,33 @@ namespace MediaBrowser.Controller.Entities
             return ConfigurationManager.Configuration.MigrationVersion >= 1;
         }
 
-        protected void AddChildrenInternal(IEnumerable<BaseItem> children)
+        protected void AddChildrenInternal(List<Guid> children)
         {
-            var actualChildren = ActualChildren;
-
             lock (_childrenSyncLock)
             {
-                var newChildren = actualChildren.ToList();
+                var newChildren = _children.ToList();
                 newChildren.AddRange(children);
-                _children = newChildren;
+                _children = newChildren.ToList();
             }
         }
-        protected void AddChildInternal(BaseItem child)
-        {
-            var actualChildren = ActualChildren;
-
-            lock (_childrenSyncLock)
-            {
-                var newChildren = actualChildren.ToList();
-                newChildren.Add(child);
-                _children = newChildren;
-            }
-        }
-
-        protected void RemoveChildrenInternal(IEnumerable<BaseItem> children)
-        {
-            var ids = children.Select(i => i.Id).ToList();
-            var actualChildren = ActualChildren;
-
-            lock (_childrenSyncLock)
-            {
-                _children = actualChildren.Where(i => !ids.Contains(i.Id)).ToList();
-            }
-        }
-
-        protected void ClearChildrenInternal()
+        protected void AddChildInternal(Guid child)
         {
             lock (_childrenSyncLock)
             {
-                _children = new List<BaseItem>();
+                if (!_children.Contains(child))
+                {
+                    var newChildren = _children.ToList();
+                    newChildren.Add(child);
+                    _children = newChildren.ToList();
+                }
+            }
+        }
+
+        protected void RemoveChildrenInternal(List<Guid> children)
+        {
+            lock (_childrenSyncLock)
+            {
+                _children = _children.Except(children).ToList();
             }
         }
 
@@ -214,7 +202,7 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="System.InvalidOperationException">Unable to remove  + item.Name</exception>
         public Task RemoveChild(BaseItem item, CancellationToken cancellationToken)
         {
-            RemoveChildrenInternal(new[] { item });
+            RemoveChildrenInternal(new[] { item.Id }.ToList());
 
             item.SetParent(null);
 
@@ -224,25 +212,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return Task.FromResult(true);
-        }
-
-        /// <summary>
-        /// Clears the children.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public Task ClearChildren(CancellationToken cancellationToken)
-        {
-            var items = ActualChildren.ToList();
-
-            ClearChildrenInternal();
-
-            foreach (var item in items)
-            {
-                LibraryManager.ReportItemRemoved(item);
-            }
-
-            return ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken);
         }
 
         #region Indexing
@@ -279,7 +248,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The children
         /// </summary>
-        private IReadOnlyList<BaseItem> _children;
+        private IReadOnlyList<Guid> _children;
         /// <summary>
         /// The _children sync lock
         /// </summary>
@@ -292,17 +261,14 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (_children == null)
+                lock (_childrenSyncLock)
                 {
-                    lock (_childrenSyncLock)
+                    if (_children == null)
                     {
-                        if (_children == null)
-                        {
-                            _children = LoadChildren().ToList();
-                        }
+                        _children = LoadChildren().ToList();
                     }
+                    return _children.Select(LibraryManager.GetItemById).Where(i => i != null);
                 }
-                return _children;
             }
         }
 
@@ -356,7 +322,7 @@ namespace MediaBrowser.Controller.Entities
         /// Loads our children.  Validation will occur externally.
         /// We want this sychronous.
         /// </summary>
-        protected virtual IEnumerable<BaseItem> LoadChildren()
+        protected virtual IEnumerable<Guid> LoadChildren()
         {
             //just load our children from the repo - the library will be validated and maintained in other processes
             return GetCachedChildren();
@@ -506,7 +472,7 @@ namespace MediaBrowser.Controller.Entities
 
                     if (actualRemovals.Count > 0)
                     {
-                        RemoveChildrenInternal(actualRemovals);
+                        RemoveChildrenInternal(actualRemovals.Select(i => i.Id).ToList());
 
                         foreach (var item in actualRemovals)
                         {
@@ -521,7 +487,7 @@ namespace MediaBrowser.Controller.Entities
 
                     await LibraryManager.CreateItems(newItems, cancellationToken).ConfigureAwait(false);
 
-                    AddChildrenInternal(newItems);
+                    AddChildrenInternal(newItems.Select(i => i.Id).ToList());
 
                     if (!EnableNewFolderQuerying())
                     {
@@ -754,18 +720,18 @@ namespace MediaBrowser.Controller.Entities
         /// Get our children from the repo - stubbed for now
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        protected IEnumerable<BaseItem> GetCachedChildren()
+        protected IEnumerable<Guid> GetCachedChildren()
         {
             if (EnableNewFolderQuerying())
             {
-                return ItemRepository.GetItemList(new InternalItemsQuery
+                return ItemRepository.GetItemIdsList(new InternalItemsQuery
                 {
                     ParentId = Id
 
-                }).Select(RetrieveChild).Where(i => i != null);
+                });
             }
 
-            return ItemRepository.GetChildrenItems(Id).Select(RetrieveChild).Where(i => i != null);
+            return ItemRepository.GetChildrenItems(Id).Select(RetrieveChild).Where(i => i != null).Select(i => i.Id);
         }
 
         private BaseItem RetrieveChild(BaseItem child)
