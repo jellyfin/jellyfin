@@ -1709,6 +1709,49 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
+            if (query.ParentIndexNumber.HasValue)
+            {
+                var filterValue = query.ParentIndexNumber.Value;
+
+                if (item.ParentIndexNumber.HasValue && item.ParentIndexNumber.Value != filterValue)
+                {
+                    return false;
+                }
+            }
+
+            if (query.AirDays.Length > 0)
+            {
+                var ok = new[] { item }.OfType<Series>().Any(p => p.AirDays != null && query.AirDays.Any(d => p.AirDays.Contains(d)));
+                if (!ok)
+                {
+                    return false;
+                }
+            }
+
+            if (query.SeriesStatuses.Length > 0)
+            {
+                var ok = new[] { item }.OfType<Series>().Any(p => p.Status.HasValue && query.SeriesStatuses.Contains(p.Status.Value)); 
+                if (!ok)
+                {
+                    return false;
+                }
+            }
+
+            if (query.AiredDuringSeason.HasValue)
+            {
+                var episode = item as Episode;
+
+                if (episode == null)
+                {
+                    return false;
+                }
+
+                if (!Series.FilterEpisodesBySeason(new[] { episode }, query.AiredDuringSeason.Value, true).Any())
+                {
+                    return false;
+                }
+            }
+
             return true;
         }
 

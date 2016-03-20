@@ -1094,13 +1094,6 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            // Apply year filter
-            if (query.Years.Length > 0)
-            {
-                Logger.Debug("Query requires post-filtering due to Years");
-                return true;
-            }
-
             // Apply official rating filter
             if (query.OfficialRatings.Length > 0)
             {
@@ -1127,21 +1120,9 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (query.MinCommunityRating.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to MinCommunityRating");
-                return true;
-            }
-
             if (query.MinIndexNumber.HasValue)
             {
                 Logger.Debug("Query requires post-filtering due to MinIndexNumber");
-                return true;
-            }
-
-            if (query.Years.Length > 0)
-            {
-                Logger.Debug("Query requires post-filtering due to Years");
                 return true;
             }
 
@@ -1202,6 +1183,24 @@ namespace MediaBrowser.Controller.Entities
             if (!string.IsNullOrWhiteSpace(query.NameStartsWithOrGreater))
             {
                 Logger.Debug("Query requires post-filtering due to NameStartsWithOrGreater");
+                return true;
+            }
+
+            if (query.AirDays.Length > 0)
+            {
+                Logger.Debug("Query requires post-filtering due to AirDays");
+                return true;
+            }
+
+            if (query.SeriesStatuses.Length > 0)
+            {
+                Logger.Debug("Query requires post-filtering due to SeriesStatuses");
+                return true;
+            }
+
+            if (query.AiredDuringSeason.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to AiredDuringSeason");
                 return true;
             }
 
