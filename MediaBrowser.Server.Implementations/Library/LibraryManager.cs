@@ -813,7 +813,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 return null;
             }
-            
+
             return RootFolder.FindByPath(path);
         }
 
@@ -1305,7 +1305,7 @@ namespace MediaBrowser.Server.Implementations.Library
             return item;
         }
 
-        public QueryResult<BaseItem> GetItems(InternalItemsQuery query)
+        public IEnumerable<BaseItem> GetItemList(InternalItemsQuery query)
         {
             if (query.User != null)
             {
@@ -1314,12 +1314,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var result = ItemRepository.GetItemIdsList(query);
 
-            var items = result.Select(GetItemById).Where(i => i != null).ToArray();
-
-            return new QueryResult<BaseItem>
-            {
-                Items = items
-            };
+            return result.Select(GetItemById).Where(i => i != null);
         }
 
         public QueryResult<BaseItem> QueryItems(InternalItemsQuery query)
@@ -1342,7 +1337,7 @@ namespace MediaBrowser.Server.Implementations.Library
             return ItemRepository.GetItemIdsList(query);
         }
 
-        public IEnumerable<BaseItem> GetItems(InternalItemsQuery query, IEnumerable<string> parentIds)
+        public IEnumerable<BaseItem> GetItemList(InternalItemsQuery query, IEnumerable<string> parentIds)
         {
             var parents = parentIds.Select(i => GetItemById(new Guid(i))).Where(i => i != null).ToList();
 
@@ -1351,13 +1346,39 @@ namespace MediaBrowser.Server.Implementations.Library
             return GetItemIds(query).Select(GetItemById).Where(i => i != null);
         }
 
+        public QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query)
+        {
+            if (query.Recursive && query.ParentId.HasValue)
+            {
+                var parent = GetItemById(query.ParentId.Value);
+                if (parent != null)
+                {
+                    SetTopParentIdsOrAncestors(query, new List<BaseItem> { parent });
+                    query.ParentId = null;
+                }
+            }
+
+            if (query.User != null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            var initialResult = ItemRepository.GetItemIds(query);
+
+            return new QueryResult<BaseItem>
+            {
+                TotalRecordCount = initialResult.TotalRecordCount,
+                Items = initialResult.Items.Select(GetItemById).Where(i => i != null).ToArray()
+            };
+        }
+
         public QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query, IEnumerable<string> parentIds)
         {
             var parents = parentIds.Select(i => GetItemById(new Guid(i))).Where(i => i != null).ToList();
 
             SetTopParentIdsOrAncestors(query, parents);
 
-            return GetItems(query);
+            return GetItemsResult(query);
         }
 
         private void SetTopParentIdsOrAncestors(InternalItemsQuery query, List<BaseItem> parents)
@@ -2545,7 +2566,7 @@ namespace MediaBrowser.Server.Implementations.Library
             // Remove this image to prevent it from retrying over and over
             item.RemoveImage(image);
             await item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
-            
+
             throw new InvalidOperationException();
         }
     }

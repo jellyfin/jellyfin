@@ -510,15 +510,12 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         public IEnumerable<ChannelFeatures> GetAllChannelFeatures()
         {
-            var inputItems = _libraryManager.GetItems(new InternalItemsQuery
+            return _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(Channel).Name },
                 SortBy = new[] { ItemSortBy.SortName }
 
-            }).Items;
-
-            return inputItems
-                .Select(i => GetChannelFeatures(i.Id.ToString("N")));
+            }).Select(i => GetChannelFeatures(i.Id.ToString("N")));
         }
 
         public ChannelFeatures GetChannelFeatures(string id)

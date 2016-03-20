@@ -183,7 +183,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (person != null)
             {
-                var items = _libraryManager.GetItems(new InternalItemsQuery(user)
+                var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
                 {
                     Person = byName.Name
 
@@ -1655,8 +1655,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 IsFolder = false,
                 Recursive = true,
-                IsVirtualUnaired = false,
-                IsMissing = false,
+                ExcludeLocationTypes = new[] { LocationType.Virtual },
                 User = user
 
             }).Result.Items;
