@@ -208,7 +208,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     await item.Delete(new DeleteOptions
                     {
                         DeleteFileLocation = false
-                        
+
                     }).ConfigureAwait(false);
                 }
 
@@ -225,7 +225,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var result = _itemRepo.GetItemIdsWithPath(new InternalItemsQuery
             {
-                LocationType = LocationType.FileSystem,
+                LocationTypes = new[] { LocationType.FileSystem },
                 //Limit = limit,
 
                 // These have their own cleanup routines

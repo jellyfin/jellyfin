@@ -1709,6 +1709,34 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
+            if (query.ParentIndexNumber.HasValue)
+            {
+                var filterValue = query.ParentIndexNumber.Value;
+
+                if (item.ParentIndexNumber.HasValue && item.ParentIndexNumber.Value != filterValue)
+                {
+                    return false;
+                }
+            }
+
+            if (query.AirDays.Length > 0)
+            {
+                var ok = new[] { item }.OfType<Series>().Any(p => p.AirDays != null && query.AirDays.Any(d => p.AirDays.Contains(d)));
+                if (!ok)
+                {
+                    return false;
+                }
+            }
+
+            if (query.SeriesStatuses.Length > 0)
+            {
+                var ok = new[] { item }.OfType<Series>().Any(p => p.Status.HasValue && query.SeriesStatuses.Contains(p.Status.Value)); 
+                if (!ok)
+                {
+                    return false;
+                }
+            }
+
             return true;
         }
 
