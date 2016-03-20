@@ -55,7 +55,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
 
             await CleanDatabase(cancellationToken).ConfigureAwait(false);
-            
+
             progress.Report(100);
         }
 
@@ -167,10 +167,14 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             var item = _libraryManager.GetItemById(id);
 
+            if (item == null)
+            {
+                return Task.FromResult(true);
+            }
+
             return _libraryManager.DeleteItem(item, new DeleteOptions
             {
                 DeleteFileLocation = false
-
             });
         }
 
