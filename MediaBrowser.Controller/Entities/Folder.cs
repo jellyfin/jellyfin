@@ -830,8 +830,11 @@ namespace MediaBrowser.Controller.Entities
         {
             if (LinkedChildren.Count > 0)
             {
-                Logger.Debug("Query requires post-filtering due to LinkedChildren");
-                return true;
+                if (!(this is ICollectionFolder))
+                {
+                    Logger.Debug("Query requires post-filtering due to LinkedChildren");
+                    return true;
+                }
             }
 
             if (query.SortBy != null && query.SortBy.Length > 0)

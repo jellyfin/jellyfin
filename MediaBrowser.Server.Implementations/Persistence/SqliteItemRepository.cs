@@ -19,6 +19,7 @@ using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Server.Implementations.Persistence
@@ -729,10 +730,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     var topParent = item.GetTopParent();
                     if (topParent != null)
                     {
+                        //Logger.Debug("Item {0} has top parent {1}", item.Id, topParent.Id);
                         _saveItemCommand.GetParameter(index++).Value = topParent.Id.ToString("N");
                     }
                     else
                     {
+                        //Logger.Debug("Item {0} has null top parent", item.Id);
                         _saveItemCommand.GetParameter(index++).Value = null;
                     }
 
@@ -2199,6 +2202,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             typeof(MusicGenre),
             typeof(MusicVideo),
             typeof(Movie),
+            typeof(Playlist),
+            typeof(AudioPodcast),
             typeof(Trailer),
             typeof(BoxSet),
             typeof(Episode),
