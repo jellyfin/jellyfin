@@ -151,7 +151,6 @@
             SortOrder: "Ascending",
             IncludeItemTypes: "Playlist",
             Recursive: true,
-            ParentId: parentId,
             Fields: "PrimaryImageAspectRatio,SortName,CumulativeRunTimeTicks,CanDelete,SyncInfo",
             StartIndex: 0,
             Limit: itemsPerRow()

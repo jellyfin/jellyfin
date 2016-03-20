@@ -35,6 +35,12 @@ namespace MediaBrowser.Controller.Entities
 
         public List<string> Keywords { get; set; }
 
+        [IgnoreDataMember]
+        public bool IsLocalTrailer
+        {
+            get { return TrailerTypes.Contains(TrailerType.LocalTrailer); }
+        }
+
         /// <summary>
         /// Gets or sets the taglines.
         /// </summary>

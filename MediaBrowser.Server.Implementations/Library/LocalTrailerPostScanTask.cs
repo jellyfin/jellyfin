@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,16 +29,14 @@ namespace MediaBrowser.Server.Implementations.Library
                 .Cast<IHasTrailers>()
                 .ToList();
 
-            var trailerResult = _libraryManager.GetItems(new InternalItemsQuery
+            var trailers = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(Trailer).Name },
                 ExcludeTrailerTypes = new[]
                 {
                     TrailerType.LocalTrailer
                 }
-
-            });
-            var trailers = trailerResult.Items;
+            }).ToArray();
 
             var numComplete = 0;
 
