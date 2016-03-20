@@ -232,7 +232,8 @@ namespace MediaBrowser.Api.UserLibrary
                 MinCommunityRating = request.MinCommunityRating,
                 MinCriticRating = request.MinCriticRating,
                 ParentId = string.IsNullOrWhiteSpace(request.ParentId) ? (Guid?)null : new Guid(request.ParentId),
-                ParentIndexNumber = request.ParentIndexNumber
+                ParentIndexNumber = request.ParentIndexNumber,
+                AiredDuringSeason = request.AiredDuringSeason
             };
 
             if (!string.IsNullOrWhiteSpace(request.Ids))
@@ -440,21 +441,6 @@ namespace MediaBrowser.Api.UserLibrary
                     .Any(p => string.Compare(request.AlbumArtistStartsWithOrGreater, p.AlbumArtists.FirstOrDefault(), StringComparison.CurrentCultureIgnoreCase) < 1);
 
                 if (!ok)
-                {
-                    return false;
-                }
-            }
-
-            if (request.AiredDuringSeason.HasValue)
-            {
-                var episode = i as Episode;
-
-                if (episode == null)
-                {
-                    return false;
-                }
-
-                if (!Series.FilterEpisodesBySeason(new[] { episode }, request.AiredDuringSeason.Value, true).Any())
                 {
                     return false;
                 }
