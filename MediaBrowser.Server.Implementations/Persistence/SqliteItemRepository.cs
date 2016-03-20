@@ -80,7 +80,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _saveAncestorCommand;
 
         private IDbCommand _updateInheritedRatingCommand;
-        
+
         private const int LatestSchemaVersion = 48;
 
         /// <summary>
@@ -160,7 +160,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.RunQueries(queries, Logger);
 
             _connection.AddColumn(Logger, "AncestorIds", "AncestorIdText", "Text");
-            
+
             _connection.AddColumn(Logger, "TypedBaseItems", "Path", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "StartDate", "DATETIME");
             _connection.AddColumn(Logger, "TypedBaseItems", "EndDate", "DATETIME");
@@ -1809,11 +1809,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 whereClauses.Add("IsOffline=@IsOffline");
                 cmd.Parameters.Add(cmd, "@IsOffline", DbType.Boolean).Value = query.IsOffline;
             }
-            if (query.LocationType.HasValue)
-            {
-                whereClauses.Add("LocationType=@LocationType");
-                cmd.Parameters.Add(cmd, "@LocationType", DbType.String).Value = query.LocationType.Value;
-            }
             if (query.IsMovie.HasValue)
             {
                 whereClauses.Add("IsMovie=@IsMovie");
@@ -1906,6 +1901,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
             //    cmd.Parameters.Add(cmd, "@MaxPlayers", DbType.Int32).Value = query.MaxPlayers.Value;
             //}
 
+            if (query.ParentIndexNumber.HasValue)
+            {
+                whereClauses.Add("ParentIndexNumber=@MinEndDate");
+                cmd.Parameters.Add(cmd, "@ParentIndexNumber", DbType.Int32).Value = query.ParentIndexNumber.Value;
+            }
             if (query.MinEndDate.HasValue)
             {
                 whereClauses.Add("EndDate>=@MinEndDate");
@@ -1990,7 +1990,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var clause = "(" + string.Join(" AND ", clauses.ToArray()) + ")";
                 whereClauses.Add(clause);
             }
-            
+
             if (query.IsAiring.HasValue)
             {
                 if (query.IsAiring.Value)
@@ -2087,12 +2087,36 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     whereClauses.Add("ParentId NOT NULL AND ParentId NOT IN (select guid from TypedBaseItems)");
                 }
             }
+
+            if (query.Years.Length == 1)
+            {
+                whereClauses.Add("ProductionYear=@Years");
+                cmd.Parameters.Add(cmd, "@Years", DbType.Int32).Value = query.Years[0].ToString();
+            }
+            else if (query.Years.Length > 1)
+            {
+                var val = string.Join(",", query.Years.ToArray());
+
+                whereClauses.Add("ProductionYear in (" + val + ")");
+            }
+
+            if (query.LocationTypes.Length == 1)
+            {
+                whereClauses.Add("LocationType=@LocationType");
+                cmd.Parameters.Add(cmd, "@LocationType", DbType.String).Value = query.LocationTypes[0].ToString();
+            }
+            else if (query.LocationTypes.Length > 1)
+            {
+                var val = string.Join(",", query.LocationTypes.Select(i => "'" + i + "'").ToArray());
+
+                whereClauses.Add("LocationType in (" + val + ")");
+            }
             if (query.ExcludeLocationTypes.Length == 1)
             {
-                whereClauses.Add("LocationType<>@LocationType");
-                cmd.Parameters.Add(cmd, "@LocationType", DbType.String).Value = query.ExcludeLocationTypes[0].ToString();
+                whereClauses.Add("LocationType<>@ExcludeLocationTypes");
+                cmd.Parameters.Add(cmd, "@ExcludeLocationTypes", DbType.String).Value = query.ExcludeLocationTypes[0].ToString();
             }
-            if (query.ExcludeLocationTypes.Length > 1)
+            else if (query.ExcludeLocationTypes.Length > 1)
             {
                 var val = string.Join(",", query.ExcludeLocationTypes.Select(i => "'" + i + "'").ToArray());
 
@@ -2128,7 +2152,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (query.TopParentIds.Length > 1)
             {
                 var val = string.Join(",", query.TopParentIds.Select(i => "'" + i + "'").ToArray());
-                
+
                 if (enableItemsByName)
                 {
                     whereClauses.Add("(IsItemByName=@IsItemByName or TopParentId in (" + val + "))");
@@ -2169,7 +2193,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 cmd.Parameters.Add(cmd, "@excludeTag" + excludeTagIndex, DbType.String).Value = "%" + excludeTag + "%";
                 excludeTagIndex++;
             }
-            
+
             if (addPaging)
             {
                 if (query.StartIndex.HasValue && query.StartIndex.Value > 0)
@@ -2252,7 +2276,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 return;
             }
-            
+
             await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             IDbTransaction transaction = null;
