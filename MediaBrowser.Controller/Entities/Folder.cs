@@ -916,11 +916,6 @@ namespace MediaBrowser.Controller.Entities
                     Logger.Debug("Query requires post-filtering due to ItemSortBy.Players");
                     return true;
                 }
-                if (query.SortBy.Contains(ItemSortBy.Random, StringComparer.OrdinalIgnoreCase))
-                {
-                    Logger.Debug("Query requires post-filtering due to ItemSortBy.Random");
-                    return true;
-                }
                 if (query.SortBy.Contains(ItemSortBy.Revenue, StringComparer.OrdinalIgnoreCase))
                 {
                     Logger.Debug("Query requires post-filtering due to ItemSortBy.Revenue");
