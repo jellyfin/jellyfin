@@ -1,4 +1,5 @@
 ﻿define(['jQuery'], function ($) {
+
     var defaultSortBy = "SortName";
     var topItems = 5;
 
@@ -323,7 +324,7 @@
 
 
             $('.listTopPaging', page).html(pagingHtml).trigger('create');
-           // page.querySelector('.listTopPaging').innerHTML = pagingHtml;
+            // page.querySelector('.listTopPaging').innerHTML = pagingHtml;
             $('.listTopPaging', page).show();
 
             $('.listBottomPaging', page).html(pagingHtml).trigger('create');
@@ -525,7 +526,7 @@
             $('#isFavorite').val("-");
         }
 
-        
+
     }
 
     var filtersLoaded;
@@ -909,10 +910,6 @@
 	    filtersLoaded = false;
 	    updateFilterControls(this);
 	});
-
-});
-
-define(['jQuery'], function ($) {
 
     function renderOptions(page, selector, cssClass, items) {
 

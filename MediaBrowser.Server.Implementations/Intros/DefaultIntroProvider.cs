@@ -106,13 +106,13 @@ namespace MediaBrowser.Server.Implementations.Intros
 
             if (trailerTypes.Count > 0)
             {
-                var trailerResult = _libraryManager.GetItems(new InternalItemsQuery
+                var trailerResult = _libraryManager.GetItemList(new InternalItemsQuery
                 {
                     IncludeItemTypes = new[] { typeof(Trailer).Name },
                     TrailerTypes = trailerTypes.ToArray()
                 });
 
-                candidates.AddRange(trailerResult.Items.Select(i => new ItemWithTrailer
+                candidates.AddRange(trailerResult.Select(i => new ItemWithTrailer
                 {
                     Item = i,
                     Type = i.SourceType == SourceType.Channel ? ItemWithTrailerType.ChannelTrailer : ItemWithTrailerType.ItemWithTrailer,
