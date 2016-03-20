@@ -266,7 +266,6 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         console.log('Emby.Page - processing path request ' + pathname);
 
         if ((!apiClient || !apiClient.isLoggedIn()) && !route.anonymous) {
-            alert(JSON.stringify(route));
             console.log('Emby.Page - route does not allow anonymous access, redirecting to login');
             beginConnectionWizard();
             return;
