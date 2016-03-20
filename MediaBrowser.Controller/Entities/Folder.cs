@@ -1120,12 +1120,6 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (query.MinCommunityRating.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to MinCommunityRating");
-                return true;
-            }
-
             if (query.MinIndexNumber.HasValue)
             {
                 Logger.Debug("Query requires post-filtering due to MinIndexNumber");
@@ -1201,6 +1195,12 @@ namespace MediaBrowser.Controller.Entities
             if (query.SeriesStatuses.Length > 0)
             {
                 Logger.Debug("Query requires post-filtering due to SeriesStatuses");
+                return true;
+            }
+
+            if (query.AiredDuringSeason.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to AiredDuringSeason");
                 return true;
             }
 
