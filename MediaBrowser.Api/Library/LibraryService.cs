@@ -444,13 +444,11 @@ namespace MediaBrowser.Api.Library
 
         public void Post(PostUpdatedSeries request)
         {
-            var series = _libraryManager.GetItems(new InternalItemsQuery
+            var series = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(Series).Name }
 
-            }).Items;
-
-            series = series.Where(i => string.Equals(request.TvdbId, i.GetProviderId(MetadataProviders.Tvdb), StringComparison.OrdinalIgnoreCase)).ToArray();
+            }).Where(i => string.Equals(request.TvdbId, i.GetProviderId(MetadataProviders.Tvdb), StringComparison.OrdinalIgnoreCase)).ToArray();
 
             if (series.Length > 0)
             {
@@ -467,11 +465,11 @@ namespace MediaBrowser.Api.Library
 
         public void Post(PostUpdatedMovies request)
         {
-            var movies = _libraryManager.GetItems(new InternalItemsQuery
+            var movies = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(Movie).Name }
 
-            }).Items;
+            }).ToArray();
 
             if (!string.IsNullOrWhiteSpace(request.ImdbId))
             {

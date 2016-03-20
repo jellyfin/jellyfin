@@ -50,15 +50,15 @@ namespace MediaBrowser.Controller.Entities
         {
             var user = query.User;
 
-            if (query.IncludeItemTypes != null &&
-                query.IncludeItemTypes.Length == 1 &&
-                string.Equals(query.IncludeItemTypes[0], "Playlist", StringComparison.OrdinalIgnoreCase))
-            {
-                if (!string.Equals(viewType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
-                {
-                    return await FindPlaylists(queryParent, user, query).ConfigureAwait(false);
-                }
-            }
+            //if (query.IncludeItemTypes != null &&
+            //    query.IncludeItemTypes.Length == 1 &&
+            //    string.Equals(query.IncludeItemTypes[0], "Playlist", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    if (!string.Equals(viewType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
+            //    {
+            //        return await FindPlaylists(queryParent, user, query).ConfigureAwait(false);
+            //    }
+            //}
 
             switch (viewType)
             {
@@ -766,7 +766,7 @@ namespace MediaBrowser.Controller.Entities
             return items;
         }
 
-        private static bool CollapseBoxSetItems(InternalItemsQuery query,
+        public static bool CollapseBoxSetItems(InternalItemsQuery query,
             BaseItem queryParent,
             User user)
         {
@@ -1684,6 +1684,26 @@ namespace MediaBrowser.Controller.Entities
                 var val = query.MinIndexNumber.Value;
 
                 if (!(item.IndexNumber.HasValue && item.IndexNumber.Value >= val))
+                {
+                    return false;
+                }
+            }
+
+            if (query.MinPremiereDate.HasValue)
+            {
+                var val = query.MinPremiereDate.Value;
+
+                if (!(item.PremiereDate.HasValue && item.PremiereDate.Value >= val))
+                {
+                    return false;
+                }
+            }
+
+            if (query.MaxPremiereDate.HasValue)
+            {
+                var val = query.MaxPremiereDate.Value;
+
+                if (!(item.PremiereDate.HasValue && item.PremiereDate.Value <= val))
                 {
                     return false;
                 }

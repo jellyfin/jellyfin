@@ -85,17 +85,16 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task{ItemsResult}.</returns>
         private async Task<ItemsResult> GetItems(GetItems request)
         {
-            var parentItem = string.IsNullOrEmpty(request.ParentId) ? null : _libraryManager.GetItemById(request.ParentId);
             var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
 
-            var result = await GetItemsToSerialize(request, user, parentItem).ConfigureAwait(false);
+            var result = await GetItemsToSerialize(request, user).ConfigureAwait(false);
 
             var dtoOptions = GetDtoOptions(request);
 
             return new ItemsResult
             {
-                TotalRecordCount = result.Item1.TotalRecordCount,
-                Items = _dtoService.GetBaseItemDtos(result.Item1.Items, dtoOptions, user).ToArray()
+                TotalRecordCount = result.TotalRecordCount,
+                Items = _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user).ToArray()
             };
         }
 
@@ -104,17 +103,16 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <param name="user">The user.</param>
-        /// <param name="parentItem">The parent item.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        private async Task<Tuple<QueryResult<BaseItem>, bool>> GetItemsToSerialize(GetItems request, User user, BaseItem parentItem)
+        private async Task<QueryResult<BaseItem>> GetItemsToSerialize(GetItems request, User user)
         {
             var item = string.IsNullOrEmpty(request.ParentId) ?
                 user == null ? _libraryManager.RootFolder : user.RootFolder :
-                parentItem;
+                _libraryManager.GetItemById(request.ParentId);
 
             if (string.Equals(request.IncludeItemTypes, "Playlist", StringComparison.OrdinalIgnoreCase))
             {
-                item = user == null ? _libraryManager.RootFolder : user.RootFolder;
+                //item = user == null ? _libraryManager.RootFolder : user.RootFolder;
             }
             else if (string.Equals(request.IncludeItemTypes, "BoxSet", StringComparison.OrdinalIgnoreCase))
             {
@@ -137,21 +135,21 @@ namespace MediaBrowser.Api.UserLibrary
                     result.Items = result.Items.OrderBy(i => ids.IndexOf(i.Id.ToString("N"))).ToArray();
                 }
 
-                return new Tuple<QueryResult<BaseItem>, bool>(result, true);
+                return result;
             }
 
             if (request.Recursive)
             {
                 var result = await ((Folder)item).GetItems(GetItemsQuery(request, user)).ConfigureAwait(false);
 
-                return new Tuple<QueryResult<BaseItem>, bool>(result, true);
+                return result;
             }
 
             if (user == null)
             {
                 var result = await ((Folder)item).GetItems(GetItemsQuery(request, null)).ConfigureAwait(false);
 
-                return new Tuple<QueryResult<BaseItem>, bool>(result, true);
+                return result;
             }
 
             var userRoot = item as UserRootFolder;
@@ -160,26 +158,24 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var result = await ((Folder)item).GetItems(GetItemsQuery(request, user)).ConfigureAwait(false);
 
-                return new Tuple<QueryResult<BaseItem>, bool>(result, true);
+                return result;
             }
 
             IEnumerable<BaseItem> items = ((Folder)item).GetChildren(user, true);
 
             var itemsArray = items.ToArray();
 
-            return new Tuple<QueryResult<BaseItem>, bool>(new QueryResult<BaseItem>
+            return new QueryResult<BaseItem>
             {
                 Items = itemsArray,
                 TotalRecordCount = itemsArray.Length
-
-            }, false);
+            };
         }
 
         private InternalItemsQuery GetItemsQuery(GetItems request, User user)
         {
-            var query = new InternalItemsQuery
+            var query = new InternalItemsQuery(user)
             {
-                User = user,
                 IsPlayed = request.IsPlayed,
                 MediaTypes = request.GetMediaTypes(),
                 IncludeItemTypes = request.GetIncludeItemTypes(),
@@ -234,7 +230,8 @@ namespace MediaBrowser.Api.UserLibrary
                 MinPlayers = request.MinPlayers,
                 MaxPlayers = request.MaxPlayers,
                 MinCommunityRating = request.MinCommunityRating,
-                MinCriticRating = request.MinCriticRating
+                MinCriticRating = request.MinCriticRating,
+                ParentId = string.IsNullOrWhiteSpace(request.ParentId) ? (Guid?)null : new Guid(request.ParentId)
             };
 
             if (!string.IsNullOrWhiteSpace(request.Ids))
@@ -276,6 +273,16 @@ namespace MediaBrowser.Api.UserLibrary
                         query.IsLiked = true;
                         break;
                 }
+            }
+
+            if (!string.IsNullOrEmpty(request.MinPremiereDate))
+            {
+                query.MinPremiereDate = DateTime.Parse(request.MinPremiereDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
+            }
+
+            if (!string.IsNullOrEmpty(request.MaxPremiereDate))
+            {
+                query.MaxPremiereDate = DateTime.Parse(request.MaxPremiereDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
             }
 
             return query;
@@ -495,26 +502,6 @@ namespace MediaBrowser.Api.UserLibrary
                 }
 
                 if (!Series.FilterEpisodesBySeason(new[] { episode }, request.AiredDuringSeason.Value, true).Any())
-                {
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(request.MinPremiereDate))
-            {
-                var date = DateTime.Parse(request.MinPremiereDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
-
-                if (!(i.PremiereDate.HasValue && i.PremiereDate.Value >= date))
-                {
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(request.MaxPremiereDate))
-            {
-                var date = DateTime.Parse(request.MaxPremiereDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
-
-                if (!(i.PremiereDate.HasValue && i.PremiereDate.Value <= date))
                 {
                     return false;
                 }

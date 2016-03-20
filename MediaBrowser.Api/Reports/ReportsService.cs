@@ -302,6 +302,16 @@ namespace MediaBrowser.Api.Reports
                 }
             }
 
+            if (!string.IsNullOrEmpty(request.MinPremiereDate))
+            {
+                query.MinPremiereDate = DateTime.Parse(request.MinPremiereDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
+            }
+
+            if (!string.IsNullOrEmpty(request.MaxPremiereDate))
+            {
+                query.MaxPremiereDate = DateTime.Parse(request.MaxPremiereDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
+            }
+
             if (request.HasQueryLimit == false)
             {
                 query.StartIndex = null;
@@ -539,48 +549,7 @@ namespace MediaBrowser.Api.Reports
                 }
             }
 
-            if (!string.IsNullOrEmpty(request.MinPremiereDate))
-            {
-                var date = DateTime.Parse(request.MinPremiereDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
-
-                if (!(i.PremiereDate.HasValue && i.PremiereDate.Value >= date))
-                {
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(request.MaxPremiereDate))
-            {
-                var date = DateTime.Parse(request.MaxPremiereDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
-
-                if (!(i.PremiereDate.HasValue && i.PremiereDate.Value <= date))
-                {
-                    return false;
-                }
-            }
-
             return true;
-        }
-
-        /// <summary> Applies the paging. </summary>
-        /// <param name="request"> The request. </param>
-        /// <param name="items"> The items. </param>
-        /// <returns> IEnumerable{BaseItem}. </returns>
-        private IEnumerable<BaseItem> ApplyPaging(BaseReportRequest request, IEnumerable<BaseItem> items)
-        {
-            // Start at
-            if (request.StartIndex.HasValue)
-            {
-                items = items.Skip(request.StartIndex.Value);
-            }
-
-            // Return limit
-            if (request.Limit.HasValue)
-            {
-                items = items.Take(request.Limit.Value);
-            }
-
-            return items;
         }
 
         /// <summary> Gets query result. </summary>
