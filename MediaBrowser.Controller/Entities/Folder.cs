@@ -15,6 +15,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Channels;
 
 namespace MediaBrowser.Controller.Entities
@@ -795,6 +797,419 @@ namespace MediaBrowser.Controller.Entities
             return item;
         }
 
+        public QueryResult<BaseItem> QueryRecursive(InternalItemsQuery query)
+        {
+            var user = query.User;
+
+            if (RequiresPostFiltering(query))
+            {
+                IEnumerable<BaseItem> items;
+                Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
+
+                if (query.User == null)
+                {
+                    items = GetRecursiveChildren(filter);
+                }
+                else
+                {
+                    items = GetRecursiveChildren(user, filter);
+                }
+
+                return PostFilterAndSort(items, query);
+            }
+
+            if (!(this is UserRootFolder) && !(this is AggregateFolder))
+            {
+                query.ParentId = query.ParentId ?? Id;
+            }
+
+            return LibraryManager.GetItemsResult(query);
+        }
+
+        private bool RequiresPostFiltering(InternalItemsQuery query)
+        {
+            if (LinkedChildren.Count > 0)
+            {
+                Logger.Debug("Query requires post-filtering due to LinkedChildren");
+                return true;
+            }
+
+            if (query.SortBy != null && query.SortBy.Length > 0)
+            {
+                if (query.SortBy.Contains(ItemSortBy.DatePlayed, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Query requires post-filtering due to ItemSortBy.DatePlayed");
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.IsFavoriteOrLiked, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Query requires post-filtering due to ItemSortBy.IsFavoriteOrLiked");
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.IsPlayed, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Query requires post-filtering due to ItemSortBy.IsPlayed");
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.IsUnplayed, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Query requires post-filtering due to ItemSortBy.IsUnplayed");
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.AiredEpisodeOrder, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Query requires post-filtering due to ItemSortBy.AiredEpisodeOrder");
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.Album, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Query requires post-filtering due to ItemSortBy.Album");
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.AlbumArtist, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Query requires post-filtering due to ItemSortBy.AlbumArtist");
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.Artist, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Query requires post-filtering due to ItemSortBy.Artist");
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.Budget, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Query requires post-filtering due to ItemSortBy.Budget");
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.CriticRating, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Query requires post-filtering due to ItemSortBy.CriticRating");
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.DateLastContentAdded, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Query requires post-filtering due to ItemSortBy.DateLastContentAdded");
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.GameSystem, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Query requires post-filtering due to ItemSortBy.GameSystem");
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.Metascore, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Query requires post-filtering due to ItemSortBy.Metascore");
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.OfficialRating, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Query requires post-filtering due to ItemSortBy.OfficialRating");
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.PlayCount, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Query requires post-filtering due to ItemSortBy.PlayCount");
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.Players, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Query requires post-filtering due to ItemSortBy.Players");
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.Random, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Query requires post-filtering due to ItemSortBy.Random");
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.Revenue, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Query requires post-filtering due to ItemSortBy.Revenue");
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.SeriesSortName, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Query requires post-filtering due to ItemSortBy.SeriesSortName");
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.StartDate, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Query requires post-filtering due to ItemSortBy.StartDate");
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.Studio, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Query requires post-filtering due to ItemSortBy.Studio");
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.VideoBitRate, StringComparer.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Query requires post-filtering due to ItemSortBy.VideoBitRate");
+                    return true;
+                }
+            }
+
+            if (query.PersonIds.Length > 0)
+            {
+                Logger.Debug("Query requires post-filtering due to PersonIds");
+                return true;
+            }
+
+            if (query.IsLiked.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to IsLiked");
+                return true;
+            }
+
+            if (query.IsFavoriteOrLiked.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to IsFavoriteOrLiked");
+                return true;
+            }
+
+            if (query.IsFavorite.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to IsFavorite");
+                return true;
+            }
+
+            if (query.IsResumable.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to IsResumable");
+                return true;
+            }
+
+            if (query.IsPlayed.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to IsPlayed");
+                return true;
+            }
+
+            if (query.IsInBoxSet.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to IsInBoxSet");
+                return true;
+            }
+
+            // Filter by Video3DFormat
+            if (query.Is3D.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to Is3D");
+                return true;
+            }
+
+            if (query.HasOverview.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to HasOverview");
+                return true;
+            }
+
+            if (query.HasImdbId.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to HasImdbId");
+                return true;
+            }
+
+            if (query.HasTmdbId.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to HasTmdbId");
+                return true;
+            }
+
+            if (query.HasTvdbId.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to HasTvdbId");
+                return true;
+            }
+
+            if (query.IsYearMismatched.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to IsYearMismatched");
+                return true;
+            }
+
+            if (query.HasOfficialRating.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to HasOfficialRating");
+                return true;
+            }
+
+            if (query.IsPlaceHolder.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to IsPlaceHolder");
+                return true;
+            }
+
+            if (query.HasSpecialFeature.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to HasSpecialFeature");
+                return true;
+            }
+
+            if (query.HasSubtitles.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to HasSubtitles");
+                return true;
+            }
+
+            if (query.HasTrailer.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to HasTrailer");
+                return true;
+            }
+
+            if (query.HasThemeSong.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to HasThemeSong");
+                return true;
+            }
+
+            if (query.HasThemeVideo.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to HasThemeVideo");
+                return true;
+            }
+
+            // Filter by VideoType
+            if (query.VideoTypes.Length > 0)
+            {
+                Logger.Debug("Query requires post-filtering due to VideoTypes");
+                return true;
+            }
+
+            if (query.ImageTypes.Length > 0)
+            {
+                Logger.Debug("Query requires post-filtering due to ImageTypes");
+                return true;
+            }
+
+            // Apply studio filter
+            if (query.StudioIds.Length > 0)
+            {
+                Logger.Debug("Query requires post-filtering due to StudioIds");
+                return true;
+            }
+
+            // Apply genre filter
+            if (query.GenreIds.Length > 0)
+            {
+                Logger.Debug("Query requires post-filtering due to GenreIds");
+                return true;
+            }
+
+            // Apply year filter
+            if (query.Years.Length > 0)
+            {
+                Logger.Debug("Query requires post-filtering due to Years");
+                return true;
+            }
+
+            // Apply official rating filter
+            if (query.OfficialRatings.Length > 0)
+            {
+                Logger.Debug("Query requires post-filtering due to OfficialRatings");
+                return true;
+            }
+
+            // Apply person filter
+            if (query.ItemIdsFromPersonFilters != null)
+            {
+                Logger.Debug("Query requires post-filtering due to ItemIdsFromPersonFilters");
+                return true;
+            }
+
+            if (query.MinPlayers.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to MinPlayers");
+                return true;
+            }
+
+            if (query.MaxPlayers.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to MaxPlayers");
+                return true;
+            }
+
+            if (query.MinCommunityRating.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to MinCommunityRating");
+                return true;
+            }
+
+            if (query.MinIndexNumber.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to MinIndexNumber");
+                return true;
+            }
+
+            if (query.Years.Length > 0)
+            {
+                Logger.Debug("Query requires post-filtering due to Years");
+                return true;
+            }
+
+            if (query.OfficialRatings.Length > 0)
+            {
+                Logger.Debug("Query requires post-filtering due to OfficialRatings");
+                return true;
+            }
+
+            if (query.IsMissing.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to IsMissing");
+                return true;
+            }
+
+            if (query.IsUnaired.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to IsUnaired");
+                return true;
+            }
+
+            if (query.IsVirtualUnaired.HasValue)
+            {
+                Logger.Debug("Query requires post-filtering due to IsVirtualUnaired");
+                return true;
+            }
+
+            if (UserViewBuilder.CollapseBoxSetItems(query, this, query.User))
+            {
+                Logger.Debug("Query requires post-filtering due to CollapseBoxSetItems");
+                return true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.AdjacentTo))
+            {
+                Logger.Debug("Query requires post-filtering due to AdjacentTo");
+                return true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.NameContains))
+            {
+                Logger.Debug("Query requires post-filtering due to NameContains");
+                return true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.NameLessThan))
+            {
+                Logger.Debug("Query requires post-filtering due to NameLessThan");
+                return true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.NameStartsWith))
+            {
+                Logger.Debug("Query requires post-filtering due to NameStartsWith");
+                return true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.NameStartsWithOrGreater))
+            {
+                Logger.Debug("Query requires post-filtering due to NameStartsWithOrGreater");
+                return true;
+            }
+
+            return false;
+        }
+
         public virtual async Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
         {
             if (SourceType == SourceType.Channel)
@@ -823,7 +1238,12 @@ namespace MediaBrowser.Controller.Entities
                     };
                 }
             }
-            
+
+            if (query.Recursive)
+            {
+                return QueryRecursive(query);
+            }
+
             var user = query.User;
 
             Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);

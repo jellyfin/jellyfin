@@ -153,13 +153,6 @@ namespace MediaBrowser.Controller.Library
         BaseItem GetItemById(Guid id);
 
         /// <summary>
-        /// Gets the items.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
-        QueryResult<BaseItem> GetItems(InternalItemsQuery query);
-
-        /// <summary>
         /// Gets the memory item by identifier.
         /// </summary>
         /// <param name="id">The identifier.</param>
@@ -551,18 +544,24 @@ namespace MediaBrowser.Controller.Library
         /// Gets the items.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
+        IEnumerable<BaseItem> GetItemList(InternalItemsQuery query);
+
+        /// <summary>
+        /// Gets the items.
+        /// </summary>
+        /// <param name="query">The query.</param>
         /// <param name="parentIds">The parent ids.</param>
         /// <returns>List&lt;BaseItem&gt;.</returns>
-        IEnumerable<BaseItem> GetItems(InternalItemsQuery query, IEnumerable<string> parentIds);
+        IEnumerable<BaseItem> GetItemList(InternalItemsQuery query, IEnumerable<string> parentIds);
 
         /// <summary>
         /// Gets the items result.
         /// </summary>
         /// <param name="query">The query.</param>
-        /// <param name="parentIds">The parent ids.</param>
         /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
-        QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query, IEnumerable<string> parentIds);
-
+        QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query);
+        
         /// <summary>
         /// Ignores the file.
         /// </summary>
