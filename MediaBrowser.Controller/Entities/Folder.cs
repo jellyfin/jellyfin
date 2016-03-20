@@ -167,7 +167,7 @@ namespace MediaBrowser.Controller.Entities
         {
             lock (_childrenSyncLock)
             {
-                var newChildren = _children.ToList();
+                var newChildren = ChildIds.ToList();
                 newChildren.AddRange(children);
                 _children = newChildren.ToList();
             }
@@ -176,11 +176,11 @@ namespace MediaBrowser.Controller.Entities
         {
             lock (_childrenSyncLock)
             {
-                if (!_children.Contains(child))
+                var childIds = ChildIds.ToList();
+                if (!childIds.Contains(child))
                 {
-                    var newChildren = _children.ToList();
-                    newChildren.Add(child);
-                    _children = newChildren.ToList();
+                    childIds.Add(child);
+                    _children = childIds.ToList();
                 }
             }
         }
@@ -189,7 +189,7 @@ namespace MediaBrowser.Controller.Entities
         {
             lock (_childrenSyncLock)
             {
-                _children = _children.Except(children).ToList();
+                _children = ChildIds.Except(children).ToList();
             }
         }
 
@@ -257,7 +257,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the actual children.
         /// </summary>
         /// <value>The actual children.</value>
-        protected virtual IEnumerable<BaseItem> ActualChildren
+        protected virtual IEnumerable<Guid> ChildIds
         {
             get
             {
@@ -267,8 +267,20 @@ namespace MediaBrowser.Controller.Entities
                     {
                         _children = LoadChildren().ToList();
                     }
-                    return _children.Select(LibraryManager.GetItemById).Where(i => i != null);
+                    return _children.ToList();
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets the actual children.
+        /// </summary>
+        /// <value>The actual children.</value>
+        protected virtual IEnumerable<BaseItem> ActualChildren
+        {
+            get
+            {
+                return ChildIds.Select(LibraryManager.GetItemById).Where(i => i != null);
             }
         }
 
@@ -910,6 +922,12 @@ namespace MediaBrowser.Controller.Entities
                     Logger.Debug("Query requires post-filtering due to ItemSortBy.VideoBitRate");
                     return true;
                 }
+            }
+
+            if (query.ItemIds.Length > 0)
+            {
+                Logger.Debug("Query requires post-filtering due to ItemIds");
+                return true;
             }
 
             if (query.PersonIds.Length > 0)

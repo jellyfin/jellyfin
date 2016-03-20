@@ -369,9 +369,14 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public async Task DeleteItem(BaseItem item, DeleteOptions options)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
             _logger.Debug("Deleting item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
                 item.GetType().Name,
-                item.Name,
+                item.Name ?? "Unknown name",
                 item.Path ?? string.Empty,
                 item.Id);
 
