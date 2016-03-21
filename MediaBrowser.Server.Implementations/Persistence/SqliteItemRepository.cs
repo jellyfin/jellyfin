@@ -2080,6 +2080,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
             }
 
+            if (query.HasOverview.HasValue)
+            {
+                if (query.HasOverview.Value)
+                {
+                    whereClauses.Add("(Overview not null AND Overview<>'')");
+                }
+                else
+                {
+                    whereClauses.Add("(Overview is null OR Overview='')");
+                }
+            }
+
             if (query.HasDeadParentId.HasValue)
             {
                 if (query.HasDeadParentId.Value)

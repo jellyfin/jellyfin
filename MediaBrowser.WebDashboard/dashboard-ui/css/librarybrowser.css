@@ -1175,7 +1175,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .alphabetPicker {
     position: fixed;
     right: 0;
-    bottom: 5px;
+    bottom: 0;
     z-index: 999;
     text-align: center;
     font-size: 90%;
@@ -1255,6 +1255,13 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
     .itemsContainerWithAlphaPicker {
         margin-right: 20px;
+    }
+}
+
+@media all and (min-height: 500px) {
+
+    .alphabetPicker {
+        bottom: 5px;
     }
 }
 

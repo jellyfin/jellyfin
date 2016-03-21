@@ -1325,5 +1325,16 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             return list;
         }
+
+        protected internal void OnConversionComplete(SyncJobItem item, SyncJob job)
+        {
+            var syncProvider = GetSyncProvider(item, job);
+            if (syncProvider is AppSyncProvider)
+            {
+                return;
+            }
+
+            _taskManager.QueueIfNotRunning<ServerSyncScheduledTask>();
+        }
     }
 }
