@@ -233,7 +233,8 @@ namespace MediaBrowser.Api.UserLibrary
                 MinCriticRating = request.MinCriticRating,
                 ParentId = string.IsNullOrWhiteSpace(request.ParentId) ? (Guid?)null : new Guid(request.ParentId),
                 ParentIndexNumber = request.ParentIndexNumber,
-                AiredDuringSeason = request.AiredDuringSeason
+                AiredDuringSeason = request.AiredDuringSeason,
+                AlbumArtistStartsWithOrGreater = request.AlbumArtistStartsWithOrGreater
             };
 
             if (!string.IsNullOrWhiteSpace(request.Ids))
@@ -309,6 +310,30 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 query.LocationTypes = request.LocationTypes.Split(',').Select(d => (LocationType)Enum.Parse(typeof(LocationType), d, true)).ToArray();
             }
+            
+            // Min official rating
+            if (!string.IsNullOrEmpty(request.MinOfficialRating))
+            {
+                query.MinParentalRating = _localization.GetRatingLevel(request.MinOfficialRating);
+            }
+
+            // Max official rating
+            if (!string.IsNullOrEmpty(request.MaxOfficialRating))
+            {
+                query.MaxParentalRating = _localization.GetRatingLevel(request.MinOfficialRating);
+            }
+
+            // Artists
+            if (!string.IsNullOrEmpty(request.Artists))
+            {
+                query.ArtistNames = request.Artists.Split('|');
+            }
+
+            // Albums
+            if (!string.IsNullOrEmpty(request.Albums))
+            {
+                query.AlbumNames = request.Albums.Split('|');
+            }
 
             return query;
         }
@@ -327,120 +352,6 @@ namespace MediaBrowser.Api.UserLibrary
                     var artistItem = libraryManager.GetItemById(id);
                     return artistItem != null && audio.HasAnyArtist(artistItem.Name);
                 })))
-                {
-                    return false;
-                }
-            }
-
-            // Artists
-            if (!string.IsNullOrEmpty(request.Artists))
-            {
-                var artists = request.Artists.Split('|');
-
-                var audio = i as IHasArtist;
-
-                if (!(audio != null && artists.Any(audio.HasAnyArtist)))
-                {
-                    return false;
-                }
-            }
-
-            // Albums
-            if (!string.IsNullOrEmpty(request.Albums))
-            {
-                var albums = request.Albums.Split('|');
-
-                var audio = i as Audio;
-
-                if (audio != null)
-                {
-                    if (!albums.Any(a => string.Equals(a, audio.Album, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        return false;
-                    }
-                }
-
-                var album = i as MusicAlbum;
-
-                if (album != null)
-                {
-                    if (!albums.Any(a => string.Equals(a, album.Name, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        return false;
-                    }
-                }
-
-                var musicVideo = i as MusicVideo;
-
-                if (musicVideo != null)
-                {
-                    if (!albums.Any(a => string.Equals(a, musicVideo.Album, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        return false;
-                    }
-                }
-
-                return false;
-            }
-
-            // Min official rating
-            if (!string.IsNullOrEmpty(request.MinOfficialRating))
-            {
-                var level = _localization.GetRatingLevel(request.MinOfficialRating);
-
-                if (level.HasValue)
-                {
-                    var rating = i.CustomRating;
-
-                    if (string.IsNullOrEmpty(rating))
-                    {
-                        rating = i.OfficialRating;
-                    }
-
-                    if (!string.IsNullOrEmpty(rating))
-                    {
-                        var itemLevel = _localization.GetRatingLevel(rating);
-
-                        if (!(!itemLevel.HasValue || itemLevel.Value >= level.Value))
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            // Max official rating
-            if (!string.IsNullOrEmpty(request.MaxOfficialRating))
-            {
-                var level = _localization.GetRatingLevel(request.MaxOfficialRating);
-
-                if (level.HasValue)
-                {
-                    var rating = i.CustomRating;
-
-                    if (string.IsNullOrEmpty(rating))
-                    {
-                        rating = i.OfficialRating;
-                    }
-
-                    if (!string.IsNullOrEmpty(rating))
-                    {
-                        var itemLevel = _localization.GetRatingLevel(rating);
-
-                        if (!(!itemLevel.HasValue || itemLevel.Value <= level.Value))
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            if (!string.IsNullOrEmpty(request.AlbumArtistStartsWithOrGreater))
-            {
-                var ok = new[] { i }.OfType<IHasAlbumArtist>()
-                    .Any(p => string.Compare(request.AlbumArtistStartsWithOrGreater, p.AlbumArtists.FirstOrDefault(), StringComparison.CurrentCultureIgnoreCase) < 1);
-
-                if (!ok)
                 {
                     return false;
                 }

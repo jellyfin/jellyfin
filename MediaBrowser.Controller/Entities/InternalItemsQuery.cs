@@ -105,6 +105,7 @@ namespace MediaBrowser.Controller.Entities
 
         internal List<Guid> ItemIdsFromPersonFilters { get; set; }
         public int? ParentIndexNumber { get; set; }
+        public int? MinParentalRating { get; set; }
         public int? MaxParentalRating { get; set; }
 
         public bool? IsCurrentSchema { get; set; }
@@ -125,9 +126,16 @@ namespace MediaBrowser.Controller.Entities
 
         public DayOfWeek[] AirDays { get; set; }
         public SeriesStatus[] SeriesStatuses { get; set; }
+        public string AlbumArtistStartsWithOrGreater { get; set; }
+
+        public string[] AlbumNames { get; set; }
+        public string[] ArtistNames { get; set; }
         
         public InternalItemsQuery()
         {
+            AlbumNames = new string[] { };
+            ArtistNames = new string[] { };
+            
             BlockUnratedItems = new UnratedItem[] { };
             Tags = new string[] { };
             OfficialRatings = new string[] { };
