@@ -1199,6 +1199,11 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
+            if (query.ExcludeLocationTypes.Length > 0 && query.ExcludeLocationTypes.Contains(item.LocationType))
+            {
+                return false;
+            }
+
             if (query.IsFolder.HasValue && query.IsFolder.Value != item.IsFolder)
             {
                 return false;
