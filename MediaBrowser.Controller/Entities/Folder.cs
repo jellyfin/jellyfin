@@ -979,12 +979,6 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (query.HasOverview.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to HasOverview");
-                return true;
-            }
-
             if (query.HasImdbId.HasValue)
             {
                 Logger.Debug("Query requires post-filtering due to HasImdbId");
@@ -1075,13 +1069,6 @@ namespace MediaBrowser.Controller.Entities
             if (query.GenreIds.Length > 0)
             {
                 Logger.Debug("Query requires post-filtering due to GenreIds");
-                return true;
-            }
-
-            // Apply official rating filter
-            if (query.OfficialRatings.Length > 0)
-            {
-                Logger.Debug("Query requires post-filtering due to OfficialRatings");
                 return true;
             }
 
