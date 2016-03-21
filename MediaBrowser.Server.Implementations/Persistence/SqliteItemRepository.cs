@@ -2062,6 +2062,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 whereClauses.Add(clause);
             }
 
+            if (query.MinParentalRating.HasValue)
+            {
+                whereClauses.Add("InheritedParentalRatingValue<=@MinParentalRating");
+                cmd.Parameters.Add(cmd, "@MinParentalRating", DbType.Int32).Value = query.MinParentalRating.Value;
+            }
+
             if (query.MaxParentalRating.HasValue)
             {
                 whereClauses.Add("InheritedParentalRatingValue<=@MaxParentalRating");
@@ -2077,6 +2083,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 else
                 {
                     whereClauses.Add("InheritedParentalRatingValue = 0");
+                }
+            }
+
+            if (query.HasOverview.HasValue)
+            {
+                if (query.HasOverview.Value)
+                {
+                    whereClauses.Add("(Overview not null AND Overview<>'')");
+                }
+                else
+                {
+                    whereClauses.Add("(Overview is null OR Overview='')");
                 }
             }
 

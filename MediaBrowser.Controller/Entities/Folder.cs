@@ -979,12 +979,6 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (query.HasOverview.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to HasOverview");
-                return true;
-            }
-
             if (query.HasImdbId.HasValue)
             {
                 Logger.Debug("Query requires post-filtering due to HasImdbId");
@@ -1078,13 +1072,6 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            // Apply official rating filter
-            if (query.OfficialRatings.Length > 0)
-            {
-                Logger.Debug("Query requires post-filtering due to OfficialRatings");
-                return true;
-            }
-
             // Apply person filter
             if (query.ItemIdsFromPersonFilters != null)
             {
@@ -1101,12 +1088,6 @@ namespace MediaBrowser.Controller.Entities
             if (query.MaxPlayers.HasValue)
             {
                 Logger.Debug("Query requires post-filtering due to MaxPlayers");
-                return true;
-            }
-
-            if (query.MinIndexNumber.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to MinIndexNumber");
                 return true;
             }
 
@@ -1185,6 +1166,24 @@ namespace MediaBrowser.Controller.Entities
             if (query.AiredDuringSeason.HasValue)
             {
                 Logger.Debug("Query requires post-filtering due to AiredDuringSeason");
+                return true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.AlbumArtistStartsWithOrGreater))
+            {
+                Logger.Debug("Query requires post-filtering due to AlbumArtistStartsWithOrGreater");
+                return true;
+            }
+
+            if (query.AlbumNames.Length > 0)
+            {
+                Logger.Debug("Query requires post-filtering due to AlbumNames");
+                return true;
+            }
+
+            if (query.ArtistNames.Length > 0)
+            {
+                Logger.Debug("Query requires post-filtering due to ArtistNames");
                 return true;
             }
 

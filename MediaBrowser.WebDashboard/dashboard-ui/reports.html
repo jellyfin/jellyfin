@@ -1,4 +1,4 @@
-﻿<div id="libraryReportManagerPage" data-role="page" class="page libraryPage noSecondaryNavPage reportsPage" data-contextname="${HeaderReports}" data-require="jqmcheckbox,jqmcontrolgroup,jqmpanel,jqmcollapsible,jqmtable,scripts/reports,detailtablecss">
+﻿<div id="libraryReportManagerPage" data-role="page" class="page libraryPage noSecondaryNavPage reportsPage" data-contextname="${HeaderReports}" data-require="paper-icon-button,jqmcheckbox,jqmcontrolgroup,jqmpanel,jqmcollapsible,jqmtable,scripts/reports,detailtablecss">
     <div data-role="content">
         <div style="text-align: center;">
             <div class="viewControls">
@@ -27,6 +27,7 @@
                         <option value="Audio">${OptionReportSongs}</option>
                     </select>
                 </div>
+                <paper-icon-button icon="more-vert" onclick="jQuery('.viewPanel').panel('toggle');"></paper-icon-button>
             </div>
             <div class="listTopPaging">
             </div>
