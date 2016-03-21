@@ -1752,6 +1752,17 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
+            if (!string.IsNullOrEmpty(query.AlbumArtistStartsWithOrGreater))
+            {
+                var ok = new[] { item }.OfType<IHasAlbumArtist>()
+                    .Any(p => string.Compare(query.AlbumArtistStartsWithOrGreater, p.AlbumArtists.FirstOrDefault(), StringComparison.CurrentCultureIgnoreCase) < 1);
+
+                if (!ok)
+                {
+                    return false;
+                }
+            }
+
             return true;
         }
 

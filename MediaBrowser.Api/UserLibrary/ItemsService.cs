@@ -233,7 +233,8 @@ namespace MediaBrowser.Api.UserLibrary
                 MinCriticRating = request.MinCriticRating,
                 ParentId = string.IsNullOrWhiteSpace(request.ParentId) ? (Guid?)null : new Guid(request.ParentId),
                 ParentIndexNumber = request.ParentIndexNumber,
-                AiredDuringSeason = request.AiredDuringSeason
+                AiredDuringSeason = request.AiredDuringSeason,
+                AlbumArtistStartsWithOrGreater = request.AlbumArtistStartsWithOrGreater
             };
 
             if (!string.IsNullOrWhiteSpace(request.Ids))
@@ -432,17 +433,6 @@ namespace MediaBrowser.Api.UserLibrary
                             return false;
                         }
                     }
-                }
-            }
-
-            if (!string.IsNullOrEmpty(request.AlbumArtistStartsWithOrGreater))
-            {
-                var ok = new[] { i }.OfType<IHasAlbumArtist>()
-                    .Any(p => string.Compare(request.AlbumArtistStartsWithOrGreater, p.AlbumArtists.FirstOrDefault(), StringComparison.CurrentCultureIgnoreCase) < 1);
-
-                if (!ok)
-                {
-                    return false;
                 }
             }
 

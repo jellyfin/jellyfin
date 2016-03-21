@@ -1188,6 +1188,12 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
+            if (!string.IsNullOrWhiteSpace(query.AlbumArtistStartsWithOrGreater))
+            {
+                Logger.Debug("Query requires post-filtering due to AlbumArtistStartsWithOrGreater");
+                return true;
+            }
+
             return false;
         }
 
