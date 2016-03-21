@@ -323,6 +323,18 @@ namespace MediaBrowser.Api.UserLibrary
                 query.MaxParentalRating = _localization.GetRatingLevel(request.MinOfficialRating);
             }
 
+            // Artists
+            if (!string.IsNullOrEmpty(request.Artists))
+            {
+                query.ArtistNames = request.Artists.Split('|');
+            }
+
+            // Albums
+            if (!string.IsNullOrEmpty(request.Albums))
+            {
+                query.AlbumNames = request.Albums.Split('|');
+            }
+
             return query;
         }
 
@@ -343,57 +355,6 @@ namespace MediaBrowser.Api.UserLibrary
                 {
                     return false;
                 }
-            }
-
-            // Artists
-            if (!string.IsNullOrEmpty(request.Artists))
-            {
-                var artists = request.Artists.Split('|');
-
-                var audio = i as IHasArtist;
-
-                if (!(audio != null && artists.Any(audio.HasAnyArtist)))
-                {
-                    return false;
-                }
-            }
-
-            // Albums
-            if (!string.IsNullOrEmpty(request.Albums))
-            {
-                var albums = request.Albums.Split('|');
-
-                var audio = i as Audio;
-
-                if (audio != null)
-                {
-                    if (!albums.Any(a => string.Equals(a, audio.Album, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        return false;
-                    }
-                }
-
-                var album = i as MusicAlbum;
-
-                if (album != null)
-                {
-                    if (!albums.Any(a => string.Equals(a, album.Name, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        return false;
-                    }
-                }
-
-                var musicVideo = i as MusicVideo;
-
-                if (musicVideo != null)
-                {
-                    if (!albums.Any(a => string.Equals(a, musicVideo.Album, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        return false;
-                    }
-                }
-
-                return false;
             }
 
             return true;
