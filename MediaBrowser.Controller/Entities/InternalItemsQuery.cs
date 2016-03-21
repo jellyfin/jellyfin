@@ -105,6 +105,7 @@ namespace MediaBrowser.Controller.Entities
 
         internal List<Guid> ItemIdsFromPersonFilters { get; set; }
         public int? ParentIndexNumber { get; set; }
+        public int? MinParentalRating { get; set; }
         public int? MaxParentalRating { get; set; }
 
         public bool? IsCurrentSchema { get; set; }

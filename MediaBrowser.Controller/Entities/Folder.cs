@@ -1091,12 +1091,6 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (query.MinIndexNumber.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to MinIndexNumber");
-                return true;
-            }
-
             if (query.OfficialRatings.Length > 0)
             {
                 Logger.Debug("Query requires post-filtering due to OfficialRatings");

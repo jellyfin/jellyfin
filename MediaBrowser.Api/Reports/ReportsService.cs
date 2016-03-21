@@ -338,6 +338,18 @@ namespace MediaBrowser.Api.Reports
                 query.LocationTypes = request.LocationTypes.Split(',').Select(d => (LocationType)Enum.Parse(typeof(LocationType), d, true)).ToArray();
             }
 
+            // Min official rating
+            if (!string.IsNullOrEmpty(request.MinOfficialRating))
+            {
+                query.MinParentalRating = _localization.GetRatingLevel(request.MinOfficialRating);
+            }
+
+            // Max official rating
+            if (!string.IsNullOrEmpty(request.MaxOfficialRating))
+            {
+                query.MaxParentalRating = _localization.GetRatingLevel(request.MinOfficialRating);
+            }
+
             if (request.HasQueryLimit == false)
             {
                 query.StartIndex = null;
@@ -415,67 +427,6 @@ namespace MediaBrowser.Api.Reports
                 }
 
                 return false;
-            }
-
-            // Min index number
-            if (request.MinIndexNumber.HasValue)
-            {
-                if (!(i.IndexNumber.HasValue && i.IndexNumber.Value >= request.MinIndexNumber.Value))
-                {
-                    return false;
-                }
-            }
-
-            // Min official rating
-            if (!string.IsNullOrEmpty(request.MinOfficialRating))
-            {
-                var level = _localization.GetRatingLevel(request.MinOfficialRating);
-
-                if (level.HasValue)
-                {
-                    var rating = i.CustomRating;
-
-                    if (string.IsNullOrEmpty(rating))
-                    {
-                        rating = i.OfficialRating;
-                    }
-
-                    if (!string.IsNullOrEmpty(rating))
-                    {
-                        var itemLevel = _localization.GetRatingLevel(rating);
-
-                        if (!(!itemLevel.HasValue || itemLevel.Value >= level.Value))
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            // Max official rating
-            if (!string.IsNullOrEmpty(request.MaxOfficialRating))
-            {
-                var level = _localization.GetRatingLevel(request.MaxOfficialRating);
-
-                if (level.HasValue)
-                {
-                    var rating = i.CustomRating;
-
-                    if (string.IsNullOrEmpty(rating))
-                    {
-                        rating = i.OfficialRating;
-                    }
-
-                    if (!string.IsNullOrEmpty(rating))
-                    {
-                        var itemLevel = _localization.GetRatingLevel(rating);
-
-                        if (!(!itemLevel.HasValue || itemLevel.Value <= level.Value))
-                        {
-                            return false;
-                        }
-                    }
-                }
             }
 
             return true;
