@@ -1175,6 +1175,18 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
+            if (query.AlbumNames.Length > 0)
+            {
+                Logger.Debug("Query requires post-filtering due to AlbumNames");
+                return true;
+            }
+
+            if (query.ArtistNames.Length > 0)
+            {
+                Logger.Debug("Query requires post-filtering due to ArtistNames");
+                return true;
+            }
+
             return false;
         }
 
