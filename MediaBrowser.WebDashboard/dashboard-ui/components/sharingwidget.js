@@ -1,11 +1,13 @@
-﻿define(['jQuery', 'thirdparty/social-share-kit-1.0.4/dist/js/social-share-kit.min', 'css!thirdparty/social-share-kit-1.0.4/dist/css/social-share-kit.css', 'fade-in-animation', 'fade-out-animation', 'paper-dialog'], function ($) {
+﻿define(['paperdialoghelper', 'jQuery', 'thirdparty/social-share-kit-1.0.4/dist/js/social-share-kit.min', 'css!thirdparty/social-share-kit-1.0.4/dist/css/social-share-kit.css'], function (paperDialogHelper, $) {
 
     function showMenu(options, successCallback, cancelCallback) {
 
-        var id = 'dlg' + new Date().getTime();
-        var html = '';
+        var dlg = paperDialogHelper.createDialog({
+            removeOnClose: true
+        });
 
-        html += '<paper-dialog id="' + id + '" entry-animation="fade-in-animation" exit-animation="fade-out-animation" with-backdrop>';
+        dlg.id = 'dlg' + new Date().getTime();
+        var html = '';
 
         html += '<h2>' + Globalize.translate('HeaderShare') + '</h2>';
 
@@ -28,48 +30,45 @@
         html += '<paper-button class="btnCancel" dialog-dismiss>' + Globalize.translate('ButtonCancel') + '</paper-button>';
         html += '</div>';
 
-        html += '</paper-dialog>';
+        dlg.innerHTML = html;
 
-        $(document.body).append(html);
+        document.body.appendChild(dlg);
 
         var isShared = false;
 
-        setTimeout(function () {
+        var shareInfo = options.share;
 
-            var dlg = document.getElementById(id);
+        SocialShareKit.init({
+            selector: '#' + dlg.id + ' .ssk',
+            url: shareInfo.Url,
+            title: shareInfo.Name,
+            text: shareInfo.Overview,
+            image: shareInfo.ImageUrl,
+            via: 'Emby'
+        });
 
-            dlg.open();
+        // Has to be assigned a z-index after the call to .open() 
+        dlg.addEventListener('close', function () {
 
-            var shareInfo = options.share;
+            if (isShared) {
+                successCallback(options);
+            } else {
+                cancelCallback(options);
+            }
+        });
 
-            SocialShareKit.init({
-                selector: '#' + id + ' .ssk',
-                url: shareInfo.Url,
-                title: shareInfo.Name,
-                text: shareInfo.Overview,
-                image: shareInfo.ImageUrl,
-                via: 'Emby'
-            });
+        // Has to be assigned a z-index after the call to .open() 
+        $('.ssk', dlg).on('click', function () {
+            isShared = true;
+            paperDialogHelper.close(dlg);
+        });
 
-            // Has to be assigned a z-index after the call to .open() 
-            $(dlg).on('iron-overlay-closed', function () {
-                $(this).remove();
+        // Has to be assigned a z-index after the call to .open() 
+        dlg.querySelector('.btnCancel').addEventListener('click', function () {
+            paperDialogHelper.close(dlg);
+        });
 
-                if (isShared) {
-                    successCallback(options);
-                } else {
-                    cancelCallback(options);
-                }
-            });
-
-            // Has to be assigned a z-index after the call to .open() 
-            $('.ssk', dlg).on('click', function () {
-                isShared = true;
-                dlg.close();
-            });
-
-        }, 100);
-
+        paperDialogHelper.open(dlg);
     }
 
     return {
