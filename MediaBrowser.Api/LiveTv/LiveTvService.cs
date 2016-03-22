@@ -491,13 +491,17 @@ namespace MediaBrowser.Api.LiveTv
         private readonly IUserManager _userManager;
         private readonly IConfigurationManager _config;
         private readonly IHttpClient _httpClient;
+        private readonly ILibraryManager _libraryManager;
+        private readonly IDtoService _dtoService;
 
-        public LiveTvService(ILiveTvManager liveTvManager, IUserManager userManager, IConfigurationManager config, IHttpClient httpClient)
+        public LiveTvService(ILiveTvManager liveTvManager, IUserManager userManager, IConfigurationManager config, IHttpClient httpClient, ILibraryManager libraryManager, IDtoService dtoService)
         {
             _liveTvManager = liveTvManager;
             _userManager = userManager;
             _config = config;
             _httpClient = httpClient;
+            _libraryManager = libraryManager;
+            _dtoService = dtoService;
         }
 
         public async Task<object> Get(GetLiveTvRegistrationInfo request)
@@ -593,7 +597,7 @@ namespace MediaBrowser.Api.LiveTv
 
         public async Task<object> Get(GetChannels request)
         {
-            var result = await _liveTvManager.GetChannels(new LiveTvChannelQuery
+            var channelResult = await _liveTvManager.GetInternalChannels(new LiveTvChannelQuery
             {
                 ChannelType = request.Type,
                 UserId = request.UserId,
@@ -605,16 +609,30 @@ namespace MediaBrowser.Api.LiveTv
                 EnableFavoriteSorting = request.EnableFavoriteSorting,
                 AddCurrentProgram = request.AddCurrentProgram
 
-            }, GetDtoOptions(request), CancellationToken.None).ConfigureAwait(false);
+            }, CancellationToken.None).ConfigureAwait(false);
 
+            var user = string.IsNullOrEmpty(request.UserId) ? null : _userManager.GetUserById(request.UserId);
+
+            var returnArray = _dtoService.GetBaseItemDtos(channelResult.Items, GetDtoOptions(Request), user).ToArray();
+
+            var result = new QueryResult<BaseItemDto>
+            {
+                Items = returnArray,
+                TotalRecordCount = channelResult.TotalRecordCount
+            };
+            
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
-        public async Task<object> Get(GetChannel request)
+        public object Get(GetChannel request)
         {
-            var user = string.IsNullOrEmpty(request.UserId) ? null : _userManager.GetUserById(request.UserId);
+            var user = string.IsNullOrWhiteSpace(request.UserId) ? null : _userManager.GetUserById(request.UserId);
 
-            var result = await _liveTvManager.GetChannel(request.Id, CancellationToken.None, user).ConfigureAwait(false);
+            var item = _libraryManager.GetItemById(request.Id);
+
+            var dtoOptions = GetDtoOptions(request);
+
+            var result = _dtoService.GetBaseItemDto(item, dtoOptions, user);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
