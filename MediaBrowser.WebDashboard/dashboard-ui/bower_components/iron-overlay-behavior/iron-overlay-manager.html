@@ -254,7 +254,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     _onCaptureClick: function(event) {
       var overlay = /** @type {?} */ (this.currentOverlay());
       // Check if clicked outside of any overlay.
-      var target = Polymer.dom(event).rootTarget;
+      var target = /** @type {Element} */ (Polymer.dom(event).rootTarget);
       if (overlay && this._overlayParent(target) !== overlay) {
         overlay._onCaptureClick(event);
       }
