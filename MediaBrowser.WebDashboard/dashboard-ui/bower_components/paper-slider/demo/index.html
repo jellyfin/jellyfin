@@ -17,113 +17,106 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta name="apple-mobile-web-app-capable" content="yes">
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-  <link rel="import" href="../../paper-styles/demo-pages.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
   <link rel="import" href="../../paper-styles/color.html">
   <link rel="import" href="../paper-slider.html">
 
-  <style is="custom-style">
-    body {
-      padding: 40px;
-    }
-
+  <style is="custom-style" include="demo-pages-shared-styles">
     paper-slider {
       width: 100%;
     }
-
-    paper-slider.blue {
-      --paper-slider-knob-color: var(--paper-light-blue-500);
-      --paper-slider-active-color: var(--paper-light-blue-500);
-    }
-
-    paper-slider.red {
-      --paper-slider-knob-color: var(--paper-red-500);
-      --paper-slider-active-color: var(--paper-red-500);
-    }
-
-    paper-slider.green {
-      --paper-slider-knob-color: var(--paper-green-500);
-      --paper-slider-active-color: var(--paper-green-500);
-    }
-
-    paper-slider.orange {
-      --paper-slider-knob-color: var(--paper-orange-500);
-      --paper-slider-active-color: var(--paper-orange-500);
-      --paper-slider-pin-color: var(--paper-orange-500);
-    }
-
-    .caption {
-      padding-left: 12px;
-      color: #a0a0a0;
-    }
-
-    #grade {
-      --paper-slider-secondary-color: var(--paper-red-a200);
-    }
-
   </style>
-
 </head>
 <body unresolved>
-  <div class="vertical-section-container">
-    <h4>Default</h4>
-    <div class="vertical-section">
-      <div>Oxygen</div>
-      <paper-slider value="21" id="test"></paper-slider><br><br>
-      <div>Argon</div>
-      <paper-slider value="1"></paper-slider><br><br>
-      <div>Hydrogen</div>
-      <paper-slider value="0"></paper-slider><br><br>
-      <div>Nitrogen</div>
-      <paper-slider value="78" secondary-progress="85"></paper-slider><br><br>
-      <div>Sprinkles</div>
-      <paper-slider disabled value="33"></paper-slider>
-    </div>
+  <div class="vertical-section-container centered">
+    <h3>paper-sliders can have values, secondary progress values, or be disabled.</h3>
+    <demo-snippet>
+      <template>
+        <paper-slider value="21"></paper-slider>
+        <paper-slider value="0"></paper-slider>
+        <paper-slider value="50" secondary-progress="85"></paper-slider>
+        <paper-slider disabled value="33"></paper-slider>
+      </template>
+    </demo-snippet>
 
-    <h4>Editable</h4>
-    <div class="vertical-section">
-      <div>
+    <h3>They can be editable, and styled using custom properties</h3>
+    <demo-snippet>
+      <template>
+        <style is="custom-style">
+          paper-slider.red {
+            --paper-slider-knob-color: var(--paper-red-500);
+            --paper-slider-active-color: var(--paper-red-500);
+          }
+          paper-slider.green {
+            --paper-slider-knob-color: var(--paper-green-500);
+            --paper-slider-active-color: var(--paper-green-500);
+          }
+          paper-slider.blue {
+            --paper-slider-knob-color: var(--paper-light-blue-500);
+            --paper-slider-active-color: var(--paper-light-blue-500);
+          }
+        </style>
+
         <div>R</div>
         <paper-slider class="red" value="23" max="255" editable></paper-slider>
-      </div>
-      <div>
         <div>G</div>
         <paper-slider class="green" value="183" max="255" editable></paper-slider>
-      </div>
-      <div>
         <div>B</div>
         <paper-slider class="blue" value="211" max="255" editable></paper-slider>
-      </div>
-      <div>
-      <div>&alpha;</div>
-      <paper-slider max="1.0" step="0.01" editable></paper-slider>
-      </div>
-    </div>
+      </template>
+    </demo-snippet>
 
-    <h4>Labelled pins</h4>
-    <div class="vertical-section">
-      <div>Brightness</div><br>
-      <paper-slider pin value="20" class="orange"></paper-slider>
-      <div>Ratings: <span id="ratingsLabel" class="caption"></span></div><br>
-      <paper-slider id="ratings" pin snaps max="10" max-markers="10" step="1" value="5" class="orange"></paper-slider>
-      <div>Grade: <span id="gradeLabel" class="caption"></span></div><br>
-      <paper-slider id="grade" pin value="20" secondary-progress="70" class="blue"></paper-slider>
-    </div>
+    <h3>The pins can be labelled</h3>
+    <demo-snippet>
+      <template>
+        <style is="custom-style">
+          .caption {
+            padding-left: 12px;
+            color: #a0a0a0;
+          }
+          #grade {
+            --paper-slider-secondary-color: var(--paper-red-a200);
+          }
+        </style>
+        <div>Brightness</div><br>
+        <paper-slider pin value="20"></paper-slider>
+        <div>Ratings: <span id="ratingsLabel" class="caption"></span></div><br>
+        <paper-slider id="ratings" pin snaps max="10" max-markers="10" step="1" value="5"></paper-slider>
+        <div>Grade: <span id="gradeLabel" class="caption"></span></div><br>
+        <paper-slider id="grade" pin value="20" secondary-progress="70"></paper-slider>
+
+        <script>
+          document.addEventListener('WebComponentsReady', function() {
+            var ratings = document.querySelector('#ratings');
+            ratings.addEventListener('value-change', function() {
+              document.querySelector('#ratingsLabel').textContent = ratings.value;
+            });
+
+            var grade = document.querySelector('#grade');
+            grade.addEventListener('value-change', function() {
+              var label = (grade.value < grade.secondaryProgress) ? "Fail" : "Pass" ;
+              document.querySelector('#gradeLabel').textContent = grade.value + " (" + label + ")";
+            });
+          });
+        </script>
+      </template>
+    </demo-snippet>
   </div>
 
   <script>
+    document.addEventListener('WebComponentsReady', function() {
+      var ratings = document.querySelector('#ratings');
+      ratings.addEventListener('value-change', function() {
+        document.querySelector('#ratingsLabel').textContent = ratings.value;
+      });
 
-    var ratings = document.querySelector('#ratings');
-    ratings.addEventListener('value-change', function() {
-      document.querySelector('#ratingsLabel').textContent = ratings.value;
+      var grade = document.querySelector('#grade');
+      grade.addEventListener('value-change', function() {
+        var label = (grade.value < grade.secondaryProgress) ? "Fail" : "Pass" ;
+        document.querySelector('#gradeLabel').textContent = grade.value + " (" + label + ")";
+      });
     });
-
-    var grade = document.querySelector('#grade');
-    grade.addEventListener('value-change', function() {
-      var label = (grade.value < grade.secondaryProgress) ? "Fail" : "Pass" ;
-      document.querySelector('#gradeLabel').textContent = grade.value + " (" + label + ")";
-    });
-
   </script>
-
 </body>
 </html>

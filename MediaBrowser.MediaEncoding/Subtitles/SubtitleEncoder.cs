@@ -604,7 +604,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             process.StandardError.BaseStream.CopyToAsync(logFileStream);
 
-            var ranToCompletion = process.WaitForExit(120000);
+            var ranToCompletion = process.WaitForExit(300000);
 
             if (!ranToCompletion)
             {
