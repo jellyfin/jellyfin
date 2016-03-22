@@ -17,7 +17,7 @@
 
         Dashboard.showLoadingMsg();
 
-        var panel = $(this).parents('paper-dialog')[0];
+        var panel = $(this).parents('dialog')[0];
 
         var playlistId = $('#selectPlaylistToAddTo', panel).val();
 
