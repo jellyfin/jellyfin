@@ -705,7 +705,9 @@ namespace MediaBrowser.Server.Implementations.Session
                 MediaInfo = info.Item,
                 DeviceName = session.DeviceName,
                 ClientName = session.Client,
-                DeviceId = session.DeviceId
+                DeviceId = session.DeviceId,
+                IsPaused = info.IsPaused,
+                PlaySessionId = info.PlaySessionId
 
             }, _logger);
 
