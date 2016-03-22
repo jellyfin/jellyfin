@@ -3,7 +3,8 @@
     function showMenu(options, successCallback, cancelCallback) {
 
         var dlg = paperDialogHelper.createDialog({
-            removeOnClose: true
+            removeOnClose: true,
+            autoFocus: false
         });
 
         dlg.id = 'dlg' + new Date().getTime();

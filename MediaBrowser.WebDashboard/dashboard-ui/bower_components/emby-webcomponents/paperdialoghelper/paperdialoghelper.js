@@ -100,6 +100,9 @@
         }
         animateDialogOpen(dlg);
 
+        // Undo the auto-focus applied by the native dialog element
+        safeBlur(document.activeElement);
+
         if (dlg.getAttribute('data-autofocus') == 'true') {
             focusManager.autoFocus(dlg);
         }
@@ -115,6 +118,12 @@
             window.addEventListener('popstate', onHashChange);
         } else {
             inputManager.on(dlg, onBackCommand);
+        }
+    }
+
+    function safeBlur(el) {
+        if (el && el.blur && el != document.body) {
+            el.blur();
         }
     }
 
