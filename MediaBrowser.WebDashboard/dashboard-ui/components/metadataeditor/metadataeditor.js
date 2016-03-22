@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'jQuery', 'paper-checkbox', 'paper-dialog', 'paper-input', 'paper-item-body', 'paper-icon-item', 'paper-textarea', 'paper-fab'], function (paperDialogHelper, $) {
+﻿define(['paperdialoghelper', 'jQuery', 'paper-checkbox', 'paper-input', 'paper-item-body', 'paper-icon-item', 'paper-textarea', 'paper-fab'], function (paperDialogHelper, $) {
 
     var currentContext;
     var metadataEditorInfo;
@@ -6,7 +6,7 @@
 
     function closeDialog(isSubmitted) {
 
-        if (currentContext.tagName == 'PAPER-DIALOG') {
+        if (currentContext.tagName == 'DIALOG') {
             paperDialogHelper.close(currentContext);
         }
     }
@@ -463,7 +463,7 @@
         });
 
         // For now this is only supported in dialog mode because we have a way of knowing when it closes
-        if (currentContext.tagName == 'PAPER-DIALOG') {
+        if (currentContext.tagName == 'DIALOG') {
             bindItemChanged(context);
         }
     }
@@ -1239,7 +1239,7 @@
 
                     paperDialogHelper.open(dlg);
 
-                    dlg.addEventListener('iron-overlay-closed', function () {
+                    dlg.addEventListener('close', function () {
                         unbindItemChanged(dlg);
                         resolve();
                     });

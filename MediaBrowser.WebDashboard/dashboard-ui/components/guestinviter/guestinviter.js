@@ -113,7 +113,7 @@
 
                     paperDialogHelper.open(dlg);
 
-                    dlg.addEventListener('iron-overlay-closed', function () {
+                    dlg.addEventListener('close', function () {
 
                         if (dlg.submitted) {
                             resolve();

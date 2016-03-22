@@ -13,7 +13,7 @@
         font-weight: 400 !important;
     }
 
-.background-theme-b, paper-dialog.background-theme-b {
+.background-theme-b, .paperDialog.background-theme-b {
     background: #161616;
 }
 

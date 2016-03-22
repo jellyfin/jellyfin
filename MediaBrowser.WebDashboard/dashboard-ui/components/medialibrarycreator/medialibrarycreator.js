@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'jQuery', 'paper-dialog', 'paper-input', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper, $) {
+﻿define(['paperdialoghelper', 'jQuery', 'paper-input', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper, $) {
 
     var currentDeferred;
     var hasChanges;
@@ -18,7 +18,7 @@
         }
 
         var form = this;
-        var dlg = $(form).parents('paper-dialog')[0];
+        var dlg = $(form).parents('dialog')[0];
 
         var name = $('#txtValue', form).val();
         var type = $('#selectCollectionType', form).val();
@@ -63,7 +63,7 @@
                 return;
             }
 
-            var dlg = $(this).parents('paper-dialog')[0];
+            var dlg = $(this).parents('dialog')[0];
 
             var index = this.selectedIndex;
             if (index != -1) {
@@ -214,7 +214,7 @@
 
                 initEditor(dlg, options.collectionTypeOptions);
 
-                dlg.addEventListener('iron-overlay-closed', onDialogClosed);
+                dlg.addEventListener('close', onDialogClosed);
 
                 paperDialogHelper.open(dlg);
 

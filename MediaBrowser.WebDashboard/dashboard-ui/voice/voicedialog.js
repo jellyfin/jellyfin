@@ -179,7 +179,7 @@ define(['paperdialoghelper', 'jQuery'], function (paperDialogHelper, $) {
         paperDialogHelper.open(dlg);
         currentDialog = dlg;
 
-        dlg.addEventListener('iron-overlay-closed', function () {
+        dlg.addEventListener('close', function () {
             currentDialog = null;
         });
 

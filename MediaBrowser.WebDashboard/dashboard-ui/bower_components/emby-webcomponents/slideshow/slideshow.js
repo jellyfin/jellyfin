@@ -57,7 +57,7 @@ define(['paperdialoghelper', 'inputManager', 'connectionManager', 'browser', 'cs
 
             inputmanager.on(window, onInputCommand);
 
-            dlg.addEventListener('iron-overlay-closed', onDialogClosed);
+            dlg.addEventListener('close', onDialogClosed);
 
             if (options.interactive) {
                 loadSwiper(dlg);

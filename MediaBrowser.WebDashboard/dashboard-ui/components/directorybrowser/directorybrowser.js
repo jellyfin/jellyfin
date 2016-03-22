@@ -237,7 +237,7 @@
                 $(dlg).on('iron-overlay-opened', function () {
                     this.querySelector('#txtDirectoryPickerPath input').focus();
                 });
-                $(dlg).on('iron-overlay-closed', onDialogClosed);
+                $(dlg).on('close', onDialogClosed);
 
                 paperDialogHelper.open(dlg);
 

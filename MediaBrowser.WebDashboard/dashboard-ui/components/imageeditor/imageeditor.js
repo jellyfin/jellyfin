@@ -271,7 +271,7 @@
                 initEditor(dlg, options);
 
                 // Has to be assigned a z-index after the call to .open() 
-                $(dlg).on('iron-overlay-closed', onDialogClosed);
+                $(dlg).on('close', onDialogClosed);
 
                 paperDialogHelper.open(dlg);
 

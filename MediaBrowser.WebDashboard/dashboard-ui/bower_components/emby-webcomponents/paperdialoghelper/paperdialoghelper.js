@@ -1,4 +1,4 @@
-﻿define(['historyManager', 'focusManager', 'browser', 'layoutManager', 'inputManager', 'paper-dialog', 'scale-up-animation', 'fade-out-animation', 'fade-in-animation', 'css!./paperdialoghelper.css'], function (historyManager, focusManager, browser, layoutManager, inputManager) {
+﻿define(['historyManager', 'focusManager', 'browser', 'layoutManager', 'inputManager', 'css!./paperdialoghelper.css'], function (historyManager, focusManager, browser, layoutManager, inputManager) {
 
     function paperDialogHashHandler(dlg, hash, resolve) {
 
@@ -11,13 +11,13 @@
 
             var isBack = self.originalUrl == window.location.href;
 
-            if (isBack || !dlg.opened) {
+            if (isBack || !isOpened(dlg)) {
                 window.removeEventListener('popstate', onHashChange);
             }
 
             if (isBack) {
                 self.closedByBack = true;
-                dlg.close();
+                closeDialog(dlg);
             }
         }
 
@@ -27,12 +27,14 @@
                 inputManager.off(dlg, onBackCommand);
 
                 self.closedByBack = true;
-                dlg.close();
+                closeDialog(dlg);
                 e.preventDefault();
             }
         }
 
         function onDialogClosed() {
+
+            removeBackdrop(dlg);
 
             if (removeScrollLockOnClose) {
                 document.body.classList.remove('noScroll');
@@ -64,8 +66,43 @@
             }, 1);
         }
 
-        dlg.addEventListener('iron-overlay-closed', onDialogClosed);
-        dlg.open();
+        dlg.addEventListener('close', onDialogClosed);
+
+        var center = !dlg.classList.contains('fixedSize');
+        if (center) {
+            dlg.style.left = '50%';
+            dlg.style.top = '50%';
+        }
+
+        dlg.classList.remove('hide');
+
+        // Use native methods if available
+        var hasManualBackdrop = false;
+        if (dlg.showModal) {
+            if (dlg.getAttribute('modal')) {
+                dlg.showModal();
+            } else {
+                addBackdropOverlay(dlg);
+                hasManualBackdrop = true;
+                dlg.show();
+            }
+        } else {
+            addBackdropOverlay(dlg);
+            hasManualBackdrop = true;
+        }
+
+        if (!hasManualBackdrop) {
+            dlg.classList.add('opened');
+        }
+
+        if (center) {
+            centerDialog(dlg);
+        }
+        animateDialogOpen(dlg);
+
+        if (dlg.getAttribute('data-autofocus') == 'true') {
+            focusManager.autoFocus(dlg);
+        }
 
         if (dlg.getAttribute('data-lockscroll') == 'true' && !document.body.classList.contains('noScroll')) {
             document.body.classList.add('noScroll');
@@ -81,6 +118,23 @@
         }
     }
 
+    function addBackdropOverlay(dlg) {
+
+        var backdrop = document.createElement('div');
+        backdrop.classList.add('dialogBackdrop');
+        dlg.parentNode.insertBefore(backdrop, dlg.nextSibling);
+        dlg.backdrop = backdrop;
+
+        // Doing this immediately causes the opacity to jump immediately without animating
+        setTimeout(function () {
+            dlg.classList.add('opened');
+        }, 0);
+
+        backdrop.addEventListener('click', function () {
+            close(dlg);
+        });
+    }
+
     function isHistoryEnabled(dlg) {
         return dlg.getAttribute('data-history') == 'true';
     }
@@ -93,20 +147,84 @@
         });
     }
 
+    function isOpened(dlg) {
+
+        //return dlg.opened;
+        return !dlg.classList.contains('hide');
+    }
+
     function close(dlg) {
 
-        if (dlg.opened) {
+        if (isOpened(dlg)) {
             if (isHistoryEnabled(dlg)) {
                 history.back();
             } else {
-                dlg.close();
+                closeDialog(dlg);
             }
         }
     }
 
-    function onDialogOpened(e) {
+    function scaleUp(elem) {
 
-        focusManager.autoFocus(e.target);
+        var keyframes = [
+          { transform: 'scale(0)', offset: 0 },
+          { transform: 'scale(1,1)', offset: 1 }];
+        var timing = elem.animationConfig.entry.timing;
+        return elem.animate(keyframes, timing);
+    }
+
+    function fadeIn(elem) {
+
+        var keyframes = [
+          { opacity: '0', offset: 0 },
+          { opacity: '1', offset: 1 }];
+        var timing = elem.animationConfig.entry.timing;
+        return elem.animate(keyframes, timing);
+    }
+
+    function fadeOut(elem) {
+
+        var keyframes = [
+          { opacity: '1', offset: 0 },
+          { opacity: '0', offset: 1 }];
+        var timing = elem.animationConfig.exit.timing;
+        return elem.animate(keyframes, timing);
+    }
+
+    function closeDialog(dlg) {
+
+        if (!dlg.classList.contains('hide')) {
+
+            var onAnimationFinish = function () {
+                dlg.classList.add('hide');
+                if (dlg.close) {
+                    dlg.close();
+                } else {
+                    dlg.dispatchEvent(new CustomEvent('close', {
+                        bubbles: false,
+                        cancelable: false
+                    }));
+                }
+            };
+            if (!dlg.animationConfig || !dlg.animate) {
+                onAnimationFinish();
+                return;
+            }
+
+            fadeOut(dlg).onfinish = onAnimationFinish;
+        }
+    }
+
+    function animateDialogOpen(dlg) {
+
+        if (!dlg.animationConfig || !dlg.animate) {
+            return;
+        }
+        if (dlg.animationConfig.entry.name == 'fade-in-animation') {
+            fadeIn(dlg);
+        } else if (dlg.animationConfig.entry.name == 'scale-up-animation') {
+            scaleUp(dlg);
+        }
     }
 
     function shouldLockDocumentScroll(options) {
@@ -122,14 +240,34 @@
         return browser.mobile;
     }
 
+    function centerDialog(dlg) {
+
+        dlg.style.marginLeft = (-(dlg.offsetWidth / 2)) + 'px';
+        dlg.style.marginTop = (-(dlg.offsetHeight / 2)) + 'px';
+    }
+
+    function removeBackdrop(dlg) {
+
+        var backdrop = dlg.backdrop;
+
+        if (backdrop) {
+            dlg.backdrop = null;
+
+            backdrop.classList.remove('opened');
+
+            setTimeout(function () {
+                backdrop.parentNode.removeChild(backdrop);
+            }, 300);
+        }
+    }
+
     function createDialog(options) {
 
         options = options || {};
 
-        var dlg = document.createElement('paper-dialog');
+        var dlg = document.createElement('dialog');
 
-        dlg.setAttribute('with-backdrop', 'with-backdrop');
-        dlg.setAttribute('role', 'alertdialog');
+        dlg.classList.add('hide');
 
         if (shouldLockDocumentScroll(options)) {
             dlg.setAttribute('data-lockscroll', 'true');
@@ -147,8 +285,9 @@
             dlg.setAttribute('modal', 'modal');
         }
 
-        // seeing max call stack size exceeded in the debugger with this
-        dlg.setAttribute('noAutoFocus', 'noAutoFocus');
+        if (options.autoFocus !== false) {
+            dlg.setAttribute('data-autofocus', 'true');
+        }
 
         var defaultEntryAnimation = browser.animate && !browser.mobile ? 'scale-up-animation' : 'fade-in-animation';
         dlg.entryAnimation = options.entryAnimation || defaultEntryAnimation;
@@ -168,15 +307,15 @@
             'exit': {
                 name: dlg.exitAnimation,
                 node: dlg,
-                timing: { duration: options.exitAnimationDuration || 400, easing: 'ease-in' }
+                timing: { duration: options.exitAnimationDuration || 300, easing: 'ease-in' }
             }
         };
 
         // too buggy in IE, not even worth it
         if (!browser.animate) {
-            dlg.animationConfig = null;
-            dlg.entryAnimation = null;
-            dlg.exitAnimation = null;
+            //dlg.animationConfig = null;
+            //dlg.entryAnimation = null;
+            //dlg.exitAnimation = null;
         }
 
         dlg.classList.add('paperDialog');
@@ -195,10 +334,6 @@
         if (options.size) {
             dlg.classList.add('fixedSize');
             dlg.classList.add(options.size);
-        }
-
-        if (options.autoFocus !== false) {
-            dlg.addEventListener('iron-overlay-opened', onDialogOpened);
         }
 
         return dlg;

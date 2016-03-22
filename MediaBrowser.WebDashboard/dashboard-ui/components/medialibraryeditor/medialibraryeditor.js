@@ -178,7 +178,7 @@
                 var editorContent = dlg.querySelector('.editorContent');
                 initEditor(editorContent, options);
 
-                $(dlg).on('iron-overlay-closed', onDialogClosed);
+                $(dlg).on('close', onDialogClosed);
 
                 paperDialogHelper.open(dlg);
 

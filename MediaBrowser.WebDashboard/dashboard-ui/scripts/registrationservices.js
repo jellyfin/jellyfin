@@ -138,7 +138,7 @@
             document.body.appendChild(dlg);
 
             // Has to be assigned a z-index after the call to .open() 
-            dlg.addEventListener('iron-overlay-closed', function (e) {
+            dlg.addEventListener('close', function (e) {
                 appStorage.setItem(supporterPlaybackKey, new Date().getTime());
                 dlg.parentNode.removeChild(dlg);
                 resolve();

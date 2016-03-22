@@ -216,14 +216,6 @@ iron-overlay-backdrop {
     padding: 0 12px;
 }
 
-paper-dialog > *:last-child:not(.buttons) {
-    margin-bottom: 12px;
-}
-
-paper-dialog > *:first-child:not(h2) {
-    margin-top: 12px;
-}
-
 paper-icon-button paper-ripple {
     color: inherit !important;
 }
@@ -559,7 +551,7 @@ div.dialogHeader {
     margin-left: .75em;
 }
 
-paper-dialog.popupEditor h2.dialogHeader {
+.paperDialog.popupEditor h2.dialogHeader {
     font-weight: inherit !important;
     line-height: 36px;
     padding: 0 1em;
@@ -571,7 +563,7 @@ paper-dialog.popupEditor h2.dialogHeader {
     margin-bottom: 0;
 }
 
-paper-dialog.popupEditor {
+.paperDialog.popupEditor {
     padding-bottom: 100px;
 }
 

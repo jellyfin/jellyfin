@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'jQuery', 'paper-checkbox', 'paper-dialog', 'paper-fab'], function (paperDialogHelper, $) {
+﻿define(['paperdialoghelper', 'jQuery', 'paper-checkbox', 'dialog', 'paper-fab'], function (paperDialogHelper, $) {
 
     var currentItemId;
     var currentItemType;
@@ -130,7 +130,7 @@
         ApiClient.downloadRemoteImage(options).then(function () {
 
             hasChanges = true;
-            var dlg = $(page).parents('paper-dialog')[0];
+            var dlg = $(page).parents('dialog')[0];
             paperDialogHelper.close(dlg);
         });
     }
@@ -296,7 +296,7 @@
             document.body.appendChild(dlg);
 
             // Has to be assigned a z-index after the call to .open() 
-            $(dlg).on('iron-overlay-closed', onDialogClosed);
+            $(dlg).on('close', onDialogClosed);
 
             paperDialogHelper.open(dlg);
 

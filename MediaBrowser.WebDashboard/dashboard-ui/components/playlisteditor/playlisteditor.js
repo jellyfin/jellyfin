@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'jQuery', 'paper-dialog', 'paper-input'], function (paperDialogHelper, $) {
+﻿define(['paperdialoghelper', 'jQuery', 'paper-input'], function (paperDialogHelper, $) {
 
     var lastPlaylistId = '';
 
@@ -221,7 +221,7 @@
 
             initEditor(dlg, items);
 
-            $(dlg).on('iron-overlay-closed', onDialogClosed);
+            $(dlg).on('close', onDialogClosed);
 
             paperDialogHelper.open(dlg);
 

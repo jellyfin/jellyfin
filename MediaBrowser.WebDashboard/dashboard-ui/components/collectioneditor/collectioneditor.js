@@ -1,9 +1,9 @@
-﻿define(['paperdialoghelper', 'jQuery', 'paper-checkbox', 'paper-dialog', 'paper-input'], function (paperDialogHelper, $) {
+﻿define(['paperdialoghelper', 'jQuery', 'paper-checkbox', 'paper-input'], function (paperDialogHelper, $) {
 
     function onSubmit() {
         Dashboard.showLoadingMsg();
 
-        var panel = $(this).parents('paper-dialog')[0];
+        var panel = $(this).parents('dialog')[0];
 
         var collectionId = $('#selectCollectionToAddTo', panel).val();
 
@@ -215,7 +215,7 @@
 
             initEditor(dlg, items);
 
-            $(dlg).on('iron-overlay-closed', onDialogClosed);
+            $(dlg).on('close', onDialogClosed);
 
             paperDialogHelper.open(dlg);
 
