@@ -63,6 +63,15 @@ namespace MediaBrowser.Api
             _mediaSourceManager = mediaSourceManager;
 
             Instance = this;
+            _sessionManager.PlaybackProgress += _sessionManager_PlaybackProgress;
+        }
+
+        void _sessionManager_PlaybackProgress(object sender, PlaybackProgressEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(e.PlaySessionId))
+            {
+                PingTranscodingJob(e.PlaySessionId, e.IsPaused);
+            }
         }
 
         /// <summary>

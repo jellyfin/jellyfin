@@ -335,11 +335,6 @@ namespace MediaBrowser.Api.UserLibrary
 
         public void Post(ReportPlaybackProgress request)
         {
-            if (!string.IsNullOrWhiteSpace(request.PlaySessionId))
-            {
-                ApiEntryPoint.Instance.PingTranscodingJob(request.PlaySessionId, request.IsPaused);
-            }
-
             request.SessionId = GetSession().Result.Id;
 
             var task = _sessionManager.OnPlaybackProgress(request);
