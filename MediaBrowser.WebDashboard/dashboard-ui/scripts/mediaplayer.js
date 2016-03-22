@@ -1599,7 +1599,7 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
             };
 
             info = Object.assign(info, state.PlayState);
-            console.log('repeat mode ' + info.RepeatMode);
+            //console.log(JSON.stringify(info));
             ApiClient.reportPlaybackProgress(info);
         }
 
