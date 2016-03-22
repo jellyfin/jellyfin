@@ -430,7 +430,7 @@ namespace MediaBrowser.Server.Implementations.Library
             }
             else if (parent != null)
             {
-                await parent.RemoveChild(item, CancellationToken.None).ConfigureAwait(false);
+                parent.RemoveChild(item);
             }
 
             await ItemRepository.DeleteItem(item.Id, CancellationToken.None).ConfigureAwait(false);

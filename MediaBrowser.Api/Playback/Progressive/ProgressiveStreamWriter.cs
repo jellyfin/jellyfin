@@ -61,8 +61,9 @@ namespace MediaBrowser.Api.Playback.Progressive
         {
             try
             {
-                new ProgressiveFileCopier(_fileSystem, _job)
-                    .StreamFile(Path, responseStream);
+                var task = new ProgressiveFileCopier(_fileSystem, _job, Logger).StreamFile(Path, responseStream);
+
+                Task.WaitAll(task);
             }
             catch (IOException)
             {
@@ -91,19 +92,21 @@ namespace MediaBrowser.Api.Playback.Progressive
     {
         private readonly IFileSystem _fileSystem;
         private readonly TranscodingJob _job;
+        private readonly ILogger _logger;
 
         // 256k
         private const int BufferSize = 262144;
-        
+
         private long _bytesWritten = 0;
 
-        public ProgressiveFileCopier(IFileSystem fileSystem, TranscodingJob job)
+        public ProgressiveFileCopier(IFileSystem fileSystem, TranscodingJob job, ILogger logger)
         {
             _fileSystem = fileSystem;
             _job = job;
+            _logger = logger;
         }
 
-        public void StreamFile(string path, Stream outputStream)
+        public async Task StreamFile(string path, Stream outputStream)
         {
             var eofCount = 0;
             long position = 0;
@@ -126,8 +129,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                         {
                             eofCount++;
                         }
-                        var task = Task.Delay(100);
-                        Task.WaitAll(task);
+                        await Task.Delay(100).ConfigureAwait(false);
                     }
                     else
                     {
@@ -145,6 +147,30 @@ namespace MediaBrowser.Api.Playback.Progressive
             int count;
             while ((count = source.Read(array, 0, array.Length)) != 0)
             {
+                //if (_job != null)
+                //{
+                //    var didPause = false;
+                //    var totalPauseTime = 0;
+
+                //    if (_job.IsUserPaused)
+                //    {
+                //        _logger.Debug("Pausing writing to network stream while user has paused playback.");
+
+                //        while (_job.IsUserPaused && totalPauseTime < 30000)
+                //        {
+                //            didPause = true;
+                //            var pauseTime = 500;
+                //            totalPauseTime += pauseTime;
+                //            await Task.Delay(pauseTime).ConfigureAwait(false);
+                //        }
+                //    }
+
+                //    if (didPause)
+                //    {
+                //        _logger.Debug("Resuming writing to network stream due to user unpausing playback.");
+                //    }
+                //}
+
                 destination.Write(array, 0, count);
 
                 _bytesWritten += count;

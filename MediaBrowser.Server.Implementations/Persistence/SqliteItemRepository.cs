@@ -63,8 +63,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private readonly string _criticReviewsPath;
 
-        private IDbCommand _deleteChildrenCommand;
-        private IDbCommand _saveChildrenCommand;
         private IDbCommand _deleteItemCommand;
 
         private IDbCommand _deletePeopleCommand;
@@ -138,9 +136,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create index if not exists idx_AncestorIds1 on AncestorIds(AncestorId)",
                                 "create index if not exists idx_AncestorIds2 on AncestorIds(AncestorIdText)",
                                 
-                                "create table if not exists ChildrenIds (ParentId GUID, ItemId GUID, PRIMARY KEY (ParentId, ItemId))",
-                                "create index if not exists idx_ChildrenIds on ChildrenIds(ParentId,ItemId)",
-
                                 "create table if not exists People (ItemId GUID, Name TEXT NOT NULL, Role TEXT, PersonType TEXT, SortOrder int, ListOrder int)",
                                 "create index if not exists idxPeopleItemId on People(ItemId)",
                                 "create index if not exists idxPeopleName on People(Name)",
@@ -477,18 +472,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             _saveItemCommand.CommandText += ")";
 
-            _deleteChildrenCommand = _connection.CreateCommand();
-            _deleteChildrenCommand.CommandText = "delete from ChildrenIds where ParentId=@ParentId";
-            _deleteChildrenCommand.Parameters.Add(_deleteChildrenCommand, "@ParentId");
-
             _deleteItemCommand = _connection.CreateCommand();
             _deleteItemCommand.CommandText = "delete from TypedBaseItems where guid=@Id";
             _deleteItemCommand.Parameters.Add(_deleteItemCommand, "@Id");
-
-            _saveChildrenCommand = _connection.CreateCommand();
-            _saveChildrenCommand.CommandText = "replace into ChildrenIds (ParentId, ItemId) values (@ParentId, @ItemId)";
-            _saveChildrenCommand.Parameters.Add(_saveChildrenCommand, "@ParentId");
-            _saveChildrenCommand.Parameters.Add(_saveChildrenCommand, "@ItemId");
 
             // People
             _deletePeopleCommand = _connection.CreateCommand();
@@ -1372,63 +1358,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 _connection.Dispose();
                 _connection = null;
-            }
-        }
-
-        public IEnumerable<Guid> GetChildren(Guid parentId)
-        {
-            if (parentId == Guid.Empty)
-            {
-                throw new ArgumentNullException("parentId");
-            }
-
-            CheckDisposed();
-
-            using (var cmd = _connection.CreateCommand())
-            {
-                cmd.CommandText = "select ItemId from ChildrenIds where ParentId = @ParentId";
-
-                cmd.Parameters.Add(cmd, "@ParentId", DbType.Guid).Value = parentId;
-
-                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
-                {
-                    while (reader.Read())
-                    {
-                        yield return reader.GetGuid(0);
-                    }
-                }
-            }
-        }
-
-        public IEnumerable<BaseItem> GetChildrenItems(Guid parentId)
-        {
-            if (parentId == Guid.Empty)
-            {
-                throw new ArgumentNullException("parentId");
-            }
-
-            CheckDisposed();
-
-            using (var cmd = _connection.CreateCommand())
-            {
-                cmd.CommandText = "select " + string.Join(",", _retriveItemColumns) + " from TypedBaseItems where guid in (select ItemId from ChildrenIds where ParentId = @ParentId)";
-
-                cmd.Parameters.Add(cmd, "@ParentId", DbType.Guid).Value = parentId;
-
-                //Logger.Debug(cmd.CommandText);
-
-                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
-                {
-                    while (reader.Read())
-                    {
-                        var item = GetItem(reader);
-
-                        if (item != null)
-                        {
-                            yield return item;
-                        }
-                    }
-                }
             }
         }
 
@@ -2392,11 +2321,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 transaction = _connection.BeginTransaction();
 
-                // First delete children
-                _deleteChildrenCommand.GetParameter(0).Value = id;
-                _deleteChildrenCommand.Transaction = transaction;
-                _deleteChildrenCommand.ExecuteNonQuery();
-
                 // Delete people
                 _deletePeopleCommand.GetParameter(0).Value = id;
                 _deletePeopleCommand.Transaction = transaction;
@@ -2421,79 +2345,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _deleteItemCommand.GetParameter(0).Value = id;
                 _deleteItemCommand.Transaction = transaction;
                 _deleteItemCommand.ExecuteNonQuery();
-
-                transaction.Commit();
-            }
-            catch (OperationCanceledException)
-            {
-                if (transaction != null)
-                {
-                    transaction.Rollback();
-                }
-
-                throw;
-            }
-            catch (Exception e)
-            {
-                Logger.ErrorException("Failed to save children:", e);
-
-                if (transaction != null)
-                {
-                    transaction.Rollback();
-                }
-
-                throw;
-            }
-            finally
-            {
-                if (transaction != null)
-                {
-                    transaction.Dispose();
-                }
-
-                WriteLock.Release();
-            }
-        }
-
-        public async Task SaveChildren(Guid parentId, IEnumerable<Guid> children, CancellationToken cancellationToken)
-        {
-            if (parentId == Guid.Empty)
-            {
-                throw new ArgumentNullException("parentId");
-            }
-
-            if (children == null)
-            {
-                throw new ArgumentNullException("children");
-            }
-
-            CheckDisposed();
-
-            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            IDbTransaction transaction = null;
-
-            try
-            {
-                transaction = _connection.BeginTransaction();
-
-                // First delete 
-                _deleteChildrenCommand.GetParameter(0).Value = parentId;
-                _deleteChildrenCommand.Transaction = transaction;
-
-                _deleteChildrenCommand.ExecuteNonQuery();
-
-                foreach (var id in children)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    _saveChildrenCommand.GetParameter(0).Value = parentId;
-                    _saveChildrenCommand.GetParameter(1).Value = id;
-
-                    _saveChildrenCommand.Transaction = transaction;
-
-                    _saveChildrenCommand.ExecuteNonQuery();
-                }
 
                 transaction.Commit();
             }

@@ -151,16 +151,6 @@ namespace MediaBrowser.Controller.Entities
             AddChildInternal(item.Id);
 
             await LibraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
-
-            if (!EnableNewFolderQuerying())
-            {
-                await ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken).ConfigureAwait(false);
-            }
-        }
-
-        private static bool EnableNewFolderQuerying()
-        {
-            return ConfigurationManager.Configuration.MigrationVersion >= 1;
         }
 
         protected void AddChildrenInternal(List<Guid> children)
@@ -197,21 +187,11 @@ namespace MediaBrowser.Controller.Entities
         /// Removes the child.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.InvalidOperationException">Unable to remove  + item.Name</exception>
-        public Task RemoveChild(BaseItem item, CancellationToken cancellationToken)
+        public void RemoveChild(BaseItem item)
         {
             RemoveChildrenInternal(new[] { item.Id }.ToList());
 
             item.SetParent(null);
-
-            if (!EnableNewFolderQuerying())
-            {
-                return ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken);
-            }
-
-            return Task.FromResult(true);
         }
 
         #region Indexing
@@ -500,11 +480,6 @@ namespace MediaBrowser.Controller.Entities
                     await LibraryManager.CreateItems(newItems, cancellationToken).ConfigureAwait(false);
 
                     AddChildrenInternal(newItems.Select(i => i.Id).ToList());
-
-                    if (!EnableNewFolderQuerying())
-                    {
-                        await ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken).ConfigureAwait(false);
-                    }
                 }
             }
 
@@ -734,45 +709,11 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected IEnumerable<Guid> GetCachedChildren()
         {
-            if (EnableNewFolderQuerying())
+            return ItemRepository.GetItemIdsList(new InternalItemsQuery
             {
-                return ItemRepository.GetItemIdsList(new InternalItemsQuery
-                {
-                    ParentId = Id
+                ParentId = Id
 
-                });
-            }
-
-            return ItemRepository.GetChildrenItems(Id).Select(RetrieveChild).Where(i => i != null).Select(i => i.Id);
-        }
-
-        private BaseItem RetrieveChild(BaseItem child)
-        {
-            if (child == null || child.Id == Guid.Empty)
-            {
-                Logger.Error("Item found with empty Id: " + (child.Path ?? child.Name));
-                return null;
-            }
-
-            var item = LibraryManager.GetMemoryItemById(child.Id);
-
-            if (item != null)
-            {
-                if (item is IByReferenceItem)
-                {
-                    return LibraryManager.GetOrAddByReferenceItem(item);
-                }
-
-                item.SetParent(this);
-            }
-            else
-            {
-                child.SetParent(this);
-                LibraryManager.RegisterItem(child);
-                item = child;
-            }
-
-            return item;
+            });
         }
 
         public QueryResult<BaseItem> QueryRecursive(InternalItemsQuery query)
