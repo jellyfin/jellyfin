@@ -213,8 +213,6 @@ namespace MediaBrowser.Api.Reports
                 SortBy = request.GetOrderBy(),
                 SortOrder = request.SortOrder ?? SortOrder.Ascending,
 
-                Filter = i => ApplyAdditionalFilters(request, i, user, _libraryManager),
-
                 IsFavorite = request.IsFavorite,
                 Limit = request.Limit,
                 StartIndex = request.StartIndex,
@@ -351,6 +349,15 @@ namespace MediaBrowser.Api.Reports
             }
 
             // Artists
+            if (!string.IsNullOrEmpty(request.ArtistIds))
+            {
+                var artistIds = request.ArtistIds.Split(new[] { '|', ',' });
+
+                var artistItems = artistIds.Select(_libraryManager.GetItemById).Where(i => i != null).ToList();
+                query.ArtistNames = artistItems.Select(i => i.Name).ToArray();
+            }
+
+            // Artists
             if (!string.IsNullOrEmpty(request.Artists))
             {
                 query.ArtistNames = request.Artists.Split('|');
@@ -369,28 +376,6 @@ namespace MediaBrowser.Api.Reports
             }
 
             return query;
-        }
-
-        private bool ApplyAdditionalFilters(BaseReportRequest request, BaseItem i, User user, ILibraryManager libraryManager)
-        {
-            // Artists
-            if (!string.IsNullOrEmpty(request.ArtistIds))
-            {
-                var artistIds = request.ArtistIds.Split(new[] { '|', ',' });
-
-                var audio = i as IHasArtist;
-
-                if (!(audio != null && artistIds.Any(id =>
-                {
-                    var artistItem = libraryManager.GetItemById(id);
-                    return artistItem != null && audio.HasAnyArtist(artistItem.Name);
-                })))
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
 
         /// <summary> Gets query result. </summary>
