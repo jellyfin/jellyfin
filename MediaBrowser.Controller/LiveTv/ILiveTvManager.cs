@@ -75,15 +75,6 @@ namespace MediaBrowser.Controller.LiveTv
         void AddParts(IEnumerable<ILiveTvService> services, IEnumerable<ITunerHost> tunerHosts, IEnumerable<IListingsProvider> listingProviders);
 
         /// <summary>
-        /// Gets the channels.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <param name="options">The options.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>IEnumerable{Channel}.</returns>
-        Task<QueryResult<ChannelInfoDto>> GetChannels(LiveTvChannelQuery query, DtoOptions options, CancellationToken cancellationToken);
-
-        /// <summary>
         /// Gets the recording.
         /// </summary>
         /// <param name="id">The identifier.</param>
@@ -92,15 +83,6 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="user">The user.</param>
         /// <returns>Task{RecordingInfoDto}.</returns>
         Task<BaseItemDto> GetRecording(string id, DtoOptions options, CancellationToken cancellationToken, User user = null);
-
-        /// <summary>
-        /// Gets the channel.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>Task{RecordingInfoDto}.</returns>
-        Task<ChannelInfoDto> GetChannel(string id, CancellationToken cancellationToken, User user = null);
         
         /// <summary>
         /// Gets the timer.
@@ -385,11 +367,10 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Adds the channel information.
         /// </summary>
-        /// <param name="dto">The dto.</param>
-        /// <param name="channel">The channel.</param>
+        /// <param name="items">The items.</param>
         /// <param name="options">The options.</param>
         /// <param name="user">The user.</param>
-        void AddChannelInfo(BaseItemDto dto, LiveTvChannel channel, DtoOptions options, User user);
+        void AddChannelInfo(List<Tuple<BaseItemDto, LiveTvChannel>> items, DtoOptions options, User user);
 
         /// <summary>
         /// Called when [recording file deleted].
