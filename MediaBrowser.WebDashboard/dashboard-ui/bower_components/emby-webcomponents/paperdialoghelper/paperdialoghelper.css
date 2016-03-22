@@ -1,5 +1,19 @@
 .paperDialog {
     margin: 0;
+    border-radius: 4px;
+    z-index: 999999 !important;
+    background-color: #fff;
+    position: fixed;
+    display: block;
+    margin: 24px 40px;
+    -webkit-overflow-scrolling: touch;
+    background: #ffffff;
+    color: #212121;
+    -webkit-font-smoothing: antialiased;
+    box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14), 0 6px 30px 5px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.4);
+    height: auto;
+    border: 0;
+    padding: 0;
 }
 
     .paperDialog.fixedSize {
@@ -12,6 +26,7 @@
         border-radius: 0 !important;
         max-height: none !important;
         max-width: none !important;
+        width: auto;
     }
 
     .paperDialog.scrollY {
@@ -59,4 +74,56 @@
 .noScroll {
     overflow-x: hidden !important;
     overflow-y: hidden !important;
+}
+
+.paperDialog > * {
+    margin-top: 20px;
+    padding: 0 24px;
+}
+
+    .paperDialog > *:first-child {
+        margin-top: 24px;
+    }
+
+.paperDialog .buttons {
+    position: relative;
+    padding: 8px 8px 8px 24px;
+    margin: 0;
+    color: #3f51b5;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -ms-flex-direction: row;
+    -webkit-flex-direction: row;
+    flex-direction: row;
+    -ms-flex-pack: end;
+    -webkit-justify-content: flex-end;
+    justify-content: flex-end;
+}
+
+.dialogBackdrop {
+    background-color: #000;
+    opacity: 0;
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin: 0 !important;
+    z-index: 999998 !important;
+    transition: opacity ease-out 0.2s;
+}
+
+.paperDialog.opened + .dialogBackdrop {
+    opacity: .6;
+}
+
+.paperDialog::backdrop {
+    opacity: 0;
+    background-color: #000;
+    transition: opacity ease-out 0.2s;
+}
+
+.paperDialog.opened::backdrop {
+    opacity: .6;
 }

@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'jQuery', 'paper-dialog', 'paper-fab', 'paper-input', 'paper-checkbox'], function (paperDialogHelper, $) {
+﻿define(['paperdialoghelper', 'jQuery', 'paper-fab', 'paper-input', 'paper-checkbox'], function (paperDialogHelper, $) {
 
     var currentItem;
     var currentItemType;
@@ -301,7 +301,7 @@
                 document.body.appendChild(dlg);
 
                 // Has to be assigned a z-index after the call to .open() 
-                $(dlg).on('iron-overlay-closed', onDialogClosed);
+                $(dlg).on('close', onDialogClosed);
 
                 paperDialogHelper.open(dlg);
 
@@ -380,7 +380,7 @@
                 return false;
             });
 
-            dlg.addEventListener('iron-overlay-closed', function () {
+            dlg.addEventListener('close', function () {
 
                 Dashboard.hideLoadingMsg();
                 var foundItem = hasChanges ? currentSearchResult : null;

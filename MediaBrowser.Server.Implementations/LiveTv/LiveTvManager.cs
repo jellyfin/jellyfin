@@ -244,42 +244,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return result;
         }
 
-        public async Task<QueryResult<ChannelInfoDto>> GetChannels(LiveTvChannelQuery query, DtoOptions options, CancellationToken cancellationToken)
-        {
-            var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
-
-            var internalResult = await GetInternalChannels(query, cancellationToken).ConfigureAwait(false);
-
-            var returnList = new List<ChannelInfoDto>();
-
-            var now = DateTime.UtcNow;
-
-            var programs = query.AddCurrentProgram ? _libraryManager.QueryItems(new InternalItemsQuery
-            {
-                IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
-                MaxStartDate = now,
-                MinEndDate = now,
-                ChannelIds = internalResult.Items.Select(i => i.Id.ToString("N")).ToArray()
-
-            }).Items.Cast<LiveTvProgram>().OrderBy(i => i.StartDate).ToList() : new List<LiveTvProgram>();
-
-            foreach (var channel in internalResult.Items)
-            {
-                var channelIdString = channel.Id.ToString("N");
-                var currentProgram = programs.FirstOrDefault(i => string.Equals(i.ChannelId, channelIdString, StringComparison.OrdinalIgnoreCase));
-
-                returnList.Add(_tvDtoService.GetChannelInfoDto(channel, options, currentProgram, user));
-            }
-
-            var result = new QueryResult<ChannelInfoDto>
-            {
-                Items = returnList.ToArray(),
-                TotalRecordCount = internalResult.TotalRecordCount
-            };
-
-            return result;
-        }
-
         public LiveTvChannel GetInternalChannel(string id)
         {
             return GetInternalChannel(new Guid(id));
@@ -1859,52 +1823,37 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             };
         }
 
-        public async Task<ChannelInfoDto> GetChannel(string id, CancellationToken cancellationToken, User user = null)
+        public void AddChannelInfo(List<Tuple<BaseItemDto, LiveTvChannel>> tuples, DtoOptions options, User user)
         {
-            var channel = GetInternalChannel(id);
-
             var now = DateTime.UtcNow;
+
+            var channelIds = tuples.Select(i => i.Item2.Id.ToString("N")).Distinct().ToArray();
 
             var programs = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
-                ChannelIds = new[] { id },
+                ChannelIds = channelIds,
                 MaxStartDate = now,
                 MinEndDate = now,
-                Limit = 1,
+                Limit = channelIds.Length,
                 SortBy = new[] { "StartDate" }
 
-            }, new string[] { }).Cast<LiveTvProgram>();
+            }, new string[] { }).ToList();
 
-            var currentProgram = programs.FirstOrDefault();
-
-            var dto = _tvDtoService.GetChannelInfoDto(channel, new DtoOptions(), currentProgram, user);
-
-            return dto;
-        }
-
-        public void AddChannelInfo(BaseItemDto dto, LiveTvChannel channel, DtoOptions options, User user)
-        {
-            dto.MediaSources = channel.GetMediaSources(true).ToList();
-
-            var now = DateTime.UtcNow;
-
-            var programs = _libraryManager.GetItemList(new InternalItemsQuery(user)
+            foreach (var tuple in tuples)
             {
-                IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
-                ChannelIds = new[] { channel.Id.ToString("N") },
-                MaxStartDate = now,
-                MinEndDate = now,
-                Limit = 1,
-                SortBy = new[] { "StartDate" }
+                var dto = tuple.Item1;
+                var channel = tuple.Item2;
 
-            }, new string[] { }).Cast<LiveTvProgram>();
+                dto.MediaSources = channel.GetMediaSources(true).ToList();
 
-            var currentProgram = programs.FirstOrDefault();
+                var channelIdString = channel.Id.ToString("N");
+                var currentProgram = programs.FirstOrDefault(i => string.Equals(i.ChannelId, channelIdString));
 
-            if (currentProgram != null)
-            {
-                dto.CurrentProgram = _dtoService.GetBaseItemDto(currentProgram, options, user);
+                if (currentProgram != null)
+                {
+                    dto.CurrentProgram = _dtoService.GetBaseItemDto(currentProgram, options, user);
+                }
             }
         }
 

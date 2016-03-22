@@ -20,6 +20,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <script src="../../web-component-tester/browser.js"></script>
   <link rel="import" href="../iron-input.html">
   <link rel="import" href="letters-only.html">
+  <link rel="import" href="disabled-input.html">
 
 </head>
 <body>
@@ -85,9 +86,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+  <test-fixture id="native-and-custom-validator">
+    <template>
+      <letters-only></letters-only>
+      <input is="iron-input" validator="letters-only" pattern="[a-c]*">
+    </template>
+  </test-fixture>
+
   <template is="dom-bind" id="bind-to-object">
     <input is="iron-input" id="input" bind-value="{{foo}}">
   </template>
+
+  <test-fixture id="disabled-input">
+    <template>
+      <disabled-input></disabled-input>
+    </template>
+  </test-fixture>
 
   <script>
 
@@ -209,8 +223,57 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         input._onInput();
         assert.equal(input.bindValue, 'foo');
       });
+
+      test('disabled input doesn\'t throw on Firefox', function() {
+        var el = fixture('disabled-input');
+        var input = el.$.input;
+
+        assert.equal(input.bindValue, 'foo');
+
+        assert.isFalse(el.myInvalid);
+        assert.isTrue(input.disabled);
+      });
+
+      test('browser validation beats custom validation', function() {
+        var input = fixture('native-and-custom-validator')[1];
+        // The input allows any letters, but the browser only allows one
+        // of [abc].
+        input.value = 'aaaa';
+        input.validate();
+        assert.isFalse(input.invalid, 'input is valid');
+
+        // The validator allows this, but the browser doesn't.
+        input.value = 'zzz';
+        input.validate();
+        assert.isTrue(input.invalid, 'input is invalid');
+      });
     });
 
+    suite('a11y', function() {
+      test('announces invalid characters when _onInput is called', function() {
+        var input = fixture('prevent-invalid-input');
+        input.addEventListener('iron-announce', function(event) {
+          assert.equal(event.detail.text, 'Invalid string of characters not entered.');
+        });
+        input.value = 'foo';
+        input._onInput();
+      });
+
+      test('announces invalid characters on keypress', function() {
+        var input = fixture('prevent-invalid-input');
+        input.addEventListener('iron-announce', function(event) {
+          assert.equal(event.detail.text, 'Invalid character a not entered.');
+        });
+
+        // Simulate key press event.
+        var event = new CustomEvent('keypress', {
+          bubbles: true,
+          cancelable: true
+        });
+        event.charCode = 97 /* a */;
+        input.dispatchEvent(event);
+      });
+    });
   </script>
 
 </body>

@@ -71,7 +71,7 @@
         pos.left += options.positionTo.offsetWidth / 2;
 
         // Account for popup size - we can't predict this yet so just estimate
-        pos.top -= (55 * options.items.length) / 2;
+        pos.top -= (45 * options.items.length) / 2;
         pos.left -= 80;
 
         // Avoid showing too close to the bottom
@@ -233,6 +233,7 @@
 
             if (pos) {
                 dlg.style.position = 'fixed';
+                dlg.style.margin = 0;
                 dlg.style.left = pos.left + 'px';
                 dlg.style.top = pos.top + 'px';
             }

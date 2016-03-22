@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'jQuery', 'paper-dialog', 'paper-fab'], function (paperDialogHelper, $) {
+﻿define(['paperdialoghelper', 'jQuery', 'paper-fab'], function (paperDialogHelper, $) {
 
     var currentItemId;
     var currentFile;
@@ -85,7 +85,7 @@
 
         Dashboard.showLoadingMsg();
 
-        var page = $(this).parents('paper-dialog');
+        var page = $(this).parents('dialog');
 
         var imageType = $('#selectImageType', page).val();
 
@@ -161,7 +161,7 @@
             document.body.appendChild(dlg);
 
             // Has to be assigned a z-index after the call to .open() 
-            $(dlg).on('iron-overlay-closed', onDialogClosed);
+            $(dlg).on('close', onDialogClosed);
 
             paperDialogHelper.open(dlg);
 

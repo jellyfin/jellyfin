@@ -55,7 +55,7 @@ define(['layoutManager', 'dialogText'], function (layoutManager, dialogText) {
 
             dialogOptions.modal = false;
             dialogOptions.entryAnimationDuration = 160;
-            dialogOptions.exitAnimationDuration = 200;
+            dialogOptions.exitAnimationDuration = 160;
             dialogOptions.autoFocus = false;
         }
 
@@ -72,18 +72,26 @@ define(['layoutManager', 'dialogText'], function (layoutManager, dialogText) {
 
         html += '<div class="buttons">';
 
-        html += '<paper-button class="btnConfirm" dialog-confirm autofocus>' + dialogText.get('Ok') + '</paper-button>';
+        html += '<paper-button class="btnConfirm" autofocus>' + dialogText.get('Ok') + '</paper-button>';
 
-        html += '<paper-button dialog-dismiss>' + dialogText.get('Cancel') + '</paper-button>';
+        html += '<paper-button class="btnCancel">' + dialogText.get('Cancel') + '</paper-button>';
 
         html += '</div>';
 
         dlg.innerHTML = html;
         document.body.appendChild(dlg);
 
-        paperdialoghelper.open(dlg).then(function () {
+        var confirmed = false;
+        dlg.querySelector('.btnConfirm').addEventListener('click', function () {
+            confirmed = true;
+            paperdialoghelper.close(dlg);
+        });
+        dlg.querySelector('.btnCancel').addEventListener('click', function () {
+            confirmed = false;
+            paperdialoghelper.close(dlg);
+        });
 
-            var confirmed = dlg.closingReason.confirmed;
+        paperdialoghelper.open(dlg).then(function () {
 
             if (confirmed) {
                 resolve();

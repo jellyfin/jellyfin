@@ -528,7 +528,7 @@
 
                     paperDialogHelper.open(dlg);
 
-                    dlg.addEventListener('iron-overlay-closed', resolve);
+                    dlg.addEventListener('close', resolve);
 
                     var onTimeout = function () {
                         updateFilterControls(dlg, options);
