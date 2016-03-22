@@ -33,6 +33,7 @@ define(['jQuery'], function ($) {
                 dependencies.push('jqmcollapsible');
                 dependencies.push('jqmcheckbox');
                 dependencies.push('legacy/dashboard');
+                dependencies.push('legacy/selectmenu');
             }
 
             if (isPluginpage || (newView.classList && newView.classList.contains('type-interior'))) {
