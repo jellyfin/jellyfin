@@ -4,7 +4,6 @@
     z-index: 999999 !important;
     background-color: #fff;
     position: fixed;
-    display: block;
     margin: 24px 40px;
     -webkit-overflow-scrolling: touch;
     background: #ffffff;
