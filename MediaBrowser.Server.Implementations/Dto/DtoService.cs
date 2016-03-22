@@ -94,12 +94,18 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             var list = new List<BaseItemDto>();
             var programTuples = new List<Tuple<BaseItem, BaseItemDto>> { };
+            var channelTuples = new List<Tuple<BaseItemDto, LiveTvChannel>> { };
 
             foreach (var item in items)
             {
                 var dto = GetBaseItemDtoInternal(item, options, syncDictionary, user, owner);
 
-                if (item is LiveTvProgram)
+                var tvChannel = item as LiveTvChannel;
+                if (tvChannel != null)
+                {
+                    channelTuples.Add(new Tuple<BaseItemDto, LiveTvChannel>(dto, tvChannel));
+                }
+                else if (item is LiveTvProgram)
                 {
                     programTuples.Add(new Tuple<BaseItem, BaseItemDto>(item, dto));
                 }
@@ -131,6 +137,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 Task.WaitAll(task);
             }
 
+            if (channelTuples.Count > 0)
+            {
+                _livetvManager().AddChannelInfo(channelTuples, options, user);
+            }
+
             return list;
         }
 
@@ -151,8 +162,13 @@ namespace MediaBrowser.Server.Implementations.Dto
             var syncProgress = GetSyncedItemProgress(options);
 
             var dto = GetBaseItemDtoInternal(item, options, GetSyncedItemProgressDictionary(syncProgress), user, owner);
-
-            if (item is LiveTvProgram)
+            var tvChannel = item as LiveTvChannel;
+            if (tvChannel != null)
+            {
+                var list = new List<Tuple<BaseItemDto, LiveTvChannel>> { new Tuple<BaseItemDto, LiveTvChannel>(dto, tvChannel) };
+                _livetvManager().AddChannelInfo(list, options, user);
+            }
+            else if (item is LiveTvProgram)
             {
                 var list = new List<Tuple<BaseItem, BaseItemDto>> { new Tuple<BaseItem, BaseItemDto>(item, dto) };
                 var task = _livetvManager().AddInfoToProgramDto(list, options.Fields, user);
@@ -371,12 +387,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             AttachBasicFields(dto, item, owner, options);
-
-            var tvChannel = item as LiveTvChannel;
-            if (tvChannel != null)
-            {
-                _livetvManager().AddChannelInfo(dto, tvChannel, options, user);
-            }
 
             var collectionFolder = item as ICollectionFolder;
             if (collectionFolder != null)
