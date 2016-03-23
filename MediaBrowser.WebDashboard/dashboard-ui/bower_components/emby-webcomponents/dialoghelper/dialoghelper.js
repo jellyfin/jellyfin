@@ -272,7 +272,8 @@
         var dlg = document.createElement('dialog');
 
         // If there's no native dialog support, use a plain div
-        if (!dlg.showModal) {
+        // Also not working well in samsung tizen browser, content inside not clickable
+        if (!dlg.showModal || browser.tv) {
             dlg = document.createElement('div');
         }
 
