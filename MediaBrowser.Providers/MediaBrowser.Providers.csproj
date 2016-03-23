@@ -50,7 +50,7 @@
     </Reference>
     <Reference Include="CommonIO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\CommonIO.1.0.0.8\lib\net45\CommonIO.dll</HintPath>
+      <HintPath>..\packages\CommonIO.1.0.0.9\lib\net45\CommonIO.dll</HintPath>
     </Reference>
     <Reference Include="DvdLib, Version=1.0.5167.21152, Culture=neutral, PublicKeyToken=7a2f3f5ec8d93575, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
