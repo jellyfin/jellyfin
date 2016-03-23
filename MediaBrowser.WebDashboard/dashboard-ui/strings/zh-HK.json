@@ -831,7 +831,7 @@
     "HeaderSubtitleDownloadingHelp": "\u7576\u6383\u63cf\u60a8\u7684\u5f71\u7247\u6587\u4ef6\u6642\uff0c\u53ef\u4ee5\u641c\u7d22\u6b20\u7f3a\u7684\u5b57\u5e55\u5f8c\uff0c\u5229\u7528\u5b57\u5e55\u63d0\u4f9b\u7db2\u7ad9\u4f86\u586b\u88dc\u5982 OpenSubtitles.org\u3002",
     "HeaderDownloadSubtitlesFor": "\u4e0b\u8f09\u5b57\u5e55\uff1a",
     "MessageNoChapterProviders": "Install a chapter provider plugin such as ChapterDb to enable additional chapter options.",
-    "LabelSkipIfGraphicalSubsPresent": "\u5982\u679c\u5f71\u7247\u5df2\u7d93\u5305\u542b\u5716\u5f62\u5b57\u5e55\u5247\u5ffd\u7565",
+    "LabelSkipIfGraphicalSubsPresent": "Skip if the video already contains embedded subtitles",
     "LabelSkipIfGraphicalSubsPresentHelp": "\u4fdd\u7559\u6587\u5b57\u7248\u672c\u7684\u5b57\u5e55\u6703\u66f4\u6709\u6548\u7387\u50b3\u905e\uff0c\u6e1b\u4f4e\u5f71\u7247\u8f49\u78bc\u7684\u6a5f\u6703\u3002",
     "TabSubtitles": "\u5b57\u5e55",
     "TabChapters": "Chapters",

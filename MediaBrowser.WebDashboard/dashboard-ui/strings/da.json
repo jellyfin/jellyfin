@@ -831,7 +831,7 @@
     "HeaderSubtitleDownloadingHelp": "N\u00e5r Emby skanner dine videofiler, kan den s\u00f8ge efter manglende undertekster, og hente dem fra en undertekstudbyder, som f. eks. OpenSubtitles.org.",
     "HeaderDownloadSubtitlesFor": "Hent undertekster til:",
     "MessageNoChapterProviders": "Installer et kapiteludbyder-plugin, som f. ekst. ChapterDb, for at f\u00e5 yderligere muligheder med kapitler.",
-    "LabelSkipIfGraphicalSubsPresent": "Spring over hvis videoen allerede indeholder grafiske undertekster",
+    "LabelSkipIfGraphicalSubsPresent": "Skip if the video already contains embedded subtitles",
     "LabelSkipIfGraphicalSubsPresentHelp": "Ved at bruger tekstbaserede undertekster kan du f\u00e5 en mere effektive levering og neds\u00e6tte sandsynligheden for transkodning.",
     "TabSubtitles": "Undertekster",
     "TabChapters": "Kapitler",

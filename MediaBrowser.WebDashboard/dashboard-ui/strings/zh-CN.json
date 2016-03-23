@@ -831,7 +831,7 @@
     "HeaderSubtitleDownloadingHelp": "When Emby scans your video files it can search for missing subtitles, and download them using a subtitle provider such as OpenSubtitles.org.",
     "HeaderDownloadSubtitlesFor": "\u4e0b\u8f7d\u54ea\u4e00\u9879\u7684\u5b57\u5e55\uff1a",
     "MessageNoChapterProviders": "\u5b89\u88c5\u4e00\u4e2a\u7ae0\u8282\u63d0\u4f9b\u8005\u7684\u63d2\u4ef6\uff0c\u4f8b\u5982ChapterDb\u3002\u4ee5\u4fbf\u542f\u7528\u989d\u5916\u7684\u7ae0\u8282\u9009\u9879\u3002",
-    "LabelSkipIfGraphicalSubsPresent": "\u5982\u679c\u89c6\u9891\u5df2\u7ecf\u5305\u542b\u56fe\u5f62\u5b57\u5e55\u5219\u8df3\u8fc7",
+    "LabelSkipIfGraphicalSubsPresent": "Skip if the video already contains embedded subtitles",
     "LabelSkipIfGraphicalSubsPresentHelp": "Keeping text versions of subtitles will result in more efficient delivery and decrease the likelihood of video transcoding.",
     "TabSubtitles": "\u5b57\u5e55",
     "TabChapters": "\u7ae0\u8282",

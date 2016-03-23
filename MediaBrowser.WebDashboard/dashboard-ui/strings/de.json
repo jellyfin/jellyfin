@@ -2123,7 +2123,7 @@
     "HeaderUploadImage": "Bild hochladen",
     "DeviceLastUsedByUserName": "Zuletzt genutzt von {0}",
     "HeaderDeleteDevice": "Ger\u00e4t l\u00f6schen",
-    "DeleteDeviceConfirmation": "Bist du dir sicher dieses Ger\u00e4t l\u00f6schen zu wollen? Es wird wieder angezeigt werden, sobald sich ein Uder dar\u00fcber einloggt.",
+    "DeleteDeviceConfirmation": "Bist du dir sicher dieses Ger\u00e4t l\u00f6schen zu wollen? Es wird wieder angezeigt werden, sobald sich ein Benutzer dar\u00fcber einloggt.",
     "LabelEnableCameraUploadFor": "Aktiviere den Kamera-Upload f\u00fcr:",
     "HeaderSelectUploadPath": "W\u00e4hle Upload Pfad",
     "LabelEnableCameraUploadForHelp": "Uploads erscheinen automatisch im Hintergrund wenn Sie mit Emby verbunden sind.",
