@@ -1,4 +1,4 @@
-﻿define(['events', 'apiclient'], function (Events, apiClientFactory) {
+﻿define(['events', 'apiclient', 'appStorage'], function (Events, apiClientFactory, appStorage) {
 
     var ConnectionState = {
         Unavailable: 0,
@@ -1497,29 +1497,82 @@
 
         self.getRegistrationInfo = function (feature, apiClient) {
 
-            if (isConnectUserSupporter()) {
-                return Promise.resolve({
-                    Name: feature,
-                    IsRegistered: true,
-                    IsTrial: false
+            var params = {
+                serverId: apiClient.serverInfo().Id,
+                deviceId: self.deviceId(),
+                deviceName: deviceName,
+                appName: appName,
+                appVersion: appVersion,
+                embyUserName: ''
+            };
+
+            var cacheKey = 'regInfo-' + params.serverId;
+            var regInfo = JSON.parse(appStorage.getItem(cacheKey) || '{}');
+
+            var updateDevicePromise;
+
+            // Cache for 3 days
+            if (params.deviceId && (new Date().getTime() - (regInfo.lastValidDate || 0)) < 259200000) {
+
+                console.log('getRegistrationInfo has cached info');
+
+                if (regInfo.deviceId == params.deviceId) {
+                    console.log('getRegistrationInfo returning cached info');
+                    return Promise.resolve();
+                }
+
+                updateDevicePromise = ajax({
+                    url: 'https://mb3admin.com/admin/service/registration/updateDevice?' + paramsToString({
+                        serverId: params.serverId,
+                        oldDeviceId: regInfo.deviceId,
+                        newDeviceId: params.deviceId
+                    }),
+                    type: 'POST'
                 });
             }
 
-            return apiClient.getRegistrationInfo(feature);
-        };
-
-        function isConnectUserSupporter() {
-
-            if (self.isLoggedIntoConnect()) {
-
-                var connectUser = self.connectUser();
-
-                if (connectUser && connectUser.IsSupporter) {
-                    return true;
-                }
+            if (!updateDevicePromise) {
+                updateDevicePromise = Promise.resolve();
             }
-            return false;
-        }
+
+            return updateDevicePromise.then(function () {
+                return apiClient.getCurrentUser().then(function (user) {
+
+                    params.embyUserName = user.Name;
+
+                    return ajax({
+                        url: 'https://mb3admin.com/admin/service/registration/validateDevice?' + paramsToString(params),
+                        type: 'POST'
+
+                    }).then(function (response) {
+
+                        var status = response.status;
+                        console.log('getRegistrationInfo response: ' + status);
+
+                        if (status == 200) {
+                            appStorage.setItem(cacheKey, JSON.stringify({
+                                lastValidDate: new Date().getTime(),
+                                deviceId: params.deviceId
+                            }));
+                            return Promise.resolve();
+                        }
+                        if (status == 401) {
+                            return Promise.reject();
+                        }
+                        if (status == 403) {
+                            return Promise.reject('overlimit');
+                        }
+
+                        // general error
+                        return Promise.reject();
+
+                    }, function (err) {
+                        console.log('getRegistrationInfo failed');
+                        throw err;
+                    });
+                });
+            });
+        };
 
         function addAppInfoToConnectRequest(request) {
             request.headers = request.headers || {};
