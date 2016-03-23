@@ -4,9 +4,13 @@
     var metadataEditorInfo;
     var currentItem;
 
+    function isDialog() {
+        return currentContext.classList.contains('dialog');
+    }
+
     function closeDialog(isSubmitted) {
 
-        if (currentContext.tagName == 'DIALOG') {
+        if (isDialog()) {
             dialogHelper.close(currentContext);
         }
     }
@@ -463,7 +467,7 @@
         });
 
         // For now this is only supported in dialog mode because we have a way of knowing when it closes
-        if (currentContext.tagName == 'DIALOG') {
+        if (isDialog()) {
             bindItemChanged(context);
         }
     }

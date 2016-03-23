@@ -130,7 +130,7 @@
         ApiClient.downloadRemoteImage(options).then(function () {
 
             hasChanges = true;
-            var dlg = $(page).parents('dialog')[0];
+            var dlg = $(page).parents('.dialog')[0];
             dialogHelper.close(dlg);
         });
     }

@@ -85,7 +85,7 @@
 
         Dashboard.showLoadingMsg();
 
-        var page = $(this).parents('dialog');
+        var page = $(this).parents('.dialog');
 
         var imageType = $('#selectImageType', page).val();
 

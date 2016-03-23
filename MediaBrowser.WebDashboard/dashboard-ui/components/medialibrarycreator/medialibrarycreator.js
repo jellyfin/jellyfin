@@ -18,7 +18,7 @@
         }
 
         var form = this;
-        var dlg = $(form).parents('dialog')[0];
+        var dlg = $(form).parents('.dialog')[0];
 
         var name = $('#txtValue', form).val();
         var type = $('#selectCollectionType', form).val();
@@ -63,7 +63,7 @@
                 return;
             }
 
-            var dlg = $(this).parents('dialog')[0];
+            var dlg = $(this).parents('.dialog')[0];
 
             var index = this.selectedIndex;
             if (index != -1) {
