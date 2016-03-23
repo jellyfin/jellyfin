@@ -259,36 +259,36 @@ namespace MediaBrowser.Providers.TV
 				return files;
 			}
 
-			if (seasonNumber == null)
-			{
-				return files;
-			}
-
-			var file = Path.Combine(seriesDataPath, string.Format("episode-{0}-{1}.xml", seasonNumber.Value, episodeNumber));
-
-			var fileInfo = _fileSystem.GetFileInfo(file);
 			var usingAbsoluteData = false;
 
-			if (fileInfo.Exists)
-			{
-				files.Add(fileInfo);
-			}
-			else
-			{
-				file = Path.Combine(seriesDataPath, string.Format("episode-abs-{0}.xml", episodeNumber));
-				fileInfo = _fileSystem.GetFileInfo(file);
-				if (fileInfo.Exists)
-				{
-					files.Add(fileInfo);
-					usingAbsoluteData = true;
-				}
-			}
+            if (seasonNumber.HasValue)
+            {
+                var file = Path.Combine(seriesDataPath, string.Format("episode-{0}-{1}.xml", seasonNumber.Value, episodeNumber));
+                var fileInfo = _fileSystem.GetFileInfo(file);
+
+                if (fileInfo.Exists)
+                {
+                    files.Add(fileInfo);
+                }
+            }
+            else
+            {
+                usingAbsoluteData = true;
+                var file = Path.Combine(seriesDataPath, string.Format("episode-abs-{0}.xml", episodeNumber));
+                var fileInfo = _fileSystem.GetFileInfo(file);
+                if (fileInfo.Exists)
+                {
+                    files.Add(fileInfo);
+                }
+            }
 
 			var end = endingEpisodeNumber ?? episodeNumber;
 			episodeNumber++;
 
 			while (episodeNumber <= end)
 			{
+                string file;
+
 				if (usingAbsoluteData)
 				{
 					file = Path.Combine(seriesDataPath, string.Format("episode-abs-{0}.xml", episodeNumber));
@@ -298,7 +298,7 @@ namespace MediaBrowser.Providers.TV
 					file = Path.Combine(seriesDataPath, string.Format("episode-{0}-{1}.xml", seasonNumber.Value, episodeNumber));
 				}
 
-				fileInfo = _fileSystem.GetFileInfo(file);
+				var fileInfo = _fileSystem.GetFileInfo(file);
 				if (fileInfo.Exists)
 				{
 					files.Add(fileInfo);
