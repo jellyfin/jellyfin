@@ -78,10 +78,55 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     /**
+     * Brings the overlay at the specified index to the front.
+     * @param {number} i
+     * @private
+     */
+    _bringOverlayAtIndexToFront: function(i) {
+      var overlay = this._overlays[i];
+      var lastI = this._overlays.length - 1;
+      // If already the top element, return.
+      if (!overlay || i === lastI) {
+        return;
+      }
+      // Update z-index to be on top.
+      var minimumZ = Math.max(this.currentOverlayZ(), this._minimumZ);
+      if (this._getZ(overlay) <= minimumZ) {
+        this._applyOverlayZ(overlay, minimumZ);
+      }
+
+      // Shift other overlays behind the new on top.
+      while (i < lastI) {
+        this._overlays[i] = this._overlays[i + 1];
+        i++;
+      }
+      this._overlays[lastI] = overlay;
+    },
+
+    /**
+     * Adds the overlay and updates its z-index if it's opened, or removes it if it's closed.
+     * Also updates the backdrop z-index.
+     * @param {Element} overlay
+     */
+    addOrRemoveOverlay: function(overlay) {
+      if (overlay.opened) {
+        this.addOverlay(overlay);
+      } else {
+        this.removeOverlay(overlay);
+      }
+      this.trackBackdrop();
+    },
+
+    /**
      * Tracks overlays for z-index and focus management.
      * @param {Element} overlay
      */
     addOverlay: function(overlay) {
+      var i = this._overlays.indexOf(overlay);
+      if (i >= 0) {
+        this._bringOverlayAtIndexToFront(i);
+        return;
+      }
       var minimumZ = Math.max(this.currentOverlayZ(), this._minimumZ);
       this._overlays.push(overlay);
       var newZ = this.currentOverlayZ();
@@ -97,16 +142,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      */
     removeOverlay: function(overlay) {
       var i = this._overlays.indexOf(overlay);
-      if (i >= 0) {
-        this._overlays.splice(i, 1);
-        this._setZ(overlay, '');
+      if (i === -1) {
+        return;
+      }
+      this._overlays.splice(i, 1);
+      this._setZ(overlay, '');
 
-        var node = overlay.restoreFocusOnClose ? overlay.restoreFocusNode : null;
-        overlay.restoreFocusNode = null;
-        // Focus back only if still contained in document.body
-        if (node && Polymer.dom(document.body).deepContains(node)) {
-          node.focus();
-        }
+      var node = overlay.restoreFocusOnClose ? overlay.restoreFocusNode : null;
+      overlay.restoreFocusNode = null;
+      // Focus back only if still contained in document.body
+      if (node && Polymer.dom(document.body).deepContains(node)) {
+        node.focus();
       }
     },
 
@@ -152,9 +198,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     /**
-     * @param {Element} overlay The overlay that updated its withBackdrop.
+     * Updates the backdrop z-index.
      */
-    trackBackdrop: function(overlay) {
+    trackBackdrop: function() {
       this.backdropElement.style.zIndex = this.backdropZ();
     },
 
