@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'jQuery', 'paper-checkbox', 'paper-input'], function (paperDialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'paper-checkbox', 'paper-input'], function (dialogHelper, $) {
 
     function onSubmit() {
         Dashboard.showLoadingMsg();
@@ -39,7 +39,7 @@
 
             var id = result.Id;
 
-            paperDialogHelper.close(dlg);
+            dialogHelper.close(dlg);
             redirectToCollection(id);
 
         });
@@ -71,7 +71,7 @@
 
             Dashboard.hideLoadingMsg();
 
-            paperDialogHelper.close(dlg);
+            dialogHelper.close(dlg);
 
             require(['toast'], function (toast) {
                 toast(Globalize.translate('MessageItemsAdded'));
@@ -191,7 +191,7 @@
 
             items = items || [];
 
-            var dlg = paperDialogHelper.createDialog({
+            var dlg = dialogHelper.createDialog({
                 size: 'small'
             });
 
@@ -217,11 +217,11 @@
 
             $(dlg).on('close', onDialogClosed);
 
-            paperDialogHelper.open(dlg);
+            dialogHelper.open(dlg);
 
             $('.btnCancel', dlg).on('click', function () {
 
-                paperDialogHelper.close(dlg);
+                dialogHelper.close(dlg);
             });
         };
     }

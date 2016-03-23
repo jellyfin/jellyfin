@@ -19,7 +19,7 @@
     background-attachment: initial;
 }
 
-.background-theme-b, .paperDialog.background-theme-b {
+.background-theme-b, .dialog.background-theme-b {
     background: #181818;
 }
 

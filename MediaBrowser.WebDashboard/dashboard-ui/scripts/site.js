@@ -1881,7 +1881,7 @@ var AppInfo = {};
 
         define("swiper", [bowerPath + "/Swiper/dist/js/swiper.min", "css!" + bowerPath + "/Swiper/dist/css/swiper.min"], returnFirstDependency);
 
-        define("paperdialoghelper", [embyWebComponentsBowerPath + "/paperdialoghelper/paperdialoghelper"], returnFirstDependency);
+        define("dialogHelper", [embyWebComponentsBowerPath + "/dialoghelper/dialoghelper"], returnFirstDependency);
         define("toast", [embyWebComponentsBowerPath + "/toast/toast"], returnFirstDependency);
         define("scrollHelper", [embyWebComponentsBowerPath + "/scrollhelper"], returnFirstDependency);
 

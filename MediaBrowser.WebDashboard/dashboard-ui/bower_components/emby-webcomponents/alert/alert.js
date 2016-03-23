@@ -1,4 +1,4 @@
-define(['paperdialoghelper', 'layoutManager', 'dialogText', 'html!./../prompt/icons.html', 'css!./../prompt/style.css', 'paper-button', 'paper-input'], function (paperdialoghelper, layoutManager, dialogText) {
+define(['dialogHelper', 'layoutManager', 'dialogText', 'html!./../prompt/icons.html', 'css!./../prompt/style.css', 'paper-button', 'paper-input'], function (dialogHelper, layoutManager, dialogText) {
 
     return function (options) {
 
@@ -27,7 +27,7 @@ define(['paperdialoghelper', 'layoutManager', 'dialogText', 'html!./../prompt/ic
             dialogOptions.exitAnimationDuration = 200;
         }
 
-        var dlg = paperdialoghelper.createDialog(dialogOptions);
+        var dlg = dialogHelper.createDialog(dialogOptions);
 
         dlg.classList.add('promptDialog');
 
@@ -73,9 +73,9 @@ define(['paperdialoghelper', 'layoutManager', 'dialogText', 'html!./../prompt/ic
 
         dlg.querySelector('.btnSubmit').addEventListener('click', function (e) {
 
-            paperdialoghelper.close(dlg);
+            dialogHelper.close(dlg);
         });
 
-        return paperdialoghelper.open(dlg);
+        return dialogHelper.open(dlg);
     };
 });

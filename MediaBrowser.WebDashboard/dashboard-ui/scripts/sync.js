@@ -2,7 +2,7 @@
 
     var currentDialogOptions;
 
-    function submitJob(dlg, userId, syncOptions, form, paperDialogHelper) {
+    function submitJob(dlg, userId, syncOptions, form, dialogHelper) {
 
         if (!userId) {
             throw new Error('userId cannot be null');
@@ -53,7 +53,7 @@
 
         }).then(function () {
 
-            paperDialogHelper.close(dlg);
+            dialogHelper.close(dlg);
             require(['toast'], function (toast) {
                 toast(Globalize.translate('MessageSyncJobCreated'));
             });
@@ -218,7 +218,7 @@
 
     function showSyncMenuInternal(options) {
 
-        require(['paperdialoghelper', 'paper-fab'], function (paperDialogHelper) {
+        require(['dialogHelper', 'paper-fab'], function (dialogHelper) {
 
             var userId = Dashboard.getCurrentUserId();
 
@@ -236,7 +236,7 @@
 
                 currentDialogOptions = dialogOptions;
 
-                var dlg = paperDialogHelper.createDialog({
+                var dlg = dialogHelper.createDialog({
                     size: 'small',
                     removeOnClose: true,
                     autoFocus: false
@@ -270,16 +270,16 @@
                 dlg.innerHTML = html;
                 document.body.appendChild(dlg);
 
-                paperDialogHelper.open(dlg);
+                dialogHelper.open(dlg);
 
                 $('form', dlg).on('submit', function () {
 
-                    submitJob(dlg, userId, options, this, paperDialogHelper);
+                    submitJob(dlg, userId, options, this, dialogHelper);
                     return false;
                 });
 
                 $('.btnCancel', dlg).on('click', function () {
-                    paperDialogHelper.close(dlg);
+                    dialogHelper.close(dlg);
                 });
 
                 renderForm({

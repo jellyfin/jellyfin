@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'appStorage', 'jQuery', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper, appStorage, $) {
+﻿define(['dialogHelper', 'appStorage', 'jQuery', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (dialogHelper, appStorage, $) {
 
     var currentItem;
 
@@ -353,7 +353,7 @@
             var template = this.response;
             ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).then(function (item) {
 
-                var dlg = paperDialogHelper.createDialog({
+                var dlg = dialogHelper.createDialog({
                     size: 'small',
                     removeOnClose: true
                 });
@@ -380,7 +380,7 @@
 
                 $('.subtitleSearchForm', dlg).off('submit', onSearchSubmit).on('submit', onSearchSubmit);
 
-                paperDialogHelper.open(dlg);
+                dialogHelper.open(dlg);
 
                 var editorContent = dlg.querySelector('.editorContent');
                 reload(editorContent, item);
@@ -392,7 +392,7 @@
 
                 $('.btnCancel', dlg).on('click', function () {
 
-                    paperDialogHelper.close(dlg);
+                    dialogHelper.close(dlg);
                 });
             });
         }

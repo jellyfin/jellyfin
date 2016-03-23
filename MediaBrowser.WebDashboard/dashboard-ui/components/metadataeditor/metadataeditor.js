@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'jQuery', 'paper-checkbox', 'paper-input', 'paper-item-body', 'paper-icon-item', 'paper-textarea', 'paper-fab'], function (paperDialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'paper-checkbox', 'paper-input', 'paper-item-body', 'paper-icon-item', 'paper-textarea', 'paper-fab'], function (dialogHelper, $) {
 
     var currentContext;
     var metadataEditorInfo;
@@ -7,7 +7,7 @@
     function closeDialog(isSubmitted) {
 
         if (currentContext.tagName == 'DIALOG') {
-            paperDialogHelper.close(currentContext);
+            dialogHelper.close(currentContext);
         }
     }
 
@@ -1220,7 +1220,7 @@
                 xhr.onload = function (e) {
 
                     var template = this.response;
-                    var dlg = paperDialogHelper.createDialog({
+                    var dlg = dialogHelper.createDialog({
                         removeOnClose: true,
                         size: 'medium'
                     });
@@ -1237,7 +1237,7 @@
                     dlg.innerHTML = html;
                     document.body.appendChild(dlg);
 
-                    paperDialogHelper.open(dlg);
+                    dialogHelper.open(dlg);
 
                     dlg.addEventListener('close', function () {
                         unbindItemChanged(dlg);

@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'jQuery', 'paper-input'], function (paperDialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'paper-input'], function (dialogHelper, $) {
 
     var lastPlaylistId = '';
 
@@ -52,7 +52,7 @@
 
             var id = result.Id;
 
-            paperDialogHelper.close(dlg);
+            dialogHelper.close(dlg);
             redirectToPlaylist(id);
         });
     }
@@ -73,7 +73,7 @@
 
             Dashboard.hideLoadingMsg();
 
-            paperDialogHelper.close(dlg);
+            dialogHelper.close(dlg);
             require(['toast'], function (toast) {
                 toast(Globalize.translate('MessageAddedToPlaylistSuccess'));
             });
@@ -196,7 +196,7 @@
 
             items = items || [];
 
-            var dlg = paperDialogHelper.createDialog({
+            var dlg = dialogHelper.createDialog({
                 size: 'small'
             });
 
@@ -223,11 +223,11 @@
 
             $(dlg).on('close', onDialogClosed);
 
-            paperDialogHelper.open(dlg);
+            dialogHelper.open(dlg);
 
             $('.btnCancel', dlg).on('click', function () {
 
-                paperDialogHelper.close(dlg);
+                dialogHelper.close(dlg);
             });
         };
     }
