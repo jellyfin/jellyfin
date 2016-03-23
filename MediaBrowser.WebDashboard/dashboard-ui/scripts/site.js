@@ -1887,7 +1887,6 @@ var AppInfo = {};
 
         define("appSettings", [embyWebComponentsBowerPath + "/appsettings"], updateAppSettings);
         define("userSettings", [embyWebComponentsBowerPath + "/usersettings"], returnFirstDependency);
-        define("material-design-lite", [bowerPath + "/material-design-lite/material.min", "css!" + bowerPath + "/material-design-lite/material"]);
 
         define("robotoFont", ['css!' + embyWebComponentsBowerPath + '/fonts/roboto/style']);
         define("opensansFont", ['css!' + embyWebComponentsBowerPath + '/fonts/opensans/style']);
@@ -1897,6 +1896,9 @@ var AppInfo = {};
         define('queryString', [bowerPath + '/query-string/index'], function () {
             return queryString;
         });
+
+        define("material-design-lite", [bowerPath + "/material-design-lite/material.min", "css!" + bowerPath + "/material-design-lite/material"]);
+        define("MaterialSpinner", ["material-design-lite"]);
 
         define("jQuery", [bowerPath + '/jquery/dist/jquery.slim.min'], function () {
 
