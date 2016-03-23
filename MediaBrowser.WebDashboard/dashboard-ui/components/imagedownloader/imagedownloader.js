@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'jQuery', 'paper-checkbox', 'dialog', 'paper-fab'], function (paperDialogHelper, $) {
+﻿define(['paperdialoghelper', 'jQuery', 'paper-checkbox', 'paper-fab'], function (paperDialogHelper, $) {
 
     var currentItemId;
     var currentItemType;

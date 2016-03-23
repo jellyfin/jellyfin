@@ -1,4 +1,4 @@
-define(['layoutManager', 'material-design-lite', 'css!./loading'], function (layoutManager) {
+define(['layoutManager', 'MaterialSpinner', 'css!./loading'], function (layoutManager) {
 
     return {
         show: function () {

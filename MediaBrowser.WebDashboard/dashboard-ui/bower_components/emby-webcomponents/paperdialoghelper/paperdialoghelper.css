@@ -113,7 +113,7 @@
     transition: opacity ease-out 0.2s;
 }
 
-.paperDialog.opened + .dialogBackdrop {
+.dialogBackdrop.opened {
     opacity: .6;
 }
 

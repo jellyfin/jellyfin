@@ -751,6 +751,55 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             done();
           })
         });
+
+      });
+
+      suite('Manager overlays in sync', function() {
+        var overlay1, overlay2;
+        var overlays;
+
+        setup(function() {
+          var f = fixture('multiple');
+          overlay1 = f[0];
+          overlay2 = f[1];
+          overlays = Polymer.IronOverlayManager._overlays;
+        });
+
+        test('no duplicates after attached', function(done) {
+          overlay1 = document.createElement('test-overlay');
+          overlay1.addEventListener('iron-overlay-opened',function() {
+            assert.equal(overlays.length, 1, 'correct count after open and attached');
+            document.body.removeChild(overlay1);
+            done();
+          });
+          overlay1.opened = true;
+          assert.equal(overlays.length, 1, 'immediately updated');
+          document.body.appendChild(overlay1);
+        });
+
+        test('open twice handled', function() {
+          overlay1.open();
+          assert.equal(overlays.length, 1, '1 overlay after open');
+          overlay1.open();
+          assert.equal(overlays.length, 1, '1 overlay after second open');
+        });
+
+        test('close handled', function() {
+          overlay1.open();
+          overlay1.close();
+          assert.equal(overlays.length, 0, '0 overlays after close');
+        });
+
+        test('open/close brings overlay on top', function() {
+          overlay1.open();
+          overlay2.open();
+          assert.equal(overlays.indexOf(overlay1), 0, 'overlay1 at index 0');
+          assert.equal(overlays.indexOf(overlay2), 1, 'overlay2 at index 1');
+          overlay1.close();
+          overlay1.open();
+          assert.equal(overlays.indexOf(overlay1), 1, 'overlay1 moved at index 1');
+          assert.isAbove(parseInt(overlay1.style.zIndex), parseInt(overlay2.style.zIndex), 'overlay1 on top of overlay2');
+        });
       });
 
       suite('z-ordering', function() {

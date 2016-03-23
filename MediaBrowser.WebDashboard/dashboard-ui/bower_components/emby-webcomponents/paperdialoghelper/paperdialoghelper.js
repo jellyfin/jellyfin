@@ -35,6 +35,7 @@
         function onDialogClosed() {
 
             removeBackdrop(dlg);
+            dlg.classList.remove('opened');
 
             if (removeScrollLockOnClose) {
                 document.body.classList.remove('noScroll');
@@ -77,25 +78,20 @@
         dlg.classList.remove('hide');
 
         // Use native methods if available
-        var hasManualBackdrop = false;
         if (dlg.showModal) {
             if (dlg.getAttribute('modal')) {
                 dlg.showModal();
             } else {
                 addBackdropOverlay(dlg);
-                hasManualBackdrop = true;
                 dlg.show();
             }
             // Undo the auto-focus applied by the native dialog element
             safeBlur(document.activeElement);
         } else {
             addBackdropOverlay(dlg);
-            hasManualBackdrop = true;
         }
 
-        if (!hasManualBackdrop) {
-            dlg.classList.add('opened');
-        }
+        dlg.classList.add('opened');
 
         if (center) {
             centerDialog(dlg);
@@ -135,7 +131,7 @@
 
         // Doing this immediately causes the opacity to jump immediately without animating
         setTimeout(function () {
-            dlg.classList.add('opened');
+            backdrop.classList.add('opened');
         }, 0);
 
         backdrop.addEventListener('click', function () {

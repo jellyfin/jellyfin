@@ -306,16 +306,13 @@ context. You should place this element as a child of `<body>` whenever possible.
         return;
       }
 
+      this._manager.addOrRemoveOverlay(this);
+
       this.__isAnimating = true;
 
       if (this.opened) {
         this._prepareRenderOpened();
-      } else {
-        this._manager.removeOverlay(this);
       }
-
-      this._manager.trackBackdrop(this);
-
       if (this._openChangedAsync) {
         this.cancelAsync(this._openChangedAsync);
       }
@@ -350,7 +347,7 @@ context. You should place this element as a child of `<body>` whenever possible.
         this.__shouldRemoveTabIndex = false;
       }
       if (this.opened) {
-        this._manager.trackBackdrop(this);
+        this._manager.trackBackdrop();
         if (this.withBackdrop) {
           this.backdropElement.prepare();
           // Give time to be added to document.
@@ -368,8 +365,6 @@ context. You should place this element as a child of `<body>` whenever possible.
      * @protected
      */
     _prepareRenderOpened: function() {
-
-      this._manager.addOverlay(this);
 
       // Needed to calculate the size of the overlay so that transitions on its size
       // will have the correct starting points.
