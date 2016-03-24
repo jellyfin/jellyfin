@@ -20,9 +20,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Controller.Entities
@@ -299,6 +301,40 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        private List<Tuple<StringBuilder,bool>> GetSortChunks(string s1)
+        {
+            var list = new List<Tuple<StringBuilder, bool>>();
+
+            int thisMarker = 0, thisNumericChunk = 0;
+
+            while ((thisMarker < s1.Length))
+            {
+                if (thisMarker >= s1.Length)
+                {
+                    break;
+                }
+                char thisCh = s1[thisMarker];
+
+                StringBuilder thisChunk = new StringBuilder();
+
+                while ((thisMarker < s1.Length) && (thisChunk.Length == 0 || SortHelper.InChunk(thisCh, thisChunk[0])))
+                {
+                    thisChunk.Append(thisCh);
+                    thisMarker++;
+
+                    if (thisMarker < s1.Length)
+                    {
+                        thisCh = s1[thisMarker];
+                    }
+                }
+
+                var isNumeric = thisChunk.Length > 0 && char.IsDigit(thisChunk[0]);
+                list.Add(new Tuple<StringBuilder, bool>(thisChunk, isNumeric));
+            }
+
+            return list;
+        }
+
         /// <summary>
         /// This is just a helper for convenience
         /// </summary>
@@ -458,11 +494,6 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (!string.IsNullOrWhiteSpace(ForcedSortName))
-                {
-                    return ForcedSortName;
-                }
-
                 return _sortName ?? (_sortName = CreateSortName());
             }
             set
@@ -484,7 +515,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 return System.IO.Path.Combine(basePath, "channels", ChannelId, Id.ToString("N"));
             }
-            
+
             var idString = Id.ToString("N");
 
             basePath = System.IO.Path.Combine(basePath, "library");
@@ -498,6 +529,11 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>System.String.</returns>
         protected virtual string CreateSortName()
         {
+            if (!string.IsNullOrWhiteSpace(ForcedSortName))
+            {
+                return ModifySortChunks(ForcedSortName);
+            }
+
             if (Name == null) return null; //some items may not have name filled in properly
 
             if (!EnableAlphaNumericSorting)
@@ -527,7 +563,32 @@ namespace MediaBrowser.Controller.Entities
                     sortable = sortable.Remove(sortable.Length - (searchLower.Length + 1));
                 }
             }
-            return sortable;
+            return ModifySortChunks(sortable);
+        }
+
+        private string ModifySortChunks(string name)
+        {
+            var chunks = GetSortChunks(name);
+
+            var builder = new StringBuilder();
+
+            foreach (var chunk in chunks)
+            {
+                var chunkBuilder = chunk.Item1;
+
+                // This chunk is numeric
+                if (chunk.Item2)
+                {
+                    while (chunkBuilder.Length < 10)
+                    {
+                        chunkBuilder.Insert(0, '0');
+                    }
+                }
+
+                builder.Append(chunkBuilder);
+            }
+            //Logger.Debug("ModifySortChunks Start: {0} End: {1}", name, builder.ToString());
+            return builder.ToString();
         }
 
         [IgnoreDataMember]
@@ -1146,7 +1207,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 return false;
             }
-            
+
             return ConfigurationManager.Configuration.SaveLocalMeta;
         }
 

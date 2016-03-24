@@ -16,7 +16,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
         /// <returns>System.Int32.</returns>
         public int Compare(BaseItem x, BaseItem y)
         {
-            return AlphanumComparator.CompareValues(GetValue(x), GetValue(y));
+            return string.Compare(GetValue(x), GetValue(y), StringComparison.CurrentCultureIgnoreCase);
         }
 
         private string GetValue(BaseItem item)

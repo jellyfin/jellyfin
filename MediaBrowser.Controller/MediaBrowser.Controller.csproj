@@ -331,6 +331,7 @@
     <Compile Include="Security\IEncryptionManager.cs" />
     <Compile Include="Session\AuthenticationRequest.cs" />
     <Compile Include="Social\ISharingManager.cs" />
+    <Compile Include="Sorting\SortHelper.cs" />
     <Compile Include="Subtitles\ISubtitleManager.cs" />
     <Compile Include="Subtitles\ISubtitleProvider.cs" />
     <Compile Include="Providers\ItemIdentifier.cs" />
