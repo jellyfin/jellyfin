@@ -494,11 +494,6 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (!string.IsNullOrWhiteSpace(ForcedSortName))
-                {
-                    return ForcedSortName;
-                }
-
                 return _sortName ?? (_sortName = CreateSortName());
             }
             set
@@ -534,6 +529,11 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>System.String.</returns>
         protected virtual string CreateSortName()
         {
+            if (!string.IsNullOrWhiteSpace(ForcedSortName))
+            {
+                return ModifySortChunks(ForcedSortName);
+            }
+
             if (Name == null) return null; //some items may not have name filled in properly
 
             if (!EnableAlphaNumericSorting)
