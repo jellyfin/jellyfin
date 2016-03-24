@@ -1,30 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Text;
+using MediaBrowser.Controller.Sorting;
 
 namespace MediaBrowser.Server.Implementations.Sorting
 {
     public class AlphanumComparator : IComparer<string>
     {
-        private enum ChunkType { Alphanumeric, Numeric };
-
-        private static bool InChunk(char ch, char otherCh)
-        {
-            var type = ChunkType.Alphanumeric;
-
-            if (char.IsDigit(otherCh))
-            {
-                type = ChunkType.Numeric;
-            }
-
-            if ((type == ChunkType.Alphanumeric && char.IsDigit(ch))
-                || (type == ChunkType.Numeric && !char.IsDigit(ch)))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
         public static int CompareValues(string s1, string s2)
         {
             if (s1 == null || s2 == null)
@@ -51,7 +32,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
                 StringBuilder thisChunk = new StringBuilder();
                 StringBuilder thatChunk = new StringBuilder();
 
-                while ((thisMarker < s1.Length) && (thisChunk.Length == 0 || InChunk(thisCh, thisChunk[0])))
+                while ((thisMarker < s1.Length) && (thisChunk.Length == 0 || SortHelper.InChunk(thisCh, thisChunk[0])))
                 {
                     thisChunk.Append(thisCh);
                     thisMarker++;
@@ -62,7 +43,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
                     }
                 }
 
-                while ((thatMarker < s2.Length) && (thatChunk.Length == 0 || InChunk(thatCh, thatChunk[0])))
+                while ((thatMarker < s2.Length) && (thatChunk.Length == 0 || SortHelper.InChunk(thatCh, thatChunk[0])))
                 {
                     thatChunk.Append(thatCh);
                     thatMarker++;
