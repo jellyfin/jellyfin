@@ -81,7 +81,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             _dtoService = dtoService;
             _userDataManager = userDataManager;
 
-            _tvDtoService = new LiveTvDtoService(dtoService, userDataManager, imageProcessor, logger, appHost);
+            _tvDtoService = new LiveTvDtoService(dtoService, userDataManager, imageProcessor, logger, appHost, _libraryManager);
         }
 
         /// <summary>
