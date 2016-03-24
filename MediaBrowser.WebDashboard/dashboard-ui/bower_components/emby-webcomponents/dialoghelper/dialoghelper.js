@@ -82,8 +82,8 @@
             if (dlg.getAttribute('modal')) {
                 dlg.showModal();
             } else {
-                addBackdropOverlay(dlg);
-                dlg.show();
+                closeOnBackdropClick(dlg);
+                dlg.showModal();
             }
             // Undo the auto-focus applied by the native dialog element
             safeBlur(document.activeElement);
@@ -114,6 +114,18 @@
         } else {
             inputManager.on(dlg, onBackCommand);
         }
+    }
+
+    function closeOnBackdropClick(dlg) {
+
+        dlg.addEventListener('click', function (event) {
+            var rect = dlg.getBoundingClientRect();
+            var isInDialog = (rect.top <= event.clientY && event.clientY <= rect.top + rect.height
+              && rect.left <= event.clientX && event.clientX <= rect.left + rect.width);
+            if (!isInDialog) {
+                close(dlg);
+            }
+        });
     }
 
     function autoFocus(dlg) {
