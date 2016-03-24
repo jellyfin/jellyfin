@@ -1,13 +1,17 @@
-﻿define(['paperdialoghelper', 'jQuery', 'paper-checkbox', 'paper-input', 'paper-item-body', 'paper-icon-item', 'paper-textarea', 'paper-fab'], function (paperDialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'paper-checkbox', 'paper-input', 'paper-item-body', 'paper-icon-item', 'paper-textarea', 'paper-fab'], function (dialogHelper, $) {
 
     var currentContext;
     var metadataEditorInfo;
     var currentItem;
 
+    function isDialog() {
+        return currentContext.classList.contains('dialog');
+    }
+
     function closeDialog(isSubmitted) {
 
-        if (currentContext.tagName == 'DIALOG') {
-            paperDialogHelper.close(currentContext);
+        if (isDialog()) {
+            dialogHelper.close(currentContext);
         }
     }
 
@@ -463,7 +467,7 @@
         });
 
         // For now this is only supported in dialog mode because we have a way of knowing when it closes
-        if (currentContext.tagName == 'DIALOG') {
+        if (isDialog()) {
             bindItemChanged(context);
         }
     }
@@ -1220,7 +1224,7 @@
                 xhr.onload = function (e) {
 
                     var template = this.response;
-                    var dlg = paperDialogHelper.createDialog({
+                    var dlg = dialogHelper.createDialog({
                         removeOnClose: true,
                         size: 'medium'
                     });
@@ -1237,7 +1241,7 @@
                     dlg.innerHTML = html;
                     document.body.appendChild(dlg);
 
-                    paperDialogHelper.open(dlg);
+                    dialogHelper.open(dlg);
 
                     dlg.addEventListener('close', function () {
                         unbindItemChanged(dlg);

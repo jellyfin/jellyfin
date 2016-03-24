@@ -831,7 +831,7 @@
     "HeaderSubtitleDownloadingHelp": "When Emby scans your video files it can search for missing subtitles, and download them using a subtitle provider such as OpenSubtitles.org.",
     "HeaderDownloadSubtitlesFor": "Download subtitles for:",
     "MessageNoChapterProviders": "Install a chapter provider plugin such as ChapterDb to enable additional chapter options.",
-    "LabelSkipIfGraphicalSubsPresent": "Skip if the video already contains graphical subtitles",
+    "LabelSkipIfGraphicalSubsPresent": "Skip if the video already contains embedded subtitles",
     "LabelSkipIfGraphicalSubsPresentHelp": "Keeping text versions of subtitles will result in more efficient delivery and decrease the likelihood of video transcoding.",
     "TabSubtitles": "Altyaz\u0131lar",
     "TabChapters": "Chapters",

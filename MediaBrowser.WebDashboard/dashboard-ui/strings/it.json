@@ -831,7 +831,7 @@
     "HeaderSubtitleDownloadingHelp": "Quando Emby fa la scansione dei tuoi file video pu\u00f2 cercare i sottotitoli mancanti e scaricarli usando un provider come OpenSubtitles.org.",
     "HeaderDownloadSubtitlesFor": "Scarica sottotitoli per:",
     "MessageNoChapterProviders": "Installare un plugin provider capitoli come ChapterDb per attivare le opzioni capitolo aggiuntive.",
-    "LabelSkipIfGraphicalSubsPresent": "Salta se il video contiene gi\u00e0 i sottotitoli grafici",
+    "LabelSkipIfGraphicalSubsPresent": "Skip if the video already contains embedded subtitles",
     "LabelSkipIfGraphicalSubsPresentHelp": "Mantenere le versioni testuali dei sottotitoli si tradurr\u00e0 in una riproduzione pi\u00f9 efficiente e diminuir\u00e0 la probabilit\u00e0 che sia necessaria la transcodifica video",
     "TabSubtitles": "Sottotitoli",
     "TabChapters": "capitoli",

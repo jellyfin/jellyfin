@@ -839,11 +839,11 @@ paper-input + .fieldDescription {
     box-shadow: -3px 0 10px 0 #555;*/
 }
 
-.background-theme-a, .paperDialog.background-theme-a {
+.background-theme-a, .dialog.background-theme-a {
     background-color: #f6f6f6;
 }
 
-.paperDialog:not(.background-theme-a):not(.background-theme-b) {
+.dialog:not(.background-theme-a):not(.background-theme-b) {
     background-color: #fff;
 }
 

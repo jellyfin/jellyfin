@@ -2941,9 +2941,9 @@
 
             showSortMenu: function (options) {
 
-                require(['paperdialoghelper', 'paper-radio-button', 'paper-radio-group'], function (paperDialogHelper) {
+                require(['dialogHelper', 'paper-radio-button', 'paper-radio-group'], function (dialogHelper) {
 
-                    var dlg = paperDialogHelper.createDialog({
+                    var dlg = dialogHelper.createDialog({
                         removeOnClose: true,
                         modal: false,
                         entryAnimationDuration: 160,
@@ -2989,7 +2989,7 @@
                     // Seeing an issue in Firefox and IE where it's initially visible in the bottom right, then moves to the center
                     var delay = browserInfo.animate ? 0 : 100;
                     setTimeout(function () {
-                        paperDialogHelper.open(dlg);
+                        dialogHelper.open(dlg);
                     }, delay);
 
                     dlg.querySelector('.groupSortBy').addEventListener('iron-select', function () {

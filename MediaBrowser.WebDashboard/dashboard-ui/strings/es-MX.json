@@ -831,7 +831,7 @@
     "HeaderSubtitleDownloadingHelp": "Cuando Emby examina sus archivos de video puede buscar los subt\u00edtulos faltantes, y descargarlos usando un proveedor de subt\u00edtulos como OpenSubtitles.org.",
     "HeaderDownloadSubtitlesFor": "Descargar subt\u00edtulos para:",
     "MessageNoChapterProviders": "Instale un complemento proveedor de cap\u00edtulos como ChapterDb para habilitar opciones adicionales de cap\u00edtulos.",
-    "LabelSkipIfGraphicalSubsPresent": "Omitir si el video ya contiene subt\u00edtulos gr\u00e1ficos",
+    "LabelSkipIfGraphicalSubsPresent": "Omitir si el video ya contiene subt\u00edtulos embebidos",
     "LabelSkipIfGraphicalSubsPresentHelp": "Manteniendo las versiones de texto de los subtitulos resultara una entrega mas eficiente de los mismos y disminuir\u00e1 las posibilidades de que un video sea transcodificado.",
     "TabSubtitles": "Subt\u00edtulos",
     "TabChapters": "Cap\u00edtulos",
@@ -2323,5 +2323,5 @@
     "OptionEnableForAllTuners": "Habilitar para todos los dispositivos sintonizadores",
     "HeaderTuners": "Sintonizador",
     "LabelOptionalM3uUrl": "M3U url (optional):",
-    "LabelOptionalM3uUrlHelp": "Some devices support an M3U channel listing."
+    "LabelOptionalM3uUrlHelp": "Algunos dispositivos soportan un listado de canales M3U."
 }

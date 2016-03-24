@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'jQuery', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (dialogHelper, $) {
 
     var currentDeferred;
     var hasChanges;
@@ -150,7 +150,7 @@
             xhr.onload = function (e) {
 
                 var template = this.response;
-                var dlg = paperDialogHelper.createDialog({
+                var dlg = dialogHelper.createDialog({
                     size: 'small',
 
                     // In (at least) chrome this is causing the text field to not be editable
@@ -180,11 +180,11 @@
 
                 $(dlg).on('close', onDialogClosed);
 
-                paperDialogHelper.open(dlg);
+                dialogHelper.open(dlg);
 
                 $('.btnCloseDialog', dlg).on('click', function () {
 
-                    paperDialogHelper.close(dlg);
+                    dialogHelper.close(dlg);
                 });
 
                 refreshLibraryFromServer(editorContent);

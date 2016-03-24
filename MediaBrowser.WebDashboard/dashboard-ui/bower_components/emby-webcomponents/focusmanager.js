@@ -18,10 +18,14 @@ define([], function () {
 
         var tagName = element.tagName;
         if (tagName == 'PAPER-INPUT' || tagName == 'PAPER-DROPDOWN-MENU' || tagName == 'EMBY-DROPDOWN-MENU') {
-            element = element.querySelector('input');
+            element = element.querySelector('input') || element;
         }
 
-        element.focus();
+        try {
+            element.focus();
+        } catch (err) {
+            console.log('Error in focusManager.autoFocus: ' + err);
+        }
     }
 
     var focusableTagNames = ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A', 'PAPER-BUTTON', 'PAPER-INPUT', 'PAPER-TEXTAREA', 'PAPER-ICON-BUTTON', 'PAPER-FAB', 'PAPER-CHECKBOX', 'PAPER-ICON-ITEM', 'PAPER-MENU-ITEM', 'PAPER-DROPDOWN-MENU', 'EMBY-DROPDOWN-MENU'];

@@ -1,4 +1,4 @@
-define(['paperdialoghelper', 'layoutManager', 'dialogText', 'html!./icons.html', 'css!./style.css', 'paper-button', 'paper-input'], function (paperdialoghelper, layoutManager, dialogText) {
+define(['dialogHelper', 'layoutManager', 'dialogText', 'html!./icons.html', 'css!./style.css', 'paper-button', 'paper-input'], function (dialogHelper, layoutManager, dialogText) {
 
     return function (options) {
 
@@ -27,7 +27,7 @@ define(['paperdialoghelper', 'layoutManager', 'dialogText', 'html!./icons.html',
             dialogOptions.exitAnimationDuration = 200;
         }
 
-        var dlg = paperdialoghelper.createDialog(dialogOptions);
+        var dlg = dialogHelper.createDialog(dialogOptions);
 
         dlg.classList.add('promptDialog');
 
@@ -75,7 +75,7 @@ define(['paperdialoghelper', 'layoutManager', 'dialogText', 'html!./icons.html',
         dlg.querySelector('form').addEventListener('submit', function (e) {
 
             submitValue = dlg.querySelector('.txtPromptValue').value;
-            paperdialoghelper.close(dlg);
+            dialogHelper.close(dlg);
             e.preventDefault();
             return false;
         });
@@ -94,10 +94,10 @@ define(['paperdialoghelper', 'layoutManager', 'dialogText', 'html!./icons.html',
 
         dlg.querySelector('.btnPromptExit').addEventListener('click', function (e) {
 
-            paperdialoghelper.close(dlg);
+            dialogHelper.close(dlg);
         });
 
-        return paperdialoghelper.open(dlg).then(function () {
+        return dialogHelper.open(dlg).then(function () {
             var value = submitValue;
             if (value) {
                 return value;

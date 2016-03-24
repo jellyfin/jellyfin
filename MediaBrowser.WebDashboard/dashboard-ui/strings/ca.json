@@ -831,7 +831,7 @@
     "HeaderSubtitleDownloadingHelp": "Quan Emby escaneja els teus fitxers de v\u00eddeo pot cercar els subt\u00edtols que manquin i descarregar-los emprant un prove\u00efdor de subt\u00edtols com OpenSubtitles.org",
     "HeaderDownloadSubtitlesFor": "Descarregar subt\u00edtols per a:",
     "MessageNoChapterProviders": "Install a chapter provider plugin such as ChapterDb to enable additional chapter options.",
-    "LabelSkipIfGraphicalSubsPresent": "Skip if the video already contains graphical subtitles",
+    "LabelSkipIfGraphicalSubsPresent": "Skip if the video already contains embedded subtitles",
     "LabelSkipIfGraphicalSubsPresentHelp": "Keeping text versions of subtitles will result in more efficient delivery and decrease the likelihood of video transcoding.",
     "TabSubtitles": "Subt\u00edtols",
     "TabChapters": "Cap\u00edtols",

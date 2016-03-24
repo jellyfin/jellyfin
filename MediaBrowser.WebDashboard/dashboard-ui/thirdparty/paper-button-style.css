@@ -551,7 +551,7 @@ div.dialogHeader {
     margin-left: .75em;
 }
 
-.paperDialog.popupEditor h2.dialogHeader {
+.dialog.popupEditor h2.dialogHeader {
     font-weight: inherit !important;
     line-height: 36px;
     padding: 0 1em;
@@ -563,7 +563,7 @@ div.dialogHeader {
     margin-bottom: 0;
 }
 
-.paperDialog.popupEditor {
+.dialog.popupEditor {
     padding-bottom: 100px;
 }
 

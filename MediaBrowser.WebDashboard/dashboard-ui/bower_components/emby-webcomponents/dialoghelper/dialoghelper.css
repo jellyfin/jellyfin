@@ -1,13 +1,10 @@
-.paperDialog {
+.dialog {
     margin: 0;
     border-radius: 4px;
     z-index: 999999 !important;
-    background-color: #fff;
     position: fixed;
     margin: 24px 40px;
     -webkit-overflow-scrolling: touch;
-    background: #ffffff;
-    color: #212121;
     -webkit-font-smoothing: antialiased;
     box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14), 0 6px 30px 5px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.4);
     height: auto;
@@ -15,7 +12,7 @@
     padding: 0;
 }
 
-    .paperDialog.fixedSize {
+    .dialog.fixedSize {
         position: fixed !important;
         top: 0 !important;
         bottom: 0 !important;
@@ -28,31 +25,31 @@
         width: auto;
     }
 
-    .paperDialog.scrollY {
+    .dialog.scrollY {
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
         overflow-x: hidden;
     }
 
-    .paperDialog.hiddenScroll::-webkit-scrollbar {
+    .dialog.hiddenScroll::-webkit-scrollbar {
         display: none;
     }
 
-    .paperDialog.hiddenScroll {
+    .dialog.hiddenScroll {
         -ms-overflow-style: none;
         overflow: -moz-scrollbars-none;
     }
 
 @media all and (min-width: 1280px) and (min-height: 720px) {
 
-    .paperDialog.medium {
+    .dialog.medium {
         top: 10% !important;
         bottom: 10% !important;
         left: 10% !important;
         right: 10% !important;
     }
 
-    .paperDialog.small {
+    .dialog.small {
         top: 10% !important;
         bottom: 10% !important;
         left: 20% !important;
@@ -62,7 +59,7 @@
 
 @media all and (min-width: 1280px) and (min-height: 720px) {
 
-    .paperDialog.fullscreen-border {
+    .dialog.fullscreen-border {
         top: 5% !important;
         bottom: 5% !important;
         left: 5% !important;
@@ -75,16 +72,16 @@
     overflow-y: hidden !important;
 }
 
-.paperDialog > * {
+.dialog > * {
     margin-top: 20px;
     padding: 0 24px;
 }
 
-    .paperDialog > *:first-child {
+    .dialog > *:first-child {
         margin-top: 24px;
     }
 
-.paperDialog .buttons {
+.dialog .buttons {
     position: relative;
     padding: 8px 8px 8px 24px;
     margin: 0;
@@ -113,16 +110,16 @@
     transition: opacity ease-out 0.2s;
 }
 
-.dialogBackdrop.opened {
-    opacity: .6;
-}
+    .dialogBackdrop.opened {
+        opacity: .6;
+    }
 
-.paperDialog::backdrop {
+.dialog::backdrop {
     opacity: 0;
     background-color: #000;
     transition: opacity ease-out 0.2s;
 }
 
-.paperDialog.opened::backdrop {
+.dialog.opened::backdrop {
     opacity: .6;
 }

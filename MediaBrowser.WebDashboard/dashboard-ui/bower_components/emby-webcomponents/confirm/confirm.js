@@ -39,7 +39,7 @@ define(['layoutManager', 'dialogText'], function (layoutManager, dialogText) {
         });
     }
 
-    function showConfirmInternal(options, paperdialoghelper, resolve, reject) {
+    function showConfirmInternal(options, dialogHelper, resolve, reject) {
 
         var dialogOptions = {
             removeOnClose: true
@@ -59,7 +59,7 @@ define(['layoutManager', 'dialogText'], function (layoutManager, dialogText) {
             dialogOptions.autoFocus = false;
         }
 
-        var dlg = paperdialoghelper.createDialog(dialogOptions);
+        var dlg = dialogHelper.createDialog(dialogOptions);
         var html = '';
 
         if (options.title) {
@@ -84,14 +84,14 @@ define(['layoutManager', 'dialogText'], function (layoutManager, dialogText) {
         var confirmed = false;
         dlg.querySelector('.btnConfirm').addEventListener('click', function () {
             confirmed = true;
-            paperdialoghelper.close(dlg);
+            dialogHelper.close(dlg);
         });
         dlg.querySelector('.btnCancel').addEventListener('click', function () {
             confirmed = false;
-            paperdialoghelper.close(dlg);
+            dialogHelper.close(dlg);
         });
 
-        paperdialoghelper.open(dlg).then(function () {
+        dialogHelper.open(dlg).then(function () {
 
             if (confirmed) {
                 resolve();
@@ -104,8 +104,8 @@ define(['layoutManager', 'dialogText'], function (layoutManager, dialogText) {
     function showConfirm(options) {
         return new Promise(function (resolve, reject) {
 
-            require(['paperdialoghelper', 'paper-button'], function (paperdialoghelper) {
-                showConfirmInternal(options, paperdialoghelper, resolve, reject);
+            require(['dialogHelper', 'paper-button'], function (dialogHelper) {
+                showConfirmInternal(options, dialogHelper, resolve, reject);
             });
         });
     }

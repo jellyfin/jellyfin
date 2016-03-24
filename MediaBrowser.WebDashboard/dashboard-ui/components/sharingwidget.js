@@ -1,8 +1,8 @@
-﻿define(['paperdialoghelper', 'jQuery', 'thirdparty/social-share-kit-1.0.4/dist/js/social-share-kit.min', 'css!thirdparty/social-share-kit-1.0.4/dist/css/social-share-kit.css'], function (paperDialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'thirdparty/social-share-kit-1.0.4/dist/js/social-share-kit.min', 'css!thirdparty/social-share-kit-1.0.4/dist/css/social-share-kit.css'], function (dialogHelper, $) {
 
     function showMenu(options, successCallback, cancelCallback) {
 
-        var dlg = paperDialogHelper.createDialog({
+        var dlg = dialogHelper.createDialog({
             removeOnClose: true,
             autoFocus: false
         });
@@ -61,15 +61,15 @@
         // Has to be assigned a z-index after the call to .open() 
         $('.ssk', dlg).on('click', function () {
             isShared = true;
-            paperDialogHelper.close(dlg);
+            dialogHelper.close(dlg);
         });
 
         // Has to be assigned a z-index after the call to .open() 
         dlg.querySelector('.btnCancel').addEventListener('click', function () {
-            paperDialogHelper.close(dlg);
+            dialogHelper.close(dlg);
         });
 
-        paperDialogHelper.open(dlg);
+        dialogHelper.open(dlg);
     }
 
     return {

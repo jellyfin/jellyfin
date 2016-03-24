@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'jQuery', 'paper-checkbox', 'paper-fab'], function (paperDialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'paper-checkbox', 'paper-fab'], function (dialogHelper, $) {
 
     var currentItemId;
     var currentItemType;
@@ -130,8 +130,8 @@
         ApiClient.downloadRemoteImage(options).then(function () {
 
             hasChanges = true;
-            var dlg = $(page).parents('dialog')[0];
-            paperDialogHelper.close(dlg);
+            var dlg = $(page).parents('.dialog')[0];
+            dialogHelper.close(dlg);
         });
     }
 
@@ -271,7 +271,7 @@
             currentItemId = itemId;
             currentItemType = itemType;
 
-            var dlg = paperDialogHelper.createDialog({
+            var dlg = dialogHelper.createDialog({
                 size: 'fullscreen-border',
                 lockScroll: true
             });
@@ -298,14 +298,14 @@
             // Has to be assigned a z-index after the call to .open() 
             $(dlg).on('close', onDialogClosed);
 
-            paperDialogHelper.open(dlg);
+            dialogHelper.open(dlg);
 
             var editorContent = dlg.querySelector('.editorContent');
             initEditor(editorContent);
 
             $('.btnCloseDialog', dlg).on('click', function () {
 
-                paperDialogHelper.close(dlg);
+                dialogHelper.close(dlg);
             });
 
             reloadBrowsableImages(editorContent);

@@ -97,9 +97,9 @@
 
     function showPlaybackOverlay(resolve, reject) {
 
-        require(['paperdialoghelper', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper) {
+        require(['dialogHelper', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (dialogHelper) {
 
-            var dlg = paperDialogHelper.createDialog({
+            var dlg = dialogHelper.createDialog({
                 size: 'fullscreen-border'
             });
 
@@ -144,10 +144,10 @@
                 resolve();
             });
 
-            paperDialogHelper.open(dlg);
+            dialogHelper.open(dlg);
 
             $('.btnCancelSupporterInfo').on('click', function () {
-                paperDialogHelper.close(dlg);
+                dialogHelper.close(dlg);
             });
         });
     }

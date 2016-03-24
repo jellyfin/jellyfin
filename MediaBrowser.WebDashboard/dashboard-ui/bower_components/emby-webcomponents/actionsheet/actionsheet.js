@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'layoutManager', 'dialogText', 'paper-button', 'css!./actionsheet'], function (paperdialoghelper, layoutManager, dialogText) {
+﻿define(['dialogHelper', 'layoutManager', 'dialogText', 'paper-button', 'css!./actionsheet'], function (dialogHelper, layoutManager, dialogText) {
 
     function parentWithClass(elem, className) {
 
@@ -120,7 +120,7 @@
             dialogOptions.autoFocus = false;
         }
 
-        var dlg = paperdialoghelper.createDialog(dialogOptions);
+        var dlg = dialogHelper.createDialog(dialogOptions);
 
         dlg.classList.add('actionSheet');
 
@@ -213,7 +213,7 @@
 
                     var selectedId = actionSheetMenuItem.getAttribute('data-id');
 
-                    paperdialoghelper.close(dlg);
+                    dialogHelper.close(dlg);
 
                     // Add a delay here to allow the click animation to finish, for nice effect
                     setTimeout(function () {
@@ -229,7 +229,7 @@
 
             });
 
-            paperdialoghelper.open(dlg);
+            dialogHelper.open(dlg);
 
             if (pos) {
                 dlg.style.position = 'fixed';
