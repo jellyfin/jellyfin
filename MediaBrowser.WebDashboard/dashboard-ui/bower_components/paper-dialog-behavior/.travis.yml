@@ -21,6 +21,5 @@ addons:
       - g++-4.8
   sauce_connect: true
 script:
-  - xvfb-run wct -l chrome
-  - xvfb-run wct -l firefox
+  - xvfb-run wct
   - "if [ \"${TRAVIS_PULL_REQUEST}\" = \"false\" ]; then wct -s 'default'; fi"

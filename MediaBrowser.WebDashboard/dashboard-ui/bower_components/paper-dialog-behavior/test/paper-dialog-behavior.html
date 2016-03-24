@@ -143,16 +143,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <script>
 
-      // Firefox 43 and later will keep the focus on the search bar, so we need
-      // to move the focus on the document for focus-related tests.
-      function ensureDocumentHasFocus() {
-        window.top && window.top.focus();
-      }
-
-      function runAfterOpen(dialog, cb) {
-        dialog.addEventListener('iron-overlay-opened', function() {
-          cb();
-        });
+      function runAfterOpen(dialog, callback) {
+        dialog.addEventListener('iron-overlay-opened', callback);
         dialog.open();
       }
 
@@ -333,45 +325,39 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         test('multiple modal dialogs opened, handle focus change', function(done) {
-          ensureDocumentHasFocus();
-
           var dialogs = fixture('multiple');
-          var focusChange = sinon.stub();
-          document.body.addEventListener('focus', focusChange, true);
 
           runAfterOpen(dialogs[0], function() {
-            // Wait 10ms to allow focus changes
-            dialogs[1].async(dialogs[1].open, 10);
-            dialogs[1].addEventListener('iron-overlay-opened', function() {
-              // Wait 10ms to allow focus changes
-              setTimeout(function() {
+            runAfterOpen(dialogs[1], function() {
+              // Each modal dialog will trap the focus within its children.
+              // Multiple modal dialogs doing it might result in an infinite loop
+              // dialog1 focus -> dialog2 focus -> dialog1 focus -> dialog2 focus...
+              // causing a "Maximum call stack size exceeded" error.
+              // Wait 50ms and verify this does not happen.
+              Polymer.Base.async(function() {
                 // Should not enter in an infinite loop.
-                assert.equal(focusChange.callCount, 2, 'focus change count');
                 done();
-              }, 10);
+              }, 50);
             });
           });
         });
 
-        test('multiple modal dialogs opened, handle backdrop click', function(done) {
-          ensureDocumentHasFocus();
-
+        test('multiple modal dialogs opened, handle outside click', function(done) {
           var dialogs = fixture('multiple');
-          var focusChange = sinon.stub();
-          document.body.addEventListener('focus', focusChange, true);
 
           runAfterOpen(dialogs[0], function() {
-            // Wait 10ms to allow focus changes
-            dialogs[1].async(dialogs[1].open, 10);
-            dialogs[1].addEventListener('iron-overlay-opened', function() {
-              // This will trigger click listener for both dialogs.
+            runAfterOpen(dialogs[1], function() {
+              // Click should be handled only by dialogs[1].
               MockInteractions.tap(document.body);
-              // Wait 10ms to allow focus changes
-              setTimeout(function() {
+              // Each modal dialog will trap the focus within its children.
+              // Multiple modal dialogs doing it might result in an infinite loop
+              // dialog1 focus -> dialog2 focus -> dialog1 focus -> dialog2 focus...
+              // causing a "Maximum call stack size exceeded" error.
+              // Wait 50ms and verify this does not happen.
+              Polymer.Base.async(function() {
                 // Should not enter in an infinite loop.
-                assert.equal(focusChange.callCount, 2, 'focus change count');
                 done();
-              }, 10);
+              }, 50);
             });
           });
         });
@@ -422,32 +408,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         test('modal dialog has aria-modal=true', function() {
           var dialog = fixture('modal');
           assert.equal(dialog.getAttribute('aria-modal'), 'true', 'has aria-modal="true"');
-        });
-
-        test('dialog with header has aria-labelledby', function() {
-          var dialog = fixture('header');
-          var header = Polymer.dom(dialog).querySelector('h2');
-          assert.ok(header.getAttribute('id'), 'header has auto-generated id');
-          assert.equal(dialog.getAttribute('aria-labelledby'), header.getAttribute('id'), 'aria-labelledby is set to header id');
-        });
-
-        test('dialog with lazily created header has aria-labelledby', function(done) {
-          var dialog = fixture('basic');
-          var header = document.createElement('h2');
-          Polymer.dom(dialog).appendChild(header);
-          Polymer.dom.flush();
-          setTimeout(function() {
-            assert.ok(header.getAttribute('id'), 'header has auto-generated id');
-            assert.equal(dialog.getAttribute('aria-labelledby'), header.getAttribute('id'), 'aria-labelledby is set to header id');
-            done();
-          }, 10);
-        });
-
-        test('dialog with header with id preserves id and has aria-labelledby', function() {
-          var dialog = fixture('header-with-id');
-          var header = Polymer.dom(dialog).querySelector('h2');
-          assert.equal(header.getAttribute('id'), 'header', 'header has preset id');
-          assert.equal(dialog.getAttribute('aria-labelledby'), 'header', 'aria-labelledby is set to header id');
         });
 
       });

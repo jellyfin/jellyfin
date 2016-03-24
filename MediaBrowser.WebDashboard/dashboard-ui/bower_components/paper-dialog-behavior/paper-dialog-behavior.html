@@ -60,8 +60,6 @@ to override this attribute with `role="alertdialog"`.
 If `modal` is set, the element will set `aria-modal` and prevent the focus from exiting the element.
 It will also ensure that focus remains in the dialog.
 
-The `aria-labelledby` attribute will be set to the header element, if one exists.
-
 @hero hero.svg
 @demo demo/index.html
 @polymerBehavior Polymer.PaperDialogBehavior
@@ -101,16 +99,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       this.__prevWithBackdrop = this.withBackdrop;
     },
 
-    attached: function() {
-      // this._observer is used by iron-overlay-behavior
-      this._ariaObserver = Polymer.dom(this).observeNodes(this._updateAriaLabelledBy);
-      this._updateAriaLabelledBy();
-    },
-
-    detached: function() {
-      Polymer.dom(this).unobserveNodes(this._ariaObserver);
-    },
-
     _modalChanged: function(modal, readied) {
       if (modal) {
         this.setAttribute('aria-modal', 'true');
@@ -140,27 +128,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
           this.__prevNoCancelOnEscKey;
         this.withBackdrop = this.withBackdrop && this.__prevWithBackdrop;
       }
-    },
-
-    _updateAriaLabelledBy: function() {
-      var header = Polymer.dom(this).querySelector('h2');
-      if (!header) {
-        this.removeAttribute('aria-labelledby');
-        return;
-      }
-      var headerId = header.getAttribute('id');
-      if (headerId && this.getAttribute('aria-labelledby') === headerId) {
-        return;
-      }
-      // set aria-describedBy to the header element
-      var labelledById;
-      if (headerId) {
-        labelledById = headerId;
-      } else {
-        labelledById = 'paper-dialog-header-' + new Date().getUTCMilliseconds();
-        header.setAttribute('id', labelledById);
-      }
-      this.setAttribute('aria-labelledby', labelledById);
     },
 
     _updateClosingReasonConfirmed: function(confirmed) {
