@@ -63,6 +63,12 @@ namespace MediaBrowser.Model.Configuration
         public bool IsPortAuthorized { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [enable case sensitive item ids].
+        /// </summary>
+        /// <value><c>true</c> if [enable case sensitive item ids]; otherwise, <c>false</c>.</value>
+        public bool EnableCaseSensitiveItemIds { get; set; }
+        
+        /// <summary>
         /// Gets or sets the metadata path.
         /// </summary>
         /// <value>The metadata path.</value>

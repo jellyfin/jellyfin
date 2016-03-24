@@ -561,8 +561,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             {
                 throw new ArgumentNullException("name");
             }
-
-            return ("Channel " + name).GetMBId(typeof(Channel));
+            return _libraryManager.GetNewItemId("Channel " + name, typeof(Channel));
         }
 
         public async Task<QueryResult<BaseItemDto>> GetLatestChannelItems(AllChannelMediaQuery query, CancellationToken cancellationToken)
