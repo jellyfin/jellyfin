@@ -113,10 +113,7 @@ var Dashboard = {
         // Try to get the server address from the browser url
         // This will preserve protocol, hostname, port and subdirectory
         var urlLower = window.location.href.toLowerCase();
-        var index = urlLower.indexOf('/web');
-        if (index == -1) {
-            index = urlLower.indexOf('/dashboard');
-        }
+        var index = urlLower.lastIndexOf('/web');
 
         if (index != -1) {
             return urlLower.substring(0, index);
