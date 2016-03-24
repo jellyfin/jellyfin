@@ -587,7 +587,7 @@ namespace MediaBrowser.Controller.Entities
 
                 builder.Append(chunkBuilder);
             }
-            Logger.Debug("ModifySortChunks Start: {0} End: {1}", name, builder.ToString());
+            //Logger.Debug("ModifySortChunks Start: {0} End: {1}", name, builder.ToString());
             return builder.ToString();
         }
 
