@@ -1845,6 +1845,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 var dto = tuple.Item1;
                 var channel = tuple.Item2;
 
+                dto.Number = channel.Number;
+                dto.ChannelType = channel.ChannelType;
+                dto.ServiceName = GetService(channel).Name;
+
                 dto.MediaSources = channel.GetMediaSources(true).ToList();
 
                 var channelIdString = channel.Id.ToString("N");

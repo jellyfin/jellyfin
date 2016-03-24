@@ -291,6 +291,12 @@ namespace MediaBrowser.Model.Dto
         public bool? IsPlaceHolder { get; set; }
 
         /// <summary>
+        /// Gets or sets the number.
+        /// </summary>
+        /// <value>The number.</value>
+        public string Number { get; set; }
+        
+        /// <summary>
         /// Gets or sets the index number.
         /// </summary>
         /// <value>The index number.</value>
