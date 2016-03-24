@@ -28,9 +28,36 @@ namespace MediaBrowser.Providers.TV
             : base(httpClient, configurationManager, jsonSerializer, fileSystem, localization, logManager)
         { }
 
-        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(EpisodeInfo searchInfo, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(EpisodeInfo searchInfo, CancellationToken cancellationToken)
         {
-            return Task.FromResult<IEnumerable<RemoteSearchResult>>(new List<RemoteSearchResult>());
+            var list = new List<RemoteSearchResult>();
+
+            // The search query must either provide an episode number or date
+            if (!searchInfo.IndexNumber.HasValue || !searchInfo.ParentIndexNumber.HasValue)
+            {
+                return list;
+            }
+
+            var metadataResult = await GetMetadata(searchInfo, cancellationToken);
+
+            if (metadataResult.HasMetadata)
+            {
+                var item = metadataResult.Item;
+
+                list.Add(new RemoteSearchResult
+                {
+                    IndexNumber = item.IndexNumber,
+                    Name = item.Name,
+                    ParentIndexNumber = item.ParentIndexNumber,
+                    PremiereDate = item.PremiereDate,
+                    ProductionYear = item.ProductionYear,
+                    ProviderIds = item.ProviderIds,
+                    SearchProviderName = Name,
+                    IndexNumberEnd = item.IndexNumberEnd
+                });
+            }
+
+            return list;
         }
 
         public async Task<MetadataResult<Episode>> GetMetadata(EpisodeInfo info, CancellationToken cancellationToken)
