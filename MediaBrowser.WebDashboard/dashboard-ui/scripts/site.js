@@ -2426,7 +2426,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/home.html',
-            dependencies: ['paper-tabs', 'neon-animated-pages'],
+            dependencies: ['paper-tabs'],
             autoFocus: false,
             controller: 'scripts/indexpage'
         });
@@ -2813,7 +2813,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/tv.html',
-            dependencies: ['paper-tabs', 'neon-animated-pages', 'paper-checkbox'],
+            dependencies: ['paper-tabs', 'paper-checkbox'],
             autoFocus: false,
             controller: 'scripts/tvrecommended'
         });

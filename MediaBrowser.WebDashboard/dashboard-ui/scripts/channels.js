@@ -75,12 +75,12 @@
         var page = this;
 
         var tabs = page.querySelector('paper-tabs');
-        var pages = page.querySelector('neon-animated-pages');
+        var pageTabsContainer = page.querySelector('.pageTabsContainer');
 
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, 'channels.html');
+        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pageTabsContainer, 'channels.html');
 
-        pages.addEventListener('tabchange', function (e) {
-            loadTab(page, parseInt(e.target.selected));
+        pageTabsContainer.addEventListener('tabchange', function (e) {
+            loadTab(page, parseInt(e.detail.selectedTabIndex));
         });
 
     });

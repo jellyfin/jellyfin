@@ -286,7 +286,7 @@
         $('.recommendations', page).createCardMenus();
 
         var tabs = page.querySelector('paper-tabs');
-        var pages = page.querySelector('neon-animated-pages');
+        var pageTabsContainer = page.querySelector('.pageTabsContainer');
 
         var baseUrl = 'music.html';
         var topParentId = LibraryMenu.getTopParentId();
@@ -294,10 +294,10 @@
             baseUrl += '?topParentId=' + topParentId;
         }
 
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, baseUrl);
+        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pageTabsContainer, baseUrl);
 
-        pages.addEventListener('tabchange', function (e) {
-            loadTab(page, parseInt(e.target.selected));
+        pageTabsContainer.addEventListener('tabchange', function (e) {
+            loadTab(page, parseInt(e.detail.selectedTabIndex));
         });
 
     });

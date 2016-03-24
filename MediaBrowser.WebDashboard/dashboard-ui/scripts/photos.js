@@ -155,8 +155,7 @@
         var info = LibraryBrowser.getListItemInfo(this);
 
         if (info.mediaType == 'Photo') {
-            var tab = page.querySelector('neon-animated-pages').selected;
-            var query = getQuery(tab);
+            var query = getQuery(LibraryBrowser.selectedTabIndex(page.querySelector('.pageTabsContainer')));
 
             Photos.startSlideshow(page, query, info.id);
             return false;
@@ -199,10 +198,10 @@
             baseUrl += '?topParentId=' + topParentId;
         }
 
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, page.querySelector('neon-animated-pages'), baseUrl);
+        LibraryBrowser.configurePaperLibraryTabs(page, tabs, page.querySelector('.pageTabsContainer'), baseUrl);
 
-        page.querySelector('neon-animated-pages').addEventListener('tabchange', function (e) {
-            loadTab(page, parseInt(e.target.selected));
+        page.querySelector('.pageTabsContainer').addEventListener('tabchange', function (e) {
+            loadTab(page, parseInt(e.detail.selectedTabIndex));
         });
 
         $(page).on('click', '.mediaItem', onListItemClick);
