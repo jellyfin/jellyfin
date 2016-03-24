@@ -314,6 +314,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     {
 
                     }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error deleting recording file {0}", ex, remove.Path);
+                    }
                 }
                 _recordingProvider.Delete(remove);
             }
@@ -525,7 +529,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 }
 
                 _logger.Debug("Getting programs for channel {0}-{1} from {2}-{3}", channel.Number, channel.Name, provider.Item1.Name, provider.Item2.ListingsId ?? string.Empty);
-                
+
                 var programs = await provider.Item1.GetProgramsAsync(provider.Item2, channel.Number, channel.Name, startDateUtc, endDateUtc, cancellationToken)
                         .ConfigureAwait(false);
 
