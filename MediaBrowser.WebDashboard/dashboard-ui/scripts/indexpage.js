@@ -276,9 +276,13 @@
 
         if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
             var page = $.mobile.activePage;
-            var pages = page.querySelector('neon-animated-pages');
+            var pageTabsContainer = page.querySelector('.pageTabsContainer');
 
-            pages.dispatchEvent(new CustomEvent("tabchange", {}));
+            pageTabsContainer.dispatchEvent(new CustomEvent("tabchange", {
+                detail: {
+                    selectedTabIndex: libraryBrowser.selectedTabIndex(pageTabsContainer)
+                }
+            }));
         }
     }
 
@@ -295,12 +299,12 @@
 
         var self = this;
 
-        var pages = view.querySelector('neon-animated-pages');
+        var pageTabsContainer = view.querySelector('.pageTabsContainer');
 
-        libraryBrowser.configurePaperLibraryTabs(view, view.querySelector('paper-tabs'), pages, 'home.html');
+        libraryBrowser.configurePaperLibraryTabs(view, view.querySelector('paper-tabs'), pageTabsContainer, 'home.html');
 
-        pages.addEventListener('tabchange', function (e) {
-            loadTab(view, parseInt(e.target.selected));
+        pageTabsContainer.addEventListener('tabchange', function (e) {
+            loadTab(view, parseInt(e.detail.selectedTabIndex));
         });
 
         view.querySelector('.btnTakeTour').addEventListener('click', function () {

@@ -25,14 +25,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private readonly IUserDataManager _userDataManager;
         private readonly IDtoService _dtoService;
         private readonly IApplicationHost _appHost;
+        private readonly ILibraryManager _libraryManager;
 
-        public LiveTvDtoService(IDtoService dtoService, IUserDataManager userDataManager, IImageProcessor imageProcessor, ILogger logger, IApplicationHost appHost)
+        public LiveTvDtoService(IDtoService dtoService, IUserDataManager userDataManager, IImageProcessor imageProcessor, ILogger logger, IApplicationHost appHost, ILibraryManager libraryManager)
         {
             _dtoService = dtoService;
             _userDataManager = userDataManager;
             _imageProcessor = imageProcessor;
             _logger = logger;
             _appHost = appHost;
+            _libraryManager = libraryManager;
         }
 
         public TimerInfoDto GetTimerInfoDto(TimerInfo info, ILiveTvService service, LiveTvProgram program, LiveTvChannel channel)
@@ -200,7 +202,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var name = serviceName + externalId + InternalVersionNumber;
 
-            return name.ToLower().GetMBId(typeof(LiveTvChannel));
+            return _libraryManager.GetNewItemId(name.ToLower(), typeof(LiveTvChannel));
         }
 
         public Guid GetInternalTimerId(string serviceName, string externalId)
@@ -221,14 +223,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var name = serviceName + externalId + InternalVersionNumber;
 
-            return name.ToLower().GetMBId(typeof(LiveTvProgram));
+            return _libraryManager.GetNewItemId(name.ToLower(), typeof(LiveTvProgram));
         }
 
         public Guid GetInternalRecordingId(string serviceName, string externalId)
         {
             var name = serviceName + externalId + InternalVersionNumber + "0";
 
-            return name.ToLower().GetMBId(typeof(ILiveTvRecording));
+            return _libraryManager.GetNewItemId(name.ToLower(), typeof(ILiveTvRecording));
         }
 
         public async Task<TimerInfo> GetTimerInfo(TimerInfoDto dto, bool isNew, LiveTvManager liveTv, CancellationToken cancellationToken)

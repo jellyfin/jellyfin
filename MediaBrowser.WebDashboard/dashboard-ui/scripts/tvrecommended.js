@@ -234,13 +234,18 @@
         function onPlaybackStop(e, state) {
 
             if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
-                var pages = view.querySelector('neon-animated-pages');
 
-                pages.dispatchEvent(new CustomEvent("tabchange", {}));
+                var pageTabsContainer = view.querySelector('.pageTabsContainer');
+
+                pageTabsContainer.dispatchEvent(new CustomEvent("tabchange", {
+                    detail: {
+                        selectedTabIndex: libraryBrowser.selectedTabIndex(pageTabsContainer)
+                    }
+                }));
             }
         }
 
-        var pages = view.querySelector('neon-animated-pages');
+        var pageTabsContainer = view.querySelector('.pageTabsContainer');
 
         var baseUrl = 'tv.html';
         var topParentId = params.topParentId;
@@ -255,10 +260,10 @@
         }
         libraryBrowser.createCardMenus(view.querySelector('#resumableItems'));
 
-        libraryBrowser.configurePaperLibraryTabs(view, view.querySelector('paper-tabs'), pages, baseUrl);
+        libraryBrowser.configurePaperLibraryTabs(view, view.querySelector('paper-tabs'), pageTabsContainer, baseUrl);
 
-        pages.addEventListener('tabchange', function (e) {
-            loadTab(view, parseInt(this.selected));
+        pageTabsContainer.addEventListener('tabchange', function (e) {
+            loadTab(view, parseInt(e.detail.selectedTabIndex));
         });
 
         view.addEventListener('viewbeforeshow', function (e) {

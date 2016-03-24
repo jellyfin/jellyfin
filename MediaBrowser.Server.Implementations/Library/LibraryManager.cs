@@ -508,7 +508,12 @@ namespace MediaBrowser.Server.Implementations.Library
                     .Replace("/", "\\");
             }
 
-            key = type.FullName + key.ToLower();
+            if (!ConfigurationManager.Configuration.EnableCaseSensitiveItemIds)
+            {
+                key = key.ToLower();
+            }
+
+            key = type.FullName + key;
 
             return key.GetMD5();
         }

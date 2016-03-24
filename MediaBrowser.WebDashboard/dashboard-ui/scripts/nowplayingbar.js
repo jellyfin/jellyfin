@@ -255,9 +255,7 @@
     function showRemoteControl(tab) {
 
         if (tab) {
-            $.mobile.changePage('nowplaying.html', {
-                dataUrl: 'nowplaying.html#' + tab
-            });
+            Dashboard.navigate('nowplaying.html?tab=' + tab);
         } else {
             Dashboard.navigate('nowplaying.html');
         }

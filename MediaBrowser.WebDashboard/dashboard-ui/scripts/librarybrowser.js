@@ -180,23 +180,6 @@
                 return AppInfo.isNativeApp;
             },
 
-            animatePaperTabs: function () {
-
-                if (!LibraryBrowser.enableFullPaperTabs()) {
-                    return false;
-                }
-
-                if (!browserInfo.animate) {
-                    return false;
-                }
-
-                if (browserInfo.mobile) {
-                    return false;
-                }
-
-                return true;
-            },
-
             allowSwipe: function (target) {
 
                 function allowSwipeOn(elem) {
@@ -246,39 +229,42 @@
 
             },
 
-            configureSwipeTabs: function (ownerpage, tabs, pages) {
+            selectedTab: function (pageTabsContainer, selected) {
 
-                if (LibraryBrowser.animatePaperTabs()) {
-                    if (browserInfo.mobile) {
+                if (selected == null) {
 
-                        require(['slide-left-animation', 'slide-from-right-animation'], function () {
-                            pages.entryAnimation = 'slide-from-right-animation';
-                            pages.exitAnimation = 'slide-left-animation';
-                        });
-                    } else {
-
-                        require(['fade-in-animation', 'fade-out-animation'], function () {
-                            pages.entryAnimation = 'fade-in-animation';
-                            pages.exitAnimation = 'fade-out-animation';
-                        });
-                    }
+                    return pageTabsContainer.selectedTabIndex;
                 }
 
-                var pageCount = pages.querySelectorAll('neon-animatable').length;
+                var tabs = pageTabsContainer.querySelectorAll('.pageTabContent');
+                for (var i = 0, length = tabs.length; i < length; i++) {
+                    if (i == selected) {
+                        tabs[i].classList.remove('hide');
+                    } else {
+                        tabs[i].classList.add('hide');
+                    }
+                }
+                pageTabsContainer.selectedTabIndex = selected;
+                pageTabsContainer.dispatchEvent(new CustomEvent("tabchange", {
+                    detail: {
+                        selectedTabIndex: selected
+                    }
+                }));
+            },
+
+            configureSwipeTabs: function (ownerpage, tabs, pageTabsContainer) {
+
+                var pageCount = pageTabsContainer.querySelectorAll('.pageTabContent').length;
 
                 require(['hammer'], function (Hammer) {
 
-                    var hammertime = new Hammer(pages);
+                    var hammertime = new Hammer(pageTabsContainer);
                     hammertime.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL });
 
                     hammertime.on('swipeleft', function (e) {
                         if (LibraryBrowser.allowSwipe(e.target)) {
-                            var selected = parseInt(pages.selected || '0');
+                            var selected = parseInt(LibraryBrowser.selectedTab(pageTabsContainer) || '0');
                             if (selected < (pageCount - 1)) {
-                                if (LibraryBrowser.animatePaperTabs()) {
-                                    pages.entryAnimation = 'slide-from-right-animation';
-                                    pages.exitAnimation = 'slide-left-animation';
-                                }
                                 tabs.selectNext();
                             }
                         }
@@ -286,12 +272,8 @@
 
                     hammertime.on('swiperight', function (e) {
                         if (LibraryBrowser.allowSwipe(e.target)) {
-                            var selected = parseInt(pages.selected || '0');
+                            var selected = parseInt(LibraryBrowser.selectedTab(pageTabsContainer) || '0');
                             if (selected > 0) {
-                                if (LibraryBrowser.animatePaperTabs()) {
-                                    pages.entryAnimation = 'slide-from-left-animation';
-                                    pages.exitAnimation = 'slide-right-animation';
-                                }
                                 tabs.selectPrevious();
                             }
                         }
@@ -303,7 +285,7 @@
                 return !LibraryBrowser.enableFullPaperTabs();
             },
 
-            configurePaperLibraryTabs: function (ownerpage, tabs, pages) {
+            configurePaperLibraryTabs: function (ownerpage, tabs, pageTabsContainer) {
 
                 // Causing iron-select to not fire in IE and safari
                 if (browserInfo.chrome) {
@@ -317,7 +299,7 @@
                         tabs.noSlide = true;
                         tabs.noBar = true;
                     } else {
-                        LibraryBrowser.configureSwipeTabs(ownerpage, tabs, pages);
+                        LibraryBrowser.configureSwipeTabs(ownerpage, tabs, pageTabsContainer);
                     }
 
                     if (libraryViewNav) {
@@ -333,9 +315,9 @@
                     var legacyTabs = ownerpage.querySelector('.legacyTabs');
 
                     if (legacyTabs) {
-                        pages.addEventListener('iron-select', function (e) {
+                        pageTabsContainer.addEventListener('tabchange', function (e) {
 
-                            var selected = pages.selected;
+                            var selected = e.detail.selectedTabIndex;
                             var anchors = legacyTabs.querySelectorAll('a');
                             for (var i = 0, length = anchors.length; i < length; i++) {
                                 if (i == selected) {
@@ -354,41 +336,10 @@
 
                 ownerpage.addEventListener('viewbeforeshow', LibraryBrowser.onTabbedpagebeforeshow);
 
-                pages.addEventListener('iron-select', function () {
-                    // When transition animations are used, add a content loading delay to allow the animations to finish
-                    // Otherwise with both operations happening at the same time, it can cause the animation to not run at full speed.
-                    var pgs = this;
-                    var delay = LibraryBrowser.animatePaperTabs() || !tabs.noSlide ? 300 : 0;
-
-                    setTimeout(function () {
-                        pgs.dispatchEvent(new CustomEvent("tabchange", {}));
-                    }, delay);
-                });
-
-                function fadeOutLeft(elem, iterations) {
-                    var keyframes = [{ opacity: '1', transform: 'none', offset: 0 },
-                      { opacity: '0', transform: 'translate3d(-100%, 0, 0)', offset: 1 }];
-                    var timing = { duration: 300, iterations: iterations };
-                    return elem.animate(keyframes, timing);
-                }
                 if (!LibraryBrowser.navigateOnLibraryTabSelect()) {
                     tabs.addEventListener('iron-select', function () {
 
-                        var animateTab = !browserInfo.safari;
-                        animateTab = false;
-
-                        var selected = pages.selected;
-                        if (selected != null && animateTab) {
-                            var newValue = this.selected;
-                            var currentTab = pages.querySelectorAll('.pageTabContent')[selected];
-
-                            fadeOutLeft(currentTab, 1).onfinish = function () {
-                                pages.selected = newValue;
-                            };
-                        }
-                        else {
-                            pages.selected = this.selected;
-                        }
+                        LibraryBrowser.selectedTab(pageTabsContainer, this.selected);
                     });
                 }
             },
@@ -417,7 +368,7 @@
 
             onTabbedpagebeforeshowInternal: function (page, e, isFirstLoad) {
 
-                var pages = page.querySelector('neon-animated-pages');
+                var pageTabsContainer = page.querySelector('.pageTabsContainer');
 
                 if (isFirstLoad) {
 
@@ -437,29 +388,24 @@
                         tabs.selected = selected;
 
                     } else {
-                        pages.selected = selected;
+                        LibraryBrowser.selectedTab(pageTabsContainer, selected);
                     }
 
                 } else {
 
                     // Go back to the first tab
                     if (LibraryBrowser.enableFullPaperTabs() && !e.detail.isRestored) {
-                        if (pages.selected) {
-
-                            var entryAnimation = pages.entryAnimation;
-                            var exitAnimation = pages.exitAnimation;
-                            pages.entryAnimation = null;
-                            pages.exitAnimation = null;
+                        if (LibraryBrowser.selectedTab(pageTabsContainer)) {
 
                             page.querySelector('paper-tabs').selected = 0;
-
-                            pages.entryAnimation = entryAnimation;
-                            pages.exitAnimation = exitAnimation;
-
                             return;
                         }
                     }
-                    pages.dispatchEvent(new CustomEvent("tabchange", {}));
+                    pageTabsContainer.dispatchEvent(new CustomEvent("tabchange", {
+                        detail: {
+                            selectedTabIndex: 0
+                        }
+                    }));
                 }
             },
 
@@ -479,14 +425,9 @@
                     document.removeEventListener('pagebeforeshow', afterNavigate);
                     if (window.location.href.toLowerCase().indexOf(url.toLowerCase()) != -1) {
 
-                        var pages = this.querySelector('neon-animated-pages');
+                        var pageTabsContainer = this.querySelector('.pageTabsContainer');
 
-                        if (pages) {
-
-                            var entryAnimation = pages.entryAnimation;
-                            var exitAnimation = pages.exitAnimation;
-                            pages.entryAnimation = null;
-                            pages.exitAnimation = null;
+                        if (pageTabsContainer) {
 
                             var tabs = this.querySelector('paper-tabs');
 
@@ -497,9 +438,6 @@
                                 var noSlide = tabs.noSlide;
                                 tabs.noSlide = true;
                                 tabs.selected = index;
-
-                                pages.entryAnimation = entryAnimation;
-                                pages.exitAnimation = exitAnimation;
                                 tabs.noSlide = noSlide;
 
                             }, delay);
@@ -1687,7 +1625,7 @@
                 function getValue(shape) {
 
                     switch (shape) {
-                    
+
                         case 'portrait':
                             if (screenWidth >= 2200) return 10;
                             if (screenWidth >= 2100) return 9;
@@ -3196,7 +3134,7 @@
             markDislike: function (link) {
 
                 // TODO: remove jQuery
-                require(['jQuery'], function($) {
+                require(['jQuery'], function ($) {
                     var id = link.getAttribute('data-itemid');
 
                     var $link = $(link);

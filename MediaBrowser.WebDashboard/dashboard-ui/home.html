@@ -15,51 +15,41 @@
         </div>
     </div>
 
-    <div class="ehsContent fullWidth">
-        <neon-animated-pages>
-            <neon-animatable>
-                <div class="pageTabContent homeTabContent" data-index="0">
-                    <div class="ui-bar-b readOnlyContent welcomeMessage" style="display: none; padding: 2em; border-radius: 10px; margin: 2em auto; font-weight: normal;">
-                        <h1 style="margin-top: 0;" class="tourHeader"></h1>
-                        <p>
-                            <paper-button raised class="submit block btnTakeTour"><iron-icon icon="check"></iron-icon><span class="tourButtonText"></span></paper-button>
-                        </p>
-                    </div>
+    <div class="ehsContent fullWidth pageTabsContainer">
+        <div class="pageTabContent homeTabContent hide" data-index="0">
+            <div class="ui-bar-b readOnlyContent welcomeMessage" style="display: none; padding: 2em; border-radius: 10px; margin: 2em auto; font-weight: normal;">
+                <h1 style="margin-top: 0;" class="tourHeader"></h1>
+                <p>
+                    <paper-button raised class="submit block btnTakeTour"><iron-icon icon="check"></iron-icon><span class="tourButtonText"></span></paper-button>
+                </p>
+            </div>
 
-                    <div class="sections"></div>
+            <div class="sections"></div>
+        </div>
+        <div class="pageTabContent homeNextUpTabContent hide" data-index="1">
+            <div class="homePageSection">
+                <div>
+                    <h1 class="listHeader nextUpHeader" style="display: inline-block; vertical-align: middle;">${HeaderNextUp}</h1>
+                    <paper-button raised class="submit mini categorySyncButton" data-category="NextUp"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
                 </div>
-            </neon-animatable>
-            <neon-animatable>
-                <div class="pageTabContent homeNextUpTabContent" data-index="1">
-                    <div class="homePageSection">
-                        <div>
-                            <h1 class="listHeader nextUpHeader" style="display: inline-block; vertical-align: middle;">${HeaderNextUp}</h1>
-                            <paper-button raised class="submit mini categorySyncButton" data-category="NextUp"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
-                        </div>
-                        <div id="nextUpItems" class="itemsContainer">
-                        </div>
-                    </div>
-                    <p class="noNextUpItems" style="display: none;">${NoNextUpItemsMessage}</p>
+                <div id="nextUpItems" class="itemsContainer">
                 </div>
-            </neon-animatable>
-            <neon-animatable>
-                <div class="pageTabContent homeFavoritesTabContent" data-index="2">
-                    <div class="favoriteSections"></div>
-                </div>
-            </neon-animatable>
-            <neon-animatable>
-                <div class="pageTabContent homeUpcomingTabContent" data-index="3">
-                    <div id="upcomingItems" class="itemsContainer">
-                    </div>
-                    <div class="noItemsMessage" style="display: none;">
-                        <p>${MessageNothingHere}</p>
-                        <p>
-                            <a href="metadata.html">${MessagePleaseEnsureInternetMetadata}</a>
-                        </p>
-                    </div>
-                </div>
-            </neon-animatable>
-        </neon-animated-pages>
+            </div>
+            <p class="noNextUpItems" style="display: none;">${NoNextUpItemsMessage}</p>
+        </div>
+        <div class="pageTabContent homeFavoritesTabContent hide" data-index="2">
+            <div class="favoriteSections"></div>
+        </div>
+        <div class="pageTabContent homeUpcomingTabContent hide" data-index="3">
+            <div id="upcomingItems" class="itemsContainer">
+            </div>
+            <div class="noItemsMessage" style="display: none;">
+                <p>${MessageNothingHere}</p>
+                <p>
+                    <a href="metadata.html">${MessagePleaseEnsureInternetMetadata}</a>
+                </p>
+            </div>
+        </div>
     </div>
 
     <div data-role="content">

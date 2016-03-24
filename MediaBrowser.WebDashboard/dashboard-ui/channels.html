@@ -1,4 +1,4 @@
-﻿<div id="channelsPage" data-role="page" data-dom-cache="true" class="page libraryPage channelsPage pageWithAbsoluteTabs" data-contextname="${HeaderChannels}" data-require="scripts/channels,scripts/channelslatest,scripts/sections,paper-tabs,neon-animated-pages">
+﻿<div id="channelsPage" data-role="page" data-dom-cache="true" class="page libraryPage channelsPage pageWithAbsoluteTabs" data-contextname="${HeaderChannels}" data-require="scripts/channels,scripts/channelslatest,scripts/sections,paper-tabs">
 
     <div class="libraryViewNav scopedLibraryViewNav libraryViewNavWithMinHeight">
         <paper-tabs hidescrollbuttons noink>
@@ -10,21 +10,15 @@
             <a href="channels.html?tab=1">${TabChannels}</a>
         </div>
     </div>
-    <div class="ehsContent fullWidth">
-        <neon-animated-pages>
-            <neon-animatable>
-                <div class="pageTabContent latestContent">
-                    <div class="latestItems"></div>
-                </div>
-            </neon-animatable>
-            <neon-animatable>
-                <div class="pageTabContent channelsContent">
-                    <div class="viewSettings">
-                    </div>
-                    <div id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
-                </div>
-            </neon-animatable>
-        </neon-animated-pages>
+    <div class="ehsContent fullWidth pageTabsContainer">
+        <div class="pageTabContent latestContent hide">
+            <div class="latestItems"></div>
+        </div>
+        <div class="pageTabContent channelsContent hide">
+            <div class="viewSettings">
+            </div>
+            <div id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
+        </div>
     </div>
 
     <div data-role="content">
