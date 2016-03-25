@@ -192,7 +192,7 @@ namespace MediaBrowser.Api
                 _userDataRepository,
                 _dtoService,
                 Logger,
-                request, item => item is Game,
+                request, new[] { typeof(Game) },
                 SimilarItemsHelper.GetSimiliarityScore);
 
             return ToOptimizedSerializedResultUsingCache(result);
