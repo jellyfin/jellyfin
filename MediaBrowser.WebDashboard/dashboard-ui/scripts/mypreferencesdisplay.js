@@ -1,4 +1,4 @@
-﻿define(['userSettings'], function (userSettings) {
+﻿define(['userSettings', 'appStorage', 'jQuery'], function (userSettings, appStorage, $) {
 
     function loadForm(page, user) {
 

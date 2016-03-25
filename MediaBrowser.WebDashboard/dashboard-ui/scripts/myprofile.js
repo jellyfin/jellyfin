@@ -1,4 +1,4 @@
-﻿(function ($, window, document, FileReader) {
+﻿define(['jQuery'], function ($) {
 
     var currentFile;
 
@@ -92,12 +92,12 @@
             case evt.target.error.ABORT_ERR:
                 break; // noop
             default:
-            {
-                require(['toast'], function (toast) {
-                    toast(Globalize.translate('FileReadError'));
-                });
-                break;
-            }
+                {
+                    require(['toast'], function (toast) {
+                        toast(Globalize.translate('FileReadError'));
+                    });
+                    break;
+                }
         };
     }
 
@@ -218,15 +218,10 @@
 
         $('.newImageForm').off('submit', MyProfilePage.onImageSubmit).on('submit', MyProfilePage.onImageSubmit);
 
-        page.querySelector('#uploadUserImage').addEventListener('change', function(e) {
+        page.querySelector('#uploadUserImage').addEventListener('change', function (e) {
             setFiles(page, e.target.files);
         });
     });
-
-
-})(jQuery, window, document, window.FileReader);
-
-(function ($, document, window) {
 
     function loadUser(page) {
 
@@ -234,8 +229,8 @@
 
         ApiClient.getUser(userid).then(function (user) {
 
-            Dashboard.getCurrentUser().then(function(loggedInUser) {
-                
+            Dashboard.getCurrentUser().then(function (loggedInUser) {
+
                 Dashboard.setPageTitle(user.Name);
 
                 var showPasswordSection = true;
@@ -335,8 +330,8 @@
             });
             loadUser(page);
 
-        }, function() {
-            
+        }, function () {
+
             Dashboard.hideLoadingMsg();
 
             Dashboard.alert({
@@ -465,4 +460,4 @@
 
     });
 
-})(jQuery, document, window);
+});

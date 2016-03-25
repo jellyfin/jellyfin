@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['layoutManager', 'jQuery'], function (layoutManager, $) {
 
     var currentItem;
 
@@ -71,9 +71,11 @@
             var hasBackdrop = false;
 
             // For these types, make the backdrop a little smaller so that the items are more quickly accessible
-            if (item.Type == 'MusicArtist' || item.Type == "MusicAlbum" || item.Type == "Playlist" || item.Type == "BoxSet" || item.Type == "Audio") {
+            if (item.Type == 'MusicArtist' || item.Type == "MusicAlbum" || item.Type == "Playlist" || item.Type == "BoxSet" || item.Type == "Audio" || !layoutManager.mobile) {
                 $('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
-                Backdrops.setBackdrops(page, [item]);
+                require(['backdrop'], function (backdrop) {
+                    backdrop.setBackdrops([item]);
+                });
             }
             else {
                 //$('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
@@ -322,6 +324,48 @@
         }
     }
 
+    function renderNextUp(page, item, user) {
+
+        var section = page.querySelector('.nextUpSection');
+
+        var userData = item.UserData || {};
+
+        if (item.Type != 'Series' || !userData.PlayedPercentage) {
+            section.classList.add('hide');
+            return;
+        }
+
+        ApiClient.getNextUpEpisodes({
+
+            SeriesId: item.Id,
+            UserId: user.Id
+
+        }).then(function (result) {
+
+            if (result.Items.length) {
+                section.classList.remove('hide');
+            } else {
+                section.classList.add('hide');
+            }
+
+            var html = LibraryBrowser.getPosterViewHtml({
+                items: result.Items,
+                shape: "detailPage169",
+                showTitle: true,
+                displayAsSpecial: item.Type == "Season" && item.IndexNumber,
+                overlayText: true,
+                lazy: true,
+                overlayPlayButton: true
+            });
+
+            var itemsContainer = section.querySelector('.nextUpItems');
+            
+            itemsContainer.innerHTML = html;
+            ImageLoader.lazyChildren(itemsContainer);
+            $(itemsContainer).createCardMenus();
+        });
+    }
+
     function setInitialCollapsibleState(page, item, context, user) {
 
         $('.collectionItems', page).empty();
@@ -352,6 +396,13 @@
         }
         else {
             $('#childrenCollapsible', page).addClass('hide');
+        }
+
+        if (item.Type == 'Series') {
+
+            renderNextUp(page, item, user);
+        } else {
+            page.querySelector('.nextUpSection').classList.add('hide');
         }
 
         if (item.MediaSources && item.MediaSources.length) {
@@ -680,7 +731,7 @@
 
         var options = {
             userId: Dashboard.getCurrentUserId(),
-            limit: screenWidth > 800 && shape == "detailPagePortrait" ? 5 : 4,
+            limit: screenWidth > 800 && shape == "detailPagePortrait" ? 4 : 4,
             fields: "PrimaryImageAspectRatio,UserData,SyncInfo"
         };
 
@@ -1116,7 +1167,7 @@
 
     function renderUserDataIcons(page, item) {
 
-        $('.userDataIcons', page).html(LibraryBrowser.getUserDataIconsHtml(item, true, 'fab'));
+        $('.userDataIcons', page).html(LibraryBrowser.getUserDataIconsHtml(item, true, 'icon-button'));
     }
 
     function renderCriticReviews(page, item, limit) {
@@ -1340,7 +1391,7 @@
 
             var onclick = item.PlayAccess == 'Full' && !isStatic ? ' onclick="ItemDetailPage.play(' + chapter.StartPositionTicks + ');"' : '';
 
-            html += '<a class="card ' + getThumbShape() + 'Card" href="#play-Chapter-' + i + '"' + onclick + '>';
+            html += '<a class="card ' + getThumbShape() + 'Card" href="#"' + onclick + '>';
 
             html += '<div class="cardBox">';
             html += '<div class="cardScalable">';
@@ -1921,7 +1972,7 @@
             if (currentItem.Type == 'Recording') {
                 LibraryBrowser.showTab('livetv.html', 3);
             } else {
-                Dashboard.navigate('index.html');
+                Dashboard.navigate('home.html');
             }
         }
     }
@@ -2099,4 +2150,4 @@
 
     window.ItemDetailPage = new itemDetailPage();
 
-})(jQuery, document, window);
+});

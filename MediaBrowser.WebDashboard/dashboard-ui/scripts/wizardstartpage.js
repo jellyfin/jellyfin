@@ -1,4 +1,4 @@
-﻿(function (window, $) {
+﻿define(['jQuery'], function ($) {
 
     function loadPage(page, config, languageOptions) {
 
@@ -46,6 +46,9 @@
 
         $('.wizardStartForm').off('submit', onSubmit).on('submit', onSubmit);
 
+        window.ConnectionManager.clearData();
+
+
     }).on('pageshow', "#wizardStartPage", function () {
 
         Dashboard.showLoadingMsg();
@@ -64,4 +67,4 @@
         });
     });
 
-})(window, jQuery);
+});

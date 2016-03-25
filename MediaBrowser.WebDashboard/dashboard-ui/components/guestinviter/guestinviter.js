@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'paper-input', 'paper-button', 'jqmcollapsible', 'paper-checkbox'], function (paperDialogHelper) {
+﻿define(['dialogHelper', 'jQuery', 'paper-input', 'paper-button', 'emby-collapsible', 'paper-checkbox'], function (dialogHelper, $) {
 
     function renderLibrarySharingList(context, result) {
 
@@ -56,7 +56,7 @@
             }).then(function (result) {
 
                 dlg.submitted = true;
-                paperDialogHelper.close(dlg);
+                dialogHelper.close(dlg);
 
                 Dashboard.hideLoadingMsg();
 
@@ -94,7 +94,7 @@
                 xhr.onload = function (e) {
 
                     var template = this.response;
-                    var dlg = paperDialogHelper.createDialog({
+                    var dlg = dialogHelper.createDialog({
                         removeOnClose: true,
                         size: 'small'
                     });
@@ -110,12 +110,10 @@
 
                     dlg.innerHTML = html;
                     document.body.appendChild(dlg);
-                    // needed for the collapsible
-                    $(dlg.querySelector('form')).trigger('create');
 
-                    paperDialogHelper.open(dlg);
+                    dialogHelper.open(dlg);
 
-                    dlg.addEventListener('iron-overlay-closed', function () {
+                    dlg.addEventListener('close', function () {
 
                         if (dlg.submitted) {
                             resolve();
@@ -126,7 +124,7 @@
 
                     dlg.querySelector('.btnCancel').addEventListener('click', function (e) {
 
-                        paperDialogHelper.close(dlg);
+                        dialogHelper.close(dlg);
                     });
 
                     dlg.querySelector('form').addEventListener('submit', function (e) {

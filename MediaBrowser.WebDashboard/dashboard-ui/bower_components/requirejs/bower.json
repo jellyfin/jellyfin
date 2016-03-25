@@ -1,6 +1,6 @@
 {
   "name": "requirejs",
-  "version": "2.1.22",
+  "version": "2.2.0",
   "ignore": [],
   "homepage": "http://requirejs.org",
   "authors": [
@@ -12,7 +12,6 @@
     "AMD"
   ],
   "license": [
-    "BSD-3-Clause",
     "MIT"
   ]
 }

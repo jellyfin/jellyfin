@@ -234,7 +234,8 @@ namespace MediaBrowser.Model.Dlna
             }
 
             list.Add(new NameValuePair("CopyTimestamps", (item.CopyTimestamps).ToString().ToLower()));
-            
+            list.Add(new NameValuePair("SubtitleMethod", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External ? item.SubtitleDeliveryMethod.ToString() : string.Empty));
+       
             return list;
         }
 
@@ -343,6 +344,11 @@ namespace MediaBrowser.Model.Dlna
                         StringHelper.ToStringCultureInvariant(stream.Index),
                         StringHelper.ToStringCultureInvariant(startPositionTicks),
                         subtitleProfile.Format);
+
+                    if (!string.IsNullOrEmpty(accessToken))
+                    {
+                        info.Url += "?api_key=" + accessToken;
+                    }
 
                     info.IsExternalUrl = false;
                 }

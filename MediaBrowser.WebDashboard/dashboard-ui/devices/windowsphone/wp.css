@@ -1,8 +1,4 @@
-﻿html, body, .ui-btn, .pageTitle {
-    font-family: 'Segoe UI', Arial, sans-serif;
-}
-
-.viewMenuBar {
+﻿.viewMenuBar {
     background-color: #000;
 }
 
@@ -17,7 +13,7 @@
         font-weight: 400 !important;
     }
 
-.background-theme-b, paper-dialog.background-theme-b {
+.background-theme-b, .dialog.background-theme-b {
     background: #161616;
 }
 

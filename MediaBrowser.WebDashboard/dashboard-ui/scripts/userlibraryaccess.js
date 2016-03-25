@@ -1,4 +1,4 @@
-﻿(function ($, window, document) {
+﻿define(['jQuery'], function ($) {
 
     function loadMediaFolders(page, user, mediaFolders) {
 
@@ -81,7 +81,7 @@
             html += '<input class="chkDevice" data-id="' + device.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
             html += '<label for="' + id + '">' + device.Name;
 
-            html += '<br/><span style="font-weight:normal;font-size: 90%;">' + device.AppName + '</span>';
+            html += '<br/><span>' + device.AppName + '</span>';
             html += '</label>';
         }
 
@@ -247,4 +247,4 @@
         });
     });
 
-})(jQuery, window, document);
+});

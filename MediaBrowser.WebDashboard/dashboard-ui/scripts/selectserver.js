@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['jQuery'], function ($) {
 
     function connectToServer(page, server) {
 
@@ -15,7 +15,7 @@
                 case MediaBrowser.ConnectionState.SignedIn:
                     {
                         Dashboard.onServerChanged(apiClient.getCurrentUserId(), apiClient.accessToken(), apiClient);
-                        Dashboard.navigate('index.html');
+                        Dashboard.navigate('home.html');
                     }
                     break;
                 case MediaBrowser.ConnectionState.ServerSignIn:
@@ -357,4 +357,4 @@
         loadPage(page);
     });
 
-})();
+});

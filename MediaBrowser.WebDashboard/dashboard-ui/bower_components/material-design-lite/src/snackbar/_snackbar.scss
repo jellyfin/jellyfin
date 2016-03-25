@@ -1,0 +1,89 @@
+/**
+ * Copyright 2015 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import "../variables";
+@import "../mixins";
+
+.mdl-snackbar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  cursor: default;
+  background-color: $snackbar-background-color;
+  z-index: 3;
+  display: block;
+  display: flex;
+  justify-content: space-between;
+  font-family: $preferred_font;
+  will-change: transform;
+  transform: translate(0, 80px);
+  transition: transform 0.25s $animation-curve-fast-out-linear-in;
+  pointer-events: none;
+  @media(max-width: $snackbar-tablet-breakpoint - 1) {
+    width: 100%;
+    left: 0;
+    min-height: 48px;
+    max-height: 80px;
+  }
+  @media(min-width: $snackbar-tablet-breakpoint) {
+    min-width: 288px;
+    max-width: 568px;
+    border-radius: 2px;
+    transform: translate(-50%, 80px);
+  }
+  &--active {
+    transform: translate(0, 0);
+    pointer-events: auto;
+    transition: transform 0.25s $animation-curve-linear-out-slow-in;
+
+    @media(min-width: $snackbar-tablet-breakpoint) {
+      transform: translate(-50%, 0);
+    }
+  }
+
+  &__text {
+    padding: 14px 12px 14px 24px;
+    vertical-align: middle;
+    color: white;
+    float: left;
+  }
+
+  &__action {
+    background: transparent;
+    border: none;
+    color: $snackbar-action-color;
+    float: right;
+    text-transform: uppercase;
+    padding: 14px 24px 14px 12px;
+    @include typo-button();
+    overflow: hidden;
+    outline: none;
+    opacity: 0;
+    pointer-events: none;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    align-self: center;
+
+    &::-moz-focus-inner {
+      border: 0;
+    }
+    &:not([aria-hidden]) {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+}

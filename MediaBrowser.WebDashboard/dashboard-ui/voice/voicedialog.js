@@ -1,4 +1,4 @@
-define(['paperdialoghelper'], function (paperDialogHelper) {
+define(['dialogHelper', 'jQuery'], function (dialogHelper, $) {
 
     var currentRecognition;
     var lang = 'en-US';
@@ -121,7 +121,7 @@ define(['paperdialoghelper'], function (paperDialogHelper) {
     /// <returns> . </returns>
     function showVoiceHelp(groupid, title) {
 
-        var dlg = paperDialogHelper.createDialog({
+        var dlg = dialogHelper.createDialog({
             size: 'medium',
             removeOnClose: true
         });
@@ -176,16 +176,16 @@ define(['paperdialoghelper'], function (paperDialogHelper) {
         dlg.innerHTML = html;
         document.body.appendChild(dlg);
 
-        paperDialogHelper.open(dlg);
+        dialogHelper.open(dlg);
         currentDialog = dlg;
 
-        dlg.addEventListener('iron-overlay-closed', function () {
+        dlg.addEventListener('close', function () {
             currentDialog = null;
         });
 
         $('.btnCancelVoiceInput', dlg).on('click', function () {
             destroyCurrentRecognition();
-            paperDialogHelper.close(dlg);
+            dialogHelper.close(dlg);
         });
 
         $('.btnRetry', dlg).on('click', function () {
@@ -250,7 +250,7 @@ define(['paperdialoghelper'], function (paperDialogHelper) {
 
                 var dlg = currentDialog;
                 if (dlg) {
-                    paperDialogHelper.close(dlg);
+                    dialogHelper.close(dlg);
                 }
             });
 

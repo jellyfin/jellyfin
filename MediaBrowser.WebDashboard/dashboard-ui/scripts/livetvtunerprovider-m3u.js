@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     function reload(page, providerId) {
 
@@ -60,6 +60,26 @@
             return false;
         });
 
+        $('#btnSelectPath', page).on("click.selectDirectory", function () {
+
+            require(['directorybrowser'], function (directoryBrowser) {
+
+                var picker = new directoryBrowser();
+
+                picker.show({
+
+                    includeFiles: true,
+                    callback: function (path) {
+                        if (path) {
+                            $('#txtDevicePath', page).val(path);
+                        }
+                        picker.close();
+                    }
+                });
+            });
+
+        });
+
     }).on('pageshow', "#liveTvTunerProviderM3UPage", function () {
 
         var providerId = getParameterByName('id');
@@ -67,4 +87,4 @@
         reload(page, providerId);
     });
 
-})(jQuery, document, window);
+});

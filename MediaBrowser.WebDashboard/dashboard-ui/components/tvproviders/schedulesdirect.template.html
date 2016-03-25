@@ -10,6 +10,8 @@
 </div>
 
 <form class="formLogin">
+    <!-- Terrible, but this hidden field prevents the yellow background in chrome -->
+    <div style="height:0; overflow: hidden;"><input type="text" name="fakeusernameremembered" tabindex="-1" /><input type="password" name="fakepasswordremembered" tabindex="-1" /></div>
     <div>
         <div>
             <paper-input class="txtUser" label="${LabelUsername}" required="required" autocomplete="off"></paper-input>
@@ -52,6 +54,17 @@
                 <label for="selectListing" class="selectLabel">${LabelLineup}</label>
                 <select id="selectListing" data-mini="true" required="required"></select>
             </div>
+            <div>
+                <br />
+                <paper-checkbox class="chkAllTuners">${OptionEnableForAllTuners}</paper-checkbox>
+                <div class="selectTunersSection hide">
+                    <br /><br />
+                    <div class="paperCheckboxListLabel">${HeaderTuners}</div>
+                    <div class="paperCheckboxList paperList tunerList">
+                    </div>
+                </div>
+            </div>
+            <br /><br />
             <div>
                 <button type="submit" data-role="none" class="clearButton btnSubmitListingsContainer">
                     <paper-button raised class="submit block btnSubmitListings hide"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>

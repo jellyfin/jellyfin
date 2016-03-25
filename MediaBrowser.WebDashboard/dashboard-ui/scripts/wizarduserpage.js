@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     function getApiClient() {
         return ApiClient;
@@ -100,4 +100,4 @@
         });
     });
 
-})(jQuery, document, window);
+});

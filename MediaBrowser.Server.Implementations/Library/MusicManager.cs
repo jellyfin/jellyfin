@@ -80,7 +80,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var genreList = genres.ToList();
 
-            var inputItems = _libraryManager.GetItems(new InternalItemsQuery(user)
+            var inputItems = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(Audio).Name },
 

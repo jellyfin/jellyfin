@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     var query = {
 
@@ -93,7 +93,7 @@
             html += "</div>";
         }
 
-        $('.divMatchInfos', page).html(html).trigger('create');
+        $('.divMatchInfos', page).html(html);
     }
 
     function onApiFailure(e) {
@@ -144,4 +144,4 @@
         currentResult = null;
     });
 
-})(jQuery, document, window);
+});

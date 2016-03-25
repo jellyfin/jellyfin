@@ -28,13 +28,38 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     margin: 0;
     padding: 0;
   }
+
+  .container {
+    display: block;
+    position: relative;
+    width: 100px;
+    height: 100px;
+    background-color: yellow;
+  }
+
+  .positioned {
+    position: absolute;
+    top: 40px;
+    left: 40px;
+  }
+
+  .dropdown-content {
+    width: 50px;
+    height: 50px;
+    background-color: orange;
+  }
+  
+  .full-screen {
+    width: 100vw;
+    height: 100vh;
+  }
 </style>
 <body>
 
   <test-fixture id="TrivialDropdown">
     <template>
       <iron-dropdown>
-        <div class="dropdown-content">Hello!</div>
+        <div class="dropdown-content"></div>
       </iron-dropdown>
     </template>
   </test-fixture>
@@ -49,9 +74,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <test-fixture id="AlignedDropdown">
     <template>
-      <div style="display: block; position: relative; width: 100px; height: 100px;">
+      <div class="container">
         <iron-dropdown horizontal-align="right" vertical-align="top">
-          <div class="dropdown-content">Hello!</div>
+          <div class="dropdown-content full-screen"></div>
         </iron-dropdown>
       </div>
     </template>
@@ -60,9 +85,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <!-- Absolutely position the dropdown so that it has enough space to move around -->
   <test-fixture id="OffsetDropdownTopLeft">
     <template>
-      <div style="display: block; position: absolute; top: 40px; left: 40px; width: 100px; height: 100px;">
+      <div class="container positioned">
         <iron-dropdown>
-          <div class="dropdown-content">Hello!</div>
+          <div class="dropdown-content"></div>
         </iron-dropdown>
       </div>
     </template>
@@ -70,9 +95,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <test-fixture id="OffsetDropdownBottomRight">
     <template>
-      <div style="display: block; position: absolute; top: 40px; left: 40px; width: 100px; height: 100px;">
+      <div class="container positioned">
         <iron-dropdown horizontal-align="right" vertical-align="bottom">
-          <div class="dropdown-content">Hello!</div>
+          <div class="dropdown-content"></div>
         </iron-dropdown>
       </div>
     </template>
@@ -90,9 +115,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <test-fixture id="RTLDropdownLeft">
     <template>
-      <div dir="rtl" style="display: block; position: relative; width: 100px; height: 100px;">
+      <div dir="rtl" class="container">
         <iron-dropdown>
-          <div class="dropdown-content">Hello!</div>
+          <div class="dropdown-content"></div>
         </iron-dropdown>
       </div>
     </template>
@@ -100,9 +125,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <test-fixture id="RTLDropdownRight">
     <template>
-      <div dir="rtl" style="display: block; position: relative; width: 100px; height: 100px;">
+      <div dir="rtl" class="container">
         <iron-dropdown horizontal-align="right">
-          <div class="dropdown-content">Hello!</div>
+          <div class="dropdown-content"></div>
         </iron-dropdown>
       </div>
     </template>
@@ -196,7 +221,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               .to.be.equal(1);
             expect(Polymer.IronDropdownScrollManager.elementIsScrollLocked(document.body))
               .to.be.equal(true);
-              
+
             if(openCount === 0) {
               // This triggers a second `pushScrollLock` with the same element, however
               // that should not add the element to the `_lockingElements` stack twice
@@ -240,11 +265,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           runAfterOpen(dropdown, function () {
             dropdownRect = dropdown.getBoundingClientRect();
             parentRect = parent.getBoundingClientRect();
-
-            // NOTE(cdata): IE10 / 11 have minor rounding errors in this case,
-            // so we assert with `closeTo` and a tight threshold:
-            expect(dropdownRect.top).to.be.closeTo(parentRect.top, 0.1);
-            expect(dropdownRect.right).to.be.closeTo(parentRect.right, 0.1);
+            assert.equal(dropdownRect.top, parentRect.top, 'top ok');
+            assert.equal(dropdownRect.left, 0, 'left ok');
+            assert.equal(dropdownRect.bottom, document.documentElement.clientHeight, 'bottom ok');
+            assert.equal(dropdownRect.right, parentRect.right, 'right ok');
             done();
           });
         });
@@ -257,11 +281,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           runAfterOpen(dropdown, function () {
             parentRect = parent.getBoundingClientRect();
             dropdownRect = dropdown.getBoundingClientRect();
+            assert.equal(dropdownRect.top, 0, 'top ok');
+            assert.equal(dropdownRect.left, 0, 'left ok');
+            assert.equal(dropdownRect.bottom, parentRect.bottom, 'bottom ok');
+            assert.equal(dropdownRect.right, parentRect.right, 'right ok');
+            done();
+          });
+        });
 
-            // NOTE(cdata): IE10 / 11 have minor rounding errors in this case,
-            // so we assert with `closeTo` and a tight threshold:
-            expect(dropdownRect.bottom).to.be.closeTo(parentRect.bottom, 0.1);
-            expect(dropdownRect.right).to.be.closeTo(parentRect.right, 0.1);
+        test('handles parent\'s stacking context', function(done) {
+          var parentRect;
+          var dropdownRect;
+          // This will create a new stacking context.
+          parent.style.transform = 'translateZ(0)';
+          runAfterOpen(dropdown, function () {
+            dropdownRect = dropdown.getBoundingClientRect();
+            parentRect = parent.getBoundingClientRect();
+            assert.equal(dropdownRect.top, parentRect.top, 'top ok');
+            assert.equal(dropdownRect.left, 0, 'left ok');
+            assert.equal(dropdownRect.bottom, document.documentElement.clientHeight, 'bottom ok');
+            assert.equal(dropdownRect.right, parentRect.right, 'right ok');
             done();
           });
         });
@@ -285,9 +324,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             offsetDropdownRect = dropdown.getBoundingClientRect();
 
             // verticalAlign is top, so a positive offset moves down.
-            expect(dropdownRect.top + 10).to.be.closeTo(offsetDropdownRect.top, 0.1);
+            assert.equal(dropdownRect.top + 10, offsetDropdownRect.top, 'top ok');
             // horizontalAlign is left, so a positive offset moves to the right.
-            expect(dropdownRect.left + 10).to.be.closeTo(offsetDropdownRect.left, 0.1);
+            assert.equal(dropdownRect.left + 10, offsetDropdownRect.left, 'left ok');
             done();
           });
         });
@@ -301,9 +340,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             offsetDropdownRect = dropdown.getBoundingClientRect();
 
             // verticalAlign is top, so a negative offset moves up.
-            expect(dropdownRect.top - 10).to.be.closeTo(offsetDropdownRect.top, 0.1);
+            assert.equal(dropdownRect.top - 10, offsetDropdownRect.top, 'top ok');
             // horizontalAlign is left, so a negative offset moves to the left.
-            expect(dropdownRect.left - 10).to.be.closeTo(offsetDropdownRect.left, 0.1);
+            assert.equal(dropdownRect.left - 10, offsetDropdownRect.left, 'left ok');
             done();
           });
         });
@@ -327,9 +366,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             offsetDropdownRect = dropdown.getBoundingClientRect();
 
             // verticalAlign is bottom, so a positive offset moves up.
-            expect(dropdownRect.bottom - 10).to.be.closeTo(offsetDropdownRect.bottom, 0.1);
+            assert.equal(dropdownRect.bottom - 10, offsetDropdownRect.bottom, 'bottom ok');
             // horizontalAlign is right, so a positive offset moves to the left.
-            expect(dropdownRect.right - 10).to.be.closeTo(offsetDropdownRect.right, 0.1);
+            assert.equal(dropdownRect.right - 10, offsetDropdownRect.right, 'right ok');
             done();
           });
         });
@@ -343,9 +382,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             offsetDropdownRect = dropdown.getBoundingClientRect();
 
             // verticalAlign is bottom, so a negative offset moves down.
-            expect(dropdownRect.bottom + 10).to.be.closeTo(offsetDropdownRect.bottom, 0.1);
+            assert.equal(dropdownRect.bottom + 10, offsetDropdownRect.bottom, 'bottom ok');
             // horizontalAlign is right, so a positive offset moves to the right.
-            expect(dropdownRect.right + 10).to.be.closeTo(offsetDropdownRect.right, 0.1);
+            assert.equal(dropdownRect.right + 10, offsetDropdownRect.right, 'right ok');
             done();
           });
         });

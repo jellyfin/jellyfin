@@ -1,4 +1,4 @@
-﻿(function ($, window, document) {
+﻿define(['jQuery'], function ($) {
 
     function renderViews(page, user, result) {
 
@@ -332,4 +332,4 @@
         }
     });
 
-})(jQuery, window, document);
+});

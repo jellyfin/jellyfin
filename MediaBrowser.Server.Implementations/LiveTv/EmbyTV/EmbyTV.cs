@@ -219,7 +219,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 {
                     try
                     {
-                        await provider.Item1.AddMetadata(provider.Item2, list, cancellationToken).ConfigureAwait(false);
+                        await provider.Item1.AddMetadata(provider.Item2, enabledChannels, cancellationToken).ConfigureAwait(false);
                     }
                     catch (NotSupportedException)
                     {
@@ -232,7 +232,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 }
             }
 
-            _channelCache = list;
+            _channelCache = list.ToList();
             return list;
         }
 
@@ -313,6 +313,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     catch (FileNotFoundException)
                     {
 
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error deleting recording file {0}", ex, remove.Path);
                     }
                 }
                 _recordingProvider.Delete(remove);
@@ -498,7 +502,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private bool IsListingProviderEnabledForTuner(ListingsProviderInfo info, string tunerHostId)
         {
-            return info.EnableAllTuners || info.EnabledTuners.Contains(tunerHostId ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+            if (info.EnableAllTuners)
+            {
+                return true;
+            }
+
+            if (string.IsNullOrWhiteSpace(tunerHostId))
+            {
+                throw new ArgumentNullException("tunerHostId");
+            }
+
+            return info.EnabledTuners.Contains(tunerHostId, StringComparer.OrdinalIgnoreCase);
         }
 
         private async Task<IEnumerable<ProgramInfo>> GetProgramsAsyncInternal(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
@@ -510,8 +524,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 if (!IsListingProviderEnabledForTuner(provider.Item2, channel.TunerHostId))
                 {
+                    _logger.Debug("Skipping getting programs for channel {0}-{1} from {2}-{3}, because it's not enabled for this tuner.", channel.Number, channel.Name, provider.Item1.Name, provider.Item2.ListingsId ?? string.Empty);
                     continue;
                 }
+
+                _logger.Debug("Getting programs for channel {0}-{1} from {2}-{3}", channel.Number, channel.Name, provider.Item1.Name, provider.Item2.ListingsId ?? string.Empty);
 
                 var programs = await provider.Item1.GetProgramsAsync(provider.Item2, channel.Number, channel.Name, startDateUtc, endDateUtc, cancellationToken)
                         .ConfigureAwait(false);
@@ -1008,6 +1025,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private IEnumerable<TimerInfo> GetTimersForSeries(SeriesTimerInfo seriesTimer, IEnumerable<ProgramInfo> allPrograms, IReadOnlyList<RecordingInfo> currentRecordings)
         {
+            if (seriesTimer == null)
+            {
+                throw new ArgumentNullException("seriesTimer");
+            }
+            if (allPrograms == null)
+            {
+                throw new ArgumentNullException("allPrograms");
+            }
+            if (currentRecordings == null)
+            {
+                throw new ArgumentNullException("currentRecordings");
+            }
+
             // Exclude programs that have already ended
             allPrograms = allPrograms.Where(i => i.EndDate > DateTime.UtcNow && i.StartDate > DateTime.UtcNow);
 

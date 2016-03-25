@@ -18,72 +18,73 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <link rel="import" href="../../paper-styles/color.html">
-  <link rel="import" href="../../paper-styles/demo-pages.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
   <link rel="import" href="../paper-progress.html">
   <link rel="import" href="../../paper-button/paper-button.html">
 
-  <style is="custom-style">
-    body {
-      padding: 40px;
-    }
-
+  <style is="custom-style" include="demo-pages-shared-styles">
     paper-progress {
       display: block;
       width: 100%;
       margin: 20px 0;
     }
-
-    paper-progress.blue {
-      --paper-progress-active-color: var(--paper-light-blue-500);
-      --paper-progress-secondary-color: var(--paper-light-blue-100);
-    }
-
-    paper-progress.red {
-      --paper-progress-active-color: var(--paper-red-500);
-      --paper-progress-secondary-color: var(--paper-red-100);
-    }
-
-    paper-progress.orange {
-      --paper-progress-active-color: var(--paper-orange-500);
-      --paper-progress-secondary-color: var(--paper-orange-100);
-    }
-
-    paper-progress.green {
-      --paper-progress-active-color: var(--paper-light-green-500);
-      --paper-progress-secondary-color: var(--paper-light-green-100);
+    paper-button {
+      display: inline-block;
+      padding: 5px;
     }
   </style>
 
 </head>
 <body unresolved>
-  <div class="vertical-section-container">
-    <h4>Progress bar</h4>
-    <div class="vertical-section">
-      <paper-progress></paper-progress>
-      <paper-button raised onclick="startProgress();">Start</paper-button>
-    </div>
+  <div class="vertical-section-container centered">
+    <h3>paper-progress can be imperatively controlled</h3>
+    <demo-snippet class="centered-demo">
+      <template>
+        <p>Once started, loops 5 times before stopping.
+          <!-- View the source code to see the contents of startProgress() -->
+          <paper-button raised onclick="startProgress();" id="start">Start</paper-button>
+        </p>
+        <paper-progress id="progress"></paper-progress>
+      </template>
+    </demo-snippet>
 
-    <h4>Indeterminate</h4>
-    <div class="vertical-section">
-      <paper-progress indeterminate></paper-progress><br>
-      <paper-progress class="blue" indeterminate value="800" min="100" max="1000"></paper-progress><br>
-    </div>
+    <h3>paper-progress can be indeterminate</h3>
+    <demo-snippet class="centered-demo">
+      <template>
+        <paper-progress indeterminate></paper-progress>
+        <paper-progress indeterminate value="800" min="100" max="1000"></paper-progress>
+      </template>
+    </demo-snippet>
 
-    <h4>Color</h4>
-    <div class="vertical-section">
-      <paper-progress value="40" class="blue"></paper-progress><br>
-      <paper-progress value="800" min="100" max="1000" class="red"></paper-progress><br>
-      <paper-progress value="40" class="orange"></paper-progress><br>
-      <paper-progress value="200" max="200" class="green"></paper-progress><br>
-      <paper-progress value="40" secondary-progress="80" class="blue"></paper-progress><br>
-    </div>
+    <h3>It can be styled using custom properties</h3>
+    <demo-snippet class="centered-demo">
+      <template>
+        <style is="custom-style">
+          paper-progress.blue {
+            --paper-progress-active-color: var(--paper-light-blue-500);
+            --paper-progress-secondary-color: var(--paper-light-blue-100);
+          }
+
+          paper-progress.red {
+            --paper-progress-active-color: var(--paper-red-500);
+            --paper-progress-secondary-color: var(--paper-red-100);
+          }
+
+          paper-progress.green {
+            --paper-progress-active-color: var(--paper-light-green-500);
+            --paper-progress-secondary-color: var(--paper-light-green-100);
+          }
+        </style>
+        <paper-progress value="800" min="100" max="1000" class="red"></paper-progress>
+        <paper-progress value="60" class="green"></paper-progress>
+        <paper-progress value="40" secondary-progress="80" class="blue"></paper-progress>
+      </template>
+    </demo-snippet>
   </div>
 
   <script>
-
-    var progress = document.querySelector('paper-progress');
-    var button = document.querySelector('paper-button');
-
+    var progress, button, animationFrame;
     var repeat, maxRepeat = 5, animating = false;
 
     function nextProgress() {
@@ -98,8 +99,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
         progress.value = progress.min;
       }
-
-      requestAnimationFrame(nextProgress);
+      var animationFrame = requestAnimationFrame(nextProgress);
     }
 
     function startProgress() {
@@ -112,7 +112,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
 
     window.addEventListener('WebComponentsReady', function() {
-      startProgress();
+      progress = document.querySelector('paper-progress');
+      button = document.querySelector('paper-button');
     });
 
   </script>

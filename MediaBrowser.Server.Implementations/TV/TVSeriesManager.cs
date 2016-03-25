@@ -36,7 +36,7 @@ namespace MediaBrowser.Server.Implementations.TV
                 ? new string[] { }
                 : new[] { request.ParentId };
 
-            var items = _libraryManager.GetItems(new InternalItemsQuery(user)
+            var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(Series).Name },
                 SortOrder = SortOrder.Ascending
@@ -58,7 +58,7 @@ namespace MediaBrowser.Server.Implementations.TV
                 throw new ArgumentException("User not found");
             }
 
-            var items = _libraryManager.GetItems(new InternalItemsQuery(user)
+            var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(Series).Name },
                 SortOrder = SortOrder.Ascending

@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     var data = {};
     function getPageData(context) {
@@ -189,4 +189,4 @@
         }
     };
 
-})(jQuery, document);
+});

@@ -108,7 +108,7 @@ namespace MediaBrowser.Api
                 IncludeItemTypes = new[] { typeof(GameSystem).Name }
             };
             var parentIds = new string[] { } ;
-            var gameSystems = _libraryManager.GetItems(query, parentIds)
+            var gameSystems = _libraryManager.GetItemList(query, parentIds)
                 .Cast<GameSystem>()
                 .ToList();
 
@@ -129,7 +129,7 @@ namespace MediaBrowser.Api
                 IncludeItemTypes = new[] { typeof(Game).Name }
             };
             var parentIds = new string[] { };
-            var games = _libraryManager.GetItems(query, parentIds)
+            var games = _libraryManager.GetItemList(query, parentIds)
                 .Cast<Game>()
                 .ToList();
 
@@ -192,7 +192,7 @@ namespace MediaBrowser.Api
                 _userDataRepository,
                 _dtoService,
                 Logger,
-                request, item => item is Game,
+                request, new[] { typeof(Game) },
                 SimilarItemsHelper.GetSimiliarityScore);
 
             return ToOptimizedSerializedResultUsingCache(result);

@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'paper-checkbox', 'paper-dialog', 'paper-fab'], function (paperDialogHelper) {
+﻿define(['dialogHelper', 'jQuery', 'paper-checkbox', 'paper-fab'], function (dialogHelper, $) {
 
     var currentItemId;
     var currentItemType;
@@ -56,7 +56,7 @@
     }
 
     function renderRemoteImages(page, imagesResult, imageType, startIndex, limit) {
-        $('.availableImagesPaging', page).html(getPagingHtml(startIndex, limit, imagesResult.TotalRecordCount)).trigger('create');
+        $('.availableImagesPaging', page).html(getPagingHtml(startIndex, limit, imagesResult.TotalRecordCount));
 
         var html = '';
 
@@ -130,8 +130,8 @@
         ApiClient.downloadRemoteImage(options).then(function () {
 
             hasChanges = true;
-            var dlg = $(page).parents('paper-dialog')[0];
-            paperDialogHelper.close(dlg);
+            var dlg = $(page).parents('.dialog')[0];
+            dialogHelper.close(dlg);
         });
     }
 
@@ -271,7 +271,7 @@
             currentItemId = itemId;
             currentItemType = itemType;
 
-            var dlg = paperDialogHelper.createDialog({
+            var dlg = dialogHelper.createDialog({
                 size: 'fullscreen-border',
                 lockScroll: true
             });
@@ -296,16 +296,16 @@
             document.body.appendChild(dlg);
 
             // Has to be assigned a z-index after the call to .open() 
-            $(dlg).on('iron-overlay-closed', onDialogClosed);
+            $(dlg).on('close', onDialogClosed);
 
-            paperDialogHelper.open(dlg);
+            dialogHelper.open(dlg);
 
             var editorContent = dlg.querySelector('.editorContent');
             initEditor(editorContent);
 
             $('.btnCloseDialog', dlg).on('click', function () {
 
-                paperDialogHelper.close(dlg);
+                dialogHelper.close(dlg);
             });
 
             reloadBrowsableImages(editorContent);

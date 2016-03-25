@@ -1,56 +1,42 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>Emby</title>
-</head>
-<body>
-    <div id="photosPage" data-role="page" data-dom-cache="true" class="page libraryPage pageWithAbsoluteTabs" data-require="scripts/photos,paper-tabs,neon-animated-pages">
+﻿<div id="photosPage" data-role="page" data-dom-cache="true" class="page libraryPage pageWithAbsoluteTabs" data-require="scripts/photos,paper-tabs">
 
-        <div class="libraryViewNav scopedLibraryViewNav libraryViewNavWithMinHeight">
-            <paper-tabs hidescrollbuttons noink>
-                <paper-tab>${TabAlbums}</paper-tab>
-                <paper-tab>${TabPhotos}</paper-tab>
-                <paper-tab>${TabVideos}</paper-tab>
-            </paper-tabs>
-            <div class="legacyTabs">
-                <a href="photos.html" class="lnkPhotoAlbums">${TabAlbums}</a>
-                <a href="photos.html?tab=1" class="lnkPhotos">${TabPhotos}</a>
-                <a href="photos.html?tab=2" class="lnkVideos">${TabVideos}</a>
-            </div>
-        </div>
-
-        <neon-animated-pages>
-            <neon-animatable>
-                <div class="pageTabContent albumTabContent">
-                    <div class="viewSettings">
-                        <div class="listTopPaging">
-                        </div>
-                    </div>
-                    <div class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
-                </div>
-            </neon-animatable>
-            <div class="pageTabContent photoTabContent">
-                <div class="viewSettings">
-                    <div class="listTopPaging">
-                    </div>
-                </div>
-                <div class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
-            </div>
-            <neon-animatable>
-            </neon-animatable>
-            <neon-animatable>
-                <div class="pageTabContent videoTabContent">
-                    <div class="viewSettings">
-                        <div class="listTopPaging">
-                        </div>
-                    </div>
-                    <div class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
-                </div>
-            </neon-animatable>
-        </neon-animated-pages>
-
-        <div data-role="content">
+    <div class="libraryViewNav scopedLibraryViewNav libraryViewNavWithMinHeight">
+        <paper-tabs hidescrollbuttons noink>
+            <paper-tab>${TabAlbums}</paper-tab>
+            <paper-tab>${TabPhotos}</paper-tab>
+            <paper-tab>${TabVideos}</paper-tab>
+        </paper-tabs>
+        <div class="legacyTabs">
+            <a href="photos.html" class="lnkPhotoAlbums">${TabAlbums}</a>
+            <a href="photos.html?tab=1" class="lnkPhotos">${TabPhotos}</a>
+            <a href="photos.html?tab=2" class="lnkVideos">${TabVideos}</a>
         </div>
     </div>
-</body>
-</html>
+
+    <div class="pageTabsContainer">
+        <div class="pageTabContent albumTabContent hide">
+            <div class="viewSettings">
+                <div class="listTopPaging">
+                </div>
+            </div>
+            <div class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
+        </div>
+        <div class="pageTabContent photoTabContent hide">
+            <div class="viewSettings">
+                <div class="listTopPaging">
+                </div>
+            </div>
+            <div class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
+        </div>
+        <div class="pageTabContent videoTabContent hide">
+            <div class="viewSettings">
+                <div class="listTopPaging">
+                </div>
+            </div>
+            <div class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
+        </div>
+    </div>
+
+    <div data-role="content">
+    </div>
+</div>

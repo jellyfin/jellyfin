@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'events', 'browser', 'paper-checkbox', 'emby-collapsible', 'css!components/filterdialog/style', 'paper-radio-button', 'paper-radio-group'], function (paperDialogHelper, events, browser) {
+﻿define(['dialogHelper', 'events', 'browser', 'jQuery', 'paper-checkbox', 'emby-collapsible', 'css!components/filterdialog/style', 'paper-radio-button', 'paper-radio-group'], function (dialogHelper, events, browser, $) {
 
     function renderOptions(context, selector, cssClass, items, isCheckedFn) {
 
@@ -507,7 +507,7 @@
                 xhr.onload = function (e) {
 
                     var template = this.response;
-                    var dlg = paperDialogHelper.createDialog({
+                    var dlg = dialogHelper.createDialog({
                         removeOnClose: true,
                         modal: false,
                         entryAnimationDuration: 160,
@@ -526,9 +526,9 @@
                     setVisibility(dlg, options);
                     document.body.appendChild(dlg);
 
-                    paperDialogHelper.open(dlg);
+                    dialogHelper.open(dlg);
 
-                    dlg.addEventListener('iron-overlay-closed', resolve);
+                    dlg.addEventListener('close', resolve);
 
                     var onTimeout = function () {
                         updateFilterControls(dlg, options);

@@ -171,7 +171,7 @@
 
             html = html.join('') + pagingHtml;
 
-            var elem = $('.latestNewsItems', page).html(html).trigger('create');
+            var elem = $('.latestNewsItems', page).html(html);
 
             $('.btnNextPage', elem).on('click', function () {
                 DashboardPage.newsStartIndex += query.Limit;
@@ -769,7 +769,7 @@
         }
 
 
-        $('#divRunningTasks', page).html(html).trigger('create');
+        $('#divRunningTasks', page).html(html);
     },
 
     renderUrls: function (page, systemInfo) {
@@ -912,7 +912,7 @@
                 html += '<button type="button" data-icon="arrow-d" data-theme="b" onclick="DashboardPage.installPluginUpdate(this);" data-name="' + update.name + '" data-guid="' + update.guid + '" data-version="' + update.versionStr + '" data-classification="' + update.classification + '">' + Globalize.translate('ButtonUpdateNow') + '</button>';
             }
 
-            elem.html(html).trigger('create');
+            elem.html(html);
 
         });
     },
@@ -1060,7 +1060,7 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
             });
         }
 
-        $(elem).html(html).trigger('create');
+        $(elem).html(html);
 
         $('.btnNextPage', elem).on('click', function () {
             reloadData(elem, startIndex + limit, limit);
@@ -1243,17 +1243,17 @@ $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pageb
         require(['slideshow'], function () {
 
             var slides = [
-                    { imageUrl: 'css/images/tour/dashboard/dashboard.png', title: Globalize.translate('DashboardTourDashboard') },
-                    { imageUrl: 'css/images/tour/dashboard/help.png', title: Globalize.translate('DashboardTourHelp') },
-                    { imageUrl: 'css/images/tour/dashboard/users.png', title: Globalize.translate('DashboardTourUsers') },
-                    { imageUrl: 'css/images/tour/dashboard/sync.png', title: Globalize.translate('DashboardTourSync') },
-                    { imageUrl: 'css/images/tour/dashboard/cinemamode.png', title: Globalize.translate('DashboardTourCinemaMode') },
-                    { imageUrl: 'css/images/tour/dashboard/chapters.png', title: Globalize.translate('DashboardTourChapters') },
-                    { imageUrl: 'css/images/tour/dashboard/subtitles.png', title: Globalize.translate('DashboardTourSubtitles') },
-                    { imageUrl: 'css/images/tour/dashboard/plugins.png', title: Globalize.translate('DashboardTourPlugins') },
-                    { imageUrl: 'css/images/tour/dashboard/notifications.png', title: Globalize.translate('DashboardTourNotifications') },
-                    { imageUrl: 'css/images/tour/dashboard/scheduledtasks.png', title: Globalize.translate('DashboardTourScheduledTasks') },
-                    { imageUrl: 'css/images/tour/dashboard/mobile.png', title: Globalize.translate('DashboardTourMobile') },
+                    { imageUrl: 'css/images/tour/admin/dashboard.png', title: Globalize.translate('DashboardTourDashboard') },
+                    { imageUrl: 'css/images/tour/admin/help.png', title: Globalize.translate('DashboardTourHelp') },
+                    { imageUrl: 'css/images/tour/admin/users.png', title: Globalize.translate('DashboardTourUsers') },
+                    { imageUrl: 'css/images/tour/admin/sync.png', title: Globalize.translate('DashboardTourSync') },
+                    { imageUrl: 'css/images/tour/admin/cinemamode.png', title: Globalize.translate('DashboardTourCinemaMode') },
+                    { imageUrl: 'css/images/tour/admin/chapters.png', title: Globalize.translate('DashboardTourChapters') },
+                    { imageUrl: 'css/images/tour/admin/subtitles.png', title: Globalize.translate('DashboardTourSubtitles') },
+                    { imageUrl: 'css/images/tour/admin/plugins.png', title: Globalize.translate('DashboardTourPlugins') },
+                    { imageUrl: 'css/images/tour/admin/notifications.png', title: Globalize.translate('DashboardTourNotifications') },
+                    { imageUrl: 'css/images/tour/admin/scheduledtasks.png', title: Globalize.translate('DashboardTourScheduledTasks') },
+                    { imageUrl: 'css/images/tour/admin/mobile.png', title: Globalize.translate('DashboardTourMobile') },
                     { imageUrl: 'css/images/tour/enjoy.jpg', title: Globalize.translate('MessageEnjoyYourStay') }
             ];
 

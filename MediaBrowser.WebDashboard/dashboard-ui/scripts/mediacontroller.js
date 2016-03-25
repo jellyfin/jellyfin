@@ -1,4 +1,4 @@
-﻿(function (window) {
+﻿define(['appStorage'], function (appStorage) {
 
     var currentDisplayInfo;
     function mirrorItem(info) {
@@ -38,7 +38,7 @@
                 NowPlayingItem: state.NowPlayingItem
             };
 
-            info = $.extend(info, state.PlayState);
+            info = Object.assign(info, state.PlayState);
 
             ApiClient.reportPlaybackStart(info);
 
@@ -126,12 +126,11 @@
 
     function showActivePlayerMenuInternal(playerInfo) {
 
-        var id = 'dlg' + new Date().getTime();
         var html = '';
 
-        var style = "";
-
-        html += '<paper-dialog id="' + id + '" entry-animation="fade-in-animation" exit-animation="fade-out-animation" with-backdrop style="' + style + '">';
+        var dlg = document.createElement('paper-dialog');
+        dlg.setAttribute('with-backdrop', 'with-backdrop');
+        dlg.setAttribute('role', 'alertdialog');
 
         html += '<h2>';
         html += (playerInfo.deviceName || playerInfo.name);
@@ -160,21 +159,19 @@
         html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonCancel') + '</paper-button>';
         html += '</div>';
 
-        html += '</paper-dialog>';
+        dlg.innerHTML = html;
 
-        $(document.body).append(html);
+        document.body.appendChild(dlg);
 
         setTimeout(function () {
 
-            var dlg = document.getElementById(id);
-
-            $('.chkMirror', dlg).on('change', onMirrorChange);
+            dlg.querySelector('.chkMirror').addEventListener('change', onMirrorChange);
 
             dlg.open();
 
             // Has to be assigned a z-index after the call to .open() 
-            $(dlg).on('iron-overlay-closed', function () {
-                $(this).remove();
+            dlg.addEventListener('iron-overlay-closed', function () {
+                dlg.parentNode.removeChild(dlg);
             });
 
         }, 100);
@@ -1045,7 +1042,9 @@
 
     document.addEventListener('headercreated', function () {
 
-        $('.btnCast').off('click', onCastButtonClicked).on('click', onCastButtonClicked);
+        var btnCast = document.querySelector('.viewMenuBar .btnCast');
+        btnCast.removeEventListener('click', onCastButtonClicked);
+        btnCast.addEventListener('click', onCastButtonClicked);
     });
 
     pageClassOn('pagebeforeshow', "page", function () {
@@ -1061,4 +1060,4 @@
         mirrorIfEnabled(info);
     });
 
-})(this);
+});

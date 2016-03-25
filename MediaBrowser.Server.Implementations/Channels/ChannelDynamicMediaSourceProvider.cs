@@ -20,11 +20,11 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         public Task<IEnumerable<MediaSourceInfo>> GetMediaSources(IHasMediaSources item, CancellationToken cancellationToken)
         {
-            var channelItem = item as IChannelMediaItem;
+            var baseItem = (BaseItem) item;
 
-            if (channelItem != null)
+            if (baseItem.SourceType == SourceType.Channel)
             {
-                return _channelManager.GetDynamicMediaSources(channelItem, cancellationToken);
+                return _channelManager.GetDynamicMediaSources(baseItem, cancellationToken);
             }
 
             return Task.FromResult<IEnumerable<MediaSourceInfo>>(new List<MediaSourceInfo>());

@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['jQuery'], function ($) {
 
     $(document).on('pagebeforeshow', "#logPage", function () {
 
@@ -55,11 +55,11 @@
 
                 html += '</div>';
 
-                $('.serverLogs', page).html(html).trigger('create');
+                $('.serverLogs', page).html(html);
                 Dashboard.hideLoadingMsg();
 
             });
         });
     });
 
-})();
+});

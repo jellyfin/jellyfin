@@ -1,0 +1,305 @@
+/**
+ * Copyright 2015 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import "../variables";
+@import "../mixins";
+
+// The button component. Defaults to a flat button.
+.mdl-button {
+  background: transparent;
+  border: none;
+  border-radius: $button-border-radius;
+  color: $button-secondary-color;
+  position: relative;
+  height: $button-height;
+  margin: 0;
+  min-width: $button-min-width;
+  padding: 0 $button-padding;
+  display: inline-block;
+  @include typo-button();
+  overflow: hidden;
+  will-change: box-shadow;
+  transition: box-shadow 0.2s $animation-curve-fast-out-linear-in,
+              background-color 0.2s $animation-curve-default,
+              color 0.2s $animation-curve-default;
+  outline: none;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  line-height: $button-height;
+  vertical-align: middle;
+
+  &::-moz-focus-inner {
+    border: 0;
+  }
+
+  &:hover {
+    background-color: $button-hover-color;
+  }
+
+  &:focus:not(:active) {
+    background-color: $button-focus-color;
+  }
+
+  &:active {
+    background-color: $button-active-color;
+  }
+
+  &.mdl-button--colored {
+    color: $button-primary-color-alt;
+
+    &:focus:not(:active) {
+      background-color: $button-focus-color-alt;
+    }
+  }
+}
+
+input.mdl-button[type="submit"] {
+  -webkit-appearance:none;
+}
+
+  // Raised buttons
+  .mdl-button--raised {
+    background: $button-primary-color;
+    @include shadow-2dp();
+
+    &:active {
+      @include shadow-4dp();
+      background-color: $button-active-color;
+    }
+
+    &:focus:not(:active) {
+      @include focus-shadow();
+      background-color: $button-active-color;
+    }
+
+    &.mdl-button--colored {
+      background: $button-primary-color-alt;
+      color: $button-secondary-color-alt;
+
+      &:hover {
+        background-color: $button-hover-color-alt;
+      }
+
+      &:active {
+        background-color: $button-active-color-alt;
+      }
+
+      &:focus:not(:active) {
+        background-color: $button-active-color-alt;
+      }
+
+      & .mdl-ripple {
+        background: $button-ripple-color-alt;
+      }
+    }
+  }
+
+
+  // FABs
+  .mdl-button--fab {
+    border-radius: 50%;
+    font-size: $button-fab-font-size;
+    height: $button-fab-size;
+    margin: auto;
+    min-width: $button-fab-size;
+    width: $button-fab-size;
+    padding: 0;
+    overflow: hidden;
+    background: $button-primary-color;
+    box-shadow: 0 1px 1.5px 0 rgba(0,0,0,0.12), 0 1px 1px 0 rgba(0,0,0,0.24);
+    position: relative;
+    line-height: normal;
+
+    & .material-icons {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(- $button-fab-font-size / 2, - $button-fab-font-size / 2);
+      line-height: $button-fab-font-size;
+      width: $button-fab-font-size;
+    }
+
+    &.mdl-button--mini-fab {
+      height: $button-fab-size-mini;
+      min-width: $button-fab-size-mini;
+      width: $button-fab-size-mini;
+    }
+
+    & .mdl-button__ripple-container {
+      border-radius: 50%;
+      // Fixes clipping bug in Safari.
+      -webkit-mask-image: -webkit-radial-gradient(circle, white, black);
+    }
+
+    &:active {
+      @include shadow-4dp();
+      background-color: $button-active-color;
+    }
+
+    &:focus:not(:active) {
+      @include focus-shadow();
+      background-color: $button-active-color;
+    }
+
+    &.mdl-button--colored {
+      background: $button-fab-color-alt;
+      color: $button-fab-text-color-alt;
+
+      &:hover {
+        background-color: $button-fab-hover-color-alt;
+      }
+
+      &:focus:not(:active) {
+        background-color: $button-fab-active-color-alt;
+      }
+
+      &:active {
+        background-color: $button-fab-active-color-alt;
+      }
+
+      & .mdl-ripple {
+        background: $button-fab-ripple-color-alt;
+      }
+    }
+  }
+
+
+  // Icon buttons
+  .mdl-button--icon {
+    border-radius: 50%;
+    font-size: $button-fab-font-size;
+    height: $button-icon-size;
+    margin-left: 0;
+    margin-right: 0;
+    min-width: $button-icon-size;
+    width: $button-icon-size;
+    padding: 0;
+    overflow: hidden;
+    color: inherit;
+    line-height: normal;
+
+    & .material-icons {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(- $button-fab-font-size / 2, - $button-fab-font-size / 2);
+      line-height: $button-fab-font-size;
+      width: $button-fab-font-size;
+    }
+
+    &.mdl-button--mini-icon {
+      height: $button-icon-size-mini;
+      min-width: $button-icon-size-mini;
+      width: $button-icon-size-mini;
+
+      & .material-icons {
+        top: ($button-icon-size-mini - $button-fab-font-size) / 2;
+        left: ($button-icon-size-mini - $button-fab-font-size) / 2;
+      }
+    }
+
+    & .mdl-button__ripple-container {
+      border-radius: 50%;
+      // Fixes clipping bug in Safari.
+      -webkit-mask-image: -webkit-radial-gradient(circle, white, black);
+    }
+  }
+
+
+  // Ripples
+  .mdl-button__ripple-container {
+    display: block;
+    height: 100%;
+    left: 0px;
+    position: absolute;
+    top: 0px;
+    width: 100%;
+    z-index: 0;
+    overflow: hidden;
+
+    .mdl-button[disabled] & .mdl-ripple,
+    .mdl-button.mdl-button--disabled & .mdl-ripple {
+      background-color: transparent;
+    }
+  }
+
+// Colorized buttons
+
+.mdl-button--primary.mdl-button--primary {
+  color: $button-primary-color-alt;
+  & .mdl-ripple {
+    background: $button-secondary-color-alt;
+  }
+  &.mdl-button--raised, &.mdl-button--fab {
+    color: $button-secondary-color-alt;
+    background-color: $button-primary-color-alt;
+  }
+}
+
+.mdl-button--accent.mdl-button--accent {
+  color: $button-fab-color-alt;
+  & .mdl-ripple {
+    background: $button-fab-text-color-alt;
+  }
+  &.mdl-button--raised, &.mdl-button--fab {
+    color: $button-fab-text-color-alt;
+    background-color: $button-fab-color-alt;
+  }
+}
+
+// Disabled buttons
+
+.mdl-button {
+  // Bump up specificity by using [disabled] twice.
+  &[disabled][disabled],
+  &.mdl-button--disabled.mdl-button--disabled {
+    color: $button-secondary-color-disabled;
+    cursor: default;
+    background-color: transparent;
+  }
+
+  &--fab {
+    // Bump up specificity by using [disabled] twice.
+    &[disabled][disabled],
+    &.mdl-button--disabled.mdl-button--disabled {
+      background-color: $button-primary-color-disabled;
+      color: $button-secondary-color-disabled;
+    }
+  }
+
+  &--raised {
+    // Bump up specificity by using [disabled] twice.
+    &[disabled][disabled],
+    &.mdl-button--disabled.mdl-button--disabled {
+      background-color: $button-primary-color-disabled;
+      color: $button-secondary-color-disabled;
+      box-shadow: none;
+    }
+  }
+  &--colored {
+    // Bump up specificity by using [disabled] twice.
+    &[disabled][disabled],
+    &.mdl-button--disabled.mdl-button--disabled {
+      color: $button-secondary-color-disabled;
+    }
+  }
+}
+
+// Align icons inside buttons with text
+.mdl-button .material-icons {
+  vertical-align: middle;
+}

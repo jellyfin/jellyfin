@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     function renderItems(page, item) {
 
@@ -29,7 +29,6 @@
         }
 
         if (item.TrailerCount) {
-
             sections.push({
                 name: Globalize.translate('TabTrailers'),
                 type: 'Trailer'
@@ -264,7 +263,7 @@
 
     function getMoreItemsHref(item, type) {
 
-        return 'secondaryitems.html?type=' + type + '&parentid=' + item.Id;
+        return 'secondaryitems.html?type=' + type + '&parentId=' + item.Id;
     }
 
     function addCurrentItemToQuery(query, item) {
@@ -337,4 +336,4 @@
         renderItems: renderItems
     };
 
-})(jQuery, document);
+});

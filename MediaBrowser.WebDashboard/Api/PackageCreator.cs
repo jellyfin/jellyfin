@@ -60,7 +60,7 @@ namespace MediaBrowser.WebDashboard.Api
                 {
                     if (IsCoreHtml(path))
                     {
-                        resourceStream = await ModifyHtml(resourceStream, mode, appVersion, localizationCulture, enableMinification).ConfigureAwait(false);
+                        resourceStream = await ModifyHtml(path, resourceStream, mode, appVersion, localizationCulture, enableMinification).ConfigureAwait(false);
                     }
                 }
                 else if (IsFormat(path, "js"))
@@ -238,13 +238,14 @@ namespace MediaBrowser.WebDashboard.Api
         /// <summary>
         /// Modifies the HTML by adding common meta tags, css and js.
         /// </summary>
+        /// <param name="path">The path.</param>
         /// <param name="sourceStream">The source stream.</param>
         /// <param name="mode">The mode.</param>
         /// <param name="appVersion">The application version.</param>
         /// <param name="localizationCulture">The localization culture.</param>
         /// <param name="enableMinification">if set to <c>true</c> [enable minification].</param>
         /// <returns>Task{Stream}.</returns>
-        public async Task<Stream> ModifyHtml(Stream sourceStream, string mode, string appVersion, string localizationCulture, bool enableMinification)
+        public async Task<Stream> ModifyHtml(string path, Stream sourceStream, string mode, string appVersion, string localizationCulture, bool enableMinification)
         {
             using (sourceStream)
             {
@@ -260,12 +261,28 @@ namespace MediaBrowser.WebDashboard.Api
                     {
                         html = ModifyForCordova(html);
                     }
+                    else if (!string.IsNullOrWhiteSpace(path) && !string.Equals(path, "index.html", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var index = html.IndexOf("<body", StringComparison.OrdinalIgnoreCase);
+                        if (index != -1)
+                        {
+                            html = html.Substring(index);
+                            index = html.IndexOf("</body>", StringComparison.OrdinalIgnoreCase);
+                            if (index != -1)
+                            {
+                                html = html.Substring(0, index+7);
+                            }
+                        }
+                        var mainFile = File.ReadAllText(GetDashboardResourcePath("index.html"));
+
+                        html = ReplaceFirst(mainFile, "<div class=\"mainAnimatedPage hide\"></div>", "<div class=\"mainAnimatedPage hide\">" + html + "</div>");
+                    }
 
                     if (!string.IsNullOrWhiteSpace(localizationCulture))
                     {
                         var lang = localizationCulture.Split('-').FirstOrDefault();
 
-                        html = html.Replace("<html>", "<html data-culture=\"" + localizationCulture + "\" lang=\"" + lang + "\">");
+                        html = html.Replace("<html", "<html data-culture=\"" + localizationCulture + "\" lang=\"" + lang + "\"");
                     }
 
                     if (enableMinification)
@@ -294,12 +311,16 @@ namespace MediaBrowser.WebDashboard.Api
                             _logger.ErrorException("Error minifying html", ex);
                         }
                     }
-
-                    html = html.Replace("<body>", "<body><paper-drawer-panel class=\"mainDrawerPanel mainDrawerPanelPreInit\" forceNarrow><div class=\"mainDrawer\" drawer></div><div class=\"mainDrawerPanelContent\" main><!--<div class=\"pageContainer\">")
-                        .Replace("</body>", "</div>--></div></paper-drawer-panel></body>");
                 }
 
                 html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, appVersion));
+
+                // Disable embedded scripts from plugins. We'll run them later once resources have loaded
+                if (html.IndexOf("<script", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    html = html.Replace("<script", "<!--<script");
+                    html = html.Replace("</script>", "</script>-->");
+                }
 
                 html = html.Replace("</body>", GetCommonJavascript(mode, appVersion) + "</body>");
 
@@ -307,6 +328,16 @@ namespace MediaBrowser.WebDashboard.Api
 
                 return new MemoryStream(bytes);
             }
+        }
+
+        public string ReplaceFirst(string text, string search, string replace)
+        {
+            int pos = text.IndexOf(search, StringComparison.OrdinalIgnoreCase);
+            if (pos < 0)
+            {
+                return text;
+            }
+            return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
         }
 
         private string ModifyForCordova(string html)
@@ -436,14 +467,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new List<string>();
 
-            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
-            {
-                files.Add("bower_components/requirejs/require.js");
-            }
-            else
-            {
-                files.Add("bower_components" + version + "/requirejs/require.js");
-            }
+            files.Add("bower_components/requirejs/require.js");
 
             files.Add("scripts/site.js" + versionString);
 

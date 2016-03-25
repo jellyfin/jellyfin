@@ -63,9 +63,11 @@ class BufferController extends EventHandler {
       ms.removeEventListener('sourceclose', this.onmsc);
       // unlink MediaSource from video tag
       this.media.src = '';
+      this.media.removeAttribute('src');
       this.mediaSource = null;
       this.media = null;
       this.pendingTracks = null;
+      this.sourceBuffer = null;
     }
     this.onmso = this.onmse = this.onmsc = null;
     this.hls.trigger(Event.MEDIA_DETACHED);
@@ -280,9 +282,9 @@ class BufferController extends EventHandler {
             }
           } else {
             // QuotaExceededError: http://www.w3.org/TR/html5/infrastructure.html#quotaexceedederror
-            // let's stop appending any segments, and report BUFFER_FULL error
+            // let's stop appending any segments, and report BUFFER_FULL_ERROR error
             segments = [];
-            event.details = ErrorDetails.BUFFER_FULL;
+            event.details = ErrorDetails.BUFFER_FULL_ERROR;
             hls.trigger(Event.ERROR,event);
           }
         }

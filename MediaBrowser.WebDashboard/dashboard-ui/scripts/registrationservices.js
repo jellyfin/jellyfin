@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['appStorage', 'jQuery'], function (appStorage, $) {
 
     var supporterPlaybackKey = 'lastSupporterPlaybackMessage4';
 
@@ -97,9 +97,9 @@
 
     function showPlaybackOverlay(resolve, reject) {
 
-        require(['paperdialoghelper', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (paperDialogHelper) {
+        require(['dialogHelper', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (dialogHelper) {
 
-            var dlg = paperDialogHelper.createDialog({
+            var dlg = dialogHelper.createDialog({
                 size: 'fullscreen-border'
             });
 
@@ -138,16 +138,16 @@
             document.body.appendChild(dlg);
 
             // Has to be assigned a z-index after the call to .open() 
-            dlg.addEventListener('iron-overlay-closed', function (e) {
+            dlg.addEventListener('close', function (e) {
                 appStorage.setItem(supporterPlaybackKey, new Date().getTime());
                 dlg.parentNode.removeChild(dlg);
                 resolve();
             });
 
-            paperDialogHelper.open(dlg);
+            dialogHelper.open(dlg);
 
             $('.btnCancelSupporterInfo').on('click', function () {
-                paperDialogHelper.close(dlg);
+                dialogHelper.close(dlg);
             });
         });
     }
@@ -297,4 +297,4 @@
         }
     };
 
-})();
+});

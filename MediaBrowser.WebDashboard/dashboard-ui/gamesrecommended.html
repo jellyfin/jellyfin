@@ -1,32 +1,24 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Emby</title>
-</head>
-<body>
-    <div id="gamesRecommendedPage" data-role="page" class="page libraryPage backdropPage" data-backdroptype="game" data-require="scripts/gamesrecommendedpage">
-        <div class="libraryViewNav scopedLibraryViewNav">
-            <a href="#" class="ui-btn-active">${TabSuggestions}</a>
-            <a href="games.html">${TabGames}</a>
-            <a href="gamesystems.html">Game Systems</a>
-            <a href="gamegenres.html">${TabGenres}</a>
-            <a href="gamestudios.html">${TabStudios}</a>
-        </div>
-        <div data-role="content">
-            <div class="ehsContent">
-                <h1 class="listHeader">${HeaderLatestGames}</h1>
+<div id="gamesRecommendedPage" data-role="page" class="page libraryPage backdropPage" data-backdroptype="game" data-require="scripts/gamesrecommendedpage">
+    <div class="libraryViewNav scopedLibraryViewNav">
+        <a href="#" class="ui-btn-active">${TabSuggestions}</a>
+        <a href="games.html">${TabGames}</a>
+        <a href="gamesystems.html">Game Systems</a>
+        <a href="gamegenres.html">${TabGenres}</a>
+        <a href="gamestudios.html">${TabStudios}</a>
+    </div>
+    <div data-role="content">
+        <div class="ehsContent">
+            <h1 class="listHeader">${HeaderLatestGames}</h1>
 
-                <div id="recentlyAddedItems">
-                </div>
+            <div id="recentlyAddedItems">
+            </div>
 
-                <div id="recentlyPlayedSection" style="display: none;">
-                    <h1 class="listHeader">${HeaderRecentlyPlayedGames}</h1>
+            <div id="recentlyPlayedSection" style="display: none;">
+                <h1 class="listHeader">${HeaderRecentlyPlayedGames}</h1>
 
-                    <div id="recentlyPlayedItems" class="itemsContainer">
-                    </div>
+                <div id="recentlyPlayedItems" class="itemsContainer">
                 </div>
             </div>
         </div>
     </div>
-</body>
-</html>
+</div>

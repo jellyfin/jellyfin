@@ -39,6 +39,13 @@ namespace MediaBrowser.Controller.LiveTv
         [IgnoreDataMember]
         public bool IsPremiere { get; set; }
 
+        [IgnoreDataMember]
+        public override SourceType SourceType
+        {
+            get { return SourceType.LiveTV; }
+            set { }
+        }
+
         /// <summary>
         /// Gets the user data key.
         /// </summary>
@@ -49,8 +56,6 @@ namespace MediaBrowser.Controller.LiveTv
 
             return name + "-" + Name + (EpisodeTitle ?? string.Empty);
         }
-
-        public string ServiceName { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is owned item.
@@ -150,6 +155,11 @@ namespace MediaBrowser.Controller.LiveTv
         public override Task Delete(DeleteOptions options)
         {
             return LiveTvManager.DeleteRecording(this);
+        }
+
+        public override Task OnFileDeleted()
+        {
+            return LiveTvManager.OnRecordingFileDeleted(this);
         }
     }
 }

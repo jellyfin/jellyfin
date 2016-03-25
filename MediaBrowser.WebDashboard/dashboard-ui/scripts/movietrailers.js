@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     var data = {};
 
@@ -21,7 +21,6 @@
                 }
             };
 
-            pageData.query.ParentId = LibraryMenu.getTopParentId();
             LibraryBrowser.loadSavedQueryValues(key, pageData.query);
         }
         return pageData.query;
@@ -200,4 +199,4 @@
         }
     };
 
-})(jQuery, document);
+});

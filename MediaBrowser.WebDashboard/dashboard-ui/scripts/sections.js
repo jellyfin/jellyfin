@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['libraryBrowser', 'jQuery'], function (LibraryBrowser, $) {
 
     function getUserViews(userId) {
 
@@ -220,7 +220,7 @@
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
 
-            $(elem).createCardMenus();
+            LibraryBrowser.createCardMenus(elem);
         });
     }
 
@@ -264,7 +264,7 @@
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
 
-            $(elem).createCardMenus();
+            LibraryBrowser.createCardMenus(elem);
         });
     }
 
@@ -309,7 +309,7 @@
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
 
-            $(elem).createCardMenus();
+            LibraryBrowser.createCardMenus(elem);
         });
     }
 
@@ -347,7 +347,7 @@
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
 
-            $(elem).createCardMenus();
+            LibraryBrowser.createCardMenus(elem);
         });
     }
 
@@ -402,7 +402,7 @@
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
 
-            $(elem).createCardMenus({ showDetailsMenu: false });
+            LibraryBrowser.createCardMenus(elem, { showDetailsMenu: false });
 
             handleLibraryLinkNavigations(elem);
         });
@@ -418,7 +418,7 @@
             SortOrder: "Descending",
             MediaTypes: "Video",
             Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 10 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 9 : 6)),
+            Limit: screenWidth >= 1920 ? 8 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 9 : 6)),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SyncInfo",
             CollapseBoxSetItems: false,
@@ -457,7 +457,7 @@
             elem.innerHTML = html;
 
             ImageLoader.lazyChildren(elem);
-            $(elem).createCardMenus();
+            LibraryBrowser.createCardMenus(elem);
         });
     }
 
@@ -501,7 +501,7 @@
             elem.innerHTML = html;
 
             ImageLoader.lazyChildren(elem);
-            $(elem).createCardMenus();
+            LibraryBrowser.createCardMenus(elem);
         });
     }
 
@@ -598,7 +598,7 @@
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
 
-            $(elem).createCardMenus();
+            LibraryBrowser.createCardMenus(elem);
         });
     }
 
@@ -644,7 +644,7 @@
 
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
-            $(elem).createCardMenus();
+            LibraryBrowser.createCardMenus(elem);
         });
     }
 
@@ -661,4 +661,5 @@
         loadLatestEpisodes: loadLatestEpisodes
     };
 
-})(jQuery, document);
+    return window.Sections;
+});

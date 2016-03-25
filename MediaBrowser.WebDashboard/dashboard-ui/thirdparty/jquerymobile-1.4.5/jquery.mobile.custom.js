@@ -961,7 +961,14 @@
             };
 
             self._enhance();
-            self.element.enhanceWithin();
+
+            var requireValues = pageElem.getAttribute('data-require');
+            if (requireValues && requireValues.indexOf('jqm') != -1) {
+                self.element.enhanceWithin();
+            }
+            else if ((pageElem.getAttribute('data-url') || '').toLowerCase().indexOf('/configurationpage?') != -1) {
+                self.element.enhanceWithin();
+            }
 
             pageElem.dispatchEvent(new CustomEvent("pageinit", {
                 bubbles: true

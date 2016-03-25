@@ -40,12 +40,14 @@ Custom property | Description | Default
       background-color: var(--iron-overlay-backdrop-background-color, #000);
       opacity: 0;
       transition: opacity 0.2s;
+      pointer-events: none;
 
       @apply(--iron-overlay-backdrop);
     }
 
     :host([opened]) {
       opacity: var(--iron-overlay-backdrop-opacity, 0.6);
+      pointer-events: auto;
 
       @apply(--iron-overlay-backdrop-opened);
     }
@@ -93,8 +95,6 @@ Custom property | Description | Default
      * Appends the backdrop to document body and sets its `z-index` to be below the latest overlay.
      */
     prepare: function() {
-      // Always update z-index
-      this.style.zIndex = this._manager.backdropZ();
       if (!this.parentNode) {
         Polymer.dom(document.body).appendChild(this);
       }
@@ -114,8 +114,6 @@ Custom property | Description | Default
      * Hides the backdrop if needed.
      */
     close: function() {
-      // Always update z-index
-      this.style.zIndex = this._manager.backdropZ();
       // close only if no element with backdrop is left
       if (this._manager.getBackdrops().length === 0) {
         // Read style before setting opened.

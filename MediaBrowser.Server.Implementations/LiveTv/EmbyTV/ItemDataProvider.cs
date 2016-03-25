@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CommonIO;
-using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 {
@@ -35,9 +34,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 if (_items == null)
                 {
+                    Logger.Info("Loading live tv data from {0}", _dataPath);
                     _items = GetItemsFromFile(_dataPath);
                 }
-                return _items;
+                return _items.ToList();
             }
         }
 
@@ -47,7 +47,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             try
             {
-                return _jsonSerializer.DeserializeFromFile<List<T>>(jsonFile);
+                return _jsonSerializer.DeserializeFromFile<List<T>>(jsonFile) ?? new List<T>();
             }
             catch (FileNotFoundException)
             {
@@ -58,7 +58,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             catch (IOException ex)
             {
                 Logger.ErrorException("Error deserializing {0}", ex, jsonFile);
-                throw;
             }
             catch (Exception ex)
             {
@@ -69,6 +68,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private void UpdateList(List<T> newList)
         {
+            if (newList == null)
+            {
+                throw new ArgumentNullException("newList");
+            }
+
             var file = _dataPath + ".json";
             _fileSystem.CreateDirectory(Path.GetDirectoryName(file));
 
@@ -81,6 +85,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public virtual void Update(T item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
             var list = GetAll().ToList();
 
             var index = list.FindIndex(i => EqualityComparer(i, item));
@@ -97,6 +106,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public virtual void Add(T item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException("item");
+            }
+
             var list = GetAll().ToList();
 
             if (list.Any(i => EqualityComparer(i, item)))

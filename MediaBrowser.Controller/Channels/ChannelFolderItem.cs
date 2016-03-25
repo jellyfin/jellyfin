@@ -11,7 +11,7 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Channels
 {
-    public class ChannelFolderItem : Folder, IChannelItem
+    public class ChannelFolderItem : Folder
     {
         public ChannelFolderType ChannelFolderType { get; set; }
 

@@ -1,4 +1,4 @@
-﻿(function ($, window, document) {
+﻿define(['jQuery'], function ($) {
 
     function loadUser(page, user) {
 
@@ -41,4 +41,4 @@
 
     });
 
-})(jQuery, window, document);
+});

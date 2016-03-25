@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     function getNode(item, folderState, selected) {
 
@@ -433,7 +433,16 @@
 
     });
 
+    var itemId;
+    function setCurrentItemId(id) {
+        itemId = id;
+    }
+
     function getCurrentItemId() {
+
+        if (itemId) {
+            return itemId;
+        }
 
         var url = window.location.hash || window.location.href;
 
@@ -450,7 +459,8 @@
 
             return ApiClient.getRootFolder(Dashboard.getCurrentUserId());
         },
-        getCurrentItemId: getCurrentItemId
+        getCurrentItemId: getCurrentItemId,
+        setCurrentItemId: setCurrentItemId
     };
 
-})(jQuery, document, window);
+});

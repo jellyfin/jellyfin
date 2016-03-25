@@ -1,4 +1,4 @@
-﻿(function (window, document, $, devicePixelRatio) {
+﻿define(['imageLoader', 'jQuery', 'paper-icon-button', 'paper-button', 'emby-icons'], function (imageLoader, $) {
 
     function renderHeader() {
 
@@ -33,7 +33,7 @@
 
         html += '<paper-button class="headerButton headerButtonRight btnNotifications subdued" type="button" title="Notifications"><div class="btnNotificationsInner">0</div></paper-button>';
 
-        html += '<paper-icon-button icon="person" class="headerButton headerButtonRight headerUserButton" onclick="return Dashboard.showUserFlyout(this);"></paper-icon-button>';
+        html += '<paper-icon-button icon="person" class="headerButton headerButtonRight headerUserButton"></paper-icon-button>';
 
         if (!browserInfo.mobile && !Dashboard.isConnectMode()) {
             html += '<paper-icon-button icon="settings" class="headerButton headerButtonRight dashboardEntryHeaderButton" onclick="return LibraryMenu.onSettingsClicked(event);"></paper-icon-button>';
@@ -48,9 +48,7 @@
 
         document.body.appendChild(viewMenuBar);
 
-        require(['imageLoader'], function (imageLoader) {
-            imageLoader.lazyChildren(document.querySelector('.viewMenuBar'));
-        });
+        imageLoader.lazyChildren(document.querySelector('.viewMenuBar'));
 
         document.dispatchEvent(new CustomEvent("headercreated", {}));
         bindMenuEvents();
@@ -81,34 +79,49 @@
                 var url = user.imageUrl;
 
                 if (user.supportsImageParams) {
-                    url += "&height=" + (userButtonHeight * Math.max(devicePixelRatio || 1, 2));
+                    url += "&height=" + (userButtonHeight * Math.max(window.devicePixelRatio || 1, 2));
                 }
 
                 if (headerUserButton) {
-                    headerUserButton.icon = null;
-                    headerUserButton.src = url;
-                    headerUserButton.classList.add('headerUserButtonRound');
+                    updateHeaderUserButton(headerUserButton, url, null);
                     hasImage = true;
                 }
             }
         }
 
         if (headerUserButton && !hasImage) {
-            headerUserButton.icon = 'person';
-            headerUserButton.src = null;
-            headerUserButton.classList.remove('headerUserButtonRound');
 
-            // Looks like a bug in paper-icon-button that this doesn't get removed
-            var headerUserButtonImg = headerUserButton.querySelector('img');
-            if (headerUserButtonImg) {
-                headerUserButtonImg.parentNode.removeChild(headerUserButtonImg);
-            }
+            updateHeaderUserButton(headerUserButton, null, 'person');
         }
         if (user) {
             updateLocalUser(user.localUser);
         }
 
         requiresUserRefresh = false;
+    }
+
+    function updateHeaderUserButton(headerUserButton, src, icon) {
+
+        var oldButton = headerUserButton;
+
+        // There seems to be a bug in paper-icon-button where it doesn't refresh it's display after switching between icon and src image
+        // So work around that by just replacing the element altogether
+
+        var headerUserButton = document.createElement('paper-icon-button');
+        headerUserButton.className = oldButton.className;
+        headerUserButton.addEventListener('click', onHeaderUserButtonClick);
+
+        if (src) {
+            headerUserButton.classList.add('headerUserButtonRound');
+            headerUserButton.src = src;
+        } else if (icon) {
+            headerUserButton.classList.remove('headerUserButtonRound');
+            headerUserButton.icon = icon;
+        } else {
+            headerUserButton.classList.remove('headerUserButtonRound');
+        }
+
+        oldButton.parentNode.replaceChild(headerUserButton, oldButton);
     }
 
     function updateLocalUser(user) {
@@ -163,12 +176,16 @@
         });
     }
 
+    function onHeaderUserButtonClick(e) {
+        Dashboard.showUserFlyout(e.target);
+    }
+
     function bindMenuEvents() {
 
         var mainDrawerButton = document.querySelector('.mainDrawerButton');
 
         if (mainDrawerButton) {
-            mainDrawerButton.addEventListener('click', openMainDrawer);
+            mainDrawerButton.addEventListener('click', toggleMainDrawer);
         }
 
         var headerBackButton = document.querySelector('.headerBackButton');
@@ -179,6 +196,11 @@
         var headerVoiceButton = document.querySelector('.headerVoiceButton');
         if (headerVoiceButton) {
             headerVoiceButton.addEventListener('click', showVoice);
+        }
+
+        var headerUserButton = document.querySelector('.headerUserButton');
+        if (headerUserButton) {
+            headerUserButton.addEventListener('click', onHeaderUserButtonClick);
         }
 
         var viewMenuBar = document.querySelector(".viewMenuBar");
@@ -199,9 +221,19 @@
     var requiresUserRefresh = true;
     var lastOpenTime = new Date().getTime();
 
-    function openMainDrawer() {
+    function toggleMainDrawer() {
 
         var drawerPanel = document.querySelector('.mainDrawerPanel');
+        if (drawerPanel.selected == 'drawer') {
+            closeMainDrawer(drawerPanel);
+        } else {
+            openMainDrawer(drawerPanel);
+        }
+    }
+
+    function openMainDrawer(drawerPanel) {
+
+        drawerPanel = drawerPanel || document.querySelector('.mainDrawerPanel');
         drawerPanel.openDrawer();
         lastOpenTime = new Date().getTime();
     }
@@ -212,7 +244,7 @@
             document.body.classList.add('bodyWithPopupOpen');
         }
 
-        var pageElem = $($.mobile.activePage)[0];
+        var pageElem = $.mobile.activePage;
 
         if (requiresDrawerRefresh || requiresDashboardDrawerRefresh) {
 
@@ -244,9 +276,10 @@
 
         document.querySelector('.mainDrawerPanel #drawer').classList.add('verticalScrollingDrawer');
     }
-    function closeMainDrawer() {
+    function closeMainDrawer(drawerPanel) {
 
-        document.querySelector('.mainDrawerPanel').closeDrawer();
+        drawerPanel = drawerPanel || document.querySelector('.mainDrawerPanel');
+        drawerPanel.closeDrawer();
     }
     function onMainDrawerSelect(e) {
 
@@ -286,7 +319,7 @@
 
         var html = '';
 
-        var homeHref = window.ApiClient ? 'index.html' : 'selectserver.html?showuser=1';
+        var homeHref = window.ApiClient ? 'home.html' : 'selectserver.html?showuser=1';
 
         html += '<div style="margin-top:5px;"></div>';
 
@@ -402,7 +435,7 @@
                     view.icon = 'live-tv';
                     view.onclick = "LibraryBrowser.showTab('livetv.html', 0);";
 
-                    var guideView = $.extend({}, view);
+                    var guideView = Object.assign({}, view);
                     guideView.Name = Globalize.translate('ButtonGuide');
                     guideView.ImageTags = {};
                     guideView.icon = 'dvr';
@@ -410,7 +443,7 @@
                     guideView.onclick = "LibraryBrowser.showTab('livetv.html', 1);";
                     list.push(guideView);
 
-                    var recordedTvView = $.extend({}, view);
+                    var recordedTvView = Object.assign({}, view);
                     recordedTvView.Name = Globalize.translate('ButtonRecordedTv');
                     recordedTvView.ImageTags = {};
                     recordedTvView.icon = 'video-library';
@@ -424,13 +457,25 @@
         });
     }
 
+    function showBySelector(selector, show) {
+        var elem = document.querySelector(selector);
+
+        if (elem) {
+            if (show) {
+                elem.classList.remove('hide');
+            } else {
+                elem.classList.add('hide');
+            }
+        }
+    }
+
     function updateLibraryMenu(user) {
 
         if (!user) {
 
-            $('.adminMenuOptions').addClass('hide');
-            $('.lnkMySync').addClass('hide');
-            $('.userMenuOptions').addClass('hide');
+            showBySelector('.adminMenuOptions', false);
+            showBySelector('.lnkMySync', false);
+            showBySelector('.userMenuOptions', false);
             return;
         }
 
@@ -508,19 +553,23 @@
             libraryMenuOptions.innerHTML = html;
             var elem = libraryMenuOptions;
 
-            $('.sidebarLink', elem).off('click', onSidebarLinkClick).on('click', onSidebarLinkClick);
+            var sidebarLinks = elem.querySelectorAll('.sidebarLink');
+            for (var i = 0, length = sidebarLinks.length; i < length; i++) {
+                sidebarLinks[i].removeEventListener('click', onSidebarLinkClick);
+                sidebarLinks[i].addEventListener('click', onSidebarLinkClick);
+            }
         });
 
         if (user.Policy.IsAdministrator) {
-            $('.adminMenuOptions').removeClass('hide');
+            showBySelector('.adminMenuOptions', true);
         } else {
-            $('.adminMenuOptions').addClass('hide');
+            showBySelector('.adminMenuOptions', false);
         }
 
         if (user.Policy.EnableSync) {
-            $('.lnkMySync').removeClass('hide');
+            showBySelector('.lnkMySync', true);
         } else {
-            $('.lnkMySync').addClass('hide');
+            showBySelector('.lnkMySync', false);
         }
     }
 
@@ -590,7 +639,7 @@
         },
 
         onHardwareMenuButtonClick: function () {
-            openMainDrawer();
+            toggleMainDrawer();
         },
 
         onSettingsClicked: function (event) {
@@ -796,11 +845,11 @@
         updateTabLinks(page);
     });
 
-    pageClassOn('pageshow', 'page', function () {
+    pageClassOn('pageshow', 'page', function (e) {
 
         var page = this;
 
-        if (!NavHelper.isBack()) {
+        if (!e.detail.isRestored) {
             // Scroll back up so in case vertical scroll was messed with
             window.scrollTo(0, 0);
         }
@@ -943,27 +992,4 @@
 
     setDrawerClass();
 
-})(window, document, jQuery, window.devicePixelRatio);
-
-(function () {
-
-    var isCurrentNavBack = false;
-
-    window.addEventListener("navigate", function (e) {
-
-        var data = e.detail.state || {};
-        var direction = data.direction;
-
-        isCurrentNavBack = direction == 'back';
-    });
-
-    function isBack() {
-
-        return isCurrentNavBack;
-    }
-
-    window.NavHelper = {
-        isBack: isBack
-    };
-
-})();
+});

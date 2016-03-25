@@ -11,7 +11,7 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.LiveTv
 {
-    public class LiveTvProgram : BaseItem, ILiveTvItem, IHasLookupInfo<LiveTvProgramLookupInfo>, IHasStartDate, IHasProgramAttributes
+    public class LiveTvProgram : BaseItem, IHasLookupInfo<LiveTvProgramLookupInfo>, IHasStartDate, IHasProgramAttributes
     {
         /// <summary>
         /// Gets the user data key.
@@ -39,12 +39,12 @@ namespace MediaBrowser.Controller.LiveTv
             return base.CreateUserDataKey();
         }
 
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
         [IgnoreDataMember]
-        public string ServiceName { get; set; }
+        public override SourceType SourceType
+        {
+            get { return SourceType.LiveTV; }
+            set { }
+        }
 
         /// <summary>
         /// The start date of the program, in UTC.

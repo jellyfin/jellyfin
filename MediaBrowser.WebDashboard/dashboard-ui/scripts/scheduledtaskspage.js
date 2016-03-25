@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     function reloadList(page) {
 
@@ -296,4 +296,4 @@
         stopInterval();
     });
 
-})(jQuery, document, window);
+});

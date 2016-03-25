@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   version="1.1"
+   viewBox="0 0 1 1"
+   preserveAspectRatio="xMinYMin meet">
+  <defs>
+    <clipPath id="clip">
+      <path
+         d="M 0,0 0,1 1,1 1,0 0,0 z M 0.8534375,0.1671875 0.9596875,0.273125 0.429375,0.8034375 0.323125,0.9096875 0.2171875,0.8034375 0.0403125,0.626875 0.1465625,0.520625 0.323125,0.6975 0.8534375,0.1671875 z"
+         style="fill:#ffffff;fill-opacity:1;stroke:none" />
+    </clipPath>
+    <mask id="mask" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+      <path
+         d="M 0,0 0,1 1,1 1,0 0,0 z M 0.8534375,0.1671875 0.9596875,0.273125 0.429375,0.8034375 0.323125,0.9096875 0.2171875,0.8034375 0.0403125,0.626875 0.1465625,0.520625 0.323125,0.6975 0.8534375,0.1671875 z"
+         style="fill:#ffffff;fill-opacity:1;stroke:none" />
+    </mask>
+  </defs>
+  <rect
+     width="1"
+     height="1"
+     x="0"
+     y="0"
+     clip-path="url(#clip)"
+     style="fill:#000000;fill-opacity:1;stroke:none" />
+</svg>

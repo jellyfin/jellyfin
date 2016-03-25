@@ -1,46 +1,38 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>Emby</title>
-</head>
-<body>
-    <div id="selectServerPage" data-role="page" class="page noSecondaryNavPage standalonePage" data-theme="b" data-require="scripts/selectserver,paper-fab,paper-item-body,paper-icon-item">
+﻿<div id="selectServerPage" data-role="page" class="page noSecondaryNavPage standalonePage" data-theme="b" data-require="scripts/selectserver,paper-fab,paper-item-body,paper-icon-item">
 
-        <div data-role="content">
+    <div data-role="content">
 
-            <div class="readOnlyContent" style="margin: 0 auto;">
+        <div class="readOnlyContent" style="margin: 0 auto;">
 
-                <div style="margin:1em 0 .5em;padding-left:5px;">
-                    <h1 style="display:inline-block;vertical-align:middle;margin: 0;">${HeaderSelectServer}</h1>
-                    <a href="https://github.com/MediaBrowser/Wiki/wiki/Emby%20Connect" target="_blank" class="clearLink" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:1em;"><paper-button raised class="secondary mini"><iron-icon icon="info"></iron-icon><span>${ButtonHelp}</span></paper-button></a>
-                </div>
-
-                <div class="serverList paperList"></div>
-                <br />
-                <div class="noServersMessage" style="display:none;padding-left:5px;">
-                    ${MessageNoServersAvailableToConnect}
-                    <br /><br />
-                </div>
-
-                <div class="addServer" style="margin:0 0 1em;">
-                    <a href="connectlogin.html?mode=manualserver" class="clearLink"><paper-button raised class="submit block"><iron-icon icon="add"></iron-icon><span>${ButtonAddServer}</span></paper-button></a>
-                </div>
-
-                <div class="connectLogin" style="margin:1em 0;display:none;">
-                    <a href="connectlogin.html?mode=connect" class="clearLink"><paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${ButtonSignInWithConnect}</span></paper-button></a>
-                </div>
-
-                <div class="invitationSection" style="display:none;">
-                    <br />
-                    <h1 style="margin-bottom:.5em;padding-left:5px;">${HeaderInvitations}</h1>
-
-                    <div class="invitationList paperList">
-
-                    </div>
-                </div>
+            <div style="margin:1em 0 .5em;padding-left:5px;">
+                <h1 style="display:inline-block;vertical-align:middle;margin: 0;">${HeaderSelectServer}</h1>
+                <a href="https://github.com/MediaBrowser/Wiki/wiki/Emby%20Connect" target="_blank" class="clearLink" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:1em;"><paper-button raised class="secondary mini"><iron-icon icon="info"></iron-icon><span>${ButtonHelp}</span></paper-button></a>
             </div>
 
+            <div class="serverList paperList"></div>
+            <br />
+            <div class="noServersMessage" style="display:none;padding-left:5px;">
+                ${MessageNoServersAvailableToConnect}
+                <br /><br />
+            </div>
+
+            <div class="addServer" style="margin:0 0 1em;">
+                <a href="connectlogin.html?mode=manualserver" class="clearLink"><paper-button raised class="submit block"><iron-icon icon="add"></iron-icon><span>${ButtonAddServer}</span></paper-button></a>
+            </div>
+
+            <div class="connectLogin" style="margin:1em 0;display:none;">
+                <a href="connectlogin.html?mode=connect" class="clearLink"><paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${ButtonSignInWithConnect}</span></paper-button></a>
+            </div>
+
+            <div class="invitationSection" style="display:none;">
+                <br />
+                <h1 style="margin-bottom:.5em;padding-left:5px;">${HeaderInvitations}</h1>
+
+                <div class="invitationList paperList">
+
+                </div>
+            </div>
         </div>
+
     </div>
-</body>
-</html>
+</div>

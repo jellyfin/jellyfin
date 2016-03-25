@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper'], function (paperDialogHelper) {
+﻿define(['dialogHelper', 'jQuery'], function (dialogHelper, $) {
 
     return {
         show: function (person) {
@@ -10,7 +10,7 @@
                 xhr.onload = function (e) {
 
                     var template = this.response;
-                    var dlg = paperDialogHelper.createDialog({
+                    var dlg = dialogHelper.createDialog({
                         removeOnClose: true,
                         size: 'medium'
                     });
@@ -32,9 +32,9 @@
                     $('.selectPersonType', dlg).val(person.Type || '');
                     $('.txtPersonRole', dlg).val(person.Role || '');
 
-                    paperDialogHelper.open(dlg);
+                    dialogHelper.open(dlg);
 
-                    dlg.addEventListener('iron-overlay-closed', function () {
+                    dlg.addEventListener('close', function () {
 
                         if (submitted) {
                             resolve(person);
@@ -45,7 +45,7 @@
 
                     dlg.querySelector('.btnCancel').addEventListener('click', function (e) {
 
-                        paperDialogHelper.close(dlg);
+                        dialogHelper.close(dlg);
                     });
 
                     dlg.querySelector('form').addEventListener('submit', function (e) {
@@ -56,7 +56,7 @@
                         person.Type = $('.selectPersonType', dlg).val();
                         person.Role = $('.txtPersonRole', dlg).val() || null;
 
-                        paperDialogHelper.close(dlg);
+                        dialogHelper.close(dlg);
 
                         e.preventDefault();
                         return false;

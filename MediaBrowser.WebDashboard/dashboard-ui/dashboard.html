@@ -1,136 +1,128 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>Emby</title>
-</head>
-<body>
-    <div id="dashboardPage" data-role="page" class="page type-interior dashboardHomePage" data-require="scripts/dashboardpage,humanedate,buttonenabled,paper-icon-item,paper-item-body,paper-fab,emby-collapsible">
+﻿<div id="dashboardPage" data-role="page" class="page type-interior dashboardHomePage" data-require="scripts/dashboardpage,humanedate,buttonenabled,paper-icon-item,paper-item-body,paper-fab,emby-collapsible">
 
-        <div data-role="content">
-            <div class="content-primary">
+    <div data-role="content">
+        <div class="content-primary">
 
-                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="#" data-role="button" class="ui-btn-active">${TabDashboard}</a>
-                    <a href="dashboardgeneral.html" data-role="button">${TabSettings}</a>
+            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                <a href="#" data-role="button" class="ui-btn-active">${TabDashboard}</a>
+                <a href="dashboardgeneral.html" data-role="button">${TabSettings}</a>
+            </div>
+            <div class="dashboardContent">
+                <div class="ui-bar-a welcomeMessage" style="display: none; padding: 2em; border-radius: 10px; margin: 2em 0; font-weight: normal; max-width: 800px;">
+                    <h1 style="margin-top: 0;" class="tourHeader"></h1>
+                    <p>
+                        <button class="btnTakeTour" type="button" data-icon="arrow-r" data-iconpos="right"><span class="tourButtonText"></span></button>
+                    </p>
                 </div>
-                <div class="dashboardContent">
-                    <div class="ui-bar-a welcomeMessage" style="display: none; padding: 2em; border-radius: 10px; margin: 2em 0; font-weight: normal; max-width: 800px;">
-                        <h1 style="margin-top: 0;" class="tourHeader"></h1>
-                        <p>
-                            <button class="btnTakeTour" type="button" data-icon="arrow-r" data-iconpos="right"><span class="tourButtonText"></span></button>
-                        </p>
+
+                <div class="readOnlyContent dashboardHomeLeftColumn">
+
+                    <div>
+                    </div>
+                    <div>
+                        <h1>${HeaderServerInformation}</h1>
+                        <div class="paperList" style="padding:1em;">
+                            <p id="appVersionNumber">
+                            </p>
+                            <p id="pUpToDate" style="display: none;">
+                                <img src="css/images/checkmarkgreen.png" style="height: 20px; margin-right: 3px; position: relative; top: 5px; border-radius: 3px;" />
+                                ${ServerUpToDate}
+                            </p>
+                            <div id="pUpdateNow" style="display: none;">
+                                <p><strong>${NewServerVersionAvailable}</strong></p>
+                                <p id="newVersionNumber"></p>
+                                <div id="btnUpdateApplicationContainer">
+                                    <button id="btnUpdateApplication" type="button" data-icon="arrow-d" data-theme="b" onclick="DashboardPage.updateApplication();">${ButtonUpdateNow}</button>
+                                </div>
+                                <div id="btnManualUpdateContainer">
+                                    <a href="http://emby.media/download" target="_blank">${PleaseUpdateManually}</a>
+                                </div>
+                            </div>
+                            <p id="ports"></p>
+                            <div id="pPluginUpdates"></div>
+
+                            <p class="localUrl"></p>
+                            <p class="externalUrl"></p>
+
+                            <div style="margin-top: 1em;">
+                                <paper-button raised class="subdued btnRestartContainer hide" onclick="DashboardPage.restart();"><iron-icon icon="refresh"></iron-icon><span>${ButtonRestart}</span></paper-button>
+                                <paper-button id="btnShutdown" raised class="subdued" onclick="DashboardPage.shutdown();"><iron-icon icon="close"></iron-icon><span>${ButtonShutdown}</span></paper-button>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="readOnlyContent dashboardHomeLeftColumn">
+                    <p class="supporterIconContainer" style="padding-left: .5em;margin: 1em 0 0;">
+                    </p>
 
-                        <div>
-                        </div>
-                        <div>
-                            <h1>${HeaderServerInformation}</h1>
-                            <div class="paperList" style="padding:1em;">
-                                <p id="appVersionNumber">
-                                </p>
-                                <p id="pUpToDate" style="display: none;">
-                                    <img src="css/images/checkmarkgreen.png" style="height: 20px; margin-right: 3px; position: relative; top: 5px; border-radius: 3px;" />
-                                    ${ServerUpToDate}
-                                </p>
-                                <div id="pUpdateNow" style="display: none;">
-                                    <p><strong>${NewServerVersionAvailable}</strong></p>
-                                    <p id="newVersionNumber"></p>
-                                    <div id="btnUpdateApplicationContainer">
-                                        <button id="btnUpdateApplication" type="button" data-icon="arrow-d" data-theme="b" onclick="DashboardPage.updateApplication();">${ButtonUpdateNow}</button>
-                                    </div>
-                                    <div id="btnManualUpdateContainer">
-                                        <a href="http://emby.media/download" target="_blank">${PleaseUpdateManually}</a>
-                                    </div>
-                                </div>
-                                <p id="ports"></p>
-                                <div id="pPluginUpdates"></div>
-
-                                <p class="localUrl"></p>
-                                <p class="externalUrl"></p>
-
-                                <div style="margin-top: 1em;">
-                                    <paper-button raised class="subdued btnRestartContainer hide" onclick="DashboardPage.restart();"><iron-icon icon="refresh"></iron-icon><span>${ButtonRestart}</span></paper-button>
-                                    <paper-button id="btnShutdown" raised class="subdued" onclick="DashboardPage.shutdown();"><iron-icon icon="close"></iron-icon><span>${ButtonShutdown}</span></paper-button>
-                                </div>
+                    <div id="collapsiblePendingInstallations" style="margin-top: 2em; display: none;">
+                        <emby-collapsible title="${HeaderPendingInstallations}" expanded>
+                            <p>${LabelComponentsUpdated}</p>
+                            <div id="pendingInstallations">
                             </div>
-                        </div>
-
-                        <p class="supporterIconContainer" style="padding-left: .5em;margin: 1em 0 0;">
-                        </p>
-
-                        <div id="collapsiblePendingInstallations" style="margin-top: 2em; display: none;">
-                            <emby-collapsible title="${HeaderPendingInstallations}" expanded>
-                                <p>${LabelComponentsUpdated}</p>
-                                <div id="pendingInstallations">
-                                </div>
-                                <p>${MessagePleaseRestartServerToFinishUpdating}</p>
-                                <div class="btnRestartContainer hide">
-                                    <paper-button raised class="submit" onclick="DashboardPage.restart();"><iron-icon icon="refresh"></iron-icon><span>${ButtonRestartNow}</span></paper-button>
-                                </div>
-                            </emby-collapsible>
-                        </div>
-
-                        <div class="activeDevicesCollapsible" style="margin-top: 2em;">
-                            <h1>${HeaderActiveDevices}</h1>
-                            <div class="activeDevices">
+                            <p>${MessagePleaseRestartServerToFinishUpdating}</p>
+                            <div class="btnRestartContainer hide">
+                                <paper-button raised class="submit" onclick="DashboardPage.restart();"><iron-icon icon="refresh"></iron-icon><span>${ButtonRestartNow}</span></paper-button>
                             </div>
-                        </div>
-
-                        <div id="runningTasksCollapsible" style="margin-top: 2em; display: none;">
-                            <emby-collapsible title="${HeaderRunningTasks}" expanded>
-                                <div id="divRunningTasks">
-                                </div>
-                            </emby-collapsible>
-                        </div>
-
-                        <br />
-                        <emby-collapsible title="${HeaderPaths}">
-                            <p>
-                                <b>${LabelCache}</b><br />
-                                <span id="cachePath"></span>
-                            </p>
-                            <p>
-                                <b>${LabelLogs}</b><br />
-                                <span id="logPath"></span>
-                            </p>
-                            <p>
-                                <b>${LabelMetadata}</b><br />
-                                <span id="metadataPath"></span>
-                            </p>
-                            <p>
-                                <b>${LabelTranscodingTemporaryFiles}</b><br />
-                                <span id="transcodingTemporaryPath"></span>
-                            </p>
                         </emby-collapsible>
                     </div>
 
-                    <div class="readOnlyContent dashboardHomeRightColumn firstDashboardHomeRightColumn">
-                        <h1>${HeaderRecentActivity}</h1>
-                        <div class="paperList activityItems">
+                    <div class="activeDevicesCollapsible" style="margin-top: 2em;">
+                        <h1>${HeaderActiveDevices}</h1>
+                        <div class="activeDevices">
                         </div>
                     </div>
 
-                    <div class="readOnlyContent dashboardHomeRightColumn">
-                        <h1>${HeaderLatestNews}</h1>
-                        <div class="paperList latestNewsItems">
-                        </div>
+                    <div id="runningTasksCollapsible" style="margin-top: 2em; display: none;">
+                        <emby-collapsible title="${HeaderRunningTasks}" expanded>
+                            <div id="divRunningTasks">
+                            </div>
+                        </emby-collapsible>
                     </div>
 
-                    <div class="dashboardFooter">
-                        <div style="height:1px;" class="ui-bar-inherit"></div>
-                        <div style="margin-top:1em;">
-                            <a href="http://emby.media" target="_blank">Emby</a>
-                            <a href="http://emby.media/community" target="_blank">${LinkCommunity}</a>
-                            <a href="https://github.com/MediaBrowser" target="_blank">${LinkGithub}</a>
-                            <a class="swaggerLink" target="_blank" href="#">${LinkApi}</a>
-                        </div>
+                    <br />
+                    <emby-collapsible title="${HeaderPaths}">
+                        <p>
+                            <b>${LabelCache}</b><br />
+                            <span id="cachePath"></span>
+                        </p>
+                        <p>
+                            <b>${LabelLogs}</b><br />
+                            <span id="logPath"></span>
+                        </p>
+                        <p>
+                            <b>${LabelMetadata}</b><br />
+                            <span id="metadataPath"></span>
+                        </p>
+                        <p>
+                            <b>${LabelTranscodingTemporaryFiles}</b><br />
+                            <span id="transcodingTemporaryPath"></span>
+                        </p>
+                    </emby-collapsible>
+                </div>
+
+                <div class="readOnlyContent dashboardHomeRightColumn firstDashboardHomeRightColumn">
+                    <h1>${HeaderRecentActivity}</h1>
+                    <div class="paperList activityItems">
                     </div>
                 </div>
 
+                <div class="readOnlyContent dashboardHomeRightColumn">
+                    <h1>${HeaderLatestNews}</h1>
+                    <div class="paperList latestNewsItems">
+                    </div>
+                </div>
+
+                <div class="dashboardFooter">
+                    <div style="height:1px;" class="ui-bar-inherit"></div>
+                    <div style="margin-top:1em;">
+                        <a href="http://emby.media" target="_blank">Emby</a>
+                        <a href="http://emby.media/community" target="_blank">${LinkCommunity}</a>
+                        <a href="https://github.com/MediaBrowser" target="_blank">${LinkGithub}</a>
+                        <a class="swaggerLink" target="_blank" href="#">${LinkApi}</a>
+                    </div>
+                </div>
             </div>
+
         </div>
     </div>
-</body>
-</html>
+</div>

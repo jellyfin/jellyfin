@@ -276,7 +276,7 @@ Single element animations:
  * `fade-out-animation` Animates opacity from `1` to `0`;
  * `scale-down-animation` Animates transform from `scale(1)` to `scale(0)`;
  * `scale-up-animation` Animates transform from `scale(0)` to `scale(1)`;
- * `slide-down-animation` Animates transform from `translateY(-100%)` to `none`;
+ * `slide-down-animation` Animates transform from `none` to `translateY(100%)`;
  * `slide-up-animation` Animates transform from `none` to `translateY(-100%)`;
  * `slide-from-top-animation` Animates transform from `translateY(-100%)` to `none`;
  * `slide-from-bottom-animation` Animates transform from `translateY(100%)` to `none`;

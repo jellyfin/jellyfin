@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     function getView() {
 
@@ -333,7 +333,7 @@
         $('.recommendations', page).createCardMenus();
 
         var tabs = page.querySelector('paper-tabs');
-        var pages = page.querySelector('neon-animated-pages');
+        var pageTabsContainer = page.querySelector('.pageTabsContainer');
 
         var baseUrl = 'movies.html';
         var topParentId = LibraryMenu.getTopParentId();
@@ -341,10 +341,10 @@
             baseUrl += '?topParentId=' + topParentId;
         }
 
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, baseUrl);
+        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pageTabsContainer, baseUrl);
 
-        pages.addEventListener('tabchange', function (e) {
-            loadTab(page, parseInt(e.target.selected));
+        pageTabsContainer.addEventListener('tabchange', function (e) {
+            loadTab(page, parseInt(e.detail.selectedTabIndex));
         });
     });
 
@@ -384,10 +384,14 @@
 
         if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
             var page = $($.mobile.activePage)[0];
-            var pages = page.querySelector('neon-animated-pages');
+            var pageTabsContainer = page.querySelector('.pageTabsContainer');
 
-            pages.dispatchEvent(new CustomEvent("tabchange", {}));
+            pageTabsContainer.dispatchEvent(new CustomEvent("tabchange", {
+                detail: {
+                    selectedTabIndex: libraryBrowser.selectedTabIndex(pageTabsContainer)
+                }
+            }));
         }
     }
 
-})(jQuery, document);
+});

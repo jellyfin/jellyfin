@@ -13,7 +13,7 @@ using System.Threading;
 
 namespace MediaBrowser.Controller.Channels
 {
-    public class ChannelVideoItem : Video, IChannelMediaItem, IHasLookupInfo<ChannelItemLookupInfo>
+    public class ChannelVideoItem : Video
     {
         public ChannelMediaContentType ContentType { get; set; }
 
@@ -103,20 +103,6 @@ namespace MediaBrowser.Controller.Channels
             return list;
         }
 
-        public ChannelItemLookupInfo GetLookupInfo()
-        {
-            var info = GetItemLookupInfo<ChannelItemLookupInfo>();
-
-            info.ContentType = ContentType;
-
-            if (ExtraType.HasValue)
-            {
-                info.ExtraType = ExtraType.Value;
-            }
-
-            return info;
-        }
-
         protected override string GetInternalMetadataPath(string basePath)
         {
             return System.IO.Path.Combine(basePath, "channels", ChannelId, Id.ToString("N"));
@@ -132,7 +118,7 @@ namespace MediaBrowser.Controller.Channels
             return IsVisibleStandaloneInternal(user, false) && IsChannelVisible(this, user);
         }
 
-        internal static bool IsChannelVisible(IChannelItem item, User user)
+        internal static bool IsChannelVisible(BaseItem item, User user)
         {
             var channel = ChannelManager.GetChannel(item.ChannelId);
 

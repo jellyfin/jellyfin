@@ -106,7 +106,8 @@
         var sessionRequest = new chrome.cast.SessionRequest(applicationID);
         var apiConfig = new chrome.cast.ApiConfig(sessionRequest,
           this.sessionListener.bind(this),
-          this.receiverListener.bind(this));
+          this.receiverListener.bind(this),
+            "origin_scoped");
 
         console.log('chromecast.initialize');
 
@@ -177,7 +178,7 @@
             }, 300);
 
         }
-        else if (message.type && message.type.indexOf('playback') == 0) {
+        else if (message.type) {
             Events.trigger(this, message.type, [message.data]);
 
         }
@@ -342,7 +343,7 @@
             receiverName = castPlayer.session.receiver.friendlyName;
         }
 
-        message = $.extend(message, {
+        message = Object.assign(message, {
             userId: Dashboard.getCurrentUserId(),
             deviceId: ApiClient.deviceId(),
             accessToken: ApiClient.accessToken(),
@@ -461,14 +462,11 @@
             var userId = Dashboard.getCurrentUserId();
 
             if (query.Ids && query.Ids.split(',').length == 1) {
-                return new Promise(function (resolve, reject) {
-
-                    ApiClient.getItem(userId, query.Ids.split(',')).then(function (item) {
-                        resolve({
-                            Items: [item],
-                            TotalRecordCount: 1
-                        });
-                    });
+                return ApiClient.getItem(userId, query.Ids.split(',')).then(function (item) {
+                    return {
+                        Items: [item],
+                        TotalRecordCount: 1
+                    };
                 });
             }
             else {
@@ -520,6 +518,22 @@
             var state = self.getPlayerStateInternal(data);
 
             Events.trigger(self, "positionchange", [state]);
+        });
+
+        Events.on(castPlayer, "volumechange", function (e, data) {
+
+            console.log('cc: volumechange');
+            var state = self.getPlayerStateInternal(data);
+
+            Events.trigger(self, "volumechange", [state]);
+        });
+
+        Events.on(castPlayer, "playstatechange", function (e, data) {
+
+            console.log('cc: playstatechange');
+            var state = self.getPlayerStateInternal(data);
+
+            Events.trigger(self, "playstatechange", [state]);
         });
 
         self.play = function (options) {
@@ -671,16 +685,13 @@
 
         self.getTargets = function () {
 
-            return new Promise(function (resolve, reject) {
+            var targets = [];
 
-                var targets = [];
+            if (castPlayer.hasReceivers) {
+                targets.push(self.getCurrentTargetInfo());
+            }
 
-                if (castPlayer.hasReceivers) {
-                    targets.push(self.getCurrentTargetInfo());
-                }
-
-                resolve(targets);
-            });
+            return Promise.resolve(targets);
         };
 
         self.getCurrentTargetInfo = function () {
@@ -814,11 +825,8 @@
 
         self.getPlayerState = function () {
 
-            return new Promise(function (resolve, reject) {
-
-                var result = self.getPlayerStateInternal();
-                resolve(result);
-            });
+            var result = self.getPlayerStateInternal();
+            return Promise.resolve(result);
         };
 
         self.lastPlayerData = {};

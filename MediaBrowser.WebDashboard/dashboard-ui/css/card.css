@@ -47,17 +47,17 @@
     margin: 4px;
 }
 
-@media all and (max-width: 600px) {
+@media all and (max-width: 500px) {
 
     .cardBox {
         margin: 1px;
     }
 }
 
-@media all and (min-width: 800px) {
+@media all and (min-width: 500px) {
 
     .cardImage {
-        border-radius: 2px;
+        border-radius: 3px;
     }
 }
 
@@ -234,7 +234,7 @@
 }
 
 .cardContent .cardFooter .cardText {
-    font-size: 16px;
+    font-size: 115%;
 }
 
 .cardOverlayInner {
@@ -596,14 +596,6 @@
 
     .detailPagePortraitCard {
         width: 25%;
-    }
-}
-
-
-@media all and (min-width: 800px) {
-
-    .detailPagePortraitCard {
-        width: 20%;
     }
 }
 

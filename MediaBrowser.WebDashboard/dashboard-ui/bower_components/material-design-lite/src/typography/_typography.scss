@@ -1,0 +1,301 @@
+/**
+ * Copyright 2015 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import "../variables";
+@import "../mixins";
+
+@if $target-elements-directly == true {
+  html, body {
+    font-family: $performance_font;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+  }
+
+  h1, h2, h3, h4, h5, h6, p {
+    margin: 0;
+    padding: 0;
+  }
+
+  /**
+  * Styles for HTML elements
+  */
+
+  h1 small, h2 small, h3 small, h4 small, h5 small, h6 small {
+    @include typo-display-3($colorContrast: true);
+
+    font-size: 0.6em;
+  }
+
+  h1 {
+    @include typo-display-3;
+
+    margin-top: 24px;
+    margin-bottom: 24px;
+  }
+
+  h2 {
+    @include typo-display-2;
+
+    margin-top: 24px;
+    margin-bottom: 24px;
+  }
+
+  h3 {
+    @include typo-display-1;
+
+    margin-top: 24px;
+    margin-bottom: 24px;
+  }
+
+  h4 {
+    @include typo-headline;
+
+    margin-top: 24px;
+    margin-bottom: 16px;
+  }
+
+  h5 {
+    @include typo-title;
+
+    margin-top: 24px;
+    margin-bottom: 16px;
+  }
+
+  h6 {
+    @include typo-subhead;
+
+    margin-top: 24px;
+    margin-bottom: 16px;
+  }
+
+  p {
+    @include typo-body-1;
+
+    margin-bottom: 16px;
+  }
+
+  a {
+    color: $text-link-color;
+    font-weight: 500;
+  }
+
+  blockquote {
+    @include typo-blockquote;
+  }
+
+  mark {
+    background-color: #f4ff81;
+  }
+
+  dt {
+    font-weight: 700;
+  }
+
+  address {
+    @include typo-caption;
+
+    font-style: normal;
+  }
+
+  ul, ol {
+    @include typo-body-1;
+  }
+}
+
+/**
+ * Class Name Styles
+ */
+
+.mdl-typography--display-4 {
+  @include typo-display-4;
+}
+
+.mdl-typography--display-4-color-contrast {
+  @include typo-display-4($colorContrast: true);
+}
+
+.mdl-typography--display-3 {
+  @include typo-display-3;
+}
+
+.mdl-typography--display-3-color-contrast {
+  @include typo-display-3($colorContrast: true);
+}
+
+.mdl-typography--display-2 {
+  @include typo-display-2;
+}
+
+.mdl-typography--display-2-color-contrast {
+  @include typo-display-2($colorContrast: true);
+}
+
+.mdl-typography--display-1 {
+  @include typo-display-1;
+}
+
+.mdl-typography--display-1-color-contrast {
+  @include typo-display-1($colorContrast: true);
+}
+
+.mdl-typography--headline {
+  @include typo-headline;
+}
+
+.mdl-typography--headline-color-contrast {
+  @include typo-headline($colorContrast: true);
+}
+
+.mdl-typography--title {
+  @include typo-title;
+}
+
+.mdl-typography--title-color-contrast {
+  @include typo-title($colorContrast: true);
+}
+
+.mdl-typography--subhead {
+  @include typo-subhead;
+}
+
+.mdl-typography--subhead-color-contrast {
+  @include typo-subhead($colorContrast: true);
+}
+
+.mdl-typography--body-2 {
+  @include typo-body-2;
+}
+
+.mdl-typography--body-2-color-contrast {
+  @include typo-body-2($colorContrast: true);
+}
+
+.mdl-typography--body-1 {
+  @include typo-body-1;
+}
+
+.mdl-typography--body-1-color-contrast {
+  @include typo-body-1($colorContrast: true);
+}
+
+.mdl-typography--body-2-force-preferred-font {
+  @include typo-body-2($usePreferred: true);
+}
+
+.mdl-typography--body-2-force-preferred-font-color-contrast {
+  @include typo-body-2($colorContrast: true, $usePreferred: true);
+}
+
+.mdl-typography--body-1-force-preferred-font {
+  @include typo-body-1($usePreferred: true);
+}
+
+.mdl-typography--body-1-force-preferred-font-color-contrast {
+  @include typo-body-1($colorContrast: true, $usePreferred: true);
+}
+
+.mdl-typography--caption {
+  @include typo-caption;
+}
+
+.mdl-typography--caption-force-preferred-font {
+  @include typo-caption($usePreferred: true);
+}
+
+.mdl-typography--caption-color-contrast {
+  @include typo-caption($colorContrast: true);
+}
+
+.mdl-typography--caption-force-preferred-font-color-contrast {
+  @include typo-caption($colorContrast: true, $usePreferred: true);
+}
+
+.mdl-typography--menu {
+  @include typo-menu;
+}
+
+.mdl-typography--menu-color-contrast {
+  @include typo-menu($colorContrast: true);
+}
+
+.mdl-typography--button {
+  @include typo-button;
+}
+
+.mdl-typography--button-color-contrast {
+  @include typo-button($colorContrast: true);
+}
+
+.mdl-typography--text-left {
+  text-align: left;
+}
+
+.mdl-typography--text-right {
+  text-align: right;
+}
+
+.mdl-typography--text-center {
+  text-align: center;
+}
+
+.mdl-typography--text-justify {
+  text-align: justify;
+}
+
+.mdl-typography--text-nowrap {
+  white-space: nowrap;
+}
+
+.mdl-typography--text-lowercase {
+  text-transform: lowercase;
+}
+
+.mdl-typography--text-uppercase {
+  text-transform: uppercase;
+}
+
+.mdl-typography--text-capitalize {
+  text-transform: capitalize;
+}
+
+.mdl-typography--font-thin {
+  font-weight: 200 !important;
+}
+
+.mdl-typography--font-light {
+  font-weight: 300 !important;
+}
+
+.mdl-typography--font-regular {
+  font-weight: 400 !important;
+}
+
+.mdl-typography--font-medium {
+  font-weight: 500 !important;
+}
+
+.mdl-typography--font-bold {
+  font-weight: 700 !important;
+}
+
+.mdl-typography--font-black {
+  font-weight: 900 !important;
+}
+
+.material-icons {
+  @include typo-icon;
+}

@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['jQuery'], function ($) {
 
     var notificationsConfigurationKey = "notifications";
 
@@ -184,4 +184,4 @@
         reload(page);
     });
 
-})(jQuery, window);
+});

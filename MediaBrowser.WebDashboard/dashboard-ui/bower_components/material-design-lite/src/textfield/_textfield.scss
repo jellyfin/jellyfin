@@ -1,0 +1,218 @@
+/**
+ * Copyright 2015 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import "../variables";
+@import "../mixins";
+
+// The container for the whole component.
+.mdl-textfield {
+  position: relative;
+  font-size: $input-text-font-size;
+  display: inline-block;
+  box-sizing: border-box;
+  width: 300px;
+  max-width: 100%;
+  margin: 0;
+  padding: $input-text-vertical-spacing 0;
+
+  // Align buttons, if used.
+  & .mdl-button {
+    position: absolute;
+    bottom: $input-text-vertical-spacing;
+  }
+}
+
+// Optional class to align right.
+.mdl-textfield--align-right {
+  text-align: right;
+}
+
+// Optional class to display at full width.
+.mdl-textfield--full-width {
+  width: 100%;
+}
+
+// Optional class to make the text field expandable.
+.mdl-textfield--expandable {
+  min-width: $input-text-button-size;
+  width: auto;
+  min-height: $input-text-button-size;
+}
+
+// Styling for the input element.
+.mdl-textfield__input {
+  border: none;
+  border-bottom: 1px solid $input-text-bottom-border-color;
+  display: block;
+  font-size: $input-text-font-size;
+  font-family: $performance_font;
+  margin: 0;
+  padding: $input-text-padding 0;
+  width: $input-text-width;
+  background: none;
+  text-align: left;
+  color: inherit;
+
+  &[type="number"] {
+    -moz-appearance: textfield;
+  }
+
+  &[type="number"]::-webkit-inner-spin-button,
+  &[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .mdl-textfield.is-focused & {
+    outline: none;
+  }
+
+  .mdl-textfield.is-invalid & {
+    border-color: $input-text-error-color;
+    box-shadow: none;
+  }
+
+  fieldset[disabled] .mdl-textfield &,
+  .mdl-textfield.is-disabled & {
+    background-color: transparent;
+    border-bottom: 1px dotted $input-text-disabled-color;
+    color: $input-text-disabled-text-color;
+  }
+}
+
+.mdl-textfield textarea.mdl-textfield__input {
+  display: block;
+}
+
+// Styling for the label / floating label.
+.mdl-textfield__label {
+  bottom: 0;
+  color: $input-text-label-color;
+  font-size: $input-text-font-size;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  position: absolute;
+  display: block;
+  top: ($input-text-padding + $input-text-vertical-spacing);
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: left;
+
+  .mdl-textfield.is-dirty &,
+  .mdl-textfield.has-placeholder & {
+    visibility: hidden;
+  }
+
+  // Floating Label
+  .mdl-textfield--floating-label & {
+    @include material-animation-default();
+  }
+
+  .mdl-textfield--floating-label.has-placeholder & {
+    transition: none;
+  }
+
+  fieldset[disabled] .mdl-textfield &,
+  .mdl-textfield.is-disabled.is-disabled & {
+    color: $input-text-disabled-text-color;
+  }
+
+  .mdl-textfield--floating-label.is-focused &,
+  .mdl-textfield--floating-label.is-dirty &,
+  .mdl-textfield--floating-label.has-placeholder & {
+    color: $input-text-highlight-color;
+    font-size : $input-text-floating-label-fontsize;
+    top: $input-text-vertical-spacing - ($input-text-floating-label-fontsize + $input-text-padding);
+    visibility: visible;
+  }
+
+  .mdl-textfield--floating-label.is-focused .mdl-textfield__expandable-holder &,
+  .mdl-textfield--floating-label.is-dirty .mdl-textfield__expandable-holder &,
+  .mdl-textfield--floating-label.has-placeholder .mdl-textfield__expandable-holder & {
+    top: -($input-text-floating-label-fontsize + $input-text-padding);
+  }
+
+  .mdl-textfield--floating-label.is-invalid & {
+    color: $input-text-error-color;
+    font-size: $input-text-floating-label-fontsize;
+  }
+
+  // The after label is the colored underline for the TextField.
+  &:after {
+    background-color: $input-text-highlight-color;
+    bottom: $input-text-vertical-spacing;
+    content: '';
+    height: 2px;
+    left: 45%;
+    position: absolute;
+    @include material-animation-default();
+    visibility: hidden;
+    width: 10px;
+  }
+
+  .mdl-textfield.is-focused &:after {
+    left: 0;
+    visibility: visible;
+    width: 100%;
+  }
+
+  .mdl-textfield.is-invalid &:after {
+    background-color: $input-text-error-color;
+  }
+}
+
+// TextField Error.
+.mdl-textfield__error {
+  color: $input-text-error-color;
+  position: absolute;
+  font-size: $input-text-floating-label-fontsize;
+  margin-top: 3px;
+  visibility: hidden;
+  display: block;
+
+  .mdl-textfield.is-invalid & {
+    visibility: visible;
+  }
+}
+
+// Expandable Holder.
+.mdl-textfield__expandable-holder {
+  display: inline-block;
+  position: relative;
+  margin-left: $input-text-button-size;
+
+  @include material-animation-default();
+  display: inline-block;
+
+  // Safari (possibly others) need to be convinced that this field is actually
+  // visible, otherwise it cannot be tabbed to nor focused via a <label>.
+  // TODO: In some cases (Retina displays), this is big enough to render the
+  // inner element :(
+  max-width: 0.1px;
+
+  .mdl-textfield.is-focused &, .mdl-textfield.is-dirty & {
+    // This is an unfortunate hack. Animating between widths in percent (%)
+    // in many browsers (Chrome, Firefox) only animates the inner visual style
+    // of the input - the outer bounding box still 'jumps'.
+    // Thus assume a sensible maximum, and animate to/from that value.
+    max-width: 600px;
+  }
+  .mdl-textfield__label:after {
+    bottom: 0;
+  }
+}

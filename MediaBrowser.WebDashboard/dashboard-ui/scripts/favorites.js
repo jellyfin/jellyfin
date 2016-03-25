@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['libraryBrowser'], function (libraryBrowser) {
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
@@ -31,9 +31,8 @@
 
     function loadSection(elem, userId, topParentId, section, isSingleSection) {
 
-        var screenWidth = $(window).width();
-
-        var options = {
+        var screenWidth = window.innerWidth;
+        var options = {
 
             SortBy: "SortName",
             SortOrder: "Ascending",
@@ -88,7 +87,7 @@
                     html += '<div class="itemsContainer">';
                 }
 
-                html += LibraryBrowser.getPosterViewHtml({
+                html += libraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     preferThumb: section.preferThumb,
                     shape: section.shape,
@@ -109,7 +108,7 @@
 
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
-            $(elem).createCardMenus();
+            libraryBrowser.createCardMenus(elem);
         });
     }
 
@@ -163,7 +162,7 @@
         Promise.all(promises).then(function () {
             Dashboard.hideLoadingMsg();
 
-            LibraryBrowser.setLastRefreshed(page);
+            libraryBrowser.setLastRefreshed(page);
         });
     }
 
@@ -171,7 +170,7 @@
 
         if (window.HomePage) {
             window.HomePage.renderFavorites = function (page, tabContent) {
-                if (LibraryBrowser.needsRefresh(tabContent)) {
+                if (libraryBrowser.needsRefresh(tabContent)) {
                     loadSections(tabContent, Dashboard.getCurrentUserId());
                 }
             };
@@ -186,7 +185,7 @@
 
         var page = this;
 
-        if (LibraryBrowser.needsRefresh(page)) {
+        if (libraryBrowser.needsRefresh(page)) {
             loadSections(page, Dashboard.getCurrentUserId());
         }
     });
@@ -195,4 +194,4 @@
         render: loadSections
     };
 
-})(jQuery, document);
+});

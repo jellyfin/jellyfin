@@ -1,11 +1,11 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     function loadPage(page, config, languages) {
 
         $('#chkSubtitlesMovies', page).checked(config.DownloadMovieSubtitles);
         $('#chkSubtitlesEpisodes', page).checked(config.DownloadEpisodeSubtitles);
 
-        $('#chkSkipIfGraphicalSubsPresent', page).checked(config.SkipIfGraphicalSubtitlesPresent);
+        $('#chkSkipIfGraphicalSubsPresent', page).checked(config.SkipIfEmbeddedSubtitlesPresent);
         $('#chkSkipIfAudioTrackPresent', page).checked(config.SkipIfAudioTrackMatches);
 
         $('#txtOpenSubtitleUsername', page).val(config.OpenSubtitlesUsername);
@@ -27,7 +27,7 @@
             html += '<paper-checkbox class="chkLang" data-lang="' + culture.ThreeLetterISOLanguageName.toLowerCase() + '">' + culture.DisplayName + '</paper-checkbox>';
         }
 
-        $('.downloadLanguages', page).html(html).trigger('create');
+        $('.downloadLanguages', page).html(html);
 
         var langs = config.DownloadLanguages || [];
 
@@ -48,7 +48,7 @@
             config.DownloadMovieSubtitles = $('#chkSubtitlesMovies', form).checked();
             config.DownloadEpisodeSubtitles = $('#chkSubtitlesEpisodes', form).checked();
 
-            config.SkipIfGraphicalSubtitlesPresent = $('#chkSkipIfGraphicalSubsPresent', form).checked();
+            config.SkipIfEmbeddedSubtitlesPresent = $('#chkSkipIfGraphicalSubsPresent', form).checked();
             config.SkipIfAudioTrackMatches = $('#chkSkipIfAudioTrackPresent', form).checked();
 
             config.OpenSubtitlesUsername = $('#txtOpenSubtitleUsername', form).val();
@@ -97,4 +97,4 @@
 
     });
 
-})(jQuery, document, window);
+});
