@@ -245,10 +245,10 @@
     <Content Include="dashboard-ui\css\images\touchicon144.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\tour\dashboard\help.png">
+    <Content Include="dashboard-ui\css\images\tour\admin\help.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\tour\dashboard\sync.png">
+    <Content Include="dashboard-ui\css\images\tour\admin\sync.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\css\images\tour\web\tourmysync.png">
@@ -610,31 +610,31 @@
     <Content Include="dashboard-ui\css\images\media\play.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\tour\dashboard\chapters.png">
+    <Content Include="dashboard-ui\css\images\tour\admin\chapters.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\tour\dashboard\cinemamode.png">
+    <Content Include="dashboard-ui\css\images\tour\admin\cinemamode.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\tour\dashboard\dashboard.png">
+    <Content Include="dashboard-ui\css\images\tour\admin\dashboard.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\tour\dashboard\mobile.png">
+    <Content Include="dashboard-ui\css\images\tour\admin\mobile.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\tour\dashboard\notifications.png">
+    <Content Include="dashboard-ui\css\images\tour\admin\notifications.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\tour\dashboard\plugins.png">
+    <Content Include="dashboard-ui\css\images\tour\admin\plugins.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\tour\dashboard\scheduledtasks.png">
+    <Content Include="dashboard-ui\css\images\tour\admin\scheduledtasks.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\tour\dashboard\subtitles.png">
+    <Content Include="dashboard-ui\css\images\tour\admin\subtitles.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\tour\dashboard\users.png">
+    <Content Include="dashboard-ui\css\images\tour\admin\users.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\css\images\tour\enjoy.jpg">
