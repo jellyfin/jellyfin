@@ -1,0 +1,25 @@
+language: node_js
+sudo: false
+before_script:
+  - npm install -g bower polylint web-component-tester
+  - bower install
+  - polylint
+env:
+  global:
+    - secure: Cyo7MV8FASyf2EZyrSmDbmoZmopQhuTbV79Ntl6eDq6JxEOAApULHn6W+ht0tvmaA+L2cRNq3Z4uvy3tbZCI5SCgQuEKLDJFoghzNp4Izc54bBlJzsxMjcgxEEMbw1jDIKp+PJ+1+8oyT5H1NogcGoNWcvMCjn+8Vl64/999mhw=
+    - secure: dI3wfjJoooFlq6Kb8V1fkbc9N5jrvw7dExN4tp4KlvJFiXIvgb823jEyLGnK/oeVLwP9yncvOYxiG/enNbjpk6fId3zjwptN2H1am3pIsPQASOZJ0Pwvwa1dX7EYGk2kxOwY1pyX4is/QRVDrlUkLm3YAPOFfYJEiVB7m6TNFIo=
+    - CXX=g++-4.8
+node_js: stable
+addons:
+  firefox: latest
+  apt:
+    sources:
+      - google-chrome
+      - ubuntu-toolchain-r-test
+    packages:
+      - google-chrome-stable
+      - g++-4.8
+  sauce_connect: true
+script:
+  - xvfb-run wct
+  - "if [ \"${TRAVIS_PULL_REQUEST}\" = \"false\" ]; then wct -s 'default'; fi"

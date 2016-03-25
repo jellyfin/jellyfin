@@ -1,4 +1,4 @@
-﻿(function (document, window, $) {
+﻿define(['jQuery'], function ($) {
 
     function deleteUser(page, id) {
 
@@ -172,7 +172,7 @@
 
         var html = getUserSectionHtml(users, addConnectIndicator);
 
-        elem.html(html).trigger('create');
+        elem.html(html);
 
         $('.btnUserMenu', elem).on('click', function () {
             showUserMenu(this);
@@ -284,7 +284,7 @@
 
         var html = users.map(getPendingUserHtml).join('');
 
-        var elem = $('.pending', page).html(html).trigger('create');
+        var elem = $('.pending', page).html(html);
 
         $('.btnUserMenu', elem).on('click', function () {
             showPendingUserMenu(this);
@@ -379,4 +379,4 @@
         loadData(page);
     });
 
-})(document, window, jQuery);
+});

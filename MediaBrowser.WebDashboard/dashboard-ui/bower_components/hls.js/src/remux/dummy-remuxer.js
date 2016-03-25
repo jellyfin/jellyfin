@@ -12,10 +12,6 @@ class DummyRemuxer {
     return false;
   }
 
-  get timescale() {
-    return this.PES_TIMESCALE;
-  }
-
   destroy() {
   }
 

@@ -1,4 +1,4 @@
-﻿(function ($, window) {
+﻿define(['jQuery'], function ($) {
 
     function deletePlugin(page, uniqueid, name) {
 
@@ -109,7 +109,7 @@
 
     function renderPlugins(page, plugins, showNoPluginsMessage) {
 
-        ApiClient.getJSON(ApiClient.getUrl("dashboard/configurationpages") + "?pageType=PluginConfiguration").then(function (configPages) {
+        ApiClient.getJSON(ApiClient.getUrl("web/configurationpages") + "?pageType=PluginConfiguration").then(function (configPages) {
 
             populateList(page, plugins, configPages, showNoPluginsMessage);
 
@@ -146,10 +146,10 @@
                 html += '</div>';
             }
 
-            $('.installedPlugins', page).html(html).trigger('create');
+            $('.installedPlugins', page).html(html);
         } else {
 
-            var elem = $('.installedPlugins', page).html(html).trigger('create');
+            var elem = $('.installedPlugins', page).html(html);
 
             $('.noConfigPluginCard', elem).on('click', function () {
                 showNoConfigurationMessage();
@@ -233,4 +233,4 @@
         renderPlugins: renderPlugins
     };
 
-})(jQuery, window);
+});

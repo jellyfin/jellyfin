@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['jQuery'], function ($) {
 
     function load(page, config, allCultures, allCountries) {
         if (!config || !allCultures || !allCountries) {
@@ -103,4 +103,4 @@
         });
     });
 
-})();
+});

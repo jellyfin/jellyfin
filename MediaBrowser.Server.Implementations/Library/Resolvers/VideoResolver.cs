@@ -34,4 +34,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
             get { return ResolverPriority.Last; }
         }
     }
+
+    public class GenericVideoResolver<T> : BaseVideoResolver<T>
+        where T : Video, new ()
+    {
+        public GenericVideoResolver(ILibraryManager libraryManager) : base(libraryManager)
+        {
+        }
+    }
 }

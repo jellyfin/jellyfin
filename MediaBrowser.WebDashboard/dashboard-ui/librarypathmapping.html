@@ -1,52 +1,44 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>${TitleMediaLibrary}</title>
-</head>
-<body>
-    <div id="libraryPathMappingPage" data-role="page" class="page type-interior librarySectionPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Library%20setup" data-require="scripts/librarypathmapping">
+﻿<div id="libraryPathMappingPage" data-role="page" class="page type-interior librarySectionPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Library%20setup" data-require="scripts/librarypathmapping">
 
-        <div data-role="content">
-            <div class="content-primary">
-                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="library.html" data-role="button">${TabFolders}</a>
-                    <a href="#" data-role="button" class="ui-btn-active">${TabPathSubstitution}</a>
-                    <a href="librarysettings.html" data-role="button">${TabAdvanced}</a>
-                </div>
-
-                <div class="readOnlyContent">
-                    <p>${PathSubstitutionHelp}</p>
-
-                    <div class="pathSubstitutions"></div>
-                </div>
-
-                <br />
-
-                <form class="libraryPathMappingForm">
-
-                    <div>
-                        <h3 class="detailSectionHeader">${ButtonAddPathSubstitution}</h3>
-                        <div>
-                            <label for="txtFrom">${LabelFrom}</label>
-                            <input id="txtFrom" type="text" required="required" data-mini="true" />
-                            <div class="fieldDescription labelFromHelp"></div>
-                        </div>
-                        <br />
-                        <div>
-                            <label for="txtTo">${LabelTo}</label>
-                            <input id="txtTo" type="text" required="required" data-mini="true" />
-                            <div class="fieldDescription">${LabelToHelp}</div>
-                        </div>
-                        <br />
-                        <button type="submit" data-role="none" class="clearButton">
-                            <paper-button raised class="submit block"><iron-icon icon="add"></iron-icon><span>${ButtonAdd}</span></paper-button>
-                        </button>
-                    </div>
-
-                </form>
-
+    <div data-role="content">
+        <div class="content-primary">
+            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                <a href="library.html" data-role="button">${TabFolders}</a>
+                <a href="#" data-role="button" class="ui-btn-active">${TabPathSubstitution}</a>
+                <a href="librarysettings.html" data-role="button">${TabAdvanced}</a>
             </div>
+
+            <div class="readOnlyContent">
+                <p>${PathSubstitutionHelp}</p>
+
+                <div class="pathSubstitutions"></div>
+            </div>
+
+            <br />
+
+            <form class="libraryPathMappingForm">
+
+                <div>
+                    <h3 class="detailSectionHeader">${ButtonAddPathSubstitution}</h3>
+                    <div>
+                        <label for="txtFrom">${LabelFrom}</label>
+                        <input id="txtFrom" type="text" required="required" data-mini="true" />
+                        <div class="fieldDescription labelFromHelp"></div>
+                    </div>
+                    <br />
+                    <div>
+                        <label for="txtTo">${LabelTo}</label>
+                        <input id="txtTo" type="text" required="required" data-mini="true" />
+                        <div class="fieldDescription">${LabelToHelp}</div>
+                    </div>
+                    <br />
+                    <button type="submit" data-role="none" class="clearButton">
+                        <paper-button raised class="submit block"><iron-icon icon="add"></iron-icon><span>${ButtonAdd}</span></paper-button>
+                    </button>
+                </div>
+
+            </form>
+
         </div>
     </div>
-</body>
-</html>
+</div>

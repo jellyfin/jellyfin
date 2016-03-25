@@ -1,141 +1,133 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title></title>
-</head>
-<body>
-    <div id="editUserPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="jqmcollapsible,scripts/useredit,paper-input,jqmcheckbox,paper-checkbox">
+﻿<div id="editUserPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="jqmcollapsible,scripts/useredit,paper-input,jqmcheckbox,paper-checkbox">
 
-        <div data-role="content">
-            <div class="content-primary">
+    <div data-role="content">
+        <div class="content-primary">
 
-                <div data-role="controlgroup" data-type="horizontal" class="localnav" id="userProfileNavigation" data-mini="true">
-                    <a href="#" data-role="button" class="ui-btn-active">${TabProfile}</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('userlibraryaccess.html', true);">${TabAccess}</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('userparentalcontrol.html', true);">${TabParentalControl}</a>
-                    <a href="#" data-role="button" onclick="Dashboard.navigate('userpassword.html', true);">${TabPassword}</a>
-                </div>
-                <p class="lnkEditUserPreferencesContainer">
-                    <a class="lnkEditUserPreferences" href="#" target="_blank">${ButtonEditOtherUserPreferences}</a>
-                </p>
-                <form class="editUserProfileForm">
+            <div data-role="controlgroup" data-type="horizontal" class="localnav" id="userProfileNavigation" data-mini="true">
+                <a href="#" data-role="button" class="ui-btn-active">${TabProfile}</a>
+                <a href="#" data-role="button" onclick="Dashboard.navigate('userlibraryaccess.html', true);">${TabAccess}</a>
+                <a href="#" data-role="button" onclick="Dashboard.navigate('userparentalcontrol.html', true);">${TabParentalControl}</a>
+                <a href="#" data-role="button" onclick="Dashboard.navigate('userpassword.html', true);">${TabPassword}</a>
+            </div>
+            <p class="lnkEditUserPreferencesContainer hide">
+                <a class="lnkEditUserPreferences" href="#" target="_blank">${ButtonEditOtherUserPreferences}</a>
+            </p>
+            <form class="editUserProfileForm">
 
-                    <div class="disabledUserBanner" style="display:none;">
-                        <div class="btn btnDarkAccent btnStatic">
-                            <div>
-                                ${HeaderThisUserIsCurrentlyDisabled}
-                            </div>
-                            <div style="font-weight:normal;font-size:90%;margin-top:5px;">
-                                ${MessageReenableUser}
-                            </div>
+                <div class="disabledUserBanner" style="display:none;">
+                    <div class="btn btnDarkAccent btnStatic">
+                        <div>
+                            ${HeaderThisUserIsCurrentlyDisabled}
                         </div>
-
+                        <div style="margin-top:5px;">
+                            ${MessageReenableUser}
+                        </div>
                     </div>
-                    <ul data-role="listview" class="ulForm">
-                        <li id="fldUserName">
-                            <paper-input id="txtUserName" required type="text" label="${LabelName}"></paper-input>
-                        </li>
-                        <li id="fldConnectInfo" style="display: none;">
-                            <div class="paperList" style="padding: 1em; border-radius: 5px;">
-                                <paper-input id="txtConnectUserName" type="text" label="${LabelConnectUserName}"></paper-input>
-                                <div class="fieldDescription">
-                                    <div>${LabelConnectUserNameHelp}</div>
-                                    <div style="margin-top: .75em;">
-                                        <a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a>
-                                    </div>
+
+                </div>
+                <ul data-role="listview" class="ulForm">
+                    <li id="fldUserName">
+                        <paper-input id="txtUserName" required type="text" label="${LabelName}"></paper-input>
+                    </li>
+                    <li id="fldConnectInfo" style="display: none;">
+                        <div class="paperList" style="padding: 1em; border-radius: 5px;">
+                            <paper-input id="txtConnectUserName" type="text" label="${LabelConnectUserName}"></paper-input>
+                            <div class="fieldDescription">
+                                <div>${LabelConnectUserNameHelp}</div>
+                                <div style="margin-top: .75em;">
+                                    <a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a>
                                 </div>
-                                <br />
                             </div>
-                        </li>
-                        <li>
-                            <paper-checkbox id="chkIsAdmin">${OptionAllowUserToManageServer}</paper-checkbox>
-                        </li>
-                    </ul>
-                    <fieldset id="featureAccessFields" data-role="controlgroup">
-                        <legend>${HeaderFeatureAccess}</legend>
-                        <input type="checkbox" id="chkEnableContentDeletion" name="chkEnableContentDeletion" />
-                        <label for="chkEnableContentDeletion">${OptionAllowDeleteLibraryContent}</label>
-                        <input type="checkbox" id="chkEnableDownloading" />
-                        <label for="chkEnableDownloading">${OptionAllowContentDownloading}</label>
-                        <input type="checkbox" id="chkEnableLiveTvAccess" name="chkEnableLiveTvAccess" />
-                        <label for="chkEnableLiveTvAccess">${OptionAllowBrowsingLiveTv}</label>
-                        <input type="checkbox" id="chkManageLiveTv" name="chkManageLiveTv" />
-                        <label for="chkManageLiveTv">${OptionAllowManageLiveTv}</label>
+                            <br />
+                        </div>
+                    </li>
+                    <li>
+                        <paper-checkbox id="chkIsAdmin">${OptionAllowUserToManageServer}</paper-checkbox>
+                    </li>
+                </ul>
+                <fieldset id="featureAccessFields" data-role="controlgroup">
+                    <legend>${HeaderFeatureAccess}</legend>
+                    <input type="checkbox" id="chkEnableContentDeletion" name="chkEnableContentDeletion" />
+                    <label for="chkEnableContentDeletion">${OptionAllowDeleteLibraryContent}</label>
+                    <input type="checkbox" id="chkEnableDownloading" />
+                    <label for="chkEnableDownloading">${OptionAllowContentDownloading}</label>
+                    <input type="checkbox" id="chkEnableLiveTvAccess" name="chkEnableLiveTvAccess" />
+                    <label for="chkEnableLiveTvAccess">${OptionAllowBrowsingLiveTv}</label>
+                    <input type="checkbox" id="chkManageLiveTv" name="chkManageLiveTv" />
+                    <label for="chkManageLiveTv">${OptionAllowManageLiveTv}</label>
+                </fieldset>
+                <br />
+                <div>
+                    <fieldset data-role="controlgroup">
+                        <legend>${HeaderPlayback}</legend>
+                        <input type="checkbox" id="chkEnableMediaPlayback" />
+                        <label for="chkEnableMediaPlayback">${OptionAllowMediaPlayback}</label>
+                        <input type="checkbox" id="chkEnableAudioPlaybackTranscoding" />
+                        <label for="chkEnableAudioPlaybackTranscoding">${OptionAllowAudioPlaybackTranscoding}</label>
+                        <input type="checkbox" id="chkEnableVideoPlaybackTranscoding" />
+                        <label for="chkEnableVideoPlaybackTranscoding">${OptionAllowVideoPlaybackTranscoding}</label>
+                    </fieldset>
+                    <div class="fieldDescription">${OptionAllowMediaPlaybackTranscodingHelp}</div>
+                    <br />
+                </div>
+                <div>
+                    <fieldset data-role="controlgroup">
+                        <legend>${HeaderRemoteControl}</legend>
+                        <input type="checkbox" id="chkEnableRemoteControlOtherUsers" name="chkEnableRemoteControlOtherUsers" />
+                        <label for="chkEnableRemoteControlOtherUsers">${OptionAllowRemoteControlOthers}</label>
+                        <input type="checkbox" id="chkRemoteControlSharedDevices" />
+                        <label for="chkRemoteControlSharedDevices">${OptionAllowRemoteSharedDevices}</label>
+                    </fieldset>
+                    <div class="fieldDescription">${OptionAllowRemoteSharedDevicesHelp}</div>
+                    <br />
+                </div>
+                <div>
+                    <fieldset data-role="controlgroup">
+                        <legend>${HeaderSharing}</legend>
+                        <input type="checkbox" id="chkEnableSharing" />
+                        <label for="chkEnableSharing">${OptionAllowLinkSharing}</label>
+                    </fieldset>
+                    <div class="fieldDescription">${OptionAllowLinkSharingHelp}</div>
+                    <br />
+                </div>
+                <div>
+                    <fieldset data-role="controlgroup">
+                        <legend>${HeaderSync}</legend>
+                        <input type="checkbox" id="chkEnableSync" />
+                        <label for="chkEnableSync">${OptionAllowSyncContent}</label>
+                        <input type="checkbox" id="chkEnableSyncTranscoding" />
+                        <label for="chkEnableSyncTranscoding">${OptionAllowSyncTranscoding}</label>
                     </fieldset>
                     <br />
-                    <div>
-                        <fieldset data-role="controlgroup">
-                            <legend>${HeaderPlayback}</legend>
-                            <input type="checkbox" id="chkEnableMediaPlayback" />
-                            <label for="chkEnableMediaPlayback">${OptionAllowMediaPlayback}</label>
-                            <input type="checkbox" id="chkEnableAudioPlaybackTranscoding" />
-                            <label for="chkEnableAudioPlaybackTranscoding">${OptionAllowAudioPlaybackTranscoding}</label>
-                            <input type="checkbox" id="chkEnableVideoPlaybackTranscoding" />
-                            <label for="chkEnableVideoPlaybackTranscoding">${OptionAllowVideoPlaybackTranscoding}</label>
-                        </fieldset>
-                        <div class="fieldDescription">${OptionAllowMediaPlaybackTranscodingHelp}</div>
-                        <br />
+                </div>
+                <div id="fldIsEnabled" style="margin: 1em 0 2em;">
+                    <div data-role="controlgroup">
+                        <input type="checkbox" id="chkDisabled" name="chkDisabled" />
+                        <label for="chkDisabled">${OptionDisableUser}</label>
                     </div>
-                    <div>
-                        <fieldset data-role="controlgroup">
-                            <legend>${HeaderRemoteControl}</legend>
-                            <input type="checkbox" id="chkEnableRemoteControlOtherUsers" name="chkEnableRemoteControlOtherUsers" />
-                            <label for="chkEnableRemoteControlOtherUsers">${OptionAllowRemoteControlOthers}</label>
-                            <input type="checkbox" id="chkRemoteControlSharedDevices" />
-                            <label for="chkRemoteControlSharedDevices">${OptionAllowRemoteSharedDevices}</label>
-                        </fieldset>
-                        <div class="fieldDescription">${OptionAllowRemoteSharedDevicesHelp}</div>
-                        <br />
-                    </div>
-                    <div>
-                        <fieldset data-role="controlgroup">
-                            <legend>${HeaderSharing}</legend>
-                            <input type="checkbox" id="chkEnableSharing" />
-                            <label for="chkEnableSharing">${OptionAllowLinkSharing}</label>
-                        </fieldset>
-                        <div class="fieldDescription">${OptionAllowLinkSharingHelp}</div>
-                        <br />
-                    </div>
-                    <div>
-                        <fieldset data-role="controlgroup">
-                            <legend>${HeaderSync}</legend>
-                            <input type="checkbox" id="chkEnableSync" />
-                            <label for="chkEnableSync">${OptionAllowSyncContent}</label>
-                            <input type="checkbox" id="chkEnableSyncTranscoding" />
-                            <label for="chkEnableSyncTranscoding">${OptionAllowSyncTranscoding}</label>
-                        </fieldset>
-                        <br />
-                    </div>
-                    <div id="fldIsEnabled" style="margin: 1em 0 2em;">
-                        <div data-role="controlgroup">
-                            <input type="checkbox" id="chkDisabled" name="chkDisabled" />
-                            <label for="chkDisabled">${OptionDisableUser}</label>
-                        </div>
-                        <div class="fieldDescription">${OptionDisableUserHelp}</div>
-                    </div>
-                    <div style="margin: 1em 0;">
-                        <input type="checkbox" id="chkDisableUserPreferences" data-mini="true" />
-                        <label for="chkDisableUserPreferences">${OptionDisableUserPreferences}</label>
-                        <div class="fieldDescription">${OptionDisableUserPreferencesHelp}</div>
-                    </div>
-                    <div id="fldIsHidden" style="margin: 2em 0 1em;">
-                        <input type="checkbox" id="chkIsHidden" name="chkIsHidden" data-mini="true" />
-                        <label for="chkIsHidden">${OptionHideUser}</label>
-                        <div class="fieldDescription">${OptionHideUserFromLoginHelp}</div>
-                    </div>
-                    <br />
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <button type="submit" data-role="none" class="clearButton">
-                                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                            </button>
+                    <div class="fieldDescription">${OptionDisableUserHelp}</div>
+                </div>
+                <div style="margin: 1em 0;">
+                    <input type="checkbox" id="chkDisableUserPreferences" data-mini="true" />
+                    <label for="chkDisableUserPreferences">${OptionDisableUserPreferences}</label>
+                    <div class="fieldDescription">${OptionDisableUserPreferencesHelp}</div>
+                </div>
+                <div id="fldIsHidden" style="margin: 2em 0 1em;">
+                    <input type="checkbox" id="chkIsHidden" name="chkIsHidden" data-mini="true" />
+                    <label for="chkIsHidden">${OptionHideUser}</label>
+                    <div class="fieldDescription">${OptionHideUserFromLoginHelp}</div>
+                </div>
+                <br />
+                <ul data-role="listview" class="ulForm">
+                    <li>
+                        <button type="submit" data-role="none" class="clearButton">
+                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+                        </button>
 
-                            <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
-                        </li>
-                    </ul>
-                </form>
-            </div>
+                        <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+                    </li>
+                </ul>
+            </form>
         </div>
     </div>
-</body>
-</html>
+</div>

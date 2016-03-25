@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define([], function () {
 
     window.LiveTvPage.initGuideTab = function (page, tabContent) {
 
@@ -15,11 +15,10 @@
 
                 page.guideInstance = new tvguide({
                     element: tabContent,
-                    enableHeadRoom: true,
-                    enableHoverMenu: true
+                    enableHeadRoom: true
                 });
             });
         }
     };
 
-})(jQuery, document);
+});

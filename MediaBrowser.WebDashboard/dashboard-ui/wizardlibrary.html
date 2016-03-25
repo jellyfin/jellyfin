@@ -1,33 +1,25 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>Emby</title>
-</head>
-<body>
-    <div id="wizardLibraryPage" data-role="page" class="page standalonePage wizardPage mediaLibraryPage" data-require="scripts/medialibrarypage,scripts/taskbutton">
+﻿<div id="wizardLibraryPage" data-role="page" class="page standalonePage wizardPage mediaLibraryPage" data-require="scripts/medialibrarypage,scripts/taskbutton">
 
-        <div data-role="content">
+    <div data-role="content">
 
-            <div class="ui-corner-all ui-shadow wizardContent">
+        <div class="ui-corner-all ui-shadow wizardContent">
 
-                <div>
-                    <h1 style="display:inline-block;">
-                        ${HeaderSetupLibrary}
-                    </h1>
-                    <a href="https://github.com/MediaBrowser/Wiki/wiki/Library%20setup" target="_blank" class="clearLink" style="margin-top:-10px;display:inline-block;vertical-align:middle;margin-left:2em;"><paper-button raised class="secondary mini"><iron-icon icon="info"></iron-icon><span>${ButtonHelp}</span></paper-button></a>
-                </div>
-
-                <br />
-                <div id="divVirtualFolders"></div>
-                <br />
-                <br />
-                <div class="wizardNavigation">
-                    <button type="button" data-role="none" class="clearButton" style="width:auto;" onclick="history.back();"><paper-button raised class="subdued"><iron-icon icon="arrow-back"></iron-icon><span>${LabelPrevious}</span></paper-button></button>
-                    <button type="button" data-role="none" class="clearButton" style="width:auto;" onclick="WizardLibraryPage.next();"><paper-button raised class="accent"><iron-icon icon="arrow-forward"></iron-icon><span>${LabelNext}</span></paper-button></button>
-                </div>
+            <div>
+                <h1 style="display:inline-block;">
+                    ${HeaderSetupLibrary}
+                </h1>
+                <a href="https://github.com/MediaBrowser/Wiki/wiki/Library%20setup" target="_blank" class="clearLink" style="margin-top:-10px;display:inline-block;vertical-align:middle;margin-left:2em;"><paper-button raised class="secondary mini"><iron-icon icon="info"></iron-icon><span>${ButtonHelp}</span></paper-button></a>
             </div>
 
+            <br />
+            <div id="divVirtualFolders"></div>
+            <br />
+            <br />
+            <div class="wizardNavigation">
+                <button type="button" data-role="none" class="clearButton" style="width:auto;" onclick="history.back();"><paper-button raised class="subdued"><iron-icon icon="arrow-back"></iron-icon><span>${LabelPrevious}</span></paper-button></button>
+                <button type="button" data-role="none" class="clearButton" style="width:auto;" onclick="WizardLibraryPage.next();"><paper-button raised class="accent"><iron-icon icon="arrow-forward"></iron-icon><span>${LabelNext}</span></paper-button></button>
+            </div>
         </div>
+
     </div>
-</body>
-</html>
+</div>

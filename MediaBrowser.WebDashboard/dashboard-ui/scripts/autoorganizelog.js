@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     var query = {
 
@@ -30,7 +30,7 @@
 
         })[0];
 
-        var message = Globalize.translate('MessageFileWillBeDeleted') + '<p style="word-wrap:break-word;">' + item.OriginalPath + '</p><p>' + Globalize.translate('MessageSureYouWishToProceed') + '</p>';
+        var message = Globalize.translate('MessageFileWillBeDeleted') + '<br/><br/>' + item.OriginalPath + '<br/><br/>' + Globalize.translate('MessageSureYouWishToProceed');
 
         require(['confirm'], function (confirm) {
 
@@ -49,12 +49,12 @@
         });
     }
 
-    function organizeEpsiodeWithCorrections(page, item) {
+    function organizeFileWithCorrections(page, item) {
 
-        showEpisodeCorrectionPopup(page, item);
+        showCorrectionPopup(page, item);
     }
 
-    function showEpisodeCorrectionPopup(page, item) {
+    function showCorrectionPopup(page, item) {
 
         require(['components/fileorganizer/fileorganizer'], function (fileorganizer) {
 
@@ -74,21 +74,21 @@
         if (!item.TargetPath) {
 
             if (item.Type == "Episode") {
-                organizeEpsiodeWithCorrections(page, item);
+                organizeFileWithCorrections(page, item);
             }
 
             return;
         }
 
-        var message = Globalize.translate('MessageFollowingFileWillBeMovedFrom') + '<p style="word-wrap:break-word;">' + item.OriginalPath + '</p><p>' + Globalize.translate('MessageDestinationTo') + '</p><p style="word-wrap:break-word;">' + item.TargetPath + '</p>';
+        var message = Globalize.translate('MessageFollowingFileWillBeMovedFrom') + '<br/><br/>' + item.OriginalPath + '<br/><br/>' + Globalize.translate('MessageDestinationTo') + '<br/><br/>' + item.TargetPath;
 
         if (item.DuplicatePaths.length) {
-            message += '<p><b>' + Globalize.translate('MessageDuplicatesWillBeDeleted') + '</b></p>';
+            message += '<br/><br/>' + Globalize.translate('MessageDuplicatesWillBeDeleted');
 
-            message += '<p style="word-wrap:break-word;">' + item.DuplicatePaths.join('<br/>') + '</p>';
+            message += '<br/><br/>' + item.DuplicatePaths.join('<br/>');
         }
 
-        message += '<p>' + Globalize.translate('MessageSureYouWishToProceed') + '</p>';
+        message += '<br/><br/>' + Globalize.translate('MessageSureYouWishToProceed');
 
         require(['confirm'], function (confirm) {
 
@@ -335,4 +335,4 @@
         Events.off(ApiClient, "websocketmessage", onWebSocketMessage);
     });
 
-})(jQuery, document, window);
+});

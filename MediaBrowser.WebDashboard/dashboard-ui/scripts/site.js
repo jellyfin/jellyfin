@@ -21,21 +21,6 @@ window.Logger = {
 
 var Dashboard = {
 
-    filterHtml: function (html) {
-
-        // replace the first instance
-        html = html.replace('<!--', '');
-
-        // replace the last instance
-        var lastIndex = html.lastIndexOf('-->');
-
-        if (lastIndex != -1) {
-            html = html.substring(0, lastIndex) + html.substring(lastIndex + 3);
-        }
-
-        return Globalize.translateDocument(html, 'html');
-    },
-
     isConnectMode: function () {
 
         if (AppInfo.isNativeApp) {
@@ -128,10 +113,7 @@ var Dashboard = {
         // Try to get the server address from the browser url
         // This will preserve protocol, hostname, port and subdirectory
         var urlLower = window.location.href.toLowerCase();
-        var index = urlLower.indexOf('/web');
-        if (index == -1) {
-            index = urlLower.indexOf('/dashboard');
-        }
+        var index = urlLower.lastIndexOf('/web');
 
         if (index != -1) {
             return urlLower.substring(0, index);
@@ -346,18 +328,7 @@ var Dashboard = {
 
     reloadPage: function () {
 
-        var currentUrl = window.location.href.toLowerCase();
-        var newUrl;
-
-        // If they're on a plugin config page just go back to the dashboard
-        // The plugin may not have been loaded yet, or could have been uninstalled
-        if (currentUrl.indexOf('configurationpage') != -1) {
-            newUrl = "dashboard.html";
-        } else {
-            newUrl = window.location.href;
-        }
-
-        window.location.href = newUrl;
+        window.location.reload(true);
     },
 
     hideDashboardVersionWarning: function () {
@@ -436,7 +407,7 @@ var Dashboard = {
     },
 
     getConfigurationPageUrl: function (name) {
-        return "ConfigurationPage?name=" + encodeURIComponent(name);
+        return "configurationpage?name=" + encodeURIComponent(name);
     },
 
     navigate: function (url, preserveQueryString) {
@@ -450,9 +421,12 @@ var Dashboard = {
             url += queryString;
         }
 
-        var options = {};
-
-        $.mobile.changePage(url, options);
+        if (url.indexOf('/') != 0) {
+            if (url.indexOf('http') != 0 && url.indexOf('file:') != 0) {
+                url = '/' + url;
+            }
+        }
+        Emby.Page.show(url);
     },
 
     showLoadingMsg: function () {
@@ -616,35 +590,6 @@ var Dashboard = {
         Dashboard.navigate('mypreferencesmenu.html?userId=' + ApiClient.getCurrentUserId());
     },
 
-    updateUserFlyout: function (elem, user) {
-
-        var html = '';
-        var imgWidth = 48;
-
-        if (user.imageUrl) {
-            var url = user.imageUrl;
-
-            if (user.supportsImageParams) {
-                url += "&width=" + (imgWidth * Math.max(window.devicePixelRatio || 1, 2));
-            }
-
-            html += '<div style="background-image:url(\'' + url + '\');width:' + imgWidth + 'px;height:' + imgWidth + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin-right:.8em;display:inline-block;"></div>';
-        }
-        html += user.name;
-
-        var userHeader = elem.querySelector('.userHeader');
-        userHeader.innerHTML = html;
-        ImageLoader.lazyChildren(userHeader);
-
-        html = '';
-
-        if (user.localUser) {
-            html += '<p><a data-mini="true" data-role="button" href="mypreferencesmenu.html?userId=' + user.localUser.Id + '" data-icon="gear">' + Globalize.translate('ButtonSettings') + '</button></a>';
-        }
-
-        $('.preferencesContainer', elem).html(html);
-    },
-
     getPluginSecurityInfo: function () {
 
         var apiClient = ApiClient;
@@ -695,7 +640,7 @@ var Dashboard = {
 
             headerHtml += '<div class="header">';
 
-            headerHtml += '<a class="logo" href="index.html" style="text-decoration:none;font-size: 22px;">';
+            headerHtml += '<a class="logo" href="home.html" style="text-decoration:none;font-size: 22px;">';
 
             if (page.classList.contains('standalonePage')) {
 
@@ -903,7 +848,7 @@ var Dashboard = {
         switch (cmd.Name) {
 
             case 'GoHome':
-                Dashboard.navigate('index.html');
+                Dashboard.navigate('home.html');
                 break;
             case 'GoToSettings':
                 Dashboard.navigate('dashboard.html');
@@ -1431,6 +1376,7 @@ var AppInfo = {};
         AppInfo.enableHomeTabs = true;
         AppInfo.enableNowPlayingPageBottomTabs = true;
         AppInfo.enableAutoSave = browserInfo.mobile;
+        AppInfo.enableHashBang = Dashboard.isRunningInCordova();
 
         AppInfo.enableAppStorePolicy = isCordova;
 
@@ -1540,7 +1486,41 @@ var AppInfo = {};
         initializeApiClient(newApiClient);
 
         // This is not included in jQuery slim
-        $.ajax = newApiClient.ajax;
+        if (window.$) {
+            $.ajax = newApiClient.ajax;
+        }
+    }
+
+    function defineConnectionManager(connectionManager) {
+        define('connectionManager', [], function () {
+            return connectionManager;
+        });
+    }
+
+    var localApiClient;
+    function bindConnectionManagerEvents(connectionManager, events) {
+
+        connectionManager.currentApiClient = function () {
+
+            if (!localApiClient) {
+                var server = connectionManager.getLastUsedServer();
+                if (server) {
+                    localApiClient = connectionManager.getApiClient(server.Id);
+                }
+            }
+            return localApiClient;
+        };
+
+        //events.on(connectionManager, 'apiclientcreated', function (e, newApiClient) {
+
+        //    //$(newApiClient).on("websocketmessage", Dashboard.onWebSocketMessageReceived).on('requestfail', Dashboard.onRequestFail);
+        //    newApiClient.normalizeImageOptions = normalizeImageOptions;
+        //});
+
+        events.on(connectionManager, 'localusersignedin', function (e, user) {
+            localApiClient = connectionManager.getApiClient(user.ServerId);
+            window.ApiClient = localApiClient;
+        });
     }
 
     //localStorage.clear();
@@ -1555,31 +1535,15 @@ var AppInfo = {};
 
             window.ConnectionManager = new MediaBrowser.ConnectionManager(credentialProvider, AppInfo.appName, AppInfo.appVersion, AppInfo.deviceName, AppInfo.deviceId, capabilities, window.devicePixelRatio);
 
-            if (window.location.href.toLowerCase().indexOf('wizardstart.html') != -1) {
-                window.ConnectionManager.clearData();
-            }
+            defineConnectionManager(window.ConnectionManager);
+            bindConnectionManagerEvents(window.ConnectionManager, Events);
 
             console.log('binding to apiclientcreated');
             Events.on(ConnectionManager, 'apiclientcreated', onApiClientCreated);
 
             if (Dashboard.isConnectMode()) {
 
-                var server = ConnectionManager.getLastUsedServer();
-
-                if (!Dashboard.isServerlessPage()) {
-
-                    if (server && server.UserId && server.AccessToken) {
-                        Dashboard.showLoadingMsg();
-
-                        return ConnectionManager.connectToServer(server).then(function (result) {
-                            Dashboard.hideLoadingMsg();
-
-                            if (result.State == MediaBrowser.ConnectionState.SignedIn) {
-                                window.ApiClient = result.ApiClient;
-                            }
-                        });
-                    }
-                }
+                return Promise.resolve();
 
             } else {
 
@@ -1594,6 +1558,7 @@ var AppInfo = {};
                     ConnectionManager.addApiClient(apiClient);
                     Dashboard.importCss(apiClient.getUrl('Branding/Css'));
                     window.ApiClient = apiClient;
+                    localApiClient = apiClient;
                     console.log('loaded ApiClient singleton');
                 });
             }
@@ -1633,9 +1598,13 @@ var AppInfo = {};
 
     }
 
-    function setDocumentClasses() {
+    function setDocumentClasses(browser) {
 
         var elem = document.documentElement;
+
+        if (!browser.android && !browser.mobile) {
+            elem.classList.add('smallerDefault');
+        }
 
         if (AppInfo.isTouchPreferred) {
             elem.classList.add('touch');
@@ -1696,7 +1665,7 @@ var AppInfo = {};
         // Put the version into the bower path since we can't easily put a query string param on html imports
         // Emby server will handle this
         if (Dashboard.isConnectMode() && !Dashboard.isRunningInCordova()) {
-            bowerPath += window.dashboardVersion;
+            //bowerPath += window.dashboardVersion;
         }
 
         return bowerPath;
@@ -1725,8 +1694,8 @@ var AppInfo = {};
             headroom: bowerPath + '/headroom.js/dist/headroom.min',
             masonry: bowerPath + '/masonry/dist/masonry.pkgd.min',
             humanedate: 'components/humanedate',
+            libraryBrowser: 'scripts/librarybrowser',
             chromecasthelpers: 'components/chromecasthelpers',
-            jQuery: bowerPath + '/jquery/dist/jquery.slim.min',
             fastclick: bowerPath + '/fastclick/lib/fastclick',
             events: apiClientBowerPath + '/events',
             credentialprovider: apiClientBowerPath + '/credentials',
@@ -1739,7 +1708,9 @@ var AppInfo = {};
             connectservice: apiClientBowerPath + '/connectservice',
             hammer: bowerPath + "/hammerjs/hammer.min",
             layoutManager: embyWebComponentsBowerPath + "/layoutmanager",
+            pageJs: embyWebComponentsBowerPath + '/page.js/page',
             focusManager: embyWebComponentsBowerPath + "/focusmanager",
+            globalize: embyWebComponentsBowerPath + "/globalize",
             imageLoader: embyWebComponentsBowerPath + "/images/imagehelper"
         };
 
@@ -1765,6 +1736,14 @@ var AppInfo = {};
 
             define("actionsheet", [embyWebComponentsBowerPath + "/actionsheet/actionsheet"], returnFirstDependency);
         }
+
+        define("backdrop", [embyWebComponentsBowerPath + "/backdrop/backdrop"], returnFirstDependency);
+        define("fetchHelper", [embyWebComponentsBowerPath + "/fetchhelper"], returnFirstDependency);
+
+        define("viewManager", [embyWebComponentsBowerPath + "/viewmanager"], function (viewManager) {
+            viewManager.dispatchPageEvents(true);
+            return viewManager;
+        });
 
         // hack for an android test before browserInfo is loaded
         if (Dashboard.isRunningInCordova() && window.MainActivity) {
@@ -1846,6 +1825,7 @@ var AppInfo = {};
         define("jstree", [bowerPath + "/jstree/dist/jstree", "css!thirdparty/jstree/themes/default/style.min.css"]);
 
         define('jqm', ['thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js']);
+
         define("jqmbase", ['css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.css']);
         define("jqmicons", ['jqmbase', 'css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css']);
         define("jqmtable", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.table", 'css!thirdparty/jquerymobile-1.4.5/jqm.table.css']);
@@ -1870,6 +1850,7 @@ var AppInfo = {};
         define("slideshow", [embyWebComponentsBowerPath + "/slideshow/slideshow"], returnFirstDependency);
 
         define('fetch', [bowerPath + '/fetch/fetch']);
+        define('objectassign', ['legacy/objectassign']);
         define('webcomponentsjs', [bowerPath + '/webcomponentsjs/webcomponents-lite.min.js']);
         define('native-promise-only', [bowerPath + '/native-promise-only/lib/npo.src']);
 
@@ -1897,26 +1878,37 @@ var AppInfo = {};
 
         define("swiper", [bowerPath + "/Swiper/dist/js/swiper.min", "css!" + bowerPath + "/Swiper/dist/css/swiper.min"], returnFirstDependency);
 
-        define("paperdialoghelper", [embyWebComponentsBowerPath + "/paperdialoghelper/paperdialoghelper"], returnFirstDependency);
-        define("loading", [embyWebComponentsBowerPath + "/loading/loading"], returnFirstDependency);
+        define("dialogHelper", [embyWebComponentsBowerPath + "/dialoghelper/dialoghelper"], returnFirstDependency);
         define("toast", [embyWebComponentsBowerPath + "/toast/toast"], returnFirstDependency);
         define("scrollHelper", [embyWebComponentsBowerPath + "/scrollhelper"], returnFirstDependency);
 
         define("appSettings", [embyWebComponentsBowerPath + "/appsettings"], updateAppSettings);
         define("userSettings", [embyWebComponentsBowerPath + "/usersettings"], returnFirstDependency);
 
+        define("robotoFont", ['css!' + embyWebComponentsBowerPath + '/fonts/roboto/style']);
+        define("opensansFont", ['css!' + embyWebComponentsBowerPath + '/fonts/opensans/style']);
+        define("montserratFont", ['css!' + embyWebComponentsBowerPath + '/fonts/montserrat/style']);
+
+        define("viewcontainer", ['components/viewcontainer-lite'], returnFirstDependency);
+        define('queryString', [bowerPath + '/query-string/index'], function () {
+            return queryString;
+        });
+
+        define("material-design-lite", [bowerPath + "/material-design-lite/material.min", "css!" + bowerPath + "/material-design-lite/material"]);
+        define("MaterialSpinner", ["material-design-lite"]);
+
+        define("jQuery", [bowerPath + '/jquery/dist/jquery.slim.min'], function () {
+
+            require(['legacy/fnchecked']);
+            if (window.ApiClient) {
+                jQuery.ajax = ApiClient.ajax;
+            }
+            return jQuery;
+        });
+
         // alias
         define("historyManager", [], function () {
-            return {
-                pushState: function (state, title, url) {
-                    state.navigate = false;
-                    history.pushState(state, title, url);
-                    jQuery.onStatePushed(state);
-                },
-                enableNativeHistory: function () {
-                    return true;
-                }
-            };
+            return Emby.Page;
         });
 
         // mock this for now. not used in this app
@@ -1929,12 +1921,25 @@ var AppInfo = {};
             };
         });
 
-        define("connectionManager", [], function () {
-            return ConnectionManager;
+        // mock this for now. not used in this app
+        define("skinManager", [], function () {
+
+            return {
+                loadUserSkin: function () {
+
+                    Emby.Page.show('/home.html');
+                }
+            };
         });
 
-        define("globalize", [], function () {
-            return Globalize;
+        // mock this for now. not used in this app
+        define("pluginManager", [], function () {
+            return {
+            };
+        });
+
+        define("connectionManager", [], function () {
+            return ConnectionManager;
         });
 
         define('apiClientResolver', [], function () {
@@ -1944,6 +1949,32 @@ var AppInfo = {};
         });
 
         define('dialogText', ['globalize'], getDialogText());
+
+        define("router", [embyWebComponentsBowerPath + '/router'], function (embyRouter) {
+
+            embyRouter.showLocalLogin = function (apiClient, serverId, manualLogin) {
+                Dashboard.navigate('login.html?serverid=' + serverId);
+            };
+
+            embyRouter.showSelectServer = function () {
+                Dashboard.navigate('selectserver.html');
+            };
+
+            embyRouter.showWelcome = function () {
+
+                if (Dashboard.isConnectMode()) {
+                    Dashboard.navigate('connectlogin.html?mode=welcome');
+                } else {
+                    Dashboard.navigate('login.html');
+                }
+            };
+
+            embyRouter.showSettings = function () {
+                Dashboard.navigate('mypreferencesmenu.html?userId=' + ApiClient.getCurrentUserId());
+            };
+
+            return embyRouter;
+        });
     }
 
     function updateAppSettings(appSettings) {
@@ -1976,7 +2007,7 @@ var AppInfo = {};
 
         var embyWebComponentsBowerPath = bowerPath + '/emby-webcomponents';
 
-        if (browser.mobile || browser.msie) {
+        if (browser.mobile) {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/nativeprompt"], returnFirstDependency);
             define("confirm", [embyWebComponentsBowerPath + "/confirm/nativeconfirm"], returnFirstDependency);
             define("alert", [embyWebComponentsBowerPath + "/alert/nativealert"], returnFirstDependency);
@@ -1984,6 +2015,14 @@ var AppInfo = {};
             define("prompt", [embyWebComponentsBowerPath + "/prompt/prompt"], returnFirstDependency);
             define("confirm", [embyWebComponentsBowerPath + "/confirm/confirm"], returnFirstDependency);
             define("alert", [embyWebComponentsBowerPath + "/alert/alert"], returnFirstDependency);
+        }
+
+        if (browser.animate) {
+            define("loading", [embyWebComponentsBowerPath + "/loading/loading"], returnFirstDependency);
+        } else if (browser.tv) {
+            define("loading", [embyWebComponentsBowerPath + "/loading/loading-smarttv"], returnFirstDependency);
+        } else {
+            define("loading", [embyWebComponentsBowerPath + "/loading/loading-lite"], returnFirstDependency);
         }
     }
 
@@ -2042,12 +2081,7 @@ var AppInfo = {};
         var deps = [];
         deps.push('events');
 
-        if (!window.fetch) {
-            deps.push('fetch');
-        }
-
         deps.push('scripts/mediacontroller');
-        deps.push('scripts/globalize');
 
         deps.push('paper-drawer-panel');
 
@@ -2094,6 +2128,14 @@ var AppInfo = {};
 
         deps.push('scripts/extensions');
 
+        if (!window.fetch) {
+            deps.push('fetch');
+        }
+
+        if (typeof Object.assign != 'function') {
+            deps.push('objectassign');
+        }
+
         require(deps, function (connectionManagerExports, credentialProviderFactory) {
 
             window.MediaBrowser = window.MediaBrowser || {};
@@ -2101,85 +2143,815 @@ var AppInfo = {};
                 MediaBrowser[i] = connectionManagerExports[i];
             }
 
-            var promises = [];
-            deps = [];
-            deps.push('scripts/mediaplayer');
-            deps.push('emby-icons');
-            deps.push('paper-icon-button');
-            deps.push('paper-button');
-            deps.push('jQuery');
-
-            promises.push(getRequirePromise(deps));
-
-            promises.push(Globalize.ensure());
-            promises.push(createConnectionManager(credentialProviderFactory, Dashboard.capabilities()));
-
-            Promise.all(promises).then(function () {
+            createConnectionManager(credentialProviderFactory, Dashboard.capabilities()).then(function () {
 
                 console.log('initAfterDependencies promises resolved');
                 MediaController.init();
 
-                document.title = Globalize.translateDocument(document.title, 'html');
+                require(['globalize'], function (globalize) {
 
-                var mainDrawerPanelContent = document.querySelector('.mainDrawerPanelContent');
+                    window.Globalize = globalize;
 
-                if (mainDrawerPanelContent) {
-
-                    var newHtml = mainDrawerPanelContent.innerHTML.substring(4);
-                    newHtml = newHtml.substring(0, newHtml.length - 3);
-
-                    var srch = 'data-require=';
-                    var index = newHtml.indexOf(srch);
-                    var depends;
-
-                    if (index != -1) {
-
-                        var requireAttribute = newHtml.substring(index + srch.length + 1);
-
-                        requireAttribute = requireAttribute.substring(0, requireAttribute.indexOf('"'));
-                        depends = requireAttribute.split(',');
-                    }
-
-                    depends = depends || [];
-
-                    if (newHtml.indexOf('type-interior') != -1) {
-                        addLegacyDependencies(depends, window.location.href);
-                    }
-
-                    require(depends, function () {
-
-                        // TODO: This needs to be deprecated, but it's used heavily
-                        $.fn.checked = function (value) {
-                            if (value === true || value === false) {
-                                // Set the value of the checkbox
-                                return $(this).each(function () {
-                                    this.checked = value;
-                                });
-                            } else {
-                                // Return check state
-                                return this.length && this[0].checked;
-                            }
-                        };
-
-                        // Don't like having to use jQuery here, but it takes care of making sure that embedded script executes
-                        $(mainDrawerPanelContent).html(Globalize.translateDocument(newHtml, 'html'));
-                        onAppReady();
-                    });
-                    return;
-                }
-
-                onAppReady();
+                    loadCoreDictionary(globalize).then(onGlobalizeInit);
+                });
             });
         });
     }
 
+    function loadCoreDictionary(globalize) {
+
+        var baseUrl = 'strings/';
+
+        var languages = ['ar', 'bg-BG', 'ca', 'cs', 'da', 'de', 'el', 'en-GB', 'en-US', 'en-AR', 'en-MX', 'es', 'fi', 'fr', 'gsw', 'he', 'hr', 'hu', 'id', 'it', 'kk', 'ko', 'ms', 'nb', 'nl', 'pl', 'pt-BR', 'pt-PT', 'ro', 'ru', 'sl-SI', 'sv', 'tr', 'uk', 'vi', 'zh-CN', 'zh-HK', 'zh-TW'];
+
+        var translations = languages.map(function (i) {
+            return {
+                lang: i,
+                path: baseUrl + i + '.json'
+            };
+        });
+
+        globalize.defaultModule('core');
+
+        return globalize.loadStrings({
+            name: 'core',
+            translations: translations
+        });
+    }
+
+    function onGlobalizeInit() {
+
+        document.title = Globalize.translateDocument(document.title, 'core');
+
+        onAppReady();
+    }
+
+    function defineRoute(newRoute, dictionary) {
+
+        var baseRoute = Emby.Page.baseUrl();
+
+        var path = newRoute.path;
+
+        path = path.replace(baseRoute, '');
+
+        console.log('Defining route: ' + path);
+
+        newRoute.dictionary = newRoute.dictionary || dictionary || 'core';
+        Emby.Page.addRoute(path, newRoute);
+    }
+
+    function defineCoreRoutes() {
+
+        console.log('Defining core routes');
+
+        defineRoute({
+            path: '/about.html',
+            dependencies: [],
+            autoFocus: false,
+            controller: 'scripts/aboutpage',
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/addplugin.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/advanced.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/appservices.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/autoorganizelog.html',
+            dependencies: [],
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/autoorganizesmart.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/autoorganizetv.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/channelitems.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/channels.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/channelsettings.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/cinemamodeconfiguration.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/collections.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/connectlogin.html',
+            dependencies: [],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/dashboard.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/dashboardgeneral.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/dashboardhosting.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/device.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/devices.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/devicesupload.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/dlnaprofile.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/dlnaprofiles.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/dlnaserversettings.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/dlnasettings.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/edititemmetadata.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/encodingsettings.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/favorites.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/forgotpassword.html',
+            dependencies: [],
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/forgotpasswordpin.html',
+            dependencies: [],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/gamegenres.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/games.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/gamesrecommended.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/gamestudios.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/gamesystems.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/home.html',
+            dependencies: ['paper-tabs'],
+            autoFocus: false,
+            controller: 'scripts/indexpage'
+        });
+
+        defineRoute({
+            path: '/index.html',
+            dependencies: [],
+            autoFocus: false,
+            isDefaultRoute: true
+        });
+
+        defineRoute({
+            path: '/itemdetails.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/itemlist.html',
+            dependencies: ['paper-checkbox', 'scripts/alphapicker'],
+            autoFocus: false,
+            controller: 'scripts/itemlistpage'
+        });
+
+        defineRoute({
+            path: '/kids.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/library.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/librarypathmapping.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/librarysettings.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/livetv.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/livetvguideprovider.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/livetvitems.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/livetvrecordinglist.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/livetvseriestimer.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/livetvsettings.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/livetvstatus.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/livetvtimer.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/livetvtunerprovider-hdhomerun.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/livetvtunerprovider-m3u.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/livetvtunerprovider-satip.html',
+            dependencies: ['paper-input', 'paper-checkbox'],
+            autoFocus: false,
+            roles: 'admin',
+            controller: 'scripts/livetvtunerprovider-satip'
+        });
+
+        defineRoute({
+            path: '/log.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/login.html',
+            dependencies: [],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/metadata.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/metadataadvanced.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/metadataimages.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/metadatanfo.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/metadatasubtitles.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/movies.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/music.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/mypreferencesdisplay.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/mypreferenceshome.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/mypreferenceslanguages.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/mypreferencesmenu.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/myprofile.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/mysync.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/mysyncjob.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/mysyncsettings.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/notificationlist.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/notificationsetting.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/notificationsettings.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/nowplaying.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/photos.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/playbackconfiguration.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/playlists.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/plugincatalog.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/plugins.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/reports.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/scheduledtask.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/scheduledtasks.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/search.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/secondaryitems.html',
+            dependencies: [],
+            autoFocus: false,
+            controller: 'scripts/secondaryitems'
+        });
+
+        defineRoute({
+            path: '/selectserver.html',
+            dependencies: [],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/serversecurity.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/shared.html',
+            dependencies: [],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/streamingsettings.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/support.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/supporterkey.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/syncactivity.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/syncjob.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/syncsettings.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/tv.html',
+            dependencies: ['paper-tabs', 'paper-checkbox'],
+            autoFocus: false,
+            controller: 'scripts/tvrecommended'
+        });
+
+        defineRoute({
+            path: '/useredit.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/userlibraryaccess.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/usernew.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/userparentalcontrol.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/userpassword.html',
+            dependencies: [],
+            autoFocus: false
+        });
+
+        defineRoute({
+            path: '/userprofiles.html',
+            dependencies: [],
+            autoFocus: false,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/wizardagreement.html',
+            dependencies: [],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/wizardfinish.html',
+            dependencies: [],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/wizardlibrary.html',
+            dependencies: [],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/wizardlivetvguide.html',
+            dependencies: [],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/wizardlivetvtuner.html',
+            dependencies: [],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/wizardservice.html',
+            dependencies: [],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/wizardsettings.html',
+            dependencies: [],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/wizardstart.html',
+            dependencies: [],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/wizarduser.html',
+            dependencies: [],
+            autoFocus: false,
+            anonymous: true
+        });
+
+        defineRoute({
+            path: '/configurationpage',
+            dependencies: ['jQuery'],
+            autoFocus: false,
+            enableCache: false,
+            enableContentQueryString: true,
+            roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/',
+            isDefaultRoute: true,
+            autoFocus: false,
+            dependencies: []
+        });
+    }
+
     function onAppReady() {
+
+        require(['scripts/mediaplayer'], function () {
+
+            MediaPlayer.init();
+        });
 
         console.log('Begin onAppReady');
 
         var deps = [];
 
         deps.push('imageLoader');
+        deps.push('router');
 
         if (!(AppInfo.isNativeApp && browserInfo.android)) {
             document.documentElement.classList.add('minimumSizeTabs');
@@ -2219,21 +2991,24 @@ var AppInfo = {};
 
         deps.push('scripts/search');
         deps.push('scripts/librarylist');
-        deps.push('scripts/backdrops');
         deps.push('scripts/librarymenu');
-        deps.push('scripts/librarybrowser');
-        deps.push('jqm');
 
         deps.push('css!css/card.css');
 
-        require(deps, function (imageLoader) {
+        require(deps, function (imageLoader, pageObjects) {
 
             imageLoader.enableFade = browserInfo.animate && !browserInfo.mobile;
             window.ImageLoader = imageLoader;
 
-            $.mobile.filterHtml = Dashboard.filterHtml;
-
-            $.mobile.initializePage();
+            //$.mobile.initializePage();
+            window.Emby = {};
+            window.Emby.Page = pageObjects;
+            window.Emby.TransparencyLevel = pageObjects.TransparencyLevel;
+            defineCoreRoutes();
+            Emby.Page.start({
+                click: true,
+                hashbang: AppInfo.enableHashBang
+            });
 
             var postInitDependencies = [];
 
@@ -2241,6 +3016,7 @@ var AppInfo = {};
             postInitDependencies.push('scripts/remotecontrol');
             postInitDependencies.push('css!css/notifications.css');
             postInitDependencies.push('css!css/chromecast.css');
+            postInitDependencies.push('scripts/autobackdrops');
 
             if (Dashboard.isRunningInCordova()) {
 
@@ -2278,6 +3054,12 @@ var AppInfo = {};
             }
 
             postInitDependencies.push('components/remotecontrolautoplay');
+
+            // Prefer custom font over Segoe if on desktop windows
+            if (!browserInfo.mobile && navigator.userAgent.toLowerCase().indexOf('windows') != -1) {
+                //postInitDependencies.push('opensansFont');
+                postInitDependencies.push('robotoFont');
+            }
 
             require(postInitDependencies);
         });
@@ -2319,58 +3101,60 @@ var AppInfo = {};
 
         return new Promise(function (resolve, reject) {
 
-            var deviceName;
+            require(['appStorage'], function (appStorage) {
+                var deviceName;
 
-            if (browserInfo.chrome) {
-                deviceName = "Chrome";
-            } else if (browserInfo.edge) {
-                deviceName = "Edge";
-            } else if (browserInfo.firefox) {
-                deviceName = "Firefox";
-            } else if (browserInfo.msie) {
-                deviceName = "Internet Explorer";
-            } else {
-                deviceName = "Web Browser";
-            }
+                if (browserInfo.chrome) {
+                    deviceName = "Chrome";
+                } else if (browserInfo.edge) {
+                    deviceName = "Edge";
+                } else if (browserInfo.firefox) {
+                    deviceName = "Firefox";
+                } else if (browserInfo.msie) {
+                    deviceName = "Internet Explorer";
+                } else {
+                    deviceName = "Web Browser";
+                }
 
-            if (browserInfo.version) {
-                deviceName += " " + browserInfo.version;
-            }
+                if (browserInfo.version) {
+                    deviceName += " " + browserInfo.version;
+                }
 
-            if (browserInfo.ipad) {
-                deviceName += " Ipad";
-            } else if (browserInfo.iphone) {
-                deviceName += " Iphone";
-            } else if (browserInfo.android) {
-                deviceName += " Android";
-            }
+                if (browserInfo.ipad) {
+                    deviceName += " Ipad";
+                } else if (browserInfo.iphone) {
+                    deviceName += " Iphone";
+                } else if (browserInfo.android) {
+                    deviceName += " Android";
+                }
 
-            function onDeviceAdAcquired(id) {
+                function onDeviceAdAcquired(id) {
 
-                resolve({
-                    deviceId: id,
-                    deviceName: deviceName,
-                    appName: "Emby Web Client",
-                    appVersion: window.dashboardVersion
-                });
-            }
+                    resolve({
+                        deviceId: id,
+                        deviceName: deviceName,
+                        appName: "Emby Web Client",
+                        appVersion: window.dashboardVersion
+                    });
+                }
 
-            var deviceIdKey = '_deviceId1';
-            var deviceId = appStorage.getItem(deviceIdKey);
+                var deviceIdKey = '_deviceId1';
+                var deviceId = appStorage.getItem(deviceIdKey);
 
-            if (deviceId) {
-                onDeviceAdAcquired(deviceId);
-            } else {
-                require(['cryptojs-sha1'], function () {
-                    var keys = [];
-                    keys.push(navigator.userAgent);
-                    keys.push((navigator.cpuClass || ""));
-                    keys.push(new Date().getTime());
-                    var randomId = CryptoJS.SHA1(keys.join('|')).toString();
-                    appStorage.setItem(deviceIdKey, randomId);
-                    onDeviceAdAcquired(randomId);
-                });
-            }
+                if (deviceId) {
+                    onDeviceAdAcquired(deviceId);
+                } else {
+                    require(['cryptojs-sha1'], function () {
+                        var keys = [];
+                        keys.push(navigator.userAgent);
+                        keys.push((navigator.cpuClass || ""));
+                        keys.push(new Date().getTime());
+                        var randomId = CryptoJS.SHA1(keys.join('|')).toString();
+                        appStorage.setItem(deviceIdKey, randomId);
+                        onDeviceAdAcquired(randomId);
+                    });
+                }
+            });
         });
     }
 
@@ -2390,25 +3174,21 @@ var AppInfo = {};
         var initialDependencies = [];
 
         initialDependencies.push('browser');
-        initialDependencies.push('appStorage');
 
         if (!window.Promise) {
             initialDependencies.push('native-promise-only');
         }
 
-        require(initialDependencies, function (browser, appStorage) {
+        require(initialDependencies, function (browser) {
 
             initRequireWithBrowser(browser);
 
             window.browserInfo = browser;
-            window.appStorage = appStorage;
 
             setAppInfo();
-            setDocumentClasses();
+            setDocumentClasses(browser);
 
-            getHostingAppInfo().then(function (hostingAppInfo) {
-                init(hostingAppInfo);
-            });
+            getHostingAppInfo().then(init);
         });
     }
 
@@ -2421,22 +3201,6 @@ var AppInfo = {};
     }
 
 })();
-
-function addLegacyDependencies(depends, url) {
-
-    var isPluginpage = url.toLowerCase().indexOf('/configurationpage?') != -1;
-
-    if (isPluginpage) {
-        depends.push('jqmpopup');
-        depends.push('jqmcollapsible');
-        depends.push('jqmcheckbox');
-        depends.push('legacy/dashboard');
-    }
-
-    depends.push('jqmcontrolgroup');
-    depends.push('jqmlistview');
-    depends.push('scripts/notifications');
-}
 
 function pageClassOn(eventName, className, fn) {
 
@@ -2460,7 +3224,7 @@ function pageIdOn(eventName, id, fn) {
     });
 }
 
-pageClassOn('pagecreate', "page", function () {
+pageClassOn('viewinit', "page", function () {
 
     var page = this;
 
@@ -2477,11 +3241,29 @@ pageClassOn('pagecreate', "page", function () {
         }
 
         page.setAttribute("data-theme", newTheme);
+        current = newTheme;
     }
 
+    page.classList.add("ui-page");
+    page.classList.add("ui-page-theme-" + current);
+
+    var contents = page.querySelectorAll("div[data-role='content']");
+
+    for (var i = 0, length = contents.length; i < length; i++) {
+        var content = contents[i];
+        //var theme = content.getAttribute("theme") || undefined;
+
+        //content.classList.add("ui-content");
+        //if (self.options.contentTheme) {
+        //    content.classList.add("ui-body-" + (self.options.contentTheme));
+        //}
+        // Add ARIA role
+        content.setAttribute("role", "main");
+        content.classList.add("ui-content");
+    }
 });
 
-pageClassOn('pageshow', "page", function () {
+pageClassOn('viewshow', "page", function () {
 
     var page = this;
 
@@ -2510,46 +3292,17 @@ pageClassOn('pageshow', "page", function () {
 
     var apiClient = window.ApiClient;
 
-    if (apiClient && apiClient.accessToken() && Dashboard.getCurrentUserId()) {
+    if (apiClient && apiClient.isLoggedIn()) {
 
-        var isSettingsPage = page.classList.contains('type-interior');
-
-        if (isSettingsPage) {
+        if (page.classList.contains('type-interior')) {
 
             Dashboard.ensureToolsMenu(page);
-
-            Dashboard.getCurrentUser().then(function (user) {
-
-                if (!user.Policy.IsAdministrator) {
-                    Dashboard.logout();
-                }
-            });
-        }
-    }
-
-    else {
-
-        var isConnectMode = Dashboard.isConnectMode();
-
-        if (isConnectMode) {
-
-            if (!Dashboard.isServerlessPage()) {
-                Dashboard.logout();
-                return;
-            }
-        }
-
-        if (!isConnectMode && this.id !== "loginPage" && !page.classList.contains('forgotPasswordPage') && !page.classList.contains('forgotPasswordPinPage') && !page.classList.contains('wizardPage') && this.id !== 'publicSharedItemPage') {
-
-            console.log('Not logged into server. Redirecting to login.');
-            Dashboard.logout();
-            return;
         }
     }
 
     Dashboard.ensureHeader(page);
 
-    if (apiClient && !apiClient.isWebSocketOpen()) {
+    if (apiClient && apiClient.isLoggedIn() && !apiClient.isWebSocketOpen()) {
         Dashboard.refreshSystemInfoFromServer();
     }
 

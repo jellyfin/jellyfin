@@ -216,14 +216,6 @@ iron-overlay-backdrop {
     padding: 0 12px;
 }
 
-paper-dialog > *:last-child:not(.buttons) {
-    margin-bottom: 12px;
-}
-
-paper-dialog > *:first-child:not(h2) {
-    margin-top: 12px;
-}
-
 paper-icon-button paper-ripple {
     color: inherit !important;
 }
@@ -241,7 +233,7 @@ paper-dialog[role="alertdialog"] + iron-overlay-backdrop {
 }
 
 paper-tabs {
-    background-color: #080808;
+    background-color: #020202;
     color: #fff;
     box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
 }
@@ -484,7 +476,7 @@ paper-textarea.mono textarea {
 }
 
 .ui-body-b .paperList {
-    background-color: #2b2b2b;
+    background-color: #323232;
 }
 
 paper-dropdown-menu {
@@ -498,8 +490,8 @@ paper-dropdown-menu {
         display: block;
     }
 
-paper-dialog paper-radio-group paper-radio-button {
-    padding: 6px 12px;
+paper-radio-group > * {
+    padding: .5em;
 }
 
 .likePaperText {
@@ -559,7 +551,7 @@ div.dialogHeader {
     margin-left: .75em;
 }
 
-paper-dialog.popupEditor h2.dialogHeader {
+.dialog.popupEditor h2.dialogHeader {
     font-weight: inherit !important;
     line-height: 36px;
     padding: 0 1em;
@@ -571,7 +563,7 @@ paper-dialog.popupEditor h2.dialogHeader {
     margin-bottom: 0;
 }
 
-paper-dialog.popupEditor {
+.dialog.popupEditor {
     padding-bottom: 100px;
 }
 

@@ -84,7 +84,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                     }
                     catch (Exception ex)
                     {
-                        _logger.ErrorException("Error organizing episode {0}", ex, file);
+                        _logger.ErrorException("Error organizing episode {0}", ex, file.FullName);
                     }
 
                     numComplete++;
@@ -132,7 +132,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         {
             try
             {
-				return _fileSystem.GetFiles(path, true)
+                return _fileSystem.GetFiles(path, true)
                     .ToList();
             }
             catch (IOException ex)
@@ -150,7 +150,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
         /// <param name="extensions">The extensions.</param>
         private void DeleteLeftOverFiles(string path, IEnumerable<string> extensions)
         {
-			var eligibleFiles = _fileSystem.GetFiles(path, true)
+            var eligibleFiles = _fileSystem.GetFiles(path, true)
                 .Where(i => extensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase))
                 .ToList();
 

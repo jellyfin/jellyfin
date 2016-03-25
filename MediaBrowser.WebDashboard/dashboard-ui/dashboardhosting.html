@@ -1,70 +1,62 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>${TitleAdvanced}</title>
-</head>
-<body>
-    <div id="dashboardHostingPage" data-role="page" class="page type-interior advancedConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Hosting%20Settings" data-require="scripts/dashboardhosting,paper-checkbox,paper-input">
+﻿<div id="dashboardHostingPage" data-role="page" class="page type-interior advancedConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Hosting%20Settings" data-require="scripts/dashboardhosting,paper-checkbox,paper-input">
 
-        <div data-role="content">
-            <div class="content-primary">
+    <div data-role="content">
+        <div class="content-primary">
 
-                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="advanced.html" data-role="button">${TabGeneral}</a>
-                    <a href="#" data-role="button" class="ui-btn-active">${TabHosting}</a>
-                    <a href="serversecurity.html" data-role="button">${TabSecurity}</a>
-                </div>
-
-                <form class="dashboardHostingForm">
-
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <paper-input type="number" id="txtPortNumber" label="${LabelLocalHttpServerPortNumber}" pattern="[0-9]*" required="required" min="1"></paper-input>
-                            <div class="fieldDescription">${LabelLocalHttpServerPortNumberHelp}</div>
-                        </li>
-                        <li>
-                            <paper-input type="number" label="${LabelPublicHttpPort}" id="txtPublicPort" pattern="[0-9]*" required="required" min="1"></paper-input>
-                            <div class="fieldDescription">${LabelPublicHttpPortHelp}</div>
-                        </li>
-                        <li>
-                            <paper-input id="txtDdns" type="text" label="${LabelExternalDDNS}"></paper-input>
-                            <div class="fieldDescription">${LabelExternalDDNSHelp}</div>
-                        </li>
-                        <li>
-                            <paper-input type="number" id="txtHttpsPort" pattern="[0-9]*" required="required" min="1" label="${LabelHttpsPort}"></paper-input>
-                            <div class="fieldDescription">${LabelHttpsPortHelp}</div>
-                        </li>
-                        <li>
-                            <paper-input type="number" id="txtPublicHttpsPort" pattern="[0-9]*" required="required" min="1" label="${LabelPublicHttpsPort}"></paper-input>
-                            <div class="fieldDescription">${LabelPublicHttpsPortHelp}</div>
-                        </li>
-                        <li>
-                            <paper-input type="text" id="txtCertificatePath" label="${LabelCustomCertificatePath}" style="display: inline-block; width: 80%;"></paper-input>
-                            <paper-icon-button id="btnSelectCertPath" icon="search" title="${ButtonSelectDirectory}"></paper-icon-button>
-                            <div class="fieldDescription">${LabelCustomCertificatePathHelp}</div>
-                        </li>
-                        <li>
-                            <paper-checkbox id="chkEnableHttps">${LabelEnableHttps}</paper-checkbox>
-                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableHttpsHelp}</div>
-                        </li>
-                        <li>
-                            <paper-checkbox id="chkEnableUpnp">${LabelEnableAutomaticPortMap}</paper-checkbox>
-                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableAutomaticPortMapHelp}</div>
-                        </li>
-                    </ul>
-
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <button type="submit" data-role="none" class="clearButton">
-                                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                            </button>
-                        </li>
-
-                    </ul>
-                </form>
-
+            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                <a href="advanced.html" data-role="button">${TabGeneral}</a>
+                <a href="#" data-role="button" class="ui-btn-active">${TabHosting}</a>
+                <a href="serversecurity.html" data-role="button">${TabSecurity}</a>
             </div>
+
+            <form class="dashboardHostingForm">
+
+                <ul data-role="listview" class="ulForm">
+                    <li>
+                        <paper-input type="number" id="txtPortNumber" label="${LabelLocalHttpServerPortNumber}" pattern="[0-9]*" required="required" min="1"></paper-input>
+                        <div class="fieldDescription">${LabelLocalHttpServerPortNumberHelp}</div>
+                    </li>
+                    <li>
+                        <paper-input type="number" label="${LabelPublicHttpPort}" id="txtPublicPort" pattern="[0-9]*" required="required" min="1"></paper-input>
+                        <div class="fieldDescription">${LabelPublicHttpPortHelp}</div>
+                    </li>
+                    <li>
+                        <paper-input id="txtDdns" type="text" label="${LabelExternalDDNS}"></paper-input>
+                        <div class="fieldDescription">${LabelExternalDDNSHelp}</div>
+                    </li>
+                    <li>
+                        <paper-input type="number" id="txtHttpsPort" pattern="[0-9]*" required="required" min="1" label="${LabelHttpsPort}"></paper-input>
+                        <div class="fieldDescription">${LabelHttpsPortHelp}</div>
+                    </li>
+                    <li>
+                        <paper-input type="number" id="txtPublicHttpsPort" pattern="[0-9]*" required="required" min="1" label="${LabelPublicHttpsPort}"></paper-input>
+                        <div class="fieldDescription">${LabelPublicHttpsPortHelp}</div>
+                    </li>
+                    <li>
+                        <paper-input type="text" id="txtCertificatePath" label="${LabelCustomCertificatePath}" style="display: inline-block; width: 80%;"></paper-input>
+                        <paper-icon-button id="btnSelectCertPath" icon="search" title="${ButtonSelectDirectory}"></paper-icon-button>
+                        <div class="fieldDescription">${LabelCustomCertificatePathHelp}</div>
+                    </li>
+                    <li>
+                        <paper-checkbox id="chkEnableHttps">${LabelEnableHttps}</paper-checkbox>
+                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableHttpsHelp}</div>
+                    </li>
+                    <li>
+                        <paper-checkbox id="chkEnableUpnp">${LabelEnableAutomaticPortMap}</paper-checkbox>
+                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableAutomaticPortMapHelp}</div>
+                    </li>
+                </ul>
+
+                <ul data-role="listview" class="ulForm">
+                    <li>
+                        <button type="submit" data-role="none" class="clearButton">
+                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+                        </button>
+                    </li>
+
+                </ul>
+            </form>
+
         </div>
     </div>
-</body>
-</html>
+</div>

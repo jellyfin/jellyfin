@@ -59,12 +59,12 @@ namespace MediaBrowser.Providers.People
             // Avoid implicitly captured closure
             var itemName = item.Name;
 
-            var seriesWithPerson = _libraryManager.GetItems(new InternalItemsQuery
+            var seriesWithPerson = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(Series).Name },
                 Person = itemName
 
-            }).Items.Cast<Series>()
+            }).Cast<Series>()
                 .Where(i => TvdbSeriesProvider.IsValidSeries(i.ProviderIds))
                 .ToList();
 

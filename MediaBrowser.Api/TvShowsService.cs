@@ -263,7 +263,7 @@ namespace MediaBrowser.Api
                 _userDataManager,
                 _dtoService,
                 Logger,
-                request, item => item is Series,
+                request, new[] { typeof(Series) },
                 SimilarItemsHelper.GetSimiliarityScore);
 
             return ToOptimizedSerializedResultUsingCache(result);
@@ -273,11 +273,11 @@ namespace MediaBrowser.Api
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var minPremiereDate = DateTime.Now.Date.AddDays(-1).ToUniversalTime();
+            var minPremiereDate = DateTime.Now.Date.ToUniversalTime();
 
             var parentIds = string.IsNullOrWhiteSpace(request.ParentId) ? new string[] { } : new[] { request.ParentId };
 
-            var itemsResult = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
+            var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(Episode).Name },
                 SortBy = new[] { "PremiereDate", "AirTime", "SortName" },
@@ -286,15 +286,15 @@ namespace MediaBrowser.Api
                 StartIndex = request.StartIndex,
                 Limit = request.Limit
 
-            }, parentIds);
+            }, parentIds).ToList();
 
             var options = GetDtoOptions(request);
 
-            var returnItems = _dtoService.GetBaseItemDtos(itemsResult.Items, options, user).ToArray();
+            var returnItems = _dtoService.GetBaseItemDtos(itemsResult, options, user).ToArray();
 
             var result = new ItemsResult
             {
-                TotalRecordCount = itemsResult.TotalRecordCount,
+                TotalRecordCount = itemsResult.Count,
                 Items = returnItems
             };
 

@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['jQuery'], function ($) {
 
     function refreshSyncStatus(page) {
 
@@ -78,4 +78,4 @@
         }
     });
 
-})();
+});

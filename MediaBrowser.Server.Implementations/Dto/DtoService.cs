@@ -94,12 +94,18 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             var list = new List<BaseItemDto>();
             var programTuples = new List<Tuple<BaseItem, BaseItemDto>> { };
+            var channelTuples = new List<Tuple<BaseItemDto, LiveTvChannel>> { };
 
             foreach (var item in items)
             {
                 var dto = GetBaseItemDtoInternal(item, options, syncDictionary, user, owner);
 
-                if (item is LiveTvProgram)
+                var tvChannel = item as LiveTvChannel;
+                if (tvChannel != null)
+                {
+                    channelTuples.Add(new Tuple<BaseItemDto, LiveTvChannel>(dto, tvChannel));
+                }
+                else if (item is LiveTvProgram)
                 {
                     programTuples.Add(new Tuple<BaseItem, BaseItemDto>(item, dto));
                 }
@@ -131,6 +137,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 Task.WaitAll(task);
             }
 
+            if (channelTuples.Count > 0)
+            {
+                _livetvManager().AddChannelInfo(channelTuples, options, user);
+            }
+
             return list;
         }
 
@@ -151,8 +162,13 @@ namespace MediaBrowser.Server.Implementations.Dto
             var syncProgress = GetSyncedItemProgress(options);
 
             var dto = GetBaseItemDtoInternal(item, options, GetSyncedItemProgressDictionary(syncProgress), user, owner);
-
-            if (item is LiveTvProgram)
+            var tvChannel = item as LiveTvChannel;
+            if (tvChannel != null)
+            {
+                var list = new List<Tuple<BaseItemDto, LiveTvChannel>> { new Tuple<BaseItemDto, LiveTvChannel>(dto, tvChannel) };
+                _livetvManager().AddChannelInfo(list, options, user);
+            }
+            else if (item is LiveTvProgram)
             {
                 var list = new List<Tuple<BaseItem, BaseItemDto>> { new Tuple<BaseItem, BaseItemDto>(item, dto) };
                 var task = _livetvManager().AddInfoToProgramDto(list, options.Fields, user);
@@ -183,7 +199,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (person != null)
             {
-                var items = _libraryManager.GetItems(new InternalItemsQuery(user)
+                var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
                 {
                     Person = byName.Name
 
@@ -316,6 +332,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 ServerId = _appHost.SystemId
             };
 
+            if (item.SourceType == SourceType.Channel)
+            {
+                dto.SourceType = item.SourceType.ToString();
+            }
+
             if (fields.Contains(ItemFields.People))
             {
                 AttachPeople(dto, item);
@@ -366,12 +387,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             AttachBasicFields(dto, item, owner, options);
-
-            var tvChannel = item as LiveTvChannel;
-            if (tvChannel != null)
-            {
-                _livetvManager().AddChannelInfo(dto, tvChannel, options, user);
-            }
 
             var collectionFolder = item as ICollectionFolder;
             if (collectionFolder != null)
@@ -452,6 +467,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.EpisodeCount = taggedItems.Count(i => i is Episode);
                 dto.GameCount = taggedItems.Count(i => i is Game);
                 dto.MovieCount = taggedItems.Count(i => i is Movie);
+                dto.TrailerCount = taggedItems.Count(i => i is Trailer);
                 dto.MusicVideoCount = taggedItems.Count(i => i is MusicVideo);
                 dto.SeriesCount = taggedItems.Count(i => i is Series);
                 dto.SongCount = taggedItems.Count(i => i is Audio);
@@ -480,7 +496,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 var folder = (Folder)item;
 
-                if (!(folder is IChannelItem) && !(folder is Channel))
+                if (item.SourceType == SourceType.Library)
                 {
                     dto.ChildCount = GetChildCount(folder, user);
 
@@ -1250,6 +1266,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (audio != null)
             {
                 dto.Album = audio.Album;
+                dto.ExtraType = audio.ExtraType;
 
                 var albumParent = audio.AlbumEntity;
 
@@ -1352,6 +1369,8 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     dto.Chapters = GetChapterInfoDtos(item);
                 }
+
+                dto.ExtraType = video.ExtraType;
             }
 
             if (fields.Contains(ItemFields.MediaStreams))
@@ -1375,16 +1394,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                     }
 
                     dto.MediaStreams = mediaStreams;
-                }
-            }
-
-            // Add MovieInfo
-            var movie = item as Movie;
-            if (movie != null)
-            {
-                if (fields.Contains(ItemFields.TmdbCollectionName))
-                {
-                    dto.TmdbCollectionName = movie.TmdbCollectionName;
                 }
             }
 
@@ -1541,16 +1550,13 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             dto.ChannelId = item.ChannelId;
 
-            var channelItem = item as IChannelItem;
-            if (channelItem != null)
+            if (item.SourceType == SourceType.Channel && !string.IsNullOrWhiteSpace(item.ChannelId))
             {
-                dto.ChannelName = _channelManagerFactory().GetChannel(channelItem.ChannelId).Name;
-            }
-
-            var channelMediaItem = item as IChannelMediaItem;
-            if (channelMediaItem != null)
-            {
-                dto.ExtraType = channelMediaItem.ExtraType;
+                var channel = _libraryManager.GetItemById(item.ChannelId);
+                if (channel != null)
+                {
+                    dto.ChannelName = channel.Name;
+                }
             }
         }
 
@@ -1659,8 +1665,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 IsFolder = false,
                 Recursive = true,
-                IsVirtualUnaired = false,
-                IsMissing = false,
+                ExcludeLocationTypes = new[] { LocationType.Virtual },
                 User = user
 
             }).Result.Items;

@@ -14,23 +14,27 @@ design idea is pretty simple :
   - [src/errors.js][]
     - definition of Hls.ErrorTypes and Hls.ErrorDetails
   - [src/controller/stream-controller.js][]
-    - in charge of:
-      - ensuring that buffer is filled as per defined quality selection logic.
+    - stream controller actions are scheduled by a tick timer (invoked every 100ms) and actions are controlled by a state machine.  
+    - stream controller is in charge of:
+      - **ensuring that buffer is filled as per defined quality selection logic**.
     - if buffer is not filled up appropriately (i.e. as per defined maximum buffer size, or as per defined quality level), buffer controller will trigger the following actions:
         - retrieve "not buffered" media position greater then current playback position. this is performed by comparing video.buffered and video.currentTime.
+          - if there are holes in video.buffered, smaller than config.maxBufferHole, they will be ignored.
         - retrieve URL of fragment matching with this media position, and appropriate quality level
         - trigger FRAG_LOADING event
-        - monitor fragment loading speed (by monitoring data received from FRAG_LOAD_PROGRESS event)
+        - **monitor fragment loading speed** (by monitoring data received from FRAG_LOAD_PROGRESS event)
          - "expected time of fragment load completion" is computed using "fragment loading instant bandwidth".
          - this time is compared to the "expected time of buffer starvation".
-         - if we have less than 2 fragments buffered and if "expected time of fragment load completion" is bigger than "expected time of buffer starvation" and also bigger than duration needed to load fragment at next quality level (determined by auto quality switch algorithm), current fragment loading is aborted, and an emergency switch down is triggered.
-        - trigger fragment demuxing on FRAG_LOADED
+         - if we have less than 2 fragments buffered and if "expected time of fragment load completion" is bigger than "expected time of buffer starvation" and also bigger than duration needed to load fragment at next quality level (determined by auto quality switch algorithm), current fragment loading is aborted, stream-controller will **trigger an emergency switch down**.
+        - **trigger fragment demuxing** on FRAG_LOADED
         - trigger BUFFER_RESET on MANIFEST_PARSED or startLoad()        
         - trigger BUFFER_CODECS on FRAG_PARSING_INIT_SEGMENT
         - trigger BUFFER_APPENDING on FRAG_PARSING_DATA
         - once FRAG_PARSED is received an all segments have been appended (BUFFER_APPENDED) then buffer controller will recheck whether it needs to buffer more data.
-      - monitor current playback quality level (buffer controller maintains a map between media position and quality level)        
-      stream controller actions are scheduled by a tick timer (invoked every 100ms) and actions are controlled by a state machine.
+      - **monitor current playback quality level** (buffer controller maintains a map between media position and quality level)
+      - **monitor playback progress** : if playhead is not moving anymore although it should (video metadata is known and video is not ended, nor paused, nor in seeking state) and if we have less than 400ms buffered upfront, and if there is a new buffer range available upfront, less than config.maxSeekHole from currentTime, then hls.js will **jump over the buffer hole** and seek to the beginning of this new buffered range, to "unstuck" the playback.
+      400 ms is a "magic number" that has been set to overcome browsers not always stopping playback at the exact end of a buffered range.
+      these holes in media buffered are often encountered on stream discontinuity or on quality level switch. holes could be "large" especially if fragments are not starting with a keyframe.
   - [src/controller/buffer-controller.js][]
     - in charge of:
         - resetting media buffer upon BUFFER_RESET event reception
@@ -49,6 +53,8 @@ design idea is pretty simple :
   - [src/controller/abr-controller.js][]
     - in charge of determining auto quality level.
     - auto quality switch algorithm is pretty naive and simple ATM and similar to the one that could be found in google [StageFright](https://android.googlesource.com/platform/frameworks/av/+/master/media/libstagefright/httplive/LiveSession.cpp)
+  - [src/controller/cap-level-controller.js][]
+    - in charge of determining best quality level to actual size (dimensions: width and height) of the player 
   - [src/crypt/aes.js][]
     - AES 128 software decryption routine, low level class handling decryption of 128 bit of data.
   - [src/crypt/aes128-decrypter.js][]  
@@ -128,6 +134,7 @@ design idea is pretty simple :
 [src/stats.js]: src/stats.js
 [src/controller/abr-controller.js]: src/controller/abr-controller.js
 [src/controller/buffer-controller.js]: src/controller/buffer-controller.js
+[src/controller/cap-level-controller.js]: src/controller/cap-level-controller.js
 [src/controller/fps-controller.js]: src/controller/fps-controller.js
 [src/controller/level-controller.js]: src/controller/level-controller.js
 [src/controller/stream-controller.js]: src/controller/stream-controller.js

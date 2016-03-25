@@ -1,210 +1,208 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title></title>
-</head>
-<body>
-    <div id="itemDetailPage" data-role="page" class="page libraryPage itemDetailPage noSecondaryNavPage" data-theme="b" data-require="scripts/itemdetailpage,tileitemcss,scripts/livetvcomponents,paper-fab,paper-item-body,paper-icon-item">
+﻿<div id="itemDetailPage" data-role="page" class="page libraryPage itemDetailPage noSecondaryNavPage selfBackdropPage" data-theme="b" data-require="scripts/itemdetailpage,tileitemcss,scripts/livetvcomponents,paper-fab,paper-item-body,paper-icon-item">
 
-        <div id="tvShowsTabs" class="itemTabs" style="display: none;">
-            <div class="libraryViewNav scopedLibraryViewNav">
-                <a href="tv.html"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
-                <a href="tv.html?tab=1"><iron-icon icon="new-releases"></iron-icon>${TabLatest}</a>
-                <a href="tv.html?tab=2"><iron-icon icon="schedule"></iron-icon>${TabUpcoming}</a>
-                <a href="tv.html?tab=3" class="ui-btn-active"><iron-icon icon="live-tv"></iron-icon>${TabShows}</a>
-                <a href="tv.html?tab=4" class="tvEpisodesTab"><iron-icon icon="slideshow"></iron-icon>${TabEpisodes}</a>
-                <a href="tv.html?tab=5"><iron-icon icon="video-library"></iron-icon>${TabGenres}</a>
-                <a href="tv.html?tab=6" class="tvStudiosTab"><iron-icon icon="account-box"></iron-icon>${TabNetworks}</a>
-            </div>
+    <div id="tvShowsTabs" class="itemTabs" style="display: none;">
+        <div class="libraryViewNav scopedLibraryViewNav">
+            <a href="tv.html"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
+            <a href="tv.html?tab=1"><iron-icon icon="new-releases"></iron-icon>${TabLatest}</a>
+            <a href="tv.html?tab=2"><iron-icon icon="schedule"></iron-icon>${TabUpcoming}</a>
+            <a href="tv.html?tab=3" class="ui-btn-active"><iron-icon icon="live-tv"></iron-icon>${TabShows}</a>
+            <a href="tv.html?tab=4" class="tvEpisodesTab"><iron-icon icon="slideshow"></iron-icon>${TabEpisodes}</a>
+            <a href="tv.html?tab=5"><iron-icon icon="video-library"></iron-icon>${TabGenres}</a>
+            <a href="tv.html?tab=6" class="tvStudiosTab"><iron-icon icon="account-box"></iron-icon>${TabNetworks}</a>
         </div>
+    </div>
 
-        <div id="itemBackdrop" class="itemBackdrop noBackdrop">
-            <div class="itemBackdropContent">
-            </div>
-            <a href="#" id="lnkPreviousItem" class="lnkPreviousItem lnkSibling hide clearLink"><paper-button raised class="subdued notext"><iron-icon icon="arrow-back"></iron-icon></paper-button></a>
-            <a href="#" id="lnkNextItem" class="lnkNextItem lnkSibling hide clearLink"><paper-button raised class="subdued notext"><iron-icon icon="arrow-forward"></iron-icon></paper-button></a>
+    <div id="itemBackdrop" class="itemBackdrop noBackdrop">
+        <div class="itemBackdropContent">
         </div>
+        <a href="#" id="lnkPreviousItem" class="lnkPreviousItem lnkSibling hide clearLink"><paper-button raised class="subdued notext"><iron-icon icon="arrow-back"></iron-icon></paper-button></a>
+        <a href="#" id="lnkNextItem" class="lnkNextItem lnkSibling hide clearLink"><paper-button raised class="subdued notext"><iron-icon icon="arrow-forward"></iron-icon></paper-button></a>
+    </div>
 
-        <div class="detailPageContent" style="position:relative;">
+    <div class="detailPageContent" style="position:relative;">
 
-            <paper-fab class="btnPlay detailFloatingButton hide" icon="play-arrow" title="${ButtonPlay}"></paper-fab>
-            <paper-fab class="btnFloatingRecord detailFloatingButton hide" icon="videocam" title="${ButtonRecord}"></paper-fab>
+        <paper-fab class="btnPlay detailFloatingButton hide" icon="play-arrow" title="${ButtonPlay}"></paper-fab>
+        <paper-fab class="btnFloatingRecord detailFloatingButton hide" icon="videocam" title="${ButtonRecord}"></paper-fab>
 
-            <div class="detailImageContainer">
-            </div>
-            <div class="primaryDetailsContainer">
-                <div class="detailNameContainer">
-                    <div><span class="parentName"></span><span class="itemName inlineItemName"></span></div>
-                    <div class="desktopDetails" style="margin-top:1em;">
+        <div class="detailImageContainer">
+        </div>
+        <div class="primaryDetailsContainer">
+            <div class="detailNameContainer">
+                <div><span class="parentName"></span><span class="itemName inlineItemName"></span></div>
+                <div class="desktopDetails" style="margin-top:1em;">
 
-                        <span class="itemMiscInfo"></span>
-                        <span class="itemCommunityRating" style="margin-left:1em;"></span>
-                    </div>
+                    <span class="itemMiscInfo"></span>
+                    <span class="itemCommunityRating" style="margin-left:1em;"></span>
                 </div>
-                <div class="desktopDetails" style="padding-top:5px;">
+            </div>
+            <div class="desktopDetails" style="padding-top:5px;">
 
+                <p class="artist"></p>
+                <p class="itemGenres"></p>
+                <div class="detailButtonsContainer">
+                    <paper-button raised class="subdued btnPlayTrailer hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonTrailer}</span></paper-button>
+                    <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><paper-button raised class="subdued"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonTrailer}</span></paper-button></a>
+                    <paper-button raised class="subdued btnRecord hide"><iron-icon icon="videocam"></iron-icon><span>${ButtonRecord}</span></paper-button>
+                    <paper-button raised class="subdued hide btnCancelRecording"><iron-icon icon="delete"></iron-icon><span>${ButtonCancelRecording}</span></paper-button>
+                    <paper-button raised class="subdued btnSync hide"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
+                    <paper-button raised class="subdued btnMoreCommands hide notext"><iron-icon icon="more-vert"></iron-icon></paper-button>
+                    <div class="detailUserDataIcons userDataIcons"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mobileDetails" style="text-align:center;clear:both;">
+        <div style="height:10px;"></div>
+        <div>
+            <span class="itemMiscInfo"></span>
+            <span class="itemCommunityRating" style="margin-left:1em;"></span>
+        </div>
+        <div class="detailButtonsContainer">
+            <br />
+            <paper-button raised class="subdued btnPlayTrailer hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonTrailer}</span></paper-button>
+            <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><paper-button raised class="subdued"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonTrailer}</span></paper-button></a>
+            <paper-button raised class="subdued btnRecord hide"><iron-icon icon="videocam"></iron-icon><span>${ButtonRecord}</span></paper-button>
+            <paper-button raised class="subdued hide btnCancelRecording"><iron-icon icon="delete"></iron-icon><span>${ButtonCancelRecording}</span></paper-button>
+            <paper-button raised class="subdued btnSync hide"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
+            <paper-button raised class="subdued btnMoreCommands hide notext"><iron-icon icon="more-vert"></iron-icon></paper-button>
+            <div class="detailUserDataIcons userDataIcons"></div>
+        </div>
+    </div>
+    <div data-role="content" style="padding-top:0;clear:both;">
+        <div class="detailPageContent">
+            <div class="detailSection">
+                <div class="mobileDetails">
                     <p class="artist"></p>
                     <p class="itemGenres"></p>
-                    <div class="detailButtonsContainer">
-                        <paper-button raised class="subdued btnPlayTrailer hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonTrailer}</span></paper-button>
-                        <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><paper-button raised class="subdued"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonTrailer}</span></paper-button></a>
-                        <paper-button raised class="subdued btnRecord hide"><iron-icon icon="videocam"></iron-icon><span>${ButtonRecord}</span></paper-button>
-                        <paper-button raised class="subdued hide btnCancelRecording"><iron-icon icon="delete"></iron-icon><span>${ButtonCancelRecording}</span></paper-button>
-                        <paper-button raised class="subdued btnSync hide"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
-                        <paper-button raised class="subdued btnMoreCommands hide notext"><iron-icon icon="more-vert"></iron-icon></paper-button>
-                        <div class="detailUserDataIcons userDataIcons"></div>
+                </div>
+                <div class="desktopDetails" style="height:10px;"></div>
+                <h2 class="tagline"></h2>
+                <p id="itemBirthday"></p>
+                <p id="itemBirthLocation"></p>
+                <p id="itemDeathDate"></p>
+                <p id="seriesAirTime"></p>
+                <p class="airDate"></p>
+                <p class="itemOverview topOverview"></p>
+            </div>
+            <div class="collectionItems"></div>
+            <div class="nextUpSection detailSection hide">
+                <h1>
+                    ${HeaderNextUp}
+                </h1>
+                <div class="smallItemsContainer nextUpItems"></div>
+            </div>
+            <div id="childrenCollapsible" class="hide detailSection">
+                <h1 class="childrenSectionHeader">
+                    <span id="childrenTitle"></span>
+                </h1>
+                <div id="childrenContent">
+                    <div class="childrenItemsContainer itemsContainer noautoinit" style="text-align:left;"></div>
+                </div>
+            </div>
+            <div id="additionalPartsCollapsible" class="detailSection hide">
+                <h1>
+                    ${HeaderAdditionalParts}
+                </h1>
+                <div id="additionalPartsContent" class="smallItemsContainer"></div>
+            </div>
+            <div id="castCollapsible" style="display: none;" class="detailSection">
+                <h1 id="peopleHeader">
+                    ${HeaderCastCrew}
+                </h1>
+                <div id="castContent"></div>
+            </div>
+
+            <div class="detailSection photoInfo hide">
+                <h1>
+                    ${HeaderPhotoInfo}
+                </h1>
+                <div>
+                    <div class="photoInfoContent"></div>
+                </div>
+            </div>
+
+            <div id="specialsCollapsible" class="detailSection hide">
+                <h1>
+                    ${HeaderSpecialFeatures}
+                </h1>
+                <div id="specialsContent" class="smallItemsContainer"></div>
+            </div>
+            <div id="musicVideosCollapsible" style="display: none;" class="detailSection">
+                <h1>
+                    ${HeaderMusicVideos}
+                </h1>
+                <div id="musicVideosContent" class="smallItemsContainer"></div>
+            </div>
+            <div id="similarCollapsible" style="display: none;" class="detailSection">
+                <h1 class="similiarHeader"></h1>
+                <div id="similarContent"></div>
+            </div>
+            <div id="criticReviewsCollapsible" style="display: none;" class="detailSection">
+                <h1>
+                    ${HeaderAwardsAndReviews}
+                </h1>
+                <div>
+                    <p id="awardSummary"></p>
+                    <div class="paperList" id="criticRatingSummary">
+                        <paper-icon-item>
+                            <paper-fab mini style="background-color: transparent; background-repeat: no-repeat; background-position: center center; background-size: cover; background-image: url(css/images/fresh.png);" item-icon></paper-fab>
+                            <paper-item-body three-line>
+                                <div>TOMATOMETER®</div>
+                                <div class="criticRatingScore"></div>
+                                <div class="criticRatingSummaryText" style="white-space: normal;" secondary></div>
+                            </paper-item-body>
+                        </paper-icon-item>
                     </div>
+                    <div id="criticReviewsContent"></div>
+                </div>
+            </div>
+
+            <div id="scenesCollapsible" style="display: none;" class="detailSection">
+                <h1>
+                    ${HeaderScenes}
+                    <a class="detailSectionHeaderButton chapterSettingsButton clearLink" style="margin-top:-8px;display:inline-block;" href="metadataadvanced.html" title="${ButtonSettings}" style="display:none;"><paper-icon-button icon="settings"></paper-icon-button></a>
+                </h1>
+                <div id="scenesContent" class="smallItemsContainer"></div>
+            </div>
+            <div id="themeSongsCollapsible" style="display: none;" class="detailSection">
+                <h1>
+                    ${HeaderThemeSongs}
+                </h1>
+                <div id="themeSongsContent"></div>
+            </div>
+            <div class="detailSection detailsSection">
+                <h1>
+                    ${HeaderDetails}
+                </h1>
+                <div>
+                    <div class="tabDetails">
+                        <p class="itemOverview bottomOverview"></p>
+                        <p id="players"></p>
+                        <p class="itemExternalLinks"></p>
+                        <p class="itemStudios"></p>
+                        <p class="itemTags"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="themeVideosCollapsible" style="display: none;" class="detailSection">
+                <h1>
+                    ${HeaderThemeVideos}
+                </h1>
+                <div id="themeVideosContent" class="smallItemsContainer"></div>
+            </div>
+
+            <div class="detailSection audioVideoMediaInfo hide">
+                <h1>${HeaderMediaInfo}</h1>
+                <div>
+                    <div class="splitVersionContainer" style="border-bottom: 1px solid #444;padding:1em 0;">
+                        <paper-button raised class="btnSplitVersions subdued">${ButtonSplitVersionsApart}</paper-button>
+                    </div>
+                    <div id="mediaInfoContent" class="mediaInfoContent"></div>
                 </div>
             </div>
         </div>
-
-        <div class="mobileDetails" style="text-align:center;clear:both;">
-            <div style="height:10px;"></div>
-            <div>
-                <span class="itemMiscInfo"></span>
-                <span class="itemCommunityRating" style="margin-left:1em;"></span>
-            </div>
-            <div class="detailButtonsContainer">
-                <br />
-                <paper-button raised class="subdued btnPlayTrailer hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonTrailer}</span></paper-button>
-                <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><paper-button raised class="subdued"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonTrailer}</span></paper-button></a>
-                <paper-button raised class="subdued btnRecord hide"><iron-icon icon="videocam"></iron-icon><span>${ButtonRecord}</span></paper-button>
-                <paper-button raised class="subdued hide btnCancelRecording"><iron-icon icon="delete"></iron-icon><span>${ButtonCancelRecording}</span></paper-button>
-                <paper-button raised class="subdued btnSync hide"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
-                <paper-button raised class="subdued btnMoreCommands hide notext"><iron-icon icon="more-vert"></iron-icon></paper-button>
-                <div class="detailUserDataIcons userDataIcons"></div>
-            </div>
-        </div>
-        <div data-role="content" style="padding-top:0;clear:both;">
-            <div class="detailPageContent">
-                <div class="detailSection">
-                    <div class="mobileDetails">
-                        <p class="artist"></p>
-                        <p class="itemGenres"></p>
-                    </div>
-                    <div class="desktopDetails" style="height:10px;"></div>
-                    <h2 class="tagline"></h2>
-                    <p id="itemBirthday"></p>
-                    <p id="itemBirthLocation"></p>
-                    <p id="itemDeathDate"></p>
-                    <p id="seriesAirTime"></p>
-                    <p class="airDate"></p>
-                    <p class="itemOverview topOverview"></p>
-                </div>
-                <div class="collectionItems"></div>
-                <div id="childrenCollapsible" class="hide detailSection">
-                    <h1 class="childrenSectionHeader">
-                        <span id="childrenTitle"></span>
-                    </h1>
-                    <div id="childrenContent">
-                        <div class="childrenItemsContainer itemsContainer noautoinit" style="text-align:left;"></div>
-                    </div>
-                </div>
-                <div id="additionalPartsCollapsible" class="detailSection hide">
-                    <h1>
-                        ${HeaderAdditionalParts}
-                    </h1>
-                    <div id="additionalPartsContent" class="smallItemsContainer"></div>
-                </div>
-                <div id="castCollapsible" style="display: none;" class="detailSection">
-                    <h1 id="peopleHeader">
-                        ${HeaderCastCrew}
-                    </h1>
-                    <div id="castContent"></div>
-                </div>
-
-                <div class="detailSection photoInfo hide">
-                    <h1>
-                        ${HeaderPhotoInfo}
-                    </h1>
-                    <div>
-                        <div class="photoInfoContent"></div>
-                    </div>
-                </div>
-
-                <div id="specialsCollapsible" class="detailSection hide">
-                    <h1>
-                        ${HeaderSpecialFeatures}
-                    </h1>
-                    <div id="specialsContent" class="smallItemsContainer"></div>
-                </div>
-                <div id="musicVideosCollapsible" style="display: none;" class="detailSection">
-                    <h1>
-                        ${HeaderMusicVideos}
-                    </h1>
-                    <div id="musicVideosContent" class="smallItemsContainer"></div>
-                </div>
-                <div id="similarCollapsible" style="display: none;" class="detailSection">
-                    <h1 class="similiarHeader"></h1>
-                    <div id="similarContent"></div>
-                </div>
-                <div id="criticReviewsCollapsible" style="display: none;" class="detailSection">
-                    <h1>
-                        ${HeaderAwardsAndReviews}
-                    </h1>
-                    <div>
-                        <p id="awardSummary"></p>
-                        <div class="paperList" id="criticRatingSummary">
-                            <paper-icon-item>
-                                <paper-fab mini style="background-color: transparent; background-repeat: no-repeat; background-position: center center; background-size: cover; background-image: url(css/images/fresh.png);" item-icon></paper-fab>
-                                <paper-item-body three-line>
-                                    <div>TOMATOMETER®</div>
-                                    <div class="criticRatingScore"></div>
-                                    <div class="criticRatingSummaryText" style="white-space: normal;" secondary></div>
-                                </paper-item-body>
-                            </paper-icon-item>
-                        </div>
-                        <div id="criticReviewsContent"></div>
-                    </div>
-                </div>
-
-                <div id="scenesCollapsible" style="display: none;" class="detailSection">
-                    <h1>
-                        ${HeaderScenes}
-                        <a class="detailSectionHeaderButton chapterSettingsButton clearLink" style="margin-top:-8px;display:inline-block;" href="metadataadvanced.html" title="${ButtonSettings}" style="display:none;"><paper-icon-button icon="settings"></paper-icon-button></a>
-                    </h1>
-                    <div id="scenesContent" class="smallItemsContainer"></div>
-                </div>
-                <div id="themeSongsCollapsible" style="display: none;" class="detailSection">
-                    <h1>
-                        ${HeaderThemeSongs}
-                    </h1>
-                    <div id="themeSongsContent"></div>
-                </div>
-                <div class="detailSection detailsSection">
-                    <h1>
-                        ${HeaderDetails}
-                    </h1>
-                    <div>
-                        <div class="tabDetails">
-                            <p class="itemOverview bottomOverview"></p>
-                            <p id="players"></p>
-                            <p class="itemExternalLinks"></p>
-                            <p class="itemStudios"></p>
-                            <p class="itemTags"></p>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="themeVideosCollapsible" style="display: none;" class="detailSection">
-                    <h1>
-                        ${HeaderThemeVideos}
-                    </h1>
-                    <div id="themeVideosContent" class="smallItemsContainer"></div>
-                </div>
-
-                <div class="detailSection audioVideoMediaInfo hide">
-                    <h1>${HeaderMediaInfo}</h1>
-                    <div>
-                        <div class="splitVersionContainer" style="border-bottom: 1px solid #444;padding:1em 0;">
-                            <paper-button raised class="btnSplitVersions subdued">${ButtonSplitVersionsApart}</paper-button>
-                        </div>
-                        <div id="mediaInfoContent" class="mediaInfoContent"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
-</body>
-</html>
+
+</div>

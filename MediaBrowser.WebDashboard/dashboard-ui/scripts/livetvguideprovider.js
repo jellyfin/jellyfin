@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     function init(page, type, providerId) {
 
@@ -23,7 +23,6 @@
             var html = this.response;
             var elem = page.querySelector('.providerTemplate');
             elem.innerHTML = Globalize.translateDocument(html);
-            $(elem).trigger('create');
 
             init(page, type, providerId);
         }
@@ -41,4 +40,4 @@
         loadTemplate(page, type, providerId);
     });
 
-})(jQuery, document, window);
+});

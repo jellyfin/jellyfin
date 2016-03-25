@@ -77,6 +77,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      * @param {string|number} value the value to select.
      */
     select: function(value) {
+      // Cancel automatically focusing a default item if the menu received focus
+      // through a user action selecting a particular item.
       if (this._defaultFocusAsync) {
         this.cancelAsync(this._defaultFocusAsync);
         this._defaultFocusAsync = null;
@@ -241,12 +243,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       // Do not focus the selected tab if the deepest target is part of the
       // menu element's local DOM and is focusable.
-      var rootTarget = Polymer.dom(event).rootTarget;
+      var rootTarget = /** @type {?HTMLElement} */(
+          Polymer.dom(event).rootTarget);
       if (rootTarget !== this && typeof rootTarget.tabIndex !== "undefined" && !this.isLightDescendant(rootTarget)) {
         return;
       }
-
-      this.blur();
 
       // clear the cached focus item
       this._defaultFocusAsync = this.async(function() {
@@ -258,11 +259,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         if (selectedItem) {
           this._setFocusedItem(selectedItem);
-        } else {
+        } else if (this.items[0]) {
           this._setFocusedItem(this.items[0]);
         }
-      // async 1ms to wait for `select` to get called from `_itemActivate`
-      }, 1);
+      });
     },
 
     /**

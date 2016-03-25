@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['libraryBrowser', 'jQuery'], function (libraryBrowser, $) {
 
     var defaultFirstSection = 'smalllibrarytiles';
 
@@ -212,10 +212,9 @@
 
     function loadHomeTab(page, tabContent) {
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
+        if (libraryBrowser.needsRefresh(tabContent)) {
             if (window.ApiClient) {
                 var userId = Dashboard.getCurrentUserId();
-
                 Dashboard.showLoadingMsg();
 
                 getDisplayPreferences('home', userId).then(function (result) {
@@ -229,7 +228,7 @@
                             }
                             Dashboard.hideLoadingMsg();
 
-                            LibraryBrowser.setLastRefreshed(tabContent);
+                            libraryBrowser.setLastRefreshed(tabContent);
                         });
 
                     });
@@ -264,61 +263,26 @@
                 method = 'renderUpcoming';
                 break;
             default:
+                return;
                 break;
         }
 
         require(depends, function () {
-
             window[scope][method](page, tabContent);
-
         });
     }
-
-    pageIdOn('pageinit', "indexPage", function () {
-
-        var page = this;
-
-        var tabs = page.querySelector('paper-tabs');
-        var pages = page.querySelector('neon-animated-pages');
-
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, 'index.html');
-
-        pages.addEventListener('tabchange', function (e) {
-            loadTab(page, parseInt(e.target.selected));
-        });
-
-        page.querySelector('.btnTakeTour').addEventListener('click', function () {
-            takeTour(page, Dashboard.getCurrentUserId());
-        });
-
-        if (AppInfo.enableHomeTabs) {
-            page.classList.remove('noSecondaryNavPage');
-            page.querySelector('.libraryViewNav').classList.remove('hide');
-        } else {
-            page.classList.add('noSecondaryNavPage');
-            page.querySelector('.libraryViewNav').classList.add('hide');
-        }
-    });
-
-    pageIdOn('pageshow', "indexPage", function () {
-
-        var page = this;
-        Events.on(MediaController, 'playbackstop', onPlaybackStop);
-    });
-
-    pageIdOn('pagebeforehide', "indexPage", function () {
-
-        var page = this;
-        Events.off(MediaController, 'playbackstop', onPlaybackStop);
-    });
 
     function onPlaybackStop(e, state) {
 
         if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
-            var page = $($.mobile.activePage)[0];
-            var pages = page.querySelector('neon-animated-pages');
+            var page = $.mobile.activePage;
+            var pageTabsContainer = page.querySelector('.pageTabsContainer');
 
-            pages.dispatchEvent(new CustomEvent("tabchange", {}));
+            pageTabsContainer.dispatchEvent(new CustomEvent("tabchange", {
+                detail: {
+                    selectedTabIndex: libraryBrowser.selectedTabIndex(pageTabsContainer)
+                }
+            }));
         }
     }
 
@@ -331,4 +295,36 @@
         renderHomeTab: loadHomeTab
     };
 
-})(jQuery, document);
+    return function (view, params) {
+
+        var self = this;
+
+        var pageTabsContainer = view.querySelector('.pageTabsContainer');
+
+        libraryBrowser.configurePaperLibraryTabs(view, view.querySelector('paper-tabs'), pageTabsContainer, 'home.html');
+
+        pageTabsContainer.addEventListener('tabchange', function (e) {
+            loadTab(view, parseInt(e.detail.selectedTabIndex));
+        });
+
+        view.querySelector('.btnTakeTour').addEventListener('click', function () {
+            takeTour(view, Dashboard.getCurrentUserId());
+        });
+
+        if (AppInfo.enableHomeTabs) {
+            view.classList.remove('noSecondaryNavPage');
+            view.querySelector('.libraryViewNav').classList.remove('hide');
+        } else {
+            view.classList.add('noSecondaryNavPage');
+            view.querySelector('.libraryViewNav').classList.add('hide');
+        }
+
+        view.addEventListener('viewshow', function (e) {
+            Events.on(MediaController, 'playbackstop', onPlaybackStop);
+        });
+
+        view.addEventListener('viewbeforehide', function (e) {
+            Events.off(MediaController, 'playbackstop', onPlaybackStop);
+        });
+    };
+});

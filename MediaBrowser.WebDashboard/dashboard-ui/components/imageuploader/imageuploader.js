@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'paper-dialog', 'paper-fab'], function (paperDialogHelper) {
+﻿define(['dialogHelper', 'jQuery', 'paper-fab'], function (dialogHelper, $) {
 
     var currentItemId;
     var currentFile;
@@ -85,7 +85,7 @@
 
         Dashboard.showLoadingMsg();
 
-        var page = $(this).parents('paper-dialog');
+        var page = $(this).parents('.dialog');
 
         var imageType = $('#selectImageType', page).val();
 
@@ -137,7 +137,7 @@
             var template = this.response;
             currentItemId = itemId;
 
-            var dlg = paperDialogHelper.createDialog({
+            var dlg = dialogHelper.createDialog({
                 size: 'fullscreen-border'
             });
 
@@ -161,9 +161,9 @@
             document.body.appendChild(dlg);
 
             // Has to be assigned a z-index after the call to .open() 
-            $(dlg).on('iron-overlay-closed', onDialogClosed);
+            $(dlg).on('close', onDialogClosed);
 
-            paperDialogHelper.open(dlg);
+            dialogHelper.open(dlg);
 
             var editorContent = dlg.querySelector('.editorContent');
             initEditor(editorContent);
@@ -172,7 +172,7 @@
 
             $('.btnCloseDialog', dlg).on('click', function () {
 
-                paperDialogHelper.close(dlg);
+                dialogHelper.close(dlg);
             });
         }
 

@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'paper-item', 'paper-input', 'paper-fab', 'paper-item-body'], function (paperDialogHelper) {
+﻿define(['dialogHelper', 'jQuery', 'paper-item', 'paper-input', 'paper-fab', 'paper-item-body'], function (dialogHelper, $) {
 
     var systemInfo;
     function getSystemInfo() {
@@ -207,7 +207,7 @@
 
             getSystemInfo().then(function (systemInfo) {
 
-                var dlg = paperDialogHelper.createDialog({
+                var dlg = dialogHelper.createDialog({
                     size: 'medium'
                 });
 
@@ -237,13 +237,13 @@
                 $(dlg).on('iron-overlay-opened', function () {
                     this.querySelector('#txtDirectoryPickerPath input').focus();
                 });
-                $(dlg).on('iron-overlay-closed', onDialogClosed);
+                $(dlg).on('close', onDialogClosed);
 
-                paperDialogHelper.open(dlg);
+                dialogHelper.open(dlg);
 
                 $('.btnCloseDialog', dlg).on('click', function () {
 
-                    paperDialogHelper.close(dlg);
+                    dialogHelper.close(dlg);
                 });
 
                 currentDialog = dlg;
@@ -261,7 +261,7 @@
 
         self.close = function () {
             if (currentDialog) {
-                paperDialogHelper.close(currentDialog);
+                dialogHelper.close(currentDialog);
             }
         };
 

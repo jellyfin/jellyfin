@@ -289,7 +289,6 @@ namespace MediaBrowser.Api.Library
         private readonly IActivityManager _activityManager;
         private readonly ILocalizationManager _localization;
         private readonly ILiveTvManager _liveTv;
-        private readonly IChannelManager _channelManager;
         private readonly ITVSeriesManager _tvManager;
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly IFileSystem _fileSystem;
@@ -298,7 +297,7 @@ namespace MediaBrowser.Api.Library
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         public LibraryService(IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager,
-                              IDtoService dtoService, IUserDataManager userDataManager, IAuthorizationContext authContext, IActivityManager activityManager, ILocalizationManager localization, ILiveTvManager liveTv, IChannelManager channelManager, ITVSeriesManager tvManager, ILibraryMonitor libraryMonitor, IFileSystem fileSystem)
+                              IDtoService dtoService, IUserDataManager userDataManager, IAuthorizationContext authContext, IActivityManager activityManager, ILocalizationManager localization, ILiveTvManager liveTv, ITVSeriesManager tvManager, ILibraryMonitor libraryMonitor, IFileSystem fileSystem)
         {
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
@@ -309,7 +308,6 @@ namespace MediaBrowser.Api.Library
             _activityManager = activityManager;
             _localization = localization;
             _liveTv = liveTv;
-            _channelManager = channelManager;
             _tvManager = tvManager;
             _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
@@ -379,11 +377,10 @@ namespace MediaBrowser.Api.Library
             }
 
             var program = item as IHasProgramAttributes;
-            var channelItem = item as ChannelVideoItem;
 
-            if (item is Movie || (program != null && program.IsMovie) || (channelItem != null && channelItem.ContentType == ChannelMediaContentType.Movie) || (channelItem != null && channelItem.ContentType == ChannelMediaContentType.MovieExtra))
+            if (item is Movie || (program != null && program.IsMovie) || item is Trailer)
             {
-                return new MoviesService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService, _channelManager)
+                return new MoviesService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService)
                 {
                     AuthorizationContext = AuthorizationContext,
                     Logger = Logger,
@@ -400,7 +397,7 @@ namespace MediaBrowser.Api.Library
                 });
             }
 
-            if (item is Series || (program != null && program.IsSeries) || (channelItem != null && channelItem.ContentType == ChannelMediaContentType.Episode))
+            if (item is Series || (program != null && program.IsSeries))
             {
                 return new TvShowsService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService, _tvManager)
                 {
@@ -447,13 +444,11 @@ namespace MediaBrowser.Api.Library
 
         public void Post(PostUpdatedSeries request)
         {
-            var series = _libraryManager.GetItems(new InternalItemsQuery
+            var series = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(Series).Name }
 
-            }).Items;
-
-            series = series.Where(i => string.Equals(request.TvdbId, i.GetProviderId(MetadataProviders.Tvdb), StringComparison.OrdinalIgnoreCase)).ToArray();
+            }).Where(i => string.Equals(request.TvdbId, i.GetProviderId(MetadataProviders.Tvdb), StringComparison.OrdinalIgnoreCase)).ToArray();
 
             if (series.Length > 0)
             {
@@ -470,11 +465,11 @@ namespace MediaBrowser.Api.Library
 
         public void Post(PostUpdatedMovies request)
         {
-            var movies = _libraryManager.GetItems(new InternalItemsQuery
+            var movies = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(Movie).Name }
 
-            }).Items;
+            }).ToArray();
 
             if (!string.IsNullOrWhiteSpace(request.ImdbId))
             {
@@ -664,87 +659,38 @@ namespace MediaBrowser.Api.Library
         /// <returns>System.Object.</returns>
         public object Get(GetItemCounts request)
         {
-            var filteredItems = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, null, i => i.LocationType != LocationType.Virtual && FilterItem(i, request, request.UserId));
+            var user = string.IsNullOrWhiteSpace(request.UserId) ? null : _userManager.GetUserById(request.UserId);
 
             var counts = new ItemCounts
             {
-                AlbumCount = filteredItems.Count(i => i is MusicAlbum),
-                EpisodeCount = filteredItems.Count(i => i is Episode),
-                GameCount = filteredItems.Count(i => i is Game),
-                GameSystemCount = filteredItems.Count(i => i is GameSystem),
-                MovieCount = filteredItems.Count(i => i is Movie),
-                SeriesCount = filteredItems.Count(i => i is Series),
-                SongCount = filteredItems.Count(i => i is Audio),
-                MusicVideoCount = filteredItems.Count(i => i is MusicVideo),
-                BoxSetCount = filteredItems.Count(i => i is BoxSet),
-                BookCount = filteredItems.Count(i => i is Book),
-
-                UniqueTypes = filteredItems.Select(i => i.GetClientTypeName()).Distinct().ToList()
+                AlbumCount = GetCount(typeof(MusicAlbum), user, request),
+                EpisodeCount = GetCount(typeof(Episode), user, request),
+                GameCount = GetCount(typeof(Game), user, request),
+                GameSystemCount = GetCount(typeof(GameSystem), user, request),
+                MovieCount = GetCount(typeof(Movie), user, request),
+                SeriesCount = GetCount(typeof(Series), user, request),
+                SongCount = GetCount(typeof(Audio), user, request),
+                MusicVideoCount = GetCount(typeof(MusicVideo), user, request),
+                BoxSetCount = GetCount(typeof(BoxSet), user, request),
+                BookCount = GetCount(typeof(Book), user, request)
             };
 
             return ToOptimizedSerializedResultUsingCache(counts);
         }
 
-        private IList<BaseItem> GetAllLibraryItems(string userId, IUserManager userManager, ILibraryManager libraryManager, string parentId, Func<BaseItem, bool> filter)
+        private int GetCount(Type type, User user, GetItemCounts request)
         {
-            if (!string.IsNullOrEmpty(parentId))
+            var query = new InternalItemsQuery(user)
             {
-                var folder = (Folder)libraryManager.GetItemById(new Guid(parentId));
+                IncludeItemTypes = new[] { type.Name },
+                Limit = 0,
+                Recursive = true,
+                ExcludeLocationTypes = new[] { LocationType.Virtual },
+                SourceTypes = new[] { SourceType.Library },
+                IsFavorite = request.IsFavorite
+            };
 
-                if (!string.IsNullOrWhiteSpace(userId))
-                {
-                    var user = userManager.GetUserById(userId);
-
-                    if (user == null)
-                    {
-                        throw new ArgumentException("User not found");
-                    }
-
-                    return folder
-                        .GetRecursiveChildren(user, filter)
-                        .ToList();
-                }
-
-                return folder
-                    .GetRecursiveChildren(filter);
-            }
-            if (!string.IsNullOrWhiteSpace(userId))
-            {
-                var user = userManager.GetUserById(userId);
-
-                if (user == null)
-                {
-                    throw new ArgumentException("User not found");
-                }
-
-                return userManager
-                    .GetUserById(userId)
-                    .RootFolder
-                    .GetRecursiveChildren(user, filter)
-                    .ToList();
-            }
-
-            return libraryManager
-                .RootFolder
-                .GetRecursiveChildren(filter);
-        }
-
-        private bool FilterItem(BaseItem item, GetItemCounts request, string userId)
-        {
-            if (!string.IsNullOrWhiteSpace(userId))
-            {
-                if (request.IsFavorite.HasValue)
-                {
-                    var val = request.IsFavorite.Value;
-
-                    if (_userDataManager.GetUserData(userId, item.GetUserDataKey()).IsFavorite != val)
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
+            return _libraryManager.GetItemsResult(query).TotalRecordCount;
         }
 
         /// <summary>
@@ -985,20 +931,15 @@ namespace MediaBrowser.Api.Library
              ? new string[] { }
              : request.IncludeItemTypes.Split(',');
 
-            Func<BaseItem, bool> filter = i =>
+            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
+            
+            var query = new InternalItemsQuery(user)
             {
-                if (includeTypes.Length > 0)
-                {
-                    if (!includeTypes.Contains(i.GetType().Name, StringComparer.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
+                IncludeItemTypes = includeTypes,
+                Recursive = true
             };
 
-            IEnumerable<BaseItem> items = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, null, filter);
+            var items = _libraryManager.GetItemList(query);
 
             var lookup = items
                 .ToLookup(i => i.ProductionYear ?? -1)

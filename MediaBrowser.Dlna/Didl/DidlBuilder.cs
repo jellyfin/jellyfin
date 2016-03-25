@@ -188,15 +188,15 @@ namespace MediaBrowser.Dlna.Didl
                 {
                     var subtitleAdded = AddSubtitleElement(container, subtitle);
 
-					if (subtitleAdded && _profile.EnableSingleSubtitleLimit) 
-					{
-						break;
-					}
+                    if (subtitleAdded && _profile.EnableSingleSubtitleLimit)
+                    {
+                        break;
+                    }
                 }
             }
         }
 
-		private bool AddSubtitleElement(XmlElement container, SubtitleStreamInfo info)
+        private bool AddSubtitleElement(XmlElement container, SubtitleStreamInfo info)
         {
             var subtitleProfile = _profile.SubtitleProfiles
                 .FirstOrDefault(i => string.Equals(info.Format, i.Format, StringComparison.OrdinalIgnoreCase) && i.Method == SubtitleDeliveryMethod.External);
@@ -213,13 +213,13 @@ namespace MediaBrowser.Dlna.Didl
                 // <sec:CaptionInfoEx sec:type="srt">http://192.168.1.3:9999/video.srt</sec:CaptionInfoEx>
                 // <sec:CaptionInfo sec:type="srt">http://192.168.1.3:9999/video.srt</sec:CaptionInfo>
 
-                //var res = container.OwnerDocument.CreateElement("SEC", "CaptionInfoEx");
+                var res = container.OwnerDocument.CreateElement("CaptionInfoEx", "sec");
 
-                //res.InnerText = info.Url;
+                res.InnerText = info.Url;
 
                 //// TODO: attribute needs SEC:
-                //res.SetAttribute("type", info.Format.ToLower());
-                //container.AppendChild(res);
+                res.SetAttribute("type", "sec", info.Format.ToLower());
+                container.AppendChild(res);
             }
             else if (string.Equals(subtitleMode, "smi", StringComparison.OrdinalIgnoreCase))
             {
@@ -243,7 +243,7 @@ namespace MediaBrowser.Dlna.Didl
                 container.AppendChild(res);
             }
 
-			return true;
+            return true;
         }
 
         private void AddVideoResource(XmlElement container, IHasMediaSources video, string deviceId, Filter filter, string contentFeatures, StreamInfo streamInfo)

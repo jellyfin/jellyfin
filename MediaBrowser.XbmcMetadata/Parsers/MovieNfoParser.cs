@@ -11,7 +11,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 {
     class MovieNfoParser : BaseNfoParser<Video>
     {
-        public MovieNfoParser(ILogger logger, IConfigurationManager config) : base(logger, config)
+        public MovieNfoParser(ILogger logger, IConfigurationManager config)
+            : base(logger, config)
         {
         }
 
@@ -35,21 +36,38 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             switch (reader.Name)
             {
                 case "id":
-                    var id = reader.ReadElementContentAsString();
-                    if (!string.IsNullOrWhiteSpace(id))
                     {
-                        item.SetProviderId(MetadataProviders.Imdb, id);
-                    }
-                    break;
+                        string imdbId = reader.GetAttribute("IMDB");
+                        string tmdbId = reader.GetAttribute("TMDB");
 
+                        if (string.IsNullOrWhiteSpace(imdbId))
+                        {
+                            imdbId = reader.ReadElementContentAsString();
+                        }
+                        if (!string.IsNullOrWhiteSpace(imdbId))
+                        {
+                            item.SetProviderId(MetadataProviders.Imdb, imdbId);
+                        }
+                        if (!string.IsNullOrWhiteSpace(tmdbId))
+                        {
+                            item.SetProviderId(MetadataProviders.Tmdb, tmdbId);
+                        }
+                        break;
+                    }
                 case "set":
                     {
-                        var val = reader.ReadElementContentAsString();
                         var movie = item as Movie;
 
+                        var tmdbcolid = reader.GetAttribute("tmdbcolid");
+                        if (!string.IsNullOrWhiteSpace(tmdbcolid) && movie != null)
+                        {
+                            movie.SetProviderId(MetadataProviders.TmdbCollection, tmdbcolid);
+                        }
+
+                        var val = reader.ReadElementContentAsString();
                         if (!string.IsNullOrWhiteSpace(val) && movie != null)
                         {
-                            movie.TmdbCollectionName = val;
+                            movie.CollectionName = val;
                         }
 
                         break;

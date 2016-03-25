@@ -65,6 +65,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         assert.isAbove(ripple.offsetWidth, 0);
       });
 
+      test('slider has focus after click event on bar"', function() {
+        var focusSpy = sinon.spy(slider, 'focus');
+        MockInteractions.down(slider.$.sliderBar);
+        assert.isTrue(focusSpy.called);
+      });
+
       a11ySuite('trivialSlider');
 
     });

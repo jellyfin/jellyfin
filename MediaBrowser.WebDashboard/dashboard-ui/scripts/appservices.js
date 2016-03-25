@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     function reloadList(page) {
 
@@ -105,4 +105,4 @@
         reloadList(page);
     });
 
-})(jQuery, document);
+});

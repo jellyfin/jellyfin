@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'paper-dialog', 'paper-input'], function (paperDialogHelper) {
+﻿define(['dialogHelper', 'jQuery', 'paper-input'], function (dialogHelper, $) {
 
     var lastPlaylistId = '';
 
@@ -17,7 +17,7 @@
 
         Dashboard.showLoadingMsg();
 
-        var panel = $(this).parents('paper-dialog')[0];
+        var panel = $(this).parents('.dialog')[0];
 
         var playlistId = $('#selectPlaylistToAddTo', panel).val();
 
@@ -52,7 +52,7 @@
 
             var id = result.Id;
 
-            paperDialogHelper.close(dlg);
+            dialogHelper.close(dlg);
             redirectToPlaylist(id);
         });
     }
@@ -73,7 +73,7 @@
 
             Dashboard.hideLoadingMsg();
 
-            paperDialogHelper.close(dlg);
+            dialogHelper.close(dlg);
             require(['toast'], function (toast) {
                 toast(Globalize.translate('MessageAddedToPlaylistSuccess'));
             });
@@ -196,7 +196,7 @@
 
             items = items || [];
 
-            var dlg = paperDialogHelper.createDialog({
+            var dlg = dialogHelper.createDialog({
                 size: 'small'
             });
 
@@ -221,13 +221,13 @@
 
             initEditor(dlg, items);
 
-            $(dlg).on('iron-overlay-closed', onDialogClosed);
+            $(dlg).on('close', onDialogClosed);
 
-            paperDialogHelper.open(dlg);
+            dialogHelper.open(dlg);
 
             $('.btnCancel', dlg).on('click', function () {
 
-                paperDialogHelper.close(dlg);
+                dialogHelper.close(dlg);
             });
         };
     }

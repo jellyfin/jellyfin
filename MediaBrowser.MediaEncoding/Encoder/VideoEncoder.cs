@@ -88,7 +88,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             args += keyFrameArg;
 
-            var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream;
+            var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.Options.SubtitleMethod == SubtitleDeliveryMethod.Encode;
 
             // Add resolution params, if specified
             if (!hasGraphicalSubs)

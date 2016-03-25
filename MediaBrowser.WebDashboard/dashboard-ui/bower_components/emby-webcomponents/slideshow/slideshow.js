@@ -1,4 +1,4 @@
-define(['paperdialoghelper', 'inputManager', 'connectionManager', 'browser', 'css!./style', 'html!./icons', 'iron-icon-set', 'paper-fab', 'paper-icon-button', 'paper-spinner'], function (paperdialoghelper, inputmanager, connectionManager, browser) {
+define(['dialogHelper', 'inputManager', 'connectionManager', 'browser', 'css!./style', 'html!./icons', 'iron-icon-set', 'paper-fab', 'paper-icon-button', 'paper-spinner'], function (dialogHelper, inputmanager, connectionManager, browser) {
 
     return function (options) {
 
@@ -8,7 +8,7 @@ define(['paperdialoghelper', 'inputManager', 'connectionManager', 'browser', 'cs
 
         function createElements(options) {
 
-            dlg = paperdialoghelper.createDialog({
+            dlg = dialogHelper.createDialog({
                 exitAnimationDuration: options.interactive ? 400 : 800,
                 size: 'fullscreen'
             });
@@ -40,7 +40,7 @@ define(['paperdialoghelper', 'inputManager', 'connectionManager', 'browser', 'cs
             if (options.interactive) {
                 dlg.querySelector('.btnSlideshowExit').addEventListener('click', function (e) {
 
-                    paperdialoghelper.close(dlg);
+                    dialogHelper.close(dlg);
                 });
                 dlg.querySelector('.btnSlideshowNext').addEventListener('click', nextImage);
                 dlg.querySelector('.btnSlideshowPrevious').addEventListener('click', previousImage);
@@ -49,7 +49,7 @@ define(['paperdialoghelper', 'inputManager', 'connectionManager', 'browser', 'cs
 
             document.body.appendChild(dlg);
 
-            paperdialoghelper.open(dlg).then(function () {
+            dialogHelper.open(dlg).then(function () {
 
                 stopInterval();
                 dlg.parentNode.removeChild(dlg);
@@ -57,7 +57,7 @@ define(['paperdialoghelper', 'inputManager', 'connectionManager', 'browser', 'cs
 
             inputmanager.on(window, onInputCommand);
 
-            dlg.addEventListener('iron-overlay-closed', onDialogClosed);
+            dlg.addEventListener('close', onDialogClosed);
 
             if (options.interactive) {
                 loadSwiper(dlg);
@@ -167,7 +167,7 @@ define(['paperdialoghelper', 'inputManager', 'connectionManager', 'browser', 'cs
                 if (options.loop === false) {
 
                     if (swiperInstance.activeIndex >= swiperInstance.slides.length - 1) {
-                        paperdialoghelper.close(dlg);
+                        dialogHelper.close(dlg);
                         return;
                     }
                 }
@@ -264,7 +264,6 @@ define(['paperdialoghelper', 'inputManager', 'connectionManager', 'browser', 'cs
             // If not resizing, get the original image
             if (!options.maxWidth && !options.width && !options.maxHeight && !options.height) {
                 options.quality = 100;
-                options.format = 'jpg';
             }
 
             if (item.BackdropImageTags && item.BackdropImageTags.length) {
@@ -434,7 +433,7 @@ define(['paperdialoghelper', 'inputManager', 'connectionManager', 'browser', 'cs
             var dialog = dlg;
             if (dialog) {
 
-                paperdialoghelper.close(dialog);
+                dialogHelper.close(dialog);
             }
         };
     }

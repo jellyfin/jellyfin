@@ -6,7 +6,13 @@
 
     (function ($, undefined) {
 
-        var escapeId = $.mobile.path.hashToSelector;
+        var escapeId = function (hash) {
+            var hasHash = (hash.substring(0, 1) === "#");
+            if (hasHash) {
+                hash = hash.substring(1);
+            }
+            return (hasHash ? "#" : "") + hash.replace(/([!"#$%&'()*+,./:;<=>?@[\]^`{|}~])/g, "\\$1");
+        };
 
         $.widget("mobile.checkboxradio", $.extend({
 

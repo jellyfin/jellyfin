@@ -1,0 +1,2303 @@
+/**
+ * Copyright 2015 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import "../variables";
+
+@if $trim-color-classes == false {
+  // Red
+
+  .mdl-color-text--red {
+    color: unquote("rgb(#{$palette-red-500})") !important;
+  }
+
+  .mdl-color--red {
+    background-color: unquote("rgb(#{$palette-red-500})") !important;
+  }
+
+  .mdl-color-text--red-50 {
+    color: unquote("rgb(#{$palette-red-50})") !important;
+  }
+
+  .mdl-color--red-50 {
+    background-color: unquote("rgb(#{$palette-red-50})") !important;
+  }
+
+  .mdl-color-text--red-100 {
+    color: unquote("rgb(#{$palette-red-100})") !important;
+  }
+
+  .mdl-color--red-100 {
+    background-color: unquote("rgb(#{$palette-red-100})") !important;
+  }
+
+  .mdl-color-text--red-200 {
+    color: unquote("rgb(#{$palette-red-200})") !important;
+  }
+
+  .mdl-color--red-200 {
+    background-color: unquote("rgb(#{$palette-red-200})") !important;
+  }
+
+  .mdl-color-text--red-300 {
+    color: unquote("rgb(#{$palette-red-300})") !important;
+  }
+
+  .mdl-color--red-300 {
+    background-color: unquote("rgb(#{$palette-red-300})") !important;
+  }
+
+  .mdl-color-text--red-400 {
+    color: unquote("rgb(#{$palette-red-400})") !important;
+  }
+
+  .mdl-color--red-400 {
+    background-color: unquote("rgb(#{$palette-red-400})") !important;
+  }
+
+  .mdl-color-text--red-500 {
+    color: unquote("rgb(#{$palette-red-500})") !important;
+  }
+
+  .mdl-color--red-500 {
+    background-color: unquote("rgb(#{$palette-red-500})") !important;
+  }
+
+  .mdl-color-text--red-600 {
+    color: unquote("rgb(#{$palette-red-600})") !important;
+  }
+
+  .mdl-color--red-600 {
+    background-color: unquote("rgb(#{$palette-red-600})") !important;
+  }
+
+  .mdl-color-text--red-700 {
+    color: unquote("rgb(#{$palette-red-700})") !important;
+  }
+
+  .mdl-color--red-700 {
+    background-color: unquote("rgb(#{$palette-red-700})") !important;
+  }
+
+  .mdl-color-text--red-800 {
+    color: unquote("rgb(#{$palette-red-800})") !important;
+  }
+
+  .mdl-color--red-800 {
+    background-color: unquote("rgb(#{$palette-red-800})") !important;
+  }
+
+  .mdl-color-text--red-900 {
+    color: unquote("rgb(#{$palette-red-900})") !important;
+  }
+
+  .mdl-color--red-900 {
+    background-color: unquote("rgb(#{$palette-red-900})") !important;
+  }
+
+  .mdl-color-text--red-A100 {
+    color: unquote("rgb(#{$palette-red-A100})") !important;
+  }
+
+  .mdl-color--red-A100 {
+    background-color: unquote("rgb(#{$palette-red-A100})") !important;
+  }
+
+  .mdl-color-text--red-A200 {
+    color: unquote("rgb(#{$palette-red-A200})") !important;
+  }
+
+  .mdl-color--red-A200 {
+    background-color: unquote("rgb(#{$palette-red-A200})") !important;
+  }
+
+  .mdl-color-text--red-A400 {
+    color: unquote("rgb(#{$palette-red-A400})") !important;
+  }
+
+  .mdl-color--red-A400 {
+    background-color: unquote("rgb(#{$palette-red-A400})") !important;
+  }
+
+  .mdl-color-text--red-A700 {
+    color: unquote("rgb(#{$palette-red-A700})") !important;
+  }
+
+  .mdl-color--red-A700 {
+    background-color: unquote("rgb(#{$palette-red-A700})") !important;
+  }
+
+  // Pink
+
+  .mdl-color-text--pink {
+    color: unquote("rgb(#{$palette-pink-500})") !important;
+  }
+
+  .mdl-color--pink {
+    background-color: unquote("rgb(#{$palette-pink-500})") !important;
+  }
+
+  .mdl-color-text--pink-50 {
+    color: unquote("rgb(#{$palette-pink-50})") !important;
+  }
+
+  .mdl-color--pink-50 {
+    background-color: unquote("rgb(#{$palette-pink-50})") !important;
+  }
+
+  .mdl-color-text--pink-100 {
+    color: unquote("rgb(#{$palette-pink-100})") !important;
+  }
+
+  .mdl-color--pink-100 {
+    background-color: unquote("rgb(#{$palette-pink-100})") !important;
+  }
+
+  .mdl-color-text--pink-200 {
+    color: unquote("rgb(#{$palette-pink-200})") !important;
+  }
+
+  .mdl-color--pink-200 {
+    background-color: unquote("rgb(#{$palette-pink-200})") !important;
+  }
+
+  .mdl-color-text--pink-300 {
+    color: unquote("rgb(#{$palette-pink-300})") !important;
+  }
+
+  .mdl-color--pink-300 {
+    background-color: unquote("rgb(#{$palette-pink-300})") !important;
+  }
+
+  .mdl-color-text--pink-400 {
+    color: unquote("rgb(#{$palette-pink-400})") !important;
+  }
+
+  .mdl-color--pink-400 {
+    background-color: unquote("rgb(#{$palette-pink-400})") !important;
+  }
+
+  .mdl-color-text--pink-500 {
+    color: unquote("rgb(#{$palette-pink-500})") !important;
+  }
+
+  .mdl-color--pink-500 {
+    background-color: unquote("rgb(#{$palette-pink-500})") !important;
+  }
+
+  .mdl-color-text--pink-600 {
+    color: unquote("rgb(#{$palette-pink-600})") !important;
+  }
+
+  .mdl-color--pink-600 {
+    background-color: unquote("rgb(#{$palette-pink-600})") !important;
+  }
+
+  .mdl-color-text--pink-700 {
+    color: unquote("rgb(#{$palette-pink-700})") !important;
+  }
+
+  .mdl-color--pink-700 {
+    background-color: unquote("rgb(#{$palette-pink-700})") !important;
+  }
+
+  .mdl-color-text--pink-800 {
+    color: unquote("rgb(#{$palette-pink-800})") !important;
+  }
+
+  .mdl-color--pink-800 {
+    background-color: unquote("rgb(#{$palette-pink-800})") !important;
+  }
+
+  .mdl-color-text--pink-900 {
+    color: unquote("rgb(#{$palette-pink-900})") !important;
+  }
+
+  .mdl-color--pink-900 {
+    background-color: unquote("rgb(#{$palette-pink-900})") !important;
+  }
+
+  .mdl-color-text--pink-A100 {
+    color: unquote("rgb(#{$palette-pink-A100})") !important;
+  }
+
+  .mdl-color--pink-A100 {
+    background-color: unquote("rgb(#{$palette-pink-A100})") !important;
+  }
+
+  .mdl-color-text--pink-A200 {
+    color: unquote("rgb(#{$palette-pink-A200})") !important;
+  }
+
+  .mdl-color--pink-A200 {
+    background-color: unquote("rgb(#{$palette-pink-A200})") !important;
+  }
+
+  .mdl-color-text--pink-A400 {
+    color: unquote("rgb(#{$palette-pink-A400})") !important;
+  }
+
+  .mdl-color--pink-A400 {
+    background-color: unquote("rgb(#{$palette-pink-A400})") !important;
+  }
+
+  .mdl-color-text--pink-A700 {
+    color: unquote("rgb(#{$palette-pink-A700})") !important;
+  }
+
+  .mdl-color--pink-A700 {
+    background-color: unquote("rgb(#{$palette-pink-A700})") !important;
+  }
+
+  // Purple
+
+  .mdl-color-text--purple {
+    color: unquote("rgb(#{$palette-purple-500})") !important;
+  }
+
+  .mdl-color--purple {
+    background-color: unquote("rgb(#{$palette-purple-500})") !important;
+  }
+
+  .mdl-color-text--purple-50 {
+    color: unquote("rgb(#{$palette-purple-50})") !important;
+  }
+
+  .mdl-color--purple-50 {
+    background-color: unquote("rgb(#{$palette-purple-50})") !important;
+  }
+
+  .mdl-color-text--purple-100 {
+    color: unquote("rgb(#{$palette-purple-100})") !important;
+  }
+
+  .mdl-color--purple-100 {
+    background-color: unquote("rgb(#{$palette-purple-100})") !important;
+  }
+
+  .mdl-color-text--purple-200 {
+    color: unquote("rgb(#{$palette-purple-200})") !important;
+  }
+
+  .mdl-color--purple-200 {
+    background-color: unquote("rgb(#{$palette-purple-200})") !important;
+  }
+
+  .mdl-color-text--purple-300 {
+    color: unquote("rgb(#{$palette-purple-300})") !important;
+  }
+
+  .mdl-color--purple-300 {
+    background-color: unquote("rgb(#{$palette-purple-300})") !important;
+  }
+
+  .mdl-color-text--purple-400 {
+    color: unquote("rgb(#{$palette-purple-400})") !important;
+  }
+
+  .mdl-color--purple-400 {
+    background-color: unquote("rgb(#{$palette-purple-400})") !important;
+  }
+
+  .mdl-color-text--purple-500 {
+    color: unquote("rgb(#{$palette-purple-500})") !important;
+  }
+
+  .mdl-color--purple-500 {
+    background-color: unquote("rgb(#{$palette-purple-500})") !important;
+  }
+
+  .mdl-color-text--purple-600 {
+    color: unquote("rgb(#{$palette-purple-600})") !important;
+  }
+
+  .mdl-color--purple-600 {
+    background-color: unquote("rgb(#{$palette-purple-600})") !important;
+  }
+
+  .mdl-color-text--purple-700 {
+    color: unquote("rgb(#{$palette-purple-700})") !important;
+  }
+
+  .mdl-color--purple-700 {
+    background-color: unquote("rgb(#{$palette-purple-700})") !important;
+  }
+
+  .mdl-color-text--purple-800 {
+    color: unquote("rgb(#{$palette-purple-800})") !important;
+  }
+
+  .mdl-color--purple-800 {
+    background-color: unquote("rgb(#{$palette-purple-800})") !important;
+  }
+
+  .mdl-color-text--purple-900 {
+    color: unquote("rgb(#{$palette-purple-900})") !important;
+  }
+
+  .mdl-color--purple-900 {
+    background-color: unquote("rgb(#{$palette-purple-900})") !important;
+  }
+
+  .mdl-color-text--purple-A100 {
+    color: unquote("rgb(#{$palette-purple-A100})") !important;
+  }
+
+  .mdl-color--purple-A100 {
+    background-color: unquote("rgb(#{$palette-purple-A100})") !important;
+  }
+
+  .mdl-color-text--purple-A200 {
+    color: unquote("rgb(#{$palette-purple-A200})") !important;
+  }
+
+  .mdl-color--purple-A200 {
+    background-color: unquote("rgb(#{$palette-purple-A200})") !important;
+  }
+
+  .mdl-color-text--purple-A400 {
+    color: unquote("rgb(#{$palette-purple-A400})") !important;
+  }
+
+  .mdl-color--purple-A400 {
+    background-color: unquote("rgb(#{$palette-purple-A400})") !important;
+  }
+
+  .mdl-color-text--purple-A700 {
+    color: unquote("rgb(#{$palette-purple-A700})") !important;
+  }
+
+  .mdl-color--purple-A700 {
+    background-color: unquote("rgb(#{$palette-purple-A700})") !important;
+  }
+
+  // Deep Purple.
+
+  .mdl-color-text--deep-purple {
+    color: unquote("rgb(#{$palette-deep-purple-500})") !important;
+  }
+
+  .mdl-color--deep-purple {
+    background-color: unquote("rgb(#{$palette-deep-purple-500})") !important;
+  }
+
+  .mdl-color-text--deep-purple-50 {
+    color: unquote("rgb(#{$palette-deep-purple-50})") !important;
+  }
+
+  .mdl-color--deep-purple-50 {
+    background-color: unquote("rgb(#{$palette-deep-purple-50})") !important;
+  }
+
+  .mdl-color-text--deep-purple-100 {
+    color: unquote("rgb(#{$palette-deep-purple-100})") !important;
+  }
+
+  .mdl-color--deep-purple-100 {
+    background-color: unquote("rgb(#{$palette-deep-purple-100})") !important;
+  }
+
+  .mdl-color-text--deep-purple-200 {
+    color: unquote("rgb(#{$palette-deep-purple-200})") !important;
+  }
+
+  .mdl-color--deep-purple-200 {
+    background-color: unquote("rgb(#{$palette-deep-purple-200})") !important;
+  }
+
+  .mdl-color-text--deep-purple-300 {
+    color: unquote("rgb(#{$palette-deep-purple-300})") !important;
+  }
+
+  .mdl-color--deep-purple-300 {
+    background-color: unquote("rgb(#{$palette-deep-purple-300})") !important;
+  }
+
+  .mdl-color-text--deep-purple-400 {
+    color: unquote("rgb(#{$palette-deep-purple-400})") !important;
+  }
+
+  .mdl-color--deep-purple-400 {
+    background-color: unquote("rgb(#{$palette-deep-purple-400})") !important;
+  }
+
+  .mdl-color-text--deep-purple-500 {
+    color: unquote("rgb(#{$palette-deep-purple-500})") !important;
+  }
+
+  .mdl-color--deep-purple-500 {
+    background-color: unquote("rgb(#{$palette-deep-purple-500})") !important;
+  }
+
+  .mdl-color-text--deep-purple-600 {
+    color: unquote("rgb(#{$palette-deep-purple-600})") !important;
+  }
+
+  .mdl-color--deep-purple-600 {
+    background-color: unquote("rgb(#{$palette-deep-purple-600})") !important;
+  }
+
+  .mdl-color-text--deep-purple-700 {
+    color: unquote("rgb(#{$palette-deep-purple-700})") !important;
+  }
+
+  .mdl-color--deep-purple-700 {
+    background-color: unquote("rgb(#{$palette-deep-purple-700})") !important;
+  }
+
+  .mdl-color-text--deep-purple-800 {
+    color: unquote("rgb(#{$palette-deep-purple-800})") !important;
+  }
+
+  .mdl-color--deep-purple-800 {
+    background-color: unquote("rgb(#{$palette-deep-purple-800})") !important;
+  }
+
+  .mdl-color-text--deep-purple-900 {
+    color: unquote("rgb(#{$palette-deep-purple-900})") !important;
+  }
+
+  .mdl-color--deep-purple-900 {
+    background-color: unquote("rgb(#{$palette-deep-purple-900})") !important;
+  }
+
+  .mdl-color-text--deep-purple-A100 {
+    color: unquote("rgb(#{$palette-deep-purple-A100})") !important;
+  }
+
+  .mdl-color--deep-purple-A100 {
+    background-color: unquote("rgb(#{$palette-deep-purple-A100})") !important;
+  }
+
+  .mdl-color-text--deep-purple-A200 {
+    color: unquote("rgb(#{$palette-deep-purple-A200})") !important;
+  }
+
+  .mdl-color--deep-purple-A200 {
+    background-color: unquote("rgb(#{$palette-deep-purple-A200})") !important;
+  }
+
+  .mdl-color-text--deep-purple-A400 {
+    color: unquote("rgb(#{$palette-deep-purple-A400})") !important;
+  }
+
+  .mdl-color--deep-purple-A400 {
+    background-color: unquote("rgb(#{$palette-deep-purple-A400})") !important;
+  }
+
+  .mdl-color-text--deep-purple-A700 {
+    color: unquote("rgb(#{$palette-deep-purple-A700})") !important;
+  }
+
+  .mdl-color--deep-purple-A700 {
+    background-color: unquote("rgb(#{$palette-deep-purple-A700})") !important;
+  }
+
+  // Indigo
+
+  .mdl-color-text--indigo {
+    color: unquote("rgb(#{$palette-indigo-500})") !important;
+  }
+
+  .mdl-color--indigo {
+    background-color: unquote("rgb(#{$palette-indigo-500})") !important;
+  }
+
+  .mdl-color-text--indigo-50 {
+    color: unquote("rgb(#{$palette-indigo-50})") !important;
+  }
+
+  .mdl-color--indigo-50 {
+    background-color: unquote("rgb(#{$palette-indigo-50})") !important;
+  }
+
+  .mdl-color-text--indigo-100 {
+    color: unquote("rgb(#{$palette-indigo-100})") !important;
+  }
+
+  .mdl-color--indigo-100 {
+    background-color: unquote("rgb(#{$palette-indigo-100})") !important;
+  }
+
+  .mdl-color-text--indigo-200 {
+    color: unquote("rgb(#{$palette-indigo-200})") !important;
+  }
+
+  .mdl-color--indigo-200 {
+    background-color: unquote("rgb(#{$palette-indigo-200})") !important;
+  }
+
+  .mdl-color-text--indigo-300 {
+    color: unquote("rgb(#{$palette-indigo-300})") !important;
+  }
+
+  .mdl-color--indigo-300 {
+    background-color: unquote("rgb(#{$palette-indigo-300})") !important;
+  }
+
+  .mdl-color-text--indigo-400 {
+    color: unquote("rgb(#{$palette-indigo-400})") !important;
+  }
+
+  .mdl-color--indigo-400 {
+    background-color: unquote("rgb(#{$palette-indigo-400})") !important;
+  }
+
+  .mdl-color-text--indigo-500 {
+    color: unquote("rgb(#{$palette-indigo-500})") !important;
+  }
+
+  .mdl-color--indigo-500 {
+    background-color: unquote("rgb(#{$palette-indigo-500})") !important;
+  }
+
+  .mdl-color-text--indigo-600 {
+    color: unquote("rgb(#{$palette-indigo-600})") !important;
+  }
+
+  .mdl-color--indigo-600 {
+    background-color: unquote("rgb(#{$palette-indigo-600})") !important;
+  }
+
+  .mdl-color-text--indigo-700 {
+    color: unquote("rgb(#{$palette-indigo-700})") !important;
+  }
+
+  .mdl-color--indigo-700 {
+    background-color: unquote("rgb(#{$palette-indigo-700})") !important;
+  }
+
+  .mdl-color-text--indigo-800 {
+    color: unquote("rgb(#{$palette-indigo-800})") !important;
+  }
+
+  .mdl-color--indigo-800 {
+    background-color: unquote("rgb(#{$palette-indigo-800})") !important;
+  }
+
+  .mdl-color-text--indigo-900 {
+    color: unquote("rgb(#{$palette-indigo-900})") !important;
+  }
+
+  .mdl-color--indigo-900 {
+    background-color: unquote("rgb(#{$palette-indigo-900})") !important;
+  }
+
+  .mdl-color-text--indigo-A100 {
+    color: unquote("rgb(#{$palette-indigo-A100})") !important;
+  }
+
+  .mdl-color--indigo-A100 {
+    background-color: unquote("rgb(#{$palette-indigo-A100})") !important;
+  }
+
+  .mdl-color-text--indigo-A200 {
+    color: unquote("rgb(#{$palette-indigo-A200})") !important;
+  }
+
+  .mdl-color--indigo-A200 {
+    background-color: unquote("rgb(#{$palette-indigo-A200})") !important;
+  }
+
+  .mdl-color-text--indigo-A400 {
+    color: unquote("rgb(#{$palette-indigo-A400})") !important;
+  }
+
+  .mdl-color--indigo-A400 {
+    background-color: unquote("rgb(#{$palette-indigo-A400})") !important;
+  }
+
+  .mdl-color-text--indigo-A700 {
+    color: unquote("rgb(#{$palette-indigo-A700})") !important;
+  }
+
+  .mdl-color--indigo-A700 {
+    background-color: unquote("rgb(#{$palette-indigo-A700})") !important;
+  }
+
+  // Blue
+
+  .mdl-color-text--blue {
+    color: unquote("rgb(#{$palette-blue-500})") !important;
+  }
+
+  .mdl-color--blue {
+    background-color: unquote("rgb(#{$palette-blue-500})") !important;
+  }
+
+  .mdl-color-text--blue-50 {
+    color: unquote("rgb(#{$palette-blue-50})") !important;
+  }
+
+  .mdl-color--blue-50 {
+    background-color: unquote("rgb(#{$palette-blue-50})") !important;
+  }
+
+  .mdl-color-text--blue-100 {
+    color: unquote("rgb(#{$palette-blue-100})") !important;
+  }
+
+  .mdl-color--blue-100 {
+    background-color: unquote("rgb(#{$palette-blue-100})") !important;
+  }
+
+  .mdl-color-text--blue-200 {
+    color: unquote("rgb(#{$palette-blue-200})") !important;
+  }
+
+  .mdl-color--blue-200 {
+    background-color: unquote("rgb(#{$palette-blue-200})") !important;
+  }
+
+  .mdl-color-text--blue-300 {
+    color: unquote("rgb(#{$palette-blue-300})") !important;
+  }
+
+  .mdl-color--blue-300 {
+    background-color: unquote("rgb(#{$palette-blue-300})") !important;
+  }
+
+  .mdl-color-text--blue-400 {
+    color: unquote("rgb(#{$palette-blue-400})") !important;
+  }
+
+  .mdl-color--blue-400 {
+    background-color: unquote("rgb(#{$palette-blue-400})") !important;
+  }
+
+  .mdl-color-text--blue-500 {
+    color: unquote("rgb(#{$palette-blue-500})") !important;
+  }
+
+  .mdl-color--blue-500 {
+    background-color: unquote("rgb(#{$palette-blue-500})") !important;
+  }
+
+  .mdl-color-text--blue-600 {
+    color: unquote("rgb(#{$palette-blue-600})") !important;
+  }
+
+  .mdl-color--blue-600 {
+    background-color: unquote("rgb(#{$palette-blue-600})") !important;
+  }
+
+  .mdl-color-text--blue-700 {
+    color: unquote("rgb(#{$palette-blue-700})") !important;
+  }
+
+  .mdl-color--blue-700 {
+    background-color: unquote("rgb(#{$palette-blue-700})") !important;
+  }
+
+  .mdl-color-text--blue-800 {
+    color: unquote("rgb(#{$palette-blue-800})") !important;
+  }
+
+  .mdl-color--blue-800 {
+    background-color: unquote("rgb(#{$palette-blue-800})") !important;
+  }
+
+  .mdl-color-text--blue-900 {
+    color: unquote("rgb(#{$palette-blue-900})") !important;
+  }
+
+  .mdl-color--blue-900 {
+    background-color: unquote("rgb(#{$palette-blue-900})") !important;
+  }
+
+  .mdl-color-text--blue-A100 {
+    color: unquote("rgb(#{$palette-blue-A100})") !important;
+  }
+
+  .mdl-color--blue-A100 {
+    background-color: unquote("rgb(#{$palette-blue-A100})") !important;
+  }
+
+  .mdl-color-text--blue-A200 {
+    color: unquote("rgb(#{$palette-blue-A200})") !important;
+  }
+
+  .mdl-color--blue-A200 {
+    background-color: unquote("rgb(#{$palette-blue-A200})") !important;
+  }
+
+  .mdl-color-text--blue-A400 {
+    color: unquote("rgb(#{$palette-blue-A400})") !important;
+  }
+
+  .mdl-color--blue-A400 {
+    background-color: unquote("rgb(#{$palette-blue-A400})") !important;
+  }
+
+  .mdl-color-text--blue-A700 {
+    color: unquote("rgb(#{$palette-blue-A700})") !important;
+  }
+
+  .mdl-color--blue-A700 {
+    background-color: unquote("rgb(#{$palette-blue-A700})") !important;
+  }
+
+  // Light Blue
+
+  .mdl-color-text--light-blue {
+    color: unquote("rgb(#{$palette-light-blue-500})") !important;
+  }
+
+  .mdl-color--light-blue {
+    background-color: unquote("rgb(#{$palette-light-blue-500})") !important;
+  }
+
+  .mdl-color-text--light-blue-50 {
+    color: unquote("rgb(#{$palette-light-blue-50})") !important;
+  }
+
+  .mdl-color--light-blue-50 {
+    background-color: unquote("rgb(#{$palette-light-blue-50})") !important;
+  }
+
+  .mdl-color-text--light-blue-100 {
+    color: unquote("rgb(#{$palette-light-blue-100})") !important;
+  }
+
+  .mdl-color--light-blue-100 {
+    background-color: unquote("rgb(#{$palette-light-blue-100})") !important;
+  }
+
+  .mdl-color-text--light-blue-200 {
+    color: unquote("rgb(#{$palette-light-blue-200})") !important;
+  }
+
+  .mdl-color--light-blue-200 {
+    background-color: unquote("rgb(#{$palette-light-blue-200})") !important;
+  }
+
+  .mdl-color-text--light-blue-300 {
+    color: unquote("rgb(#{$palette-light-blue-300})") !important;
+  }
+
+  .mdl-color--light-blue-300 {
+    background-color: unquote("rgb(#{$palette-light-blue-300})") !important;
+  }
+
+  .mdl-color-text--light-blue-400 {
+    color: unquote("rgb(#{$palette-light-blue-400})") !important;
+  }
+
+  .mdl-color--light-blue-400 {
+    background-color: unquote("rgb(#{$palette-light-blue-400})") !important;
+  }
+
+  .mdl-color-text--light-blue-500 {
+    color: unquote("rgb(#{$palette-light-blue-500})") !important;
+  }
+
+  .mdl-color--light-blue-500 {
+    background-color: unquote("rgb(#{$palette-light-blue-500})") !important;
+  }
+
+  .mdl-color-text--light-blue-600 {
+    color: unquote("rgb(#{$palette-light-blue-600})") !important;
+  }
+
+  .mdl-color--light-blue-600 {
+    background-color: unquote("rgb(#{$palette-light-blue-600})") !important;
+  }
+
+  .mdl-color-text--light-blue-700 {
+    color: unquote("rgb(#{$palette-light-blue-700})") !important;
+  }
+
+  .mdl-color--light-blue-700 {
+    background-color: unquote("rgb(#{$palette-light-blue-700})") !important;
+  }
+
+  .mdl-color-text--light-blue-800 {
+    color: unquote("rgb(#{$palette-light-blue-800})") !important;
+  }
+
+  .mdl-color--light-blue-800 {
+    background-color: unquote("rgb(#{$palette-light-blue-800})") !important;
+  }
+
+  .mdl-color-text--light-blue-900 {
+    color: unquote("rgb(#{$palette-light-blue-900})") !important;
+  }
+
+  .mdl-color--light-blue-900 {
+    background-color: unquote("rgb(#{$palette-light-blue-900})") !important;
+  }
+
+  .mdl-color-text--light-blue-A100 {
+    color: unquote("rgb(#{$palette-light-blue-A100})") !important;
+  }
+
+  .mdl-color--light-blue-A100 {
+    background-color: unquote("rgb(#{$palette-light-blue-A100})") !important;
+  }
+
+  .mdl-color-text--light-blue-A200 {
+    color: unquote("rgb(#{$palette-light-blue-A200})") !important;
+  }
+
+  .mdl-color--light-blue-A200 {
+    background-color: unquote("rgb(#{$palette-light-blue-A200})") !important;
+  }
+
+  .mdl-color-text--light-blue-A400 {
+    color: unquote("rgb(#{$palette-light-blue-A400})") !important;
+  }
+
+  .mdl-color--light-blue-A400 {
+    background-color: unquote("rgb(#{$palette-light-blue-A400})") !important;
+  }
+
+  .mdl-color-text--light-blue-A700 {
+    color: unquote("rgb(#{$palette-light-blue-A700})") !important;
+  }
+
+  .mdl-color--light-blue-A700 {
+    background-color: unquote("rgb(#{$palette-light-blue-A700})") !important;
+  }
+
+  // Cyan
+
+  .mdl-color-text--cyan {
+    color: unquote("rgb(#{$palette-cyan-500})") !important;
+  }
+
+  .mdl-color--cyan {
+    background-color: unquote("rgb(#{$palette-cyan-500})") !important;
+  }
+
+  .mdl-color-text--cyan-50 {
+    color: unquote("rgb(#{$palette-cyan-50})") !important;
+  }
+
+  .mdl-color--cyan-50 {
+    background-color: unquote("rgb(#{$palette-cyan-50})") !important;
+  }
+
+  .mdl-color-text--cyan-100 {
+    color: unquote("rgb(#{$palette-cyan-100})") !important;
+  }
+
+  .mdl-color--cyan-100 {
+    background-color: unquote("rgb(#{$palette-cyan-100})") !important;
+  }
+
+  .mdl-color-text--cyan-200 {
+    color: unquote("rgb(#{$palette-cyan-200})") !important;
+  }
+
+  .mdl-color--cyan-200 {
+    background-color: unquote("rgb(#{$palette-cyan-200})") !important;
+  }
+
+  .mdl-color-text--cyan-300 {
+    color: unquote("rgb(#{$palette-cyan-300})") !important;
+  }
+
+  .mdl-color--cyan-300 {
+    background-color: unquote("rgb(#{$palette-cyan-300})") !important;
+  }
+
+  .mdl-color-text--cyan-400 {
+    color: unquote("rgb(#{$palette-cyan-400})") !important;
+  }
+
+  .mdl-color--cyan-400 {
+    background-color: unquote("rgb(#{$palette-cyan-400})") !important;
+  }
+
+  .mdl-color-text--cyan-500 {
+    color: unquote("rgb(#{$palette-cyan-500})") !important;
+  }
+
+  .mdl-color--cyan-500 {
+    background-color: unquote("rgb(#{$palette-cyan-500})") !important;
+  }
+
+  .mdl-color-text--cyan-600 {
+    color: unquote("rgb(#{$palette-cyan-600})") !important;
+  }
+
+  .mdl-color--cyan-600 {
+    background-color: unquote("rgb(#{$palette-cyan-600})") !important;
+  }
+
+  .mdl-color-text--cyan-700 {
+    color: unquote("rgb(#{$palette-cyan-700})") !important;
+  }
+
+  .mdl-color--cyan-700 {
+    background-color: unquote("rgb(#{$palette-cyan-700})") !important;
+  }
+
+  .mdl-color-text--cyan-800 {
+    color: unquote("rgb(#{$palette-cyan-800})") !important;
+  }
+
+  .mdl-color--cyan-800 {
+    background-color: unquote("rgb(#{$palette-cyan-800})") !important;
+  }
+
+  .mdl-color-text--cyan-900 {
+    color: unquote("rgb(#{$palette-cyan-900})") !important;
+  }
+
+  .mdl-color--cyan-900 {
+    background-color: unquote("rgb(#{$palette-cyan-900})") !important;
+  }
+
+  .mdl-color-text--cyan-A100 {
+    color: unquote("rgb(#{$palette-cyan-A100})") !important;
+  }
+
+  .mdl-color--cyan-A100 {
+    background-color: unquote("rgb(#{$palette-cyan-A100})") !important;
+  }
+
+  .mdl-color-text--cyan-A200 {
+    color: unquote("rgb(#{$palette-cyan-A200})") !important;
+  }
+
+  .mdl-color--cyan-A200 {
+    background-color: unquote("rgb(#{$palette-cyan-A200})") !important;
+  }
+
+  .mdl-color-text--cyan-A400 {
+    color: unquote("rgb(#{$palette-cyan-A400})") !important;
+  }
+
+  .mdl-color--cyan-A400 {
+    background-color: unquote("rgb(#{$palette-cyan-A400})") !important;
+  }
+
+  .mdl-color-text--cyan-A700 {
+    color: unquote("rgb(#{$palette-cyan-A700})") !important;
+  }
+
+  .mdl-color--cyan-A700 {
+    background-color: unquote("rgb(#{$palette-cyan-A700})") !important;
+  }
+
+  // Teal
+
+  .mdl-color-text--teal {
+    color: unquote("rgb(#{$palette-teal-500})") !important;
+  }
+
+  .mdl-color--teal {
+    background-color: unquote("rgb(#{$palette-teal-500})") !important;
+  }
+
+  .mdl-color-text--teal-50 {
+    color: unquote("rgb(#{$palette-teal-50})") !important;
+  }
+
+  .mdl-color--teal-50 {
+    background-color: unquote("rgb(#{$palette-teal-50})") !important;
+  }
+
+  .mdl-color-text--teal-100 {
+    color: unquote("rgb(#{$palette-teal-100})") !important;
+  }
+
+  .mdl-color--teal-100 {
+    background-color: unquote("rgb(#{$palette-teal-100})") !important;
+  }
+
+  .mdl-color-text--teal-200 {
+    color: unquote("rgb(#{$palette-teal-200})") !important;
+  }
+
+  .mdl-color--teal-200 {
+    background-color: unquote("rgb(#{$palette-teal-200})") !important;
+  }
+
+  .mdl-color-text--teal-300 {
+    color: unquote("rgb(#{$palette-teal-300})") !important;
+  }
+
+  .mdl-color--teal-300 {
+    background-color: unquote("rgb(#{$palette-teal-300})") !important;
+  }
+
+  .mdl-color-text--teal-400 {
+    color: unquote("rgb(#{$palette-teal-400})") !important;
+  }
+
+  .mdl-color--teal-400 {
+    background-color: unquote("rgb(#{$palette-teal-400})") !important;
+  }
+
+  .mdl-color-text--teal-500 {
+    color: unquote("rgb(#{$palette-teal-500})") !important;
+  }
+
+  .mdl-color--teal-500 {
+    background-color: unquote("rgb(#{$palette-teal-500})") !important;
+  }
+
+  .mdl-color-text--teal-600 {
+    color: unquote("rgb(#{$palette-teal-600})") !important;
+  }
+
+  .mdl-color--teal-600 {
+    background-color: unquote("rgb(#{$palette-teal-600})") !important;
+  }
+
+  .mdl-color-text--teal-700 {
+    color: unquote("rgb(#{$palette-teal-700})") !important;
+  }
+
+  .mdl-color--teal-700 {
+    background-color: unquote("rgb(#{$palette-teal-700})") !important;
+  }
+
+  .mdl-color-text--teal-800 {
+    color: unquote("rgb(#{$palette-teal-800})") !important;
+  }
+
+  .mdl-color--teal-800 {
+    background-color: unquote("rgb(#{$palette-teal-800})") !important;
+  }
+
+  .mdl-color-text--teal-900 {
+    color: unquote("rgb(#{$palette-teal-900})") !important;
+  }
+
+  .mdl-color--teal-900 {
+    background-color: unquote("rgb(#{$palette-teal-900})") !important;
+  }
+
+  .mdl-color-text--teal-A100 {
+    color: unquote("rgb(#{$palette-teal-A100})") !important;
+  }
+
+  .mdl-color--teal-A100 {
+    background-color: unquote("rgb(#{$palette-teal-A100})") !important;
+  }
+
+  .mdl-color-text--teal-A200 {
+    color: unquote("rgb(#{$palette-teal-A200})") !important;
+  }
+
+  .mdl-color--teal-A200 {
+    background-color: unquote("rgb(#{$palette-teal-A200})") !important;
+  }
+
+  .mdl-color-text--teal-A400 {
+    color: unquote("rgb(#{$palette-teal-A400})") !important;
+  }
+
+  .mdl-color--teal-A400 {
+    background-color: unquote("rgb(#{$palette-teal-A400})") !important;
+  }
+
+  .mdl-color-text--teal-A700 {
+    color: unquote("rgb(#{$palette-teal-A700})") !important;
+  }
+
+  .mdl-color--teal-A700 {
+    background-color: unquote("rgb(#{$palette-teal-A700})") !important;
+  }
+
+  // Green
+
+  .mdl-color-text--green {
+    color: unquote("rgb(#{$palette-green-500})") !important;
+  }
+
+  .mdl-color--green {
+    background-color: unquote("rgb(#{$palette-green-500})") !important;
+  }
+
+  .mdl-color-text--green-50 {
+    color: unquote("rgb(#{$palette-green-50})") !important;
+  }
+
+  .mdl-color--green-50 {
+    background-color: unquote("rgb(#{$palette-green-50})") !important;
+  }
+
+  .mdl-color-text--green-100 {
+    color: unquote("rgb(#{$palette-green-100})") !important;
+  }
+
+  .mdl-color--green-100 {
+    background-color: unquote("rgb(#{$palette-green-100})") !important;
+  }
+
+  .mdl-color-text--green-200 {
+    color: unquote("rgb(#{$palette-green-200})") !important;
+  }
+
+  .mdl-color--green-200 {
+    background-color: unquote("rgb(#{$palette-green-200})") !important;
+  }
+
+  .mdl-color-text--green-300 {
+    color: unquote("rgb(#{$palette-green-300})") !important;
+  }
+
+  .mdl-color--green-300 {
+    background-color: unquote("rgb(#{$palette-green-300})") !important;
+  }
+
+  .mdl-color-text--green-400 {
+    color: unquote("rgb(#{$palette-green-400})") !important;
+  }
+
+  .mdl-color--green-400 {
+    background-color: unquote("rgb(#{$palette-green-400})") !important;
+  }
+
+  .mdl-color-text--green-500 {
+    color: unquote("rgb(#{$palette-green-500})") !important;
+  }
+
+  .mdl-color--green-500 {
+    background-color: unquote("rgb(#{$palette-green-500})") !important;
+  }
+
+  .mdl-color-text--green-600 {
+    color: unquote("rgb(#{$palette-green-600})") !important;
+  }
+
+  .mdl-color--green-600 {
+    background-color: unquote("rgb(#{$palette-green-600})") !important;
+  }
+
+  .mdl-color-text--green-700 {
+    color: unquote("rgb(#{$palette-green-700})") !important;
+  }
+
+  .mdl-color--green-700 {
+    background-color: unquote("rgb(#{$palette-green-700})") !important;
+  }
+
+  .mdl-color-text--green-800 {
+    color: unquote("rgb(#{$palette-green-800})") !important;
+  }
+
+  .mdl-color--green-800 {
+    background-color: unquote("rgb(#{$palette-green-800})") !important;
+  }
+
+  .mdl-color-text--green-900 {
+    color: unquote("rgb(#{$palette-green-900})") !important;
+  }
+
+  .mdl-color--green-900 {
+    background-color: unquote("rgb(#{$palette-green-900})") !important;
+  }
+
+  .mdl-color-text--green-A100 {
+    color: unquote("rgb(#{$palette-green-A100})") !important;
+  }
+
+  .mdl-color--green-A100 {
+    background-color: unquote("rgb(#{$palette-green-A100})") !important;
+  }
+
+  .mdl-color-text--green-A200 {
+    color: unquote("rgb(#{$palette-green-A200})") !important;
+  }
+
+  .mdl-color--green-A200 {
+    background-color: unquote("rgb(#{$palette-green-A200})") !important;
+  }
+
+  .mdl-color-text--green-A400 {
+    color: unquote("rgb(#{$palette-green-A400})") !important;
+  }
+
+  .mdl-color--green-A400 {
+    background-color: unquote("rgb(#{$palette-green-A400})") !important;
+  }
+
+  .mdl-color-text--green-A700 {
+    color: unquote("rgb(#{$palette-green-A700})") !important;
+  }
+
+  .mdl-color--green-A700 {
+    background-color: unquote("rgb(#{$palette-green-A700})") !important;
+  }
+
+  // Light Green
+
+  .mdl-color-text--light-green {
+    color: unquote("rgb(#{$palette-light-green-500})") !important;
+  }
+
+  .mdl-color--light-green {
+    background-color: unquote("rgb(#{$palette-light-green-500})") !important;
+  }
+
+  .mdl-color-text--light-green-50 {
+    color: unquote("rgb(#{$palette-light-green-50})") !important;
+  }
+
+  .mdl-color--light-green-50 {
+    background-color: unquote("rgb(#{$palette-light-green-50})") !important;
+  }
+
+  .mdl-color-text--light-green-100 {
+    color: unquote("rgb(#{$palette-light-green-100})") !important;
+  }
+
+  .mdl-color--light-green-100 {
+    background-color: unquote("rgb(#{$palette-light-green-100})") !important;
+  }
+
+  .mdl-color-text--light-green-200 {
+    color: unquote("rgb(#{$palette-light-green-200})") !important;
+  }
+
+  .mdl-color--light-green-200 {
+    background-color: unquote("rgb(#{$palette-light-green-200})") !important;
+  }
+
+  .mdl-color-text--light-green-300 {
+    color: unquote("rgb(#{$palette-light-green-300})") !important;
+  }
+
+  .mdl-color--light-green-300 {
+    background-color: unquote("rgb(#{$palette-light-green-300})") !important;
+  }
+
+  .mdl-color-text--light-green-400 {
+    color: unquote("rgb(#{$palette-light-green-400})") !important;
+  }
+
+  .mdl-color--light-green-400 {
+    background-color: unquote("rgb(#{$palette-light-green-400})") !important;
+  }
+
+  .mdl-color-text--light-green-500 {
+    color: unquote("rgb(#{$palette-light-green-500})") !important;
+  }
+
+  .mdl-color--light-green-500 {
+    background-color: unquote("rgb(#{$palette-light-green-500})") !important;
+  }
+
+  .mdl-color-text--light-green-600 {
+    color: unquote("rgb(#{$palette-light-green-600})") !important;
+  }
+
+  .mdl-color--light-green-600 {
+    background-color: unquote("rgb(#{$palette-light-green-600})") !important;
+  }
+
+  .mdl-color-text--light-green-700 {
+    color: unquote("rgb(#{$palette-light-green-700})") !important;
+  }
+
+  .mdl-color--light-green-700 {
+    background-color: unquote("rgb(#{$palette-light-green-700})") !important;
+  }
+
+  .mdl-color-text--light-green-800 {
+    color: unquote("rgb(#{$palette-light-green-800})") !important;
+  }
+
+  .mdl-color--light-green-800 {
+    background-color: unquote("rgb(#{$palette-light-green-800})") !important;
+  }
+
+  .mdl-color-text--light-green-900 {
+    color: unquote("rgb(#{$palette-light-green-900})") !important;
+  }
+
+  .mdl-color--light-green-900 {
+    background-color: unquote("rgb(#{$palette-light-green-900})") !important;
+  }
+
+  .mdl-color-text--light-green-A100 {
+    color: unquote("rgb(#{$palette-light-green-A100})") !important;
+  }
+
+  .mdl-color--light-green-A100 {
+    background-color: unquote("rgb(#{$palette-light-green-A100})") !important;
+  }
+
+  .mdl-color-text--light-green-A200 {
+    color: unquote("rgb(#{$palette-light-green-A200})") !important;
+  }
+
+  .mdl-color--light-green-A200 {
+    background-color: unquote("rgb(#{$palette-light-green-A200})") !important;
+  }
+
+  .mdl-color-text--light-green-A400 {
+    color: unquote("rgb(#{$palette-light-green-A400})") !important;
+  }
+
+  .mdl-color--light-green-A400 {
+    background-color: unquote("rgb(#{$palette-light-green-A400})") !important;
+  }
+
+  .mdl-color-text--light-green-A700 {
+    color: unquote("rgb(#{$palette-light-green-A700})") !important;
+  }
+
+  .mdl-color--light-green-A700 {
+    background-color: unquote("rgb(#{$palette-light-green-A700})") !important;
+  }
+
+  // Lime
+
+  .mdl-color-text--lime {
+    color: unquote("rgb(#{$palette-lime-500})") !important;
+  }
+
+  .mdl-color--lime {
+    background-color: unquote("rgb(#{$palette-lime-500})") !important;
+  }
+
+  .mdl-color-text--lime-50 {
+    color: unquote("rgb(#{$palette-lime-50})") !important;
+  }
+
+  .mdl-color--lime-50 {
+    background-color: unquote("rgb(#{$palette-lime-50})") !important;
+  }
+
+  .mdl-color-text--lime-100 {
+    color: unquote("rgb(#{$palette-lime-100})") !important;
+  }
+
+  .mdl-color--lime-100 {
+    background-color: unquote("rgb(#{$palette-lime-100})") !important;
+  }
+
+  .mdl-color-text--lime-200 {
+    color: unquote("rgb(#{$palette-lime-200})") !important;
+  }
+
+  .mdl-color--lime-200 {
+    background-color: unquote("rgb(#{$palette-lime-200})") !important;
+  }
+
+  .mdl-color-text--lime-300 {
+    color: unquote("rgb(#{$palette-lime-300})") !important;
+  }
+
+  .mdl-color--lime-300 {
+    background-color: unquote("rgb(#{$palette-lime-300})") !important;
+  }
+
+  .mdl-color-text--lime-400 {
+    color: unquote("rgb(#{$palette-lime-400})") !important;
+  }
+
+  .mdl-color--lime-400 {
+    background-color: unquote("rgb(#{$palette-lime-400})") !important;
+  }
+
+  .mdl-color-text--lime-500 {
+    color: unquote("rgb(#{$palette-lime-500})") !important;
+  }
+
+  .mdl-color--lime-500 {
+    background-color: unquote("rgb(#{$palette-lime-500})") !important;
+  }
+
+  .mdl-color-text--lime-600 {
+    color: unquote("rgb(#{$palette-lime-600})") !important;
+  }
+
+  .mdl-color--lime-600 {
+    background-color: unquote("rgb(#{$palette-lime-600})") !important;
+  }
+
+  .mdl-color-text--lime-700 {
+    color: unquote("rgb(#{$palette-lime-700})") !important;
+  }
+
+  .mdl-color--lime-700 {
+    background-color: unquote("rgb(#{$palette-lime-700})") !important;
+  }
+
+  .mdl-color-text--lime-800 {
+    color: unquote("rgb(#{$palette-lime-800})") !important;
+  }
+
+  .mdl-color--lime-800 {
+    background-color: unquote("rgb(#{$palette-lime-800})") !important;
+  }
+
+  .mdl-color-text--lime-900 {
+    color: unquote("rgb(#{$palette-lime-900})") !important;
+  }
+
+  .mdl-color--lime-900 {
+    background-color: unquote("rgb(#{$palette-lime-900})") !important;
+  }
+
+  .mdl-color-text--lime-A100 {
+    color: unquote("rgb(#{$palette-lime-A100})") !important;
+  }
+
+  .mdl-color--lime-A100 {
+    background-color: unquote("rgb(#{$palette-lime-A100})") !important;
+  }
+
+  .mdl-color-text--lime-A200 {
+    color: unquote("rgb(#{$palette-lime-A200})") !important;
+  }
+
+  .mdl-color--lime-A200 {
+    background-color: unquote("rgb(#{$palette-lime-A200})") !important;
+  }
+
+  .mdl-color-text--lime-A400 {
+    color: unquote("rgb(#{$palette-lime-A400})") !important;
+  }
+
+  .mdl-color--lime-A400 {
+    background-color: unquote("rgb(#{$palette-lime-A400})") !important;
+  }
+
+  .mdl-color-text--lime-A700 {
+    color: unquote("rgb(#{$palette-lime-A700})") !important;
+  }
+
+  .mdl-color--lime-A700 {
+    background-color: unquote("rgb(#{$palette-lime-A700})") !important;
+  }
+
+  // Yellow
+
+  .mdl-color-text--yellow {
+    color: unquote("rgb(#{$palette-yellow-500})") !important;
+  }
+
+  .mdl-color--yellow {
+    background-color: unquote("rgb(#{$palette-yellow-500})") !important;
+  }
+
+  .mdl-color-text--yellow-50 {
+    color: unquote("rgb(#{$palette-yellow-50})") !important;
+  }
+
+  .mdl-color--yellow-50 {
+    background-color: unquote("rgb(#{$palette-yellow-50})") !important;
+  }
+
+  .mdl-color-text--yellow-100 {
+    color: unquote("rgb(#{$palette-yellow-100})") !important;
+  }
+
+  .mdl-color--yellow-100 {
+    background-color: unquote("rgb(#{$palette-yellow-100})") !important;
+  }
+
+  .mdl-color-text--yellow-200 {
+    color: unquote("rgb(#{$palette-yellow-200})") !important;
+  }
+
+  .mdl-color--yellow-200 {
+    background-color: unquote("rgb(#{$palette-yellow-200})") !important;
+  }
+
+  .mdl-color-text--yellow-300 {
+    color: unquote("rgb(#{$palette-yellow-300})") !important;
+  }
+
+  .mdl-color--yellow-300 {
+    background-color: unquote("rgb(#{$palette-yellow-300})") !important;
+  }
+
+  .mdl-color-text--yellow-400 {
+    color: unquote("rgb(#{$palette-yellow-400})") !important;
+  }
+
+  .mdl-color--yellow-400 {
+    background-color: unquote("rgb(#{$palette-yellow-400})") !important;
+  }
+
+  .mdl-color-text--yellow-500 {
+    color: unquote("rgb(#{$palette-yellow-500})") !important;
+  }
+
+  .mdl-color--yellow-500 {
+    background-color: unquote("rgb(#{$palette-yellow-500})") !important;
+  }
+
+  .mdl-color-text--yellow-600 {
+    color: unquote("rgb(#{$palette-yellow-600})") !important;
+  }
+
+  .mdl-color--yellow-600 {
+    background-color: unquote("rgb(#{$palette-yellow-600})") !important;
+  }
+
+  .mdl-color-text--yellow-700 {
+    color: unquote("rgb(#{$palette-yellow-700})") !important;
+  }
+
+  .mdl-color--yellow-700 {
+    background-color: unquote("rgb(#{$palette-yellow-700})") !important;
+  }
+
+  .mdl-color-text--yellow-800 {
+    color: unquote("rgb(#{$palette-yellow-800})") !important;
+  }
+
+  .mdl-color--yellow-800 {
+    background-color: unquote("rgb(#{$palette-yellow-800})") !important;
+  }
+
+  .mdl-color-text--yellow-900 {
+    color: unquote("rgb(#{$palette-yellow-900})") !important;
+  }
+
+  .mdl-color--yellow-900 {
+    background-color: unquote("rgb(#{$palette-yellow-900})") !important;
+  }
+
+  .mdl-color-text--yellow-A100 {
+    color: unquote("rgb(#{$palette-yellow-A100})") !important;
+  }
+
+  .mdl-color--yellow-A100 {
+    background-color: unquote("rgb(#{$palette-yellow-A100})") !important;
+  }
+
+  .mdl-color-text--yellow-A200 {
+    color: unquote("rgb(#{$palette-yellow-A200})") !important;
+  }
+
+  .mdl-color--yellow-A200 {
+    background-color: unquote("rgb(#{$palette-yellow-A200})") !important;
+  }
+
+  .mdl-color-text--yellow-A400 {
+    color: unquote("rgb(#{$palette-yellow-A400})") !important;
+  }
+
+  .mdl-color--yellow-A400 {
+    background-color: unquote("rgb(#{$palette-yellow-A400})") !important;
+  }
+
+  .mdl-color-text--yellow-A700 {
+    color: unquote("rgb(#{$palette-yellow-A700})") !important;
+  }
+
+  .mdl-color--yellow-A700 {
+    background-color: unquote("rgb(#{$palette-yellow-A700})") !important;
+  }
+
+  // Amber
+
+  .mdl-color-text--amber {
+    color: unquote("rgb(#{$palette-amber-500})") !important;
+  }
+
+  .mdl-color--amber {
+    background-color: unquote("rgb(#{$palette-amber-500})") !important;
+  }
+
+  .mdl-color-text--amber-50 {
+    color: unquote("rgb(#{$palette-amber-50})") !important;
+  }
+
+  .mdl-color--amber-50 {
+    background-color: unquote("rgb(#{$palette-amber-50})") !important;
+  }
+
+  .mdl-color-text--amber-100 {
+    color: unquote("rgb(#{$palette-amber-100})") !important;
+  }
+
+  .mdl-color--amber-100 {
+    background-color: unquote("rgb(#{$palette-amber-100})") !important;
+  }
+
+  .mdl-color-text--amber-200 {
+    color: unquote("rgb(#{$palette-amber-200})") !important;
+  }
+
+  .mdl-color--amber-200 {
+    background-color: unquote("rgb(#{$palette-amber-200})") !important;
+  }
+
+  .mdl-color-text--amber-300 {
+    color: unquote("rgb(#{$palette-amber-300})") !important;
+  }
+
+  .mdl-color--amber-300 {
+    background-color: unquote("rgb(#{$palette-amber-300})") !important;
+  }
+
+  .mdl-color-text--amber-400 {
+    color: unquote("rgb(#{$palette-amber-400})") !important;
+  }
+
+  .mdl-color--amber-400 {
+    background-color: unquote("rgb(#{$palette-amber-400})") !important;
+  }
+
+  .mdl-color-text--amber-500 {
+    color: unquote("rgb(#{$palette-amber-500})") !important;
+  }
+
+  .mdl-color--amber-500 {
+    background-color: unquote("rgb(#{$palette-amber-500})") !important;
+  }
+
+  .mdl-color-text--amber-600 {
+    color: unquote("rgb(#{$palette-amber-600})") !important;
+  }
+
+  .mdl-color--amber-600 {
+    background-color: unquote("rgb(#{$palette-amber-600})") !important;
+  }
+
+  .mdl-color-text--amber-700 {
+    color: unquote("rgb(#{$palette-amber-700})") !important;
+  }
+
+  .mdl-color--amber-700 {
+    background-color: unquote("rgb(#{$palette-amber-700})") !important;
+  }
+
+  .mdl-color-text--amber-800 {
+    color: unquote("rgb(#{$palette-amber-800})") !important;
+  }
+
+  .mdl-color--amber-800 {
+    background-color: unquote("rgb(#{$palette-amber-800})") !important;
+  }
+
+  .mdl-color-text--amber-900 {
+    color: unquote("rgb(#{$palette-amber-900})") !important;
+  }
+
+  .mdl-color--amber-900 {
+    background-color: unquote("rgb(#{$palette-amber-900})") !important;
+  }
+
+  .mdl-color-text--amber-A100 {
+    color: unquote("rgb(#{$palette-amber-A100})") !important;
+  }
+
+  .mdl-color--amber-A100 {
+    background-color: unquote("rgb(#{$palette-amber-A100})") !important;
+  }
+
+  .mdl-color-text--amber-A200 {
+    color: unquote("rgb(#{$palette-amber-A200})") !important;
+  }
+
+  .mdl-color--amber-A200 {
+    background-color: unquote("rgb(#{$palette-amber-A200})") !important;
+  }
+
+  .mdl-color-text--amber-A400 {
+    color: unquote("rgb(#{$palette-amber-A400})") !important;
+  }
+
+  .mdl-color--amber-A400 {
+    background-color: unquote("rgb(#{$palette-amber-A400})") !important;
+  }
+
+  .mdl-color-text--amber-A700 {
+    color: unquote("rgb(#{$palette-amber-A700})") !important;
+  }
+
+  .mdl-color--amber-A700 {
+    background-color: unquote("rgb(#{$palette-amber-A700})") !important;
+  }
+
+  // Orange
+
+  .mdl-color-text--orange {
+    color: unquote("rgb(#{$palette-orange-500})") !important;
+  }
+
+  .mdl-color--orange {
+    background-color: unquote("rgb(#{$palette-orange-500})") !important;
+  }
+
+  .mdl-color-text--orange-50 {
+    color: unquote("rgb(#{$palette-orange-50})") !important;
+  }
+
+  .mdl-color--orange-50 {
+    background-color: unquote("rgb(#{$palette-orange-50})") !important;
+  }
+
+  .mdl-color-text--orange-100 {
+    color: unquote("rgb(#{$palette-orange-100})") !important;
+  }
+
+  .mdl-color--orange-100 {
+    background-color: unquote("rgb(#{$palette-orange-100})") !important;
+  }
+
+  .mdl-color-text--orange-200 {
+    color: unquote("rgb(#{$palette-orange-200})") !important;
+  }
+
+  .mdl-color--orange-200 {
+    background-color: unquote("rgb(#{$palette-orange-200})") !important;
+  }
+
+  .mdl-color-text--orange-300 {
+    color: unquote("rgb(#{$palette-orange-300})") !important;
+  }
+
+  .mdl-color--orange-300 {
+    background-color: unquote("rgb(#{$palette-orange-300})") !important;
+  }
+
+  .mdl-color-text--orange-400 {
+    color: unquote("rgb(#{$palette-orange-400})") !important;
+  }
+
+  .mdl-color--orange-400 {
+    background-color: unquote("rgb(#{$palette-orange-400})") !important;
+  }
+
+  .mdl-color-text--orange-500 {
+    color: unquote("rgb(#{$palette-orange-500})") !important;
+  }
+
+  .mdl-color--orange-500 {
+    background-color: unquote("rgb(#{$palette-orange-500})") !important;
+  }
+
+  .mdl-color-text--orange-600 {
+    color: unquote("rgb(#{$palette-orange-600})") !important;
+  }
+
+  .mdl-color--orange-600 {
+    background-color: unquote("rgb(#{$palette-orange-600})") !important;
+  }
+
+  .mdl-color-text--orange-700 {
+    color: unquote("rgb(#{$palette-orange-700})") !important;
+  }
+
+  .mdl-color--orange-700 {
+    background-color: unquote("rgb(#{$palette-orange-700})") !important;
+  }
+
+  .mdl-color-text--orange-800 {
+    color: unquote("rgb(#{$palette-orange-800})") !important;
+  }
+
+  .mdl-color--orange-800 {
+    background-color: unquote("rgb(#{$palette-orange-800})") !important;
+  }
+
+  .mdl-color-text--orange-900 {
+    color: unquote("rgb(#{$palette-orange-900})") !important;
+  }
+
+  .mdl-color--orange-900 {
+    background-color: unquote("rgb(#{$palette-orange-900})") !important;
+  }
+
+  .mdl-color-text--orange-A100 {
+    color: unquote("rgb(#{$palette-orange-A100})") !important;
+  }
+
+  .mdl-color--orange-A100 {
+    background-color: unquote("rgb(#{$palette-orange-A100})") !important;
+  }
+
+  .mdl-color-text--orange-A200 {
+    color: unquote("rgb(#{$palette-orange-A200})") !important;
+  }
+
+  .mdl-color--orange-A200 {
+    background-color: unquote("rgb(#{$palette-orange-A200})") !important;
+  }
+
+  .mdl-color-text--orange-A400 {
+    color: unquote("rgb(#{$palette-orange-A400})") !important;
+  }
+
+  .mdl-color--orange-A400 {
+    background-color: unquote("rgb(#{$palette-orange-A400})") !important;
+  }
+
+  .mdl-color-text--orange-A700 {
+    color: unquote("rgb(#{$palette-orange-A700})") !important;
+  }
+
+  .mdl-color--orange-A700 {
+    background-color: unquote("rgb(#{$palette-orange-A700})") !important;
+  }
+
+  // Deep Orange
+
+  .mdl-color-text--deep-orange {
+    color: unquote("rgb(#{$palette-deep-orange-500})") !important;
+  }
+
+  .mdl-color--deep-orange {
+    background-color: unquote("rgb(#{$palette-deep-orange-500})") !important;
+  }
+
+  .mdl-color-text--deep-orange-50 {
+    color: unquote("rgb(#{$palette-deep-orange-50})") !important;
+  }
+
+  .mdl-color--deep-orange-50 {
+    background-color: unquote("rgb(#{$palette-deep-orange-50})") !important;
+  }
+
+  .mdl-color-text--deep-orange-100 {
+    color: unquote("rgb(#{$palette-deep-orange-100})") !important;
+  }
+
+  .mdl-color--deep-orange-100 {
+    background-color: unquote("rgb(#{$palette-deep-orange-100})") !important;
+  }
+
+  .mdl-color-text--deep-orange-200 {
+    color: unquote("rgb(#{$palette-deep-orange-200})") !important;
+  }
+
+  .mdl-color--deep-orange-200 {
+    background-color: unquote("rgb(#{$palette-deep-orange-200})") !important;
+  }
+
+  .mdl-color-text--deep-orange-300 {
+    color: unquote("rgb(#{$palette-deep-orange-300})") !important;
+  }
+
+  .mdl-color--deep-orange-300 {
+    background-color: unquote("rgb(#{$palette-deep-orange-300})") !important;
+  }
+
+  .mdl-color-text--deep-orange-400 {
+    color: unquote("rgb(#{$palette-deep-orange-400})") !important;
+  }
+
+  .mdl-color--deep-orange-400 {
+    background-color: unquote("rgb(#{$palette-deep-orange-400})") !important;
+  }
+
+  .mdl-color-text--deep-orange-500 {
+    color: unquote("rgb(#{$palette-deep-orange-500})") !important;
+  }
+
+  .mdl-color--deep-orange-500 {
+    background-color: unquote("rgb(#{$palette-deep-orange-500})") !important;
+  }
+
+  .mdl-color-text--deep-orange-600 {
+    color: unquote("rgb(#{$palette-deep-orange-600})") !important;
+  }
+
+  .mdl-color--deep-orange-600 {
+    background-color: unquote("rgb(#{$palette-deep-orange-600})") !important;
+  }
+
+  .mdl-color-text--deep-orange-700 {
+    color: unquote("rgb(#{$palette-deep-orange-700})") !important;
+  }
+
+  .mdl-color--deep-orange-700 {
+    background-color: unquote("rgb(#{$palette-deep-orange-700})") !important;
+  }
+
+  .mdl-color-text--deep-orange-800 {
+    color: unquote("rgb(#{$palette-deep-orange-800})") !important;
+  }
+
+  .mdl-color--deep-orange-800 {
+    background-color: unquote("rgb(#{$palette-deep-orange-800})") !important;
+  }
+
+  .mdl-color-text--deep-orange-900 {
+    color: unquote("rgb(#{$palette-deep-orange-900})") !important;
+  }
+
+  .mdl-color--deep-orange-900 {
+    background-color: unquote("rgb(#{$palette-deep-orange-900})") !important;
+  }
+
+  .mdl-color-text--deep-orange-A100 {
+    color: unquote("rgb(#{$palette-deep-orange-A100})") !important;
+  }
+
+  .mdl-color--deep-orange-A100 {
+    background-color: unquote("rgb(#{$palette-deep-orange-A100})") !important;
+  }
+
+  .mdl-color-text--deep-orange-A200 {
+    color: unquote("rgb(#{$palette-deep-orange-A200})") !important;
+  }
+
+  .mdl-color--deep-orange-A200 {
+    background-color: unquote("rgb(#{$palette-deep-orange-A200})") !important;
+  }
+
+  .mdl-color-text--deep-orange-A400 {
+    color: unquote("rgb(#{$palette-deep-orange-A400})") !important;
+  }
+
+  .mdl-color--deep-orange-A400 {
+    background-color: unquote("rgb(#{$palette-deep-orange-A400})") !important;
+  }
+
+  .mdl-color-text--deep-orange-A700 {
+    color: unquote("rgb(#{$palette-deep-orange-A700})") !important;
+  }
+
+  .mdl-color--deep-orange-A700 {
+    background-color: unquote("rgb(#{$palette-deep-orange-A700})") !important;
+  }
+
+  // Brown
+
+  .mdl-color-text--brown {
+    color: unquote("rgb(#{$palette-brown-500})") !important;
+  }
+
+  .mdl-color--brown {
+    background-color: unquote("rgb(#{$palette-brown-500})") !important;
+  }
+
+  .mdl-color-text--brown-50 {
+    color: unquote("rgb(#{$palette-brown-50})") !important;
+  }
+
+  .mdl-color--brown-50 {
+    background-color: unquote("rgb(#{$palette-brown-50})") !important;
+  }
+
+  .mdl-color-text--brown-100 {
+    color: unquote("rgb(#{$palette-brown-100})") !important;
+  }
+
+  .mdl-color--brown-100 {
+    background-color: unquote("rgb(#{$palette-brown-100})") !important;
+  }
+
+  .mdl-color-text--brown-200 {
+    color: unquote("rgb(#{$palette-brown-200})") !important;
+  }
+
+  .mdl-color--brown-200 {
+    background-color: unquote("rgb(#{$palette-brown-200})") !important;
+  }
+
+  .mdl-color-text--brown-300 {
+    color: unquote("rgb(#{$palette-brown-300})") !important;
+  }
+
+  .mdl-color--brown-300 {
+    background-color: unquote("rgb(#{$palette-brown-300})") !important;
+  }
+
+  .mdl-color-text--brown-400 {
+    color: unquote("rgb(#{$palette-brown-400})") !important;
+  }
+
+  .mdl-color--brown-400 {
+    background-color: unquote("rgb(#{$palette-brown-400})") !important;
+  }
+
+  .mdl-color-text--brown-500 {
+    color: unquote("rgb(#{$palette-brown-500})") !important;
+  }
+
+  .mdl-color--brown-500 {
+    background-color: unquote("rgb(#{$palette-brown-500})") !important;
+  }
+
+  .mdl-color-text--brown-600 {
+    color: unquote("rgb(#{$palette-brown-600})") !important;
+  }
+
+  .mdl-color--brown-600 {
+    background-color: unquote("rgb(#{$palette-brown-600})") !important;
+  }
+
+  .mdl-color-text--brown-700 {
+    color: unquote("rgb(#{$palette-brown-700})") !important;
+  }
+
+  .mdl-color--brown-700 {
+    background-color: unquote("rgb(#{$palette-brown-700})") !important;
+  }
+
+  .mdl-color-text--brown-800 {
+    color: unquote("rgb(#{$palette-brown-800})") !important;
+  }
+
+  .mdl-color--brown-800 {
+    background-color: unquote("rgb(#{$palette-brown-800})") !important;
+  }
+
+  .mdl-color-text--brown-900 {
+    color: unquote("rgb(#{$palette-brown-900})") !important;
+  }
+
+  .mdl-color--brown-900 {
+    background-color: unquote("rgb(#{$palette-brown-900})") !important;
+  }
+
+  // Grey
+
+  .mdl-color-text--grey {
+    color: unquote("rgb(#{$palette-grey-500})") !important;
+  }
+
+  .mdl-color--grey {
+    background-color: unquote("rgb(#{$palette-grey-500})") !important;
+  }
+
+  .mdl-color-text--grey-50 {
+    color: unquote("rgb(#{$palette-grey-50})") !important;
+  }
+
+  .mdl-color--grey-50 {
+    background-color: unquote("rgb(#{$palette-grey-50})") !important;
+  }
+
+  .mdl-color-text--grey-100 {
+    color: unquote("rgb(#{$palette-grey-100})") !important;
+  }
+
+  .mdl-color--grey-100 {
+    background-color: unquote("rgb(#{$palette-grey-100})") !important;
+  }
+
+  .mdl-color-text--grey-200 {
+    color: unquote("rgb(#{$palette-grey-200})") !important;
+  }
+
+  .mdl-color--grey-200 {
+    background-color: unquote("rgb(#{$palette-grey-200})") !important;
+  }
+
+  .mdl-color-text--grey-300 {
+    color: unquote("rgb(#{$palette-grey-300})") !important;
+  }
+
+  .mdl-color--grey-300 {
+    background-color: unquote("rgb(#{$palette-grey-300})") !important;
+  }
+
+  .mdl-color-text--grey-400 {
+    color: unquote("rgb(#{$palette-grey-400})") !important;
+  }
+
+  .mdl-color--grey-400 {
+    background-color: unquote("rgb(#{$palette-grey-400})") !important;
+  }
+
+  .mdl-color-text--grey-500 {
+    color: unquote("rgb(#{$palette-grey-500})") !important;
+  }
+
+  .mdl-color--grey-500 {
+    background-color: unquote("rgb(#{$palette-grey-500})") !important;
+  }
+
+  .mdl-color-text--grey-600 {
+    color: unquote("rgb(#{$palette-grey-600})") !important;
+  }
+
+  .mdl-color--grey-600 {
+    background-color: unquote("rgb(#{$palette-grey-600})") !important;
+  }
+
+  .mdl-color-text--grey-700 {
+    color: unquote("rgb(#{$palette-grey-700})") !important;
+  }
+
+  .mdl-color--grey-700 {
+    background-color: unquote("rgb(#{$palette-grey-700})") !important;
+  }
+
+  .mdl-color-text--grey-800 {
+    color: unquote("rgb(#{$palette-grey-800})") !important;
+  }
+
+  .mdl-color--grey-800 {
+    background-color: unquote("rgb(#{$palette-grey-800})") !important;
+  }
+
+  .mdl-color-text--grey-900 {
+    color: unquote("rgb(#{$palette-grey-900})") !important;
+  }
+
+  .mdl-color--grey-900 {
+    background-color: unquote("rgb(#{$palette-grey-900})") !important;
+  }
+
+  // Blue Grey
+
+  .mdl-color-text--blue-grey {
+    color: unquote("rgb(#{$palette-blue-grey-500})") !important;
+  }
+
+  .mdl-color--blue-grey {
+    background-color: unquote("rgb(#{$palette-blue-grey-500})") !important;
+  }
+
+  .mdl-color-text--blue-grey-50 {
+    color: unquote("rgb(#{$palette-blue-grey-50})") !important;
+  }
+
+  .mdl-color--blue-grey-50 {
+    background-color: unquote("rgb(#{$palette-blue-grey-50})") !important;
+  }
+
+  .mdl-color-text--blue-grey-100 {
+    color: unquote("rgb(#{$palette-blue-grey-100})") !important;
+  }
+
+  .mdl-color--blue-grey-100 {
+    background-color: unquote("rgb(#{$palette-blue-grey-100})") !important;
+  }
+
+  .mdl-color-text--blue-grey-200 {
+    color: unquote("rgb(#{$palette-blue-grey-200})") !important;
+  }
+
+  .mdl-color--blue-grey-200 {
+    background-color: unquote("rgb(#{$palette-blue-grey-200})") !important;
+  }
+
+  .mdl-color-text--blue-grey-300 {
+    color: unquote("rgb(#{$palette-blue-grey-300})") !important;
+  }
+
+  .mdl-color--blue-grey-300 {
+    background-color: unquote("rgb(#{$palette-blue-grey-300})") !important;
+  }
+
+  .mdl-color-text--blue-grey-400 {
+    color: unquote("rgb(#{$palette-blue-grey-400})") !important;
+  }
+
+  .mdl-color--blue-grey-400 {
+    background-color: unquote("rgb(#{$palette-blue-grey-400})") !important;
+  }
+
+  .mdl-color-text--blue-grey-500 {
+    color: unquote("rgb(#{$palette-blue-grey-500})") !important;
+  }
+
+  .mdl-color--blue-grey-500 {
+    background-color: unquote("rgb(#{$palette-blue-grey-500})") !important;
+  }
+
+  .mdl-color-text--blue-grey-600 {
+    color: unquote("rgb(#{$palette-blue-grey-600})") !important;
+  }
+
+  .mdl-color--blue-grey-600 {
+    background-color: unquote("rgb(#{$palette-blue-grey-600})") !important;
+  }
+
+  .mdl-color-text--blue-grey-700 {
+    color: unquote("rgb(#{$palette-blue-grey-700})") !important;
+  }
+
+  .mdl-color--blue-grey-700 {
+    background-color: unquote("rgb(#{$palette-blue-grey-700})") !important;
+  }
+
+  .mdl-color-text--blue-grey-800 {
+    color: unquote("rgb(#{$palette-blue-grey-800})") !important;
+  }
+
+  .mdl-color--blue-grey-800 {
+    background-color: unquote("rgb(#{$palette-blue-grey-800})") !important;
+  }
+
+  .mdl-color-text--blue-grey-900 {
+    color: unquote("rgb(#{$palette-blue-grey-900})") !important;
+  }
+
+  .mdl-color--blue-grey-900 {
+    background-color: unquote("rgb(#{$palette-blue-grey-900})") !important;
+  }
+
+  // Black
+
+  .mdl-color--black {
+    background-color: unquote("rgb(#{$color-black})") !important;
+  }
+
+  .mdl-color-text--black {
+    color: unquote("rgb(#{$color-black})") !important;
+  }
+
+  // White
+
+  .mdl-color--white {
+    background-color: unquote("rgb(#{$color-white})") !important;
+  }
+
+  .mdl-color-text--white {
+    color: unquote("rgb(#{$color-white})") !important;
+  }
+}
+
+// Primary and accent
+
+.mdl-color--primary {
+  background-color: unquote("rgb(#{$color-primary})") !important;
+}
+
+.mdl-color--primary-contrast {
+  background-color: unquote("rgb(#{$color-primary-contrast})") !important;
+}
+
+.mdl-color--primary-dark {
+  background-color: unquote("rgb(#{$color-primary-dark})") !important;
+}
+
+.mdl-color--accent {
+  background-color: unquote("rgb(#{$color-accent})") !important;
+}
+
+.mdl-color--accent-contrast {
+  background-color: unquote("rgb(#{$color-accent-contrast})") !important;
+}
+
+.mdl-color-text--primary {
+  color: unquote("rgb(#{$color-primary})") !important;
+}
+
+.mdl-color-text--primary-contrast {
+  color: unquote("rgb(#{$color-primary-contrast})") !important;
+}
+
+.mdl-color-text--primary-dark {
+  color: unquote("rgb(#{$color-primary-dark})") !important;
+}
+
+.mdl-color-text--accent {
+  color: unquote("rgb(#{$color-accent})") !important;
+}
+
+.mdl-color-text--accent-contrast {
+  color: unquote("rgb(#{$color-accent-contrast})") !important;
+}

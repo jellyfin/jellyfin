@@ -1,4 +1,4 @@
-﻿define(['paper-checkbox', 'paper-input'], function () {
+﻿define(['jQuery','paper-checkbox', 'paper-input', 'paper-item-body', 'paper-icon-item'], function ($) {
 
     return function (page, providerId, options) {
 
@@ -29,7 +29,16 @@
                     page.querySelector('.listingsSection').classList.add('hide');
                 }
 
+                page.querySelector('.chkAllTuners').checked = info.EnableAllTuners;
+
+                if (page.querySelector('.chkAllTuners').checked) {
+                    page.querySelector('.selectTunersSection').classList.add('hide');
+                } else {
+                    page.querySelector('.selectTunersSection').classList.remove('hide');
+                }
+
                 setCountry(info);
+                refreshTunerDevices(page, info, config.TunerHosts);
             });
         }
 
@@ -91,6 +100,7 @@
                 var info = {
                     Type: 'SchedulesDirect',
                     Username: page.querySelector('.txtUser').value,
+                    EnableAllTuners: true,
                     Password: CryptoJS.SHA1(page.querySelector('.txtPass').value).toString()
                 };
 
@@ -147,6 +157,12 @@
                 info.ZipCode = page.querySelector('.txtZipCode').value;
                 info.Country = $('#selectCountry', page).val();
                 info.ListingsId = selectedListingsId;
+                info.EnableAllTuners = page.querySelector('.chkAllTuners').checked;
+                info.EnabledTuners = info.EnableAllTuners ? [] : $('.chkTuner', page).get().filter(function (i) {
+                    return i.checked;
+                }).map(function (i) {
+                    return i.getAttribute('data-id');
+                });
 
                 ApiClient.ajax({
                     type: "POST",
@@ -216,6 +232,53 @@
             });
         }
 
+        function getTunerName(providerId) {
+
+            providerId = providerId.toLowerCase();
+
+            switch (providerId) {
+
+                case 'm3u':
+                    return 'M3U Playlist';
+                case 'hdhomerun':
+                    return 'HDHomerun';
+                case 'satip':
+                    return 'DVB';
+                default:
+                    return 'Unknown';
+            }
+        }
+
+        function refreshTunerDevices(page, providerInfo, devices) {
+
+            var html = '';
+
+            for (var i = 0, length = devices.length; i < length; i++) {
+
+                var device = devices[i];
+
+                html += '<paper-icon-item>';
+
+                var isChecked = providerInfo.EnableAllTuners || providerInfo.EnabledTuners.indexOf(device.Id) != -1;
+                var checkedAttribute = isChecked ? ' checked' : '';
+                html += '<paper-checkbox data-id="' + device.Id + '" class="chkTuner" item-icon ' + checkedAttribute + '></paper-checkbox>';
+
+                html += '<paper-item-body two-line>';
+                html += '<div>';
+                html += device.FriendlyName || getTunerName(device.Type);
+                html += '</div>';
+
+                html += '<div secondary>';
+                html += device.Url;
+                html += '</div>';
+                html += '</paper-item-body>';
+
+                html += '</paper-icon-item>';
+            }
+
+            page.querySelector('.tunerList').innerHTML = html;
+        }
+
         self.submit = function () {
             page.querySelector('.btnSubmitListingsContainer').click();
         };
@@ -248,6 +311,14 @@
 
             $('.txtZipCode', page).on('change', function () {
                 refreshListings(this.value);
+            });
+
+            page.querySelector('.chkAllTuners').addEventListener('change', function (e) {
+                if (e.target.checked) {
+                    page.querySelector('.selectTunersSection').classList.add('hide');
+                } else {
+                    page.querySelector('.selectTunersSection').classList.remove('hide');
+                }
             });
 
             $('.createAccountHelp', page).html(Globalize.translate('MessageCreateAccountAt', '<a href="http://www.schedulesdirect.org" target="_blank">http://www.schedulesdirect.org</a>'));

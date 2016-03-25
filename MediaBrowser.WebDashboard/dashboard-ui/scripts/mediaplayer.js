@@ -1,4 +1,4 @@
-define(['appSettings', 'userSettings'], function (appSettings, userSettings) {
+define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, userSettings, appStorage) {
 
     function mediaPlayer() {
 
@@ -47,8 +47,8 @@ define(['appSettings', 'userSettings'], function (appSettings, userSettings) {
         function updateDeviceProfileForAndroid(profile) {
 
             // Just here as an easy escape out, if ever needed
-            var enableVlcVideo = window.VlcAudio;
-            var enableVlcAudio = true;
+            var enableVlcVideo = true;
+            var enableVlcAudio = window.VlcAudio;
 
             if (enableVlcVideo) {
 
@@ -150,6 +150,15 @@ define(['appSettings', 'userSettings'], function (appSettings, userSettings) {
                         Property: 'VideoLevel',
                         Value: '41'
                     }]
+                });
+
+                profile.TranscodingProfiles.filter(function (p) {
+
+                    return p.Type == 'Video' && p.VideoCodec == 'h264';
+
+                }).forEach(function (p) {
+
+                    p.AudioCodec += ',ac3';
                 });
             }
 
@@ -1589,8 +1598,8 @@ define(['appSettings', 'userSettings'], function (appSettings, userSettings) {
                 NowPlayingItem: state.NowPlayingItem
             };
 
-            info = $.extend(info, state.PlayState);
-            console.log('repeat mode ' + info.RepeatMode);
+            info = Object.assign(info, state.PlayState);
+            //console.log(JSON.stringify(info));
             ApiClient.reportPlaybackProgress(info);
         }
 
@@ -1729,7 +1738,9 @@ define(['appSettings', 'userSettings'], function (appSettings, userSettings) {
 
     window.MediaPlayer = new mediaPlayer();
 
-    window.MediaController.registerPlayer(window.MediaPlayer);
-    window.MediaController.setActivePlayer(window.MediaPlayer, window.MediaPlayer.getTargetsInternal()[0]);
+    window.MediaPlayer.init = function () {
+        window.MediaController.registerPlayer(window.MediaPlayer);
+        window.MediaController.setActivePlayer(window.MediaPlayer, window.MediaPlayer.getTargetsInternal()[0]);
+    };
 
 });

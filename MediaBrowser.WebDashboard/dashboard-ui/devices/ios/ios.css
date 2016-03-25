@@ -1,18 +1,5 @@
-﻿html, body, .ui-btn, .pageTitle {
-    font-family: San Francisco, Helvetica Neue;
-}
-
-body {
+﻿html {
     font-size: 15px;
-}
-
-.ui-body-b a:visited {
-    color: #007AFF /*{b-link-visited}*/;
-}
-
-.ui-body-b a {
-    color: #007AFF /*{b-link-color}*/;
-    font-weight: 500;
 }
 
 .ui-body-b select {
@@ -32,7 +19,7 @@ body {
     background-attachment: initial;
 }
 
-.background-theme-b, paper-dialog.background-theme-b {
+.background-theme-b, .dialog.background-theme-b {
     background: #181818;
 }
 

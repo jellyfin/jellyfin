@@ -1,4 +1,4 @@
-﻿define(['browser'], function (browser) {
+﻿define(['browser', 'appStorage'], function (browser, appStorage) {
 
     require(['css!devices/ie/ie.css']);
     var browserSwitchKey = "ieswitchbrowser";

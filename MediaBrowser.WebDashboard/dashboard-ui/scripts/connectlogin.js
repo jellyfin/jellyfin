@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['jQuery'], function ($) {
 
     function login(page, username, password) {
 
@@ -35,7 +35,7 @@
                     var apiClient = result.ApiClient;
 
                     Dashboard.onServerChanged(apiClient.getCurrentUserId(), apiClient.accessToken(), apiClient);
-                    Dashboard.navigate('index.html');
+                    Dashboard.navigate('home.html');
                 }
                 break;
             case MediaBrowser.ConnectionState.ServerSignIn:
@@ -271,8 +271,13 @@
         $('#txtSignupPassword', page).val('');
         $('#txtSignupPasswordConfirm', page).val('');
 
-        var link = '<a href="http://emby.media" target="_blank">http://emby.media</a>';
-        $('.embyIntroDownloadMessage', page).html(Globalize.translate('EmbyIntroDownloadMessage', link));
+        if (browserInfo.safari && AppInfo.isNativeApp) {
+            // With apple we can't even have a link to the site
+            $('.embyIntroDownloadMessage', page).html(Globalize.translate('EmbyIntroDownloadMessageWithoutLink'));
+        } else {
+            var link = '<a href="http://emby.media" target="_blank">http://emby.media</a>';
+            $('.embyIntroDownloadMessage', page).html(Globalize.translate('EmbyIntroDownloadMessage', link));
+        }
 
     }).on('pageshow', "#connectLoginPage", function () {
 
@@ -311,4 +316,4 @@
         login(page, user, password);
     }
 
-})();
+});

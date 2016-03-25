@@ -39,7 +39,7 @@ define(['layoutManager', 'dialogText'], function (layoutManager, dialogText) {
         });
     }
 
-    function showConfirmInternal(options, paperdialoghelper, resolve, reject) {
+    function showConfirmInternal(options, dialogHelper, resolve, reject) {
 
         var dialogOptions = {
             removeOnClose: true
@@ -55,11 +55,11 @@ define(['layoutManager', 'dialogText'], function (layoutManager, dialogText) {
 
             dialogOptions.modal = false;
             dialogOptions.entryAnimationDuration = 160;
-            dialogOptions.exitAnimationDuration = 200;
+            dialogOptions.exitAnimationDuration = 160;
             dialogOptions.autoFocus = false;
         }
 
-        var dlg = paperdialoghelper.createDialog(dialogOptions);
+        var dlg = dialogHelper.createDialog(dialogOptions);
         var html = '';
 
         if (options.title) {
@@ -72,18 +72,26 @@ define(['layoutManager', 'dialogText'], function (layoutManager, dialogText) {
 
         html += '<div class="buttons">';
 
-        html += '<paper-button class="btnConfirm" dialog-confirm autofocus>' + dialogText.get('Ok') + '</paper-button>';
+        html += '<paper-button class="btnConfirm" autofocus>' + dialogText.get('Ok') + '</paper-button>';
 
-        html += '<paper-button dialog-dismiss>' + dialogText.get('Cancel') + '</paper-button>';
+        html += '<paper-button class="btnCancel">' + dialogText.get('Cancel') + '</paper-button>';
 
         html += '</div>';
 
         dlg.innerHTML = html;
         document.body.appendChild(dlg);
 
-        paperdialoghelper.open(dlg).then(function () {
+        var confirmed = false;
+        dlg.querySelector('.btnConfirm').addEventListener('click', function () {
+            confirmed = true;
+            dialogHelper.close(dlg);
+        });
+        dlg.querySelector('.btnCancel').addEventListener('click', function () {
+            confirmed = false;
+            dialogHelper.close(dlg);
+        });
 
-            var confirmed = dlg.closingReason.confirmed;
+        dialogHelper.open(dlg).then(function () {
 
             if (confirmed) {
                 resolve();
@@ -96,8 +104,8 @@ define(['layoutManager', 'dialogText'], function (layoutManager, dialogText) {
     function showConfirm(options) {
         return new Promise(function (resolve, reject) {
 
-            require(['paperdialoghelper', 'paper-button'], function (paperdialoghelper) {
-                showConfirmInternal(options, paperdialoghelper, resolve, reject);
+            require(['dialogHelper', 'paper-button'], function (dialogHelper) {
+                showConfirmInternal(options, dialogHelper, resolve, reject);
             });
         });
     }

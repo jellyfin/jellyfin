@@ -9,6 +9,7 @@ using MediaBrowser.Model.Serialization;
 using ServiceStack;
 using System;
 using CommonIO;
+using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -104,7 +105,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var keyFrameArg = string.Format(" -force_key_frames \"expr:gte(t,n_forced*{0})\"",
                 state.SegmentLength.ToString(UsCulture));
 
-            var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream;
+            var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.VideoRequest.SubtitleMethod == SubtitleDeliveryMethod.Encode;
 
             args += " " + GetVideoQualityParam(state, GetH264Encoder(state)) + keyFrameArg;
 

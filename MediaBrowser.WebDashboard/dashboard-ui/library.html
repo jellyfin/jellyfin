@@ -1,28 +1,20 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>${TitleMediaLibrary}</title>
-</head>
-<body>
-    <div id="mediaLibraryPage" data-role="page" class="page type-interior mediaLibraryPage librarySectionPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Library%20setup" data-require="scripts/medialibrarypage,scripts/taskbutton">
+﻿<div id="mediaLibraryPage" data-role="page" class="page type-interior mediaLibraryPage librarySectionPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Library%20setup" data-require="scripts/medialibrarypage,scripts/taskbutton">
 
-        <div data-role="content">
-            <div class="content-primary">
-                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="#" data-role="button" class="ui-btn-active">${TabFolders}</a>
-                    <a href="librarypathmapping.html" data-role="button">${TabPathSubstitution}</a>
-                    <a href="librarysettings.html" data-role="button">${TabAdvanced}</a>
-                </div>
+    <div data-role="content">
+        <div class="content-primary">
+            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                <a href="#" data-role="button" class="ui-btn-active">${TabFolders}</a>
+                <a href="librarypathmapping.html" data-role="button">${TabPathSubstitution}</a>
+                <a href="librarysettings.html" data-role="button">${TabAdvanced}</a>
+            </div>
 
-                <div id="divVirtualFolders"></div>
-                <br />
-                <div>
+            <div id="divVirtualFolders"></div>
+            <br />
+            <div>
 
-                    <paper-button raised class="btnRefresh"><iron-icon icon="refresh"></iron-icon><span>${ButtonScanLibrary}</span></paper-button>
-                    <progress max="100" min="0" style="display: inline-block; vertical-align: middle;" class="refreshProgress"></progress>
-                </div>
+                <paper-button raised class="btnRefresh"><iron-icon icon="refresh"></iron-icon><span>${ButtonScanLibrary}</span></paper-button>
+                <progress max="100" min="0" style="display: inline-block; vertical-align: middle;" class="refreshProgress"></progress>
             </div>
         </div>
     </div>
-</body>
-</html>
+</div>

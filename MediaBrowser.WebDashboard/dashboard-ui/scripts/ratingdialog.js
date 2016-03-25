@@ -1,4 +1,4 @@
-﻿(function (window, document, $) {
+﻿define(['jQuery'], function ($) {
 
     window.RatingDialog = function (page) {
 
@@ -136,4 +136,4 @@
         }
     };
 
-})(window, document, jQuery);
+});

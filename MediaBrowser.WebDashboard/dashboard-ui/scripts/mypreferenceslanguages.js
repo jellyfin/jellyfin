@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'userSettings'], function (appSettings, userSettings) {
+﻿define(['appSettings', 'userSettings', 'jQuery'], function (appSettings, userSettings, $) {
 
     function populateLanguages(select, languages) {
 

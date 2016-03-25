@@ -68,7 +68,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                     extInf = line.Substring(8).Trim();
                     _logger.Info("Found m3u channel: {0}", extInf);
                 }
-                else if (!string.IsNullOrWhiteSpace(extInf))
+                else if (!string.IsNullOrWhiteSpace(extInf) && !line.StartsWith("#", StringComparison.OrdinalIgnoreCase))
                 {
                     var channel = GetChannelnfo(extInf, tunerHostId);
                     channel.Id = channelIdPrefix + urlHash + line.GetMD5().ToString("N");

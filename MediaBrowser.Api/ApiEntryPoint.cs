@@ -63,6 +63,15 @@ namespace MediaBrowser.Api
             _mediaSourceManager = mediaSourceManager;
 
             Instance = this;
+            _sessionManager.PlaybackProgress += _sessionManager_PlaybackProgress;
+        }
+
+        void _sessionManager_PlaybackProgress(object sender, PlaybackProgressEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(e.PlaySessionId))
+            {
+                PingTranscodingJob(e.PlaySessionId, e.IsPaused);
+            }
         }
 
         /// <summary>
@@ -300,26 +309,31 @@ namespace MediaBrowser.Api
                 PingTimer(job, false);
             }
         }
-        internal void PingTranscodingJob(string playSessionId)
+        internal void PingTranscodingJob(string playSessionId, bool? isUserPaused)
         {
             if (string.IsNullOrEmpty(playSessionId))
             {
                 throw new ArgumentNullException("playSessionId");
             }
 
-            //Logger.Debug("PingTranscodingJob PlaySessionId={0}", playSessionId);
+            //Logger.Debug("PingTranscodingJob PlaySessionId={0} isUsedPaused: {1}", playSessionId, isUserPaused);
 
-            var jobs = new List<TranscodingJob>();
+            List<TranscodingJob> jobs;
 
             lock (_activeTranscodingJobs)
             {
                 // This is really only needed for HLS. 
                 // Progressive streams can stop on their own reliably
-                jobs = jobs.Where(j => string.Equals(playSessionId, j.PlaySessionId, StringComparison.OrdinalIgnoreCase)).ToList();
+                jobs = _activeTranscodingJobs.Where(j => string.Equals(playSessionId, j.PlaySessionId, StringComparison.OrdinalIgnoreCase)).ToList();
             }
 
             foreach (var job in jobs)
             {
+                if (isUserPaused.HasValue)
+                {
+                    //Logger.Debug("Setting job.IsUserPaused to {0}. jobId: {1}", isUserPaused, job.Id);
+                    job.IsUserPaused = isUserPaused.Value;
+                }
                 PingTimer(job, true);
             }
         }
@@ -655,6 +669,7 @@ namespace MediaBrowser.Api
         public object ProcessLock = new object();
 
         public bool HasExited { get; set; }
+        public bool IsUserPaused { get; set; }
 
         public string Id { get; set; }
 

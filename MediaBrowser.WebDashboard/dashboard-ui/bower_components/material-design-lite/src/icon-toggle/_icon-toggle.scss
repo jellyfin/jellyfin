@@ -1,0 +1,121 @@
+/**
+ * Copyright 2015 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import "../variables";
+
+.mdl-icon-toggle {
+  position: relative;
+
+  z-index: 1;
+
+  vertical-align: middle;
+
+  display: inline-block;
+  height: $icon-toggle-size;
+  margin: 0;
+  padding: 0;
+}
+
+.mdl-icon-toggle__input {
+  line-height: $icon-toggle-size;
+
+  .mdl-icon-toggle.is-upgraded & {
+    // Hide input element, while still making it respond to focus.
+    position: absolute;
+    width: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    -ms-appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+  }
+}
+
+.mdl-icon-toggle__label {
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+  height: $icon-toggle-size;
+  width: $icon-toggle-size;
+  min-width: $icon-toggle-size;
+  color: $icon-toggle-color;
+  border-radius: 50%;
+  padding: 0;
+  margin-left: 0;
+  margin-right: 0;
+  text-align: center;
+  background-color: transparent;
+  will-change: background-color;
+  transition: background-color 0.2s $animation-curve-default,
+  color 0.2s $animation-curve-default;
+
+  &.material-icons {
+    line-height: $icon-toggle-size;
+    font-size: $icon-toggle-font-size;
+  }
+
+  .mdl-icon-toggle.is-checked & {
+    color: $icon-toggle-checked-color;
+  }
+
+  .mdl-icon-toggle.is-disabled & {
+    color: $icon-toggle-disabled-color;
+    cursor: auto;
+    transition: none;
+  }
+
+  .mdl-icon-toggle.is-focused & {
+    background-color: $icon-toggle-focus-color;
+  }
+
+  .mdl-icon-toggle.is-focused.is-checked & {
+    background-color: $icon-toggle-checked-focus-color;
+  }
+}
+
+
+.mdl-icon-toggle__ripple-container {
+  position: absolute;
+  z-index: 2;
+  top: -(($icon-toggle-ripple-size - $icon-toggle-size) / 2);
+  left: -(($icon-toggle-ripple-size - $icon-toggle-size) / 2);
+
+  box-sizing: border-box;
+  width: $icon-toggle-ripple-size;
+  height: $icon-toggle-ripple-size;
+  border-radius: 50%;
+
+  cursor: pointer;
+
+  overflow: hidden;
+  -webkit-mask-image: -webkit-radial-gradient(circle, white, black);
+
+  & .mdl-ripple {
+    background: $icon-toggle-color;
+  }
+
+  .mdl-icon-toggle.is-disabled & {
+    cursor: auto;
+  }
+
+  .mdl-icon-toggle.is-disabled & .mdl-ripple {
+    background: transparent;
+  }
+}

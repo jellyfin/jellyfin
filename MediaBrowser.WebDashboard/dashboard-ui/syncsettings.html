@@ -1,59 +1,51 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>${TitleSync}</title>
-</head>
-<body>
-    <div id="syncSettingsPage" data-role="page" class="page type-interior syncConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Sync" data-require="scripts/syncsettings,paper-checkbox,paper-input">
+﻿<div id="syncSettingsPage" data-role="page" class="page type-interior syncConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Sync" data-require="scripts/syncsettings,paper-checkbox,paper-input">
 
-        <div data-role="content">
-            <div class="content-primary">
+    <div data-role="content">
+        <div class="content-primary">
 
-                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="syncactivity.html" data-role="button">${TabActivity}</a>
-                    <a href="appservices.html?context=sync" data-role="button">${TabServices}</a>
-                    <a href="#" data-role="button" class="ui-btn-active">${TabSettings}</a>
-                </div>
-
-                <form class="syncSettingsForm">
-
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <paper-input type="text" id="txtSyncTempPath" label="${LabelSyncTempPath}" style="display: inline-block; width: 84%;"></paper-input>
-                            <paper-icon-button id="btnSelectSyncTempPath" icon="search" title="${ButtonSelectDirectory}"></paper-icon-button>
-                            <div class="fieldDescription">
-                                ${LabelSyncTempPathHelp}
-                            </div>
-                        </li>
-                        <li>
-                            <paper-input type="number" min="0" step=".5" id="txtUploadSpeedLimit" label="${LabelUploadSpeedLimit}"></paper-input>
-                        </li>
-                        <li>
-                            <paper-input type="number" min="0" max="8" step="1" id="txtCpuCoreLimit" label="${LabelConversionCpuCoreLimit}" required="required"></paper-input>
-                            <div class="fieldDescription">
-                                ${LabelConversionCpuCoreLimitHelp}
-                            </div>
-                        </li>
-                        <li>
-                            <paper-checkbox id="chkEnableFullSpeedConversion">${OptionEnableFullSpeedConversion}</paper-checkbox>
-                            <div class="fieldDescription paperCheckboxFieldDescription">
-                                ${OptionEnableFullSpeedConversionHelp}
-                            </div>
-                        </li>
-                    </ul>
-
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <button type="submit" data-role="none" class="clearButton">
-                                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                            </button>
-
-                            <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
-                        </li>
-                    </ul>
-                </form>
+            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                <a href="syncactivity.html" data-role="button">${TabActivity}</a>
+                <a href="appservices.html?context=sync" data-role="button">${TabServices}</a>
+                <a href="#" data-role="button" class="ui-btn-active">${TabSettings}</a>
             </div>
+
+            <form class="syncSettingsForm">
+
+                <ul data-role="listview" class="ulForm">
+                    <li>
+                        <paper-input type="text" id="txtSyncTempPath" label="${LabelSyncTempPath}" style="display: inline-block; width: 84%;"></paper-input>
+                        <paper-icon-button id="btnSelectSyncTempPath" icon="search" title="${ButtonSelectDirectory}"></paper-icon-button>
+                        <div class="fieldDescription">
+                            ${LabelSyncTempPathHelp}
+                        </div>
+                    </li>
+                    <li>
+                        <paper-input type="number" min="0" step=".5" id="txtUploadSpeedLimit" label="${LabelUploadSpeedLimit}"></paper-input>
+                    </li>
+                    <li>
+                        <paper-input type="number" min="0" max="8" step="1" id="txtCpuCoreLimit" label="${LabelConversionCpuCoreLimit}" required="required"></paper-input>
+                        <div class="fieldDescription">
+                            ${LabelConversionCpuCoreLimitHelp}
+                        </div>
+                    </li>
+                    <li>
+                        <paper-checkbox id="chkEnableFullSpeedConversion">${OptionEnableFullSpeedConversion}</paper-checkbox>
+                        <div class="fieldDescription paperCheckboxFieldDescription">
+                            ${OptionEnableFullSpeedConversionHelp}
+                        </div>
+                    </li>
+                </ul>
+
+                <ul data-role="listview" class="ulForm">
+                    <li>
+                        <button type="submit" data-role="none" class="clearButton">
+                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+                        </button>
+
+                        <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+                    </li>
+                </ul>
+            </form>
         </div>
     </div>
-</body>
-</html>
+</div>

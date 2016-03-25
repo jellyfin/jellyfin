@@ -1,4 +1,4 @@
-﻿(function ($, document, window) {
+﻿define(['jQuery'], function ($) {
 
     function populateHistory(packageInfo, page) {
 
@@ -320,4 +320,4 @@
 
     window.AddPluginPage = new addPluginpage();
 
-})(jQuery, document, window);
+});

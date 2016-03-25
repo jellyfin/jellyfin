@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     function reload(page) {
 
@@ -61,4 +61,4 @@
         }
     };
 
-})(jQuery, document);
+});

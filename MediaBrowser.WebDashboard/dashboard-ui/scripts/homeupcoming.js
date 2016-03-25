@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     function loadUpcoming(page) {
         Dashboard.showLoadingMsg();
@@ -127,4 +127,4 @@
         }
     };
 
-})(jQuery, document);
+});

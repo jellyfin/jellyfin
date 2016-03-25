@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'paper-checkbox', 'paper-input', 'paper-button'], function (paperDialogHelper) {
+﻿define(['dialogHelper', 'paper-checkbox', 'paper-input', 'paper-button'], function (dialogHelper) {
 
     var extractedName;
     var extractedYear;
@@ -133,7 +133,7 @@
             Dashboard.hideLoadingMsg();
 
             dlg.submitted = true;
-            paperDialogHelper.close(dlg);
+            dialogHelper.close(dlg);
 
         }, onApiFailure);
     }
@@ -160,9 +160,11 @@
 
         if (seriesId == "##NEW##") {
             dlg.querySelector('.fldSelectSeriesFolder').classList.remove('hide');
+            dlg.querySelector('#selectSeriesFolder').setAttribute('required', 'required');
         }
         else {
             dlg.querySelector('.fldSelectSeriesFolder').classList.add('hide');
+            dlg.querySelector('#selectSeriesFolder').removeAttribute('required');
         }
     }
 
@@ -181,7 +183,7 @@
                 xhr.onload = function (e) {
 
                     var template = this.response;
-                    var dlg = paperDialogHelper.createDialog({
+                    var dlg = dialogHelper.createDialog({
                         removeOnClose: true,
                         size: 'small'
                     });
@@ -200,9 +202,9 @@
 
                     dlg.querySelector('.dialogHeaderTitle').innerHTML = Globalize.translate('FileOrganizeManually');
 
-                    paperDialogHelper.open(dlg);
+                    dialogHelper.open(dlg);
 
-                    dlg.addEventListener('iron-overlay-closed', function () {
+                    dlg.addEventListener('close', function () {
 
                         if (dlg.submitted) {
                             resolve();
@@ -213,7 +215,7 @@
 
                     dlg.querySelector('.btnCancel').addEventListener('click', function (e) {
 
-                        paperDialogHelper.close(dlg);
+                        dialogHelper.close(dlg);
                     });
 
                     dlg.querySelector('form').addEventListener('submit', function (e) {

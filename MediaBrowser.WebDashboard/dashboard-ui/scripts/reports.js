@@ -1,4 +1,5 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
+
     var defaultSortBy = "SortName";
     var topItems = 5;
 
@@ -323,7 +324,7 @@
 
 
             $('.listTopPaging', page).html(pagingHtml).trigger('create');
-           // page.querySelector('.listTopPaging').innerHTML = pagingHtml;
+            // page.querySelector('.listTopPaging').innerHTML = pagingHtml;
             $('.listTopPaging', page).show();
 
             $('.listBottomPaging', page).html(pagingHtml).trigger('create');
@@ -525,7 +526,7 @@
             $('#isFavorite').val("-");
         }
 
-        
+
     }
 
     var filtersLoaded;
@@ -910,10 +911,6 @@
 	    updateFilterControls(this);
 	});
 
-})(jQuery, document);
-
-(function (window) {
-
     function renderOptions(page, selector, cssClass, items) {
 
         var elem;
@@ -1145,4 +1142,4 @@
         loadColumns: loadColumns,
         onPageShow: onPageReportColumnsShow
     };
-})(window);
+});

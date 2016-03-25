@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'css!css/metadataeditor.css', 'paper-fab'], function (paperDialogHelper) {
+﻿define(['dialogHelper', 'jQuery', 'css!css/metadataeditor.css', 'paper-fab'], function (dialogHelper, $) {
 
     var currentItem;
     var currentDeferred;
@@ -245,7 +245,7 @@
             var template = this.response;
             ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).then(function (item) {
 
-                var dlg = paperDialogHelper.createDialog({
+                var dlg = dialogHelper.createDialog({
                     size: 'fullscreen-border'
                 });
 
@@ -271,16 +271,16 @@
                 initEditor(dlg, options);
 
                 // Has to be assigned a z-index after the call to .open() 
-                $(dlg).on('iron-overlay-closed', onDialogClosed);
+                $(dlg).on('close', onDialogClosed);
 
-                paperDialogHelper.open(dlg);
+                dialogHelper.open(dlg);
 
                 var editorContent = dlg.querySelector('.editorContent');
                 reload(editorContent, item);
 
                 $('.btnCloseDialog', dlg).on('click', function () {
 
-                    paperDialogHelper.close(dlg);
+                    dialogHelper.close(dlg);
                 });
             });
         }

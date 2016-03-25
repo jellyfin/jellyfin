@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     function save(page) {
 
@@ -115,4 +115,4 @@
         reload(page);
     });
 
-})(jQuery, document, window);
+});

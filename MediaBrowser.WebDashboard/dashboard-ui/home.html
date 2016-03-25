@@ -1,0 +1,58 @@
+﻿<div id="indexPage" style="outline: none;" data-role="page" data-dom-cache="true" class="page homePage libraryPage allLibraryPage backdropPage pageWithAbsoluteTabs" data-title="${ButtonHome}" data-backdroptype="movie,series,game,book">
+
+    <div class="libraryViewNav libraryViewNavWithMinHeight hide">
+        <paper-tabs hidescrollbuttons noink>
+            <paper-tab>${TabHome}</paper-tab>
+            <paper-tab>${TabNextUp}</paper-tab>
+            <paper-tab class="homeFavoritesTab">${TabFavorites}</paper-tab>
+            <paper-tab>${TabUpcoming}</paper-tab>
+        </paper-tabs>
+        <div class="legacyTabs">
+            <a href="home.html">${TabHome}</a>
+            <a href="home.html?tab=1">${TabNextUp}</a>
+            <a href="home.html?tab=2" class="homeFavoritesTab">${TabFavorites}</a>
+            <a href="home.html?tab=3">${TabUpcoming}</a>
+        </div>
+    </div>
+
+    <div class="ehsContent fullWidth pageTabsContainer">
+        <div class="pageTabContent homeTabContent hide" data-index="0">
+            <div class="ui-bar-b readOnlyContent welcomeMessage" style="display: none; padding: 2em; border-radius: 10px; margin: 2em auto; font-weight: normal;">
+                <h1 style="margin-top: 0;" class="tourHeader"></h1>
+                <p>
+                    <paper-button raised class="submit block btnTakeTour"><iron-icon icon="check"></iron-icon><span class="tourButtonText"></span></paper-button>
+                </p>
+            </div>
+
+            <div class="sections"></div>
+        </div>
+        <div class="pageTabContent homeNextUpTabContent hide" data-index="1">
+            <div class="homePageSection">
+                <div>
+                    <h1 class="listHeader nextUpHeader" style="display: inline-block; vertical-align: middle;">${HeaderNextUp}</h1>
+                    <paper-button raised class="submit mini categorySyncButton" data-category="NextUp"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
+                </div>
+                <div id="nextUpItems" class="itemsContainer">
+                </div>
+            </div>
+            <p class="noNextUpItems" style="display: none;">${NoNextUpItemsMessage}</p>
+        </div>
+        <div class="pageTabContent homeFavoritesTabContent hide" data-index="2">
+            <div class="favoriteSections"></div>
+        </div>
+        <div class="pageTabContent homeUpcomingTabContent hide" data-index="3">
+            <div id="upcomingItems" class="itemsContainer">
+            </div>
+            <div class="noItemsMessage" style="display: none;">
+                <p>${MessageNothingHere}</p>
+                <p>
+                    <a href="metadata.html">${MessagePleaseEnsureInternetMetadata}</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div data-role="content">
+
+    </div>
+</div>

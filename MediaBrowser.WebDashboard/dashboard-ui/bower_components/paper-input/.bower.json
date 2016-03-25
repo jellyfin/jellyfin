@@ -1,6 +1,6 @@
 {
   "name": "paper-input",
-  "version": "1.1.8",
+  "version": "1.1.10",
   "description": "Material design text fields",
   "authors": [
     "The Polymer Authors"
@@ -39,6 +39,7 @@
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
     "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^1.0.0",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",
     "iron-icon": "PolymerElements/iron-icon#^1.0.0",
     "iron-test-helpers": "PolymerElements/iron-test-helpers#^1.0.0",
     "iron-validator-behavior": "PolymerElements/iron-validator-behavior#^1.0.0",
@@ -47,11 +48,11 @@
     "web-component-tester": "^4.0.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
-  "_release": "1.1.8",
+  "_release": "1.1.10",
   "_resolution": {
     "type": "version",
-    "tag": "v1.1.8",
-    "commit": "96efaa0f707870d5a5999120467d67b8da806704"
+    "tag": "v1.1.10",
+    "commit": "d8e201099b4b2987bea1dbcf5804c0383544bbfd"
   },
   "_source": "git://github.com/polymerelements/paper-input.git",
   "_target": "^1.0.9",

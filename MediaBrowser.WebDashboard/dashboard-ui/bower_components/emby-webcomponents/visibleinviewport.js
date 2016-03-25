@@ -10,13 +10,22 @@
    *       the user visible viewport of a web browser.
    *       only accounts for vertical position, not horizontal.
    */
-    function visibleInViewport(elem, partial, thresholdX, thresholdY) {
+    function visibleInViewport(elem, partial, thresholdX, thresholdY, windowSize) {
 
         thresholdX = thresholdX || 0;
         thresholdY = thresholdY || 0;
 
-        var vpWidth = window.innerWidth,
-            vpHeight = window.innerHeight;
+        if (!elem.getBoundingClientRect) {
+            return true;
+        }
+
+        windowSize = windowSize || {
+            innerHeight: window.innerHeight,
+            innerWidth: window.innerWidth
+        };
+
+        var vpWidth = windowSize.innerWidth,
+            vpHeight = windowSize.innerHeight;
 
         // Use this native browser method, if available.
         var rec = elem.getBoundingClientRect(),

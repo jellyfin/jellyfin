@@ -21,6 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Security;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
 {
@@ -288,6 +289,36 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             return Path.GetExtension(parts[0]);
         }
 
+        public static string RemoveQueryStringByKey(string url, string key)
+        {
+            var uri = new Uri(url);
+
+            // this gets all the query string key value pairs as a collection
+            var newQueryString = MyHttpUtility.ParseQueryString(uri.Query);
+
+            if (newQueryString.Count == 0)
+            {
+                return url;
+            }
+
+            // this removes the key if exists
+            newQueryString.Remove(key);
+
+            // this gets the page path from root without QueryString
+            string pagePathWithoutQueryString = uri.GetLeftPart(UriPartial.Path);
+
+            return newQueryString.Count > 0
+                ? String.Format("{0}?{1}", pagePathWithoutQueryString, newQueryString)
+                : pagePathWithoutQueryString;
+        }
+
+        private string GetUrlToLog(string url)
+        {
+            url = RemoveQueryStringByKey(url, "api_key");
+
+            return url;
+        }
+
         /// <summary>
         /// Overridable method that can be used to implement a custom hnandler
         /// </summary>
@@ -305,21 +336,36 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             var urlString = url.OriginalString;
             var enableLog = EnableLogging(urlString, localPath);
+            var urlToLog = urlString;
 
             if (enableLog)
             {
-                LoggerUtils.LogRequest(_logger, urlString, httpReq.HttpMethod, httpReq.UserAgent);
+                urlToLog = GetUrlToLog(urlString);
+                LoggerUtils.LogRequest(_logger, urlToLog, httpReq.HttpMethod, httpReq.UserAgent);
             }
-            
+
             if (string.Equals(localPath, "/mediabrowser/", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(localPath, "/emby/", StringComparison.OrdinalIgnoreCase))
+                string.Equals(localPath, "/mediabrowser", StringComparison.OrdinalIgnoreCase) ||
+                localPath.IndexOf("mediabrowser/web", StringComparison.OrdinalIgnoreCase) != -1 ||
+                localPath.IndexOf("dashboard/", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                httpRes.StatusCode = 200;
+                httpRes.ContentType = "text/html";
+                var newUrl = urlString.Replace("mediabrowser", "emby", StringComparison.OrdinalIgnoreCase)
+                    .Replace("/dashboard/", "/web/", StringComparison.OrdinalIgnoreCase);
+
+                if (!string.Equals(newUrl, urlString, StringComparison.OrdinalIgnoreCase))
+                {
+                    httpRes.Write("<!doctype html><html><head><title>Emby</title></head><body>Please update your Emby bookmark to <a href=\"" + newUrl + "\">" + newUrl + "</a></body></html>");
+
+                    httpRes.Close();
+                    return Task.FromResult(true);
+                }
+            }
+
+            if (string.Equals(localPath, "/emby/", StringComparison.OrdinalIgnoreCase))
             {
                 httpRes.RedirectToUrl(DefaultRedirectPath);
-                return Task.FromResult(true);
-            }
-            if (string.Equals(localPath, "/mediabrowser", StringComparison.OrdinalIgnoreCase))
-            {
-                httpRes.RedirectToUrl("mediabrowser/" + DefaultRedirectPath);
                 return Task.FromResult(true);
             }
             if (string.Equals(localPath, "/emby", StringComparison.OrdinalIgnoreCase))
@@ -353,7 +399,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 httpRes.RedirectToUrl("web/pin.html");
                 return Task.FromResult(true);
             }
-            
+
             if (!string.IsNullOrWhiteSpace(GlobalResponse))
             {
                 httpRes.StatusCode = 503;
@@ -390,7 +436,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                     if (enableLog)
                     {
-                        LoggerUtils.LogResponse(_logger, statusCode, urlString, remoteIp, duration);
+                        LoggerUtils.LogResponse(_logger, statusCode, urlToLog, remoteIp, duration);
                     }
 
                 }, TaskContinuationOptions.None);
@@ -429,6 +475,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     Priority = route.Priority,
                     Summary = route.Summary
                 });
+
                 routes.Add(new RouteAttribute(NormalizeRoutePath(route.Path), route.Verbs)
                 {
                     Notes = route.Notes,
@@ -436,13 +483,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     Summary = route.Summary
                 });
 
-                // TODO: This is a hack for iOS. Remove it asap.
-                routes.Add(new RouteAttribute(DoubleNormalizeRoutePath(route.Path), route.Verbs)
-                {
-                    Notes = route.Notes,
-                    Priority = route.Priority,
-                    Summary = route.Summary
-                });
                 routes.Add(new RouteAttribute(DoubleNormalizeEmbyRoutePath(route.Path), route.Verbs)
                 {
                     Notes = route.Notes,
@@ -482,16 +522,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
 
             return "mediabrowser/" + path;
-        }
-
-        private string DoubleNormalizeRoutePath(string path)
-        {
-            if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
-            {
-                return "/mediabrowser/mediabrowser" + path;
-            }
-
-            return "mediabrowser/mediabrowser/" + path;
         }
 
         /// <summary>

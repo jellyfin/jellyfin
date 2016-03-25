@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['jQuery'], function ($) {
 
     function deleteDevice(page, id) {
 
@@ -106,4 +106,4 @@
 
     });
 
-})();
+});

@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     var defaultSortBy = "Album,SortName";
 
@@ -165,4 +165,4 @@
         }
     };
 
-})(jQuery, document);
+});

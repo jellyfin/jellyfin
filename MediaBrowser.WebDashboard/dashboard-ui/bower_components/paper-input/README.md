@@ -109,6 +109,9 @@ For example:
 </paper-input-container>
 ```
 
+Do not wrap <paper-input-contanter> around elements that already include it, such as <paper-input>.
+Doing so may cause events to bounce infintely between the container and its contained element.
+
 ### Listening for input changes
 
 By default, it listens for changes on the `bind-value` attribute on its children nodes and perform
@@ -128,6 +131,10 @@ compound input field like a social security number input. The custom input eleme
   <ssn-input class="paper-input-input"></ssn-input>
 </paper-input-container>
 ```
+
+If you're using a `<paper-input-container>` imperatively, it's important to make sure
+that you attach its children (the `iron-input` and the optional `label`) before you
+attach the `<paper-input-container>` itself, so that it can be set up correctly.
 
 ### Validation
 

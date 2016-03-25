@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['jQuery'], function ($) {
 
     var currentPlayer;
 
@@ -255,9 +255,7 @@
     function showRemoteControl(tab) {
 
         if (tab) {
-            $.mobile.changePage('nowplaying.html', {
-                dataUrl: 'nowplaying.html#' + tab
-            });
+            Dashboard.navigate('nowplaying.html?tab=' + tab);
         } else {
             Dashboard.navigate('nowplaying.html');
         }
@@ -273,7 +271,7 @@
                 return;
             }
 
-            require(['css!css/nowplayingbar.css', 'paper-slider'], function () {
+            require(['jQuery', 'css!css/nowplayingbar.css', 'paper-slider'], function ($) {
 
                 nowPlayingBarElement = document.querySelector('.nowPlayingBar');
 

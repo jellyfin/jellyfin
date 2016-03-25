@@ -35,7 +35,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(val) && movie != null)
                         {
-                            movie.TmdbCollectionName = val;
+                            movie.CollectionName = val;
                         }
 
                         break;

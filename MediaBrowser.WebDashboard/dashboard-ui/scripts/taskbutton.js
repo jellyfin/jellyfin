@@ -1,175 +1,178 @@
-﻿$.fn.taskButton = function (options) {
+﻿define(['appStorage', 'jQuery'], function (appStorage, $) {
 
-    function pollTasks(button) {
+    $.fn.taskButton = function (options) {
 
-        ApiClient.getScheduledTasks({
+        function pollTasks(button) {
 
-            IsEnabled: true
+            ApiClient.getScheduledTasks({
 
-        }).then(function (tasks) {
+                IsEnabled: true
 
-            updateTasks(button, tasks);
-        });
+            }).then(function (tasks) {
 
-    }
+                updateTasks(button, tasks);
+            });
 
-    function updateTasks(button, tasks) {
+        }
 
-        var task = tasks.filter(function (t) {
+        function updateTasks(button, tasks) {
 
-            return t.Key == options.taskKey;
+            var task = tasks.filter(function (t) {
 
-        })[0];
+                return t.Key == options.taskKey;
 
-        if (options.panel) {
-            if (task) {
-                $(options.panel).show();
+            })[0];
+
+            if (options.panel) {
+                if (task) {
+                    $(options.panel).show();
+                } else {
+                    $(options.panel).hide();
+                }
+            }
+
+            if (!task) {
+                return;
+            }
+
+            if (task.State == 'Idle') {
+                $(button).removeAttr('disabled');
             } else {
-                $(options.panel).hide();
+                $(button).attr('disabled', 'disabled');
+            }
+
+            $(button).attr('data-taskid', task.Id);
+
+            var progress = (task.CurrentProgressPercentage || 0).toFixed(1);
+
+            if (options.progressElem) {
+                options.progressElem.value = progress;
+
+                if (task.State == 'Running') {
+                    options.progressElem.classList.remove('hide');
+                } else {
+                    options.progressElem.classList.add('hide');
+                }
+            }
+
+            if (options.lastResultElem) {
+                var lastResult = task.LastExecutionResult ? task.LastExecutionResult.Status : '';
+
+                if (lastResult == "Failed") {
+                    options.lastResultElem.html('<span style="color:#FF0000;">' + Globalize.translate('LabelFailed') + '</span>');
+                }
+                else if (lastResult == "Cancelled") {
+                    options.lastResultElem.html('<span style="color:#0026FF;">' + Globalize.translate('LabelCancelled') + '</span>');
+                }
+                else if (lastResult == "Aborted") {
+                    options.lastResultElem.html('<span style="color:#FF0000;">' + Globalize.translate('LabelAbortedByServerShutdown') + '</span>');
+                } else {
+                    options.lastResultElem.html(lastResult);
+                }
             }
         }
 
-        if (!task) {
-            return;
-        }
+        function onScheduledTaskMessageConfirmed(instance, id) {
+            ApiClient.startScheduledTask(id).then(function () {
 
-        if (task.State == 'Idle') {
-            $(button).removeAttr('disabled');
-        } else {
-            $(button).attr('disabled', 'disabled');
-        }
-
-        $(button).attr('data-taskid', task.Id);
-
-        var progress = (task.CurrentProgressPercentage || 0).toFixed(1);
-
-        if (options.progressElem) {
-            options.progressElem.value = progress;
-
-            if (task.State == 'Running') {
-                options.progressElem.classList.remove('hide');
-            } else {
-                options.progressElem.classList.add('hide');
-            }
-        }
-
-        if (options.lastResultElem) {
-            var lastResult = task.LastExecutionResult ? task.LastExecutionResult.Status : '';
-
-            if (lastResult == "Failed") {
-                options.lastResultElem.html('<span style="color:#FF0000;">' + Globalize.translate('LabelFailed') + '</span>');
-            }
-            else if (lastResult == "Cancelled") {
-                options.lastResultElem.html('<span style="color:#0026FF;">' + Globalize.translate('LabelCancelled') + '</span>');
-            }
-            else if (lastResult == "Aborted") {
-                options.lastResultElem.html('<span style="color:#FF0000;">' + Globalize.translate('LabelAbortedByServerShutdown') + '</span>');
-            } else {
-                options.lastResultElem.html(lastResult);
-            }
-        }
-    }
-
-    function onScheduledTaskMessageConfirmed(instance, id) {
-        ApiClient.startScheduledTask(id).then(function () {
-
-            pollTasks(instance);
-        });
-    }
-
-    function onButtonClick() {
-
-        var button = this;
-        var id = button.getAttribute('data-taskid');
-
-        var key = 'scheduledTaskButton' + options.taskKey;
-        var expectedValue = new Date().getMonth() + '5';
-
-        if (appStorage.getItem(key) == expectedValue) {
-            onScheduledTaskMessageConfirmed(button, id);
-        } else {
-
-            var msg = Globalize.translate('ConfirmMessageScheduledTaskButton');
-            msg += '<br/>';
-            msg += '<div style="margin-top:1em;">';
-            msg += '<a class="clearLink" href="scheduledtasks.html"><paper-button style="color:#3f51b5!important;margin:0;">' + Globalize.translate('ButtonScheduledTasks') + '</paper-button></a>';
-            msg += '</div>';
-
-            require(['confirm'], function (confirm) {
-
-                confirm(msg, Globalize.translate('HeaderConfirmation')).then(function () {
-                    appStorage.setItem(key, expectedValue);
-                    onScheduledTaskMessageConfirmed(button, id);
-                });
-
+                pollTasks(instance);
             });
         }
-    }
 
-    function onSocketOpen() {
-        startInterval();
-    }
+        function onButtonClick() {
 
-    function onSocketMessage(e, msg) {
-        if (msg.MessageType == "ScheduledTasksInfo") {
+            var button = this;
+            var id = button.getAttribute('data-taskid');
 
-            var tasks = msg.Data;
+            var key = 'scheduledTaskButton' + options.taskKey;
+            var expectedValue = new Date().getMonth() + '5';
 
-            updateTasks(self, tasks);
+            if (appStorage.getItem(key) == expectedValue) {
+                onScheduledTaskMessageConfirmed(button, id);
+            } else {
+
+                var msg = Globalize.translate('ConfirmMessageScheduledTaskButton');
+                msg += '<br/>';
+                msg += '<div style="margin-top:1em;">';
+                msg += '<a class="clearLink" href="scheduledtasks.html"><paper-button style="color:#3f51b5!important;margin:0;">' + Globalize.translate('ButtonScheduledTasks') + '</paper-button></a>';
+                msg += '</div>';
+
+                require(['confirm'], function (confirm) {
+
+                    confirm(msg, Globalize.translate('HeaderConfirmation')).then(function () {
+                        appStorage.setItem(key, expectedValue);
+                        onScheduledTaskMessageConfirmed(button, id);
+                    });
+
+                });
+            }
         }
-    }
 
-    var self = this;
-    var pollInterval;
+        function onSocketOpen() {
+            startInterval();
+        }
 
-    function onPollIntervalFired() {
+        function onSocketMessage(e, msg) {
+            if (msg.MessageType == "ScheduledTasksInfo") {
 
-        if (!ApiClient.isWebSocketOpen()) {
+                var tasks = msg.Data;
+
+                updateTasks(self, tasks);
+            }
+        }
+
+        var self = this;
+        var pollInterval;
+
+        function onPollIntervalFired() {
+
+            if (!ApiClient.isWebSocketOpen()) {
+                pollTasks(self);
+            }
+        }
+
+        function startInterval() {
+            if (ApiClient.isWebSocketOpen()) {
+                ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1000,1000");
+            }
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+            pollInterval = setInterval(onPollIntervalFired, 5000);
+        }
+
+        function stopInterval() {
+            if (ApiClient.isWebSocketOpen()) {
+                ApiClient.sendWebSocketMessage("ScheduledTasksInfoStop");
+            }
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+        }
+
+        if (options.panel) {
+            $(options.panel).hide();
+        }
+
+        if (options.mode == 'off') {
+
+            this.off('click', onButtonClick);
+            Events.off(ApiClient, 'websocketmessage', onSocketMessage);
+            Events.off(ApiClient, 'websocketopen', onSocketOpen);
+            stopInterval();
+
+        } else if (this.length) {
+
+            this.on('click', onButtonClick);
+
             pollTasks(self);
+
+            startInterval();
+
+            Events.on(ApiClient, 'websocketmessage', onSocketMessage);
+            Events.on(ApiClient, 'websocketopen', onSocketOpen);
         }
-    }
 
-    function startInterval() {
-        if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1000,1000");
-        }
-        if (pollInterval) {
-            clearInterval(pollInterval);
-        }
-        pollInterval = setInterval(onPollIntervalFired, 5000);
-    }
-
-    function stopInterval() {
-        if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStop");
-        }
-        if (pollInterval) {
-            clearInterval(pollInterval);
-        }
-    }
-
-    if (options.panel) {
-        $(options.panel).hide();
-    }
-
-    if (options.mode == 'off') {
-
-        this.off('click', onButtonClick);
-        Events.off(ApiClient, 'websocketmessage', onSocketMessage);
-        Events.off(ApiClient, 'websocketopen', onSocketOpen);
-        stopInterval();
-
-    } else if (this.length) {
-
-        this.on('click', onButtonClick);
-
-        pollTasks(self);
-
-        startInterval();
-
-        Events.on(ApiClient, 'websocketmessage', onSocketMessage);
-        Events.on(ApiClient, 'websocketopen', onSocketOpen);
-    }
-
-    return this;
-};
+        return this;
+    };
+});

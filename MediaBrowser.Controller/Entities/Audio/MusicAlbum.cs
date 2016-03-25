@@ -34,7 +34,17 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             get
             {
-                return GetParents().OfType<MusicArtist>().FirstOrDefault();
+                var artist = GetParents().OfType<MusicArtist>().FirstOrDefault();
+
+                if (artist == null)
+                {
+                    var name = AlbumArtist;
+                    if (!string.IsNullOrWhiteSpace(name))
+                    {
+                        artist = LibraryManager.GetArtist(name);
+                    }
+                }
+                return artist;
             }
         }
 
@@ -106,6 +116,15 @@ namespace MediaBrowser.Controller.Entities.Audio
                 return "MusicAlbum-Musicbrainz-" + id;
             }
 
+            if (ConfigurationManager.Configuration.EnableStandaloneMusicKeys)
+            {
+                var albumArtist = AlbumArtist;
+                if (!string.IsNullOrWhiteSpace(albumArtist))
+                {
+                    return albumArtist + "-" + Name;
+                }
+            }
+
             return base.CreateUserDataKey();
         }
 
@@ -125,7 +144,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
             id.AlbumArtists = AlbumArtists;
 
-            var artist = GetParents().OfType<MusicArtist>().FirstOrDefault();
+            var artist = MusicArtist;
 
             if (artist != null)
             {

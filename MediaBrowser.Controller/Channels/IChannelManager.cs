@@ -116,7 +116,7 @@ namespace MediaBrowser.Controller.Channels
         /// <param name="includeCachedVersions">if set to <c>true</c> [include cached versions].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{MediaSourceInfo}}.</returns>
-        Task<IEnumerable<MediaSourceInfo>> GetStaticMediaSources(IChannelMediaItem item, bool includeCachedVersions, CancellationToken cancellationToken);
+        Task<IEnumerable<MediaSourceInfo>> GetStaticMediaSources(BaseItem item, bool includeCachedVersions, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the channel folder.
@@ -141,6 +141,6 @@ namespace MediaBrowser.Controller.Channels
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task DownloadChannelItem(IChannelMediaItem item, string destinationPath, IProgress<double> progress, CancellationToken cancellationToken);
+        Task DownloadChannelItem(BaseItem item, string destinationPath, IProgress<double> progress, CancellationToken cancellationToken);
     }
 }

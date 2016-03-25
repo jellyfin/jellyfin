@@ -96,6 +96,7 @@ namespace MediaBrowser.Common.Net
         public TimeSpan CacheLength { get; set; }
 
         public int TimeoutMs { get; set; }
+        public bool PreferIpv4 { get; set; }
 
         private string GetHeaderValue(string name)
         {

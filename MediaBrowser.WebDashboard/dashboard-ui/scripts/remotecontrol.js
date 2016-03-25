@@ -1,4 +1,4 @@
-﻿(function (window, document, $) {
+﻿define([], function () {
 
     function sendPlayCommand(options, playType) {
 
@@ -396,4 +396,4 @@
         initializeApiClient(apiClient);
     });
 
-})(window, document, jQuery);
+});

@@ -1,320 +1,298 @@
-﻿(function ($, document) {
+﻿define(['libraryBrowser', 'scripts/alphapicker'], function (libraryBrowser) {
 
-    function getView() {
+    return function (view, params) {
 
-        return 'Thumb';
-    }
+        var self = this;
 
-    function getResumeView() {
+        function getView() {
 
-        return 'Poster';
-    }
-
-    function reload(page) {
-
-        Dashboard.showLoadingMsg();
-
-        if (LibraryMenu.getTopParentId()) {
-
-            $('.scopedContent', page).show();
-
-            loadResume(page);
-
-        } else {
-            $('.scopedContent', page).hide();
+            return 'Thumb';
         }
 
-        loadNextUp(page);
-    }
+        function getResumeView() {
 
-    function loadNextUp(page) {
+            return 'Poster';
+        }
 
-        var limit = AppInfo.hasLowImageBandwidth ?
-         16 :
-         24;
+        function reload() {
 
-        var query = {
+            Dashboard.showLoadingMsg();
 
-            Limit: limit,
-            Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
-            UserId: Dashboard.getCurrentUserId(),
-            ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+            loadResume();
+            loadNextUp();
+        }
+
+        function loadNextUp() {
+
+            var limit = AppInfo.hasLowImageBandwidth ?
+             16 :
+             24;
+
+            var query = {
+
+                Limit: limit,
+                Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
+                UserId: Dashboard.getCurrentUserId(),
+                ImageTypeLimit: 1,
+                EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+            };
+
+            query.ParentId = LibraryMenu.getTopParentId();
+
+            ApiClient.getNextUpEpisodes(query).then(function (result) {
+
+                if (result.Items.length) {
+                    view.querySelector('.noNextUpItems').classList.add('hide');
+                } else {
+                    view.querySelector('.noNextUpItems').classList.remove('hide');
+                }
+
+                var viewStyle = getView();
+                var html = '';
+
+                if (viewStyle == 'ThumbCard') {
+
+                    html += libraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "backdrop",
+                        showTitle: true,
+                        preferThumb: true,
+                        showParentTitle: true,
+                        lazy: true,
+                        cardLayout: true,
+                        showDetailsMenu: true
+                    });
+
+                } else if (viewStyle == 'Thumb') {
+
+                    html += libraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "backdrop",
+                        showTitle: true,
+                        showParentTitle: true,
+                        overlayText: false,
+                        lazy: true,
+                        preferThumb: true,
+                        showDetailsMenu: true,
+                        centerText: true,
+                        overlayPlayButton: AppInfo.enableAppLayouts
+                    });
+                }
+
+                var elem = view.querySelector('#nextUpItems');
+                elem.innerHTML = html;
+                ImageLoader.lazyChildren(elem);
+                Dashboard.hideLoadingMsg();
+            });
+        }
+
+        function enableScrollX() {
+            return browserInfo.mobile && AppInfo.enableAppLayouts;
+        }
+
+        function getThumbShape() {
+            return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
+        }
+
+        function loadResume() {
+
+            var parentId = LibraryMenu.getTopParentId();
+
+            var limit = 6;
+
+            var options = {
+
+                SortBy: "DatePlayed",
+                SortOrder: "Descending",
+                IncludeItemTypes: "Episode",
+                Filters: "IsResumable",
+                Limit: limit,
+                Recursive: true,
+                Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData,SyncInfo",
+                ExcludeLocationTypes: "Virtual",
+                ParentId: parentId,
+                ImageTypeLimit: 1,
+                EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+            };
+
+            ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
+
+                if (result.Items.length) {
+                    view.querySelector('#resumableSection').classList.remove('hide');
+                } else {
+                    view.querySelector('#resumableSection').classList.add('hide');
+                }
+
+                var viewStyle = getResumeView();
+                var html = '';
+
+                if (viewStyle == 'PosterCard') {
+
+                    html += libraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: getThumbShape(),
+                        showTitle: true,
+                        showParentTitle: true,
+                        lazy: true,
+                        cardLayout: true,
+                        showDetailsMenu: true,
+                        preferThumb: true
+                    });
+
+                } else if (viewStyle == 'Poster') {
+
+                    html += libraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: getThumbShape(),
+                        showTitle: true,
+                        showParentTitle: true,
+                        lazy: true,
+                        showDetailsMenu: true,
+                        overlayPlayButton: true,
+                        preferThumb: true,
+                        centerText: true
+                    });
+                }
+
+                var elem = view.querySelector('#resumableItems');
+                elem.innerHTML = html;
+                ImageLoader.lazyChildren(elem);
+            });
+        }
+
+        self.initTab = function () {
+
+            var tabContent = self.tabContent;
+            if (enableScrollX()) {
+                tabContent.querySelector('#resumableItems').classList.add('hiddenScrollX');
+            } else {
+                tabContent.querySelector('#resumableItems').classList.remove('hiddenScrollX');
+            }
+            libraryBrowser.createCardMenus(tabContent.querySelector('#resumableItems'));
         };
 
-        query.ParentId = LibraryMenu.getTopParentId();
-
-        ApiClient.getNextUpEpisodes(query).then(function (result) {
-
-            if (result.Items.length) {
-                $('.noNextUpItems', page).hide();
-            } else {
-                $('.noNextUpItems', page).show();
-            }
-
-            var view = getView();
-            var html = '';
-
-            if (view == 'ThumbCard') {
-
-                html += LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "backdrop",
-                    showTitle: true,
-                    preferThumb: true,
-                    showParentTitle: true,
-                    lazy: true,
-                    cardLayout: true,
-                    showDetailsMenu: true
-                });
-
-            } else if (view == 'Thumb') {
-
-                html += LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "backdrop",
-                    showTitle: true,
-                    showParentTitle: true,
-                    overlayText: false,
-                    lazy: true,
-                    preferThumb: true,
-                    showDetailsMenu: true,
-                    centerText: true,
-                    overlayPlayButton: AppInfo.enableAppLayouts
-                });
-            }
-
-            var elem = page.querySelector('#nextUpItems');
-            elem.innerHTML = html;
-            ImageLoader.lazyChildren(elem);
-            Dashboard.hideLoadingMsg();
-
-            LibraryBrowser.setLastRefreshed(page);
-        });
-    }
-
-    function enableScrollX() {
-        return browserInfo.mobile && AppInfo.enableAppLayouts;
-    }
-
-    function getThumbShape() {
-        return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
-    }
-
-    function loadResume(page) {
-
-        var parentId = LibraryMenu.getTopParentId();
-
-        var limit = 6;
-
-        var options = {
-
-            SortBy: "DatePlayed",
-            SortOrder: "Descending",
-            IncludeItemTypes: "Episode",
-            Filters: "IsResumable",
-            Limit: limit,
-            Recursive: true,
-            Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData,SyncInfo",
-            ExcludeLocationTypes: "Virtual",
-            ParentId: parentId,
-            ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+        self.renderTab = function () {
+            reload();
         };
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
+        var tabControllers = [];
+        var renderedTabs = [];
 
-            if (result.Items.length) {
-                $('#resumableSection', page).show();
-            } else {
-                $('#resumableSection', page).hide();
+        function loadTab(page, index) {
+
+            var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+            var depends = [];
+
+            switch (index) {
+
+                case 0:
+                    break;
+                case 1:
+                    depends.push('scripts/tvlatest');
+                    break;
+                case 2:
+                    depends.push('scripts/tvupcoming');
+                    break;
+                case 3:
+                    depends.push('scripts/tvshows');
+                    break;
+                case 4:
+                    depends.push('scripts/episodes');
+                    break;
+                case 5:
+                    depends.push('scripts/tvgenres');
+                    break;
+                case 6:
+                    depends.push('scripts/tvstudios');
+                    break;
+                default:
+                    break;
             }
 
-            var view = getResumeView();
-            var html = '';
+            require(depends, function (controllerFactory) {
 
-            if (view == 'PosterCard') {
+                if (index == 0) {
+                    self.tabContent = tabContent;
+                }
+                var controller = tabControllers[index];
+                if (!controller) {
+                    controller = index ? new controllerFactory(view, params, tabContent) : self;
+                    tabControllers[index] = controller;
 
-                html += LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: getThumbShape(),
-                    showTitle: true,
-                    showParentTitle: true,
-                    lazy: true,
-                    cardLayout: true,
-                    showDetailsMenu: true,
-                    preferThumb: true
-                });
+                    if (controller.initTab) {
+                        controller.initTab();
+                    }
+                }
 
-            } else if (view == 'Poster') {
+                if (renderedTabs.indexOf(index) == -1) {
+                    renderedTabs.push(index);
+                    controller.renderTab();
+                }
+            });
+        }
 
-                html += LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: getThumbShape(),
-                    showTitle: true,
-                    showParentTitle: true,
-                    lazy: true,
-                    showDetailsMenu: true,
-                    overlayPlayButton: true,
-                    preferThumb: true,
-                    centerText: true
-                });
+        function onPlaybackStop(e, state) {
+
+            if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
+
+                var pageTabsContainer = view.querySelector('.pageTabsContainer');
+
+                pageTabsContainer.dispatchEvent(new CustomEvent("tabchange", {
+                    detail: {
+                        selectedTabIndex: libraryBrowser.selectedTabIndex(pageTabsContainer)
+                    }
+                }));
             }
-
-            var elem = page.querySelector('#resumableItems');
-            elem.innerHTML = html;
-            ImageLoader.lazyChildren(elem);
-        });
-    }
-
-    function initSuggestedTab(page, tabContent) {
-
-        if (enableScrollX()) {
-            tabContent.querySelector('#resumableItems').classList.add('hiddenScrollX');
-        } else {
-            tabContent.querySelector('#resumableItems').classList.remove('hiddenScrollX');
-        }
-        $(tabContent.querySelector('#resumableItems')).createCardMenus();
-    }
-
-    function loadSuggestionsTab(page, tabContent) {
-
-        if (LibraryBrowser.needsRefresh(tabContent)) {
-            reload(tabContent);
-        }
-    }
-
-    function loadTab(page, index) {
-
-        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
-        var depends = [];
-        var scope = 'TvPage';
-        var renderMethod = '';
-        var initMethod = '';
-
-        switch (index) {
-
-            case 0:
-                initMethod = 'initSuggestedTab';
-                renderMethod = 'renderSuggestedTab';
-                break;
-            case 1:
-                depends.push('scripts/tvlatest');
-                renderMethod = 'renderLatestTab';
-                break;
-            case 2:
-                depends.push('scripts/tvupcoming');
-                renderMethod = 'renderUpcomingTab';
-                break;
-            case 3:
-                depends.push('scripts/tvshows');
-                renderMethod = 'renderSeriesTab';
-                initMethod = 'initSeriesTab';
-                break;
-            case 4:
-                depends.push('scripts/episodes');
-                renderMethod = 'renderEpisodesTab';
-                initMethod = 'initEpisodesTab';
-                break;
-            case 5:
-                depends.push('scripts/tvgenres');
-                renderMethod = 'renderGenresTab';
-                break;
-            case 6:
-                depends.push('scripts/tvstudios');
-                renderMethod = 'renderStudiosTab';
-                break;
-            default:
-                break;
         }
 
-        require(depends, function () {
-
-            if (initMethod && !tabContent.initComplete) {
-
-                window[scope][initMethod](page, tabContent);
-                tabContent.initComplete = true;
-            }
-
-            window[scope][renderMethod](page, tabContent);
-
-        });
-    }
-
-    window.TvPage = window.TvPage || {};
-    window.TvPage.renderSuggestedTab = loadSuggestionsTab;
-    window.TvPage.initSuggestedTab = initSuggestedTab;
-
-    pageIdOn('pageinit', "tvRecommendedPage", function () {
-
-        var page = this;
-
-        $('.recommendations', page).createCardMenus();
-
-        var tabs = page.querySelector('paper-tabs');
-        var pages = page.querySelector('neon-animated-pages');
+        var pageTabsContainer = view.querySelector('.pageTabsContainer');
 
         var baseUrl = 'tv.html';
-        var topParentId = LibraryMenu.getTopParentId();
+        var topParentId = params.topParentId;
         if (topParentId) {
             baseUrl += '?topParentId=' + topParentId;
         }
 
         if (enableScrollX()) {
-            page.querySelector('#resumableItems').classList.add('hiddenScrollX');
+            view.querySelector('#resumableItems').classList.add('hiddenScrollX');
         } else {
-            page.querySelector('#resumableItems').classList.remove('hiddenScrollX');
+            view.querySelector('#resumableItems').classList.remove('hiddenScrollX');
         }
-        $(page.querySelector('#resumableItems')).createCardMenus();
+        libraryBrowser.createCardMenus(view.querySelector('#resumableItems'));
 
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, baseUrl);
+        libraryBrowser.configurePaperLibraryTabs(view, view.querySelector('paper-tabs'), pageTabsContainer, baseUrl);
 
-        pages.addEventListener('tabchange', function (e) {
-            loadTab(page, parseInt(this.selected));
+        pageTabsContainer.addEventListener('tabchange', function (e) {
+            loadTab(view, parseInt(e.detail.selectedTabIndex));
         });
-    });
 
-    pageIdOn('pagebeforeshow', "tvRecommendedPage", function () {
+        view.addEventListener('viewbeforeshow', function (e) {
 
-        var page = this;
+            if (!view.getAttribute('data-title')) {
 
-        if (!page.getAttribute('data-title')) {
+                var parentId = params.topParentId;
 
-            var parentId = LibraryMenu.getTopParentId();
+                if (parentId) {
 
-            if (parentId) {
+                    ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).then(function (item) {
 
-                ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).then(function (item) {
-
-                    page.setAttribute('data-title', item.Name);
-                    LibraryMenu.setTitle(item.Name);
-                });
+                        view.setAttribute('data-title', item.Name);
+                        LibraryMenu.setTitle(item.Name);
+                    });
 
 
-            } else {
-                page.setAttribute('data-title', Globalize.translate('TabShows'));
-                LibraryMenu.setTitle(Globalize.translate('TabShows'));
+                } else {
+                    view.setAttribute('data-title', Globalize.translate('TabShows'));
+                    LibraryMenu.setTitle(Globalize.translate('TabShows'));
+                }
             }
-        }
 
-        Events.on(MediaController, 'playbackstop', onPlaybackStop);
-    });
+            Events.on(MediaController, 'playbackstop', onPlaybackStop);
+        });
 
-    pageIdOn('pagebeforehide', "tvRecommendedPage", function () {
+        view.addEventListener('viewbeforehide', function (e) {
 
-        var page = this;
-        Events.off(MediaController, 'playbackstop', onPlaybackStop);
-    });
-
-    function onPlaybackStop(e, state) {
-
-        if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
-            var page = $($.mobile.activePage)[0];
-            var pages = page.querySelector('neon-animated-pages');
-
-            pages.dispatchEvent(new CustomEvent("tabchange", {}));
-        }
-    }
-
-
-})(jQuery, document);
+            Events.off(MediaController, 'playbackstop', onPlaybackStop);
+        });
+    };
+});

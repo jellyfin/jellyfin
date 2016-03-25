@@ -1,78 +1,70 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>Emby</title>
-</head>
-<body>
-    <div id="liveTvSeriesTimerPage" data-role="page" class="page libraryPage liveTvPage noSecondaryNavPage" data-contextname="${HeaderLiveTv}" data-require="jqmcheckbox,jqmcontrolgroup,jqmcollapsible,scripts/livetvcomponents,scripts/livetvseriestimer,livetvcss,paper-checkbox,paper-input" data-backbutton="true" data-menubutton="false">
+﻿<div id="liveTvSeriesTimerPage" data-role="page" class="page libraryPage liveTvPage noSecondaryNavPage" data-contextname="${HeaderLiveTv}" data-require="jqmcheckbox,jqmcontrolgroup,jqmcollapsible,scripts/livetvcomponents,scripts/livetvseriestimer,livetvcss,paper-checkbox,paper-input" data-backbutton="true" data-menubutton="false">
 
-        <div data-role="content">
-            <form class="liveTvSeriesTimerForm" style="margin: 0 auto; max-width: 720px;">
-                <p><span class="itemName inlineItemName"></span></p>
+    <div data-role="content">
+        <form class="liveTvSeriesTimerForm" style="margin: 0 auto; max-width: 720px;">
+            <p><span class="itemName inlineItemName"></span></p>
 
-                <p class="channel" style="margin-top: 2em;"></p>
-                <p class="time"></p>
+            <p class="channel" style="margin-top: 2em;"></p>
+            <p class="time"></p>
 
-                <br />
-                <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="seriesTimerTabs">
-                    <input type="radio" name="radioSeriesTimerTab" class="radioSeriesTimerTab" id="radioSettings" value="settings">
-                    <label for="radioSettings">${TabSettings}</label>
-                    <input type="radio" name="radioSeriesTimerTab" class="radioSeriesTimerTab" id="radioRecordings" value="recordings">
-                    <label for="radioRecordings">${TabRecordings}</label>
-                    <input type="radio" name="radioSeriesTimerTab" class="radioSeriesTimerTab" id="radioScheduled" value="schedule">
-                    <label for="radioScheduled">${TabScheduled}</label>
+            <br />
+            <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="seriesTimerTabs">
+                <input type="radio" name="radioSeriesTimerTab" class="radioSeriesTimerTab" id="radioSettings" value="settings">
+                <label for="radioSettings">${TabSettings}</label>
+                <input type="radio" name="radioSeriesTimerTab" class="radioSeriesTimerTab" id="radioRecordings" value="recordings">
+                <label for="radioRecordings">${TabRecordings}</label>
+                <input type="radio" name="radioSeriesTimerTab" class="radioSeriesTimerTab" id="radioScheduled" value="schedule">
+                <label for="radioScheduled">${TabScheduled}</label>
+            </div>
+            <br />
+            <div class="settingsTab tab">
+                <div>
+                    <h1>${HeaderDays}</h1>
+                </div>
+                <div class="paperCheckboxList">
+                    <paper-checkbox id="chkSunday">${OptionSunday}</paper-checkbox>
+                    <paper-checkbox id="chkMonday">${OptionMonday}</paper-checkbox>
+                    <paper-checkbox id="chkTuesday">${OptionTuesday}</paper-checkbox>
+                    <paper-checkbox id="chkWednesday">${OptionWednesday}</paper-checkbox>
+                    <paper-checkbox id="chkThursday">${OptionThursday}</paper-checkbox>
+                    <paper-checkbox id="chkFriday">${OptionFriday}</paper-checkbox>
+                    <paper-checkbox id="chkSaturday">${OptionSaturday}</paper-checkbox>
+                </div>
+                <div>
+                    <h1>${HeaderRepeatingOptions}</h1>
+                </div>
+                <div class="paperCheckboxList">
+                    <paper-checkbox id="chkNewOnly">${OptionRecordOnlyNewEpisodes}</paper-checkbox>
+                    <paper-checkbox id="chkAnyTime">${OptionRecordAnytime}</paper-checkbox>
+                    <paper-checkbox id="chkAllChannels">${OptionRecordOnAllChannels}</paper-checkbox>
                 </div>
                 <br />
-                <div class="settingsTab tab">
+                <div data-role="collapsible" data-mini="true">
+                    <h3>${HeaderAdvanced}</h3>
                     <div>
-                        <h1>${HeaderDays}</h1>
-                    </div>
-                    <div class="paperCheckboxList">
-                        <paper-checkbox id="chkSunday">${OptionSunday}</paper-checkbox>
-                        <paper-checkbox id="chkMonday">${OptionMonday}</paper-checkbox>
-                        <paper-checkbox id="chkTuesday">${OptionTuesday}</paper-checkbox>
-                        <paper-checkbox id="chkWednesday">${OptionWednesday}</paper-checkbox>
-                        <paper-checkbox id="chkThursday">${OptionThursday}</paper-checkbox>
-                        <paper-checkbox id="chkFriday">${OptionFriday}</paper-checkbox>
-                        <paper-checkbox id="chkSaturday">${OptionSaturday}</paper-checkbox>
-                    </div>
-                    <div>
-                        <h1>${HeaderRepeatingOptions}</h1>
-                    </div>
-                    <div class="paperCheckboxList">
-                        <paper-checkbox id="chkNewOnly">${OptionRecordOnlyNewEpisodes}</paper-checkbox>
-                        <paper-checkbox id="chkAnyTime">${OptionRecordAnytime}</paper-checkbox>
-                        <paper-checkbox id="chkAllChannels">${OptionRecordOnAllChannels}</paper-checkbox>
-                    </div>
-                    <br />
-                    <div data-role="collapsible" data-mini="true">
-                        <h3>${HeaderAdvanced}</h3>
+                        <br />
                         <div>
-                            <br />
-                            <div>
-                                <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
-                            </div>
-                            <br />
-                            <div>
-                                <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
-                            </div>
-                            <br />
+                            <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
                         </div>
-                    </div>
-                    <br />
-                    <div>
-                        <button type="submit" data-role="none" class="clearButton">
-                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                        </button>
-
-                        <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+                        <br />
+                        <div>
+                            <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
+                        </div>
+                        <br />
                     </div>
                 </div>
-                <div class="recordingsTab tab"></div>
-                <div class="scheduleTab tab"></div>
-            </form>
-        </div>
+                <br />
+                <div>
+                    <button type="submit" data-role="none" class="clearButton">
+                        <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+                    </button>
 
+                    <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+                </div>
+            </div>
+            <div class="recordingsTab tab"></div>
+            <div class="scheduleTab tab"></div>
+        </form>
     </div>
-</body>
-</html>
+
+</div>

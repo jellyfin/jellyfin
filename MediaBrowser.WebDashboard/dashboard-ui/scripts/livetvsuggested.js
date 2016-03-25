@@ -1,4 +1,4 @@
-﻿(function ($, document) {
+﻿define(['jQuery'], function ($) {
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
@@ -197,12 +197,12 @@
         var page = this;
 
         var tabs = page.querySelector('paper-tabs');
-        var pages = page.querySelector('neon-animated-pages');
+        var pageTabsContainer = page.querySelector('.pageTabsContainer');
 
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, 'livetv.html');
+        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pageTabsContainer, 'livetv.html');
 
-        pages.addEventListener('tabchange', function (e) {
-            loadTab(page, parseInt(e.target.selected));
+        pageTabsContainer.addEventListener('tabchange', function (e) {
+            loadTab(page, parseInt(e.detail.selectedTabIndex));
         });
 
     });
@@ -212,4 +212,4 @@
         initSuggestedTab: initSuggestedTab
     };
 
-})(jQuery, document);
+});

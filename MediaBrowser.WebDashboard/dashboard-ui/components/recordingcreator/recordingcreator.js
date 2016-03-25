@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'scripts/livetvcomponents', 'livetvcss', 'paper-checkbox', 'paper-input', 'paper-toggle-button'], function (paperDialogHelper) {
+﻿define(['dialogHelper', 'jQuery', 'scripts/livetvcomponents', 'livetvcss', 'paper-checkbox', 'paper-input', 'paper-toggle-button'], function (dialogHelper, $) {
 
     var currentProgramId;
     var currentDialog;
@@ -40,7 +40,7 @@
     function closeDialog(isSubmitted) {
 
         recordingCreated = isSubmitted;
-        paperDialogHelper.close(currentDialog);
+        dialogHelper.close(currentDialog);
     }
 
     function onSubmit() {
@@ -334,7 +334,7 @@
             xhr.onload = function (e) {
 
                 var template = this.response;
-                var dlg = paperDialogHelper.createDialog({
+                var dlg = dialogHelper.createDialog({
                     removeOnClose: true,
                     size: 'small'
                 });
@@ -351,11 +351,11 @@
                 dlg.innerHTML = html;
                 document.body.appendChild(dlg);
 
-                paperDialogHelper.open(dlg);
+                dialogHelper.open(dlg);
 
                 currentDialog = dlg;
 
-                dlg.addEventListener('iron-overlay-closed', function () {
+                dlg.addEventListener('close', function () {
 
                     if (recordingCreated) {
                         require(['toast'], function (toast) {

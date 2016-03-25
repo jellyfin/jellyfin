@@ -9,6 +9,7 @@ import PlaylistLoader from './loader/playlist-loader';
 import FragmentLoader from './loader/fragment-loader';
 import AbrController from    './controller/abr-controller';
 import BufferController from  './controller/buffer-controller';
+import CapLevelController from  './controller/cap-level-controller';
 import StreamController from  './controller/stream-controller';
 import LevelController from  './controller/level-controller';
 import TimelineController from './controller/timeline-controller';
@@ -41,12 +42,16 @@ class Hls {
        Hls.defaultConfig = {
           autoStartLoad: true,
           debug: false,
+          capLevelToPlayerSize: false,
           maxBufferLength: 30,
           maxBufferSize: 60 * 1000 * 1000,
           maxBufferHole: 0.5,
           maxSeekHole: 2,
+          maxFragLookUpTolerance : 0.2,
           liveSyncDurationCount:3,
           liveMaxLatencyDurationCount: Infinity,
+          liveSyncDuration: undefined,
+          liveMaxLatencyDuration: undefined,
           maxMaxBufferLength: 600,
           enableWorker: true,
           enableSoftwareAES: true,
@@ -69,6 +74,7 @@ class Hls {
           pLoader: undefined,
           abrController : AbrController,
           bufferController : BufferController,
+          capLevelController : CapLevelController,
           streamController: StreamController,
           timelineController: TimelineController,
           enableCEA708Captions: true,
@@ -84,6 +90,11 @@ class Hls {
 
   constructor(config = {}) {
     var defaultConfig = Hls.DefaultConfig;
+
+    if ((config.liveSyncDurationCount || config.liveMaxLatencyDurationCount) && (config.liveSyncDuration || config.liveMaxLatencyDuration)) {
+      throw new Error('Illegal hls.js config: don\'t mix up liveSyncDurationCount/liveMaxLatencyDurationCount and liveSyncDuration/liveMaxLatencyDuration');
+    }
+
     for (var prop in defaultConfig) {
         if (prop in config) { continue; }
         config[prop] = defaultConfig[prop];
@@ -91,6 +102,10 @@ class Hls {
 
     if (config.liveMaxLatencyDurationCount !== undefined && config.liveMaxLatencyDurationCount <= config.liveSyncDurationCount) {
       throw new Error('Illegal hls.js config: "liveMaxLatencyDurationCount" must be gt "liveSyncDurationCount"');
+    }
+
+    if (config.liveMaxLatencyDuration !== undefined && (config.liveMaxLatencyDuration <= config.liveSyncDuration || config.liveSyncDuration === undefined)) {
+      throw new Error('Illegal hls.js config: "liveMaxLatencyDuration" must be gt "liveSyncDuration"');
     }
 
     enableLogs(config.debug);
@@ -112,6 +127,7 @@ class Hls {
     this.levelController = new LevelController(this);
     this.abrController = new config.abrController(this);
     this.bufferController = new config.bufferController(this);
+    this.capLevelController = new config.capLevelController(this);
     this.streamController = new config.streamController(this);
     this.timelineController = new config.timelineController(this);
     this.keyLoader = new KeyLoader(this);
@@ -126,6 +142,7 @@ class Hls {
     this.fragmentLoader.destroy();
     this.levelController.destroy();
     this.bufferController.destroy();
+    this.capLevelController.destroy();
     this.streamController.destroy();
     this.timelineController.destroy();
     this.keyLoader.destroy();
@@ -153,9 +170,16 @@ class Hls {
     this.trigger(Event.MANIFEST_LOADING, {url: url});
   }
 
-  startLoad() {
+  startLoad(startPosition=0) {
     logger.log('startLoad');
-    this.streamController.startLoad();
+    this.levelController.startLoad();
+    this.streamController.startLoad(startPosition);
+  }
+
+  stopLoad() {
+    logger.log('stopLoad');
+    this.levelController.stopLoad();
+    this.streamController.stopLoad();
   }
 
   swapAudioCodec() {
@@ -212,12 +236,12 @@ class Hls {
 
   /** Return the quality level of next loaded fragment **/
   get nextLoadLevel() {
-    return this.levelController.nextLoadLevel();
+    return this.levelController.nextLoadLevel;
   }
 
   /** set quality level of next loaded fragment **/
   set nextLoadLevel(level) {
-    this.levelController.level = level;
+    this.levelController.nextLoadLevel = level;
   }
 
   /** Return first level (index of first level referenced in manifest)

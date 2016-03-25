@@ -5,8 +5,8 @@ define(['visibleinviewport', 'imageFetcher'], function (visibleinviewport, image
 
     var wheelEvent = (document.implementation.hasFeature('Event.wheel', '3.0') ? 'wheel' : 'mousewheel');
 
-    function isVisible(elem) {
-        return visibleinviewport(elem, true, thresholdX, thresholdY);
+    function isVisible(elem, windowSize) {
+        return visibleinviewport(elem, true, thresholdX, thresholdY, windowSize);
     }
 
     var self = {};
@@ -56,6 +56,11 @@ define(['visibleinviewport', 'imageFetcher'], function (visibleinviewport, image
             var anyFound = false;
             var out = false;
 
+            var windowSize = {
+                innerHeight: window.innerHeight,
+                innerWidth: window.innerWidth
+            };
+
             // TODO: This out construct assumes left to right, top to bottom
 
             for (var i = 0, length = images.length; i < length; i++) {
@@ -64,7 +69,7 @@ define(['visibleinviewport', 'imageFetcher'], function (visibleinviewport, image
                     return;
                 }
                 var img = images[i];
-                if (!out && isVisible(img)) {
+                if (!out && isVisible(img, windowSize)) {
                     anyFound = true;
                     fillImage(img);
                 } else {

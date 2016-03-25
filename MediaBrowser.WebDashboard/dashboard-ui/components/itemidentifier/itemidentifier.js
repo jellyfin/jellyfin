@@ -1,4 +1,4 @@
-﻿define(['paperdialoghelper', 'paper-dialog', 'paper-fab', 'paper-input', 'paper-checkbox'], function (paperDialogHelper) {
+﻿define(['dialogHelper', 'jQuery', 'paper-fab', 'paper-input', 'paper-checkbox'], function (dialogHelper, $) {
 
     var currentItem;
     var currentItemType;
@@ -87,7 +87,7 @@
             html += getSearchResultHtml(result, i);
         }
 
-        var elem = $('.identificationSearchResultList', page).html(html).trigger('create');
+        var elem = $('.identificationSearchResultList', page).html(html);
 
         $('.searchImage', elem).on('click', function () {
 
@@ -110,7 +110,7 @@
         hasChanges = true;
         Dashboard.hideLoadingMsg();
 
-        paperDialogHelper.close(dlg);
+        dialogHelper.close(dlg);
     }
 
     function showIdentifyOptions(page, identifyResult) {
@@ -219,13 +219,13 @@
             hasChanges = true;
             Dashboard.hideLoadingMsg();
 
-            paperDialogHelper.close(page);
+            dialogHelper.close(page);
 
         }, function () {
 
             Dashboard.hideLoadingMsg();
 
-            paperDialogHelper.close(page);
+            dialogHelper.close(page);
         });
     }
 
@@ -266,7 +266,7 @@
                 $('#txtLookupYear', page).val(item.ProductionYear);
             }
 
-            $('.identifyProviderIds', page).html(html).trigger('create');
+            $('.identifyProviderIds', page).html(html);
 
             page.querySelector('.dialogHeaderTitle').innerHTML = Globalize.translate('HeaderIdentify');
         });
@@ -287,7 +287,7 @@
                 currentItem = item;
                 currentItemType = currentItem.Type;
 
-                var dlg = paperDialogHelper.createDialog({
+                var dlg = dialogHelper.createDialog({
                     size: 'medium'
                 });
 
@@ -301,9 +301,9 @@
                 document.body.appendChild(dlg);
 
                 // Has to be assigned a z-index after the call to .open() 
-                $(dlg).on('iron-overlay-closed', onDialogClosed);
+                $(dlg).on('close', onDialogClosed);
 
-                paperDialogHelper.open(dlg);
+                dialogHelper.open(dlg);
 
                 dlg.querySelector('.popupIdentifyForm').addEventListener('submit', function (e) {
 
@@ -321,7 +321,7 @@
 
                 $('.btnCancel', dlg).on('click', function () {
 
-                    paperDialogHelper.close(dlg);
+                    dialogHelper.close(dlg);
                 });
 
                 dlg.classList.add('identifyDialog');
@@ -353,7 +353,7 @@
 
             var template = this.response;
 
-            var dlg = paperDialogHelper.createDialog({
+            var dlg = dialogHelper.createDialog({
                 size: 'medium'
             });
 
@@ -366,11 +366,11 @@
             dlg.innerHTML = html;
             document.body.appendChild(dlg);
 
-            paperDialogHelper.open(dlg);
+            dialogHelper.open(dlg);
 
             dlg.querySelector('.btnCancel').addEventListener('click', function (e) {
 
-                paperDialogHelper.close(dlg);
+                dialogHelper.close(dlg);
             });
 
             dlg.querySelector('.popupIdentifyForm').addEventListener('submit', function (e) {
@@ -380,7 +380,7 @@
                 return false;
             });
 
-            dlg.addEventListener('iron-overlay-closed', function () {
+            dlg.addEventListener('close', function () {
 
                 Dashboard.hideLoadingMsg();
                 var foundItem = hasChanges ? currentSearchResult : null;

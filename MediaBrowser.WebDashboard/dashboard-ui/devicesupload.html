@@ -1,59 +1,51 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>${TitleDevices}</title>
-</head>
-<body>
-    <div id="devicesUploadPage" data-role="page" class="page type-interior devicesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Camera%20upload" data-require="scripts/devicesupload,paper-input,jqmcheckbox">
+﻿<div id="devicesUploadPage" data-role="page" class="page type-interior devicesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Camera%20upload" data-require="scripts/devicesupload,paper-input,jqmcheckbox">
 
-        <div data-role="content">
-            <div class="content-primary">
+    <div data-role="content">
+        <div class="content-primary">
 
-                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="devices.html" data-role="button">${TabDevices}</a>
-                    <a href="#" data-role="button" class="ui-btn-active">${TabCameraUpload}</a>
-                    <!--<a href="dashboardsync.html" data-role="button">${TabSync}</a>-->
-                </div>
+            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                <a href="devices.html" data-role="button">${TabDevices}</a>
+                <a href="#" data-role="button" class="ui-btn-active">${TabCameraUpload}</a>
+                <!--<a href="dashboardsync.html" data-role="button">${TabSync}</a>-->
+            </div>
 
-                <div class="readOnlyContent">
+            <div class="readOnlyContent">
 
-                    <p>${HeaderCameraUploadHelp}</p>
+                <p>${HeaderCameraUploadHelp}</p>
 
-                    <p class="noDevices" style="display:none;color:red;">${MessageNoDevicesSupportCameraUpload}</p>
+                <p class="noDevices" style="display:none;color:red;">${MessageNoDevicesSupportCameraUpload}</p>
+
+                <br />
+                <form class="devicesUploadForm" style="display:none;">
+
+                    <div class="devicesList">
+
+                    </div>
 
                     <br />
-                    <form class="devicesUploadForm" style="display:none;">
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <paper-input id="txtUploadPath" label="${LabelCameraUploadPath}" style="width:84%;display:inline-block;"></paper-input>
+                            <paper-icon-button id="btnSelectUploadPath" icon="search"></paper-icon-button>
+                            <div class="fieldDescription">${LabelCameraUploadPathHelp}</div>
+                        </li>
+                        <li>
+                            <label for="chkSubfolder">${LabelCreateCameraUploadSubfolder}</label>
+                            <input type="checkbox" id="chkSubfolder" data-mini="true" />
+                            <div class="fieldDescription">${LabelCreateCameraUploadSubfolderHelp}</div>
+                        </li>
 
-                        <div class="devicesList">
+                    </ul><br />
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <button type="submit" data-role="none" class="clearButton">
+                                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+                            </button>
+                        </li>
+                    </ul>
 
-                        </div>
-
-                        <br />
-                        <ul data-role="listview" class="ulForm">
-                            <li>
-                                <paper-input id="txtUploadPath" label="${LabelCameraUploadPath}" style="width:84%;display:inline-block;"></paper-input>
-                                <paper-icon-button id="btnSelectUploadPath" icon="search"></paper-icon-button>
-                                <div class="fieldDescription">${LabelCameraUploadPathHelp}</div>
-                            </li>
-                            <li>
-                                <label for="chkSubfolder">${LabelCreateCameraUploadSubfolder}</label>
-                                <input type="checkbox" id="chkSubfolder" data-mini="true" />
-                                <div class="fieldDescription">${LabelCreateCameraUploadSubfolderHelp}</div>
-                            </li>
-
-                        </ul><br />
-                        <ul data-role="listview" class="ulForm">
-                            <li>
-                                <button type="submit" data-role="none" class="clearButton">
-                                    <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                                </button>
-                            </li>
-                        </ul>
-
-                    </form>
-                </div>
+                </form>
             </div>
         </div>
     </div>
-</body>
-</html>
+</div>

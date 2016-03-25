@@ -1,0 +1,39 @@
+{
+  "name": "query-string",
+  "version": "2.3.0",
+  "description": "Parse and stringify URL query strings",
+  "keywords": [
+    "browser",
+    "querystring",
+    "query",
+    "string",
+    "qs",
+    "param",
+    "parameter",
+    "url",
+    "uri",
+    "parse",
+    "stringify",
+    "encode",
+    "decode"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Sindre Sorhus",
+    "email": "sindresorhus@gmail.com",
+    "url": "sindresorhus.com"
+  },
+  "files": [
+    "index.js"
+  ],
+  "repository": "sindresorhus/query-string",
+  "scripts": {
+    "test": "mocha"
+  },
+  "devDependencies": {
+    "mocha": "*"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  }
+}
