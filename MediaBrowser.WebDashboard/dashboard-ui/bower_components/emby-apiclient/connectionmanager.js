@@ -1522,7 +1522,7 @@
                 }
 
                 updateDevicePromise = ajax({
-                    url: 'https://mb3admin.com/admin/service/registration/updateDevice?' + paramsToString({
+                    url: 'http://mb3admin.com/admin/service/registration/updateDevice?' + paramsToString({
                         serverId: params.serverId,
                         oldDeviceId: regInfo.deviceId,
                         newDeviceId: params.deviceId
@@ -1541,7 +1541,7 @@
                     params.embyUserName = user.Name;
 
                     return ajax({
-                        url: 'https://mb3admin.com/admin/service/registration/validateDevice?' + paramsToString(params),
+                        url: 'http://mb3admin.com/admin/service/registration/validateDevice?' + paramsToString(params),
                         type: 'POST'
 
                     }).then(function (response) {
