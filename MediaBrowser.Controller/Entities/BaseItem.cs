@@ -687,6 +687,18 @@ namespace MediaBrowser.Controller.Entities
         public string OfficialRating { get; set; }
 
         /// <summary>
+        /// Gets or sets the critic rating.
+        /// </summary>
+        /// <value>The critic rating.</value>
+        public float? CriticRating { get; set; }
+
+        /// <summary>
+        /// Gets or sets the critic rating summary.
+        /// </summary>
+        /// <value>The critic rating summary.</value>
+        public string CriticRatingSummary { get; set; }
+
+        /// <summary>
         /// Gets or sets the official rating description.
         /// </summary>
         /// <value>The official rating description.</value>

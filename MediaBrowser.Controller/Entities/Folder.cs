@@ -803,11 +803,6 @@ namespace MediaBrowser.Controller.Entities
                     Logger.Debug("Query requires post-filtering due to ItemSortBy.Budget");
                     return true;
                 }
-                if (query.SortBy.Contains(ItemSortBy.CriticRating, StringComparer.OrdinalIgnoreCase))
-                {
-                    Logger.Debug("Query requires post-filtering due to ItemSortBy.CriticRating");
-                    return true;
-                }
                 if (query.SortBy.Contains(ItemSortBy.DateLastContentAdded, StringComparer.OrdinalIgnoreCase))
                 {
                     Logger.Debug("Query requires post-filtering due to ItemSortBy.DateLastContentAdded");

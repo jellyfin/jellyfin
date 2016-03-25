@@ -490,8 +490,8 @@ paper-dropdown-menu {
         display: block;
     }
 
-paper-dialog paper-radio-group paper-radio-button {
-    padding: 6px 12px;
+paper-radio-group > * {
+    padding: .5em;
 }
 
 .likePaperText {
