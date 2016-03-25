@@ -354,10 +354,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 var newUrl = urlString.Replace("mediabrowser", "emby", StringComparison.OrdinalIgnoreCase)
                     .Replace("/dashboard/", "/web/", StringComparison.OrdinalIgnoreCase);
 
-                httpRes.Write("<!doctype html><html><head><title>Emby</title></head><body>Please update your Emby bookmark to <a href=\"" + newUrl + "\">" + newUrl + "</a></body></html>");
+                if (!string.Equals(newUrl, urlString, StringComparison.OrdinalIgnoreCase))
+                {
+                    httpRes.Write("<!doctype html><html><head><title>Emby</title></head><body>Please update your Emby bookmark to <a href=\"" + newUrl + "\">" + newUrl + "</a></body></html>");
 
-                httpRes.Close();
-                return Task.FromResult(true);
+                    httpRes.Close();
+                    return Task.FromResult(true);
+                }
             }
 
             if (string.Equals(localPath, "/emby/", StringComparison.OrdinalIgnoreCase))
