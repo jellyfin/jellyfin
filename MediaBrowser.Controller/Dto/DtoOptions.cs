@@ -17,6 +17,7 @@ namespace MediaBrowser.Controller.Dto
         public List<ImageType> ImageTypes { get; set; }
         public int ImageTypeLimit { get; set; }
         public bool EnableImages { get; set; }
+        public bool AddProgramRecordingInfo { get; set; }
         public string DeviceId { get; set; }
 
         public DtoOptions()

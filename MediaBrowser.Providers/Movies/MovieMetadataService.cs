@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -8,6 +7,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
 using System.Collections.Generic;
 using CommonIO;
+using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Providers.Movies
 {
@@ -37,10 +37,42 @@ namespace MediaBrowser.Providers.Movies
             var sourceItem = source.Item;
             var targetItem = target.Item;
 
-            if (replaceData || string.IsNullOrEmpty(targetItem.TmdbCollectionName))
+            if (replaceData || string.IsNullOrEmpty(targetItem.CollectionName))
             {
-                targetItem.TmdbCollectionName = sourceItem.TmdbCollectionName;
+                targetItem.CollectionName = sourceItem.CollectionName;
             }
         }
     }
+
+    public class TrailerMetadataService : MetadataService<Trailer, TrailerInfo>
+    {
+        public TrailerMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager)
+            : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager, libraryManager)
+        {
+        }
+
+        protected override bool IsFullLocalMetadata(Trailer item)
+        {
+            if (string.IsNullOrWhiteSpace(item.Overview))
+            {
+                return false;
+            }
+            if (!item.ProductionYear.HasValue)
+            {
+                return false;
+            }
+            return base.IsFullLocalMetadata(item);
+        }
+
+        protected override void MergeData(MetadataResult<Trailer> source, MetadataResult<Trailer> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        {
+            ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+
+            if (replaceData || target.Item.TrailerTypes.Count == 0)
+            {
+                target.Item.TrailerTypes = source.Item.TrailerTypes;
+            }
+        }
+    }
+
 }

@@ -54,21 +54,21 @@ namespace MediaBrowser.Dlna.Profiles
                 new DirectPlayProfile
                 {
                     Container = "ts",
-                    VideoCodec = "h264",
+                    VideoCodec = "h264,hevc",
                     AudioCodec = "aac,ac3,mp3",
                     Type = DlnaProfileType.Video
                 },
                 new DirectPlayProfile
                 {
                     Container = "mkv",
-                    VideoCodec = "h264",
+                    VideoCodec = "h264,hevc",
                     AudioCodec = "aac,ac3,mp3",
                     Type = DlnaProfileType.Video
                 },
                 new DirectPlayProfile
                 {
                     Container = "mp4",
-                    VideoCodec = "h264,mpeg4",
+                    VideoCodec = "h264,mpeg4,hevc",
                     AudioCodec = "aac,ac3,mp3",
                     Type = DlnaProfileType.Video
                 },

@@ -196,9 +196,13 @@ namespace MediaBrowser.Api
                 return name;
             }
 
-            return libraryManager.RootFolder
-                .GetRecursiveChildren(i => i is IHasArtist)
-                .Cast<IHasArtist>()
+            var items = libraryManager.GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { typeof(Audio).Name, typeof(MusicVideo).Name, typeof(MusicAlbum).Name }
+            });
+
+            return items
+                .OfType<IHasArtist>()
                 .SelectMany(i => i.AllArtists)
                 .DistinctNames()
                 .FirstOrDefault(i =>
@@ -239,8 +243,12 @@ namespace MediaBrowser.Api
                 return name;
             }
 
-            return libraryManager.RootFolder
-                .GetRecursiveChildren(i => i is Game)
+            var items = libraryManager.GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { typeof(Game).Name }
+            });
+
+            return items
                 .SelectMany(i => i.Genres)
                 .DistinctNames()
                 .FirstOrDefault(i =>

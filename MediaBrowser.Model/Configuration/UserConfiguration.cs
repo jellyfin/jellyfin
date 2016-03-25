@@ -60,7 +60,8 @@ namespace MediaBrowser.Model.Configuration
             EnableNextEpisodeAutoPlay = true;
             RememberAudioSelections = true;
             RememberSubtitleSelections = true;
-            
+            DisplayChannelsInline = true;
+
             HidePlayedInLatest = true;
             PlayDefaultAudioTrack = true;
 

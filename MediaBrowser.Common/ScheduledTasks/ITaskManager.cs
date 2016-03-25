@@ -50,6 +50,9 @@ namespace MediaBrowser.Common.ScheduledTasks
         void QueueScheduledTask<T>()
             where T : IScheduledTask;
 
+        void QueueIfNotRunning<T>()
+            where T : IScheduledTask;
+        
         /// <summary>
         /// Queues the scheduled task.
         /// </summary>

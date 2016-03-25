@@ -145,7 +145,6 @@ namespace MediaBrowser.Server.Implementations.Configuration
         {
             var newConfig = (ServerConfiguration)newConfiguration;
 
-            ValidateItemByNamePath(newConfig);
             ValidatePathSubstitutions(newConfig);
             ValidateMetadataPath(newConfig);
             ValidateSslCertificate(newConfig);
@@ -186,28 +185,6 @@ namespace MediaBrowser.Server.Implementations.Configuration
                 {
                     throw new ArgumentException("Invalid path substitution");
                 }
-            }
-        }
-
-        /// <summary>
-        /// Replaces the item by name path.
-        /// </summary>
-        /// <param name="newConfig">The new configuration.</param>
-        /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
-        private void ValidateItemByNamePath(ServerConfiguration newConfig)
-        {
-            var newPath = newConfig.ItemsByNamePath;
-
-            if (!string.IsNullOrWhiteSpace(newPath)
-                && !string.Equals(Configuration.ItemsByNamePath ?? string.Empty, newPath))
-            {
-                // Validate
-                if (!FileSystem.DirectoryExists(newPath))
-                {
-                    throw new DirectoryNotFoundException(string.Format("{0} does not exist.", newPath));
-                }
-
-                EnsureWriteAccess(newPath);
             }
         }
 

@@ -588,6 +588,10 @@ namespace MediaBrowser.Dlna.Ssdp
                 {
 
                 }
+                catch (Exception)
+                {
+                    // If called while shutting down, seeing a NullReferenceException inside EndReceive
+                }
             }
         }
 

@@ -90,8 +90,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             Cabac = info.Cabac;
             Context = info.Context;
 
-            if (info.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode ||
-                info.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Embed)
+            if (info.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External)
             {
                 SubtitleStreamIndex = info.SubtitleStreamIndex;
             }

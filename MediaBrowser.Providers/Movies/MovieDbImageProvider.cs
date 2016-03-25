@@ -42,23 +42,6 @@ namespace MediaBrowser.Providers.Movies
 
         public bool Supports(IHasImages item)
         {
-            var channelItem = item as IChannelMediaItem;
-
-            if (channelItem != null)
-            {
-                if (channelItem.ContentType == ChannelMediaContentType.Movie)
-                {
-                    return true;
-                }
-                if (channelItem.ContentType == ChannelMediaContentType.MovieExtra)
-                {
-                    if (channelItem.ExtraType == ExtraType.Trailer)
-                    {
-                        return true;
-                    }
-                }
-            }
-
             // Supports images for tv movies
             var tvProgram = item as LiveTvProgram;
             if (tvProgram != null && tvProgram.IsMovie)
@@ -66,7 +49,7 @@ namespace MediaBrowser.Providers.Movies
                 return true;
             }
 
-            return item is Movie || item is MusicVideo;
+            return item is Movie || item is MusicVideo || item is Trailer;
         }
 
         public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
@@ -82,7 +65,7 @@ namespace MediaBrowser.Providers.Movies
         {
             var list = new List<RemoteImageInfo>();
 
-            var results = await FetchImages((BaseItem)item, _jsonSerializer, cancellationToken).ConfigureAwait(false);
+            var results = await FetchImages((BaseItem)item, null, _jsonSerializer, cancellationToken).ConfigureAwait(false);
 
             if (results == null)
             {
@@ -183,14 +166,13 @@ namespace MediaBrowser.Providers.Movies
         /// Fetches the images.
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="language">The language.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{MovieImages}.</returns>
-        private async Task<MovieDbProvider.Images> FetchImages(BaseItem item, IJsonSerializer jsonSerializer,
-            CancellationToken cancellationToken)
+        private async Task<MovieDbProvider.Images> FetchImages(BaseItem item, string language, IJsonSerializer jsonSerializer, CancellationToken cancellationToken)
         {
             var tmdbId = item.GetProviderId(MetadataProviders.Tmdb);
-            var language = item.GetPreferredMetadataLanguage();
 
             if (string.IsNullOrWhiteSpace(tmdbId))
             {

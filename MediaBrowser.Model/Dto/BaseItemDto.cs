@@ -43,6 +43,12 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The etag.</value>
         public string Etag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the source.
+        /// </summary>
+        /// <value>The type of the source.</value>
+        public string SourceType { get; set; }
         
         /// <summary>
         /// Gets or sets the playlist item identifier.
@@ -207,12 +213,6 @@ namespace MediaBrowser.Model.Dto
         public string ShortOverview { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the TMDB collection.
-        /// </summary>
-        /// <value>The name of the TMDB collection.</value>
-        public string TmdbCollectionName { get; set; }
-
-        /// <summary>
         /// Gets or sets the taglines.
         /// </summary>
         /// <value>The taglines.</value>
@@ -290,6 +290,12 @@ namespace MediaBrowser.Model.Dto
         /// <value><c>null</c> if [is place holder] contains no value, <c>true</c> if [is place holder]; otherwise, <c>false</c>.</value>
         public bool? IsPlaceHolder { get; set; }
 
+        /// <summary>
+        /// Gets or sets the number.
+        /// </summary>
+        /// <value>The number.</value>
+        public string Number { get; set; }
+        
         /// <summary>
         /// Gets or sets the index number.
         /// </summary>
@@ -792,6 +798,11 @@ namespace MediaBrowser.Model.Dto
         /// <value>The locked fields.</value>
         public List<MetadataFields> LockedFields { get; set; }
 
+        /// <summary>
+        /// Gets or sets the trailer count.
+        /// </summary>
+        /// <value>The trailer count.</value>
+        public int? TrailerCount { get; set; }
         /// <summary>
         /// Gets or sets the movie count.
         /// </summary>

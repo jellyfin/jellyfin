@@ -170,6 +170,17 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             QueueScheduledTask<T>(new TaskExecutionOptions());
         }
 
+        public void QueueIfNotRunning<T>()
+            where T : IScheduledTask
+        {
+            var task = ScheduledTasks.First(t => t.ScheduledTask.GetType() == typeof(T));
+
+            if (task.State != TaskState.Running)
+            {
+                QueueScheduledTask<T>(new TaskExecutionOptions());
+            }
+        }
+
         public void Execute<T>()
             where T : IScheduledTask
         {

@@ -293,10 +293,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             var formats = (video.Container ?? string.Empty).Split(',').ToList();
-            var enableInterlacedDection = formats.Contains("vob", StringComparer.OrdinalIgnoreCase) &&
-                                          formats.Contains("m2ts", StringComparer.OrdinalIgnoreCase) &&
-                                          formats.Contains("ts", StringComparer.OrdinalIgnoreCase) &&
-                                          formats.Contains("mpegts", StringComparer.OrdinalIgnoreCase) &&
+            var enableInterlacedDection = formats.Contains("vob", StringComparer.OrdinalIgnoreCase) ||
+                                          formats.Contains("m2ts", StringComparer.OrdinalIgnoreCase) ||
+                                          formats.Contains("ts", StringComparer.OrdinalIgnoreCase) ||
+                                          formats.Contains("mpegts", StringComparer.OrdinalIgnoreCase) ||
                                           formats.Contains("wtv", StringComparer.OrdinalIgnoreCase);
             
             // If it's mpeg based, assume true

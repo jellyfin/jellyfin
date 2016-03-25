@@ -19,6 +19,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,7 +54,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             get { return _data.AccessKey; }
         }
 
-        public string DiscoveredWanIpAddress { get; private set; }
+        private IPAddress DiscoveredWanIpAddress { get; set; }
 
         public string WanIpAddress
         {
@@ -61,9 +62,16 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 var address = _config.Configuration.WanDdns;
 
-                if (string.IsNullOrWhiteSpace(address))
+                if (string.IsNullOrWhiteSpace(address) && DiscoveredWanIpAddress != null)
                 {
-                    address = DiscoveredWanIpAddress;
+                    if (DiscoveredWanIpAddress.AddressFamily == AddressFamily.InterNetworkV6)
+                    {
+                        address = "[" + DiscoveredWanIpAddress + "]";
+                    }
+                    else
+                    {
+                        address = DiscoveredWanIpAddress.ToString();
+                    }
                 }
 
                 return address;
@@ -124,7 +132,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             LoadCachedData();
         }
 
-        internal void OnWanAddressResolved(string address)
+        internal void OnWanAddressResolved(IPAddress address)
         {
             DiscoveredWanIpAddress = address;
 
@@ -316,7 +324,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             try
             {
-				_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+                _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                 var json = _json.SerializeToString(_data);
 
@@ -324,7 +332,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
                 lock (_dataFileLock)
                 {
-					_fileSystem.WriteAllText(path, encrypted, Encoding.UTF8);
+                    _fileSystem.WriteAllText(path, encrypted, Encoding.UTF8);
                 }
             }
             catch (Exception ex)
@@ -341,7 +349,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 lock (_dataFileLock)
                 {
-					var encrypted = _fileSystem.ReadAllText(path, Encoding.UTF8);
+                    var encrypted = _fileSystem.ReadAllText(path, Encoding.UTF8);
 
                     var json = _encryption.DecryptString(encrypted);
 
@@ -381,7 +389,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 await UpdateConnectInfo().ConfigureAwait(false);
             }
-            
+
             await _operationLock.WaitAsync().ConfigureAwait(false);
 
             try
@@ -480,7 +488,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 await UpdateConnectInfo().ConfigureAwait(false);
             }
-            
+
             await _operationLock.WaitAsync().ConfigureAwait(false);
 
             try

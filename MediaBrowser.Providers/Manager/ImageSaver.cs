@@ -421,7 +421,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (saveLocally)
             {
-                if (item is Episode)
+                if (type == ImageType.Primary && item is Episode)
                 {
                     path = Path.Combine(Path.GetDirectoryName(item.Path), "metadata", filename + extension);
                 }

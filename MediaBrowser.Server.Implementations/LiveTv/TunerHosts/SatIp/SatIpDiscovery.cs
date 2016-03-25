@@ -14,238 +14,292 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 {
-    //public class SatIpDiscovery : IServerEntryPoint
-    //{
-    //    private readonly IDeviceDiscovery _deviceDiscovery;
-    //    private readonly IServerConfigurationManager _config;
-    //    private readonly ILogger _logger;
-    //    private readonly ILiveTvManager _liveTvManager;
-    //    private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
-    //    private readonly IHttpClient _httpClient;
-    //    private readonly IJsonSerializer _json;
+    public class SatIpDiscovery : IServerEntryPoint
+    {
+        private readonly IDeviceDiscovery _deviceDiscovery;
+        private readonly IServerConfigurationManager _config;
+        private readonly ILogger _logger;
+        private readonly ILiveTvManager _liveTvManager;
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+        private readonly IHttpClient _httpClient;
+        private readonly IJsonSerializer _json;
 
-    //    public static SatIpDiscovery Current;
+        public static SatIpDiscovery Current;
 
-    //    private readonly List<TunerHostInfo> _discoveredHosts = new List<TunerHostInfo>();
+        public SatIpDiscovery(IDeviceDiscovery deviceDiscovery, IServerConfigurationManager config, ILogger logger, ILiveTvManager liveTvManager, IHttpClient httpClient, IJsonSerializer json)
+        {
+            _deviceDiscovery = deviceDiscovery;
+            _config = config;
+            _logger = logger;
+            _liveTvManager = liveTvManager;
+            _httpClient = httpClient;
+            _json = json;
+            Current = this;
+        }
 
-    //    public List<TunerHostInfo> DiscoveredHosts
-    //    {
-    //        get { return _discoveredHosts.ToList(); }
-    //    }
+        public void Run()
+        {
+            _deviceDiscovery.DeviceDiscovered += _deviceDiscovery_DeviceDiscovered;
+        }
 
-    //    public SatIpDiscovery(IDeviceDiscovery deviceDiscovery, IServerConfigurationManager config, ILogger logger, ILiveTvManager liveTvManager, IHttpClient httpClient, IJsonSerializer json)
-    //    {
-    //        _deviceDiscovery = deviceDiscovery;
-    //        _config = config;
-    //        _logger = logger;
-    //        _liveTvManager = liveTvManager;
-    //        _httpClient = httpClient;
-    //        _json = json;
-    //        Current = this;
-    //    }
+        void _deviceDiscovery_DeviceDiscovered(object sender, SsdpMessageEventArgs e)
+        {
+            string st = null;
+            string nt = null;
+            e.Headers.TryGetValue("ST", out st);
+            e.Headers.TryGetValue("NT", out nt);
 
-    //    public void Run()
-    //    {
-    //        _deviceDiscovery.DeviceDiscovered += _deviceDiscovery_DeviceDiscovered;
-    //    }
+            if (string.Equals(st, "urn:ses-com:device:SatIPServer:1", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(nt, "urn:ses-com:device:SatIPServer:1", StringComparison.OrdinalIgnoreCase))
+            {
+                string location;
+                if (e.Headers.TryGetValue("Location", out location) && !string.IsNullOrWhiteSpace(location))
+                {
+                    _logger.Debug("SAT IP found at {0}", location);
 
-    //    void _deviceDiscovery_DeviceDiscovered(object sender, SsdpMessageEventArgs e)
-    //    {
-    //        string st = null;
-    //        string nt = null;
-    //        e.Headers.TryGetValue("ST", out st);
-    //        e.Headers.TryGetValue("NT", out nt);
+                    // Just get the beginning of the url
+                    Uri uri;
+                    if (Uri.TryCreate(location, UriKind.Absolute, out uri))
+                    {
+                        var apiUrl = location.Replace(uri.LocalPath, String.Empty, StringComparison.OrdinalIgnoreCase)
+                                .TrimEnd('/');
 
-    //        if (string.Equals(st, "urn:ses-com:device:SatIPServer:1", StringComparison.OrdinalIgnoreCase) ||
-    //            string.Equals(nt, "urn:ses-com:device:SatIPServer:1", StringComparison.OrdinalIgnoreCase))
-    //        {
-    //            string location;
-    //            if (e.Headers.TryGetValue("Location", out location) && !string.IsNullOrWhiteSpace(location))
-    //            {
-    //                _logger.Debug("SAT IP found at {0}", location);
+                        AddDevice(apiUrl, location);
+                    }
+                }
+            }
+        }
 
-    //                // Just get the beginning of the url
-    //                AddDevice(location);
-    //            }
-    //        }
-    //    }
+        private async void AddDevice(string deviceUrl, string infoUrl)
+        {
+            await _semaphore.WaitAsync().ConfigureAwait(false);
 
-    //    private async void AddDevice(string location)
-    //    {
-    //        await _semaphore.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                var options = GetConfiguration();
 
-    //        try
-    //        {
-    //            if (_discoveredHosts.Any(i => string.Equals(i.Type, SatIpHost.DeviceType, StringComparison.OrdinalIgnoreCase) && string.Equals(location, i.Url, StringComparison.OrdinalIgnoreCase)))
-    //            {
-    //                return;
-    //            }
+                if (options.TunerHosts.Any(i => string.Equals(i.Type, SatIpHost.DeviceType, StringComparison.OrdinalIgnoreCase) && UriEquals(i.Url, deviceUrl)))
+                {
+                    return;
+                }
 
-    //            _logger.Debug("Will attempt to add SAT device {0}", location);
-    //            var info = await GetInfo(location, CancellationToken.None).ConfigureAwait(false);
+                _logger.Debug("Will attempt to add SAT device {0}", deviceUrl);
+                var info = await GetInfo(infoUrl, CancellationToken.None).ConfigureAwait(false);
 
-    //            _discoveredHosts.Add(info);
-    //        }
-    //        catch (OperationCanceledException)
-    //        {
+                var existing = GetConfiguration().TunerHosts
+                    .FirstOrDefault(i => string.Equals(i.Type, SatIpHost.DeviceType, StringComparison.OrdinalIgnoreCase) && string.Equals(i.DeviceId, info.DeviceId, StringComparison.OrdinalIgnoreCase));
 
-    //        }
-    //        catch (NotImplementedException)
-    //        {
+                if (existing == null)
+                {
+                    if (string.IsNullOrWhiteSpace(info.M3UUrl))
+                    {
+                        return;
+                    }
 
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            _logger.ErrorException("Error saving device", ex);
-    //        }
-    //        finally
-    //        {
-    //            _semaphore.Release();
-    //        }
-    //    }
+                    await _liveTvManager.SaveTunerHost(new TunerHostInfo
+                    {
+                        Type = SatIpHost.DeviceType,
+                        Url = deviceUrl,
+                        InfoUrl = infoUrl,
+                        DataVersion = 1,
+                        DeviceId = info.DeviceId,
+                        FriendlyName = info.FriendlyName,
+                        Tuners = info.Tuners,
+                        M3UUrl = info.M3UUrl,
+                        IsEnabled = true
 
-    //    public void Dispose()
-    //    {
-    //    }
+                    }).ConfigureAwait(false);
+                }
+                else
+                {
+                    existing.Url = deviceUrl;
+                    existing.InfoUrl = infoUrl;
+                    existing.M3UUrl = info.M3UUrl;
+                    existing.FriendlyName = info.FriendlyName;
+                    existing.Tuners = info.Tuners;
+                    await _liveTvManager.SaveTunerHost(existing).ConfigureAwait(false);
+                }
+            }
+            catch (OperationCanceledException)
+            {
 
-    //    public async Task<SatIpTunerHostInfo> GetInfo(string url, CancellationToken cancellationToken)
-    //    {
-    //        var result = new SatIpTunerHostInfo
-    //        {
-    //            Url = url,
-    //            IsEnabled = true,
-    //            Type = SatIpHost.DeviceType,
-    //            Tuners = 1,
-    //            TunersAvailable = 1
-    //        };
+            }
+            catch (NotImplementedException)
+            {
 
-    //        using (var stream = await _httpClient.Get(url, cancellationToken).ConfigureAwait(false))
-    //        {
-    //            using (var streamReader = new StreamReader(stream))
-    //            {
-    //                // Use XmlReader for best performance
-    //                using (var reader = XmlReader.Create(streamReader))
-    //                {
-    //                    reader.MoveToContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error saving device", ex);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
 
-    //                    // Loop through each element
-    //                    while (reader.Read())
-    //                    {
-    //                        if (reader.NodeType == XmlNodeType.Element)
-    //                        {
-    //                            switch (reader.Name)
-    //                            {
-    //                                case "device":
-    //                                    using (var subtree = reader.ReadSubtree())
-    //                                    {
-    //                                        FillFromDeviceNode(result, subtree);
-    //                                    }
-    //                                    break;
-    //                                default:
-    //                                    reader.Skip();
-    //                                    break;
-    //                            }
-    //                        }
-    //                    }
-    //                }
-    //            }
-    //        }
+        private bool UriEquals(string savedUri, string location)
+        {
+            return string.Equals(NormalizeUrl(location), NormalizeUrl(savedUri), StringComparison.OrdinalIgnoreCase);
+        }
 
-    //        if (string.IsNullOrWhiteSpace(result.Id))
-    //        {
-    //            throw new NotImplementedException();
-    //        }
+        private string NormalizeUrl(string url)
+        {
+            if (!url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                url = "http://" + url;
+            }
 
-    //        // Device hasn't implemented an m3u list
-    //        if (string.IsNullOrWhiteSpace(result.M3UUrl))
-    //        {
-    //            result.IsEnabled = false;
-    //        }
+            url = url.TrimEnd('/');
 
-    //        else if (!result.M3UUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-    //        {
-    //            var fullM3uUrl = url.Substring(0, url.LastIndexOf('/'));
-    //            result.M3UUrl = fullM3uUrl + "/" + result.M3UUrl.TrimStart('/');
-    //        }
+            // Strip off the port
+            return new Uri(url).GetComponents(UriComponents.AbsoluteUri & ~UriComponents.Port, UriFormat.UriEscaped);
+        }
 
-    //        _logger.Debug("SAT device result: {0}", _json.SerializeToString(result));
+        private LiveTvOptions GetConfiguration()
+        {
+            return _config.GetConfiguration<LiveTvOptions>("livetv");
+        }
 
-    //        return result;
-    //    }
+        public void Dispose()
+        {
+        }
 
-    //    private void FillFromDeviceNode(SatIpTunerHostInfo info, XmlReader reader)
-    //    {
-    //        reader.MoveToContent();
+        public async Task<SatIpTunerHostInfo> GetInfo(string url, CancellationToken cancellationToken)
+        {
+            var result = new SatIpTunerHostInfo
+            {
+                Url = url,
+                IsEnabled = true,
+                Type = SatIpHost.DeviceType,
+                Tuners = 1,
+                TunersAvailable = 1
+            };
 
-    //        while (reader.Read())
-    //        {
-    //            if (reader.NodeType == XmlNodeType.Element)
-    //            {
-    //                switch (reader.LocalName)
-    //                {
-    //                    case "UDN":
-    //                        {
-    //                            info.Id = reader.ReadElementContentAsString();
-    //                            break;
-    //                        }
+            using (var stream = await _httpClient.Get(url, cancellationToken).ConfigureAwait(false))
+            {
+                using (var streamReader = new StreamReader(stream))
+                {
+                    // Use XmlReader for best performance
+                    using (var reader = XmlReader.Create(streamReader))
+                    {
+                        reader.MoveToContent();
 
-    //                    case "friendlyName":
-    //                        {
-    //                            info.FriendlyName = reader.ReadElementContentAsString();
-    //                            break;
-    //                        }
+                        // Loop through each element
+                        while (reader.Read())
+                        {
+                            if (reader.NodeType == XmlNodeType.Element)
+                            {
+                                switch (reader.Name)
+                                {
+                                    case "device":
+                                        using (var subtree = reader.ReadSubtree())
+                                        {
+                                            FillFromDeviceNode(result, subtree);
+                                        }
+                                        break;
+                                    default:
+                                        reader.Skip();
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
-    //                    case "satip:X_SATIPCAP":
-    //                    case "X_SATIPCAP":
-    //                        {
-    //                            // <satip:X_SATIPCAP xmlns:satip="urn:ses-com:satip">DVBS2-2</satip:X_SATIPCAP>
-    //                            var value = reader.ReadElementContentAsString() ?? string.Empty;
-    //                            var parts = value.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
-    //                            if (parts.Length == 2)
-    //                            {
-    //                                int intValue;
-    //                                if (int.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out intValue))
-    //                                {
-    //                                    info.TunersAvailable = intValue;
-    //                                }
+            if (string.IsNullOrWhiteSpace(result.DeviceId))
+            {
+                throw new NotImplementedException();
+            }
 
-    //                                if (int.TryParse(parts[0].Substring(parts[0].Length - 1), NumberStyles.Any, CultureInfo.InvariantCulture, out intValue))
-    //                                {
-    //                                    info.Tuners = intValue;
-    //                                }
-    //                            }
-    //                            break;
-    //                        }
+            // Device hasn't implemented an m3u list
+            if (string.IsNullOrWhiteSpace(result.M3UUrl))
+            {
+                result.IsEnabled = false;
+            }
 
-    //                    case "satip:X_SATIPM3U":
-    //                    case "X_SATIPM3U":
-    //                        {
-    //                            // <satip:X_SATIPM3U xmlns:satip="urn:ses-com:satip">/channellist.lua?select=m3u</satip:X_SATIPM3U>
-    //                            info.M3UUrl = reader.ReadElementContentAsString();
-    //                            break;
-    //                        }
+            else if (!result.M3UUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                var fullM3uUrl = url.Substring(0, url.LastIndexOf('/'));
+                result.M3UUrl = fullM3uUrl + "/" + result.M3UUrl.TrimStart('/');
+            }
 
-    //                    default:
-    //                        reader.Skip();
-    //                        break;
-    //                }
-    //            }
-    //        }
-    //    }
-    //}
+            _logger.Debug("SAT device result: {0}", _json.SerializeToString(result));
+
+            return result;
+        }
+
+        private void FillFromDeviceNode(SatIpTunerHostInfo info, XmlReader reader)
+        {
+            reader.MoveToContent();
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.LocalName)
+                    {
+                        case "UDN":
+                            {
+                                info.DeviceId = reader.ReadElementContentAsString();
+                                break;
+                            }
+
+                        case "friendlyName":
+                            {
+                                info.FriendlyName = reader.ReadElementContentAsString();
+                                break;
+                            }
+
+                        case "satip:X_SATIPCAP":
+                        case "X_SATIPCAP":
+                            {
+                                // <satip:X_SATIPCAP xmlns:satip="urn:ses-com:satip">DVBS2-2</satip:X_SATIPCAP>
+                                var value = reader.ReadElementContentAsString() ?? string.Empty;
+                                var parts = value.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+                                if (parts.Length == 2)
+                                {
+                                    int intValue;
+                                    if (int.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out intValue))
+                                    {
+                                        info.TunersAvailable = intValue;
+                                    }
+
+                                    if (int.TryParse(parts[0].Substring(parts[0].Length - 1), NumberStyles.Any, CultureInfo.InvariantCulture, out intValue))
+                                    {
+                                        info.Tuners = intValue;
+                                    }
+                                }
+                                break;
+                            }
+
+                        case "satip:X_SATIPM3U":
+                        case "X_SATIPM3U":
+                            {
+                                // <satip:X_SATIPM3U xmlns:satip="urn:ses-com:satip">/channellist.lua?select=m3u</satip:X_SATIPM3U>
+                                info.M3UUrl = reader.ReadElementContentAsString();
+                                break;
+                            }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+        }
+    }
 
     public class SatIpTunerHostInfo : TunerHostInfo
     {
-        public int Tuners { get; set; }
         public int TunersAvailable { get; set; }
-        public string M3UUrl { get; set; }
-        public string FriendlyName { get; set; }
     }
 }

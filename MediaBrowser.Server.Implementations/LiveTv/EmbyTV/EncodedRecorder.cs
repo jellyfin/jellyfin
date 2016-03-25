@@ -28,6 +28,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         private string _targetPath;
         private Process _process;
         private readonly IJsonSerializer _json;
+        private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
 
         public EncodedRecorder(ILogger logger, IFileSystem fileSystem, IMediaEncoder mediaEncoder, IApplicationPaths appPaths, IJsonSerializer json)
         {
@@ -93,11 +94,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
             StartStreamingLog(process.StandardError.BaseStream, _logFileStream);
 
-            // Wait for the file to exist before proceeeding
-            while (!_hasExited)
-            {
-                await Task.Delay(100, cancellationToken).ConfigureAwait(false);
-            }
+            await _taskCompletionSource.Task.ConfigureAwait(false);
         }
 
         private string GetCommandLineArgs(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration)
@@ -197,16 +194,27 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         {
             _hasExited = true;
 
-            _logger.Debug("Disposing stream resources");
             DisposeLogStream();
 
             try
             {
-                _logger.Info("FFMpeg exited with code {0}", process.ExitCode);
+                var exitCode = process.ExitCode;
+
+                _logger.Info("FFMpeg recording exited with code {0} for {1}", exitCode, _targetPath);
+
+                if (exitCode == 0)
+                {
+                    _taskCompletionSource.TrySetResult(true);
+                }
+                else
+                {
+                    _taskCompletionSource.TrySetException(new Exception(string.Format("Recording for {0} failed. Exit code {1}", _targetPath, exitCode)));
+                }
             }
             catch
             {
-                _logger.Error("FFMpeg exited with an error.");
+                _logger.Error("FFMpeg recording exited with an error for {0}.", _targetPath);
+                _taskCompletionSource.TrySetException(new Exception(string.Format("Recording for {0} failed", _targetPath)));
             }
         }
 
@@ -220,7 +228,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error disposing log stream", ex);
+                    _logger.ErrorException("Error disposing recording log stream", ex);
                 }
 
                 _logFileStream = null;
@@ -250,7 +258,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error reading ffmpeg log", ex);
+                _logger.ErrorException("Error reading ffmpeg recording log", ex);
             }
         }
     }

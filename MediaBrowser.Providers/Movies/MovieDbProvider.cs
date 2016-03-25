@@ -16,12 +16,14 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Common;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Providers.Movies
 {
@@ -226,10 +228,6 @@ namespace MediaBrowser.Providers.Movies
             {
                 throw new ArgumentNullException("tmdbId");
             }
-            if (string.IsNullOrEmpty(language))
-            {
-                throw new ArgumentNullException("language");
-            }
 
             var path = GetDataFilePath(tmdbId, language);
 
@@ -253,15 +251,15 @@ namespace MediaBrowser.Providers.Movies
             {
                 throw new ArgumentNullException("tmdbId");
             }
-            if (string.IsNullOrEmpty(preferredLanguage))
-            {
-                throw new ArgumentNullException("preferredLanguage");
-            }
 
             var path = GetMovieDataPath(_configurationManager.ApplicationPaths, tmdbId);
 
-            var filename = string.Format("all-{0}.json",
-                preferredLanguage);
+            if (string.IsNullOrWhiteSpace(preferredLanguage))
+            {
+                preferredLanguage = "alllang";
+            }
+
+            var filename = string.Format("all-{0}.json", preferredLanguage);
 
             return Path.Combine(path, filename);
         }
@@ -283,6 +281,20 @@ namespace MediaBrowser.Providers.Movies
             return string.Join(",", languages.ToArray());
         }
 
+        public static string NormalizeLanguage(string language)
+        {
+            // They require this to be uppercase
+            // http://emby.media/community/index.php?/topic/32454-fr-follow-tmdbs-new-language-api-update/?p=311148
+            var parts = language.Split('-');
+
+            if (parts.Length == 2)
+            {
+                language = parts[0] + "-" + parts[1].ToUpper();
+            }
+
+            return language;
+        }
+
         /// <summary>
         /// Fetches the main result.
         /// </summary>
@@ -297,12 +309,11 @@ namespace MediaBrowser.Providers.Movies
 
             if (!string.IsNullOrEmpty(language))
             {
-                url += string.Format("&language={0}", language);
-            }
+                url += string.Format("&language={0}", NormalizeLanguage(language));
 
-            var includeImageLanguageParam = GetImageLanguagesParam(language);
-            // Get images in english and with no language
-            url += "&include_image_language=" + includeImageLanguageParam;
+                // Get images in english and with no language
+                url += "&include_image_language=" + GetImageLanguagesParam(language);
+            }
 
             CompleteMovieData mainResult;
 
@@ -348,7 +359,13 @@ namespace MediaBrowser.Providers.Movies
             {
                 _logger.Info("MovieDbProvider couldn't find meta for language " + language + ". Trying English...");
 
-                url = string.Format(GetMovieInfo3, id, ApiKey) + "&include_image_language=" + includeImageLanguageParam + "&language=en";
+                url = string.Format(GetMovieInfo3, id, ApiKey) + "&language=en";
+
+                if (!string.IsNullOrEmpty(language))
+                {
+                    // Get images in english and with no language
+                    url += "&include_image_language=" + GetImageLanguagesParam(language);
+                }
 
                 using (var json = await GetMovieDbResponse(new HttpRequestOptions
                 {

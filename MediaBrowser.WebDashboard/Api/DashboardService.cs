@@ -25,7 +25,6 @@ namespace MediaBrowser.WebDashboard.Api
     /// <summary>
     /// Class GetDashboardConfigurationPages
     /// </summary>
-    [Route("/dashboard/ConfigurationPages", "GET")]
     [Route("/web/ConfigurationPages", "GET")]
     public class GetDashboardConfigurationPages : IReturn<List<ConfigurationPageInfo>>
     {
@@ -39,7 +38,6 @@ namespace MediaBrowser.WebDashboard.Api
     /// <summary>
     /// Class GetDashboardConfigurationPage
     /// </summary>
-    [Route("/dashboard/ConfigurationPage", "GET")]
     [Route("/web/ConfigurationPage", "GET")]
     public class GetDashboardConfigurationPage
     {
@@ -51,7 +49,6 @@ namespace MediaBrowser.WebDashboard.Api
     }
 
     [Route("/web/Package", "GET")]
-    [Route("/dashboard/Package", "GET")]
     public class GetDashboardPackage
     {
         public string Mode { get; set; }
@@ -66,7 +63,6 @@ namespace MediaBrowser.WebDashboard.Api
     /// Class GetDashboardResource
     /// </summary>
     [Route("/web/{ResourceName*}", "GET")]
-    [Route("/dashboard/{ResourceName*}", "GET")]
     public class GetDashboardResource
     {
         /// <summary>
@@ -142,7 +138,7 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var page = ServerEntryPoint.Instance.PluginConfigurationPages.First(p => p.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
 
-            return ResultFactory.GetStaticResult(Request, page.Plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator().ModifyHtml(page.GetHtmlStream(), null, _appHost.ApplicationVersion.ToString(), null, false));
+            return ResultFactory.GetStaticResult(Request, page.Plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator().ModifyHtml("dummy.html", page.GetHtmlStream(), null, _appHost.ApplicationVersion.ToString(), null, false));
         }
 
         /// <summary>
@@ -312,9 +308,9 @@ namespace MediaBrowser.WebDashboard.Api
 
             if (!string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
             {
-                var versionedBowerPath = Path.Combine(Path.GetDirectoryName(bowerPath), "bower_components" + _appHost.ApplicationVersion);
-                Directory.Move(bowerPath, versionedBowerPath);
-                bowerPath = versionedBowerPath;
+                //var versionedBowerPath = Path.Combine(Path.GetDirectoryName(bowerPath), "bower_components" + _appHost.ApplicationVersion);
+                //Directory.Move(bowerPath, versionedBowerPath);
+                //bowerPath = versionedBowerPath;
             }
 
             DeleteFilesByExtension(bowerPath, ".log");
@@ -345,6 +341,11 @@ namespace MediaBrowser.WebDashboard.Api
             DeleteFoldersByName(bowerPath, "grunt");
             DeleteFoldersByName(bowerPath, "rollups");
 
+            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+            {
+                DeleteFoldersByName(Path.Combine(bowerPath, "emby-webcomponents"), "fonts");
+            }
+
             _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "jquery", "src"), true);
           
             DeleteCryptoFiles(Path.Combine(bowerPath, "cryptojslib", "components"));
@@ -354,6 +355,9 @@ namespace MediaBrowser.WebDashboard.Api
             DeleteFoldersByName(Path.Combine(bowerPath, "Sortable"), "meteor");
             DeleteFoldersByName(Path.Combine(bowerPath, "Sortable"), "st");
             DeleteFoldersByName(Path.Combine(bowerPath, "Swiper"), "src");
+            DeleteFoldersByName(Path.Combine(bowerPath, "material-design-lite"), "src");
+            DeleteFoldersByName(Path.Combine(bowerPath, "material-design-lite"), "utils");
+            _fileSystem.DeleteFile(Path.Combine(bowerPath, "material-design-lite", "gulpfile.babel.js"));
 
             _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "marked"), true);
             _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "marked-element"), true);
