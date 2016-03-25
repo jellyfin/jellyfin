@@ -59,19 +59,13 @@
         self.getCurrentUser = function () {
 
             if (currentUser) {
-                return new Promise(function (resolve, reject) {
-
-                    resolve(currentUser);
-                });
+                return Promise.resolve(currentUser);
             }
 
             var userId = self.getCurrentUserId();
 
             if (!userId) {
-                return new Promise(function (resolve, reject) {
-
-                    reject();
-                });
+                return Promise.reject();
             }
 
             return self.getUser(userId).then(function (user) {

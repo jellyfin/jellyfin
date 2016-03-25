@@ -183,6 +183,7 @@ configuration parameters could be provided to hls.js upon instantiation of Hls O
 
    var config = {
       autoStartLoad : true,
+      capLevelToPlayerSize: false,
       debug : false,
       defaultAudioCodec : undefined,
       maxBufferLength : 30,
@@ -223,6 +224,12 @@ var hls = new Hls(config);
 this getter/setter allows to retrieve and override Hls default configuration.
 this configuration will be applied by default to all instances.
 
+#### ```capLevelToPlayerSize```
+ (default false)
+ 
+  - if set to true, the adaptive algorithm with limit levels usable in auto-quality by the HTML video element dimensions (width and height)
+  - if set to false, levels will not be limited. All available levels could be used in auto-quality mode taking only bandwidth into consideration.
+ 
 #### ```debug```
 (default false)
 
@@ -397,7 +404,7 @@ var customLoader = function() {
   maxRetry : max nb of load retry
   retryDelay : delay between an I/O error and following connection retry (ms). this to avoid spamming the server.
   */
-  this.load = function(url,responseType,onSuccess,onError,timeout,maxRetry,retryDelay) {}
+  this.load = function(url,responseType,onSuccess,onError,onTimeOut,timeout,maxRetry,retryDelay) {}
 
   /* abort any loading in progress */
   this.abort = function() {}

@@ -53,6 +53,8 @@ design idea is pretty simple :
   - [src/controller/abr-controller.js][]
     - in charge of determining auto quality level.
     - auto quality switch algorithm is pretty naive and simple ATM and similar to the one that could be found in google [StageFright](https://android.googlesource.com/platform/frameworks/av/+/master/media/libstagefright/httplive/LiveSession.cpp)
+  - [src/controller/cap-level-controller.js][]
+    - in charge of determining best quality level to actual size (dimensions: width and height) of the player 
   - [src/crypt/aes.js][]
     - AES 128 software decryption routine, low level class handling decryption of 128 bit of data.
   - [src/crypt/aes128-decrypter.js][]  
@@ -132,6 +134,7 @@ design idea is pretty simple :
 [src/stats.js]: src/stats.js
 [src/controller/abr-controller.js]: src/controller/abr-controller.js
 [src/controller/buffer-controller.js]: src/controller/buffer-controller.js
+[src/controller/cap-level-controller.js]: src/controller/cap-level-controller.js
 [src/controller/fps-controller.js]: src/controller/fps-controller.js
 [src/controller/level-controller.js]: src/controller/level-controller.js
 [src/controller/stream-controller.js]: src/controller/stream-controller.js

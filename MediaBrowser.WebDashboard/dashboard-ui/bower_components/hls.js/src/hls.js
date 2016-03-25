@@ -9,6 +9,7 @@ import PlaylistLoader from './loader/playlist-loader';
 import FragmentLoader from './loader/fragment-loader';
 import AbrController from    './controller/abr-controller';
 import BufferController from  './controller/buffer-controller';
+import CapLevelController from  './controller/cap-level-controller';
 import StreamController from  './controller/stream-controller';
 import LevelController from  './controller/level-controller';
 import TimelineController from './controller/timeline-controller';
@@ -41,6 +42,7 @@ class Hls {
        Hls.defaultConfig = {
           autoStartLoad: true,
           debug: false,
+          capLevelToPlayerSize: false,
           maxBufferLength: 30,
           maxBufferSize: 60 * 1000 * 1000,
           maxBufferHole: 0.5,
@@ -72,6 +74,7 @@ class Hls {
           pLoader: undefined,
           abrController : AbrController,
           bufferController : BufferController,
+          capLevelController : CapLevelController,
           streamController: StreamController,
           timelineController: TimelineController,
           enableCEA708Captions: true,
@@ -124,6 +127,7 @@ class Hls {
     this.levelController = new LevelController(this);
     this.abrController = new config.abrController(this);
     this.bufferController = new config.bufferController(this);
+    this.capLevelController = new config.capLevelController(this);
     this.streamController = new config.streamController(this);
     this.timelineController = new config.timelineController(this);
     this.keyLoader = new KeyLoader(this);
@@ -138,6 +142,7 @@ class Hls {
     this.fragmentLoader.destroy();
     this.levelController.destroy();
     this.bufferController.destroy();
+    this.capLevelController.destroy();
     this.streamController.destroy();
     this.timelineController.destroy();
     this.keyLoader.destroy();

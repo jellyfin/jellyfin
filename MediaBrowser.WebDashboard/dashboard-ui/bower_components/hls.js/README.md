@@ -39,6 +39,9 @@ hls.js is (being) integrated in the following players:
  - [MediaElement.js] (http://mediaelementjs.com/)  through [#1609
 ] (https://github.com/johndyer/mediaelement/issues/1609)
 
+## Chrome integration
+
+ - [native-hls] (https://chrome.google.com/webstore/detail/native-hls-playback/emnphkkblegpebimobpbekeedfgemhof), plays hls from address bar and m3u8 links 
 
 ## Dependencies
 

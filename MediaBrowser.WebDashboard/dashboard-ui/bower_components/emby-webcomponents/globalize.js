@@ -75,7 +75,13 @@ define(['connectionManager', 'userSettings', 'events'], function (connectionMana
             }
         }
 
-        return culture.toLowerCase();
+        var lower = culture.toLowerCase();
+
+        if (lower == 'ca-es') {
+            return 'ca';
+        }
+
+        return lower;
     }
 
     function getDictionary(module) {
