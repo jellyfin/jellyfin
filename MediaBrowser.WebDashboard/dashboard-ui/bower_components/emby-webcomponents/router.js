@@ -253,8 +253,7 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
 
             firstConnectionResult = null;
 
-            if (firstResult.State != MediaBrowser.ConnectionState.SignedIn) {
-
+            if (firstResult.State != MediaBrowser.ConnectionState.SignedIn && !route.anonymous) {
                 handleConnectionResult(firstResult, loading);
                 return;
             }
