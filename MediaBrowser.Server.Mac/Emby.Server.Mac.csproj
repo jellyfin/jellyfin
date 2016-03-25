@@ -78,11 +78,11 @@
       <HintPath>..\ThirdParty\Mono.Security\Mono.Security.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="CommonIO">
-      <HintPath>..\packages\CommonIO.1.0.0.8\lib\net45\CommonIO.dll</HintPath>
-    </Reference>
     <Reference Include="Patterns.Logging">
       <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="CommonIO">
+      <HintPath>..\packages\CommonIO.1.0.0.9\lib\net45\CommonIO.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
