@@ -70,7 +70,9 @@ namespace MediaBrowser.Server.Implementations.Connect
                         LogErrors = logErrors,
 
                         // Seeing block length errors with our server
-                        EnableHttpCompression = false
+                        EnableHttpCompression = false,
+
+                        PreferIpv4 = true
 
                     }).ConfigureAwait(false))
                     {

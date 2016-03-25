@@ -126,6 +126,23 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             }
         }
 
+        private void AddIpv4Option(HttpWebRequest request, HttpRequestOptions options)
+        {
+            if (!options.PreferIpv4)
+            {
+                return;
+            }
+
+            request.ServicePoint.BindIPEndPointDelegate = (servicePount, remoteEndPoint, retryCount) =>
+            {
+                if (remoteEndPoint.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return new IPEndPoint(IPAddress.Any, 0);
+                }
+                throw new InvalidOperationException("no IPv4 address");
+            };
+        }
+
         private WebRequest GetRequest(HttpRequestOptions options, string method, bool enableHttpCompression)
         {
             var request = CreateWebRequest(options.Url);
@@ -133,6 +150,8 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             if (httpWebRequest != null)
             {
+                AddIpv4Option(httpWebRequest, options);
+
                 AddRequestHeaders(httpWebRequest, options);
 
                 httpWebRequest.AutomaticDecompression = enableHttpCompression ? DecompressionMethods.Deflate : DecompressionMethods.None;
