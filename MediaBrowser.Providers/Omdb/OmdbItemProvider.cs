@@ -100,13 +100,13 @@ namespace MediaBrowser.Providers.Omdb
                 if (enableMultipleResults)
                 {
                     url += "&s=" + WebUtility.UrlEncode(name);
+                    isSearch = true;
                 }
                 else
                 {
                     url += "&t=" + WebUtility.UrlEncode(name);
                 }
                 url += "&type=" + type;
-                isSearch = true;
             }
             else
             {
