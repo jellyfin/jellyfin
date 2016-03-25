@@ -59,18 +59,6 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The revenue.</value>
         public double? Revenue { get; set; }
 
-        /// <summary>
-        /// Gets or sets the critic rating.
-        /// </summary>
-        /// <value>The critic rating.</value>
-        public float? CriticRating { get; set; }
-
-        /// <summary>
-        /// Gets or sets the critic rating summary.
-        /// </summary>
-        /// <value>The critic rating summary.</value>
-        public string CriticRatingSummary { get; set; }
-
         protected override string CreateUserDataKey()
         {
             var key = Movie.GetMovieUserDataKey(this);

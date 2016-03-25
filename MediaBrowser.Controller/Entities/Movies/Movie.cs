@@ -69,18 +69,6 @@ namespace MediaBrowser.Controller.Entities.Movies
         public double? Revenue { get; set; }
 
         /// <summary>
-        /// Gets or sets the critic rating.
-        /// </summary>
-        /// <value>The critic rating.</value>
-        public float? CriticRating { get; set; }
-
-        /// <summary>
-        /// Gets or sets the critic rating summary.
-        /// </summary>
-        /// <value>The critic rating summary.</value>
-        public string CriticRatingSummary { get; set; }
-
-        /// <summary>
         /// Gets or sets the name of the TMDB collection.
         /// </summary>
         /// <value>The name of the TMDB collection.</value>
