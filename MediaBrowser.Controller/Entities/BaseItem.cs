@@ -531,7 +531,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (!string.IsNullOrWhiteSpace(ForcedSortName))
             {
-                return ModifySortChunks(ForcedSortName);
+                return ModifySortChunks(ForcedSortName).ToLower();
             }
 
             if (Name == null) return null; //some items may not have name filled in properly
