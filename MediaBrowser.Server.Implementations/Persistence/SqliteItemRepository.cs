@@ -79,7 +79,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private IDbCommand _updateInheritedRatingCommand;
 
-        private const int LatestSchemaVersion = 52;
+        private const int LatestSchemaVersion = 53;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -221,6 +221,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "IsItemByName", "BIT");
             _connection.AddColumn(Logger, "TypedBaseItems", "SourceType", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "TrailerTypes", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "CriticRating", "Float");
+            _connection.AddColumn(Logger, "TypedBaseItems", "CriticRatingSummary", "Text");
 
             PrepareStatements();
 
@@ -455,7 +457,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "TopParentId",
                 "IsItemByName",
                 "SourceType",
-                "TrailerTypes"
+                "TrailerTypes",
+                "CriticRating",
+                "CriticRatingSummary"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -746,6 +750,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         _saveItemCommand.GetParameter(index++).Value = null;
                     }
 
+                    _saveItemCommand.GetParameter(index++).Value = item.CriticRating;
+                    _saveItemCommand.GetParameter(index++).Value = item.CriticRatingSummary;
+                    
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();
@@ -1471,7 +1478,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 cmd.CommandText += "; select count (guid) from TypedBaseItems" + whereTextWithoutPaging;
 
-                Logger.Debug(cmd.CommandText);
+                //Logger.Debug(cmd.CommandText);
 
                 var list = new List<BaseItem>();
                 var count = 0;
@@ -1562,7 +1569,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 var list = new List<Guid>();
 
-                Logger.Debug(cmd.CommandText);
+                //Logger.Debug(cmd.CommandText);
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
                 {
@@ -1684,7 +1691,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var list = new List<Guid>();
                 var count = 0;
 
-                Logger.Debug(cmd.CommandText);
+                //Logger.Debug(cmd.CommandText);
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
                 {
