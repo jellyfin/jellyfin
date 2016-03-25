@@ -54,21 +54,7 @@ namespace MediaBrowser.Api
     /// </summary>
     public static class SimilarItemsHelper
     {
-        /// <summary>
-        /// Gets the similar items.
-        /// </summary>
-        /// <param name="dtoOptions">The dto options.</param>
-        /// <param name="userManager">The user manager.</param>
-        /// <param name="itemRepository">The item repository.</param>
-        /// <param name="libraryManager">The library manager.</param>
-        /// <param name="userDataRepository">The user data repository.</param>
-        /// <param name="dtoService">The dto service.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="request">The request.</param>
-        /// <param name="includeInSearch">The include in search.</param>
-        /// <param name="getSimilarityScore">The get similarity score.</param>
-        /// <returns>ItemsResult.</returns>
-        internal static ItemsResult GetSimilarItemsResult(DtoOptions dtoOptions, IUserManager userManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserDataManager userDataRepository, IDtoService dtoService, ILogger logger, BaseGetSimilarItemsFromItem request, Func<BaseItem, bool> includeInSearch, Func<BaseItem, List<PersonInfo>, List<PersonInfo>, BaseItem, int> getSimilarityScore)
+        internal static ItemsResult GetSimilarItemsResult(DtoOptions dtoOptions, IUserManager userManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserDataManager userDataRepository, IDtoService dtoService, ILogger logger, BaseGetSimilarItemsFromItem request, Type[] includeTypes, Func<BaseItem, List<PersonInfo>, List<PersonInfo>, BaseItem, int> getSimilarityScore)
         {
             var user = !string.IsNullOrWhiteSpace(request.UserId) ? userManager.GetUserById(request.UserId) : null;
 
@@ -76,11 +62,13 @@ namespace MediaBrowser.Api
                 (!string.IsNullOrWhiteSpace(request.UserId) ? user.RootFolder :
                 libraryManager.RootFolder) : libraryManager.GetItemById(request.Id);
 
-            Func<BaseItem, bool> filter = i => i.Id != item.Id && includeInSearch(i);
+            var query = new InternalItemsQuery(user)
+            {
+                IncludeItemTypes = includeTypes.Select(i => i.Name).ToArray(),
+                Recursive = true
+            };
 
-            var inputItems = user == null
-                                 ? libraryManager.RootFolder.GetRecursiveChildren(filter)
-                                 : user.RootFolder.GetRecursiveChildren(user, filter);
+            var inputItems = libraryManager.GetItemList(query);
 
             var items = GetSimilaritems(item, libraryManager, inputItems, getSimilarityScore)
                 .ToList();

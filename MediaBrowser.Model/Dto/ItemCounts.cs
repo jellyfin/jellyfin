@@ -62,15 +62,5 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The book count.</value>
         public int BookCount { get; set; }
-        /// <summary>
-        /// Gets or sets the unique types.
-        /// </summary>
-        /// <value>The unique types.</value>
-        public List<string> UniqueTypes { get; set; }
-     
-        public ItemCounts()
-        {
-            UniqueTypes = new List<string>();
-        }
     }
 }
