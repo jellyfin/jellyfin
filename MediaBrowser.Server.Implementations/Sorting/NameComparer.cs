@@ -18,12 +18,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
         /// <returns>System.Int32.</returns>
         public int Compare(BaseItem x, BaseItem y)
         {
-            if (!x.EnableAlphaNumericSorting || !y.EnableAlphaNumericSorting)
-            {
-                return string.Compare(x.SortName, y.SortName, StringComparison.CurrentCultureIgnoreCase);
-            }
-
-            return AlphanumComparator.CompareValues(x.Name, y.Name);
+            return string.Compare(x.Name, y.Name, StringComparison.CurrentCultureIgnoreCase);
         }
 
         /// <summary>
