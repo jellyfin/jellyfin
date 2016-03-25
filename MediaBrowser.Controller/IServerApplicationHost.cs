@@ -79,5 +79,12 @@ namespace MediaBrowser.Controller
         /// <param name="host">The host.</param>
         /// <returns>System.String.</returns>
         string GetLocalApiUrl(string host);
+
+        /// <summary>
+        /// Gets the local API URL.
+        /// </summary>
+        /// <param name="ipAddress">The ip address.</param>
+        /// <returns>System.String.</returns>
+        string GetLocalApiUrl(IPAddress ipAddress);
     }
 }

@@ -36,15 +36,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public Task<IEnumerable<MediaSourceInfo>> GetMediaSources(IHasMediaSources item, CancellationToken cancellationToken)
         {
-            var channelItem = item as ILiveTvItem;
+            var baseItem = (BaseItem)item;
 
-            if (channelItem != null)
+            if (baseItem.SourceType == SourceType.LiveTV)
             {
-                var hasMetadata = (IHasMetadata)channelItem;
-
-                if (string.IsNullOrWhiteSpace(hasMetadata.Path))
+                if (string.IsNullOrWhiteSpace(baseItem.Path))
                 {
-                    return GetMediaSourcesInternal(channelItem, cancellationToken);
+                    return GetMediaSourcesInternal(item, cancellationToken);
                 }
             }
 
@@ -54,8 +52,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         // Do not use a pipe here because Roku http requests to the server will fail, without any explicit error message.
         private const char StreamIdDelimeter = '_';
         private const string StreamIdDelimeterString = "_";
-        
-        private async Task<IEnumerable<MediaSourceInfo>> GetMediaSourcesInternal(ILiveTvItem item, CancellationToken cancellationToken)
+
+        private async Task<IEnumerable<MediaSourceInfo>> GetMediaSourcesInternal(IHasMediaSources item, CancellationToken cancellationToken)
         {
             IEnumerable<MediaSourceInfo> sources;
 

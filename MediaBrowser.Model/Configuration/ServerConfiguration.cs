@@ -63,11 +63,11 @@ namespace MediaBrowser.Model.Configuration
         public bool IsPortAuthorized { get; set; }
 
         /// <summary>
-        /// Gets or sets the item by name path.
+        /// Gets or sets a value indicating whether [enable case sensitive item ids].
         /// </summary>
-        /// <value>The item by name path.</value>
-        public string ItemsByNamePath { get; set; }
-
+        /// <value><c>true</c> if [enable case sensitive item ids]; otherwise, <c>false</c>.</value>
+        public bool EnableCaseSensitiveItemIds { get; set; }
+        
         /// <summary>
         /// Gets or sets the metadata path.
         /// </summary>
@@ -207,7 +207,8 @@ namespace MediaBrowser.Model.Configuration
         public bool DownloadImagesInAdvance { get; set; }
 
         public bool EnableAnonymousUsageReporting { get; set; }
-        
+        public bool EnableStandaloneMusicKeys { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>

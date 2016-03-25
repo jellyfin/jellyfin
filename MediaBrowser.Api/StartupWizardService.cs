@@ -68,6 +68,8 @@ namespace MediaBrowser.Api
             _config.Configuration.EnableLocalizedGuids = true;
             _config.Configuration.EnableCustomPathSubFolders = true;
             _config.Configuration.EnableDateLastRefresh = true;
+            _config.Configuration.EnableStandaloneMusicKeys = true;
+            _config.Configuration.EnableCaseSensitiveItemIds = true;
             _config.SaveConfiguration();
         }
 

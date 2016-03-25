@@ -19,13 +19,9 @@ namespace MediaBrowser.Controller.Entities
     {
         public override async Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
         {
-            var user = query.User;
-            Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
-            
             if (query.Recursive)
             {
-                var items = query.User.RootFolder.GetRecursiveChildren(query.User, filter);
-                return PostFilterAndSort(items, query);
+                return QueryRecursive(query);
             }
 
             var result = await UserViewManager.GetUserViews(new UserViewQuery
@@ -35,6 +31,9 @@ namespace MediaBrowser.Controller.Entities
 
             }, CancellationToken.None).ConfigureAwait(false);
 
+            var user = query.User;
+            Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
+            
             return PostFilterAndSort(result.Where(filter), query);
         }
 

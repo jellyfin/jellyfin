@@ -50,15 +50,15 @@ namespace MediaBrowser.Controller.Entities
         {
             var user = query.User;
 
-            if (query.IncludeItemTypes != null &&
-                query.IncludeItemTypes.Length == 1 &&
-                string.Equals(query.IncludeItemTypes[0], "Playlist", StringComparison.OrdinalIgnoreCase))
-            {
-                if (!string.Equals(viewType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
-                {
-                    return await FindPlaylists(queryParent, user, query).ConfigureAwait(false);
-                }
-            }
+            //if (query.IncludeItemTypes != null &&
+            //    query.IncludeItemTypes.Length == 1 &&
+            //    string.Equals(query.IncludeItemTypes[0], "Playlist", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    if (!string.Equals(viewType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
+            //    {
+            //        return await FindPlaylists(queryParent, user, query).ConfigureAwait(false);
+            //    }
+            //}
 
             switch (viewType)
             {
@@ -766,7 +766,7 @@ namespace MediaBrowser.Controller.Entities
             return items;
         }
 
-        private static bool CollapseBoxSetItems(InternalItemsQuery query,
+        public static bool CollapseBoxSetItems(InternalItemsQuery query,
             BaseItem queryParent,
             User user)
         {
@@ -1195,6 +1195,11 @@ namespace MediaBrowser.Controller.Entities
             }
 
             if (query.ExcludeItemTypes.Length > 0 && query.ExcludeItemTypes.Contains(item.GetClientTypeName(), StringComparer.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (query.ExcludeLocationTypes.Length > 0 && query.ExcludeLocationTypes.Contains(item.LocationType))
             {
                 return false;
             }
@@ -1687,6 +1692,127 @@ namespace MediaBrowser.Controller.Entities
                 {
                     return false;
                 }
+            }
+
+            if (query.MinPremiereDate.HasValue)
+            {
+                var val = query.MinPremiereDate.Value;
+
+                if (!(item.PremiereDate.HasValue && item.PremiereDate.Value >= val))
+                {
+                    return false;
+                }
+            }
+
+            if (query.MaxPremiereDate.HasValue)
+            {
+                var val = query.MaxPremiereDate.Value;
+
+                if (!(item.PremiereDate.HasValue && item.PremiereDate.Value <= val))
+                {
+                    return false;
+                }
+            }
+
+            if (query.ParentIndexNumber.HasValue)
+            {
+                var filterValue = query.ParentIndexNumber.Value;
+
+                if (item.ParentIndexNumber.HasValue && item.ParentIndexNumber.Value != filterValue)
+                {
+                    return false;
+                }
+            }
+
+            if (query.AirDays.Length > 0)
+            {
+                var ok = new[] { item }.OfType<Series>().Any(p => p.AirDays != null && query.AirDays.Any(d => p.AirDays.Contains(d)));
+                if (!ok)
+                {
+                    return false;
+                }
+            }
+
+            if (query.SeriesStatuses.Length > 0)
+            {
+                var ok = new[] { item }.OfType<Series>().Any(p => p.Status.HasValue && query.SeriesStatuses.Contains(p.Status.Value)); 
+                if (!ok)
+                {
+                    return false;
+                }
+            }
+
+            if (query.AiredDuringSeason.HasValue)
+            {
+                var episode = item as Episode;
+
+                if (episode == null)
+                {
+                    return false;
+                }
+
+                if (!Series.FilterEpisodesBySeason(new[] { episode }, query.AiredDuringSeason.Value, true).Any())
+                {
+                    return false;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(query.AlbumArtistStartsWithOrGreater))
+            {
+                var ok = new[] { item }.OfType<IHasAlbumArtist>()
+                    .Any(p => string.Compare(query.AlbumArtistStartsWithOrGreater, p.AlbumArtists.FirstOrDefault(), StringComparison.CurrentCultureIgnoreCase) < 1);
+
+                if (!ok)
+                {
+                    return false;
+                }
+            }
+
+            // Artists
+            if (query.ArtistNames.Length > 0)
+            {
+                var audio = item as IHasArtist;
+
+                if (!(audio != null && query.ArtistNames.Any(audio.HasAnyArtist)))
+                {
+                    return false;
+                }
+            }
+
+            // Albums
+            if (query.AlbumNames.Length > 0)
+            {
+                var audio = item as Audio.Audio;
+
+                if (audio != null)
+                {
+                    if (!query.AlbumNames.Any(a => string.Equals(a, audio.Album, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return false;
+                    }
+                }
+
+                var album = item as MusicAlbum;
+
+                if (album != null)
+                {
+                    if (!query.AlbumNames.Any(a => string.Equals(a, album.Name, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return false;
+                    }
+                }
+
+                var musicVideo = item as MusicVideo;
+
+                if (musicVideo != null)
+                {
+                    if (!query.AlbumNames.Any(a => string.Equals(a, musicVideo.Album, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return false;
+                    }
+                }
+
+                return false;
             }
 
             return true;

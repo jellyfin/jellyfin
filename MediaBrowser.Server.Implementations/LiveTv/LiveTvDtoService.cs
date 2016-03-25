@@ -25,14 +25,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private readonly IUserDataManager _userDataManager;
         private readonly IDtoService _dtoService;
         private readonly IApplicationHost _appHost;
+        private readonly ILibraryManager _libraryManager;
 
-        public LiveTvDtoService(IDtoService dtoService, IUserDataManager userDataManager, IImageProcessor imageProcessor, ILogger logger, IApplicationHost appHost)
+        public LiveTvDtoService(IDtoService dtoService, IUserDataManager userDataManager, IImageProcessor imageProcessor, ILogger logger, IApplicationHost appHost, ILibraryManager libraryManager)
         {
             _dtoService = dtoService;
             _userDataManager = userDataManager;
             _imageProcessor = imageProcessor;
             _logger = logger;
             _appHost = appHost;
+            _libraryManager = libraryManager;
         }
 
         public TimerInfoDto GetTimerInfoDto(TimerInfo info, ILiveTvService service, LiveTvProgram program, LiveTvChannel channel)
@@ -152,21 +154,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return pattern;
         }
 
-        /// <summary>
-        /// Convert the provider 0-5 scale to our 0-10 scale
-        /// </summary>
-        /// <param name="val"></param>
-        /// <returns></returns>
-        private float? GetClientCommunityRating(float? val)
-        {
-            if (!val.HasValue)
-            {
-                return null;
-            }
-
-            return val.Value;
-        }
-
         public LiveTvTunerInfoDto GetTunerInfoDto(string serviceName, LiveTvTunerInfo info, string channelName)
         {
             var dto = new LiveTvTunerInfoDto
@@ -195,54 +182,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return dto;
         }
 
-        /// <summary>
-        /// Gets the channel info dto.
-        /// </summary>
-        /// <param name="info">The info.</param>
-        /// <param name="options">The options.</param>
-        /// <param name="currentProgram">The current program.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>ChannelInfoDto.</returns>
-        public ChannelInfoDto GetChannelInfoDto(LiveTvChannel info, DtoOptions options, LiveTvProgram currentProgram, User user = null)
-        {
-            var dto = new ChannelInfoDto
-            {
-                Name = info.Name,
-                ServiceName = info.ServiceName,
-                ChannelType = info.ChannelType,
-                Number = info.Number,
-                Type = info.GetClientTypeName(),
-                Id = info.Id.ToString("N"),
-                MediaType = info.MediaType,
-                ExternalId = info.ExternalId,
-                MediaSources = info.GetMediaSources(true).ToList(),
-                ServerId = _appHost.SystemId
-            };
-
-            if (user != null)
-            {
-                dto.UserData = _userDataManager.GetUserDataDto(info, user);
-
-                dto.PlayAccess = info.GetPlayAccess(user);
-            }
-
-            var imageTag = GetImageTag(info);
-
-            if (imageTag != null)
-            {
-                dto.ImageTags[ImageType.Primary] = imageTag;
-
-                _dtoService.AttachPrimaryImageAspectRatio(dto, info);
-            }
-
-            if (currentProgram != null)
-            {
-                dto.CurrentProgram = _dtoService.GetBaseItemDto(currentProgram, options, user);
-            }
-
-            return dto;
-        }
-
         internal string GetImageTag(IHasImages info)
         {
             try
@@ -263,7 +202,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var name = serviceName + externalId + InternalVersionNumber;
 
-            return name.ToLower().GetMBId(typeof(LiveTvChannel));
+            return _libraryManager.GetNewItemId(name.ToLower(), typeof(LiveTvChannel));
         }
 
         public Guid GetInternalTimerId(string serviceName, string externalId)
@@ -284,14 +223,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var name = serviceName + externalId + InternalVersionNumber;
 
-            return name.ToLower().GetMBId(typeof(LiveTvProgram));
+            return _libraryManager.GetNewItemId(name.ToLower(), typeof(LiveTvProgram));
         }
 
         public Guid GetInternalRecordingId(string serviceName, string externalId)
         {
             var name = serviceName + externalId + InternalVersionNumber + "0";
 
-            return name.ToLower().GetMBId(typeof(ILiveTvRecording));
+            return _libraryManager.GetNewItemId(name.ToLower(), typeof(ILiveTvRecording));
         }
 
         public async Task<TimerInfo> GetTimerInfo(TimerInfoDto dto, bool isNew, LiveTvManager liveTv, CancellationToken cancellationToken)
@@ -324,7 +263,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (!string.IsNullOrEmpty(dto.ChannelId) && string.IsNullOrEmpty(info.ChannelId))
             {
-                var channel = await liveTv.GetChannel(dto.ChannelId, cancellationToken).ConfigureAwait(false);
+                var channel = liveTv.GetInternalChannel(dto.ChannelId);
 
                 if (channel != null)
                 {
@@ -387,7 +326,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (!string.IsNullOrEmpty(dto.ChannelId) && string.IsNullOrEmpty(info.ChannelId))
             {
-                var channel = await liveTv.GetChannel(dto.ChannelId, cancellationToken).ConfigureAwait(false);
+                var channel = liveTv.GetInternalChannel(dto.ChannelId);
 
                 if (channel != null)
                 {

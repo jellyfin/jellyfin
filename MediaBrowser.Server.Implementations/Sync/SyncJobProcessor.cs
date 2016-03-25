@@ -641,6 +641,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                         ReadInputAtNativeFramerate = !syncOptions.EnableFullSpeedTranscoding
 
                     }, innerProgress, cancellationToken);
+
+                    _syncManager.OnConversionComplete(jobItem, job);
                 }
                 catch (OperationCanceledException)
                 {
@@ -825,6 +827,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                         CpuCoreLimit = syncOptions.TranscodingCpuCoreLimit
 
                     }, innerProgress, cancellationToken);
+
+                    _syncManager.OnConversionComplete(jobItem, job);
                 }
                 catch (OperationCanceledException)
                 {

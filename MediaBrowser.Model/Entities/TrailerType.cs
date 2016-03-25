@@ -5,6 +5,7 @@ namespace MediaBrowser.Model.Entities
         ComingSoonToTheaters = 1,
         ComingSoonToDvd = 2,
         ComingSoonToStreaming = 3,
-        Archive = 4
+        Archive = 4,
+        LocalTrailer = 5
     }
 }

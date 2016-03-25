@@ -29,8 +29,14 @@ namespace MediaBrowser.Model.LiveTv
         public string Id { get; set; }
         public string Url { get; set; }
         public string Type { get; set; }
+        public string DeviceId { get; set; }
         public bool ImportFavoritesOnly { get; set; }
         public bool IsEnabled { get; set; }
+        public string M3UUrl { get; set; }
+        public string InfoUrl { get; set; }
+        public string FriendlyName { get; set; }
+        public int Tuners { get; set; }
+        public string DiseqC { get; set; }
 
         public int DataVersion { get; set; }
 

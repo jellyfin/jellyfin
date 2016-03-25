@@ -213,8 +213,6 @@ namespace MediaBrowser.Api.Reports
                 SortBy = request.GetOrderBy(),
                 SortOrder = request.SortOrder ?? SortOrder.Ascending,
 
-                Filter = i => ApplyAdditionalFilters(request, i, user, _libraryManager),
-
                 IsFavorite = request.IsFavorite,
                 Limit = request.Limit,
                 StartIndex = request.StartIndex,
@@ -258,7 +256,10 @@ namespace MediaBrowser.Api.Reports
                 MinPlayers = request.MinPlayers,
                 MaxPlayers = request.MaxPlayers,
                 MinCommunityRating = request.MinCommunityRating,
-                MinCriticRating = request.MinCriticRating
+                MinCriticRating = request.MinCriticRating,
+                ParentIndexNumber = request.ParentIndexNumber,
+                AiredDuringSeason = request.AiredDuringSeason,
+                AlbumArtistStartsWithOrGreater = request.AlbumArtistStartsWithOrGreater
             };
 
             if (!string.IsNullOrWhiteSpace(request.Ids))
@@ -302,6 +303,72 @@ namespace MediaBrowser.Api.Reports
                 }
             }
 
+            if (!string.IsNullOrEmpty(request.MinPremiereDate))
+            {
+                query.MinPremiereDate = DateTime.Parse(request.MinPremiereDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
+            }
+
+            if (!string.IsNullOrEmpty(request.MaxPremiereDate))
+            {
+                query.MaxPremiereDate = DateTime.Parse(request.MaxPremiereDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
+            }
+
+            // Filter by Series Status
+            if (!string.IsNullOrEmpty(request.SeriesStatus))
+            {
+                query.SeriesStatuses = request.SeriesStatus.Split(',').Select(d => (SeriesStatus)Enum.Parse(typeof(SeriesStatus), d, true)).ToArray();
+            }
+
+            // Filter by Series AirDays
+            if (!string.IsNullOrEmpty(request.AirDays))
+            {
+                query.AirDays = request.AirDays.Split(',').Select(d => (DayOfWeek)Enum.Parse(typeof(DayOfWeek), d, true)).ToArray();
+            }
+
+            // ExcludeLocationTypes
+            if (!string.IsNullOrEmpty(request.ExcludeLocationTypes))
+            {
+                query.ExcludeLocationTypes = request.ExcludeLocationTypes.Split(',').Select(d => (LocationType)Enum.Parse(typeof(LocationType), d, true)).ToArray();
+            }
+
+            if (!string.IsNullOrEmpty(request.LocationTypes))
+            {
+                query.LocationTypes = request.LocationTypes.Split(',').Select(d => (LocationType)Enum.Parse(typeof(LocationType), d, true)).ToArray();
+            }
+
+            // Min official rating
+            if (!string.IsNullOrEmpty(request.MinOfficialRating))
+            {
+                query.MinParentalRating = _localization.GetRatingLevel(request.MinOfficialRating);
+            }
+
+            // Max official rating
+            if (!string.IsNullOrEmpty(request.MaxOfficialRating))
+            {
+                query.MaxParentalRating = _localization.GetRatingLevel(request.MinOfficialRating);
+            }
+
+            // Artists
+            if (!string.IsNullOrEmpty(request.ArtistIds))
+            {
+                var artistIds = request.ArtistIds.Split(new[] { '|', ',' });
+
+                var artistItems = artistIds.Select(_libraryManager.GetItemById).Where(i => i != null).ToList();
+                query.ArtistNames = artistItems.Select(i => i.Name).ToArray();
+            }
+
+            // Artists
+            if (!string.IsNullOrEmpty(request.Artists))
+            {
+                query.ArtistNames = request.Artists.Split('|');
+            }
+
+            // Albums
+            if (!string.IsNullOrEmpty(request.Albums))
+            {
+                query.AlbumNames = request.Albums.Split('|');
+            }
+
             if (request.HasQueryLimit == false)
             {
                 query.StartIndex = null;
@@ -309,278 +376,6 @@ namespace MediaBrowser.Api.Reports
             }
 
             return query;
-        }
-
-        private bool ApplyAdditionalFilters(BaseReportRequest request, BaseItem i, User user, ILibraryManager libraryManager)
-        {
-            // Artists
-            if (!string.IsNullOrEmpty(request.ArtistIds))
-            {
-                var artistIds = request.ArtistIds.Split(new[] { '|', ',' });
-
-                var audio = i as IHasArtist;
-
-                if (!(audio != null && artistIds.Any(id =>
-                {
-                    var artistItem = libraryManager.GetItemById(id);
-                    return artistItem != null && audio.HasAnyArtist(artistItem.Name);
-                })))
-                {
-                    return false;
-                }
-            }
-
-            // Artists
-            if (!string.IsNullOrEmpty(request.Artists))
-            {
-                var artists = request.Artists.Split('|');
-
-                var audio = i as IHasArtist;
-
-                if (!(audio != null && artists.Any(audio.HasAnyArtist)))
-                {
-                    return false;
-                }
-            }
-
-            // Albums
-            if (!string.IsNullOrEmpty(request.Albums))
-            {
-                var albums = request.Albums.Split('|');
-
-                var audio = i as Audio;
-
-                if (audio != null)
-                {
-                    if (!albums.Any(a => string.Equals(a, audio.Album, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        return false;
-                    }
-                }
-
-                var album = i as MusicAlbum;
-
-                if (album != null)
-                {
-                    if (!albums.Any(a => string.Equals(a, album.Name, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        return false;
-                    }
-                }
-
-                var musicVideo = i as MusicVideo;
-
-                if (musicVideo != null)
-                {
-                    if (!albums.Any(a => string.Equals(a, musicVideo.Album, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        return false;
-                    }
-                }
-
-                return false;
-            }
-
-            // Min index number
-            if (request.MinIndexNumber.HasValue)
-            {
-                if (!(i.IndexNumber.HasValue && i.IndexNumber.Value >= request.MinIndexNumber.Value))
-                {
-                    return false;
-                }
-            }
-
-            // Min official rating
-            if (!string.IsNullOrEmpty(request.MinOfficialRating))
-            {
-                var level = _localization.GetRatingLevel(request.MinOfficialRating);
-
-                if (level.HasValue)
-                {
-                    var rating = i.CustomRating;
-
-                    if (string.IsNullOrEmpty(rating))
-                    {
-                        rating = i.OfficialRating;
-                    }
-
-                    if (!string.IsNullOrEmpty(rating))
-                    {
-                        var itemLevel = _localization.GetRatingLevel(rating);
-
-                        if (!(!itemLevel.HasValue || itemLevel.Value >= level.Value))
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            // Max official rating
-            if (!string.IsNullOrEmpty(request.MaxOfficialRating))
-            {
-                var level = _localization.GetRatingLevel(request.MaxOfficialRating);
-
-                if (level.HasValue)
-                {
-                    var rating = i.CustomRating;
-
-                    if (string.IsNullOrEmpty(rating))
-                    {
-                        rating = i.OfficialRating;
-                    }
-
-                    if (!string.IsNullOrEmpty(rating))
-                    {
-                        var itemLevel = _localization.GetRatingLevel(rating);
-
-                        if (!(!itemLevel.HasValue || itemLevel.Value <= level.Value))
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            // LocationTypes
-            if (!string.IsNullOrEmpty(request.LocationTypes))
-            {
-                var vals = request.LocationTypes.Split(',');
-                if (!vals.Contains(i.LocationType.ToString(), StringComparer.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-            }
-
-            // ExcludeLocationTypes
-            if (!string.IsNullOrEmpty(request.ExcludeLocationTypes))
-            {
-                var vals = request.ExcludeLocationTypes.Split(',');
-                if (vals.Contains(i.LocationType.ToString(), StringComparer.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(request.AlbumArtistStartsWithOrGreater))
-            {
-                var ok = new[] { i }.OfType<IHasAlbumArtist>()
-                    .Any(p => string.Compare(request.AlbumArtistStartsWithOrGreater, p.AlbumArtists.FirstOrDefault(), StringComparison.CurrentCultureIgnoreCase) < 1);
-
-                if (!ok)
-                {
-                    return false;
-                }
-            }
-
-            // Filter by Series Status
-            if (!string.IsNullOrEmpty(request.SeriesStatus))
-            {
-                var vals = request.SeriesStatus.Split(',');
-
-                var ok = new[] { i }.OfType<Series>().Any(p => p.Status.HasValue && vals.Contains(p.Status.Value.ToString(), StringComparer.OrdinalIgnoreCase));
-
-                if (!ok)
-                {
-                    return false;
-                }
-            }
-
-            // Filter by Series AirDays
-            if (!string.IsNullOrEmpty(request.AirDays))
-            {
-                var days = request.AirDays.Split(',').Select(d => (DayOfWeek)Enum.Parse(typeof(DayOfWeek), d, true));
-
-                var ok = new[] { i }.OfType<Series>().Any(p => p.AirDays != null && days.Any(d => p.AirDays.Contains(d)));
-
-                if (!ok)
-                {
-                    return false;
-                }
-            }
-
-            if (request.ParentIndexNumber.HasValue)
-            {
-                var filterValue = request.ParentIndexNumber.Value;
-
-                var episode = i as Episode;
-
-                if (episode != null)
-                {
-                    if (episode.ParentIndexNumber.HasValue && episode.ParentIndexNumber.Value != filterValue)
-                    {
-                        return false;
-                    }
-                }
-
-                var song = i as Audio;
-
-                if (song != null)
-                {
-                    if (song.ParentIndexNumber.HasValue && song.ParentIndexNumber.Value != filterValue)
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            if (request.AiredDuringSeason.HasValue)
-            {
-                var episode = i as Episode;
-
-                if (episode == null)
-                {
-                    return false;
-                }
-
-                if (!Series.FilterEpisodesBySeason(new[] { episode }, request.AiredDuringSeason.Value, true).Any())
-                {
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(request.MinPremiereDate))
-            {
-                var date = DateTime.Parse(request.MinPremiereDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
-
-                if (!(i.PremiereDate.HasValue && i.PremiereDate.Value >= date))
-                {
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(request.MaxPremiereDate))
-            {
-                var date = DateTime.Parse(request.MaxPremiereDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
-
-                if (!(i.PremiereDate.HasValue && i.PremiereDate.Value <= date))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        /// <summary> Applies the paging. </summary>
-        /// <param name="request"> The request. </param>
-        /// <param name="items"> The items. </param>
-        /// <returns> IEnumerable{BaseItem}. </returns>
-        private IEnumerable<BaseItem> ApplyPaging(BaseReportRequest request, IEnumerable<BaseItem> items)
-        {
-            // Start at
-            if (request.StartIndex.HasValue)
-            {
-                items = items.Skip(request.StartIndex.Value);
-            }
-
-            // Return limit
-            if (request.Limit.HasValue)
-            {
-                items = items.Take(request.Limit.Value);
-            }
-
-            return items;
         }
 
         /// <summary> Gets query result. </summary>

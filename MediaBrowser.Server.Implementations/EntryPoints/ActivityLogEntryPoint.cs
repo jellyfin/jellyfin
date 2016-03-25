@@ -342,7 +342,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         void _libraryManager_ItemRemoved(object sender, ItemChangeEventArgs e)
         {
-            if (e.Item is LiveTvProgram || e.Item is IChannelItem)
+            if (e.Item.SourceType != SourceType.Library)
             {
                 return;
             }
@@ -356,7 +356,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         void _libraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
         {
-            if (e.Item is LiveTvProgram || e.Item is IChannelItem)
+            if (e.Item.SourceType != SourceType.Library)
             {
                 return;
             }

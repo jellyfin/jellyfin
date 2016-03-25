@@ -141,8 +141,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var connectionstr = new SQLiteConnectionStringBuilder
             {
                 PageSize = 4096,
-                CacheSize = 4096,
-                SyncMode = SynchronizationModes.Normal,
+                CacheSize = 2000,
+                SyncMode = SynchronizationModes.Full,
                 DataSource = dbPath,
                 JournalMode = SQLiteJournalModeEnum.Wal
             };

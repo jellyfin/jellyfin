@@ -536,7 +536,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                     }
                 }
 
-                if (item is LiveTvChannel || item is IChannelItem)
+                if (item.SourceType != SourceType.Library)
                 {
                     return false;
                 }
@@ -1324,6 +1324,17 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
 
             return list;
+        }
+
+        protected internal void OnConversionComplete(SyncJobItem item, SyncJob job)
+        {
+            var syncProvider = GetSyncProvider(item, job);
+            if (syncProvider is AppSyncProvider)
+            {
+                return;
+            }
+
+            _taskManager.QueueIfNotRunning<ServerSyncScheduledTask>();
         }
     }
 }

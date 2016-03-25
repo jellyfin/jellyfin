@@ -97,6 +97,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -322,7 +323,7 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 TaskManager.SuspendTriggers = true;
             }
-            
+
             await base.RunStartupTasks().ConfigureAwait(false);
 
             Logger.Info("ServerId: {0}", SystemId);
@@ -374,6 +375,7 @@ namespace MediaBrowser.Server.Startup.Common
             var migrations = new List<IVersionMigration>
             {
                 new OmdbEpisodeProviderMigration(ServerConfigurationManager),
+                new MovieDbEpisodeProviderMigration(ServerConfigurationManager),
                 new DbMigration(ServerConfigurationManager, TaskManager)
             };
 
@@ -1133,7 +1135,7 @@ namespace MediaBrowser.Server.Startup.Common
 
                     if (address != null)
                     {
-                        return GetLocalApiUrl(address.ToString());
+                        return GetLocalApiUrl(address);
                     }
 
                     return null;
@@ -1145,6 +1147,16 @@ namespace MediaBrowser.Server.Startup.Common
 
                 return null;
             }
+        }
+
+        public string GetLocalApiUrl(IPAddress ipAddress)
+        {
+            if (ipAddress.AddressFamily == AddressFamily.InterNetworkV6)
+            {
+                return GetLocalApiUrl("[" + ipAddress + "]");
+            }
+
+            return GetLocalApiUrl(ipAddress.ToString());
         }
 
         public string GetLocalApiUrl(string host)
@@ -1179,7 +1191,7 @@ namespace MediaBrowser.Server.Startup.Common
                 return true;
             }
 
-            var apiUrl = GetLocalApiUrl(address.ToString());
+            var apiUrl = GetLocalApiUrl(address);
             apiUrl += "/system/ping";
 
             if ((DateTime.UtcNow - _lastAddressCacheClear).TotalMinutes >= 5)

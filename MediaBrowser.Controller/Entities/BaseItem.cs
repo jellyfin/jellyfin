@@ -20,9 +20,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Controller.Entities
@@ -57,7 +59,9 @@ namespace MediaBrowser.Controller.Entities
         public static string ThemeSongFilename = "theme";
         public static string ThemeVideosFolderName = "backdrops";
 
+        [IgnoreDataMember]
         public string PreferredMetadataCountryCode { get; set; }
+        [IgnoreDataMember]
         public string PreferredMetadataLanguage { get; set; }
 
         public List<ItemImageInfo> ImageInfos { get; set; }
@@ -88,6 +92,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets a value indicating whether this instance is in mixed folder.
         /// </summary>
         /// <value><c>true</c> if this instance is in mixed folder; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
         public bool IsInMixedFolder { get; set; }
 
         [IgnoreDataMember]
@@ -166,6 +171,9 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public bool IsOffline { get; set; }
 
+        [IgnoreDataMember]
+        public virtual SourceType SourceType { get; set; }
+
         /// <summary>
         /// Returns the folder containing the item.
         /// If the item is a folder, it returns the folder itself
@@ -183,6 +191,13 @@ namespace MediaBrowser.Controller.Entities
                 return System.IO.Path.GetDirectoryName(Path);
             }
         }
+
+        /// <summary>
+        /// Gets or sets the name of the service.
+        /// </summary>
+        /// <value>The name of the service.</value>
+        [IgnoreDataMember]
+        public string ServiceName { get; set; }
 
         /// <summary>
         /// If this content came from an external service, the id of the content on that service
@@ -252,6 +267,11 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
+                if (SourceType == SourceType.Channel)
+                {
+                    return false;
+                }
+
                 var locationType = LocationType;
 
                 return locationType != LocationType.Remote && locationType != LocationType.Virtual;
@@ -281,6 +301,40 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        private List<Tuple<StringBuilder,bool>> GetSortChunks(string s1)
+        {
+            var list = new List<Tuple<StringBuilder, bool>>();
+
+            int thisMarker = 0, thisNumericChunk = 0;
+
+            while ((thisMarker < s1.Length))
+            {
+                if (thisMarker >= s1.Length)
+                {
+                    break;
+                }
+                char thisCh = s1[thisMarker];
+
+                StringBuilder thisChunk = new StringBuilder();
+
+                while ((thisMarker < s1.Length) && (thisChunk.Length == 0 || SortHelper.InChunk(thisCh, thisChunk[0])))
+                {
+                    thisChunk.Append(thisCh);
+                    thisMarker++;
+
+                    if (thisMarker < s1.Length)
+                    {
+                        thisCh = s1[thisMarker];
+                    }
+                }
+
+                var isNumeric = thisChunk.Length > 0 && char.IsDigit(thisChunk[0]);
+                list.Add(new Tuple<StringBuilder, bool>(thisChunk, isNumeric));
+            }
+
+            return list;
+        }
+
         /// <summary>
         /// This is just a helper for convenience
         /// </summary>
@@ -298,6 +352,11 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool CanDelete()
         {
+            if (SourceType == SourceType.Channel)
+            {
+                return false;
+            }
+
             var locationType = LocationType;
             return locationType != LocationType.Remote &&
                    locationType != LocationType.Virtual;
@@ -342,6 +401,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public DateTime DateModified { get; set; }
 
+        [IgnoreDataMember]
         public DateTime DateLastSaved { get; set; }
 
         [IgnoreDataMember]
@@ -380,6 +440,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the locked fields.
         /// </summary>
         /// <value>The locked fields.</value>
+        [IgnoreDataMember]
         public List<MetadataFields> LockedFields { get; set; }
 
         /// <summary>
@@ -433,11 +494,6 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (!string.IsNullOrWhiteSpace(ForcedSortName))
-                {
-                    return ForcedSortName;
-                }
-
                 return _sortName ?? (_sortName = CreateSortName());
             }
             set
@@ -455,6 +511,11 @@ namespace MediaBrowser.Controller.Entities
 
         protected virtual string GetInternalMetadataPath(string basePath)
         {
+            if (SourceType == SourceType.Channel)
+            {
+                return System.IO.Path.Combine(basePath, "channels", ChannelId, Id.ToString("N"));
+            }
+
             var idString = Id.ToString("N");
 
             basePath = System.IO.Path.Combine(basePath, "library");
@@ -468,6 +529,11 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>System.String.</returns>
         protected virtual string CreateSortName()
         {
+            if (!string.IsNullOrWhiteSpace(ForcedSortName))
+            {
+                return ModifySortChunks(ForcedSortName).ToLower();
+            }
+
             if (Name == null) return null; //some items may not have name filled in properly
 
             if (!EnableAlphaNumericSorting)
@@ -497,7 +563,32 @@ namespace MediaBrowser.Controller.Entities
                     sortable = sortable.Remove(sortable.Length - (searchLower.Length + 1));
                 }
             }
-            return sortable;
+            return ModifySortChunks(sortable);
+        }
+
+        private string ModifySortChunks(string name)
+        {
+            var chunks = GetSortChunks(name);
+
+            var builder = new StringBuilder();
+
+            foreach (var chunk in chunks)
+            {
+                var chunkBuilder = chunk.Item1;
+
+                // This chunk is numeric
+                if (chunk.Item2)
+                {
+                    while (chunkBuilder.Length < 10)
+                    {
+                        chunkBuilder.Insert(0, '0');
+                    }
+                }
+
+                builder.Append(chunkBuilder);
+            }
+            //Logger.Debug("ModifySortChunks Start: {0} End: {1}", name, builder.ToString());
+            return builder.ToString();
         }
 
         [IgnoreDataMember]
@@ -596,6 +687,18 @@ namespace MediaBrowser.Controller.Entities
         public string OfficialRating { get; set; }
 
         /// <summary>
+        /// Gets or sets the critic rating.
+        /// </summary>
+        /// <value>The critic rating.</value>
+        public float? CriticRating { get; set; }
+
+        /// <summary>
+        /// Gets or sets the critic rating summary.
+        /// </summary>
+        /// <value>The critic rating summary.</value>
+        public string CriticRatingSummary { get; set; }
+
+        /// <summary>
         /// Gets or sets the official rating description.
         /// </summary>
         /// <value>The official rating description.</value>
@@ -620,6 +723,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the studios.
         /// </summary>
         /// <value>The studios.</value>
+        [IgnoreDataMember]
         public List<string> Studios { get; set; }
 
         /// <summary>
@@ -633,6 +737,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the tags.
         /// </summary>
         /// <value>The tags.</value>
+        [IgnoreDataMember]
         public List<string> Tags { get; set; }
 
         /// <summary>
@@ -1025,6 +1130,13 @@ namespace MediaBrowser.Controller.Entities
 
         protected virtual string CreateUserDataKey()
         {
+            if (SourceType == SourceType.Channel)
+            {
+                if (!string.IsNullOrWhiteSpace(ExternalId))
+                {
+                    return ExternalId;
+                }
+            }
             return Id.ToString();
         }
 
@@ -1103,6 +1215,11 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool IsSaveLocalMetadataEnabled()
         {
+            if (SourceType == SourceType.Channel)
+            {
+                return false;
+            }
+
             return ConfigurationManager.Configuration.SaveLocalMeta;
         }
 
@@ -1218,6 +1335,11 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual UnratedItem GetBlockUnratedType()
         {
+            if (SourceType == SourceType.Channel)
+            {
+                return UnratedItem.ChannelContent;
+            }
+
             return UnratedItem.Other;
         }
 
@@ -1261,6 +1383,11 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool IsVisibleStandalone(User user)
         {
+            if (SourceType == SourceType.Channel)
+            {
+                return IsVisibleStandaloneInternal(user, false) && Channel.IsChannelVisible(this, user);
+            }
+
             return IsVisibleStandaloneInternal(user, true);
         }
 
@@ -1312,6 +1439,11 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual string GetClientTypeName()
         {
+            if (IsFolder && SourceType == SourceType.Channel)
+            {
+                return "ChannelFolderItem";
+            }
+
             return GetType().Name;
         }
 
@@ -1835,8 +1967,8 @@ namespace MediaBrowser.Controller.Entities
                 ProviderIds = ProviderIds,
                 IndexNumber = IndexNumber,
                 ParentIndexNumber = ParentIndexNumber,
-				Year = ProductionYear,
-				PremiereDate = PremiereDate
+                Year = ProductionYear,
+                PremiereDate = PremiereDate
             };
         }
 
@@ -1984,6 +2116,15 @@ namespace MediaBrowser.Controller.Entities
         public virtual Task Delete(DeleteOptions options)
         {
             return LibraryManager.DeleteItem(this, options);
+        }
+
+        public virtual Task OnFileDeleted()
+        {
+            // Remove from database
+            return Delete(new DeleteOptions
+            {
+                DeleteFileLocation = false
+            });
         }
     }
 }
