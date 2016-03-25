@@ -116,12 +116,32 @@
         }
     }
 
+    function parentWithTag(elem, tagName) {
+
+        while (elem.tagName != tagName) {
+            elem = elem.parentNode;
+
+            if (!elem) {
+                return null;
+            }
+        }
+
+        return elem;
+    }
+
     function closeOnBackdropClick(dlg) {
 
         dlg.addEventListener('click', function (event) {
             var rect = dlg.getBoundingClientRect();
             var isInDialog = (rect.top <= event.clientY && event.clientY <= rect.top + rect.height
               && rect.left <= event.clientX && event.clientX <= rect.left + rect.width);
+
+            if (!isInDialog) {
+                if (parentWithTag(event.target, 'SELECT')) {
+                    isInDialog = true;
+                }
+            }
+
             if (!isInDialog) {
                 close(dlg);
             }
