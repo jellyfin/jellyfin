@@ -272,6 +272,11 @@ namespace MediaBrowser.Server.Implementations.Library
                     .ToArray();
             }
 
+            if (parentIds.Length == 0)
+            {
+                return new List<BaseItem>();
+            }
+
             var excludeItemTypes = includeItemTypes.Length == 0 ? new[]
             {
                 typeof(Person).Name, typeof(Studio).Name, typeof(Year).Name, typeof(GameGenre).Name, typeof(MusicGenre).Name, typeof(Genre).Name
