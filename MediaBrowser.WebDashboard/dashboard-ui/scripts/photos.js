@@ -155,7 +155,7 @@
         var info = LibraryBrowser.getListItemInfo(this);
 
         if (info.mediaType == 'Photo') {
-            var query = getQuery(LibraryBrowser.selectedTabIndex(page.querySelector('.pageTabsContainer')));
+            var query = getQuery(LibraryBrowser.selectedTab(page.querySelector('.pageTabsContainer')));
 
             Photos.startSlideshow(page, query, info.id);
             return false;
