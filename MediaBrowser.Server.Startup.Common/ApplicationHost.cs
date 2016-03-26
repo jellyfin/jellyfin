@@ -1299,6 +1299,7 @@ namespace MediaBrowser.Server.Startup.Common
                     UdpServerEntryPoint.PortNumber,
                     ServerConfigurationManager.Configuration.HttpServerPortNumber,
                     ServerConfigurationManager.Configuration.HttpsPortNumber,
+                    ConfigurationManager.CommonApplicationPaths.ApplicationPath,
                     ConfigurationManager.CommonApplicationPaths.TempDirectory);
             }
             catch (Exception ex)

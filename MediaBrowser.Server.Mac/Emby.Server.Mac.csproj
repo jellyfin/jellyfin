@@ -78,11 +78,11 @@
       <HintPath>..\ThirdParty\Mono.Security\Mono.Security.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="CommonIO">
-      <HintPath>..\packages\CommonIO.1.0.0.8\lib\net45\CommonIO.dll</HintPath>
-    </Reference>
     <Reference Include="Patterns.Logging">
       <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="CommonIO">
+      <HintPath>..\packages\CommonIO.1.0.0.9\lib\net45\CommonIO.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -1364,6 +1364,21 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\confirm\nativeconfirm.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\confirm\nativeconfirm.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\dialoghelper\dialoghelper.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\dialoghelper\dialoghelper.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\dialoghelper\dialoghelper.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\dialoghelper\dialoghelper.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\fonts\material-icons\2fcrYFNaTjcS6g4U3t-Y5ZjZjT5FdEJ140U2DJYC3mY.woff2">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\fonts\material-icons\2fcrYFNaTjcS6g4U3t-Y5ZjZjT5FdEJ140U2DJYC3mY.woff2</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\fonts\material-icons\2fcrYFNaTjcS6g4U3t-Y5ewrjPiaoEww8AihgqWRJAo.woff">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\fonts\material-icons\2fcrYFNaTjcS6g4U3t-Y5ewrjPiaoEww8AihgqWRJAo.woff</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\fonts\material-icons\style.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\fonts\material-icons\style.css</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\fonts\montserrat\IQHow_FEYlDC4Gzy_m8fcgFhaRv2pGgT5Kf0An0s4MM.woff">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\fonts\montserrat\IQHow_FEYlDC4Gzy_m8fcgFhaRv2pGgT5Kf0An0s4MM.woff</Link>
     </BundleResource>
@@ -1567,12 +1582,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\page.js\page.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\page.js\page.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\paperdialoghelper\paperdialoghelper.css">
-      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\paperdialoghelper\paperdialoghelper.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\paperdialoghelper\paperdialoghelper.js">
-      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\paperdialoghelper\paperdialoghelper.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\prompt\icons.html">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\prompt\icons.html</Link>
@@ -1778,6 +1787,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hls.js\src\controller\buffer-controller.js">
       <Link>Resources\dashboard-ui\bower_components\hls.js\src\controller\buffer-controller.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hls.js\src\controller\cap-level-controller.js">
+      <Link>Resources\dashboard-ui\bower_components\hls.js\src\controller\cap-level-controller.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hls.js\src\controller\fps-controller.js">
       <Link>Resources\dashboard-ui\bower_components\hls.js\src\controller\fps-controller.js</Link>
     </BundleResource>
@@ -1822,6 +1834,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hls.js\src\demux\tsdemuxer.js">
       <Link>Resources\dashboard-ui\bower_components\hls.js\src\demux\tsdemuxer.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hls.js\src\helper\buffer-helper.js">
+      <Link>Resources\dashboard-ui\bower_components\hls.js\src\helper\buffer-helper.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hls.js\src\helper\level-helper.js">
       <Link>Resources\dashboard-ui\bower_components\hls.js\src\helper\level-helper.js</Link>
@@ -2498,6 +2513,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-input\demo\index.html">
       <Link>Resources\dashboard-ui\bower_components\iron-input\demo\index.html</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-input\test\disabled-input.html">
+      <Link>Resources\dashboard-ui\bower_components\iron-input\test\disabled-input.html</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-input\test\index.html">
       <Link>Resources\dashboard-ui\bower_components\iron-input\test\index.html</Link>
     </BundleResource>
@@ -2569,6 +2587,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-menu-behavior\iron-menubar-behavior.html">
       <Link>Resources\dashboard-ui\bower_components\iron-menu-behavior\iron-menubar-behavior.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-menu-behavior\.github\ISSUE_TEMPLATE.md">
+      <Link>Resources\dashboard-ui\bower_components\iron-menu-behavior\.github\ISSUE_TEMPLATE.md</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-menu-behavior\demo\index.html">
       <Link>Resources\dashboard-ui\bower_components\iron-menu-behavior\demo\index.html</Link>
@@ -2662,6 +2683,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-overlay-behavior\iron-overlay-manager.html">
       <Link>Resources\dashboard-ui\bower_components\iron-overlay-behavior\iron-overlay-manager.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-overlay-behavior\.github\ISSUE_TEMPLATE.md">
+      <Link>Resources\dashboard-ui\bower_components\iron-overlay-behavior\.github\ISSUE_TEMPLATE.md</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-overlay-behavior\demo\index.html">
       <Link>Resources\dashboard-ui\bower_components\iron-overlay-behavior\demo\index.html</Link>
@@ -4486,6 +4510,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-dialog-behavior\paper-dialog-shared-styles.html">
       <Link>Resources\dashboard-ui\bower_components\paper-dialog-behavior\paper-dialog-shared-styles.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-dialog-behavior\.github\ISSUE_TEMPLATE.md">
+      <Link>Resources\dashboard-ui\bower_components\paper-dialog-behavior\.github\ISSUE_TEMPLATE.md</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-dialog-behavior\demo\index.html">
       <Link>Resources\dashboard-ui\bower_components\paper-dialog-behavior\demo\index.html</Link>
@@ -9197,38 +9224,38 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\enjoy.jpg">
       <Link>Resources\dashboard-ui\css\images\tour\enjoy.jpg</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\dashboard\chapters.png">
-      <Link>Resources\dashboard-ui\css\images\tour\dashboard\chapters.png</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\admin\chapters.png">
+      <Link>Resources\dashboard-ui\css\images\tour\admin\chapters.png</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\dashboard\cinemamode.png">
-      <Link>Resources\dashboard-ui\css\images\tour\dashboard\cinemamode.png</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\admin\cinemamode.png">
+      <Link>Resources\dashboard-ui\css\images\tour\admin\cinemamode.png</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\dashboard\dashboard.png">
-      <Link>Resources\dashboard-ui\css\images\tour\dashboard\dashboard.png</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\admin\dashboard.png">
+      <Link>Resources\dashboard-ui\css\images\tour\admin\dashboard.png</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\dashboard\help.png">
-      <Link>Resources\dashboard-ui\css\images\tour\dashboard\help.png</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\admin\help.png">
+      <Link>Resources\dashboard-ui\css\images\tour\admin\help.png</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\dashboard\mobile.png">
-      <Link>Resources\dashboard-ui\css\images\tour\dashboard\mobile.png</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\admin\mobile.png">
+      <Link>Resources\dashboard-ui\css\images\tour\admin\mobile.png</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\dashboard\notifications.png">
-      <Link>Resources\dashboard-ui\css\images\tour\dashboard\notifications.png</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\admin\notifications.png">
+      <Link>Resources\dashboard-ui\css\images\tour\admin\notifications.png</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\dashboard\plugins.png">
-      <Link>Resources\dashboard-ui\css\images\tour\dashboard\plugins.png</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\admin\plugins.png">
+      <Link>Resources\dashboard-ui\css\images\tour\admin\plugins.png</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\dashboard\scheduledtasks.png">
-      <Link>Resources\dashboard-ui\css\images\tour\dashboard\scheduledtasks.png</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\admin\scheduledtasks.png">
+      <Link>Resources\dashboard-ui\css\images\tour\admin\scheduledtasks.png</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\dashboard\subtitles.png">
-      <Link>Resources\dashboard-ui\css\images\tour\dashboard\subtitles.png</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\admin\subtitles.png">
+      <Link>Resources\dashboard-ui\css\images\tour\admin\subtitles.png</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\dashboard\sync.png">
-      <Link>Resources\dashboard-ui\css\images\tour\dashboard\sync.png</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\admin\sync.png">
+      <Link>Resources\dashboard-ui\css\images\tour\admin\sync.png</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\dashboard\users.png">
-      <Link>Resources\dashboard-ui\css\images\tour\dashboard\users.png</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\admin\users.png">
+      <Link>Resources\dashboard-ui\css\images\tour\admin\users.png</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\tour\web\tourcollections.jpg">
       <Link>Resources\dashboard-ui\css\images\tour\web\tourcollections.jpg</Link>
@@ -9307,6 +9334,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\legacy\objectassign.js">
       <Link>Resources\dashboard-ui\legacy\objectassign.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\legacy\selectmenu.js">
+      <Link>Resources\dashboard-ui\legacy\selectmenu.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\aboutpage.js">
       <Link>Resources\dashboard-ui\scripts\aboutpage.js</Link>
