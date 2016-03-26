@@ -88,19 +88,22 @@ namespace MediaBrowser.Providers.TV
 
                 var seriesDataPath = await TvdbSeriesProvider.Current.EnsureSeriesInfo(seriesProviderIds, series.GetPreferredMetadataLanguage(), cancellationToken).ConfigureAwait(false);
 
-                var path = Path.Combine(seriesDataPath, "banners.xml");
+                if (!string.IsNullOrWhiteSpace(seriesDataPath))
+                {
+                    var path = Path.Combine(seriesDataPath, "banners.xml");
 
-                try
-                {
-                    return GetImages(path, item.GetPreferredMetadataLanguage(), seasonNumber, cancellationToken);
-                }
-                catch (FileNotFoundException)
-                {
-                    // No tvdb data yet. Don't blow up
-                }
-                catch (DirectoryNotFoundException)
-                {
-                    // No tvdb data yet. Don't blow up
+                    try
+                    {
+                        return GetImages(path, item.GetPreferredMetadataLanguage(), seasonNumber, cancellationToken);
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        // No tvdb data yet. Don't blow up
+                    }
+                    catch (DirectoryNotFoundException)
+                    {
+                        // No tvdb data yet. Don't blow up
+                    }
                 }
             }
 

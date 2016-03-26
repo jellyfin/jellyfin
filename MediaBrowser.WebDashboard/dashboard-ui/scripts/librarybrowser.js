@@ -403,7 +403,7 @@
                     }
                     pageTabsContainer.dispatchEvent(new CustomEvent("tabchange", {
                         detail: {
-                            selectedTabIndex: LibraryBrowser.selectedTabIndex(pageTabsContainer)
+                            selectedTabIndex: LibraryBrowser.selectedTab(pageTabsContainer)
                         }
                     }));
                 }
