@@ -280,7 +280,7 @@
 
             pageTabsContainer.dispatchEvent(new CustomEvent("tabchange", {
                 detail: {
-                    selectedTabIndex: libraryBrowser.selectedTabIndex(pageTabsContainer)
+                    selectedTabIndex: libraryBrowser.selectedTab(pageTabsContainer)
                 }
             }));
         }
