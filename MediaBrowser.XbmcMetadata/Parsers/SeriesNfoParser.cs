@@ -46,7 +46,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         }
                         if (!string.IsNullOrWhiteSpace(tvdbId))
                         {
-                            item.SetProviderId(MetadataProviders.Tvcom, tvdbId);
+                            item.SetProviderId(MetadataProviders.Tvdb, tvdbId);
                         }
                         break;
                     }
