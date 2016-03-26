@@ -17,7 +17,7 @@ namespace MediaBrowser.ServerApplication.Native
         /// <param name="httpServerPort">The HTTP server port.</param>
         /// <param name="httpsServerPort">The HTTPS server port.</param>
         /// <param name="tempDirectory">The temp directory.</param>
-        public static void AuthorizeServer(int udpPort, int httpServerPort, int httpsServerPort, string tempDirectory)
+        public static void AuthorizeServer(int udpPort, int httpServerPort, int httpsServerPort, string applicationPath, string tempDirectory)
         {
             Directory.CreateDirectory(tempDirectory);
 
@@ -37,7 +37,7 @@ namespace MediaBrowser.ServerApplication.Native
             {
                 FileName = tmpFile,
 
-                Arguments = string.Format("{0} {1} {2}", udpPort, httpServerPort, httpsServerPort),
+                Arguments = string.Format("{0} {1} {2} \"{3}\"", udpPort, httpServerPort, httpsServerPort, applicationPath),
 
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden,
