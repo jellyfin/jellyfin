@@ -19,13 +19,18 @@ namespace MediaBrowser.Dlna.Server
 
             Address = address;
 
-            if (Type.StartsWith("uuid:", StringComparison.OrdinalIgnoreCase))
+            USN = CreateUSN(aUuid, aType);
+        }
+
+        private static string CreateUSN(string aUuid, string aType)
+        {
+            if (aType.StartsWith("uuid:", StringComparison.OrdinalIgnoreCase))
             {
-                USN = Type;
+                return aType;
             }
             else
             {
-                USN = String.Format("uuid:{0}::{1}", Uuid, Type);
+                return String.Format("uuid:{0}::{1}", aUuid, aType);
             }
         }
     }
