@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace MediaBrowser.Model.Dto
+﻿namespace MediaBrowser.Model.Dto
 {
     /// <summary>
     /// Class LibrarySummary

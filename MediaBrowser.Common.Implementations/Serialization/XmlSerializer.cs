@@ -4,7 +4,6 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Xml;
 using CommonIO;
-using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Common.Implementations.Serialization
 {

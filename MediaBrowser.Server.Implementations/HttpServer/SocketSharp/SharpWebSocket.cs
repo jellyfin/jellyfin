@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using WebSocketState = MediaBrowser.Model.Net.WebSocketState;

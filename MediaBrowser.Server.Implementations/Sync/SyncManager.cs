@@ -1,17 +1,14 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Sync;
@@ -486,7 +483,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private string GetSyncProviderId(ISyncProvider provider)
         {
-            return (provider.GetType().Name).GetMD5().ToString("N");
+            return provider.GetType().Name.GetMD5().ToString("N");
         }
 
         public bool SupportsSync(BaseItem item)

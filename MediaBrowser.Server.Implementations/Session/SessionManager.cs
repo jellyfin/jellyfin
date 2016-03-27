@@ -547,9 +547,9 @@ namespace MediaBrowser.Server.Implementations.Session
                         await OnPlaybackStopped(new PlaybackStopInfo
                         {
                             Item = session.NowPlayingItem,
-                            ItemId = (session.NowPlayingItem == null ? null : session.NowPlayingItem.Id),
+                            ItemId = session.NowPlayingItem == null ? null : session.NowPlayingItem.Id,
                             SessionId = session.Id,
-                            MediaSourceId = (session.PlayState == null ? null : session.PlayState.MediaSourceId),
+                            MediaSourceId = session.PlayState == null ? null : session.PlayState.MediaSourceId,
                             PositionTicks = session.PlayState == null ? null : session.PlayState.PositionTicks
                         });
                     }

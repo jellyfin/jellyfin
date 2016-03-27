@@ -43,7 +43,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
             if (enableCache && !string.IsNullOrWhiteSpace(key) && _channelCache.TryGetValue(key, out cache))
             {
-                if ((DateTime.UtcNow - cache.Date) < TimeSpan.FromMinutes(60))
+                if (DateTime.UtcNow - cache.Date < TimeSpan.FromMinutes(60))
                 {
                     return cache.Channels.ToList();
                 }

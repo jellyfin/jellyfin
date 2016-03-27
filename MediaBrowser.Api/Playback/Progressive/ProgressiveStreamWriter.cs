@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.Model.Logging;
 using ServiceStack.Web;
 using System;
 using System.Collections.Generic;

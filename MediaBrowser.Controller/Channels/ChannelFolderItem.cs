@@ -7,7 +7,6 @@ using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Channels
 {

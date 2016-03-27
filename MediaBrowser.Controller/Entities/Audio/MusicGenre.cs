@@ -69,7 +69,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public Func<BaseItem, bool> GetItemFilter()
         {
-            return i => (i is IHasMusicGenres) && i.Genres.Contains(Name, StringComparer.OrdinalIgnoreCase);
+            return i => i is IHasMusicGenres && i.Genres.Contains(Name, StringComparer.OrdinalIgnoreCase);
         }
 
         [IgnoreDataMember]

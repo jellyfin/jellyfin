@@ -103,11 +103,11 @@ namespace MediaBrowser.Common.Implementations.Security
                 }
                 catch (DirectoryNotFoundException)
                 {
-                    (File.Create(licenseFile)).Close();
+                    File.Create(licenseFile).Close();
                 }
                 catch (FileNotFoundException)
                 {
-					(File.Create(licenseFile)).Close();
+					File.Create(licenseFile).Close();
                 }
             }
             if (contents != null && contents.Length > 0)
