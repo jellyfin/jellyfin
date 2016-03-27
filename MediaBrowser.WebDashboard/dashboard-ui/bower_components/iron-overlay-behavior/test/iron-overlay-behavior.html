@@ -25,6 +25,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <link rel="import" href="test-overlay.html">
     <link rel="import" href="test-overlay2.html">
     <link rel="import" href="test-buttons.html">
+    <link rel="import" href="test-menu-button.html">
 
     <style is="custom-style">
       iron-overlay-backdrop {
@@ -110,6 +111,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <test-overlay2 class="overlay-3">
           Other overlay 3
         </test-overlay2>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="composed">
+      <template>
+        <test-menu-button>
+          Composed overlay
+          <button>Button</button>
+        </test-menu-button>
       </template>
     </test-fixture>
 
@@ -923,6 +933,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           });
         });
 
+      });
+
+      suite('overlay in composed tree', function() {
+        test('click on overlay content does not close it', function(done) {
+          var composed = fixture('composed');
+          // Opens overlay.
+          MockInteractions.tap(composed.$.trigger);
+          composed.$.dropdown.addEventListener('iron-overlay-opened', function() {
+            // Tap on button inside overlay.
+            MockInteractions.tap(Polymer.dom(composed).querySelector('button'));
+            Polymer.Base.async(function(){
+              assert.isTrue(composed.$.dropdown.opened, 'overlay still opened');
+              done();
+            }, 1);
+          });
+        });
       });
 
       suite('a11y', function() {

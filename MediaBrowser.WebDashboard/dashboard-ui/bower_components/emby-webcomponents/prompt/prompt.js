@@ -59,7 +59,7 @@ define(['dialogHelper', 'layoutManager', 'dialogText', 'html!./icons.html', 'css
         if (raisedButtons) {
             html += '<paper-button raised class="btnSubmit"><iron-icon icon="dialog:check"></iron-icon><span>' + dialogText.get('Ok') + '</span></paper-button>';
         } else {
-            html += '<div style="text-align:right;">';
+            html += '<div class="buttons">';
             html += '<paper-button class="btnSubmit">' + dialogText.get('Ok') + '</paper-button>';
             html += '<paper-button class="btnPromptExit">' + dialogText.get('Cancel') + '</paper-button>';
             html += '</div>';

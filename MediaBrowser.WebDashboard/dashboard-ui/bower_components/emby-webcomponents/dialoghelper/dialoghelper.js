@@ -347,7 +347,7 @@
             dlg.setAttribute('data-autofocus', 'true');
         }
 
-        var defaultEntryAnimation = browser.animate && !browser.mobile ? 'scale-up-animation' : 'fade-in-animation';
+        var defaultEntryAnimation = browser.animate ? 'scale-up-animation' : 'fade-in-animation';
         dlg.entryAnimation = options.entryAnimation || defaultEntryAnimation;
         dlg.exitAnimation = 'fade-out-animation';
 

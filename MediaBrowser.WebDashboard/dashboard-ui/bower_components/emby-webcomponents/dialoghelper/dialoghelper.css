@@ -1,6 +1,6 @@
 .dialog {
     margin: 0;
-    border-radius: 4px;
+    border-radius: 3px;
     z-index: 999999 !important;
     position: fixed;
     margin: 24px 40px;

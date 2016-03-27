@@ -293,15 +293,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     /**
+     * Returns the deepest overlay in the path.
+     * @param {?Array<Element>} path
+     * @return {Element|undefined}
+     * @private
+     */
+    _overlayInPath: function(path) {
+      path = path || [];
+      for (var i = 0; i < path.length; i++) {
+        if (path[i]._manager === this) {
+          return path[i];
+        }
+      }
+    },
+
+    /**
      * Ensures the click event is delegated to the right overlay.
      * @param {!Event} event
      * @private
      */
     _onCaptureClick: function(event) {
       var overlay = /** @type {?} */ (this.currentOverlay());
-      // Check if clicked outside of any overlay.
-      var target = /** @type {Element} */ (Polymer.dom(event).rootTarget);
-      if (overlay && this._overlayParent(target) !== overlay) {
+      // Check if clicked outside of top overlay.
+      if (overlay && this._overlayInPath(Polymer.dom(event).path) !== overlay) {
         overlay._onCaptureClick(event);
       }
     },

@@ -37,13 +37,15 @@ class MP4Remuxer {
     if (!this.ISGenerated) {
       this.generateIS(audioTrack,videoTrack,timeOffset);
     }
-    //logger.log('nb AVC samples:' + videoTrack.samples.length);
-    if (videoTrack.samples.length) {
-      this.remuxVideo(videoTrack,timeOffset,contiguous);
-    }
-    //logger.log('nb AAC samples:' + audioTrack.samples.length);
-    if (audioTrack.samples.length) {
-      this.remuxAudio(audioTrack,timeOffset,contiguous);
+    if (this.ISGenerated) {
+      //logger.log('nb AVC samples:' + videoTrack.samples.length);
+      if (videoTrack.samples.length) {
+        this.remuxVideo(videoTrack,timeOffset,contiguous);
+      }
+      //logger.log('nb AAC samples:' + audioTrack.samples.length);
+      if (audioTrack.samples.length) {
+        this.remuxAudio(audioTrack,timeOffset,contiguous);
+      }
     }
     //logger.log('nb ID3 samples:' + audioTrack.samples.length);
     if (id3Track.samples.length) {
@@ -117,15 +119,15 @@ class MP4Remuxer {
       }
     }
 
-    if(!Object.keys(tracks)) {
-      observer.trigger(Event.ERROR, {type : ErrorTypes.MEDIA_ERROR, details: ErrorDetails.FRAG_PARSING_ERROR, fatal: false, reason: 'no audio/video samples found'});
-    } else {
+    if(Object.keys(tracks).length) {
       observer.trigger(Event.FRAG_PARSING_INIT_SEGMENT,data);
       this.ISGenerated = true;
       if (computePTSDTS) {
         this._initPTS = initPTS;
         this._initDTS = initDTS;
       }
+    } else {
+      observer.trigger(Event.ERROR, {type : ErrorTypes.MEDIA_ERROR, details: ErrorDetails.FRAG_PARSING_ERROR, fatal: false, reason: 'no audio/video samples found'});
     }
   }
 
