@@ -3,11 +3,8 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.LiveTv;
-using MediaBrowser.Model.Users;
 using System;
-using System.Linq;
 using System.Runtime.Serialization;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.LiveTv
 {

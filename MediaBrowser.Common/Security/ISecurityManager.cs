@@ -1,4 +1,3 @@
-using System;
 using MediaBrowser.Model.Entities;
 using System.Threading.Tasks;
 

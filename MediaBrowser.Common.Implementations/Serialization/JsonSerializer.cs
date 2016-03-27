@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Model.Serialization;
+﻿using MediaBrowser.Model.Serialization;
 using System;
 using System.IO;
 using CommonIO;

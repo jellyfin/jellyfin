@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Api.Playback.Hls;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
@@ -156,7 +155,7 @@ namespace MediaBrowser.Api.Playback.Dash
                         var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
                         var segmentGapRequiringTranscodingChange = 24 / state.SegmentLength;
                         Logger.Debug("Current transcoding index is {0}. requestedIndex={1}. segmentGapRequiringTranscodingChange={2}", currentTranscodingIndex ?? -2, requestedIndex, segmentGapRequiringTranscodingChange);
-                        if (currentTranscodingIndex == null || requestedIndex < currentTranscodingIndex.Value || (requestedIndex - currentTranscodingIndex.Value) > segmentGapRequiringTranscodingChange)
+                        if (currentTranscodingIndex == null || requestedIndex < currentTranscodingIndex.Value || requestedIndex - currentTranscodingIndex.Value > segmentGapRequiringTranscodingChange)
                         {
                             // If the playlist doesn't already exist, startup ffmpeg
                             try

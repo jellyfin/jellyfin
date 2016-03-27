@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MediaBrowser.Model.Search
+﻿namespace MediaBrowser.Model.Search
 {
     /// <summary>
     /// Class SearchHintResult

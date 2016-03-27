@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.FileOrganization;
@@ -10,7 +9,6 @@ using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;

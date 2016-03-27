@@ -9,13 +9,11 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Dlna.Channels;
 using MediaBrowser.Dlna.PlayTo;
 using MediaBrowser.Dlna.Ssdp;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
-using System.Net;
 
 namespace MediaBrowser.Dlna.Main
 {

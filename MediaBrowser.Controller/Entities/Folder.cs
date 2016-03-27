@@ -6,7 +6,6 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,9 +13,6 @@ using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Channels;
 
 namespace MediaBrowser.Controller.Entities
@@ -500,7 +496,7 @@ namespace MediaBrowser.Controller.Entities
 
                 var innerProgress = new ActionableProgress<double>();
 
-                innerProgress.RegisterAction(p => progress.Report((.80 * p) + 20));
+                innerProgress.RegisterAction(p => progress.Report(.80 * p + 20));
 
                 if (container != null)
                 {
@@ -634,7 +630,7 @@ namespace MediaBrowser.Controller.Entities
                         var percent = percentages.Values.Sum();
                         percent /= childCount;
 
-                        progress.Report((10 * percent) + 10);
+                        progress.Report(10 * percent + 10);
                     }
                 });
 

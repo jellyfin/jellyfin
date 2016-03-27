@@ -11,12 +11,10 @@ using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Server.Implementations.Library
@@ -536,7 +534,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var infos = _openStreams
                 .Values
-                .Where(i => i.EnableCloseTimer && (DateTime.UtcNow - i.Date) > _openStreamMaxAge)
+                .Where(i => i.EnableCloseTimer && DateTime.UtcNow - i.Date > _openStreamMaxAge)
                 .ToList();
 
             foreach (var info in infos)

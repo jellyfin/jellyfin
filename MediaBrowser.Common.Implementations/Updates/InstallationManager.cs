@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Implementations.Security;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;
@@ -200,7 +199,7 @@ namespace MediaBrowser.Common.Implementations.Updates
                 {
                     var packages = _jsonSerializer.DeserializeFromStream<List<PackageInfo>>(stream).ToList();
 
-                    if ((DateTime.UtcNow - _lastPackageUpdateTime) > GetCacheLength())
+                    if (DateTime.UtcNow - _lastPackageUpdateTime > GetCacheLength())
                     {
                         UpdateCachedPackages(CancellationToken.None, false);
                     }
@@ -233,7 +232,7 @@ namespace MediaBrowser.Common.Implementations.Updates
 
             try
             {
-                if ((DateTime.UtcNow - _lastPackageUpdateTime) < GetCacheLength())
+                if (DateTime.UtcNow - _lastPackageUpdateTime < GetCacheLength())
                 {
                     return;
                 }

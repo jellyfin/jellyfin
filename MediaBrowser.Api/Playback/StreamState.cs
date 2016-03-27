@@ -185,7 +185,7 @@ namespace MediaBrowser.Api.Playback
 
         private async void DisposeLiveStream()
         {
-            if ((MediaSource.RequiresClosing) && string.IsNullOrWhiteSpace(Request.LiveStreamId))
+            if (MediaSource.RequiresClosing && string.IsNullOrWhiteSpace(Request.LiveStreamId))
             {
                 try
                 {

@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints

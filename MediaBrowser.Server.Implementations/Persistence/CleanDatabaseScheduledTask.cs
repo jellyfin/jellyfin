@@ -3,7 +3,6 @@ using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -86,7 +85,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             innerProgress = new ActionableProgress<double>();
             innerProgress.RegisterAction(p =>
             {
-                double newPercentCommplete = 40 + (.05 * p);
+                double newPercentCommplete = 40 + .05 * p;
                 OnProgress(newPercentCommplete);
                 progress.Report(newPercentCommplete);
             });
@@ -96,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             innerProgress = new ActionableProgress<double>();
             innerProgress.RegisterAction(p =>
             {
-                double newPercentCommplete = 45 + (.55 * p);
+                double newPercentCommplete = 45 + .55 * p;
                 OnProgress(newPercentCommplete);
                 progress.Report(newPercentCommplete);
             });

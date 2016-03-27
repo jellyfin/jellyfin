@@ -307,7 +307,7 @@ namespace MediaBrowser.Controller.Entities
 
             int thisMarker = 0, thisNumericChunk = 0;
 
-            while ((thisMarker < s1.Length))
+            while (thisMarker < s1.Length)
             {
                 if (thisMarker >= s1.Length)
                 {
