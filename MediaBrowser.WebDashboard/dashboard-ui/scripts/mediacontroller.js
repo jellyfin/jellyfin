@@ -165,7 +165,11 @@
 
         setTimeout(function () {
 
-            dlg.querySelector('.chkMirror').addEventListener('change', onMirrorChange);
+            var chkMirror = dlg.querySelector('.chkMirror');
+
+            if (chkMirror) {
+                chkMirror.addEventListener('change', onMirrorChange);
+            }
 
             dlg.open();
 
