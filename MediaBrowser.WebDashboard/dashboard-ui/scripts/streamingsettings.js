@@ -4,6 +4,12 @@
 
         $('#txtRemoteClientBitrateLimit', page).val((config.RemoteClientBitrateLimit / 1000000) || '');
 
+        ApiClient.getNamedConfiguration("channels").then(function (channelConfig) {
+
+            $('#selectChannelResolution', page).val(channelConfig.PreferredStreamingWidth || '');
+
+        });
+
         Dashboard.hideLoadingMsg();
     }
 
@@ -17,6 +23,14 @@
             config.RemoteClientBitrateLimit = parseInt(parseFloat(($('#txtRemoteClientBitrateLimit', form).val() || '0')) * 1000000);
 
             ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
+        });
+
+        ApiClient.getNamedConfiguration("channels").then(function (config) {
+
+            // This should be null if empty
+            config.PreferredStreamingWidth = $('#selectChannelResolution', form).val() || null;
+
+            ApiClient.updateNamedConfiguration("channels", config).then(Dashboard.processServerConfigurationUpdateResult);
         });
 
         // Disable default form submission

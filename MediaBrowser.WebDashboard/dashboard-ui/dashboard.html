@@ -3,10 +3,6 @@
     <div data-role="content">
         <div class="content-primary">
 
-            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                <a href="#" data-role="button" class="ui-btn-active">${TabDashboard}</a>
-                <a href="dashboardgeneral.html" data-role="button">${TabSettings}</a>
-            </div>
             <div class="dashboardContent">
                 <div class="ui-bar-a welcomeMessage" style="display: none; padding: 2em; border-radius: 10px; margin: 2em 0; font-weight: normal; max-width: 800px;">
                     <h1 style="margin-top: 0;" class="tourHeader"></h1>
@@ -20,12 +16,12 @@
                     <div>
                     </div>
                     <div>
-                        <h1>${HeaderServerInformation}</h1>
+                        <h1 class="serverNameHeader"></h1>
                         <div class="paperList" style="padding:1em;">
                             <p id="appVersionNumber">
                             </p>
-                            <p id="pUpToDate" style="display: none;">
-                                <img src="css/images/checkmarkgreen.png" style="height: 20px; margin-right: 3px; position: relative; top: 5px; border-radius: 3px;" />
+                            <p id="pUpToDate" style="display: flex; align-items:center;" class="hide">
+                                <iron-icon icon="check" style="background-color: #52B54B;border-radius:.25em;color: #fff;margin-right:.5em;"></iron-icon>
                                 ${ServerUpToDate}
                             </p>
                             <div id="pUpdateNow" style="display: none;">

@@ -2,20 +2,6 @@
 
     function loadPage(page, config, systemInfo) {
 
-        var os = systemInfo.OperatingSystem.toLowerCase();
-
-        if (os.indexOf('windows') != -1) {
-            $('#windowsStartupDescription', page).show();
-        } else {
-            $('#windowsStartupDescription', page).hide();
-        }
-
-        if (systemInfo.SupportsAutoRunAtStartup) {
-            $('#fldRunAtStartup', page).show();
-        } else {
-            $('#fldRunAtStartup', page).hide();
-        }
-
         if (systemInfo.CanSelfUpdate) {
             $('.fldAutomaticUpdates', page).show();
             $('.lnlAutomaticUpdateLevel', page).html(Globalize.translate('LabelAutomaticUpdateLevel'));
@@ -26,7 +12,6 @@
 
         $('#chkEnableAutomaticServerUpdates', page).checked(config.EnableAutoUpdate);
         $('#chkEnableAutomaticRestart', page).checked(config.EnableAutomaticRestart);
-        $('#chkUsageData', page).checked(config.EnableAnonymousUsageReporting);
 
         if (systemInfo.CanSelfRestart) {
             $('#fldEnableAutomaticRestart', page).show();
@@ -35,9 +20,7 @@
         }
 
         $('#selectAutomaticUpdateLevel', page).val(config.SystemUpdateLevel).trigger('change');
-        $('#chkDebugLog', page).checked(config.EnableDebugLevelLogging);
 
-        $('#chkRunAtStartup', page).checked(config.RunAtStartup);
 
         $('#chkEnableDashboardResponseCache', page).checked(config.EnableDashboardResponseCaching);
         $('#chkEnableMinification', page).checked(config.EnableDashboardResourceMinification);
@@ -53,13 +36,9 @@
 
         ApiClient.getServerConfiguration().then(function (config) {
 
-            config.EnableDebugLevelLogging = $('#chkDebugLog', form).checked();
-
-            config.RunAtStartup = $('#chkRunAtStartup', form).checked();
             config.SystemUpdateLevel = $('#selectAutomaticUpdateLevel', form).val();
             config.EnableAutomaticRestart = $('#chkEnableAutomaticRestart', form).checked();
             config.EnableAutoUpdate = $('#chkEnableAutomaticServerUpdates', form).checked();
-            config.EnableAnonymousUsageReporting = $('#chkUsageData', form).checked();
 
             config.EnableDashboardResourceMinification = $('#chkEnableMinification', form).checked();
             config.EnableDashboardResponseCaching = $('#chkEnableDashboardResponseCache', form).checked();

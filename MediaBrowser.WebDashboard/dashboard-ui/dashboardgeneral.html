@@ -1,12 +1,7 @@
-﻿<div id="dashboardGeneralPage" data-role="page" class="page type-interior dashboardHomePage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Server%20Settings" data-require="emby-collapsible,scripts/dashboardgeneral,paper-textarea,paper-input">
+﻿<div id="dashboardGeneralPage" data-role="page" class="page type-interior dashboardHomePage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Server%20Settings">
 
     <div data-role="content">
         <div class="content-primary">
-
-            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                <a href="dashboard.html" data-role="button">${TabDashboard}</a>
-                <a href="#" data-role="button" class="ui-btn-active">${TabSettings}</a>
-            </div>
 
             <form class="dashboardGeneralForm">
 
@@ -27,6 +22,25 @@
                     </div>
                 </div>
                 <br /><br />
+
+                <div id="fldRunAtStartup" style="display: none;">
+                    <paper-checkbox id="chkRunAtStartup">${LabelRunServerAtStartup}</paper-checkbox>
+                    <div id="windowsStartupDescription" class="fieldDescription paperCheckboxFieldDescription" style="display: none;">
+                        ${LabelRunServerAtStartupHelp}
+                    </div>
+                    <br /><br />
+                </div>
+
+                <div>
+                    <paper-checkbox id="chkUsageData">${OptionEnableAnonymousUsageReporting}</paper-checkbox>
+                    <div class="fieldDescription paperCheckboxFieldDescription">
+                        ${OptionEnableAnonymousUsageReportingHelp}
+                        <div style="margin-top:.5em;">
+                            <a target="_blank" href="https://emby.media/privacy">${ButtonLearnMore}</a>
+                        </div>
+                    </div>
+                    <br /><br />
+                </div>
 
                 <emby-collapsible title="${HeaderAdvanced}">
                     <br />

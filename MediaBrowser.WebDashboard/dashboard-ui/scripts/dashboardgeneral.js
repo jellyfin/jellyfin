@@ -5,13 +5,21 @@
 
     var currentLanguage;
 
-    function loadPage(page, config, languageOptions) {
+    function loadPage(page, config, languageOptions, systemInfo) {
 
-        if (Dashboard.lastSystemInfo) {
-            Dashboard.setPageTitle(Dashboard.lastSystemInfo.ServerName);
+        var os = systemInfo.OperatingSystem.toLowerCase();
+
+        if (os.indexOf('windows') != -1) {
+            $('#windowsStartupDescription', page).show();
+        } else {
+            $('#windowsStartupDescription', page).hide();
         }
 
-        refreshPageTitle(page);
+        if (systemInfo.SupportsAutoRunAtStartup) {
+            $('#fldRunAtStartup', page).show();
+        } else {
+            $('#fldRunAtStartup', page).hide();
+        }
 
         page.querySelector('#txtServerName').value = config.ServerName || '';
         page.querySelector('#txtCachePath').value = config.CachePath || '';
@@ -23,16 +31,10 @@
         })).val(config.UICulture);
 
         currentLanguage = config.UICulture;
+        $('#chkUsageData', page).checked(config.EnableAnonymousUsageReporting);
+        $('#chkRunAtStartup', page).checked(config.RunAtStartup);
 
         Dashboard.hideLoadingMsg();
-    }
-
-    function refreshPageTitle(page) {
-
-        ApiClient.getSystemInfo().then(function (systemInfo) {
-
-            Dashboard.setPageTitle(systemInfo.ServerName);
-        });
     }
 
     function onSubmit() {
@@ -52,9 +54,10 @@
                 Dashboard.showDashboardRefreshNotification();
             }
 
-            ApiClient.updateServerConfiguration(config).then(function () {
+            config.EnableAnonymousUsageReporting = $('#chkUsageData', form).checked();
+            config.RunAtStartup = $('#chkRunAtStartup', form).checked();
 
-                refreshPageTitle(page);
+            ApiClient.updateServerConfiguration(config).then(function () {
 
                 ApiClient.getNamedConfiguration(brandingConfigKey).then(function (brandingConfig) {
 
@@ -77,11 +80,9 @@
         return false;
     }
 
-    $(document).on('pageinit', "#dashboardGeneralPage", function () {
+    return function (view, params) {
 
-        var page = this;
-
-        $('#btnSelectCachePath', page).on("click.selectDirectory", function () {
+        $('#btnSelectCachePath', view).on("click.selectDirectory", function () {
 
             require(['directorybrowser'], function (directoryBrowser) {
 
@@ -92,7 +93,7 @@
                     callback: function (path) {
 
                         if (path) {
-                            page.querySelector('#txtCachePath').value = path;
+                            view.querySelector('#txtCachePath').value = path;
                         }
                         picker.close();
                     },
@@ -104,32 +105,27 @@
             });
         });
 
-        $('.dashboardGeneralForm').off('submit', onSubmit).on('submit', onSubmit);
+        $('.dashboardGeneralForm', view).off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshow', "#dashboardGeneralPage", function () {
+        view.addEventListener('viewshow', function () {
 
-        Dashboard.showLoadingMsg();
+            var promise1 = ApiClient.getServerConfiguration();
+            var promise2 = ApiClient.getJSON(ApiClient.getUrl("Localization/Options"));
+            var promise3 = ApiClient.getSystemInfo();
 
-        var page = this;
+            Promise.all([promise1, promise2, promise3]).then(function (responses) {
 
-        var promise1 = ApiClient.getServerConfiguration();
+                loadPage(view, responses[0], responses[1], responses[2]);
 
-        var promise2 = ApiClient.getJSON(ApiClient.getUrl("Localization/Options"));
+            });
 
-        Promise.all([promise1, promise2]).then(function (responses) {
+            ApiClient.getNamedConfiguration(brandingConfigKey).then(function (config) {
 
-            loadPage(page, responses[0], responses[1]);
+                currentBrandingOptions = config;
 
+                view.querySelector('#txtLoginDisclaimer').value = config.LoginDisclaimer || '';
+                view.querySelector('#txtCustomCss').value = config.CustomCss || '';
+            });
         });
-
-        ApiClient.getNamedConfiguration(brandingConfigKey).then(function (config) {
-
-            currentBrandingOptions = config;
-
-            page.querySelector('#txtLoginDisclaimer').value = config.LoginDisclaimer || '';
-            page.querySelector('#txtCustomCss').value = config.CustomCss || '';
-        });
-
-    });
-
+    };
 });

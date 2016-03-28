@@ -184,10 +184,6 @@ paper-button.notext {
         margin-right: 0;
     }
 
-.promptDialogContent paper-button {
-    color: #43A047;
-}
-
 /*paper-toast {
     background-color: #eee;
     color: #000;

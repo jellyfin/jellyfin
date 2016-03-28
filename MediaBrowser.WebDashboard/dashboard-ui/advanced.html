@@ -3,33 +3,7 @@
     <div data-role="content">
         <div class="content-primary">
 
-            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                <a href="#" data-role="button" class="ui-btn-active">${TabGeneral}</a>
-                <a href="dashboardhosting.html" data-role="button">${TabHosting}</a>
-                <a href="serversecurity.html" data-role="button">${TabSecurity}</a>
-            </div>
             <form class="advancedConfigurationForm">
-
-                <ul data-role="listview" class="ulForm">
-                    <li id="fldRunAtStartup" style="display: none;">
-                        <paper-checkbox id="chkRunAtStartup">${LabelRunServerAtStartup}</paper-checkbox>
-                        <div id="windowsStartupDescription" class="fieldDescription paperCheckboxFieldDescription" style="display: none;">
-                            ${LabelRunServerAtStartupHelp}
-                        </div>
-                    </li>
-                    <li>
-                        <paper-checkbox id="chkDebugLog">${LabelEnableDebugLogging}</paper-checkbox>
-                    </li>
-                    <li>
-                        <paper-checkbox id="chkUsageData">${OptionEnableAnonymousUsageReporting}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">
-                            ${OptionEnableAnonymousUsageReportingHelp}
-                            <div style="margin-top:.5em;">
-                                <a target="_blank" href="https://emby.media/privacy">${ButtonLearnMore}</a>
-                            </div>
-                        </div>
-                    </li>
-                </ul>
 
                 <emby-collapsible title="${HeaderAutomaticUpdates}">
                     <br />
