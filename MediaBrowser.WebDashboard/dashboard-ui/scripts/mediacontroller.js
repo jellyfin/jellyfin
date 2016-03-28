@@ -178,10 +178,13 @@
 
         var destination = '';
 
-        dlg.querySelector('.btnRemoteControl').addEventListener('click', function () {
-            destination = 'nowplaying.html';
-            dialogHelper.close(dlg);
-        });
+        var btnRemoteControl = dlg.querySelector('.btnRemoteControl');
+        if (btnRemoteControl) {
+            btnRemoteControl.addEventListener('click', function () {
+                destination = 'nowplaying.html';
+                dialogHelper.close(dlg);
+            });
+        }
 
         dlg.querySelector('.btnDisconnect').addEventListener('click', function () {
             MediaController.disconnectFromPlayer();
