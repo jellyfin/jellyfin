@@ -1,6 +1,6 @@
 {
   "name": "iron-demo-helpers",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Utility classes to make building demo pages easier",
   "authors": [
     "The Polymer Authors"
@@ -10,7 +10,10 @@
     "polymer",
     "demo"
   ],
-  "main": ["demo-snippet.html", "url-bar.html"],
+  "main": [
+    "demo-snippet.html",
+    "url-bar.html"
+  ],
   "private": true,
   "repository": {
     "type": "git",
@@ -26,13 +29,13 @@
     "paper-styles": "PolymerElements/paper-styles#^1.0.0",
     "marked-element": "polymerelements/marked-element#^1.0.0",
     "prism-element": "PolymerElements/prism-element#^1.0.0",
-    "iron-location": "PolymerElements/iron-location#^0.8.0"
+    "iron-location": "PolymerElements/iron-location#^0.8.0",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.3.1"
   },
   "devDependencies": {
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
     "web-component-tester": "^4.0.0",
     "test-fixture": "PolymerElements/test-fixture#^1.0.0",
-    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
     "iron-test-helpers": "PolymerElements/iron-test-helpers#^1.1.2",
     "paper-styles": "PolymerElements/paper-styles#^1.1.0",
