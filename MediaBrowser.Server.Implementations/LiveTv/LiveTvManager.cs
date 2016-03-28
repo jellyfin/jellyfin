@@ -514,6 +514,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 // We can't trust that we'll be able to direct stream it through emby server,  no matter what the provider says
                 mediaSource.SupportsDirectStream = true;
+                mediaSource.SupportsTranscoding = true;
             }
         }
 

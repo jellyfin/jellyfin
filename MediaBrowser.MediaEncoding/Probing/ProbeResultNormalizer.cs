@@ -452,7 +452,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
             else if (string.Equals(streamInfo.codec_type, "video", StringComparison.OrdinalIgnoreCase))
             {
-                stream.Type = isAudio || string.Equals(stream.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase) || string.Equals(stream.Codec, "gif", StringComparison.OrdinalIgnoreCase)
+                stream.Type = isAudio || string.Equals(stream.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase) || string.Equals(stream.Codec, "gif", StringComparison.OrdinalIgnoreCase) || string.Equals(stream.Codec, "png", StringComparison.OrdinalIgnoreCase)
                     ? MediaStreamType.EmbeddedImage
                     : MediaStreamType.Video;
 
