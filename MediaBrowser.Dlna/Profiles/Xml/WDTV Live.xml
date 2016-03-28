@@ -40,7 +40,7 @@
     <DirectPlayProfile container="avi" audioCodec="ac3,dca,mp2,mp3,pcm,dca" videoCodec="mpeg1video,mpeg2video,mpeg4,h264,vc1" type="Video" />
     <DirectPlayProfile container="mpeg" audioCodec="ac3,dca,mp2,mp3,pcm,dca" videoCodec="mpeg1video,mpeg2video" type="Video" />
     <DirectPlayProfile container="mkv" audioCodec="ac3,dca,aac,mp2,mp3,pcm,dca" videoCodec="mpeg1video,mpeg2video,mpeg4,h264,vc1" type="Video" />
-    <DirectPlayProfile container="ts" audioCodec="ac3,dca,mp2,mp3,aac,dca" videoCodec="mpeg1video,mpeg2video,h264,vc1" type="Video" />
+    <DirectPlayProfile container="ts,m2ts" audioCodec="ac3,dca,mp2,mp3,aac,dca" videoCodec="mpeg1video,mpeg2video,h264,vc1" type="Video" />
     <DirectPlayProfile container="mp4,mov" audioCodec="ac3,aac,mp2,mp3,dca" videoCodec="h264,mpeg4" type="Video" />
     <DirectPlayProfile container="asf" audioCodec="wmav2,wmapro" videoCodec="vc1" type="Video" />
     <DirectPlayProfile container="asf" audioCodec="mp2,ac3" videoCodec="mpeg2video" type="Video" />
