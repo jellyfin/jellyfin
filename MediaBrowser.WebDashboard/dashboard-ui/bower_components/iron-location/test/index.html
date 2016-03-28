@@ -9,20 +9,18 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <html>
-<head>
-
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>paper-tooltip</title>
-
-  <script src="../webcomponentsjs/webcomponents-lite.js"></script>
-  <link rel="import" href="../iron-component-page/iron-component-page.html">
-
-</head>
-<body>
-
-<iron-component-page src="demo-snippet.html"></iron-component-page>
-
-</body>
+  <head>
+    <meta charset="utf-8">
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+  </head>
+  <body>
+    <script>
+      WCT.loadSuites([
+        'iron-location.html',
+        'iron-query-params.html',
+        'initialization-tests.html'
+      ]);
+    </script>
+  </body>
 </html>

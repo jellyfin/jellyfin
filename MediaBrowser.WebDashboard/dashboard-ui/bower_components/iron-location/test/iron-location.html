@@ -1,0 +1,140 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+  <title>iron-location</title>
+
+  <script src="../../webcomponentsjs/webcomponents.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../../promise-polyfill/promise-polyfill.html">
+  <link rel="import" href="../iron-location.html">
+</head>
+<body>
+<test-fixture id='Solo'>
+  <template>
+    <iron-location></iron-location>
+  </template>
+</test-fixture>
+<test-fixture id='Together'>
+  <template>
+    <div>
+      <iron-location id='one'></iron-location>
+      <iron-location id='two'></iron-location>
+    </div>
+  </template>
+</test-fixture>
+
+
+<script>
+  'use strict';
+
+  function timePasses(ms) {
+    return new Promise(function(resolve) {
+      window.setTimeout(function() {
+        resolve();
+      }, ms);
+    });
+  }
+
+  suite('<iron-location>', function () {
+    var initialUrl;
+    setup(function() {
+      initialUrl = window.location.href;
+    });
+    teardown(function(){
+      window.history.replaceState({}, '', initialUrl);
+    });
+
+    suite('when used solo', function() {
+      var urlElem;
+      setup(function() {
+        urlElem = fixture('Solo');
+      });
+      test('basic functionality with #hash urls', function() {
+        // Initialized to the window location's hash.
+        expect(window.location.hash).to.be.equal(urlElem.hash);
+
+        // Changing the urlElem's hash changes the URL
+        urlElem.hash = '/lol/ok';
+        expect(window.location.hash).to.be.equal('#/lol/ok');
+
+        // Changing the hash via normal means changes the urlElem.
+        var anchor = document.createElement('a');
+        anchor.href = '#/wat';
+        document.body.appendChild(anchor);
+        anchor.click();
+        // In IE10 it appears that the hashchange event is asynchronous.
+        return timePasses(10).then(function() {
+          expect(urlElem.hash).to.be.equal('/wat');
+        });
+      });
+      test('basic functionality with paths', function() {
+        // Initialized to the window location's path.
+        expect(window.location.pathname).to.be.equal(urlElem.path);
+
+        // Changing the urlElem's path changes the URL
+        urlElem.path = '/foo/bar';
+        expect(window.location.pathname).to.be.equal('/foo/bar');
+
+        // Changing the path and sending a custom event on the window changes
+        // the urlElem.
+        window.history.replaceState({}, '', '/baz')
+        window.dispatchEvent(new CustomEvent('location-changed'));
+        expect(urlElem.path).to.be.equal('/baz');
+      });
+      test('basic functionality with ?key=value params', function() {
+        // Initialized to the window location's params.
+        expect(urlElem.query).to.be.eq('');
+
+        // Changing location.search and sending a custom event on the window
+        // changes the urlElem.
+        window.history.replaceState({}, '', '/?greeting=hello&target=world');
+        window.dispatchEvent(new CustomEvent('location-changed'));
+        expect(urlElem.query).to.be.equal('greeting=hello&target=world');
+
+        // Changing the urlElem's query changes the URL.
+        urlElem.query = 'greeting=hello&target=world&another=key';
+        expect(window.location.search).to.be.equal(
+            '?greeting=hello&target=world&another=key');
+      });
+    });
+    suite('when used with other iron-location elements', function() {
+      var otherUrlElem;
+      var urlElem;
+      setup(function() {
+        var elems = fixture('Together');
+        urlElem = elems.querySelector('#one');
+        otherUrlElem = elems.querySelector('#two');
+      });
+      function assertHaveSameUrls(urlElemOne, urlElemTwo) {
+        expect(urlElemOne.path).to.be.equal(urlElemTwo.path);
+        expect(urlElemOne.hash).to.be.equal(urlElemTwo.hash);
+        expect(urlElemOne.query).to.be.equal(urlElemTwo.query);
+      }
+      test('coordinate their changes (by firing events on window)', function() {
+        assertHaveSameUrls(urlElem, otherUrlElem);
+
+        urlElem.path = '/a/b/c';
+        assertHaveSameUrls(urlElem, otherUrlElem);
+
+        otherUrlElem.query = 'alsdkjflaksjfd=alksjfdlkajsdfl';
+        assertHaveSameUrls(urlElem, otherUrlElem);
+
+        urlElem.hash = 'lkjljifosjkldfjlksjfldsjf';
+        assertHaveSameUrls(urlElem, otherUrlElem);
+      });
+    });
+  });
+
+</script>
+</body>

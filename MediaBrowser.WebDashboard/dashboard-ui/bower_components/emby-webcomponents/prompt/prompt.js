@@ -75,8 +75,14 @@ define(['dialogHelper', 'layoutManager', 'dialogText', 'html!./icons.html', 'css
         dlg.querySelector('form').addEventListener('submit', function (e) {
 
             submitValue = dlg.querySelector('.txtPromptValue').value;
-            dialogHelper.close(dlg);
             e.preventDefault();
+            e.stopPropagation();
+
+            // Important, don't close the dialog until after the form has completed submitting, or it will cause an error in Chrome
+            setTimeout(function () {
+                dialogHelper.close(dlg);
+            }, 300);
+
             return false;
         });
 
@@ -99,6 +105,7 @@ define(['dialogHelper', 'layoutManager', 'dialogText', 'html!./icons.html', 'css
 
         return dialogHelper.open(dlg).then(function () {
             var value = submitValue;
+
             if (value) {
                 return value;
             } else {
