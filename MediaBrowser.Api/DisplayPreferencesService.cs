@@ -3,7 +3,6 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
 using ServiceStack;
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 

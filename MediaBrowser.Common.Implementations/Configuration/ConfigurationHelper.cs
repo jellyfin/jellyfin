@@ -2,7 +2,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Common.Implementations.Configuration
 {

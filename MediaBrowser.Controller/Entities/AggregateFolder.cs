@@ -3,11 +3,9 @@ using MediaBrowser.Controller.Library;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using CommonIO;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Providers;
 
 namespace MediaBrowser.Controller.Entities

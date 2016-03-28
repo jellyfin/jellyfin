@@ -131,7 +131,7 @@ namespace MediaBrowser.Model.Dlna
 
         public TranscodingProfile GetAudioTranscodingProfile(string container, string audioCodec)
         {
-            container = StringHelper.TrimStart((container ?? string.Empty), '.');
+            container = StringHelper.TrimStart(container ?? string.Empty, '.');
 
             foreach (var i in TranscodingProfiles)
             {
@@ -157,7 +157,7 @@ namespace MediaBrowser.Model.Dlna
 
         public TranscodingProfile GetVideoTranscodingProfile(string container, string audioCodec, string videoCodec)
         {
-            container = StringHelper.TrimStart((container ?? string.Empty), '.');
+            container = StringHelper.TrimStart(container ?? string.Empty, '.');
 
             foreach (var i in TranscodingProfiles)
             {
@@ -188,7 +188,7 @@ namespace MediaBrowser.Model.Dlna
 
         public ResponseProfile GetAudioMediaProfile(string container, string audioCodec, int? audioChannels, int? audioBitrate)
         {
-            container = StringHelper.TrimStart((container ?? string.Empty), '.');
+            container = StringHelper.TrimStart(container ?? string.Empty, '.');
 
             foreach (var i in ResponseProfiles)
             {
@@ -233,7 +233,7 @@ namespace MediaBrowser.Model.Dlna
 
         public ResponseProfile GetImageMediaProfile(string container, int? width, int? height)
         {
-            container = StringHelper.TrimStart((container ?? string.Empty), '.');
+            container = StringHelper.TrimStart(container ?? string.Empty, '.');
 
             foreach (var i in ResponseProfiles)
             {
@@ -289,7 +289,7 @@ namespace MediaBrowser.Model.Dlna
             int? numAudioStreams,
             string videoCodecTag)
         {
-            container = StringHelper.TrimStart((container ?? string.Empty), '.');
+            container = StringHelper.TrimStart(container ?? string.Empty, '.');
 
             foreach (var i in ResponseProfiles)
             {

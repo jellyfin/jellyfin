@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MediaBrowser.Model.Updates
+﻿namespace MediaBrowser.Model.Updates
 {
     /// <summary>
     /// Class InstallationInfo

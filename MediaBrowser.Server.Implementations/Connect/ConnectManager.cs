@@ -891,8 +891,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         private async Task RefreshGuestNames(List<ServerUserAuthorizationResponse> list, bool refreshImages)
         {
             var users = _userManager.Users
-                .Where(i => !string.IsNullOrEmpty(i.ConnectUserId) &&
-                    (i.ConnectLinkType.HasValue && i.ConnectLinkType.Value == UserLinkType.Guest))
+                .Where(i => !string.IsNullOrEmpty(i.ConnectUserId) && i.ConnectLinkType.HasValue && i.ConnectLinkType.Value == UserLinkType.Guest)
                     .ToList();
 
             foreach (var user in users)

@@ -1,10 +1,8 @@
 ﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Users;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;

@@ -98,7 +98,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 var index = jobItems.Count == 0 ?
                     0 :
-                    (jobItems.Select(i => i.JobItemIndex).Max() + 1);
+                    jobItems.Select(i => i.JobItemIndex).Max() + 1;
 
                 jobItem = new SyncJobItem
                 {
@@ -469,7 +469,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 var startingPercent = numComplete * percentPerItem * 100;
 
                 var innerProgress = new ActionableProgress<double>();
-                innerProgress.RegisterAction(p => progress.Report(startingPercent + (percentPerItem * p)));
+                innerProgress.RegisterAction(p => progress.Report(startingPercent + percentPerItem * p));
 
                 // Pull it fresh from the db just to make sure it wasn't deleted or cancelled while another item was converting
                 var jobItem = enableConversion ? _syncRepo.GetJobItem(item.Id) : item;
@@ -716,7 +716,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             var startingIndex = mediaStreams.Count == 0 ?
                 0 :
-                (mediaStreams.Select(i => i.Index).Max() + 1);
+                mediaStreams.Select(i => i.Index).Max() + 1;
 
             foreach (var subtitle in subtitles)
             {

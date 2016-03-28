@@ -6,7 +6,6 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -194,7 +193,7 @@ namespace MediaBrowser.Model.Dlna
             list.Add(new NameValuePair("DeviceProfileId", item.DeviceProfileId ?? string.Empty));
             list.Add(new NameValuePair("DeviceId", item.DeviceId ?? string.Empty));
             list.Add(new NameValuePair("MediaSourceId", item.MediaSourceId ?? string.Empty));
-            list.Add(new NameValuePair("Static", (item.IsDirectStream).ToString().ToLower()));
+            list.Add(new NameValuePair("Static", item.IsDirectStream.ToString().ToLower()));
             list.Add(new NameValuePair("VideoCodec", item.VideoCodec ?? string.Empty));
             list.Add(new NameValuePair("AudioCodec", item.AudioCodec ?? string.Empty));
             list.Add(new NameValuePair("AudioStreamIndex", item.AudioStreamIndex.HasValue ? StringHelper.ToStringCultureInvariant(item.AudioStreamIndex.Value) : string.Empty));
@@ -233,7 +232,7 @@ namespace MediaBrowser.Model.Dlna
                 list.Add(new NameValuePair("ItemId", item.ItemId));
             }
 
-            list.Add(new NameValuePair("CopyTimestamps", (item.CopyTimestamps).ToString().ToLower()));
+            list.Add(new NameValuePair("CopyTimestamps", item.CopyTimestamps.ToString().ToLower()));
             list.Add(new NameValuePair("SubtitleMethod", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External ? item.SubtitleDeliveryMethod.ToString() : string.Empty));
        
             return list;

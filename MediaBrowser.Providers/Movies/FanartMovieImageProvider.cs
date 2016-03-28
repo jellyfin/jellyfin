@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -20,9 +19,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
-using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.Channels;
 using MediaBrowser.Providers.TV;
 
 namespace MediaBrowser.Providers.Movies
