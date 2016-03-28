@@ -98,10 +98,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 
                 if (existing == null)
                 {
-                    if (string.IsNullOrWhiteSpace(info.M3UUrl))
-                    {
-                        return;
-                    }
+                    //if (string.IsNullOrWhiteSpace(info.M3UUrl))
+                    //{
+                    //    return;
+                    //}
 
                     await _liveTvManager.SaveTunerHost(new TunerHostInfo
                     {
