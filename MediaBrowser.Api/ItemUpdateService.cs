@@ -331,7 +331,7 @@ namespace MediaBrowser.Api
                 hasAspectRatio.AspectRatio = request.AspectRatio;
             }
 
-            item.IsLocked = (request.LockData ?? false);
+            item.IsLocked = request.LockData ?? false;
 
             if (request.LockedFields != null)
             {

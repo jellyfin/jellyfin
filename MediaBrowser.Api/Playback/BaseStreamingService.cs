@@ -1,12 +1,10 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -1548,7 +1546,7 @@ namespace MediaBrowser.Api.Playback
                 double digit;
                 if (double.TryParse(time, NumberStyles.Any, UsCulture, out digit))
                 {
-                    secondsSum += (digit * timeFactor);
+                    secondsSum += digit * timeFactor;
                 }
                 else
                 {

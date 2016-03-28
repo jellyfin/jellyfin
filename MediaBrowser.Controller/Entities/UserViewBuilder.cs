@@ -363,14 +363,14 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetMusicAlbums(Folder parent, User user, InternalItemsQuery query)
         {
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos }, i => (i is MusicAlbum) && FilterItem(i, query));
+            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos }, i => i is MusicAlbum && FilterItem(i, query));
 
             return PostFilterAndSort(items, parent, null, query);
         }
 
         private QueryResult<BaseItem> GetMusicSongs(Folder parent, User user, InternalItemsQuery query)
         {
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos }, i => (i is Audio.Audio) && FilterItem(i, query));
+            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos }, i => i is Audio.Audio && FilterItem(i, query));
 
             return PostFilterAndSort(items, parent, null, query);
         }
@@ -382,7 +382,7 @@ namespace MediaBrowser.Controller.Entities
                 UserId = user.Id.ToString("N"),
                 Limit = GetSpecialItemsLimit(),
                 IncludeItemTypes = new[] { typeof(Audio.Audio).Name },
-                ParentId = (parent == null ? null : parent.Id.ToString("N")),
+                ParentId = parent == null ? null : parent.Id.ToString("N"),
                 GroupItems = true
 
             }).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null);
@@ -398,7 +398,7 @@ namespace MediaBrowser.Controller.Entities
         {
             query.IsFavorite = true;
 
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music }, i => (i is Audio.Audio) && FilterItem(i, query));
+            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music }, i => i is Audio.Audio && FilterItem(i, query));
 
             return PostFilterAndSort(items, parent, null, query);
         }
@@ -407,7 +407,7 @@ namespace MediaBrowser.Controller.Entities
         {
             query.IsFavorite = true;
 
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music }, i => (i is MusicAlbum) && FilterItem(i, query));
+            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music }, i => i is MusicAlbum && FilterItem(i, query));
 
             return PostFilterAndSort(items, parent, null, query);
         }
@@ -459,7 +459,7 @@ namespace MediaBrowser.Controller.Entities
         {
             query.IsFavorite = true;
 
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Movies, CollectionType.BoxSets, string.Empty }, i => (i is Movie) && FilterItem(i, query));
+            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Movies, CollectionType.BoxSets, string.Empty }, i => i is Movie && FilterItem(i, query));
 
             return PostFilterAndSort(items, parent, null, query);
         }
@@ -468,7 +468,7 @@ namespace MediaBrowser.Controller.Entities
         {
             query.IsFavorite = true;
 
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.TvShows, string.Empty }, i => (i is Series) && FilterItem(i, query));
+            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.TvShows, string.Empty }, i => i is Series && FilterItem(i, query));
 
             return PostFilterAndSort(items, parent, null, query);
         }
@@ -477,21 +477,21 @@ namespace MediaBrowser.Controller.Entities
         {
             query.IsFavorite = true;
 
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.TvShows, string.Empty }, i => (i is Episode) && FilterItem(i, query));
+            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.TvShows, string.Empty }, i => i is Episode && FilterItem(i, query));
 
             return PostFilterAndSort(items, parent, null, query);
         }
 
         private QueryResult<BaseItem> GetMovieMovies(Folder parent, User user, InternalItemsQuery query)
         {
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Movies, CollectionType.BoxSets, string.Empty }, i => (i is Movie) && FilterItem(i, query));
+            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Movies, CollectionType.BoxSets, string.Empty }, i => i is Movie && FilterItem(i, query));
 
             return PostFilterAndSort(items, parent, null, query);
         }
 
         private QueryResult<BaseItem> GetMovieCollections(Folder parent, User user, InternalItemsQuery query)
         {
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Movies, CollectionType.BoxSets, string.Empty }, i => (i is BoxSet) && FilterItem(i, query));
+            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Movies, CollectionType.BoxSets, string.Empty }, i => i is BoxSet && FilterItem(i, query));
 
             return PostFilterAndSort(items, parent, null, query);
         }
@@ -1516,7 +1516,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Apply genre filter
-            if (query.Genres.Length > 0 && !(query.Genres.Any(v => item.Genres.Contains(v, StringComparer.OrdinalIgnoreCase))))
+            if (query.Genres.Length > 0 && !query.Genres.Any(v => item.Genres.Contains(v, StringComparer.OrdinalIgnoreCase)))
             {
                 return false;
             }
@@ -1603,7 +1603,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     return false;
                 }
-                if (!(tags.Any(v => hasTags.Tags.Contains(v, StringComparer.OrdinalIgnoreCase))))
+                if (!tags.Any(v => hasTags.Tags.Contains(v, StringComparer.OrdinalIgnoreCase)))
                 {
                     return false;
                 }
