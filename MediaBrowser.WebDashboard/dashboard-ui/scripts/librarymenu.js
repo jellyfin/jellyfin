@@ -373,7 +373,9 @@
                     collapsible.expanded = true;
                 }
 
-                var title = collapsible.title || '';
+                var title = '';
+
+                title += collapsible.title || '';
                 title += '<span class="title-separator">–</span>';
                 title += (link.innerText || link.textContent).trim();
 
@@ -650,7 +652,7 @@
 
         setTitle: function (title) {
 
-            var html = '<span>' + title + '</span>';
+            var html =  title ;
 
             var page = $.mobile.activePage;
             if (page) {

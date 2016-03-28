@@ -665,7 +665,9 @@ var Dashboard = {
         var icon = item.icon;
 
         if (icon) {
-            menuHtml += '<iron-icon icon="' + icon + '" class="sidebarLinkIcon"></iron-icon>';
+            var style = item.color ? ' style="color:' + item.color + '"' : '';
+
+            menuHtml += '<iron-icon icon="' + icon + '" class="sidebarLinkIcon"' + style + '></iron-icon>';
         }
 
         menuHtml += '<span class="sidebarLinkText">';
@@ -689,6 +691,7 @@ var Dashboard = {
             if (item.items) {
 
                 if (item.icon) {
+                    var style = item.color ? ' style="color:' + item.color + '"' : '';
                     menuHtml += '<emby-collapsible icon="' + item.icon + '" title="' + item.name + '">';
                 } else {
                     menuHtml += '<emby-collapsible title="' + item.name + '">';
@@ -716,6 +719,7 @@ var Dashboard = {
         return [{
             name: Globalize.translate('TabServer'),
             icon: 'dashboard',
+            color: '#38c',
             items: [
                 {
                     name: Globalize.translate('TabDashboard'),

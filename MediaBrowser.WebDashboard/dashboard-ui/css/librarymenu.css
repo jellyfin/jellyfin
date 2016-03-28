@@ -407,8 +407,12 @@ body:not(.dashboardDocument) .btnNotifications {
 }
 
 .adminDrawerPanel:not([narrow]) #drawer {
-    z-index: 998!important;
+    z-index: 998 !important;
     top: 65px !important;
+}
+
+.adminDrawerPanel:not([narrow]) .mainDrawerButton {
+    display: none !important;
 }
 
 .adminDrawerPanel .sidebarLink {
@@ -469,9 +473,9 @@ body:not(.dashboardDocument) .btnNotifications {
     display: none;
 }
 
-    .adminDrawerLogo img {
-        height: 30px;
-    }
+.adminDrawerLogo img {
+    height: 30px;
+}
 
 .adminDrawerPanel #drawer #titleIcon {
     color: #666;
@@ -480,6 +484,7 @@ body:not(.dashboardDocument) .btnNotifications {
 
 .adminDrawerPanel:not([narrow]) .libraryMenuButtonText {
     font-size: 150%;
+    margin-left: 1em;
 }
 
 .title-separator {
