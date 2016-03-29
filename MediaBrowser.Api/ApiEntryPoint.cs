@@ -349,7 +349,7 @@ namespace MediaBrowser.Api
 
             if (job.Type != TranscodingJobType.Progressive)
             {
-                timerDuration = 1800000;
+                timerDuration = 60000;
             }
 
             job.PingTimeout = timerDuration;

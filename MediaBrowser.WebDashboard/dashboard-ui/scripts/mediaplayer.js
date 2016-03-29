@@ -1578,9 +1578,9 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
 
         window.addEventListener("beforeunload", onAppClose);
 
-        if (browserInfo.safari) {
-            document.addEventListener("pause", onAppClose);
-        }
+        //if (browserInfo.safari) {
+        //    document.addEventListener("pause", onAppClose);
+        //}
 
         function sendProgressUpdate() {
 
