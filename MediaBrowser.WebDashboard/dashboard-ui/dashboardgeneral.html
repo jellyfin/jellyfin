@@ -53,6 +53,35 @@
                     </ul>
                 </emby-collapsible>
 
+                <emby-collapsible title="${HeaderAutomaticUpdates}">
+                    <br />
+                    <ul data-role="listview" class="ulForm">
+                        <li class="fldAutomaticUpdates">
+                            <div data-role="controlgroup">
+                                <input type="checkbox" id="chkEnableAutomaticServerUpdates" data-mini="true" />
+                                <label for="chkEnableAutomaticServerUpdates">${OptionEnableAutomaticServerUpdates}</label>
+                            </div>
+                        </li>
+                        <li>
+                            <label class="lnlAutomaticUpdateLevel selectLabel" for="selectAutomaticUpdateLevel"></label>
+                            <select name="selectAutomaticUpdateLevel" id="selectAutomaticUpdateLevel">
+                                <option value="Release">${OptionRelease}</option>
+                                <option value="Beta">${OptionBeta}</option>
+                                <option value="Dev">${OptionDev}</option>
+                            </select>
+                            <div id="devBuildWarning" class="fieldDescription warningFieldDescription" style="display: none;">
+                                ${DevBuildWarning}
+                            </div>
+                        </li>
+                        <li id="fldEnableAutomaticRestart" style="display: none;">
+                            <paper-checkbox id="chkEnableAutomaticRestart">${LabelAllowServerAutoRestart}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">
+                                ${LabelAllowServerAutoRestartHelp}
+                            </div>
+                        </li>
+                    </ul>
+                </emby-collapsible>
+
                 <emby-collapsible title="${HeaderBranding}">
                     <p>${HeaderBrandingHelp}</p>
                     <br />
@@ -65,6 +94,28 @@
                         <li>
                             <paper-textarea id="txtCustomCss" label="${LabelCustomCss}" class="mono"></paper-textarea>
                             <div class="fieldDescription">${LabelCustomCssHelp}</div>
+                        </li>
+                    </ul>
+                </emby-collapsible>
+
+                <emby-collapsible title="${HeaderDeveloperOptions}">
+                    <br />
+                    <div>
+                        <paper-checkbox id="chkEnableDashboardResponseCache">${OptionEnableWebClientResponseCache}</paper-checkbox>
+                    </div>
+                    <br />
+                    <div>
+                        <paper-checkbox id="chkEnableMinification">${OptionEnableWebClientResourceMinification}</paper-checkbox>
+                    </div>
+                    <div class="fieldDescription paperCheckboxFieldDescription">
+                        ${OptionDisableForDevelopmentHelp}
+                    </div>
+                    <br /><br />
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <paper-input type="text" id="txtDashboardSourcePath" label="${LabelDashboardSourcePath}" style="display: inline-block; width: 80%;"></paper-input>
+                            <paper-icon-button id="btnSelectDashboardSourcePath" icon="search" title="${ButtonSelectDirectory}"></paper-icon-button>
+                            <div class="fieldDescription">${LabelDashboardSourcePathHelp}</div>
                         </li>
                     </ul>
                 </emby-collapsible>

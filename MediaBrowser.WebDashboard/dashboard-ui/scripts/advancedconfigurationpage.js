@@ -2,26 +2,6 @@
 
     function loadPage(page, config, systemInfo) {
 
-        if (systemInfo.CanSelfUpdate) {
-            $('.fldAutomaticUpdates', page).show();
-            $('.lnlAutomaticUpdateLevel', page).html(Globalize.translate('LabelAutomaticUpdateLevel'));
-        } else {
-            $('.fldAutomaticUpdates', page).hide();
-            $('.lnlAutomaticUpdateLevel', page).html(Globalize.translate('LabelAutomaticUpdateLevelForPlugins'));
-        }
-
-        $('#chkEnableAutomaticServerUpdates', page).checked(config.EnableAutoUpdate);
-        $('#chkEnableAutomaticRestart', page).checked(config.EnableAutomaticRestart);
-
-        if (systemInfo.CanSelfRestart) {
-            $('#fldEnableAutomaticRestart', page).show();
-        } else {
-            $('#fldEnableAutomaticRestart', page).hide();
-        }
-
-        $('#selectAutomaticUpdateLevel', page).val(config.SystemUpdateLevel).trigger('change');
-
-
         $('#chkEnableDashboardResponseCache', page).checked(config.EnableDashboardResponseCaching);
         $('#chkEnableMinification', page).checked(config.EnableDashboardResourceMinification);
         $('#txtDashboardSourcePath', page).val(config.DashboardSourcePath).trigger('change');
@@ -35,10 +15,6 @@
         var form = this;
 
         ApiClient.getServerConfiguration().then(function (config) {
-
-            config.SystemUpdateLevel = $('#selectAutomaticUpdateLevel', form).val();
-            config.EnableAutomaticRestart = $('#chkEnableAutomaticRestart', form).checked();
-            config.EnableAutoUpdate = $('#chkEnableAutomaticServerUpdates', form).checked();
 
             config.EnableDashboardResourceMinification = $('#chkEnableMinification', form).checked();
             config.EnableDashboardResponseCaching = $('#chkEnableDashboardResponseCache', form).checked();

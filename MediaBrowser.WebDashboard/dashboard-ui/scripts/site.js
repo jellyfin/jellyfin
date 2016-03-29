@@ -910,11 +910,6 @@ var Dashboard = {
                     href: "autoorganizelog.html",
                     pageIds: ['libraryFileOrganizerPage', 'libraryFileOrganizerSmartMatchPage', 'libraryFileOrganizerLogPage'],
                     icon: 'folder'
-                }, {
-                    name: Globalize.translate('TabGeneral'),
-                    href: "advanced.html",
-                    pageIds: ['advancedConfigurationPage'],
-                    icon: 'mode-edit'
                 },
                 {
                     name: Globalize.translate('TabHosting'),
@@ -1536,7 +1531,7 @@ var AppInfo = {};
         // This doesn't perform well on iOS
         AppInfo.enableHeadRoom = !isIOS;
 
-        AppInfo.supportsDownloading = !(AppInfo.isNativeApp);
+        AppInfo.supportsDownloading = !(AppInfo.isNativeApp && isIOS);
 
         // This currently isn't working on android, unfortunately
         AppInfo.supportsFileInput = !(AppInfo.isNativeApp && isAndroid);
@@ -2123,6 +2118,12 @@ var AppInfo = {};
         } else {
             define("loading", [embyWebComponentsBowerPath + "/loading/loading-lite"], returnFirstDependency);
         }
+
+        if (Dashboard.isRunningInCordova() && browser.android) {
+            define("fileDownloader", 'components/filedownloader', returnFirstDependency);
+        } else {
+            define("fileDownloader", 'cordova/android/filedownloader', returnFirstDependency);
+        }
     }
 
     function init(hostingAppInfo) {
@@ -2314,13 +2315,6 @@ var AppInfo = {};
 
         defineRoute({
             path: '/addplugin.html',
-            dependencies: [],
-            autoFocus: false,
-            roles: 'admin'
-        });
-
-        defineRoute({
-            path: '/advanced.html',
             dependencies: [],
             autoFocus: false,
             roles: 'admin'

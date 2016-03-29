@@ -34,6 +34,29 @@
         $('#chkUsageData', page).checked(config.EnableAnonymousUsageReporting);
         $('#chkRunAtStartup', page).checked(config.RunAtStartup);
 
+        if (systemInfo.CanSelfUpdate) {
+            $('.fldAutomaticUpdates', page).show();
+            $('.lnlAutomaticUpdateLevel', page).html(Globalize.translate('LabelAutomaticUpdateLevel'));
+        } else {
+            $('.fldAutomaticUpdates', page).hide();
+            $('.lnlAutomaticUpdateLevel', page).html(Globalize.translate('LabelAutomaticUpdateLevelForPlugins'));
+        }
+
+        $('#chkEnableAutomaticServerUpdates', page).checked(config.EnableAutoUpdate);
+        $('#chkEnableAutomaticRestart', page).checked(config.EnableAutomaticRestart);
+
+        if (systemInfo.CanSelfRestart) {
+            $('#fldEnableAutomaticRestart', page).show();
+        } else {
+            $('#fldEnableAutomaticRestart', page).hide();
+        }
+
+        $('#selectAutomaticUpdateLevel', page).val(config.SystemUpdateLevel).trigger('change');
+
+        $('#chkEnableDashboardResponseCache', page).checked(config.EnableDashboardResponseCaching);
+        $('#chkEnableMinification', page).checked(config.EnableDashboardResourceMinification);
+        $('#txtDashboardSourcePath', page).val(config.DashboardSourcePath).trigger('change');
+
         Dashboard.hideLoadingMsg();
     }
 
@@ -56,6 +79,14 @@
 
             config.EnableAnonymousUsageReporting = $('#chkUsageData', form).checked();
             config.RunAtStartup = $('#chkRunAtStartup', form).checked();
+
+            config.SystemUpdateLevel = $('#selectAutomaticUpdateLevel', form).val();
+            config.EnableAutomaticRestart = $('#chkEnableAutomaticRestart', form).checked();
+            config.EnableAutoUpdate = $('#chkEnableAutomaticServerUpdates', form).checked();
+
+            config.EnableDashboardResourceMinification = $('#chkEnableMinification', form).checked();
+            config.EnableDashboardResponseCaching = $('#chkEnableDashboardResponseCache', form).checked();
+            config.DashboardSourcePath = $('#txtDashboardSourcePath', form).val();
 
             ApiClient.updateServerConfiguration(config).then(function () {
 
@@ -81,6 +112,16 @@
     }
 
     return function (view, params) {
+
+        $('#selectAutomaticUpdateLevel', view).on('change', function () {
+
+            if (this.value == "Dev") {
+                $('#devBuildWarning', view).show();
+            } else {
+                $('#devBuildWarning', view).hide();
+            }
+
+        });
 
         $('#btnSelectCachePath', view).on("click.selectDirectory", function () {
 
