@@ -185,6 +185,64 @@
 
     function onHeaderAppsButtonClick() {
 
+        require(['dialogHelper'], function (dialogHelper) {
+
+            var dlg = dialogHelper.createDialog({
+                removeOnClose: true,
+                modal: false,
+                autoFocus: false,
+                entryAnimationDuration: 160,
+                exitAnimationDuration: 160
+            });
+
+            dlg.classList.add('ui-body-a');
+            dlg.classList.add('background-theme-a');
+            dlg.classList.add('adminAppsMenu');
+
+            var html = '';
+
+            html += '<div class="adminAppsMenuRow">';
+
+            html += '<a class="adminAppsButton" href="home.html">';
+            html += '<paper-icon-button icon="home"></paper-icon-button>';
+            html += '<div>' + Globalize.translate('ButtonHome') + '</div>';
+            html += '</a>';
+
+            html += '</div>';
+
+            html += '<div class="adminAppsMenuRow">';
+
+            html += '<a class="adminAppsButton" href="edititemmetadata.html">';
+            html += '<paper-icon-button icon="mode-edit"></paper-icon-button>';
+            html += '<div>' + Globalize.translate('ButtonMetadataManager') + '</div>';
+            html += '</a>';
+            html += '<a class="adminAppsButton" href="reports.html">';
+            html += '<paper-icon-button icon="insert-chart"></paper-icon-button>';
+            html += '<div>' + Globalize.translate('ButtonReports') + '</div>';
+            html += '</a>';
+
+            html += '</div>';
+
+            dlg.innerHTML = html;
+            document.body.appendChild(dlg);
+
+            var destination;
+            dlg.addEventListener('click', function (e) {
+                var link = parentWithTag(e.target, 'A');
+                if (link) {
+                    destination = link.href;
+                    dialogHelper.close(dlg);
+                    e.preventDefault();
+                    return false;
+                }
+            });
+            dialogHelper.open(dlg).then(function () {
+                if (destination) {
+                    Dashboard.navigate(destination);
+                }
+            });
+
+        });
     }
 
     function bindMenuEvents() {
