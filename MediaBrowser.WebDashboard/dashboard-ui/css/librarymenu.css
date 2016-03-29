@@ -463,7 +463,7 @@ body:not(.dashboardDocument) .btnNotifications {
 }
 
 .adminDrawerLogo {
-    padding: 15px 1em;
+    padding: 1.5em 1em 1.2em;
     border-bottom: 1px solid #e0e0e0;
     margin-bottom: 1em;
     display: block;

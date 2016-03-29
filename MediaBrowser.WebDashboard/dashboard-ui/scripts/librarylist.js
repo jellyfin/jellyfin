@@ -479,7 +479,6 @@
                             case 'download':
                                 {
                                     require(['fileDownloader'], function (fileDownloader) {
-
                                         var downloadHref = ApiClient.getUrl("Items/" + itemId + "/Download", {
                                             api_key: ApiClient.accessToken()
                                         });

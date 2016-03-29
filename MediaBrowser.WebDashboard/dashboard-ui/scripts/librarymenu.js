@@ -469,7 +469,7 @@
             //html += '</div>';
             //html += '</div>';
 
-            html += '<a class="adminDrawerLogo clearLink" href="dashboard.html">'
+            html += '<a class="adminDrawerLogo clearLink" href="home.html">'
             html += '<img src="css/images/logo.png" />';
             html += '</a>'
 

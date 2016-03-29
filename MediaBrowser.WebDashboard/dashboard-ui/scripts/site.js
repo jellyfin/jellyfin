@@ -2120,9 +2120,9 @@ var AppInfo = {};
         }
 
         if (Dashboard.isRunningInCordova() && browser.android) {
-            define("fileDownloader", 'components/filedownloader', returnFirstDependency);
+            define("fileDownloader", ['cordova/android/filedownloader'], returnFirstDependency);
         } else {
-            define("fileDownloader", 'cordova/android/filedownloader', returnFirstDependency);
+            define("fileDownloader", ['components/filedownloader'], returnFirstDependency);
         }
     }
 
