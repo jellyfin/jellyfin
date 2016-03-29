@@ -362,10 +362,6 @@
     display: none !important;
 }
 
-.dashboardDocument .headerSearchButton {
-    display: none !important;
-}
-
 body:not(.dashboardDocument) .btnNotifications {
     display: none !important;
 }
@@ -399,6 +395,10 @@ body:not(.dashboardDocument) .btnNotifications {
 
 .darkDrawerPanel .sidebarLink.selectedSidebarLink, .darkDrawerPanel .selectedMediaFolder {
     background: #4d4d4d !important;
+}
+
+.darkDrawerPanel .headerAppsButton {
+    display: none;
 }
 
 .adminDrawerPanel #drawer {
@@ -485,6 +485,10 @@ body:not(.dashboardDocument) .btnNotifications {
 .adminDrawerPanel:not([narrow]) .libraryMenuButtonText {
     font-size: 150%;
     margin-left: 1em;
+}
+
+.adminDrawerPanel[narrow] .headerAppsButton {
+    display: none;
 }
 
 .title-separator {

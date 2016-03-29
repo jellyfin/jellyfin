@@ -14,6 +14,8 @@
             html += '<paper-icon-button icon="menu" class="headerButton mainDrawerButton barsMenuButton headerButtonLeft"></paper-icon-button>';
         }
 
+        html += '<paper-icon-button icon="view-comfy" class="headerButton headerAppsButton barsMenuButton headerButtonLeft"></paper-icon-button>';
+
         html += '<div class="libraryMenuButtonText headerButton">' + Globalize.translate('ButtonHome') + '</div>';
 
         html += '<div class="viewMenuSecondary">';
@@ -181,6 +183,10 @@
         Dashboard.showUserFlyout(e.target);
     }
 
+    function onHeaderAppsButtonClick() {
+
+    }
+
     function bindMenuEvents() {
 
         var mainDrawerButton = document.querySelector('.mainDrawerButton');
@@ -202,6 +208,11 @@
         var headerUserButton = document.querySelector('.headerUserButton');
         if (headerUserButton) {
             headerUserButton.addEventListener('click', onHeaderUserButtonClick);
+        }
+
+        var headerAppsButton = document.querySelector('.headerAppsButton');
+        if (headerAppsButton) {
+            headerAppsButton.addEventListener('click', onHeaderAppsButtonClick);
         }
 
         var viewMenuBar = document.querySelector(".viewMenuBar");
@@ -652,7 +663,7 @@
 
         setTitle: function (title) {
 
-            var html =  title ;
+            var html = title;
 
             var page = $.mobile.activePage;
             if (page) {
