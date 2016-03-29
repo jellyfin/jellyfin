@@ -14,7 +14,7 @@
             html += '<paper-icon-button icon="menu" class="headerButton mainDrawerButton barsMenuButton headerButtonLeft"></paper-icon-button>';
         }
 
-        html += '<paper-icon-button icon="view-comfy" class="headerButton headerAppsButton barsMenuButton headerButtonLeft"></paper-icon-button>';
+        html += '<paper-icon-button icon="menu" class="headerButton headerAppsButton barsMenuButton headerButtonLeft"></paper-icon-button>';
 
         html += '<div class="libraryMenuButtonText headerButton">' + Globalize.translate('ButtonHome') + '</div>';
 
