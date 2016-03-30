@@ -121,7 +121,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 var channels = channelResult.Items;
 
-                if (!user.Configuration.DisplayChannelsInline && channels.Length > 0)
+                if (user.Configuration.EnableChannelView && channels.Length > 0)
                 {
                     list.Add(await _channelManager.GetInternalChannelFolder(cancellationToken).ConfigureAwait(false));
                 }
