@@ -791,6 +791,11 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             }
 
+            if (audio.AlbumArtists.Count == 0)
+            {
+                audio.AlbumArtists = audio.Artists.Take(1).ToList();
+            }
+
             // Track number
             audio.IndexNumber = GetDictionaryDiscValue(tags, "track");
 
