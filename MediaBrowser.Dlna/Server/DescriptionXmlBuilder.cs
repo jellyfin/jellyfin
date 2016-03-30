@@ -140,7 +140,7 @@ namespace MediaBrowser.Dlna.Server
         {
             if (string.IsNullOrWhiteSpace(_profile.FriendlyName))
             {
-                return _serverName;
+                return "Emby - " + _serverName;
             }
 
             var characters = _serverName.Where(c => (char.IsLetterOrDigit(c) || c == '-')).ToArray();
