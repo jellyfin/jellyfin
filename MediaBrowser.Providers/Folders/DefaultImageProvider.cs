@@ -77,7 +77,7 @@ namespace MediaBrowser.Providers.Folders
             }
             if (string.Equals(viewType, CollectionType.Music, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "music.jpg";
+                //return urlPrefix + "music.jpg";
             }
             if (string.Equals(viewType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
             {
@@ -105,7 +105,7 @@ namespace MediaBrowser.Providers.Folders
             }
             if (string.Equals(viewType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "homevideos.jpg";
+                //return urlPrefix + "homevideos.jpg";
             }
             if (string.Equals(viewType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
             {
