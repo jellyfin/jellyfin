@@ -1282,12 +1282,13 @@ var Dashboard = {
         });
     },
 
-    setPageTitle: function (title) {
+    setPageTitle: function (title, documentTitle) {
 
         LibraryMenu.setTitle(title || 'Emby');
 
-        if (title) {
-            document.title = title;
+        documentTitle = documentTitle || title;
+        if (documentTitle) {
+            document.title = documentTitle;
         }
     },
 

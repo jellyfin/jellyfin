@@ -130,6 +130,7 @@
                     if (query.IncludeItemTypes == "MusicAlbum") {
                         posterOptions.overlayText = false;
                         posterOptions.showParentTitle = true;
+                        posterOptions.showTitle = true;
                         posterOptions.overlayPlayButton = true;
                     }
                     else if (query.IncludeItemTypes == "MusicArtist") {

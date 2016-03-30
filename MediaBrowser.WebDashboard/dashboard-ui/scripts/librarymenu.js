@@ -446,9 +446,13 @@
 
                 title += collapsible.title || '';
                 title += '<span class="title-separator">–</span>';
-                title += (link.innerText || link.textContent).trim();
 
-                Dashboard.setPageTitle(title);
+                var secondaryTitle = (link.innerText || link.textContent).trim();
+                title += secondaryTitle;
+
+                var documentTitle = collapsible.title || secondaryTitle;
+
+                Dashboard.setPageTitle(title, documentTitle);
 
             } else {
                 link.classList.remove('selectedSidebarLink');
