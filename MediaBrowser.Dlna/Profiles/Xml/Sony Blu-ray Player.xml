@@ -9,7 +9,6 @@
       <HttpHeaderInfo name="X-AV-Physical-Unit-Info" value="(Blu-ray Disc Player|Home Theater System|Home Theatre System|Media Player)" match="Regex" />
     </Headers>
   </Identification>
-  <FriendlyName>Emby</FriendlyName>
   <Manufacturer>Microsoft Corporation</Manufacturer>
   <ManufacturerUrl>http://emby.media/</ManufacturerUrl>
   <ModelName>Windows Media Player Sharing</ModelName>
