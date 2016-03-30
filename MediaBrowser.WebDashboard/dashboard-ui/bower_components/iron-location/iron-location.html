@@ -281,7 +281,20 @@ milliseconds.
         url = new URL(href);
       }
 
-      if (url.origin !== window.location.origin) {
+      var origin;
+
+      // IE Polyfill
+      if (window.location.origin) {
+        origin = window.location.origin;
+      } else {
+        origin = window.location.protocol + '//' + window.location.hostname;
+
+        if (window.location.port) {
+          origin += ':' + window.location.port;
+        }
+      }
+
+      if (url.origin !== origin) {
         return null;
       }
       var normalizedHref = url.pathname + url.search + url.hash;

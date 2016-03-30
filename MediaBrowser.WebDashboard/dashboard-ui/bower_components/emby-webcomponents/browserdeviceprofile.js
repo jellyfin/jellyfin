@@ -56,18 +56,6 @@ define(['browser'], function (browser) {
                 return true;
             }
 
-            // Newer mobile chrome supports it but doesn't report it
-            if (browser.chrome) {
-                var version = (browser.version || '').toString().split('.')[0];
-                try {
-                    version = parseInt(version);
-                    if (version >= 49) {
-                        return true;
-                    }
-                } catch (err) {
-
-                }
-            }
             return false;
         }
 
