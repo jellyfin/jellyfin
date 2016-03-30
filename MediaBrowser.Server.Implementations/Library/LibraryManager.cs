@@ -2361,6 +2361,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     }
 
                     video.ExtraType = ExtraType.Trailer;
+                    video.TrailerTypes = new List<TrailerType> { TrailerType.LocalTrailer };
 
                     return video;
 

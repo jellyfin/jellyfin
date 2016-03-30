@@ -21,11 +21,11 @@ namespace MediaBrowser.Controller.Entities
             Taglines = new List<string>();
             Keywords = new List<string>();
             ProductionLocations = new List<string>();
-            TrailerTypes = new List<TrailerType>();
+            TrailerTypes = new List<TrailerType> { TrailerType.LocalTrailer };
         }
 
         public List<TrailerType> TrailerTypes { get; set; }
-        
+
         public float? Metascore { get; set; }
 
         public List<MediaUrl> RemoteTrailers { get; set; }
@@ -86,7 +86,7 @@ namespace MediaBrowser.Controller.Entities
             var info = GetItemLookupInfo<TrailerInfo>();
 
             info.IsLocalTrailer = TrailerTypes.Contains(TrailerType.LocalTrailer);
-            
+
             if (!IsInMixedFolder)
             {
                 info.Name = System.IO.Path.GetFileName(ContainingFolderPath);
