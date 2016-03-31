@@ -949,6 +949,57 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }, 1);
           });
         });
+        
+      });
+
+      suite('always-on-top', function() {
+        var overlay1, overlay2;
+
+        setup(function() {
+          var f = fixture('multiple');
+          overlay1 = f[0];
+          overlay2 = f[1];
+          overlay1.alwaysOnTop = true;
+        });
+
+        test('stays on top', function(done) {
+          runAfterOpen(overlay1, function() {
+            runAfterOpen(overlay2, function() {
+              var zIndex1 = parseInt(window.getComputedStyle(overlay1).zIndex, 10);
+              var zIndex2 = parseInt(window.getComputedStyle(overlay2).zIndex, 10);
+              assert.isAbove(zIndex1, zIndex2, 'overlay1 on top');
+              assert.equal(Polymer.IronOverlayManager.currentOverlay(), overlay1, 'currentOverlay ok');
+              done();
+            });
+          });
+        });
+
+        test('stays on top also if another overlay is with-backdrop', function(done) {
+          overlay2.withBackdrop = true;
+          runAfterOpen(overlay1, function() {
+            runAfterOpen(overlay2, function() {
+              var zIndex1 = parseInt(window.getComputedStyle(overlay1).zIndex, 10);
+              var zIndex2 = parseInt(window.getComputedStyle(overlay2).zIndex, 10);
+              assert.isAbove(zIndex1, zIndex2, 'overlay1 on top');
+              assert.equal(Polymer.IronOverlayManager.currentOverlay(), overlay1, 'currentOverlay ok');
+              done();
+            });
+          });
+        });
+
+        test('last overlay with always-on-top wins', function(done) {
+          overlay2.alwaysOnTop = true;
+          runAfterOpen(overlay1, function() {
+            runAfterOpen(overlay2, function() {
+              var zIndex1 = parseInt(window.getComputedStyle(overlay1).zIndex, 10);
+              var zIndex2 = parseInt(window.getComputedStyle(overlay2).zIndex, 10);
+              assert.isAbove(zIndex2, zIndex1, 'overlay2 on top');
+              assert.equal(Polymer.IronOverlayManager.currentOverlay(), overlay2, 'currentOverlay ok');
+              done();
+            });
+          });
+        });
+
       });
 
       suite('a11y', function() {
@@ -962,7 +1013,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           assert.equal(overlay.getAttribute('aria-hidden'), 'true', 'overlay has aria-hidden="true"');
         });
 
-      })
+      });
     </script>
 
   </body>

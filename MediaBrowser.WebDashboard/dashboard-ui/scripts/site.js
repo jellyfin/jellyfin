@@ -1945,7 +1945,7 @@ var AppInfo = {};
         define("slideshow", [embyWebComponentsBowerPath + "/slideshow/slideshow"], returnFirstDependency);
 
         define('fetch', [bowerPath + '/fetch/fetch']);
-        define('objectassign', ['legacy/objectassign']);
+        define('objectassign', [embyWebComponentsBowerPath + '/objectassign']);
         define('webcomponentsjs', [bowerPath + '/webcomponentsjs/webcomponents-lite.min.js']);
         define('native-promise-only', [bowerPath + '/native-promise-only/lib/npo.src']);
 
