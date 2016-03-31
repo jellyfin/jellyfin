@@ -10,7 +10,6 @@ using MediaBrowser.Controller.Localization;
 using MediaBrowser.Dlna.Didl;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.Dlna.Service;
-using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
@@ -24,7 +23,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using MediaBrowser.Model.Library;
 
 namespace MediaBrowser.Dlna.ContentDirectory
 {

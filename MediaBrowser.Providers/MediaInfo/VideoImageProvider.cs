@@ -13,7 +13,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
-using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Providers.MediaInfo
 {

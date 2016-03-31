@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using System;
@@ -10,7 +9,6 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using CommonIO;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 
@@ -452,7 +450,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
             else if (string.Equals(streamInfo.codec_type, "video", StringComparison.OrdinalIgnoreCase))
             {
-                stream.Type = isAudio || string.Equals(stream.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase) || string.Equals(stream.Codec, "gif", StringComparison.OrdinalIgnoreCase)
+                stream.Type = isAudio || string.Equals(stream.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase) || string.Equals(stream.Codec, "gif", StringComparison.OrdinalIgnoreCase) || string.Equals(stream.Codec, "png", StringComparison.OrdinalIgnoreCase)
                     ? MediaStreamType.EmbeddedImage
                     : MediaStreamType.Video;
 
@@ -791,6 +789,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
+            }
+
+            if (audio.AlbumArtists.Count == 0)
+            {
+                audio.AlbumArtists = audio.Artists.Take(1).ToList();
             }
 
             // Track number

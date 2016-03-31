@@ -299,7 +299,7 @@ namespace MediaBrowser.Common.Implementations.Security
             };
 
             record.TrialVersion = IsInTrial(reg.expDate, record.RegChecked, record.IsRegistered);
-            record.IsValid = !record.RegChecked || (record.IsRegistered || record.TrialVersion);
+            record.IsValid = !record.RegChecked || record.IsRegistered || record.TrialVersion;
 
             return record;
         }
@@ -314,7 +314,7 @@ namespace MediaBrowser.Common.Implementations.Security
 
             var isInTrial = expirationDate > DateTime.UtcNow;
 
-            return (isInTrial && !isRegistered);
+            return isInTrial && !isRegistered;
         }
 
         /// <summary>

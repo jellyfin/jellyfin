@@ -13,12 +13,12 @@ namespace MediaBrowser.Model.Dlna
 		and there are no issues with causing a buffer overflow if the 
 		receiver uses TCP flow control to reduce total throughput.
 	    */
-        BackgroundTransferMode = (1 << 22),
+        BackgroundTransferMode = 1 << 22,
 
-        ByteBasedSeek = (1 << 29),
-        ConnectionStall = (1 << 21),
+        ByteBasedSeek = 1 << 29,
+        ConnectionStall = 1 << 21,
 
-        DlnaV15 = (1 << 20),
+        DlnaV15 = 1 << 20,
 
         /*! <i>Interactive</i> transfer mode.
             For best effort transfer of images and non-real-time transfers. 
@@ -27,13 +27,13 @@ namespace MediaBrowser.Model.Dlna
             \ref DH_TransferMode_Bulk is that the former assumes that the 
             transfer is intended for immediate rendering.
         */
-        InteractiveTransferMode = (1 << 23),
+        InteractiveTransferMode = 1 << 23,
 
-        PlayContainer = (1 << 28),
-        RtspPause = (1 << 25),
-        S0Increase = (1 << 27),
-        SenderPaced = (1L << 31),
-        SnIncrease = (1 << 26),
+        PlayContainer = 1 << 28,
+        RtspPause = 1 << 25,
+        S0Increase = 1 << 27,
+        SenderPaced = 1L << 31,
+        SnIncrease = 1 << 26,
 
         /*!	<i>Streaming</i> transfer mode.
         The server transmits at a throughput sufficient for real-time playback of 
@@ -41,8 +41,8 @@ namespace MediaBrowser.Model.Dlna
         \ref DH_TransferMode_Interactive and \ref DH_TransferMode_Bulk transfer modes. 
         The most well-known exception to this general claim is for live streams.
         */
-        StreamingTransferMode = (1 << 24),
+        StreamingTransferMode = 1 << 24,
 
-        TimeBasedSeek = (1 << 30)
+        TimeBasedSeek = 1 << 30
     }
 }

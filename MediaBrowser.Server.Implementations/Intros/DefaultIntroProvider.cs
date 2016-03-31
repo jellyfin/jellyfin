@@ -1,22 +1,18 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Security;
-using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
-using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
-using MediaBrowser.Common.IO;
 using MoreLinq;
 
 namespace MediaBrowser.Server.Implementations.Intros
@@ -106,10 +102,15 @@ namespace MediaBrowser.Server.Implementations.Intros
 
             if (trailerTypes.Count > 0)
             {
+                var excludeTrailerTypes = Enum.GetNames(typeof(TrailerType))
+                        .Select(i => (TrailerType)Enum.Parse(typeof(TrailerType), i, true))
+                        .Except(trailerTypes)
+                        .ToArray();
+
                 var trailerResult = _libraryManager.GetItemList(new InternalItemsQuery
                 {
                     IncludeItemTypes = new[] { typeof(Trailer).Name },
-                    TrailerTypes = trailerTypes.ToArray()
+                    ExcludeTrailerTypes = excludeTrailerTypes
                 });
 
                 candidates.AddRange(trailerResult.Select(i => new ItemWithTrailer
@@ -156,7 +157,7 @@ namespace MediaBrowser.Server.Implementations.Intros
             })
                 .OrderByDescending(i => i.Score)
                 .ThenBy(i => Guid.NewGuid())
-                .ThenByDescending(i => (i.IsPlayed ? 0 : 1))
+                .ThenByDescending(i => i.IsPlayed ? 0 : 1)
                 .Select(i => i.IntroInfo)
                 .Take(trailerLimit)
                 .Concat(customIntros.Take(1))

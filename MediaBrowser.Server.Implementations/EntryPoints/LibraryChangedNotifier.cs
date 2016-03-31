@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
@@ -11,7 +10,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.LiveTv;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints
 {

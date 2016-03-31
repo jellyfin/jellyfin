@@ -285,7 +285,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public void Post(OnPlaybackStart request)
         {
-            var queueableMediaTypes = (request.QueueableMediaTypes ?? string.Empty);
+            var queueableMediaTypes = request.QueueableMediaTypes ?? string.Empty;
 
             Post(new ReportPlaybackStart
             {
