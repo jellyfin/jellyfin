@@ -2480,5 +2480,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 }
             }
         }
+
+        public async Task<List<ChannelInfo>> GetSatChannelScanResult(TunerHostInfo info, CancellationToken cancellationToken)
+        {
+            var result = await new TunerHosts.SatIp.ChannelScan().Scan(info, cancellationToken).ConfigureAwait(false);
+
+            return result.Select(i => new ChannelInfo()).ToList();
+        }
     }
 }
