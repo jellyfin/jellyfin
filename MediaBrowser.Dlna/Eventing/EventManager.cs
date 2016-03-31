@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;

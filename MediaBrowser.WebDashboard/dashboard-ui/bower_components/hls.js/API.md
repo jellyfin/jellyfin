@@ -191,6 +191,7 @@ configuration parameters could be provided to hls.js upon instantiation of Hls O
       maxBufferSize : 60*1000*1000,
       maxBufferHole : 0.3,
       maxSeekHole : 2,
+      seekHoleNudgeDuration : 0.01,
       maxFragLookUpTolerance : 0.2,
       liveSyncDurationCount : 3,
       liveMaxLatencyDurationCount: 10,
@@ -275,6 +276,13 @@ This could result in small overlapping or hole in media buffer. This tolerance f
 in case playback is stalled, and a buffered range is available upfront, less than maxSeekHole seconds from current media position,
 hls.js will jump over this buffer hole to reach the beginning of this following buffered range.
 ```maxSeekHole``` allows to configure this jumpable threshold.
+
+
+#### ```seekHoleNudgeDuration```
+(default 0.01s)
+
+ in case playback is still stalling although a seek over buffer hole just occured, hls.js will seek to next buffer start + (nb of consecutive stalls * seekHoleNudgeDuration to try to restore playback
+
 
 #### ```maxFragLookUpTolerance```
 (default 0.2s)

@@ -1,0 +1,277 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel='import' href='../iron-location.html'>
+<link rel='import' href='../../polymer/polymer.html'>
+
+<script>
+  Polymer({
+    is: 'default-value',
+    properties: {
+      val: {
+        type: String,
+        notify: true,
+        value: 'default-value'
+      }
+    },
+  });
+
+  Polymer({
+    is: 'on-attached',
+    properties: {
+      val: {
+        type: String,
+        notify: true,
+        value: 'on-attached-default-value'
+      }
+    },
+    attached: function() {
+      if (this.val === 'on-attached-default-value') {
+        this.val = 'on-attached';
+      }
+    }
+  });
+
+  Polymer({
+    is: 'on-ready',
+    properties: {
+      val: {
+        type: String,
+        notify: true,
+        value: 'on-ready-default-value'
+      }
+    },
+    ready: function() {
+      this.val = 'on-ready';
+    }
+  });
+
+  Polymer({
+    is: 'on-timeout',
+    properties: {
+      val: {
+        type: String,
+        notify: true,
+        value: 'on-timeout-default-value'
+      }
+    },
+    attached: function() {
+      setTimeout(function() {
+        this.val = 'on-timeout';
+      }.bind(this), 10);
+    }
+  })
+</script>
+
+<dom-module id='default-before'>
+  <template>
+    <default-value value='{{val}}'></default-value>
+    <iron-location query='{{val}}'></iron-location>
+
+  </template>
+  <script>Polymer({is: 'default-before', properties: {val: {type: String}}});</script>
+</dom-module>
+
+<dom-module id='attached-before'>
+  <template>
+    <on-attached val='{{val}}'></on-attached>
+    <iron-location query='{{val}}'></iron-location>
+  </template>
+  <script>Polymer({is: 'attached-before', properties: {val: {type: String}}});</script>
+</dom-module>
+
+<dom-module id='ready-before'>
+  <template>
+    <on-ready val='{{val}}'></on-ready>
+    <iron-location query='{{val}}'></iron-location>
+  </template>
+  <script>Polymer({is: 'ready-before', properties: {val: {type: String}}});</script>
+</dom-module>
+
+<dom-module id='timeout-before'>
+  <template>
+    <on-timeout val='{{val}}'></on-timeout>
+    <iron-location query='{{val}}'></iron-location>
+  </template>
+  <script>Polymer({is: 'timeout-before', properties: {val: {type: String}}});</script>
+</dom-module>
+
+
+<dom-module id='default-after'>
+  <template>
+    <iron-location query='{{val}}'></iron-location>
+    <default-value value='{{val}}'></default-value>
+  </template>
+  <script>Polymer({is: 'default-after', properties: {val: {type: String}}});</script>
+</dom-module>
+
+<dom-module id='attached-after'>
+  <template>
+    <iron-location query='{{val}}'></iron-location>
+    <on-attached val='{{val}}'></on-attached>
+  </template>
+  <script>Polymer({is: 'attached-after', properties: {val: {type: String}}});</script>
+</dom-module>
+
+<dom-module id='ready-after'>
+  <template>
+    <iron-location query='{{val}}'></iron-location>
+    <on-ready val='{{val}}'></on-ready>
+  </template>
+  <script>Polymer({is: 'ready-after', properties: {val: {type: String}}});</script>
+</dom-module>
+
+<dom-module id='timeout-after'>
+  <template>
+    <iron-location query='{{val}}'></iron-location>
+    <on-timeout val='{{val}}'></on-timeout>
+  </template>
+  <script>Polymer({is: 'timeout-after', properties: {val: {type: String}}});</script>
+</dom-module>
+
+
+<dom-module id='default-below'>
+  <template>
+    <iron-location query='{{val}}'>
+      <default-value value='{{val}}'></default-value>
+    </iron-location>
+  </template>
+  <script>Polymer({is: 'default-below', properties: {val: {type: String}}});</script>
+</dom-module>
+
+<dom-module id='attached-below'>
+  <template>
+    <iron-location query='{{val}}'>
+      <on-attached val='{{val}}'></on-attached>
+    </iron-location>
+  </template>
+  <script>Polymer({is: 'attached-below', properties: {val: {type: String}}});</script>
+</dom-module>
+
+<dom-module id='ready-below'>
+  <template>
+    <iron-location query='{{val}}'>
+      <on-ready val='{{val}}'></on-ready>
+    </iron-location>
+  </template>
+  <script>Polymer({is: 'ready-below', properties: {val: {type: String}}});</script>
+</dom-module>
+
+<dom-module id='timeout-below'>
+  <template>
+    <iron-location query='{{val}}'>
+      <on-timeout val='{{val}}'></on-timeout>
+    </iron-location>
+  </template>
+  <script>Polymer({is: 'timeout-below', properties: {val: {type: String}}});</script>
+</dom-module>
+
+
+<dom-module id='default-above'>
+  <template>
+    <default-value value='{{val}}'>
+      <iron-location query='{{val}}'></iron-location>
+    </default-value>
+  </template>
+  <script>Polymer({is: 'default-above', properties: {val: {type: String}}});</script>
+</dom-module>
+
+<dom-module id='attached-above'>
+  <template>
+    <on-attached val='{{val}}'>
+      <iron-location query='{{val}}'>
+      </iron-location>
+    </on-attached>
+  </template>
+  <script>Polymer({is: 'attached-above', properties: {val: {type: String}}});</script>
+</dom-module>
+
+<dom-module id='ready-above'>
+  <template>
+    <on-ready val='{{val}}'>
+      <iron-location query='{{val}}'>
+      </iron-location>
+    </on-ready>
+  </template>
+  <script>Polymer({is: 'ready-above', properties: {val: {type: String}}});</script>
+</dom-module>
+
+<dom-module id='timeout-above'>
+  <template>
+    <on-timeout val='{{val}}'>
+      <iron-location query='{{val}}'></iron-location>
+    </on-timeout>
+  </template>
+  <script>Polymer({is: 'timeout-above', properties: {val: {type: String}}});</script>
+</dom-module>
+
+
+<dom-module id='default-container'>
+  <template>
+    <iron-location query='{{val}}'></iron-location>
+  </template>
+  <script>
+    Polymer({
+      is: 'default-container',
+      properties: {val: {type: String, value: 'default-container-val'}}
+    });
+  </script>
+</dom-module>
+
+<dom-module id='attached-container'>
+  <template>
+    <iron-location query='{{val}}'></iron-location>
+  </template>
+  <script>
+    Polymer({
+      is: 'attached-container',
+      properties: {val: {type: String, value: 'container-attached-default-val'}},
+      attached: function() {
+        if (this.val === 'container-attached-default-val') {
+          this.val = 'attached-container-val';
+        }
+      }
+    });
+  </script>
+</dom-module>
+
+<dom-module id='ready-container'>
+  <template>
+    <iron-location query='{{val}}'></iron-location>
+  </template>
+  <script>
+    Polymer({
+      is: 'ready-container', properties: {val: {type: String}},
+      ready: function() {
+        this.val = 'ready-container-val';
+      }
+    });
+  </script>
+</dom-module>
+
+<dom-module id='timeout-container'>
+  <template>
+    <iron-location query='{{val}}'></iron-location>
+  </template>
+  <script>Polymer({
+    is: 'timeout-container',
+    properties: {
+      val: {
+        type: String,
+        notify: true
+      }
+    },
+    attached: function() {
+      setTimeout(function() {
+        this.val = 'on-timeout';
+      }.bind(this), 10);
+    }
+  });</script>
+</dom-module>

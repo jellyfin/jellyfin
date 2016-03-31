@@ -119,18 +119,25 @@
 
     function showActivePlayerMenu(playerInfo) {
 
-        require(['paper-checkbox', 'fade-in-animation', 'fade-out-animation', 'paper-dialog'], function () {
-            showActivePlayerMenuInternal(playerInfo);
+        require(['dialogHelper', 'paper-checkbox', ], function (dialogHelper) {
+            showActivePlayerMenuInternal(dialogHelper, playerInfo);
         });
     }
 
-    function showActivePlayerMenuInternal(playerInfo) {
+    function showActivePlayerMenuInternal(dialogHelper, playerInfo) {
 
         var html = '';
 
-        var dlg = document.createElement('paper-dialog');
-        dlg.setAttribute('with-backdrop', 'with-backdrop');
-        dlg.setAttribute('role', 'alertdialog');
+        var dialogOptions = {
+            removeOnClose: true
+        };
+
+        dialogOptions.modal = false;
+        dialogOptions.entryAnimationDuration = 160;
+        dialogOptions.exitAnimationDuration = 160;
+        dialogOptions.autoFocus = false;
+
+        var dlg = dialogHelper.createDialog(dialogOptions);
 
         html += '<h2>';
         html += (playerInfo.deviceName || playerInfo.name);
@@ -152,33 +159,47 @@
 
         // On small layouts papepr dialog doesn't respond very well. this button isn't that important here anyway.
         if (screen.availWidth >= 600) {
-            html += '<paper-button onclick="Dashboard.navigate(\'nowplaying.html\');" dialog-dismiss>' + Globalize.translate('ButtonRemoteControl') + '</paper-button>';
+            html += '<paper-button class="btnRemoteControl">' + Globalize.translate('ButtonRemoteControl') + '</paper-button>';
         }
 
-        html += '<paper-button dialog-dismiss onclick="MediaController.disconnectFromPlayer();">' + Globalize.translate('ButtonDisconnect') + '</paper-button>';
-        html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonCancel') + '</paper-button>';
+        html += '<paper-button class="btnDisconnect">' + Globalize.translate('ButtonDisconnect') + '</paper-button>';
+        html += '<paper-button class="btnCancel">' + Globalize.translate('ButtonCancel') + '</paper-button>';
         html += '</div>';
 
         dlg.innerHTML = html;
 
         document.body.appendChild(dlg);
 
-        setTimeout(function () {
+        var chkMirror = dlg.querySelector('.chkMirror');
 
-            var chkMirror = dlg.querySelector('.chkMirror');
+        if (chkMirror) {
+            chkMirror.addEventListener('change', onMirrorChange);
+        }
 
-            if (chkMirror) {
-                chkMirror.addEventListener('change', onMirrorChange);
-            }
+        var destination = '';
 
-            dlg.open();
-
-            // Has to be assigned a z-index after the call to .open() 
-            dlg.addEventListener('iron-overlay-closed', function () {
-                dlg.parentNode.removeChild(dlg);
+        var btnRemoteControl = dlg.querySelector('.btnRemoteControl');
+        if (btnRemoteControl) {
+            btnRemoteControl.addEventListener('click', function () {
+                destination = 'nowplaying.html';
+                dialogHelper.close(dlg);
             });
+        }
 
-        }, 100);
+        dlg.querySelector('.btnDisconnect').addEventListener('click', function () {
+            MediaController.disconnectFromPlayer();
+            dialogHelper.close(dlg);
+        });
+
+        dlg.querySelector('.btnCancel').addEventListener('click', function () {
+            dialogHelper.close(dlg);
+        });
+
+        dialogHelper.open(dlg).then(function () {
+            if (destination) {
+                Dashboard.navigate(destination);
+            }
+        });
     }
 
     function onMirrorChange() {

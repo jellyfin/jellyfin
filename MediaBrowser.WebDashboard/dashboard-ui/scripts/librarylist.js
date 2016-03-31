@@ -478,10 +478,16 @@
                                 break;
                             case 'download':
                                 {
-                                    var downloadHref = ApiClient.getUrl("Items/" + itemId + "/Download", {
-                                        api_key: ApiClient.accessToken()
+                                    require(['fileDownloader'], function (fileDownloader) {
+                                        var downloadHref = ApiClient.getUrl("Items/" + itemId + "/Download", {
+                                            api_key: ApiClient.accessToken()
+                                        });
+
+                                        fileDownloader([{
+                                            url: downloadHref,
+                                            itemId: itemId
+                                        }]);
                                     });
-                                    window.location.href = downloadHref;
 
                                     break;
                                 }

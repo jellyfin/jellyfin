@@ -247,21 +247,9 @@
 
         var page = this;
 
-        $('.chkPremiumFilter', page).on('change', function () {
+        $('#selectSystem', page).on('change', function () {
 
-            if (this.checked) {
-                query.IsPremium = false;
-            } else {
-                query.IsPremium = null;
-            }
-            reloadList(page);
-        });
-
-        $('.radioPackageTypes', page).on('change', function () {
-
-            var val = $('.radioPackageTypes:checked', page).val();
-
-            query.TargetSystems = val;
+            query.TargetSystems = this.value;
             reloadList(page);
         });
 
@@ -274,21 +262,6 @@
     }).on('pageshow', "#pluginCatalogPage", function () {
 
         var page = this;
-
-        $(".radioPackageTypes", page).each(function () {
-
-            this.checked = this.value == query.TargetSystems;
-
-        }).checkboxradio('refresh');
-
-        // Reset form values using the last used query
-        $('.chkPremiumFilter', page).each(function () {
-
-            var filters = query.IsPremium || false;
-
-            this.checked = filters;
-
-        }).checkboxradio('refresh');
 
         reloadList(page);
     });

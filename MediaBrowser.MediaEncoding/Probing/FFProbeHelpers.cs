@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.MediaEncoding;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.MediaEncoding.Probing

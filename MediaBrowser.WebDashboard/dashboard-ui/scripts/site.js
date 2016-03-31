@@ -655,41 +655,53 @@ var Dashboard = {
         }
     },
 
+    getToolsLinkHtml: function (item) {
+
+        var menuHtml = '';
+        var pageIds = item.pageIds ? item.pageIds.join(',') : '';
+        pageIds = pageIds ? (' data-pageids="' + pageIds + '"') : '';
+        menuHtml += '<a class="sidebarLink" href="' + item.href + '"' + pageIds + '>';
+
+        var icon = item.icon;
+
+        if (icon) {
+            var style = item.color ? ' style="color:' + item.color + '"' : '';
+
+            menuHtml += '<iron-icon icon="' + icon + '" class="sidebarLinkIcon"' + style + '></iron-icon>';
+        }
+
+        menuHtml += '<span class="sidebarLinkText">';
+        menuHtml += item.name;
+        menuHtml += '</span>';
+        menuHtml += '</a>';
+        return menuHtml;
+    },
+
     getToolsMenuHtml: function (page) {
 
         var items = Dashboard.getToolsMenuLinks(page);
 
         var i, length, item;
         var menuHtml = '';
-
+        menuHtml += '<div class="drawerContent">';
         for (i = 0, length = items.length; i < length; i++) {
 
             item = items[i];
 
-            if (item.divider) {
-                menuHtml += "<div class='sidebarDivider'></div>";
-            }
+            if (item.items) {
 
-            if (item.href) {
-
-                var style = item.color ? ' style="color:' + item.color + '"' : '';
-
-                if (item.selected) {
-                    menuHtml += '<a class="sidebarLink selectedSidebarLink" href="' + item.href + '">';
+                if (item.icon) {
+                    var style = item.color ? ' style="color:' + item.color + '"' : '';
+                    menuHtml += '<emby-collapsible icon="' + item.icon + '" title="' + item.name + '">';
                 } else {
-                    menuHtml += '<a class="sidebarLink" href="' + item.href + '">';
+                    menuHtml += '<emby-collapsible title="' + item.name + '">';
                 }
+                menuHtml += item.items.map(Dashboard.getToolsLinkHtml).join('');
+                menuHtml += '</emby-collapsible>';
+            }
+            else if (item.href) {
 
-                var icon = item.icon;
-
-                if (icon) {
-                    menuHtml += '<iron-icon icon="' + icon + '" class="sidebarLinkIcon"' + style + '></iron-icon>';
-                }
-
-                menuHtml += '<span class="sidebarLinkText">';
-                menuHtml += item.name;
-                menuHtml += '</span>';
-                menuHtml += '</a>';
+                menuHtml += Dashboard.getToolsLinkHtml(item);
             } else {
 
                 menuHtml += '<div class="sidebarHeader">';
@@ -697,132 +709,254 @@ var Dashboard = {
                 menuHtml += '</div>';
             }
         }
+        menuHtml += '</div>';
 
         return menuHtml;
     },
 
-    ensureToolsMenu: function (page) {
-
-        var sidebar = page.querySelector('.toolsSidebar');
-
-        if (!sidebar) {
-
-            var html = '<div class="content-secondary toolsSidebar">';
-
-            html += '<div class="sidebarLinks">';
-
-            html += Dashboard.getToolsMenuHtml(page);
-            // sidebarLinks
-            html += '</div>';
-
-            // content-secondary
-            html += '</div>';
-
-            $('.content-primary', page).before(html);
-        }
-    },
-
-    getToolsMenuLinks: function (page) {
-
-        var pageElem = page;
-
-        var isServicesPage = page.classList.contains('appServicesPage');
-        var context = getParameterByName('context');
+    getToolsMenuLinks: function () {
 
         return [{
             name: Globalize.translate('TabServer'),
-            href: "dashboard.html",
-            selected: page.classList.contains("dashboardHomePage"),
             icon: 'dashboard',
-            color: '#38c'
-        }, {
-            name: Globalize.translate('TabDevices'),
-            href: "devices.html",
-            selected: page.classList.contains("devicesPage"),
-            icon: 'tablet',
-            color: '#ECA403'
-        }, {
-            name: Globalize.translate('TabUsers'),
-            href: "userprofiles.html",
-            selected: page.classList.contains("userProfilesPage"),
-            icon: 'people',
-            color: '#679C34'
+            color: '#38c',
+            items: [
+                {
+                    name: Globalize.translate('TabDashboard'),
+                    href: "dashboard.html",
+                    pageIds: ['dashboardPage'],
+                    icon: 'dashboard'
+                }, {
+                    name: Globalize.translate('TabSettings'),
+                    href: "dashboardgeneral.html",
+                    pageIds: ['dashboardGeneralPage'],
+                    icon: 'settings'
+                }, {
+                    name: Globalize.translate('TabDevices'),
+                    href: "devices.html",
+                    pageIds: ['devicesPage'],
+                    icon: 'tablet'
+                }, {
+                    name: Globalize.translate('TabUsers'),
+                    href: "userprofiles.html",
+                    pageIds: ['userProfilesPage'],
+                    icon: 'people'
+                }
+            ]
         }, {
             name: Globalize.translate('TabLibrary'),
-            divider: true,
-            href: "library.html",
-            selected: page.classList.contains("librarySectionPage"),
-            icon: 'video-library'
-        }, {
-            name: Globalize.translate('TabMetadata'),
-            href: "metadata.html",
-            selected: page.classList.contains('metadataConfigurationPage'),
-            icon: 'insert-drive-file'
-        }, {
-            name: Globalize.translate('TabPlayback'),
-            href: "playbackconfiguration.html",
-            selected: page.classList.contains('playbackConfigurationPage'),
-            icon: 'play-circle-filled'
-        }, {
-            name: Globalize.translate('TabSync'),
-            href: "syncactivity.html",
-            selected: page.classList.contains('syncConfigurationPage') || (isServicesPage && context == 'sync'),
-            icon: 'sync'
-        }, {
-            divider: true,
-            name: Globalize.translate('TabExtras')
-        }, {
-            name: Globalize.translate('TabAutoOrganize'),
-            href: "autoorganizelog.html",
-            selected: page.classList.contains("organizePage"),
             icon: 'folder',
-            color: '#01C0DD'
+            items: [
+                {
+                    name: Globalize.translate('TabFolders'),
+                    href: "library.html",
+                    pageIds: ['mediaLibraryPage'],
+                    icon: 'folder'
+                },
+                {
+                    name: Globalize.translate('TabMetadata'),
+                    href: "metadata.html",
+                    pageIds: ['metadataConfigurationPage'],
+                    icon: 'insert-drive-file'
+                },
+                {
+                    name: Globalize.translate('TabServices'),
+                    href: "metadataimages.html",
+                    pageIds: ['metadataImagesConfigurationPage'],
+                    icon: 'insert-drive-file'
+                },
+                {
+                    name: Globalize.translate('TabNfoSettings'),
+                    href: "metadatanfo.html",
+                    pageIds: ['metadataNfoPage'],
+                    icon: 'insert-drive-file'
+                },
+                {
+                    name: Globalize.translate('TabPathSubstitution'),
+                    href: "librarypathmapping.html",
+                    pageIds: ['libraryPathMappingPage'],
+                    icon: 'mode-edit'
+                },
+                {
+                    name: Globalize.translate('TabSubtitles'),
+                    href: "metadatasubtitles.html",
+                    pageIds: ['metadataSubtitlesPage'],
+                    icon: 'closed-caption'
+                },
+                {
+                    name: Globalize.translate('TabAdvanced'),
+                    href: "librarysettings.html",
+                    pageIds: ['librarySettingsPage'],
+                    icon: 'settings'
+                }
+            ]
         }, {
-            name: Globalize.translate('TabDLNA'),
-            href: "dlnasettings.html",
-            selected: page.classList.contains("dlnaPage"),
-            icon: 'tv',
-            color: '#E5342E'
+            name: Globalize.translate('DLNA'),
+            icon: 'live-tv',
+            items: [
+                {
+                    name: Globalize.translate('TabSettings'),
+                    href: "dlnasettings.html",
+                    pageIds: ['dlnaSettingsPage'],
+                    icon: 'settings'
+                },
+                {
+                    name: Globalize.translate('TabProfiles'),
+                    href: "dlnaprofiles.html",
+                    pageIds: ['dlnaProfilesPage', 'dlnaProfilePage'],
+                    icon: 'live-tv'
+                }
+            ]
         }, {
             name: Globalize.translate('TabLiveTV'),
-            href: "livetvstatus.html",
-            selected: page.classList.contains("liveTvSettingsPage") || (isServicesPage && context == 'livetv'),
-            icon: 'live-tv',
-            color: '#293AAE'
+            icon: 'dvr',
+            items: [
+                {
+                    name: Globalize.translate('TabSettings'),
+                    href: "livetvstatus.html",
+                    pageIds: ['liveTvStatusPage'],
+                    icon: 'settings'
+                },
+                {
+                    name: Globalize.translate('TabAdvanced'),
+                    href: "livetvsettings.html",
+                    pageIds: ['liveTvSettingsPage'],
+                    icon: 'settings'
+                },
+                {
+                    name: Globalize.translate('TabServices'),
+                    href: "appservices.html?context=livetv",
+                    //selected: (isServicesPage && context == 'livetv'),
+                    icon: 'add-shopping-cart'
+                }
+            ]
         }, {
-            name: Globalize.translate('TabNotifications'),
-            href: "notificationsettings.html",
-            selected: page.classList.contains("notificationConfigurationPage"),
-            icon: 'notifications',
-            color: 'brown'
+            name: Globalize.translate('TabPlayback'),
+            icon: 'play-circle-filled',
+            items: [
+                {
+                    name: Globalize.translate('TabCinemaMode'),
+                    href: "cinemamodeconfiguration.html",
+                    pageIds: ['cinemaModeConfigurationPage'],
+                    icon: 'local-movies'
+                },
+                {
+                    name: Globalize.translate('TabResumeSettings'),
+                    href: "playbackconfiguration.html",
+                    pageIds: ['playbackConfigurationPage'],
+                    icon: 'play-circle-filled'
+                },
+                {
+                    name: Globalize.translate('TabStreaming'),
+                    href: "streamingsettings.html",
+                    pageIds: ['streamingSettingsPage'],
+                    icon: 'wifi'
+                },
+                {
+                    name: Globalize.translate('TabTranscoding'),
+                    href: "encodingsettings.html",
+                    pageIds: ['encodingSettingsPage'],
+                    icon: 'play-circle-filled'
+                }
+            ]
         }, {
             name: Globalize.translate('TabPlugins'),
-            href: "plugins.html",
-            selected: page.classList.contains("pluginConfigurationPage"),
             icon: 'add-shopping-cart',
-            color: '#9D22B1'
+            items: [
+                {
+                    name: Globalize.translate('TabMyPlugins'),
+                    href: "plugins.html",
+                    pageIds: ['pluginsPage'],
+                    icon: 'file-download'
+                }, {
+                    name: Globalize.translate('TabCatalog'),
+                    href: "plugincatalog.html",
+                    pageIds: ['pluginCatalogPage'],
+                    icon: 'add-shopping-cart'
+                }
+            ]
         }, {
-            divider: true,
-            name: Globalize.translate('TabExpert')
+            name: Globalize.translate('TabSync'),
+            icon: 'sync',
+            items: [
+                {
+                    name: Globalize.translate('TabSyncJobs'),
+                    href: "syncactivity.html",
+                    pageIds: ['syncActivityPage', 'syncJobPage'],
+                    icon: 'menu'
+                }, {
+                    name: Globalize.translate('TabCameraUpload'),
+                    href: "devicesupload.html",
+                    pageIds: ['devicesUploadPage'],
+                    icon: 'photo'
+                }, {
+                    name: Globalize.translate('TabServices'),
+                    href: "appservices.html?context=sync",
+                    //selected: (isServicesPage && context == 'sync'),
+                    icon: 'add-shopping-cart'
+                }, {
+                    name: Globalize.translate('TabSettings'),
+                    href: "syncsettings.html",
+                    pageIds: ['syncSettingsPage'],
+                    icon: 'settings'
+                }
+            ]
         }, {
             name: Globalize.translate('TabAdvanced'),
-            href: "advanced.html",
-            selected: page.classList.contains("advancedConfigurationPage"),
             icon: 'settings',
-            color: '#F16834'
-        }, {
-            name: Globalize.translate('TabScheduledTasks'),
-            href: "scheduledtasks.html",
-            selected: page.classList.contains("scheduledTasksConfigurationPage"),
-            icon: 'schedule',
-            color: '#38c'
+            items: [
+                {
+                    name: Globalize.translate('TabAutoOrganize'),
+                    href: "autoorganizelog.html",
+                    pageIds: ['libraryFileOrganizerPage', 'libraryFileOrganizerSmartMatchPage', 'libraryFileOrganizerLogPage'],
+                    icon: 'folder'
+                },
+                {
+                    name: Globalize.translate('TabHosting'),
+                    href: "dashboardhosting.html",
+                    pageIds: ['dashboardHostingPage'],
+                    icon: 'wifi'
+                }, {
+                    name: Globalize.translate('TabNotifications'),
+                    href: "notificationsettings.html",
+                    pageIds: ['notificationSettingsPage', 'notificationSettingPage'],
+                    icon: 'notifications'
+                }, {
+                    name: Globalize.translate('TabScheduledTasks'),
+                    href: "scheduledtasks.html",
+                    pageIds: ['scheduledTasksPage', 'scheduledTaskPage'],
+                    icon: 'schedule'
+                },
+                {
+                    name: Globalize.translate('TabSecurity'),
+                    href: "serversecurity.html",
+                    pageIds: ['serverSecurityPage'],
+                    icon: 'lock'
+                }
+            ]
         }, {
             name: Globalize.translate('TabHelp'),
-            divider: true,
-            href: "support.html",
-            selected: pageElem.id == "supportPage" || pageElem.id == "logPage" || pageElem.id == "supporterPage" || pageElem.id == "supporterKeyPage" || pageElem.id == "aboutPage",
-            icon: 'help',
-            color: '#679C34'
+            icon: 'info',
+            items: [
+                {
+                    name: Globalize.translate('TabAbout'),
+                    href: "about.html",
+                    pageIds: ['aboutPage'],
+                    icon: 'info'
+                },
+                {
+                    name: Globalize.translate('TabLogs'),
+                    href: "log.html",
+                    pageIds: ['logPage'],
+                    icon: 'menu'
+                },
+                {
+                    name: Globalize.translate('TabEmbyPremiere'),
+                    href: "supporterkey.html",
+                    pageIds: ['supporterKeyPage'],
+                    icon: 'add-circle'
+                }
+            ]
         }];
 
     },
@@ -1148,52 +1282,13 @@ var Dashboard = {
         });
     },
 
-    ensurePageTitle: function (page) {
+    setPageTitle: function (title, documentTitle) {
 
-        if (!page.classList.contains('type-interior')) {
-            return;
-        }
+        LibraryMenu.setTitle(title || 'Emby');
 
-        var pageElem = page;
-
-        if (pageElem.querySelector('.pageTitle')) {
-            return;
-        }
-
-        var parent = pageElem.querySelector('.content-primary');
-
-        if (!parent) {
-            parent = pageElem.getElementsByClassName('ui-content')[0];
-        }
-
-        var helpUrl = pageElem.getAttribute('data-helpurl');
-
-        var html = '<div>';
-        html += '<h1 class="pageTitle" style="display:inline-block;">' + (document.title || '&nbsp;') + '</h1>';
-
-        if (helpUrl) {
-            html += '<a href="' + helpUrl + '" target="_blank" class="clearLink" style="margin-top:-10px;display:inline-block;vertical-align:middle;margin-left:1em;"><paper-button raised class="secondary mini"><iron-icon icon="info"></iron-icon><span>' + Globalize.translate('ButtonHelp') + '</span></paper-button></a>';
-        }
-
-        html += '</div>';
-
-        $(parent).prepend(html);
-    },
-
-    setPageTitle: function (title) {
-
-        var page = $.mobile.activePage;
-
-        if (page) {
-            var elem = $(page)[0].querySelector('.pageTitle');
-
-            if (elem) {
-                elem.innerHTML = title;
-            }
-        }
-
-        if (title) {
-            document.title = title;
+        documentTitle = documentTitle || title;
+        if (documentTitle) {
+            document.title = documentTitle;
         }
     },
 
@@ -1437,7 +1532,7 @@ var AppInfo = {};
         // This doesn't perform well on iOS
         AppInfo.enableHeadRoom = !isIOS;
 
-        AppInfo.supportsDownloading = !(AppInfo.isNativeApp);
+        AppInfo.supportsDownloading = !(AppInfo.isNativeApp && isIOS);
 
         // This currently isn't working on android, unfortunately
         AppInfo.supportsFileInput = !(AppInfo.isNativeApp && isAndroid);
@@ -1850,7 +1945,7 @@ var AppInfo = {};
         define("slideshow", [embyWebComponentsBowerPath + "/slideshow/slideshow"], returnFirstDependency);
 
         define('fetch', [bowerPath + '/fetch/fetch']);
-        define('objectassign', ['legacy/objectassign']);
+        define('objectassign', [embyWebComponentsBowerPath + '/objectassign']);
         define('webcomponentsjs', [bowerPath + '/webcomponentsjs/webcomponents-lite.min.js']);
         define('native-promise-only', [bowerPath + '/native-promise-only/lib/npo.src']);
 
@@ -2024,6 +2119,12 @@ var AppInfo = {};
         } else {
             define("loading", [embyWebComponentsBowerPath + "/loading/loading-lite"], returnFirstDependency);
         }
+
+        if (Dashboard.isRunningInCordova() && browser.android) {
+            define("fileDownloader", ['cordova/android/filedownloader'], returnFirstDependency);
+        } else {
+            define("fileDownloader", ['components/filedownloader'], returnFirstDependency);
+        }
     }
 
     function init(hostingAppInfo) {
@@ -2110,11 +2211,12 @@ var AppInfo = {};
         var drawer = document.querySelector('.mainDrawerPanel');
         drawer.classList.remove('mainDrawerPanelPreInit');
         drawer.forceNarrow = true;
+
         var drawerWidth = screen.availWidth - 50;
         // At least 240
         drawerWidth = Math.max(drawerWidth, 240);
-        // But not exceeding 310
-        drawerWidth = Math.min(drawerWidth, 310);
+        // But not exceeding 270
+        drawerWidth = Math.min(drawerWidth, 270);
 
         drawer.drawerWidth = drawerWidth + "px";
 
@@ -2220,13 +2322,6 @@ var AppInfo = {};
         });
 
         defineRoute({
-            path: '/advanced.html',
-            dependencies: [],
-            autoFocus: false,
-            roles: 'admin'
-        });
-
-        defineRoute({
             path: '/appservices.html',
             dependencies: [],
             autoFocus: false,
@@ -2301,7 +2396,8 @@ var AppInfo = {};
 
         defineRoute({
             path: '/dashboardgeneral.html',
-            dependencies: [],
+            dependencies: ['emby-collapsible', 'paper-textarea', 'paper-input', 'paper-checkbox'],
+            controller: 'scripts/dashboardgeneral',
             autoFocus: false,
             roles: 'admin'
         });
@@ -2378,7 +2474,8 @@ var AppInfo = {};
         defineRoute({
             path: '/favorites.html',
             dependencies: [],
-            autoFocus: false
+            autoFocus: false,
+            controller: 'scripts/favorites'
         });
 
         defineRoute({
@@ -2552,9 +2649,9 @@ var AppInfo = {};
 
         defineRoute({
             path: '/log.html',
-            dependencies: [],
-            autoFocus: false,
-            roles: 'admin'
+            dependencies: ['paper-toggle-button'],
+            roles: 'admin',
+            controller: 'scripts/logpage'
         });
 
         defineRoute({
@@ -3288,17 +3385,7 @@ pageClassOn('viewshow', "page", function () {
         document.documentElement.classList.remove('darkScrollbars');
     }
 
-    Dashboard.ensurePageTitle(page);
-
     var apiClient = window.ApiClient;
-
-    if (apiClient && apiClient.isLoggedIn()) {
-
-        if (page.classList.contains('type-interior')) {
-
-            Dashboard.ensureToolsMenu(page);
-        }
-    }
 
     Dashboard.ensureHeader(page);
 

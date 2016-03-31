@@ -282,9 +282,9 @@ html {
     font-size: 14px;
 }
 
-html.smallerDefault {
-    font-size: 13px;
-}
+    html.smallerDefault {
+        font-size: 13px;
+    }
 
 body {
     overflow-y: scroll !important;
@@ -817,38 +817,23 @@ paper-input + .fieldDescription {
 }
 
 .content-primary {
-    padding-top: 55px;
+    padding-top: 70px;
 }
 
-.content-secondary {
-    z-index: 999;
-    border: 0;
-    display: none;
-    text-align: left;
-    width: 250px;
-    position: fixed;
-    top: 51px;
-    left: 0;
-    bottom: 0;
-    margin: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    border-right: 1px solid #e0e0e0;
-    /*-moz-box-shadow: -3px 0 10px 0 #555;
-    -webkit-box-shadow: -3px 0 10px 0 #555;
-    box-shadow: -3px 0 10px 0 #555;*/
+.mainDrawerPanel:not([narrow]) .content-primary {
+    padding: 110px 1.5em 3em 3em;
 }
+
+    .mainDrawerPanel:not([narrow]) .content-primary ul:first-child {
+        margin-top: 0;
+    }
 
 .background-theme-a, .dialog.background-theme-a {
-    background-color: #f6f6f6;
+    background-color: #f5f5f5;
 }
 
 .dialog:not(.background-theme-a):not(.background-theme-b) {
     background-color: #fff;
-}
-
-.ui-page-theme-a .content-secondary {
-    background: #fff;
 }
 
 .sidebarLinks {
@@ -874,10 +859,9 @@ paper-input + .fieldDescription {
     }
 
 .sidebarLinkIcon {
-    width: 72px !important;
     text-align: center;
     vertical-align: middle;
-    color: #7f7f7f;
+    margin-right: 2em;
 }
 
     .sidebarLinkIcon + span {
@@ -941,7 +925,7 @@ paper-input + .fieldDescription {
     Forms
     */
     form, .readOnlyContent {
-        max-width: 600px;
+        max-width: 700px;
     }
 
     .header {
@@ -954,19 +938,6 @@ paper-input + .fieldDescription {
         padding-top: 0;
         overflow: hidden;
     }
-
-    .content-secondary {
-        display: block;
-    }
-
-    .content-primary {
-        padding: 80px 15px 3em 0;
-        margin: 0 0 0 290px;
-    }
-
-        .content-primary ul:first-child {
-            margin-top: 0;
-        }
 }
 
 @media all and (min-width: 900px) {

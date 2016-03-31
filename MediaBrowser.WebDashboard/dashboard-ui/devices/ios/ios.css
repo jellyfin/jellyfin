@@ -139,17 +139,12 @@ h1, h1 a {
     position: absolute;
     left: 100px;
     right: 100px;
+    top: 12px;
     text-align: center;
     font-size: 16px;
     margin: 0 auto !important;
     padding: 0 !important;
-}
-
-@media all and (max-width: 400px) {
-
-    .libraryMenuButtonText {
-        display: block;
-    }
+    justify-content: center;
 }
 
 .libraryPanelHeader span {

@@ -79,7 +79,7 @@ namespace MediaBrowser.Dlna.Profiles
 
                 new DirectPlayProfile
                 {
-                    Container = "ts",
+                    Container = "ts,m2ts",
                     Type = DlnaProfileType.Video,
                     VideoCodec = "mpeg1video,mpeg2video,h264,vc1",
                     AudioCodec = "ac3,dca,mp2,mp3,aac,dca"

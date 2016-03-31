@@ -17,7 +17,6 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -85,7 +84,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                     if (info.ImportFavoritesOnly)
                     {
-                        result = result.Where(i => (i.IsFavorite ?? true)).ToList();
+                        result = result.Where(i => i.IsFavorite ?? true).ToList();
                     }
 
                     return result;

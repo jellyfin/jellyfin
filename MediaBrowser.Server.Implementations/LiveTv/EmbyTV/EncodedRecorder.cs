@@ -175,9 +175,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                     //process.Kill();
                     _process.StandardInput.WriteLine("q");
-
-                    // Need to wait because killing is asynchronous
-                    _process.WaitForExit(5000);
                 }
                 catch (Exception ex)
                 {

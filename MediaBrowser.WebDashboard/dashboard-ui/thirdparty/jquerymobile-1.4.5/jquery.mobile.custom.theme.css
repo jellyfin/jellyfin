@@ -198,21 +198,15 @@ body.ui-mobile-viewport,
 div.ui-mobile-viewport {
     overflow-x: hidden;
 }
+
 /* "page" containers - full-screen views, one should always be in view post-pageload */
-.ui-mobile [data-role=page],
-.ui-mobile [data-role=dialog],
-.ui-page {
+.ui-mobile [data-role=dialog] {
     top: 0;
     left: 0;
     width: 100%;
     min-height: 100%;
     position: absolute;
     border: 0;
-}
-
-/* "page" containers - full-screen views, one should always be in view post-pageload */
-.ui-mobile [data-role=dialog] {
-    display: none;
 }
 
 /* On ios4, setting focus on the page element causes flashing during transitions when there is an outline, so we turn off outlines */

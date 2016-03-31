@@ -7,10 +7,9 @@
       <HttpHeaderInfo name="User-Agent" value="Kodi" match="Substring" />
     </Headers>
   </Identification>
-  <FriendlyName>Emby</FriendlyName>
   <Manufacturer>Emby</Manufacturer>
   <ManufacturerUrl>http://emby.media/</ManufacturerUrl>
-  <ModelName>Emby</ModelName>
+  <ModelName>Emby Server</ModelName>
   <ModelDescription>Emby</ModelDescription>
   <ModelNumber>Emby</ModelNumber>
   <ModelUrl>http://emby.media/</ModelUrl>

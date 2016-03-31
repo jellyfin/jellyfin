@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Api.Playback;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
@@ -350,7 +349,7 @@ namespace MediaBrowser.Api
 
             if (job.Type != TranscodingJobType.Progressive)
             {
-                timerDuration = 1800000;
+                timerDuration = 60000;
             }
 
             job.PingTimeout = timerDuration;

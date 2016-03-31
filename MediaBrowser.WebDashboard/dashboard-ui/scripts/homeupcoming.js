@@ -30,8 +30,6 @@
             renderUpcoming(elem, items);
 
             Dashboard.hideLoadingMsg();
-
-            LibraryBrowser.setLastRefreshed(page);
         });
     }
 
@@ -120,11 +118,14 @@
         elem.innerHTML = html;
         ImageLoader.lazyChildren(elem);
     }
+    return function (view, params, tabContent) {
 
-    window.HomePage.renderUpcoming = function (page, tabContent) {
-        if (LibraryBrowser.needsRefresh(tabContent)) {
+        var self = this;
+
+        self.renderTab = function () {
+
             loadUpcoming(tabContent);
-        }
+        };
     };
 
 });

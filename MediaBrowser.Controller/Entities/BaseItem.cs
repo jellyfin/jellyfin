@@ -307,7 +307,7 @@ namespace MediaBrowser.Controller.Entities
 
             int thisMarker = 0, thisNumericChunk = 0;
 
-            while ((thisMarker < s1.Length))
+            while (thisMarker < s1.Length)
             {
                 if (thisMarker >= s1.Length)
                 {
@@ -2084,13 +2084,17 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (GetParent() is AggregateFolder || this is Channel || this is BasePluginFolder)
+                if (GetParent() is AggregateFolder || this is BasePluginFolder)
                 {
                     return true;
                 }
 
                 var view = this as UserView;
                 if (view != null && string.Equals(view.ViewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+                if (view != null && string.Equals(view.ViewType, CollectionType.Channels, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }

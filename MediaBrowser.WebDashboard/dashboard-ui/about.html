@@ -3,12 +3,6 @@
     <div data-role="content">
         <div class="content-primary">
             <div class="readOnlyContent">
-                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="support.html" data-role="button">${TabGeneral}</a>
-                    <a href="log.html" data-role="button">${TabLogs}</a>
-                    <a href="supporterkey.html" data-role="button" class="tabSupporterMembership">${TabEmbyPremiere}</a>
-                    <a href="about.html" data-role="button" class="ui-btn-active">${TabAbout}</a>
-                </div>
                 <h1>
                     <img class="imgLogoIcon" src="css/images/mblogoicon.png" /><span class="logoLibraryMenuButtonText">EMBY</span>
                 </h1>
@@ -44,7 +38,17 @@
                         <a href="http://thetvdb.com" target="_blank">TheTVDB.com</a>
                     </p>
                 </div>
-
+                <br/>
+                <p>${ProjectHasCommunity}</p>
+                <a data-role="button" data-icon="arrow-r" data-iconpos="right" href="http://emby.media/community" target="_blank">${VisitTheCommunity}</a>
+                <br />
+                <p>
+                    ${CheckoutKnowledgeBase}
+                </p>
+                <a data-role="button" data-icon="search" data-iconpos="right" href="http://emby.media/community/index.php?/forum/23-knowledge-base/" target="_blank">${SearchKnowledgeBase}</a>
+                <br />
+                <p>${VisitProjectWebsiteLong}</p>
+                <a data-role="button" data-icon="home" data-iconpos="right" href="http://emby.media" target="_blank">${VisitProjectWebsite}</a>
             </div>
         </div>
     </div>
