@@ -17,7 +17,7 @@
 
 using System.ComponentModel;
 
-namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp.SatIp
+namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp.Rtsp
 {
     /// <summary>
     /// Standard RTSP status codes.

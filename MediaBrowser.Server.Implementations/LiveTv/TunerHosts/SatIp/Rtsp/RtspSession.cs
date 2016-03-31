@@ -25,7 +25,7 @@ using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using MediaBrowser.Model.Logging;
 
-namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp.SatIp
+namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp.Rtsp
 {
     public class RtspSession : IDisposable
     {
@@ -58,15 +58,22 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp.SatIp
         private Socket _rtspSocket;
         private int _rtspSequenceNum = 1;
         private bool _disposed = false;
-        private ILogger _logger;
+        private readonly ILogger _logger;
         #endregion
 
         #region Constructor
 
         public RtspSession(string address, ILogger logger)
         {
+            if (string.IsNullOrWhiteSpace(address))
+            {
+                throw new ArgumentNullException("address");
+            }
+
             _address = address;
             _logger = logger;
+
+            _logger.Info("Creating RtspSession with url {0}", address);
         }
         ~RtspSession()
         {

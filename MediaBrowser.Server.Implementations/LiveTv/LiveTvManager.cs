@@ -2450,7 +2450,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public List<NameValuePair> GetSatIniMappings()
         {
-            var names = GetType().Assembly.GetManifestResourceNames().Where(i => i.IndexOf("SatIp.ini.satellite", StringComparison.OrdinalIgnoreCase) != -1).ToList();
+            var names = GetType().Assembly.GetManifestResourceNames().Where(i => i.IndexOf("SatIp.ini", StringComparison.OrdinalIgnoreCase) != -1).ToList();
 
             return names.Select(GetSatIniMappings).Where(i => i != null).DistinctBy(i => i.Value.Split('|')[0]).ToList();
         }
@@ -2472,20 +2472,21 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                         return null;
                     }
 
+                    var srch = "SatIp.ini.";
+                    var filename = Path.GetFileName(resource);
+
                     return new NameValuePair
                     {
                         Name = satType1 + " " + satType2,
-                        Value = satType2 + "|" + Path.GetFileName(resource)
+                        Value = satType2 + "|" + filename.Substring(filename.IndexOf(srch) + srch.Length)
                     };
                 }
             }
         }
 
-        public async Task<List<ChannelInfo>> GetSatChannelScanResult(TunerHostInfo info, CancellationToken cancellationToken)
+        public Task<List<ChannelInfo>> GetSatChannelScanResult(TunerHostInfo info, CancellationToken cancellationToken)
         {
-            var result = await new TunerHosts.SatIp.ChannelScan().Scan(info, cancellationToken).ConfigureAwait(false);
-
-            return result.Select(i => new ChannelInfo()).ToList();
+            return new TunerHosts.SatIp.ChannelScan(_logger).Scan(info, cancellationToken);
         }
     }
 }

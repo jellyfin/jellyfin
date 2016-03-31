@@ -18,8 +18,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-
-namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp.SatIp
+namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp.Rtsp
 {
     /// <summary>
     /// A simple class that can be used to serialise RTSP requests.
