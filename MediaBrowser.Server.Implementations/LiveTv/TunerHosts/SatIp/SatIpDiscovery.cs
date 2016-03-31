@@ -235,7 +235,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                 }
             }
 
-
             var result = new SatIpTunerHostInfo
             {
                 Url = url,
