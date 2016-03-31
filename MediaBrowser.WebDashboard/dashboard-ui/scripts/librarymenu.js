@@ -559,9 +559,21 @@
             return;
         }
 
+        if (user.Policy.EnableSync) {
+            showBySelector('.lnkMySync', true);
+        } else {
+            showBySelector('.lnkMySync', false);
+        }
+
         var userId = Dashboard.getCurrentUserId();
 
         var apiClient = window.ApiClient;
+
+        var libraryMenuOptions = document.querySelector('.libraryMenuOptions');
+
+        if (!libraryMenuOptions) {
+            return;
+        }
 
         getUserViews(apiClient, userId).then(function (result) {
 
@@ -629,7 +641,6 @@
 
             }).join('');
 
-            var libraryMenuOptions = document.querySelector('.libraryMenuOptions');
             libraryMenuOptions.innerHTML = html;
             var elem = libraryMenuOptions;
 
@@ -639,12 +650,6 @@
                 sidebarLinks[i].addEventListener('click', onSidebarLinkClick);
             }
         });
-
-        if (user.Policy.EnableSync) {
-            showBySelector('.lnkMySync', true);
-        } else {
-            showBySelector('.lnkMySync', false);
-        }
     }
 
     function onManageServerClicked() {

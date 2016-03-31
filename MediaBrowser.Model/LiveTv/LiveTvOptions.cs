@@ -37,6 +37,10 @@ namespace MediaBrowser.Model.LiveTv
         public string FriendlyName { get; set; }
         public int Tuners { get; set; }
         public string DiseqC { get; set; }
+        public string SourceA { get; set; }
+        public string SourceB { get; set; }
+        public string SourceC { get; set; }
+        public string SourceD { get; set; }
 
         public int DataVersion { get; set; }
 
