@@ -21,8 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-
-namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp.SatIp
+namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp.Rtsp
 {
     /// <summary>
     /// A simple class that can be used to deserialise RTSP responses.

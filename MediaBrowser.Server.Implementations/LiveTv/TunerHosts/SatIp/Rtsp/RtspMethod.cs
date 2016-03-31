@@ -17,7 +17,7 @@
 
 using System.Collections.Generic;
 
-namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp.SatIp
+namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp.Rtsp
 {
     /// <summary>
     /// Standard RTSP request methods.
