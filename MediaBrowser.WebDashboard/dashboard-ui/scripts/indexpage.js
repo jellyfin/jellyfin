@@ -237,41 +237,6 @@
         }
     }
 
-    function loadTab(page, index) {
-
-        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
-        var depends = [];
-        var scope = 'HomePage';
-        var method = '';
-
-        switch (index) {
-
-            case 0:
-                depends.push('scripts/sections');
-                method = 'renderHomeTab';
-                break;
-            case 1:
-                depends.push('scripts/homenextup');
-                method = 'renderNextUp';
-                break;
-            case 2:
-                depends.push('scripts/favorites');
-                method = 'renderFavorites';
-                break;
-            case 3:
-                depends.push('scripts/homeupcoming');
-                method = 'renderUpcoming';
-                break;
-            default:
-                return;
-                break;
-        }
-
-        require(depends, function () {
-            window[scope][method](page, tabContent);
-        });
-    }
-
     function onPlaybackStop(e, state) {
 
         if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
@@ -291,17 +256,67 @@
         return ApiClient.getDisplayPreferences(key, userId, displayPreferencesKey());
     }
 
-    window.HomePage = {
-        renderHomeTab: loadHomeTab
-    };
-
     return function (view, params) {
 
         var self = this;
 
+        self.renderTab = function () {
+            var tabContent = view.querySelector('.pageTabContent[data-index=\'' + 0 + '\']');
+            loadHomeTab(view, tabContent);
+        };
+
         var pageTabsContainer = view.querySelector('.pageTabsContainer');
 
         libraryBrowser.configurePaperLibraryTabs(view, view.querySelector('paper-tabs'), pageTabsContainer, 'home.html');
+
+        var tabControllers = [];
+        var renderedTabs = [];
+
+        function loadTab(page, index) {
+
+            var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+            var depends = [];
+
+            switch (index) {
+
+                case 0:
+                    depends.push('scripts/sections');
+                    break;
+                case 1:
+                    depends.push('scripts/homenextup');
+                    break;
+                case 2:
+                    depends.push('scripts/homefavorites');
+                    break;
+                case 3:
+                    depends.push('scripts/homeupcoming');
+                    break;
+                default:
+                    return;
+                    break;
+            }
+
+            require(depends, function (controllerFactory) {
+
+                if (index == 0) {
+                    self.tabContent = tabContent;
+                }
+                var controller = tabControllers[index];
+                if (!controller) {
+                    controller = index ? new controllerFactory(view, params, tabContent) : self;
+                    tabControllers[index] = controller;
+
+                    if (controller.initTab) {
+                        controller.initTab();
+                    }
+                }
+
+                if (renderedTabs.indexOf(index) == -1) {
+                    renderedTabs.push(index);
+                    controller.renderTab();
+                }
+            });
+        }
 
         pageTabsContainer.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));

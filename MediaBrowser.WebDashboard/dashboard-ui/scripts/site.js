@@ -2474,7 +2474,8 @@ var AppInfo = {};
         defineRoute({
             path: '/favorites.html',
             dependencies: [],
-            autoFocus: false
+            autoFocus: false,
+            controller: 'scripts/favorites'
         });
 
         defineRoute({

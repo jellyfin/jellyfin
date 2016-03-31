@@ -331,6 +331,8 @@
 
         var html = '';
 
+        html += '<div style="height:.5em;"></div>';
+
         var homeHref = window.ApiClient ? 'home.html' : 'selectserver.html?showuser=1';
 
         html += '<a class="lnkMediaFolder sidebarLink" href="' + homeHref + '" onclick="return LibraryMenu.onLinkClicked(event, this);">';
