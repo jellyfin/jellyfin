@@ -31,20 +31,26 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             _appHost = appHost;
             _config = config;
             _ssdp = ssdp;
+
+            _config.ConfigurationUpdated += _config_ConfigurationUpdated;
+        }
+
+        private void _config_ConfigurationUpdated(object sender, EventArgs e)
+        {
         }
 
         public void Run()
         {
-            //NatUtility.Logger = new LogWriter(_logger);
-
-            if (_config.Configuration.EnableUPnP)
-            {
-                Discover();
-            }
+            Discover();
         }
 
         private async void Discover()
         {
+            if (!_config.Configuration.EnableUPnP)
+            {
+                return;
+            }
+
             var discoverer = new NatDiscoverer();
 
             var cancellationTokenSource = new CancellationTokenSource(10000);
