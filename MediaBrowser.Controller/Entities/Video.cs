@@ -80,23 +80,6 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override LocationType LocationType
-        {
-            get
-            {
-                if (SourceType == SourceType.Channel)
-                {
-                    if (string.IsNullOrEmpty(Path))
-                    {
-                        return LocationType.Remote;
-                    }
-                }
-
-                return base.LocationType;
-            }
-        }
-
-        [IgnoreDataMember]
         public override bool SupportsAddingToPlaylist
         {
             get { return LocationType == LocationType.FileSystem && RunTimeTicks.HasValue; }
