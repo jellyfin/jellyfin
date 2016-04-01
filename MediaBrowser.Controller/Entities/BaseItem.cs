@@ -255,6 +255,11 @@ namespace MediaBrowser.Controller.Entities
 
                 if (string.IsNullOrWhiteSpace(Path))
                 {
+                    if (SourceType == SourceType.Channel)
+                    {
+                        return LocationType.Remote;
+                    }
+
                     return LocationType.Virtual;
                 }
 
