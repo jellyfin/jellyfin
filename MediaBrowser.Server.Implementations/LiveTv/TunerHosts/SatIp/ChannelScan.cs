@@ -25,28 +25,31 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 
         public async Task<List<ChannelInfo>> Scan(TunerHostInfo info, CancellationToken cancellationToken)
         {
-            var timedToken = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(timedToken.Token, cancellationToken);
+            var ini = info.SourceA.Split('|')[1];
+            var resource = GetType().Assembly.GetManifestResourceNames().FirstOrDefault(i => i.EndsWith(ini, StringComparison.OrdinalIgnoreCase));
 
-            using (var rtspSession = new RtspSession(info.Url, _logger))
+            _logger.Info("Opening ini file {0}", resource);
+            var list = new List<ChannelInfo>();
+
+            using (var stream = GetType().Assembly.GetManifestResourceStream(resource))
             {
-                var ini = info.SourceA.Split('|')[1];
-                var resource = GetType().Assembly.GetManifestResourceNames().FirstOrDefault(i => i.EndsWith(ini, StringComparison.OrdinalIgnoreCase));
-
-                _logger.Info("Opening ini file {0}", resource);
-                using (var stream = GetType().Assembly.GetManifestResourceStream(resource))
+                using (var reader = new StreamReader(stream))
                 {
-                    using (var reader = new StreamReader(stream))
+                    var parser = new StreamIniDataParser();
+                    var data = parser.ReadData(reader);
+
+                    var count = GetInt(data, "DVB", "0", 0);
+
+                    _logger.Info("DVB Count: {0}", count);
+
+                    var index = 1;
+                    var source = "1";
+
+                    while (index <= count)
                     {
-                        var parser = new StreamIniDataParser();
-                        var data = parser.ReadData(reader);
+                        cancellationToken.ThrowIfCancellationRequested();
 
-                        var count = GetInt(data, "DVB", "0", 0);
-
-                        var index = 1;
-                        var source = "1";
-
-                        while (!linkedToken.IsCancellationRequested)
+                        using (var rtspSession = new RtspSession(info.Url, _logger))
                         {
                             float percent = count == 0 ? 0 : (float)(index) / count;
                             percent = Math.Max(percent * 100, 100);
@@ -64,16 +67,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                                 tuning = string.Format("src={0}&freq={1}&pol={2}&sr={3}&fec={4}&msys=dvbs&mtype={5}&pids=0,16,17,18,20", source, strArray[0], strArray[1].ToLower(), strArray[2], strArray[3], strArray[5].ToLower());
                             }
 
-                            if (string.IsNullOrEmpty(rtspSession.RtspSessionId))
-                            {
-                                rtspSession.Setup(tuning, "unicast");
+                            rtspSession.Setup(tuning, "unicast");
 
-                                rtspSession.Play(string.Empty);
-                            }
-                            else
-                            {
-                                rtspSession.Play(tuning);
-                            }
+                            rtspSession.Play(string.Empty);
 
                             int signallevel;
                             int signalQuality;
@@ -86,7 +82,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                 }
             }
 
-            return new List<ChannelInfo>();
+            return list;
         }
 
         private int GetInt(IniData data, string s1, string s2, int defaultValue)
