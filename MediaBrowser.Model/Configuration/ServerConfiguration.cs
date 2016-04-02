@@ -196,8 +196,6 @@ namespace MediaBrowser.Model.Configuration
 
         public int SharingExpirationDays { get; set; }
 
-        public bool EnableWindowsShortcuts { get; set; }
-
         public bool EnableDateLastRefresh { get; set; }
 
         public string[] Migrations { get; set; }
