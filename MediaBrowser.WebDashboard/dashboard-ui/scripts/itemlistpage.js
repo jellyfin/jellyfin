@@ -258,7 +258,7 @@
             }
         }
 
-        $('.alphabetPicker', this).on('alphaselect', function (e, character) {
+        $('.alphabetPicker', view).on('alphaselect', function (e, character) {
 
             var query = getQuery();
             query.NameStartsWithOrGreater = character;
