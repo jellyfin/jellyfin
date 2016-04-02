@@ -8,6 +8,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
         public string FFProbeFilename { get; set; }
         public string ArchiveType { get; set; }
         public string[] DownloadUrls { get; set; }
+        public bool IsEmbedded { get; set; }
 
         public FFMpegDownloadInfo()
         {
@@ -54,8 +55,9 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
 
                     info.FFMpegFilename = "ffmpeg.exe";
                     info.FFProbeFilename = "ffprobe.exe";
-                    info.Version = "20160131";
+                    info.Version = "20160401";
                     info.ArchiveType = "7z";
+                    info.IsEmbedded = true;
 
                     switch (environment.SystemArchitecture)
                     {
@@ -81,17 +83,9 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                     switch (environment.SystemArchitecture)
                     {
                         case Architecture.X86_X64:
-                            return new[]
-                            {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20160131-win64.7z",
-                                "http://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-20151109-git-480bad7-win64-static.7z"
-                            };
+                            return new string[] { "MediaBrowser.ServerApplication.ffmpeg.ffmpegx64.7z" };
                         case Architecture.X86:
-                            return new[]
-                            {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20160131-win32.7z",
-                                "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20151109-git-480bad7-win32-static.7z"
-                            };
+                            return new string[] { "MediaBrowser.ServerApplication.ffmpeg.ffmpegx86.7z" };
                     }
                     break;
 
