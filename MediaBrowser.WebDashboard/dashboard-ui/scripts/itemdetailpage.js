@@ -71,7 +71,7 @@
             var hasBackdrop = false;
 
             // For these types, make the backdrop a little smaller so that the items are more quickly accessible
-            if (item.Type == 'MusicArtist' || item.Type == "MusicAlbum" || item.Type == "Playlist" || item.Type == "BoxSet" || item.Type == "Audio" || !layoutManager.mobile) {
+            if (item.Type == 'MusicArtist' || item.Type == "MusicAlbum" || item.Type == "Playlist" || item.Type == "BoxSet" || item.MediaType == "Audio" || !layoutManager.mobile) {
                 $('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
                 require(['backdrop'], function (backdrop) {
                     backdrop.setBackdrops([item]);
@@ -293,7 +293,7 @@
 
     function setPeopleHeader(page, item) {
 
-        if (item.Type == "Audio" || item.Type == "MusicAlbum" || item.MediaType == "Book" || item.MediaType == "Photo") {
+        if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.MediaType == "Book" || item.MediaType == "Photo") {
             $('#peopleHeader', page).html(Globalize.translate('HeaderPeople'));
         } else {
             $('#peopleHeader', page).html(Globalize.translate('HeaderCastAndCrew'));

@@ -2900,7 +2900,7 @@
 
                     var html = '';
 
-                    html += '<div style="margin:0;padding:1.25em 1.25em 1.5em;">';
+                    html += '<div style="margin:0;padding:1.25em 1.5em 1.5em;">';
 
                     html += '<h2 style="margin:0 0 .5em;">';
                     html += Globalize.translate('HeaderSortBy');
