@@ -65,8 +65,8 @@
     <Compile Include="Browser\BrowserLauncher.cs" />
     <Compile Include="EntryPoints\KeepServerAwake.cs" />
     <Compile Include="EntryPoints\StartupWizard.cs" />
-    <Compile Include="FFMpeg\FFMpegDownloader.cs" />
-    <Compile Include="FFMpeg\FFMpegDownloadInfo.cs" />
+    <Compile Include="FFMpeg\FFMpegLoader.cs" />
+    <Compile Include="FFMpeg\FFMpegInstallInfo.cs" />
     <Compile Include="FFMpeg\FFMpegInfo.cs" />
     <Compile Include="FFMpeg\FFmpegValidator.cs" />
     <Compile Include="INativeApp.cs" />

@@ -16,7 +16,7 @@ using CommonIO;
 
 namespace MediaBrowser.Server.Startup.Common.FFMpeg
 {
-    public class FFMpegDownloader
+    public class FFMpegLoader
     {
         private readonly IHttpClient _httpClient;
         private readonly IApplicationPaths _appPaths;
@@ -24,14 +24,15 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
         private readonly IZipClient _zipClient;
         private readonly IFileSystem _fileSystem;
         private readonly NativeEnvironment _environment;
-        private Assembly _ownerAssembly;
+        private readonly Assembly _ownerAssembly;
+        private readonly FFMpegInstallInfo _ffmpegInstallInfo;
 
         private readonly string[] _fontUrls =
         {
             "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/ARIALUNI.7z"
         };
 
-        public FFMpegDownloader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IZipClient zipClient, IFileSystem fileSystem, NativeEnvironment environment, Assembly ownerAssembly)
+        public FFMpegLoader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IZipClient zipClient, IFileSystem fileSystem, NativeEnvironment environment, Assembly ownerAssembly, FFMpegInstallInfo ffmpegInstallInfo)
         {
             _logger = logger;
             _appPaths = appPaths;
@@ -40,6 +41,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             _fileSystem = fileSystem;
             _environment = environment;
             _ownerAssembly = ownerAssembly;
+            _ffmpegInstallInfo = ffmpegInstallInfo;
         }
 
         public async Task<FFMpegInfo> GetFFMpegInfo(NativeEnvironment environment, StartupOptions options, IProgress<double> progress)
@@ -57,7 +59,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                 };
             }
 
-            var downloadInfo = FFMpegDownloadInfo.GetInfo(environment);
+            var downloadInfo = _ffmpegInstallInfo;
 
             var version = downloadInfo.Version;
 
@@ -181,7 +183,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             return null;
         }
 
-        private async void DownloadFFMpegInBackground(FFMpegDownloadInfo downloadinfo, string directory)
+        private async void DownloadFFMpegInBackground(FFMpegInstallInfo downloadinfo, string directory)
         {
             try
             {
@@ -193,7 +195,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             }
         }
 
-        private async Task DownloadFFMpeg(FFMpegDownloadInfo downloadinfo, string directory, IProgress<double> progress)
+        private async Task DownloadFFMpeg(FFMpegInstallInfo downloadinfo, string directory, IProgress<double> progress)
         {
             if (downloadinfo.IsEmbedded)
             {
@@ -241,7 +243,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             throw new ApplicationException("Unable to download required components. Please try again later.");
         }
 
-        private void ExtractFFMpeg(FFMpegDownloadInfo downloadinfo, string tempFile, string targetFolder)
+        private void ExtractFFMpeg(FFMpegInstallInfo downloadinfo, string tempFile, string targetFolder)
         {
             _logger.Info("Extracting ffmpeg from {0}", tempFile);
 
@@ -287,7 +289,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             }
         }
 
-        private void ExtractArchive(FFMpegDownloadInfo downloadinfo, string archivePath, string targetPath)
+        private void ExtractArchive(FFMpegInstallInfo downloadinfo, string archivePath, string targetPath)
         {
             _logger.Info("Extracting {0} to {1}", archivePath, targetPath);
 
