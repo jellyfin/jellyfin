@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using CommonIO;
 using MediaBrowser.Controller.Power;
+using MediaBrowser.Server.Startup.Common.FFMpeg;
 
 namespace MediaBrowser.ServerApplication.Native
 {
@@ -30,7 +31,7 @@ namespace MediaBrowser.ServerApplication.Native
             }
 
             list.Add(GetType().Assembly);
-            
+
             return list;
         }
 
@@ -123,6 +124,33 @@ namespace MediaBrowser.ServerApplication.Native
         public IPowerManagement GetPowerManagement()
         {
             return new WindowsPowerManagement(_logger);
+        }
+
+        public FFMpegInstallInfo GetFfmpegInstallInfo()
+        {
+            var info = new FFMpegInstallInfo();
+
+            info.FFMpegFilename = "ffmpeg.exe";
+            info.FFProbeFilename = "ffprobe.exe";
+            info.Version = "20160401";
+            info.ArchiveType = "7z";
+            info.IsEmbedded = true;
+            info.DownloadUrls = GetDownloadUrls();
+
+            return info;
+        }
+
+        private string[] GetDownloadUrls()
+        {
+            switch (Environment.SystemArchitecture)
+            {
+                case Architecture.X86_X64:
+                    return new[] { "MediaBrowser.ServerApplication.ffmpeg.ffmpegx64.7z" };
+                case Architecture.X86:
+                    return new[] { "MediaBrowser.ServerApplication.ffmpeg.ffmpegx86.7z" };
+            }
+
+            return new string[] { };
         }
     }
 }
