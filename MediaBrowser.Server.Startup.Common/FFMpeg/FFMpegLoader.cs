@@ -210,6 +210,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                     }
                 }
                 ExtractFFMpeg(downloadinfo, tempFile, directory);
+                return;
             }
 
             foreach (var url in downloadinfo.DownloadUrls)
