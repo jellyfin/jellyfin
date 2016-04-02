@@ -32,7 +32,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private readonly ILocalizationManager _localization;
         private readonly ITaskManager _taskManager;
 
-        public const int MigrationVersion = 22;
+        public const int MigrationVersion = 23;
         public static bool EnableUnavailableMessage = false;
 
         public CleanDatabaseScheduledTask(ILibraryManager libraryManager, IItemRepository itemRepo, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem, IHttpServer httpServer, ILocalizationManager localization, ITaskManager taskManager)
