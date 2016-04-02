@@ -503,7 +503,8 @@ namespace MediaBrowser.Controller.Entities
                 {
                     if (!string.IsNullOrWhiteSpace(ForcedSortName))
                     {
-                        _sortName = ModifySortChunks(ForcedSortName);
+                        // Need the ToLower because that's what CreateSortName does
+                        _sortName = ModifySortChunks(ForcedSortName).ToLower();
                     }
                     else
                     {
