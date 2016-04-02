@@ -94,8 +94,39 @@ define([], function () {
         return parts.join(':');
     }
 
+    function getDisplayTime(date) {
+        var time = date.toLocaleTimeString().toLowerCase();
+
+        if (time.indexOf('am') != -1 || time.indexOf('pm') != -1) {
+
+            var hour = date.getHours() % 12;
+            var suffix = date.getHours() > 11 ? 'pm' : 'am';
+            if (!hour) {
+                hour = 12;
+            }
+            var minutes = date.getMinutes();
+
+            if (minutes < 10) {
+                minutes = '0' + minutes;
+            }
+            time = hour + ':' + minutes + suffix;
+        } else {
+
+            var timeParts = time.split(':');
+
+            // Trim off seconds
+            if (timeParts.length > 2) {
+                timeParts.length -= 1;
+                time = timeParts.join(':');
+            }
+        }
+
+        return time;
+    }
+
     return {
         parseISO8601Date: parseISO8601Date,
-        getDisplayRunningTime: getDisplayRunningTime
+        getDisplayRunningTime: getDisplayRunningTime,
+        getDisplayTime: getDisplayTime
     };
 });

@@ -3094,6 +3094,8 @@ var AppInfo = {};
 
         require(deps, function (imageLoader, pageObjects) {
 
+            console.log('Loaded dependencies in onAppReady');
+
             imageLoader.enableFade = browserInfo.animate && !browserInfo.mobile;
             window.ImageLoader = imageLoader;
 
