@@ -219,14 +219,15 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 string outputFormat;
                 string outputCodec;
 
-                if (string.Equals(subtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(subtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(subtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(subtitleStream.Codec, "srt", StringComparison.OrdinalIgnoreCase))
                 {
                     // Extract    
                     outputCodec = "copy";
-                    outputFormat = "ass";
+                    outputFormat = subtitleStream.Codec;
                 }
-                else if (string.Equals(subtitleStream.Codec, "subrip", StringComparison.OrdinalIgnoreCase) ||
-                         string.Equals(subtitleStream.Codec, "srt", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(subtitleStream.Codec, "subrip", StringComparison.OrdinalIgnoreCase))
                 {
                     // Extract    
                     outputCodec = "copy";
