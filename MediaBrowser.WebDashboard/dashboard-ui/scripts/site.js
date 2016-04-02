@@ -3127,7 +3127,7 @@ var AppInfo = {};
 
                 if (browserInfo.safari) {
 
-                    postInitDependencies.push('cordova/connectsdk/connectsdk');
+                    postInitDependencies.push('cordova/ios/chromecast');
 
                     postInitDependencies.push('cordova/ios/orientation');
 
@@ -3170,22 +3170,31 @@ var AppInfo = {};
 
                 cordova.getAppVersion.getVersionNumber(function (appVersion) {
 
-                    var name = browserInfo.android ? "Emby for Android Mobile" : (browserInfo.safari ? "Emby for iOS" : "Emby Mobile");
+                    require(['appStorage'], function (appStorage) {
 
-                    // Remove special characters
-                    var cleanDeviceName = device.model.replace(/[^\w\s]/gi, '');
+                        var name = browserInfo.android ? "Emby for Android Mobile" : (browserInfo.safari ? "Emby for iOS" : "Emby Mobile");
 
-                    var deviceId = null;
+                        // Remove special characters
+                        var cleanDeviceName = device.model.replace(/[^\w\s]/gi, '');
 
-                    if (window.MainActivity) {
-                        deviceId = MainActivity.getLegacyDeviceId();
-                    }
+                        var deviceId = null;
 
-                    resolve({
-                        deviceId: deviceId || device.uuid,
-                        deviceName: cleanDeviceName,
-                        appName: name,
-                        appVersion: appVersion
+                        if (window.MainActivity) {
+
+                            deviceId = appStorage.getItem('legacyDeviceId');
+
+                            if (!deviceId) {
+                                deviceId = MainActivity.getLegacyDeviceId();
+                                appStorage.setItem('legacyDeviceId', deviceId);
+                            }
+                        }
+
+                        resolve({
+                            deviceId: deviceId || device.uuid,
+                            deviceName: cleanDeviceName,
+                            appName: name,
+                            appVersion: appVersion
+                        });
                     });
 
                 });

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,13 +24,14 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
         private readonly IZipClient _zipClient;
         private readonly IFileSystem _fileSystem;
         private readonly NativeEnvironment _environment;
+        private Assembly _ownerAssembly;
 
         private readonly string[] _fontUrls =
         {
             "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/ARIALUNI.7z"
         };
 
-        public FFMpegDownloader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IZipClient zipClient, IFileSystem fileSystem, NativeEnvironment environment)
+        public FFMpegDownloader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IZipClient zipClient, IFileSystem fileSystem, NativeEnvironment environment, Assembly ownerAssembly)
         {
             _logger = logger;
             _appPaths = appPaths;
@@ -37,6 +39,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             _zipClient = zipClient;
             _fileSystem = fileSystem;
             _environment = environment;
+            _ownerAssembly = ownerAssembly;
         }
 
         public async Task<FFMpegInfo> GetFFMpegInfo(NativeEnvironment environment, StartupOptions options, IProgress<double> progress)
@@ -78,11 +81,11 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                 Version = version
             };
 
-			_fileSystem.CreateDirectory(versionedDirectoryPath);
+            _fileSystem.CreateDirectory(versionedDirectoryPath);
 
             var excludeFromDeletions = new List<string> { versionedDirectoryPath };
 
-			if (!_fileSystem.FileExists(info.ProbePath) || !_fileSystem.FileExists(info.EncoderPath))
+            if (!_fileSystem.FileExists(info.ProbePath) || !_fileSystem.FileExists(info.EncoderPath))
             {
                 // ffmpeg not present. See if there's an older version we can start with
                 var existingVersion = GetExistingVersion(info, rootEncoderPath);
@@ -106,7 +109,10 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                 }
             }
 
-            await DownloadFonts(versionedDirectoryPath).ConfigureAwait(false);
+            if (_environment.OperatingSystem == OperatingSystem.Windows)
+            {
+                await DownloadFonts(versionedDirectoryPath).ConfigureAwait(false);
+            }
 
             DeleteOlderFolders(Path.GetDirectoryName(versionedDirectoryPath), excludeFromDeletions);
 
@@ -189,6 +195,21 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
 
         private async Task DownloadFFMpeg(FFMpegDownloadInfo downloadinfo, string directory, IProgress<double> progress)
         {
+            if (downloadinfo.IsEmbedded)
+            {
+                var tempFile = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString());
+                _fileSystem.CreateDirectory(Path.GetDirectoryName(tempFile));
+
+                using (var stream = _ownerAssembly.GetManifestResourceStream(downloadinfo.DownloadUrls[0]))
+                {
+                    using (var fs = _fileSystem.GetFileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                    {
+                        await stream.CopyToAsync(fs).ConfigureAwait(false);
+                    }
+                }
+                ExtractFFMpeg(downloadinfo, tempFile, directory);
+            }
+
             foreach (var url in downloadinfo.DownloadUrls)
             {
                 progress.Report(0);
@@ -216,10 +237,8 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             {
                 throw new ApplicationException("ffmpeg unvailable. Please install it and start the server with two command line arguments: -ffmpeg \"{PATH}\" and -ffprobe \"{PATH}\"");
             }
-            else
-            {
-                throw new ApplicationException("Unable to download required components. Please try again later.");
-            }
+
+            throw new ApplicationException("Unable to download required components. Please try again later.");
         }
 
         private void ExtractFFMpeg(FFMpegDownloadInfo downloadinfo, string tempFile, string targetFolder)
@@ -228,7 +247,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
 
             var tempFolder = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString());
 
-			_fileSystem.CreateDirectory(tempFolder);
+            _fileSystem.CreateDirectory(tempFolder);
 
             try
             {
@@ -247,7 +266,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                     }))
                 {
                     var targetFile = Path.Combine(targetFolder, Path.GetFileName(file));
-					_fileSystem.CopyFile(file, targetFile, true);
+                    _fileSystem.CopyFile(file, targetFile, true);
                     SetFilePermissions(targetFile);
                 }
             }
@@ -311,13 +330,13 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             {
                 var fontsDirectory = Path.Combine(targetPath, "fonts");
 
-				_fileSystem.CreateDirectory(fontsDirectory);
+                _fileSystem.CreateDirectory(fontsDirectory);
 
                 const string fontFilename = "ARIALUNI.TTF";
 
                 var fontFile = Path.Combine(fontsDirectory, fontFilename);
 
-				if (_fileSystem.FileExists(fontFile))
+                if (_fileSystem.FileExists(fontFile))
                 {
                     await WriteFontConfigFile(fontsDirectory).ConfigureAwait(false);
                 }
@@ -360,7 +379,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             {
                 try
                 {
-					_fileSystem.CopyFile(existingFile, Path.Combine(fontsDirectory, fontFilename), true);
+                    _fileSystem.CopyFile(existingFile, Path.Combine(fontsDirectory, fontFilename), true);
                     return;
                 }
                 catch (IOException ex)
@@ -422,7 +441,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             const string fontConfigFilename = "fonts.conf";
             var fontConfigFile = Path.Combine(fontsDirectory, fontConfigFilename);
 
-			if (!_fileSystem.FileExists(fontConfigFile))
+            if (!_fileSystem.FileExists(fontConfigFile))
             {
                 var contents = string.Format("<?xml version=\"1.0\"?><fontconfig><dir>{0}</dir><alias><family>Arial</family><prefer>Arial Unicode MS</prefer></alias></fontconfig>", fontsDirectory);
 
