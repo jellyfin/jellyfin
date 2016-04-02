@@ -206,13 +206,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           assert.equal(callCount, 0, 'iron-resize should not be called');
         });
 
-        test('open overlay triggers iron-resize when its content changes', function() {
+        test('open overlay triggers iron-resize when its content changes', function(done) {
           runAfterOpen(overlay, function() {
             var spy = sinon.stub();
             overlay.addEventListener('iron-resize', spy);
             Polymer.dom(overlay).appendChild(document.createElement('div'));
             Polymer.dom.flush();
             assert.equal(spy.callCount, 1, 'iron-resize should be called once');
+            done();
           });
         });
 
