@@ -62,6 +62,10 @@
     <Reference Include="MoreLinq">
       <HintPath>..\packages\morelinq.1.4.0\lib\net35\MoreLinq.dll</HintPath>
     </Reference>
+    <Reference Include="Open.Nat, Version=2.0.15.0, Culture=neutral, PublicKeyToken=f22a6a4582336c76, processorArchitecture=MSIL">
+      <HintPath>..\packages\Open.NAT.2.0.15.0\lib\net45\Open.Nat.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Patterns.Logging">
       <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
     </Reference>
@@ -99,6 +103,7 @@
     <Reference Include="ServiceStack.Text">
       <HintPath>..\ThirdParty\ServiceStack.Text\ServiceStack.Text.dll</HintPath>
     </Reference>
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="UniversalDetector">
       <HintPath>..\ThirdParty\UniversalDetector\UniversalDetector.dll</HintPath>
     </Reference>
@@ -242,6 +247,12 @@
     <Compile Include="LiveTv\ProgramImageProvider.cs" />
     <Compile Include="LiveTv\RecordingImageProvider.cs" />
     <Compile Include="LiveTv\RefreshChannelsScheduledTask.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\ChannelScan.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Rtsp\RtspMethod.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Rtsp\RtspRequest.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Rtsp\RtspResponse.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Rtsp\RtspSession.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Rtsp\RtspStatusCode.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\SatIpHost.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\SatIpDiscovery.cs" />
     <Compile Include="Localization\LocalizationManager.cs" />

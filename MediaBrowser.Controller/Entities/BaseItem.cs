@@ -255,6 +255,11 @@ namespace MediaBrowser.Controller.Entities
 
                 if (string.IsNullOrWhiteSpace(Path))
                 {
+                    if (SourceType == SourceType.Channel)
+                    {
+                        return LocationType.Remote;
+                    }
+
                     return LocationType.Virtual;
                 }
 
@@ -494,7 +499,19 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                return _sortName ?? (_sortName = CreateSortName());
+                if (_sortName == null)
+                {
+                    if (!string.IsNullOrWhiteSpace(ForcedSortName))
+                    {
+                        // Need the ToLower because that's what CreateSortName does
+                        _sortName = ModifySortChunks(ForcedSortName).ToLower();
+                    }
+                    else
+                    {
+                        _sortName = CreateSortName();
+                    }
+                }
+                return _sortName;
             }
             set
             {
@@ -529,11 +546,6 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>System.String.</returns>
         protected virtual string CreateSortName()
         {
-            if (!string.IsNullOrWhiteSpace(ForcedSortName))
-            {
-                return ModifySortChunks(ForcedSortName).ToLower();
-            }
-
             if (Name == null) return null; //some items may not have name filled in properly
 
             if (!EnableAlphaNumericSorting)
