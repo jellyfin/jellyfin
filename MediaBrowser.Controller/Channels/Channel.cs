@@ -38,7 +38,7 @@ namespace MediaBrowser.Controller.Channels
             set { }
         }
 
-        public override async Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
+        protected override async Task<QueryResult<BaseItem>> GetItemsInternal(InternalItemsQuery query)
         {
             try
             {
