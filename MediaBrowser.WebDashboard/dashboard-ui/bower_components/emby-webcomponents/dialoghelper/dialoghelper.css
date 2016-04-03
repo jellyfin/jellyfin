@@ -25,6 +25,12 @@
         width: auto;
     }
 
+    .dialog.centeredDialog {
+        top: 50%;
+        left: 50%;
+        max-width: 70%;
+    }
+
     .dialog.scrollY {
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;

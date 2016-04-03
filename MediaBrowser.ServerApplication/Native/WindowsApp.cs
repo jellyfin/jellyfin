@@ -3,6 +3,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Startup.Common;
 using MediaBrowser.ServerApplication.Networking;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using CommonIO;
 using MediaBrowser.Controller.Power;
@@ -108,7 +109,22 @@ namespace MediaBrowser.ServerApplication.Native
 
         public void ConfigureAutoRun(bool autorun)
         {
-            Autorun.Configure(autorun, _fileSystem);
+            var shortcutPath = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.StartMenu), "Emby", "Emby Server.lnk");
+
+            var startupPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Startup);
+
+            if (autorun)
+            {
+                //Copy our shortut into the startup folder for this user
+                var targetPath = Path.Combine(startupPath, Path.GetFileName(shortcutPath) ?? "Emby Server.lnk");
+                _fileSystem.CreateDirectory(Path.GetDirectoryName(targetPath));
+                File.Copy(shortcutPath, targetPath, true);
+            }
+            else
+            {
+                //Remove our shortcut from the startup folder for this user
+                _fileSystem.DeleteFile(Path.Combine(startupPath, Path.GetFileName(shortcutPath) ?? "Emby Server.lnk"));
+            }
         }
 
         public INetworkManager CreateNetworkManager(ILogger logger)

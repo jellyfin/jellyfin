@@ -234,6 +234,8 @@
 
                 Dashboard.showLoadingMsg();
 
+                page.querySelector('#btnInstall').disabled = true;
+
                 ApiClient.installPlugin(packageName, guid, updateClass, version).then(function () {
 
                     Dashboard.hideLoadingMsg();
@@ -276,8 +278,6 @@
             Dashboard.showLoadingMsg();
 
             var page = $(this).parents('#addPluginPage')[0];
-
-            page.querySelector('#btnInstall').disabled = true;
 
             var name = getParameterByName('name');
             var guid = getParameterByName('guid');
