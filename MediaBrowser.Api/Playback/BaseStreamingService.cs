@@ -614,7 +614,7 @@ namespace MediaBrowser.Api.Playback
 
                 if (!string.IsNullOrEmpty(state.SubtitleStream.Language))
                 {
-                    var charenc = SubtitleEncoder.GetSubtitleFileCharacterSet(subtitlePath, state.MediaSource.Protocol, CancellationToken.None).Result;
+                    var charenc = SubtitleEncoder.GetSubtitleFileCharacterSet(subtitlePath, state.SubtitleStream.Language, state.MediaSource.Protocol, CancellationToken.None).Result;
 
                     if (!string.IsNullOrEmpty(charenc))
                     {
