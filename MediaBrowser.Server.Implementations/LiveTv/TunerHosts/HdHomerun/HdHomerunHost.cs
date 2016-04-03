@@ -59,7 +59,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return id;
         }
 
-        protected override async Task<IEnumerable<ChannelInfo>> GetChannelsInternal(TunerHostInfo info, CancellationToken cancellationToken)
+        private async Task<IEnumerable<Channels>> GetLineup(TunerHostInfo info, CancellationToken cancellationToken)
         {
             var options = new HttpRequestOptions
             {
@@ -68,29 +68,29 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             };
             using (var stream = await _httpClient.Get(options))
             {
-                var root = JsonSerializer.DeserializeFromStream<List<Channels>>(stream);
+                var lineup = JsonSerializer.DeserializeFromStream<List<Channels>>(stream) ?? new List<Channels>();
 
-                if (root != null)
+                if (info.ImportFavoritesOnly)
                 {
-                    var result = root.Select(i => new ChannelInfo
-                    {
-                        Name = i.GuideName,
-                        Number = i.GuideNumber.ToString(CultureInfo.InvariantCulture),
-                        Id = GetChannelId(info, i),
-                        IsFavorite = i.Favorite,
-                        TunerHostId = info.Id
-
-                    });
-
-                    if (info.ImportFavoritesOnly)
-                    {
-                        result = result.Where(i => i.IsFavorite ?? true).ToList();
-                    }
-
-                    return result;
+                    lineup = lineup.Where(i => i.Favorite).ToList();
                 }
-                return new List<ChannelInfo>();
+
+                return lineup;
             }
+        }
+
+        protected override async Task<IEnumerable<ChannelInfo>> GetChannelsInternal(TunerHostInfo info, CancellationToken cancellationToken)
+        {
+            var lineup = await GetLineup(info, cancellationToken).ConfigureAwait(false);
+
+            return lineup.Select(i => new ChannelInfo
+            {
+                Name = i.GuideName,
+                Number = i.GuideNumber.ToString(CultureInfo.InvariantCulture),
+                Id = GetChannelId(info, i),
+                IsFavorite = i.Favorite,
+                TunerHostId = info.Id
+            });
         }
 
         private async Task<string> GetModelInfo(TunerHostInfo info, CancellationToken cancellationToken)
@@ -226,17 +226,21 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             public string GuideNumber { get; set; }
             public string GuideName { get; set; }
+            public string VideoCodec { get; set; }
+            public string AudioCodec { get; set; }
             public string URL { get; set; }
             public bool Favorite { get; set; }
             public bool DRM { get; set; }
+            public int HD { get; set; }
         }
 
-        private MediaSourceInfo GetMediaSource(TunerHostInfo info, string channelId, string profile)
+        private async Task<MediaSourceInfo> GetMediaSource(TunerHostInfo info, string channelId, string profile)
         {
             int? width = null;
             int? height = null;
             bool isInterlaced = true;
-            var videoCodec = !string.IsNullOrWhiteSpace(GetEncodingOptions().HardwareAccelerationType) ? null : "mpeg2video";
+            string videoCodec = null;
+            string audioCodec = "ac3";
 
             int? videoBitrate = null;
 
@@ -297,6 +301,25 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 videoBitrate = 1000000;
             }
 
+            if (string.IsNullOrWhiteSpace(videoCodec))
+            {
+                var lineup = await GetLineup(info, CancellationToken.None).ConfigureAwait(false);
+                var channel = lineup.FirstOrDefault(i => string.Equals(i.GuideNumber, channelId, StringComparison.OrdinalIgnoreCase));
+                if (channel != null)
+                {
+                    videoCodec = channel.VideoCodec;
+                    audioCodec = channel.AudioCodec;
+
+                    videoBitrate = channel.HD == 1 ? 15000000 : 2000000;
+                }
+            }
+
+            // normalize
+            if (string.Equals(videoCodec, "mpeg2", StringComparison.OrdinalIgnoreCase))
+            {
+                videoCodec = "mpeg2video";
+            }
+
             var url = GetApiUrl(info, true) + "/auto/v" + channelId;
 
             if (!string.IsNullOrWhiteSpace(profile) && !string.Equals(profile, "native", StringComparison.OrdinalIgnoreCase))
@@ -327,7 +350,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                 Type = MediaStreamType.Audio,
                                 // Set the index to -1 because we don't know the exact index of the audio stream within the container
                                 Index = -1,
-                                Codec = "ac3",
+                                Codec = audioCodec,
                                 BitRate = 192000
                             }
                         },
@@ -364,7 +387,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
             var hdhrId = GetHdHrIdFromChannelId(channelId);
 
-            list.Add(GetMediaSource(info, hdhrId, "native"));
+            list.Add(await GetMediaSource(info, hdhrId, "native").ConfigureAwait(false));
 
             try
             {
@@ -373,12 +396,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                 if (model.IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    list.Insert(0, GetMediaSource(info, hdhrId, "heavy"));
+                    list.Add(await GetMediaSource(info, hdhrId, "heavy").ConfigureAwait(false));
 
-                    list.Add(GetMediaSource(info, hdhrId, "internet480"));
-                    list.Add(GetMediaSource(info, hdhrId, "internet360"));
-                    list.Add(GetMediaSource(info, hdhrId, "internet240"));
-                    list.Add(GetMediaSource(info, hdhrId, "mobile"));
+                    list.Add(await GetMediaSource(info, hdhrId, "internet480").ConfigureAwait(false));
+                    list.Add(await GetMediaSource(info, hdhrId, "internet360").ConfigureAwait(false));
+                    list.Add(await GetMediaSource(info, hdhrId, "internet240").ConfigureAwait(false));
+                    list.Add(await GetMediaSource(info, hdhrId, "mobile").ConfigureAwait(false));
                 }
             }
             catch (Exception ex)
@@ -409,7 +432,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
             var hdhrId = GetHdHrIdFromChannelId(channelId);
 
-            return GetMediaSource(info, hdhrId, streamId);
+            return await GetMediaSource(info, hdhrId, streamId).ConfigureAwait(false);
         }
 
         public async Task Validate(TunerHostInfo info)
