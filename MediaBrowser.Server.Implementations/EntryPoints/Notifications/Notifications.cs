@@ -118,7 +118,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             var notification = new NotificationRequest
             {
-                NotificationType = type
+                NotificationType = type,
+                Url = e.Argument.infoUrl
             };
 
             notification.Variables["Version"] = e.Argument.versionStr;
