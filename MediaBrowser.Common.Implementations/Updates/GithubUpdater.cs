@@ -113,7 +113,8 @@ namespace MediaBrowser.Common.Implementations.Updates
                     targetFilename = targetFilename,
                     versionStr = version.ToString(),
                     requiredVersionStr = "1.0.0",
-                    description = obj.body
+                    description = obj.body,
+                    infoUrl = obj.html_url
                 }
             };
         }
