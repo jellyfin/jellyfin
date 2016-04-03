@@ -3,7 +3,7 @@
     // The base query options
     var data = {};
 
-    function getQuery() {
+    function getQuery(params) {
 
         var key = getSavedQueryKey();
         var pageData = data[key];
@@ -21,7 +21,7 @@
                 }
             };
 
-            pageData.query.ParentId = LibraryMenu.getTopParentId();
+            pageData.query.ParentId = params.topParentId;
             LibraryBrowser.loadSavedQueryValues(key, pageData.query);
         }
         return pageData.query;
@@ -32,11 +32,11 @@
         return LibraryBrowser.getSavedQueryKey('studios');
     }
 
-    function reloadItems(page) {
+    function reloadItems(context, params) {
+
+        var query = getQuery(params);
 
         Dashboard.showLoadingMsg();
-
-        var query = getQuery();
 
         ApiClient.getStudios(Dashboard.getCurrentUserId(), query).then(function (result) {
 
@@ -44,52 +44,50 @@
             window.scrollTo(0, 0);
 
             var html = '';
-            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+
+            $('.listTopPaging', context).html(LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
-                viewButton: false,
-                updatePageSizeSetting: false,
                 showLimit: false
-            });
+            }));
 
-            page.querySelector('.listTopPaging').innerHTML = pagingHtml;
-
-            html = LibraryBrowser.getPosterViewHtml({
+            html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: "backdrop",
+                showTitle: false,
                 preferThumb: true,
-                context: 'movies',
                 showItemCounts: true,
                 centerText: true,
                 lazy: true
+
             });
 
-            var elem = page.querySelector('.itemsContainer');
-            elem.innerHTML = html + pagingHtml;
+            var elem = context.querySelector('.itemsContainer');
+            elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
 
-            $('.btnNextPage', page).on('click', function () {
+            $('.btnNextPage', context).on('click', function () {
                 query.StartIndex += query.Limit;
-                reloadItems(page);
+                reloadItems(context, params);
             });
 
-            $('.btnPreviousPage', page).on('click', function () {
+            $('.btnPreviousPage', context).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
+                reloadItems(context, params);
             });
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
-
             Dashboard.hideLoadingMsg();
         });
     }
+    return function (view, params, tabContent) {
 
-    window.MoviesPage.renderStudiosTab = function (page, tabContent) {
+        var self = this;
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
-            reloadItems(tabContent);
-        }
+        self.renderTab = function () {
+
+            reloadItems(tabContent, params);
+        };
     };
-
 });

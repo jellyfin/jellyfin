@@ -1,4 +1,4 @@
-define(['appStorage'], function (appStorage) {
+define(['appStorage', 'events'], function (appStorage, events) {
 
     function getKey(name, userId) {
 
@@ -9,74 +9,86 @@ define(['appStorage'], function (appStorage) {
         return name;
     }
 
-    function get(name, userId) {
+    return new function () {
 
-        return appStorage.getItem(getKey(name, userId));
-    }
+        var self = this;
 
-    function set(name, value, userId) {
-        appStorage.setItem(getKey(name, userId), value);
-    }
-
-    return {
-        enableAutomaticBitrateDetection: function (val) {
+        self.enableAutomaticBitrateDetection = function (val) {
 
             if (val != null) {
-                set('enableAutomaticBitrateDetection', val.toString());
+                self.set('enableAutomaticBitrateDetection', val.toString());
             }
 
-            return get('enableAutomaticBitrateDetection') != 'false';
-        },
-        maxStreamingBitrate: function (val) {
+            return self.get('enableAutomaticBitrateDetection') != 'false';
+        };
+
+        self.maxStreamingBitrate = function (val) {
 
             if (val != null) {
-                set('preferredVideoBitrate', val);
+                self.set('preferredVideoBitrate', val);
             }
 
-            return parseInt(get('preferredVideoBitrate') || '') || 1500000;
-        },
-        maxChromecastBitrate: function (val) {
+            return parseInt(self.get('preferredVideoBitrate') || '') || 1500000;
+        };
+
+        self.maxChromecastBitrate = function (val) {
 
             if (val != null) {
-                set('chromecastBitrate1', val);
+                self.set('chromecastBitrate1', val);
             }
 
-            val = get('chromecastBitrate1');
+            val = self.get('chromecastBitrate1');
 
             return val ? parseInt(val) : null;
-        },
-        syncOnlyOnWifi: function (val) {
+        };
+
+        self.syncOnlyOnWifi = function (val) {
 
             if (val != null) {
-                set('syncOnlyOnWifi', val.toString());
+                self.set('syncOnlyOnWifi', val.toString());
             }
 
-            return get('syncOnlyOnWifi') != 'false';
-        },
-        syncPath: function (val) {
+            return self.get('syncOnlyOnWifi') != 'false';
+        };
+
+        self.syncPath = function (val) {
 
             if (val != null) {
-                set('syncPath', val);
+                self.set('syncPath', val);
             }
 
-            return get('syncPath');
-        },
+            return self.get('syncPath');
+        };
 
-        cameraUploadServers: function (val) {
+        self.cameraUploadServers = function (val) {
 
             if (val != null) {
-                set('cameraUploadServers', val.join(','));
+                self.set('cameraUploadServers', val.join(','));
             }
 
-            val = get('cameraUploadServers');
+            val = self.get('cameraUploadServers');
 
             if (val) {
                 return val.split(',');
             }
 
             return [];
-        },
-        set: set,
-        get: get
-    };
+        };
+
+        self.set = function (name, value, userId) {
+
+            var currentValue = self.get(name, userId);
+
+            appStorage.setItem(getKey(name, userId), value);
+
+            if (currentValue != value) {
+                events.trigger(self, 'change', [name]);
+            }
+        };
+
+        self.get = function (name, userId) {
+
+            return appStorage.getItem(getKey(name, userId));
+        };
+    }();
 });

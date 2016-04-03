@@ -2698,8 +2698,9 @@ var AppInfo = {};
 
         defineRoute({
             path: '/movies.html',
-            dependencies: [],
-            autoFocus: false
+            dependencies: ['paper-tabs', 'paper-checkbox', 'paper-fab', 'scripts/alphapicker'],
+            autoFocus: false,
+            controller: 'scripts/moviesrecommended'
         });
 
         defineRoute({
