@@ -187,17 +187,20 @@
         });
     }
 
-    window.MoviesPage.initTrailerTab = function (page, tabContent) {
+    return function (view, params, tabContent) {
 
-        initPage(page, tabContent);
-    };
+        var self = this;
 
-    window.MoviesPage.renderTrailerTab = function (page, tabContent) {
+        self.initTab = function () {
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
+            initPage(view, tabContent);
+        };
+
+        self.renderTab = function () {
+
             reloadItems(tabContent);
             updateFilterControls(tabContent);
-        }
+        };
     };
 
 });
