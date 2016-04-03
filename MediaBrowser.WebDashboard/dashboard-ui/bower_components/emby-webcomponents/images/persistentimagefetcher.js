@@ -54,11 +54,65 @@ define(['cryptojs-md5'], function () {
 
                     imageCacheDirectoryEntry = dirEntry;
 
+                    // TODO: find a better time to schedule this
+                    setTimeout(cleanCache, 60000);
                 });
 
             });
 
         });
+
+    function toArray(list) {
+        return Array.prototype.slice.call(list || [], 0);
+    }
+
+    function cleanCache() {
+
+        var dirReader = imageCacheDirectoryEntry.createReader();
+        var entries = [];
+
+        var onReadFail = function () {
+            console.log('dirReader.readEntries failed');
+        };
+
+        // Keep calling readEntries() until no more results are returned.
+        var readEntries = function () {
+            dirReader.readEntries(function (results) {
+                if (!results.length) {
+                    entries.forEach(cleanFile);
+                } else {
+                    entries = entries.concat(toArray(results));
+                    readEntries();
+                }
+            }, onReadFail);
+        };
+
+        // Start reading the directory.
+        readEntries();
+    }
+
+    function cleanFile(fileEntry) {
+        if (!fileEntry.isFile) {
+            return;
+        }
+
+        fileEntry.file(function (file) {
+            var elapsed = new Date().getTime() - file.lastModifiedDate.getTime();
+            // 60 days
+            var maxElapsed = 5184000000;
+            if (elapsed >= maxElapsed) {
+
+                var fullPath = fileEntry.fullPath;
+                console.log('deleting file: ' + fullPath);
+
+                fileEntry.remove(function () {
+                    console.log('File deleted: ' + fullPath);
+                }, function () {
+                    console.log('Failed to delete file: ' + fullPath);
+                });
+            }
+        });
+    }
 
     function getCacheKey(url) {
 
