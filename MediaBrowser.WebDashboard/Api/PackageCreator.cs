@@ -477,7 +477,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var tags = files.Select(s =>
             {
-                if (s.IndexOf("require", StringComparison.OrdinalIgnoreCase) == -1)
+                if (s.IndexOf("require", StringComparison.OrdinalIgnoreCase) == -1 && s.IndexOf("alameda", StringComparison.OrdinalIgnoreCase) == -1)
                 {
                     return string.Format("<script src=\"{0}\" async></script>", s);
                 }

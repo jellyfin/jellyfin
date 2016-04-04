@@ -500,13 +500,25 @@ namespace MediaBrowser.Api.Playback.Hls
             return ResultFactory.GetResult(playlistText, MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
         }
 
+        private bool IsLiveStream(StreamState state)
+        {
+            var isLiveStream = (state.RunTimeTicks ?? 0) == 0;
+
+            if (state.VideoRequest.ForceLiveStream)
+            {
+                return true;
+            }
+
+            return isLiveStream;
+        }
+
         private string GetMasterPlaylistFileText(StreamState state, int totalBitrate)
         {
             var builder = new StringBuilder();
 
             builder.AppendLine("#EXTM3U");
 
-            var isLiveStream = (state.RunTimeTicks ?? 0) == 0;
+            var isLiveStream = IsLiveStream(state);
 
             var queryStringIndex = Request.RawUrl.IndexOf('?');
             var queryString = queryStringIndex == -1 ? string.Empty : Request.RawUrl.Substring(queryStringIndex);
@@ -929,10 +941,16 @@ namespace MediaBrowser.Api.Playback.Hls
             return isOutputVideo ? ".ts" : ".ts";
         }
 
-        protected override bool CanStreamCopyVideo(VideoStreamRequest request, MediaStream videoStream)
+        protected override bool CanStreamCopyVideo(StreamState state)
         {
-            return false;
-            //return base.CanStreamCopyVideo(request, videoStream);
+            var isLiveStream = IsLiveStream(state);
+
+            if (!isLiveStream)
+            {
+                return false;
+            }
+
+            return base.CanStreamCopyVideo(state);
         }
     }
 }

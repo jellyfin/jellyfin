@@ -32,25 +32,6 @@ namespace MediaBrowser.Api.Playback.Hls
     }
 
     /// <summary>
-    /// Class GetHlsVideoStream
-    /// </summary>
-    [Route("/Videos/{Id}/stream.m3u8", "GET")]
-    [Api(Description = "Gets a video stream using HTTP live streaming.")]
-    public class GetHlsVideoStreamLegacy : VideoStreamRequest
-    {
-        // TODO: Deprecate with new iOS app
-
-        [ApiMember(Name = "BaselineStreamAudioBitRate", Description = "Optional. Specify the audio bitrate for the baseline stream.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
-        public int? BaselineStreamAudioBitRate { get; set; }
-
-        [ApiMember(Name = "AppendBaselineStream", Description = "Optional. Whether or not to include a baseline audio-only stream in the master playlist.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
-        public bool AppendBaselineStream { get; set; }
-
-        [ApiMember(Name = "TimeStampOffsetMs", Description = "Optional. Alter the timestamps in the playlist by a given amount, in ms. Default is 1000.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
-        public int TimeStampOffsetMs { get; set; }
-    }
-
-    /// <summary>
     /// Class GetHlsVideoSegment
     /// </summary>
     [Route("/Videos/{Id}/hls/{PlaylistId}/stream.m3u8", "GET")]

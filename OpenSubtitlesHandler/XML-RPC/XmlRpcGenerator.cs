@@ -51,47 +51,45 @@ namespace XmlRpcHandler
             XmlWriterSettings sett = new XmlWriterSettings();
             sett.Indent = true;
 
-            var requestXmlPath = Path.Combine(Path.GetTempPath(), "request.xml");
-
             sett.Encoding = Encoding.UTF8;
-            FileStream str = new FileStream(requestXmlPath, FileMode.Create, FileAccess.Write);
 
-            XmlWriter XMLwrt = XmlWriter.Create(str, sett);
-            // Let's write the methods
-            foreach (XmlRpcMethodCall method in methods)
+            using (var ms = new MemoryStream())
             {
-                XMLwrt.WriteStartElement("methodCall");//methodCall
-                XMLwrt.WriteStartElement("methodName");//methodName
-                XMLwrt.WriteString(method.Name);
-                XMLwrt.WriteEndElement();//methodName
-                XMLwrt.WriteStartElement("params");//params
-                // Write values
-                foreach (IXmlRpcValue p in method.Parameters)
+                XmlWriter XMLwrt = XmlWriter.Create(ms, sett);
+                // Let's write the methods
+                foreach (XmlRpcMethodCall method in methods)
                 {
-                    XMLwrt.WriteStartElement("param");//param
-                    if (p is XmlRpcValueBasic)
+                    XMLwrt.WriteStartElement("methodCall");//methodCall
+                    XMLwrt.WriteStartElement("methodName");//methodName
+                    XMLwrt.WriteString(method.Name);
+                    XMLwrt.WriteEndElement();//methodName
+                    XMLwrt.WriteStartElement("params");//params
+                                                       // Write values
+                    foreach (IXmlRpcValue p in method.Parameters)
                     {
-                        WriteBasicValue(XMLwrt, (XmlRpcValueBasic)p);
+                        XMLwrt.WriteStartElement("param");//param
+                        if (p is XmlRpcValueBasic)
+                        {
+                            WriteBasicValue(XMLwrt, (XmlRpcValueBasic)p);
+                        }
+                        else if (p is XmlRpcValueStruct)
+                        {
+                            WriteStructValue(XMLwrt, (XmlRpcValueStruct)p);
+                        }
+                        else if (p is XmlRpcValueArray)
+                        {
+                            WriteArrayValue(XMLwrt, (XmlRpcValueArray)p);
+                        }
+                        XMLwrt.WriteEndElement();//param
                     }
-                    else if (p is XmlRpcValueStruct)
-                    {
-                        WriteStructValue(XMLwrt, (XmlRpcValueStruct)p);
-                    }
-                    else if (p is XmlRpcValueArray)
-                    {
-                        WriteArrayValue(XMLwrt, (XmlRpcValueArray)p);
-                    }
-                    XMLwrt.WriteEndElement();//param
-                }
 
-                XMLwrt.WriteEndElement();//params
-                XMLwrt.WriteEndElement();//methodCall
+                    XMLwrt.WriteEndElement();//params
+                    XMLwrt.WriteEndElement();//methodCall
+                }
+                XMLwrt.Flush();
+                XMLwrt.Close();
+                return ms.ToArray();
             }
-            XMLwrt.Flush();
-            XMLwrt.Close();
-            str.Close();
-            string requestContent = File.ReadAllText(requestXmlPath);
-            return Encoding.UTF8.GetBytes(requestContent);
         }
         /// <summary>
         /// Decode response then return the values

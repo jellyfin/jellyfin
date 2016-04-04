@@ -664,14 +664,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            if (request.Cabac.HasValue && request.Cabac.Value)
-            {
-                if (videoStream.IsCabac.HasValue && !videoStream.IsCabac.Value)
-                {
-                    return false;
-                }
-            }
-
             return request.EnableAutoStreamCopy;
         }
 
@@ -773,7 +765,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 state.TargetPacketLength,
                 state.TargetTimestamp,
                 state.IsTargetAnamorphic,
-                state.IsTargetCabac,
                 state.TargetRefFrames,
                 state.TargetVideoStreamCount,
                 state.TargetAudioStreamCount,

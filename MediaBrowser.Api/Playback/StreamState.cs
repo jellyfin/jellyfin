@@ -480,18 +480,5 @@ namespace MediaBrowser.Api.Playback
                 return false;
             }
         }
-
-        public bool? IsTargetCabac
-        {
-            get
-            {
-                if (Request.Static)
-                {
-                    return VideoStream == null ? null : VideoStream.IsCabac;
-                }
-
-                return true;
-            }
-        }
     }
 }
