@@ -196,7 +196,11 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
 
             return new Promise(function (resolve, reject) {
 
-                require(['browserdeviceprofile', 'qualityoptions'], function (profile, qualityoptions) {
+                require(['browserdeviceprofile', 'qualityoptions'], function (profileBuilder, qualityoptions) {
+
+                    var profile = profileBuilder({
+                        supportsAutoPlay: !browserInfo.mobile || AppInfo.isNativeApp
+                    });
 
                     var bitrateSetting = appSettings.maxStreamingBitrate();
 
