@@ -31,6 +31,7 @@ namespace MediaBrowser.Model.LiveTv
         public string Type { get; set; }
         public string DeviceId { get; set; }
         public bool ImportFavoritesOnly { get; set; }
+        public bool AllowHWTranscoding { get; set; }
         public bool IsEnabled { get; set; }
         public string M3UUrl { get; set; }
         public string InfoUrl { get; set; }
@@ -47,6 +48,7 @@ namespace MediaBrowser.Model.LiveTv
         public TunerHostInfo()
         {
             IsEnabled = true;
+            AllowHWTranscoding = true;
         }
     }
 
