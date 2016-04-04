@@ -391,19 +391,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
-        public bool? IsTargetCabac
-        {
-            get
-            {
-                if (Options.Static)
-                {
-                    return VideoStream == null ? null : VideoStream.IsCabac;
-                }
-
-                return true;
-            }
-        }
-
         public int? TargetVideoStreamCount
         {
             get

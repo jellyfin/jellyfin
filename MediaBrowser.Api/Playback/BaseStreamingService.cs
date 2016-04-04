@@ -1452,10 +1452,7 @@ namespace MediaBrowser.Api.Playback
                 }
                 else if (i == 19)
                 {
-                    if (videoRequest != null)
-                    {
-                        videoRequest.Cabac = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
-                    }
+                    // cabac no longer used
                 }
                 else if (i == 20)
                 {
@@ -1805,10 +1802,10 @@ namespace MediaBrowser.Api.Playback
             {
                 if (string.IsNullOrEmpty(videoStream.Profile))
                 {
-                    return false;
+                    //return false;
                 }
 
-                if (!string.Equals(request.Profile, videoStream.Profile, StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(videoStream.Profile) && !string.Equals(request.Profile, videoStream.Profile, StringComparison.OrdinalIgnoreCase))
                 {
                     var currentScore = GetVideoProfileScore(videoStream.Profile);
                     var requestedScore = GetVideoProfileScore(request.Profile);
@@ -1884,21 +1881,13 @@ namespace MediaBrowser.Api.Playback
                 {
                     if (!videoStream.Level.HasValue)
                     {
-                        return false;
+                        //return false;
                     }
 
-                    if (videoStream.Level.Value > requestLevel)
+                    if (videoStream.Level.HasValue && videoStream.Level.Value > requestLevel)
                     {
                         return false;
                     }
-                }
-            }
-
-            if (request.Cabac.HasValue && request.Cabac.Value)
-            {
-                if (videoStream.IsCabac.HasValue && !videoStream.IsCabac.Value)
-                {
-                    return false;
                 }
             }
 
@@ -2028,7 +2017,6 @@ namespace MediaBrowser.Api.Playback
                 state.TargetPacketLength,
                 state.TargetTimestamp,
                 state.IsTargetAnamorphic,
-                state.IsTargetCabac,
                 state.TargetRefFrames,
                 state.TargetVideoStreamCount,
                 state.TargetAudioStreamCount,
@@ -2131,7 +2119,6 @@ namespace MediaBrowser.Api.Playback
                     state.TargetPacketLength,
                     state.TranscodeSeekInfo,
                     state.IsTargetAnamorphic,
-                    state.IsTargetCabac,
                     state.TargetRefFrames,
                     state.TargetVideoStreamCount,
                     state.TargetAudioStreamCount,
