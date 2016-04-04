@@ -235,10 +235,12 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
         function canPlayerSeek() {
 
             var mediaRenderer = self.currentMediaRenderer;
-            var currentSrc = self.getCurrentSrc(mediaRenderer);
+            var currentSrc = (self.getCurrentSrc(mediaRenderer) || '').toLowerCase();
 
-            if ((currentSrc || '').indexOf('.m3u8') != -1) {
-                return true;
+            if (currentSrc.indexOf('.m3u8') != -1) {
+                if (currentSrc.indexOf('forcelivestream=true') == -1) {
+                    return true;
+                }
             } else {
                 var duration = mediaRenderer.duration();
                 return duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
@@ -707,7 +709,11 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
 
                             if (mediaSource.TranscodingSubProtocol == 'hls') {
 
-                                mediaUrl += seekParam;
+                                if (mediaUrl.toLowerCase().indexOf('forcelivestream=true') != -1) {
+                                    startPositionInSeekParam = 0;
+                                    startTimeTicksOffset = startPosition || 0;
+                                }
+
                                 contentType = 'application/x-mpegURL';
 
                             } else {
