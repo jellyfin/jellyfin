@@ -1677,7 +1677,7 @@ namespace MediaBrowser.Api.Playback
 
         private void TryStreamCopy(StreamState state, VideoStreamRequest videoRequest)
         {
-            if (state.VideoStream != null && CanStreamCopyVideo(videoRequest, state.VideoStream))
+            if (state.VideoStream != null && CanStreamCopyVideo(state))
             {
                 state.OutputVideoCodec = "copy";
             }
@@ -1770,8 +1770,11 @@ namespace MediaBrowser.Api.Playback
             state.MediaSource = mediaSource;
         }
 
-        protected virtual bool CanStreamCopyVideo(VideoStreamRequest request, MediaStream videoStream)
+        protected virtual bool CanStreamCopyVideo(StreamState state)
         {
+            var request = state.VideoRequest;
+            var videoStream = state.VideoStream;
+
             if (videoStream.IsInterlaced)
             {
                 return false;
