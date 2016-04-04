@@ -317,7 +317,8 @@ define(['browser'], function (browser) {
                 AudioCodec: hlsVideoAudioCodecs.join(','),
                 VideoCodec: 'h264',
                 Context: 'Streaming',
-                Protocol: 'hls'
+                Protocol: 'hls',
+                ForceLiveStream: true
             });
         }
 

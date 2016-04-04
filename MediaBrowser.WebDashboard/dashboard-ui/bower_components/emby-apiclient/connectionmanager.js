@@ -557,53 +557,51 @@
 
         function validateAuthentication(server, connectionMode) {
 
-            return new Promise(function (resolve, reject) {
+            var url = ServerInfo.getServerAddress(server, connectionMode);
 
-                var url = ServerInfo.getServerAddress(server, connectionMode);
+            return ajax({
 
-                ajax({
+                type: "GET",
+                url: getEmbyServerUrl(url, "System/Info"),
+                dataType: "json",
+                headers: {
+                    "X-MediaBrowser-Token": server.AccessToken
+                }
 
-                    type: "GET",
-                    url: getEmbyServerUrl(url, "System/Info"),
-                    dataType: "json",
-                    headers: {
-                        "X-MediaBrowser-Token": server.AccessToken
-                    }
+            }).then(function (systemInfo) {
 
-                }).then(function (systemInfo) {
+                updateServerInfo(server, systemInfo);
 
-                    updateServerInfo(server, systemInfo);
+                if (server.UserId) {
 
-                    if (server.UserId) {
+                    return ajax({
+                        type: "GET",
+                        url: getEmbyServerUrl(url, "users/" + server.UserId),
+                        dataType: "json",
+                        headers: {
+                            "X-MediaBrowser-Token": server.AccessToken
+                        }
 
-                        ajax({
+                    }).then(function(user) {
 
-                            type: "GET",
-                            url: getEmbyServerUrl(url, "users/" + server.UserId),
-                            dataType: "json",
-                            headers: {
-                                "X-MediaBrowser-Token": server.AccessToken
-                            }
+                        onLocalUserSignIn(server, connectionMode, user);
+                        return Promise.resolve();
 
-                        }).then(function (user) {
+                    }, function() {
 
-                            onLocalUserSignIn(server, connectionMode, user);
-                            resolve();
+                        server.UserId = null;
+                        server.AccessToken = null;
+                        return Promise.resolve();
+                    });
+                } else {
+                    return Promise.resolve();
+                }
 
-                        }, function () {
+            }, function () {
 
-                            server.UserId = null;
-                            server.AccessToken = null;
-                            resolve();
-                        });
-                    }
-
-                }, function () {
-
-                    server.UserId = null;
-                    server.AccessToken = null;
-                    resolve();
-                });
+                server.UserId = null;
+                server.AccessToken = null;
+                return Promise.resolve();
             });
         }
 
@@ -1522,7 +1520,7 @@
                 }
 
                 updateDevicePromise = ajax({
-                    url: 'http://mb3admin.com/admin/service/registration/updateDevice?' + paramsToString({
+                    url: 'https://mb3admin.com/admin/service/registration/updateDevice?' + paramsToString({
                         serverId: params.serverId,
                         oldDeviceId: regInfo.deviceId,
                         newDeviceId: params.deviceId
@@ -1541,7 +1539,7 @@
                     params.embyUserName = user.Name;
 
                     return ajax({
-                        url: 'http://mb3admin.com/admin/service/registration/validateDevice?' + paramsToString(params),
+                        url: 'https://mb3admin.com/admin/service/registration/validateDevice?' + paramsToString(params),
                         type: 'POST'
 
                     }).then(function (response) {
