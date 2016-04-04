@@ -27,16 +27,6 @@ namespace MediaBrowser.Api.Playback.Hls
         {
         }
 
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetHlsVideoStreamLegacy request)
-        {
-            return ProcessRequest(request, false);
-        }
-
         public object Get(GetLiveHlsStream request)
         {
             return ProcessRequest(request, true);
