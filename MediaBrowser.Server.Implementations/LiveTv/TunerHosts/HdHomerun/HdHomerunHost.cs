@@ -393,6 +393,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 {
                     list.Add(await GetMediaSource(info, hdhrId, "heavy").ConfigureAwait(false));
 
+                    list.Add(await GetMediaSource(info, hdhrId, "internet540").ConfigureAwait(false));
                     list.Add(await GetMediaSource(info, hdhrId, "internet480").ConfigureAwait(false));
                     list.Add(await GetMediaSource(info, hdhrId, "internet360").ConfigureAwait(false));
                     list.Add(await GetMediaSource(info, hdhrId, "internet240").ConfigureAwait(false));
