@@ -89,7 +89,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 Number = i.GuideNumber.ToString(CultureInfo.InvariantCulture),
                 Id = GetChannelId(info, i),
                 IsFavorite = i.Favorite,
-                TunerHostId = info.Id
+                TunerHostId = info.Id,
+                IsHD = i.HD == 1,
+                AudioCodec = i.AudioCodec,
+                VideoCodec = i.VideoCodec
             });
         }
 
@@ -303,14 +306,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             if (string.IsNullOrWhiteSpace(videoCodec))
             {
-                var lineup = await GetLineup(info, CancellationToken.None).ConfigureAwait(false);
-                var channel = lineup.FirstOrDefault(i => string.Equals(i.GuideNumber, channelId, StringComparison.OrdinalIgnoreCase));
+                var channels = await GetChannels(info, true, CancellationToken.None).ConfigureAwait(false);
+                var channel = channels.FirstOrDefault(i => string.Equals(i.Number, channelId, StringComparison.OrdinalIgnoreCase));
                 if (channel != null)
                 {
                     videoCodec = channel.VideoCodec;
                     audioCodec = channel.AudioCodec;
 
-                    videoBitrate = channel.HD == 1 ? 15000000 : 2000000;
+                    videoBitrate = (channel.IsHD ?? true) ? 15000000 : 2000000;
                 }
             }
 
@@ -343,7 +346,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                 Width = width,
                                 Height = height,
                                 BitRate = videoBitrate
-                                
+
                             },
                             new MediaStream
                             {

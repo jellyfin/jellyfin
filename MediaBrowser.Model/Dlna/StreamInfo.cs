@@ -30,7 +30,6 @@ namespace MediaBrowser.Model.Dlna
         public string VideoCodec { get; set; }
         public string VideoProfile { get; set; }
 
-        public bool? Cabac { get; set; }
         public bool CopyTimestamps { get; set; }
         public string AudioCodec { get; set; }
 
@@ -219,7 +218,9 @@ namespace MediaBrowser.Model.Dlna
             list.Add(new NameValuePair("MaxRefFrames", item.MaxRefFrames.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxRefFrames.Value) : string.Empty));
             list.Add(new NameValuePair("MaxVideoBitDepth", item.MaxVideoBitDepth.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxVideoBitDepth.Value) : string.Empty));
             list.Add(new NameValuePair("Profile", item.VideoProfile ?? string.Empty));
-            list.Add(new NameValuePair("Cabac", item.Cabac.HasValue ? item.Cabac.Value.ToString() : string.Empty));
+
+            // no longer used
+            list.Add(new NameValuePair("Cabac", string.Empty));
 
             list.Add(new NameValuePair("PlaySessionId", item.PlaySessionId ?? string.Empty));
             list.Add(new NameValuePair("api_key", accessToken ?? string.Empty));
@@ -629,19 +630,6 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 return false;
-            }
-        }
-
-        public bool? IsTargetCabac
-        {
-            get
-            {
-                if (IsDirectStream)
-                {
-                    return TargetVideoStream == null ? null : TargetVideoStream.IsCabac;
-                }
-
-                return true;
             }
         }
 
