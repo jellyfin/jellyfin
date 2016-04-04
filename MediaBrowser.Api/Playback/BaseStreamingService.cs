@@ -1026,7 +1026,7 @@ namespace MediaBrowser.Api.Playback
             StartStreamingLog(transcodingJob, state, process.StandardError.BaseStream, state.LogFileStream);
 
             // Wait for the file to exist before proceeeding
-			while (!FileSystem.FileExists(state.WaitForPath ?? outputPath) && !transcodingJob.HasExited)
+            while (!FileSystem.FileExists(state.WaitForPath ?? outputPath) && !transcodingJob.HasExited)
             {
                 await Task.Delay(100, cancellationTokenSource.Token).ConfigureAwait(false);
             }
@@ -1651,9 +1651,9 @@ namespace MediaBrowser.Api.Playback
                 if (state.OutputVideoBitrate.HasValue)
                 {
                     var resolution = ResolutionNormalizer.Normalize(
-						state.VideoStream == null ? (int?)null : state.VideoStream.BitRate,
-						state.OutputVideoBitrate.Value,
-						state.VideoStream == null ? null : state.VideoStream.Codec,
+                        state.VideoStream == null ? (int?)null : state.VideoStream.BitRate,
+                        state.OutputVideoBitrate.Value,
+                        state.VideoStream == null ? null : state.VideoStream.Codec,
                         state.OutputVideoCodec,
                         videoRequest.MaxWidth,
                         videoRequest.MaxHeight);
@@ -1682,7 +1682,7 @@ namespace MediaBrowser.Api.Playback
                 state.OutputVideoCodec = "copy";
             }
 
-            if (state.AudioStream != null && CanStreamCopyAudio(videoRequest, state.AudioStream, state.SupportedAudioCodecs))
+            if (state.AudioStream != null && CanStreamCopyAudio(state, state.SupportedAudioCodecs))
             {
                 state.OutputAudioCodec = "copy";
             }
@@ -1784,7 +1784,7 @@ namespace MediaBrowser.Api.Playback
             {
                 return false;
             }
-            
+
             // Can't stream copy if we're burning in subtitles
             if (request.SubtitleStreamIndex.HasValue)
             {
@@ -1913,8 +1913,11 @@ namespace MediaBrowser.Api.Playback
             return Array.FindIndex(list.ToArray(), t => string.Equals(t, profile, StringComparison.OrdinalIgnoreCase));
         }
 
-        protected virtual bool CanStreamCopyAudio(VideoStreamRequest request, MediaStream audioStream, List<string> supportedAudioCodecs)
+        protected virtual bool CanStreamCopyAudio(StreamState state, List<string> supportedAudioCodecs)
         {
+            var request = state.VideoRequest;
+            var audioStream = state.AudioStream;
+
             // Source and target codecs must match
             if (string.IsNullOrEmpty(audioStream.Codec) || !supportedAudioCodecs.Contains(audioStream.Codec, StringComparer.OrdinalIgnoreCase))
             {
@@ -2213,7 +2216,7 @@ namespace MediaBrowser.Api.Playback
                     inputModifier += " -noaccurate_seek";
                 }
             }
-            
+
             return inputModifier;
         }
 

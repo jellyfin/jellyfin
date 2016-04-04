@@ -513,7 +513,14 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (targetAudioChannels.Value >= 5 && (maxTotalBitrate ?? 0) >= 2000000)
                 {
-                    defaultBitrate = 320000;
+                    if (StringHelper.EqualsIgnoreCase(targetAudioCodec, "ac3"))
+                    {
+                        defaultBitrate = 384000;
+                    }
+                    else
+                    {
+                        defaultBitrate = 320000;
+                    }
                 }
             }
 
