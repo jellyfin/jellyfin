@@ -30,8 +30,8 @@ namespace MediaBrowser.Model.Dlna
         public string VideoCodec { get; set; }
         public string VideoProfile { get; set; }
 
-        public bool? Cabac { get; set; }
         public bool CopyTimestamps { get; set; }
+        public bool ForceLiveStream { get; set; }
         public string AudioCodec { get; set; }
 
         public int? AudioStreamIndex { get; set; }
@@ -205,7 +205,7 @@ namespace MediaBrowser.Model.Dlna
             list.Add(new NameValuePair("MaxWidth", item.MaxWidth.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxWidth.Value) : string.Empty));
             list.Add(new NameValuePair("MaxHeight", item.MaxHeight.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxHeight.Value) : string.Empty));
 
-            if (StringHelper.EqualsIgnoreCase(item.SubProtocol, "hls"))
+            if (StringHelper.EqualsIgnoreCase(item.SubProtocol, "hls") && !item.ForceLiveStream)
             {
                 list.Add(new NameValuePair("StartTimeTicks", string.Empty));
             }
@@ -219,7 +219,9 @@ namespace MediaBrowser.Model.Dlna
             list.Add(new NameValuePair("MaxRefFrames", item.MaxRefFrames.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxRefFrames.Value) : string.Empty));
             list.Add(new NameValuePair("MaxVideoBitDepth", item.MaxVideoBitDepth.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxVideoBitDepth.Value) : string.Empty));
             list.Add(new NameValuePair("Profile", item.VideoProfile ?? string.Empty));
-            list.Add(new NameValuePair("Cabac", item.Cabac.HasValue ? item.Cabac.Value.ToString() : string.Empty));
+
+            // no longer used
+            list.Add(new NameValuePair("Cabac", string.Empty));
 
             list.Add(new NameValuePair("PlaySessionId", item.PlaySessionId ?? string.Empty));
             list.Add(new NameValuePair("api_key", accessToken ?? string.Empty));
@@ -233,6 +235,7 @@ namespace MediaBrowser.Model.Dlna
             }
 
             list.Add(new NameValuePair("CopyTimestamps", item.CopyTimestamps.ToString().ToLower()));
+            list.Add(new NameValuePair("ForceLiveStream", item.ForceLiveStream.ToString().ToLower()));
             list.Add(new NameValuePair("SubtitleMethod", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External ? item.SubtitleDeliveryMethod.ToString() : string.Empty));
        
             return list;
@@ -629,19 +632,6 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 return false;
-            }
-        }
-
-        public bool? IsTargetCabac
-        {
-            get
-            {
-                if (IsDirectStream)
-                {
-                    return TargetVideoStream == null ? null : TargetVideoStream.IsCabac;
-                }
-
-                return true;
             }
         }
 

@@ -137,12 +137,10 @@ namespace MediaBrowser.Api.Playback.Progressive
                 args += " -mpegts_m2ts_mode 1";
             }
 
-            var isOutputMkv = string.Equals(state.OutputContainer, "mkv", StringComparison.OrdinalIgnoreCase);
-
             if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
                 if (state.VideoStream != null && IsH264(state.VideoStream) &&
-                    (string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase) || isOutputMkv))
+                    (string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase)))
                 {
                     args += " -bsf:v h264_mp4toannexb";
                 }

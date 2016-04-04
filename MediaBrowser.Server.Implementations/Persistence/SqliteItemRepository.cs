@@ -2755,7 +2755,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveStreamCommand.GetParameter(index++).Value = stream.BitDepth;
                     _saveStreamCommand.GetParameter(index++).Value = stream.IsAnamorphic;
                     _saveStreamCommand.GetParameter(index++).Value = stream.RefFrames;
-                    _saveStreamCommand.GetParameter(index++).Value = stream.IsCabac;
+                    _saveStreamCommand.GetParameter(index++).Value = null;
 
                     _saveStreamCommand.GetParameter(index++).Value = stream.CodecTag;
                     _saveStreamCommand.GetParameter(index++).Value = stream.Comment;
@@ -2907,10 +2907,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 item.RefFrames = reader.GetInt32(24);
             }
 
-            if (!reader.IsDBNull(25))
-            {
-                item.IsCabac = reader.GetBoolean(25);
-            }
+            // cabac no longer used
 
             if (!reader.IsDBNull(26))
             {

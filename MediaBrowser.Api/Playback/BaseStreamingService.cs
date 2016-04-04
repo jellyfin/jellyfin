@@ -1026,7 +1026,7 @@ namespace MediaBrowser.Api.Playback
             StartStreamingLog(transcodingJob, state, process.StandardError.BaseStream, state.LogFileStream);
 
             // Wait for the file to exist before proceeeding
-			while (!FileSystem.FileExists(state.WaitForPath ?? outputPath) && !transcodingJob.HasExited)
+            while (!FileSystem.FileExists(state.WaitForPath ?? outputPath) && !transcodingJob.HasExited)
             {
                 await Task.Delay(100, cancellationTokenSource.Token).ConfigureAwait(false);
             }
@@ -1452,10 +1452,7 @@ namespace MediaBrowser.Api.Playback
                 }
                 else if (i == 19)
                 {
-                    if (videoRequest != null)
-                    {
-                        videoRequest.Cabac = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
-                    }
+                    // cabac no longer used
                 }
                 else if (i == 20)
                 {
@@ -1654,9 +1651,9 @@ namespace MediaBrowser.Api.Playback
                 if (state.OutputVideoBitrate.HasValue)
                 {
                     var resolution = ResolutionNormalizer.Normalize(
-						state.VideoStream == null ? (int?)null : state.VideoStream.BitRate,
-						state.OutputVideoBitrate.Value,
-						state.VideoStream == null ? null : state.VideoStream.Codec,
+                        state.VideoStream == null ? (int?)null : state.VideoStream.BitRate,
+                        state.OutputVideoBitrate.Value,
+                        state.VideoStream == null ? null : state.VideoStream.Codec,
                         state.OutputVideoCodec,
                         videoRequest.MaxWidth,
                         videoRequest.MaxHeight);
@@ -1680,12 +1677,12 @@ namespace MediaBrowser.Api.Playback
 
         private void TryStreamCopy(StreamState state, VideoStreamRequest videoRequest)
         {
-            if (state.VideoStream != null && CanStreamCopyVideo(videoRequest, state.VideoStream))
+            if (state.VideoStream != null && CanStreamCopyVideo(state))
             {
                 state.OutputVideoCodec = "copy";
             }
 
-            if (state.AudioStream != null && CanStreamCopyAudio(videoRequest, state.AudioStream, state.SupportedAudioCodecs))
+            if (state.AudioStream != null && CanStreamCopyAudio(state, state.SupportedAudioCodecs))
             {
                 state.OutputAudioCodec = "copy";
             }
@@ -1773,8 +1770,11 @@ namespace MediaBrowser.Api.Playback
             state.MediaSource = mediaSource;
         }
 
-        protected virtual bool CanStreamCopyVideo(VideoStreamRequest request, MediaStream videoStream)
+        protected virtual bool CanStreamCopyVideo(StreamState state)
         {
+            var request = state.VideoRequest;
+            var videoStream = state.VideoStream;
+
             if (videoStream.IsInterlaced)
             {
                 return false;
@@ -1784,7 +1784,7 @@ namespace MediaBrowser.Api.Playback
             {
                 return false;
             }
-            
+
             // Can't stream copy if we're burning in subtitles
             if (request.SubtitleStreamIndex.HasValue)
             {
@@ -1805,10 +1805,10 @@ namespace MediaBrowser.Api.Playback
             {
                 if (string.IsNullOrEmpty(videoStream.Profile))
                 {
-                    return false;
+                    //return false;
                 }
 
-                if (!string.Equals(request.Profile, videoStream.Profile, StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(videoStream.Profile) && !string.Equals(request.Profile, videoStream.Profile, StringComparison.OrdinalIgnoreCase))
                 {
                     var currentScore = GetVideoProfileScore(videoStream.Profile);
                     var requestedScore = GetVideoProfileScore(request.Profile);
@@ -1884,21 +1884,13 @@ namespace MediaBrowser.Api.Playback
                 {
                     if (!videoStream.Level.HasValue)
                     {
-                        return false;
+                        //return false;
                     }
 
-                    if (videoStream.Level.Value > requestLevel)
+                    if (videoStream.Level.HasValue && videoStream.Level.Value > requestLevel)
                     {
                         return false;
                     }
-                }
-            }
-
-            if (request.Cabac.HasValue && request.Cabac.Value)
-            {
-                if (videoStream.IsCabac.HasValue && !videoStream.IsCabac.Value)
-                {
-                    return false;
                 }
             }
 
@@ -1921,8 +1913,11 @@ namespace MediaBrowser.Api.Playback
             return Array.FindIndex(list.ToArray(), t => string.Equals(t, profile, StringComparison.OrdinalIgnoreCase));
         }
 
-        protected virtual bool CanStreamCopyAudio(VideoStreamRequest request, MediaStream audioStream, List<string> supportedAudioCodecs)
+        protected virtual bool CanStreamCopyAudio(StreamState state, List<string> supportedAudioCodecs)
         {
+            var request = state.VideoRequest;
+            var audioStream = state.AudioStream;
+
             // Source and target codecs must match
             if (string.IsNullOrEmpty(audioStream.Codec) || !supportedAudioCodecs.Contains(audioStream.Codec, StringComparer.OrdinalIgnoreCase))
             {
@@ -2028,7 +2023,6 @@ namespace MediaBrowser.Api.Playback
                 state.TargetPacketLength,
                 state.TargetTimestamp,
                 state.IsTargetAnamorphic,
-                state.IsTargetCabac,
                 state.TargetRefFrames,
                 state.TargetVideoStreamCount,
                 state.TargetAudioStreamCount,
@@ -2054,6 +2048,7 @@ namespace MediaBrowser.Api.Playback
                     if (state.VideoRequest != null)
                     {
                         state.VideoRequest.CopyTimestamps = transcodingProfile.CopyTimestamps;
+                        state.VideoRequest.ForceLiveStream = transcodingProfile.ForceLiveStream;
                     }
                 }
             }
@@ -2131,7 +2126,6 @@ namespace MediaBrowser.Api.Playback
                     state.TargetPacketLength,
                     state.TranscodeSeekInfo,
                     state.IsTargetAnamorphic,
-                    state.IsTargetCabac,
                     state.TargetRefFrames,
                     state.TargetVideoStreamCount,
                     state.TargetAudioStreamCount,
@@ -2223,7 +2217,7 @@ namespace MediaBrowser.Api.Playback
                     inputModifier += " -noaccurate_seek";
                 }
             }
-            
+
             return inputModifier;
         }
 

@@ -443,6 +443,7 @@ namespace MediaBrowser.Model.Dlna
 
                 playlistItem.VideoCodec = transcodingProfile.VideoCodec;
                 playlistItem.CopyTimestamps = transcodingProfile.CopyTimestamps;
+                playlistItem.ForceLiveStream = transcodingProfile.ForceLiveStream;
                 playlistItem.SubProtocol = transcodingProfile.Protocol;
                 playlistItem.AudioStreamIndex = audioStreamIndex;
 
@@ -513,7 +514,14 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (targetAudioChannels.Value >= 5 && (maxTotalBitrate ?? 0) >= 2000000)
                 {
-                    defaultBitrate = 320000;
+                    if (StringHelper.EqualsIgnoreCase(targetAudioCodec, "ac3"))
+                    {
+                        defaultBitrate = 384000;
+                    }
+                    else
+                    {
+                        defaultBitrate = 320000;
+                    }
                 }
             }
 
@@ -597,7 +605,6 @@ namespace MediaBrowser.Model.Dlna
             string videoProfile = videoStream == null ? null : videoStream.Profile;
             float? videoFramerate = videoStream == null ? null : videoStream.AverageFrameRate ?? videoStream.AverageFrameRate;
             bool? isAnamorphic = videoStream == null ? null : videoStream.IsAnamorphic;
-            bool? isCabac = videoStream == null ? null : videoStream.IsCabac;
             string videoCodecTag = videoStream == null ? null : videoStream.CodecTag;
 
             int? audioBitrate = audioStream == null ? null : audioStream.BitRate;
@@ -614,7 +621,7 @@ namespace MediaBrowser.Model.Dlna
             // Check container conditions
             foreach (ProfileCondition i in conditions)
             {
-                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams, videoCodecTag))
+                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, refFrames, numVideoStreams, numAudioStreams, videoCodecTag))
                 {
                     LogConditionFailure(profile, "VideoContainerProfile", i, mediaSource);
 
@@ -647,7 +654,7 @@ namespace MediaBrowser.Model.Dlna
 
             foreach (ProfileCondition i in conditions)
             {
-                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams, videoCodecTag))
+                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, refFrames, numVideoStreams, numAudioStreams, videoCodecTag))
                 {
                     LogConditionFailure(profile, "VideoCodecProfile", i, mediaSource);
 
@@ -907,22 +914,6 @@ namespace MediaBrowser.Model.Dlna
                             if (IntHelper.TryParseCultureInvariant(value, out num))
                             {
                                 item.MaxAudioChannels = num;
-                            }
-                            break;
-                        }
-                    case ProfileConditionValue.IsCabac:
-                        {
-                            bool val;
-                            if (BoolHelper.TryParseCultureInvariant(value, out val))
-                            {
-                                if (condition.Condition == ProfileConditionType.Equals)
-                                {
-                                    item.Cabac = val;
-                                }
-                                else if (condition.Condition == ProfileConditionType.NotEquals)
-                                {
-                                    item.Cabac = !val;
-                                }
                             }
                             break;
                         }
