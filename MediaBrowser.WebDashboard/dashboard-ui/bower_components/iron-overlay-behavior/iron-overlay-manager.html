@@ -38,11 +38,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      */
     this._backdropElement = null;
 
-    // Enable document-wide tap recognizer.
-    Polymer.Gestures.add(document, 'tap', null);
-    // We should be using only 'tap', but this would be a breaking change.
-    var tapEvent = ('ontouchstart' in window) ? 'tap' : 'click';
-    document.addEventListener(tapEvent, this._onCaptureClick.bind(this), true);
+    // Listen to mousedown or touchstart to be sure to be the first to capture
+    // clicks outside the overlay.
+    var clickEvent = ('ontouchstart' in window) ? 'touchstart' : 'mousedown';
+    document.addEventListener(clickEvent, this._onCaptureClick.bind(this), true);
     document.addEventListener('focus', this._onCaptureFocus.bind(this), true);
     document.addEventListener('keydown', this._onCaptureKeyDown.bind(this), true);
   };
@@ -167,7 +166,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return;
       }
       this._overlays.splice(i, 1);
-      this._setZ(overlay, '');
 
       var node = overlay.restoreFocusOnClose ? overlay.restoreFocusNode : null;
       overlay.restoreFocusNode = null;
@@ -267,7 +265,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     _getZ: function(overlay) {
       var z = this._minimumZ;
       if (overlay) {
-        var z1 = Number(window.getComputedStyle(overlay).zIndex);
+        var z1 = Number(overlay.style.zIndex || window.getComputedStyle(overlay).zIndex);
         // Check if is a number
         // Number.isNaN not supported in IE 10+
         if (z1 === z1) {

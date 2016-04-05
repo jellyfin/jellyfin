@@ -289,7 +289,7 @@ define(['browser'], function (browser) {
         });
 
         // Can't use mkv on mobile because we have to use the native player controls and they won't be able to seek it
-        if (canPlayMkv && options.supportsAutoPlay) {
+        if (canPlayMkv && options.supportsCustomSeeking) {
             profile.TranscodingProfiles.push({
                 Container: 'mkv',
                 Type: 'Video',
@@ -320,7 +320,7 @@ define(['browser'], function (browser) {
                 Context: 'Streaming',
                 Protocol: 'hls',
                 // Can't use this when autoplay is not supported
-                ForceLiveStream: options.supportsAutoPlay ? true : false
+                ForceLiveStream: options.supportsCustomSeeking ? true : false
             });
         }
 
