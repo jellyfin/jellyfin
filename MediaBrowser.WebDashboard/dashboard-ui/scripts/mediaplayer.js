@@ -196,7 +196,34 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
 
             return new Promise(function (resolve, reject) {
 
-                require(['browserdeviceprofile', 'qualityoptions'], function (profile, qualityoptions) {
+                require(['browserdeviceprofile', 'qualityoptions'], function (profileBuilder, qualityoptions) {
+
+                    var supportsCustomSeeking = false;
+                    if (!browserInfo.mobile) {
+                        supportsCustomSeeking = true;
+                    } else if (AppInfo.isNativeApp && browserInfo.safari) {
+                        if (navigator.userAgent.toLowerCase().indexOf('ipad') == -1) {
+                            // Need to disable it in order to support picture in picture
+                            supportsCustomSeeking = true;
+                        }
+                    } else if (AppInfo.isNativeApp) {
+                        supportsCustomSeeking = true;
+                    }
+
+                    var profile = profileBuilder({
+                        supportsCustomSeeking: supportsCustomSeeking
+                    });
+
+                    if (!(AppInfo.isNativeApp && browserInfo.android)) {
+                        profile.SubtitleProfiles.push({
+                            Format: 'ass',
+                            Method: 'External'
+                        });
+                        profile.SubtitleProfiles.push({
+                            Format: 'ssa',
+                            Method: 'External'
+                        });
+                    }
 
                     var bitrateSetting = appSettings.maxStreamingBitrate();
 
@@ -430,7 +457,8 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
                     url: textStreamUrl,
                     language: (textStream.Language || 'und'),
                     isDefault: textStream.Index == mediaSource.DefaultSubtitleStreamIndex,
-                    index: textStream.Index
+                    index: textStream.Index,
+                    format: textStream.Codec
                 });
             }
 

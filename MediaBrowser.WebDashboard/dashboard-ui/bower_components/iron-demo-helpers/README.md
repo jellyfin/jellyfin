@@ -2,7 +2,7 @@
 <!---
 
 This README is automatically generated from the comments in these files:
-demo-snippet.html
+demo-snippet.html  url-bar.html
 
 Edit those files, and our readme bot will duplicate them over here!
 Edit this file, and the bot will squash your changes :)
@@ -51,5 +51,23 @@ The following custom properties and mixins are available for styling:
 | `--demo-snippet` | Mixin applied to the entire element | `{}` |
 | `--demo-snippet-demo` | Mixin applied to just the demo section | `{}` |
 | `--demo-snippet-code` | Mixin applied to just the code section | `{}` |
+
+
+
+##&lt;url-bar&gt;
+
+`url-bar` is a helper element that displays a simple read-only URL bar if
+and only if the page is in an iframe. In this way we can demo elements that
+deal with the URL in our iframe-based demo environments.
+
+If the page is not in an iframe, the url-bar element is not displayed.
+
+### Styling
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--url-bar` | Mixin applied to the entire element | `{}` |
 
 

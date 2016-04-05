@@ -13,7 +13,7 @@
         var self = this;
 
         function onEnded() {
-            destroyCustomTrack();
+            destroyCustomTrack(this);
             Events.trigger(self, 'ended');
         }
 
@@ -76,7 +76,7 @@
 
         function onError(e) {
 
-            destroyCustomTrack();
+            destroyCustomTrack(this);
 
             var elem = e.target;
             var errorCode = elem.error ? elem.error.code : '';
@@ -282,7 +282,7 @@
 
         self.stop = function () {
 
-            destroyCustomTrack();
+            destroyCustomTrack(mediaElement);
 
             if (mediaElement) {
                 mediaElement.pause();
@@ -538,12 +538,20 @@
                 }
             }
 
+            if (track) {
+                var format = (track.format || '').toLowerCase();
+                if (format == 'ssa' || format == 'ass') {
+                    // libjass is needed here
+                    return false;
+                }
+            }
+
             return true;
         }
 
-        function destroyCustomTrack(isPlaying) {
+        function destroyCustomTrack(videoElement, isPlaying) {
 
-            //window.removeEventListener('resize', onVideoResize);
+            window.removeEventListener('resize', onVideoResize);
 
             var videoSubtitlesElem = document.querySelector('.videoSubtitles');
             if (videoSubtitlesElem) {
@@ -552,7 +560,7 @@
 
             if (isPlaying) {
 
-                var allTracks = mediaElement.textTracks; // get list of tracks
+                var allTracks = videoElement.textTracks; // get list of tracks
                 for (var i = 0; i < allTracks.length; i++) {
 
                     var currentTrack = allTracks[i];
@@ -584,10 +592,10 @@
             });
         }
 
-        function setTrackForCustomDisplay(track) {
+        function setTrackForCustomDisplay(videoElement, track) {
 
             if (!track) {
-                destroyCustomTrack(true);
+                destroyCustomTrack(videoElement, true);
                 return;
             }
 
@@ -596,13 +604,60 @@
                 return;
             }
 
-            destroyCustomTrack(true);
+            destroyCustomTrack(videoElement, true);
             customTrackIndex = track.index;
-            renderTracksEvents(track);
+            renderTracksEvents(videoElement, track);
             lastCustomTrackMs = 0;
         }
 
-        function renderTracksEvents(track) {
+        function renderWithLibjass(videoElement, track) {
+
+            var rendererSettings = {};
+
+            require(['libjass'], function (libjass) {
+
+                libjass.ASS.fromUrl(track.url).then(function (ass) {
+
+                    var clock = currentClock = new libjass.renderers.ManualClock();
+
+                    // Create a DefaultRenderer using the video element and the ASS object
+                    var renderer = new libjass.renderers.WebRenderer(ass, clock, videoElement.parentNode.parentNode, rendererSettings);
+
+                    currentAssRenderer = renderer;
+
+                    renderer.addEventListener("ready", function () {
+                        try {
+                            renderer.resize(videoElement.offsetWidth, videoElement.offsetHeight, 0, 0);
+                            window.removeEventListener('resize', onVideoResize);
+                            window.addEventListener('resize', onVideoResize);
+                            //clock.pause();
+                        }
+                        catch (ex) {
+                        }
+                    });
+                });
+            });
+        }
+
+        function onVideoResize() {
+            var renderer = currentAssRenderer;
+            if (renderer) {
+                var videoElement = mediaElement;
+                var width = videoElement.offsetWidth;
+                var height = videoElement.offsetHeight;
+                console.log('videoElement resized: ' + width + 'x' + height);
+                renderer.resize(width, height, 0, 0);
+            }
+        }
+
+        function renderTracksEvents(videoElement, track) {
+
+            var format = (track.format || '').toLowerCase();
+            if (format == 'ssa' || format == 'ass') {
+                // libjass is needed here
+                renderWithLibjass(videoElement, track);
+                return;
+            }
 
             if (browserInfo.edge || browserInfo.msie) {
                 fetchSubtitles(track).then(function (data) {
@@ -614,7 +669,7 @@
             var trackElement = null;
             var expectedId = 'manualTrack' + track.index;
 
-            var allTracks = mediaElement.textTracks; // get list of tracks
+            var allTracks = videoElement.textTracks; // get list of tracks
             for (var i = 0; i < allTracks.length; i++) {
 
                 var currentTrack = allTracks[i];
@@ -628,7 +683,7 @@
             }
 
             if (!trackElement) {
-                trackElement = mediaElement.addTextTrack('subtitles', 'manualTrack' + track.index, track.language || 'und');
+                trackElement = videoElement.addTextTrack('subtitles', 'manualTrack' + track.index, track.language || 'und');
                 trackElement.label = 'manualTrack' + track.index;
 
                 // download the track json
@@ -656,10 +711,10 @@
         var currentAssRenderer;
         function updateSubtitleText(timeMs) {
 
-            //var clock = currentClock;
-            //if (clock) {
-            //    clock.seek(timeMs / 1000);
-            //}
+            var clock = currentClock;
+            if (clock) {
+                clock.seek(timeMs / 1000);
+            }
 
             var trackEvents = currentTrackEvents;
             if (!trackEvents) {
@@ -710,10 +765,10 @@
 
             if (enableNativeTrackSupport(track)) {
 
-                setTrackForCustomDisplay(null);
+                setTrackForCustomDisplay(mediaElement, null);
             } else {
-                setTrackForCustomDisplay(track);
-
+                setTrackForCustomDisplay(mediaElement, track);
+                
                 // null these out to disable the player's native display (handled below)
                 streamIndex = -1;
                 track = null;
@@ -806,12 +861,12 @@
 
             if (AppInfo.isNativeApp && browserInfo.safari) {
 
-                if (navigator.userAgent.toLowerCase().indexOf('iphone') != -1) {
-                    return true;
+                if (navigator.userAgent.toLowerCase().indexOf('ipad') != -1) {
+                    // Need to disable it in order to support picture in picture
+                    return false;
                 }
 
-                // Need to disable it in order to support picture in picture
-                return false;
+                return true;
             }
 
             return self.canAutoPlayVideo();
