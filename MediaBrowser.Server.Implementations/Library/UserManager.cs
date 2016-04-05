@@ -355,6 +355,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 users.Add(user);
 
                 user.Policy.IsAdministrator = true;
+                user.Policy.EnableContentDeletion = true;
                 user.Policy.EnableRemoteControlOfOtherUsers = true;
                 await UpdateUserPolicy(user, user.Policy, false).ConfigureAwait(false);
             }
