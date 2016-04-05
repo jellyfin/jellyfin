@@ -15,6 +15,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="iron-overlay-manager.html">
 
 <script>
+// IIFE to help scripts concatenation.
+(function() {
+'use strict';
 
 /**
 Use `Polymer.IronOverlayBehavior` to implement an element that can be hidden or shown, and displays
@@ -233,6 +236,10 @@ context. You should place this element as a child of `<body>` whenever possible.
       this.__shouldRemoveTabIndex = false;
       // Used for wrapping the focus on TAB / Shift+TAB.
       this.__firstFocusableNode = this.__lastFocusableNode = null;
+      // Used for requestAnimationFrame when opened changes.
+      this.__openChangedAsync = null;
+      // Used for requestAnimationFrame when iron-resize is fired.
+      this.__onIronResizeAsync = null;
       this._ensureSetup();
     },
 
@@ -317,26 +324,22 @@ context. You should place this element as a child of `<body>` whenever possible.
 
       this.__isAnimating = true;
 
+      // requestAnimationFrame for non-blocking rendering
+      if (this.__openChangedAsync) {
+        cancelAnimationFrame(this.__openChangedAsync);
+      }
       if (this.opened) {
-        this._prepareRenderOpened();
-      }
-      if (this._openChangedAsync) {
-        this.cancelAsync(this._openChangedAsync);
-      }
-      // Async here to allow overlay layer to become visible.
-      this._openChangedAsync = this.async(function() {
-        // overlay becomes visible here
-        this.style.display = '';
-        // Force layout to ensure transition will go. Set offsetWidth to itself
-        // so that compilers won't remove it.
-        this.offsetWidth = this.offsetWidth;
-        if (this.opened) {
-          this._renderOpened();
-        } else {
-          this._renderClosed();
+        if (this.withBackdrop) {
+          this.backdropElement.prepare();
         }
-        this._openChangedAsync = null;
-      });
+        this.__openChangedAsync = requestAnimationFrame(function() {
+          this.__openChangedAsync = null;
+          this._prepareRenderOpened();
+          this._renderOpened();
+        }.bind(this));
+      } else {
+        this._renderClosed();
+      }
     },
 
     _canceledChanged: function() {
@@ -378,10 +381,6 @@ context. You should place this element as a child of `<body>` whenever possible.
       this._preparePositioning();
       this.refit();
       this._finishPositioning();
-
-      if (this.withBackdrop) {
-        this.backdropElement.prepare();
-      }
 
       // Safari will apply the focus to the autofocus element when displayed for the first time,
       // so we blur it. Later, _applyFocus will set the focus if necessary.
@@ -432,6 +431,8 @@ context. You should place this element as a child of `<body>` whenever possible.
     _finishRenderClosed: function() {
       // Hide the overlay and remove the backdrop.
       this.style.display = 'none';
+      // Reset z-index only at the end of the animation.
+      this.style.zIndex = '';
 
       this._applyFocus();
 
@@ -447,12 +448,18 @@ context. You should place this element as a child of `<body>` whenever possible.
     },
 
     _finishPositioning: function() {
+      // First, make it invisible & reactivate animations.
       this.style.display = 'none';
-      this.style.transform = this.style.webkitTransform = '';
-      // Force layout layout to avoid application of transform.
-      // Set offsetWidth to itself so that compilers won't remove it.
-      this.offsetWidth = this.offsetWidth;
+      // Force reflow before re-enabling animations so that they don't start.
+      // Set scrollTop to itself so that Closure Compiler doesn't remove this.
+      this.scrollTop = this.scrollTop;
       this.style.transition = this.style.webkitTransition = '';
+      this.style.transform = this.style.webkitTransform = '';
+      // Now that animations are enabled, make it visible again
+      this.style.display = '';
+      // Force reflow, so that following animations are properly started.
+      // Set scrollTop to itself so that Closure Compiler doesn't remove this.
+      this.scrollTop = this.scrollTop;
     },
 
     /**
@@ -535,12 +542,15 @@ context. You should place this element as a child of `<body>` whenever possible.
      * @protected
      */
     _onIronResize: function() {
-      if (this.__isAnimating) {
-        return;
+      if (this.__onIronResizeAsync) {
+        cancelAnimationFrame(this.__onIronResizeAsync);
+        this.__onIronResizeAsync = null;
       }
-
-      if (this.opened) {
-        this.refit();
+      if (this.opened && !this.__isAnimating) {
+        this.__onIronResizeAsync = requestAnimationFrame(function() {
+          this.__onIronResizeAsync = null;
+          this.refit();
+        }.bind(this));
       }
     },
 
@@ -583,4 +593,5 @@ context. You should place this element as a child of `<body>` whenever possible.
   * @param {{canceled: (boolean|undefined)}} closingReason Contains `canceled` (whether the overlay was canceled).
   */
 
+})();
 </script>
