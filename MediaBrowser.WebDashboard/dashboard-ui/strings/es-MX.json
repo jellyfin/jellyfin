@@ -1,4 +1,7 @@
 {
+    "IPurchasedThisApp": "I purchased this app",
+    "IHaveEmbyPremiere": "I have Emby Premiere",
+    "HowDidYouPay": "How did you pay?",
     "LabelExit": "Salir",
     "LabelVisitCommunity": "Visitar la Comunidad",
     "LabelGithub": "Github",
@@ -908,7 +911,7 @@
     "MessageNoPlaylistItemsAvailable": "Esta lista de reproducci\u00f3n se encuentra vac\u00eda.",
     "ButtonDismiss": "Descartar",
     "ButtonEditOtherUserPreferences": "Editar el perf\u00edl de este usuario. im\u00e1gen y preferencias personales.",
-    "LabelChannelStreamQuality": "Preferred internet channel quality:",
+    "LabelChannelStreamQuality": "Calidad preferida para canal de internet:",
     "LabelChannelStreamQualityHelp": "En un ambiente de ancho de banda limitado, limitar la calidad puede ayudar a asegurar una experiencia de transimisi\u00f3n en tiempo real fluida.",
     "OptionBestAvailableStreamQuality": "La mejor disponible",
     "LabelEnableChannelContentDownloadingFor": "Habilitar descarga de contenidos del canal para:",
@@ -967,7 +970,7 @@
     "OptionLatestTvRecordings": "Grabaciones recientes",
     "LabelProtocolInfo": "Informaci\u00f3n del protocolo:",
     "LabelProtocolInfoHelp": "El valor que ser\u00e1 utilizado cuando se responde a solicitudes GetProtocolInfo desde el dispositivo.",
-    "TabNfoSettings": "Nfo Settings",
+    "TabNfoSettings": "Configuraci\u00f3n Nfo",
     "HeaderKodiMetadataHelp": "Emby incluye soporte nativo para archivos de metadatos Nfo. Para habilitar o deshabilitar los metadatos Nfo, utilice la pesta\u00f1a Avanzado para configurar las opciones para sus tipos de medios.",
     "LabelKodiMetadataUser": "Sincronizar informaci\u00f3n de vistos a nfo's para:",
     "LabelKodiMetadataUserHelp": "Habilitar esto para mantener los datos monitoreados en sincron\u00eda entre el Servidor Emby y los archivos Nfo .",
@@ -2186,7 +2189,7 @@
     "HeaderUnlockSync": "Desbloquear Emby Sinc",
     "MessageUnlockAppWithPurchaseOrSupporter": "Desbloquee esta caracter\u00edstica con una peque\u00f1a compra \u00fanica, o con una suscripci\u00f3n activa de Emby Premier.",
     "MessageUnlockAppWithSupporter": "Desbloquee esta caracter\u00edstica con una suscripci\u00f3n activa de Emby Premier.",
-    "MessageToValidateSupporter": "Si tiene una activa una suscripci\u00f3n Emby Premiere, solo acceda a la aplicaci\u00f3n una vez usando su conexi\u00f3n Wifi dentro de su red de hogar.",
+    "MessageToValidateSupporter": "If you have an active Emby Premiere subscription, ensure you've setup Emby Premiere in your Emby Server Dashboard under Help -> Emby Premiere.",
     "MessagePaymentServicesUnavailable": "Los servicios de pago no se encuentran disponibles actualmente. Por favor intente de nuevo mas tarde.",
     "MessagePleaseSignInLocalNetwork": "Antes de continuar, por favor aseg\u00farese de que esta conectado a su red local usando una conexi\u00f3n Wifi o LAN.",
     "ButtonUnlockWithPurchase": "Desbloquear con una compra",
@@ -2258,7 +2261,7 @@
     "ButtonRestorePreviousPurchase": "Restaurar Compra",
     "AlreadyPaid": "\u00bfYa esta pagado?",
     "AlreadyPaidHelp1": "Si ya ha pagado para instalar una versi\u00f3n antigua de Media Browser para Android, no necesita pagar de nuevo para activar esta app. De clic en OK para enviarnos un correo electr\u00f3nico a {0} y nosotros la activaremos por usted.",
-    "AlreadyPaidHelp2": "\u00bfYa tiene Emby Premiere? Solo de cancelar a este cuadro de dialogo, inicie sesi\u00f3n con la app desde la red WIFI de su hogar, y sera desbloqueado autom\u00e1ticamente.",
+    "AlreadyPaidHelp2": "Got Emby Premiere? Just cancel this dialog, setup Emby Premiere in your Emby Server Dashboard under Help -> Emby Premiere, and it will be unlocked automatically.",
     "ButtonForYou": "Para T\u00ed",
     "ButtonLibrary": "Biblioteca",
     "ButtonNowPlaying": "Reproduci\u00e9ndo Ahora",
@@ -2323,5 +2326,5 @@
     "HeaderTuners": "Sintonizador",
     "LabelOptionalM3uUrl": "url M3U (opcional):",
     "LabelOptionalM3uUrlHelp": "Algunos dispositivos soportan un listado de canales M3U.",
-    "TabResumeSettings": "Resume Settings"
+    "TabResumeSettings": "Configuraci\u00f3n para Continuar"
 }

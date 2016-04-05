@@ -1,4 +1,7 @@
 {
+    "IPurchasedThisApp": "Ik heb deze app gekocht\n",
+    "IHaveEmbyPremiere": "Ik heb Emby premi\u00e8re",
+    "HowDidYouPay": "Hoe heb je betaald?",
     "LabelExit": "Afsluiten",
     "LabelVisitCommunity": "Bezoek Gemeenschap",
     "LabelGithub": "Github",
@@ -908,7 +911,7 @@
     "MessageNoPlaylistItemsAvailable": "De afspeellijst is momenteel leeg.",
     "ButtonDismiss": "Afwijzen",
     "ButtonEditOtherUserPreferences": "Wijzig het profiel, afbeelding en persoonlijke voorkeuren van deze gebruiker.",
-    "LabelChannelStreamQuality": "Preferred internet channel quality:",
+    "LabelChannelStreamQuality": "Voorkeurs kwaliteit voor internet kanaal:",
     "LabelChannelStreamQualityHelp": "Bij weinig beschikbare bandbreedte kan het verminderen van de kwaliteit betere streams opleveren.",
     "OptionBestAvailableStreamQuality": "Best beschikbaar",
     "LabelEnableChannelContentDownloadingFor": "Schakel kanaalinhoud downloaden in voor:",
@@ -967,7 +970,7 @@
     "OptionLatestTvRecordings": "Nieuwste opnames",
     "LabelProtocolInfo": "Protocol info:",
     "LabelProtocolInfoHelp": "De waarde die wordt gebruikt bij het reageren op GetProtocolInfo verzoeken van het apparaat.",
-    "TabNfoSettings": "Nfo Settings",
+    "TabNfoSettings": "Nfo Instellingen",
     "HeaderKodiMetadataHelp": "Emby omvat ondersteunt Nfo metadata bestanden. Om Nfo metadata in- of uit te schakelen, gebruikt u het tabblad Geavanceerd om opties voor uw mediatypen in te stellen.",
     "LabelKodiMetadataUser": "Synchroniseer kijk informatie naar nfo's voor:",
     "LabelKodiMetadataUserHelp": "Schakel dit in om gemonitorde gegevens tussen Emby Server en Nfo bestanden te synchroniseren",
@@ -2186,7 +2189,7 @@
     "HeaderUnlockSync": "Ontgrendel Emby Sync",
     "MessageUnlockAppWithPurchaseOrSupporter": "Ontgrendel deze functie met een kleine eenmalige aankoop, of met een actief Emby Premiere abonnement.",
     "MessageUnlockAppWithSupporter": "Ontgrendel deze functie met een actief Emby Premiere abonnement.",
-    "MessageToValidateSupporter": "Als u een actief emby Premiere abonnement hebt, meldt u een keer aan via uw thuisnetwerk.",
+    "MessageToValidateSupporter": "If you have an active Emby Premiere subscription, ensure you've setup Emby Premiere in your Emby Server Dashboard under Help -> Emby Premiere.",
     "MessagePaymentServicesUnavailable": "Betaal services zijn momenteel niet beschikbaar, Probeer het later svp. nog eens.",
     "MessagePleaseSignInLocalNetwork": "Controleer of u verbonden bent met uw lokale netwerk voordat u verder gaat.",
     "ButtonUnlockWithPurchase": "Geef vrij met een aankoop",
@@ -2258,7 +2261,7 @@
     "ButtonRestorePreviousPurchase": "Herstel aankoop",
     "AlreadyPaid": "Al betaald?",
     "AlreadyPaidHelp1": "Als u een oudere versie van Media Browser voor Android aangeschaft hebt hoeft u niet opnieuw te betalen om deze app te activeren. Klik op OK om ons u een e-mail op {0} te sturen en wij activeren deze voor u.",
-    "AlreadyPaidHelp2": "Heeft u Emby Premiere? Annuleer dan deze dialoog en meldt u via uw draadloos thuisnetwerk aan bij de app. Deze zal daarna automatisch ontgrendeld worden.",
+    "AlreadyPaidHelp2": "Got Emby Premiere? Just cancel this dialog, setup Emby Premiere in your Emby Server Dashboard under Help -> Emby Premiere, and it will be unlocked automatically.",
     "ButtonForYou": "Voor U",
     "ButtonLibrary": "Bibliotheek",
     "ButtonNowPlaying": "Wordt nu afgespeeld",
@@ -2323,5 +2326,5 @@
     "HeaderTuners": "Tuners",
     "LabelOptionalM3uUrl": "M3U url (optioneel):",
     "LabelOptionalM3uUrlHelp": "Sommige apparaten ondersteunen een M3U-kanaal lijst.",
-    "TabResumeSettings": "Resume Settings"
+    "TabResumeSettings": "Instellingen voor hervatten"
 }
