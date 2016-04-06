@@ -65,7 +65,7 @@ namespace MediaBrowser.Controller.Channels
                 Name = id,
                 Id = id,
                 ReadAtNativeFramerate = ReadAtNativeFramerate,
-                SupportsDirectStream = Protocol == MediaProtocol.File || Protocol == MediaProtocol.Http,
+                SupportsDirectStream = Protocol == MediaProtocol.File,
                 SupportsDirectPlay = SupportsDirectPlay
             };
 
