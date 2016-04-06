@@ -155,6 +155,8 @@ namespace MediaBrowser.Api.Movies
             listEligibleForSuggestion.AddRange(list);
 
             listEligibleForCategories = listEligibleForCategories
+                // Exclude trailers from the suggestion categories
+                .Where(i => i is Movie)
                 .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
                 .DistinctBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString(), StringComparer.OrdinalIgnoreCase)
                 .ToList();
