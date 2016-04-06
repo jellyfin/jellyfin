@@ -1,7 +1,4 @@
 {
-    "IPurchasedThisApp": "I purchased this app",
-    "IHaveEmbyPremiere": "I have Emby Premiere",
-    "HowDidYouPay": "How did you pay?",
     "LabelExit": "Salir",
     "LabelVisitCommunity": "Visitar la Comunidad",
     "LabelGithub": "Github",
@@ -95,7 +92,6 @@
     "FolderTypeMixed": "Contenido mezclado",
     "FolderTypeMovies": "Pel\u00edculas",
     "FolderTypeMusic": "M\u00fasica",
-    "FolderTypeAdultVideos": "Videos para adultos",
     "FolderTypePhotos": "Fotos",
     "FolderTypeMusicVideos": "Videos musicales",
     "FolderTypeHomeVideos": "Videos caseros",
@@ -725,7 +721,6 @@
     "TabControls": "Controles",
     "ButtonScenes": "Escenas",
     "ButtonSubtitles": "Subt\u00edtulos",
-    "ButtonAudioTracks": "Pistas de audio",
     "ButtonPreviousTrack": "Pista anterior",
     "ButtonNextTrack": "Pista siguiente",
     "ButtonStop": "Detener",
@@ -1875,6 +1870,7 @@
     "TabPlugins": "Complementos",
     "TabHelp": "Ayuda",
     "ButtonFullscreen": "Cambiar a pantalla completa",
+    "ButtonAudioTracks": "Pistas de audio",
     "ButtonQuality": "Calidad",
     "HeaderNotifications": "Notificaciones",
     "HeaderSelectPlayer": "Seleccionar Reproductor",
@@ -2312,7 +2308,7 @@
     "CoverArt": "Cover Art",
     "ButtonOff": "Apagar",
     "TitleHardwareAcceleration": "Aceleraci\u00f3n por Hardware",
-    "HardwareAccelerationWarning": "Habilitar la aceleraci\u00f3n por hardware puede ocasionar inestabilidad en algunos ambientes. Si tiene dificultad para reproducir algunos videos despu\u00e9s de habilitar esta opci\u00f3n, tendr\u00e1 que regresar la configuraci\u00f3n a Auto.",
+    "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. Ensure that your operating system and video drivers are fully up to date. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
     "HeaderSelectCodecIntrosPath": "Seleccionar Trayectoria de Intros de C\u00f3dec",
     "ButtonLocalRefresh": "Actualizaci\u00f3n local",
     "ButtonAddMissingData": "S\u00f3lo agregar datos faltantes",
@@ -2326,5 +2322,10 @@
     "HeaderTuners": "Sintonizador",
     "LabelOptionalM3uUrl": "url M3U (opcional):",
     "LabelOptionalM3uUrlHelp": "Algunos dispositivos soportan un listado de canales M3U.",
-    "TabResumeSettings": "Configuraci\u00f3n para Continuar"
+    "TabResumeSettings": "Configuraci\u00f3n para Continuar",
+    "HowDidYouPay": "How did you pay?",
+    "IHaveEmbyPremiere": "I have Emby Premiere",
+    "IPurchasedThisApp": "I purchased this app",
+    "DrmChannelsNotImported": "Channels with DRM will not be imported.",
+    "ConfigureDateAdded": "Configure how date added is determined in the Emby Server dashboard under Library settings"
 }

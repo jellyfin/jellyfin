@@ -1,7 +1,4 @@
 {
-    "IPurchasedThisApp": "Ik heb deze app gekocht\n",
-    "IHaveEmbyPremiere": "Ik heb Emby premi\u00e8re",
-    "HowDidYouPay": "Hoe heb je betaald?",
     "LabelExit": "Afsluiten",
     "LabelVisitCommunity": "Bezoek Gemeenschap",
     "LabelGithub": "Github",
@@ -95,7 +92,6 @@
     "FolderTypeMixed": "Gemengde inhoud",
     "FolderTypeMovies": "Films",
     "FolderTypeMusic": "Muziek",
-    "FolderTypeAdultVideos": "Adult video's",
     "FolderTypePhotos": "Foto's",
     "FolderTypeMusicVideos": "Muziek video's",
     "FolderTypeHomeVideos": "Thuis video's",
@@ -725,7 +721,6 @@
     "TabControls": "Besturing",
     "ButtonScenes": "Scenes",
     "ButtonSubtitles": "Ondertiteling",
-    "ButtonAudioTracks": "Geluidssporen",
     "ButtonPreviousTrack": "Vorige track",
     "ButtonNextTrack": "Volgende track",
     "ButtonStop": "Stop",
@@ -1875,6 +1870,7 @@
     "TabPlugins": "Plugins",
     "TabHelp": "Hulp",
     "ButtonFullscreen": "Schakelen tussen volledig scherm ",
+    "ButtonAudioTracks": "Geluidssporen",
     "ButtonQuality": "Kwaliteit",
     "HeaderNotifications": "Meldingen",
     "HeaderSelectPlayer": "Selecteer Speler",
@@ -2312,7 +2308,7 @@
     "CoverArt": "Cover Art",
     "ButtonOff": "Uit",
     "TitleHardwareAcceleration": "Hardware versnelling",
-    "HardwareAccelerationWarning": "Het inschakelen van hardware versnelling kan problemen veroorzaken in somige omgevingen. Als je problemen met video afspelen ondervindt na inschakelen, zet deze setting dan weer op Auto.",
+    "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. Ensure that your operating system and video drivers are fully up to date. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
     "HeaderSelectCodecIntrosPath": "Selecteer het Codec intro's pad",
     "ButtonLocalRefresh": "Lokaal vernieuwen",
     "ButtonAddMissingData": "Alleen ontbrekende gegevens toevoegen",
@@ -2326,5 +2322,10 @@
     "HeaderTuners": "Tuners",
     "LabelOptionalM3uUrl": "M3U url (optioneel):",
     "LabelOptionalM3uUrlHelp": "Sommige apparaten ondersteunen een M3U-kanaal lijst.",
-    "TabResumeSettings": "Instellingen voor hervatten"
+    "TabResumeSettings": "Instellingen voor hervatten",
+    "HowDidYouPay": "Hoe heb je betaald?",
+    "IHaveEmbyPremiere": "Ik heb Emby premi\u00e8re",
+    "IPurchasedThisApp": "Ik heb deze app gekocht\n",
+    "DrmChannelsNotImported": "Channels with DRM will not be imported.",
+    "ConfigureDateAdded": "Configure how date added is determined in the Emby Server dashboard under Library settings"
 }

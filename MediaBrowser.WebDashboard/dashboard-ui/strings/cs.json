@@ -1,7 +1,4 @@
 {
-    "IPurchasedThisApp": "I purchased this app",
-    "IHaveEmbyPremiere": "I have Emby Premiere",
-    "HowDidYouPay": "How did you pay?",
     "LabelExit": "Zav\u0159\u00edt",
     "LabelVisitCommunity": "Nav\u0161t\u00edvit komunitu",
     "LabelGithub": "Github",
@@ -95,7 +92,6 @@
     "FolderTypeMixed": "Sm\u00ed\u0161en\u00fd obsah",
     "FolderTypeMovies": "Filmy",
     "FolderTypeMusic": "Hudba",
-    "FolderTypeAdultVideos": "Filmy pro dosp\u011bl\u00e9",
     "FolderTypePhotos": "Fotky",
     "FolderTypeMusicVideos": "Hudebn\u00ed klipy",
     "FolderTypeHomeVideos": "Dom\u00e1c\u00ed video",
@@ -725,7 +721,6 @@
     "TabControls": "Ovl\u00e1d\u00e1n\u00ed",
     "ButtonScenes": "Sc\u00e9ny",
     "ButtonSubtitles": "Titulky",
-    "ButtonAudioTracks": "Audio stopy",
     "ButtonPreviousTrack": "P\u0159edchoz\u00ed stopa",
     "ButtonNextTrack": "N\u00e1sleduj\u00edc\u00ed stopa",
     "ButtonStop": "Zastavit",
@@ -1875,6 +1870,7 @@
     "TabPlugins": "Z\u00e1suvn\u00e9 moduly",
     "TabHelp": "N\u00e1pov\u011bda",
     "ButtonFullscreen": "P\u0159epnout fullscreen",
+    "ButtonAudioTracks": "Audio stopy",
     "ButtonQuality": "Kvalita",
     "HeaderNotifications": "Ozn\u00e1men\u00ed",
     "HeaderSelectPlayer": "V\u00fdb\u011br p\u0159ehr\u00e1va\u010de",
@@ -2312,7 +2308,7 @@
     "CoverArt": "Obal",
     "ButtonOff": "Vypnout",
     "TitleHardwareAcceleration": "Hardwarov\u00e1 akcelerace",
-    "HardwareAccelerationWarning": "Zapnut\u00ed hardwarov\u00e9 akcelerace m\u016f\u017ee zp\u016fsobit nestabilitu v n\u011bkter\u00fdch prost\u0159ed\u00edch. M\u00e1te-li pot\u00ed\u017ee s p\u0159ehr\u00e1v\u00e1n\u00edm videa po povolen\u00ed budete muset zm\u011bnit nastaven\u00ed zp\u011bt na Auto.",
+    "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. Ensure that your operating system and video drivers are fully up to date. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
     "HeaderSelectCodecIntrosPath": "Vyberte cestu ke kodeku pro p\u0159edehry",
     "ButtonLocalRefresh": "Lok\u00e1ln\u00ed obnoven\u00ed",
     "ButtonAddMissingData": "P\u0159idat pouze chyb\u011bj\u00edc\u00ed data",
@@ -2326,5 +2322,10 @@
     "HeaderTuners": "Tunery",
     "LabelOptionalM3uUrl": "M3U url (nepovinn\u00e9):",
     "LabelOptionalM3uUrlHelp": "N\u011bkter\u00e1 za\u0159\u00edzen\u00ed podporuj\u00edc\u00ed M3U v\u00fdpis kan\u00e1lu.",
-    "TabResumeSettings": "Obnovit nastaven\u00ed"
+    "TabResumeSettings": "Obnovit nastaven\u00ed",
+    "HowDidYouPay": "How did you pay?",
+    "IHaveEmbyPremiere": "I have Emby Premiere",
+    "IPurchasedThisApp": "I purchased this app",
+    "DrmChannelsNotImported": "Channels with DRM will not be imported.",
+    "ConfigureDateAdded": "Configure how date added is determined in the Emby Server dashboard under Library settings"
 }

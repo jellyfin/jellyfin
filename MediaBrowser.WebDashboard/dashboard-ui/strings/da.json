@@ -1,7 +1,4 @@
 {
-    "IPurchasedThisApp": "I purchased this app",
-    "IHaveEmbyPremiere": "I have Emby Premiere",
-    "HowDidYouPay": "How did you pay?",
     "LabelExit": "Afslut",
     "LabelVisitCommunity": "Bes\u00f8g F\u00e6lleskab",
     "LabelGithub": "Github",
@@ -95,7 +92,6 @@
     "FolderTypeMixed": "Mixed content",
     "FolderTypeMovies": "FIlm",
     "FolderTypeMusic": "Musik",
-    "FolderTypeAdultVideos": "Voksenfilm",
     "FolderTypePhotos": "Fotos",
     "FolderTypeMusicVideos": "Musikvideoer",
     "FolderTypeHomeVideos": "Hjemmevideoer",
@@ -725,7 +721,6 @@
     "TabControls": "Kontroller",
     "ButtonScenes": "Scener",
     "ButtonSubtitles": "Undertekster",
-    "ButtonAudioTracks": "Lydspor",
     "ButtonPreviousTrack": "Forrige spor",
     "ButtonNextTrack": "N\u00e6ste spor",
     "ButtonStop": "Stop",
@@ -1875,6 +1870,7 @@
     "TabPlugins": "Tilf\u00f8jelser",
     "TabHelp": "Hj\u00e6lp",
     "ButtonFullscreen": "Skift fuldsk\u00e6rm",
+    "ButtonAudioTracks": "Lydspor",
     "ButtonQuality": "Kvalitet",
     "HeaderNotifications": "Notifikationer",
     "HeaderSelectPlayer": "Select Player",
@@ -2312,7 +2308,7 @@
     "CoverArt": "Cover Art",
     "ButtonOff": "Off",
     "TitleHardwareAcceleration": "Hardware Acceleration",
-    "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
+    "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. Ensure that your operating system and video drivers are fully up to date. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
     "HeaderSelectCodecIntrosPath": "Select Codec Intros Path",
     "ButtonLocalRefresh": "Local refresh",
     "ButtonAddMissingData": "Add missing data only",
@@ -2326,5 +2322,10 @@
     "HeaderTuners": "Tuners",
     "LabelOptionalM3uUrl": "M3U url (optional):",
     "LabelOptionalM3uUrlHelp": "Some devices support an M3U channel listing.",
-    "TabResumeSettings": "Resume Settings"
+    "TabResumeSettings": "Resume Settings",
+    "HowDidYouPay": "How did you pay?",
+    "IHaveEmbyPremiere": "I have Emby Premiere",
+    "IPurchasedThisApp": "I purchased this app",
+    "DrmChannelsNotImported": "Channels with DRM will not be imported.",
+    "ConfigureDateAdded": "Configure how date added is determined in the Emby Server dashboard under Library settings"
 }

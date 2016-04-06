@@ -1,7 +1,4 @@
 {
-    "IPurchasedThisApp": "I purchased this app",
-    "IHaveEmbyPremiere": "I have Emby Premiere",
-    "HowDidYouPay": "How did you pay?",
     "LabelExit": "\u9000\u51fa",
     "LabelVisitCommunity": "\u8bbf\u95ee\u793e\u533a",
     "LabelGithub": "Github",
@@ -95,7 +92,6 @@
     "FolderTypeMixed": "\u6df7\u5408\u5185\u5bb9",
     "FolderTypeMovies": "\u7535\u5f71",
     "FolderTypeMusic": "\u97f3\u4e50",
-    "FolderTypeAdultVideos": "\u6210\u4eba\u89c6\u9891",
     "FolderTypePhotos": "\u56fe\u7247",
     "FolderTypeMusicVideos": "\u97f3\u4e50\u89c6\u9891",
     "FolderTypeHomeVideos": "\u5bb6\u5ead\u89c6\u9891",
@@ -725,7 +721,6 @@
     "TabControls": "\u63a7\u5236",
     "ButtonScenes": "\u573a\u666f",
     "ButtonSubtitles": "\u5b57\u5e55",
-    "ButtonAudioTracks": "\u97f3\u8f68",
     "ButtonPreviousTrack": "\u4e0a\u4e00\u97f3\u8f68",
     "ButtonNextTrack": "\u4e0b\u4e00\u97f3\u8f68",
     "ButtonStop": "\u505c\u6b62",
@@ -1875,6 +1870,7 @@
     "TabPlugins": "\u63d2\u4ef6",
     "TabHelp": "\u5e2e\u52a9",
     "ButtonFullscreen": "\u5207\u6362\u5168\u5c4f",
+    "ButtonAudioTracks": "\u97f3\u8f68",
     "ButtonQuality": "\u8d28\u91cf",
     "HeaderNotifications": "\u901a\u77e5",
     "HeaderSelectPlayer": "Select Player",
@@ -2312,7 +2308,7 @@
     "CoverArt": "Cover Art",
     "ButtonOff": "Off",
     "TitleHardwareAcceleration": "Hardware Acceleration",
-    "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
+    "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. Ensure that your operating system and video drivers are fully up to date. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
     "HeaderSelectCodecIntrosPath": "Select Codec Intros Path",
     "ButtonLocalRefresh": "Local refresh",
     "ButtonAddMissingData": "Add missing data only",
@@ -2326,5 +2322,10 @@
     "HeaderTuners": "Tuners",
     "LabelOptionalM3uUrl": "M3U url (optional):",
     "LabelOptionalM3uUrlHelp": "Some devices support an M3U channel listing.",
-    "TabResumeSettings": "Resume Settings"
+    "TabResumeSettings": "Resume Settings",
+    "HowDidYouPay": "How did you pay?",
+    "IHaveEmbyPremiere": "I have Emby Premiere",
+    "IPurchasedThisApp": "I purchased this app",
+    "DrmChannelsNotImported": "Channels with DRM will not be imported.",
+    "ConfigureDateAdded": "Configure how date added is determined in the Emby Server dashboard under Library settings"
 }

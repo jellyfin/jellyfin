@@ -1,7 +1,4 @@
 {
-    "IPurchasedThisApp": "I purchased this app",
-    "IHaveEmbyPremiere": "I have Emby Premiere",
-    "HowDidYouPay": "How did you pay?",
     "LabelExit": "\u0388\u03be\u03bf\u03b4\u03bf\u03c2",
     "LabelVisitCommunity": "\u039a\u03bf\u03b9\u03bd\u03cc\u03c4\u03b7\u03c4\u03b1",
     "LabelGithub": "Github",
@@ -95,7 +92,6 @@
     "FolderTypeMixed": "Mixed content",
     "FolderTypeMovies": "\u03a4\u03b1\u03b9\u03bd\u03af\u03b5\u03c2",
     "FolderTypeMusic": "\u039c\u03bf\u03c5\u03c3\u03b9\u03ba\u03ae",
-    "FolderTypeAdultVideos": "\u03a4\u03b1\u03b9\u03bd\u03af\u03b5\u03c2 \u0395\u03bd\u03b7\u03bb\u03af\u03ba\u03c9\u03bd",
     "FolderTypePhotos": "\u03a6\u03c9\u03c4\u03bf\u03b3\u03c1\u03b1\u03c6\u03af\u03b5\u03c2",
     "FolderTypeMusicVideos": "\u039c\u03bf\u03c5\u03c3\u03b9\u03ba\u03ac \u0392\u03af\u03bd\u03c4\u03b5\u03bf",
     "FolderTypeHomeVideos": "\u03a0\u03c1\u03bf\u03c3\u03c9\u03c0\u03b9\u03ba\u03ac \u0392\u03af\u03bd\u03c4\u03b5\u03bf",
@@ -725,7 +721,6 @@
     "TabControls": "Controls",
     "ButtonScenes": "Scenes",
     "ButtonSubtitles": "Subtitles",
-    "ButtonAudioTracks": "Audio tracks",
     "ButtonPreviousTrack": "Previous track",
     "ButtonNextTrack": "Next track",
     "ButtonStop": "Stop",
@@ -1875,6 +1870,7 @@
     "TabPlugins": "Plugins",
     "TabHelp": "Help",
     "ButtonFullscreen": "Toggle fullscreen",
+    "ButtonAudioTracks": "Audio tracks",
     "ButtonQuality": "Quality",
     "HeaderNotifications": "Notifications",
     "HeaderSelectPlayer": "Select Player",
@@ -2312,7 +2308,7 @@
     "CoverArt": "Cover Art",
     "ButtonOff": "Off",
     "TitleHardwareAcceleration": "Hardware Acceleration",
-    "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
+    "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. Ensure that your operating system and video drivers are fully up to date. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
     "HeaderSelectCodecIntrosPath": "Select Codec Intros Path",
     "ButtonLocalRefresh": "Local refresh",
     "ButtonAddMissingData": "Add missing data only",
@@ -2326,5 +2322,10 @@
     "HeaderTuners": "Tuners",
     "LabelOptionalM3uUrl": "M3U url (optional):",
     "LabelOptionalM3uUrlHelp": "Some devices support an M3U channel listing.",
-    "TabResumeSettings": "Resume Settings"
+    "TabResumeSettings": "Resume Settings",
+    "HowDidYouPay": "How did you pay?",
+    "IHaveEmbyPremiere": "I have Emby Premiere",
+    "IPurchasedThisApp": "I purchased this app",
+    "DrmChannelsNotImported": "Channels with DRM will not be imported.",
+    "ConfigureDateAdded": "Configure how date added is determined in the Emby Server dashboard under Library settings"
 }

@@ -1,7 +1,4 @@
 {
-    "IPurchasedThisApp": "I purchased this app",
-    "IHaveEmbyPremiere": "I have Emby Premiere",
-    "HowDidYouPay": "How did you pay?",
     "LabelExit": "Quitter",
     "LabelVisitCommunity": "Visiter la Communaut\u00e9",
     "LabelGithub": "Github",
@@ -95,7 +92,6 @@
     "FolderTypeMixed": "Contenu m\u00e9lang\u00e9",
     "FolderTypeMovies": "Films",
     "FolderTypeMusic": "Musique",
-    "FolderTypeAdultVideos": "Vid\u00e9os Adultes",
     "FolderTypePhotos": "Photos",
     "FolderTypeMusicVideos": "Vid\u00e9os Musical",
     "FolderTypeHomeVideos": "Vid\u00e9os personnelles",
@@ -725,7 +721,6 @@
     "TabControls": "Contr\u00f4les",
     "ButtonScenes": "Sc\u00e8nes",
     "ButtonSubtitles": "Sous-titres",
-    "ButtonAudioTracks": "Pistes audio",
     "ButtonPreviousTrack": "Piste pr\u00e9c\u00e9dente",
     "ButtonNextTrack": "Piste suivante",
     "ButtonStop": "Arr\u00eat",
@@ -1875,6 +1870,7 @@
     "TabPlugins": "Plugins",
     "TabHelp": "Aide",
     "ButtonFullscreen": "Basculer en plein \u00e9cran",
+    "ButtonAudioTracks": "Pistes audio",
     "ButtonQuality": "Qualit\u00e9",
     "HeaderNotifications": "Notifications",
     "HeaderSelectPlayer": "S\u00e9lectionnez le lecteur",
@@ -2312,7 +2308,7 @@
     "CoverArt": "Pochette",
     "ButtonOff": "Arr\u00eat",
     "TitleHardwareAcceleration": "Acc\u00e9l\u00e9ration mat\u00e9rielle",
-    "HardwareAccelerationWarning": "L'activation mat\u00e9rielle peut causer des instabilit\u00e9s dans certains environnements. Si vous avez des difficult\u00e9s pour lire des vid\u00e9os apr\u00e8s l'avoir activ\u00e9, vous devrez changer les param\u00e8tres de l\u2019acc\u00e9l\u00e9ration en automatique.",
+    "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. Ensure that your operating system and video drivers are fully up to date. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
     "HeaderSelectCodecIntrosPath": "Choisir le chemin du codec des intros",
     "ButtonLocalRefresh": "Actualisation locale",
     "ButtonAddMissingData": "Ajouter uniquement les donn\u00e9es manquantes",
@@ -2326,5 +2322,10 @@
     "HeaderTuners": "Tuners",
     "LabelOptionalM3uUrl": "M3U url (optional):",
     "LabelOptionalM3uUrlHelp": "Some devices support an M3U channel listing.",
-    "TabResumeSettings": "Resume Settings"
+    "TabResumeSettings": "Resume Settings",
+    "HowDidYouPay": "How did you pay?",
+    "IHaveEmbyPremiere": "I have Emby Premiere",
+    "IPurchasedThisApp": "I purchased this app",
+    "DrmChannelsNotImported": "Channels with DRM will not be imported.",
+    "ConfigureDateAdded": "Configure how date added is determined in the Emby Server dashboard under Library settings"
 }
