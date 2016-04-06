@@ -75,7 +75,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     lineup = lineup.Where(i => i.Favorite).ToList();
                 }
 
-                return lineup;
+                return lineup.Where(i => !i.DRM).ToList();
             }
         }
 
