@@ -552,6 +552,7 @@
         function destroyCustomTrack(videoElement, isPlaying) {
 
             window.removeEventListener('resize', onVideoResize);
+            window.removeEventListener('orientationchange', onVideoResize);
 
             var videoSubtitlesElem = document.querySelector('.videoSubtitles');
             if (videoSubtitlesElem) {
@@ -630,6 +631,8 @@
                             renderer.resize(videoElement.offsetWidth, videoElement.offsetHeight, 0, 0);
                             window.removeEventListener('resize', onVideoResize);
                             window.addEventListener('resize', onVideoResize);
+                            window.removeEventListener('orientationchange', onVideoResize);
+                            window.addEventListener('orientationchange', onVideoResize);
                             //clock.pause();
                         }
                         catch (ex) {

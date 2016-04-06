@@ -2351,7 +2351,7 @@
   "CoverArt": "Cover Art",
   "ButtonOff": "Off",
   "TitleHardwareAcceleration": "Hardware Acceleration",
-  "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
+  "HardwareAccelerationWarning": "Enabling hardware acceleration may cause instability in some environments. Ensure that your operating system and video drivers are fully up to date. If you have difficulty playing video after enabling this, you'll need to change the setting back to Auto.",
   "HeaderSelectCodecIntrosPath": "Select Codec Intros Path",
   "ButtonLocalRefresh": "Local refresh",
   "ButtonAddMissingData": "Add missing data only",
@@ -2368,5 +2368,6 @@
   "TabResumeSettings": "Resume Settings",
   "HowDidYouPay": "How did you pay?",
   "IHaveEmbyPremiere": "I have Emby Premiere",
-  "IPurchasedThisApp": "I purchased this app"
+  "IPurchasedThisApp": "I purchased this app",
+  "DrmChannelsNotImported": "Channels with DRM will not be imported."
 }
