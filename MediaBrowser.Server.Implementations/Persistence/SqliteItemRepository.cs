@@ -2283,7 +2283,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private static Dictionary<string, string[]> GetTypeMapDictionary()
         {
-            var dict = new Dictionary<string, string[]>();
+            var dict = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var t in KnownTypes)
             {

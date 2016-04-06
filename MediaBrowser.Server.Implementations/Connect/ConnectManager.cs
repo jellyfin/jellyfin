@@ -62,6 +62,17 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 var address = _config.Configuration.WanDdns;
 
+                if (!string.IsNullOrWhiteSpace(address))
+                {
+                    try
+                    {
+                        address = new Uri(address).Host;
+                    }
+                    catch
+                    {
+                    }
+                }
+
                 if (string.IsNullOrWhiteSpace(address) && DiscoveredWanIpAddress != null)
                 {
                     if (DiscoveredWanIpAddress.AddressFamily == AddressFamily.InterNetworkV6)
@@ -237,8 +248,8 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             var postData = new Dictionary<string, string>
             {
-                {"name", _appHost.FriendlyName}, 
-                {"url", wanApiAddress}, 
+                {"name", _appHost.FriendlyName},
+                {"url", wanApiAddress},
                 {"systemId", _appHost.SystemId}
             };
 

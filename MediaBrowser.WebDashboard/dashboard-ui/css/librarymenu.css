@@ -458,8 +458,11 @@ body:not(.dashboardDocument) .btnNotifications {
 .adminDrawerPanel #drawer .emby-collapsible-title {
     font-size: inherit;
     text-transform: none;
-    color: #333;
     margin: .7em 0;
+}
+
+.adminDrawerPanel #drawer #expandButton {
+    color: #333;
 }
 
 .adminDrawerLogo {
@@ -477,9 +480,12 @@ body:not(.dashboardDocument) .btnNotifications {
     height: 30px;
 }
 
-.adminDrawerPanel #drawer #titleIcon {
-    color: #666;
-    height: 20px;
+.adminDrawerPanel #drawer #expandIcon {
+    color: #000;
+}
+
+.adminDrawerPanel #drawer emby-collapsible > .style-scope {
+    margin: .7em 0;
 }
 
 .adminDrawerPanel:not([narrow]) .libraryMenuButtonText {
@@ -517,22 +523,22 @@ body:not(.dashboardDocument) .btnNotifications {
         padding-top: 1em !important;
     }
 
-    .adminAppsButton{
-        display: block;
-        color: inherit!important;
-        font-weight: normal!important;
-        text-align: center;
-    }
-
-    .adminAppsButton{
-        width: 5.3vw;
-    }
-
-.adminAppsButton + .adminAppsButton {
-    margin-left: 1.5em;
+.adminAppsButton {
+    display: block;
+    color: inherit !important;
+    font-weight: normal !important;
+    text-align: center;
 }
 
-.adminAppsButton paper-icon-button{
-    width: 4.5vh;
-    height: 4.5vh;
+.adminAppsButton {
+    width: 5.3vw;
 }
+
+    .adminAppsButton + .adminAppsButton {
+        margin-left: 1.5em;
+    }
+
+    .adminAppsButton paper-icon-button {
+        width: 4.5vh;
+        height: 4.5vh;
+    }

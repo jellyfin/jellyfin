@@ -690,11 +690,11 @@ var Dashboard = {
 
             if (item.items) {
 
+                var style = item.color ? ' iconstyle="color:' + item.color + '"' : '';
                 if (item.icon) {
-                    var style = item.color ? ' style="color:' + item.color + '"' : '';
-                    menuHtml += '<emby-collapsible icon="' + item.icon + '" title="' + item.name + '">';
+                    menuHtml += '<emby-collapsible icon="' + item.icon + '" title="' + item.name + '"' + style + '>';
                 } else {
-                    menuHtml += '<emby-collapsible title="' + item.name + '">';
+                    menuHtml += '<emby-collapsible title="' + item.name + '"' + style + '>';
                 }
                 menuHtml += item.items.map(Dashboard.getToolsLinkHtml).join('');
                 menuHtml += '</emby-collapsible>';
@@ -746,6 +746,7 @@ var Dashboard = {
         }, {
             name: Globalize.translate('TabLibrary'),
             icon: 'folder',
+            color: '#ECA403',
             items: [
                 {
                     name: Globalize.translate('TabFolders'),
@@ -793,6 +794,7 @@ var Dashboard = {
         }, {
             name: Globalize.translate('DLNA'),
             icon: 'live-tv',
+            color: '#E5342E',
             items: [
                 {
                     name: Globalize.translate('TabSettings'),
@@ -810,6 +812,7 @@ var Dashboard = {
         }, {
             name: Globalize.translate('TabLiveTV'),
             icon: 'dvr',
+            color: '#293AAE',
             items: [
                 {
                     name: Globalize.translate('TabSettings'),
@@ -833,6 +836,7 @@ var Dashboard = {
         }, {
             name: Globalize.translate('TabPlayback'),
             icon: 'play-circle-filled',
+            color: '#E5342E',
             items: [
                 {
                     name: Globalize.translate('TabCinemaMode'),
@@ -862,6 +866,7 @@ var Dashboard = {
         }, {
             name: Globalize.translate('TabPlugins'),
             icon: 'add-shopping-cart',
+            color: '#9D22B1',
             items: [
                 {
                     name: Globalize.translate('TabMyPlugins'),
@@ -904,6 +909,7 @@ var Dashboard = {
         }, {
             name: Globalize.translate('TabAdvanced'),
             icon: 'settings',
+            color: '#F16834',
             items: [
                 {
                     name: Globalize.translate('TabAutoOrganize'),

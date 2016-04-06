@@ -60,9 +60,8 @@ namespace MediaBrowser.Providers.Omdb
             return GetSearchResultsInternal(searchInfo, type, true, cancellationToken);
         }
 
-        private async Task<IEnumerable<RemoteSearchResult>> GetSearchResultsInternal(ItemLookupInfo searchInfo, string type, bool enableMultipleResults, CancellationToken cancellationToken)
+        private async Task<IEnumerable<RemoteSearchResult>> GetSearchResultsInternal(ItemLookupInfo searchInfo, string type, bool isSearch, CancellationToken cancellationToken)
         {
-            bool isSearch = false;
             var episodeSearchInfo = searchInfo as EpisodeInfo;
 
             var list = new List<RemoteSearchResult>();
@@ -95,10 +94,9 @@ namespace MediaBrowser.Providers.Omdb
                 }
 
                 // &s means search and returns a list of results as opposed to t
-                if (enableMultipleResults)
+                if (isSearch)
                 {
                     url += "&s=" + WebUtility.UrlEncode(name);
-                    isSearch = true;
                 }
                 else
                 {

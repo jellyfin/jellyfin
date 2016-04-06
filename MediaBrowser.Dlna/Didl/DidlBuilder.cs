@@ -979,7 +979,10 @@ namespace MediaBrowser.Dlna.Didl
 
             if (item != null)
             {
-                return GetImageInfo(item, ImageType.Primary);
+                if (item.HasImage(ImageType.Primary))
+                {
+                    return GetImageInfo(item, ImageType.Primary);
+                }
             }
 
             return null;
