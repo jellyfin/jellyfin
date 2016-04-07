@@ -1440,6 +1440,8 @@
   "MessageTunerDeviceNotListed": "Is your tuner device not listed? Try installing an external service provider for more Live TV options.",
   "LabelImportOnlyFavoriteChannels": "Restrict to channels marked as favorite",
   "ImportFavoriteChannelsHelp": "If enabled, only channels that are marked as favorite on the tuner device will be imported.",
+  "LabelAllowHWTranscoding": "Allow hardware transcoding",
+  "AllowHWTranscodingHelp": "If enabled, allow the tuner to transcode streams in hardware.",
   "ButtonRepeat": "Repeat",
   "LabelEnableThisTuner": "Enable this tuner",
   "LabelEnableThisTunerHelp": "Uncheck to prevent importing channels from this tuner.",
