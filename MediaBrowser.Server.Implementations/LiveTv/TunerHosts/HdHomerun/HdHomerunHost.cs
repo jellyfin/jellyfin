@@ -263,18 +263,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 videoCodec = "h264";
                 videoBitrate = 15000000;
             }
-            else if (string.Equals(profile, "internet720", StringComparison.OrdinalIgnoreCase))
-            {
-                width = 1280;
-                height = 720;
-                isInterlaced = false;
-                videoCodec = "h264";
-                videoBitrate = 8000000;
-            }
             else if (string.Equals(profile, "internet540", StringComparison.OrdinalIgnoreCase))
             {
-                width = 1280;
-                height = 720;
+                width = 960;
+                height = 546;
                 isInterlaced = false;
                 videoCodec = "h264";
                 videoBitrate = 2500000;
@@ -397,10 +389,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 string model = await GetModelInfo(info, cancellationToken).ConfigureAwait(false);
                 model = model ?? string.Empty;
 
-                if (model.IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1)
+                if (info.AllowHWTranscoding && (model.IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1))
                 {
                     list.Add(await GetMediaSource(info, hdhrId, "heavy").ConfigureAwait(false));
 
+                    list.Add(await GetMediaSource(info, hdhrId, "internet540").ConfigureAwait(false));
                     list.Add(await GetMediaSource(info, hdhrId, "internet480").ConfigureAwait(false));
                     list.Add(await GetMediaSource(info, hdhrId, "internet360").ConfigureAwait(false));
                     list.Add(await GetMediaSource(info, hdhrId, "internet240").ConfigureAwait(false));
