@@ -19,6 +19,7 @@ namespace MediaBrowser.Controller.Subtitles
         public int? ParentIndexNumber { get; set; }
         public int? ProductionYear { get; set; }
         public long? RuntimeTicks { get; set; }
+        public bool IsPerfectMatch { get; set; }
         public Dictionary<string, string> ProviderIds { get; set; }
 
         public bool SearchAllProviders { get; set; }

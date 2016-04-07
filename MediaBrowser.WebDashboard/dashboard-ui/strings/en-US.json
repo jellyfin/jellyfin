@@ -1440,8 +1440,6 @@
   "MessageTunerDeviceNotListed": "Is your tuner device not listed? Try installing an external service provider for more Live TV options.",
   "LabelImportOnlyFavoriteChannels": "Restrict to channels marked as favorite",
   "ImportFavoriteChannelsHelp": "If enabled, only channels that are marked as favorite on the tuner device will be imported.",
-  "LabelAllowHWTranscoding": "Allow hardware transcoding",
-  "AllowHWTranscodingHelp": "If enabled, allow the tuner to transcode streams in hardware.",
   "ButtonRepeat": "Repeat",
   "LabelEnableThisTuner": "Enable this tuner",
   "LabelEnableThisTunerHelp": "Uncheck to prevent importing channels from this tuner.",
@@ -2342,5 +2340,8 @@
   "IHaveEmbyPremiere": "I have Emby Premiere",
   "IPurchasedThisApp": "I purchased this app",
   "DrmChannelsNotImported": "Channels with DRM will not be imported.",
-  "ConfigureDateAdded": "Configure how date added is determined in the Emby Server dashboard under Library settings"
+  "ConfigureDateAdded": "Configure how date added is determined in the Emby Server dashboard under Library settings",
+  "LabelAllowHWTranscoding": "Allow hardware transcoding",
+  "AllowHWTranscodingHelp": "If enabled, allow the tuner to transcode streams on the fly. This may help reduce transcoding required by Emby Server.",
+  "OptionRequirePerfectSubtitleMatch": "Only download subtitles that are a perfect match for my video files"
 }

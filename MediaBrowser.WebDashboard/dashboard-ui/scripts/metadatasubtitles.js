@@ -7,6 +7,7 @@
 
         $('#chkSkipIfGraphicalSubsPresent', page).checked(config.SkipIfEmbeddedSubtitlesPresent);
         $('#chkSkipIfAudioTrackPresent', page).checked(config.SkipIfAudioTrackMatches);
+        $('#chkRequirePerfectMatch', page).checked(config.RequirePerfectMatch);
 
         $('#txtOpenSubtitleUsername', page).val(config.OpenSubtitlesUsername);
         $('#txtOpenSubtitlePassword', page).val('');
@@ -50,6 +51,7 @@
 
             config.SkipIfEmbeddedSubtitlesPresent = $('#chkSkipIfGraphicalSubsPresent', form).checked();
             config.SkipIfAudioTrackMatches = $('#chkSkipIfAudioTrackPresent', form).checked();
+            config.RequirePerfectMatch = $('#chkRequirePerfectMatch', form).checked();
 
             config.OpenSubtitlesUsername = $('#txtOpenSubtitleUsername', form).val();
 
