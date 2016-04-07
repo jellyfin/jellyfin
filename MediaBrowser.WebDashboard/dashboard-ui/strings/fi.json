@@ -1,4 +1,7 @@
 {
+    "LabelAllowHWTranscoding": "Allow hardware transcoding",
+    "AllowHWTranscodingHelp": "If enabled, allow the tuner to transcode streams on the fly. This may help reduce transcoding required by Emby Server.",
+    "OptionRequirePerfectSubtitleMatch": "Only download subtitles that are a perfect match for my video files",
     "LabelExit": "Poistu",
     "LabelVisitCommunity": "K\u00e4y Yhteis\u00f6ss\u00e4",
     "LabelGithub": "Github",
@@ -1067,7 +1070,6 @@
     "OptionUnidentified": "Unidentified",
     "OptionMissingParentalRating": "Missing parental rating",
     "OptionStub": "Stub",
-    "HeaderEpisodes": "Episodes:",
     "OptionSeason0": "Season 0",
     "LabelReport": "Report:",
     "OptionReportSongs": "Songs",
@@ -2043,6 +2045,7 @@
     "HeaderAlbums": "Albums",
     "HeaderGames": "Games",
     "HeaderBooks": "Books",
+    "HeaderEpisodes": "Episodes:",
     "HeaderSeasons": "Seasons",
     "HeaderTracks": "Tracks",
     "HeaderItems": "Items",

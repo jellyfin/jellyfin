@@ -1,4 +1,7 @@
 {
+    "LabelAllowHWTranscoding": "Allow hardware transcoding",
+    "AllowHWTranscodingHelp": "If enabled, allow the tuner to transcode streams on the fly. This may help reduce transcoding required by Emby Server.",
+    "OptionRequirePerfectSubtitleMatch": "Only download subtitles that are a perfect match for my video files",
     "LabelExit": "Avsluta",
     "LabelVisitCommunity": "Bes\u00f6k v\u00e5rt diskussionsforum",
     "LabelGithub": "Github",
@@ -1067,7 +1070,6 @@
     "OptionUnidentified": "Oidentifierad",
     "OptionMissingParentalRating": "\u00c5ldersgr\u00e4ns saknas",
     "OptionStub": "Stump",
-    "HeaderEpisodes": "Avsnitt:",
     "OptionSeason0": "S\u00e4song 0",
     "LabelReport": "Rapport:",
     "OptionReportSongs": "L\u00e5tar",
@@ -2043,6 +2045,7 @@
     "HeaderAlbums": "Album",
     "HeaderGames": "Spel",
     "HeaderBooks": "B\u00f6cker",
+    "HeaderEpisodes": "Avsnitt:",
     "HeaderSeasons": "S\u00e4songer",
     "HeaderTracks": "Sp\u00e5r",
     "HeaderItems": "Objekt",

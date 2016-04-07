@@ -1,4 +1,7 @@
 {
+    "LabelAllowHWTranscoding": "Allow hardware transcoding",
+    "AllowHWTranscodingHelp": "If enabled, allow the tuner to transcode streams on the fly. This may help reduce transcoding required by Emby Server.",
+    "OptionRequirePerfectSubtitleMatch": "Only download subtitles that are a perfect match for my video files",
     "LabelExit": "Wyj\u015bcie",
     "LabelVisitCommunity": "Odwied\u017a spo\u0142eczno\u015b\u0107",
     "LabelGithub": "Github",
@@ -1067,7 +1070,6 @@
     "OptionUnidentified": "Niezidentyfikowane",
     "OptionMissingParentalRating": "Brak oceny rodzicielskiej",
     "OptionStub": "Stub",
-    "HeaderEpisodes": "Odcinki:",
     "OptionSeason0": "Sezon 0",
     "LabelReport": "Zg\u0142o\u015b:",
     "OptionReportSongs": "Utwory",
@@ -2043,6 +2045,7 @@
     "HeaderAlbums": "Albumy",
     "HeaderGames": "Gry",
     "HeaderBooks": "Ksi\u0105\u017cki",
+    "HeaderEpisodes": "Odcinki:",
     "HeaderSeasons": "Sezony",
     "HeaderTracks": "Utwory",
     "HeaderItems": "Pozycje",

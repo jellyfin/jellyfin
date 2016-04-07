@@ -1,4 +1,7 @@
 {
+    "LabelAllowHWTranscoding": "Allow hardware transcoding",
+    "AllowHWTranscodingHelp": "If enabled, allow the tuner to transcode streams on the fly. This may help reduce transcoding required by Emby Server.",
+    "OptionRequirePerfectSubtitleMatch": "Only download subtitles that are a perfect match for my video files",
     "LabelExit": "Afslut",
     "LabelVisitCommunity": "Bes\u00f8g F\u00e6lleskab",
     "LabelGithub": "Github",
@@ -1067,7 +1070,6 @@
     "OptionUnidentified": "Uidentificeret",
     "OptionMissingParentalRating": "Mangler aldersgr\u00e6nse",
     "OptionStub": "P\u00e5begyndt",
-    "HeaderEpisodes": "Episoder:",
     "OptionSeason0": "S\u00e6son 0",
     "LabelReport": "Rapport:",
     "OptionReportSongs": "Sange",
@@ -2043,6 +2045,7 @@
     "HeaderAlbums": "Albums",
     "HeaderGames": "Spil",
     "HeaderBooks": "B\u00f8ger",
+    "HeaderEpisodes": "Episoder:",
     "HeaderSeasons": "S\u00e6soner",
     "HeaderTracks": "Spor",
     "HeaderItems": "Element",

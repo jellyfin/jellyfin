@@ -1,4 +1,7 @@
 {
+    "LabelAllowHWTranscoding": "Allow hardware transcoding",
+    "AllowHWTranscodingHelp": "If enabled, allow the tuner to transcode streams on the fly. This may help reduce transcoding required by Emby Server.",
+    "OptionRequirePerfectSubtitleMatch": "Only download subtitles that are a perfect match for my video files",
     "LabelExit": "\u9000\u51fa",
     "LabelVisitCommunity": "\u8bbf\u95ee\u793e\u533a",
     "LabelGithub": "Github",
@@ -1067,7 +1070,6 @@
     "OptionUnidentified": "\u672a\u7ecf\u786e\u8ba4\u7684",
     "OptionMissingParentalRating": "\u7f3a\u5c11\u5bb6\u957f\u5206\u7ea7",
     "OptionStub": "\u5b58\u6839",
-    "HeaderEpisodes": "Episodes:",
     "OptionSeason0": "0\u5b63",
     "LabelReport": "\u62a5\u544a\uff1a",
     "OptionReportSongs": "\u6b4c\u66f2",
@@ -2043,6 +2045,7 @@
     "HeaderAlbums": "\u4e13\u8f91",
     "HeaderGames": "\u6e38\u620f",
     "HeaderBooks": "\u4e66\u7c4d",
+    "HeaderEpisodes": "Episodes:",
     "HeaderSeasons": "\u5b63",
     "HeaderTracks": "\u97f3\u8f68",
     "HeaderItems": "\u9879\u76ee",

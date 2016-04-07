@@ -1,4 +1,7 @@
 {
+    "LabelAllowHWTranscoding": "Allow hardware transcoding",
+    "AllowHWTranscodingHelp": "If enabled, allow the tuner to transcode streams on the fly. This may help reduce transcoding required by Emby Server.",
+    "OptionRequirePerfectSubtitleMatch": "Only download subtitles that are a perfect match for my video files",
     "LabelExit": "Avslutt",
     "LabelVisitCommunity": "Bes\u00f8k oss",
     "LabelGithub": "Github",
@@ -1067,7 +1070,6 @@
     "OptionUnidentified": "uidentifisert",
     "OptionMissingParentalRating": "Mangler foreldresensur",
     "OptionStub": "stump",
-    "HeaderEpisodes": "Episoder:",
     "OptionSeason0": "Sesong 0",
     "LabelReport": "Rapport:",
     "OptionReportSongs": "Sanger:",
@@ -2043,6 +2045,7 @@
     "HeaderAlbums": "Albumer",
     "HeaderGames": "Spill",
     "HeaderBooks": "B\u00f8ker",
+    "HeaderEpisodes": "Episoder:",
     "HeaderSeasons": "Sesonger",
     "HeaderTracks": "Spor",
     "HeaderItems": "Elementer",

@@ -1,4 +1,7 @@
 {
+    "LabelAllowHWTranscoding": "Allow hardware transcoding",
+    "AllowHWTranscodingHelp": "If enabled, allow the tuner to transcode streams on the fly. This may help reduce transcoding required by Emby Server.",
+    "OptionRequirePerfectSubtitleMatch": "Only download subtitles that are a perfect match for my video files",
     "LabelExit": "Esci",
     "LabelVisitCommunity": "Visita la Community",
     "LabelGithub": "Github",
@@ -1067,7 +1070,6 @@
     "OptionUnidentified": "Non identificata",
     "OptionMissingParentalRating": "Voto genitori mancante",
     "OptionStub": "Stub",
-    "HeaderEpisodes": "Episodi:",
     "OptionSeason0": "Stagione 0",
     "LabelReport": "Report:",
     "OptionReportSongs": "Canzoni",
@@ -2043,6 +2045,7 @@
     "HeaderAlbums": "Album",
     "HeaderGames": "Giochi",
     "HeaderBooks": "Libri",
+    "HeaderEpisodes": "Episodi:",
     "HeaderSeasons": "Stagioni",
     "HeaderTracks": "Traccia",
     "HeaderItems": "Elementi",
