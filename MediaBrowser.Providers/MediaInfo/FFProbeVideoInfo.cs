@@ -532,6 +532,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     currentStreams.Concat(externalSubtitleStreams).ToList(),
                     subtitleOptions.SkipIfEmbeddedSubtitlesPresent,
                     subtitleOptions.SkipIfAudioTrackMatches,
+                    subtitleOptions.RequirePerfectMatch,
                     subtitleOptions.DownloadLanguages,
                     cancellationToken).ConfigureAwait(false);
 
