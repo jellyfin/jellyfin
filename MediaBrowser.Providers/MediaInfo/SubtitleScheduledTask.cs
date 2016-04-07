@@ -116,6 +116,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     mediaStreams,
                     options.SkipIfEmbeddedSubtitlesPresent,
                     options.SkipIfAudioTrackMatches,
+                    options.RequirePerfectMatch,
                     options.DownloadLanguages,
                     cancellationToken).ConfigureAwait(false);
 
