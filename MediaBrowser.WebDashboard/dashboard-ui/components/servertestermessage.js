@@ -140,7 +140,7 @@
 
         if (!lastShown) {
             // don't show the first time
-            //return;
+            return;
         }
 
         apiClient.getPublicSystemInfo().then(function (info) {

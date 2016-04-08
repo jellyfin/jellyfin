@@ -28,10 +28,15 @@
             return;
         }
 
+        if (!elem.animate) {
+            elem.classList.add('hide');
+            return;
+        }
+
         requestAnimationFrame(function () {
             var keyframes = [
-              { height: '100%', offset: 0 },
-              { height: '0', offset: 1 }];
+              { transform: 'translateY(0)', offset: 0 },
+              { transform: 'translateY(100%)', offset: 1 }];
             var timing = { duration: 300, iterations: 1, fill: 'forwards', easing: 'ease-out' };
 
             elem.animate(keyframes, timing).onfinish = function () {
@@ -48,12 +53,15 @@
 
         elem.classList.remove('hide');
 
+        if (!elem.animate) {
+            return;
+        }
+
         requestAnimationFrame(function () {
-            elem.style.display = 'block';
 
             var keyframes = [
-              { height: '0', offset: 0 },
-              { height: '100%', offset: 1 }];
+              { transform: 'translateY(100%)', offset: 0 },
+              { transform: 'translateY(0)', offset: 1 }];
             var timing = { duration: 300, iterations: 1, fill: 'forwards', easing: 'ease-out' };
             elem.animate(keyframes, timing);
         });

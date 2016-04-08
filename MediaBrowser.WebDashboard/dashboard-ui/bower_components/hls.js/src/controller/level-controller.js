@@ -225,7 +225,7 @@ class LevelController extends EventHandler {
           }
           // redispatch same error but with fatal set to true
           data.fatal = true;
-          hls.trigger(event, data);
+          hls.trigger(Event.ERROR, data);
         }
       }
     }
