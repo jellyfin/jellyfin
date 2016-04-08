@@ -84,7 +84,7 @@ namespace MediaBrowser.Server.Implementations.Social
             var externalUrl = _appHost.GetSystemInfo().WanAddress;
 
             info.ImageUrl = externalUrl + "/Social/Shares/Public/" + info.Id + "/Image";
-            info.Url = externalUrl + "/web/shared.html?id=" + info.Id;
+            info.Url = externalUrl + "/emby/web/shared.html?id=" + info.Id;
 
             var item = _libraryManager.GetItemById(info.ItemId);
 
