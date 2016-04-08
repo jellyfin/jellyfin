@@ -75,7 +75,7 @@ class PlaylistLoader extends EventHandler {
         level.width = resolution.width;
         level.height = resolution.height;
       }
-      level.bitrate = attrs.decimalInteger('BANDWIDTH');
+      level.bitrate = attrs.decimalInteger('AVERAGE-BANDWIDTH') || attrs.decimalInteger('BANDWIDTH');
       level.name = attrs.NAME;
 
       var codecs = attrs.CODECS;

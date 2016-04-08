@@ -25,6 +25,8 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The date last saved.</value>
         DateTime DateLastSaved { get; set; }
 
+        SourceType SourceType { get; set; }
+
         /// <summary>
         /// Gets or sets the date last refreshed.
         /// </summary>
