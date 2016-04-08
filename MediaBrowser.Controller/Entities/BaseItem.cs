@@ -412,6 +412,9 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public DateTime DateLastRefreshed { get; set; }
 
+        [IgnoreDataMember]
+        public DateTime? DateModifiedDuringLastRefresh { get; set; }
+
         /// <summary>
         /// The logger
         /// </summary>

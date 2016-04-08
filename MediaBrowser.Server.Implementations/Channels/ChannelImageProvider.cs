@@ -47,7 +47,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             return ((ChannelManager)_channelManager).GetChannelProvider(channel);
         }
 
-        public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
             return GetSupportedImages(item).Any(i => !item.HasImage(i));
         }
