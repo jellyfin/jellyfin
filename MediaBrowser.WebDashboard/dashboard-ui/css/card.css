@@ -45,13 +45,13 @@
 }
 
 .cardBox {
-    margin: 5px;
+    margin: 4px;
 }
 
 @media all and (max-width: 500px) {
 
     .cardBox {
-        margin: 2px;
+        margin: 3px;
     }
 }
 
