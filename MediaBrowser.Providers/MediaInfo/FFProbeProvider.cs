@@ -163,11 +163,11 @@ namespace MediaBrowser.Providers.MediaInfo
             return prober.Probe(item, cancellationToken);
         }
 
-        public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
-            if (status.ItemDateModified.HasValue)
+            if (item.DateModifiedDuringLastRefresh.HasValue)
             {
-                if (status.ItemDateModified.Value != item.DateModified)
+                if (item.DateModifiedDuringLastRefresh.Value != item.DateModified)
                 {
                     return true;
                 }
