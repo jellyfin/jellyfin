@@ -335,12 +335,17 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
         private bool FilterItem(BaseItem item)
         {
-            if (!item.IsFolder && item.LocationType == LocationType.Virtual)
+            if (item.IsFolder)
             {
                 return false;
             }
 
-            if (item is IItemByName && !(item is MusicArtist))
+            if (item.LocationType == LocationType.Virtual)
+            {
+                return false;
+            }
+
+            if (item is IItemByName)
             {
                 return false;
             }
