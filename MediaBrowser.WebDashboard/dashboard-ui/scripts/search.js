@@ -44,7 +44,7 @@
         }
         else if (hint.Type == "Series") {
 
-            return [Globalize.translate('LabelSeries')];
+            return [Globalize.translate('Series')];
         }
         else if (hint.Type == "BoxSet") {
 
