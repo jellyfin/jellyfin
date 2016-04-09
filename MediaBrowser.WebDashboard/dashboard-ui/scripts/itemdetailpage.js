@@ -55,7 +55,8 @@
 
         var context = getContext(item);
 
-        renderHeader(page, item, context);
+        LibraryMenu.setBackButtonVisible(true);
+        LibraryMenu.setMenuButtonVisible(false);
 
         LibraryBrowser.renderName(item, $('.itemName', page), false, context);
         LibraryBrowser.renderParentName(item, $('.parentName', page), context);
@@ -304,24 +305,6 @@
     function getContext(item) {
 
         return getParameterByName('context');
-    }
-
-    function renderHeader(page, item, context) {
-
-        $('.itemTabs', page).hide();
-
-        if (context == 'tv') {
-
-            $(page).removeClass('noSecondaryNavPage');
-
-            $('#tvShowsTabs', page).show();
-            LibraryMenu.setMenuButtonVisible(true);
-        }
-        else {
-            $(page).addClass('noSecondaryNavPage');
-            LibraryMenu.setBackButtonVisible(true);
-            LibraryMenu.setMenuButtonVisible(false);
-        }
     }
 
     function renderNextUp(page, item, user) {

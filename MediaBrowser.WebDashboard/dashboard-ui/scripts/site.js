@@ -691,10 +691,11 @@ var Dashboard = {
             if (item.items) {
 
                 var style = item.color ? ' iconstyle="color:' + item.color + '"' : '';
+                var expanded = item.expanded ? (' expanded') : '';
                 if (item.icon) {
-                    menuHtml += '<emby-collapsible icon="' + item.icon + '" title="' + item.name + '"' + style + '>';
+                    menuHtml += '<emby-collapsible icon="' + item.icon + '" title="' + item.name + '"' + style + expanded + '>';
                 } else {
-                    menuHtml += '<emby-collapsible title="' + item.name + '"' + style + '>';
+                    menuHtml += '<emby-collapsible title="' + item.name + '"' + style + expanded + '>';
                 }
                 menuHtml += item.items.map(Dashboard.getToolsLinkHtml).join('');
                 menuHtml += '</emby-collapsible>';
@@ -720,6 +721,7 @@ var Dashboard = {
             name: Globalize.translate('TabServer'),
             icon: 'dashboard',
             color: '#38c',
+            expanded: true,
             items: [
                 {
                     name: Globalize.translate('TabDashboard'),
@@ -747,6 +749,7 @@ var Dashboard = {
             name: Globalize.translate('TabLibrary'),
             icon: 'folder',
             color: '#ECA403',
+            expanded: true,
             items: [
                 {
                     name: Globalize.translate('TabFolders'),
