@@ -251,7 +251,7 @@ namespace MediaBrowser.Server.Implementations.IO
         /// <exception cref="System.ArgumentNullException">path</exception>
         private static bool ContainsParentFolder(IEnumerable<string> lst, string path)
         {
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrWhiteSpace(path))
             {
                 throw new ArgumentNullException("path");
             }
