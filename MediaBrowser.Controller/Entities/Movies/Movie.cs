@@ -79,17 +79,6 @@ namespace MediaBrowser.Controller.Entities.Movies
         }
         
         /// <summary>
-        /// Gets the trailer ids.
-        /// </summary>
-        /// <returns>List&lt;Guid&gt;.</returns>
-        public List<Guid> GetTrailerIds()
-        {
-            var list = LocalTrailerIds.ToList();
-            list.AddRange(RemoteTrailerIds);
-            return list;
-        }
-
-        /// <summary>
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>

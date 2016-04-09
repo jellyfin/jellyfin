@@ -306,7 +306,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        private List<Tuple<StringBuilder,bool>> GetSortChunks(string s1)
+        private List<Tuple<StringBuilder, bool>> GetSortChunks(string s1)
         {
             var list = new List<Tuple<StringBuilder, bool>>();
 
@@ -668,9 +668,30 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public virtual BaseItem DisplayParent
+        public virtual Guid? DisplayParentId
         {
-            get { return GetParent(); }
+            get
+            {
+                if (ParentId == Guid.Empty)
+                {
+                    return null;
+                }
+                return ParentId;
+            }
+        }
+
+        [IgnoreDataMember]
+        public BaseItem DisplayParent
+        {
+            get
+            {
+                var id = DisplayParentId;
+                if (!id.HasValue)
+                {
+                    return null;
+                }
+                return LibraryManager.GetItemById(id.Value);
+            }
         }
 
         /// <summary>
@@ -1454,7 +1475,7 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual string GetClientTypeName()
         {
-            if (IsFolder && SourceType == SourceType.Channel)
+            if (IsFolder && SourceType == SourceType.Channel && !(this is Channel))
             {
                 return "ChannelFolderItem";
             }
