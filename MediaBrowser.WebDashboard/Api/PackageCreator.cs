@@ -415,6 +415,7 @@ namespace MediaBrowser.WebDashboard.Api
             sb.Append("<link rel=\"shortcut icon\" href=\"css/images/favicon.ico\">");
             sb.Append("<meta name=\"msapplication-TileImage\" content=\"css/images/touchicon144.png\">");
             sb.Append("<meta name=\"msapplication-TileColor\" content=\"#333333\">");
+            sb.Append("<meta name=\"theme-color\" content=\"#43A047\">");
 
             return sb.ToString();
         }
