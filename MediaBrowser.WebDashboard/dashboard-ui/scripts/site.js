@@ -210,8 +210,6 @@ var Dashboard = {
 
         Dashboard.lastSystemInfo = info;
 
-        Dashboard.ensureWebSocket();
-
         if (!Dashboard.initialServerVersion) {
             Dashboard.initialServerVersion = info.Version;
         }
@@ -532,8 +530,6 @@ var Dashboard = {
 
                     Dashboard.updateSystemInfo(info);
                 });
-            } else {
-                Dashboard.ensureWebSocket();
             }
         }
     },
@@ -968,19 +964,6 @@ var Dashboard = {
             ]
         }];
 
-    },
-
-    ensureWebSocket: function () {
-
-        if (ApiClient.isWebSocketOpenOrConnecting() || !ApiClient.isWebSocketSupported()) {
-            return;
-        }
-
-        ApiClient.openWebSocket();
-
-        if (!Dashboard.isConnectMode()) {
-            ApiClient.reportCapabilities(Dashboard.capabilities());
-        }
     },
 
     processGeneralCommand: function (cmd) {
@@ -2116,7 +2099,10 @@ var AppInfo = {};
         if (browser.mobile) {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/nativeprompt"], returnFirstDependency);
             define("confirm", [embyWebComponentsBowerPath + "/confirm/nativeconfirm"], returnFirstDependency);
-            define("alert", [embyWebComponentsBowerPath + "/alert/nativealert"], returnFirstDependency);
+
+            // We have some alerts with markup
+            //define("alert", [embyWebComponentsBowerPath + "/alert/nativealert"], returnFirstDependency);
+            define("alert", [embyWebComponentsBowerPath + "/alert/alert"], returnFirstDependency);
         } else {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/prompt"], returnFirstDependency);
             define("confirm", [embyWebComponentsBowerPath + "/confirm/confirm"], returnFirstDependency);

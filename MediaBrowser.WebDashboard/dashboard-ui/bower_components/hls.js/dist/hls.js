@@ -2446,9 +2446,12 @@ var StreamController = function (_EventHandler) {
         case _errors.ErrorDetails.LEVEL_LOAD_TIMEOUT:
         case _errors.ErrorDetails.KEY_LOAD_ERROR:
         case _errors.ErrorDetails.KEY_LOAD_TIMEOUT:
-          // if fatal error, stop processing, otherwise move to IDLE to retry loading
-          _logger.logger.warn('mediaController: ' + data.details + ' while loading frag,switch to ' + (data.fatal ? 'ERROR' : 'IDLE') + ' state ...');
-          this.state = data.fatal ? State.ERROR : State.IDLE;
+          //  when in ERROR state, don't switch back to IDLE state in case a non-fatal error is received
+          if (this.state !== State.ERROR) {
+            // if fatal error, stop processing, otherwise move to IDLE to retry loading
+            this.state = data.fatal ? State.ERROR : State.IDLE;
+            _logger.logger.warn('mediaController: ' + data.details + ' while loading frag,switch to ' + this.state + ' state ...');
+          }
           break;
         case _errors.ErrorDetails.BUFFER_FULL_ERROR:
           // trigger a smooth level switch to empty buffers
