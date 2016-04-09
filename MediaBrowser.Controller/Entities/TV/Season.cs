@@ -33,9 +33,13 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
-        public override BaseItem DisplayParent
+        public override Guid? DisplayParentId
         {
-            get { return Series ?? GetParent(); }
+            get
+            {
+                var series = Series;
+                return series == null ? ParentId : series.Id;
+            }
         }
 
         // Genre, Rating and Stuido will all be the same
