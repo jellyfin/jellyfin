@@ -210,8 +210,6 @@ var Dashboard = {
 
         Dashboard.lastSystemInfo = info;
 
-        Dashboard.ensureWebSocket();
-
         if (!Dashboard.initialServerVersion) {
             Dashboard.initialServerVersion = info.Version;
         }
@@ -532,8 +530,6 @@ var Dashboard = {
 
                     Dashboard.updateSystemInfo(info);
                 });
-            } else {
-                Dashboard.ensureWebSocket();
             }
         }
     },
@@ -691,10 +687,11 @@ var Dashboard = {
             if (item.items) {
 
                 var style = item.color ? ' iconstyle="color:' + item.color + '"' : '';
+                var expanded = item.expanded ? (' expanded') : '';
                 if (item.icon) {
-                    menuHtml += '<emby-collapsible icon="' + item.icon + '" title="' + item.name + '"' + style + '>';
+                    menuHtml += '<emby-collapsible icon="' + item.icon + '" title="' + item.name + '"' + style + expanded + '>';
                 } else {
-                    menuHtml += '<emby-collapsible title="' + item.name + '"' + style + '>';
+                    menuHtml += '<emby-collapsible title="' + item.name + '"' + style + expanded + '>';
                 }
                 menuHtml += item.items.map(Dashboard.getToolsLinkHtml).join('');
                 menuHtml += '</emby-collapsible>';
@@ -720,6 +717,7 @@ var Dashboard = {
             name: Globalize.translate('TabServer'),
             icon: 'dashboard',
             color: '#38c',
+            expanded: true,
             items: [
                 {
                     name: Globalize.translate('TabDashboard'),
@@ -747,6 +745,7 @@ var Dashboard = {
             name: Globalize.translate('TabLibrary'),
             icon: 'folder',
             color: '#ECA403',
+            expanded: true,
             items: [
                 {
                     name: Globalize.translate('TabFolders'),
@@ -965,19 +964,6 @@ var Dashboard = {
             ]
         }];
 
-    },
-
-    ensureWebSocket: function () {
-
-        if (ApiClient.isWebSocketOpenOrConnecting() || !ApiClient.isWebSocketSupported()) {
-            return;
-        }
-
-        ApiClient.openWebSocket();
-
-        if (!Dashboard.isConnectMode()) {
-            ApiClient.reportCapabilities(Dashboard.capabilities());
-        }
     },
 
     processGeneralCommand: function (cmd) {
@@ -2113,7 +2099,10 @@ var AppInfo = {};
         if (browser.mobile) {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/nativeprompt"], returnFirstDependency);
             define("confirm", [embyWebComponentsBowerPath + "/confirm/nativeconfirm"], returnFirstDependency);
-            define("alert", [embyWebComponentsBowerPath + "/alert/nativealert"], returnFirstDependency);
+
+            // We have some alerts with markup
+            //define("alert", [embyWebComponentsBowerPath + "/alert/nativealert"], returnFirstDependency);
+            define("alert", [embyWebComponentsBowerPath + "/alert/alert"], returnFirstDependency);
         } else {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/prompt"], returnFirstDependency);
             define("confirm", [embyWebComponentsBowerPath + "/confirm/confirm"], returnFirstDependency);
@@ -2272,7 +2261,7 @@ var AppInfo = {};
 
         var baseUrl = 'strings/';
 
-        var languages = ['ar', 'bg-BG', 'ca', 'cs', 'da', 'de', 'el', 'en-GB', 'en-US', 'en-AR', 'en-MX', 'es', 'fi', 'fr', 'gsw', 'he', 'hr', 'hu', 'id', 'it', 'kk', 'ko', 'ms', 'nb', 'nl', 'pl', 'pt-BR', 'pt-PT', 'ro', 'ru', 'sl-SI', 'sv', 'tr', 'uk', 'vi', 'zh-CN', 'zh-HK', 'zh-TW'];
+        var languages = ['ar', 'bg-BG', 'ca', 'cs', 'da', 'de', 'el', 'en-GB', 'en-US', 'es-AR', 'es-MX', 'es', 'fi', 'fr', 'gsw', 'he', 'hr', 'hu', 'id', 'it', 'kk', 'ko', 'ms', 'nb', 'nl', 'pl', 'pt-BR', 'pt-PT', 'ro', 'ru', 'sl-SI', 'sv', 'tr', 'uk', 'vi', 'zh-CN', 'zh-HK', 'zh-TW'];
 
         var translations = languages.map(function (i) {
             return {

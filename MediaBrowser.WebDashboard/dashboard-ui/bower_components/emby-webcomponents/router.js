@@ -15,6 +15,9 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         },
         showSettings: function () {
             show('/settings/settings.html');
+        },
+        showSearch: function () {
+            skinManager.getCurrentSkin().search();
         }
     };
 
@@ -285,7 +288,12 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
                 skinManager.loadUserSkin();
                 return;
             } else if (route.roles) {
-                validateRoles(apiClient, route.roles, callback).then(callback, beginConnectionWizard);
+                validateRoles(apiClient, route.roles).then(function () {
+
+                    apiClient.ensureWebSocket();
+                    callback();
+
+                }, beginConnectionWizard);
                 return;
             }
         }

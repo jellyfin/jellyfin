@@ -1,4 +1,4 @@
-﻿<div id="newUserPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/usernew,paper-input,jqmcheckbox">
+﻿<div id="newUserPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/usernew,paper-input,paper-checkbox">
 
     <div data-role="content">
         <div class="content-primary">
@@ -12,11 +12,10 @@
                 </ul>
 
                 <div class="folderAccessContainer">
-                    <div class="ui-controlgroup-label">${HeaderLibraryAccess}</div>
+                    <h1>${HeaderLibraryAccess}</h1>
                     <div>
-                        <label for="chkEnableAllFolders">${OptionEnableAccessToAllLibraries}</label>
-                        <input type="checkbox" id="chkEnableAllFolders" />
-                        <div class="fieldDescription">${LibraryAccessHelp}</div>
+                        <paper-checkbox id="chkEnableAllFolders">${OptionEnableAccessToAllLibraries}</paper-checkbox>
+                        <div class="fieldDescription paperCheckboxFieldDescription">${LibraryAccessHelp}</div>
                     </div>
                     <div class="folderAccessListContainer">
                         <br />
@@ -27,11 +26,10 @@
                 <br />
                 <br />
                 <div class="channelAccessContainer" style="display:none;">
-                    <div class="ui-controlgroup-label">${HeaderChannelAccess}</div>
+                    <h1>${HeaderChannelAccess}</h1>
                     <div>
-                        <label for="chkEnableAllChannels">${OptionEnableAccessToAllChannels}</label>
-                        <input type="checkbox" id="chkEnableAllChannels" />
-                        <div class="fieldDescription">${ChannelAccessHelp}</div>
+                        <paper-checkbox id="chkEnableAllChannels">${OptionEnableAccessToAllChannels}</paper-checkbox>
+                        <div class="fieldDescription paperCheckboxFieldDescription">${ChannelAccessHelp}</div>
                     </div>
                     <div class="channelAccessListContainer">
                         <br />

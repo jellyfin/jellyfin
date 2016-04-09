@@ -90,11 +90,11 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
-        public override BaseItem DisplayParent
+        public override Guid? DisplayParentId
         {
             get
             {
-                return Season ?? GetParent();
+                return SeasonId;
             }
         }
 

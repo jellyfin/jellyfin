@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>MediaBrowser.Common</id>
-        <version>3.0.644</version>
+        <version>3.0.645</version>
         <title>MediaBrowser.Common</title>
         <authors>Emby Team</authors>
         <owners>ebr,Luke,scottisafool</owners>

@@ -192,7 +192,8 @@
                 modal: false,
                 autoFocus: false,
                 entryAnimationDuration: 160,
-                exitAnimationDuration: 160
+                exitAnimationDuration: 160,
+                enableHistory: false
             });
 
             dlg.classList.add('ui-body-a');
@@ -226,21 +227,13 @@
             dlg.innerHTML = html;
             document.body.appendChild(dlg);
 
-            var destination;
             dlg.addEventListener('click', function (e) {
                 var link = parentWithTag(e.target, 'A');
                 if (link) {
-                    destination = link.href;
                     dialogHelper.close(dlg);
-                    e.preventDefault();
-                    return false;
                 }
             });
-            dialogHelper.open(dlg).then(function () {
-                if (destination) {
-                    Dashboard.navigate(destination);
-                }
-            });
+            dialogHelper.open(dlg);
 
         });
     }
