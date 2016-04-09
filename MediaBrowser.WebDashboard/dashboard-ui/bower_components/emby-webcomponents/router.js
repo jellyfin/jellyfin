@@ -15,6 +15,9 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         },
         showSettings: function () {
             show('/settings/settings.html');
+        },
+        showSearch: function () {
+            skinManager.getCurrentSkin().search();
         }
     };
 

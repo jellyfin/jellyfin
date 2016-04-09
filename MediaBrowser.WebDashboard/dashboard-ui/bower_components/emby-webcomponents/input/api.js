@@ -1,4 +1,4 @@
-define(['connectionManager', 'playbackManager', 'events', 'inputManager'], function (connectionManager, playbackManager, events, inputManager) {
+define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focusManager'], function (connectionManager, playbackManager, events, inputManager, focusManager) {
 
     function displayMessage(cmd) {
 
@@ -115,6 +115,7 @@ define(['connectionManager', 'playbackManager', 'events', 'inputManager'], funct
                 break;
             case 'SendString':
                 // todo
+                focusManager.sendText(cmd.Arguments.String);
                 break;
             default:
                 console.log('processGeneralCommand does not recognize: ' + cmd.Name);
