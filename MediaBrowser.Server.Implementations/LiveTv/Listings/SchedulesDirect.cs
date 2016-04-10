@@ -302,7 +302,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                     }
                     if (string.IsNullOrWhiteSpace(channelNumber))
                     {
-                        channelNumber = (map.atscMajor + "." + map.atscMinor);
+                        channelNumber = map.atscMajor + "." + map.atscMinor;
                     }
                     channelNumber = channelNumber.TrimStart('0');
 
@@ -343,7 +343,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             DateTime endAt = startAt.AddSeconds(programInfo.duration);
             ProgramAudio audioType = ProgramAudio.Stereo;
 
-            bool repeat = (programInfo.@new == null);
+            bool repeat = programInfo.@new == null;
             string newID = programInfo.programID + "T" + startAt.Ticks + "C" + channel;
 
             if (programInfo.audioProperties != null)
@@ -633,7 +633,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 if (long.TryParse(savedToken.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out ticks))
                 {
                     // If it's under 24 hours old we can still use it
-                    if ((DateTime.UtcNow.Ticks - ticks) < TimeSpan.FromHours(20).Ticks)
+                    if (DateTime.UtcNow.Ticks - ticks < TimeSpan.FromHours(20).Ticks)
                     {
                         return savedToken.Name;
                     }

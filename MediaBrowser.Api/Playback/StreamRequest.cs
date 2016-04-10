@@ -189,10 +189,9 @@ namespace MediaBrowser.Api.Playback
 
         [ApiMember(Name = "CopyTimestamps", Description = "Whether or not to copy timestamps when transcoding with an offset. Defaults to false.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool CopyTimestamps { get; set; }
-        
-        [ApiMember(Name = "Cabac", Description = "Enable if cabac encoding is required", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
-        public bool? Cabac { get; set; }
-        
+
+        public bool ForceLiveStream { get; set; }
+
         public VideoStreamRequest()
         {
             EnableAutoStreamCopy = true;

@@ -28,6 +28,7 @@ namespace MediaBrowser.Providers.MediaInfo
             List<MediaStream> mediaStreams,
             bool skipIfEmbeddedSubtitlesPresent,
             bool skipIfAudioTrackMatches,
+            bool requirePerfectMatch,
             IEnumerable<string> languages,
             CancellationToken cancellationToken)
         {
@@ -59,7 +60,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 try
                 {
-                    var downloaded = await DownloadSubtitles(video, mediaStreams, skipIfEmbeddedSubtitlesPresent, skipIfAudioTrackMatches, lang, mediaType, cancellationToken)
+                    var downloaded = await DownloadSubtitles(video, mediaStreams, skipIfEmbeddedSubtitlesPresent, skipIfAudioTrackMatches, requirePerfectMatch, lang, mediaType, cancellationToken)
                         .ConfigureAwait(false);
 
                     if (downloaded)
@@ -80,6 +81,7 @@ namespace MediaBrowser.Providers.MediaInfo
             List<MediaStream> mediaStreams,
             bool skipIfEmbeddedSubtitlesPresent,
             bool skipIfAudioTrackMatches,
+            bool requirePerfectMatch,
             string language,
             VideoContentType mediaType,
             CancellationToken cancellationToken)
@@ -125,7 +127,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 ProviderIds = video.ProviderIds,
 
                 // Stop as soon as we find something
-                SearchAllProviders = false
+                SearchAllProviders = false,
+
+                IsPerfectMatch = requirePerfectMatch
             };
 
             var episode = video as Episode;

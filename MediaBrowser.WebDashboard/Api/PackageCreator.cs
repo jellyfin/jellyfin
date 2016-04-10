@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -416,6 +415,7 @@ namespace MediaBrowser.WebDashboard.Api
             sb.Append("<link rel=\"shortcut icon\" href=\"css/images/favicon.ico\">");
             sb.Append("<meta name=\"msapplication-TileImage\" content=\"css/images/touchicon144.png\">");
             sb.Append("<meta name=\"msapplication-TileColor\" content=\"#333333\">");
+            sb.Append("<meta name=\"theme-color\" content=\"#43A047\">");
 
             return sb.ToString();
         }
@@ -478,7 +478,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var tags = files.Select(s =>
             {
-                if (s.IndexOf("require", StringComparison.OrdinalIgnoreCase) == -1)
+                if (s.IndexOf("require", StringComparison.OrdinalIgnoreCase) == -1 && s.IndexOf("alameda", StringComparison.OrdinalIgnoreCase) == -1)
                 {
                     return string.Format("<script src=\"{0}\" async></script>", s);
                 }

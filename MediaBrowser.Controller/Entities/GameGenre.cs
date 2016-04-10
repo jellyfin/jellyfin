@@ -60,7 +60,7 @@ namespace MediaBrowser.Controller.Entities
 
         public Func<BaseItem, bool> GetItemFilter()
         {
-            return i => (i is Game) && i.Genres.Contains(Name, StringComparer.OrdinalIgnoreCase);
+            return i => i is Game && i.Genres.Contains(Name, StringComparer.OrdinalIgnoreCase);
         }
 
         [IgnoreDataMember]

@@ -98,7 +98,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
                     double percent = numComplete;
                     percent /= packagesToInstall.Count;
 
-                    progress.Report((90 * percent) + 10);
+                    progress.Report(90 * percent + 10);
                 }
             }));
 

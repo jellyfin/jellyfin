@@ -1,16 +1,13 @@
 ﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
-using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Controller.Entities.Movies
 {
@@ -81,17 +78,6 @@ namespace MediaBrowser.Controller.Entities.Movies
             set { TmdbCollectionName = value; }
         }
         
-        /// <summary>
-        /// Gets the trailer ids.
-        /// </summary>
-        /// <returns>List&lt;Guid&gt;.</returns>
-        public List<Guid> GetTrailerIds()
-        {
-            var list = LocalTrailerIds.ToList();
-            list.AddRange(RemoteTrailerIds);
-            return list;
-        }
-
         /// <summary>
         /// Gets the user data key.
         /// </summary>

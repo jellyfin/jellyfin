@@ -1,10 +1,8 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.System;
 using ServiceStack;
 using System;

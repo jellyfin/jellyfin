@@ -22,8 +22,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.LiveTv;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 {

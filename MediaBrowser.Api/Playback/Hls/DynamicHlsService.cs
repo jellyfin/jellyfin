@@ -199,9 +199,9 @@ namespace MediaBrowser.Api.Playback.Hls
                         Logger.Debug("Starting transcoding because requestedIndex={0} and currentTranscodingIndex={1}", requestedIndex, currentTranscodingIndex);
                         startTranscoding = true;
                     }
-                    else if ((requestedIndex - currentTranscodingIndex.Value) > segmentGapRequiringTranscodingChange)
+                    else if (requestedIndex - currentTranscodingIndex.Value > segmentGapRequiringTranscodingChange)
                     {
-                        Logger.Debug("Starting transcoding because segmentGap is {0} and max allowed gap is {1}. requestedIndex={2}", (requestedIndex - currentTranscodingIndex.Value), segmentGapRequiringTranscodingChange, requestedIndex);
+                        Logger.Debug("Starting transcoding because segmentGap is {0} and max allowed gap is {1}. requestedIndex={2}", requestedIndex - currentTranscodingIndex.Value, segmentGapRequiringTranscodingChange, requestedIndex);
                         startTranscoding = true;
                     }
                     if (startTranscoding)
@@ -500,13 +500,25 @@ namespace MediaBrowser.Api.Playback.Hls
             return ResultFactory.GetResult(playlistText, MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
         }
 
+        private bool IsLiveStream(StreamState state)
+        {
+            var isLiveStream = (state.RunTimeTicks ?? 0) == 0;
+
+            if (state.VideoRequest.ForceLiveStream)
+            {
+                return true;
+            }
+
+            return isLiveStream;
+        }
+
         private string GetMasterPlaylistFileText(StreamState state, int totalBitrate)
         {
             var builder = new StringBuilder();
 
             builder.AppendLine("#EXTM3U");
 
-            var isLiveStream = (state.RunTimeTicks ?? 0) == 0;
+            var isLiveStream = IsLiveStream(state);
 
             var queryStringIndex = Request.RawUrl.IndexOf('?');
             var queryString = queryStringIndex == -1 ? string.Empty : Request.RawUrl.Substring(queryStringIndex);
@@ -524,7 +536,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 .ToList();
 
             var subtitleGroup = subtitleStreams.Count > 0 &&
-                (request is GetMasterHlsVideoPlaylist) &&
+                request is GetMasterHlsVideoPlaylist &&
                 ((GetMasterHlsVideoPlaylist)request).SubtitleMethod == SubtitleDeliveryMethod.Hls ?
                 "subs" :
                 null;
@@ -544,12 +556,12 @@ namespace MediaBrowser.Api.Playback.Hls
                 var variation = GetBitrateVariation(totalBitrate);
 
                 var newBitrate = totalBitrate - variation;
-                var variantUrl = ReplaceBitrate(playlistUrl, requestedVideoBitrate, (requestedVideoBitrate - variation));
+                var variantUrl = ReplaceBitrate(playlistUrl, requestedVideoBitrate, requestedVideoBitrate - variation);
                 AppendPlaylist(builder, state, variantUrl, newBitrate, subtitleGroup);
 
                 variation *= 2;
                 newBitrate = totalBitrate - variation;
-                variantUrl = ReplaceBitrate(playlistUrl, requestedVideoBitrate, (requestedVideoBitrate - variation));
+                variantUrl = ReplaceBitrate(playlistUrl, requestedVideoBitrate, requestedVideoBitrate - variation);
                 AppendPlaylist(builder, state, variantUrl, newBitrate, subtitleGroup);
             }
 
@@ -703,7 +715,7 @@ namespace MediaBrowser.Api.Playback.Hls
             builder.AppendLine("#EXTM3U");
             builder.AppendLine("#EXT-X-PLAYLIST-TYPE:VOD");
             builder.AppendLine("#EXT-X-VERSION:3");
-            builder.AppendLine("#EXT-X-TARGETDURATION:" + Math.Ceiling((segmentLengths.Length > 0 ? segmentLengths.Max() : state.SegmentLength)).ToString(UsCulture));
+            builder.AppendLine("#EXT-X-TARGETDURATION:" + Math.Ceiling(segmentLengths.Length > 0 ? segmentLengths.Max() : state.SegmentLength).ToString(UsCulture));
             builder.AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
 
             var queryStringIndex = Request.RawUrl.IndexOf('?');
@@ -929,10 +941,16 @@ namespace MediaBrowser.Api.Playback.Hls
             return isOutputVideo ? ".ts" : ".ts";
         }
 
-        protected override bool CanStreamCopyVideo(VideoStreamRequest request, MediaStream videoStream)
+        protected override bool CanStreamCopyVideo(StreamState state)
         {
-            return false;
-            //return base.CanStreamCopyVideo(request, videoStream);
+            var isLiveStream = IsLiveStream(state);
+
+            if (!isLiveStream)
+            {
+                return false;
+            }
+
+            return base.CanStreamCopyVideo(state);
         }
     }
 }

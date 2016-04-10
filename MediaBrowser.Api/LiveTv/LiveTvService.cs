@@ -482,7 +482,14 @@ namespace MediaBrowser.Api.LiveTv
     [Authenticated(AllowBeforeStartupWizard = true)]
     public class GetSatIniMappings : IReturn<List<NameValuePair>>
     {
-        
+
+    }
+
+    [Route("/LiveTv/TunerHosts/Satip/ChannelScan", "GET", Summary = "Scans for available channels")]
+    [Authenticated(AllowBeforeStartupWizard = true)]
+    public class GetSatChannnelScanResult : TunerHostInfo
+    {
+
     }
 
     public class LiveTvService : BaseApiService
@@ -502,6 +509,13 @@ namespace MediaBrowser.Api.LiveTv
             _httpClient = httpClient;
             _libraryManager = libraryManager;
             _dtoService = dtoService;
+        }
+
+        public async Task<object> Get(GetSatChannnelScanResult request)
+        {
+            var result = await _liveTvManager.GetSatChannelScanResult(request, CancellationToken.None).ConfigureAwait(false);
+
+            return ToOptimizedResult(result);
         }
 
         public async Task<object> Get(GetLiveTvRegistrationInfo request)

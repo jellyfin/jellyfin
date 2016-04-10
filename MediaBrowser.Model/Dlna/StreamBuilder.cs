@@ -383,7 +383,7 @@ namespace MediaBrowser.Model.Dlna
 
                     if (subtitleStream != null)
                     {
-                        SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, options.Context, directPlay.Value);
+                        SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, directPlay.Value);
 
                         playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
                         playlistItem.SubtitleFormat = subtitleProfile.Format;
@@ -413,7 +413,7 @@ namespace MediaBrowser.Model.Dlna
 
                 if (subtitleStream != null)
                 {
-                    SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, options.Context, PlayMethod.Transcode);
+                    SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, PlayMethod.Transcode);
 
                     playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
                     playlistItem.SubtitleFormat = subtitleProfile.Format;
@@ -443,6 +443,7 @@ namespace MediaBrowser.Model.Dlna
 
                 playlistItem.VideoCodec = transcodingProfile.VideoCodec;
                 playlistItem.CopyTimestamps = transcodingProfile.CopyTimestamps;
+                playlistItem.ForceLiveStream = transcodingProfile.ForceLiveStream;
                 playlistItem.SubProtocol = transcodingProfile.Protocol;
                 playlistItem.AudioStreamIndex = audioStreamIndex;
 
@@ -513,7 +514,14 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (targetAudioChannels.Value >= 5 && (maxTotalBitrate ?? 0) >= 2000000)
                 {
-                    defaultBitrate = 320000;
+                    if (StringHelper.EqualsIgnoreCase(targetAudioCodec, "ac3"))
+                    {
+                        defaultBitrate = 384000;
+                    }
+                    else
+                    {
+                        defaultBitrate = 320000;
+                    }
                 }
             }
 
@@ -597,7 +605,6 @@ namespace MediaBrowser.Model.Dlna
             string videoProfile = videoStream == null ? null : videoStream.Profile;
             float? videoFramerate = videoStream == null ? null : videoStream.AverageFrameRate ?? videoStream.AverageFrameRate;
             bool? isAnamorphic = videoStream == null ? null : videoStream.IsAnamorphic;
-            bool? isCabac = videoStream == null ? null : videoStream.IsCabac;
             string videoCodecTag = videoStream == null ? null : videoStream.CodecTag;
 
             int? audioBitrate = audioStream == null ? null : audioStream.BitRate;
@@ -614,7 +621,7 @@ namespace MediaBrowser.Model.Dlna
             // Check container conditions
             foreach (ProfileCondition i in conditions)
             {
-                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams, videoCodecTag))
+                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, refFrames, numVideoStreams, numAudioStreams, videoCodecTag))
                 {
                     LogConditionFailure(profile, "VideoContainerProfile", i, mediaSource);
 
@@ -647,7 +654,7 @@ namespace MediaBrowser.Model.Dlna
 
             foreach (ProfileCondition i in conditions)
             {
-                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams, videoCodecTag))
+                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, refFrames, numVideoStreams, numAudioStreams, videoCodecTag))
                 {
                     LogConditionFailure(profile, "VideoCodecProfile", i, mediaSource);
 
@@ -739,7 +746,7 @@ namespace MediaBrowser.Model.Dlna
         {
             if (subtitleStream != null)
             {
-                SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, options.Context, playMethod);
+                SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, playMethod);
 
                 if (subtitleProfile.Method != SubtitleDeliveryMethod.External && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
                 {
@@ -751,7 +758,7 @@ namespace MediaBrowser.Model.Dlna
             return IsAudioEligibleForDirectPlay(item, maxBitrate);
         }
 
-        public static SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, EncodingContext context, PlayMethod playMethod)
+        public static SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, PlayMethod playMethod)
         {
             if (playMethod != PlayMethod.Transcode && !subtitleStream.IsExternal)
             {
@@ -775,7 +782,16 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            // Look for an external profile that matches the stream type (text/graphical)
+            // Look for an external or hls profile that matches the stream type (text/graphical) and doesn't require conversion
+            return GetExternalSubtitleProfile(subtitleStream, subtitleProfiles, playMethod, false) ?? GetExternalSubtitleProfile(subtitleStream, subtitleProfiles, playMethod, true) ?? new SubtitleProfile
+            {
+                Method = SubtitleDeliveryMethod.Encode,
+                Format = subtitleStream.Codec
+            };
+        }
+
+        private static SubtitleProfile GetExternalSubtitleProfile(MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, PlayMethod playMethod, bool allowConversion)
+        {
             foreach (SubtitleProfile profile in subtitleProfiles)
             {
                 if (profile.Method != SubtitleDeliveryMethod.External && profile.Method != SubtitleDeliveryMethod.Hls)
@@ -798,21 +814,24 @@ namespace MediaBrowser.Model.Dlna
                 {
                     bool requiresConversion = !StringHelper.EqualsIgnoreCase(subtitleStream.Codec, profile.Format);
 
-                    if (subtitleStream.IsTextSubtitleStream || !requiresConversion)
+                    if (requiresConversion && !allowConversion)
                     {
-                        if (subtitleStream.SupportsExternalStream)
-                        {
-                            return profile;
-                        }
+                        continue;
+                    }
+
+                    if (!requiresConversion)
+                    {
+                        return profile;
+                    }
+
+                    if (subtitleStream.IsTextSubtitleStream && subtitleStream.SupportsExternalStream)
+                    {
+                        return profile;
                     }
                 }
             }
 
-            return new SubtitleProfile
-            {
-                Method = SubtitleDeliveryMethod.Encode,
-                Format = subtitleStream.Codec
-            };
+            return null;
         }
 
         private bool IsAudioEligibleForDirectPlay(MediaSourceInfo item, int? maxBitrate)
@@ -895,22 +914,6 @@ namespace MediaBrowser.Model.Dlna
                             if (IntHelper.TryParseCultureInvariant(value, out num))
                             {
                                 item.MaxAudioChannels = num;
-                            }
-                            break;
-                        }
-                    case ProfileConditionValue.IsCabac:
-                        {
-                            bool val;
-                            if (BoolHelper.TryParseCultureInvariant(value, out val))
-                            {
-                                if (condition.Condition == ProfileConditionType.Equals)
-                                {
-                                    item.Cabac = val;
-                                }
-                                else if (condition.Condition == ProfileConditionType.NotEquals)
-                                {
-                                    item.Cabac = !val;
-                                }
                             }
                             break;
                         }

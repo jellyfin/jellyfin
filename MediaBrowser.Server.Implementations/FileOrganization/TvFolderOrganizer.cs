@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -91,7 +90,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                     double percent = numComplete;
                     percent /= eligibleFiles.Count;
 
-                    progress.Report(10 + (89 * percent));
+                    progress.Report(10 + 89 * percent);
                 }
             }
 

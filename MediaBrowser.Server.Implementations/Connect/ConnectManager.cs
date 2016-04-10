@@ -62,6 +62,17 @@ namespace MediaBrowser.Server.Implementations.Connect
             {
                 var address = _config.Configuration.WanDdns;
 
+                if (!string.IsNullOrWhiteSpace(address))
+                {
+                    try
+                    {
+                        address = new Uri(address).Host;
+                    }
+                    catch
+                    {
+                    }
+                }
+
                 if (string.IsNullOrWhiteSpace(address) && DiscoveredWanIpAddress != null)
                 {
                     if (DiscoveredWanIpAddress.AddressFamily == AddressFamily.InterNetworkV6)
@@ -237,8 +248,8 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             var postData = new Dictionary<string, string>
             {
-                {"name", _appHost.FriendlyName}, 
-                {"url", wanApiAddress}, 
+                {"name", _appHost.FriendlyName},
+                {"url", wanApiAddress},
                 {"systemId", _appHost.SystemId}
             };
 
@@ -891,8 +902,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         private async Task RefreshGuestNames(List<ServerUserAuthorizationResponse> list, bool refreshImages)
         {
             var users = _userManager.Users
-                .Where(i => !string.IsNullOrEmpty(i.ConnectUserId) &&
-                    (i.ConnectLinkType.HasValue && i.ConnectLinkType.Value == UserLinkType.Guest))
+                .Where(i => !string.IsNullOrEmpty(i.ConnectUserId) && i.ConnectLinkType.HasValue && i.ConnectLinkType.Value == UserLinkType.Guest)
                     .ToList();
 
             foreach (var user in users)

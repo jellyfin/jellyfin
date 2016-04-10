@@ -58,8 +58,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
-        public bool? Cabac { get; set; }
-
         public EncodingJobOptions()
         {
             
@@ -87,7 +85,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             MaxRefFrames = info.MaxRefFrames;
             MaxVideoBitDepth = info.MaxVideoBitDepth;
             SubtitleMethod = info.SubtitleDeliveryMethod;
-            Cabac = info.Cabac;
             Context = info.Context;
 
             if (info.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External)

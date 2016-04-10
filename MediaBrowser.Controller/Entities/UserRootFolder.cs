@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -17,7 +18,7 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class UserRootFolder : Folder
     {
-        public override async Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
+        protected override async Task<QueryResult<BaseItem>> GetItemsInternal(InternalItemsQuery query)
         {
             if (query.Recursive)
             {

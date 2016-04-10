@@ -99,6 +99,7 @@
     <Reference Include="ServiceStack.Text">
       <HintPath>..\ThirdParty\ServiceStack.Text\ServiceStack.Text.dll</HintPath>
     </Reference>
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="UniversalDetector">
       <HintPath>..\ThirdParty\UniversalDetector\UniversalDetector.dll</HintPath>
     </Reference>
@@ -242,6 +243,12 @@
     <Compile Include="LiveTv\ProgramImageProvider.cs" />
     <Compile Include="LiveTv\RecordingImageProvider.cs" />
     <Compile Include="LiveTv\RefreshChannelsScheduledTask.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\ChannelScan.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Rtsp\RtspMethod.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Rtsp\RtspRequest.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Rtsp\RtspResponse.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Rtsp\RtspSession.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Rtsp\RtspStatusCode.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\SatIpHost.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\SatIpDiscovery.cs" />
     <Compile Include="Localization\LocalizationManager.cs" />

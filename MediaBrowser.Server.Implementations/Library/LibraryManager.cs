@@ -1,16 +1,13 @@
 ﻿using Interfaces.IO;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
@@ -27,7 +24,6 @@ using MediaBrowser.Server.Implementations.Library.Validators;
 using MediaBrowser.Server.Implementations.Logging;
 using MediaBrowser.Server.Implementations.ScheduledTasks;
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
@@ -1183,7 +1179,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 innerProgress.RegisterAction(pct =>
                 {
-                    double innerPercent = (currentNumComplete * 100) + pct;
+                    double innerPercent = currentNumComplete * 100 + pct;
                     innerPercent /= numTasks;
                     progress.Report(innerPercent);
                 });
@@ -1395,7 +1391,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             if (parents.All(i =>
             {
-                if ((i is ICollectionFolder) || (i is UserView))
+                if (i is ICollectionFolder || i is UserView)
                 {
                     return true;
                 }
@@ -1498,7 +1494,7 @@ namespace MediaBrowser.Server.Implementations.Library
         public async Task<IEnumerable<Video>> GetIntros(BaseItem item, User user)
         {
             var tasks = IntroProviders
-                .OrderBy(i => (i.GetType().Name.IndexOf("Default", StringComparison.OrdinalIgnoreCase) == -1 ? 0 : 1))
+                .OrderBy(i => i.GetType().Name.IndexOf("Default", StringComparison.OrdinalIgnoreCase) == -1 ? 0 : 1)
                 .Take(1)
                 .Select(i => GetIntros(i, item, user));
 
@@ -1926,7 +1922,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (!refresh)
             {
-                refresh = (DateTime.UtcNow - item.DateLastRefreshed) >= _viewRefreshInterval;
+                refresh = DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
             }
 
             if (!refresh && item.DisplayParentId != Guid.Empty)
@@ -1991,7 +1987,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 isNew = true;
             }
 
-            var refresh = isNew || (DateTime.UtcNow - item.DateLastRefreshed) >= _viewRefreshInterval;
+            var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
 
             if (!refresh && item.DisplayParentId != Guid.Empty)
             {
@@ -2055,7 +2051,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 isNew = true;
             }
 
-            var refresh = isNew || (DateTime.UtcNow - item.DateLastRefreshed) >= _viewRefreshInterval;
+            var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
 
             if (!refresh && item.DisplayParentId != Guid.Empty)
             {
@@ -2131,7 +2127,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
             }
 
-            var refresh = isNew || (DateTime.UtcNow - item.DateLastRefreshed) >= _viewRefreshInterval;
+            var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
 
             if (!refresh && item.DisplayParentId != Guid.Empty)
             {
@@ -2336,7 +2332,7 @@ namespace MediaBrowser.Server.Implementations.Library
             var videos = videoListResolver.Resolve(fileSystemChildren.Select(i => new FileMetadata
             {
                 Id = i.FullName,
-                IsFolder = ((i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                IsFolder = (i.Attributes & FileAttributes.Directory) == FileAttributes.Directory
 
             }).ToList());
 
@@ -2365,6 +2361,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     }
 
                     video.ExtraType = ExtraType.Trailer;
+                    video.TrailerTypes = new List<TrailerType> { TrailerType.LocalTrailer };
 
                     return video;
 
@@ -2384,7 +2381,7 @@ namespace MediaBrowser.Server.Implementations.Library
             var videos = videoListResolver.Resolve(fileSystemChildren.Select(i => new FileMetadata
             {
                 Id = i.FullName,
-                IsFolder = ((i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                IsFolder = (i.Attributes & FileAttributes.Directory) == FileAttributes.Directory
 
             }).ToList());
 
