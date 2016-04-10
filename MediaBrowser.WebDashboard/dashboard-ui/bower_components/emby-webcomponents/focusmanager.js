@@ -58,7 +58,8 @@ define([], function () {
         return elem;
     }
 
-    function isFocusableElementValid(elem) {
+    // Determines if a focusable element can be focused at a given point in time 
+    function isCurrentlyFocusable(elem) {
 
         if (elem.disabled) {
             return false;
@@ -84,7 +85,7 @@ define([], function () {
 
             var elem = elems[i];
 
-            if (isFocusableElementValid(elem)) {
+            if (isCurrentlyFocusable(elem)) {
                 focusableElements.push(elem);
             }
         }
@@ -203,7 +204,7 @@ define([], function () {
                 continue;
             }
 
-            if (!isFocusableElementValid(curr)) {
+            if (!isCurrentlyFocusable(curr)) {
                 continue;
             }
 
@@ -480,6 +481,7 @@ define([], function () {
         moveDown: function (sourceElement) {
             nav(sourceElement, 3);
         },
-        sendText: sendText
+        sendText: sendText,
+        isCurrentlyFocusable: isCurrentlyFocusable
     };
 });

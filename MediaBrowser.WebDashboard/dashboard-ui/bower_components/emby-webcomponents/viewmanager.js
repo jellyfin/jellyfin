@@ -51,8 +51,12 @@ define(['viewcontainer', 'focusManager', 'queryString', 'connectionManager', 'ev
                 focusManager.autoFocus(view);
             }
         }
-        else if (view.activeElement) {
-            view.activeElement.focus();
+        else {
+            if (view.activeElement && document.body.contains(view.activeElement) && focusManager.isCurrentlyFocusable(view.activeElement)) {
+                focusManager.focus(view.activeElement);
+            } else {
+                focusManager.autoFocus(view);
+            }
         }
 
         view.dispatchEvent(new CustomEvent('viewshow', eventDetail));
