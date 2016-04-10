@@ -145,7 +145,7 @@
 
         apiClient.getPublicSystemInfo().then(function (info) {
 
-            if (compareVersions(info.Version, '3.0.5912') == 1) {
+            if (compareVersions(info.Version, '3.0.5913') == 1) {
                 showInternal();
             }
         });
