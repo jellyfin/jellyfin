@@ -157,7 +157,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return GetSeasons(user, config.DisplayMissingEpisodes, config.DisplayUnairedEpisodes);
         }
 
-        public override Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
+        protected override Task<QueryResult<BaseItem>> GetItemsInternal(InternalItemsQuery query)
         {
             var user = query.User;
 

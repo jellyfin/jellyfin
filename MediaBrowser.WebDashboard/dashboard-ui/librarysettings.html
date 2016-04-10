@@ -2,51 +2,8 @@
 
     <div data-role="content">
         <div class="content-primary">
-            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                <a href="library.html" data-role="button">${TabFolders}</a>
-                <a href="librarypathmapping.html" data-role="button">${TabPathSubstitution}</a>
-                <a href="#" data-role="button" class="ui-btn-active">${TabAdvanced}</a>
-            </div>
-
             <form class="librarySettingsForm">
 
-                <div data-role="collapsible">
-                    <h2>${HeaderAudio}</h2>
-                    <div>
-                        <br />
-                        <div>
-                            <paper-checkbox id="chkEnableAudioArchiveFiles">${OptionDetectArchiveFilesAsMedia}</paper-checkbox>
-                            <div class="fieldDescription paperCheckboxFieldDescription">${OptionDetectArchiveFilesAsMediaHelp}</div>
-                        </div>
-                        <br />
-                    </div>
-                </div>
-
-                <div data-role="collapsible">
-                    <h2>${HeaderVideo}</h2>
-                    <div>
-                        <br />
-                        <div>
-                            <paper-checkbox id="chkEnableVideoArchiveFiles">${OptionDetectArchiveFilesAsMedia}</paper-checkbox>
-                            <div class="fieldDescription paperCheckboxFieldDescription">${OptionDetectArchiveFilesAsMediaHelp}</div>
-                        </div>
-                        <br />
-                    </div>
-                </div>
-
-                <div data-role="collapsible">
-                    <h2>${HeaderTV}</h2>
-                    <div>
-                        <br />
-                        <div>
-                            <label for="txtSeasonZeroName">${LabelSeasonZeroDisplayName}</label>
-                            <paper-input type="text" id="txtSeasonZeroName" required></paper-input>
-                        </div>
-                        <br />
-                    </div>
-                </div>
-                <br />
-                <br />
                 <ul data-role="listview" class="ulForm">
                     <li class="fldLibraryMonitor hide">
                         <label for="selectEnableRealtimeMonitor" class="selectLabel">${LabelEnableRealtimeMonitor}</label>
@@ -60,11 +17,142 @@
                         </div>
                     </li>
                     <li>
-                        <button type="submit" data-role="none" class="clearButton">
-                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                        </button>
+                        <label for="selectDateAdded" class="selectLabel">${LabelDateAddedBehavior}</label>
+                        <select id="selectDateAdded" data-mini="true">
+                            <option value="0">${OptionDateAddedImportTime}</option>
+                            <option value="1">${OptionDateAddedFileTime}</option>
+                        </select>
+                        <div class="fieldDescription">${LabelDateAddedBehaviorHelp}</div>
+                    </li>
+                    <li>
+                        <paper-input id="txtMetadataPath" label="${LabelMetadataPath}" style="width:85%;display:inline-block;"></paper-input>
+                        <paper-icon-button id="btnSelectMetadataPath" icon="search"></paper-icon-button>
+                        <div class="fieldDescription">${LabelMetadataPathHelp}</div>
+                        <br />
+                    </li>
+                    <li>
+                        <paper-checkbox id="chkSaveMetadataHidden">${OptionSaveMetadataAsHidden}</paper-checkbox>
+                        <br /><br />
                     </li>
                 </ul>
+
+                <emby-collapsible title="${HeaderAutomaticUpdates}" class="hide">
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <paper-checkbox id="chkEnableTmdbUpdates">${LabelAutomaticUpdatesTmdb}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelAutomaticUpdatesTmdbHelp}</div>
+                        </li>
+                        <li>
+                            <paper-checkbox id="chkEnableTvdbUpdates">${LabelAutomaticUpdatesTvdb}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelAutomaticUpdatesTvdbHelp}</div>
+                        </li>
+                    </ul>
+                </emby-collapsible>
+
+                <emby-collapsible title="${HeaderAudio}">
+                    <br />
+                    <div>
+                        <paper-checkbox id="chkEnableAudioArchiveFiles">${OptionDetectArchiveFilesAsMedia}</paper-checkbox>
+                        <div class="fieldDescription paperCheckboxFieldDescription">${OptionDetectArchiveFilesAsMediaHelp}</div>
+                    </div>
+                    <br />
+                </emby-collapsible>
+
+                <emby-collapsible title="${HeaderVideo}">
+                    <br />
+                    <div>
+                        <paper-checkbox id="chkEnableVideoArchiveFiles">${OptionDetectArchiveFilesAsMedia}</paper-checkbox>
+                        <div class="fieldDescription paperCheckboxFieldDescription">${OptionDetectArchiveFilesAsMediaHelp}</div>
+                    </div>
+                    <br />
+                </emby-collapsible>
+
+                <emby-collapsible title="${HeaderChapters}">
+                    <br />
+                    <ul data-role="listview" class="ulForm" style="margin-bottom:0!important;">
+                        <li>
+                            <div class="paperCheckboxListLabel">${HeaderExtractChapterImagesFor}</div>
+                            <div class="paperCheckboxList">
+                                <paper-checkbox id="chkChaptersMovies">${OptionMovies}</paper-checkbox>
+
+                                <paper-checkbox id="chkChaptersEpisodes">${OptionEpisodes}</paper-checkbox>
+
+                                <paper-checkbox id="chkChaptersOtherVideos">${OptionOtherVideos}</paper-checkbox>
+                            </div>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${ExtractChapterImagesHelp}</div>
+                        </li>
+                    </ul>
+                    <br />
+                    <div>
+                        <paper-checkbox id="chkExtractChaptersDuringLibraryScan">${LabelExtractChaptersDuringLibraryScan}</paper-checkbox>
+                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelExtractChaptersDuringLibraryScanHelp}</div>
+                    </div>
+                    <br />
+                </emby-collapsible>
+
+                <emby-collapsible title="${HeaderImages}">
+                    <br />
+                    <div>
+                        <paper-checkbox id="chkDownloadImagesInAdvance">${OptionDownloadImagesInAdvance}</paper-checkbox>
+                        <div class="fieldDescription paperCheckboxFieldDescription">${OptionDownloadImagesInAdvanceHelp}</div>
+                    </div>
+                    <br />
+                </emby-collapsible>
+
+                <emby-collapsible title="${HeaderPeople}">
+                    <br />
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <div class="paperCheckboxListLabel">${HeaderDownloadPeopleMetadataFor}</div>
+                            <div class="paperCheckboxList">
+                                <paper-checkbox id="chkPeopleActors">${OptionActors}</paper-checkbox>
+
+                                <paper-checkbox id="chkPeopleComposers">${OptionComposers}</paper-checkbox>
+
+                                <paper-checkbox id="chkPeopleDirectors">${OptionDirectors}</paper-checkbox>
+
+                                <paper-checkbox id="chkPeopleGuestStars">${OptionGuestStars}</paper-checkbox>
+
+                                <paper-checkbox id="chkPeopleProducers">${OptionProducers}</paper-checkbox>
+
+                                <paper-checkbox id="chkPeopleWriters">${OptionWriters}</paper-checkbox>
+
+                                <paper-checkbox id="chkPeopleOthers">${OptionOthers}</paper-checkbox>
+                            </div>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${HeaderDownloadPeopleMetadataForHelp}</div>
+                        </li>
+                    </ul>
+                </emby-collapsible>
+
+                <emby-collapsible title="${HeaderTV}">
+                    <br />
+                    <div>
+                        <label for="txtSeasonZeroName">${LabelSeasonZeroDisplayName}</label>
+                        <paper-input type="text" id="txtSeasonZeroName" required></paper-input>
+                    </div>
+                    <br />
+                </emby-collapsible>
+
+                <emby-collapsible title="Fanart.tv">
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <paper-input type="text" id="txtFanartApiKey" label="${LabelFanartApiKey}"></paper-input>
+                            <div class="fieldDescription">${LabelFanartApiKeyHelp}</div>
+                            <div class="fieldDescription"><a href="https://fanart.tv/2015/01/personal-api-keys" target="_blank">${ButtonLearnMore}</a></div>
+                        </li>
+                        <li style="display:none;">
+                            <input type="checkbox" id="chkEnableFanartUpdates" data-mini="true" />
+                            <label for="chkEnableFanartUpdates">${LabelAutomaticUpdates}</label>
+                            <div class="fieldDescription">${LabelAutomaticUpdatesFanartHelp}</div>
+                        </li>
+                    </ul>
+                </emby-collapsible>
+
+                <br />
+                <br />
+                <button type="submit" data-role="none" class="clearButton">
+                    <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+                </button>
 
             </form>
 

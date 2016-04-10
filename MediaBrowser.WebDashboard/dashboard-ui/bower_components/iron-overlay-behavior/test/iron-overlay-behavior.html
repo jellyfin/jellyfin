@@ -25,6 +25,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <link rel="import" href="test-overlay.html">
     <link rel="import" href="test-overlay2.html">
     <link rel="import" href="test-buttons.html">
+    <link rel="import" href="test-menu-button.html">
 
     <style is="custom-style">
       iron-overlay-backdrop {
@@ -113,14 +114,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </template>
     </test-fixture>
 
+    <test-fixture id="composed">
+      <template>
+        <test-menu-button>
+          Composed overlay
+          <button>Button</button>
+        </test-menu-button>
+      </template>
+    </test-fixture>
+
     <test-buttons id="buttons"></test-buttons>
     <input id="focusInput" placeholder="focus input">
 
     <script>
+
+      HTMLImports.whenReady(function() {
+        // Enable document-wide tap recognizer.
+        Polymer.Gestures.add(document, 'tap', null);
+      });
+
       function runAfterOpen(overlay, callback) {
-        overlay.addEventListener('iron-overlay-opened', function() {
-          Polymer.Base.async(callback, 1);
-        });
+        overlay.addEventListener('iron-overlay-opened', callback);
         overlay.open();
       }
 
@@ -158,10 +172,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           overlay.opened = true;
         });
 
-        test('closed overlay does not refit on iron-resize', function() {
+        test('open() refits overlay only once', function(done) {
+          var spy = sinon.spy(overlay, 'refit');
+          runAfterOpen(overlay, function() {
+            assert.equal(spy.callCount, 1, 'overlay did refit only once');
+            done();
+          });
+        });
+
+        test('open overlay refits on iron-resize', function(done) {
+          runAfterOpen(overlay, function() {
+            var spy = sinon.spy(overlay, 'refit');
+            overlay.fire('iron-resize');
+            Polymer.dom.flush();
+            requestAnimationFrame(function() {
+              assert.isTrue(spy.called, 'overlay did refit');
+              done();
+            });
+          });
+        });
+
+        test('closed overlay does not refit on iron-resize', function(done) {
           var spy = sinon.spy(overlay, 'refit');
           overlay.fire('iron-resize');
-          assert.isFalse(spy.called, 'overlay should not refit');
+          Polymer.dom.flush();
+          requestAnimationFrame(function() {
+            assert.isFalse(spy.called, 'overlay should not refit');
+            done();
+          });
         });
 
         test('open() triggers iron-resize', function(done) {
@@ -196,13 +234,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           assert.equal(callCount, 0, 'iron-resize should not be called');
         });
 
-        test('open overlay triggers iron-resize when its content changes', function() {
+        test('open overlay triggers iron-resize when its content changes', function(done) {
           runAfterOpen(overlay, function() {
             var spy = sinon.stub();
             overlay.addEventListener('iron-resize', spy);
             Polymer.dom(overlay).appendChild(document.createElement('div'));
             Polymer.dom.flush();
             assert.equal(spy.callCount, 1, 'iron-resize should be called once');
+            done();
           });
         });
 
@@ -229,6 +268,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               done();
             }, 10);
           });
+        });
+
+        test('open overlay on mousedown does not close it', function(done) {
+          var btn = document.createElement('button');
+          btn.addEventListener('mousedown', overlay.open.bind(overlay));
+          document.body.appendChild(btn);
+          // It triggers mousedown, mouseup, and click.
+          MockInteractions.tap(btn);
+          document.body.removeChild(btn);
+
+          assert.isTrue(overlay.opened, 'overlay opened');
+          overlay.async(function() {
+            assert.isTrue(overlay.opened, 'overlay is still open');
+            done();
+          }, 10);
         });
 
         test('clicking outside fires iron-overlay-canceled', function(done) {
@@ -385,18 +439,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             done();
           });
         });
-
-        test('open overlay refits on iron-resize', function(done) {
-          var spy = sinon.spy(overlay, 'refit');
-          // At this point, overlay is still opening.
-          overlay.fire('iron-resize');
-          assert.isFalse(spy.called, 'overlay did not refit while animating');
-          overlay.addEventListener('iron-overlay-opened', function() {
-            overlay.fire('iron-resize');
-            assert.isTrue(spy.called, 'overlay did refit');
-            done();
-          });
-        });
       });
 
       suite('focus handling', function() {
@@ -493,17 +535,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           overlay.withBackdrop = true;
           var focusableNodes = overlay._focusableNodes;
           runAfterOpen(overlay, function() {
-            // Go to last element.
-            MockInteractions.focus(focusableNodes[focusableNodes.length-1]);
-            // Simulate TAB & focus out of overlay.
-            MockInteractions.pressAndReleaseKeyOn(document, 9);
-            MockInteractions.focus(document.body);
-            assert.equal(focusableNodes[0], document.activeElement, 'focus wrapped to first focusable');
-            // Simulate Shift+TAB & focus out of overlay.
-            MockInteractions.pressAndReleaseKeyOn(document, 9, ['shift']);
-            MockInteractions.focus(document.body);
-            assert.equal(focusableNodes[focusableNodes.length-1], document.activeElement, 'focus wrapped to last focusable');
-            done();
+            Polymer.Base.async(function() {
+              // Go to last element.
+              MockInteractions.focus(focusableNodes[focusableNodes.length-1]);
+              // Simulate TAB & focus out of overlay.
+              MockInteractions.pressAndReleaseKeyOn(document, 9);
+              MockInteractions.focus(document.body);
+
+              assert.equal(focusableNodes[0], document.activeElement, 'focus wrapped to first focusable');
+              // Simulate Shift+TAB & focus out of overlay.
+              MockInteractions.pressAndReleaseKeyOn(document, 9, ['shift']);
+              MockInteractions.focus(document.body);
+              assert.equal(focusableNodes[focusableNodes.length-1], document.activeElement, 'focus wrapped to last focusable');
+              done();
+            }, 1);
           });
         });
 
@@ -511,17 +556,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           overlayWithTabIndex.withBackdrop = true;
           var focusableNodes = overlayWithTabIndex._focusableNodes;
           runAfterOpen(overlayWithTabIndex, function() {
-            // Go to last element.
-            MockInteractions.focus(focusableNodes[focusableNodes.length-1]);
-            // Simulate TAB & focus out of overlay.
-            MockInteractions.pressAndReleaseKeyOn(document, 9);
-            MockInteractions.focus(document.body);
-            assert.equal(focusableNodes[0], document.activeElement, 'focus wrapped to first focusable');
-            // Simulate Shift+TAB & focus out of overlay.
-            MockInteractions.pressAndReleaseKeyOn(document, 9, ['shift']);
-            MockInteractions.focus(document.body);
-            assert.equal(focusableNodes[focusableNodes.length-1], document.activeElement, 'focus wrapped to last focusable');
-            done();
+            Polymer.Base.async(function() {
+              // Go to last element.
+              MockInteractions.focus(focusableNodes[focusableNodes.length-1]);
+              // Simulate TAB & focus out of overlay.
+              MockInteractions.pressAndReleaseKeyOn(document, 9);
+              MockInteractions.focus(document.body);
+              assert.equal(focusableNodes[0], document.activeElement, 'focus wrapped to first focusable');
+              // Simulate Shift+TAB & focus out of overlay.
+              MockInteractions.pressAndReleaseKeyOn(document, 9, ['shift']);
+              MockInteractions.focus(document.body);
+              assert.equal(focusableNodes[focusableNodes.length-1], document.activeElement, 'focus wrapped to last focusable');
+              done();
+            }, 1);
           });
         });
 
@@ -879,7 +926,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           Polymer.Base.async(function() {
             assert.lengthOf(document.querySelectorAll('iron-overlay-backdrop'), 0, 'backdrop element removed from the DOM');
             done();
-          }, 1);
+          }, 100);
         });
 
         test('newest overlay appear on top', function(done) {
@@ -925,6 +972,90 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       });
 
+      suite('overlay in composed tree', function() {
+        test('click on overlay content does not close it', function(done) {
+          var composed = fixture('composed');
+          // Opens overlay.
+          MockInteractions.tap(composed.$.trigger);
+          composed.$.dropdown.addEventListener('iron-overlay-opened', function() {
+            // Tap on button inside overlay.
+            MockInteractions.tap(Polymer.dom(composed).querySelector('button'));
+            Polymer.Base.async(function(){
+              assert.isTrue(composed.$.dropdown.opened, 'overlay still opened');
+              done();
+            }, 1);
+          });
+        });
+
+      });
+
+      suite('always-on-top', function() {
+        var overlay1, overlay2;
+
+        setup(function() {
+          var f = fixture('multiple');
+          overlay1 = f[0];
+          overlay2 = f[1];
+          overlay1.alwaysOnTop = true;
+        });
+
+        test('stays on top', function(done) {
+          runAfterOpen(overlay1, function() {
+            runAfterOpen(overlay2, function() {
+              var zIndex1 = parseInt(window.getComputedStyle(overlay1).zIndex, 10);
+              var zIndex2 = parseInt(window.getComputedStyle(overlay2).zIndex, 10);
+              assert.isAbove(zIndex1, zIndex2, 'overlay1 on top');
+              assert.equal(Polymer.IronOverlayManager.currentOverlay(), overlay1, 'currentOverlay ok');
+              done();
+            });
+          });
+        });
+
+        test('stays on top also if another overlay is with-backdrop', function(done) {
+          overlay2.withBackdrop = true;
+          runAfterOpen(overlay1, function() {
+            runAfterOpen(overlay2, function() {
+              var zIndex1 = parseInt(window.getComputedStyle(overlay1).zIndex, 10);
+              var zIndex2 = parseInt(window.getComputedStyle(overlay2).zIndex, 10);
+              assert.isAbove(zIndex1, zIndex2, 'overlay1 on top');
+              assert.equal(Polymer.IronOverlayManager.currentOverlay(), overlay1, 'currentOverlay ok');
+              done();
+            });
+          });
+        });
+
+        test('last overlay with always-on-top wins', function(done) {
+          overlay2.alwaysOnTop = true;
+          runAfterOpen(overlay1, function() {
+            runAfterOpen(overlay2, function() {
+              var zIndex1 = parseInt(window.getComputedStyle(overlay1).zIndex, 10);
+              var zIndex2 = parseInt(window.getComputedStyle(overlay2).zIndex, 10);
+              assert.isAbove(zIndex2, zIndex1, 'overlay2 on top');
+              assert.equal(Polymer.IronOverlayManager.currentOverlay(), overlay2, 'currentOverlay ok');
+              done();
+            });
+          });
+        });
+
+      });
+
+      suite('animations', function() {
+
+        test('overlay animations correctly triggered', function(done) {
+          var overlay = fixture('basic');
+          overlay.animated = true;
+          overlay.open();
+          overlay.addEventListener('simple-overlay-open-animation-start', function() {
+            // Since animated overlay will transition center + 300px to center,
+            // we should not find the element at the center when the open animation starts.
+            var centerElement = document.elementFromPoint(window.innerWidth/2, window.innerHeight/2);
+            assert.notEqual(centerElement, overlay, 'overlay should not be centered already');
+            done();
+          });
+        });
+
+      });
+
       suite('a11y', function() {
 
         test('overlay has aria-hidden=true when opened', function() {
@@ -936,7 +1067,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           assert.equal(overlay.getAttribute('aria-hidden'), 'true', 'overlay has aria-hidden="true"');
         });
 
-      })
+      });
     </script>
 
   </body>

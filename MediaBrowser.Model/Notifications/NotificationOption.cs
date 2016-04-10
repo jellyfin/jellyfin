@@ -1,5 +1,3 @@
-using MediaBrowser.Model.Configuration;
-
 namespace MediaBrowser.Model.Notifications
 {
     public class NotificationOption

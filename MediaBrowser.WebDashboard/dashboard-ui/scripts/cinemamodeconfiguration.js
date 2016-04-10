@@ -101,6 +101,14 @@
 
         $('.cinemaModeConfigurationForm').off('submit', onSubmit).on('submit', onSubmit);
 
+        if (!AppInfo.enableSupporterMembership) {
+            page.querySelector('.lnkSupporterLearnMore').href = '#';
+            page.querySelector('.lnkSupporterLearnMore').addEventListener('click', function (e) {
+                e.preventDefault();
+                return false;
+            });
+        }
+
     }).on('pageshow', "#cinemaModeConfigurationPage", function () {
 
         Dashboard.showLoadingMsg();
@@ -112,12 +120,6 @@
             loadPage(page, config);
 
         });
-
-        if (AppInfo.enableSupporterMembership) {
-            $('.lnkSupporterLearnMore', page).show();
-        } else {
-            $('.lnkSupporterLearnMore', page).hide();
-        }
     });
 
 });

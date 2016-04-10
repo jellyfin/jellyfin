@@ -38,11 +38,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      */
     this._backdropElement = null;
 
-    // Enable document-wide tap recognizer.
-    Polymer.Gestures.add(document, 'tap', null);
-    // We should be using only 'tap', but this would be a breaking change.
-    var tapEvent = ('ontouchstart' in window) ? 'tap' : 'click';
-    document.addEventListener(tapEvent, this._onCaptureClick.bind(this), true);
+    // Listen to mousedown or touchstart to be sure to be the first to capture
+    // clicks outside the overlay.
+    var clickEvent = ('ontouchstart' in window) ? 'touchstart' : 'mousedown';
+    document.addEventListener(clickEvent, this._onCaptureClick.bind(this), true);
     document.addEventListener('focus', this._onCaptureFocus.bind(this), true);
     document.addEventListener('keydown', this._onCaptureKeyDown.bind(this), true);
   };
@@ -85,8 +84,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     _bringOverlayAtIndexToFront: function(i) {
       var overlay = this._overlays[i];
       var lastI = this._overlays.length - 1;
+      // Ensure always-on-top overlay stays on top.
+      if (!overlay.alwaysOnTop && this._overlays[lastI].alwaysOnTop) {
+        lastI--;
+      }
       // If already the top element, return.
-      if (!overlay || i === lastI) {
+      if (!overlay || i >= lastI) {
         return;
       }
       // Update z-index to be on top.
@@ -119,6 +122,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     /**
      * Tracks overlays for z-index and focus management.
+     * Ensures the last added overlay with always-on-top remains on top.
      * @param {Element} overlay
      */
     addOverlay: function(overlay) {
@@ -127,12 +131,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this._bringOverlayAtIndexToFront(i);
         return;
       }
-      var minimumZ = Math.max(this.currentOverlayZ(), this._minimumZ);
-      this._overlays.push(overlay);
-      var newZ = this.currentOverlayZ();
+      var insertionIndex = this._overlays.length;
+      var currentOverlay = this._overlays[insertionIndex - 1];
+      var minimumZ = Math.max(this._getZ(currentOverlay), this._minimumZ);
+      var newZ = this._getZ(overlay);
+
+      // Ensure always-on-top overlay stays on top.
+      if (currentOverlay && currentOverlay.alwaysOnTop && !overlay.alwaysOnTop) {
+        // This bumps the z-index of +2.
+        this._applyOverlayZ(currentOverlay, minimumZ);
+        insertionIndex--;
+        // Update minimumZ to match previous overlay's z-index.
+        var previousOverlay = this._overlays[insertionIndex - 1];
+        minimumZ = Math.max(this._getZ(previousOverlay), this._minimumZ);
+      }
+
+      // Update z-index and insert overlay.
       if (newZ <= minimumZ) {
         this._applyOverlayZ(overlay, minimumZ);
       }
+      this._overlays.splice(insertionIndex, 0, overlay);
+
+      // Get focused node.
       var element = this.deepActiveElement;
       overlay.restoreFocusNode = this._overlayParent(element) ? null : element;
     },
@@ -146,7 +166,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return;
       }
       this._overlays.splice(i, 1);
-      this._setZ(overlay, '');
 
       var node = overlay.restoreFocusOnClose ? overlay.restoreFocusNode : null;
       overlay.restoreFocusNode = null;
@@ -246,7 +265,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     _getZ: function(overlay) {
       var z = this._minimumZ;
       if (overlay) {
-        var z1 = Number(window.getComputedStyle(overlay).zIndex);
+        var z1 = Number(overlay.style.zIndex || window.getComputedStyle(overlay).zIndex);
         // Check if is a number
         // Number.isNaN not supported in IE 10+
         if (z1 === z1) {
@@ -293,15 +312,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     /**
+     * Returns the deepest overlay in the path.
+     * @param {Array<Element>=} path
+     * @return {Element|undefined}
+     * @private
+     */
+    _overlayInPath: function(path) {
+      path = path || [];
+      for (var i = 0; i < path.length; i++) {
+        if (path[i]._manager === this) {
+          return path[i];
+        }
+      }
+    },
+
+    /**
      * Ensures the click event is delegated to the right overlay.
      * @param {!Event} event
      * @private
      */
     _onCaptureClick: function(event) {
       var overlay = /** @type {?} */ (this.currentOverlay());
-      // Check if clicked outside of any overlay.
-      var target = /** @type {Element} */ (Polymer.dom(event).rootTarget);
-      if (overlay && this._overlayParent(target) !== overlay) {
+      // Check if clicked outside of top overlay.
+      if (overlay && this._overlayInPath(Polymer.dom(event).path) !== overlay) {
         overlay._onCaptureClick(event);
       }
     },

@@ -80,8 +80,6 @@
     <Compile Include="FilterService.cs" />
     <Compile Include="IHasDtoOptions.cs" />
     <Compile Include="Library\ChapterService.cs" />
-    <Compile Include="Playback\Dash\ManifestBuilder.cs" />
-    <Compile Include="Playback\Dash\MpegDashService.cs" />
     <Compile Include="Playback\MediaInfoService.cs" />
     <Compile Include="Playback\TranscodingThrottler.cs" />
     <Compile Include="PlaylistService.cs" />

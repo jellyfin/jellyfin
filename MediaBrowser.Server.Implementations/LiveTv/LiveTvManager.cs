@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
@@ -14,7 +13,6 @@ using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Sorting;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
@@ -514,6 +512,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 // We can't trust that we'll be able to direct stream it through emby server,  no matter what the provider says
                 mediaSource.SupportsDirectStream = true;
+                mediaSource.SupportsTranscoding = true;
             }
         }
 
@@ -1001,7 +1000,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var channelUserdata = _userDataManager.GetUserData(userId, channel.GetUserDataKey());
 
-            if ((channelUserdata.Likes ?? false))
+            if (channelUserdata.Likes ?? false)
             {
                 score += 2;
             }
@@ -1032,7 +1031,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 {
                     var genreUserdata = _userDataManager.GetUserData(userId, genre.GetUserDataKey());
 
-                    if ((genreUserdata.Likes ?? false))
+                    if (genreUserdata.Likes ?? false)
                     {
                         score++;
                     }
@@ -1311,7 +1310,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             const int maxPrograms = 24000;
 
-            var days = Math.Round(((double)maxPrograms) / programsPerDay);
+            var days = Math.Round((double)maxPrograms / programsPerDay);
 
             return Math.Max(3, Math.Min(days, MaxGuideDays));
         }
@@ -1415,13 +1414,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             if (query.IsInProgress.HasValue)
             {
                 var val = query.IsInProgress.Value;
-                recordings = recordings.Where(i => (i.Status == RecordingStatus.InProgress) == val);
+                recordings = recordings.Where(i => i.Status == RecordingStatus.InProgress == val);
             }
 
             if (query.Status.HasValue)
             {
                 var val = query.Status.Value;
-                recordings = recordings.Where(i => (i.Status == val));
+                recordings = recordings.Where(i => i.Status == val);
             }
 
             if (!string.IsNullOrEmpty(query.SeriesTimerId))
@@ -2451,7 +2450,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public List<NameValuePair> GetSatIniMappings()
         {
-            var names = GetType().Assembly.GetManifestResourceNames().Where(i => i.IndexOf("SatIp.ini.satellite", StringComparison.OrdinalIgnoreCase) != -1).ToList();
+            var names = GetType().Assembly.GetManifestResourceNames().Where(i => i.IndexOf("SatIp.ini", StringComparison.OrdinalIgnoreCase) != -1).ToList();
 
             return names.Select(GetSatIniMappings).Where(i => i != null).DistinctBy(i => i.Value.Split('|')[0]).ToList();
         }
@@ -2473,13 +2472,21 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                         return null;
                     }
 
+                    var srch = "SatIp.ini.";
+                    var filename = Path.GetFileName(resource);
+
                     return new NameValuePair
                     {
                         Name = satType1 + " " + satType2,
-                        Value = satType2 + "|" + Path.GetFileName(resource)
+                        Value = satType2 + "|" + filename.Substring(filename.IndexOf(srch) + srch.Length)
                     };
                 }
             }
+        }
+
+        public Task<List<ChannelInfo>> GetSatChannelScanResult(TunerHostInfo info, CancellationToken cancellationToken)
+        {
+            return new TunerHosts.SatIp.ChannelScan(_logger).Scan(info, cancellationToken);
         }
     }
 }

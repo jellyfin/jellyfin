@@ -79,7 +79,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private IDbCommand _updateInheritedRatingCommand;
 
-        private const int LatestSchemaVersion = 55;
+        private const int LatestSchemaVersion = 58;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -223,6 +223,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "TrailerTypes", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "CriticRating", "Float");
             _connection.AddColumn(Logger, "TypedBaseItems", "CriticRatingSummary", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "DateModifiedDuringLastRefresh", "DATETIME");
 
             PrepareStatements();
 
@@ -355,7 +356,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "Studios",
             "Tags",
             "SourceType",
-            "TrailerTypes"
+            "TrailerTypes",
+            "DateModifiedDuringLastRefresh"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -459,7 +461,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "SourceType",
                 "TrailerTypes",
                 "CriticRating",
-                "CriticRatingSummary"
+                "CriticRatingSummary",
+                "DateModifiedDuringLastRefresh"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -752,7 +755,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                     _saveItemCommand.GetParameter(index++).Value = item.CriticRating;
                     _saveItemCommand.GetParameter(index++).Value = item.CriticRatingSummary;
-                    
+
+                    if (!item.DateModifiedDuringLastRefresh.HasValue || item.DateModifiedDuringLastRefresh.Value == default(DateTime))
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = item.DateModifiedDuringLastRefresh.Value;
+                    }
+
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();
@@ -1123,6 +1135,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     trailer.TrailerTypes = reader.GetString(50).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => (TrailerType)Enum.Parse(typeof(TrailerType), i, true)).ToList();
                 }
+            }
+
+            if (!reader.IsDBNull(51))
+            {
+                item.DateModifiedDuringLastRefresh = reader.GetDateTime(51).ToUniversalTime();
             }
 
             return item;
@@ -2755,7 +2772,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveStreamCommand.GetParameter(index++).Value = stream.BitDepth;
                     _saveStreamCommand.GetParameter(index++).Value = stream.IsAnamorphic;
                     _saveStreamCommand.GetParameter(index++).Value = stream.RefFrames;
-                    _saveStreamCommand.GetParameter(index++).Value = stream.IsCabac;
+                    _saveStreamCommand.GetParameter(index++).Value = null;
 
                     _saveStreamCommand.GetParameter(index++).Value = stream.CodecTag;
                     _saveStreamCommand.GetParameter(index++).Value = stream.Comment;
@@ -2907,10 +2924,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 item.RefFrames = reader.GetInt32(24);
             }
 
-            if (!reader.IsDBNull(25))
-            {
-                item.IsCabac = reader.GetBoolean(25);
-            }
+            // cabac no longer used
 
             if (!reader.IsDBNull(26))
             {

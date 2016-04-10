@@ -981,10 +981,17 @@
                                     break;
                                 case 'download':
                                     {
-                                        var downloadHref = ApiClient.getUrl("Items/" + itemId + "/Download", {
-                                            api_key: ApiClient.accessToken()
+                                        require(['fileDownloader'], function (fileDownloader) {
+
+                                            var downloadHref = ApiClient.getUrl("Items/" + itemId + "/Download", {
+                                                api_key: ApiClient.accessToken()
+                                            });
+
+                                            fileDownloader([{
+                                                url: downloadHref,
+                                                itemId: itemId
+                                            }]);
                                         });
-                                        window.location.href = downloadHref;
 
                                         break;
                                     }
@@ -2893,7 +2900,7 @@
 
                     var html = '';
 
-                    html += '<div style="margin:0;padding:1.25em 1.25em 1.5em;">';
+                    html += '<div style="margin:0;padding:1.25em 1.5em 1.5em;">';
 
                     html += '<h2 style="margin:0 0 .5em;">';
                     html += Globalize.translate('HeaderSortBy');

@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Providers;
 using ServiceStack;
 using System.Threading;
 using CommonIO;
-using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Api
 {

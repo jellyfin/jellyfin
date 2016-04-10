@@ -457,6 +457,12 @@ define([], function () {
         return result;
     }
 
+    function sendText(text) {
+        var elem = document.activeElement;
+
+        elem.value = text;
+    }
+
     return {
         autoFocus: autoFocus,
         focus: focus,
@@ -473,6 +479,7 @@ define([], function () {
         },
         moveDown: function (sourceElement) {
             nav(sourceElement, 3);
-        }
+        },
+        sendText: sendText
     };
 });

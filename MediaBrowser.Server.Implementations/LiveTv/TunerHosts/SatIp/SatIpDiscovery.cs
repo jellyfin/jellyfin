@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
@@ -18,6 +15,7 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Extensions;
+using System.Xml.Linq;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 {
@@ -98,10 +96,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 
                 if (existing == null)
                 {
-                    if (string.IsNullOrWhiteSpace(info.M3UUrl))
-                    {
-                        return;
-                    }
+                    //if (string.IsNullOrWhiteSpace(info.M3UUrl))
+                    //{
+                    //    return;
+                    //}
 
                     await _liveTvManager.SaveTunerHost(new TunerHostInfo
                     {
@@ -174,56 +172,84 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 
         public async Task<SatIpTunerHostInfo> GetInfo(string url, CancellationToken cancellationToken)
         {
-            var result = new SatIpTunerHostInfo
+            Uri locationUri = new Uri(url);
+            string devicetype = "";
+            string friendlyname = "";
+            string uniquedevicename = "";
+            string manufacturer = "";
+            string manufacturerurl = "";
+            string modelname = "";
+            string modeldescription = "";
+            string modelnumber = "";
+            string modelurl = "";
+            string serialnumber = "";
+            string presentationurl = "";
+            string capabilities = "";
+            string m3u = "";
+            var document = XDocument.Load(locationUri.AbsoluteUri);
+            var xnm = new XmlNamespaceManager(new NameTable());
+            XNamespace n1 = "urn:ses-com:satip";
+            XNamespace n0 = "urn:schemas-upnp-org:device-1-0";
+            xnm.AddNamespace("root", n0.NamespaceName);
+            xnm.AddNamespace("satip:", n1.NamespaceName);
+            if (document.Root != null)
             {
-                Url = url,
-                IsEnabled = true,
-                Type = SatIpHost.DeviceType,
-                Tuners = 1,
-                TunersAvailable = 1
-            };
-
-            using (var stream = await _httpClient.Get(url, cancellationToken).ConfigureAwait(false))
-            {
-                using (var streamReader = new StreamReader(stream))
+                var deviceElement = document.Root.Element(n0 + "device");
+                if (deviceElement != null)
                 {
-                    // Use XmlReader for best performance
-                    using (var reader = XmlReader.Create(streamReader))
-                    {
-                        reader.MoveToContent();
-
-                        // Loop through each element
-                        while (reader.Read())
-                        {
-                            if (reader.NodeType == XmlNodeType.Element)
-                            {
-                                switch (reader.Name)
-                                {
-                                    case "device":
-                                        using (var subtree = reader.ReadSubtree())
-                                        {
-                                            FillFromDeviceNode(result, subtree);
-                                        }
-                                        break;
-                                    default:
-                                        reader.Skip();
-                                        break;
-                                }
-                            }
-                        }
-                    }
+                    var devicetypeElement = deviceElement.Element(n0 + "deviceType");
+                    if (devicetypeElement != null)
+                        devicetype = devicetypeElement.Value;
+                    var friendlynameElement = deviceElement.Element(n0 + "friendlyName");
+                    if (friendlynameElement != null)
+                        friendlyname = friendlynameElement.Value;
+                    var manufactureElement = deviceElement.Element(n0 + "manufacturer");
+                    if (manufactureElement != null)
+                        manufacturer = manufactureElement.Value;
+                    var manufactureurlElement = deviceElement.Element(n0 + "manufacturerURL");
+                    if (manufactureurlElement != null)
+                        manufacturerurl = manufactureurlElement.Value;
+                    var modeldescriptionElement = deviceElement.Element(n0 + "modelDescription");
+                    if (modeldescriptionElement != null)
+                        modeldescription = modeldescriptionElement.Value;
+                    var modelnameElement = deviceElement.Element(n0 + "modelName");
+                    if (modelnameElement != null)
+                        modelname = modelnameElement.Value;
+                    var modelnumberElement = deviceElement.Element(n0 + "modelNumber");
+                    if (modelnumberElement != null)
+                        modelnumber = modelnumberElement.Value;
+                    var modelurlElement = deviceElement.Element(n0 + "modelURL");
+                    if (modelurlElement != null)
+                        modelurl = modelurlElement.Value;
+                    var serialnumberElement = deviceElement.Element(n0 + "serialNumber");
+                    if (serialnumberElement != null)
+                        serialnumber = serialnumberElement.Value;
+                    var uniquedevicenameElement = deviceElement.Element(n0 + "UDN");
+                    if (uniquedevicenameElement != null) uniquedevicename = uniquedevicenameElement.Value;
+                    var presentationUrlElement = deviceElement.Element(n0 + "presentationURL");
+                    if (presentationUrlElement != null) presentationurl = presentationUrlElement.Value;
+                    var capabilitiesElement = deviceElement.Element(n1 + "X_SATIPCAP");
+                    if (capabilitiesElement != null) capabilities = capabilitiesElement.Value;
+                    var m3uElement = deviceElement.Element(n1 + "X_SATIPM3U");
+                    if (m3uElement != null) m3u = m3uElement.Value;
                 }
             }
 
-            if (string.IsNullOrWhiteSpace(result.DeviceId))
+            var result = new SatIpTunerHostInfo
+            {
+                Url = url,
+                Id = uniquedevicename,
+                IsEnabled = true,
+                Type = SatIpHost.DeviceType,
+                Tuners = 1,
+                TunersAvailable = 1,
+                M3UUrl = m3u
+            };
+
+            result.FriendlyName = friendlyname;
+            if (string.IsNullOrWhiteSpace(result.Id))
             {
                 throw new NotImplementedException();
-            }
-
-            // Device hasn't implemented an m3u list
-            if (string.IsNullOrWhiteSpace(result.M3UUrl))
-            {
-                result.IsEnabled = false;
             }
 
             else if (!result.M3UUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
@@ -235,66 +261,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
             _logger.Debug("SAT device result: {0}", _json.SerializeToString(result));
 
             return result;
-        }
-
-        private void FillFromDeviceNode(SatIpTunerHostInfo info, XmlReader reader)
-        {
-            reader.MoveToContent();
-
-            while (reader.Read())
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.LocalName)
-                    {
-                        case "UDN":
-                            {
-                                info.DeviceId = reader.ReadElementContentAsString();
-                                break;
-                            }
-
-                        case "friendlyName":
-                            {
-                                info.FriendlyName = reader.ReadElementContentAsString();
-                                break;
-                            }
-
-                        case "satip:X_SATIPCAP":
-                        case "X_SATIPCAP":
-                            {
-                                // <satip:X_SATIPCAP xmlns:satip="urn:ses-com:satip">DVBS2-2</satip:X_SATIPCAP>
-                                var value = reader.ReadElementContentAsString() ?? string.Empty;
-                                var parts = value.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
-                                if (parts.Length == 2)
-                                {
-                                    int intValue;
-                                    if (int.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out intValue))
-                                    {
-                                        info.TunersAvailable = intValue;
-                                    }
-
-                                    if (int.TryParse(parts[0].Substring(parts[0].Length - 1), NumberStyles.Any, CultureInfo.InvariantCulture, out intValue))
-                                    {
-                                        info.Tuners = intValue;
-                                    }
-                                }
-                                break;
-                            }
-
-                        case "satip:X_SATIPM3U":
-                        case "X_SATIPM3U":
-                            {
-                                // <satip:X_SATIPM3U xmlns:satip="urn:ses-com:satip">/channellist.lua?select=m3u</satip:X_SATIPM3U>
-                                info.M3UUrl = reader.ReadElementContentAsString();
-                                break;
-                            }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-            }
         }
     }
 

@@ -1,0 +1,145 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="../../webcomponentsjs/webcomponents.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../../test-fixture/test-fixture-mocha.js"></script>
+
+    <link rel="import" href="../../polymer/polymer.html">
+    <link rel="import" href="../../promise-polyfill/promise-polyfill.html">
+    <link rel="import" href="../../test-fixture/test-fixture.html">
+    <link rel="import" href="../iron-location.html">
+  </head>
+
+  <body>
+    <script>
+      'use strict';
+
+      function getIframe() {
+        return new Promise(function(resolve, reject) {
+          var iframe = document.createElement('iframe');
+          var result = getMessageMatching(iframe, function(message) {
+            return message.type === 'ready';
+          });
+          iframe.src = './initialization-iframe.html';
+          document.body.appendChild(iframe);
+          iframe.addEventListener('error', reject);
+          result.then(function() {resolve(iframe)}, reject);
+        });
+      }
+
+      function onMessage(iframe, callback) {
+        var f = function(event) {
+          if (event.source === iframe.contentWindow) {
+            callback(event.data);
+          }
+        };
+        window.addEventListener('message', f, false);
+        return function() {
+          window.removeEventListener('message', f);
+        }
+      }
+
+      function getMessageMatching(iframe, predicate) {
+        var revoke = function() {};
+        var result = new Promise(function(resolve, reject) {
+          revoke = onMessage(iframe, function(message) {
+            if (predicate(message)) {
+              resolve(message);
+            }
+          });
+        });
+        result.then(revoke, revoke);
+        return result;
+      }
+
+      function getUrl(iframe) {
+        var result = getMessageMatching(iframe, function(message) {
+          return message.type === 'urlQueryResponse';
+        })
+        var revoke = function() {};
+        var result = new Promise(function(resolve, reject) {
+          revoke = onMessage(iframe, resolve);
+        });
+        result.then(revoke, revoke);
+        iframe.contentWindow.postMessage({type: 'urlQuery'}, '*');
+        return result;
+      }
+
+      function timePasses(ms) {
+        return new Promise(function(resolve) {
+          window.setTimeout(function() {
+            resolve();
+          }, ms);
+        });
+      }
+
+      suite('<iron-location>\'s initialization', function() {
+        var iframe;
+        var error;
+        setup(function() {
+          return getIframe().then(function(i) {
+            iframe = i;
+            function isError(m) {return m.type === 'error'}
+            getMessageMatching(iframe, isError).then(function(m) {
+              error = m.error;
+            });
+          });
+        });
+        teardown(function() {
+          if (iframe) {
+            document.body.removeChild(iframe);
+          }
+          var e = error;
+          iframe = null;
+          error = null;
+          if (e) {
+            throw new Error('Error message from contained iframe: ' + e);
+          }
+        });
+        var cases = [
+          'default-before', 'attached-before', 'ready-before',
+          'default-after', 'attached-after', 'ready-after',
+          'default-below', 'attached-below', 'ready-below',
+          'default-above', 'attached-above', 'ready-above',
+          'default-container', 'attached-container', 'ready-container'
+        ];
+        cases.forEach(function(caseName) {
+          test('the url takes priority in ' + caseName + ' initialization', function() {
+            return getUrl(iframe).then(function(url) {
+              expect(url.search).to.be.eq('');
+              iframe.contentWindow.postMessage({type: 'appendBody', tagName: caseName}, '*');
+              return timePasses(10).then(function() {return getUrl(iframe)});
+            }).then(function(url) {
+              expect(url.search).to.be.eq('');
+            });
+          });
+        });
+        var expectedFailureCases = ['timeout-before', 'timeout-after', 'timeout-below', 'timeout-above', 'timeout-container'];
+        expectedFailureCases.forEach(function(caseName) {
+          test('the url does not take priority in ' + caseName + ' initialization', function() {
+            return getUrl(iframe).then(function(url) {
+              expect(url.search).to.be.eq('');
+              iframe.contentWindow.postMessage({type: 'appendBody', tagName: caseName}, '*');
+              return timePasses(60).then(function() {return getUrl(iframe)});
+            }).then(function(url) {
+              expect(url.search).to.be.eq('?on-timeout');
+            });
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -55,7 +55,8 @@
 
         var context = getContext(item);
 
-        renderHeader(page, item, context);
+        LibraryMenu.setBackButtonVisible(true);
+        LibraryMenu.setMenuButtonVisible(false);
 
         LibraryBrowser.renderName(item, $('.itemName', page), false, context);
         LibraryBrowser.renderParentName(item, $('.parentName', page), context);
@@ -71,7 +72,7 @@
             var hasBackdrop = false;
 
             // For these types, make the backdrop a little smaller so that the items are more quickly accessible
-            if (item.Type == 'MusicArtist' || item.Type == "MusicAlbum" || item.Type == "Playlist" || item.Type == "BoxSet" || item.Type == "Audio" || !layoutManager.mobile) {
+            if (item.Type == 'MusicArtist' || item.Type == "MusicAlbum" || item.Type == "Playlist" || item.Type == "BoxSet" || item.MediaType == "Audio" || !layoutManager.mobile) {
                 $('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
                 require(['backdrop'], function (backdrop) {
                     backdrop.setBackdrops([item]);
@@ -293,7 +294,7 @@
 
     function setPeopleHeader(page, item) {
 
-        if (item.Type == "Audio" || item.Type == "MusicAlbum" || item.MediaType == "Book" || item.MediaType == "Photo") {
+        if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.MediaType == "Book" || item.MediaType == "Photo") {
             $('#peopleHeader', page).html(Globalize.translate('HeaderPeople'));
         } else {
             $('#peopleHeader', page).html(Globalize.translate('HeaderCastAndCrew'));
@@ -304,24 +305,6 @@
     function getContext(item) {
 
         return getParameterByName('context');
-    }
-
-    function renderHeader(page, item, context) {
-
-        $('.itemTabs', page).hide();
-
-        if (context == 'tv') {
-
-            $(page).removeClass('noSecondaryNavPage');
-
-            $('#tvShowsTabs', page).show();
-            LibraryMenu.setMenuButtonVisible(true);
-        }
-        else {
-            $(page).addClass('noSecondaryNavPage');
-            LibraryMenu.setBackButtonVisible(true);
-            LibraryMenu.setMenuButtonVisible(false);
-        }
     }
 
     function renderNextUp(page, item, user) {
@@ -1568,10 +1551,6 @@
 
             if (stream.Type == "Video" && version.Timestamp) {
                 attributes.push(createAttribute(Globalize.translate('MediaInfoTimestamp'), version.Timestamp));
-            }
-
-            if (stream.IsCabac != null) {
-                attributes.push(createAttribute(Globalize.translate('CABAC'), (stream.IsCabac ? 'Yes' : 'No')));
             }
 
             html += attributes.join('<br/>');

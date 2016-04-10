@@ -59,5 +59,9 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>null</c> if [is favorite] contains no value, <c>true</c> if [is favorite]; otherwise, <c>false</c>.</value>
         public bool? IsFavorite { get; set; }
+
+        public bool? IsHD { get; set; }
+        public string AudioCodec { get; set; }
+        public string VideoCodec { get; set; }
     }
 }

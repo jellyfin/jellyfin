@@ -9,13 +9,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-dropdown/iron-dropdown.html">
 <link rel="import" href="../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
 <link rel="import" href="../iron-behaviors/iron-control-state.html">
-<link rel="import" href="../paper-material/paper-material.html">
-<link rel="import" href="../paper-styles/default-theme.html">
+<link rel="import" href="../iron-dropdown/iron-dropdown.html">
 <link rel="import" href="../neon-animation/animations/fade-in-animation.html">
 <link rel="import" href="../neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="../paper-styles/default-theme.html">
+<link rel="import" href="../paper-styles/shadow.html">
 <link rel="import" href="paper-menu-button-animations.html">
 
 <!--
@@ -50,7 +50,7 @@ The following custom properties and mixins are also available for styling:
 
 Custom property | Description | Default
 ----------------|-------------|----------
-`--paper-menu-button-dropdown-background` | Background color of the paper-menu-button dropdown | `#fff`
+`--paper-menu-button-dropdown-background` | Background color of the paper-menu-button dropdown | `--primary-background-color`
 `--paper-menu-button` | Mixin applied to the paper-menu-button | `{}`
 `--paper-menu-button-disabled` | Mixin applied to the paper-menu-button when disabled | `{}`
 `--paper-menu-button-dropdown` | Mixin applied to the paper-menu-button dropdown | `{}`
@@ -61,49 +61,55 @@ Custom property | Description | Default
 -->
 
 <dom-module id="paper-menu-button">
-  <style>
-    :host {
-      display: inline-block;
-      position: relative;
-      padding: 8px;
-      outline: none;
-
-      @apply(--paper-menu-button);
-    }
-
-    :host([disabled]) {
-      cursor: auto;
-      color: var(--disabled-text-color);
-
-      @apply(--paper-menu-button-disabled);
-    }
-
-    :host([vertical-align="top"]) paper-material {
-      margin-bottom: 20px;
-      margin-top: -10px;
-      top: 10px;
-    }
-
-    :host([vertical-align="bottom"]) paper-material {
-      bottom: 10px;
-      margin-bottom: -10px;
-      margin-top: 20px;
-    }
-
-    iron-dropdown {
-      @apply(--paper-menu-button-dropdown);
-    }
-
-    .dropdown-content {
-      border-radius: 2px;
-      background-color: var(--paper-menu-button-dropdown-background, --primary-background-color);
-      @apply(--paper-menu-button-content);
-    }
-  </style>
   <template>
-    <div id="trigger" on-tap="open">
+    <style>
+      :host {
+        display: inline-block;
+        position: relative;
+        padding: 8px;
+        outline: none;
+
+        @apply(--paper-menu-button);
+      }
+
+      :host([disabled]) {
+        cursor: auto;
+        color: var(--disabled-text-color);
+
+        @apply(--paper-menu-button-disabled);
+      }
+
+      iron-dropdown {
+        @apply(--paper-menu-button-dropdown);
+      }
+
+      .dropdown-content {
+        @apply(--shadow-elevation-2dp);
+
+        position: relative;
+        border-radius: 2px;
+        background-color: var(--paper-menu-button-dropdown-background, --primary-background-color);
+
+        @apply(--paper-menu-button-content);
+      }
+
+      :host([vertical-align="top"]) .dropdown-content {
+        margin-bottom: 20px;
+        margin-top: -10px;
+        top: 10px;
+      }
+
+      :host([vertical-align="bottom"]) .dropdown-content {
+        bottom: 10px;
+        margin-bottom: -10px;
+        margin-top: 20px;
+      }
+    </style>
+
+    <div id="trigger" on-tap="toggle">
       <content select=".dropdown-trigger"></content>
     </div>
+
     <iron-dropdown
       id="dropdown"
       opened="{{opened}}"
@@ -114,264 +120,287 @@ Custom property | Description | Default
       open-animation-config="[[openAnimationConfig]]"
       close-animation-config="[[closeAnimationConfig]]"
       no-animations="[[noAnimations]]"
-      focus-target="[[_dropdownContent]]">
-      <paper-material class="dropdown-content">
+      focus-target="[[_dropdownContent]]"
+      on-iron-overlay-canceled="__onIronOverlayCanceled">
+      <div class="dropdown-content">
         <content id="content" select=".dropdown-content"></content>
-      </paper-material>
+      </div>
     </iron-dropdown>
   </template>
-</dom-module>
-<script>
-  (function() {
-    'use strict';
 
-    var PaperMenuButton = Polymer({
-      is: 'paper-menu-button',
+  <script>
+    (function() {
+      'use strict';
 
-      /**
-       * Fired when the dropdown opens.
-       *
-       * @event paper-dropdown-open
-       */
-
-      /**
-       * Fired when the dropdown closes.
-       *
-       * @event paper-dropdown-close
-       */
-
-      behaviors: [
-        Polymer.IronA11yKeysBehavior,
-        Polymer.IronControlState
-      ],
-
-      properties: {
+      var PaperMenuButton = Polymer({
+        is: 'paper-menu-button',
 
         /**
-         * True if the content is currently displayed.
+         * Fired when the dropdown opens.
+         *
+         * @event paper-dropdown-open
          */
-        opened: {
-          type: Boolean,
-          value: false,
-          notify: true,
-          observer: '_openedChanged'
+
+        /**
+         * Fired when the dropdown closes.
+         *
+         * @event paper-dropdown-close
+         */
+
+        behaviors: [
+          Polymer.IronA11yKeysBehavior,
+          Polymer.IronControlState
+        ],
+
+        properties: {
+          /**
+           * True if the content is currently displayed.
+           */
+          opened: {
+            type: Boolean,
+            value: false,
+            notify: true,
+            observer: '_openedChanged'
+          },
+
+          /**
+           * The orientation against which to align the menu dropdown
+           * horizontally relative to the dropdown trigger.
+           */
+          horizontalAlign: {
+            type: String,
+            value: 'left',
+            reflectToAttribute: true
+          },
+
+          /**
+           * The orientation against which to align the menu dropdown
+           * vertically relative to the dropdown trigger.
+           */
+          verticalAlign: {
+            type: String,
+            value: 'top',
+            reflectToAttribute: true
+          },
+
+          /**
+           * A pixel value that will be added to the position calculated for the
+           * given `horizontalAlign`. Use a negative value to offset to the
+           * left, or a positive value to offset to the right.
+           */
+          horizontalOffset: {
+            type: Number,
+            value: 0,
+            notify: true
+          },
+
+          /**
+           * A pixel value that will be added to the position calculated for the
+           * given `verticalAlign`. Use a negative value to offset towards the
+           * top, or a positive value to offset towards the bottom.
+           */
+          verticalOffset: {
+            type: Number,
+            value: 0,
+            notify: true
+          },
+
+          /**
+           * Set to true to disable animations when opening and closing the
+           * dropdown.
+           */
+          noAnimations: {
+            type: Boolean,
+            value: false
+          },
+
+          /**
+           * Set to true to disable automatically closing the dropdown after
+           * a selection has been made.
+           */
+          ignoreSelect: {
+            type: Boolean,
+            value: false
+          },
+
+          /**
+           * An animation config. If provided, this will be used to animate the
+           * opening of the dropdown.
+           */
+          openAnimationConfig: {
+            type: Object,
+            value: function() {
+              return [{
+                name: 'fade-in-animation',
+                timing: {
+                  delay: 100,
+                  duration: 200
+                }
+              }, {
+                name: 'paper-menu-grow-width-animation',
+                timing: {
+                  delay: 100,
+                  duration: 150,
+                  easing: PaperMenuButton.ANIMATION_CUBIC_BEZIER
+                }
+              }, {
+                name: 'paper-menu-grow-height-animation',
+                timing: {
+                  delay: 100,
+                  duration: 275,
+                  easing: PaperMenuButton.ANIMATION_CUBIC_BEZIER
+                }
+              }];
+            }
+          },
+
+          /**
+           * An animation config. If provided, this will be used to animate the
+           * closing of the dropdown.
+           */
+          closeAnimationConfig: {
+            type: Object,
+            value: function() {
+              return [{
+                name: 'fade-out-animation',
+                timing: {
+                  duration: 150
+                }
+              }, {
+                name: 'paper-menu-shrink-width-animation',
+                timing: {
+                  delay: 100,
+                  duration: 50,
+                  easing: PaperMenuButton.ANIMATION_CUBIC_BEZIER
+                }
+              }, {
+                name: 'paper-menu-shrink-height-animation',
+                timing: {
+                  duration: 200,
+                  easing: 'ease-in'
+                }
+              }];
+            }
+          },
+
+          /**
+           * This is the element intended to be bound as the focus target
+           * for the `iron-dropdown` contained by `paper-menu-button`.
+           */
+          _dropdownContent: {
+            type: Object
+          }
+        },
+
+        hostAttributes: {
+          role: 'group',
+          'aria-haspopup': 'true'
+        },
+
+        listeners: {
+          'iron-select': '_onIronSelect'
         },
 
         /**
-         * The orientation against which to align the menu dropdown
-         * horizontally relative to the dropdown trigger.
+         * The content element that is contained by the menu button, if any.
          */
-        horizontalAlign: {
-          type: String,
-          value: 'left',
-          reflectToAttribute: true
+        get contentElement() {
+          return Polymer.dom(this.$.content).getDistributedNodes()[0];
         },
 
         /**
-         * The orientation against which to align the menu dropdown
-         * vertically relative to the dropdown trigger.
+         * Toggles the drowpdown content between opened and closed.
          */
-        verticalAlign: {
-          type: String,
-          value: 'top',
-          reflectToAttribute: true
+        toggle: function() {
+          if (this.opened) {
+            this.close();
+          } else {
+            this.open();
+          }
         },
 
         /**
-         * A pixel value that will be added to the position calculated for the
-         * given `horizontalAlign`. Use a negative value to offset to the
-         * left, or a positive value to offset to the right.
+         * Make the dropdown content appear as an overlay positioned relative
+         * to the dropdown trigger.
          */
-        horizontalOffset: {
-          type: Number,
-          value: 0,
-          notify: true
+        open: function() {
+          if (this.disabled) {
+            return;
+          }
+
+          this.$.dropdown.open();
         },
 
         /**
-         * A pixel value that will be added to the position calculated for the
-         * given `verticalAlign`. Use a negative value to offset towards the
-         * top, or a positive value to offset towards the bottom.
+         * Hide the dropdown content.
          */
-        verticalOffset: {
-          type: Number,
-          value: 0,
-          notify: true
+        close: function() {
+          this.$.dropdown.close();
         },
 
         /**
-         * Set to true to disable animations when opening and closing the
+         * When an `iron-select` event is received, the dropdown should
+         * automatically close on the assumption that a value has been chosen.
+         *
+         * @param {CustomEvent} event A CustomEvent instance with type
+         * set to `"iron-select"`.
+         */
+        _onIronSelect: function(event) {
+          if (!this.ignoreSelect) {
+            this.close();
+          }
+        },
+
+        /**
+         * When the dropdown opens, the `paper-menu-button` fires `paper-open`.
+         * When the dropdown closes, the `paper-menu-button` fires `paper-close`.
+         *
+         * @param {boolean} opened True if the dropdown is opened, otherwise false.
+         * @param {boolean} oldOpened The previous value of `opened`.
+         */
+        _openedChanged: function(opened, oldOpened) {
+          if (opened) {
+            // TODO(cdata): Update this when we can measure changes in distributed
+            // children in an idiomatic way.
+            // We poke this property in case the element has changed. This will
+            // cause the focus target for the `iron-dropdown` to be updated as
+            // necessary:
+            this._dropdownContent = this.contentElement;
+            this.fire('paper-dropdown-open');
+          } else if (oldOpened != null) {
+            this.fire('paper-dropdown-close');
+          }
+        },
+
+        /**
+         * If the dropdown is open when disabled becomes true, close the
          * dropdown.
+         *
+         * @param {boolean} disabled True if disabled, otherwise false.
          */
-        noAnimations: {
-          type: Boolean,
-          value: false
-        },
-
-        /**
-         * Set to true to disable automatically closing the dropdown after
-         * a selection has been made.
-         */
-        ignoreSelect: {
-          type: Boolean,
-          value: false
-        },
-
-        /**
-         * An animation config. If provided, this will be used to animate the
-         * opening of the dropdown.
-         */
-        openAnimationConfig: {
-          type: Object,
-          value: function() {
-            return [{
-              name: 'fade-in-animation',
-              timing: {
-                delay: 100,
-                duration: 200
-              }
-            }, {
-              name: 'paper-menu-grow-width-animation',
-              timing: {
-                delay: 100,
-                duration: 150,
-                easing: PaperMenuButton.ANIMATION_CUBIC_BEZIER
-              }
-            }, {
-              name: 'paper-menu-grow-height-animation',
-              timing: {
-                delay: 100,
-                duration: 275,
-                easing: PaperMenuButton.ANIMATION_CUBIC_BEZIER
-              }
-            }];
+        _disabledChanged: function(disabled) {
+          Polymer.IronControlState._disabledChanged.apply(this, arguments);
+          if (disabled && this.opened) {
+            this.close();
           }
         },
 
-        /**
-         * An animation config. If provided, this will be used to animate the
-         * closing of the dropdown.
-         */
-        closeAnimationConfig: {
-          type: Object,
-          value: function() {
-            return [{
-              name: 'fade-out-animation',
-              timing: {
-                duration: 150
-              }
-            }, {
-              name: 'paper-menu-shrink-width-animation',
-              timing: {
-                delay: 100,
-                duration: 50,
-                easing: PaperMenuButton.ANIMATION_CUBIC_BEZIER
-              }
-            }, {
-              name: 'paper-menu-shrink-height-animation',
-              timing: {
-                duration: 200,
-                easing: 'ease-in'
-              }
-            }];
+        __onIronOverlayCanceled: function(event) {
+          var uiEvent = event.detail;
+          var target = Polymer.dom(uiEvent).rootTarget;
+          var trigger = this.$.trigger;
+          var path = Polymer.dom(uiEvent).path;
+
+          if (path.indexOf(trigger) > -1) {
+            event.preventDefault();
           }
-        },
-
-        /**
-         * This is the element intended to be bound as the focus target
-         * for the `iron-dropdown` contained by `paper-menu-button`.
-         */
-        _dropdownContent: {
-          type: Object
         }
-      },
+      });
 
-      hostAttributes: {
-        role: 'group',
-        'aria-haspopup': 'true'
-      },
+      PaperMenuButton.ANIMATION_CUBIC_BEZIER = 'cubic-bezier(.3,.95,.5,1)';
+      PaperMenuButton.MAX_ANIMATION_TIME_MS = 400;
 
-      listeners: {
-        'iron-select': '_onIronSelect'
-      },
-
-      /**
-       * The content element that is contained by the menu button, if any.
-       */
-      get contentElement() {
-        return Polymer.dom(this.$.content).getDistributedNodes()[0];
-      },
-
-      /**
-       * Make the dropdown content appear as an overlay positioned relative
-       * to the dropdown trigger.
-       */
-      open: function() {
-        if (this.disabled) {
-          return;
-        }
-
-        this.$.dropdown.open();
-      },
-
-      /**
-       * Hide the dropdown content.
-       */
-      close: function() {
-        this.$.dropdown.close();
-      },
-
-      /**
-       * When an `iron-select` event is received, the dropdown should
-       * automatically close on the assumption that a value has been chosen.
-       *
-       * @param {CustomEvent} event A CustomEvent instance with type
-       * set to `"iron-select"`.
-       */
-      _onIronSelect: function(event) {
-        if (!this.ignoreSelect) {
-          this.close();
-        }
-      },
-
-      /**
-       * When the dropdown opens, the `paper-menu-button` fires `paper-open`.
-       * When the dropdown closes, the `paper-menu-button` fires `paper-close`.
-       *
-       * @param {boolean} opened True if the dropdown is opened, otherwise false.
-       * @param {boolean} oldOpened The previous value of `opened`.
-       */
-      _openedChanged: function(opened, oldOpened) {
-        if (opened) {
-          // TODO(cdata): Update this when we can measure changes in distributed
-          // children in an idiomatic way.
-          // We poke this property in case the element has changed. This will
-          // cause the focus target for the `iron-dropdown` to be updated as
-          // necessary:
-          this._dropdownContent = this.contentElement;
-          this.fire('paper-dropdown-open');
-        } else if (oldOpened != null) {
-          this.fire('paper-dropdown-close');
-        }
-      },
-
-      /**
-       * If the dropdown is open when disabled becomes true, close the
-       * dropdown.
-       *
-       * @param {boolean} disabled True if disabled, otherwise false.
-       */
-      _disabledChanged: function(disabled) {
-        Polymer.IronControlState._disabledChanged.apply(this, arguments);
-        if (disabled && this.opened) {
-          this.close();
-        }
-      }
-    });
-
-    PaperMenuButton.ANIMATION_CUBIC_BEZIER = 'cubic-bezier(.3,.95,.5,1)';
-    PaperMenuButton.MAX_ANIMATION_TIME_MS = 400;
-
-    Polymer.PaperMenuButton = PaperMenuButton;
-  })();
-</script>
+      Polymer.PaperMenuButton = PaperMenuButton;
+    })();
+  </script>
+</dom-module>

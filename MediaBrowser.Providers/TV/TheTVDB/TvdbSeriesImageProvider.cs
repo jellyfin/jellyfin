@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -333,7 +332,7 @@ namespace MediaBrowser.Providers.TV
             });
         }
 
-        public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
             if (!TvdbSeriesProvider.Current.GetTvDbOptions().EnableAutomaticUpdates)
             {
@@ -347,7 +346,7 @@ namespace MediaBrowser.Providers.TV
 
                 var fileInfo = _fileSystem.GetFileInfo(imagesXmlPath);
 
-                return fileInfo.Exists && _fileSystem.GetLastWriteTimeUtc(fileInfo) > (status.DateLastMetadataRefresh ?? DateTime.MinValue);
+                return fileInfo.Exists && _fileSystem.GetLastWriteTimeUtc(fileInfo) > item.DateLastRefreshed;
             }
 
             return false;

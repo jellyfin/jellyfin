@@ -147,7 +147,7 @@ namespace MediaBrowser.Common.IO
             BytesProcessed += read;
 
             double percent = BytesProcessed;
-            percent /= (ReadLength ?? BaseStream.Length);
+            percent /= ReadLength ?? BaseStream.Length;
             percent *= 100;
 
             ProgressAction(percent);

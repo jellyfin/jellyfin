@@ -12,11 +12,14 @@ namespace MediaBrowser.Model.Providers
         public string OpenSubtitlesPasswordHash { get; set; }
         public bool IsOpenSubtitleVipAccount { get; set; }
 
+        public bool RequirePerfectMatch { get; set; }
+
         public SubtitleOptions()
         {
             DownloadLanguages = new string[] { };
 
             SkipIfAudioTrackMatches = true;
+            RequirePerfectMatch = true;
         }
     }
 }

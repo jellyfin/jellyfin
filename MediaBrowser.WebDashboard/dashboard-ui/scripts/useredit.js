@@ -29,26 +29,26 @@
 
         $('#chkIsAdmin', page).checked(user.Policy.IsAdministrator);
 
-        $('#chkDisabled', page).checked(user.Policy.IsDisabled).checkboxradio("refresh");
-        $('#chkIsHidden', page).checked(user.Policy.IsHidden).checkboxradio("refresh");
-        $('#chkRemoteControlSharedDevices', page).checked(user.Policy.EnableSharedDeviceControl).checkboxradio("refresh");
-        $('#chkEnableRemoteControlOtherUsers', page).checked(user.Policy.EnableRemoteControlOfOtherUsers).checkboxradio("refresh");
+        $('#chkDisabled', page).checked(user.Policy.IsDisabled);
+        $('#chkIsHidden', page).checked(user.Policy.IsHidden);
+        $('#chkRemoteControlSharedDevices', page).checked(user.Policy.EnableSharedDeviceControl);
+        $('#chkEnableRemoteControlOtherUsers', page).checked(user.Policy.EnableRemoteControlOfOtherUsers);
 
-        $('#chkEnableDownloading', page).checked(user.Policy.EnableContentDownloading).checkboxradio("refresh");
+        $('#chkEnableDownloading', page).checked(user.Policy.EnableContentDownloading);
 
-        $('#chkManageLiveTv', page).checked(user.Policy.EnableLiveTvManagement).checkboxradio("refresh");
-        $('#chkEnableLiveTvAccess', page).checked(user.Policy.EnableLiveTvAccess).checkboxradio("refresh");
-        $('#chkEnableContentDeletion', page).checked(user.Policy.EnableContentDeletion).checkboxradio("refresh");
+        $('#chkManageLiveTv', page).checked(user.Policy.EnableLiveTvManagement);
+        $('#chkEnableLiveTvAccess', page).checked(user.Policy.EnableLiveTvAccess);
+        $('#chkEnableContentDeletion', page).checked(user.Policy.EnableContentDeletion);
 
-        $('#chkDisableUserPreferences', page).checked((!user.Policy.EnableUserPreferenceAccess)).checkboxradio("refresh");
+        $('#chkDisableUserPreferences', page).checked((!user.Policy.EnableUserPreferenceAccess));
 
-        $('#chkEnableMediaPlayback', page).checked(user.Policy.EnableMediaPlayback).checkboxradio("refresh");
-        $('#chkEnableAudioPlaybackTranscoding', page).checked(user.Policy.EnableAudioPlaybackTranscoding).checkboxradio("refresh");
-        $('#chkEnableVideoPlaybackTranscoding', page).checked(user.Policy.EnableVideoPlaybackTranscoding).checkboxradio("refresh");
+        $('#chkEnableMediaPlayback', page).checked(user.Policy.EnableMediaPlayback);
+        $('#chkEnableAudioPlaybackTranscoding', page).checked(user.Policy.EnableAudioPlaybackTranscoding);
+        $('#chkEnableVideoPlaybackTranscoding', page).checked(user.Policy.EnableVideoPlaybackTranscoding);
 
-        $('#chkEnableSync', page).checked(user.Policy.EnableSync).checkboxradio("refresh");
-        $('#chkEnableSyncTranscoding', page).checked(user.Policy.EnableSyncTranscoding).checkboxradio("refresh");
-        $('#chkEnableSharing', page).checked(user.Policy.EnablePublicSharing).checkboxradio("refresh");
+        $('#chkEnableSync', page).checked(user.Policy.EnableSync);
+        $('#chkEnableSyncTranscoding', page).checked(user.Policy.EnableSyncTranscoding);
+        $('#chkEnableSharing', page).checked(user.Policy.EnablePublicSharing);
 
         Dashboard.hideLoadingMsg();
     }

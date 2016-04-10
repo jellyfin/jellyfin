@@ -160,8 +160,9 @@ define(['browser'], function (browser) {
         return 100000000;
     }
 
-    return function () {
+    return function (options) {
 
+        options = options || {};
         var bitrateSetting = getMaxBitrate();
 
         var videoTestElement = document.createElement('video');
@@ -288,7 +289,7 @@ define(['browser'], function (browser) {
         });
 
         // Can't use mkv on mobile because we have to use the native player controls and they won't be able to seek it
-        if (canPlayMkv && !browser.mobile) {
+        if (canPlayMkv && options.supportsCustomSeeking) {
             profile.TranscodingProfiles.push({
                 Container: 'mkv',
                 Type: 'Video',
@@ -317,7 +318,9 @@ define(['browser'], function (browser) {
                 AudioCodec: hlsVideoAudioCodecs.join(','),
                 VideoCodec: 'h264',
                 Context: 'Streaming',
-                Protocol: 'hls'
+                Protocol: 'hls',
+                // Can't use this when autoplay is not supported
+                ForceLiveStream: options.supportsCustomSeeking ? true : false
             });
         }
 
@@ -468,5 +471,5 @@ define(['browser'], function (browser) {
         });
 
         return profile;
-    }();
+    };
 });

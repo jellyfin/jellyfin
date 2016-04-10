@@ -943,9 +943,12 @@ class StreamController extends EventHandler {
       case ErrorDetails.LEVEL_LOAD_TIMEOUT:
       case ErrorDetails.KEY_LOAD_ERROR:
       case ErrorDetails.KEY_LOAD_TIMEOUT:
-        // if fatal error, stop processing, otherwise move to IDLE to retry loading
-        logger.warn(`mediaController: ${data.details} while loading frag,switch to ${data.fatal ? 'ERROR' : 'IDLE'} state ...`);
-        this.state = data.fatal ? State.ERROR : State.IDLE;
+        //  when in ERROR state, don't switch back to IDLE state in case a non-fatal error is received
+        if(this.state !== State.ERROR) {
+            // if fatal error, stop processing, otherwise move to IDLE to retry loading
+            this.state = data.fatal ? State.ERROR : State.IDLE;
+            logger.warn(`mediaController: ${data.details} while loading frag,switch to ${this.state} state ...`);
+        }
         break;
       case ErrorDetails.BUFFER_FULL_ERROR:
         // trigger a smooth level switch to empty buffers
@@ -1007,12 +1010,16 @@ _checkBuffer() {
           if(playheadMoving || !expectedPlaying) {
             // playhead moving or media not playing
             jumpThreshold = 0;
+            this.seekHoleNudgeDuration = 0;
           } else {
             // playhead not moving AND media expected to play
             if(!this.stalled) {
+              this.seekHoleNudgeDuration = 0;
               logger.log(`playback seems stuck @${currentTime}`);
               this.hls.trigger(Event.ERROR, {type: ErrorTypes.MEDIA_ERROR, details: ErrorDetails.BUFFER_STALLED_ERROR, fatal: false});
               this.stalled = true;
+            } else {
+              this.seekHoleNudgeDuration += this.config.seekHoleNudgeDuration;
             }
           }
           // if we are below threshold, try to jump if next buffer range is close
@@ -1025,8 +1032,8 @@ _checkBuffer() {
                !media.seeking) {
               // next buffer is close ! adjust currentTime to nextBufferStart
               // this will ensure effective video decoding
-              logger.log(`adjust currentTime from ${media.currentTime} to next buffered @ ${nextBufferStart}`);
-              media.currentTime = nextBufferStart;
+              logger.log(`adjust currentTime from ${media.currentTime} to next buffered @ ${nextBufferStart} + nudge ${this.seekHoleNudgeDuration}`);
+              media.currentTime = nextBufferStart + this.seekHoleNudgeDuration;
               this.hls.trigger(Event.ERROR, {type: ErrorTypes.MEDIA_ERROR, details: ErrorDetails.BUFFER_SEEK_OVER_HOLE, fatal: false});
             }
           }

@@ -7,7 +7,6 @@ using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.Implementations.Security;
 using MediaBrowser.Common.Implementations.Serialization;
 using MediaBrowser.Common.Implementations.Updates;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;
@@ -251,7 +250,7 @@ namespace MediaBrowser.Common.Implementations
             progress.Report(15);
 
             var innerProgress = new ActionableProgress<double>();
-            innerProgress.RegisterAction(p => progress.Report((.8 * p) + 15));
+            innerProgress.RegisterAction(p => progress.Report(.8 * p + 15));
 
             await RegisterResources(innerProgress).ConfigureAwait(false);
 
@@ -661,7 +660,7 @@ namespace MediaBrowser.Common.Implementations
         {
             try
             {
-                return Assembly.Load(File.ReadAllBytes((file)));
+                return Assembly.Load(File.ReadAllBytes(file));
             }
             catch (Exception ex)
             {

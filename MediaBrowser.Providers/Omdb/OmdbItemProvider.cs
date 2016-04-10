@@ -1,12 +1,10 @@
 ﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
@@ -62,9 +60,8 @@ namespace MediaBrowser.Providers.Omdb
             return GetSearchResultsInternal(searchInfo, type, true, cancellationToken);
         }
 
-        private async Task<IEnumerable<RemoteSearchResult>> GetSearchResultsInternal(ItemLookupInfo searchInfo, string type, bool enableMultipleResults, CancellationToken cancellationToken)
+        private async Task<IEnumerable<RemoteSearchResult>> GetSearchResultsInternal(ItemLookupInfo searchInfo, string type, bool isSearch, CancellationToken cancellationToken)
         {
-            bool isSearch = false;
             var episodeSearchInfo = searchInfo as EpisodeInfo;
 
             var list = new List<RemoteSearchResult>();
@@ -97,10 +94,9 @@ namespace MediaBrowser.Providers.Omdb
                 }
 
                 // &s means search and returns a list of results as opposed to t
-                if (enableMultipleResults)
+                if (isSearch)
                 {
                     url += "&s=" + WebUtility.UrlEncode(name);
-                    isSearch = true;
                 }
                 else
                 {

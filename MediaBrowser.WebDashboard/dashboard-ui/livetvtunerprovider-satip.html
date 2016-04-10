@@ -3,12 +3,6 @@
     <div data-role="content">
         <div class="content-primary">
 
-            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                <a href="livetvstatus.html" data-role="button" class="ui-btn-active">${TabTuners}</a>
-                <a href="livetvsettings.html" data-role="button">${TabSettings}</a>
-                <a href="appservices.html?context=livetv" data-role="button">${TabExternalServices}</a>
-            </div>
-
             <div class="readOnlyContent" style="margin-top: 2em;">
 
                 <h1>DVB</h1>
@@ -19,7 +13,7 @@
                             <paper-input class="txtDevicePath" label="${LabelTunerIpAddress}" required="required"></paper-input>
                         </div>
                         <div>
-                            <paper-input class="txtM3uUrl" label="${LabelOptionalM3uUrl}" required="required"></paper-input>
+                            <paper-input class="txtM3uUrl" label="${LabelOptionalM3uUrl}"></paper-input>
                             <div class="fieldDescription">${LabelOptionalM3uUrlHelp}</div>
                         </div>
                         <br />

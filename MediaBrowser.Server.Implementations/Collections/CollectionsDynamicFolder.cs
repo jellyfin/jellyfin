@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Entities;
 using System.IO;
 using CommonIO;
-using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.Collections
 {

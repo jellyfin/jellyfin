@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -91,11 +90,11 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
-        public override BaseItem DisplayParent
+        public override Guid? DisplayParentId
         {
             get
             {
-                return Season ?? GetParent();
+                return SeasonId;
             }
         }
 
@@ -176,7 +175,7 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <returns>System.String.</returns>
         protected override string CreateSortName()
         {
-            return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("000-") : "")
+            return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("000 - ") : "")
                     + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ") : "") + Name;
         }
 

@@ -143,7 +143,7 @@ class AbrController extends EventHandler {
 
   get nextAutoLevel() {
     var lastbw = this.lastbw, hls = this.hls,adjustedbw, i, maxAutoLevel;
-    if (this._autoLevelCapping === -1) {
+    if (this._autoLevelCapping === -1 && hls.levels && hls.levels.length) {
       maxAutoLevel = hls.levels.length - 1;
     } else {
       maxAutoLevel = this._autoLevelCapping;

@@ -3,12 +3,6 @@
     <div data-role="content">
         <div class="content-primary">
 
-            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                <a href="livetvstatus.html" data-role="button" class="ui-btn-active">${TabTuners}</a>
-                <a href="livetvsettings.html" data-role="button">${TabSettings}</a>
-                <a href="appservices.html?context=livetv" data-role="button">${TabExternalServices}</a>
-            </div>
-
             <div class="readOnlyContent" style="margin-top: 2em;">
 
                 <h1>HD Homerun</h1>
@@ -28,6 +22,13 @@
                             <paper-checkbox class="chkFavorite">${LabelImportOnlyFavoriteChannels}</paper-checkbox>
                             <div class="fieldDescription paperCheckboxFieldDescription">${ImportFavoriteChannelsHelp}</div>
                         </div>
+                        <div>
+                            <br />
+                            <paper-checkbox class="chkTranscode">${LabelAllowHWTranscoding}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${AllowHWTranscodingHelp}</div>
+                        </div>
+                        <br />
+                        <p>${DrmChannelsNotImported}</p>
                         <br />
                         <div>
                             <button type="submit" data-role="none" class="clearButton">

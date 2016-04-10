@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -9,7 +8,6 @@ using System.Security;
 using System.Text;
 using System.Threading;
 using CommonIO;
-using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {
