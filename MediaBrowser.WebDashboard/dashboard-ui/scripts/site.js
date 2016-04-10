@@ -2099,10 +2099,7 @@ var AppInfo = {};
         if (browser.mobile) {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/nativeprompt"], returnFirstDependency);
             define("confirm", [embyWebComponentsBowerPath + "/confirm/nativeconfirm"], returnFirstDependency);
-
-            // We have some alerts with markup
-            //define("alert", [embyWebComponentsBowerPath + "/alert/nativealert"], returnFirstDependency);
-            define("alert", [embyWebComponentsBowerPath + "/alert/alert"], returnFirstDependency);
+            define("alert", [embyWebComponentsBowerPath + "/alert/nativealert"], returnFirstDependency);
         } else {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/prompt"], returnFirstDependency);
             define("confirm", [embyWebComponentsBowerPath + "/confirm/confirm"], returnFirstDependency);

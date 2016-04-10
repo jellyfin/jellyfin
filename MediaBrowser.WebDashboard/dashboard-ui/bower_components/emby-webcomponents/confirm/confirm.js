@@ -66,8 +66,10 @@ define(['layoutManager', 'dialogText'], function (layoutManager, dialogText) {
             html += '<h2>' + options.title + '</h2>';
         }
 
-        if (options.text) {
-            html += '<div>' + options.text + '</div>';
+        var text = options.html || options.text;
+
+        if (text) {
+            html += '<div>' + text + '</div>';
         }
 
         html += '<div class="buttons">';

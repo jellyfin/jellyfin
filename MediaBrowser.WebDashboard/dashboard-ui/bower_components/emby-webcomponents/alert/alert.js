@@ -44,7 +44,9 @@ define(['dialogHelper', 'layoutManager', 'dialogText', 'html!./../prompt/icons.h
             html += '</h2>';
         }
 
-        if (options.text) {
+        var text = options.html || options.text;
+
+        if (text) {
 
             if (options.title) {
                 html += '<p style="margin-top:2em;">';
@@ -52,7 +54,7 @@ define(['dialogHelper', 'layoutManager', 'dialogText', 'html!./../prompt/icons.h
                 html += '<p>';
             }
 
-            html += options.text;
+            html += text;
             html += '</p>';
         }
 
