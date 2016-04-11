@@ -5,13 +5,17 @@ define([], function () {
         var element = view.querySelector('*[autofocus]');
         if (element) {
             focus(element);
+            return element;
         } else if (defaultToFirst !== false) {
             element = getFocusableElements(view)[0];
 
             if (element) {
                 focus(element);
+                return element;
             }
         }
+
+        return null;
     }
 
     function focus(element) {
