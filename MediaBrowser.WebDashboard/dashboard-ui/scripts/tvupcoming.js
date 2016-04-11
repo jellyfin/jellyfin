@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['scrollStyles'], function () {
 
     function loadUpcoming(context, params) {
 

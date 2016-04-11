@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'jQuery'], function (layoutManager, $) {
+﻿define(['layoutManager', 'jQuery', 'scrollStyles'], function (layoutManager, $) {
 
     var currentItem;
 

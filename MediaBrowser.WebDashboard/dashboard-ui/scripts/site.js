@@ -1977,6 +1977,7 @@ var AppInfo = {};
         define("robotoFont", ['css!' + embyWebComponentsBowerPath + '/fonts/roboto/style']);
         define("opensansFont", ['css!' + embyWebComponentsBowerPath + '/fonts/opensans/style']);
         define("montserratFont", ['css!' + embyWebComponentsBowerPath + '/fonts/montserrat/style']);
+        define("scrollStyles", ['css!' + embyWebComponentsBowerPath + '/scrollstyles']);
 
         define("viewcontainer", ['components/viewcontainer-lite'], returnFirstDependency);
         define('queryString', [bowerPath + '/query-string/index'], function () {
@@ -2615,7 +2616,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/livetvtimer.html',
-            dependencies: [],
+            dependencies: ['scrollStyles'],
             autoFocus: false
         });
 

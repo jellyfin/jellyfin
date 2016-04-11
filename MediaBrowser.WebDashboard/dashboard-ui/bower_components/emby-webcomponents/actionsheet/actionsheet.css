@@ -1,6 +1,31 @@
 .actionSheet {
     display: flex;
     justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: 2px;
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12);
+
+    /*opacity: 1;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+    z-index: 999;
+     transform-origin: 100% 0;
+            display: block;
+    background: #fff;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 2px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12);
+    will-change: transform;
+    transition: transform .3s cubic-bezier(.4,0,.2,1),opacity .2s cubic-bezier(.4,0,.2,1);
+    transition: transform .3s cubic-bezier(.4,0,.2,1),opacity .2s cubic-bezier(.4,0,.2,1),-webkit-transform .3s cubic-bezier(.4,0,.2,1);
+    z-index: -1;*/
 }
 
     .actionSheet.centered .actionSheetContent {
@@ -10,7 +35,7 @@
 
 .actionSheetContent {
     margin: 0 !important;
-    padding: 1em 1em !important;
+    padding: .4em 0 !important;
     flex-direction: column;
     display: flex;
     justify-content: center;
@@ -18,7 +43,7 @@
 }
 
 .actionSheetMenuItem {
-    padding: .5em .5em;
+    padding: .7em 1.5em;
     margin: 0;
     text-transform: none;
     text-align: inherit;
@@ -47,8 +72,14 @@
 
 h1.actionSheetTitle {
     margin: .5em 0 1em !important;
+    padding: 0 1em;
 }
 
 h2.actionSheetTitle {
     margin: .25em 0 .55em !important;
+    padding: 0 1em;
+}
+
+.actionSheet.extraSpacing {
+    font-size: 108%;
 }

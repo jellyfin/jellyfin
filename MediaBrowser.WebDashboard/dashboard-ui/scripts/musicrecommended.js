@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'scrollStyles'], function ($) {
 
     function itemsPerRow() {
 

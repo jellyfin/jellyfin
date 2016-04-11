@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'scrollStyles'], function (libraryBrowser) {
 
     var searchHintTimeout;
 

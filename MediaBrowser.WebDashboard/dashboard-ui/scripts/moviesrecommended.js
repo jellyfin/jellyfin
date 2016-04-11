@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'libraryBrowser'], function ($, libraryBrowser) {
+﻿define(['jQuery', 'libraryBrowser', 'scrollStyles'], function ($, libraryBrowser) {
 
     function getView() {
 
