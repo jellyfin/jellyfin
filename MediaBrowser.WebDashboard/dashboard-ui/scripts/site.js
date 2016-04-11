@@ -3045,6 +3045,7 @@ var AppInfo = {};
 
         deps.push('imageLoader');
         deps.push('router');
+        deps.push('layoutManager');
 
         if (!(AppInfo.isNativeApp && browserInfo.android)) {
             document.documentElement.classList.add('minimumSizeTabs');
@@ -3088,12 +3089,14 @@ var AppInfo = {};
 
         deps.push('css!css/card.css');
 
-        require(deps, function (imageLoader, pageObjects) {
+        require(deps, function (imageLoader, pageObjects, layoutManager) {
 
             console.log('Loaded dependencies in onAppReady');
 
             imageLoader.enableFade = browserInfo.animate && !browserInfo.mobile;
             window.ImageLoader = imageLoader;
+
+            layoutManager.init();
 
             //$.mobile.initializePage();
             window.Emby = {};
