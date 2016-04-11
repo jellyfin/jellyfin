@@ -686,7 +686,7 @@ namespace MediaBrowser.Controller.Entities
             get
             {
                 var id = DisplayParentId;
-                if (!id.HasValue)
+                if (!id.HasValue || id.Value == Guid.Empty)
                 {
                     return null;
                 }

@@ -785,7 +785,7 @@ namespace MediaBrowser.Controller.Entities
                     return false;
                 }
 
-                if (query.IncludeItemTypes.Contains("Movie", StringComparer.OrdinalIgnoreCase))
+                if (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains("Movie", StringComparer.OrdinalIgnoreCase))
                 {
                     param = true;
                 }
