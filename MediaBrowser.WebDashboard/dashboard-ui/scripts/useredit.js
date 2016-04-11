@@ -123,21 +123,26 @@
         }
     } function showEmbyConnectErrorMessage(username) {
 
-        var msg;
+        var html;
+        var text;
 
         if (username) {
 
-            msg = Globalize.translate('ErrorAddingEmbyConnectAccount1', '<a href="https://emby.media/connect" target="_blank">https://emby.media/connect</a>');
-            msg += '<br/><br/>' + Globalize.translate('ErrorAddingEmbyConnectAccount2', 'apps@emby.media');
+            html = Globalize.translate('ErrorAddingEmbyConnectAccount1', '<a href="https://emby.media/connect" target="_blank">https://emby.media/connect</a>');
+            html += '<br/><br/>' + Globalize.translate('ErrorAddingEmbyConnectAccount2', 'apps@emby.media');
+
+            text = Globalize.translate('ErrorAddingEmbyConnectAccount1', 'https://emby.media/connect');
+            text += '\n\n' + Globalize.translate('ErrorAddingEmbyConnectAccount2', 'apps@emby.media');
 
         } else {
-            msg = Globalize.translate('DefaultErrorMessage');
+            html = text = Globalize.translate('DefaultErrorMessage');
         }
 
-        Dashboard.alert({
-
-            message: msg
-
+        require(['alert'], function (alert) {
+            alert({
+                text: text,
+                html: html
+            });
         });
     }
 

@@ -26,9 +26,12 @@
                     break;
                 case MediaBrowser.ConnectionState.ServerUpdateNeeded:
                     {
-                        Dashboard.alert({
-                            message: Globalize.translate('ServerUpdateNeeded', '<a href="https://emby.media">https://emby.media</a>')
-                        });
+                        Dashboard.alert(alert({
+
+                            text: Globalize.translate('core#ServerUpdateNeeded', 'https://emby.media'),
+                            html: Globalize.translate('core#ServerUpdateNeeded', '<a href="https://emby.media">https://emby.media</a>')
+
+                        }));
                     }
                     break;
                 default:

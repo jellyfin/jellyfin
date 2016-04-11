@@ -1,7 +1,4 @@
 {
-    "LabelAllowHWTranscoding": "Erlaube Hardware Transkodierung",
-    "AllowHWTranscodingHelp": "Wenn aktiviert, erlaube dem tuner eine Transkodierung des Streams in Echtzeit vorzunehmen. Dadurch wird die Transkodierung des Emby Servers reduziert.",
-    "OptionRequirePerfectSubtitleMatch": "Lade nur Untertitel die perfekt zu meinen Videos passen",
     "LabelExit": "Beenden",
     "LabelVisitCommunity": "Besuche die Community",
     "LabelGithub": "Github",
@@ -2330,5 +2327,8 @@
     "IHaveEmbyPremiere": "Ich besitze Emby Premiere",
     "IPurchasedThisApp": "Ich habe diese App gekauft",
     "DrmChannelsNotImported": "Verschl\u00fcsselte Kan\u00e4le werden nicht importiert.",
-    "ConfigureDateAdded": "Bestimmen Sie in den Bibliotheks-Einstellungen des Emby Server Dashboards, wie das Feld \"Hinzugef\u00fcgt am\" interpretiert werden soll."
+    "ConfigureDateAdded": "Bestimmen Sie in den Bibliotheks-Einstellungen des Emby Server Dashboards, wie das Feld \"Hinzugef\u00fcgt am\" interpretiert werden soll.",
+    "LabelAllowHWTranscoding": "Erlaube Hardware Transkodierung",
+    "AllowHWTranscodingHelp": "Wenn aktiviert, erlaube dem tuner eine Transkodierung des Streams in Echtzeit vorzunehmen. Dadurch wird die Transkodierung des Emby Servers reduziert.",
+    "OptionRequirePerfectSubtitleMatch": "Lade nur Untertitel die perfekt zu meinen Videos passen"
 }

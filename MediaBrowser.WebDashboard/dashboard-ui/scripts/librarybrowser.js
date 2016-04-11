@@ -1,4 +1,4 @@
-﻿define(['playlistManager', 'appSettings', 'appStorage', 'jQuery'], function (playlistManager, appSettings, appStorage, $) {
+﻿define(['playlistManager', 'appSettings', 'appStorage', 'jQuery', 'scrollStyles'], function (playlistManager, appSettings, appStorage, $) {
 
     var libraryBrowser = (function (window, document, screen) {
 

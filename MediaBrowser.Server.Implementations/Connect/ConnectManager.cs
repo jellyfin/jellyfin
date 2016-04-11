@@ -24,6 +24,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Common.Extensions;
 
 namespace MediaBrowser.Server.Implementations.Connect
 {
@@ -555,9 +556,22 @@ namespace MediaBrowser.Server.Implementations.Connect
             }
             catch (HttpException ex)
             {
-                if (!ex.StatusCode.HasValue ||
-                    ex.StatusCode.Value != HttpStatusCode.NotFound ||
-                    !Validator.EmailIsValid(connectUsername))
+                if (!ex.StatusCode.HasValue)
+                {
+                    throw;
+                }
+
+                // If they entered a username, then whatever the error is just throw it, for example, user not found
+                if (!Validator.EmailIsValid(connectUsername))
+                {
+                    if (ex.StatusCode.Value == HttpStatusCode.NotFound)
+                    {
+                        throw new ResourceNotFoundException();
+                    }
+                    throw;
+                }
+
+                if (ex.StatusCode.Value != HttpStatusCode.NotFound)
                 {
                     throw;
                 }

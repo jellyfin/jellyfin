@@ -1,7 +1,4 @@
 {
-    "LabelAllowHWTranscoding": "Allow hardware transcoding",
-    "AllowHWTranscodingHelp": "If enabled, allow the tuner to transcode streams on the fly. This may help reduce transcoding required by Emby Server.",
-    "OptionRequirePerfectSubtitleMatch": "Only download subtitles that are a perfect match for my video files",
     "LabelExit": "\u062e\u0631\u0648\u062c",
     "LabelVisitCommunity": "\u0632\u064a\u0627\u0631\u0629 \u0627\u0644\u0645\u062c\u062a\u0645\u0639",
     "LabelGithub": "\u062c\u064a\u062a \u0647\u0628",
@@ -2330,5 +2327,8 @@
     "IHaveEmbyPremiere": "I have Emby Premiere",
     "IPurchasedThisApp": "I purchased this app",
     "DrmChannelsNotImported": "Channels with DRM will not be imported.",
-    "ConfigureDateAdded": "Configure how date added is determined in the Emby Server dashboard under Library settings"
+    "ConfigureDateAdded": "Configure how date added is determined in the Emby Server dashboard under Library settings",
+    "LabelAllowHWTranscoding": "Allow hardware transcoding",
+    "AllowHWTranscodingHelp": "If enabled, allow the tuner to transcode streams on the fly. This may help reduce transcoding required by Emby Server.",
+    "OptionRequirePerfectSubtitleMatch": "Only download subtitles that are a perfect match for my video files"
 }

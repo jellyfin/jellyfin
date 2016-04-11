@@ -1977,6 +1977,7 @@ var AppInfo = {};
         define("robotoFont", ['css!' + embyWebComponentsBowerPath + '/fonts/roboto/style']);
         define("opensansFont", ['css!' + embyWebComponentsBowerPath + '/fonts/opensans/style']);
         define("montserratFont", ['css!' + embyWebComponentsBowerPath + '/fonts/montserrat/style']);
+        define("scrollStyles", ['css!' + embyWebComponentsBowerPath + '/scrollstyles']);
 
         define("viewcontainer", ['components/viewcontainer-lite'], returnFirstDependency);
         define('queryString', [bowerPath + '/query-string/index'], function () {
@@ -2099,10 +2100,7 @@ var AppInfo = {};
         if (browser.mobile) {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/nativeprompt"], returnFirstDependency);
             define("confirm", [embyWebComponentsBowerPath + "/confirm/nativeconfirm"], returnFirstDependency);
-
-            // We have some alerts with markup
-            //define("alert", [embyWebComponentsBowerPath + "/alert/nativealert"], returnFirstDependency);
-            define("alert", [embyWebComponentsBowerPath + "/alert/alert"], returnFirstDependency);
+            define("alert", [embyWebComponentsBowerPath + "/alert/nativealert"], returnFirstDependency);
         } else {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/prompt"], returnFirstDependency);
             define("confirm", [embyWebComponentsBowerPath + "/confirm/confirm"], returnFirstDependency);
@@ -2618,7 +2616,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/livetvtimer.html',
-            dependencies: [],
+            dependencies: ['scrollStyles'],
             autoFocus: false
         });
 
@@ -3047,6 +3045,7 @@ var AppInfo = {};
 
         deps.push('imageLoader');
         deps.push('router');
+        deps.push('layoutManager');
 
         if (!(AppInfo.isNativeApp && browserInfo.android)) {
             document.documentElement.classList.add('minimumSizeTabs');
@@ -3090,12 +3089,14 @@ var AppInfo = {};
 
         deps.push('css!css/card.css');
 
-        require(deps, function (imageLoader, pageObjects) {
+        require(deps, function (imageLoader, pageObjects, layoutManager) {
 
             console.log('Loaded dependencies in onAppReady');
 
             imageLoader.enableFade = browserInfo.animate && !browserInfo.mobile;
             window.ImageLoader = imageLoader;
+
+            layoutManager.init();
 
             //$.mobile.initializePage();
             window.Emby = {};
