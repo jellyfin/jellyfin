@@ -92,7 +92,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("searchTerm");
             }
 
-            searchTerm = searchTerm.RemoveDiacritics();
+            searchTerm = searchTerm.Trim().RemoveDiacritics();
 
             var terms = GetWords(searchTerm);
 
