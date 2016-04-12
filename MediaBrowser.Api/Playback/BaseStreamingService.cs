@@ -288,11 +288,9 @@ namespace MediaBrowser.Api.Playback
         {
             if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
             {
-                // It's currently failing on live tv
-                if (state.RunTimeTicks.HasValue)
-                {
+                
                     return "h264_qsv";
-                }
+               
             }
 
             return "libx264";
@@ -440,6 +438,8 @@ namespace MediaBrowser.Api.Playback
                             param += " -level " + state.VideoRequest.Level;
                             break;
                     }
+
+                    return param;
                 }
                 else
                 {
