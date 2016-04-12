@@ -661,18 +661,28 @@
         function fadeInUp(elem) {
             var keyframes = [
               { transform: 'translate3d(0, 100%, 0)', offset: 0 },
-              { transform: 'none', offset: 1 }];
+              { transform: 'translate3d(0, 0, 0)', offset: 1 }];
             var timing = { duration: 300, iterations: 1 };
-            elem.animate(keyframes, timing);
+
+            if (elem.animate) {
+                elem.animate(keyframes, timing);
+            }
         }
 
         function fadeOutDown(elem) {
-            var keyframes = [{ transform: 'none', offset: 0 },
+            var keyframes = [{ transform: 'translate3d(0, 0, 0)', offset: 0 },
               { transform: 'translate3d(0, 100%, 0)', offset: 1 }];
             var timing = { duration: 300, iterations: 1 };
-            elem.animate(keyframes, timing).onfinish = function () {
+
+            var onFinish = function () {
                 elem.classList.add('hide');
             };
+
+            if (elem.animate) {
+                elem.animate(keyframes, timing).onfinish = onFinish;
+            } else {
+                onFinish();
+            }
         }
 
         function ensureVideoPlayerElements() {
