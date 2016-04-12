@@ -509,6 +509,10 @@ namespace MediaBrowser.Model.Dlna
         private int GetAudioBitrate(int? maxTotalBitrate, int? targetAudioChannels, string targetAudioCodec, MediaStream audioStream)
         {
             var defaultBitrate = 128000;
+            if (StringHelper.EqualsIgnoreCase(targetAudioCodec, "ac3"))
+            {
+                defaultBitrate = 192000;
+            }
 
             if (targetAudioChannels.HasValue)
             {
