@@ -1583,6 +1583,7 @@
     "LabelMovie": "\u0424\u0438\u043b\u044c\u043c",
     "LabelMusicVideo": "\u041c\u0443\u0437\u044b\u043a\u0430\u043b\u044b\u049b \u0431\u0435\u0439\u043d\u0435",
     "LabelEpisode": "\u0411\u04e9\u043b\u0456\u043c",
+    "Series": "Series",
     "LabelStopping": "\u0422\u043e\u049b\u0442\u0430\u0442\u044b\u043b\u0443\u0434\u0430",
     "LabelCancelled": "(\u0431\u043e\u043b\u0434\u044b\u0440\u044b\u043b\u043c\u0430\u0434\u044b)",
     "ButtonDownload": "\u0416\u04af\u043a\u0442\u0435\u043f \u0430\u043b\u0443",
@@ -2330,5 +2331,8 @@
     "ConfigureDateAdded": "\u04ae\u0441\u0442\u0435\u043b\u0433\u0435\u043d \u043a\u04af\u043d\u0456 Emby Server \u0411\u0430\u049b\u044b\u043b\u0430\u0443 \u0442\u0430\u049b\u0442\u0430\u0441\u044b\u043d\u0434\u0430\u0493\u044b \u0422\u0430\u0441\u044b\u0493\u044b\u0448\u0445\u0430\u043d\u0430 \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u043b\u0435\u0440\u0456\u043d\u0434\u0435 \u0430\u043d\u044b\u049b\u0442\u0430\u043b\u0430\u0434\u044b",
     "LabelAllowHWTranscoding": "\u0410\u043f\u043f\u0430\u0440\u0430\u0442\u0442\u044b\u049b \u049b\u0430\u0439\u0442\u0430 \u043a\u043e\u0434\u0442\u0430\u0443\u0493\u0430 \u0440\u04b1\u049b\u0441\u0430\u0442 \u0435\u0442\u0443",
     "AllowHWTranscodingHelp": "If enabled, allow the tuner to transcode streams on the fly. This may help reduce transcoding required by Emby Server.",
-    "OptionRequirePerfectSubtitleMatch": "Only download subtitles that are a perfect match for my video files"
+    "OptionRequirePerfectSubtitleMatch": "Only download subtitles that are a perfect match for my video files",
+    "ErrorAddingGuestAccount1": "There was an error adding the Emby Connect account. Has your guest created an Emby account? They can sign up at {0}.",
+    "ErrorAddingGuestAccount2": "Please ensure your guest has completed activation by following the instructions in the email sent after creating the account. If they did not receive this email then please send an email to {0}, and include your email address as well as theirs.",
+    "GuestUserNotFound": "User not found. Please ensure the name is correct and try again, or try entering their email address."
 }

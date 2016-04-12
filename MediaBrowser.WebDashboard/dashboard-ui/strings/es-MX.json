@@ -1583,6 +1583,7 @@
     "LabelMovie": "Pel\u00edcula",
     "LabelMusicVideo": "Video Musical",
     "LabelEpisode": "Episodio",
+    "Series": "Series",
     "LabelStopping": "Deteniendo",
     "LabelCancelled": "(cancelado)",
     "ButtonDownload": "Descargar",
@@ -2330,5 +2331,8 @@
     "ConfigureDateAdded": "Configure como la fecha de adici\u00f3n es determinada en el Panel de Control del Servidor Emby bajo la configuraci\u00f3n de Librerias",
     "LabelAllowHWTranscoding": "Permitir transcodificacion de hardware",
     "AllowHWTranscodingHelp": "Si se habilita, permite a la sintonizadora transcodificar transmisiones al vuelo. Esto podr\u00eda ayudar a reducir la transcodificacion requer\u00eda por el Servidor Emby.",
-    "OptionRequirePerfectSubtitleMatch": "Solo descargar subtitulos que corresponden perfectamente para mis archivos de video."
+    "OptionRequirePerfectSubtitleMatch": "Solo descargar subtitulos que corresponden perfectamente para mis archivos de video.",
+    "ErrorAddingGuestAccount1": "There was an error adding the Emby Connect account. Has your guest created an Emby account? They can sign up at {0}.",
+    "ErrorAddingGuestAccount2": "Please ensure your guest has completed activation by following the instructions in the email sent after creating the account. If they did not receive this email then please send an email to {0}, and include your email address as well as theirs.",
+    "GuestUserNotFound": "User not found. Please ensure the name is correct and try again, or try entering their email address."
 }

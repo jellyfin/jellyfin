@@ -1583,8 +1583,9 @@
     "LabelMovie": "Film",
     "LabelMusicVideo": "Musikvideo",
     "LabelEpisode": "Episode",
+    "Series": "Serien",
     "LabelStopping": "Stoppe",
-    "LabelCancelled": "(abgebrochen)",
+    "LabelCancelled": "Abgebrochen",
     "ButtonDownload": "Download",
     "SyncJobStatusQueued": "Warten",
     "SyncJobStatusConverting": "Konvertiere",
@@ -2330,5 +2331,8 @@
     "ConfigureDateAdded": "Bestimmen Sie in den Bibliotheks-Einstellungen des Emby Server Dashboards, wie das Feld \"Hinzugef\u00fcgt am\" interpretiert werden soll.",
     "LabelAllowHWTranscoding": "Erlaube Hardware Transkodierung",
     "AllowHWTranscodingHelp": "Wenn aktiviert, erlaube dem tuner eine Transkodierung des Streams in Echtzeit vorzunehmen. Dadurch wird die Transkodierung des Emby Servers reduziert.",
-    "OptionRequirePerfectSubtitleMatch": "Lade nur Untertitel die perfekt zu meinen Videos passen"
+    "OptionRequirePerfectSubtitleMatch": "Lade nur Untertitel die perfekt zu meinen Videos passen",
+    "ErrorAddingGuestAccount1": "There was an error adding the Emby Connect account. Has your guest created an Emby account? They can sign up at {0}.",
+    "ErrorAddingGuestAccount2": "Please ensure your guest has completed activation by following the instructions in the email sent after creating the account. If they did not receive this email then please send an email to {0}, and include your email address as well as theirs.",
+    "GuestUserNotFound": "User not found. Please ensure the name is correct and try again, or try entering their email address."
 }
