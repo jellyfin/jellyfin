@@ -132,7 +132,7 @@
         var key = 'servertestermessagetime';
         var lastShown = parseInt(appSettings.get(key) || '0');
 
-        if ((new Date().getTime() - lastShown) < 86400000) {
+        if ((new Date().getTime() - lastShown) < 259200000) {
             return;
         }
 

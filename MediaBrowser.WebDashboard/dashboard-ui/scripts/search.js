@@ -109,7 +109,7 @@
         ApiClient.getSearchHints({
 
             userId: Dashboard.getCurrentUserId(),
-            searchTerm: searchTerm,
+            searchTerm: (searchTerm || '').trim(),
             limit: 30
 
         }).then(function (result) {

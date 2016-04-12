@@ -833,6 +833,11 @@ var Dashboard = {
                 }
             ]
         }, {
+            name: Globalize.translate('TabNotifications'),
+            icon: 'notifications',
+            color: 'brown',
+            href: "notificationsettings.html"
+        }, {
             name: Globalize.translate('TabPlayback'),
             icon: 'play-circle-filled',
             color: '#E5342E',
@@ -921,11 +926,6 @@ var Dashboard = {
                     href: "dashboardhosting.html",
                     pageIds: ['dashboardHostingPage'],
                     icon: 'wifi'
-                }, {
-                    name: Globalize.translate('TabNotifications'),
-                    href: "notificationsettings.html",
-                    pageIds: ['notificationSettingsPage', 'notificationSettingPage'],
-                    icon: 'notifications'
                 }, {
                     name: Globalize.translate('TabScheduledTasks'),
                     href: "scheduledtasks.html",

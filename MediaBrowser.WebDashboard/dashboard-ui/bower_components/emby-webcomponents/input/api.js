@@ -127,9 +127,7 @@ define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focus
 
         var apiClient = this;
 
-        if (msg.MessageType === "LibraryChanged") {
-        }
-        else if (msg.MessageType === "Play") {
+        if (msg.MessageType === "Play") {
 
             var serverId = apiClient.serverInfo().Id;
 
@@ -142,10 +140,6 @@ define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focus
             else {
                 playbackManager.play({ ids: msg.Data.ItemIds, startPositionTicks: msg.Data.StartPositionTicks, serverId: serverId });
             }
-        }
-        else if (msg.MessageType === "ServerShuttingDown") {
-        }
-        else if (msg.MessageType === "ServerRestarting") {
         }
         else if (msg.MessageType === "Playstate") {
 
@@ -171,8 +165,6 @@ define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focus
         else if (msg.MessageType === "GeneralCommand") {
             var cmd = msg.Data;
             processGeneralCommand(cmd);
-        }
-        else if (msg.MessageType === "RestartRequired") {
         }
     }
 
