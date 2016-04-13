@@ -50,6 +50,26 @@
         return false;
     }
 
+    function getTabs() {
+        return [
+        {
+            href: 'cinemamodeconfiguration.html',
+            name: Globalize.translate('TabCinemaMode')
+        },
+         {
+             href: 'playbackconfiguration.html',
+             name: Globalize.translate('TabResumeSettings')
+         },
+         {
+             href: 'streamingsettings.html',
+             name: Globalize.translate('TabStreaming')
+         },
+         {
+             href: 'encodingsettings.html',
+             name: Globalize.translate('TabTranscoding')
+         }];
+    }
+
     $(document).on('pageinit', "#encodingSettingsPage", function () {
 
         var page = this;
@@ -84,6 +104,7 @@
 
         Dashboard.showLoadingMsg();
 
+        LibraryMenu.setTabs('playback',3, getTabs);
         var page = this;
 
         ApiClient.getNamedConfiguration("encoding").then(function (config) {

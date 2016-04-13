@@ -49,12 +49,25 @@
         return false;
     }
 
+    function getTabs() {
+        return [
+        {
+            href: 'dlnasettings.html',
+            name: Globalize.translate('TabSettings')
+        },
+         {
+             href: 'dlnaprofiles.html',
+             name: Globalize.translate('TabProfiles')
+         }];
+    }
+
     $(document).on('pageinit', "#dlnaSettingsPage", function () {
 
         $('.dlnaSettingsForm').off('submit', onSubmit).on('submit', onSubmit);
 
     }).on('pageshow', "#dlnaSettingsPage", function () {
 
+        LibraryMenu.setTabs('dlna', 0, getTabs);
         Dashboard.showLoadingMsg();
 
         var page = this;

@@ -6,6 +6,7 @@
 
         var html = '';
 
+        html += '<div class="primaryIcons">';
         var backIcon = browserInfo.safari ? 'chevron-left' : 'arrow-back';
 
         html += '<paper-icon-button icon="' + backIcon + '" class="headerButton headerButtonLeft headerBackButton hide"></paper-icon-button>';
@@ -43,6 +44,10 @@
             html += '<paper-icon-button icon="settings" class="headerButton headerButtonRight dashboardEntryHeaderButton" onclick="return LibraryMenu.onSettingsClicked(event);"></paper-icon-button>';
         }
 
+        html += '</div>';
+        html += '</div>';
+
+        html += '<div class="viewMenuBarTabs hiddenScrollX">';
         html += '</div>';
 
         var viewMenuBar = document.createElement('div');
@@ -432,20 +437,12 @@
             if (selected) {
                 link.classList.add('selectedSidebarLink');
 
-                var collapsible = parentWithTag(link, 'EMBY-COLLAPSIBLE');
-                if (collapsible) {
-                    collapsible.expanded = true;
-                }
-
                 var title = '';
-
-                title += collapsible.title || '';
-                title += '<span class="title-separator">–</span>';
 
                 var secondaryTitle = (link.innerText || link.textContent).trim();
                 title += secondaryTitle;
 
-                var documentTitle = collapsible.title || secondaryTitle;
+                var documentTitle = secondaryTitle;
 
                 Dashboard.setPageTitle(title, documentTitle);
 
@@ -456,30 +453,28 @@
     }
 
     function createDashboardMenu() {
-        require(['emby-collapsible'], function () {
-            var html = '';
+        var html = '';
 
-            //html += '<div class="userHeader">';
-            //html += '<div class="userHeaderActionMenu">';
-            //html += '<div>';
-            //html += localUser.Name;
-            //html += '</div>';
-            //html += '<paper-icon-button icon="expand-more"></paper-icon-button>';
-            //html += '</div>';
-            //html += '</div>';
+        //html += '<div class="userHeader">';
+        //html += '<div class="userHeaderActionMenu">';
+        //html += '<div>';
+        //html += localUser.Name;
+        //html += '</div>';
+        //html += '<paper-icon-button icon="expand-more"></paper-icon-button>';
+        //html += '</div>';
+        //html += '</div>';
 
-            html += '<a class="adminDrawerLogo clearLink" href="home.html">'
-            html += '<img src="css/images/logo.png" />';
-            html += '</a>'
+        html += '<a class="adminDrawerLogo clearLink" href="home.html">'
+        html += '<img src="css/images/logo.png" />';
+        html += '</a>';
 
-            html += Dashboard.getToolsMenuHtml();
+        html += Dashboard.getToolsMenuHtml();
 
-            html = html.split('href=').join('onclick="return LibraryMenu.onLinkClicked(event, this);" href=');
+        html = html.split('href=').join('onclick="return LibraryMenu.onLinkClicked(event, this);" href=');
 
-            mainDrawerPanel.querySelector('.mainDrawer').innerHTML = html;
+        mainDrawerPanel.querySelector('.mainDrawer').innerHTML = html;
 
-            updateDashboardMenuSelectedItem();
-        });
+        updateDashboardMenuSelectedItem();
     }
 
     function onSidebarLinkClick() {
@@ -723,6 +718,47 @@
             return false;
         },
 
+        setTabs: function (type, selectedIndex, builder) {
+
+            var viewMenuBarTabs;
+
+            if (!type) {
+                if (LibraryMenu.tabType) {
+
+                    mainDrawerPanel.classList.remove('withTallToolbar');
+                    viewMenuBarTabs = document.querySelector('.viewMenuBarTabs');
+                    viewMenuBarTabs.innerHTML = '';
+                    viewMenuBarTabs.classList.add('hide');
+                    LibraryMenu.tabType = null;
+                }
+                return;
+            }
+
+            viewMenuBarTabs = document.querySelector('.viewMenuBarTabs');
+
+            if (!LibraryMenu.tabType) {
+                viewMenuBarTabs.classList.remove('hide');
+            }
+
+            if (LibraryMenu.tabType != type) {
+
+                require(['paper-tabs'], function () {
+
+                    viewMenuBarTabs.innerHTML = '<paper-tabs selected="' + selectedIndex + '" hidescrollbuttons noink>' + builder().map(function (t) {
+
+                        return '<paper-tab link><a class="clearLink paperTabLink" href="' + t.href + '"><div>' + t.name + '</div></a></paper-tab>';
+
+                    }).join('') + '</paper-tabs>';
+                    mainDrawerPanel.classList.add('withTallToolbar');
+                    LibraryMenu.tabType = type;
+                });
+                return;
+            }
+
+            viewMenuBarTabs.querySelector('paper-tabs').selected = selectedIndex;
+            LibraryMenu.tabType = type;
+        },
+
         setTitle: function (title) {
 
             var html = title;
@@ -885,7 +921,7 @@
         }
     }
 
-    function buildViewMenuBar(page) {
+    function updateViewMenuBar(page) {
 
         var viewMenuBar = document.querySelector('.viewMenuBar');
 
@@ -893,6 +929,12 @@
             viewMenuBar.classList.add('hide');
         } else {
             viewMenuBar.classList.remove('hide');
+        }
+
+        if (page.classList.contains('type-interior')) {
+            viewMenuBar.classList.add('headroomDisabled');
+        } else {
+            viewMenuBar.classList.remove('headroomDisabled');
         }
 
         if (requiresUserRefresh) {
@@ -912,6 +954,15 @@
             for (var i = 0, length = navs.length; i < length; i++) {
                 initHeadRoom(navs[i]);
             }
+        }
+    });
+
+    pageClassOn('pagebeforeshow', 'page', function (e) {
+
+        var page = this;
+
+        if (!page.classList.contains('withTabs')) {
+            LibraryMenu.setTabs(null);
         }
     });
 
@@ -935,7 +986,7 @@
 
         setDrawerClass(page);
 
-        buildViewMenuBar(page);
+        updateViewMenuBar(page);
         updateTabLinks(page);
 
         if (!e.detail.isRestored) {
@@ -1023,7 +1074,6 @@
             });
             // initialise
             headroom.init();
-            elem.classList.add('headroomEnabled');
         });
     }
 

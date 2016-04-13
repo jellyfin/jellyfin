@@ -513,6 +513,22 @@
         return false;
     }
 
+    function getTabs() {
+        return [
+        {
+            href: 'metadata.html',
+            name: Globalize.translate('TabSettings')
+        },
+         {
+             href: 'metadataimages.html',
+             name: Globalize.translate('TabServices')
+         },
+         {
+             href: 'metadatanfo.html',
+             name: Globalize.translate('TabNfoSettings')
+         }];
+    }
+
     $(document).on('pageinit', "#metadataImagesConfigurationPage", function () {
 
         var page = this;
@@ -555,6 +571,7 @@
 
     }).on('pageshow', "#metadataImagesConfigurationPage", function () {
 
+        LibraryMenu.setTabs('metadata', 1, getTabs);
         Dashboard.showLoadingMsg();
 
         var page = this;

@@ -243,6 +243,18 @@
         return html;
     }
 
+    function getTabs() {
+        return [
+        {
+            href: 'plugins.html',
+            name: Globalize.translate('TabMyPlugins')
+        },
+         {
+             href: 'plugincatalog.html',
+             name: Globalize.translate('TabCatalog')
+         }];
+    }
+
     $(document).on('pageinit', "#pluginCatalogPage", function () {
 
         var page = this;
@@ -261,6 +273,7 @@
 
     }).on('pageshow', "#pluginCatalogPage", function () {
 
+        LibraryMenu.setTabs('plugins', 1, getTabs);
         var page = this;
 
         reloadList(page);

@@ -105,6 +105,22 @@
         });
     }
 
+    function getTabs() {
+        return [
+        {
+            href: 'autoorganizelog.html',
+            name: Globalize.translate('TabActivityLog')
+        },
+         {
+             href: 'autoorganizetv.html',
+             name: Globalize.translate('TabTV')
+         },
+         {
+             href: 'autoorganizesmart.html',
+             name: Globalize.translate('TabSmartMatches')
+         }];
+    }
+
     $(document).on('pageinit', "#libraryFileOrganizerSmartMatchPage", function () {
 
         var page = this;
@@ -133,6 +149,8 @@
     }).on('pageshow', "#libraryFileOrganizerSmartMatchPage", function () {
 
         var page = this;
+
+        LibraryMenu.setTabs('autoorganize', 2, getTabs);
 
         Dashboard.showLoadingMsg();
 

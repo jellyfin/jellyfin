@@ -41,12 +41,29 @@
         return false;
     }
 
+    function getTabs() {
+        return [
+        {
+            href: 'metadata.html',
+            name: Globalize.translate('TabSettings')
+        },
+         {
+             href: 'metadataimages.html',
+             name: Globalize.translate('TabServices')
+         },
+         {
+             href: 'metadatanfo.html',
+             name: Globalize.translate('TabNfoSettings')
+         }];
+    }
+
     $(document).on('pageinit', "#metadataNfoPage", function () {
 
         $('.metadataNfoForm').off('submit', onSubmit).on('submit', onSubmit);
 
     }).on('pageshow', "#metadataNfoPage", function () {
 
+        LibraryMenu.setTabs('metadata', 2, getTabs);
         Dashboard.showLoadingMsg();
 
         var page = this;
