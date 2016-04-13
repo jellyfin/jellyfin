@@ -715,7 +715,7 @@
         var options = {
             userId: Dashboard.getCurrentUserId(),
             limit: screenWidth > 800 && shape == "detailPagePortrait" ? 4 : 4,
-            fields: "PrimaryImageAspectRatio,UserData,SyncInfo"
+            fields: "PrimaryImageAspectRatio,UserData,SyncInfo,CanDelete"
         };
 
         if (screenWidth >= 800 && screenHeight >= 1000) {
@@ -866,7 +866,7 @@
 
         _childrenItemsFunction = null;
 
-        var fields = "ItemCounts,AudioInfo,PrimaryImageAspectRatio,SyncInfo";
+        var fields = "ItemCounts,AudioInfo,PrimaryImageAspectRatio,SyncInfo,CanDelete";
 
         var query = {
             ParentId: item.Id,
@@ -901,7 +901,8 @@
             _childrenItemsFunction = getEpisodesFunction(item.SeriesId, {
 
                 seasonId: item.Id,
-                userId: user.Id
+                userId: user.Id,
+                Fields: fields
             });
         }
         else if (item.Type == "MusicAlbum") {
@@ -945,6 +946,7 @@
                 });
             }
             else if (item.Type == "Season") {
+
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "detailPage169",
@@ -1318,7 +1320,7 @@
             SortOrder: "Ascending",
             IncludeItemTypes: "MusicVideo",
             Recursive: true,
-            Fields: "DateCreated,SyncInfo",
+            Fields: "DateCreated,SyncInfo,CanDelete",
             Albums: item.Name
 
         }).then(function (result) {

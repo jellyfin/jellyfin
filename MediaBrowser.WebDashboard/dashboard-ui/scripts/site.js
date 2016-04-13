@@ -732,7 +732,7 @@ var Dashboard = {
         }, {
             name: Globalize.translate('TabDevices'),
             href: "devices.html",
-            pageIds: ['devicesPage'],
+            pageIds: ['devicesPage', 'devicePage'],
             icon: 'tablet'
         }, {
             name: Globalize.translate('TabUsers'),
