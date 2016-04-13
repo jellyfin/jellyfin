@@ -224,8 +224,21 @@
         });
     }
 
+    function getTabs() {
+        return [
+        {
+            href: 'plugins.html',
+            name: Globalize.translate('TabMyPlugins')
+        },
+         {
+             href: 'plugincatalog.html',
+             name: Globalize.translate('TabCatalog')
+         }];
+    }
+
     $(document).on('pageshow', "#pluginsPage", function () {
 
+        LibraryMenu.setTabs('plugins', 0, getTabs);
         reloadList(this);
     });
 

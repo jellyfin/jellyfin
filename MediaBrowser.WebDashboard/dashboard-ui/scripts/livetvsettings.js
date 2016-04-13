@@ -43,6 +43,22 @@
         return false;
     }
 
+    function getTabs() {
+        return [
+        {
+            href: 'livetvstatus.html',
+            name: Globalize.translate('TabDevices')
+        },
+         {
+             href: 'livetvsettings.html',
+             name: Globalize.translate('TabSettings')
+         },
+         {
+             href: 'appservices.html?context=livetv',
+             name: Globalize.translate('TabServices')
+         }];
+    }
+
     $(document).on('pageinit', "#liveTvSettingsPage", function () {
 
         var page = this;
@@ -70,6 +86,7 @@
 
     }).on('pageshow', "#liveTvSettingsPage", function () {
 
+        LibraryMenu.setTabs('livetvadmin', 1, getTabs);
         Dashboard.showLoadingMsg();
 
         var page = this;

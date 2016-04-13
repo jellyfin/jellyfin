@@ -146,6 +146,22 @@
         }
     };
 
+    function getTabs() {
+        return [
+        {
+            href: 'about.html',
+            name: Globalize.translate('TabAbout')
+        },
+         {
+             href: 'log.html',
+             name: Globalize.translate('TabLogs')
+         },
+         {
+             href: 'supporterkey.html',
+             name: Globalize.translate('TabEmbyPremiere')
+         }];
+    }
+
     $(document).on('pageinit', "#supporterKeyPage", function () {
 
         var page = this;
@@ -156,6 +172,9 @@
         $('.benefits', page).html(Globalize.translate('HeaderSupporterBenefit', '<a href="http://emby.media/premiere" target="_blank">', '</a>'));
 
     }).on('pageshow', "#supporterKeyPage", function () {
+
+        LibraryMenu.setTabs('helpadmin', 2, getTabs);
+
         var page = this;
         loadUserInfo(page);
         load(page);

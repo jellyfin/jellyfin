@@ -747,23 +747,13 @@ var Dashboard = {
             href: "library.html",
             pageIds: ['mediaLibraryPage'],
             icon: 'folder',
-            color: '#E5342E'
+            color: '#009688'
         }, {
             name: Globalize.translate('TabMetadata'),
             href: "metadata.html",
-            pageIds: ['metadataConfigurationPage'],
+            pageIds: ['metadataConfigurationPage', 'metadataImagesConfigurationPage', 'metadataNfoPage'],
             icon: 'insert-drive-file',
-            color: '#293AAE'
-        }, {
-            name: Globalize.translate('TabServices'),
-            href: "metadataimages.html",
-            pageIds: ['metadataImagesConfigurationPage'],
-            icon: 'insert-drive-file'
-        }, {
-            name: Globalize.translate('TabNfoSettings'),
-            href: "metadatanfo.html",
-            pageIds: ['metadataNfoPage'],
-            icon: 'insert-drive-file'
+            color: '#FF9800'
         }, {
             name: Globalize.translate('TabPathSubstitution'),
             href: "librarypathmapping.html",
@@ -807,7 +797,7 @@ var Dashboard = {
         }, {
             name: Globalize.translate('TabLiveTV'),
             href: "livetvstatus.html",
-            pageIds: ['liveTvStatusPage', 'liveTvSettingsPage'],
+            pageIds: ['liveTvStatusPage', 'liveTvSettingsPage', 'liveTvTunerProviderHdHomerunPage', 'liveTvTunerProviderM3UPage', 'liveTvTunerProviderSatPage'],
             icon: 'dvr'
         }, {
             name: Globalize.translate('TabNotifications'),
