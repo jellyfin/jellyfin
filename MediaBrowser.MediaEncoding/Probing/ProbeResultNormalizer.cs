@@ -138,10 +138,14 @@ namespace MediaBrowser.MediaEncoding.Probing
                     var parts = iTunEXTC.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
                     // Example 
                     // mpaa|G|100|For crude humor
-                    if (parts.Length == 4)
+                    if (parts.Length > 1)
                     {
                         info.OfficialRating = parts[1];
-                        info.OfficialRatingDescription = parts[3];
+
+                        if (parts.Length > 3)
+                        {
+                            info.OfficialRatingDescription = parts[3];
+                        }
                     }
                 }
 

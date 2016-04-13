@@ -520,7 +520,7 @@ namespace MediaBrowser.Model.Dlna
                 {
                     if (StringHelper.EqualsIgnoreCase(targetAudioCodec, "ac3"))
                     {
-                        defaultBitrate = 384000;
+                        defaultBitrate = 448000;
                     }
                     else
                     {
@@ -840,13 +840,25 @@ namespace MediaBrowser.Model.Dlna
 
         private bool IsAudioEligibleForDirectPlay(MediaSourceInfo item, int? maxBitrate)
         {
-            if (!maxBitrate.HasValue || (item.Bitrate.HasValue && item.Bitrate.Value <= maxBitrate.Value))
+            if (!maxBitrate.HasValue)
             {
-                return true;
+                _logger.Info("Cannot direct play due to unknown supported bitrate");
+                return false;
             }
 
-            _logger.Info("Bitrate exceeds DirectPlay limit");
-            return false;
+            if (!item.Bitrate.HasValue)
+            {
+                _logger.Info("Cannot direct play due to unknown content bitrate");
+                return false;
+            }
+
+            if (item.Bitrate.Value > maxBitrate.Value)
+            {
+                _logger.Info("Bitrate exceeds DirectPlay limit");
+                return false;
+            }
+
+            return true;
         }
 
         private void ValidateInput(VideoOptions options)
