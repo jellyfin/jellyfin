@@ -85,8 +85,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="cancellationToken">The cancellation token.</param>
         private void Fetch(MetadataResult<T> item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
         {
-            item.ResetPeople();
-
             if (!SupportsUrlAfterClosingXmlTag)
             {
                 using (var streamReader = BaseNfoSaver.GetStreamReader(metadataFile))
@@ -94,6 +92,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     // Use XmlReader for best performance
                     using (var reader = XmlReader.Create(streamReader, settings))
                     {
+                        item.ResetPeople();
+
                         reader.MoveToContent();
 
                         // Loop through each element
@@ -113,6 +113,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
             using (var streamReader = BaseNfoSaver.GetStreamReader(metadataFile))
             {
+                item.ResetPeople();
+
                 // Need to handle a url after the xml data
                 // http://kodi.wiki/view/NFO_files/movies
 
