@@ -684,6 +684,10 @@ var Dashboard = {
 
             item = items[i];
 
+            if (item.divider) {
+                menuHtml += "<div class='sidebarDivider'></div>";
+            }
+
             if (item.items) {
 
                 var style = item.color ? ' iconstyle="color:' + item.color + '"' : '';
@@ -714,254 +718,131 @@ var Dashboard = {
     getToolsMenuLinks: function () {
 
         return [{
-            name: Globalize.translate('TabServer'),
-            icon: 'dashboard',
-            color: '#38c',
-            expanded: true,
-            items: [
-                {
-                    name: Globalize.translate('TabDashboard'),
-                    href: "dashboard.html",
-                    pageIds: ['dashboardPage'],
-                    icon: 'dashboard'
-                }, {
-                    name: Globalize.translate('TabSettings'),
-                    href: "dashboardgeneral.html",
-                    pageIds: ['dashboardGeneralPage'],
-                    icon: 'settings'
-                }, {
-                    name: Globalize.translate('TabDevices'),
-                    href: "devices.html",
-                    pageIds: ['devicesPage'],
-                    icon: 'tablet'
-                }, {
-                    name: Globalize.translate('TabUsers'),
-                    href: "userprofiles.html",
-                    pageIds: ['userProfilesPage'],
-                    icon: 'people'
-                }
-            ]
+            name: Globalize.translate('TabServer')
         }, {
-            name: Globalize.translate('TabLibrary'),
+            name: Globalize.translate('TabDashboard'),
+            href: "dashboard.html",
+            pageIds: ['dashboardPage'],
+            icon: 'dashboard'
+        }, {
+            name: Globalize.translate('TabSettings'),
+            href: "dashboardgeneral.html",
+            pageIds: ['dashboardGeneralPage'],
+            icon: 'settings'
+        }, {
+            name: Globalize.translate('TabDevices'),
+            href: "devices.html",
+            pageIds: ['devicesPage'],
+            icon: 'tablet'
+        }, {
+            name: Globalize.translate('TabUsers'),
+            href: "userprofiles.html",
+            pageIds: ['userProfilesPage'],
+            icon: 'people'
+        }, {
+            divider: true,
+            name: Globalize.translate('TabLibrary')
+        }, {
+            name: Globalize.translate('TabFolders'),
+            href: "library.html",
+            pageIds: ['mediaLibraryPage'],
             icon: 'folder',
-            color: '#ECA403',
-            expanded: true,
-            items: [
-                {
-                    name: Globalize.translate('TabFolders'),
-                    href: "library.html",
-                    pageIds: ['mediaLibraryPage'],
-                    icon: 'folder'
-                },
-                {
-                    name: Globalize.translate('TabMetadata'),
-                    href: "metadata.html",
-                    pageIds: ['metadataConfigurationPage'],
-                    icon: 'insert-drive-file'
-                },
-                {
-                    name: Globalize.translate('TabServices'),
-                    href: "metadataimages.html",
-                    pageIds: ['metadataImagesConfigurationPage'],
-                    icon: 'insert-drive-file'
-                },
-                {
-                    name: Globalize.translate('TabNfoSettings'),
-                    href: "metadatanfo.html",
-                    pageIds: ['metadataNfoPage'],
-                    icon: 'insert-drive-file'
-                },
-                {
-                    name: Globalize.translate('TabPathSubstitution'),
-                    href: "librarypathmapping.html",
-                    pageIds: ['libraryPathMappingPage'],
-                    icon: 'mode-edit'
-                },
-                {
-                    name: Globalize.translate('TabSubtitles'),
-                    href: "metadatasubtitles.html",
-                    pageIds: ['metadataSubtitlesPage'],
-                    icon: 'closed-caption'
-                },
-                {
-                    name: Globalize.translate('TabAdvanced'),
-                    href: "librarysettings.html",
-                    pageIds: ['librarySettingsPage'],
-                    icon: 'settings'
-                }
-            ]
+            color: '#E5342E'
         }, {
-            name: Globalize.translate('DLNA'),
-            icon: 'live-tv',
-            color: '#E5342E',
-            items: [
-                {
-                    name: Globalize.translate('TabSettings'),
-                    href: "dlnasettings.html",
-                    pageIds: ['dlnaSettingsPage'],
-                    icon: 'settings'
-                },
-                {
-                    name: Globalize.translate('TabProfiles'),
-                    href: "dlnaprofiles.html",
-                    pageIds: ['dlnaProfilesPage', 'dlnaProfilePage'],
-                    icon: 'live-tv'
-                }
-            ]
+            name: Globalize.translate('TabMetadata'),
+            href: "metadata.html",
+            pageIds: ['metadataConfigurationPage'],
+            icon: 'insert-drive-file',
+            color: '#293AAE'
         }, {
-            name: Globalize.translate('TabLiveTV'),
-            icon: 'dvr',
-            color: '#293AAE',
-            items: [
-                {
-                    name: Globalize.translate('TabSettings'),
-                    href: "livetvstatus.html",
-                    pageIds: ['liveTvStatusPage'],
-                    icon: 'settings'
-                },
-                {
-                    name: Globalize.translate('TabAdvanced'),
-                    href: "livetvsettings.html",
-                    pageIds: ['liveTvSettingsPage'],
-                    icon: 'settings'
-                },
-                {
-                    name: Globalize.translate('TabServices'),
-                    href: "appservices.html?context=livetv",
-                    //selected: (isServicesPage && context == 'livetv'),
-                    icon: 'add-shopping-cart'
-                }
-            ]
+            name: Globalize.translate('TabServices'),
+            href: "metadataimages.html",
+            pageIds: ['metadataImagesConfigurationPage'],
+            icon: 'insert-drive-file'
         }, {
-            name: Globalize.translate('TabNotifications'),
-            icon: 'notifications',
-            color: 'brown',
-            href: "notificationsettings.html"
+            name: Globalize.translate('TabNfoSettings'),
+            href: "metadatanfo.html",
+            pageIds: ['metadataNfoPage'],
+            icon: 'insert-drive-file'
+        }, {
+            name: Globalize.translate('TabPathSubstitution'),
+            href: "librarypathmapping.html",
+            pageIds: ['libraryPathMappingPage'],
+            icon: 'mode-edit'
+        }, {
+            name: Globalize.translate('TabSubtitles'),
+            href: "metadatasubtitles.html",
+            pageIds: ['metadataSubtitlesPage'],
+            icon: 'closed-caption'
+        }, {
+            name: Globalize.translate('TabAdvanced'),
+            href: "librarysettings.html",
+            pageIds: ['librarySettingsPage'],
+            icon: 'settings'
         }, {
             name: Globalize.translate('TabPlayback'),
             icon: 'play-circle-filled',
             color: '#E5342E',
-            items: [
-                {
-                    name: Globalize.translate('TabCinemaMode'),
-                    href: "cinemamodeconfiguration.html",
-                    pageIds: ['cinemaModeConfigurationPage'],
-                    icon: 'local-movies'
-                },
-                {
-                    name: Globalize.translate('TabResumeSettings'),
-                    href: "playbackconfiguration.html",
-                    pageIds: ['playbackConfigurationPage'],
-                    icon: 'play-circle-filled'
-                },
-                {
-                    name: Globalize.translate('TabStreaming'),
-                    href: "streamingsettings.html",
-                    pageIds: ['streamingSettingsPage'],
-                    icon: 'wifi'
-                },
-                {
-                    name: Globalize.translate('TabTranscoding'),
-                    href: "encodingsettings.html",
-                    pageIds: ['encodingSettingsPage'],
-                    icon: 'play-circle-filled'
-                }
-            ]
+            href: "cinemamodeconfiguration.html",
+            pageIds: ['cinemaModeConfigurationPage', 'playbackConfigurationPage', 'streamingSettingsPage', 'encodingSettingsPage']
+        }, {
+            name: Globalize.translate('TabSync'),
+            icon: 'sync',
+            href: "syncactivity.html",
+            pageIds: ['syncActivityPage', 'syncJobPage', 'devicesUploadPage', 'syncSettingsPage']
+        }, {
+            divider: true,
+            name: Globalize.translate('TabExtras')
+        }, {
+            name: Globalize.translate('TabAutoOrganize'),
+            color: '#01C0DD',
+            href: "autoorganizelog.html",
+            pageIds: ['libraryFileOrganizerPage', 'libraryFileOrganizerSmartMatchPage', 'libraryFileOrganizerLogPage'],
+            icon: 'folder'
+        }, {
+            name: Globalize.translate('DLNA'),
+            href: "dlnasettings.html",
+            pageIds: ['dlnaSettingsPage', 'dlnaProfilesPage', 'dlnaProfilePage'],
+            icon: 'settings'
+        }, {
+            name: Globalize.translate('TabLiveTV'),
+            href: "livetvstatus.html",
+            pageIds: ['liveTvStatusPage', 'liveTvSettingsPage'],
+            icon: 'dvr'
+        }, {
+            name: Globalize.translate('TabNotifications'),
+            icon: 'notifications',
+            color: 'brown',
+            href: "notificationsettings.html",
+            pageIds: ['notificationSettingsPage', 'notificationSettingPage']
         }, {
             name: Globalize.translate('TabPlugins'),
             icon: 'add-shopping-cart',
             color: '#9D22B1',
-            items: [
-                {
-                    name: Globalize.translate('TabMyPlugins'),
-                    href: "plugins.html",
-                    pageIds: ['pluginsPage'],
-                    icon: 'file-download'
-                }, {
-                    name: Globalize.translate('TabCatalog'),
-                    href: "plugincatalog.html",
-                    pageIds: ['pluginCatalogPage'],
-                    icon: 'add-shopping-cart'
-                }
-            ]
+            href: "plugins.html",
+            pageIds: ['pluginsPage', 'pluginCatalogPage']
         }, {
-            name: Globalize.translate('TabSync'),
-            icon: 'sync',
-            items: [
-                {
-                    name: Globalize.translate('TabSyncJobs'),
-                    href: "syncactivity.html",
-                    pageIds: ['syncActivityPage', 'syncJobPage'],
-                    icon: 'menu'
-                }, {
-                    name: Globalize.translate('TabCameraUpload'),
-                    href: "devicesupload.html",
-                    pageIds: ['devicesUploadPage'],
-                    icon: 'photo'
-                }, {
-                    name: Globalize.translate('TabServices'),
-                    href: "appservices.html?context=sync",
-                    //selected: (isServicesPage && context == 'sync'),
-                    icon: 'add-shopping-cart'
-                }, {
-                    name: Globalize.translate('TabSettings'),
-                    href: "syncsettings.html",
-                    pageIds: ['syncSettingsPage'],
-                    icon: 'settings'
-                }
-            ]
+            divider: true,
+            name: Globalize.translate('TabExpert')
         }, {
             name: Globalize.translate('TabAdvanced'),
             icon: 'settings',
+            href: "dashboardhosting.html",
             color: '#F16834',
-            items: [
-                {
-                    name: Globalize.translate('TabAutoOrganize'),
-                    href: "autoorganizelog.html",
-                    pageIds: ['libraryFileOrganizerPage', 'libraryFileOrganizerSmartMatchPage', 'libraryFileOrganizerLogPage'],
-                    icon: 'folder'
-                },
-                {
-                    name: Globalize.translate('TabHosting'),
-                    href: "dashboardhosting.html",
-                    pageIds: ['dashboardHostingPage'],
-                    icon: 'wifi'
-                }, {
-                    name: Globalize.translate('TabScheduledTasks'),
-                    href: "scheduledtasks.html",
-                    pageIds: ['scheduledTasksPage', 'scheduledTaskPage'],
-                    icon: 'schedule'
-                },
-                {
-                    name: Globalize.translate('TabSecurity'),
-                    href: "serversecurity.html",
-                    pageIds: ['serverSecurityPage'],
-                    icon: 'lock'
-                }
-            ]
+            pageIds: ['dashboardHostingPage', 'serverSecurityPage']
+        }, {
+            name: Globalize.translate('TabScheduledTasks'),
+            color: '#38c',
+            href: "scheduledtasks.html",
+            pageIds: ['scheduledTasksPage', 'scheduledTaskPage'],
+            icon: 'schedule'
         }, {
             name: Globalize.translate('TabHelp'),
-            icon: 'info',
-            items: [
-                {
-                    name: Globalize.translate('TabAbout'),
-                    href: "about.html",
-                    pageIds: ['aboutPage'],
-                    icon: 'info'
-                },
-                {
-                    name: Globalize.translate('TabLogs'),
-                    href: "log.html",
-                    pageIds: ['logPage'],
-                    icon: 'menu'
-                },
-                {
-                    name: Globalize.translate('TabEmbyPremiere'),
-                    href: "supporterkey.html",
-                    pageIds: ['supporterKeyPage'],
-                    icon: 'add-circle'
-                }
-            ]
+            href: "about.html",
+            icon: 'help',
+            color: '#679C34',
+            divider: true,
+            pageIds: ['supporterKeyPage', 'logPage', 'aboutPage']
         }];
 
     },
@@ -2767,6 +2648,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/notificationsettings.html',
+            controller: 'scripts/notificationsettings',
             dependencies: [],
             autoFocus: false,
             roles: 'admin'

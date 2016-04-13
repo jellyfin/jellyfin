@@ -774,13 +774,21 @@ paper-input + .fieldDescription {
     padding-top: 70px;
 }
 
+.withTabs .content-primary {
+    padding-top: 110px;
+}
+
 .mainDrawerPanel:not([narrow]) .content-primary {
     padding: 110px 1.5em 3em 3em;
 }
 
-    .mainDrawerPanel:not([narrow]) .content-primary ul:first-child {
-        margin-top: 0;
-    }
+.mainDrawerPanel:not([narrow]) .withTabs .content-primary {
+    padding-top: 128px!important;
+}
+
+.mainDrawerPanel:not([narrow]) .content-primary ul:first-child {
+    margin-top: 0;
+}
 
 .background-theme-a, .dialog.background-theme-a {
     background-color: #f5f5f5;

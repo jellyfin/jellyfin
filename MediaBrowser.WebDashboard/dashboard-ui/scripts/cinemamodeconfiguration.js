@@ -53,6 +53,26 @@
         return false;
     }
 
+    function getTabs() {
+        return [
+        {
+            href: 'cinemamodeconfiguration.html',
+            name: Globalize.translate('TabCinemaMode')
+        },
+         {
+             href: 'playbackconfiguration.html',
+             name: Globalize.translate('TabResumeSettings')
+         },
+         {
+             href: 'streamingsettings.html',
+             name: Globalize.translate('TabStreaming')
+         },
+         {
+             href: 'encodingsettings.html',
+             name: Globalize.translate('TabTranscoding')
+         }];
+    }
+
     $(document).on('pageinit', "#cinemaModeConfigurationPage", function () {
 
         var page = this;
@@ -110,6 +130,8 @@
         }
 
     }).on('pageshow', "#cinemaModeConfigurationPage", function () {
+
+        LibraryMenu.setTabs('playback', 0, getTabs);
 
         Dashboard.showLoadingMsg();
 

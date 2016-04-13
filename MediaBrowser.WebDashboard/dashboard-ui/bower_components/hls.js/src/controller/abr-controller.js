@@ -53,6 +53,13 @@ class AbrController extends EventHandler {
       we compare it to expected time of buffer starvation
     */
     let hls = this.hls, v = hls.media,frag = this.fragCurrent;
+
+    // if loader has been destroyed or loading has been aborted, stop timer and return
+    if(!frag.loader || ( frag.loader.stats && frag.loader.stats.aborted)) {
+      logger.warn(`frag loader destroy or aborted, disarm abandonRulesCheck`);
+      this.clearTimer();
+      return;
+    }
     /* only monitor frag retrieval time if
     (video not paused OR first fragment being loaded(ready state === HAVE_NOTHING = 0)) AND autoswitching enabled AND not lowest level (=> means that we have several levels) */
     if (v && (!v.paused || !v.readyState) && frag.autoLevel && frag.level) {
