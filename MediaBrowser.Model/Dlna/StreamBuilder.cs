@@ -55,7 +55,7 @@ namespace MediaBrowser.Model.Dlna
                 stream.DeviceProfileId = options.Profile.Id;
             }
 
-            return GetOptimalStream(streams);
+            return GetOptimalStream(streams, options.GetMaxBitrate());
         }
 
         public StreamInfo BuildVideoItem(VideoOptions options)
@@ -88,12 +88,12 @@ namespace MediaBrowser.Model.Dlna
                 stream.DeviceProfileId = options.Profile.Id;
             }
 
-            return GetOptimalStream(streams);
+            return GetOptimalStream(streams, options.GetMaxBitrate());
         }
 
-        private StreamInfo GetOptimalStream(List<StreamInfo> streams)
+        private StreamInfo GetOptimalStream(List<StreamInfo> streams, int? maxBitrate)
         {
-            streams = StreamInfoSorter.SortMediaSources(streams);
+            streams = StreamInfoSorter.SortMediaSources(streams, maxBitrate);
 
             foreach (StreamInfo stream in streams)
             {
@@ -424,7 +424,7 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.EstimateContentLength = transcodingProfile.EstimateContentLength;
                 playlistItem.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
 
-                // TODO: We should probably preserve the full list and sent it tp the server that way
+                // TODO: We should probably preserve the full list and sent it to the server that way
                 string[] supportedAudioCodecs = transcodingProfile.AudioCodec.Split(',');
                 string inputAudioCodec = audioStream == null ? null : audioStream.Codec;
                 foreach (string supportedAudioCodec in supportedAudioCodecs)
