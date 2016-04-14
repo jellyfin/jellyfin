@@ -166,6 +166,7 @@
     -ms-overflow-style: none;
     overflow: -moz-scrollbars-none;
     -webkit-overflow-scrolling: touch;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
 }
 
     .libraryViewNav::-webkit-scrollbar {

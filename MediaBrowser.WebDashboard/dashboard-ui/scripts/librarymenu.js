@@ -1,4 +1,4 @@
-﻿define(['imageLoader', 'jQuery', 'paper-icon-button', 'paper-button', 'emby-icons'], function (imageLoader, $) {
+﻿define(['imageLoader', 'layoutManager', 'jQuery', 'paper-icon-button', 'paper-button', 'emby-icons'], function (imageLoader, layoutManager, $) {
 
     var mainDrawerPanel = document.querySelector('.mainDrawerPanel');
 
@@ -933,7 +933,7 @@
             viewMenuBar.classList.remove('hide');
         }
 
-        if (page.classList.contains('type-interior')) {
+        if (page.classList.contains('type-interior') && !layoutManager.mobile) {
             viewMenuBar.classList.add('headroomDisabled');
         } else {
             viewMenuBar.classList.remove('headroomDisabled');

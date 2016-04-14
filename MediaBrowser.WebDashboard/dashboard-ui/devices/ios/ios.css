@@ -44,6 +44,10 @@
         background-color: #000;
     }
 
+.libraryViewNav {
+    box-shadow: none;
+}
+
     .libraryViewNav a {
         font-weight: 400;
         text-transform: none;
