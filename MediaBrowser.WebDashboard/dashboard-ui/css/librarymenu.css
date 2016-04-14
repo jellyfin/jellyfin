@@ -205,6 +205,7 @@
 
 .dashboardDocument .viewMenuBar #selectionBar {
     background: #fff !important;
+    height: 3px;
 }
 
 .viewMenuBarTabs {

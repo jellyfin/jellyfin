@@ -744,7 +744,9 @@
 
                 require(['paper-tabs'], function () {
 
-                    viewMenuBarTabs.innerHTML = '<paper-tabs selected="' + selectedIndex + '" hidescrollbuttons noink>' + builder().map(function (t) {
+                    var noInk = browserInfo.animate ? '' : ' noink';
+
+                    viewMenuBarTabs.innerHTML = '<paper-tabs selected="' + selectedIndex + '" hidescrollbuttons ' + noInk + '>' + builder().map(function (t) {
 
                         return '<paper-tab link><a class="clearLink paperTabLink" href="' + t.href + '"><div>' + t.name + '</div></a></paper-tab>';
 

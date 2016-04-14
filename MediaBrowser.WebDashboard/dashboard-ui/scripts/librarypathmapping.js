@@ -112,6 +112,18 @@
         return false;
     }
 
+    function getTabs() {
+        return [
+        {
+            href: 'library.html',
+            name: Globalize.translate('TabFolders')
+        },
+         {
+             href: 'librarypathmapping.html',
+             name: Globalize.translate('TabPathSubstitution')
+         }];
+    }
+
     $(document).on('pageinit', "#libraryPathMappingPage", function () {
 
         var page = this;
@@ -122,6 +134,7 @@
 
     }).on('pageshow', "#libraryPathMappingPage", function () {
 
+        LibraryMenu.setTabs('librarysetup', 1, getTabs);
         Dashboard.showLoadingMsg();
 
         var page = this;

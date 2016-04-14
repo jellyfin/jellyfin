@@ -741,11 +741,9 @@ var Dashboard = {
             icon: 'people'
         }, {
             divider: true,
-            name: Globalize.translate('TabLibrary')
-        }, {
-            name: Globalize.translate('TabFolders'),
+            name: Globalize.translate('TabLibrary'),
             href: "library.html",
-            pageIds: ['mediaLibraryPage'],
+            pageIds: ['mediaLibraryPage', 'libraryPathMappingPage'],
             icon: 'folder',
             color: '#009688'
         }, {
@@ -754,11 +752,6 @@ var Dashboard = {
             pageIds: ['metadataConfigurationPage', 'metadataImagesConfigurationPage', 'metadataNfoPage'],
             icon: 'insert-drive-file',
             color: '#FF9800'
-        }, {
-            name: Globalize.translate('TabPathSubstitution'),
-            href: "librarypathmapping.html",
-            pageIds: ['libraryPathMappingPage'],
-            icon: 'mode-edit'
         }, {
             name: Globalize.translate('TabSubtitles'),
             href: "metadatasubtitles.html",

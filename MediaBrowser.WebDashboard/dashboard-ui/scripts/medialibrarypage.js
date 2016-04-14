@@ -452,6 +452,19 @@
             });
         }
     };
+
+    function getTabs() {
+        return [
+        {
+            href: 'library.html',
+            name: Globalize.translate('TabFolders')
+        },
+         {
+             href: 'librarypathmapping.html',
+             name: Globalize.translate('TabPathSubstitution')
+         }];
+    }
+
     pageClassOn('pageshow', "mediaLibraryPage", function () {
 
         var page = this;
@@ -461,6 +474,7 @@
 
     pageIdOn('pageshow', "mediaLibraryPage", function () {
 
+        LibraryMenu.setTabs('librarysetup', 0, getTabs);
         var page = this;
 
         // on here
