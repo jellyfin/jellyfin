@@ -510,7 +510,7 @@ body:not(.dashboardDocument) .btnNotifications {
 }
 
 .adminDrawerPanel .sidebarLink.selectedSidebarLink {
-    background: #66BB6A !important;
+    background: #52B54B !important;
     color: #fff !important;
 }
 

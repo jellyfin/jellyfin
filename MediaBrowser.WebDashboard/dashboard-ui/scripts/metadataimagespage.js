@@ -235,7 +235,7 @@
         }
 
         html += '<div class="paperCheckboxListLabel">' + Globalize.translate('LabelMetadataSavers') + '</div>';
-        html += '<div class="paperCheckboxList">';
+        html += '<div class="paperCheckboxList paperList">';
 
         for (var i = 0, length = plugins.length; i < length; i++) {
 
@@ -351,38 +351,40 @@
             return;
         }
 
-        html += '<div class="ui-controlgroup-label" style="margin-bottom:0;padding-left:2px;">' + Globalize.translate('LabelMetadataReaders') + '</div>';
-        html += '<ul data-role="listview" data-inset="true" data-mini="true" style="margin-top:.5em;margin-bottom:.5em;">';
+        html += '<div class="paperCheckboxListLabel">' + Globalize.translate('LabelMetadataReaders') + '</div>';
+        html += '<div class="paperList">';
 
         for (var i = 0, length = plugins.length; i < length; i++) {
 
             var plugin = plugins[i];
 
-            html += '<li data-mini="true" class="localReaderOption" data-pluginname="' + plugin.Name + '">';
+            html += '<paper-icon-item class="localReaderOption" data-pluginname="' + plugin.Name + '">';
+
+            html += '<paper-fab mini style="background:#52B54B;" icon="live-tv" item-icon></paper-fab>';
+
+            html += '<paper-item-body>';
+
+            html += '<div>';
+            html += plugin.Name;
+            html += '</div>';
+
+            html += '</paper-item-body>';
 
             if (i > 0) {
-                html += '<a href="#" style="font-weight:normal;">' + plugin.Name + '</a>';
-
-                html += '<a class="btnLocalReaderUp btnLocalReaderMove" data-pluginindex="' + i + '" href="#" style="font-weight:normal;" data-icon="arrow-u">' + Globalize.translate('ButtonUp') + '</a>';
+                html += '<paper-icon-button title="' + Globalize.translate('ButtonUp') + '" icon="keyboard-arrow-up" class="btnLocalReaderUp btnLocalReaderMove" data-pluginindex="' + i + '"></paper-icon-button>';
             }
             else if (plugins.length > 1) {
 
-                html += '<a href="#" style="font-weight:normal;">' + plugin.Name + '</a>';
-
-                html += '<a class="btnLocalReaderDown btnLocalReaderMove" data-pluginindex="' + i + '" href="#" style="font-weight:normal;" data-icon="arrow-d">' + Globalize.translate('ButtonDown') + '</a>';
+                html += '<paper-icon-button title="' + Globalize.translate('ButtonDown') + '" icon="keyboard-arrow-down" class="btnLocalReaderDown btnLocalReaderMove" data-pluginindex="' + i + '"></paper-icon-button>';
             }
-            else {
 
-                html += plugin.Name;
-
-            }
-            html += '</li>';
+            html += '</paper-icon-item>';
         }
 
-        html += '</ul>';
+        html += '</div>';
         html += '<div class="fieldDescription">' + Globalize.translate('LabelMetadataReadersHelp') + '</div>';
 
-        $('.metadataReaders', page).html(html).show().trigger('create');
+        $('.metadataReaders', page).html(html).show();
     }
 
     function loadPage(page) {
@@ -536,7 +538,7 @@
         $('.metadataReaders', page).on('click', '.btnLocalReaderMove', function () {
 
             var li = $(this).parents('.localReaderOption');
-            var ul = li.parents('ul');
+            var list = li.parents('.paperList');
 
             if ($(this).hasClass('btnLocalReaderDown')) {
 
@@ -551,12 +553,12 @@
                 li.remove().insertBefore(prev);
             }
 
-            $('.localReaderOption', ul).each(function () {
+            $('.localReaderOption', list).each(function () {
 
                 if ($(this).prev('.localReaderOption').length) {
-                    $('.btnLocalReaderMove', this).addClass('btnLocalReaderUp').removeClass('btnLocalReaderDown').attr('data-icon', 'arrow-u').removeClass('ui-icon-arrow-d').addClass('ui-icon-arrow-u');
+                    $('.btnLocalReaderMove', this).addClass('btnLocalReaderUp').removeClass('btnLocalReaderDown').attr('icon', 'keyboard-arrow-up');
                 } else {
-                    $('.btnLocalReaderMove', this).addClass('btnLocalReaderDown').removeClass('btnLocalReaderUp').attr('data-icon', 'arrow-d').removeClass('ui-icon-arrow-u').addClass('ui-icon-arrow-d');
+                    $('.btnLocalReaderMove', this).addClass('btnLocalReaderDown').removeClass('btnLocalReaderUp').attr('icon', 'keyboard-arrow-down');
                 }
 
             });
