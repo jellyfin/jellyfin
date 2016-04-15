@@ -152,7 +152,7 @@
 
         html += '<div class="ui-controlgroup-label" style="margin-bottom:0;padding-left:2px;">' + Globalize.translate('LabelImageFetchers') + '</div>';
 
-        html += '<div style="display:inline-block;width: 75%;vertical-align:top;">';
+        html += '<div style="display:inline-block;vertical-align:top;">';
         html += '<div data-role="controlgroup" class="imageFetcherGroup">';
 
         for (i = 0, length = plugins.length; i < length; i++) {
@@ -193,7 +193,7 @@
         }
 
         html += '</div>';
-        html += '<div class="fieldDescription" style="width:75%;">' + Globalize.translate('LabelImageFetchersHelp') + '</div>';
+        html += '<div class="fieldDescription">' + Globalize.translate('LabelImageFetchersHelp') + '</div>';
 
         var elem = $('.imageFetchers', page).html(html).show().trigger('create');
 
@@ -269,7 +269,7 @@
 
         html += '<div class="ui-controlgroup-label" style="margin-bottom:0;padding-left:2px;">' + Globalize.translate('LabelMetadataDownloaders') + '</div>';
 
-        html += '<div style="display:inline-block;width: 75%;vertical-align:top;">';
+        html += '<div style="display:inline-block;vertical-align:top;">';
         html += '<div data-role="controlgroup" class="metadataFetcherGroup">';
 
         for (i = 0, length = plugins.length; i < length; i++) {
@@ -310,7 +310,7 @@
         }
 
         html += '</div>';
-        html += '<div class="fieldDescription" style="width:75%;">' + Globalize.translate('LabelMetadataDownloadersHelp') + '</div>';
+        html += '<div class="fieldDescription">' + Globalize.translate('LabelMetadataDownloadersHelp') + '</div>';
 
         var elem = $('.metadataFetchers', page).html(html).show().trigger('create');
 
