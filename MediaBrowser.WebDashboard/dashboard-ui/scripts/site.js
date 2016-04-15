@@ -758,11 +758,6 @@ var Dashboard = {
             pageIds: ['metadataSubtitlesPage'],
             icon: 'closed-caption'
         }, {
-            name: Globalize.translate('TabAdvanced'),
-            href: "librarysettings.html",
-            pageIds: ['librarySettingsPage'],
-            icon: 'settings'
-        }, {
             name: Globalize.translate('TabPlayback'),
             icon: 'play-circle-filled',
             color: '#E5342E',

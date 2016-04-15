@@ -1348,6 +1348,24 @@ namespace MediaBrowser.Controller.Entities
             return LocalizationManager.GetRatingLevel(rating);
         }
 
+        public List<string> GetInheritedTags()
+        {
+            var list = new List<string>();
+            list.AddRange(Tags);
+
+            foreach (var parent in GetParents())
+            {
+                list.AddRange(parent.Tags);
+            }
+
+            foreach (var parent in LibraryManager.GetCollectionFolders(this))
+            {
+                list.AddRange(parent.Tags);
+            }
+
+            return list.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        }
+
         private bool IsVisibleViaTags(User user)
         {
             var hasTags = this as IHasTags;

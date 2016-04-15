@@ -121,8 +121,13 @@
          {
              href: 'librarypathmapping.html',
              name: Globalize.translate('TabPathSubstitution')
+         },
+         {
+             href: 'librarysettings.html',
+             name: Globalize.translate('TabAdvanced')
          }];
     }
+
 
     $(document).on('pageinit', "#libraryPathMappingPage", function () {
 

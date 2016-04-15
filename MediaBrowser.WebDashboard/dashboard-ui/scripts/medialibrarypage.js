@@ -222,7 +222,7 @@
     }
 
     function editImages(page, virtualFolder) {
-        
+
         require(['components/imageeditor/imageeditor'], function (ImageEditor) {
 
             ImageEditor.show(virtualFolder.ItemId, {
@@ -462,6 +462,10 @@
          {
              href: 'librarypathmapping.html',
              name: Globalize.translate('TabPathSubstitution')
+         },
+         {
+             href: 'librarysettings.html',
+             name: Globalize.translate('TabAdvanced')
          }];
     }
 
