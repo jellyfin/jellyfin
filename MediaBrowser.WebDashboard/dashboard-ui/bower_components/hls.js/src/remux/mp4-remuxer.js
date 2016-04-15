@@ -190,8 +190,8 @@ class MP4Remuxer {
         ptsnorm = this._PTSNormalize(pts, nextAvcDts);
         dtsnorm = this._PTSNormalize(dts, nextAvcDts);
         delta = Math.round((dtsnorm - nextAvcDts) / 90);
-        // if fragment are contiguous, or delta less than 600ms, ensure there is no overlap/hole between fragments
-        if (contiguous || Math.abs(delta) < 600) {
+        // if fragment are contiguous, or if there is a huge delta (more than 10s) between expected PTS and sample PTS
+        if (contiguous || Math.abs(delta) > 10000) {
           if (delta) {
             if (delta > 1) {
               logger.log(`AVC:${delta} ms hole between fragments detected,filling it`);
@@ -314,8 +314,8 @@ class MP4Remuxer {
         ptsnorm = this._PTSNormalize(pts, nextAacPts);
         dtsnorm = this._PTSNormalize(dts, nextAacPts);
         delta = Math.round(1000 * (ptsnorm - nextAacPts) / pesTimeScale);
-        // if fragment are contiguous, or delta less than 600ms, ensure there is no overlap/hole between fragments
-        if (contiguous || Math.abs(delta) < 600) {
+        // if fragment are contiguous, or if there is a huge delta (more than 10s) between expected PTS and sample PTS
+        if (contiguous || Math.abs(delta) > 10000) {
           // log delta
           if (delta) {
             if (delta > 0) {
@@ -327,7 +327,7 @@ class MP4Remuxer {
               track.len -= unit.byteLength;
               continue;
             }
-            // set DTS to next DTS
+            // set PTS/DTS to next PTS/DTS
             ptsnorm = dtsnorm = nextAacPts;
           }
         }

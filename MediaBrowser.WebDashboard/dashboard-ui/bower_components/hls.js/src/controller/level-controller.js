@@ -20,7 +20,8 @@ class LevelController extends EventHandler {
 
   destroy() {
     if (this.timer) {
-     clearInterval(this.timer);
+      clearInterval(this.timer);
+      this.timer = null;
     }
     this._manualLevel = -1;
   }

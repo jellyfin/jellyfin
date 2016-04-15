@@ -1101,6 +1101,10 @@
                         return 'photos.html?topParentId=' + item.Id;
                     }
                 }
+                else if (item.IsFolder) {
+                    return id ? "itemlist.html?parentId=" + id : "#";
+                }
+
                 if (item.Type == 'CollectionFolder') {
                     return 'itemlist.html?topParentId=' + item.Id + '&parentId=' + item.Id;
                 }
