@@ -47,7 +47,7 @@
         html += '</div>';
         html += '</div>';
 
-        html += '<div class="viewMenuBarTabs hiddenScrollX">';
+        html += '<div class="viewMenuBarTabs hiddenScrollX hide">';
         html += '</div>';
 
         var viewMenuBar = document.createElement('div');
@@ -652,6 +652,45 @@
         return getParameterByName('topParentId') || null;
     }
 
+    function slideDownToShow(elem) {
+
+        if (!elem.classList.contains('hide')) {
+            return;
+        }
+
+        elem.classList.remove('hide');
+        requestAnimationFrame(function () {
+
+            var keyframes = [
+              { height: '0', offset: 0 },
+              { height: elem.clientHeight + 'px', offset: 1 }];
+            var timing = { duration: 200, iterations: 1, easing: 'ease-out' };
+            elem.animate(keyframes, timing);
+        });
+    }
+
+    function slideUpToHide(elem) {
+
+        if (elem.classList.contains('hide')) {
+            return;
+        }
+
+        var height = elem.clientHeight;
+
+        requestAnimationFrame(function () {
+
+            elem.innerHTML = '';
+
+            var keyframes = [
+              { height: height + 'px', offset: 0 },
+              { height: '0', offset: 1 }];
+            var timing = { duration: 200, iterations: 1, easing: 'ease-out' };
+            elem.animate(keyframes, timing).onfinish = function () {
+                elem.classList.add('hide');
+            };
+        });
+    }
+
     window.LibraryMenu = {
         getTopParentId: getTopParentId,
 
@@ -727,8 +766,8 @@
 
                     mainDrawerPanel.classList.remove('withTallToolbar');
                     viewMenuBarTabs = document.querySelector('.viewMenuBarTabs');
-                    viewMenuBarTabs.innerHTML = '';
-                    viewMenuBarTabs.classList.add('hide');
+                    slideUpToHide(viewMenuBarTabs);
+                    //viewMenuBarTabs.innerHTML = '';
                     LibraryMenu.tabType = null;
                 }
                 return;
@@ -736,28 +775,35 @@
 
             viewMenuBarTabs = document.querySelector('.viewMenuBarTabs');
 
-            if (!LibraryMenu.tabType) {
-                viewMenuBarTabs.classList.remove('hide');
-            }
-
             if (LibraryMenu.tabType != type) {
 
-                require(['paper-tabs'], function () {
+                require(['paper-tabs'], function() {
 
                     var noInk = browserInfo.animate ? '' : ' noink';
 
-                    viewMenuBarTabs.innerHTML = '<paper-tabs selected="' + selectedIndex + '" hidescrollbuttons ' + noInk + '>' + builder().map(function (t) {
+                    viewMenuBarTabs.innerHTML = '<paper-tabs selected="' + selectedIndex + '" hidescrollbuttons ' + noInk + '>' + builder().map(function(t) {
 
                         return '<paper-tab link><a class="clearLink paperTabLink" href="' + t.href + '"><div>' + t.name + '</div></a></paper-tab>';
 
                     }).join('') + '</paper-tabs>';
                     mainDrawerPanel.classList.add('withTallToolbar');
+
+                    if (!LibraryMenu.tabType) {
+                        //viewMenuBarTabs.classList.remove('hide');
+                        slideDownToShow(viewMenuBarTabs);
+                    }
+
                     LibraryMenu.tabType = type;
                 });
                 return;
-            }
+            } else {
+                viewMenuBarTabs.querySelector('paper-tabs').selected = selectedIndex;
 
-            viewMenuBarTabs.querySelector('paper-tabs').selected = selectedIndex;
+                if (!LibraryMenu.tabType) {
+                    //viewMenuBarTabs.classList.remove('hide');
+                    slideDownToShow(viewMenuBarTabs);
+                }
+            }
             LibraryMenu.tabType = type;
         },
 
