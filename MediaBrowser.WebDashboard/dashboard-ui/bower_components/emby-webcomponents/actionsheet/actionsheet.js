@@ -178,7 +178,7 @@
 
         if (options.showCancel) {
             html += '<div class="buttons">';
-            html += '<paper-button dialog-dismiss>' + dialogText.get('Cancel') + '</paper-button>';
+            html += '<paper-button class="btnCancel">' + dialogText.get('Cancel') + '</paper-button>';
             html += '</div>';
         }
         html += '</div>';
@@ -187,6 +187,12 @@
 
         if (layoutManager.tv) {
             addCenterFocus(dlg);
+        }
+
+        if (options.showCancel) {
+            dlg.querySelector('.btnCancel').addEventListener('click', function () {
+                dialogHelper.close(dlg);
+            });
         }
 
         document.body.appendChild(dlg);

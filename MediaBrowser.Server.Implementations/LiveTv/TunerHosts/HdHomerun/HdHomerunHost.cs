@@ -246,6 +246,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             string audioCodec = "ac3";
 
             int? videoBitrate = null;
+            int? audioBitrate = null;
 
             if (string.Equals(profile, "mobile", StringComparison.OrdinalIgnoreCase))
             {
@@ -306,6 +307,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     audioCodec = channel.AudioCodec;
 
                     videoBitrate = (channel.IsHD ?? true) ? 15000000 : 2000000;
+                    audioBitrate = (channel.IsHD ?? true) ? 448000 : 192000;
                 }
             }
 
@@ -346,7 +348,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                 // Set the index to -1 because we don't know the exact index of the audio stream within the container
                                 Index = -1,
                                 Codec = audioCodec,
-                                BitRate = 192000
+                                BitRate = audioBitrate
                             }
                         },
                 RequiresOpening = false,

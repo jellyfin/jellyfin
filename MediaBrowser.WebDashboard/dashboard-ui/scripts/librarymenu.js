@@ -1,4 +1,4 @@
-﻿define(['imageLoader', 'jQuery', 'paper-icon-button', 'paper-button', 'emby-icons'], function (imageLoader, $) {
+﻿define(['imageLoader', 'layoutManager', 'jQuery', 'paper-icon-button', 'paper-button', 'emby-icons'], function (imageLoader, layoutManager, $) {
 
     var mainDrawerPanel = document.querySelector('.mainDrawerPanel');
 
@@ -744,7 +744,9 @@
 
                 require(['paper-tabs'], function () {
 
-                    viewMenuBarTabs.innerHTML = '<paper-tabs selected="' + selectedIndex + '" hidescrollbuttons noink>' + builder().map(function (t) {
+                    var noInk = browserInfo.animate ? '' : ' noink';
+
+                    viewMenuBarTabs.innerHTML = '<paper-tabs selected="' + selectedIndex + '" hidescrollbuttons ' + noInk + '>' + builder().map(function (t) {
 
                         return '<paper-tab link><a class="clearLink paperTabLink" href="' + t.href + '"><div>' + t.name + '</div></a></paper-tab>';
 
@@ -931,7 +933,7 @@
             viewMenuBar.classList.remove('hide');
         }
 
-        if (page.classList.contains('type-interior')) {
+        if (page.classList.contains('type-interior') && !layoutManager.mobile) {
             viewMenuBar.classList.add('headroomDisabled');
         } else {
             viewMenuBar.classList.remove('headroomDisabled');

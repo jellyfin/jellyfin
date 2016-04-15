@@ -783,7 +783,7 @@ paper-input + .fieldDescription {
 }
 
 .mainDrawerPanel:not([narrow]) .withTabs .content-primary {
-    padding-top: 128px!important;
+    padding-top: 135px!important;
 }
 
 .mainDrawerPanel:not([narrow]) .content-primary ul:first-child {

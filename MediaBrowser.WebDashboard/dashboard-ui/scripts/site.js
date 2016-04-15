@@ -741,11 +741,9 @@ var Dashboard = {
             icon: 'people'
         }, {
             divider: true,
-            name: Globalize.translate('TabLibrary')
-        }, {
-            name: Globalize.translate('TabFolders'),
+            name: Globalize.translate('TabLibrary'),
             href: "library.html",
-            pageIds: ['mediaLibraryPage'],
+            pageIds: ['mediaLibraryPage', 'libraryPathMappingPage'],
             icon: 'folder',
             color: '#009688'
         }, {
@@ -755,20 +753,10 @@ var Dashboard = {
             icon: 'insert-drive-file',
             color: '#FF9800'
         }, {
-            name: Globalize.translate('TabPathSubstitution'),
-            href: "librarypathmapping.html",
-            pageIds: ['libraryPathMappingPage'],
-            icon: 'mode-edit'
-        }, {
             name: Globalize.translate('TabSubtitles'),
             href: "metadatasubtitles.html",
             pageIds: ['metadataSubtitlesPage'],
             icon: 'closed-caption'
-        }, {
-            name: Globalize.translate('TabAdvanced'),
-            href: "librarysettings.html",
-            pageIds: ['librarySettingsPage'],
-            icon: 'settings'
         }, {
             name: Globalize.translate('TabPlayback'),
             icon: 'play-circle-filled',
@@ -2930,8 +2918,6 @@ var AppInfo = {};
             deps.push('css!devices/ios/ios.css');
         } else if (AppInfo.isNativeApp && browserInfo.edge) {
             deps.push('css!devices/windowsphone/wp.css');
-        } else if (!browserInfo.android) {
-            deps.push('css!devices/android/android.css');
         }
 
         loadTheme();

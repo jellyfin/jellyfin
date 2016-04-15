@@ -164,8 +164,25 @@
         return false;
     }
 
+    function getTabs() {
+        return [
+        {
+            href: 'library.html',
+            name: Globalize.translate('TabFolders')
+        },
+         {
+             href: 'librarypathmapping.html',
+             name: Globalize.translate('TabPathSubstitution')
+         },
+         {
+             href: 'librarysettings.html',
+             name: Globalize.translate('TabAdvanced')
+         }];
+    }
+
     $(document).on('pageshow', "#librarySettingsPage", function () {
 
+        LibraryMenu.setTabs('librarysetup', 2, getTabs);
         Dashboard.showLoadingMsg();
 
         var page = this;
