@@ -55,7 +55,7 @@
 
         var html = '';
 
-        html += '<p class="paperCheckboxListLabel">' + Globalize.translate('HeaderBlockItemsWithNoRating') + '</p>';
+        html += '<p class="paperListLabel">' + Globalize.translate('HeaderBlockItemsWithNoRating') + '</p>';
 
         html += '<div class="paperCheckboxList">';
 

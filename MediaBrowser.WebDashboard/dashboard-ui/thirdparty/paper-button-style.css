@@ -427,16 +427,16 @@ paper-input label, paper-textarea label {
     font-family: inherit !important;
 }
 
-.paperCheckboxListLabel {
+.paperListLabel {
     font-size: 16px;
     margin-bottom: .5em;
 }
 
-.ui-body-b .paper-input-container-0 .input-content.paper-input-container label, .ui-body-b .paper-input-container-0 .input-content.paper-input-container .paper-input-label, .ui-body-b paper-textarea label, .ui-body-b .selectLabel, .ui-body-b .paperCheckboxListLabel, .ui-body-b .fieldDescription {
+.ui-body-b .paper-input-container-0 .input-content.paper-input-container label, .ui-body-b .paper-input-container-0 .input-content.paper-input-container .paper-input-label, .ui-body-b paper-textarea label, .ui-body-b .selectLabel, .ui-body-b .paperListLabel, .ui-body-b .fieldDescription {
     color: #ccc;
 }
 
-.ui-body-a .paper-input-container-0 .input-content.paper-input-container label, .ui-body-a .paper-input-container-0 .input-content.paper-input-container .paper-input-label, .ui-body-a paper-textarea label, .ui-body-a .selectLabel, .ui-body-a .paperCheckboxListLabel, .ui-body-a .fieldDescription {
+.ui-body-a .paper-input-container-0 .input-content.paper-input-container label, .ui-body-a .paper-input-container-0 .input-content.paper-input-container .paper-input-label, .ui-body-a paper-textarea label, .ui-body-a .selectLabel, .ui-body-a .paperListLabel, .ui-body-a .fieldDescription {
     color: #656565;
 }
 

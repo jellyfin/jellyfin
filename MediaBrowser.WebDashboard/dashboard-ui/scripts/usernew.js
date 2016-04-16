@@ -4,7 +4,7 @@
 
         var html = '';
 
-        html += '<div class="paperCheckboxListLabel">' + Globalize.translate('HeaderLibraries') + '</div>';
+        html += '<div class="paperListLabel">' + Globalize.translate('HeaderLibraries') + '</div>';
 
         html += '<div class="paperCheckboxList paperList" style="padding:.5em 1em;">';
 
@@ -28,7 +28,7 @@
 
         var html = '';
 
-        html += '<div class="paperCheckboxListLabel">' + Globalize.translate('HeaderChannels') + '</div>';
+        html += '<div class="paperListLabel">' + Globalize.translate('HeaderChannels') + '</div>';
 
         html += '<div class="paperCheckboxList paperList" style="padding:.5em 1em;">';
 

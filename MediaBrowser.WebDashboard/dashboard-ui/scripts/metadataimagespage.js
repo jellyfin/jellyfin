@@ -150,7 +150,7 @@
 
         var i, length, plugin, id;
 
-        html += '<div class="paperCheckboxListLabel">' + Globalize.translate('LabelImageFetchers') + '</div>';
+        html += '<div class="paperListLabel">' + Globalize.translate('LabelImageFetchers') + '</div>';
         html += '<div class="paperList">';
 
         for (i = 0, length = plugins.length; i < length; i++) {
@@ -220,7 +220,7 @@
             return;
         }
 
-        html += '<div class="paperCheckboxListLabel">' + Globalize.translate('LabelMetadataSavers') + '</div>';
+        html += '<div class="paperListLabel">' + Globalize.translate('LabelMetadataSavers') + '</div>';
         html += '<div class="paperCheckboxList paperList">';
 
         for (var i = 0, length = plugins.length; i < length; i++) {
@@ -253,7 +253,7 @@
 
         var i, length, plugin;
 
-        html += '<div class="paperCheckboxListLabel">' + Globalize.translate('LabelMetadataDownloaders') + '</div>';
+        html += '<div class="paperListLabel">' + Globalize.translate('LabelMetadataDownloaders') + '</div>';
         html += '<div class="paperList">';
 
         for (i = 0, length = plugins.length; i < length; i++) {
@@ -323,7 +323,7 @@
             return;
         }
 
-        html += '<div class="paperCheckboxListLabel">' + Globalize.translate('LabelMetadataReaders') + '</div>';
+        html += '<div class="paperListLabel">' + Globalize.translate('LabelMetadataReaders') + '</div>';
         html += '<div class="paperList">';
 
         for (var i = 0, length = plugins.length; i < length; i++) {

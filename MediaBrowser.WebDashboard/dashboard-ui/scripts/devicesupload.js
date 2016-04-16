@@ -21,7 +21,7 @@
 
         var html = '';
 
-        html += '<div class="paperCheckboxListLabel">';
+        html += '<div class="paperListLabel">';
         html += Globalize.translate('LabelEnableCameraUploadFor');
         html += '</div>';
 
