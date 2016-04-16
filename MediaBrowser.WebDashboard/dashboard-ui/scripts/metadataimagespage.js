@@ -267,46 +267,31 @@
 
         var i, length, plugin, id;
 
-        html += '<div class="ui-controlgroup-label" style="margin-bottom:0;padding-left:2px;">' + Globalize.translate('LabelMetadataDownloaders') + '</div>';
-
-        html += '<div style="display:inline-block;vertical-align:top;">';
-        html += '<div data-role="controlgroup" class="metadataFetcherGroup">';
+        html += '<div class="paperCheckboxListLabel">' + Globalize.translate('LabelMetadataDownloaders') + '</div>';
+        html += '<div class="paperList">';
 
         for (i = 0, length = plugins.length; i < length; i++) {
 
             plugin = plugins[i];
 
-            id = 'chkMetadataFetcher' + i;
-
             var isChecked = config.DisabledMetadataFetchers.indexOf(plugin.Name) == -1 ? ' checked="checked"' : '';
 
-            html += '<input class="chkMetadataFetcher" type="checkbox" name="' + id + '" id="' + id + '" data-pluginname="' + plugin.Name + '" data-mini="true"' + isChecked + '>';
-            html += '<label for="' + id + '">' + plugin.Name + '</label>';
-        }
+            html += '<paper-icon-item class="metadataFetcherItem" data-pluginname="' + plugin.Name + '">';
 
-        html += '</div>';
-        html += '</div>';
+            html += '<paper-checkbox class="chkMetadataFetcher" data-pluginname="' + plugin.Name + '" item-icon' + isChecked + '></paper-checkbox>';
 
-        if (plugins.length > 1) {
-            html += '<div style="display:inline-block;vertical-align:top;margin-left:5px;">';
+            html += '<paper-item-body>';
 
-            for (i = 0, length = plugins.length; i < length; i++) {
+            html += '<div>';
+            html += plugin.Name;
+            html += '</div>';
 
-                html += '<div>';
+            html += '</paper-item-body>';
 
-                if (i > 0) {
-                    html += '<paper-icon-button class="btnUp" data-pluginindex="' + i + '" icon="keyboard-arrow-up" title="' + Globalize.translate('ButtonUp') + '" style="padding:3px 8px;"></paper-icon-button>';
-                } else {
-                    html += '<paper-icon-button disabled class="btnUp" data-pluginindex="' + i + '" icon="keyboard-arrow-up" title="' + Globalize.translate('ButtonUp') + '" style="padding:3px 8px;"></paper-icon-button>';
-                }
+            html += '<paper-icon-button class="btnUp" icon="keyboard-arrow-up" title="' + Globalize.translate('ButtonUp') + '" style="padding:3px 8px;"></paper-icon-button>';
+            html += '<paper-icon-button class="btnDown" icon="keyboard-arrow-down" title="' + Globalize.translate('ButtonDown') + '" style="padding:3px 8px;"></paper-icon-button>';
 
-                if (i < (plugins.length - 1)) {
-                    html += '<paper-icon-button class="btnDown" data-pluginindex="' + i + '" icon="keyboard-arrow-down" title="' + Globalize.translate('ButtonDown') + '" style="padding:3px 8px;"></paper-icon-button>';
-                } else {
-                    html += '<paper-icon-button disabled class="btnDown" data-pluginindex="' + i + '" icon="keyboard-arrow-down" title="' + Globalize.translate('ButtonDown') + '" style="padding:3px 8px;"></paper-icon-button>';
-                }
-                html += '</div>';
-            }
+            html += '</paper-icon-item>';
         }
 
         html += '</div>';
@@ -315,26 +300,27 @@
         var elem = $('.metadataFetchers', page).html(html).show().trigger('create');
 
         $('.btnDown', elem).on('click', function () {
-            var index = parseInt(this.getAttribute('data-pluginindex'));
 
-            var elemToMove = $('.metadataFetcherGroup .ui-checkbox', page)[index];
+            var elemToMove = $(this).parents('.metadataFetcherItem')[0];
 
-            var insertAfter = $(elemToMove).next('.ui-checkbox')[0];
+            var insertAfter = $(elemToMove).next('.metadataFetcherItem')[0];
 
-            elemToMove.parentNode.removeChild(elemToMove);
-            $(elemToMove).insertAfter(insertAfter);
+            if (insertAfter) {
+                elemToMove.parentNode.removeChild(elemToMove);
+                $(elemToMove).insertAfter(insertAfter);
+            }
         });
 
         $('.btnUp', elem).on('click', function () {
 
-            var index = parseInt(this.getAttribute('data-pluginindex'));
+            var elemToMove = $(this).parents('.metadataFetcherItem')[0];
 
-            var elemToMove = $('.metadataFetcherGroup .ui-checkbox', page)[index];
+            var insertBefore = $(elemToMove).prev('.metadataFetcherItem')[0];
 
-            var insertBefore = $(elemToMove).prev('.ui-checkbox')[0];
-
-            elemToMove.parentNode.removeChild(elemToMove);
-            $(elemToMove).insertBefore(insertBefore);
+            if (insertBefore) {
+                elemToMove.parentNode.removeChild(elemToMove);
+                $(elemToMove).insertBefore(insertBefore);
+            }
         });
     }
 
@@ -431,7 +417,9 @@
 
         });
 
-        config.DisabledMetadataFetchers = $('.chkMetadataFetcher:not(:checked)', form).get().map(function (c) {
+        config.DisabledMetadataFetchers = $('.chkMetadataFetcher', form).get().filter(function (c) {
+            return !c.checked;
+        }).map(function (c) {
 
             return c.getAttribute('data-pluginname');
 

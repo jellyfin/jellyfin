@@ -143,8 +143,8 @@ namespace MediaBrowser.Providers.Manager
                 Item = itemOfType
             };
 
-            bool hasRefreshedMetadata = false;
-            bool hasRefreshedImages = false;
+            bool hasRefreshedMetadata = true;
+            bool hasRefreshedImages = true;
 
             // Next run metadata providers
             if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
@@ -186,6 +186,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                     else
                     {
+                        hasRefreshedMetadata = false;
                         refreshResult.SetDateLastMetadataRefresh(null);
                     }
                 }
@@ -208,6 +209,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                     else
                     {
+                        hasRefreshedImages = false;
                         refreshResult.SetDateLastImagesRefresh(null);
                     }
                 }
@@ -299,6 +301,11 @@ namespace MediaBrowser.Providers.Manager
             }
 
             if (item.SourceType != SourceType.Library)
+            {
+                return true;
+            }
+
+            if (item is ICollectionFolder)
             {
                 return true;
             }
