@@ -291,7 +291,7 @@ namespace MediaBrowser.Api
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var minPremiereDate = DateTime.Now.Date.ToUniversalTime();
+            var minPremiereDate = DateTime.Now.Date.ToUniversalTime().AddDays(-1);
 
             var parentIds = string.IsNullOrWhiteSpace(request.ParentId) ? new string[] { } : new[] { request.ParentId };
 
