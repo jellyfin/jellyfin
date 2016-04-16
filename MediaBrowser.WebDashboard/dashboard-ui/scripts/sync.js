@@ -82,13 +82,12 @@
         return new Promise(function (resolve, reject) {
 
             require(['paper-checkbox', 'paper-input', 'emby-collapsible'], function () {
-                renderFormInternal(options);
-                resolve();
+                renderFormInternal(options, resolve);
             });
         });
     }
 
-    function renderFormInternal(options) {
+    function renderFormInternal(options, resolve) {
 
         var elem = options.elem;
         var dialogOptions = options.dialogOptions;
@@ -189,7 +188,7 @@
 
         $('#selectSyncTarget', elem).on('change', function () {
 
-            loadQualityOptions(elem, this.value, options.dialogOptionsFn);
+            loadQualityOptions(elem, this.value, options.dialogOptionsFn).then(resolve);
 
         }).trigger('change');
 
@@ -383,9 +382,9 @@
 
     function loadQualityOptions(form, targetId, dialogOptionsFn) {
 
-        dialogOptionsFn(targetId).then(function (options) {
+        return dialogOptionsFn(targetId).then(function (options) {
 
-            renderTargetDialogOptions(form, options);
+            return renderTargetDialogOptions(form, options);
         });
     }
 

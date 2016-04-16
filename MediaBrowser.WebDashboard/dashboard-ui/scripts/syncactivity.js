@@ -412,7 +412,9 @@
 
     }).on('pageshow', ".syncActivityPage", function () {
 
-        LibraryMenu.setTabs('syncadmin', 0, getTabs);
+        if (this.id == 'syncActivityPage') {
+            LibraryMenu.setTabs('syncadmin', 0, getTabs);
+        }
         var page = this;
 
         Dashboard.getPluginSecurityInfo().then(function (pluginSecurityInfo) {
