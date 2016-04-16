@@ -185,7 +185,7 @@ namespace MediaBrowser.Api.Playback
 
         private async void DisposeLiveStream()
         {
-            if ((MediaSource.RequiresClosing) && string.IsNullOrWhiteSpace(Request.LiveStreamId))
+            if (MediaSource.RequiresClosing && string.IsNullOrWhiteSpace(Request.LiveStreamId))
             {
                 try
                 {
@@ -478,19 +478,6 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 return false;
-            }
-        }
-
-        public bool? IsTargetCabac
-        {
-            get
-            {
-                if (Request.Static)
-                {
-                    return VideoStream == null ? null : VideoStream.IsCabac;
-                }
-
-                return true;
             }
         }
     }

@@ -22,8 +22,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Entities.TV;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 {
@@ -337,12 +336,17 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
         private bool FilterItem(BaseItem item)
         {
-            if (!item.IsFolder && item.LocationType == LocationType.Virtual)
+            if (item.IsFolder)
             {
                 return false;
             }
 
-            if (item is IItemByName && !(item is MusicArtist))
+            if (item.LocationType == LocationType.Virtual)
+            {
+                return false;
+            }
+
+            if (item is IItemByName)
             {
                 return false;
             }
@@ -390,6 +394,18 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         public static string GetItemName(BaseItem item)
         {
             var name = item.Name;
+            var episode = item as Episode;
+            if (episode != null)
+            {
+                if (episode.IndexNumber.HasValue)
+                {
+                    name = string.Format("Ep{0} - {1}", episode.IndexNumber.Value.ToString(CultureInfo.InvariantCulture), name);
+                }
+                if (episode.ParentIndexNumber.HasValue)
+                {
+                    name = string.Format("S{0}, {1}", episode.ParentIndexNumber.Value.ToString(CultureInfo.InvariantCulture), name);
+                }
+            }
 
             var hasSeries = item as IHasSeries;
 

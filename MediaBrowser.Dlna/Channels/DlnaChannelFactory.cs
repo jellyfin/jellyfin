@@ -1,22 +1,4 @@
-﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Dlna.ContentDirectory;
-using MediaBrowser.Dlna.PlayTo;
-using MediaBrowser.Dlna.Ssdp;
-using MediaBrowser.Model.Channels;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace MediaBrowser.Dlna.Channels
+﻿namespace MediaBrowser.Dlna.Channels
 {
     //public class DlnaChannelFactory : IChannelFactory, IDisposable
     //{

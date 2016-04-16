@@ -142,8 +142,8 @@ namespace MediaBrowser.Server.Implementations.Sorting
 
         private int CompareEpisodes(Episode x, Episode y)
         {
-            var xValue = ((x.PhysicalSeasonNumber ?? -1) * 1000) + (x.IndexNumber ?? -1);
-            var yValue = ((y.PhysicalSeasonNumber ?? -1) * 1000) + (y.IndexNumber ?? -1);
+            var xValue = (x.PhysicalSeasonNumber ?? -1) * 1000 + (x.IndexNumber ?? -1);
+            var yValue = (y.PhysicalSeasonNumber ?? -1) * 1000 + (y.IndexNumber ?? -1);
 
             return xValue.CompareTo(yValue);
         }

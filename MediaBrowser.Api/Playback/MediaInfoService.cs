@@ -227,7 +227,7 @@ namespace MediaBrowser.Api.Playback
                 SetDeviceSpecificData(item, mediaSource, profile, auth, maxBitrate, startTimeTicks, mediaSourceId, audioStreamIndex, subtitleStreamIndex, result.PlaySessionId);
             }
 
-            SortMediaSources(result);
+            SortMediaSources(result, maxBitrate);
         }
 
         private void SetDeviceSpecificData(BaseItem item,
@@ -375,7 +375,7 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        private void SortMediaSources(PlaybackInfoResponse result)
+        private void SortMediaSources(PlaybackInfoResponse result, int? maxBitrate)
         {
             var originalList = result.MediaSources.ToList();
 
@@ -408,6 +408,23 @@ namespace MediaBrowser.Api.Playback
                     default:
                         return 1;
                 }
+
+            }).ThenBy(i =>
+            {
+                if (maxBitrate.HasValue)
+                {
+                    if (i.Bitrate.HasValue)
+                    {
+                        if (i.Bitrate.Value <= maxBitrate.Value)
+                        {
+                            return 0;
+                        }
+
+                        return 2;
+                    }
+                }
+
+                return 1;
 
             }).ThenBy(originalList.IndexOf)
             .ToList();

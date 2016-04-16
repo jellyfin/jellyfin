@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Model.Logging;
-using System.Linq;
 using System.ServiceProcess;
 
 namespace MediaBrowser.ServerApplication

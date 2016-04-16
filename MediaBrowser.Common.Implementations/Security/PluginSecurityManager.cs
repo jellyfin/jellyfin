@@ -21,7 +21,7 @@ namespace MediaBrowser.Common.Implementations.Security
     public class PluginSecurityManager : ISecurityManager
     {
         private const string MBValidateUrl = MbAdmin.HttpsUrl + "service/registration/validate";
-        private const string AppstoreRegUrl = /*MbAdmin.HttpsUrl*/ "http://mb3admin.com/admin/service/appstore/register";
+        private const string AppstoreRegUrl = /*MbAdmin.HttpsUrl*/ "https://mb3admin.com/admin/service/appstore/register";
 
         /// <summary>
         /// The _is MB supporter
@@ -299,7 +299,7 @@ namespace MediaBrowser.Common.Implementations.Security
             };
 
             record.TrialVersion = IsInTrial(reg.expDate, record.RegChecked, record.IsRegistered);
-            record.IsValid = !record.RegChecked || (record.IsRegistered || record.TrialVersion);
+            record.IsValid = !record.RegChecked || record.IsRegistered || record.TrialVersion;
 
             return record;
         }
@@ -314,7 +314,7 @@ namespace MediaBrowser.Common.Implementations.Security
 
             var isInTrial = expirationDate > DateTime.UtcNow;
 
-            return (isInTrial && !isRegistered);
+            return isInTrial && !isRegistered;
         }
 
         /// <summary>

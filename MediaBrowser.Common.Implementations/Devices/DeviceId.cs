@@ -4,7 +4,6 @@ using System;
 using System.IO;
 using System.Text;
 using CommonIO;
-using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Common.Implementations.Devices
 {

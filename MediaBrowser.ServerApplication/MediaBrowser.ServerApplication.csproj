@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MediaBrowser.ServerApplication</RootNamespace>
     <AssemblyName>MediaBrowser.ServerApplication</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -69,15 +70,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\ImageMagickSharp.1.0.0.18\lib\net45\ImageMagickSharp.dll</HintPath>
     </Reference>
-    <Reference Include="MediaBrowser.IsoMounter">
-      <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.69\lib\net45\MediaBrowser.IsoMounter.dll</HintPath>
-    </Reference>
     <Reference Include="Patterns.Logging, Version=1.0.5494.41209, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
-    </Reference>
-    <Reference Include="pfmclrapi">
-      <HintPath>..\packages\MediaBrowser.IsoMounting.3.0.69\lib\net45\pfmclrapi.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
@@ -116,7 +111,7 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="MainStartup.cs" />
-    <Compile Include="Native\Autorun.cs" />
+    <Compile Include="Native\LnkShortcutHandler.cs" />
     <Compile Include="Native\Standby.cs" />
     <Compile Include="Native\ServerAuthorization.cs" />
     <Compile Include="Native\WindowsApp.cs" />
@@ -144,6 +139,8 @@
     <None Include="App.config" />
     <None Include="app.manifest" />
     <EmbeddedResource Include="Native\RegisterServer.bat" />
+    <EmbeddedResource Include="ffmpeg\ffmpegx64.7z" />
+    <EmbeddedResource Include="ffmpeg\ffmpegx86.7z" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

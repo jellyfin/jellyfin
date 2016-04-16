@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -122,7 +121,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 {
                     try
                     {
-                        return (GetChannelProvider(i) is ISupportsLatestMedia) == val;
+                        return GetChannelProvider(i) is ISupportsLatestMedia == val;
                     }
                     catch
                     {
@@ -403,7 +402,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 var val = width.Value;
 
                 var res = list
-                    .OrderBy(i => (i.Width.HasValue && i.Width.Value <= val ? 0 : 1))
+                    .OrderBy(i => i.Width.HasValue && i.Width.Value <= val ? 0 : 1)
                     .ThenBy(i => Math.Abs((i.Width ?? 0) - val))
                     .ThenByDescending(i => i.Width ?? 0)
                     .ThenBy(list.IndexOf)
@@ -1407,7 +1406,8 @@ namespace MediaBrowser.Server.Implementations.Channels
                 throw new ArgumentNullException("channel");
             }
 
-            var result = GetAllChannels().FirstOrDefault(i => string.Equals(GetInternalChannelId(i.Name).ToString("N"), channel.ChannelId, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, channel.Name, StringComparison.OrdinalIgnoreCase));
+            var result = GetAllChannels()
+                .FirstOrDefault(i => string.Equals(GetInternalChannelId(i.Name).ToString("N"), channel.ChannelId, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, channel.Name, StringComparison.OrdinalIgnoreCase));
 
             if (result == null)
             {
