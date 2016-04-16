@@ -30,7 +30,9 @@ class AbrController extends EventHandler {
   }
 
   onFragLoading(data) {
-    this.timer = setInterval(this.onCheck, 100);
+    if (!this.timer) {
+      this.timer = setInterval(this.onCheck, 100);
+    }
     this.fragCurrent = data.frag;
   }
 

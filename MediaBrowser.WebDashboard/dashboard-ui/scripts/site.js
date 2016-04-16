@@ -743,7 +743,7 @@ var Dashboard = {
             divider: true,
             name: Globalize.translate('TabLibrary'),
             href: "library.html",
-            pageIds: ['mediaLibraryPage', 'libraryPathMappingPage'],
+            pageIds: ['mediaLibraryPage', 'libraryPathMappingPage', 'librarySettingsPage'],
             icon: 'folder',
             color: '#009688'
         }, {

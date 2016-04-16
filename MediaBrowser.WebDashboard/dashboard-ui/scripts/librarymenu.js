@@ -1134,7 +1134,6 @@
     });
 
     Events.on(ConnectionManager, 'localusersignedin', function (e, user) {
-        requiresDrawerRefresh = true;
         setDrawerClass();
         var apiClient = ConnectionManager.getApiClient(user.ServerId);
         ConnectionManager.user(ConnectionManager.getApiClient(user.ServerId)).then(function (user) {
@@ -1149,14 +1148,8 @@
         }
     });
 
-    Events.on(ConnectionManager, 'localusersignedout', function () {
-        requiresDrawerRefresh = true;
-        updateUserInHeader();
-    });
-
-    Events.on(MediaController, 'playerchange', function () {
-        updateCastIcon();
-    });
+    Events.on(ConnectionManager, 'localusersignedout', updateUserInHeader);
+    Events.on(MediaController, 'playerchange', updateCastIcon);
 
     setDrawerClass();
 

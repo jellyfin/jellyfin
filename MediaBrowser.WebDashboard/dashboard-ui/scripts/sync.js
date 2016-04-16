@@ -82,13 +82,12 @@
         return new Promise(function (resolve, reject) {
 
             require(['paper-checkbox', 'paper-input', 'emby-collapsible'], function () {
-                renderFormInternal(options);
-                resolve();
+                renderFormInternal(options, resolve);
             });
         });
     }
 
-    function renderFormInternal(options) {
+    function renderFormInternal(options, resolve) {
 
         var elem = options.elem;
         var dialogOptions = options.dialogOptions;
@@ -189,7 +188,7 @@
 
         $('#selectSyncTarget', elem).on('change', function () {
 
-            loadQualityOptions(elem, this.value, options.dialogOptionsFn);
+            loadQualityOptions(elem, this.value, options.dialogOptionsFn).then(resolve);
 
         }).trigger('change');
 
@@ -319,12 +318,14 @@
             return o.Id == profileId;
         })[0];
 
+        var qualityOptions = options.QualityOptions || [];
+
         if (option) {
             $('.profileDescription', form).html(option.Description || '');
-            setQualityFieldVisible(form, options.QualityOptions.length > 0 && option.EnableQualityOptions && options.Options.indexOf('Quality') != -1);
+            setQualityFieldVisible(form, qualityOptions.length > 0 && option.EnableQualityOptions && options.Options.indexOf('Quality') != -1);
         } else {
             $('.profileDescription', form).html('');
-            setQualityFieldVisible(form, options.QualityOptions.length > 0 && options.Options.indexOf('Quality') != -1);
+            setQualityFieldVisible(form, qualityOptions.length > 0 && options.Options.indexOf('Quality') != -1);
         }
     }
 
@@ -381,9 +382,9 @@
 
     function loadQualityOptions(form, targetId, dialogOptionsFn) {
 
-        dialogOptionsFn(targetId).then(function (options) {
+        return dialogOptionsFn(targetId).then(function (options) {
 
-            renderTargetDialogOptions(form, options);
+            return renderTargetDialogOptions(form, options);
         });
     }
 

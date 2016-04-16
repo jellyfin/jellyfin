@@ -208,6 +208,20 @@ class StreamController extends EventHandler {
                 logger.log(`buffer end: ${bufferEnd} is located too far from the end of live sliding playlist, media position will be reseted to: ${this.seekAfterBuffered.toFixed(3)}`);
                 bufferEnd = this.seekAfterBuffered;
             }
+
+            // if end of buffer greater than live edge, don't load any fragment
+            // this could happen if live playlist intermittently slides in the past.
+            // level 1 loaded [182580161,182580167]
+            // level 1 loaded [182580162,182580169]
+            // Loading 182580168 of [182580162 ,182580169],level 1 ..
+            // Loading 182580169 of [182580162 ,182580169],level 1 ..
+            // level 1 loaded [182580162,182580168] <============= here we should have bufferEnd > end. in that case break to avoid reloading 182580168
+            // level 1 loaded [182580164,182580171]
+            //
+            if (bufferEnd > end) {
+              break;
+            }
+
             if (this.startFragRequested && !levelDetails.PTSKnown) {
               /* we are switching level on live playlist, but we don't have any PTS info for that quality level ...
                  try to load frag matching with next SN.
@@ -1004,11 +1018,11 @@ _checkBuffer() {
           logger.log(`playback not stuck anymore @${currentTime}`);
         }
         // check buffer upfront
-        // if less than 200ms is buffered, and media is expected to play but playhead is not moving,
+        // if less than jumpThreshold second is buffered, and media is expected to play but playhead is not moving,
         // and we have a new buffer range available upfront, let's seek to that one
-        if(bufferInfo.len <= jumpThreshold) {
-          if(playheadMoving || !expectedPlaying) {
-            // playhead moving or media not playing
+        if(expectedPlaying && bufferInfo.len <= jumpThreshold) {
+          if(playheadMoving) {
+            // playhead moving
             jumpThreshold = 0;
             this.seekHoleNudgeDuration = 0;
           } else {

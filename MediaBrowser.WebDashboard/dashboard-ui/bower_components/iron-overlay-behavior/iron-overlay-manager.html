@@ -52,7 +52,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     /**
      * The shared backdrop element.
-     * @type {Element} backdropElement
+     * @type {!Element} backdropElement
      */
     get backdropElement() {
       if (!this._backdropElement) {
@@ -63,7 +63,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     /**
      * The deepest active element.
-     * @type {Element} activeElement the active element
+     * @type {!Element} activeElement the active element
      */
     get deepActiveElement() {
       // document.activeElement can be null
@@ -83,13 +83,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      */
     _bringOverlayAtIndexToFront: function(i) {
       var overlay = this._overlays[i];
+      if (!overlay) {
+        return;
+      }
       var lastI = this._overlays.length - 1;
+      var currentOverlay = this._overlays[lastI];
       // Ensure always-on-top overlay stays on top.
-      if (!overlay.alwaysOnTop && this._overlays[lastI].alwaysOnTop) {
+      if (currentOverlay && this._shouldBeBehindOverlay(overlay, currentOverlay)) {
         lastI--;
       }
       // If already the top element, return.
-      if (!overlay || i >= lastI) {
+      if (i >= lastI) {
         return;
       }
       // Update z-index to be on top.
@@ -109,7 +113,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     /**
      * Adds the overlay and updates its z-index if it's opened, or removes it if it's closed.
      * Also updates the backdrop z-index.
-     * @param {Element} overlay
+     * @param {!Element} overlay
      */
     addOrRemoveOverlay: function(overlay) {
       if (overlay.opened) {
@@ -123,7 +127,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     /**
      * Tracks overlays for z-index and focus management.
      * Ensures the last added overlay with always-on-top remains on top.
-     * @param {Element} overlay
+     * @param {!Element} overlay
      */
     addOverlay: function(overlay) {
       var i = this._overlays.indexOf(overlay);
@@ -137,7 +141,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       var newZ = this._getZ(overlay);
 
       // Ensure always-on-top overlay stays on top.
-      if (currentOverlay && currentOverlay.alwaysOnTop && !overlay.alwaysOnTop) {
+      if (currentOverlay && this._shouldBeBehindOverlay(overlay, currentOverlay)) {
         // This bumps the z-index of +2.
         this._applyOverlayZ(currentOverlay, minimumZ);
         insertionIndex--;
@@ -158,7 +162,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     /**
-     * @param {Element} overlay
+     * @param {!Element} overlay
      */
     removeOverlay: function(overlay) {
       var i = this._overlays.indexOf(overlay);
@@ -276,7 +280,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     /**
-     * @param {Element} element
+     * @param {!Element} element
      * @param {number|string} z
      * @private
      */
@@ -285,7 +289,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     /**
-     * @param {Element} overlay
+     * @param {!Element} overlay
      * @param {number} aboveZ
      * @private
      */
@@ -365,6 +369,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           overlay._onCaptureTab(event);
         }
       }
+    },
+
+    /**
+     * Returns if the overlay1 should be behind overlay2.
+     * @param {!Element} overlay1
+     * @param {!Element} overlay2
+     * @return {boolean}
+     * @private
+     */
+    _shouldBeBehindOverlay: function(overlay1, overlay2) {
+      var o1 = /** @type {?} */ (overlay1);
+      var o2 = /** @type {?} */ (overlay2);
+      return !o1.alwaysOnTop && o2.alwaysOnTop;
     }
   };
 

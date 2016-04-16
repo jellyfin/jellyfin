@@ -65,10 +65,6 @@
 
         htmlName += name;
 
-        if (!item.LocalTrailerCount && item.Type == "Movie") {
-            htmlName += '<img src="css/images/editor/missingtrailer.png" title="' + Globalize.translate('MissingLocalTrailer') + '" />';
-        }
-
         if (!item.ImageTags || !item.ImageTags.Primary) {
             htmlName += '<img src="css/images/editor/missingprimaryimage.png" title="' + Globalize.translate('MissingPrimaryImage') + '" />';
         }

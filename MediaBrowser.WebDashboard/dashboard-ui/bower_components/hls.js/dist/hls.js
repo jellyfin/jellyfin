@@ -427,7 +427,9 @@ var AbrController = function (_EventHandler) {
   }, {
     key: 'onFragLoading',
     value: function onFragLoading(data) {
-      this.timer = setInterval(this.onCheck, 100);
+      if (!this.timer) {
+        this.timer = setInterval(this.onCheck, 100);
+      }
       this.fragCurrent = data.frag;
     }
   }, {
@@ -1188,6 +1190,7 @@ var LevelController = function (_EventHandler) {
     value: function destroy() {
       if (this.timer) {
         clearInterval(this.timer);
+        this.timer = null;
       }
       this._manualLevel = -1;
     }
@@ -1712,6 +1715,20 @@ var StreamController = function (_EventHandler) {
                 _logger.logger.log('buffer end: ' + bufferEnd + ' is located too far from the end of live sliding playlist, media position will be reseted to: ' + this.seekAfterBuffered.toFixed(3));
                 bufferEnd = this.seekAfterBuffered;
               }
+
+              // if end of buffer greater than live edge, don't load any fragment
+              // this could happen if live playlist intermittently slides in the past.
+              // level 1 loaded [182580161,182580167]
+              // level 1 loaded [182580162,182580169]
+              // Loading 182580168 of [182580162 ,182580169],level 1 ..
+              // Loading 182580169 of [182580162 ,182580169],level 1 ..
+              // level 1 loaded [182580162,182580168] <============= here we should have bufferEnd > end. in that case break to avoid reloading 182580168
+              // level 1 loaded [182580164,182580171]
+              //
+              if (bufferEnd > end) {
+                break;
+              }
+
               if (this.startFragRequested && !levelDetails.PTSKnown) {
                 /* we are switching level on live playlist, but we don't have any PTS info for that quality level ...
                    try to load frag matching with next SN.
@@ -2516,11 +2533,11 @@ var StreamController = function (_EventHandler) {
             _logger.logger.log('playback not stuck anymore @' + currentTime);
           }
           // check buffer upfront
-          // if less than 200ms is buffered, and media is expected to play but playhead is not moving,
+          // if less than jumpThreshold second is buffered, and media is expected to play but playhead is not moving,
           // and we have a new buffer range available upfront, let's seek to that one
-          if (bufferInfo.len <= jumpThreshold) {
-            if (playheadMoving || !expectedPlaying) {
-              // playhead moving or media not playing
+          if (expectedPlaying && bufferInfo.len <= jumpThreshold) {
+            if (playheadMoving) {
+              // playhead moving
               jumpThreshold = 0;
               this.seekHoleNudgeDuration = 0;
             } else {
@@ -5158,7 +5175,9 @@ var ErrorDetails = exports.ErrorDetails = {
   // Identifier for a buffer full event
   BUFFER_FULL_ERROR: 'bufferFullError',
   // Identifier for a buffer seek over hole event
-  BUFFER_SEEK_OVER_HOLE: 'bufferSeekOverHole'
+  BUFFER_SEEK_OVER_HOLE: 'bufferSeekOverHole',
+  // Identifier for an internal exception happening inside hls.js while handling an event
+  INTERNAL_EXCEPTION: 'internalException'
 };
 
 },{}],21:[function(require,module,exports){
@@ -5170,17 +5189,17 @@ Object.defineProperty(exports, "__esModule", {
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /*
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     * All objects in the event handling chain should inherit from this class
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     */
+
+var _logger = require('./utils/logger');
+
+var _errors = require('./errors');
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*
-*
-* All objects in the event handling chain should inherit from this class
-*
-*/
-
-//import {logger} from './utils/logger';
 
 var EventHandler = function () {
   function EventHandler(hls) {
@@ -5250,7 +5269,12 @@ var EventHandler = function () {
         }
         return this[funcName].bind(this, data);
       };
-      eventToFunction.call(this, event, data).call();
+      try {
+        eventToFunction.call(this, event, data).call();
+      } catch (err) {
+        _logger.logger.error('internal error happened while processing ' + event + ':' + err.message);
+        this.hls.trigger(Event.ERROR, { type: _errors.ErrorTypes.OTHER_ERROR, details: _errors.ErrorDetails.INTERNAL_EXCEPTION, fatal: false, event: event, err: err });
+      }
     }
   }]);
 
@@ -5259,7 +5283,7 @@ var EventHandler = function () {
 
 exports.default = EventHandler;
 
-},{}],22:[function(require,module,exports){
+},{"./errors":20,"./utils/logger":36}],22:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -5498,10 +5522,14 @@ var LevelHelper = function () {
       if (PTSFrag) {
         LevelHelper.updateFragPTS(newDetails, PTSFrag.sn, PTSFrag.startPTS, PTSFrag.endPTS);
       } else {
-        // adjust start by sliding offset
-        var sliding = oldfragments[delta].start;
-        for (i = 0; i < newfragments.length; i++) {
-          newfragments[i].start += sliding;
+        // ensure that delta is within oldfragments range
+        // no need to offset start if delta === 0
+        if (delta > 0 && delta < oldfragments.length) {
+          // adjust start by sliding offset
+          var sliding = oldfragments[delta].start;
+          for (i = 0; i < newfragments.length; i++) {
+            newfragments[i].start += sliding;
+          }
         }
       }
       // if we are here, it means we have fragments overlapping between
@@ -5795,6 +5823,7 @@ var Hls = function () {
       this.playlistLoader.destroy();
       this.fragmentLoader.destroy();
       this.levelController.destroy();
+      this.abrController.destroy();
       this.bufferController.destroy();
       this.capLevelController.destroy();
       this.streamController.destroy();
@@ -7281,8 +7310,8 @@ var MP4Remuxer = function () {
           ptsnorm = this._PTSNormalize(pts, nextAvcDts);
           dtsnorm = this._PTSNormalize(dts, nextAvcDts);
           delta = Math.round((dtsnorm - nextAvcDts) / 90);
-          // if fragment are contiguous, or delta less than 600ms, ensure there is no overlap/hole between fragments
-          if (contiguous || Math.abs(delta) < 600) {
+          // if fragment are contiguous, or if there is a huge delta (more than 10s) between expected PTS and sample PTS
+          if (contiguous || Math.abs(delta) > 10000) {
             if (delta) {
               if (delta > 1) {
                 _logger.logger.log('AVC:' + delta + ' ms hole between fragments detected,filling it');
@@ -7414,8 +7443,8 @@ var MP4Remuxer = function () {
           ptsnorm = this._PTSNormalize(pts, nextAacPts);
           dtsnorm = this._PTSNormalize(dts, nextAacPts);
           delta = Math.round(1000 * (ptsnorm - nextAacPts) / pesTimeScale);
-          // if fragment are contiguous, or delta less than 600ms, ensure there is no overlap/hole between fragments
-          if (contiguous || Math.abs(delta) < 600) {
+          // if fragment are contiguous, or if there is a huge delta (more than 10s) between expected PTS and sample PTS
+          if (contiguous || Math.abs(delta) > 10000) {
             // log delta
             if (delta) {
               if (delta > 0) {
@@ -7427,7 +7456,7 @@ var MP4Remuxer = function () {
                   track.len -= unit.byteLength;
                   continue;
                 }
-              // set DTS to next DTS
+              // set PTS/DTS to next PTS/DTS
               ptsnorm = dtsnorm = nextAacPts;
             }
           }

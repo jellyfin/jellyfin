@@ -326,13 +326,13 @@ context. You should place this element as a child of `<body>` whenever possible.
 
       // requestAnimationFrame for non-blocking rendering
       if (this.__openChangedAsync) {
-        cancelAnimationFrame(this.__openChangedAsync);
+        window.cancelAnimationFrame(this.__openChangedAsync);
       }
       if (this.opened) {
         if (this.withBackdrop) {
           this.backdropElement.prepare();
         }
-        this.__openChangedAsync = requestAnimationFrame(function() {
+        this.__openChangedAsync = window.requestAnimationFrame(function() {
           this.__openChangedAsync = null;
           this._prepareRenderOpened();
           this._renderOpened();
@@ -543,11 +543,11 @@ context. You should place this element as a child of `<body>` whenever possible.
      */
     _onIronResize: function() {
       if (this.__onIronResizeAsync) {
-        cancelAnimationFrame(this.__onIronResizeAsync);
+        window.cancelAnimationFrame(this.__onIronResizeAsync);
         this.__onIronResizeAsync = null;
       }
       if (this.opened && !this.__isAnimating) {
-        this.__onIronResizeAsync = requestAnimationFrame(function() {
+        this.__onIronResizeAsync = window.requestAnimationFrame(function() {
           this.__onIronResizeAsync = null;
           this.refit();
         }.bind(this));
