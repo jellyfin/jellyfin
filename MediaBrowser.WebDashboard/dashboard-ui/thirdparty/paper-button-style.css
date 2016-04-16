@@ -184,10 +184,6 @@ paper-button.notext {
         margin-right: 0;
     }
 
-.promptDialogContent paper-button {
-    color: #43A047;
-}
-
 /*paper-toast {
     background-color: #eee;
     color: #000;
@@ -431,16 +427,16 @@ paper-input label, paper-textarea label {
     font-family: inherit !important;
 }
 
-.paperCheckboxListLabel {
+.paperListLabel {
     font-size: 16px;
     margin-bottom: .5em;
 }
 
-.ui-body-b .paper-input-container-0 .input-content.paper-input-container label, .ui-body-b .paper-input-container-0 .input-content.paper-input-container .paper-input-label, .ui-body-b paper-textarea label, .ui-body-b .selectLabel, .ui-body-b .paperCheckboxListLabel, .ui-body-b .fieldDescription {
+.ui-body-b .paper-input-container-0 .input-content.paper-input-container label, .ui-body-b .paper-input-container-0 .input-content.paper-input-container .paper-input-label, .ui-body-b paper-textarea label, .ui-body-b .selectLabel, .ui-body-b .paperListLabel, .ui-body-b .fieldDescription {
     color: #ccc;
 }
 
-.ui-body-a .paper-input-container-0 .input-content.paper-input-container label, .ui-body-a .paper-input-container-0 .input-content.paper-input-container .paper-input-label, .ui-body-a paper-textarea label, .ui-body-a .selectLabel, .ui-body-a .paperCheckboxListLabel, .ui-body-a .fieldDescription {
+.ui-body-a .paper-input-container-0 .input-content.paper-input-container label, .ui-body-a .paper-input-container-0 .input-content.paper-input-container .paper-input-label, .ui-body-a paper-textarea label, .ui-body-a .selectLabel, .ui-body-a .paperListLabel, .ui-body-a .fieldDescription {
     color: #656565;
 }
 
@@ -469,10 +465,14 @@ paper-textarea.mono textarea {
 }
 
 .paperList {
-    padding-top: 12px;
+    padding: .5em 0;
     margin: 12px auto;
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
     background-color: #fff;
+}
+
+.paperCheckboxList.paperList {
+    padding: .5em 1em;
 }
 
 .ui-body-b .paperList {

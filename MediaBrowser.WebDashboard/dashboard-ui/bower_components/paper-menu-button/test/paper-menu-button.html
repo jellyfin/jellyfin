@@ -34,6 +34,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+  <test-fixture id="TwoMenuButtons">
+    <template>
+      <paper-menu-button no-animations>
+        <span class="dropdown-trigger">trigger</span>
+        <span class="dropdown-content">content</span>
+      </paper-menu-button>
+      <paper-menu-button no-animations>
+        <span class="dropdown-trigger">trigger</span>
+        <span class="dropdown-content">content</span>
+      </paper-menu-button>
+    </template>
+  </test-fixture>
+
   <script>
     suite('<paper-menu-button>', function() {
       var menuButton;
@@ -54,37 +67,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         expect(contentRect.width).to.be.equal(0);
         expect(contentRect.height).to.be.equal(0);
 
-        MockInteractions.tap(trigger);
-
-        Polymer.Base.async(function() {
-          contentRect = content.getBoundingClientRect();
-
+        menuButton.addEventListener('paper-dropdown-open', function() {
           expect(menuButton.opened).to.be.equal(true);
-
-          expect(contentRect.width).to.be.greaterThan(0);
-          expect(contentRect.height).to.be.greaterThan(0);
           done();
         });
+
+        MockInteractions.tap(trigger);
       });
 
       test('closes when trigger is clicked again', function(done) {
-        MockInteractions.tap(trigger);
-
-        Polymer.Base.async(function() {
-
-          MockInteractions.tap(trigger);
+        menuButton.addEventListener('paper-dropdown-open', function() {
+          menuButton.addEventListener('paper-dropdown-close', function() {
+            expect(menuButton.opened).to.be.equal(false);
+            done();
+          });
 
           Polymer.Base.async(function() {
-            var contentRect = content.getBoundingClientRect();
-
-            expect(menuButton.opened).to.be.equal(false);
-
-            expect(contentRect.width).to.be.equal(0);
-            expect(contentRect.height).to.be.equal(0);
-
-            done();
-          }, Polymer.PaperMenuButton.MAX_ANIMATION_TIME_MS);
-        }, 100);
+            MockInteractions.tap(trigger);
+          });
+        });
+        
+        MockInteractions.tap(trigger);
       });
 
       test('closes when disabled while open', function() {
@@ -102,6 +105,62 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       test('has aria-haspopup attribute', function() {
         expect(menuButton.hasAttribute('aria-haspopup')).to.be.equal(true);
+      });
+
+    });
+
+    suite('when there are two buttons', function() {
+      var menuButton;
+      var trigger;
+      var otherButton;
+      var otherTrigger;
+
+      setup(function() {
+        var buttons = fixture('TwoMenuButtons');
+        menuButton = buttons[0];
+        otherButton = buttons[1];
+        trigger = Polymer.dom(menuButton).querySelector('.dropdown-trigger');
+        otherTrigger = Polymer.dom(otherButton).querySelector('.dropdown-trigger');
+      });
+
+      test('closes current and opens other', function(done) {
+        expect(menuButton.opened).to.be.equal(false);
+        expect(otherButton.opened).to.be.equal(false);
+
+        /*
+          NOTE: iron-overlay-behavior adds listeners asynchronously when the
+          overlay opens, so we need to wait for this event which is a
+          more-explicit signal that tells us that the overlay is really opened.
+         */
+        menuButton.addEventListener('iron-overlay-opened', function() {
+          expect(menuButton.opened).to.be.equal(true);
+          expect(otherButton.opened).to.be.equal(false);
+
+          var firstClosed = false;
+          var secondOpened = false;
+
+          menuButton.addEventListener('paper-dropdown-close', function() {
+            firstClosed = true;
+          });
+
+          otherButton.addEventListener('paper-dropdown-open', function() {
+            secondOpened = true;
+          });
+
+          Polymer.Base.async(function() {
+            MockInteractions.tap(otherTrigger);
+          });
+          
+
+          Polymer.Base.async(function() {
+            expect(firstClosed).to.be.equal(true);
+            expect(secondOpened).to.be.equal(true);
+
+            done();
+          });
+        });
+
+        MockInteractions.tap(trigger);
       });
     });
   </script>

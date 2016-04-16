@@ -28,10 +28,15 @@
             return;
         }
 
+        if (!elem.animate) {
+            elem.classList.add('hide');
+            return;
+        }
+
         requestAnimationFrame(function () {
             var keyframes = [
-              { height: '100%', offset: 0 },
-              { height: '0', offset: 1 }];
+              { transform: 'translateY(0)', offset: 0 },
+              { transform: 'translateY(100%)', offset: 1 }];
             var timing = { duration: 300, iterations: 1, fill: 'forwards', easing: 'ease-out' };
 
             elem.animate(keyframes, timing).onfinish = function () {
@@ -48,12 +53,15 @@
 
         elem.classList.remove('hide');
 
+        if (!elem.animate) {
+            return;
+        }
+
         requestAnimationFrame(function () {
-            elem.style.display = 'block';
 
             var keyframes = [
-              { height: '0', offset: 0 },
-              { height: '100%', offset: 1 }];
+              { transform: 'translateY(100%)', offset: 0 },
+              { transform: 'translateY(0)', offset: 1 }];
             var timing = { duration: 300, iterations: 1, fill: 'forwards', easing: 'ease-out' };
             elem.animate(keyframes, timing);
         });
@@ -478,10 +486,16 @@
                                 break;
                             case 'download':
                                 {
-                                    var downloadHref = ApiClient.getUrl("Items/" + itemId + "/Download", {
-                                        api_key: ApiClient.accessToken()
+                                    require(['fileDownloader'], function (fileDownloader) {
+                                        var downloadHref = ApiClient.getUrl("Items/" + itemId + "/Download", {
+                                            api_key: ApiClient.accessToken()
+                                        });
+
+                                        fileDownloader([{
+                                            url: downloadHref,
+                                            itemId: itemId
+                                        }]);
                                     });
-                                    window.location.href = downloadHref;
 
                                     break;
                                 }
@@ -1144,6 +1158,16 @@
             });
 
             items.push({
+                name: Globalize.translate('MarkPlayed'),
+                id: 'markplayed'
+            });
+
+            items.push({
+                name: Globalize.translate('MarkUnplayed'),
+                id: 'markunplayed'
+            });
+
+            items.push({
                 name: Globalize.translate('ButtonRefresh'),
                 id: 'refresh',
                 ironIcon: 'refresh'
@@ -1188,6 +1212,18 @@
                                 break;
                             case 'groupvideos':
                                 combineVersions($.mobile.activePage, items);
+                                break;
+                            case 'markplayed':
+                                items.forEach(function(itemId) {
+                                    ApiClient.markPlayed(Dashboard.getCurrentUserId(), itemId);
+                                });
+                                hideSelections();
+                                break;
+                            case 'markunplayed':
+                                items.forEach(function (itemId) {
+                                    ApiClient.markUnplayed(Dashboard.getCurrentUserId(), itemId);
+                                });
+                                hideSelections();
                                 break;
                             case 'refresh':
                                 items.map(function (itemId) {

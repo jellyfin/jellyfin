@@ -35,7 +35,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var items = _libraryManager.RootFolder.GetRecursiveChildren(i => (i is Game))
+            var items = _libraryManager.RootFolder.GetRecursiveChildren(i => i is Game)
                 .SelectMany(i => i.Genres)
                 .DistinctNames()
                 .ToList();

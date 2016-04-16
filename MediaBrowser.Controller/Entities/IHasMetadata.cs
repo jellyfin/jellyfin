@@ -1,9 +1,4 @@
-﻿using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -29,6 +24,8 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The date last saved.</value>
         DateTime DateLastSaved { get; set; }
+
+        SourceType SourceType { get; set; }
 
         /// <summary>
         /// Gets or sets the date last refreshed.

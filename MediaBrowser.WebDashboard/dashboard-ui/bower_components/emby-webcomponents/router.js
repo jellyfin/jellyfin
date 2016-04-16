@@ -15,6 +15,9 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         },
         showSettings: function () {
             show('/settings/settings.html');
+        },
+        showSearch: function () {
+            skinManager.getCurrentSkin().search();
         }
     };
 
@@ -66,7 +69,12 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
             case MediaBrowser.ConnectionState.ServerUpdateNeeded:
                 {
                     require(['alert'], function (alert) {
-                        alert(Globalize.translate('core#ServerUpdateNeeded', '<a href="https://emby.media">https://emby.media</a>')).then(function () {
+                        alert({
+
+                            text: Globalize.translate('core#ServerUpdateNeeded', 'https://emby.media'),
+                            html: Globalize.translate('core#ServerUpdateNeeded', '<a href="https://emby.media">https://emby.media</a>')
+
+                        }).then(function () {
                             embyRouter.showSelectServer();
                         });
                     });
@@ -285,7 +293,12 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
                 skinManager.loadUserSkin();
                 return;
             } else if (route.roles) {
-                validateRoles(apiClient, route.roles, callback).then(callback, beginConnectionWizard);
+                validateRoles(apiClient, route.roles).then(function () {
+
+                    apiClient.ensureWebSocket();
+                    callback();
+
+                }, beginConnectionWizard);
                 return;
             }
         }

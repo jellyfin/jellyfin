@@ -10,9 +10,9 @@ namespace MediaBrowser.Providers.Manager
     public static class ProviderUtils
     {
         public static void MergeBaseItemData<T>(MetadataResult<T> sourceResult,
-            MetadataResult<T> targetResult, 
-            List<MetadataFields> lockedFields, 
-            bool replaceData, 
+            MetadataResult<T> targetResult,
+            List<MetadataFields> lockedFields,
+            bool replaceData,
             bool mergeMetadataSettings)
             where T : BaseItem
         {
@@ -89,7 +89,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 target.CustomRating = source.CustomRating;
             }
-            
+
             if (!lockedFields.Contains(MetadataFields.Overview))
             {
                 if (replaceData || string.IsNullOrEmpty(target.Overview))
@@ -107,7 +107,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (replaceData || targetResult.People == null || targetResult.People.Count == 0)
                 {
-                    targetResult.People = sourceResult.People ?? new List<PersonInfo>();
+                    targetResult.People = sourceResult.People;
                 }
             }
 
@@ -238,7 +238,7 @@ namespace MediaBrowser.Providers.Manager
                 targetHasDisplayOrder.DisplayOrder = sourceHasDisplayOrder.DisplayOrder;
             }
         }
-        
+
         private static void MergeShortOverview(BaseItem source, BaseItem target, List<MetadataFields> lockedFields, bool replaceData)
         {
             var sourceHasShortOverview = source as IHasShortOverview;

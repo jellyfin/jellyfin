@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// @version 0.7.21
+// @version 0.7.22
 (function() {
   window.WebComponents = window.WebComponents || {
     flags: {}
@@ -914,14 +914,29 @@ if (typeof WeakMap === "undefined") {
 
 (function() {
   var needsTemplate = typeof HTMLTemplateElement === "undefined";
+  if (/Trident/.test(navigator.userAgent)) {
+    (function() {
+      var importNode = document.importNode;
+      document.importNode = function() {
+        var n = importNode.apply(document, arguments);
+        if (n.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+          var f = document.createDocumentFragment();
+          f.appendChild(n);
+          return f;
+        } else {
+          return n;
+        }
+      };
+    })();
+  }
   var needsCloning = function() {
     if (!needsTemplate) {
-      var frag = document.createDocumentFragment();
       var t = document.createElement("template");
-      frag.appendChild(t);
-      t.content.appendChild(document.createElement("div"));
-      var clone = frag.cloneNode(true);
-      return clone.firstChild.content.childNodes.length === 0;
+      var t2 = document.createElement("template");
+      t2.content.appendChild(document.createElement("div"));
+      t.content.appendChild(t2);
+      var clone = t.cloneNode(true);
+      return clone.content.childNodes.length === 0 || clone.content.firstChild.content.childNodes.length === 0;
     }
   }();
   var TEMPLATE_TAG = "template";
@@ -943,6 +958,9 @@ if (typeof WeakMap === "undefined") {
       while (child = template.firstChild) {
         template.content.appendChild(child);
       }
+      template.cloneNode = function(deep) {
+        return TemplateImpl.cloneNode(this, deep);
+      };
       if (canDecorate) {
         try {
           Object.defineProperty(template, "innerHTML", {
@@ -965,9 +983,6 @@ if (typeof WeakMap === "undefined") {
             },
             configurable: true
           });
-          template.cloneNode = function(deep) {
-            return TemplateImpl.cloneNode(this, deep);
-          };
         } catch (err) {
           canDecorate = false;
         }
@@ -987,7 +1002,7 @@ if (typeof WeakMap === "undefined") {
     document.createElement = function() {
       "use strict";
       var el = createElement.apply(document, arguments);
-      if (el.localName == "template") {
+      if (el.localName === "template") {
         TemplateImpl.decorate(el);
       }
       return el;
@@ -1015,7 +1030,7 @@ if (typeof WeakMap === "undefined") {
   if (needsTemplate || needsCloning) {
     var nativeCloneNode = Node.prototype.cloneNode;
     TemplateImpl.cloneNode = function(template, deep) {
-      var clone = nativeCloneNode.call(template);
+      var clone = nativeCloneNode.call(template, false);
       if (this.decorate) {
         this.decorate(clone);
       }
@@ -1026,6 +1041,7 @@ if (typeof WeakMap === "undefined") {
       return clone;
     };
     TemplateImpl.fixClonedDom = function(clone, source) {
+      if (!source.querySelectorAll) return;
       var s$ = source.querySelectorAll(TEMPLATE_TAG);
       var t$ = clone.querySelectorAll(TEMPLATE_TAG);
       for (var i = 0, l = t$.length, t, s; i < l; i++) {
@@ -1063,7 +1079,7 @@ if (typeof WeakMap === "undefined") {
     }
   }
   if (needsTemplate) {
-    HTMLTemplateElement = TemplateImpl;
+    window.HTMLTemplateElement = TemplateImpl;
   }
 })();
 
@@ -2231,6 +2247,9 @@ window.CustomElements.addModule(function(scope) {
       definition.prototype = Object.create(HTMLElement.prototype);
     }
     definition.__name = name.toLowerCase();
+    if (definition.extends) {
+      definition.extends = definition.extends.toLowerCase();
+    }
     definition.lifecycle = definition.lifecycle || {};
     definition.ancestry = ancestry(definition.extends);
     resolveTagName(definition);
@@ -2403,21 +2422,6 @@ window.CustomElements.addModule(function(scope) {
   }
   wrapDomMethodToForceUpgrade(Node.prototype, "cloneNode");
   wrapDomMethodToForceUpgrade(document, "importNode");
-  if (isIE) {
-    (function() {
-      var importNode = document.importNode;
-      document.importNode = function() {
-        var n = importNode.apply(document, arguments);
-        if (n.nodeType == n.DOCUMENT_FRAGMENT_NODE) {
-          var f = document.createDocumentFragment();
-          f.appendChild(n);
-          return f;
-        } else {
-          return n;
-        }
-      };
-    })();
-  }
   document.registerElement = register;
   document.createElement = createElement;
   document.createElementNS = createElementNS;

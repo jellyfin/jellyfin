@@ -1,26 +1,20 @@
-﻿<div id="notificationSettingPage" data-role="page" class="page type-interior notificationConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Notifications" data-require="scripts/notificationsetting,paper-input,jqmcheckbox">
+﻿<div id="notificationSettingPage" data-role="page" class="page type-interior notificationConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Notifications" data-require="scripts/notificationsetting,paper-input,paper-checkbox">
 
     <div data-role="content">
         <div class="content-primary">
 
-            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                <a href="notificationsettings.html" data-role="button" class="ui-btn-active">${TabNotifications}</a>
-                <a href="appservices.html?context=notifications" data-role="button">${TabServices}</a>
-            </div>
-
-            <h2 class="notificationType" style="margin-bottom: 0;"></h2>
+            <h1 class="notificationType" style="margin-top:0;"></h1>
 
             <form class="notificationSettingForm">
 
                 <ul data-role="listview" class="ulForm">
                     <li>
-                        <input type="checkbox" id="chkEnabled" data-mini="true" />
-                        <label for="chkEnabled">${LabelNotificationEnabled}</label>
+                        <paper-checkbox id="chkEnabled">${LabelNotificationEnabled}</paper-checkbox>
                     </li>
                 </ul>
 
                 <div class="monitorUsers" style="display: none;">
-                    <label>${LabelMonitorUsers}</label>
+                    <div class="paperListLabel">${LabelMonitorUsers}</div>
                     <div class="monitorUsersList">
                     </div>
                     <br />

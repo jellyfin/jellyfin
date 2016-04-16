@@ -113,7 +113,7 @@ namespace MediaBrowser.Model.Dto
             {
                 foreach (MediaStream i in MediaStreams)
                 {
-                    if (i.Type == MediaStreamType.Video && StringHelper.IndexOfIgnoreCase((i.Codec ?? string.Empty), "jpeg") == -1)
+                    if (i.Type == MediaStreamType.Video && StringHelper.IndexOfIgnoreCase(i.Codec ?? string.Empty, "jpeg") == -1)
                     {
                         return i;
                     }
@@ -160,6 +160,16 @@ namespace MediaBrowser.Model.Dto
 
         public bool? IsSecondaryAudio(MediaStream stream)
         {
+            // Look for the first audio track marked as default
+            foreach (MediaStream currentStream in MediaStreams)
+            {
+                if (currentStream.Type == MediaStreamType.Audio && currentStream.IsDefault)
+                {
+                    return currentStream.Index != stream.Index;
+                }
+            }
+
+            // Look for the first audio track
             foreach (MediaStream currentStream in MediaStreams)
             {
                 if (currentStream.Type == MediaStreamType.Audio)

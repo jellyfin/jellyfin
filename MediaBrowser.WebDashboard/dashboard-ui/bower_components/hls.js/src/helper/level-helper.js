@@ -44,10 +44,15 @@ class LevelHelper {
     if(PTSFrag) {
       LevelHelper.updateFragPTS(newDetails,PTSFrag.sn,PTSFrag.startPTS,PTSFrag.endPTS);
     } else {
-      // adjust start by sliding offset
-      var sliding = oldfragments[delta].start;
-      for(i = 0 ; i < newfragments.length ; i++) {
-        newfragments[i].start += sliding;
+      // ensure that delta is within oldfragments range
+      // also adjust sliding in case delta is 0 (we could have old=[50-60] and new=old=[50-61])
+      // in that case we also need to adjust start offset of all fragments
+      if (delta >= 0 && delta < oldfragments.length) {
+        // adjust start by sliding offset
+        var sliding = oldfragments[delta].start;
+        for(i = 0 ; i < newfragments.length ; i++) {
+          newfragments[i].start += sliding;
+        }
       }
     }
     // if we are here, it means we have fragments overlapping between

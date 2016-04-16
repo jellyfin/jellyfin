@@ -1,12 +1,8 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
-using System.Text;
-using MediaBrowser.Common.IO;
 using System.Collections.Generic;
 using CommonIO;
 

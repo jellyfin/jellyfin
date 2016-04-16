@@ -1,20 +1,13 @@
-﻿<div id="cinemaModeConfigurationPage" data-role="page" class="page type-interior playbackConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Cinema-Mode" data-require="scripts/cinemamodeconfiguration,paper-checkbox,paper-input">
+﻿<div id="cinemaModeConfigurationPage" data-role="page" class="page type-interior playbackConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Cinema-Mode" data-require="scripts/cinemamodeconfiguration,paper-checkbox,paper-input">
 
     <div data-role="content">
         <div class="content-primary">
-
-            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                <a href="playbackconfiguration.html" data-role="button">${TabGeneral}</a>
-                <a href="#" data-role="button" class="ui-btn-active">${TabCinemaMode}</a>
-                <a href="streamingsettings.html" data-role="button">${TabStreaming}</a>
-                <a href="encodingsettings.html" data-role="button">${TabTranscoding}</a>
-            </div>
 
             <form class="cinemaModeConfigurationForm">
 
                 <p>${CinemaModeConfigurationHelp}</p>
                 <div style="margin-top: 2em;">
-                    <div class="paperCheckboxListLabel">${LabelEnableCinemaModeFor}</div>
+                    <div class="paperListLabel">${LabelEnableCinemaModeFor}</div>
                     <div class="paperCheckboxList">
                         <paper-checkbox class="chkMovies">${OptionMovies}</paper-checkbox>
                         <paper-checkbox class="chkEpisodes">${OptionEpisodes}</paper-checkbox>
@@ -22,15 +15,14 @@
                 </div>
                 <br />
                 <div>
-                    <div class="paperCheckboxListLabel">${LabelSelectInternetTrailersForCinemaMode}</div>
+                    <div class="paperListLabel">${LabelSelectInternetTrailersForCinemaMode}</div>
                     <div class="paperCheckboxList">
                         <paper-checkbox class="chkUpcomingTheaterTrailers">${OptionUpcomingMoviesInTheaters}</paper-checkbox>
                         <paper-checkbox class="chkUpcomingDvdTrailers">${OptionUpcomingDvdMovies}</paper-checkbox>
                         <paper-checkbox class="chkUpcomingStreamingTrailers">${OptionUpcomingStreamingMovies}</paper-checkbox>
                         <paper-checkbox class="chkOtherTrailers">${OptionOtherTrailers}</paper-checkbox>
                     </div>
-                    <div class="fieldDescription paperCheckboxFieldDescription">${LabelTheseFeaturesRequireSubscriptionHelpAndTrailers}</div>
-                    <div class="fieldDescription paperCheckboxFieldDescription"><a class="lnkSupporterLearnMore" href="http://emby.media/premiere" target="_blank" style="display:none;">${ButtonLearnMore}</a></div>
+                    <div class="fieldDescription paperCheckboxFieldDescription"><a class="lnkSupporterLearnMore" href="http://emby.media/premiere" target="_blank">${LabelTheseFeaturesRequireSubscriptionHelpAndTrailers}</a></div>
                 </div>
                 <br />
                 <div>

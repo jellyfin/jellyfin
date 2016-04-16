@@ -19,6 +19,7 @@
     right: 0;
     left: 0;
     bottom: 0;
+    top: 0;
     background-color: rgba(0, 0, 0, .85);
     z-index: 998;
     display: none;
@@ -50,15 +51,12 @@
 @media all and (max-width: 500px) {
 
     .cardBox {
-        margin: 1px;
+        margin: 3px;
     }
 }
 
-@media all and (min-width: 500px) {
-
-    .cardImage {
-        border-radius: 3px;
-    }
+.cardImage {
+    border-radius: 3px;
 }
 
 .defaultBackground .cardImage {

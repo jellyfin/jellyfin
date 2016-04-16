@@ -154,7 +154,9 @@
 
     CastPlayer.prototype.messageListener = function (namespace, message) {
 
-        message = JSON.parse(message);
+        if (typeof (message) === 'string') {
+            message = JSON.parse(message);
+        }
 
         if (message.type == 'playbackerror') {
 
@@ -180,7 +182,6 @@
         }
         else if (message.type) {
             Events.trigger(this, message.type, [message.data]);
-
         }
     };
 

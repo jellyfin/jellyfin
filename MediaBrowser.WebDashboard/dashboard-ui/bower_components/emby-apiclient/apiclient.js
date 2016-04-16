@@ -526,6 +526,14 @@
             }
         };
 
+        self.ensureWebSocket = function() {
+            if (self.isWebSocketOpenOrConnecting() || !self.isWebSocketSupported()) {
+                return;
+            }
+
+            self.openWebSocket();
+        };
+
         self.openWebSocket = function () {
 
             var accessToken = self.accessToken();
@@ -555,9 +563,7 @@
                 }, 0);
             };
             webSocket.onerror = function () {
-                setTimeout(function () {
-                    Events.trigger(self, 'websocketerror');
-                }, 0);
+                Events.trigger(self, 'websocketerror');
             };
             webSocket.onclose = function () {
                 setTimeout(function () {

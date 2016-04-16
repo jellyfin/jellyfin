@@ -208,6 +208,20 @@ class StreamController extends EventHandler {
                 logger.log(`buffer end: ${bufferEnd} is located too far from the end of live sliding playlist, media position will be reseted to: ${this.seekAfterBuffered.toFixed(3)}`);
                 bufferEnd = this.seekAfterBuffered;
             }
+
+            // if end of buffer greater than live edge, don't load any fragment
+            // this could happen if live playlist intermittently slides in the past.
+            // level 1 loaded [182580161,182580167]
+            // level 1 loaded [182580162,182580169]
+            // Loading 182580168 of [182580162 ,182580169],level 1 ..
+            // Loading 182580169 of [182580162 ,182580169],level 1 ..
+            // level 1 loaded [182580162,182580168] <============= here we should have bufferEnd > end. in that case break to avoid reloading 182580168
+            // level 1 loaded [182580164,182580171]
+            //
+            if (bufferEnd > end) {
+              break;
+            }
+
             if (this.startFragRequested && !levelDetails.PTSKnown) {
               /* we are switching level on live playlist, but we don't have any PTS info for that quality level ...
                  try to load frag matching with next SN.
@@ -943,9 +957,12 @@ class StreamController extends EventHandler {
       case ErrorDetails.LEVEL_LOAD_TIMEOUT:
       case ErrorDetails.KEY_LOAD_ERROR:
       case ErrorDetails.KEY_LOAD_TIMEOUT:
-        // if fatal error, stop processing, otherwise move to IDLE to retry loading
-        logger.warn(`mediaController: ${data.details} while loading frag,switch to ${data.fatal ? 'ERROR' : 'IDLE'} state ...`);
-        this.state = data.fatal ? State.ERROR : State.IDLE;
+        //  when in ERROR state, don't switch back to IDLE state in case a non-fatal error is received
+        if(this.state !== State.ERROR) {
+            // if fatal error, stop processing, otherwise move to IDLE to retry loading
+            this.state = data.fatal ? State.ERROR : State.IDLE;
+            logger.warn(`mediaController: ${data.details} while loading frag,switch to ${this.state} state ...`);
+        }
         break;
       case ErrorDetails.BUFFER_FULL_ERROR:
         // trigger a smooth level switch to empty buffers
@@ -1001,18 +1018,22 @@ _checkBuffer() {
           logger.log(`playback not stuck anymore @${currentTime}`);
         }
         // check buffer upfront
-        // if less than 200ms is buffered, and media is expected to play but playhead is not moving,
+        // if less than jumpThreshold second is buffered, and media is expected to play but playhead is not moving,
         // and we have a new buffer range available upfront, let's seek to that one
-        if(bufferInfo.len <= jumpThreshold) {
-          if(playheadMoving || !expectedPlaying) {
-            // playhead moving or media not playing
+        if(expectedPlaying && bufferInfo.len <= jumpThreshold) {
+          if(playheadMoving) {
+            // playhead moving
             jumpThreshold = 0;
+            this.seekHoleNudgeDuration = 0;
           } else {
             // playhead not moving AND media expected to play
             if(!this.stalled) {
+              this.seekHoleNudgeDuration = 0;
               logger.log(`playback seems stuck @${currentTime}`);
               this.hls.trigger(Event.ERROR, {type: ErrorTypes.MEDIA_ERROR, details: ErrorDetails.BUFFER_STALLED_ERROR, fatal: false});
               this.stalled = true;
+            } else {
+              this.seekHoleNudgeDuration += this.config.seekHoleNudgeDuration;
             }
           }
           // if we are below threshold, try to jump if next buffer range is close
@@ -1025,8 +1046,8 @@ _checkBuffer() {
                !media.seeking) {
               // next buffer is close ! adjust currentTime to nextBufferStart
               // this will ensure effective video decoding
-              logger.log(`adjust currentTime from ${media.currentTime} to next buffered @ ${nextBufferStart}`);
-              media.currentTime = nextBufferStart;
+              logger.log(`adjust currentTime from ${media.currentTime} to next buffered @ ${nextBufferStart} + nudge ${this.seekHoleNudgeDuration}`);
+              media.currentTime = nextBufferStart + this.seekHoleNudgeDuration;
               this.hls.trigger(Event.ERROR, {type: ErrorTypes.MEDIA_ERROR, details: ErrorDetails.BUFFER_SEEK_OVER_HOLE, fatal: false});
             }
           }

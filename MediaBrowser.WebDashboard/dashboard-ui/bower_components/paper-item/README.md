@@ -40,6 +40,30 @@ items.
 </paper-item>
 ```
 
+To use `paper-item` as a link, wrap it in an anchor tag. Since `paper-item` will
+already receive focus, you may want to prevent the anchor tag from receiving
+focus as well by setting its tabindex to -1.
+
+```html
+<a href="https://www.polymer-project.org/" tabindex="-1">
+  <paper-item raised>Polymer Project</paper-item>
+</a>
+```
+
+If you are concerned about performance and want to use `paper-item` in a `paper-listbox`
+with many items, you can just use a native `button` with the `paper-item` class
+applied (provided you have correctly included the shared styles):
+
+```html
+<style is="custom-style" include="paper-item-shared-styles"></style>
+
+<paper-listbox>
+  <button class="paper-item" role="option">Inbox</button>
+  <button class="paper-item" role="option">Starred</button>
+  <button class="paper-item" role="option">Sent mail</button>
+</paper-listbox>
+```
+
 ### Styling
 
 The following custom properties and mixins are available for styling:

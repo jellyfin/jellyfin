@@ -17,7 +17,6 @@ namespace MediaBrowser.Model.Dlna
             int? packetLength,
             TransportStreamTimestamp? timestamp,
             bool? isAnamorphic,
-            bool? isCabac,
             int? refFrames,
             int? numVideoStreams,
             int? numAudioStreams,
@@ -27,8 +26,6 @@ namespace MediaBrowser.Model.Dlna
             {
                 case ProfileConditionValue.IsAnamorphic:
                     return IsConditionSatisfied(condition, isAnamorphic);
-                case ProfileConditionValue.IsCabac:
-                    return IsConditionSatisfied(condition, isCabac);
                 case ProfileConditionValue.VideoFramerate:
                     return IsConditionSatisfied(condition, videoFramerate);
                 case ProfileConditionValue.VideoLevel:

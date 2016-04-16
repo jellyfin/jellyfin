@@ -4,6 +4,12 @@
 
         $('#txtRemoteClientBitrateLimit', page).val((config.RemoteClientBitrateLimit / 1000000) || '');
 
+        ApiClient.getNamedConfiguration("channels").then(function (channelConfig) {
+
+            $('#selectChannelResolution', page).val(channelConfig.PreferredStreamingWidth || '');
+
+        });
+
         Dashboard.hideLoadingMsg();
     }
 
@@ -19,8 +25,36 @@
             ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
         });
 
+        ApiClient.getNamedConfiguration("channels").then(function (config) {
+
+            // This should be null if empty
+            config.PreferredStreamingWidth = $('#selectChannelResolution', form).val() || null;
+
+            ApiClient.updateNamedConfiguration("channels", config).then(Dashboard.processServerConfigurationUpdateResult);
+        });
+
         // Disable default form submission
         return false;
+    }
+
+    function getTabs() {
+        return [
+        {
+            href: 'cinemamodeconfiguration.html',
+            name: Globalize.translate('TabCinemaMode')
+        },
+         {
+             href: 'playbackconfiguration.html',
+             name: Globalize.translate('TabResumeSettings')
+         },
+         {
+             href: 'streamingsettings.html',
+             name: Globalize.translate('TabStreaming')
+         },
+         {
+             href: 'encodingsettings.html',
+             name: Globalize.translate('TabTranscoding')
+         }];
     }
 
     $(document).on('pageinit', "#streamingSettingsPage", function () {
@@ -56,6 +90,7 @@
 
         Dashboard.showLoadingMsg();
 
+        LibraryMenu.setTabs('playback', 2, getTabs);
         var page = this;
 
         ApiClient.getServerConfiguration().then(function (config) {

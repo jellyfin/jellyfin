@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'paper-progress', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'paper-icon-button'], function ($) {
 
     function renderJob(page, job, dialogOptions) {
 
@@ -335,7 +335,7 @@
 
     function loadJobInfo(page, job, jobItems) {
 
-        renderJob(page, job, _jobOptions);
+        //renderJob(page, job, _jobOptions);
         renderJobItems(page, jobItems);
         Dashboard.hideLoadingMsg();
     }

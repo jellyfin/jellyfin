@@ -12,8 +12,9 @@
                 query: {
                     SortBy: "SortName",
                     SortOrder: "Ascending",
+                    IncludeItemTypes: "Trailer",
                     Recursive: true,
-                    Fields: "PrimaryImageAspectRatio,SortName,SyncInfo",
+                    Fields: "PrimaryImageAspectRatio,SortName,MediaSourceCount,SyncInfo",
                     ImageTypeLimit: 1,
                     EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
                     StartIndex: 0,
@@ -39,9 +40,9 @@
         Dashboard.showLoadingMsg();
 
         var query = getQuery(page);
-        query.UserId = Dashboard.getCurrentUserId();
+        var userId = Dashboard.getCurrentUserId();
 
-        ApiClient.getJSON(ApiClient.getUrl('Trailers', query)).then(function (result) {
+        ApiClient.getItems(userId, query).then(function (result) {
 
             // Scroll back up so they can see the results from the beginning
             window.scrollTo(0, 0);
@@ -186,17 +187,20 @@
         });
     }
 
-    window.MoviesPage.initTrailerTab = function (page, tabContent) {
+    return function (view, params, tabContent) {
 
-        initPage(page, tabContent);
-    };
+        var self = this;
 
-    window.MoviesPage.renderTrailerTab = function (page, tabContent) {
+        self.initTab = function () {
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
+            initPage(view, tabContent);
+        };
+
+        self.renderTab = function () {
+
             reloadItems(tabContent);
             updateFilterControls(tabContent);
-        }
+        };
     };
 
 });

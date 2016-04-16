@@ -331,7 +331,7 @@ Custom property | Description | Default
         on-up="_resetKnob"
         on-track="_onTrack"
         on-transitionend="_knobTransitionEnd">
-          <div id="sliderKnobInner" value$="[[immediateValue]]"></div>
+          <div id="sliderKnobInner" value$="[[pinValue]]"></div>
       </div>
     </div>
 
@@ -528,7 +528,8 @@ Custom property | Description | Default
       },
 
       _positionKnob: function(ratio) {
-        this._setImmediateValue(this._calcStep(this._calcKnobPosition(ratio)));
+          this._setImmediateValue(this._calcStep(this._calcKnobPosition(ratio)));
+          this._setPinValue(this.immediateValue);
         this._setRatio(this._calcRatio(this.immediateValue));
 
         this.$.sliderKnob.style.left = (this.ratio * 100) + '%';
@@ -582,6 +583,7 @@ Custom property | Description | Default
         // update knob's position
         var translateX = ((this._calcRatio(this.immediateValue) * this._w) - this._knobstartx);
         this.translate3d(translateX + 'px', 0, 0, this.$.sliderKnob);
+        this._setPinValue(this.immediateValue);
       },
 
       _trackEnd: function() {
@@ -595,6 +597,9 @@ Custom property | Description | Default
         s.transform = s.webkitTransform = '';
 
         this.fire('change');
+      },
+      _setPinValue: function (value) {
+          this.pinValue = value;
       },
 
       _knobdown: function(event) {

@@ -9,7 +9,6 @@ using MediaBrowser.Model.Logging;
 using ServiceStack.Text.Controller;
 using ServiceStack.Web;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 

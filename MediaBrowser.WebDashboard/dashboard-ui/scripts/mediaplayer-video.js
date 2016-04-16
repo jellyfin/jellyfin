@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'jQuery'], function (appSettings, $) {
+﻿define(['appSettings', 'jQuery', 'scrollStyles'], function (appSettings, $) {
 
     function createVideoPlayer(self) {
 
@@ -115,7 +115,7 @@
                 };
 
                 if (stream.Index == currentIndex) {
-                    opt.ironIcon = "check";
+                    opt.selected = true;
                 }
 
                 return opt;
@@ -166,7 +166,7 @@
                     };
 
                     if (o.selected) {
-                        opt.ironIcon = "check";
+                        opt.selected = true;
                     }
 
                     return opt;
@@ -234,7 +234,7 @@
                 };
 
                 if (stream.Index == currentIndex) {
-                    opt.ironIcon = "check";
+                    opt.selected = true;
                 }
 
                 return opt;
@@ -465,7 +465,7 @@
             html += '</div>';
 
             if (item.Chapters && item.Chapters.length) {
-                html += '<div class="tabScenes nowPlayingTab hiddenScrollX" style="display:none;white-space:nowrap;margin-bottom:2em;">';
+                html += '<div class="tabScenes nowPlayingTab smoothScrollX" style="display:none;white-space:nowrap;margin-bottom:2em;">';
                 var chapterIndex = 0;
                 html += item.Chapters.map(function (c) {
 
@@ -512,7 +512,7 @@
             }
 
             if (item.People && item.People.length) {
-                html += '<div class="tabCast nowPlayingTab hiddenScrollX" style="display:none;white-space:nowrap;">';
+                html += '<div class="tabCast nowPlayingTab smoothScrollX" style="display:none;white-space:nowrap;">';
                 html += item.People.map(function (cast) {
 
                     var personHtml = '<div class="tileItem smallPosterTileItem" style="width:300px;">';
@@ -661,18 +661,28 @@
         function fadeInUp(elem) {
             var keyframes = [
               { transform: 'translate3d(0, 100%, 0)', offset: 0 },
-              { transform: 'none', offset: 1 }];
+              { transform: 'translate3d(0, 0, 0)', offset: 1 }];
             var timing = { duration: 300, iterations: 1 };
-            elem.animate(keyframes, timing);
+
+            if (elem.animate) {
+                elem.animate(keyframes, timing);
+            }
         }
 
         function fadeOutDown(elem) {
-            var keyframes = [{ transform: 'none', offset: 0 },
+            var keyframes = [{ transform: 'translate3d(0, 0, 0)', offset: 0 },
               { transform: 'translate3d(0, 100%, 0)', offset: 1 }];
             var timing = { duration: 300, iterations: 1 };
-            elem.animate(keyframes, timing).onfinish = function () {
+
+            var onFinish = function () {
                 elem.classList.add('hide');
             };
+
+            if (elem.animate) {
+                elem.animate(keyframes, timing).onfinish = onFinish;
+            } else {
+                onFinish();
+            }
         }
 
         function ensureVideoPlayerElements() {
@@ -970,7 +980,7 @@
                     // Huge hack alert. Safari doesn't seem to like if the segments aren't available right away when playback starts
                     // This will start the transcoding process before actually feeding the video url into the player
                     // Edit: Also seeing stalls from hls.js
-                    if ((browserInfo.safari || browserInfo.msie || browserInfo.firefox) && !mediaSource.RunTimeTicks && isHls) {
+                    if (!mediaSource.RunTimeTicks && isHls) {
 
                         Dashboard.showLoadingMsg();
                         var hlsPlaylistUrl = streamInfo.url.replace('master.m3u8', 'live.m3u8');
@@ -982,7 +992,12 @@
                         }).then(function () {
                             Dashboard.hideLoadingMsg();
                             streamInfo.url = hlsPlaylistUrl;
-                            self.playVideoInternal(item, mediaSource, startPosition, streamInfo, callback);
+
+                            // add a delay to continue building up the buffer. without this we see failures in safari mobile
+                            setTimeout(function () {
+                                self.playVideoInternal(item, mediaSource, startPosition, streamInfo, callback);
+                            }, 0);
+
                         }, function () {
                             Dashboard.hideLoadingMsg();
                         });

@@ -1,21 +1,25 @@
-﻿<div id="streamingSettingsPage" data-role="page" class="page type-interior playbackConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Streaming" data-require="scripts/streamingsettings,paper-input">
+﻿<div id="streamingSettingsPage" data-role="page" class="page type-interior playbackConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Streaming" data-require="scripts/streamingsettings,paper-input">
 
     <div data-role="content">
         <div class="content-primary">
-
-            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                <a href="playbackconfiguration.html" data-role="button">${TabGeneral}</a>
-                <a href="cinemamodeconfiguration.html" data-role="button">${TabCinemaMode}</a>
-                <a href="#" data-role="button" class="ui-btn-active">${TabStreaming}</a>
-                <a href="encodingsettings.html" data-role="button">${TabTranscoding}</a>
-            </div>
 
             <form class="streamingSettingsForm">
 
                 <ul data-role="listview" class="ulForm">
                     <li>
-                        <paper-input type="number" id="txtRemoteClientBitrateLimit" pattern="[0-9]*" required min="0" step=".25" label="${LabelRemoteClientBitrateLimit}"></paper-input>
+                        <paper-input type="number" id="txtRemoteClientBitrateLimit" pattern="[0-9]*" min="0" step=".25" label="${LabelRemoteClientBitrateLimit}"></paper-input>
                         <div class="fieldDescription">${LabelRemoteClientBitrateLimitHelp}</div>
+                    </li>
+                    <li>
+                        <br/>
+                        <label for="selectChannelResolution" class="selectLabel">${LabelChannelStreamQuality}</label>
+                        <select id="selectChannelResolution" data-mini="true">
+                            <option value="">${OptionBestAvailableStreamQuality}</option>
+                            <option value="1920">1080p</option>
+                            <option value="1280">720p</option>
+                            <option value="720">480p</option>
+                        </select>
+                        <div class="fieldDescription">${LabelChannelStreamQualityHelp}</div>
                     </li>
                 </ul>
 

@@ -12,7 +12,7 @@
 
         $('#txtUploadPath', page).val(config.CameraUploadPath || '');
 
-        $('#chkSubfolder', page).checked(config.EnableCameraUploadSubfolders).checkboxradio('refresh');
+        $('#chkSubfolder', page).checked(config.EnableCameraUploadSubfolders);
 
         loadDeviceList(page, devices, config);
     }
@@ -21,32 +21,27 @@
 
         var html = '';
 
-        html += '<fieldset data-role="controlgroup">';
-
-        html += '<legend>';
+        html += '<div class="paperListLabel">';
         html += Globalize.translate('LabelEnableCameraUploadFor');
-        html += '</legend>';
+        html += '</div>';
+
+        html += '<div class="paperCheckboxList paperList">';
 
         var index = 0;
         html += devices.map(function (d) {
 
             var deviceHtml = '';
 
-            var id = "chk" + index;
-
-            deviceHtml += '<label for="' + id + '">';
-            deviceHtml += d.Name;
-
-            if (d.AppName) {
-                deviceHtml += '<br/><span>' + d.AppName + '</span>';
-            }
-
-            deviceHtml += '</label>';
-
             var isChecked = config.EnabledCameraUploadDevices.indexOf(d.Id) != -1;
             var checkedHtml = isChecked ? ' checked="checked"' : '';
 
-            deviceHtml += '<input type="checkbox" id="' + id + '" class="chkDevice" data-id="' + d.Id + '"' + checkedHtml + ' />';
+            var label = d.Name;
+
+            if (d.AppName) {
+                label += ' - ' + d.AppName;
+            }
+
+            deviceHtml += '<paper-checkbox class="chkDevice" data-id="' + d.Id + '"' + checkedHtml + '>' + label + '</paper-checkbox>';
 
             index++;
 
@@ -54,7 +49,7 @@
 
         }).join('');
 
-        html += '</fieldset>';
+        html += '</div>';
 
         html += '<div class="fieldDescription">';
         html += Globalize.translate('LabelEnableCameraUploadForHelp');
@@ -89,7 +84,11 @@
 
             config.CameraUploadPath = $('#txtUploadPath', page).val();
 
-            config.EnabledCameraUploadDevices = $('.chkDevice:checked', page).get().map(function (c) {
+            config.EnabledCameraUploadDevices = $('.chkDevice', page).get().filter(function (c) {
+
+                return c.checked;
+
+            }).map(function (c) {
 
                 return c.getAttribute('data-id');
 
@@ -109,6 +108,22 @@
         save(page);
 
         return false;
+    }
+
+    function getTabs() {
+        return [
+        {
+            href: 'syncactivity.html',
+            name: Globalize.translate('TabSyncJobs')
+        },
+         {
+             href: 'devicesupload.html',
+             name: Globalize.translate('TabCameraUpload')
+         },
+         {
+             href: 'syncsettings.html',
+             name: Globalize.translate('TabSettings')
+         }];
     }
 
     $(document).on('pageinit', "#devicesUploadPage", function () {
@@ -141,6 +156,7 @@
 
     }).on('pageshow', "#devicesUploadPage", function () {
 
+        LibraryMenu.setTabs('syncadmin', 1, getTabs);
         var page = this;
 
         loadData(page);

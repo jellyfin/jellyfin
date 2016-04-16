@@ -22,6 +22,11 @@
         info.Url = page.querySelector('.txtDevicePath').value;
         info.M3UUrl = page.querySelector('.txtM3uUrl').value;
         info.IsEnabled = page.querySelector('.chkEnabled').checked;
+        info.DiseqC = page.querySelector('.selectDiseqC').value;
+        info.SourceA = page.querySelector('.selectSourceA').value;
+        info.SourceB = page.querySelector('.selectSourceB').value;
+        info.SourceC = page.querySelector('.selectSourceC').value;
+        info.SourceD = page.querySelector('.selectSourceD').value;
     }
 
     function submitTunerInfo(page, info) {

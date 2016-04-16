@@ -33,6 +33,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="protocol">The protocol.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>System.String.</returns>
-        Task<string> GetSubtitleFileCharacterSet(string path, MediaProtocol protocol, CancellationToken cancellationToken);
+        Task<string> GetSubtitleFileCharacterSet(string path, string language, MediaProtocol protocol, CancellationToken cancellationToken);
     }
 }

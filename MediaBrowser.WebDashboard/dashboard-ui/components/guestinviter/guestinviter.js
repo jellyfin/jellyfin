@@ -62,6 +62,47 @@
 
                 showNewUserInviteMessage(dlg, result);
 
+            }, function (response) {
+
+                Dashboard.hideLoadingMsg();
+
+                if (!response.status) {
+                    // General error
+                    require(['alert'], function (alert) {
+                        alert({
+                            text: Globalize.translate('DefaultErrorMessage')
+                        });
+                    });
+                } else if (response.status == 404) {
+                    // User doesn't exist
+                    require(['alert'], function (alert) {
+                        alert({
+                            text: Globalize.translate('GuestUserNotFound')
+                        });
+                    });
+                } else {
+
+                    // status 400 = account not activated
+
+                    // General error
+                    showAccountErrorMessage();
+                }
+            });
+        });
+    }
+
+    function showAccountErrorMessage() {
+
+        var html = Globalize.translate('ErrorAddingGuestAccount1', '<a href="https://emby.media/connect" target="_blank">https://emby.media/connect</a>');
+        html += '<br/><br/>' + Globalize.translate('ErrorAddingGuestAccount2', 'apps@emby.media');
+
+        var text = Globalize.translate('ErrorAddingGuestAccount1', 'https://emby.media/connect');
+        text += '\n\n' + Globalize.translate('ErrorAddingGuestAccount2', 'apps@emby.media');
+
+        require(['alert'], function (alert) {
+            alert({
+                text: text,
+                html: html
             });
         });
     }
@@ -78,9 +119,11 @@
             Globalize.translate('MessageInvitationSentToNewUser', result.GuestDisplayName) :
             Globalize.translate('MessageInvitationSentToUser', result.GuestDisplayName);
 
-        Dashboard.alert({
-            message: message,
-            title: Globalize.translate('HeaderInvitationSent')
+        require(['alert'], function (alert) {
+            alert({
+                text: message,
+                title: Globalize.translate('HeaderInvitationSent')
+            });
         });
     }
 

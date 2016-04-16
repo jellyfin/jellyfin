@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['scrollStyles'], function () {
 
     function loadUpcoming(context, params) {
 
@@ -62,7 +62,13 @@
             if (item.PremiereDate) {
                 try {
 
-                    dateText = LibraryBrowser.getFutureDateText(parseISO8601Date(item.PremiereDate, { toLocal: true }), true);
+                    var premiereDate = parseISO8601Date(item.PremiereDate, { toLocal: true });
+
+                    if (premiereDate.getDate() == new Date().getDate() - 1) {
+                        dateText = Globalize.translate('Yesterday');
+                    } else {
+                        dateText = LibraryBrowser.getFutureDateText(premiereDate, true);
+                    }
 
                 } catch (err) {
                 }

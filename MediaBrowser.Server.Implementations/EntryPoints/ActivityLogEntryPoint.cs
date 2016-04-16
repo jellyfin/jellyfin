@@ -5,11 +5,9 @@ using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Activity;
-using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
@@ -206,7 +204,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 Name = name,
                 Type = "SessionEnded",
                 ShortOverview = string.Format(_localization.GetLocalizedString("LabelIpAddressValue"), session.RemoteEndPoint),
-                UserId = (session.UserId.HasValue ? session.UserId.Value.ToString("N") : null)
+                UserId = session.UserId.HasValue ? session.UserId.Value.ToString("N") : null
             });
         }
 
@@ -336,7 +334,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 Name = name,
                 Type = "SessionStarted",
                 ShortOverview = string.Format(_localization.GetLocalizedString("LabelIpAddressValue"), session.RemoteEndPoint),
-                UserId = (session.UserId.HasValue ? session.UserId.Value.ToString("N") : null)
+                UserId = session.UserId.HasValue ? session.UserId.Value.ToString("N") : null
             });
         }
 
@@ -518,16 +516,16 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             int days = span.Days;
             if (days >= DaysInYear)
             {
-                int years = (days / DaysInYear);
+                int years = days / DaysInYear;
                 values.Add(CreateValueString(years, "year"));
-                days = (days % DaysInYear);
+                days = days % DaysInYear;
             }
             // Number of months
             if (days >= DaysInMonth)
             {
-                int months = (days / DaysInMonth);
+                int months = days / DaysInMonth;
                 values.Add(CreateValueString(months, "month"));
-                days = (days % DaysInMonth);
+                days = days % DaysInMonth;
             }
             // Number of days
             if (days >= 1)
@@ -547,7 +545,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             for (int i = 0; i < values.Count; i++)
             {
                 if (builder.Length > 0)
-                    builder.Append((i == (values.Count - 1)) ? " and " : ", ");
+                    builder.Append(i == values.Count - 1 ? " and " : ", ");
                 builder.Append(values[i]);
             }
             // Return result
@@ -562,7 +560,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private static string CreateValueString(int value, string description)
         {
             return String.Format("{0:#,##0} {1}",
-                value, (value == 1) ? description : String.Format("{0}s", description));
+                value, value == 1 ? description : String.Format("{0}s", description));
         }
     }
 }

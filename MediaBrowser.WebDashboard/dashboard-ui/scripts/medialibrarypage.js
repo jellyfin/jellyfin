@@ -104,6 +104,12 @@
         });
 
         menuItems.push({
+            name: Globalize.translate('ButtonEditImages'),
+            id: 'editimages',
+            ironIcon: 'photo'
+        });
+
+        menuItems.push({
             name: Globalize.translate('ButtonManageFolders'),
             id: 'edit',
             ironIcon: 'folder-open'
@@ -135,6 +141,9 @@
                             break;
                         case 'edit':
                             editVirtualFolder(page, virtualFolder);
+                            break;
+                        case 'editimages':
+                            editImages(page, virtualFolder);
                             break;
                         case 'rename':
                             renameVirtualFolder(page, virtualFolder);
@@ -206,19 +215,24 @@
                 return;
             }
 
-            require(['components/imageeditor/imageeditor'], function (ImageEditor) {
-
-                ImageEditor.show(virtualFolder.ItemId, {
-                    theme: 'a'
-                }).then(function (hasChanged) {
-                    if (hasChanged) {
-                        reloadLibrary(page);
-                    }
-                });
-            });
+            editVirtualFolder(page, virtualFolder);
         });
 
         Dashboard.hideLoadingMsg();
+    }
+
+    function editImages(page, virtualFolder) {
+
+        require(['components/imageeditor/imageeditor'], function (ImageEditor) {
+
+            ImageEditor.show(virtualFolder.ItemId, {
+                theme: 'a'
+            }).then(function (hasChanged) {
+                if (hasChanged) {
+                    reloadLibrary(page);
+                }
+            });
+        });
     }
 
     function getCollectionTypeOptions() {
@@ -438,6 +452,23 @@
             });
         }
     };
+
+    function getTabs() {
+        return [
+        {
+            href: 'library.html',
+            name: Globalize.translate('TabFolders')
+        },
+         {
+             href: 'librarypathmapping.html',
+             name: Globalize.translate('TabPathSubstitution')
+         },
+         {
+             href: 'librarysettings.html',
+             name: Globalize.translate('TabAdvanced')
+         }];
+    }
+
     pageClassOn('pageshow', "mediaLibraryPage", function () {
 
         var page = this;
@@ -447,6 +478,7 @@
 
     pageIdOn('pageshow', "mediaLibraryPage", function () {
 
+        LibraryMenu.setTabs('librarysetup', 0, getTabs);
         var page = this;
 
         // on here

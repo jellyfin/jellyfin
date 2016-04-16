@@ -34,10 +34,10 @@ define(['jQuery'], function ($) {
                 dependencies.push('jqmcheckbox');
                 dependencies.push('legacy/dashboard');
                 dependencies.push('legacy/selectmenu');
+                dependencies.push('jqmcontrolgroup');
             }
 
             if (isPluginpage || (newView.classList && newView.classList.contains('type-interior'))) {
-                dependencies.push('jqmcontrolgroup');
                 dependencies.push('jqmlistview');
                 dependencies.push('scripts/notifications');
             }

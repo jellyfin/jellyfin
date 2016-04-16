@@ -1,6 +1,5 @@
 ﻿using System;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -79,7 +78,8 @@ namespace MediaBrowser.Providers.MediaInfo
                         _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                         var imageStream = imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).IndexOf("front", StringComparison.OrdinalIgnoreCase) != -1) ??
-                            imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).IndexOf("cover", StringComparison.OrdinalIgnoreCase) != -1);
+                            imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).IndexOf("cover", StringComparison.OrdinalIgnoreCase) != -1) ??
+                            imageStreams.FirstOrDefault();
 
                         var imageStreamIndex = imageStream == null ? (int?)null : imageStream.Index;
 
@@ -160,14 +160,11 @@ namespace MediaBrowser.Providers.MediaInfo
             return item.LocationType == LocationType.FileSystem && audio != null && !audio.IsArchive;
         }
 
-        public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
-            if (status.ItemDateModified.HasValue)
+            if (item.DateModifiedDuringLastRefresh.HasValue)
             {
-                if (status.ItemDateModified.Value != item.DateModified)
-                {
-                    return true;
-                }
+                return item.DateModifiedDuringLastRefresh.Value != item.DateModified;
             }
 
             return false;

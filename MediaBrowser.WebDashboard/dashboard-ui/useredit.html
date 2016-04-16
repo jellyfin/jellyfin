@@ -1,4 +1,4 @@
-﻿<div id="editUserPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="jqmcollapsible,scripts/useredit,paper-input,jqmcheckbox,paper-checkbox">
+﻿<div id="editUserPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="jqmcollapsible,scripts/useredit,paper-input,paper-checkbox">
 
     <div data-role="content">
         <div class="content-primary">
@@ -45,77 +45,62 @@
                         <paper-checkbox id="chkIsAdmin">${OptionAllowUserToManageServer}</paper-checkbox>
                     </li>
                 </ul>
-                <fieldset id="featureAccessFields" data-role="controlgroup">
-                    <legend>${HeaderFeatureAccess}</legend>
-                    <input type="checkbox" id="chkEnableContentDeletion" name="chkEnableContentDeletion" />
-                    <label for="chkEnableContentDeletion">${OptionAllowDeleteLibraryContent}</label>
-                    <input type="checkbox" id="chkEnableDownloading" />
-                    <label for="chkEnableDownloading">${OptionAllowContentDownloading}</label>
-                    <input type="checkbox" id="chkEnableLiveTvAccess" name="chkEnableLiveTvAccess" />
-                    <label for="chkEnableLiveTvAccess">${OptionAllowBrowsingLiveTv}</label>
-                    <input type="checkbox" id="chkManageLiveTv" name="chkManageLiveTv" />
-                    <label for="chkManageLiveTv">${OptionAllowManageLiveTv}</label>
-                </fieldset>
-                <br />
+                <div id="featureAccessFields">
+                    <div class="paperListLabel">${HeaderFeatureAccess}</div>
+                    <div class="paperCheckboxList paperList" style="padding:.5em 1em;">
+                        <paper-checkbox id="chkEnableContentDeletion">${OptionAllowDeleteLibraryContent}</paper-checkbox>
+                        <paper-checkbox id="chkEnableDownloading">${OptionAllowContentDownloading}</paper-checkbox>
+                        <paper-checkbox id="chkEnableLiveTvAccess">${OptionAllowBrowsingLiveTv}</paper-checkbox>
+                        <paper-checkbox id="chkManageLiveTv">${OptionAllowManageLiveTv}</paper-checkbox>
+                    </div>
+                </div>
                 <div>
-                    <fieldset data-role="controlgroup">
-                        <legend>${HeaderPlayback}</legend>
-                        <input type="checkbox" id="chkEnableMediaPlayback" />
-                        <label for="chkEnableMediaPlayback">${OptionAllowMediaPlayback}</label>
-                        <input type="checkbox" id="chkEnableAudioPlaybackTranscoding" />
-                        <label for="chkEnableAudioPlaybackTranscoding">${OptionAllowAudioPlaybackTranscoding}</label>
-                        <input type="checkbox" id="chkEnableVideoPlaybackTranscoding" />
-                        <label for="chkEnableVideoPlaybackTranscoding">${OptionAllowVideoPlaybackTranscoding}</label>
-                    </fieldset>
+                    <br />
+                    <div class="paperListLabel">${HeaderPlayback}</div>
+                    <div class="paperCheckboxList paperList" style="padding:.5em 1em;">
+                        <paper-checkbox id="chkEnableMediaPlayback">${OptionAllowMediaPlayback}</paper-checkbox>
+                        <paper-checkbox id="chkEnableAudioPlaybackTranscoding">${OptionAllowAudioPlaybackTranscoding}</paper-checkbox>
+                        <paper-checkbox id="chkEnableVideoPlaybackTranscoding">${OptionAllowVideoPlaybackTranscoding}</paper-checkbox>
+                    </div>
                     <div class="fieldDescription">${OptionAllowMediaPlaybackTranscodingHelp}</div>
                     <br />
                 </div>
                 <div>
-                    <fieldset data-role="controlgroup">
-                        <legend>${HeaderRemoteControl}</legend>
-                        <input type="checkbox" id="chkEnableRemoteControlOtherUsers" name="chkEnableRemoteControlOtherUsers" />
-                        <label for="chkEnableRemoteControlOtherUsers">${OptionAllowRemoteControlOthers}</label>
-                        <input type="checkbox" id="chkRemoteControlSharedDevices" />
-                        <label for="chkRemoteControlSharedDevices">${OptionAllowRemoteSharedDevices}</label>
-                    </fieldset>
+                    <br />
+                    <div class="paperListLabel">${HeaderRemoteControl}</div>
+                    <div class="paperCheckboxList paperList" style="padding:.5em 1em;">
+                        <paper-checkbox id="chkEnableRemoteControlOtherUsers">${OptionAllowRemoteControlOthers}</paper-checkbox>
+                        <paper-checkbox id="chkRemoteControlSharedDevices">${OptionAllowRemoteSharedDevices}</paper-checkbox>
+                    </div>
                     <div class="fieldDescription">${OptionAllowRemoteSharedDevicesHelp}</div>
                     <br />
                 </div>
                 <div>
-                    <fieldset data-role="controlgroup">
-                        <legend>${HeaderSharing}</legend>
-                        <input type="checkbox" id="chkEnableSharing" />
-                        <label for="chkEnableSharing">${OptionAllowLinkSharing}</label>
-                    </fieldset>
-                    <div class="fieldDescription">${OptionAllowLinkSharingHelp}</div>
+                    <br />
+                    <div class="paperListLabel">${HeaderSync}</div>
+                    <div class="paperCheckboxList paperList" style="padding:.5em 1em;">
+                        <paper-checkbox id="chkEnableSync">${OptionAllowSyncContent}</paper-checkbox>
+                        <paper-checkbox id="chkEnableSyncTranscoding">${OptionAllowSyncTranscoding}</paper-checkbox>
+                    </div>
                     <br />
                 </div>
                 <div>
-                    <fieldset data-role="controlgroup">
-                        <legend>${HeaderSync}</legend>
-                        <input type="checkbox" id="chkEnableSync" />
-                        <label for="chkEnableSync">${OptionAllowSyncContent}</label>
-                        <input type="checkbox" id="chkEnableSyncTranscoding" />
-                        <label for="chkEnableSyncTranscoding">${OptionAllowSyncTranscoding}</label>
-                    </fieldset>
+                    <br />
+                    <paper-checkbox id="chkEnableSharing">${OptionAllowLinkSharing}</paper-checkbox>
+                    <div class="fieldDescription paperCheckboxFieldDescription">${OptionAllowLinkSharingHelp}</div>
                     <br />
                 </div>
                 <div id="fldIsEnabled" style="margin: 1em 0 2em;">
-                    <div data-role="controlgroup">
-                        <input type="checkbox" id="chkDisabled" name="chkDisabled" />
-                        <label for="chkDisabled">${OptionDisableUser}</label>
-                    </div>
-                    <div class="fieldDescription">${OptionDisableUserHelp}</div>
+                    <paper-checkbox id="chkDisabled">${OptionDisableUser}</paper-checkbox>
+                    <div class="fieldDescription paperCheckboxFieldDescription">${OptionDisableUserHelp}</div>
                 </div>
                 <div style="margin: 1em 0;">
-                    <input type="checkbox" id="chkDisableUserPreferences" data-mini="true" />
-                    <label for="chkDisableUserPreferences">${OptionDisableUserPreferences}</label>
-                    <div class="fieldDescription">${OptionDisableUserPreferencesHelp}</div>
+                    <paper-checkbox id="chkDisableUserPreferences">${OptionDisableUserPreferences}</paper-checkbox>
+                    <div class="fieldDescription paperCheckboxFieldDescription">${OptionDisableUserPreferencesHelp}</div>
                 </div>
                 <div id="fldIsHidden" style="margin: 2em 0 1em;">
-                    <input type="checkbox" id="chkIsHidden" name="chkIsHidden" data-mini="true" />
-                    <label for="chkIsHidden">${OptionHideUser}</label>
-                    <div class="fieldDescription">${OptionHideUserFromLoginHelp}</div>
+                    <paper-checkbox id="chkIsHidden">${OptionHideUser}</paper-checkbox>
+                    <div class="fieldDescription paperCheckboxFieldDescription">${OptionHideUserFromLoginHelp}</div>
                 </div>
                 <br />
                 <ul data-role="listview" class="ulForm">

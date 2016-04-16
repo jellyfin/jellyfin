@@ -93,10 +93,10 @@ namespace MediaBrowser.Dlna.Didl
             }
             else
             {
-                var parent = item.DisplayParent;
-                if (parent != null)
+                var parent = item.DisplayParentId;
+                if (parent.HasValue)
                 {
-                    element.SetAttribute("parentID", GetClientId(parent, null));
+                    element.SetAttribute("parentID", GetClientId(parent.Value, null));
                 }
             }
 
@@ -171,7 +171,6 @@ namespace MediaBrowser.Dlna.Didl
                 streamInfo.TargetPacketLength,
                 streamInfo.TranscodeSeekInfo,
                 streamInfo.IsTargetAnamorphic,
-                streamInfo.IsTargetCabac,
                 streamInfo.TargetRefFrames,
                 streamInfo.TargetVideoStreamCount,
                 streamInfo.TargetAudioStreamCount,
@@ -317,7 +316,6 @@ namespace MediaBrowser.Dlna.Didl
                 streamInfo.TargetPacketLength,
                 streamInfo.TargetTimestamp,
                 streamInfo.IsTargetAnamorphic,
-                streamInfo.IsTargetCabac,
                 streamInfo.TargetRefFrames,
                 streamInfo.TargetVideoStreamCount,
                 streamInfo.TargetAudioStreamCount,
@@ -501,14 +499,21 @@ namespace MediaBrowser.Dlna.Didl
             {
                 container.SetAttribute("id", clientId);
 
-                var parent = context ?? folder.DisplayParent;
-                if (parent == null)
+                if (context != null)
                 {
-                    container.SetAttribute("parentID", "0");
+                    container.SetAttribute("parentID", GetClientId(context, null));
                 }
                 else
                 {
-                    container.SetAttribute("parentID", GetClientId(parent, null));
+                    var parent = folder.DisplayParentId;
+                    if (!parent.HasValue)
+                    {
+                        container.SetAttribute("parentID", "0");
+                    }
+                    else
+                    {
+                        container.SetAttribute("parentID", GetClientId(parent.Value, null));
+                    }
                 }
             }
 
@@ -981,7 +986,10 @@ namespace MediaBrowser.Dlna.Didl
 
             if (item != null)
             {
-                return GetImageInfo(item, ImageType.Primary);
+                if (item.HasImage(ImageType.Primary))
+                {
+                    return GetImageInfo(item, ImageType.Primary);
+                }
             }
 
             return null;
@@ -1058,7 +1066,12 @@ namespace MediaBrowser.Dlna.Didl
 
         public static string GetClientId(BaseItem item, StubType? stubType)
         {
-            var id = item.Id.ToString("N");
+            return GetClientId(item.Id, stubType);
+        }
+
+        public static string GetClientId(Guid idValue, StubType? stubType)
+        {
+            var id = idValue.ToString("N");
 
             if (stubType.HasValue)
             {

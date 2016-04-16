@@ -22,18 +22,6 @@
             return results;
         }
 
-        var docElem = doc.documentElement;
-        var docElemValues = {
-            clientTop: docElem.clientTop,
-            clientLeft: docElem.clientLeft
-        };
-
-        var win = doc.defaultView;
-        var winValues = {
-            pageXOffset: win.pageXOffset,
-            pageYOffset: win.pageYOffset
-        };
-
         var box;
         var elem;
 
@@ -57,7 +45,7 @@
         return results;
     }
 
-    function getPosition(options) {
+    function getPosition(options, dlg) {
 
         var windowHeight = window.innerHeight;
 
@@ -70,9 +58,9 @@
         pos.top += options.positionTo.offsetHeight / 2;
         pos.left += options.positionTo.offsetWidth / 2;
 
-        // Account for popup size - we can't predict this yet so just estimate
-        pos.top -= (45 * options.items.length) / 2;
-        pos.left -= 80;
+        // Account for popup size 
+        pos.top -= ((dlg.offsetHeight || 300) / 2);
+        pos.left -= ((dlg.offsetWidth || 160) / 2);
 
         // Avoid showing too close to the bottom
         pos.top = Math.min(pos.top, windowHeight - 300);
@@ -94,16 +82,13 @@
 
     function show(options) {
 
-        var pos = options.positionTo ? getPosition(options) : null;
-
         // items
         // positionTo
         // showCancel
         // title
         var dialogOptions = {
             removeOnClose: true,
-            enableHistory: options.enableHistory,
-            refit: pos == null
+            enableHistory: options.enableHistory
         };
 
         var backButton = false;
@@ -121,6 +106,10 @@
         }
 
         var dlg = dialogHelper.createDialog(dialogOptions);
+
+        if (!layoutManager.tv) {
+            dlg.classList.add('extraSpacing');
+        }
 
         dlg.classList.add('actionSheet');
 
@@ -142,6 +131,10 @@
 
         html += '<div class="actionSheetScroller">';
 
+        options.items.forEach(function (o) {
+            o.ironIcon = o.selected ? 'check' : null;
+        });
+
         var itemsWithIcons = options.items.filter(function (o) {
             return o.ironIcon;
         });
@@ -155,7 +148,6 @@
         }
 
         var enablePaperMenu = !layoutManager.tv;
-        enablePaperMenu = false;
         var itemTagName = 'paper-button';
 
         if (enablePaperMenu) {
@@ -168,7 +160,7 @@
             var option = options.items[i];
 
             var autoFocus = option.selected ? ' autoFocus' : '';
-            html += '<' + itemTagName + autoFocus + ' noink class="actionSheetMenuItem" data-id="' + option.id + '" style="display:block;">';
+            html += '<' + itemTagName + autoFocus + ' class="actionSheetMenuItem" data-id="' + option.id + '">';
 
             if (option.ironIcon) {
                 html += '<iron-icon class="actionSheetItemIcon" icon="' + option.ironIcon + '"></iron-icon>';
@@ -176,7 +168,7 @@
             else if (renderIcon && !center) {
                 html += '<iron-icon class="actionSheetItemIcon"></iron-icon>';
             }
-            html += '<span>' + option.name + '</span>';
+            html += '<div class="actionSheetItemText">' + option.name + '</div>';
             html += '</' + itemTagName + '>';
         }
 
@@ -186,7 +178,7 @@
 
         if (options.showCancel) {
             html += '<div class="buttons">';
-            html += '<paper-button dialog-dismiss>' + dialogText.get('Cancel') + '</paper-button>';
+            html += '<paper-button class="btnCancel">' + dialogText.get('Cancel') + '</paper-button>';
             html += '</div>';
         }
         html += '</div>';
@@ -195,6 +187,12 @@
 
         if (layoutManager.tv) {
             addCenterFocus(dlg);
+        }
+
+        if (options.showCancel) {
+            dlg.querySelector('.btnCancel').addEventListener('click', function () {
+                dialogHelper.close(dlg);
+            });
         }
 
         document.body.appendChild(dlg);
@@ -230,6 +228,8 @@
             });
 
             dialogHelper.open(dlg);
+
+            var pos = options.positionTo ? getPosition(options, dlg) : null;
 
             if (pos) {
                 dlg.style.position = 'fixed';

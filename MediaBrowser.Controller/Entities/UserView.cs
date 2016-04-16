@@ -45,7 +45,7 @@ namespace MediaBrowser.Controller.Entities
             return list;
         }
 
-        public override Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
+        protected override Task<QueryResult<BaseItem>> GetItemsInternal(InternalItemsQuery query)
         {
             var parent = this as Folder;
 

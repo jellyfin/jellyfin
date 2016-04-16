@@ -1,5 +1,6 @@
 <!doctype html>
 <!--
+@license
 Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
 The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
@@ -67,6 +68,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div some-attr="value3">Item 3</div>
         <attr-reflector>Item 4</attr-reflector>
         <div some-attr="value5">Item 5</div>
+      </iron-selector>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="defaultAttribute">
+    <template>
+      <iron-selector attr-for-selected="some-attr" fallback-selection="default">
+        <div some-attr="value0">Item 0</div>
+        <div some-attr="value1">Item 1</div>
+        <div some-attr="default">Item 2</div>
       </iron-selector>
     </template>
   </test-fixture>
@@ -155,6 +166,61 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
 
         testSelectItem(i);
+      });
+    });
+
+    suite('default attribute', function() {
+      var selector;
+      var items;
+
+      setup(function () {
+        selector = fixture('defaultAttribute');
+        items = Array.prototype.slice.apply(selector.querySelectorAll('div[some-attr]'));
+      });
+
+      test('setting non-existing value sets default', function() {
+        selector.select('non-existing-value');
+        assert.equal(selector.selected, 'default');
+        assert.equal(selector.selectedItem, items[2]);
+      });
+
+      test('setting non-existing value sets default', function() {
+        selector.multi = true;
+        selector.select(['non-existing-value']);
+        assert.deepEqual(selector.selectedValues, ['default']);
+        assert.deepEqual(selector.selectedItems, [items[2]]);
+      });
+
+      test('default not used when there was at least one match', function() {
+        selector.multi = true;
+        selector.selectedValues = ['non-existing-value', 'value0'];
+        assert.deepEqual(selector.selectedValues, ['non-existing-value', 'value0']);
+        assert.deepEqual(selector.selectedItems, [items[0]]);
+      });
+
+      test('default element not found does not result in infinite loop', function() {
+        selector.fallbackSelection = 'non-existing-fallback';
+        selector.select('non-existing-value');
+        assert.equal(selector.selectedItem, undefined);
+        selector.multi = true;
+        selector.selectedValues = ['non-existing-value'];
+        assert.deepEqual(selector.selectedItems, [undefined]);
+        selector.fallbackSelection = 'default';
+        assert.deepEqual(selector.selectedItems, [items[2]]);
+      });
+
+      test('selection is updated after fallback is set', function() {
+        selector.fallbackSolution = undefined;
+        selector.select('non-existing-value');
+        selector.fallbackSelection = 'default';
+        assert.equal(selector.selectedItem, items[2]);
+      });
+
+      test('multi-selection is updated after fallback is set', function() {
+        selector.fallbackSolution = undefined;
+        selector.selectedValues = ['non-existing-value'];
+        selector.fallbackSolution = 'default';
+        assert.equal(selector.selectedItem, items[2]);
       });
     });
   </script>

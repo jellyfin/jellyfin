@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using System.Collections.Generic;
 using System.Xml;
 
 namespace MediaBrowser.XbmcMetadata.Parsers

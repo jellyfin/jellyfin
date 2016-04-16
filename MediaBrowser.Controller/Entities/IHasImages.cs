@@ -1,11 +1,10 @@
-﻿using MediaBrowser.Controller.Providers;
+﻿using System;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.Controller.Entities
@@ -208,6 +207,8 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="image">The image.</param>
         /// <param name="index">The index.</param>
         void SetImage(ItemImageInfo image, int index);
+
+        DateTime? DateModifiedDuringLastRefresh { get; set; }
     }
 
     public static class HasImagesExtensions

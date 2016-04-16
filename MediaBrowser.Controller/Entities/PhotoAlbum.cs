@@ -1,11 +1,7 @@
-﻿using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
+﻿using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Users;
-using System;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Entities
 {

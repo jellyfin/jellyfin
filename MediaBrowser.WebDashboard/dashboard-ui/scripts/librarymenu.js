@@ -1,9 +1,12 @@
-﻿define(['imageLoader', 'jQuery', 'paper-icon-button', 'paper-button', 'emby-icons'], function (imageLoader, $) {
+﻿define(['imageLoader', 'layoutManager', 'jQuery', 'paper-icon-button', 'paper-button', 'emby-icons'], function (imageLoader, layoutManager, $) {
+
+    var mainDrawerPanel = document.querySelector('.mainDrawerPanel');
 
     function renderHeader() {
 
         var html = '';
 
+        html += '<div class="primaryIcons">';
         var backIcon = browserInfo.safari ? 'chevron-left' : 'arrow-back';
 
         html += '<paper-icon-button icon="' + backIcon + '" class="headerButton headerButtonLeft headerBackButton hide"></paper-icon-button>';
@@ -11,6 +14,8 @@
         if (AppInfo.enableNavDrawer) {
             html += '<paper-icon-button icon="menu" class="headerButton mainDrawerButton barsMenuButton headerButtonLeft"></paper-icon-button>';
         }
+
+        html += '<paper-icon-button icon="menu" class="headerButton headerAppsButton barsMenuButton headerButtonLeft"></paper-icon-button>';
 
         html += '<div class="libraryMenuButtonText headerButton">' + Globalize.translate('ButtonHome') + '</div>';
 
@@ -40,13 +45,16 @@
         }
 
         html += '</div>';
+        html += '</div>';
+
+        html += '<div class="viewMenuBarTabs hiddenScrollX">';
+        html += '</div>';
 
         var viewMenuBar = document.createElement('div');
         viewMenuBar.classList.add('viewMenuBar');
-        viewMenuBar.classList.add('ui-body-b');
         viewMenuBar.innerHTML = html;
 
-        document.body.appendChild(viewMenuBar);
+        document.querySelector('.skinHeader').appendChild(viewMenuBar);
 
         imageLoader.lazyChildren(document.querySelector('.viewMenuBar'));
 
@@ -180,6 +188,61 @@
         Dashboard.showUserFlyout(e.target);
     }
 
+    function onHeaderAppsButtonClick() {
+
+        require(['dialogHelper'], function (dialogHelper) {
+
+            var dlg = dialogHelper.createDialog({
+                removeOnClose: true,
+                modal: false,
+                autoFocus: false,
+                entryAnimationDuration: 160,
+                exitAnimationDuration: 160,
+                enableHistory: false
+            });
+
+            dlg.classList.add('ui-body-a');
+            dlg.classList.add('background-theme-a');
+            dlg.classList.add('adminAppsMenu');
+
+            var html = '';
+
+            html += '<div class="adminAppsMenuRow">';
+
+            html += '<a class="adminAppsButton" href="home.html">';
+            html += '<paper-icon-button icon="home"></paper-icon-button>';
+            html += '<div>' + Globalize.translate('ButtonHome') + '</div>';
+            html += '</a>';
+
+            html += '</div>';
+
+            html += '<div class="adminAppsMenuRow">';
+
+            html += '<a class="adminAppsButton" href="edititemmetadata.html">';
+            html += '<paper-icon-button icon="mode-edit"></paper-icon-button>';
+            html += '<div>' + Globalize.translate('ButtonMetadataManager') + '</div>';
+            html += '</a>';
+            html += '<a class="adminAppsButton" href="reports.html">';
+            html += '<paper-icon-button icon="insert-chart"></paper-icon-button>';
+            html += '<div>' + Globalize.translate('ButtonReports') + '</div>';
+            html += '</a>';
+
+            html += '</div>';
+
+            dlg.innerHTML = html;
+            document.body.appendChild(dlg);
+
+            dlg.addEventListener('click', function (e) {
+                var link = parentWithTag(e.target, 'A');
+                if (link) {
+                    dialogHelper.close(dlg);
+                }
+            });
+            dialogHelper.open(dlg);
+
+        });
+    }
+
     function bindMenuEvents() {
 
         var mainDrawerButton = document.querySelector('.mainDrawerButton');
@@ -203,6 +266,11 @@
             headerUserButton.addEventListener('click', onHeaderUserButtonClick);
         }
 
+        var headerAppsButton = document.querySelector('.headerAppsButton');
+        if (headerAppsButton) {
+            headerAppsButton.addEventListener('click', onHeaderAppsButtonClick);
+        }
+
         var viewMenuBar = document.querySelector(".viewMenuBar");
         initHeadRoom(viewMenuBar);
 
@@ -216,18 +284,15 @@
         return LibraryBrowser.getHref(item, context);
     }
 
-    var requiresDrawerRefresh = true;
-    var requiresDashboardDrawerRefresh = true;
     var requiresUserRefresh = true;
     var lastOpenTime = new Date().getTime();
 
     function toggleMainDrawer() {
 
-        var drawerPanel = document.querySelector('.mainDrawerPanel');
-        if (drawerPanel.selected == 'drawer') {
-            closeMainDrawer(drawerPanel);
+        if (mainDrawerPanel.selected == 'drawer') {
+            closeMainDrawer(mainDrawerPanel);
         } else {
-            openMainDrawer(drawerPanel);
+            openMainDrawer(mainDrawerPanel);
         }
     }
 
@@ -243,38 +308,6 @@
         if (browserInfo.mobile) {
             document.body.classList.add('bodyWithPopupOpen');
         }
-
-        var pageElem = $.mobile.activePage;
-
-        if (requiresDrawerRefresh || requiresDashboardDrawerRefresh) {
-
-            ConnectionManager.user(window.ApiClient).then(function (user) {
-
-                var drawer = document.querySelector('.mainDrawerPanel .mainDrawer');
-
-                if (requiresDrawerRefresh) {
-                    ensureDrawerStructure(drawer);
-
-                    refreshUserInfoInDrawer(user, drawer);
-                    refreshLibraryInfoInDrawer(user, drawer);
-                    refreshBottomUserInfoInDrawer(user, drawer);
-
-                    document.dispatchEvent(new CustomEvent("libraryMenuCreated", {}));
-                    updateLibraryMenu(user.localUser);
-                }
-
-                if (requiresDrawerRefresh || requiresDashboardDrawerRefresh) {
-                    refreshDashboardInfoInDrawer(pageElem, user, drawer);
-                    requiresDashboardDrawerRefresh = false;
-                }
-
-                requiresDrawerRefresh = false;
-            });
-        }
-
-        updateLibraryNavLinks(pageElem);
-
-        document.querySelector('.mainDrawerPanel #drawer').classList.add('verticalScrollingDrawer');
     }
     function closeMainDrawer(drawerPanel) {
 
@@ -287,101 +320,49 @@
 
         if (drawer.selected != 'drawer') {
             document.body.classList.remove('bodyWithPopupOpen');
-            document.querySelector('.mainDrawerPanel #drawer').classList.remove('verticalScrollingDrawer');
         } else {
             onMainDrawerOpened();
         }
-    }
-
-    function ensureDrawerStructure(drawer) {
-
-        if (drawer.querySelector('.mainDrawerContent')) {
-            return;
-        }
-
-        var html = '<div class="mainDrawerContent">';
-
-        html += '<div class="userheader">';
-        html += '</div>';
-        html += '<div class="libraryDrawerContent">';
-        html += '</div>';
-        html += '<div class="dashboardDrawerContent">';
-        html += '</div>';
-        html += '<div class="userFooter">';
-        html += '</div>';
-
-        html += '</div>';
-
-        drawer.innerHTML = html;
-    }
-
-    function refreshUserInfoInDrawer(user, drawer) {
-
-        var html = '';
-
-        var homeHref = window.ApiClient ? 'home.html' : 'selectserver.html?showuser=1';
-
-        html += '<div style="margin-top:5px;"></div>';
-
-        html += '<a class="lnkMediaFolder sidebarLink" href="' + homeHref + '" onclick="return LibraryMenu.onLinkClicked(event, this);">';
-        html += '<div style="background-image:url(\'css/images/mblogoicon.png\');width:' + 28 + 'px;height:' + 28 + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin:0 1.6em 0 1.5em;display:inline-block;"></div>';
-        html += Globalize.translate('ButtonHome');
-        html += '</a>';
-
-        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="remote" href="nowplaying.html" onclick="return LibraryMenu.onLinkClicked(event, this);"><iron-icon icon="tablet-android" class="sidebarLinkIcon" style="color:#673AB7;"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonRemote') + '</span></a>';
-
-        var userHeader = drawer.querySelector('.userheader');
-
-        userHeader.innerHTML = html;
-
-        require(['imageLoader'], function (imageLoader) {
-            imageLoader.fillImages(userHeader.getElementsByClassName('lazy'));
-        });
     }
 
     function refreshLibraryInfoInDrawer(user, drawer) {
 
         var html = '';
 
+        html += '<div style="height:.5em;"></div>';
+
+        var homeHref = window.ApiClient ? 'home.html' : 'selectserver.html?showuser=1';
+
+        html += '<a class="lnkMediaFolder sidebarLink" href="' + homeHref + '" onclick="return LibraryMenu.onLinkClicked(event, this);">';
+        html += '<div style="background-image:url(\'css/images/mblogoicon.png\');width:' + 28 + 'px;height:' + 28 + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin:0 1.6em 0 1.5em;display:inline-block;"></div>';
+        html += Globalize.translate('ButtonHome');
+        html += '</a>';
+
+        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="remote" href="nowplaying.html" onclick="return LibraryMenu.onLinkClicked(event, this);"><iron-icon icon="tablet-android" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonRemote') + '</span></a>';
+
         html += '<div class="sidebarDivider"></div>';
 
         html += '<div class="libraryMenuOptions">';
         html += '</div>';
 
-        drawer.querySelector('.libraryDrawerContent').innerHTML = html;
-    }
+        var localUser = user.localUser;
+        if (localUser && localUser.Policy.IsAdministrator) {
 
-    function refreshDashboardInfoInDrawer(page, user, drawer) {
+            html += '<div class="adminMenuOptions">';
+            html += '<div class="sidebarDivider"></div>';
 
-        var html = '';
+            html += '<div class="sidebarHeader">';
+            html += Globalize.translate('HeaderAdmin');
+            html += '</div>';
 
-        html += '<div class="sidebarDivider"></div>';
+            html += '<a class="sidebarLink lnkMediaFolder lnkManageServer" data-itemid="dashboard" href="#"><iron-icon icon="dashboard" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonManageServer') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder editorViewMenu" data-itemid="editor" onclick="return LibraryMenu.onLinkClicked(event, this);" href="edititemmetadata.html"><iron-icon icon="mode-edit" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonMetadataManager') + '</span></a>';
 
-        html += Dashboard.getToolsMenuHtml(page);
-
-        html = html.split('href=').join('onclick="return LibraryMenu.onLinkClicked(event, this);" href=');
-
-        drawer.querySelector('.dashboardDrawerContent').innerHTML = html;
-    }
-
-    function refreshBottomUserInfoInDrawer(user, drawer) {
-
-        var html = '';
-
-        html += '<div class="adminMenuOptions">';
-        html += '<div class="sidebarDivider"></div>';
-
-        html += '<div class="sidebarHeader">';
-        html += Globalize.translate('HeaderAdmin');
-        html += '</div>';
-
-        html += '<a class="sidebarLink lnkMediaFolder lnkManageServer" data-itemid="dashboard" href="#"><iron-icon icon="dashboard" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonManageServer') + '</span></a>';
-        html += '<a class="sidebarLink lnkMediaFolder editorViewMenu" data-itemid="editor" onclick="return LibraryMenu.onLinkClicked(event, this);" href="edititemmetadata.html"><iron-icon icon="mode-edit" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonMetadataManager') + '</span></a>';
-
-        if (!browserInfo.mobile) {
-            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="reports" onclick="return LibraryMenu.onLinkClicked(event, this);" href="reports.html"><iron-icon icon="insert-chart" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonReports') + '</span></a>';
+            if (!browserInfo.mobile) {
+                html += '<a class="sidebarLink lnkMediaFolder" data-itemid="reports" onclick="return LibraryMenu.onLinkClicked(event, this);" href="reports.html"><iron-icon icon="insert-chart" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonReports') + '</span></a>';
+            }
+            html += '</div>';
         }
-        html += '</div>';
 
         html += '<div class="userMenuOptions">';
 
@@ -403,9 +384,97 @@
 
         html += '</div>';
 
-        drawer.querySelector('.userFooter').innerHTML = html;
+        var drawer = mainDrawerPanel.querySelector('.mainDrawer');
 
-        drawer.querySelector('.lnkManageServer').addEventListener('click', onManageServerClicked);
+        drawer.innerHTML = html;
+
+        var lnkManageServer = drawer.querySelector('.lnkManageServer');
+        if (lnkManageServer) {
+            lnkManageServer.addEventListener('click', onManageServerClicked);
+        }
+
+        require(['imageLoader'], function (imageLoader) {
+            imageLoader.fillImages(mainDrawerPanel.getElementsByClassName('lazy'));
+        });
+    }
+
+    function refreshDashboardInfoInDrawer(page, user) {
+
+        if (!mainDrawerPanel.querySelector('.adminDrawerLogo')) {
+            createDashboardMenu(page);
+        } else {
+            updateDashboardMenuSelectedItem();
+        }
+    }
+
+    function parentWithTag(elem, tagName) {
+
+        while (elem.tagName != tagName) {
+            elem = elem.parentNode;
+
+            if (!elem) {
+                return null;
+            }
+        }
+
+        return elem;
+    }
+
+    function updateDashboardMenuSelectedItem() {
+
+        var links = mainDrawerPanel.querySelectorAll('.sidebarLink');
+
+        for (var i = 0, length = links.length; i < length; i++) {
+            var link = links[i];
+
+            var selected = false;
+
+            var pageIds = link.getAttribute('data-pageids');
+            if (pageIds) {
+                selected = pageIds.split(',').indexOf($.mobile.activePage.id) != -1
+            }
+
+            if (selected) {
+                link.classList.add('selectedSidebarLink');
+
+                var title = '';
+
+                var secondaryTitle = (link.innerText || link.textContent).trim();
+                title += secondaryTitle;
+
+                var documentTitle = secondaryTitle;
+
+                Dashboard.setPageTitle(title, documentTitle);
+
+            } else {
+                link.classList.remove('selectedSidebarLink');
+            }
+        }
+    }
+
+    function createDashboardMenu() {
+        var html = '';
+
+        //html += '<div class="userHeader">';
+        //html += '<div class="userHeaderActionMenu">';
+        //html += '<div>';
+        //html += localUser.Name;
+        //html += '</div>';
+        //html += '<paper-icon-button icon="expand-more"></paper-icon-button>';
+        //html += '</div>';
+        //html += '</div>';
+
+        html += '<a class="adminDrawerLogo clearLink" href="home.html">'
+        html += '<img src="css/images/logo.png" />';
+        html += '</a>';
+
+        html += Dashboard.getToolsMenuHtml();
+
+        html = html.split('href=').join('onclick="return LibraryMenu.onLinkClicked(event, this);" href=');
+
+        mainDrawerPanel.querySelector('.mainDrawer').innerHTML = html;
+
+        updateDashboardMenuSelectedItem();
     }
 
     function onSidebarLinkClick() {
@@ -473,15 +542,26 @@
 
         if (!user) {
 
-            showBySelector('.adminMenuOptions', false);
             showBySelector('.lnkMySync', false);
             showBySelector('.userMenuOptions', false);
             return;
         }
 
+        if (user.Policy.EnableSync) {
+            showBySelector('.lnkMySync', true);
+        } else {
+            showBySelector('.lnkMySync', false);
+        }
+
         var userId = Dashboard.getCurrentUserId();
 
         var apiClient = window.ApiClient;
+
+        var libraryMenuOptions = document.querySelector('.libraryMenuOptions');
+
+        if (!libraryMenuOptions) {
+            return;
+        }
 
         getUserViews(apiClient, userId).then(function (result) {
 
@@ -549,7 +629,6 @@
 
             }).join('');
 
-            var libraryMenuOptions = document.querySelector('.libraryMenuOptions');
             libraryMenuOptions.innerHTML = html;
             var elem = libraryMenuOptions;
 
@@ -559,21 +638,7 @@
                 sidebarLinks[i].addEventListener('click', onSidebarLinkClick);
             }
         });
-
-        if (user.Policy.IsAdministrator) {
-            showBySelector('.adminMenuOptions', true);
-        } else {
-            showBySelector('.adminMenuOptions', false);
-        }
-
-        if (user.Policy.EnableSync) {
-            showBySelector('.lnkMySync', true);
-        } else {
-            showBySelector('.lnkMySync', false);
-        }
     }
-
-    var requiresLibraryMenuRefresh = false;
 
     function onManageServerClicked() {
 
@@ -653,8 +718,63 @@
             return false;
         },
 
+        setTabs: function (type, selectedIndex, builder) {
+
+            var viewMenuBarTabs;
+
+            if (!type) {
+                if (LibraryMenu.tabType) {
+
+                    mainDrawerPanel.classList.remove('withTallToolbar');
+                    viewMenuBarTabs = document.querySelector('.viewMenuBarTabs');
+                    viewMenuBarTabs.innerHTML = '';
+                    viewMenuBarTabs.classList.add('hide');
+                    LibraryMenu.tabType = null;
+                }
+                return;
+            }
+
+            viewMenuBarTabs = document.querySelector('.viewMenuBarTabs');
+
+            if (!LibraryMenu.tabType) {
+                viewMenuBarTabs.classList.remove('hide');
+            }
+
+            if (LibraryMenu.tabType != type) {
+
+                require(['paper-tabs'], function () {
+
+                    var noInk = browserInfo.animate ? '' : ' noink';
+
+                    viewMenuBarTabs.innerHTML = '<paper-tabs selected="' + selectedIndex + '" hidescrollbuttons ' + noInk + '>' + builder().map(function (t) {
+
+                        return '<paper-tab link><a class="clearLink paperTabLink" href="' + t.href + '"><div>' + t.name + '</div></a></paper-tab>';
+
+                    }).join('') + '</paper-tabs>';
+                    mainDrawerPanel.classList.add('withTallToolbar');
+                    LibraryMenu.tabType = type;
+                });
+                return;
+            }
+
+            viewMenuBarTabs.querySelector('paper-tabs').selected = selectedIndex;
+            LibraryMenu.tabType = type;
+        },
+
         setTitle: function (title) {
-            document.querySelector('.libraryMenuButtonText').innerHTML = title;
+
+            var html = title;
+
+            var page = $.mobile.activePage;
+            if (page) {
+                var helpUrl = page.getAttribute('data-helpurl');
+
+                if (helpUrl) {
+                    html += '<a href="' + helpUrl + '" target="_blank" class="clearLink" style="margin-left:1em;" title="' + Globalize.translate('ButtonHelp') + '"><paper-icon-button icon="info"></paper-icon-button></a>';
+                }
+            }
+
+            document.querySelector('.libraryMenuButtonText').innerHTML = html;
         },
 
         setBackButtonVisible: function (visible) {
@@ -798,12 +918,12 @@
 
             if (msg.Data.Id == Dashboard.getCurrentUserId()) {
 
-                requiresLibraryMenuRefresh = true;
+                // refresh library menu
             }
         }
     }
 
-    function buildViewMenuBar(page) {
+    function updateViewMenuBar(page) {
 
         var viewMenuBar = document.querySelector('.viewMenuBar');
 
@@ -811,6 +931,12 @@
             viewMenuBar.classList.add('hide');
         } else {
             viewMenuBar.classList.remove('hide');
+        }
+
+        if (page.classList.contains('type-interior') && !layoutManager.mobile) {
+            viewMenuBar.classList.add('headroomDisabled');
+        } else {
+            viewMenuBar.classList.remove('headroomDisabled');
         }
 
         if (requiresUserRefresh) {
@@ -833,21 +959,37 @@
         }
     });
 
-    pageClassOn('pagebeforeshow', 'page', function () {
+    pageClassOn('pagebeforeshow', 'page', function (e) {
 
         var page = this;
 
-        if (page.classList.contains('type-interior')) {
-            requiresDashboardDrawerRefresh = true;
+        if (!page.classList.contains('withTabs')) {
+            LibraryMenu.setTabs(null);
         }
-
-        buildViewMenuBar(page);
-        updateTabLinks(page);
     });
 
     pageClassOn('pageshow', 'page', function (e) {
 
         var page = this;
+
+        var isDashboardPage = page.classList.contains('type-interior');
+
+        if (isDashboardPage) {
+            refreshDashboardInfoInDrawer(page);
+            mainDrawerPanel.forceNarrow = false;
+        } else {
+
+            if (mainDrawerPanel.classList.contains('adminDrawerPanel')) {
+                refreshLibraryDrawer();
+            }
+
+            mainDrawerPanel.forceNarrow = true;
+        }
+
+        setDrawerClass(page);
+
+        updateViewMenuBar(page);
+        updateTabLinks(page);
 
         if (!e.detail.isRestored) {
             // Scroll back up so in case vertical scroll was messed with
@@ -857,15 +999,13 @@
         updateTitle(page);
         updateBackButton(page);
 
-        var isLibraryPage = page.classList.contains('libraryPage');
-
-        if (isLibraryPage) {
+        if (page.classList.contains('libraryPage')) {
 
             document.body.classList.add('libraryDocument');
             document.body.classList.remove('dashboardDocument');
             document.body.classList.remove('hideMainDrawer');
         }
-        else if (page.classList.contains('type-interior')) {
+        else if (isDashboardPage) {
 
             document.body.classList.remove('libraryDocument');
             document.body.classList.add('dashboardDocument');
@@ -877,6 +1017,8 @@
             document.body.classList.remove('dashboardDocument');
             document.body.classList.add('hideMainDrawer');
         }
+
+        updateLibraryNavLinks(page);
     });
 
     function updateTitle(page) {
@@ -887,12 +1029,6 @@
 
             if (titleKey) {
                 title = Globalize.translate(titleKey);
-            }
-        }
-
-        if (!title) {
-            if (page.classList.contains('type-interior')) {
-                title = Globalize.translate('ButtonHome');
             }
         }
 
@@ -940,13 +1076,11 @@
             });
             // initialise
             headroom.init();
-            elem.classList.add('headroomEnabled');
         });
     }
 
     function initializeApiClient(apiClient) {
 
-        requiresLibraryMenuRefresh = true;
         Events.off(apiClient, 'websocketmessage', onWebSocketMessage);
 
         Events.on(apiClient, 'websocketmessage', onWebSocketMessage);
@@ -956,15 +1090,41 @@
         initializeApiClient(window.ApiClient);
     }
 
-    function setDrawerClass() {
+    function setDrawerClass(page) {
 
-        var drawer = document.querySelector('.mainDrawerPanel #drawer');
-        if (drawer) {
-            drawer.classList.add('darkDrawer');
+        var admin = false;
+
+        if (!page) {
+            if (window.$ && window.$.mobile) {
+                page = $.mobile.activePage;
+            }
+        }
+
+        if (page && page.classList.contains('type-interior')) {
+            admin = true;
+        }
+
+        if (admin) {
+            mainDrawerPanel.classList.add('adminDrawerPanel');
+            mainDrawerPanel.classList.remove('darkDrawerPanel');
+        } else {
+            mainDrawerPanel.classList.add('darkDrawerPanel');
+            mainDrawerPanel.classList.remove('adminDrawerPanel');
         }
     }
 
-    var mainDrawerPanel = document.querySelector('.mainDrawerPanel');
+    function refreshLibraryDrawer(user) {
+
+        var promise = user ? Promise.resolve(user) : ConnectionManager.user(window.ApiClient);
+
+        promise.then(function (user) {
+            refreshLibraryInfoInDrawer(user);
+
+            document.dispatchEvent(new CustomEvent("libraryMenuCreated", {}));
+            updateLibraryMenu(user.localUser);
+        });
+    }
+
     mainDrawerPanel.addEventListener('iron-select', onMainDrawerSelect);
 
     renderHeader();
@@ -974,21 +1134,22 @@
     });
 
     Events.on(ConnectionManager, 'localusersignedin', function (e, user) {
-        requiresLibraryMenuRefresh = true;
-        requiresDrawerRefresh = true;
         setDrawerClass();
-        ConnectionManager.user(ConnectionManager.getApiClient(user.ServerId)).then(updateUserInHeader);
+        var apiClient = ConnectionManager.getApiClient(user.ServerId);
+        ConnectionManager.user(ConnectionManager.getApiClient(user.ServerId)).then(function (user) {
+            refreshLibraryDrawer(user);
+            updateUserInHeader(user);
+        });
+
+        if (!AppInfo.isNativeApp) {
+            require(['components/servertestermessage'], function (message) {
+                message.show(apiClient);
+            });
+        }
     });
 
-    Events.on(ConnectionManager, 'localusersignedout', function () {
-        requiresLibraryMenuRefresh = true;
-        requiresDrawerRefresh = true;
-        updateUserInHeader();
-    });
-
-    Events.on(MediaController, 'playerchange', function () {
-        updateCastIcon();
-    });
+    Events.on(ConnectionManager, 'localusersignedout', updateUserInHeader);
+    Events.on(MediaController, 'playerchange', updateCastIcon);
 
     setDrawerClass();
 

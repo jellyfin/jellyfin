@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'scrollStyles'], function ($) {
 
     function itemsPerRow() {
 
@@ -206,9 +206,9 @@
             loadRecentlyPlayed(tabContent, parentId);
             loadFrequentlyPlayed(tabContent, parentId);
 
-            require(['scripts/favorites'], function () {
+            require(['components/favoriteitems'], function (favoriteItems) {
 
-                FavoriteItems.render(tabContent, Dashboard.getCurrentUserId(), parentId, ['favoriteArtists', 'favoriteAlbums', 'favoriteSongs']);
+                favoriteItems.render(tabContent, Dashboard.getCurrentUserId(), parentId, ['favoriteArtists', 'favoriteAlbums', 'favoriteSongs']);
 
             });
         }

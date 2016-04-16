@@ -51,7 +51,7 @@ class FragmentLoader extends EventHandler {
     this.hls.trigger(Event.ERROR, {type: ErrorTypes.NETWORK_ERROR, details: ErrorDetails.FRAG_LOAD_TIMEOUT, fatal: false, frag: this.frag});
   }
 
-  loadprogress(event, stats) {
+  loadprogress(stats) {
     this.frag.loaded = stats.loaded;
     this.hls.trigger(Event.FRAG_LOAD_PROGRESS, {frag: this.frag, stats: stats});
   }

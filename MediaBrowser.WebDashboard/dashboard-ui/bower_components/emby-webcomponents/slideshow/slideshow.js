@@ -1,4 +1,4 @@
-define(['dialogHelper', 'inputManager', 'connectionManager', 'browser', 'css!./style', 'html!./icons', 'iron-icon-set', 'paper-fab', 'paper-icon-button', 'paper-spinner'], function (dialogHelper, inputmanager, connectionManager, browser) {
+define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'css!./style', 'html!./icons', 'iron-icon-set', 'paper-fab', 'paper-icon-button', 'paper-spinner'], function (dialogHelper, inputmanager, connectionManager, layoutManager) {
 
     return function (options) {
 
@@ -90,7 +90,7 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'browser', 'css!./s
                 swiperInstance.on('onLazyImageLoad', onSlideChangeStart);
                 swiperInstance.on('onLazyImageReady', onSlideChangeEnd);
 
-                if (browser.mobile) {
+                if (layoutManager.mobile) {
                     pause();
                 } else {
                     play();

@@ -100,8 +100,21 @@
         });
     }
 
+    function getTabs() {
+        return [
+        {
+            href: 'dlnasettings.html',
+            name: Globalize.translate('TabSettings')
+        },
+         {
+             href: 'dlnaprofiles.html',
+             name: Globalize.translate('TabProfiles')
+         }];
+    }
+
     $(document).on('pageshow', "#dlnaProfilesPage", function () {
 
+        LibraryMenu.setTabs('dlna', 1, getTabs);
         var page = this;
 
         loadProfiles(page);

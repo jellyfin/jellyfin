@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Channels;
@@ -8,8 +7,6 @@ using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Reports
 {
@@ -327,7 +324,7 @@ namespace MediaBrowser.Api.Reports
             if (stream != null && stream.Width != null)
                 return string.Format("{0} * {1}",
                         stream.Width,
-                        (stream.Height != null ? stream.Height.ToString() : "-"));
+                        stream.Height != null ? stream.Height.ToString() : "-");
 
             return string.Empty;
         }

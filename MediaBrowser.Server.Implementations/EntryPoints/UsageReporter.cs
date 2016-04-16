@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints
@@ -19,7 +18,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly IHttpClient _httpClient;
         private readonly IUserManager _userManager;
         private readonly ILogger _logger;
-        private const string MbAdminUrl = "http://www.mb3admin.com/admin/";
+        private const string MbAdminUrl = "https://www.mb3admin.com/admin/";
 
         public UsageReporter(IApplicationHost applicationHost, IHttpClient httpClient, IUserManager userManager, ILogger logger)
         {
