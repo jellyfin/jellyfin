@@ -1358,11 +1358,6 @@ namespace MediaBrowser.Controller.Entities
                 list.AddRange(parent.Tags);
             }
 
-            foreach (var parent in LibraryManager.GetCollectionFolders(this))
-            {
-                list.AddRange(parent.Tags);
-            }
-
             return list.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         }
 
