@@ -2336,5 +2336,6 @@
   "ErrorAddingGuestAccount2": "Please ensure your guest has completed activation by following the instructions in the email sent after creating the account. If they did not receive this email then please send an email to {0}, and include your email address as well as theirs.",
   "GuestUserNotFound": "User not found. Please ensure the name is correct and try again, or try entering their email address.",
   "MarkPlayed": "Mark played",
-  "MarkUnplayed": "Mark unplayed"
+  "MarkUnplayed": "Mark unplayed",
+  "Yesterday": "Yesterday"
 }
