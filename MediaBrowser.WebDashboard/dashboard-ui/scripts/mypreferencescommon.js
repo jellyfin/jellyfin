@@ -31,8 +31,8 @@ pageIdOn('pageshow', 'myPreferencesMenuPage', function () {
 
         page.querySelector('.headerUser').innerHTML = user.Name;
 
-        if (AppInfo.isNativeApp && browserInfo.safari && user.Policy.IsAdministrator) {
-            page.querySelector('.adminSection').classList.add('hide');
+        if (!(AppInfo.isNativeApp && browserInfo.safari) && user.Policy.IsAdministrator) {
+            page.querySelector('.adminSection').classList.remove('hide');
         } else {
             page.querySelector('.adminSection').classList.add('hide');
         }

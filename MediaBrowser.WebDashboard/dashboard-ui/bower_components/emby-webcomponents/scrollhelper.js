@@ -1,4 +1,4 @@
-define(['focusManager'], function (focusManager) {
+define(['focusManager', 'scrollStyles'], function (focusManager) {
 
     function getOffsets(elems) {
 

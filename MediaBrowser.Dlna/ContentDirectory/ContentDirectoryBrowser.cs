@@ -2,10 +2,8 @@
 using System.Xml.Linq;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
-using MediaBrowser.Dlna.PlayTo;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
-using System;
 using System.Globalization;
 using System.IO;
 using System.Security;

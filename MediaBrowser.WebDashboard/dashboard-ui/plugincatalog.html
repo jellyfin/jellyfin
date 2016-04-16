@@ -1,37 +1,21 @@
-﻿<div id="pluginCatalogPage" data-role="page" class="page type-interior pluginConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Plugins" data-require="scripts/ratingdialog,scripts/plugincatalogpage,jqmcheckbox">
+﻿<div id="pluginCatalogPage" data-role="page" class="page type-interior pluginConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Plugins" data-require="scripts/ratingdialog,scripts/plugincatalogpage,paper-toggle-button">
     <div data-role="content">
         <div class="content-primary">
-            <div data-role="controlgroup" data-type="horizontal" data-mini="true">
-                <a href="plugins.html" data-role="button">${TabMyPlugins}</a>
-                <a href="#" data-role="button" class="ui-btn-active">${TabCatalog}</a>
-                <a href="channelsettings.html" data-role="button">${TabChannels}</a>
-            </div>
-
-            <br />
-            <div>
-                <div style="display:inline-block;vertical-align:middle;">
-                    <fieldset data-role="controlgroup" data-type="horizontal">
-                        <legend>${LabelDisplayPluginsFor}</legend>
-                        <input type="radio" name="radioPackageTypes" class="radioPackageTypes" id="radioServer" value="Server" data-mini="true">
-                        <label for="radioServer">${TabServer}</label>
-                        <input type="radio" name="radioPackageTypes" class="radioPackageTypes" id="radioClassic" value="MBClassic" data-mini="true">
-                        <label for="radioClassic">${PluginTabAppClassic}</label>
-                    </fieldset>
+            <div style="display: flex;align-items:center;">
+                <div>
+                    <label class="selectLabel" for="selectSystem">${LabelDisplayPluginsFor}</label>
+                    <select id="selectSystem">
+                        <option value="Server">${TabServer}</option>
+                        <option value="MBClassic">${PluginTabAppClassic}</option>
+                    </select>
                 </div>
-                <div style="display:inline-block;vertical-align:bottom;" class="optionAdultContainer">
-                    <div style="margin-left:1em;">
-                        <label for="chkAdult">${OptionDisplayAdultContent}</label>
-                        <input id="chkAdult" type="checkbox" data-mini="true" data-inline="true" />
-                    </div>
+                <div style="margin-left:auto;" class="optionAdultContainer">
+                    <paper-toggle-button id="chkAdult">${OptionDisplayAdultContent}</paper-toggle-button>
                 </div>
             </div>
 
             <br />
             <br />
-            <p style="display: none;">
-                <input class="chkPremiumFilter" type="checkbox" data-mini="true" data-inline="true" name="chkPremium" id="chkPremium" data-filter="IsPremium" />
-                <label for="chkPremium">Free Only</label>
-            </p>
             <div id="noPlugins" class="hide">
                 <div style="text-align: center; margin: 10px;">${MessageNoAvailablePlugins}</div>
             </div>

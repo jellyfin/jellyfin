@@ -13,7 +13,7 @@
         }
 
         if (Dashboard.lastSystemInfo) {
-            Dashboard.setPageTitle(Dashboard.lastSystemInfo.ServerName);
+            page.querySelector('.serverNameHeader').innerHTML = Dashboard.lastSystemInfo.ServerName;
         }
 
         DashboardPage.newsStartIndex = 0;
@@ -84,7 +84,7 @@
 
         ApiClient.getSystemInfo().then(function (systemInfo) {
 
-            Dashboard.setPageTitle(systemInfo.ServerName);
+            page.querySelector('.serverNameHeader').innerHTML = systemInfo.ServerName;
             Dashboard.updateSystemInfo(systemInfo);
 
             $('#appVersionNumber', page).html(Globalize.translate('LabelVersionNumber').replace('{0}', systemInfo.Version));
@@ -835,10 +835,10 @@
                 var version = packageInfo[0];
 
                 if (!version) {
-                    $('#pUpToDate', page).show();
+                    page.querySelector('#pUpToDate').classList.remove('hide');
                     $('#pUpdateNow', page).hide();
                 } else {
-                    $('#pUpToDate', page).hide();
+                    page.querySelector('#pUpToDate').classList.add('hide');
 
                     $('#pUpdateNow', page).show();
 
@@ -849,7 +849,7 @@
 
         } else {
 
-            $('#pUpToDate', page).hide();
+            page.querySelector('#pUpToDate').classList.add('hide');
 
             $('#pUpdateNow', page).hide();
         }

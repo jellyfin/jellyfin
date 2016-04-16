@@ -1,15 +1,13 @@
-﻿<div id="logPage" data-role="page" class="page type-interior" data-require="scripts/logpage">
+﻿<div id="logPage" data-role="page" class="page type-interior withTabs">
 
     <div data-role="content">
         <div class="content-primary">
-            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                <a href="support.html" data-role="button">${TabGeneral}</a>
-                <a href="log.html" data-role="button" class="ui-btn-active">${TabLogs}</a>
-                <a href="supporterkey.html" data-role="button" class="tabSupporterMembership">${TabEmbyPremiere}</a>
-                <a href="about.html" data-role="button">${TabAbout}</a>
+            <div class="readOnlyContent">
+                <div style="text-align: right; display: flex; justify-content: flex-end;">
+                    <paper-toggle-button id="chkDebugLog">${LabelEnableDebugLogging}</paper-toggle-button>
+                </div>
+                <br/>
             </div>
-
-            <p>${HeaderServerLogFiles}</p>
             <div class="serverLogs readOnlyContent">
 
             </div>

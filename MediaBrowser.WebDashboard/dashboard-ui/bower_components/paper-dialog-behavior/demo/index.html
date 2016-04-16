@@ -22,6 +22,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <link rel="import" href="simple-dialog.html">
 
   <link rel="import" href="../../paper-button/paper-button.html">
+  <link rel="import" href="../../paper-dropdown-menu/paper-dropdown-menu.html">
+  <link rel="import" href="../../paper-item/paper-item.html">
+  <link rel="import" href="../../paper-listbox/paper-listbox.html">
   <link rel="import" href="../../paper-dialog-scrollable/paper-dialog-scrollable.html">
   <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
   <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
@@ -47,7 +50,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <paper-button raised onclick="modalAlert.toggle()">modal alert</paper-button>
       <simple-dialog id="modalAlert" modal role="alertdialog">
         <h2>Alert</h2>
-        <p>Discard draft?</p>
+        <paper-dropdown-menu label="Draft to discard">
+          <paper-listbox class="dropdown-content">
+            <paper-item>Draft 1</paper-item>
+            <paper-item>Draft 2</paper-item>
+            <paper-item>Draft 3</paper-item>
+            <paper-item>Draft 4</paper-item>
+          </paper-listbox>
+        </paper-dropdown-menu>
         <div class="buttons">
           <paper-button onclick="modalDetails.toggle()">More details</paper-button>
           <paper-button dialog-dismiss>Cancel</paper-button>

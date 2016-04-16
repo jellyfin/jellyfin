@@ -1,6 +1,6 @@
 {
   "name": "iron-selector",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Manages a set of elements that can be selected",
   "private": true,
   "license": "http://polymer.github.io/LICENSE.txt",

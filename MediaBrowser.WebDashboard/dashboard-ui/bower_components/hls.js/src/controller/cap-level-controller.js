@@ -8,20 +8,30 @@ import EventHandler from '../event-handler';
 class CapLevelController extends EventHandler {
 	constructor(hls) {
     super(hls,
+      Event.FPS_DROP_LEVEL_CAPPING,
       Event.MEDIA_ATTACHING,
       Event.MANIFEST_PARSED);   
 	}
 	
 	destroy() {
     if (this.hls.config.capLevelToPlayerSize) {
-      this.media = null;
+      this.media = this.restrictedLevels = null;
       this.autoLevelCapping = Number.POSITIVE_INFINITY;
       if (this.timer) {
         this.timer = clearInterval(this.timer);
       }
     }
   }
-	  
+	
+  onFpsDropLevelCapping(data) {
+    if (!this.restrictedLevels) {
+      this.restrictedLevels = [];
+    }
+    if (!this.isLevelRestricted(data.droppedLevel)) {
+      this.restrictedLevels.push(data.droppedLevel);
+    }
+  }
+  
 	onMediaAttaching(data) {
     this.media = data.media instanceof HTMLVideoElement ? data.media : null;  
   }
@@ -56,7 +66,7 @@ class CapLevelController extends EventHandler {
   * returns level should be the one with the dimensions equal or greater than the media (player) dimensions (so the video will be downscaled)
   */
   getMaxLevel(capLevelIndex) {
-    let result,
+    let result = 0,
         i,
         level,
         mWidth = this.mediaWidth,
@@ -66,6 +76,9 @@ class CapLevelController extends EventHandler {
         
     for (i = 0; i <= capLevelIndex; i++) {
       level = this.levels[i];
+      if (this.isLevelRestricted(i)) {
+        break;
+      }
       result = i;
       lWidth = level.width;
       lHeight = level.height;
@@ -74,6 +87,10 @@ class CapLevelController extends EventHandler {
       }
     }  
     return result;
+  }
+  
+  isLevelRestricted(level) {
+    return (this.restrictedLevels && this.restrictedLevels.indexOf(level) !== -1) ? true : false;
   }
   
   get contentScaleFactor() {

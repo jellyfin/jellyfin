@@ -9,7 +9,6 @@ using System.IO;
 using System.Threading;
 using System.Xml;
 using CommonIO;
-using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {

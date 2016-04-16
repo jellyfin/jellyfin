@@ -15,10 +15,9 @@ namespace MediaBrowser.Dlna.Profiles
 
             XDlnaDoc = "DMS-1.50";
 
-            FriendlyName = "Emby";
             Manufacturer = "Emby";
             ModelDescription = "Emby";
-            ModelName = "Emby";
+            ModelName = "Emby Server";
             ModelNumber = "Emby";
             ModelUrl = "http://emby.media/";
             ManufacturerUrl = "http://emby.media/";

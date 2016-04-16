@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'scrollStyles'], function ($) {
 
     function loadUpcoming(page) {
         Dashboard.showLoadingMsg();
@@ -30,8 +30,6 @@
             renderUpcoming(elem, items);
 
             Dashboard.hideLoadingMsg();
-
-            LibraryBrowser.setLastRefreshed(page);
         });
     }
 
@@ -61,7 +59,13 @@
             if (item.PremiereDate) {
                 try {
 
-                    dateText = LibraryBrowser.getFutureDateText(parseISO8601Date(item.PremiereDate, { toLocal: true }), true);
+                    var premiereDate = parseISO8601Date(item.PremiereDate, { toLocal: true });
+
+                    if (premiereDate.getDate() == new Date().getDate() - 1) {
+                        dateText = Globalize.translate('Yesterday');
+                    } else {
+                        dateText = LibraryBrowser.getFutureDateText(premiereDate, true);
+                    }
 
                 } catch (err) {
                 }
@@ -120,11 +124,14 @@
         elem.innerHTML = html;
         ImageLoader.lazyChildren(elem);
     }
+    return function (view, params, tabContent) {
 
-    window.HomePage.renderUpcoming = function (page, tabContent) {
-        if (LibraryBrowser.needsRefresh(tabContent)) {
+        var self = this;
+
+        self.renderTab = function () {
+
             loadUpcoming(tabContent);
-        }
+        };
     };
 
 });

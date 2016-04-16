@@ -1,6 +1,6 @@
 {
   "name": "hls.js",
-  "version": "0.5.16",
+  "version": "0.6.1",
   "license": "Apache-2.0",
   "description": "Media Source Extension - HLS library, by/for Dailymotion",
   "homepage": "https://github.com/dailymotion/hls.js",
@@ -17,7 +17,7 @@
   "scripts": {
     "clean": "find dist -mindepth 1 -delete",
     "prebuild": "npm run clean & npm run test",
-    "build": "npm run babel && browserify -t [babelify] -s Hls src/index.js --debug | exorcist dist/hls.js.map -b . > dist/hls.js",
+    "build": "npm run babel && browserify -t browserify-versionify -t [babelify] -s Hls src/index.js --debug | exorcist dist/hls.js.map -b . > dist/hls.js",
     "postbuild": "npm run minify",
     "prerelease": "npm run prebuild && npm run build && npm run postbuild && git add dist/* && git commit -m 'update dist'",
     "patch": "npm run prerelease && mversion p",
@@ -38,13 +38,14 @@
     "webworkify": "^1.0.2"
   },
   "devDependencies": {
-    "babel-preset-es2015": "^6.3.13",
-    "babel-register": "^6.3.13",
-    "babelify": "^7.2.0",
     "arraybuffer-equal": "^1.0.4",
     "babel": "^6.3.26",
     "babel-cli": "^6.3.17",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-register": "^6.3.13",
+    "babelify": "^7.2.0",
     "browserify": "^13.0.0",
+    "browserify-versionify": "^1.0.6",
     "deep-strict-equal": "^0.1.0",
     "exorcist": "^0.4.0",
     "http-server": "^0.9.0",

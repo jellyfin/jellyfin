@@ -40,8 +40,21 @@
         return false;
     }
 
+    function getTabs() {
+        return [
+        {
+            href: 'dashboardhosting.html',
+            name: Globalize.translate('TabHosting')
+        },
+         {
+             href: 'serversecurity.html',
+             name: Globalize.translate('TabSecurity')
+         }];
+    }
+
     $(document).on('pageshow', "#dashboardHostingPage", function () {
 
+        LibraryMenu.setTabs('adminadvanced', 0, getTabs);
         Dashboard.showLoadingMsg();
 
         var page = this;

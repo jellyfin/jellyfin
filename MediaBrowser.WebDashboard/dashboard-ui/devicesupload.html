@@ -1,13 +1,7 @@
-﻿<div id="devicesUploadPage" data-role="page" class="page type-interior devicesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Camera%20upload" data-require="scripts/devicesupload,paper-input,jqmcheckbox">
+﻿<div id="devicesUploadPage" data-role="page" class="page type-interior devicesPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Camera%20upload" data-require="scripts/devicesupload,paper-input,paper-checkbox">
 
     <div data-role="content">
         <div class="content-primary">
-
-            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                <a href="devices.html" data-role="button">${TabDevices}</a>
-                <a href="#" data-role="button" class="ui-btn-active">${TabCameraUpload}</a>
-                <!--<a href="dashboardsync.html" data-role="button">${TabSync}</a>-->
-            </div>
 
             <div class="readOnlyContent">
 
@@ -30,9 +24,9 @@
                             <div class="fieldDescription">${LabelCameraUploadPathHelp}</div>
                         </li>
                         <li>
-                            <label for="chkSubfolder">${LabelCreateCameraUploadSubfolder}</label>
-                            <input type="checkbox" id="chkSubfolder" data-mini="true" />
-                            <div class="fieldDescription">${LabelCreateCameraUploadSubfolderHelp}</div>
+                            <br />
+                            <paper-checkbox id="chkSubfolder">${LabelCreateCameraUploadSubfolder}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelCreateCameraUploadSubfolderHelp}</div>
                         </li>
 
                     </ul><br />

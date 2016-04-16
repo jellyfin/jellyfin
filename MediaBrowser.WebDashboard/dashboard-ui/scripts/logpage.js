@@ -1,11 +1,37 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function ($) {
 
-    $(document).on('pagebeforeshow', "#logPage", function () {
+    function getTabs() {
+        return [
+        {
+            href: 'about.html',
+            name: Globalize.translate('TabAbout')
+        },
+         {
+             href: 'log.html',
+             name: Globalize.translate('TabLogs')
+         },
+         {
+             href: 'supporterkey.html',
+             name: Globalize.translate('TabEmbyPremiere')
+         }];
+    }
 
-        var page = this;
-        Dashboard.showLoadingMsg();
+    return function (view, params) {
 
-        require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
+        view.querySelector('#chkDebugLog').addEventListener('change', function () {
+
+            ApiClient.getServerConfiguration().then(function (config) {
+
+                config.EnableDebugLevelLogging = view.querySelector('#chkDebugLog').checked;
+
+                ApiClient.updateServerConfiguration(config);
+            });
+        });
+
+        view.addEventListener('viewbeforeshow', function () {
+
+            LibraryMenu.setTabs('helpadmin', 1, getTabs);
+            Dashboard.showLoadingMsg();
 
             var apiClient = ApiClient;
 
@@ -55,11 +81,15 @@
 
                 html += '</div>';
 
-                $('.serverLogs', page).html(html);
+                $('.serverLogs', view).html(html);
                 Dashboard.hideLoadingMsg();
+            });
 
+            apiClient.getServerConfiguration().then(function (config) {
+
+                view.querySelector('#chkDebugLog').checked = config.EnableDebugLevelLogging;
             });
         });
-    });
 
+    };
 });

@@ -1,4 +1,4 @@
-﻿<div id="userLibraryAccessPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/userlibraryaccess,jqmcheckbox">
+﻿<div id="userLibraryAccessPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/userlibraryaccess,paper-checkbox">
 
     <div data-role="content">
         <div class="content-primary">
@@ -11,40 +11,35 @@
             <form class="userLibraryAccessForm">
 
                 <div class="folderAccessContainer">
-                    <div class="ui-controlgroup-label">${HeaderLibraryAccess}</div>
+                    <h2>${HeaderLibraryAccess}</h2>
                     <div>
-                        <label for="chkEnableAllFolders">${OptionEnableAccessToAllLibraries}</label>
-                        <input type="checkbox" id="chkEnableAllFolders" />
-                        <div class="fieldDescription">${LibraryAccessHelp}</div>
+                        <paper-checkbox id="chkEnableAllFolders">${OptionEnableAccessToAllLibraries}</paper-checkbox>
                     </div>
                     <div class="folderAccessListContainer">
                         <br />
                         <div class="folderAccess">
                         </div>
+                        <div class="fieldDescription">${LibraryAccessHelp}</div>
                     </div>
                 </div>
                 <br />
-                <br />
                 <div class="channelAccessContainer" style="display:none;">
-                    <div class="ui-controlgroup-label">${HeaderChannelAccess}</div>
+                    <h2>${HeaderChannelAccess}</h2>
                     <div>
-                        <label for="chkEnableAllChannels">${OptionEnableAccessToAllChannels}</label>
-                        <input type="checkbox" id="chkEnableAllChannels" />
-                        <div class="fieldDescription">${ChannelAccessHelp}</div>
+                        <paper-checkbox id="chkEnableAllChannels">${OptionEnableAccessToAllChannels}</paper-checkbox>
                     </div>
                     <div class="channelAccessListContainer">
                         <br />
                         <div class="channelAccess">
                         </div>
+                        <div class="fieldDescription">${ChannelAccessHelp}</div>
                     </div>
                 </div>
                 <br />
                 <div class="deviceAccessContainer hide">
-                    <br />
-                    <div class="ui-controlgroup-label">${HeaderDeviceAccess}</div>
+                    <h2>${HeaderDeviceAccess}</h2>
                     <div>
-                        <label for="chkEnableAllDevices">${OptionEnableAccessFromAllDevices}</label>
-                        <input type="checkbox" id="chkEnableAllDevices" />
+                        <paper-checkbox id="chkEnableAllDevices">${OptionEnableAccessFromAllDevices}</paper-checkbox>
                     </div>
                     <div class="deviceAccessListContainer">
                         <br />

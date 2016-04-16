@@ -11,7 +11,7 @@ define(['appSettings', 'apiClientResolver', 'events'], function (appsettings, ap
         return null;
     }
 
-    var obj = function () {
+    return new function () {
 
         var self = this;
 
@@ -94,7 +94,5 @@ define(['appSettings', 'apiClientResolver', 'events'], function (appsettings, ap
                 });
             }
         };
-    };
-
-    return new obj();
+    }();
 });

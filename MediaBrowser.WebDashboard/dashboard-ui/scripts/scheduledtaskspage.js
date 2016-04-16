@@ -127,10 +127,10 @@
                     .replace("{1}", humane_elapsed(task.LastExecutionResult.StartTimeUtc, task.LastExecutionResult.EndTimeUtc));
 
                 if (task.LastExecutionResult.Status == "Failed") {
-                    html += " <span style='color:#FF0000;'>" + Globalize.translate('LabelFailed') + "</span>";
+                    html += " <span style='color:#FF0000;'>(" + Globalize.translate('LabelFailed') + ")</span>";
                 }
                 else if (task.LastExecutionResult.Status == "Cancelled") {
-                    html += " <span style='color:#0026FF;'>" + Globalize.translate('LabelCancelled') + "</span>";
+                    html += " <span style='color:#0026FF;'>(" + Globalize.translate('LabelCancelled') + ")</span>";
                 }
                 else if (task.LastExecutionResult.Status == "Aborted") {
                     html += " <span style='color:#FF0000;'>" + Globalize.translate('LabelAbortedByServerShutdown') + "</span>";

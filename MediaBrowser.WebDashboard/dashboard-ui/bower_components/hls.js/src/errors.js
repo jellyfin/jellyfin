@@ -36,6 +36,8 @@ export const ErrorDetails = {
   KEY_LOAD_ERROR: 'keyLoadError',
   // Identifier for decrypt key load timeout error - data: { frag : fragment object}
   KEY_LOAD_TIMEOUT: 'keyLoadTimeOut',
+  // Triggered when an exception occurs while adding a sourceBuffer to MediaSource - data : {  err : exception , mimeType : mimeType }
+  BUFFER_ADD_CODEC_ERROR: 'bufferAddCodecError',
   // Identifier for a buffer append error - data: append error description
   BUFFER_APPEND_ERROR: 'bufferAppendError',
   // Identifier for a buffer appending error event - data: appending error description
@@ -45,5 +47,7 @@ export const ErrorDetails = {
   // Identifier for a buffer full event
   BUFFER_FULL_ERROR: 'bufferFullError',
   // Identifier for a buffer seek over hole event
-  BUFFER_SEEK_OVER_HOLE: 'bufferSeekOverHole'
+  BUFFER_SEEK_OVER_HOLE: 'bufferSeekOverHole',
+  // Identifier for an internal exception happening inside hls.js while handling an event
+  INTERNAL_EXCEPTION: 'internalException'
 };

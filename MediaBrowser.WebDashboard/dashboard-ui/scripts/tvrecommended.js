@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'scripts/alphapicker'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'scripts/alphapicker', 'scrollStyles'], function (libraryBrowser) {
 
     return function (view, params) {
 

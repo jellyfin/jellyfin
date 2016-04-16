@@ -1,4 +1,3 @@
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
@@ -10,7 +9,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using ServiceStack;
 using System;
-using System.Globalization;
 using System.IO;
 using CommonIO;
 using MediaBrowser.Model.Dlna;
@@ -139,12 +137,10 @@ namespace MediaBrowser.Api.Playback.Progressive
                 args += " -mpegts_m2ts_mode 1";
             }
 
-            var isOutputMkv = string.Equals(state.OutputContainer, "mkv", StringComparison.OrdinalIgnoreCase);
-
             if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
                 if (state.VideoStream != null && IsH264(state.VideoStream) &&
-                    (string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase) || isOutputMkv))
+                    (string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase)))
                 {
                     args += " -bsf:v h264_mp4toannexb";
                 }

@@ -1,4 +1,3 @@
-using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
@@ -9,7 +8,6 @@ using MediaBrowser.MediaEncoding.Probing;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
@@ -486,10 +484,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return ExtractImage(new[] { path }, imageStreamIndex, MediaProtocol.File, true, null, null, cancellationToken);
         }
 
-        public Task<Stream> ExtractVideoImage(string[] inputFiles, MediaProtocol protocol, Video3DFormat? threedFormat,
-            TimeSpan? offset, CancellationToken cancellationToken)
+        public Task<Stream> ExtractVideoImage(string[] inputFiles, MediaProtocol protocol, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
         {
             return ExtractImage(inputFiles, null, protocol, false, threedFormat, offset, cancellationToken);
+        }
+
+        public Task<Stream> ExtractVideoImage(string[] inputFiles, MediaProtocol protocol, int? imageStreamIndex, CancellationToken cancellationToken)
+        {
+            return ExtractImage(inputFiles, imageStreamIndex, protocol, false, null, null, cancellationToken);
         }
 
         private async Task<Stream> ExtractImage(string[] inputFiles, int? imageStreamIndex, MediaProtocol protocol, bool isAudio,

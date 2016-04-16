@@ -243,25 +243,25 @@
         return html;
     }
 
+    function getTabs() {
+        return [
+        {
+            href: 'plugins.html',
+            name: Globalize.translate('TabMyPlugins')
+        },
+         {
+             href: 'plugincatalog.html',
+             name: Globalize.translate('TabCatalog')
+         }];
+    }
+
     $(document).on('pageinit', "#pluginCatalogPage", function () {
 
         var page = this;
 
-        $('.chkPremiumFilter', page).on('change', function () {
+        $('#selectSystem', page).on('change', function () {
 
-            if (this.checked) {
-                query.IsPremium = false;
-            } else {
-                query.IsPremium = null;
-            }
-            reloadList(page);
-        });
-
-        $('.radioPackageTypes', page).on('change', function () {
-
-            var val = $('.radioPackageTypes:checked', page).val();
-
-            query.TargetSystems = val;
+            query.TargetSystems = this.value;
             reloadList(page);
         });
 
@@ -273,22 +273,8 @@
 
     }).on('pageshow', "#pluginCatalogPage", function () {
 
+        LibraryMenu.setTabs('plugins', 1, getTabs);
         var page = this;
-
-        $(".radioPackageTypes", page).each(function () {
-
-            this.checked = this.value == query.TargetSystems;
-
-        }).checkboxradio('refresh');
-
-        // Reset form values using the last used query
-        $('.chkPremiumFilter', page).each(function () {
-
-            var filters = query.IsPremium || false;
-
-            this.checked = filters;
-
-        }).checkboxradio('refresh');
 
         reloadList(page);
     });

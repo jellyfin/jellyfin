@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MediaBrowser.Common;
 using MediaBrowser.Controller.Providers;
 
 namespace MediaBrowser.Providers.Manager

@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Controller;
+﻿using MediaBrowser.Controller;
 using System;
 using System.IO;
 using System.Linq;

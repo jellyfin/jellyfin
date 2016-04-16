@@ -1,4 +1,4 @@
-﻿define(['playlistManager', 'appSettings', 'appStorage', 'jQuery'], function (playlistManager, appSettings, appStorage, $) {
+﻿define(['playlistManager', 'appSettings', 'appStorage', 'jQuery', 'scrollStyles'], function (playlistManager, appSettings, appStorage, $) {
 
     var libraryBrowser = (function (window, document, screen) {
 
@@ -981,10 +981,17 @@
                                     break;
                                 case 'download':
                                     {
-                                        var downloadHref = ApiClient.getUrl("Items/" + itemId + "/Download", {
-                                            api_key: ApiClient.accessToken()
+                                        require(['fileDownloader'], function (fileDownloader) {
+
+                                            var downloadHref = ApiClient.getUrl("Items/" + itemId + "/Download", {
+                                                api_key: ApiClient.accessToken()
+                                            });
+
+                                            fileDownloader([{
+                                                url: downloadHref,
+                                                itemId: itemId
+                                            }]);
                                         });
-                                        window.location.href = downloadHref;
 
                                         break;
                                     }
@@ -1094,6 +1101,10 @@
                         return 'photos.html?topParentId=' + item.Id;
                     }
                 }
+                else if (item.IsFolder) {
+                    return id ? "itemlist.html?parentId=" + id : "#";
+                }
+
                 if (item.Type == 'CollectionFolder') {
                     return 'itemlist.html?topParentId=' + item.Id + '&parentId=' + item.Id;
                 }
@@ -2893,7 +2904,7 @@
 
                     var html = '';
 
-                    html += '<div style="margin:0;padding:1.25em 1.25em 1.5em;">';
+                    html += '<div style="margin:0;padding:1.25em 1.5em 1.5em;">';
 
                     html += '<h2 style="margin:0 0 .5em;">';
                     html += Globalize.translate('HeaderSortBy');

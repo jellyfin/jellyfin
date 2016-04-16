@@ -210,8 +210,6 @@ var Dashboard = {
 
         Dashboard.lastSystemInfo = info;
 
-        Dashboard.ensureWebSocket();
-
         if (!Dashboard.initialServerVersion) {
             Dashboard.initialServerVersion = info.Version;
         }
@@ -532,8 +530,6 @@ var Dashboard = {
 
                     Dashboard.updateSystemInfo(info);
                 });
-            } else {
-                Dashboard.ensureWebSocket();
             }
         }
     },
@@ -655,13 +651,35 @@ var Dashboard = {
         }
     },
 
+    getToolsLinkHtml: function (item) {
+
+        var menuHtml = '';
+        var pageIds = item.pageIds ? item.pageIds.join(',') : '';
+        pageIds = pageIds ? (' data-pageids="' + pageIds + '"') : '';
+        menuHtml += '<a class="sidebarLink" href="' + item.href + '"' + pageIds + '>';
+
+        var icon = item.icon;
+
+        if (icon) {
+            var style = item.color ? ' style="color:' + item.color + '"' : '';
+
+            menuHtml += '<iron-icon icon="' + icon + '" class="sidebarLinkIcon"' + style + '></iron-icon>';
+        }
+
+        menuHtml += '<span class="sidebarLinkText">';
+        menuHtml += item.name;
+        menuHtml += '</span>';
+        menuHtml += '</a>';
+        return menuHtml;
+    },
+
     getToolsMenuHtml: function (page) {
 
         var items = Dashboard.getToolsMenuLinks(page);
 
         var i, length, item;
         var menuHtml = '';
-
+        menuHtml += '<div class="drawerContent">';
         for (i = 0, length = items.length; i < length; i++) {
 
             item = items[i];
@@ -670,26 +688,21 @@ var Dashboard = {
                 menuHtml += "<div class='sidebarDivider'></div>";
             }
 
-            if (item.href) {
+            if (item.items) {
 
-                var style = item.color ? ' style="color:' + item.color + '"' : '';
-
-                if (item.selected) {
-                    menuHtml += '<a class="sidebarLink selectedSidebarLink" href="' + item.href + '">';
+                var style = item.color ? ' iconstyle="color:' + item.color + '"' : '';
+                var expanded = item.expanded ? (' expanded') : '';
+                if (item.icon) {
+                    menuHtml += '<emby-collapsible icon="' + item.icon + '" title="' + item.name + '"' + style + expanded + '>';
                 } else {
-                    menuHtml += '<a class="sidebarLink" href="' + item.href + '">';
+                    menuHtml += '<emby-collapsible title="' + item.name + '"' + style + expanded + '>';
                 }
+                menuHtml += item.items.map(Dashboard.getToolsLinkHtml).join('');
+                menuHtml += '</emby-collapsible>';
+            }
+            else if (item.href) {
 
-                var icon = item.icon;
-
-                if (icon) {
-                    menuHtml += '<iron-icon icon="' + icon + '" class="sidebarLinkIcon"' + style + '></iron-icon>';
-                }
-
-                menuHtml += '<span class="sidebarLinkText">';
-                menuHtml += item.name;
-                menuHtml += '</span>';
-                menuHtml += '</a>';
+                menuHtml += Dashboard.getToolsLinkHtml(item);
             } else {
 
                 menuHtml += '<div class="sidebarHeader">';
@@ -697,147 +710,119 @@ var Dashboard = {
                 menuHtml += '</div>';
             }
         }
+        menuHtml += '</div>';
 
         return menuHtml;
     },
 
-    ensureToolsMenu: function (page) {
-
-        var sidebar = page.querySelector('.toolsSidebar');
-
-        if (!sidebar) {
-
-            var html = '<div class="content-secondary toolsSidebar">';
-
-            html += '<div class="sidebarLinks">';
-
-            html += Dashboard.getToolsMenuHtml(page);
-            // sidebarLinks
-            html += '</div>';
-
-            // content-secondary
-            html += '</div>';
-
-            $('.content-primary', page).before(html);
-        }
-    },
-
-    getToolsMenuLinks: function (page) {
-
-        var pageElem = page;
-
-        var isServicesPage = page.classList.contains('appServicesPage');
-        var context = getParameterByName('context');
+    getToolsMenuLinks: function () {
 
         return [{
-            name: Globalize.translate('TabServer'),
+            name: Globalize.translate('TabServer')
+        }, {
+            name: Globalize.translate('TabDashboard'),
             href: "dashboard.html",
-            selected: page.classList.contains("dashboardHomePage"),
-            icon: 'dashboard',
-            color: '#38c'
+            pageIds: ['dashboardPage'],
+            icon: 'dashboard'
+        }, {
+            name: Globalize.translate('TabSettings'),
+            href: "dashboardgeneral.html",
+            pageIds: ['dashboardGeneralPage'],
+            icon: 'settings'
         }, {
             name: Globalize.translate('TabDevices'),
             href: "devices.html",
-            selected: page.classList.contains("devicesPage"),
-            icon: 'tablet',
-            color: '#ECA403'
+            pageIds: ['devicesPage', 'devicePage'],
+            icon: 'tablet'
         }, {
             name: Globalize.translate('TabUsers'),
             href: "userprofiles.html",
-            selected: page.classList.contains("userProfilesPage"),
-            icon: 'people',
-            color: '#679C34'
+            pageIds: ['userProfilesPage'],
+            icon: 'people'
         }, {
-            name: Globalize.translate('TabLibrary'),
             divider: true,
+            name: Globalize.translate('TabLibrary'),
             href: "library.html",
-            selected: page.classList.contains("librarySectionPage"),
-            icon: 'video-library'
+            pageIds: ['mediaLibraryPage', 'libraryPathMappingPage', 'librarySettingsPage'],
+            icon: 'folder',
+            color: '#009688'
         }, {
             name: Globalize.translate('TabMetadata'),
             href: "metadata.html",
-            selected: page.classList.contains('metadataConfigurationPage'),
-            icon: 'insert-drive-file'
+            pageIds: ['metadataConfigurationPage', 'metadataImagesConfigurationPage', 'metadataNfoPage'],
+            icon: 'insert-drive-file',
+            color: '#FF9800'
+        }, {
+            name: Globalize.translate('TabSubtitles'),
+            href: "metadatasubtitles.html",
+            pageIds: ['metadataSubtitlesPage'],
+            icon: 'closed-caption'
         }, {
             name: Globalize.translate('TabPlayback'),
-            href: "playbackconfiguration.html",
-            selected: page.classList.contains('playbackConfigurationPage'),
-            icon: 'play-circle-filled'
+            icon: 'play-circle-filled',
+            color: '#E5342E',
+            href: "cinemamodeconfiguration.html",
+            pageIds: ['cinemaModeConfigurationPage', 'playbackConfigurationPage', 'streamingSettingsPage', 'encodingSettingsPage']
         }, {
             name: Globalize.translate('TabSync'),
+            icon: 'sync',
             href: "syncactivity.html",
-            selected: page.classList.contains('syncConfigurationPage') || (isServicesPage && context == 'sync'),
-            icon: 'sync'
+            pageIds: ['syncActivityPage', 'syncJobPage', 'devicesUploadPage', 'syncSettingsPage']
         }, {
             divider: true,
             name: Globalize.translate('TabExtras')
         }, {
             name: Globalize.translate('TabAutoOrganize'),
+            color: '#01C0DD',
             href: "autoorganizelog.html",
-            selected: page.classList.contains("organizePage"),
-            icon: 'folder',
-            color: '#01C0DD'
+            pageIds: ['libraryFileOrganizerPage', 'libraryFileOrganizerSmartMatchPage', 'libraryFileOrganizerLogPage'],
+            icon: 'folder'
         }, {
-            name: Globalize.translate('TabDLNA'),
+            name: Globalize.translate('DLNA'),
             href: "dlnasettings.html",
-            selected: page.classList.contains("dlnaPage"),
-            icon: 'tv',
-            color: '#E5342E'
+            pageIds: ['dlnaSettingsPage', 'dlnaProfilesPage', 'dlnaProfilePage'],
+            icon: 'settings'
         }, {
             name: Globalize.translate('TabLiveTV'),
             href: "livetvstatus.html",
-            selected: page.classList.contains("liveTvSettingsPage") || (isServicesPage && context == 'livetv'),
-            icon: 'live-tv',
-            color: '#293AAE'
+            pageIds: ['liveTvStatusPage', 'liveTvSettingsPage', 'liveTvTunerProviderHdHomerunPage', 'liveTvTunerProviderM3UPage', 'liveTvTunerProviderSatPage'],
+            icon: 'dvr'
         }, {
             name: Globalize.translate('TabNotifications'),
-            href: "notificationsettings.html",
-            selected: page.classList.contains("notificationConfigurationPage"),
             icon: 'notifications',
-            color: 'brown'
+            color: 'brown',
+            href: "notificationsettings.html",
+            pageIds: ['notificationSettingsPage', 'notificationSettingPage']
         }, {
             name: Globalize.translate('TabPlugins'),
-            href: "plugins.html",
-            selected: page.classList.contains("pluginConfigurationPage"),
             icon: 'add-shopping-cart',
-            color: '#9D22B1'
+            color: '#9D22B1',
+            href: "plugins.html",
+            pageIds: ['pluginsPage', 'pluginCatalogPage']
         }, {
             divider: true,
             name: Globalize.translate('TabExpert')
         }, {
             name: Globalize.translate('TabAdvanced'),
-            href: "advanced.html",
-            selected: page.classList.contains("advancedConfigurationPage"),
             icon: 'settings',
-            color: '#F16834'
+            href: "dashboardhosting.html",
+            color: '#F16834',
+            pageIds: ['dashboardHostingPage', 'serverSecurityPage']
         }, {
             name: Globalize.translate('TabScheduledTasks'),
+            color: '#38c',
             href: "scheduledtasks.html",
-            selected: page.classList.contains("scheduledTasksConfigurationPage"),
-            icon: 'schedule',
-            color: '#38c'
+            pageIds: ['scheduledTasksPage', 'scheduledTaskPage'],
+            icon: 'schedule'
         }, {
             name: Globalize.translate('TabHelp'),
-            divider: true,
-            href: "support.html",
-            selected: pageElem.id == "supportPage" || pageElem.id == "logPage" || pageElem.id == "supporterPage" || pageElem.id == "supporterKeyPage" || pageElem.id == "aboutPage",
+            href: "about.html",
             icon: 'help',
-            color: '#679C34'
+            color: '#679C34',
+            divider: true,
+            pageIds: ['supporterKeyPage', 'logPage', 'aboutPage']
         }];
 
-    },
-
-    ensureWebSocket: function () {
-
-        if (ApiClient.isWebSocketOpenOrConnecting() || !ApiClient.isWebSocketSupported()) {
-            return;
-        }
-
-        ApiClient.openWebSocket();
-
-        if (!Dashboard.isConnectMode()) {
-            ApiClient.reportCapabilities(Dashboard.capabilities());
-        }
     },
 
     processGeneralCommand: function (cmd) {
@@ -1148,52 +1133,13 @@ var Dashboard = {
         });
     },
 
-    ensurePageTitle: function (page) {
+    setPageTitle: function (title, documentTitle) {
 
-        if (!page.classList.contains('type-interior')) {
-            return;
-        }
+        LibraryMenu.setTitle(title || 'Emby');
 
-        var pageElem = page;
-
-        if (pageElem.querySelector('.pageTitle')) {
-            return;
-        }
-
-        var parent = pageElem.querySelector('.content-primary');
-
-        if (!parent) {
-            parent = pageElem.getElementsByClassName('ui-content')[0];
-        }
-
-        var helpUrl = pageElem.getAttribute('data-helpurl');
-
-        var html = '<div>';
-        html += '<h1 class="pageTitle" style="display:inline-block;">' + (document.title || '&nbsp;') + '</h1>';
-
-        if (helpUrl) {
-            html += '<a href="' + helpUrl + '" target="_blank" class="clearLink" style="margin-top:-10px;display:inline-block;vertical-align:middle;margin-left:1em;"><paper-button raised class="secondary mini"><iron-icon icon="info"></iron-icon><span>' + Globalize.translate('ButtonHelp') + '</span></paper-button></a>';
-        }
-
-        html += '</div>';
-
-        $(parent).prepend(html);
-    },
-
-    setPageTitle: function (title) {
-
-        var page = $.mobile.activePage;
-
-        if (page) {
-            var elem = $(page)[0].querySelector('.pageTitle');
-
-            if (elem) {
-                elem.innerHTML = title;
-            }
-        }
-
-        if (title) {
-            document.title = title;
+        documentTitle = documentTitle || title;
+        if (documentTitle) {
+            document.title = documentTitle;
         }
     },
 
@@ -1437,7 +1383,7 @@ var AppInfo = {};
         // This doesn't perform well on iOS
         AppInfo.enableHeadRoom = !isIOS;
 
-        AppInfo.supportsDownloading = !(AppInfo.isNativeApp);
+        AppInfo.supportsDownloading = !(AppInfo.isNativeApp && isIOS);
 
         // This currently isn't working on android, unfortunately
         AppInfo.supportsFileInput = !(AppInfo.isNativeApp && isAndroid);
@@ -1737,6 +1683,8 @@ var AppInfo = {};
             define("actionsheet", [embyWebComponentsBowerPath + "/actionsheet/actionsheet"], returnFirstDependency);
         }
 
+        define("libjass", [bowerPath + "/libjass/libjass", "css!" + bowerPath + "/libjass/libjass"], returnFirstDependency);
+
         define("backdrop", [embyWebComponentsBowerPath + "/backdrop/backdrop"], returnFirstDependency);
         define("fetchHelper", [embyWebComponentsBowerPath + "/fetchhelper"], returnFirstDependency);
 
@@ -1850,7 +1798,7 @@ var AppInfo = {};
         define("slideshow", [embyWebComponentsBowerPath + "/slideshow/slideshow"], returnFirstDependency);
 
         define('fetch', [bowerPath + '/fetch/fetch']);
-        define('objectassign', ['legacy/objectassign']);
+        define('objectassign', [embyWebComponentsBowerPath + '/objectassign']);
         define('webcomponentsjs', [bowerPath + '/webcomponentsjs/webcomponents-lite.min.js']);
         define('native-promise-only', [bowerPath + '/native-promise-only/lib/npo.src']);
 
@@ -1888,6 +1836,7 @@ var AppInfo = {};
         define("robotoFont", ['css!' + embyWebComponentsBowerPath + '/fonts/roboto/style']);
         define("opensansFont", ['css!' + embyWebComponentsBowerPath + '/fonts/opensans/style']);
         define("montserratFont", ['css!' + embyWebComponentsBowerPath + '/fonts/montserrat/style']);
+        define("scrollStyles", ['css!' + embyWebComponentsBowerPath + '/scrollstyles']);
 
         define("viewcontainer", ['components/viewcontainer-lite'], returnFirstDependency);
         define('queryString', [bowerPath + '/query-string/index'], function () {
@@ -2024,6 +1973,12 @@ var AppInfo = {};
         } else {
             define("loading", [embyWebComponentsBowerPath + "/loading/loading-lite"], returnFirstDependency);
         }
+
+        if (Dashboard.isRunningInCordova() && browser.android) {
+            define("fileDownloader", ['cordova/android/filedownloader'], returnFirstDependency);
+        } else {
+            define("fileDownloader", ['components/filedownloader'], returnFirstDependency);
+        }
     }
 
     function init(hostingAppInfo) {
@@ -2110,11 +2065,12 @@ var AppInfo = {};
         var drawer = document.querySelector('.mainDrawerPanel');
         drawer.classList.remove('mainDrawerPanelPreInit');
         drawer.forceNarrow = true;
+
         var drawerWidth = screen.availWidth - 50;
         // At least 240
         drawerWidth = Math.max(drawerWidth, 240);
-        // But not exceeding 310
-        drawerWidth = Math.min(drawerWidth, 310);
+        // But not exceeding 270
+        drawerWidth = Math.min(drawerWidth, 270);
 
         drawer.drawerWidth = drawerWidth + "px";
 
@@ -2162,7 +2118,7 @@ var AppInfo = {};
 
         var baseUrl = 'strings/';
 
-        var languages = ['ar', 'bg-BG', 'ca', 'cs', 'da', 'de', 'el', 'en-GB', 'en-US', 'en-AR', 'en-MX', 'es', 'fi', 'fr', 'gsw', 'he', 'hr', 'hu', 'id', 'it', 'kk', 'ko', 'ms', 'nb', 'nl', 'pl', 'pt-BR', 'pt-PT', 'ro', 'ru', 'sl-SI', 'sv', 'tr', 'uk', 'vi', 'zh-CN', 'zh-HK', 'zh-TW'];
+        var languages = ['ar', 'bg-BG', 'ca', 'cs', 'da', 'de', 'el', 'en-GB', 'en-US', 'es-AR', 'es-MX', 'es', 'fi', 'fr', 'gsw', 'he', 'hr', 'hu', 'id', 'it', 'kk', 'ko', 'ms', 'nb', 'nl', 'pl', 'pt-BR', 'pt-PT', 'ro', 'ru', 'sl-SI', 'sv', 'tr', 'uk', 'vi', 'zh-CN', 'zh-HK', 'zh-TW'];
 
         var translations = languages.map(function (i) {
             return {
@@ -2214,13 +2170,6 @@ var AppInfo = {};
 
         defineRoute({
             path: '/addplugin.html',
-            dependencies: [],
-            autoFocus: false,
-            roles: 'admin'
-        });
-
-        defineRoute({
-            path: '/advanced.html',
             dependencies: [],
             autoFocus: false,
             roles: 'admin'
@@ -2301,7 +2250,8 @@ var AppInfo = {};
 
         defineRoute({
             path: '/dashboardgeneral.html',
-            dependencies: [],
+            dependencies: ['emby-collapsible', 'paper-textarea', 'paper-input', 'paper-checkbox'],
+            controller: 'scripts/dashboardgeneral',
             autoFocus: false,
             roles: 'admin'
         });
@@ -2378,7 +2328,8 @@ var AppInfo = {};
         defineRoute({
             path: '/favorites.html',
             dependencies: [],
-            autoFocus: false
+            autoFocus: false,
+            controller: 'scripts/favorites'
         });
 
         defineRoute({
@@ -2524,7 +2475,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/livetvtimer.html',
-            dependencies: [],
+            dependencies: ['scrollStyles'],
             autoFocus: false
         });
 
@@ -2552,9 +2503,9 @@ var AppInfo = {};
 
         defineRoute({
             path: '/log.html',
-            dependencies: [],
-            autoFocus: false,
-            roles: 'admin'
+            dependencies: ['paper-toggle-button'],
+            roles: 'admin',
+            controller: 'scripts/logpage'
         });
 
         defineRoute({
@@ -2601,8 +2552,9 @@ var AppInfo = {};
 
         defineRoute({
             path: '/movies.html',
-            dependencies: [],
-            autoFocus: false
+            dependencies: ['paper-tabs', 'paper-checkbox', 'paper-fab', 'scripts/alphapicker'],
+            autoFocus: false,
+            controller: 'scripts/moviesrecommended'
         });
 
         defineRoute({
@@ -2674,6 +2626,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/notificationsettings.html',
+            controller: 'scripts/notificationsettings',
             dependencies: [],
             autoFocus: false,
             roles: 'admin'
@@ -2952,6 +2905,7 @@ var AppInfo = {};
 
         deps.push('imageLoader');
         deps.push('router');
+        deps.push('layoutManager');
 
         if (!(AppInfo.isNativeApp && browserInfo.android)) {
             document.documentElement.classList.add('minimumSizeTabs');
@@ -2964,8 +2918,6 @@ var AppInfo = {};
             deps.push('css!devices/ios/ios.css');
         } else if (AppInfo.isNativeApp && browserInfo.edge) {
             deps.push('css!devices/windowsphone/wp.css');
-        } else if (!browserInfo.android) {
-            deps.push('css!devices/android/android.css');
         }
 
         loadTheme();
@@ -2995,10 +2947,14 @@ var AppInfo = {};
 
         deps.push('css!css/card.css');
 
-        require(deps, function (imageLoader, pageObjects) {
+        require(deps, function (imageLoader, pageObjects, layoutManager) {
+
+            console.log('Loaded dependencies in onAppReady');
 
             imageLoader.enableFade = browserInfo.animate && !browserInfo.mobile;
             window.ImageLoader = imageLoader;
+
+            layoutManager.init();
 
             //$.mobile.initializePage();
             window.Emby = {};
@@ -3030,7 +2986,7 @@ var AppInfo = {};
 
                 if (browserInfo.safari) {
 
-                    postInitDependencies.push('cordova/connectsdk/connectsdk');
+                    postInitDependencies.push('cordova/ios/chromecast');
 
                     postInitDependencies.push('cordova/ios/orientation');
 
@@ -3073,22 +3029,31 @@ var AppInfo = {};
 
                 cordova.getAppVersion.getVersionNumber(function (appVersion) {
 
-                    var name = browserInfo.android ? "Emby for Android Mobile" : (browserInfo.safari ? "Emby for iOS" : "Emby Mobile");
+                    require(['appStorage'], function (appStorage) {
 
-                    // Remove special characters
-                    var cleanDeviceName = device.model.replace(/[^\w\s]/gi, '');
+                        var name = browserInfo.android ? "Emby for Android Mobile" : (browserInfo.safari ? "Emby for iOS" : "Emby Mobile");
 
-                    var deviceId = null;
+                        // Remove special characters
+                        var cleanDeviceName = device.model.replace(/[^\w\s]/gi, '');
 
-                    if (window.MainActivity) {
-                        deviceId = MainActivity.getLegacyDeviceId();
-                    }
+                        var deviceId = null;
 
-                    resolve({
-                        deviceId: deviceId || device.uuid,
-                        deviceName: cleanDeviceName,
-                        appName: name,
-                        appVersion: appVersion
+                        if (window.MainActivity) {
+
+                            deviceId = appStorage.getItem('legacyDeviceId');
+
+                            if (!deviceId) {
+                                deviceId = MainActivity.getLegacyDeviceId();
+                                appStorage.setItem('legacyDeviceId', deviceId);
+                            }
+                        }
+
+                        resolve({
+                            deviceId: deviceId || device.uuid,
+                            deviceName: cleanDeviceName,
+                            appName: name,
+                            appVersion: appVersion
+                        });
                     });
 
                 });
@@ -3288,17 +3253,7 @@ pageClassOn('viewshow', "page", function () {
         document.documentElement.classList.remove('darkScrollbars');
     }
 
-    Dashboard.ensurePageTitle(page);
-
     var apiClient = window.ApiClient;
-
-    if (apiClient && apiClient.isLoggedIn()) {
-
-        if (page.classList.contains('type-interior')) {
-
-            Dashboard.ensureToolsMenu(page);
-        }
-    }
 
     Dashboard.ensureHeader(page);
 

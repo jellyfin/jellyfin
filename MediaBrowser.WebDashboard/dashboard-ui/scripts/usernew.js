@@ -4,50 +4,44 @@
 
         var html = '';
 
-        html += '<fieldset data-role="controlgroup">';
+        html += '<div class="paperListLabel">' + Globalize.translate('HeaderLibraries') + '</div>';
 
-        html += '<legend>' + Globalize.translate('HeaderLibraries') + '</legend>';
+        html += '<div class="paperCheckboxList paperList" style="padding:.5em 1em;">';
 
         for (var i = 0, length = mediaFolders.length; i < length; i++) {
 
             var folder = mediaFolders[i];
 
-            var id = 'mediaFolder' + i;
-
             var checkedAttribute = ' checked="checked"';
 
-            html += '<input class="chkFolder" data-id="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
-            html += '<label for="' + id + '">' + folder.Name + '</label>';
+            html += '<paper-checkbox class="chkFolder" data-id="' + folder.Id + '"' + checkedAttribute + '>' + folder.Name + '</paper-checkbox>';
         }
 
-        html += '</fieldset>';
+        html += '</div>';
 
         $('.folderAccess', page).html(html).trigger('create');
 
-        $('#chkEnableAllFolders', page).checked(true).checkboxradio('refresh').trigger('change');
+        $('#chkEnableAllFolders', page).checked(true).trigger('change');
     }
 
     function loadChannels(page, channels) {
 
         var html = '';
 
-        html += '<fieldset data-role="controlgroup">';
+        html += '<div class="paperListLabel">' + Globalize.translate('HeaderChannels') + '</div>';
 
-        html += '<legend>' + Globalize.translate('HeaderChannels') + '</legend>';
+        html += '<div class="paperCheckboxList paperList" style="padding:.5em 1em;">';
 
         for (var i = 0, length = channels.length; i < length; i++) {
 
             var folder = channels[i];
 
-            var id = 'channels' + i;
-
             var checkedAttribute = ' checked="checked"';
 
-            html += '<input class="chkChannel" data-id="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
-            html += '<label for="' + id + '">' + folder.Name + '</label>';
+            html += '<paper-checkbox class="chkChannel" data-id="' + folder.Id + '"' + checkedAttribute + '>' + folder.Name + '</paper-checkbox>';
         }
 
-        html += '</fieldset>';
+        html += '</div>';
 
         $('.channelAccess', page).show().html(html).trigger('create');
 
@@ -57,7 +51,7 @@
             $('.channelAccessContainer', page).hide();
         }
 
-        $('#chkEnableAllChannels', page).checked(true).checkboxradio('refresh').trigger('change');
+        $('#chkEnableAllChannels', page).checked(true).trigger('change');
     }
 
     function loadUser(page) {
@@ -88,23 +82,23 @@
             user.Policy.EnableAllFolders = $('#chkEnableAllFolders', page).checked();
             user.Policy.EnabledFolders = user.Policy.EnableAllFolders ?
                 [] :
-                $('.chkFolder:checked', page).map(function () {
-
-                    return this.getAttribute('data-id');
-
-                }).get();
+                $('.chkFolder', page).get().filter(function (i) {
+                    return i.checked;
+                }).map(function (i) {
+                    return i.getAttribute('data-id');
+                });
 
             user.Policy.EnableAllChannels = $('#chkEnableAllChannels', page).checked();
             user.Policy.EnabledChannels = user.Policy.EnableAllChannels ?
                 [] :
-                $('.chkChannel:checked', page).map(function () {
-
-                    return this.getAttribute('data-id');
-
-                }).get();
+                $('.chkChannel', page).get().filter(function (i) {
+                    return i.checked;
+                }).map(function (i) {
+                    return i.getAttribute('data-id');
+                });
 
             ApiClient.updateUserPolicy(user.Id, user.Policy).then(function () {
-                Dashboard.navigate("useredit.html?userId=" + user.Id);
+                Dashboard.navigate("userprofiles.html");
             });
 
         }, function (response) {

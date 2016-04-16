@@ -11,7 +11,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 :host {
   display: block;
   margin: 24px 40px;
-  -webkit-overflow-scrolling: touch;
 
   background: var(--paper-dialog-background-color, --primary-background-color);
   color: var(--paper-dialog-color, --primary-text-color);

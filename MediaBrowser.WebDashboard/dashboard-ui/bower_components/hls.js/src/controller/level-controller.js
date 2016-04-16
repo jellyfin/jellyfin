@@ -20,7 +20,8 @@ class LevelController extends EventHandler {
 
   destroy() {
     if (this.timer) {
-     clearInterval(this.timer);
+      clearInterval(this.timer);
+      this.timer = null;
     }
     this._manualLevel = -1;
   }
@@ -225,7 +226,7 @@ class LevelController extends EventHandler {
           }
           // redispatch same error but with fatal set to true
           data.fatal = true;
-          hls.trigger(event, data);
+          hls.trigger(Event.ERROR, data);
         }
       }
     }
@@ -233,10 +234,15 @@ class LevelController extends EventHandler {
 
   onLevelLoaded(data) {
     // check if current playlist is a live playlist
-    if (data.details.live && !this.timer) {
+    if (data.details.live) {
       // if live playlist we will have to reload it periodically
-      // set reload period to playlist target duration
-      this.timer = setInterval(this.ontick, 1000 * data.details.targetduration);
+      // set reload period to average of the frag duration, if average not set then use playlist target duration
+      let timerInterval = data.details.averagetargetduration ? data.details.averagetargetduration : data.details.targetduration;
+      if (!this.timer || timerInterval !== this.timerInterval) {
+        clearInterval(this.timer);
+        this.timer = setInterval(this.ontick, 1000 * timerInterval);
+        this.timerInterval = timerInterval;    
+      }
     }
     if (!data.details.live && this.timer) {
       // playlist is not live and timer is armed : stopping it

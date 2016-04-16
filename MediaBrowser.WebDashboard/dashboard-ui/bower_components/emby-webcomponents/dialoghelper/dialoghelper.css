@@ -1,6 +1,6 @@
 .dialog {
     margin: 0;
-    border-radius: 3px;
+    border-radius: 2px;
     z-index: 999999 !important;
     position: fixed;
     margin: 24px 40px;
@@ -10,6 +10,7 @@
     height: auto;
     border: 0;
     padding: 0;
+    will-change: transform;
 }
 
     .dialog.fixedSize {
@@ -23,6 +24,12 @@
         max-height: none !important;
         max-width: none !important;
         width: auto;
+    }
+
+    .dialog.centeredDialog {
+        top: 50%;
+        left: 50%;
+        max-width: 70%;
     }
 
     .dialog.scrollY {

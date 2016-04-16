@@ -67,7 +67,7 @@ class BufferController extends EventHandler {
       this.mediaSource = null;
       this.media = null;
       this.pendingTracks = null;
-      this.sourceBuffer = null;
+      this.sourceBuffer = {};
     }
     this.onmso = this.onmse = this.onmsc = null;
     this.hls.trigger(Event.MEDIA_DETACHED);
@@ -122,18 +122,16 @@ class BufferController extends EventHandler {
 
   onBufferReset() {
     var sourceBuffer = this.sourceBuffer;
-    if (sourceBuffer) {
-      for(var type in sourceBuffer) {
-        var sb = sourceBuffer[type];
-        try {
-          this.mediaSource.removeSourceBuffer(sb);
-          sb.removeEventListener('updateend', this.onsbue);
-          sb.removeEventListener('error', this.onsbe);
-        } catch(err) {
-        }
+    for(var type in sourceBuffer) {
+      var sb = sourceBuffer[type];
+      try {
+        this.mediaSource.removeSourceBuffer(sb);
+        sb.removeEventListener('updateend', this.onsbue);
+        sb.removeEventListener('error', this.onsbe);
+      } catch(err) {
       }
-      this.sourceBuffer = null;
     }
+    this.sourceBuffer = {};
     this.flushRange = [];
     this.appended = 0;
   }
@@ -146,19 +144,24 @@ class BufferController extends EventHandler {
       return;
     }
 
-    if (!this.sourceBuffer) {
-      var sourceBuffer = {}, mediaSource = this.mediaSource;
-      for (trackName in tracks) {
+    var sourceBuffer = this.sourceBuffer,mediaSource = this.mediaSource;
+
+    for (trackName in tracks) {
+      if(!sourceBuffer[trackName]) {
         track = tracks[trackName];
         // use levelCodec as first priority
         codec = track.levelCodec || track.codec;
         mimeType = `${track.container};codecs=${codec}`;
         logger.log(`creating sourceBuffer with mimeType:${mimeType}`);
-        sb = sourceBuffer[trackName] = mediaSource.addSourceBuffer(mimeType);
-        sb.addEventListener('updateend', this.onsbue);
-        sb.addEventListener('error', this.onsbe);
+        try {
+          sb = sourceBuffer[trackName] = mediaSource.addSourceBuffer(mimeType);
+          sb.addEventListener('updateend', this.onsbue);
+          sb.addEventListener('error', this.onsbe);
+        } catch(err) {
+          logger.error(`error while trying to add sourceBuffer:${err.message}`);
+          this.hls.trigger(Event.ERROR, {type: ErrorTypes.MEDIA_ERROR, details: ErrorDetails.BUFFER_ADD_CODEC_ERROR, fatal: false, err: err, mimeType : mimeType});
+        }
       }
-      this.sourceBuffer = sourceBuffer;
     }
   }
 
@@ -223,10 +226,8 @@ class BufferController extends EventHandler {
       // let's recompute this.appended, which is used to avoid flush looping
       var appended = 0;
       var sourceBuffer = this.sourceBuffer;
-      if (sourceBuffer) {
-        for (var type in sourceBuffer) {
-          appended += sourceBuffer[type].buffered.length;
-        }
+      for (var type in sourceBuffer) {
+        appended += sourceBuffer[type].buffered.length;
       }
       this.appended = appended;
       this.hls.trigger(Event.BUFFER_FLUSHED);
@@ -251,9 +252,16 @@ class BufferController extends EventHandler {
         var segment = segments.shift();
         try {
           //logger.log(`appending ${segment.type} SB, size:${segment.data.length});
-          sourceBuffer[segment.type].appendBuffer(segment.data);
-          this.appendError = 0;
-          this.appended++;
+          if(sourceBuffer[segment.type]) {
+            sourceBuffer[segment.type].appendBuffer(segment.data);
+            this.appendError = 0;
+            this.appended++;
+          } else {
+            // in case we don't have any source buffer matching with this segment type,
+            // it means that Mediasource fails to create sourcebuffer
+            // discard this segment, and trigger update end
+            this.onSBUpdateEnd();
+          }
         } catch(err) {
           // in case any error occured while appending, put back segment in segments table
           logger.error(`error while trying to append buffer:${err.message}`);

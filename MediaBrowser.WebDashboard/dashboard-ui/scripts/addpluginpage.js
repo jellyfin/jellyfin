@@ -199,20 +199,13 @@
 
         var context = getParameterByName('context');
 
-        $('.syncTabs', page).hide();
-        $('.pluginTabs', page).hide();
-        $('.livetvTabs', page).hide();
         $('.notificationsTabs', page).hide();
 
         if (context == 'sync') {
-            $('.syncTabs', page).show();
-
             page.setAttribute('data-helpurl', 'https://github.com/MediaBrowser/Wiki/wiki/Sync');
             Dashboard.setPageTitle(Globalize.translate('TitleSync'));
         }
         else if (context == 'livetv') {
-
-            $('.livetvTabs', page).show();
 
             Dashboard.setPageTitle(Globalize.translate('TitleLiveTV'));
             page.setAttribute('data-helpurl', 'https://github.com/MediaBrowser/Wiki/wiki/Live%20TV');
@@ -225,8 +218,6 @@
             page.setAttribute('data-helpurl', 'https://github.com/MediaBrowser/Wiki/wiki/Notifications');
         }
         else {
-            $('.pluginTabs', page).show();
-
             page.setAttribute('data-helpurl', 'https://github.com/MediaBrowser/Wiki/wiki/Plugins');
             Dashboard.setPageTitle(Globalize.translate('TitlePlugins'));
         }
@@ -242,6 +233,8 @@
             if (confirmed) {
 
                 Dashboard.showLoadingMsg();
+
+                page.querySelector('#btnInstall').disabled = true;
 
                 ApiClient.installPlugin(packageName, guid, updateClass, version).then(function () {
 
@@ -285,8 +278,6 @@
             Dashboard.showLoadingMsg();
 
             var page = $(this).parents('#addPluginPage')[0];
-
-            page.querySelector('#btnInstall').disabled = true;
 
             var name = getParameterByName('name');
             var guid = getParameterByName('guid');

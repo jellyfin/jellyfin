@@ -16,14 +16,14 @@
   },
   "devDependencies": {},
   "ignore": [],
-  "version": "1.1.96",
-  "_release": "1.1.96",
+  "version": "1.2.26",
+  "_release": "1.2.26",
   "_resolution": {
     "type": "version",
-    "tag": "1.1.96",
-    "commit": "81f0ec7b5bca701668dd1e643d0a4381b414d771"
+    "tag": "1.2.26",
+    "commit": "7e13c8d9c17a4946681b3485c5fbf3e62f39cd2f"
   },
-  "_source": "git://github.com/MediaBrowser/emby-webcomponents.git",
-  "_target": "~1.1.5",
+  "_source": "https://github.com/MediaBrowser/emby-webcomponents.git",
+  "_target": "^1.2.0",
   "_originalSource": "emby-webcomponents"
 }

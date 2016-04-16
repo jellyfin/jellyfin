@@ -10,7 +10,6 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text;
-using System.Threading;
 using MediaBrowser.Common.Threading;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints
@@ -51,8 +50,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         void _config_ConfigurationUpdated(object sender, EventArgs e)
         {
-            _config.ConfigurationUpdated -= _config_ConfigurationUpdated;
-
             if (!string.Equals(_lastConfigIdentifier, GetConfigIdentifier(), StringComparison.OrdinalIgnoreCase))
             {
                 if (_isStarted)
@@ -225,31 +222,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             finally
             {
                 _isStarted = false;
-            }
-        }
-
-        private class LogWriter : TextWriter
-        {
-            private readonly ILogger _logger;
-
-            public LogWriter(ILogger logger)
-            {
-                _logger = logger;
-            }
-
-            public override Encoding Encoding
-            {
-                get { return Encoding.UTF8; }
-            }
-
-            public override void WriteLine(string format, params object[] arg)
-            {
-                _logger.Debug(format, arg);
-            }
-
-            public override void WriteLine(string value)
-            {
-                _logger.Debug(value);
             }
         }
     }

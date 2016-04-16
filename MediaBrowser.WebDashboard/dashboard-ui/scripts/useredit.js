@@ -29,26 +29,26 @@
 
         $('#chkIsAdmin', page).checked(user.Policy.IsAdministrator);
 
-        $('#chkDisabled', page).checked(user.Policy.IsDisabled).checkboxradio("refresh");
-        $('#chkIsHidden', page).checked(user.Policy.IsHidden).checkboxradio("refresh");
-        $('#chkRemoteControlSharedDevices', page).checked(user.Policy.EnableSharedDeviceControl).checkboxradio("refresh");
-        $('#chkEnableRemoteControlOtherUsers', page).checked(user.Policy.EnableRemoteControlOfOtherUsers).checkboxradio("refresh");
+        $('#chkDisabled', page).checked(user.Policy.IsDisabled);
+        $('#chkIsHidden', page).checked(user.Policy.IsHidden);
+        $('#chkRemoteControlSharedDevices', page).checked(user.Policy.EnableSharedDeviceControl);
+        $('#chkEnableRemoteControlOtherUsers', page).checked(user.Policy.EnableRemoteControlOfOtherUsers);
 
-        $('#chkEnableDownloading', page).checked(user.Policy.EnableContentDownloading).checkboxradio("refresh");
+        $('#chkEnableDownloading', page).checked(user.Policy.EnableContentDownloading);
 
-        $('#chkManageLiveTv', page).checked(user.Policy.EnableLiveTvManagement).checkboxradio("refresh");
-        $('#chkEnableLiveTvAccess', page).checked(user.Policy.EnableLiveTvAccess).checkboxradio("refresh");
-        $('#chkEnableContentDeletion', page).checked(user.Policy.EnableContentDeletion).checkboxradio("refresh");
+        $('#chkManageLiveTv', page).checked(user.Policy.EnableLiveTvManagement);
+        $('#chkEnableLiveTvAccess', page).checked(user.Policy.EnableLiveTvAccess);
+        $('#chkEnableContentDeletion', page).checked(user.Policy.EnableContentDeletion);
 
-        $('#chkDisableUserPreferences', page).checked((!user.Policy.EnableUserPreferenceAccess)).checkboxradio("refresh");
+        $('#chkDisableUserPreferences', page).checked((!user.Policy.EnableUserPreferenceAccess));
 
-        $('#chkEnableMediaPlayback', page).checked(user.Policy.EnableMediaPlayback).checkboxradio("refresh");
-        $('#chkEnableAudioPlaybackTranscoding', page).checked(user.Policy.EnableAudioPlaybackTranscoding).checkboxradio("refresh");
-        $('#chkEnableVideoPlaybackTranscoding', page).checked(user.Policy.EnableVideoPlaybackTranscoding).checkboxradio("refresh");
+        $('#chkEnableMediaPlayback', page).checked(user.Policy.EnableMediaPlayback);
+        $('#chkEnableAudioPlaybackTranscoding', page).checked(user.Policy.EnableAudioPlaybackTranscoding);
+        $('#chkEnableVideoPlaybackTranscoding', page).checked(user.Policy.EnableVideoPlaybackTranscoding);
 
-        $('#chkEnableSync', page).checked(user.Policy.EnableSync).checkboxradio("refresh");
-        $('#chkEnableSyncTranscoding', page).checked(user.Policy.EnableSyncTranscoding).checkboxradio("refresh");
-        $('#chkEnableSharing', page).checked(user.Policy.EnablePublicSharing).checkboxradio("refresh");
+        $('#chkEnableSync', page).checked(user.Policy.EnableSync);
+        $('#chkEnableSyncTranscoding', page).checked(user.Policy.EnableSyncTranscoding);
+        $('#chkEnableSharing', page).checked(user.Policy.EnablePublicSharing);
 
         Dashboard.hideLoadingMsg();
     }
@@ -123,21 +123,26 @@
         }
     } function showEmbyConnectErrorMessage(username) {
 
-        var msg;
+        var html;
+        var text;
 
         if (username) {
 
-            msg = Globalize.translate('ErrorAddingEmbyConnectAccount1', '<a href="https://emby.media/connect" target="_blank">https://emby.media/connect</a>');
-            msg += '<br/><br/>' + Globalize.translate('ErrorAddingEmbyConnectAccount2', 'apps@emby.media');
+            html = Globalize.translate('ErrorAddingEmbyConnectAccount1', '<a href="https://emby.media/connect" target="_blank">https://emby.media/connect</a>');
+            html += '<br/><br/>' + Globalize.translate('ErrorAddingEmbyConnectAccount2', 'apps@emby.media');
+
+            text = Globalize.translate('ErrorAddingEmbyConnectAccount1', 'https://emby.media/connect');
+            text += '\n\n' + Globalize.translate('ErrorAddingEmbyConnectAccount2', 'apps@emby.media');
 
         } else {
-            msg = Globalize.translate('DefaultErrorMessage');
+            html = text = Globalize.translate('DefaultErrorMessage');
         }
 
-        Dashboard.alert({
-
-            message: msg
-
+        require(['alert'], function (alert) {
+            alert({
+                text: text,
+                html: html
+            });
         });
     }
 

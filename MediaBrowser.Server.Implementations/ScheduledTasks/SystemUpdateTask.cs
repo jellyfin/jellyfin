@@ -96,7 +96,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
             {
                 Logger.Info("Update Revision {0} available.  Updating...", updateInfo.AvailableVersion);
 
-                innerProgressHandler = (sender, e) => progress.Report((e * .9) + .1);
+                innerProgressHandler = (sender, e) => progress.Report(e * .9 + .1);
 
                 innerProgress = new Progress<double>();
                 innerProgress.ProgressChanged += innerProgressHandler;

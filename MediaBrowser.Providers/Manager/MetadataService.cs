@@ -12,8 +12,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Playlists;
+using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Manager
 {
@@ -68,6 +72,11 @@ namespace MediaBrowser.Providers.Manager
 
             result.ItemDateModified = item.DateModified;
 
+            if (EnableDateLastRefreshed(item))
+            {
+                return Task.FromResult(true);
+            }
+
             return ProviderRepo.SaveMetadataStatus(result, CancellationToken.None);
         }
 
@@ -83,7 +92,22 @@ namespace MediaBrowser.Providers.Manager
                 return new MetadataStatus { ItemId = item.Id };
             }
 
-            return ProviderRepo.GetMetadataStatus(item.Id) ?? new MetadataStatus { ItemId = item.Id };
+            if (EnableDateLastRefreshed(item) && item.DateModifiedDuringLastRefresh.HasValue)
+            {
+                return new MetadataStatus
+                {
+                    ItemId = item.Id,
+                    DateLastImagesRefresh = item.DateLastRefreshed,
+                    DateLastMetadataRefresh = item.DateLastRefreshed,
+                    ItemDateModified = item.DateModifiedDuringLastRefresh.Value
+                };
+            }
+
+            var result = ProviderRepo.GetMetadataStatus(item.Id) ?? new MetadataStatus { ItemId = item.Id };
+
+            item.DateModifiedDuringLastRefresh = result.ItemDateModified;
+
+            return result;
         }
 
         public async Task<ItemUpdateType> RefreshMetadata(IHasMetadata item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
@@ -119,13 +143,20 @@ namespace MediaBrowser.Providers.Manager
                 Item = itemOfType
             };
 
+            bool hasRefreshedMetadata = true;
+            bool hasRefreshedImages = true;
+
             // Next run metadata providers
             if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
             {
                 var providers = GetProviders(item, refreshResult, refreshOptions)
                     .ToList();
 
-                if (providers.Count > 0 || !refreshResult.DateLastMetadataRefresh.HasValue)
+                var dateLastRefresh = EnableDateLastRefreshed(item)
+                     ? item.DateLastRefreshed
+                     : refreshResult.DateLastMetadataRefresh ?? default(DateTime);
+
+                if (providers.Count > 0 || dateLastRefresh == default(DateTime))
                 {
                     if (item.BeforeMetadataRefresh())
                     {
@@ -137,6 +168,11 @@ namespace MediaBrowser.Providers.Manager
                 {
                     var id = itemOfType.GetLookupInfo();
 
+                    if (refreshOptions.SearchResult != null)
+                    {
+                        ApplySearchResult(id, refreshOptions.SearchResult);
+                    }
+
                     //await FindIdentities(id, cancellationToken).ConfigureAwait(false);
                     id.IsAutomated = refreshOptions.IsAutomated;
 
@@ -146,9 +182,11 @@ namespace MediaBrowser.Providers.Manager
                     if (result.Failures == 0)
                     {
                         refreshResult.SetDateLastMetadataRefresh(DateTime.UtcNow);
+                        hasRefreshedMetadata = true;
                     }
                     else
                     {
+                        hasRefreshedMetadata = false;
                         refreshResult.SetDateLastMetadataRefresh(null);
                     }
                 }
@@ -167,9 +205,11 @@ namespace MediaBrowser.Providers.Manager
                     if (result.Failures == 0)
                     {
                         refreshResult.SetDateLastImagesRefresh(DateTime.UtcNow);
+                        hasRefreshedImages = true;
                     }
                     else
                     {
+                        hasRefreshedImages = false;
                         refreshResult.SetDateLastImagesRefresh(null);
                     }
                 }
@@ -189,9 +229,15 @@ namespace MediaBrowser.Providers.Manager
                     updateType = updateType | ItemUpdateType.MetadataDownload;
                 }
 
-                if (refreshOptions.MetadataRefreshMode >= MetadataRefreshMode.Default && refreshOptions.ImageRefreshMode >= ImageRefreshMode.Default)
+                if (hasRefreshedMetadata && hasRefreshedImages)
                 {
                     item.DateLastRefreshed = DateTime.UtcNow;
+                    item.DateModifiedDuringLastRefresh = item.DateModified;
+                }
+                else
+                {
+                    item.DateLastRefreshed = default(DateTime);
+                    item.DateModifiedDuringLastRefresh = null;
                 }
 
                 // Save to database
@@ -206,6 +252,13 @@ namespace MediaBrowser.Providers.Manager
             await AfterMetadataRefresh(itemOfType, refreshOptions, cancellationToken).ConfigureAwait(false);
 
             return updateType;
+        }
+
+        private void ApplySearchResult(ItemLookupInfo lookupInfo, RemoteSearchResult result)
+        {
+            lookupInfo.ProviderIds = result.ProviderIds;
+            lookupInfo.Name = result.Name;
+            lookupInfo.Year = result.ProductionYear;
         }
 
         private async Task FindIdentities(TIdType id, CancellationToken cancellationToken)
@@ -242,7 +295,17 @@ namespace MediaBrowser.Providers.Manager
                 return true;
             }
 
-            if (item is BoxSet || (item is IItemByName && !(item is MusicArtist)))
+            if (item is BoxSet || item is IItemByName || item is Playlist)
+            {
+                return true;
+            }
+
+            if (item.SourceType != SourceType.Library)
+            {
+                return true;
+            }
+
+            if (item is ICollectionFolder)
             {
                 return true;
             }
@@ -352,8 +415,12 @@ namespace MediaBrowser.Providers.Manager
             // Get providers to refresh
             var providers = ((ProviderManager)ProviderManager).GetMetadataProviders<TItemType>(item).ToList();
 
+            var dateLastRefresh = EnableDateLastRefreshed(item)
+                ? item.DateLastRefreshed
+                : status.DateLastMetadataRefresh ?? default(DateTime);
+
             // Run all if either of these flags are true
-            var runAllProviders = options.ReplaceAllMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || !status.DateLastMetadataRefresh.HasValue;
+            var runAllProviders = options.ReplaceAllMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || dateLastRefresh == default(DateTime);
 
             if (!runAllProviders)
             {
@@ -372,7 +439,7 @@ namespace MediaBrowser.Providers.Manager
                         var hasFileChangeMonitor = i as IHasItemChangeMonitor;
                         if (hasFileChangeMonitor != null)
                         {
-                            return HasChanged(item, hasFileChangeMonitor, status, options.DirectoryService);
+                            return HasChanged(item, hasFileChangeMonitor, options.DirectoryService);
                         }
 
                         return false;
@@ -417,8 +484,12 @@ namespace MediaBrowser.Providers.Manager
             // Get providers to refresh
             var providers = allImageProviders.Where(i => !(i is ILocalImageProvider)).ToList();
 
+            var dateLastImageRefresh = EnableDateLastRefreshed(item)
+                  ? item.DateLastRefreshed
+                  : status.DateLastImagesRefresh ?? default(DateTime);
+
             // Run all if either of these flags are true
-            var runAllProviders = options.ImageRefreshMode == ImageRefreshMode.FullRefresh || !status.DateLastImagesRefresh.HasValue;
+            var runAllProviders = options.ImageRefreshMode == ImageRefreshMode.FullRefresh || dateLastImageRefresh == default(DateTime);
 
             if (!runAllProviders)
             {
@@ -428,13 +499,13 @@ namespace MediaBrowser.Providers.Manager
                         var hasChangeMonitor = i as IHasChangeMonitor;
                         if (hasChangeMonitor != null)
                         {
-                            return HasChanged(item, hasChangeMonitor, status.DateLastImagesRefresh.Value, options.DirectoryService);
+                            return HasChanged(item, hasChangeMonitor, dateLastImageRefresh, options.DirectoryService);
                         }
 
                         var hasFileChangeMonitor = i as IHasItemChangeMonitor;
                         if (hasFileChangeMonitor != null)
                         {
-                            return HasChanged(item, hasFileChangeMonitor, status, options.DirectoryService);
+                            return HasChanged(item, hasFileChangeMonitor, options.DirectoryService);
                         }
 
                         return false;
@@ -546,7 +617,7 @@ namespace MediaBrowser.Providers.Manager
                     if (options.MetadataRefreshMode != MetadataRefreshMode.FullRefresh)
                     {
                         // If the local provider fails don't continue with remote providers because the user's saved metadata could be lost
-                        return refreshResult;
+                        //return refreshResult;
                     }
                 }
             }
@@ -726,11 +797,11 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private bool HasChanged(IHasMetadata item, IHasItemChangeMonitor changeMonitor, MetadataStatus status, IDirectoryService directoryService)
+        private bool HasChanged(IHasMetadata item, IHasItemChangeMonitor changeMonitor, IDirectoryService directoryService)
         {
             try
             {
-                var hasChanged = changeMonitor.HasChanged(item, status, directoryService);
+                var hasChanged = changeMonitor.HasChanged(item, directoryService);
 
                 //if (hasChanged)
                 //{

@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// @version 0.7.21
+// @version 0.7.22
 if (typeof WeakMap === "undefined") {
   (function() {
     var defineProperty = Object.defineProperty;
@@ -778,6 +778,9 @@ window.CustomElements.addModule(function(scope) {
       definition.prototype = Object.create(HTMLElement.prototype);
     }
     definition.__name = name.toLowerCase();
+    if (definition.extends) {
+      definition.extends = definition.extends.toLowerCase();
+    }
     definition.lifecycle = definition.lifecycle || {};
     definition.ancestry = ancestry(definition.extends);
     resolveTagName(definition);
@@ -950,21 +953,6 @@ window.CustomElements.addModule(function(scope) {
   }
   wrapDomMethodToForceUpgrade(Node.prototype, "cloneNode");
   wrapDomMethodToForceUpgrade(document, "importNode");
-  if (isIE) {
-    (function() {
-      var importNode = document.importNode;
-      document.importNode = function() {
-        var n = importNode.apply(document, arguments);
-        if (n.nodeType == n.DOCUMENT_FRAGMENT_NODE) {
-          var f = document.createDocumentFragment();
-          f.appendChild(n);
-          return f;
-        } else {
-          return n;
-        }
-      };
-    })();
-  }
   document.registerElement = register;
   document.createElement = createElement;
   document.createElementNS = createElementNS;

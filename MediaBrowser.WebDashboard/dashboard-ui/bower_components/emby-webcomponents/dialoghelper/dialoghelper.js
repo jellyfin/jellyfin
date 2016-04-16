@@ -71,8 +71,7 @@
 
         var center = !dlg.classList.contains('fixedSize');
         if (center) {
-            dlg.style.left = '50%';
-            dlg.style.top = '50%';
+            dlg.classList.add('centeredDialog');
         }
 
         dlg.classList.remove('hide');
@@ -216,22 +215,22 @@
         }
     }
 
-    function scaleUp(elem) {
+    function scaleUp(elem, onFinish) {
 
         var keyframes = [
           { transform: 'scale(0)', offset: 0 },
           { transform: 'scale(1,1)', offset: 1 }];
         var timing = elem.animationConfig.entry.timing;
-        return elem.animate(keyframes, timing);
+        return elem.animate(keyframes, timing).onfinish = onFinish;
     }
 
-    function fadeIn(elem) {
+    function fadeIn(elem, onFinish) {
 
         var keyframes = [
           { opacity: '0', offset: 0 },
           { opacity: '1', offset: 1 }];
         var timing = elem.animationConfig.entry.timing;
-        return elem.animate(keyframes, timing);
+        return elem.animate(keyframes, timing).onfinish = onFinish;
     }
 
     function fadeOut(elem) {
@@ -269,13 +268,17 @@
 
     function animateDialogOpen(dlg) {
 
+        var onAnimationFinish = function() {
+        };
+
         if (!dlg.animationConfig || !dlg.animate) {
+            onAnimationFinish();
             return;
         }
         if (dlg.animationConfig.entry.name == 'fade-in-animation') {
-            fadeIn(dlg);
+            fadeIn(dlg, onAnimationFinish);
         } else if (dlg.animationConfig.entry.name == 'scale-up-animation') {
-            scaleUp(dlg);
+            scaleUp(dlg, onAnimationFinish);
         }
     }
 

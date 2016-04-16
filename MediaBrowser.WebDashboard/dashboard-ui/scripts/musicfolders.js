@@ -67,7 +67,7 @@
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "square",
-                    context: 'music',
+                    context: 'folders',
                     showTitle: true,
                     showParentTitle: true,
                     lazy: true,

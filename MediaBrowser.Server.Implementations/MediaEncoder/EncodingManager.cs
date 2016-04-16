@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.Chapters;
+﻿using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -153,7 +152,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                         }
                         catch (Exception ex)
                         {
-                            _logger.ErrorException("Error extraching chapter images for {0}", ex, string.Join(",", inputPath));
+                            _logger.ErrorException("Error extracting chapter images for {0}", ex, string.Join(",", inputPath));
                             success = false;
                             break;
                         }

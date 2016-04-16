@@ -59,10 +59,10 @@
                 var lastResult = task.LastExecutionResult ? task.LastExecutionResult.Status : '';
 
                 if (lastResult == "Failed") {
-                    options.lastResultElem.html('<span style="color:#FF0000;">' + Globalize.translate('LabelFailed') + '</span>');
+                    options.lastResultElem.html('<span style="color:#FF0000;">(' + Globalize.translate('LabelFailed') + ')</span>');
                 }
                 else if (lastResult == "Cancelled") {
-                    options.lastResultElem.html('<span style="color:#0026FF;">' + Globalize.translate('LabelCancelled') + '</span>');
+                    options.lastResultElem.html('<span style="color:#0026FF;">(' + Globalize.translate('LabelCancelled') + ')</span>');
                 }
                 else if (lastResult == "Aborted") {
                     options.lastResultElem.html('<span style="color:#FF0000;">' + Globalize.translate('LabelAbortedByServerShutdown') + '</span>');

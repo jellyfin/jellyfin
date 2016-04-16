@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'livetvcss', 'scripts/livetvcomponents'], function ($) {
+﻿define(['jQuery', 'livetvcss', 'scripts/livetvcomponents', 'scrollStyles'], function ($) {
 
     return function (options) {
 

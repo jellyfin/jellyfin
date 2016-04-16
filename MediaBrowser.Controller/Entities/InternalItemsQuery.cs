@@ -33,6 +33,7 @@ namespace MediaBrowser.Controller.Entities
         public string[] IncludeItemTypes { get; set; }
         public string[] ExcludeItemTypes { get; set; }
         public string[] ExcludeTags { get; set; }
+        public string[] ExcludeInheritedTags { get; set; }
         public string[] Genres { get; set; }
 
         public bool? IsMissing { get; set; }
@@ -157,6 +158,7 @@ namespace MediaBrowser.Controller.Entities
             AncestorIds = new string[] { };
             TopParentIds = new string[] { };
             ExcludeTags = new string[] { };
+            ExcludeInheritedTags = new string[] { };
             LocationTypes = new LocationType[] { };
             ExcludeLocationTypes = new LocationType[] { };
             PresetViews = new string[] { };
@@ -181,7 +183,7 @@ namespace MediaBrowser.Controller.Entities
                     BlockUnratedItems = policy.BlockUnratedItems;
                 }
 
-                ExcludeTags = policy.BlockedTags;
+                ExcludeInheritedTags = policy.BlockedTags;
 
                 User = user;
             }

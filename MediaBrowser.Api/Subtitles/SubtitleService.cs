@@ -17,7 +17,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
-using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Api.Subtitles
 {

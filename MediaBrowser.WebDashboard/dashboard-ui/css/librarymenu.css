@@ -30,7 +30,6 @@
 }
 
 .viewMenuBar paper-icon-button {
-    color: #fff;
     vertical-align: middle;
 }
 
@@ -53,19 +52,10 @@
     height: auto !important;
     /* Need to reset this because it causes the entire panel to be draggable in safari */
     box-sizing: initial !important;
+    font-size: 108%;
 }
 
-.verticalScrollingDrawer {
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch;
-    overflow-x: hidden;
-}
-
-/*.mainDrawerPanel #drawer, .mainDrawerPanel #scrim {
-    top: 50px !important;
-}*/
-
-.mainDrawerPanel #main {
+.mainDrawerPanel[narrow] #main {
     left: 0 !important;
     position: static !important;
     z-index: 1;
@@ -75,15 +65,18 @@
     /* Give it at least something to make it visible */
     z-index: 1098;
     /* It defaults to absolute, not visible after scrolling */
-    position: fixed!important;
+    position: fixed !important;
 }
 
 .mainDrawer {
-    height: auto !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
 }
 
-.mainDrawerContent {
-    padding-bottom: 40px;
+.drawerContent {
+    padding-bottom: 100px;
 }
 
 .headerButton {
@@ -120,30 +113,16 @@
 .libraryMenuButtonText {
     text-decoration: none;
     font-weight: 400 !important;
-    display: inline-block;
+    display: inline-flex;
     vertical-align: middle;
     padding-left: 0 !important;
     cursor: default;
     position: relative;
     top: 1px;
     white-space: nowrap;
-    max-width: 100px;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-@media all and (min-width: 500px) {
-
-    .libraryMenuButtonText {
-        max-width: 200px;
-    }
-}
-
-@media all and (min-width: 600px) {
-
-    .libraryMenuButtonText {
-        max-width: 300px;
-    }
+    align-items: center;
 }
 
 .logoLibraryMenuButtonText {
@@ -165,7 +144,7 @@
     border: 0;
     height: 50px;
     display: flex;
-    align-items: center;
+    flex-direction: column;
 }
 
 .hiddenViewMenuBar .viewMenuBar {
@@ -187,6 +166,7 @@
     -ms-overflow-style: none;
     overflow: -moz-scrollbars-none;
     -webkit-overflow-scrolling: touch;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
 }
 
     .libraryViewNav::-webkit-scrollbar {
@@ -200,11 +180,94 @@
 
 .viewMenuBar, .libraryViewNav {
     background-color: #020202;
+    color: #fff;
 }
 
-    .viewMenuBar.semiTransparent {
-        background-color: rgba(15, 15, 15, .3);
+    .viewMenuBar .primaryIcons {
+        display: flex;
+        flex-grow: 1;
+        width: 100%;
+        align-items: center;
     }
+
+.dashboardDocument .viewMenuBar {
+    background-color: #43A047;
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12);
+    height: auto;
+}
+
+    .dashboardDocument .viewMenuBar .primaryIcons {
+        padding: .92em 0;
+    }
+
+.dashboardDocument .withTallToolbar .primaryIcons {
+    padding-bottom: 0;
+}
+
+.dashboardDocument .viewMenuBar #selectionBar {
+    background: #fff !important;
+    height: 3px;
+}
+
+.viewMenuBarTabs {
+    width: 100%;
+}
+
+    .viewMenuBarTabs paper-tabs {
+        background: none;
+        box-shadow: none;
+    }
+
+    .viewMenuBarTabs .paperTabLink {
+        align-items: center;
+        justify-content: center;
+        display: flex;
+    }
+
+.mainDrawerPanel:not([narrow]) .viewMenuBarTabs {
+    width: auto;
+    padding-left: 272px;
+}
+
+.mainDrawerPanel .viewMenuBarTabs #tabsContent {
+    display: block !important;
+    width: 100%;
+}
+
+.mainDrawerPanel:not([narrow]) .viewMenuBarTabs paper-tab {
+    width: auto !important;
+}
+
+.viewMenuBarTabs #tabsContainer {
+    margin: auto;
+    -ms-flex: none;
+    -webkit-flex: none;
+    flex: none;
+    flex-shrink: 0;
+    flex-grow: 1;
+    touch-action: auto !important;
+}
+
+.viewMenuBarTabs paper-tabs {
+    overflow: visible !important;
+}
+
+.viewMenuBarTabs .paperTabLink {
+    padding-left: 1.5em;
+    padding-right: 1.5em;
+}
+
+.mainDrawerPanel:not([narrow]) .viewMenuBarTabs .tab-content {
+    display: block !important;
+}
+
+.viewMenuBar paper-icon-button.paper-tabs {
+    display: none !important;
+}
+
+.viewMenuBar.semiTransparent {
+    background-color: rgba(15, 15, 15, .3);
+}
 
 .paperLibraryViewNav {
     background-color: transparent !important;
@@ -241,10 +304,7 @@
     }
 
 .viewMenuSecondary {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 0;
+    margin-left: auto;
     display: flex;
     align-items: center;
 }
@@ -338,20 +398,6 @@
     }
 }
 
-@media all and (min-width: 800px) {
-
-    .dashboardDocument .dashboardDrawerContent {
-        display: none !important;
-    }
-}
-
-@media all and (max-width: 800px) {
-
-    .dashboardDocument .libraryDrawerContent {
-        display: none !important;
-    }
-}
-
 .drawerUserPanel {
     color: #fff;
     padding: 1em 1.2em;
@@ -370,10 +416,6 @@
     padding-left: 1em;
 }
 
-.libraryDocument .dashboardDrawerContent {
-    display: none !important;
-}
-
 .dashboardDocument .lnkMySync {
     display: none !important;
 }
@@ -390,36 +432,182 @@
     display: none !important;
 }
 
+.dashboardDocument .btnCast {
+    display: none !important;
+}
+
 body:not(.dashboardDocument) .btnNotifications {
     display: none !important;
 }
 
-.darkDrawer {
+.darkDrawerPanel #drawer {
     background-color: #212121 !important;
     box-shadow: none !important;
 }
 
-    .darkDrawer .sidebarLinkIcon {
-        color: #eee !important;
-    }
+.darkDrawerPanel .sidebarLinkIcon {
+    color: #bbb !important;
+    margin-left: 1.6em;
+}
 
-    .darkDrawer .sidebarLinkText, .darkDrawer .sidebarLink {
+.darkDrawerPanel .sidebarLinkText, .darkDrawerPanel .sidebarLink {
+    color: #fff !important;
+    font-weight: normal !important;
+}
+
+.darkDrawerPanel .sidebarHeader {
+    color: #bbb !important;
+}
+
+.darkDrawerPanel .sidebarDivider {
+    background: #282828 !important;
+}
+
+.darkDrawerPanel .sidebarLink:hover {
+    background: #4d4d4d;
+}
+
+.darkDrawerPanel .sidebarLink.selectedSidebarLink, .darkDrawerPanel .selectedMediaFolder {
+    background: #4d4d4d !important;
+}
+
+.darkDrawerPanel .headerAppsButton {
+    display: none;
+}
+
+.adminDrawerPanel #drawer {
+    background: #fff !important;
+    box-shadow: none !important;
+}
+
+.adminDrawerPanel:not([narrow]) #drawer {
+    z-index: 998 !important;
+    top: 65px !important;
+}
+
+.adminDrawerPanel:not([narrow]) .mainDrawerButton {
+    display: none !important;
+}
+
+.adminDrawerPanel .sidebarLink {
+    color: #333 !important;
+    font-weight: 400 !important;
+    padding: .7em 0 .7em 1.5em;
+}
+
+.adminDrawerPanel .sidebarHeader {
+    color: #666 !important;
+    font-weight: 500 !important;
+}
+
+.adminDrawerPanel .sidebarLinkIcon {
+    color: #666;
+    margin-right: 1em;
+}
+
+.adminDrawerPanel .sidebarLink:hover {
+    color: #00897B !important;
+}
+
+.adminDrawerPanel .sidebarLink.selectedSidebarLink {
+    background: #52B54B !important;
+    color: #fff !important;
+}
+
+    .adminDrawerPanel .sidebarLink.selectedSidebarLink .sidebarLinkIcon {
         color: #fff !important;
-        font-weight: normal !important;
     }
 
-    .darkDrawer .sidebarHeader {
-        color: #bbb !important;
+.adminDrawerPanel #drawer .emby-collapsible-button {
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: 1em;
+}
+
+.adminDrawerPanel #drawer .emby-collapsible-title {
+    font-size: inherit;
+    text-transform: none;
+    margin: .7em 0;
+}
+
+.adminDrawerPanel #drawer #expandButton {
+    color: #333;
+}
+
+.adminDrawerLogo {
+    padding: 1.5em 1em 1.2em;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 1em;
+    display: block;
+}
+
+.adminDrawerPanel:not([narrow]) .adminDrawerLogo {
+    display: none;
+}
+
+.adminDrawerLogo img {
+    height: 30px;
+}
+
+.adminDrawerPanel #drawer #expandIcon {
+    color: #000;
+}
+
+.adminDrawerPanel #drawer emby-collapsible > .style-scope {
+    margin: .7em 0;
+}
+
+.adminDrawerPanel:not([narrow]) .libraryMenuButtonText {
+    font-size: 150%;
+    margin-left: 1em;
+}
+
+.adminDrawerPanel[narrow] .headerAppsButton {
+    display: none;
+}
+
+.title-separator {
+    margin: 0 .5em;
+}
+
+.adminAppsMenu {
+    position: fixed;
+    top: 5vh !important;
+    left: 2vw !important;
+    padding: 1.5em 1em !important;
+    font-size: 110%;
+    margin: 0 !important;
+    color: #333;
+}
+
+.adminAppsMenuRow {
+    display: flex;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+    .adminAppsMenuRow + .adminAppsMenuRow {
+        margin-top: 1.5em !important;
+        border-top: 1px solid #ddd;
+        padding-top: 1em !important;
     }
 
-    .darkDrawer .sidebarDivider {
-        background: #303030 !important;
+.adminAppsButton {
+    display: block;
+    color: inherit !important;
+    font-weight: normal !important;
+    text-align: center;
+}
+
+.adminAppsButton {
+    width: 5.3vw;
+}
+
+    .adminAppsButton + .adminAppsButton {
+        margin-left: 1.5em;
     }
 
-    .darkDrawer .sidebarLink:hover {
-        background: #4d4d4d;
-    }
-
-    .darkDrawer .sidebarLink.selectedSidebarLink, .darkDrawer .selectedMediaFolder {
-        background: #4d4d4d !important;
+    .adminAppsButton paper-icon-button {
+        width: 4.5vh;
+        height: 4.5vh;
     }
