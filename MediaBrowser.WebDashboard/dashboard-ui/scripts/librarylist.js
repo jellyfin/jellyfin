@@ -1158,6 +1158,16 @@
             });
 
             items.push({
+                name: Globalize.translate('MarkPlayed'),
+                id: 'markplayed'
+            });
+
+            items.push({
+                name: Globalize.translate('MarkUnplayed'),
+                id: 'markunplayed'
+            });
+
+            items.push({
                 name: Globalize.translate('ButtonRefresh'),
                 id: 'refresh',
                 ironIcon: 'refresh'
@@ -1202,6 +1212,18 @@
                                 break;
                             case 'groupvideos':
                                 combineVersions($.mobile.activePage, items);
+                                break;
+                            case 'markplayed':
+                                items.forEach(function(itemId) {
+                                    ApiClient.markPlayed(Dashboard.getCurrentUserId(), itemId);
+                                });
+                                hideSelections();
+                                break;
+                            case 'markunplayed':
+                                items.forEach(function (itemId) {
+                                    ApiClient.markUnplayed(Dashboard.getCurrentUserId(), itemId);
+                                });
+                                hideSelections();
                                 break;
                             case 'refresh':
                                 items.map(function (itemId) {
