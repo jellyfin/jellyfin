@@ -737,7 +737,7 @@ var Dashboard = {
         }, {
             name: Globalize.translate('TabUsers'),
             href: "userprofiles.html",
-            pageIds: ['userProfilesPage'],
+            pageIds: ['userProfilesPage', 'newUserPage', 'editUserPage', 'userLibraryAccessPage', 'userParentalControlPage', 'userPasswordPage'],
             icon: 'people'
         }, {
             divider: true,
