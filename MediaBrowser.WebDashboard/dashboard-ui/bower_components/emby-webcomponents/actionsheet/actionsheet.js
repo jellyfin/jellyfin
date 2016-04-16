@@ -148,6 +148,7 @@
         }
 
         var enablePaperMenu = !layoutManager.tv;
+        enablePaperMenu = false;
         var itemTagName = 'paper-button';
 
         if (enablePaperMenu) {
