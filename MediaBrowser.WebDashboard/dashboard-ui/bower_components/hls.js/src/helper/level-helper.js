@@ -45,8 +45,9 @@ class LevelHelper {
       LevelHelper.updateFragPTS(newDetails,PTSFrag.sn,PTSFrag.startPTS,PTSFrag.endPTS);
     } else {
       // ensure that delta is within oldfragments range
-      // no need to offset start if delta === 0
-      if (delta > 0 && delta < oldfragments.length) {
+      // also adjust sliding in case delta is 0 (we could have old=[50-60] and new=old=[50-61])
+      // in that case we also need to adjust start offset of all fragments
+      if (delta >= 0 && delta < oldfragments.length) {
         // adjust start by sliding offset
         var sliding = oldfragments[delta].start;
         for(i = 0 ; i < newfragments.length ; i++) {

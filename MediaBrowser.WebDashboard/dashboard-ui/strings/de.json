@@ -1,4 +1,6 @@
 {
+    "MarkPlayed": "Mark played",
+    "MarkUnplayed": "Mark unplayed",
     "LabelExit": "Beenden",
     "LabelVisitCommunity": "Besuche die Community",
     "LabelGithub": "Github",
@@ -2332,7 +2334,7 @@
     "LabelAllowHWTranscoding": "Erlaube Hardware Transkodierung",
     "AllowHWTranscodingHelp": "Wenn aktiviert, erlaube dem tuner eine Transkodierung des Streams in Echtzeit vorzunehmen. Dadurch wird die Transkodierung des Emby Servers reduziert.",
     "OptionRequirePerfectSubtitleMatch": "Lade nur Untertitel die perfekt zu meinen Videos passen",
-    "ErrorAddingGuestAccount1": "There was an error adding the Emby Connect account. Has your guest created an Emby account? They can sign up at {0}.",
-    "ErrorAddingGuestAccount2": "Please ensure your guest has completed activation by following the instructions in the email sent after creating the account. If they did not receive this email then please send an email to {0}, and include your email address as well as theirs.",
-    "GuestUserNotFound": "User not found. Please ensure the name is correct and try again, or try entering their email address."
+    "ErrorAddingGuestAccount1": "Ein Fehler trat beim Hinzuf\u00fcgen des Emby Connect Kontos auf. Hat einer Ihrer G\u00e4ste ein Emby Konto erstellt? Sie k\u00f6nnen sich hier anmelden {0}.",
+    "ErrorAddingGuestAccount2": "Bitte stellen Sie sicher, dass Ihre G\u00e4ste die Aktivierung vervollst\u00e4ndigt haben, welche wir ihm in einer Email nach der Erstellung des Kontos zugesandt haben. Sollte diese Email nicht angekommen sein, senden Sie bitte eine Email an {0}. Bitte geben Sie Ihre Emailadresse und die des Gastes mit an.",
+    "GuestUserNotFound": "Benutzer nicht gefunden. Bitte stellen Sie die korrekte Schreibweise sicher und versuchen Sie es erneut. Sie k\u00f6nnen auch die Emailadresse verwenden."
 }

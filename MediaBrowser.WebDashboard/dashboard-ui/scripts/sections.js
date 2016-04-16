@@ -179,7 +179,7 @@
         }
 
         var cacheKey = 'lastappinfopresent5';
-        if ((new Date().getTime() - parseInt(appSettings.get(cacheKey) || '0')) < 172800000) {
+        if ((new Date().getTime() - parseInt(appSettings.get(cacheKey) || '0')) < 86400000) {
             return Promise.resolve('');
         }
 
