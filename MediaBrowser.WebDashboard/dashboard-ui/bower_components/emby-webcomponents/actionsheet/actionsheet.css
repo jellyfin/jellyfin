@@ -42,13 +42,17 @@
 }
 
 .actionSheetMenuItem {
-    padding: .8em 1.6em;
+    padding: 0 1.6em;
     margin: 0;
     text-transform: none;
     text-align: inherit;
     display: flex;
-    justify-content: center;
     font-weight: inherit;
+    align-items: center;
+}
+
+.actionSheetItemText {
+    padding: .8em 0;
 }
 
 .layout-tv .actionSheetMenuItem {
