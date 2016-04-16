@@ -996,7 +996,7 @@
                             // add a delay to continue building up the buffer. without this we see failures in safari mobile
                             setTimeout(function () {
                                 self.playVideoInternal(item, mediaSource, startPosition, streamInfo, callback);
-                            }, 2000);
+                            }, 0);
 
                         }, function () {
                             Dashboard.hideLoadingMsg();

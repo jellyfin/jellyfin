@@ -1,10 +1,12 @@
 {
+    "MarkPlayed": "Mark played",
+    "MarkUnplayed": "Mark unplayed",
     "LabelExit": "Avsluta",
     "LabelVisitCommunity": "Bes\u00f6k v\u00e5rt diskussionsforum",
     "LabelGithub": "Github",
     "LabelSwagger": "Swagger",
     "LabelStandard": "F\u00f6rval",
-    "LabelApiDocumentation": "Api Dokumentation",
+    "LabelApiDocumentation": "Api-dokumentation",
     "LabelDeveloperResources": "Resurser f\u00f6r utvecklare",
     "LabelBrowseLibrary": "Bl\u00e4ddra i biblioteket",
     "LabelConfigureServer": "Konfigurera Emby",
