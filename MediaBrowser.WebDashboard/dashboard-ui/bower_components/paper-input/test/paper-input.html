@@ -1,5 +1,6 @@
 <!doctype html>
 <!--
+@license
 Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
 The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
@@ -105,6 +106,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <test-fixture id="validator">
     <template>
       <paper-input value="123123" validator="letters-only" auto-validate></paper-input>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="multiple-inputs">
+    <template>
+      <paper-input label="one"></paper-input>
+      <paper-input label="two"></paper-input>
+      <paper-input label="three"></paper-input>
+      <paper-input label="four"></paper-input>
     </template>
   </test-fixture>
 
@@ -274,11 +284,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     });
 
     suite('a11y', function() {
+      test('has aria-labelledby, which is monotonically increasing', function() {
+        var inputs = fixture('multiple-inputs');
 
-      test('has aria-labelledby', function() {
-        var input = fixture('label');
-        assert.isTrue(input.inputElement.hasAttribute('aria-labelledby'))
-        assert.equal(input.inputElement.getAttribute('aria-labelledby'), Polymer.dom(input.root).querySelector('label').id, 'aria-labelledby points to the label');
+        // Find the first index of the input in this fixture. Since the label
+        // ids monotonically increase every time a new input is created, and
+        // this fixture isn't the first one in the document, we're going to start
+        // at an ID > 1.
+        var firstLabel = Polymer.dom(inputs[0].root).querySelector('label').id;
+        var index = parseInt(firstLabel.substr(firstLabel.lastIndexOf('-') + 1));
+
+        for (var i = 0; i < inputs.length; i++ ) {
+          var input = inputs[i].inputElement;
+          var label = Polymer.dom(inputs[i].root).querySelector('label').id;
+
+          assert.isTrue(input.hasAttribute('aria-labelledby'));
+          assert.equal(label, 'paper-input-label-' + (index++));
+          assert.equal(input.getAttribute('aria-labelledby'), label);
+        }
       });
 
       test('has aria-describedby for error message', function() {
