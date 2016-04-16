@@ -160,7 +160,7 @@
             var option = options.items[i];
 
             var autoFocus = option.selected ? ' autoFocus' : '';
-            html += '<' + itemTagName + autoFocus + ' class="actionSheetMenuItem" data-id="' + option.id + '" style="display:block;">';
+            html += '<' + itemTagName + autoFocus + ' class="actionSheetMenuItem" data-id="' + option.id + '">';
 
             if (option.ironIcon) {
                 html += '<iron-icon class="actionSheetItemIcon" icon="' + option.ironIcon + '"></iron-icon>';
@@ -168,7 +168,7 @@
             else if (renderIcon && !center) {
                 html += '<iron-icon class="actionSheetItemIcon"></iron-icon>';
             }
-            html += '<span>' + option.name + '</span>';
+            html += '<div class="actionSheetItemText">' + option.name + '</div>';
             html += '</' + itemTagName + '>';
         }
 
