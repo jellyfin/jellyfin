@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -19,7 +18,6 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -165,11 +163,11 @@ namespace MediaBrowser.Providers.MediaInfo
             return prober.Probe(item, cancellationToken);
         }
 
-        public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
-            if (status.ItemDateModified.HasValue)
+            if (item.DateModifiedDuringLastRefresh.HasValue)
             {
-                if (status.ItemDateModified.Value != item.DateModified)
+                if (item.DateModifiedDuringLastRefresh.Value != item.DateModified)
                 {
                     return true;
                 }

@@ -1,8 +1,6 @@
 ﻿using DvdLib.Ifo;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Extensions;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -534,6 +532,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     currentStreams.Concat(externalSubtitleStreams).ToList(),
                     subtitleOptions.SkipIfEmbeddedSubtitlesPresent,
                     subtitleOptions.SkipIfAudioTrackMatches,
+                    subtitleOptions.RequirePerfectMatch,
                     subtitleOptions.DownloadLanguages,
                     cancellationToken).ConfigureAwait(false);
 

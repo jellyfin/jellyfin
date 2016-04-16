@@ -74,7 +74,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
         }
 
-        public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
             var liveTvItem = item as LiveTvProgram;
 

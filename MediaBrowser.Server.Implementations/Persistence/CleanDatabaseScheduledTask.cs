@@ -3,7 +3,6 @@ using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -33,7 +32,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private readonly ILocalizationManager _localization;
         private readonly ITaskManager _taskManager;
 
-        public const int MigrationVersion = 20;
+        public const int MigrationVersion = 23;
         public static bool EnableUnavailableMessage = false;
 
         public CleanDatabaseScheduledTask(ILibraryManager libraryManager, IItemRepository itemRepo, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem, IHttpServer httpServer, ILocalizationManager localization, ITaskManager taskManager)
@@ -86,7 +85,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             innerProgress = new ActionableProgress<double>();
             innerProgress.RegisterAction(p =>
             {
-                double newPercentCommplete = 40 + (.05 * p);
+                double newPercentCommplete = 40 + .05 * p;
                 OnProgress(newPercentCommplete);
                 progress.Report(newPercentCommplete);
             });
@@ -96,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             innerProgress = new ActionableProgress<double>();
             innerProgress.RegisterAction(p =>
             {
-                double newPercentCommplete = 45 + (.55 * p);
+                double newPercentCommplete = 45 + .55 * p;
                 OnProgress(newPercentCommplete);
                 progress.Report(newPercentCommplete);
             });

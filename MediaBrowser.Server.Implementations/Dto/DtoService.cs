@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
@@ -1150,10 +1149,10 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (fields.Contains(ItemFields.ParentId))
             {
-                var displayParent = item.DisplayParent;
-                if (displayParent != null)
+                var displayParentId = item.DisplayParentId;
+                if (displayParentId.HasValue)
                 {
-                    dto.ParentId = GetDtoId(displayParent);
+                    dto.ParentId = displayParentId.Value.ToString("N");
                 }
             }
 

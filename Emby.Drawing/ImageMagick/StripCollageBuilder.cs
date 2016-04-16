@@ -3,7 +3,6 @@ using MediaBrowser.Common.Configuration;
 using System;
 using System.Collections.Generic;
 using CommonIO;
-using MediaBrowser.Common.IO;
 
 namespace Emby.Drawing.ImageMagick
 {
@@ -296,9 +295,9 @@ namespace Emby.Drawing.ImageMagick
                 wand.OpenImage("gradient:#111111-#111111");
                 using (var draw = new DrawingWand())
                 {
-                    var iSlice = Convert.ToInt32(width * .1166666667 * 2);
+                    var iSlice = Convert.ToInt32(width * 0.24125);
                     int iTrans = Convert.ToInt32(height * .25);
-                    int iHeight = Convert.ToInt32(height * .62);
+                    int iHeight = Convert.ToInt32(height * .70);
                     var horizontalImagePadding = Convert.ToInt32(width * 0.0125);
 
                     foreach (var element in wandImages.ImageList)
@@ -340,7 +339,7 @@ namespace Emby.Drawing.ImageMagick
 
                                         wandList.AddImage(mwr);
                                         int ex = (int)(wand.CurrentImage.Width - mwg.CurrentImage.Width) / 2;
-                                        wand.CurrentImage.CompositeImage(wandList.AppendImages(true), CompositeOperator.AtopCompositeOp, ex, Convert.ToInt32(height * .085));
+                                        wand.CurrentImage.CompositeImage(wandList.AppendImages(true), CompositeOperator.AtopCompositeOp, ex, Convert.ToInt32(height * .045));
                                     }
                                 }
                             }
@@ -361,9 +360,9 @@ namespace Emby.Drawing.ImageMagick
                 wand.OpenImage("gradient:#111111-#111111");
                 using (var draw = new DrawingWand())
                 {
-                    var iSlice = Convert.ToInt32(width * .3);
+                    var iSlice = Convert.ToInt32(width * .32);
                     int iTrans = Convert.ToInt32(height * .25);
-                    int iHeight = Convert.ToInt32(height * .63);
+                    int iHeight = Convert.ToInt32(height * .68);
                     var horizontalImagePadding = Convert.ToInt32(width * 0.02);
 
                     foreach (var element in wandImages.ImageList)
@@ -405,7 +404,7 @@ namespace Emby.Drawing.ImageMagick
 
                                         wandList.AddImage(mwr);
                                         int ex = (int)(wand.CurrentImage.Width - mwg.CurrentImage.Width) / 2;
-                                        wand.CurrentImage.CompositeImage(wandList.AppendImages(true), CompositeOperator.AtopCompositeOp, ex, Convert.ToInt32(height * .07));
+                                        wand.CurrentImage.CompositeImage(wandList.AppendImages(true), CompositeOperator.AtopCompositeOp, ex, Convert.ToInt32(height * .03));
                                     }
                                 }
                             }

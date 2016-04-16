@@ -523,7 +523,6 @@ namespace MediaBrowser.Dlna.PlayTo
                     streamInfo.TargetPacketLength,
                     streamInfo.TranscodeSeekInfo,
                     streamInfo.IsTargetAnamorphic,
-                    streamInfo.IsTargetCabac,
                     streamInfo.TargetRefFrames,
                     streamInfo.TargetVideoStreamCount,
                     streamInfo.TargetAudioStreamCount,

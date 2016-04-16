@@ -40,7 +40,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                 return await new M3uParser(Logger, _fileSystem, _httpClient).Parse(tuner.M3UUrl, ChannelIdPrefix, tuner.Id, cancellationToken).ConfigureAwait(false);
             }
 
-            return new List<ChannelInfo>();
+            var channels = await new ChannelScan(Logger).Scan(tuner, cancellationToken).ConfigureAwait(false);
+            return channels;
         }
 
         public static string DeviceType

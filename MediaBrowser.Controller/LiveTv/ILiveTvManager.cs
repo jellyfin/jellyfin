@@ -1,5 +1,4 @@
 ﻿using System;
-using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
@@ -384,5 +383,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <returns>List&lt;NameValuePair&gt;.</returns>
         List<NameValuePair> GetSatIniMappings();
+
+        Task<List<ChannelInfo>> GetSatChannelScanResult(TunerHostInfo info, CancellationToken cancellationToken);
     }
 }

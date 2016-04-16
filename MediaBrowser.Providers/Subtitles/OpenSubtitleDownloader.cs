@@ -18,7 +18,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Providers.Subtitles
 {
@@ -309,8 +308,8 @@ namespace MediaBrowser.Providers.Subtitles
             // Avoid implicitly captured closure
             var hasCopy = hash;
 
-            return results.Where(x => x.SubBad == "0" && mediaFilter(x))
-                    .OrderBy(x => (x.MovieHash == hash ? 0 : 1))
+            return results.Where(x => x.SubBad == "0" && mediaFilter(x) && (!request.IsPerfectMatch || string.Equals(x.MovieHash, hash, StringComparison.OrdinalIgnoreCase)))
+                    .OrderBy(x => (string.Equals(x.MovieHash, hash, StringComparison.OrdinalIgnoreCase) ? 0 : 1))
                     .ThenBy(x => Math.Abs(long.Parse(x.MovieByteSize, _usCulture) - movieByteSize))
                     .ThenByDescending(x => int.Parse(x.SubDownloadsCnt, _usCulture))
                     .ThenByDescending(x => double.Parse(x.SubRating, _usCulture))

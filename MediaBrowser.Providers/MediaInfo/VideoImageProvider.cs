@@ -10,10 +10,11 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
-using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -94,20 +95,59 @@ namespace MediaBrowser.Providers.MediaInfo
 
             try
             {
-                // If we know the duration, grab it from 10% into the video. Otherwise just 10 seconds in.
-                // Always use 10 seconds for dvd because our duration could be out of whack
-                var imageOffset = item.VideoType != VideoType.Dvd && item.RunTimeTicks.HasValue &&
-                                  item.RunTimeTicks.Value > 0
-                                      ? TimeSpan.FromTicks(Convert.ToInt64(item.RunTimeTicks.Value * .1))
-                                      : TimeSpan.FromSeconds(10);
-
                 var protocol = item.LocationType == LocationType.Remote
                     ? MediaProtocol.Http
                     : MediaProtocol.File;
 
                 var inputPath = MediaEncoderHelpers.GetInputArgument(_fileSystem, item.Path, protocol, isoMount, item.PlayableStreamFileNames);
 
-                var stream = await _mediaEncoder.ExtractVideoImage(inputPath, protocol, item.Video3DFormat, imageOffset, cancellationToken).ConfigureAwait(false);
+                var mediaStreams =
+                    item.GetMediaSources(false)
+                        .Take(1)
+                        .SelectMany(i => i.MediaStreams)
+                        .ToList();
+
+                var imageStreams =
+                    mediaStreams
+                        .Where(i => i.Type == MediaStreamType.EmbeddedImage)
+                        .ToList();
+
+                var imageStream = imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).IndexOf("front", StringComparison.OrdinalIgnoreCase) != -1) ??
+                    imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).IndexOf("cover", StringComparison.OrdinalIgnoreCase) != -1) ??
+                    imageStreams.FirstOrDefault();
+
+                Stream stream;
+
+                if (imageStream != null)
+                {
+                    // Instead of using the raw stream index, we need to use nth video/embedded image stream
+                    var videoIndex = -1;
+                    foreach (var mediaStream in mediaStreams)
+                    {
+                        if (mediaStream.Type == MediaStreamType.Video ||
+                            mediaStream.Type == MediaStreamType.EmbeddedImage)
+                        {
+                            videoIndex++;
+                        }
+                        if (mediaStream == imageStream)
+                        {
+                            break;
+                        }
+                    }
+
+                    stream = await _mediaEncoder.ExtractVideoImage(inputPath, protocol, videoIndex, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    // If we know the duration, grab it from 10% into the video. Otherwise just 10 seconds in.
+                    // Always use 10 seconds for dvd because our duration could be out of whack
+                    var imageOffset = item.VideoType != VideoType.Dvd && item.RunTimeTicks.HasValue &&
+                                      item.RunTimeTicks.Value > 0
+                                          ? TimeSpan.FromTicks(Convert.ToInt64(item.RunTimeTicks.Value * .1))
+                                          : TimeSpan.FromSeconds(10);
+
+                    stream = await _mediaEncoder.ExtractVideoImage(inputPath, protocol, item.Video3DFormat, imageOffset, cancellationToken).ConfigureAwait(false);
+                }
 
                 return new DynamicImageResponse
                 {
@@ -152,11 +192,11 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
-            if (status.ItemDateModified.HasValue)
+            if (item.DateModifiedDuringLastRefresh.HasValue)
             {
-                if (status.ItemDateModified.Value != item.DateModified)
+                if (item.DateModifiedDuringLastRefresh.Value != item.DateModified)
                 {
                     return true;
                 }

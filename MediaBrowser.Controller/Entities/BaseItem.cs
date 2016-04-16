@@ -255,6 +255,11 @@ namespace MediaBrowser.Controller.Entities
 
                 if (string.IsNullOrWhiteSpace(Path))
                 {
+                    if (SourceType == SourceType.Channel)
+                    {
+                        return LocationType.Remote;
+                    }
+
                     return LocationType.Virtual;
                 }
 
@@ -301,13 +306,13 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        private List<Tuple<StringBuilder,bool>> GetSortChunks(string s1)
+        private List<Tuple<StringBuilder, bool>> GetSortChunks(string s1)
         {
             var list = new List<Tuple<StringBuilder, bool>>();
 
             int thisMarker = 0, thisNumericChunk = 0;
 
-            while ((thisMarker < s1.Length))
+            while (thisMarker < s1.Length)
             {
                 if (thisMarker >= s1.Length)
                 {
@@ -407,6 +412,9 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public DateTime DateLastRefreshed { get; set; }
 
+        [IgnoreDataMember]
+        public DateTime? DateModifiedDuringLastRefresh { get; set; }
+
         /// <summary>
         /// The logger
         /// </summary>
@@ -494,7 +502,19 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                return _sortName ?? (_sortName = CreateSortName());
+                if (_sortName == null)
+                {
+                    if (!string.IsNullOrWhiteSpace(ForcedSortName))
+                    {
+                        // Need the ToLower because that's what CreateSortName does
+                        _sortName = ModifySortChunks(ForcedSortName).ToLower();
+                    }
+                    else
+                    {
+                        _sortName = CreateSortName();
+                    }
+                }
+                return _sortName;
             }
             set
             {
@@ -529,11 +549,6 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>System.String.</returns>
         protected virtual string CreateSortName()
         {
-            if (!string.IsNullOrWhiteSpace(ForcedSortName))
-            {
-                return ModifySortChunks(ForcedSortName).ToLower();
-            }
-
             if (Name == null) return null; //some items may not have name filled in properly
 
             if (!EnableAlphaNumericSorting)
@@ -653,9 +668,30 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public virtual BaseItem DisplayParent
+        public virtual Guid? DisplayParentId
         {
-            get { return GetParent(); }
+            get
+            {
+                if (ParentId == Guid.Empty)
+                {
+                    return null;
+                }
+                return ParentId;
+            }
+        }
+
+        [IgnoreDataMember]
+        public BaseItem DisplayParent
+        {
+            get
+            {
+                var id = DisplayParentId;
+                if (!id.HasValue || id.Value == Guid.Empty)
+                {
+                    return null;
+                }
+                return LibraryManager.GetItemById(id.Value);
+            }
         }
 
         /// <summary>
@@ -1310,6 +1346,19 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return LocalizationManager.GetRatingLevel(rating);
+        }
+
+        public List<string> GetInheritedTags()
+        {
+            var list = new List<string>();
+            list.AddRange(Tags);
+
+            foreach (var parent in GetParents())
+            {
+                list.AddRange(parent.Tags);
+            }
+
+            return list.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         }
 
         private bool IsVisibleViaTags(User user)

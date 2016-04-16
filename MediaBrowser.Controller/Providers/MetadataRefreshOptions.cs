@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using CommonIO;
-using MediaBrowser.Common.IO;
+using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -14,6 +14,7 @@ namespace MediaBrowser.Controller.Providers
         public bool IsPostRecursiveRefresh { get; set; }
 
         public MetadataRefreshMode MetadataRefreshMode { get; set; }
+        public RemoteSearchResult SearchResult { get; set; }
 
         public bool ForceSave { get; set; }
 
@@ -38,6 +39,7 @@ namespace MediaBrowser.Controller.Providers
             ImageRefreshMode = copy.ImageRefreshMode;
             ReplaceAllImages = copy.ReplaceAllImages;
             ReplaceImages = copy.ReplaceImages.ToList();
+            SearchResult = copy.SearchResult;
         }
     }
 }

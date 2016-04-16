@@ -1,10 +1,9 @@
 <?xml version="1.0"?>
 <Profile xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Name>Generic Device</Name>
-  <FriendlyName>Emby</FriendlyName>
   <Manufacturer>Emby</Manufacturer>
   <ManufacturerUrl>http://emby.media/</ManufacturerUrl>
-  <ModelName>Emby</ModelName>
+  <ModelName>Emby Server</ModelName>
   <ModelDescription>Emby</ModelDescription>
   <ModelNumber>Emby</ModelNumber>
   <ModelUrl>http://emby.media/</ModelUrl>

@@ -3,7 +3,6 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -191,7 +190,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                 if (IndexNumber.HasValue)
                 {
                     var songKey = (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("0000 - ") : "")
-                                  + (IndexNumber.Value.ToString("0000 - "));
+                                  + IndexNumber.Value.ToString("0000 - ");
 
                     return parentKey + songKey;
                 }

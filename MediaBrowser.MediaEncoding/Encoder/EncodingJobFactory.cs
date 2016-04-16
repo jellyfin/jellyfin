@@ -10,7 +10,6 @@ using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -665,14 +664,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            if (request.Cabac.HasValue && request.Cabac.Value)
-            {
-                if (videoStream.IsCabac.HasValue && !videoStream.IsCabac.Value)
-                {
-                    return false;
-                }
-            }
-
             return request.EnableAutoStreamCopy;
         }
 
@@ -774,7 +765,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 state.TargetPacketLength,
                 state.TargetTimestamp,
                 state.IsTargetAnamorphic,
-                state.IsTargetCabac,
                 state.TargetRefFrames,
                 state.TargetVideoStreamCount,
                 state.TargetAudioStreamCount,

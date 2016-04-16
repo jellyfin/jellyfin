@@ -6,14 +6,12 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Dlna.Ssdp;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Threading;
 
 namespace MediaBrowser.Dlna.PlayTo
 {

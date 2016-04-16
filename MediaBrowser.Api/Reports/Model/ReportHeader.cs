@@ -1,11 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MediaBrowser.Api.Reports
+﻿namespace MediaBrowser.Api.Reports
 {
 	/// <summary> A report header. </summary>
 	public class ReportHeader

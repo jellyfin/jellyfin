@@ -1,10 +1,8 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.MediaEncoding.Subtitles;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -971,7 +969,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 if (!string.IsNullOrEmpty(state.SubtitleStream.Language))
                 {
-                    var charenc = SubtitleEncoder.GetSubtitleFileCharacterSet(subtitlePath, state.MediaSource.Protocol, CancellationToken.None).Result;
+                    var charenc = SubtitleEncoder.GetSubtitleFileCharacterSet(subtitlePath, state.SubtitleStream.Language, state.MediaSource.Protocol, CancellationToken.None).Result;
 
                     if (!string.IsNullOrEmpty(charenc))
                     {
