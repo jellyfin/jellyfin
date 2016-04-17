@@ -80,7 +80,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        private const int LatestSchemaVersion = 62;
+        private const int LatestSchemaVersion = 63;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -760,7 +760,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveItemCommand.GetParameter(index++).Value = item.SourceType.ToString();
 
                     var trailer = item as Trailer;
-                    if (trailer != null)
+                    if (trailer != null && trailer.TrailerTypes.Count > 0)
                     {
                         _saveItemCommand.GetParameter(index++).Value = string.Join("|", trailer.TrailerTypes.Select(i => i.ToString()).ToArray());
                     }
@@ -1962,7 +1962,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var index = 0;
                 foreach (var type in query.ExcludeTrailerTypes)
                 {
-                    clauses.Add("TrailerTypes not like @TrailerTypes" + index);
+                    clauses.Add("(TrailerTypes is null OR TrailerTypes not like @TrailerTypes" + index + ")");
                     cmd.Parameters.Add(cmd, "@TrailerTypes" + index, DbType.String).Value = "%" + type + "%";
                     index++;
                 }
@@ -2186,7 +2186,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var excludeTagIndex = 0;
             foreach (var excludeTag in query.ExcludeTags)
             {
-                whereClauses.Add("Tags not like @excludeTag" + excludeTagIndex);
+                whereClauses.Add("(Tags is null OR Tags not like @excludeTag" + excludeTagIndex + ")");
                 cmd.Parameters.Add(cmd, "@excludeTag" + excludeTagIndex, DbType.String).Value = "%" + excludeTag + "%";
                 excludeTagIndex++;
             }
@@ -2194,7 +2194,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             excludeTagIndex = 0;
             foreach (var excludeTag in query.ExcludeInheritedTags)
             {
-                whereClauses.Add("InheritedTags not like @excludeInheritedTag" + excludeTagIndex);
+                whereClauses.Add("(InheritedTags is null OR InheritedTags not like @excludeInheritedTag" + excludeTagIndex +")");
                 cmd.Parameters.Add(cmd, "@excludeInheritedTag" + excludeTagIndex, DbType.String).Value = "%" + excludeTag + "%";
                 excludeTagIndex++;
             }
