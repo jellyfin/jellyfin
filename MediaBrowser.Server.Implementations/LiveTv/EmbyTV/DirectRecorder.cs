@@ -40,7 +40,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 {
                     onStarted();
 
-                    _logger.Info("Copying recording stream to file stream");
+                    _logger.Info("Copying recording stream to file {0}", targetFile);
 
                     var durationToken = new CancellationTokenSource(duration);
                     var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
@@ -48,6 +48,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     await response.Content.CopyToAsync(output, StreamDefaults.DefaultCopyToBufferSize, linkedToken).ConfigureAwait(false);
                 }
             }
+
+            _logger.Info("Recording completed to file {0}", targetFile);
         }
     }
 }
