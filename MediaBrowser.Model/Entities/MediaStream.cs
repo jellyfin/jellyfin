@@ -33,7 +33,9 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The comment.</value>
         public string Comment { get; set; }
-        
+
+        public string NalLengthSize { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is interlaced.
         /// </summary>

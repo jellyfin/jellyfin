@@ -87,6 +87,11 @@ namespace MediaBrowser.Api.Playback.Hls
             if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
                 // if h264_mp4toannexb is ever added, do not use it for live tv
+                if (state.VideoStream != null && IsH264(state.VideoStream) && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
+                {
+                    Logger.Debug("Enabling h264_mp4toannexb due to nal_length_size of {0}", state.VideoStream.NalLengthSize);
+                    args += " -bsf:v h264_mp4toannexb";
+                }
                 return args;
             }
 

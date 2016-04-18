@@ -287,7 +287,9 @@ namespace MediaBrowser.Controller.Entities.TV
                 id.AnimeSeriesIndex = series.AnimeSeriesIndex;
             }
 
+            id.IsMissingEpisode = IsMissingEpisode;
             id.IndexNumberEnd = IndexNumberEnd;
+            id.IsVirtualUnaired = IsVirtualUnaired;
 
             return id;
         }
