@@ -146,6 +146,25 @@
             });
         });
 
+        $('#btnSelectDashboardSourcePath', view).on("click.selectDirectory", function () {
+
+            require(['directorybrowser'], function (directoryBrowser) {
+
+                var picker = new directoryBrowser();
+
+                picker.show({
+
+                    callback: function (path) {
+
+                        if (path) {
+                            view.querySelector('#txtDashboardSourcePath').value = path;
+                        }
+                        picker.close();
+                    }
+                });
+            });
+        });
+
         $('.dashboardGeneralForm', view).off('submit', onSubmit).on('submit', onSubmit);
 
         view.addEventListener('viewshow', function () {
