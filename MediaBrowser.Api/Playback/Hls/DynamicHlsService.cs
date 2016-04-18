@@ -828,7 +828,7 @@ namespace MediaBrowser.Api.Playback.Hls
             // See if we can save come cpu cycles by avoiding encoding
             if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                if (state.VideoStream != null && IsH264(state.VideoStream) && !string.IsNullOrWhiteSpace(state.VideoStream.NalLengthSize))
+                if (state.VideoStream != null && IsH264(state.VideoStream) && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
                 {
                     Logger.Debug("Enabling h264_mp4toannexb due to nal_length_size of {0}", state.VideoStream.NalLengthSize);
                     args += " -bsf:v h264_mp4toannexb";
