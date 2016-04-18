@@ -310,6 +310,11 @@ namespace MediaBrowser.Providers.Manager
                 return true;
             }
 
+            if (!(item is Audio) && !(item is Video))
+            {
+                return true;
+            }
+
             return false;
         }
 

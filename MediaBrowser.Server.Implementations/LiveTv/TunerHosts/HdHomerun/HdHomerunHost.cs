@@ -317,6 +317,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 videoCodec = "mpeg2video";
             }
 
+            string nal = null;
+            if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase))
+            {
+                nal = "0";
+            }
+
             var url = GetApiUrl(info, true) + "/auto/v" + channelId;
 
             if (!string.IsNullOrWhiteSpace(profile) && !string.Equals(profile, "native", StringComparison.OrdinalIgnoreCase))
@@ -339,7 +345,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                 Codec = videoCodec,
                                 Width = width,
                                 Height = height,
-                                BitRate = videoBitrate
+                                BitRate = videoBitrate,
+                                NalLengthSize = nal
 
                             },
                             new MediaStream

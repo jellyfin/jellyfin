@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'appStorage', 'libraryBrowser', 'jQuery'], function (appSettings, appStorage, LibraryBrowser, $) {
+﻿define(['appSettings', 'appStorage', 'libraryBrowser', 'apphost', 'jQuery'], function (appSettings, appStorage, LibraryBrowser, appHost, $) {
 
     var showOverlayTimeout;
 
@@ -270,7 +270,7 @@
                 });
             }
 
-            if (user.Policy.EnableContentDownloading && AppInfo.supportsDownloading) {
+            if (user.Policy.EnableContentDownloading && appHost.supports('filedownload')) {
                 if (mediaType) {
                     items.push({
                         name: Globalize.translate('ButtonDownload'),
@@ -491,7 +491,8 @@
                                             api_key: ApiClient.accessToken()
                                         });
 
-                                        fileDownloader([{
+                                        fileDownloader.download([
+                                        {
                                             url: downloadHref,
                                             itemId: itemId
                                         }]);
@@ -1143,7 +1144,7 @@
                 });
             }
 
-            if (user.Policy.EnableContentDownloading && AppInfo.supportsDownloading) {
+            if (user.Policy.EnableContentDownloading && appHost.supports('filedownload')) {
                 //items.push({
                 //    name: Globalize.translate('ButtonDownload'),
                 //    id: 'download',
@@ -1214,7 +1215,7 @@
                                 combineVersions($.mobile.activePage, items);
                                 break;
                             case 'markplayed':
-                                items.forEach(function(itemId) {
+                                items.forEach(function (itemId) {
                                     ApiClient.markPlayed(Dashboard.getCurrentUserId(), itemId);
                                 });
                                 hideSelections();

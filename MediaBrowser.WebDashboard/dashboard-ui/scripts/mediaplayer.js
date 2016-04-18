@@ -34,7 +34,7 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
 
             var targets = [{
                 name: Globalize.translate('MyDevice'),
-                id: AppInfo.deviceId,
+                id: ConnectionManager.deviceId(),
                 playerName: self.name,
                 playableMediaTypes: ['Audio', 'Video'],
                 isLocalPlayer: true,

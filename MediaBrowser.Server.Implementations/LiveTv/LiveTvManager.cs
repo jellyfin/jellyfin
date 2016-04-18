@@ -511,8 +511,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             if (!(service is EmbyTV.EmbyTV))
             {
                 // We can't trust that we'll be able to direct stream it through emby server,  no matter what the provider says
-                mediaSource.SupportsDirectStream = true;
+                mediaSource.SupportsDirectStream = false;
                 mediaSource.SupportsTranscoding = true;
+                foreach (var stream in mediaSource.MediaStreams)
+                {
+                    if (stream.Type == MediaStreamType.Video && string.IsNullOrWhiteSpace(stream.NalLengthSize))
+                    {
+                        stream.NalLengthSize = "0";
+                    }
+                }
             }
         }
 

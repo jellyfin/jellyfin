@@ -407,7 +407,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                 Profile = streamInfo.profile,
                 Level = streamInfo.level,
                 Index = streamInfo.index,
-                PixelFormat = streamInfo.pix_fmt
+                PixelFormat = streamInfo.pix_fmt,
+                NalLengthSize = streamInfo.nal_length_size
             };
 
             // Filter out junk

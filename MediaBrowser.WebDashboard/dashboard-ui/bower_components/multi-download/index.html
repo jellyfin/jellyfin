@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="author" content="Sindre Sorhus">
+		<meta name="viewport" content="width=device-width">
+		<title>multi-download</title>
+		<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+		<style>
+			#download-btn {
+				width: 300px;
+				height: 50px;
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				margin: -25px 0 0 -150px;
+				outline: none;
+			}
+		</style>
+	</head>
+	<body >
+		<button id="download-btn" class="btn btn-primary btn-lg" data-files="fixture/unicorn.jpg.zip fixture/rainbow.jpg.zip fixture/unicorn2.jpg.zip">Download multiple files</button>
+		<script src="browser.js"></script>
+		<script>
+			document.querySelector('#download-btn').addEventListener('click', function (e) {
+				var files = e.target.dataset.files.split(' ');
+				multiDownload(files);
+			});
+		</script>
+	</body>
+</html>
