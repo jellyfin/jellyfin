@@ -171,41 +171,6 @@ var Dashboard = {
         }
     },
 
-    importCss: function (url) {
-
-        var originalUrl = url;
-        url += "?v=" + AppInfo.appVersion;
-
-        if (!Dashboard.importedCss) {
-            Dashboard.importedCss = [];
-        }
-
-        if (Dashboard.importedCss.indexOf(url) != -1) {
-            return;
-        }
-
-        Dashboard.importedCss.push(url);
-
-        if (document.createStyleSheet) {
-            document.createStyleSheet(url);
-        } else {
-            var link = document.createElement('link');
-            link.setAttribute('rel', 'stylesheet');
-            link.setAttribute('data-url', originalUrl);
-            link.setAttribute('type', 'text/css');
-            link.setAttribute('href', url);
-            document.head.appendChild(link);
-        }
-    },
-
-    removeStylesheet: function (url) {
-
-        var elem = document.querySelector('link[data-url=\'' + url + '\']');
-        if (elem) {
-            elem.parentNode.removeChild(elem);
-        }
-    },
-
     updateSystemInfo: function (info) {
 
         Dashboard.lastSystemInfo = info;
@@ -1500,7 +1465,7 @@ var AppInfo = {};
                     var apiClient = new apiClientFactory(Dashboard.serverAddress(), AppInfo.appName, AppInfo.appVersion, AppInfo.deviceName, AppInfo.deviceId, window.devicePixelRatio);
                     apiClient.enableAutomaticNetworking = false;
                     ConnectionManager.addApiClient(apiClient);
-                    Dashboard.importCss(apiClient.getUrl('Branding/Css'));
+                    require(['css!' + apiClient.getUrl('Branding/Css')]);
                     window.ApiClient = apiClient;
                     localApiClient = apiClient;
                     console.log('loaded ApiClient singleton');
@@ -2015,14 +1980,8 @@ var AppInfo = {};
             define("localsync", ["scripts/localsync"]);
         }
 
-        define("livetvcss", [], function () {
-            Dashboard.importCss('css/livetv.css');
-            return {};
-        });
-        define("detailtablecss", [], function () {
-            Dashboard.importCss('css/detailtable.css');
-            return {};
-        });
+        define("livetvcss", ['css!css/livetv.css']);
+        define("detailtablecss", ['css!css/detailtable.css']);
         define("tileitemcss", ['css!css/tileitem.css']);
 
         define("sharingmanager", ["scripts/sharingmanager"]);

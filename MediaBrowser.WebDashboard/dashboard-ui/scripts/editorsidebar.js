@@ -394,7 +394,7 @@
 
     }).on('pagebeforeshow', ".metadataEditorPage", function () {
 
-        Dashboard.importCss('css/metadataeditor.css');
+        require(['css!css/metadataeditor.css']);
 
     }).on('pagebeforeshow', ".metadataEditorPage", function () {
 
