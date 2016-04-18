@@ -62,7 +62,7 @@ define(['dialogHelper', 'layoutManager', 'dialogText', 'html!./../prompt/icons.h
         if (raisedButtons) {
             html += '<paper-button raised class="btnSubmit"><iron-icon icon="dialog:check"></iron-icon><span>' + dialogText.get(buttonText) + '</span></paper-button>';
         } else {
-            html += '<div style="text-align:right;">';
+            html += '<div class="buttons" style="text-align:right;">';
             html += '<paper-button class="btnSubmit">' + dialogText.get(buttonText) + '</paper-button>';
             html += '</div>';
         }

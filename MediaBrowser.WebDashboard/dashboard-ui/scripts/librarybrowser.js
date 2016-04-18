@@ -769,7 +769,7 @@
                 }
 
                 if (item.CanDownload) {
-                    if (AppInfo.supportsDownloading) {
+                    if (appHost.supports('filedownload')) {
                         commands.push('download');
                     }
                 }
@@ -987,7 +987,8 @@
                                                 api_key: ApiClient.accessToken()
                                             });
 
-                                            fileDownloader([{
+                                            fileDownloader.download([
+                                            {
                                                 url: downloadHref,
                                                 itemId: itemId
                                             }]);

@@ -1383,8 +1383,6 @@ var AppInfo = {};
         // This doesn't perform well on iOS
         AppInfo.enableHeadRoom = !isIOS;
 
-        AppInfo.supportsDownloading = !(AppInfo.isNativeApp && isIOS);
-
         // This currently isn't working on android, unfortunately
         AppInfo.supportsFileInput = !(AppInfo.isNativeApp && isAndroid);
 
@@ -1696,8 +1694,10 @@ var AppInfo = {};
         // hack for an android test before browserInfo is loaded
         if (Dashboard.isRunningInCordova() && window.MainActivity) {
             paths.appStorage = "cordova/android/appstorage";
+            paths.apphost = "cordova/apphost";
         } else {
             paths.appStorage = apiClientBowerPath + "/appstorage";
+            paths.apphost = "components/apphost";
         }
 
         paths.playlistManager = "scripts/playlistmanager";
@@ -1974,10 +1974,12 @@ var AppInfo = {};
             define("loading", [embyWebComponentsBowerPath + "/loading/loading-lite"], returnFirstDependency);
         }
 
+        define("multi-download", [bowerPath + '/multi-download/browser'], returnFirstDependency);
+
         if (Dashboard.isRunningInCordova() && browser.android) {
             define("fileDownloader", ['cordova/android/filedownloader'], returnFirstDependency);
         } else {
-            define("fileDownloader", ['components/filedownloader'], returnFirstDependency);
+            define("fileDownloader", [embyWebComponentsBowerPath + '/filedownloader'], returnFirstDependency);
         }
     }
 

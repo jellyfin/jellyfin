@@ -1,4 +1,4 @@
-define([], function () {
+﻿define(['globalize'], function (globalize) {
 
     function parseISO8601Date(s, toLocal) {
 
@@ -94,11 +94,28 @@ define([], function () {
         return parts.join(':');
     }
 
+    var toLocaleTimeStringSupportsLocales = function toLocaleTimeStringSupportsLocales() {
+        try {
+            new Date().toLocaleTimeString('i');
+        } catch (e) {
+            return e.name === 'RangeError';
+        }
+        return false;
+    }();
+
     function getDisplayTime(date) {
-        var time = date.toLocaleTimeString().toLowerCase();
 
-        if (time.indexOf('am') != -1 || time.indexOf('pm') != -1) {
+        var currentLocale = globalize.getCurrentLocale();
 
+        var time = currentLocale && toLocaleTimeStringSupportsLocales ?
+            date.toLocaleTimeString(currentLocale) :
+            date.toLocaleTimeString();
+
+        var timeLower = time.toLowerCase();
+
+        if (timeLower.indexOf('am') != -1 || timeLower.indexOf('pm') != -1) {
+
+            time = timeLower;
             var hour = date.getHours() % 12;
             var suffix = date.getHours() > 11 ? 'pm' : 'am';
             if (!hour) {
