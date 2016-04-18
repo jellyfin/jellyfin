@@ -1316,6 +1316,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\layoutmanager.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\layoutmanager.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\objectassign.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\objectassign.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\qualityoptions.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\qualityoptions.js</Link>
     </BundleResource>
@@ -2524,6 +2527,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-input\test\letters-only.html">
       <Link>Resources\dashboard-ui\bower_components\iron-input\test\letters-only.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-location\.github\ISSUE_TEMPLATE.md">
+      <Link>Resources\dashboard-ui\bower_components\iron-location\.github\ISSUE_TEMPLATE.md</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-media-query\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\iron-media-query\.bower.json</Link>
