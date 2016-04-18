@@ -1954,7 +1954,7 @@ var AppInfo = {};
             define("loading", [embyWebComponentsBowerPath + "/loading/loading-lite"], returnFirstDependency);
         }
 
-        define("multi-download", [bowerPath + '/multi-download/browser'], returnFirstDependency);
+        define("multi-download", [embyWebComponentsBowerPath + '/multidownload'], returnFirstDependency);
 
         if (Dashboard.isRunningInCordova() && browser.android) {
             define("fileDownloader", ['cordova/android/filedownloader'], returnFirstDependency);
@@ -2910,6 +2910,8 @@ var AppInfo = {};
         deps.push('scripts/librarymenu');
 
         deps.push('css!css/card.css');
+
+        console.log('onAppReady - loading dependencies');
 
         require(deps, function (imageLoader, pageObjects, layoutManager) {
 
