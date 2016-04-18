@@ -1401,6 +1401,9 @@ var AppInfo = {};
     }
 
     function defineConnectionManager(connectionManager) {
+
+        window.ConnectionManager = connectionManager;
+
         define('connectionManager', [], function () {
             return connectionManager;
         });
@@ -1408,6 +1411,8 @@ var AppInfo = {};
 
     var localApiClient;
     function bindConnectionManagerEvents(connectionManager, events) {
+
+        Events.on(ConnectionManager, 'apiclientcreated', onApiClientCreated);
 
         connectionManager.currentApiClient = function () {
 
@@ -1435,42 +1440,51 @@ var AppInfo = {};
     //localStorage.clear();
     function createConnectionManager(credentialProviderFactory, capabilities) {
 
-        var credentialKey = Dashboard.isConnectMode() ? null : 'servercredentials4';
-        var credentialProvider = new credentialProviderFactory(credentialKey);
-
         return getSyncProfile().then(function (deviceProfile) {
 
-            capabilities.DeviceProfile = deviceProfile;
+            return new Promise(function (resolve, reject) {
 
-            window.ConnectionManager = new MediaBrowser.ConnectionManager(credentialProvider, AppInfo.appName, AppInfo.appVersion, AppInfo.deviceName, AppInfo.deviceId, capabilities, window.devicePixelRatio);
+                require(['connectionManagerFactory', 'apphost', 'credentialprovider', 'events'], function (connectionManagerExports, apphost, credentialProvider, events) {
 
-            defineConnectionManager(window.ConnectionManager);
-            bindConnectionManagerEvents(window.ConnectionManager, Events);
+                    window.MediaBrowser = Object.assign(window.MediaBrowser || {}, connectionManagerExports);
 
-            console.log('binding to apiclientcreated');
-            Events.on(ConnectionManager, 'apiclientcreated', onApiClientCreated);
+                    var credentialProviderInstance = new credentialProvider();
 
-            if (Dashboard.isConnectMode()) {
+                    apphost.appInfo().then(function (appInfo) {
 
-                return Promise.resolve();
+                        var capabilities = Dashboard.capabilities();
+                        capabilities.DeviceProfile = deviceProfile;
 
-            } else {
+                        connectionManager = new MediaBrowser.ConnectionManager(credentialProviderInstance, appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId, capabilities, window.devicePixelRatio);
 
-                console.log('loading ApiClient singleton');
+                        defineConnectionManager(connectionManager);
+                        bindConnectionManagerEvents(connectionManager, events);
 
-                return getRequirePromise(['apiclient']).then(function (apiClientFactory) {
+                        if (Dashboard.isConnectMode()) {
 
-                    console.log('creating ApiClient singleton');
+                            resolve();
 
-                    var apiClient = new apiClientFactory(Dashboard.serverAddress(), AppInfo.appName, AppInfo.appVersion, AppInfo.deviceName, AppInfo.deviceId, window.devicePixelRatio);
-                    apiClient.enableAutomaticNetworking = false;
-                    ConnectionManager.addApiClient(apiClient);
-                    require(['css!' + apiClient.getUrl('Branding/Css')]);
-                    window.ApiClient = apiClient;
-                    localApiClient = apiClient;
-                    console.log('loaded ApiClient singleton');
+                        } else {
+
+                            console.log('loading ApiClient singleton');
+
+                            return getRequirePromise(['apiclient']).then(function (apiClientFactory) {
+
+                                console.log('creating ApiClient singleton');
+
+                                var apiClient = new apiClientFactory(Dashboard.serverAddress(), appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId, window.devicePixelRatio);
+                                apiClient.enableAutomaticNetworking = false;
+                                connectionManager.addApiClient(apiClient);
+                                require(['css!' + apiClient.getUrl('Branding/Css')]);
+                                window.ApiClient = apiClient;
+                                localApiClient = apiClient;
+                                console.log('loaded ApiClient singleton');
+                                resolve();
+                            });
+                        } 
+                    });
                 });
-            }
+            });
         });
     }
 
@@ -1609,7 +1623,7 @@ var AppInfo = {};
             events: apiClientBowerPath + '/events',
             credentialprovider: apiClientBowerPath + '/credentials',
             apiclient: apiClientBowerPath + '/apiclient',
-            connectionmanagerfactory: apiClientBowerPath + '/connectionmanager',
+            connectionManagerFactory: bowerPath + '/emby-apiclient/connectionmanager',
             visibleinviewport: embyWebComponentsBowerPath + "/visibleinviewport",
             browserdeviceprofile: embyWebComponentsBowerPath + "/browserdeviceprofile",
             browser: embyWebComponentsBowerPath + "/browser",
@@ -1766,6 +1780,7 @@ var AppInfo = {};
         define('objectassign', [embyWebComponentsBowerPath + '/objectassign']);
         define('webcomponentsjs', [bowerPath + '/webcomponentsjs/webcomponents-lite.min.js']);
         define('native-promise-only', [bowerPath + '/native-promise-only/lib/npo.src']);
+        define("fingerprintjs2", [bowerPath + '/fingerprintjs2/fingerprint2'], returnFirstDependency);
 
         if (Dashboard.isRunningInCordova()) {
             define('registrationservices', ['cordova/registrationservices']);
@@ -2005,10 +2020,6 @@ var AppInfo = {};
 
             window.Events = events;
 
-            for (var i in hostingAppInfo) {
-                AppInfo[i] = hostingAppInfo[i];
-            }
-
             initAfterDependencies();
         });
     }
@@ -2040,9 +2051,6 @@ var AppInfo = {};
         }
 
         var deps = [];
-        deps.push('connectionmanagerfactory');
-        deps.push('credentialprovider');
-
         deps.push('scripts/extensions');
 
         if (!window.fetch) {
@@ -2053,14 +2061,9 @@ var AppInfo = {};
             deps.push('objectassign');
         }
 
-        require(deps, function (connectionManagerExports, credentialProviderFactory) {
+        require(deps, function () {
 
-            window.MediaBrowser = window.MediaBrowser || {};
-            for (var i in connectionManagerExports) {
-                MediaBrowser[i] = connectionManagerExports[i];
-            }
-
-            createConnectionManager(credentialProviderFactory, Dashboard.capabilities()).then(function () {
+            createConnectionManager().then(function () {
 
                 console.log('initAfterDependencies promises resolved');
                 MediaController.init();
@@ -2982,117 +2985,6 @@ var AppInfo = {};
         });
     }
 
-    function getCordovaHostingAppInfo() {
-
-        return new Promise(function (resolve, reject) {
-
-            document.addEventListener("deviceready", function () {
-
-                cordova.getAppVersion.getVersionNumber(function (appVersion) {
-
-                    require(['appStorage'], function (appStorage) {
-
-                        var name = browserInfo.android ? "Emby for Android Mobile" : (browserInfo.safari ? "Emby for iOS" : "Emby Mobile");
-
-                        // Remove special characters
-                        var cleanDeviceName = device.model.replace(/[^\w\s]/gi, '');
-
-                        var deviceId = null;
-
-                        if (window.MainActivity) {
-
-                            deviceId = appStorage.getItem('legacyDeviceId');
-
-                            if (!deviceId) {
-                                deviceId = MainActivity.getLegacyDeviceId();
-                                appStorage.setItem('legacyDeviceId', deviceId);
-                            }
-                        }
-
-                        resolve({
-                            deviceId: deviceId || device.uuid,
-                            deviceName: cleanDeviceName,
-                            appName: name,
-                            appVersion: appVersion
-                        });
-                    });
-
-                });
-
-            }, false);
-        });
-    }
-
-    function getWebHostingAppInfo() {
-
-        return new Promise(function (resolve, reject) {
-
-            require(['appStorage'], function (appStorage) {
-                var deviceName;
-
-                if (browserInfo.chrome) {
-                    deviceName = "Chrome";
-                } else if (browserInfo.edge) {
-                    deviceName = "Edge";
-                } else if (browserInfo.firefox) {
-                    deviceName = "Firefox";
-                } else if (browserInfo.msie) {
-                    deviceName = "Internet Explorer";
-                } else {
-                    deviceName = "Web Browser";
-                }
-
-                if (browserInfo.version) {
-                    deviceName += " " + browserInfo.version;
-                }
-
-                if (browserInfo.ipad) {
-                    deviceName += " Ipad";
-                } else if (browserInfo.iphone) {
-                    deviceName += " Iphone";
-                } else if (browserInfo.android) {
-                    deviceName += " Android";
-                }
-
-                function onDeviceAdAcquired(id) {
-
-                    resolve({
-                        deviceId: id,
-                        deviceName: deviceName,
-                        appName: "Emby Web Client",
-                        appVersion: window.dashboardVersion
-                    });
-                }
-
-                var deviceIdKey = '_deviceId1';
-                var deviceId = appStorage.getItem(deviceIdKey);
-
-                if (deviceId) {
-                    onDeviceAdAcquired(deviceId);
-                } else {
-                    require(['cryptojs-sha1'], function () {
-                        var keys = [];
-                        keys.push(navigator.userAgent);
-                        keys.push((navigator.cpuClass || ""));
-                        keys.push(new Date().getTime());
-                        var randomId = CryptoJS.SHA1(keys.join('|')).toString();
-                        appStorage.setItem(deviceIdKey, randomId);
-                        onDeviceAdAcquired(randomId);
-                    });
-                }
-            });
-        });
-    }
-
-    function getHostingAppInfo() {
-
-        if (Dashboard.isRunningInCordova()) {
-            return getCordovaHostingAppInfo();
-        }
-
-        return getWebHostingAppInfo();
-    }
-
     initRequire();
 
     function onWebComponentsReady() {
@@ -3114,7 +3006,7 @@ var AppInfo = {};
             setAppInfo();
             setDocumentClasses(browser);
 
-            getHostingAppInfo().then(init);
+            init();
         });
     }
 
