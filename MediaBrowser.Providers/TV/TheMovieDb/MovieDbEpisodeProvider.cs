@@ -64,6 +64,12 @@ namespace MediaBrowser.Providers.TV
         {
             var result = new MetadataResult<Episode>();
 
+            // Allowing this will dramatically increase scan times
+            if (info.IsMissingEpisode || info.IsVirtualUnaired)
+            {
+                return result;
+            }
+
             string seriesTmdbId;
             info.SeriesProviderIds.TryGetValue(MetadataProviders.Tmdb.ToString(), out seriesTmdbId);
 
