@@ -139,9 +139,9 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                if (state.VideoStream != null && IsH264(state.VideoStream) &&
-                    (string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase)))
+                if (state.VideoStream != null && IsH264(state.VideoStream) && string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(state.VideoStream.NalLengthSize))
                 {
+                    Logger.Debug("Enabling h264_mp4toannexb due to nal_length_size of {0}", state.VideoStream.NalLengthSize);
                     args += " -bsf:v h264_mp4toannexb";
                 }
 
