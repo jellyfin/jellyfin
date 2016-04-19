@@ -154,6 +154,16 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
 
                 profile.TranscodingProfiles.filter(function (p) {
 
+                    return p.Type == 'Video' && p.CopyTimestamps == true;
+
+                }).forEach(function (p) {
+
+                    // Vlc doesn't seem to handle this well
+                    p.CopyTimestamps = false;
+                });
+
+                profile.TranscodingProfiles.filter(function (p) {
+
                     return p.Type == 'Video' && p.VideoCodec == 'h264';
 
                 }).forEach(function (p) {
@@ -746,12 +756,8 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
 
                             } else {
 
-                                // Reports of stuttering with h264 stream copy in IE
-                                if (mediaUrl.indexOf('.mkv') == -1) {
-                                    mediaUrl += '&EnableAutoStreamCopy=false';
-                                }
-
                                 if (mediaUrl.toLowerCase().indexOf('copytimestamps=true') == -1) {
+                                    startPositionInSeekParam = 0;
                                     startTimeTicksOffset = startPosition || 0;
                                 }
 
