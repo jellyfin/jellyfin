@@ -103,25 +103,6 @@
             });
         }
 
-        function getStartTime(url) {
-
-            var src = url;
-
-            var parts = src.split('#');
-
-            if (parts.length > 1) {
-
-                parts = parts[parts.length - 1].split('=');
-
-                if (parts.length == 2) {
-
-                    return parseFloat(parts[1]);
-                }
-            }
-
-            return 0;
-        }
-
         function onOneVideoPlaying(e) {
 
             var element = e.target;
@@ -136,12 +117,11 @@
             }
 
             if (requiresSettingStartTimeOnStart) {
-                var src = (self.currentSrc() || '').toLowerCase();
 
-                var startPositionInSeekParam = getStartTime(src);
+                var startPositionInSeekParam = currentPlayOptions.startPositionInSeekParam;
 
                 // Appending #t=xxx to the query string doesn't seem to work with HLS
-                if (startPositionInSeekParam && src.indexOf('.m3u8') != -1) {
+                if (startPositionInSeekParam && currentSrc.indexOf('.m3u8') != -1) {
 
                     var delay = browserInfo.safari ? 2500 : 0;
                     if (delay) {
@@ -352,7 +332,6 @@
 
                 return;
             }
-
             elem.crossOrigin = getCrossOriginValue(mediaSource);
             var val = streamInfo.url;
 
@@ -361,7 +340,7 @@
             }
 
             requiresSettingStartTimeOnStart = false;
-            var startTime = getStartTime(val);
+            var startTime = streamInfo.startPositionInSeekParam;
             var playNow = false;
 
             if (elem.tagName.toLowerCase() == 'audio') {
