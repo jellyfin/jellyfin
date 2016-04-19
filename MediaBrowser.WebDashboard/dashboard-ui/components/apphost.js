@@ -114,19 +114,6 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
                 return appInfo;
             });
         },
-        appName: function () {
-            return 'Emby Mobile';
-        },
-        appVersion: function () {
-            return version;
-        },
-        deviceName: function () {
-            return getDeviceName();
-        },
-        deviceId: function () {
-
-            return getDeviceId();
-        },
         capabilities: getCapabilities
     };
 });
