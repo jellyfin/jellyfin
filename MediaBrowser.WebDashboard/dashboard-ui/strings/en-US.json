@@ -2337,5 +2337,7 @@
   "GuestUserNotFound": "User not found. Please ensure the name is correct and try again, or try entering their email address.",
   "MarkPlayed": "Mark played",
   "MarkUnplayed": "Mark unplayed",
-  "Yesterday": "Yesterday"
+  "Yesterday": "Yesterday",
+  "DownloadImagesInAdvanceWarning": "Downloading all images in advance will result in longer library scan times.",
+  "MetadataSettingChangeHelp": "Changing metadata settings will affect new content that is added going forward. To refresh existing content, open the detail screen and click the refresh button, or perform bulk refreshes using the metadata manager."
 }

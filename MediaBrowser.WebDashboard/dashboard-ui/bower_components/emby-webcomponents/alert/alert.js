@@ -15,11 +15,13 @@ define(['dialogHelper', 'layoutManager', 'dialogText', 'html!./../prompt/icons.h
 
         var backButton = false;
         var raisedButtons = false;
+        var isFullscreen = false;
 
         if (layoutManager.tv) {
             dialogOptions.size = 'fullscreen';
             backButton = true;
             raisedButtons = true;
+            isFullscreen = true;
         } else {
 
             dialogOptions.modal = false;
@@ -42,6 +44,9 @@ define(['dialogHelper', 'layoutManager', 'dialogText', 'html!./../prompt/icons.h
             html += '<h2>';
             html += options.title;
             html += '</h2>';
+        } else if (!isFullscreen) {
+            // Add a little space so it's not hugging the border
+            html += '<br/>';
         }
 
         var text = options.html || options.text;

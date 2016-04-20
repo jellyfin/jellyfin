@@ -1963,7 +1963,7 @@ var AppInfo = {};
         }
     }
 
-    function init(hostingAppInfo) {
+    function init() {
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
             define("nativedirectorychooser", ["cordova/android/nativedirectorychooser"]);

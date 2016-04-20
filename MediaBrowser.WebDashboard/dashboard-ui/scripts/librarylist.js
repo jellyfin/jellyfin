@@ -937,6 +937,7 @@
 
             showSelections(card);
 
+            // It won't have this if it's a hammer event
             if (e.stopPropagation) {
                 e.stopPropagation();
             }
@@ -944,7 +945,10 @@
             return false;
         }
         e.preventDefault();
-        e.stopPropagation();
+        // It won't have this if it's a hammer event
+        if (e.stopPropagation) {
+            e.stopPropagation();
+        }
         return false;
     }
 
