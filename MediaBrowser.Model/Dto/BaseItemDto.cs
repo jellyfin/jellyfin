@@ -26,6 +26,8 @@ namespace MediaBrowser.Model.Dto
         /// <value>The name.</value>
         public string Name { get; set; }
 
+        public string OriginalTitle { get; set; }
+
         /// <summary>
         /// Gets or sets the server identifier.
         /// </summary>
