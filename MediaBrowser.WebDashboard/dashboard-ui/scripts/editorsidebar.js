@@ -60,7 +60,7 @@
         var htmlName = "<div class='" + cssClass + "'>";
 
         if (item.LockData) {
-            htmlName += '<img src="css/images/editor/lock.png" />';
+            htmlName += '<iron-icon icon="lock" style="height:18px"></iron-icon>';
         }
 
         htmlName += name;
