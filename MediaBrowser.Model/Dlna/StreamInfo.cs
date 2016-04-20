@@ -31,7 +31,6 @@ namespace MediaBrowser.Model.Dlna
         public string VideoProfile { get; set; }
 
         public bool CopyTimestamps { get; set; }
-        public bool ForceLiveStream { get; set; }
         public string AudioCodec { get; set; }
 
         public int? AudioStreamIndex { get; set; }
@@ -205,7 +204,7 @@ namespace MediaBrowser.Model.Dlna
             list.Add(new NameValuePair("MaxWidth", item.MaxWidth.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxWidth.Value) : string.Empty));
             list.Add(new NameValuePair("MaxHeight", item.MaxHeight.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxHeight.Value) : string.Empty));
 
-            if (StringHelper.EqualsIgnoreCase(item.SubProtocol, "hls") && !item.ForceLiveStream)
+            if (StringHelper.EqualsIgnoreCase(item.SubProtocol, "hls"))
             {
                 list.Add(new NameValuePair("StartTimeTicks", string.Empty));
             }
@@ -235,7 +234,6 @@ namespace MediaBrowser.Model.Dlna
             }
 
             list.Add(new NameValuePair("CopyTimestamps", item.CopyTimestamps.ToString().ToLower()));
-            list.Add(new NameValuePair("ForceLiveStream", item.ForceLiveStream.ToString().ToLower()));
             list.Add(new NameValuePair("SubtitleMethod", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External ? item.SubtitleDeliveryMethod.ToString() : string.Empty));
        
             return list;
