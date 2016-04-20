@@ -169,11 +169,11 @@
                 break;
             case "StatusImage":
                 if (rRow.HasLockData) {
-                    html += '<img src="css/images/editor/lock.png"  style="width:18px"/>';
+                    html += '<iron-icon icon="lock" style="height:18px"></iron-icon>';
                 }
 
                 if (!rRow.HasLocalTrailer && rRow.RowType === "Movie") {
-                    html += '<img src="css/images/editor/missingtrailer.png" title="Missing local trailer."  style="width:18px"/>';
+                    html += '<iron-icon icon="videocam" title="Missing local trailer." style="height:18px"></iron-icon>';
                 }
 
                 if (!rRow.HasImageTagsPrimary) {
