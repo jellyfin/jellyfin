@@ -1,6 +1,4 @@
 {
-    "MarkPlayed": "Mark played",
-    "MarkUnplayed": "Mark unplayed",
     "LabelExit": "\u0418\u0437\u0445\u043e\u0434",
     "LabelVisitCommunity": "\u041f\u043e\u0441\u0435\u0442\u0438 \u043e\u0431\u0449\u0435\u0441\u0442\u0432\u043e\u0442\u043e",
     "LabelGithub": "Github",
@@ -2336,5 +2334,13 @@
     "OptionRequirePerfectSubtitleMatch": "Only download subtitles that are a perfect match for my video files",
     "ErrorAddingGuestAccount1": "There was an error adding the Emby Connect account. Has your guest created an Emby account? They can sign up at {0}.",
     "ErrorAddingGuestAccount2": "Please ensure your guest has completed activation by following the instructions in the email sent after creating the account. If they did not receive this email then please send an email to {0}, and include your email address as well as theirs.",
-    "GuestUserNotFound": "User not found. Please ensure the name is correct and try again, or try entering their email address."
+    "GuestUserNotFound": "User not found. Please ensure the name is correct and try again, or try entering their email address.",
+    "MarkPlayed": "Mark played",
+    "MarkUnplayed": "Mark unplayed",
+    "Yesterday": "Yesterday",
+    "DownloadImagesInAdvanceWarning": "Downloading all images in advance will result in longer library scan times.",
+    "MetadataSettingChangeHelp": "Changing metadata settings will affect new content that is added going forward. To refresh existing content, open the detail screen and click the refresh button, or perform bulk refreshes using the metadata manager.",
+    "LabelTitle": "Title:",
+    "LabelOriginalTitle": "Original title:",
+    "LabelSortTitle": "Sort title:"
 }

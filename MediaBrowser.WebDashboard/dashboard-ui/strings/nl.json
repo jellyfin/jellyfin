@@ -1,6 +1,4 @@
 {
-    "MarkPlayed": "Mark played",
-    "MarkUnplayed": "Mark unplayed",
     "LabelExit": "Afsluiten",
     "LabelVisitCommunity": "Bezoek Gemeenschap",
     "LabelGithub": "Github",
@@ -2336,5 +2334,13 @@
     "OptionRequirePerfectSubtitleMatch": "Downloaden alleen ondertitels die een perfecte match geven voor mijn video bestanden",
     "ErrorAddingGuestAccount1": "Er is een fout opgetreden bij het toevoegen van het Emby Connect-account. Heeft uw gast een Emby-account aangemaakt? Zij kunnen zich aanmelden op {0}.",
     "ErrorAddingGuestAccount2": "Zorg ervoor dat uw gasten activering voltooien door het volgen van de instructies in de verzonden e-mail nadat u de account hebt gemaakt. Als ze deze e-mail niet ontvangen stuur dan alstublieft een mailtje naar {0}, met daarin uw e-mailadres, als ook het e-mailadres van uw gast.",
-    "GuestUserNotFound": "Gebruiker is niet gevonden. Zorg er voor dat de naam klopt en probeer het opnieuw, of probeer hun e-mailadres in te voeren."
+    "GuestUserNotFound": "Gebruiker is niet gevonden. Zorg er voor dat de naam klopt en probeer het opnieuw, of probeer hun e-mailadres in te voeren.",
+    "MarkPlayed": "Mark played",
+    "MarkUnplayed": "Mark unplayed",
+    "Yesterday": "Yesterday",
+    "DownloadImagesInAdvanceWarning": "Downloading all images in advance will result in longer library scan times.",
+    "MetadataSettingChangeHelp": "Changing metadata settings will affect new content that is added going forward. To refresh existing content, open the detail screen and click the refresh button, or perform bulk refreshes using the metadata manager.",
+    "LabelTitle": "Title:",
+    "LabelOriginalTitle": "Original title:",
+    "LabelSortTitle": "Sort title:"
 }

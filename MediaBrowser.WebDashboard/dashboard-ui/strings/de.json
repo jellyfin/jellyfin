@@ -1,6 +1,4 @@
 {
-    "MarkPlayed": "Mark played",
-    "MarkUnplayed": "Mark unplayed",
     "LabelExit": "Beenden",
     "LabelVisitCommunity": "Besuche die Community",
     "LabelGithub": "Github",
@@ -2336,5 +2334,13 @@
     "OptionRequirePerfectSubtitleMatch": "Lade nur Untertitel die perfekt zu meinen Videos passen",
     "ErrorAddingGuestAccount1": "Ein Fehler trat beim Hinzuf\u00fcgen des Emby Connect Kontos auf. Hat einer Ihrer G\u00e4ste ein Emby Konto erstellt? Sie k\u00f6nnen sich hier anmelden {0}.",
     "ErrorAddingGuestAccount2": "Bitte stellen Sie sicher, dass Ihre G\u00e4ste die Aktivierung vervollst\u00e4ndigt haben, welche wir ihm in einer Email nach der Erstellung des Kontos zugesandt haben. Sollte diese Email nicht angekommen sein, senden Sie bitte eine Email an {0}. Bitte geben Sie Ihre Emailadresse und die des Gastes mit an.",
-    "GuestUserNotFound": "Benutzer nicht gefunden. Bitte stellen Sie die korrekte Schreibweise sicher und versuchen Sie es erneut. Sie k\u00f6nnen auch die Emailadresse verwenden."
+    "GuestUserNotFound": "Benutzer nicht gefunden. Bitte stellen Sie die korrekte Schreibweise sicher und versuchen Sie es erneut. Sie k\u00f6nnen auch die Emailadresse verwenden.",
+    "MarkPlayed": "Markiere \"als gesehen\"",
+    "MarkUnplayed": "Markiere \"als ungesehen\"",
+    "Yesterday": "Gestern",
+    "DownloadImagesInAdvanceWarning": "Das vorzeitige Herunterladen aller Bilder wird einen l\u00e4ngeren Bibliotheken Scan verursachen.",
+    "MetadataSettingChangeHelp": "Das Ver\u00e4ndern der Metadata-Einstellungen hat nur Einfluss auf neu hinzugef\u00fcgte Inhalte. Um eine Aktualisierung bereits hinzugef\u00fcgter Inhalte durchzuf\u00fchren, \u00f6ffnen Sie bitte die Detail Ansicht und klicken die Aktualisieren Schaltfl\u00e4che. Die Aktualisierung mehrerer Inhalte kann im Metadata Manager durchgef\u00fchrt werden.",
+    "LabelTitle": "Titel:",
+    "LabelOriginalTitle": "Original Titel:",
+    "LabelSortTitle": "Sortierungs Titel:"
 }
