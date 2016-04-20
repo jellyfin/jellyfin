@@ -74,7 +74,6 @@ namespace MediaBrowser.Providers.Omdb
                 episodeSearchInfo.SeriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out imdbId);
             }
 
-
             var name = searchInfo.Name;
             var year = searchInfo.Year;
 
@@ -107,6 +106,7 @@ namespace MediaBrowser.Providers.Omdb
             else
             {
                 url += "&i=" + imdbId;
+                isSearch = false;
             }
 
             if (type == "episode")
