@@ -762,7 +762,6 @@ namespace MediaBrowser.Providers.Manager
 
             var resultList = new List<RemoteSearchResult>();
             var foundProviderIds = new Dictionary<Tuple<string, string>, RemoteSearchResult>();
-            var foundTitleYearStrings = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var provider in providers)
             {
