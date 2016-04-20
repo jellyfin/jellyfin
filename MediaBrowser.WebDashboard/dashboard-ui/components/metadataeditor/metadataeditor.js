@@ -122,6 +122,7 @@
             var item = {
                 Id: currentItem.Id,
                 Name: $('#txtName', form).val(),
+                OriginalTitle: $('#txtOriginalName', form).val(),
                 ForcedSortName: $('#txtSortName', form).val(),
                 DisplayMediaType: $('#txtDisplayMediaType', form).val(),
                 CommunityRating: $('#txtCommunityRating', form).val(),
@@ -297,7 +298,7 @@
                 callback: function (id) {
 
                     if (id) {
-                    
+
                         Dashboard.showLoadingMsg();
                         // For now this is a hack
                         setTimeout(function () {
@@ -592,6 +593,12 @@
             $('#fldPath', context).hide();
         }
 
+        if (item.Type == "Series" || item.Type == "Movie" || item.Type == "Trailer") {
+            $('#fldOriginalName', context).show();
+        } else {
+            $('#fldOriginalName', context).hide();
+        }
+
         if (item.Type == "Series") {
             $('#fldSeriesRuntime', context).show();
         } else {
@@ -878,6 +885,7 @@
 
         $('#txtPath', context).val(item.Path || '');
         $('#txtName', context).val(item.Name || "");
+        $('#txtOriginalName', context).val(item.OriginalTitle || "");
         context.querySelector('#txtOverview').value = item.Overview || '';
         $('#txtShortOverview', context).val(item.ShortOverview || "");
         $('#txtTagline', context).val((item.Taglines && item.Taglines.length ? item.Taglines[0] : ''));

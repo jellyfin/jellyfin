@@ -18,8 +18,6 @@ namespace MediaBrowser.Controller.Entities.Movies
     {
         public List<Guid> SpecialFeatureIds { get; set; }
 
-        public string OriginalTitle { get; set; }
-
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }
         public List<string> ProductionLocations { get; set; }
