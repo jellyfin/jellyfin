@@ -2058,7 +2058,6 @@ namespace MediaBrowser.Api.Playback
                     if (state.VideoRequest != null)
                     {
                         state.VideoRequest.CopyTimestamps = transcodingProfile.CopyTimestamps;
-                        state.VideoRequest.ForceLiveStream = transcodingProfile.ForceLiveStream;
                     }
                 }
             }

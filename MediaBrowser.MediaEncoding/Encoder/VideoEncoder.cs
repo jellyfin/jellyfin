@@ -75,7 +75,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 if (state.VideoStream != null && IsH264(state.VideoStream) && string.Equals(state.Options.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase) && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
                 {
-                    Logger.Debug("Enabling h264_mp4toannexb due to nal_length_size of {0}", state.VideoStream.NalLengthSize);
                     args += " -bsf:v h264_mp4toannexb";
                 }
 

@@ -275,9 +275,7 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
             var currentSrc = (self.getCurrentSrc(mediaRenderer) || '').toLowerCase();
 
             if (currentSrc.indexOf('.m3u8') != -1) {
-                if (currentSrc.indexOf('forcelivestream=true') == -1) {
-                    return true;
-                }
+                return true;
             } else {
                 var duration = mediaRenderer.duration();
                 return duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
@@ -746,11 +744,6 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
                             mediaUrl = ApiClient.getUrl(mediaSource.TranscodingUrl);
 
                             if (mediaSource.TranscodingSubProtocol == 'hls') {
-
-                                if (mediaUrl.toLowerCase().indexOf('forcelivestream=true') != -1) {
-                                    startPositionInSeekParam = 0;
-                                    startTimeTicksOffset = startPosition || 0;
-                                }
 
                                 contentType = 'application/x-mpegURL';
 
