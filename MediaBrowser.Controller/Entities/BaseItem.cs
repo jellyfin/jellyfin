@@ -125,6 +125,8 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public string OriginalTitle { get; set; }
+
         /// <summary>
         /// Gets or sets the id.
         /// </summary>

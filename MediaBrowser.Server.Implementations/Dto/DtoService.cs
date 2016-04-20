@@ -1126,6 +1126,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.Overview = item.Overview;
             }
 
+            if (fields.Contains(ItemFields.OriginalTitle))
+            {
+                dto.OriginalTitle = item.OriginalTitle;
+            }
+
             if (fields.Contains(ItemFields.ShortOverview))
             {
                 var hasShortOverview = item as IHasShortOverview;
