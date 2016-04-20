@@ -479,7 +479,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
             writer.WriteElementString("dateadded", item.DateCreated.ToLocalTime().ToString(DateAddedFormat));
 
             writer.WriteElementString("title", item.Name ?? string.Empty);
-            writer.WriteElementString("originaltitle", item.Name ?? string.Empty);
 
             var hasOriginalTitle = item as IHasOriginalTitle;
             if (hasOriginalTitle != null)
