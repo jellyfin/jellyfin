@@ -31,7 +31,7 @@ namespace MediaBrowser.Providers.Movies
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _json;
 
-        private const string FanArtBaseUrl = "http://webservice.fanart.tv/v3/movies/{1}?api_key={0}";
+        private const string FanArtBaseUrl = "https://webservice.fanart.tv/v3/movies/{1}?api_key={0}";
         // &client_key=52c813aa7b8c8b3bb87f4797532a2f8c
 
         internal static FanartMovieImageProvider Current;
