@@ -443,6 +443,7 @@ namespace MediaBrowser.Model.Dlna
 
                 playlistItem.VideoCodec = transcodingProfile.VideoCodec;
                 playlistItem.CopyTimestamps = transcodingProfile.CopyTimestamps;
+                playlistItem.ForceLiveStream = transcodingProfile.ForceLiveStream;
                 playlistItem.SubProtocol = transcodingProfile.Protocol;
                 playlistItem.AudioStreamIndex = audioStreamIndex;
 

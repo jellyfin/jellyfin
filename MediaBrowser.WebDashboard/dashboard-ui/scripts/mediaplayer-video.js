@@ -975,13 +975,12 @@
 
                 self.createStreamInfo('Video', item, mediaSource, startPosition).then(function (streamInfo) {
 
-                    var urlLower = streamInfo.url.toLowerCase();
-                    var isHls = urlLower.indexOf('.m3u8') != -1;
+                    var isHls = streamInfo.url.toLowerCase().indexOf('.m3u8') != -1;
 
                     // Huge hack alert. Safari doesn't seem to like if the segments aren't available right away when playback starts
                     // This will start the transcoding process before actually feeding the video url into the player
                     // Edit: Also seeing stalls from hls.js
-                    if ((!mediaSource.RunTimeTicks) && isHls) {
+                    if (!mediaSource.RunTimeTicks && isHls) {
 
                         Dashboard.showLoadingMsg();
                         var hlsPlaylistUrl = streamInfo.url.replace('master.m3u8', 'live.m3u8');
@@ -991,11 +990,11 @@
                             url: hlsPlaylistUrl
 
                         }).then(function () {
+                            Dashboard.hideLoadingMsg();
                             streamInfo.url = hlsPlaylistUrl;
 
                             // add a delay to continue building up the buffer. without this we see failures in safari mobile
                             setTimeout(function () {
-                                Dashboard.hideLoadingMsg();
                                 self.playVideoInternal(item, mediaSource, startPosition, streamInfo, callback);
                             }, 2000);
 
