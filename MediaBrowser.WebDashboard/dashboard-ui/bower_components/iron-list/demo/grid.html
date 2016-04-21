@@ -1,0 +1,302 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<!doctype html>
+<html>
+<head>
+  <title>Grid layout using iron-list</title>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
+  <link rel="import" href="../../app-layout/app-header/app-header.html">
+  <link rel="import" href="../../app-layout/app-toolbar/app-toolbar.html">
+  <link rel="import" href="../../app-layout/app-scroll-effects/effects/waterfall.html">
+  <link rel="import" href="../../iron-ajax/iron-ajax.html">
+  <link rel="import" href="../../iron-image/iron-image.html">
+  <link rel="import" href="../../iron-scroll-threshold/iron-scroll-threshold.html">
+  <link rel="import" href="../../paper-spinner/paper-spinner.html">
+  <link rel="import" href="../iron-list.html">
+
+  <style>
+
+    body {
+      margin: 0;
+      background-color: #f6f6f6;
+      font-family: 'Roboto', 'Noto', sans-serif;
+    }
+
+  </style>
+
+</head>
+<body unresolved>
+
+  <dom-module id="x-grid">
+    <template>
+      <style>
+
+        :host {
+          display: block;
+          @apply(--paper-font-common-base);
+        }
+
+        app-header {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          z-index: 1;
+          background-color: #4285f4;
+          color: white;
+        }
+
+        iron-list {
+          margin-top: 90px;
+          padding-bottom: 16px;
+        }
+
+        .photoContent {
+          @apply(--layout);
+          background-color: #ddd;
+          position: relative;
+          width: 300px;
+          height: 300px;
+          margin: 8px;
+        }
+
+        .photoContent:hover .detail{
+          opacity: 1;
+        }
+
+        .photoContent > iron-image {
+          @apply(--layout-flex);
+        }
+
+        .photoContent > .detail {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.8) 100%);
+          color: white;
+          font-size: 20px;
+          font-weight: 100;
+          padding: 20px;
+          opacity: 0;
+          transition: opacity 0.1s;
+        }
+
+        .searchInput {
+          @apply(--layout-flex);
+          font-size: 20px;
+          padding: 10px 20px;
+          border: none;
+          background-color: rgba(255, 255, 255, 0.2);
+          color: white;
+          -webkit-appearance: none;
+          border-radius: 0px;
+        }
+
+        .searchInput:hover {
+          background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .searchInput:focus {
+          background-color: white;
+          outline: none;
+          color: black;
+        }
+
+        .loadingIndicator {
+          font-size: 16px;
+          text-align: center;
+          height: 60px;
+        }
+
+        .loadingIndicator paper-spinner {
+          margin-right: 20px;
+          vertical-align: middle;
+        }
+
+        @media (max-width: 800px) {
+          .photoContainer {
+            width: calc(50% - 16px);
+          }
+
+          .photoContent {
+            width: auto;
+          }
+        }
+
+        @media (max-width: 400px) {
+          iron-list {
+            margin-top: 72px;
+          }
+
+          .photoContainer {
+            width: 100%;
+          }
+
+          .photoContent > .detail {
+            opacity: 1;
+          }
+        }
+
+        ::-webkit-input-placeholder {
+          color: rgba(255, 255, 255, 0.5);
+        }
+
+        ::-moz-placeholder {
+          color: rgba(255, 255, 255, 0.5);
+        }
+
+        :-ms-input-placeholder {
+          color: rgba(255, 255, 255, 0.5);
+        }
+
+        ::-ms-input-placeholder {
+          color: rgba(255, 255, 255, 0.5);
+        }
+
+      </style>
+
+      <iron-ajax id="ajax" loading="{{loadingPhotos}}" url="[[_getAPIEndpoint(apiKey, searchText, page)]]"
+          handle-as="text" on-response="_didReceiveResponse"></iron-ajax>
+
+      <app-header fixed effects="waterfall">
+        <app-toolbar>
+          <input class="searchInput" type="search" placeholder="Search on Flikr" value="{{searchText::input}}">
+        </app-toolbar>
+      </app-header>
+
+      <iron-list items="[[photos]]" as="photo" scroll-target="document" grid>
+        <template>
+          <div class="photoContainer">
+            <div class="photoContent" tabindex$="[[tabIndex]]">
+              <iron-image sizing="cover"
+                  src="//farm[[photo.farm]].staticflickr.com/[[photo.server]]/[[photo.id]]_[[photo.secret]]_n.jpg">
+              </iron-image>
+              <div class="detail">[[photo.title]]</div>
+            </div>
+          </div>
+        </template>
+      </iron-list>
+
+      <div class="loadingIndicator" hidden$="[[!loadingPhotos]]">
+        <paper-spinner active$="[[loadingPhotos]]"></paper-spinner> Fetching photos for <b>[[searchText]]</b>
+      </div>
+
+      <!-- this element loads more photos when the user scrolls down and reached the lower threshold -->
+      <iron-scroll-threshold id="scrollTheshold"
+        lower-threshold="500"
+        on-lower-threshold="_loadMorePhotos"
+        scroll-target="document">
+      </iron-scroll-threshold>
+
+    </template>
+  </dom-module>
+
+  <script>
+
+    HTMLImports.whenReady(function() {
+
+      Polymer({
+
+        is: 'x-grid',
+
+        properties: {
+
+          apiKey: {
+            type: String,
+            value: 'c304f1096a06486d3c1e7ab271bf7f3f'
+          },
+
+          photos: Array,
+
+          perPage: {
+            type: Number,
+            value: 100
+          },
+
+          page: {
+            type: Number,
+            value: 1
+          },
+
+          searchText: {
+            type: String,
+            value: 'Big Sur'
+          },
+
+          loadingPhotos: Boolean
+        },
+
+        observers: [
+          '_resetPhotos(searchText)'
+        ],
+
+        _getAPIEndpoint: function(apiKey, searchText, page) {
+          return 'https://api.flickr.com/services/rest/?method=flickr.photos.search' +
+              '&api_key=' + apiKey +
+              '&safe_search=1&sort=interestingness-desc'+
+              '&text=' + encodeURIComponent(searchText) +
+              '&page=' + page +
+              '&format=json' +
+              '&per_page=' + this.perPage;
+        },
+
+        _didReceiveResponse: function(e) {
+          var payload = JSON.parse(e.detail.response.match('jsonFlickrApi\\((.*)\\)')[1]);
+
+          if (!payload || !payload.photos || !payload.photos.photo) {
+            return;
+          }
+
+          payload.photos.photo.forEach(function(photo) {
+            this.push('photos', photo);
+          }, this);
+
+          this.$.scrollTheshold.clearTriggers();
+        },
+
+        _loadMorePhotos: function() {
+          if (this.$.ajax.lastRequest) {
+            this.$.ajax.lastRequest.abort();
+          }
+
+          this.page++;
+          this.$.ajax.generateRequest();
+        },
+
+        _resetPhotos: function(searchText) {
+          this.page = 1;
+          this.photos = [];
+
+          if (searchText.trim() !== '') {
+            this.debounce('_loadPhotos', this._loadMorePhotos, 400);
+          }
+        }
+
+      });
+
+    });
+
+  </script>
+
+  <x-grid></x-grid>
+
+</body>
+</html>

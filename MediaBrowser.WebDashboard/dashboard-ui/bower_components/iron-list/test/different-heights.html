@@ -1,0 +1,125 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
+The complete set of authors may be found at http://polymer.github.io/AUTHORS
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>iron-list test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
+
+  <link rel="import" href="helpers.html">
+  <link rel="import" href="x-list.html">
+
+</head>
+<body>
+
+  <test-fixture id="trivialList">
+    <template>
+      <x-list></x-list>
+    </template>
+  </test-fixture>
+
+  <script>
+
+    suite('Different heights', function() {
+      var list, container;
+
+      setup(function() {
+        container = fixture('trivialList');
+        list = container.list;
+      });
+
+      test('render without gaps 1', function(done) {
+        list.items = [
+          {index: 0, height: 791},
+          {index: 1, height: 671}
+        ];
+
+        flush(function() {
+          list.push('items',
+            {index: 2, height: 251},
+            {index: 3, height: 191},
+            {index: 4, height: 151},
+            {index: 5, height: 191},
+            {index: 6, height: 51},
+            {index: 7, height: 51},
+            {index: 8, height: 51}
+          );
+
+          simulateScroll({
+            list: list,
+            contribution: 20,
+            target: 100000,
+            onScrollEnd: done,
+            onScroll: function() {
+              list.debounce('scroll', function() {
+                assert.isTrue(isFullOfItems(list));
+              });
+            }
+          });
+        });
+      });
+
+       test('render without gaps 2', function(done) {
+        var height = 2, items = [];
+
+        while (items.length < 15) {
+          items.push({height: height});
+          height *= 1.5;
+        }
+        list.items = items;
+
+        flush(function() {
+          simulateScroll({
+            list: list,
+            contribution: 20,
+            target: 100000,
+            onScrollEnd: done,
+            onScroll: function() {
+              list.debounce('scroll', function() {
+                assert.equal(isFullOfItems(list), true);
+              });
+            }
+          });
+        });
+      });
+
+      test('render without gaps 3', function(done) {
+        var heights = [20, 100, 140, 117, 800, 50, 15, 80, 90, 255, 20, 15, 19, 250, 314];
+
+        list.items = heights.map(function(height) {
+          return {height: height};
+        });
+
+        flush(function() {
+          simulateScroll({
+            list: list,
+            contribution: 20,
+            target: 100000,
+            onScrollEnd: done,
+            onScroll: function() {
+              list.debounce('scroll', function() {
+                assert.isTrue(isFullOfItems(list));
+              });
+            }
+          });
+        });
+      });
+
+    });
+
+  </script>
+
+</body>
+</html>

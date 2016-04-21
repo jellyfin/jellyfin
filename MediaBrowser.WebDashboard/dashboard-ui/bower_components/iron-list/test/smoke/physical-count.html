@@ -1,0 +1,296 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<!doctype html>
+<html>
+<head>
+
+  <title>physical count</title>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <link rel="import" href="../../../polymer/polymer.html">
+  <link rel="import" href="../../../paper-button/paper-button.html">
+
+  <link rel="import" href="../../iron-list.html">
+
+  <style is="custom-style">
+    body {
+      @apply(--layout-fullbleed);
+    }
+
+    .item {
+      background-color: green;
+      border-bottom: 1px solid white;
+      overflow:hidden;
+    }
+
+    .wrapper {
+      position: relative;
+      margin: 10px;
+    }
+
+    .wrapper .count {
+      background-color: red;
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: 1;
+    }
+    .wrapper .stats {
+      background-color: red;
+      position: absolute;
+      top: 20px;
+      right: 0;
+      z-index: 1;
+    }
+
+    .wrapper iron-list {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+
+    .group {
+      float: left;
+    }
+
+  </style>
+
+</head>
+<body unresolved>
+
+  <template is="dom-bind">
+
+    <h1>Physical count</h1>
+    <p>In red you can see the last physical count values</p>
+    <div class="group">
+      <p>100 items, 50px tall</p>
+      <div class="wrapper" style="width: 300px; height: 300px;">
+        <iron-list id="list1" as="item">
+          <template>
+            <div class="item" style$="[[_getStyle(item)]]"><span>[[index]]</span> height: <span>[[item]]</span>
+            <div>
+              <paper-button raised>Test</paper-button>
+              <paper-button raised>Test</paper-button>
+              <paper-button raised>Test</paper-button>
+              <paper-button raised>Test</paper-button>
+            </div>
+            </div>
+          </template>
+        </iron-list>
+      </div>
+    </div>
+<!--
+  <div class="group">
+    <p>100 items, 300px tall</p>
+    <div class="wrapper" style="width: 300px; height: 300px;">
+      <iron-list id="list2" as="item">
+        <template>
+          <div class="item" style$="[[_getStyle(item)]]">
+            <span>[[index]]</span> height: <span>[[item]]</span>
+          </div>
+        </template>
+      </iron-list>
+    </div>
+</div>
+<div class="group">
+    <p>1000 items, 2px tall</p>
+    <div class="wrapper" style="width: 300px; height: 300px;">
+      <iron-list id="list3" as="item">
+        <template>
+          <div class="item" style$="[[_getStyle(item)]]">
+            <span>[[index]]</span> height: <span>[[item]]</span>
+          </div>
+        </template>
+      </iron-list>
+    </div>
+</div>
+<div class="group">
+    <p>First two items: 2px tall, next 100 items are 300px tall</p>
+    <div class="wrapper" style="width: 300px; height: 300px;">
+      <iron-list id="list4" as="item">
+        <template>
+          <div class="item" style$="[[_getStyle(item)]]">
+            <span>[[index]]</span> height: <span>[[item]]</span>
+          </div>
+        </template>
+      </iron-list>
+    </div>
+</div>
+<div class="group">
+    <p>100 items, 600px tall</p>
+    <div class="wrapper" style="width: 300px; height: 300px;">
+      <iron-list id="list5" as="item">
+        <template>
+          <div class="item" style$="[[_getStyle(item)]]">
+            <span>[[index]]</span> height: <span>[[item]]</span>
+          </div>
+        </template>
+      </iron-list>
+    </div>
+</div>
+<div class="group">
+    <p>1 item that is 2px tall, <br /> and then add 100 items async with different heights </p>
+    <div class="wrapper" style="width: 300px; height: 300px;">
+      <iron-list id="list6" as="item">
+        <template>
+          <div class="item" style$="[[_getStyle(item)]]">
+            <span>[[index]]</span> height: <span>[[item]]</span>
+          </div>
+        </template>
+      </iron-list>
+    </div>
+</div>
+
+<div class="group">
+    <p>200 items with random heights</p>
+    <div class="wrapper" style="width: 300px; height: 300px;">
+      <iron-list id="list7" as="item">
+        <template>
+          <div class="item" style$="[[_getStyle(item)]]">
+            <span>[[index]]</span> height: <span>[[item]]</span>
+          </div>
+        </template>
+      </iron-list>
+    </div>
+</div>
+
+
+<div class="group">
+    <p>200 items async with random heights</p>
+    <div class="wrapper" style="width: 300px; height: 300px;">
+      <iron-list id="list8" as="item">
+        <template>
+          <div class="item" style$="[[_getStyle(item)]]">
+            <span>[[index]]</span> height: <span>[[item]]</span>
+          </div>
+        </template>
+      </iron-list>
+    </div>
+</div> -->
+</template>
+
+  <script>
+    HTMLImports.whenReady(function() {
+      function observePhysicalCount(list) {
+        var div = document.createElement('div');
+        var stats = document.createElement('div');
+        var values = [];
+        var timer;
+        div.classList.add('count');
+        stats.classList.add('stats');
+
+        Object.observe(list, function(changes) {
+          var physicalCount = list._physicalCount;
+          changes.forEach(function(change) {
+
+            if (change.name === '_physicalCount') {
+              values.pop();
+              values.push(change.oldValue);
+              values.push(list._physicalCount);
+              div.innerText = values.join(' -> ');
+            } else if (change.name === '_lastPage') {
+              if (list._lastPage === 0) {
+                timer = Date.now();
+              } else if (list._lastPage === 1) {
+                stats.innerText = 'First paint: ' + (Date.now() - timer) + 'ms';
+              } else if (list._lastPage === list._maxPages) {
+                stats.innerText = stats.innerText  + ' total: ' + (Date.now() - timer) + 'ms';
+              }
+            }
+          });
+        });
+
+        values.push(list._physicalCount);
+        div.innerText = list._physicalCount;
+        stats.innerText = 'Waiting for stats...';
+
+        Polymer.dom(list.parentNode).appendChild(div);
+        Polymer.dom(list.parentNode).appendChild(stats);
+      }
+
+      function arrayFill(size, value) {
+        return (new Array(size)).fill(value, 0, size);
+      }
+
+      function randomArrayFill(size, min, max) {
+        var a = [];
+        while (a.length < size) {
+          a.push(parseInt(Math.random() * (max-min+1)) + min);
+        }
+        return a;
+      }
+
+      function asyncJob(fn) {
+        if (fn()) {
+          setTimeout(asyncJob.bind(null, fn), 1);
+        }
+      }
+
+      document.querySelector('template[is=dom-bind]')._getStyle = function(item) {
+        return 'height:' + item + 'px; ';
+      };
+
+      setTimeout(function() {
+        var list1 = document.querySelector('#list1');
+        var list2 = document.querySelector('#list2');
+        var list3 = document.querySelector('#list3');
+        var list4 = document.querySelector('#list4');
+        var list5 = document.querySelector('#list5');
+        var list6 = document.querySelector('#list6');
+        var list7 = document.querySelector('#list7');
+        var list8 = document.querySelector('#list8');
+        var items = randomArrayFill(100, 1, 200);
+
+        list1.items = arrayFill(100, 50);
+        observePhysicalCount(list1);
+
+        // list2.items = arrayFill(100, 300);
+        // list3.items = arrayFill(1000, 2);
+        // list4.items = arrayFill(2, 2).concat(arrayFill(100, 300));
+        // list5.items = arrayFill(100, 600);
+        // list6.items = [2];
+
+        // setTimeout(function() {
+        //   list6.push.apply(list6,
+        //     ['items'].concat([512, 256, 128, 64, 16, 16, 16, 16, 16, 16, 8, 4])
+        //   );
+        // }, 100);
+
+        // list7.items = randomArrayFill(100, 1, 200);
+        // list8.items = [];
+
+        // asyncJob(function() {
+        //   list8.push('items', items.pop());
+        //   return items.length > 0;
+        // });
+
+        // observePhysicalCount(list2);
+        // observePhysicalCount(list3);
+        // observePhysicalCount(list4);
+        // observePhysicalCount(list5);
+        // observePhysicalCount(list6);
+        // observePhysicalCount(list7);
+        // observePhysicalCount(list8);
+
+      }, 0);
+
+    });
+  </script>
+</body>
+</html>
