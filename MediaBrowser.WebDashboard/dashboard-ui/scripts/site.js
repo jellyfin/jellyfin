@@ -1741,6 +1741,8 @@ var AppInfo = {};
         define("fade-out-animation", ["html!" + bowerPath + "/neon-animation/animations/fade-out-animation.html"]);
         define("scale-up-animation", ["html!" + bowerPath + "/neon-animation/animations/scale-up-animation.html"]);
         define("paper-fab", ["html!" + bowerPath + "/paper-fab/paper-fab.html"]);
+        define("iron-list", ["html!" + bowerPath + "/iron-list/iron-list.html"]);
+        define("iron-scroll-threshold", ["html!" + bowerPath + "/iron-scroll-threshold/iron-scroll-threshold.html"]);
         define("paper-progress", ["html!" + bowerPath + "/paper-progress/paper-progress.html"]);
         define("paper-input", ["html!" + bowerPath + "/paper-input/paper-input.html"]);
         define("paper-icon-item", ["html!" + bowerPath + "/paper-item/paper-icon-item.html"]);
