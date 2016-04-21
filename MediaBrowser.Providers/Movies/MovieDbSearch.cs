@@ -18,7 +18,7 @@ namespace MediaBrowser.Providers.Movies
     public class MovieDbSearch
     {
         private static readonly CultureInfo EnUs = new CultureInfo("en-US");
-        private const string Search3 = @"http://api.themoviedb.org/3/search/{3}?api_key={1}&query={0}&language={2}";
+        private const string Search3 = @"https://api.themoviedb.org/3/search/{3}?api_key={1}&query={0}&language={2}";
 
         internal static string ApiKey = "f6bd687ffa63cd282b6ff2c6877f2669";
         internal static string AcceptHeader = "application/json,image/*";
