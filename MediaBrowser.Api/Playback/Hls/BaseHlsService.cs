@@ -282,19 +282,12 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var isLiveStream = (state.RunTimeTicks ?? 0) == 0;
 
-            return isLiveStream;
-        }
-
-        protected override bool CanStreamCopyAudio(StreamState state, List<string> supportedAudioCodecs)
-        {
-            var isLiveStream = IsLiveStream(state);
-
-            if (!isLiveStream)
+            if (state.VideoRequest.ForceLiveStream)
             {
-                return false;
+                return true;
             }
 
-            return base.CanStreamCopyAudio(state, supportedAudioCodecs);
+            return isLiveStream;
         }
     }
 }
