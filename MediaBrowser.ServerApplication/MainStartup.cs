@@ -555,9 +555,10 @@ namespace MediaBrowser.ServerApplication
 
         private static void ShutdownWindowsApplication()
         {
-            _logger.Info("Calling Application.Exit");
-            Application.Exit();
+            //_logger.Info("Calling Application.Exit");
+            //Application.Exit();
 
+            _logger.Info("Calling Environment.Exit");
             Environment.Exit(0);
 
             _logger.Info("Calling ApplicationTaskCompletionSource.SetResult");
