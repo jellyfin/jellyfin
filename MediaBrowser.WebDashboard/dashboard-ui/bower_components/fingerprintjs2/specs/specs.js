@@ -97,6 +97,16 @@ describe("Fingerprint2", function () {
           done();
         });
       });
+
+      it("does not use IE plugins info when excluded", function (done) {
+        var fp2 = new Fingerprint2({excludeIEPlugins: true});
+        spyOn(fp2, "getIEPlugins");
+        fp2.get(function(result) {
+          expect(fp2.getIEPlugins).not.toHaveBeenCalled();
+          done();
+        });
+      });
+
     });
 
     describe("returns components", function () {
