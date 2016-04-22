@@ -304,7 +304,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
                 if (otherDuplicatePaths.Count > 0)
                 {
-                    var msg = string.Format("File '{0}' already exists as '{1}', stopping organization", sourcePath, otherDuplicatePaths);
+                    var msg = string.Format("File '{0}' already exists as these:'{1}'. Stopping organization", sourcePath, string.Join("', '", otherDuplicatePaths));
                     _logger.Info(msg);
                     result.Status = FileSortingStatus.SkippedExisting;
                     result.StatusMessage = msg;
