@@ -1,6 +1,4 @@
 {
-    "MarkPlayed": "Mark played",
-    "MarkUnplayed": "Mark unplayed",
     "LabelExit": "Zav\u0159\u00edt",
     "LabelVisitCommunity": "Nav\u0161t\u00edvit komunitu",
     "LabelGithub": "Github",
@@ -2336,5 +2334,13 @@
     "OptionRequirePerfectSubtitleMatch": "Stahovat jen titulky, kter\u00e9 perfektn\u011b sed\u00ed k m\u00fdm video soubor\u016fm.",
     "ErrorAddingGuestAccount1": "Do\u0161lo k chyb\u011b p\u0159i p\u0159id\u00e1v\u00e1n\u00ed \u00fa\u010dtu Emby Connect. M\u00e1 v\u00e1\u0161 nov\u00fd u\u017eivatel vytvo\u0159en\u00fd \u00fa\u010det Emby? U\u017eivatel\u00e9 se mohou p\u0159ihl\u00e1sit na {0}.",
     "ErrorAddingGuestAccount2": "Ujist\u011bte se pros\u00edm, \u017ee v\u00e1\u0161 nov\u00fd u\u017eivatel dokon\u010dil aktivaci dle pokyn\u016f z e-mailu zaslan\u00e9m po vytvo\u0159en\u00ed \u00fa\u010dtu. Jestli\u017ee nedostali takov\u00fd e-mail, pak pros\u00edm po\u0161lete email na {0}, a p\u0159ipojte svoj\u00ed e-mailovou adresu, stejn\u011b jako jejich.",
-    "GuestUserNotFound": "U\u017eivatel nenalezen. Pros\u00edm, ujist\u011bte se, \u017ee n\u00e1zev je spr\u00e1vn\u00fd a zkuste to znovu, nebo zkuste zadat jejich e-mailovou adresu."
+    "GuestUserNotFound": "U\u017eivatel nenalezen. Pros\u00edm, ujist\u011bte se, \u017ee n\u00e1zev je spr\u00e1vn\u00fd a zkuste to znovu, nebo zkuste zadat jejich e-mailovou adresu.",
+    "MarkPlayed": "Mark played",
+    "MarkUnplayed": "Mark unplayed",
+    "Yesterday": "Yesterday",
+    "DownloadImagesInAdvanceWarning": "Downloading all images in advance will result in longer library scan times.",
+    "MetadataSettingChangeHelp": "Changing metadata settings will affect new content that is added going forward. To refresh existing content, open the detail screen and click the refresh button, or perform bulk refreshes using the metadata manager.",
+    "LabelTitle": "Title:",
+    "LabelOriginalTitle": "Original title:",
+    "LabelSortTitle": "Sort title:"
 }

@@ -31,6 +31,8 @@ mc.on('rotate', function(e) {
 });
 ```
 
+An advanced demo is available here: [http://codepen.io/runspired/full/ZQBGWd/](http://codepen.io/runspired/full/ZQBGWd/)
+
 
 ## Contributing
 

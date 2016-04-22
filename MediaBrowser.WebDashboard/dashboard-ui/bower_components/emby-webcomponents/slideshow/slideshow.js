@@ -226,9 +226,10 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
 
             return getSwiperSlideHtmlFromSlide({
                 imageUrl: getImgUrl(item),
-                originalImage: getImgUrl(item, true)
+                originalImage: getImgUrl(item, true),
                 //title: item.Name,
                 //description: item.Overview
+                Id: item.Id
             });
         }
 
@@ -253,7 +254,7 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
         function getSwiperSlideHtmlFromSlide(item) {
 
             var html = '';
-            html += '<div class="swiper-slide" data-original="' + item.originalImage + '">';
+            html += '<div class="swiper-slide" data-original="' + item.originalImage + '" data-itemid="' + item.Id + '">';
             html += '<img data-src="' + item.imageUrl + '" class="swiper-lazy">';
             html += '<paper-spinner></paper-spinner>';
             if (item.title || item.subtitle) {
@@ -304,6 +305,16 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
             }
         }
 
+        function getCurrentItemId() {
+
+
+            if (swiperInstance) {
+                return document.querySelector('.swiper-slide-active').getAttribute('data-itemid');
+            } else {
+                return null;
+            }
+        }
+
         function getCurrentImageUrl() {
 
 
@@ -317,11 +328,13 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
         function download() {
 
             var url = getCurrentImageUrl();
-
+            var itemId = getCurrentItemId();
+            alert(itemId);
             require(['fileDownloader'], function (fileDownloader) {
                 fileDownloader.download([
                 {
-                    url: url
+                    url: url,
+                    itemId: itemId
                 }]);
             });
         }

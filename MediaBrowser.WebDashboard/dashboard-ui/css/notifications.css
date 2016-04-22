@@ -1,11 +1,9 @@
 ﻿.btnNotifications {
     text-decoration: none !important;
-    padding: 0 !important;
     outline: 0 !important;
-    margin: 0 !important;
-    float: right;
     vertical-align: middle;
-    min-width: 4.1em;
+    width: auto;
+    margin: 0 .7em;
 }
 
 .btnNotificationsInner {

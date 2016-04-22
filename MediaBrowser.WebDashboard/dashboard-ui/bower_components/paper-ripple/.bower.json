@@ -32,14 +32,14 @@
     "iron-test-helpers": "PolymerElements/iron-test-helpers#^1.0.0"
   },
   "ignore": [],
-  "homepage": "https://github.com/polymerelements/paper-ripple",
+  "homepage": "https://github.com/PolymerElements/paper-ripple",
   "_release": "1.0.5",
   "_resolution": {
     "type": "version",
     "tag": "v1.0.5",
     "commit": "d72e7a9a8ab518b901ed18dde492df3b87a93be5"
   },
-  "_source": "git://github.com/polymerelements/paper-ripple.git",
+  "_source": "git://github.com/PolymerElements/paper-ripple.git",
   "_target": "^1.0.0",
-  "_originalSource": "polymerelements/paper-ripple"
+  "_originalSource": "PolymerElements/paper-ripple"
 }

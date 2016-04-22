@@ -1,6 +1,4 @@
 {
-    "MarkPlayed": "Mark played",
-    "MarkUnplayed": "Mark unplayed",
     "LabelExit": "Quitter",
     "LabelVisitCommunity": "Visiter la Communaut\u00e9",
     "LabelGithub": "Github",
@@ -829,7 +827,7 @@
     "OptionReportByteRangeSeekingWhenTranscodingHelp": "Cette option est requise pour certains p\u00e9riph\u00e9riques qui ne sont pas capables d'effectuer une recherche d'octets correctement.",
     "HeaderDownloadSubtitlesFor": "T\u00e9l\u00e9charger les sous-titres pour :",
     "MessageNoChapterProviders": "Installer un plugin de fournisseur de chapitre tel que ChapterDb pour activer les options suppl\u00e9mentaires de chapitre.",
-    "LabelSkipIfGraphicalSubsPresent": "Skip if the video already contains embedded subtitles",
+    "LabelSkipIfGraphicalSubsPresent": "Sauter si la vid\u00e9o contient d\u00e9j\u00e0 des sous-titres.",
     "LabelSkipIfGraphicalSubsPresentHelp": "Conserver les versions textes des sous-titres permettra une diffusion plus efficace et diminuera la probabilit\u00e9 d'un transcodage de la vid\u00e9o.",
     "TabSubtitles": "Sous-titres",
     "TabChapters": "Chapitres",
@@ -2333,8 +2331,16 @@
     "ConfigureDateAdded": "Configure how date added is determined in the Emby Server dashboard under Library settings",
     "LabelAllowHWTranscoding": "Allow hardware transcoding",
     "AllowHWTranscodingHelp": "If enabled, allow the tuner to transcode streams on the fly. This may help reduce transcoding required by Emby Server.",
-    "OptionRequirePerfectSubtitleMatch": "Only download subtitles that are a perfect match for my video files",
+    "OptionRequirePerfectSubtitleMatch": "T\u00e9l\u00e9charger uniquement les sous-titres qui correspondent parfaitement \u00e0 mes fichiers vid\u00e9o.",
     "ErrorAddingGuestAccount1": "There was an error adding the Emby Connect account. Has your guest created an Emby account? They can sign up at {0}.",
     "ErrorAddingGuestAccount2": "Please ensure your guest has completed activation by following the instructions in the email sent after creating the account. If they did not receive this email then please send an email to {0}, and include your email address as well as theirs.",
-    "GuestUserNotFound": "User not found. Please ensure the name is correct and try again, or try entering their email address."
+    "GuestUserNotFound": "User not found. Please ensure the name is correct and try again, or try entering their email address.",
+    "MarkPlayed": "Mark played",
+    "MarkUnplayed": "Mark unplayed",
+    "Yesterday": "Yesterday",
+    "DownloadImagesInAdvanceWarning": "Downloading all images in advance will result in longer library scan times.",
+    "MetadataSettingChangeHelp": "Changing metadata settings will affect new content that is added going forward. To refresh existing content, open the detail screen and click the refresh button, or perform bulk refreshes using the metadata manager.",
+    "LabelTitle": "Title:",
+    "LabelOriginalTitle": "Original title:",
+    "LabelSortTitle": "Sort title:"
 }

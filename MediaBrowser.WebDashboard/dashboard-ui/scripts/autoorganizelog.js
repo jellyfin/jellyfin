@@ -11,23 +11,22 @@
     function showStatusMessage(id) {
 
         var item = currentResult.Items.filter(function (i) {
-            return i.Id == id;
 
+            return i.Id == id;
         })[0];
 
         Dashboard.alert({
 
             title: getStatusText(item, false),
             message: item.StatusMessage
-
         });
     }
 
     function deleteOriginalFile(page, id) {
 
         var item = currentResult.Items.filter(function (i) {
-            return i.Id == id;
 
+            return i.Id == id;
         })[0];
 
         var message = Globalize.translate('MessageFileWillBeDeleted') + '<br/><br/>' + item.OriginalPath + '<br/><br/>' + Globalize.translate('MessageSureYouWishToProceed');
@@ -67,8 +66,8 @@
     function organizeFile(page, id) {
 
         var item = currentResult.Items.filter(function (i) {
-            return i.Id == id;
 
+            return i.Id == id;
         })[0];
 
         if (!item.TargetPath) {
@@ -118,7 +117,6 @@
 
             Dashboard.hideLoadingMsg();
         }, onApiFailure);
-
     }
 
     function getStatusText(item, enhance) {
@@ -148,7 +146,6 @@
                 return '<span data-resultid="' + item.Id + '" style="color:' + color + ';">' + status + '</span>';
             }
         }
-
 
         return status;
     }
@@ -193,7 +190,6 @@
 
             html += '<td class="organizerButtonCell">';
 
-
             if (item.Status != 'Success') {
                 html += '<paper-icon-button data-resultid="' + item.Id + '" icon="folder" class="btnProcessResult organizerButton" title="' + Globalize.translate('ButtonOrganizeFile') + '"></paper-icon-button>';
                 html += '<paper-icon-button data-resultid="' + item.Id + '" icon="delete" class="btnDeleteResult organizerButton" title="' + Globalize.translate('ButtonDeleteFile') + '"></paper-icon-button>';
@@ -206,7 +202,7 @@
             return html;
         }).join('');
 
-        var elem = $('.resultBody', page).html(rows).parents('.tblOrganizationResults').table("refresh").trigger('create');
+        var elem = $('.resultBody', page).html(rows).parents('.tblOrganizationResults').table('refresh').trigger('create');
 
         $('.btnShowStatusMessage', elem).on('click', function () {
 
@@ -240,17 +236,21 @@
         $(page)[0].querySelector('.listTopPaging').innerHTML = pagingHtml;
 
         if (result.TotalRecordCount > query.Limit && result.TotalRecordCount > 50) {
+
             $('.listBottomPaging', page).html(pagingHtml).trigger('create');
         } else {
+
             $('.listBottomPaging', page).empty();
         }
 
         $('.btnNextPage', page).on('click', function () {
+
             query.StartIndex += query.Limit;
             reloadItems(page);
         });
 
         $('.btnPreviousPage', page).on('click', function () {
+
             query.StartIndex -= query.Limit;
             reloadItems(page);
         });
@@ -276,19 +276,18 @@
 
         Dashboard.hideLoadingMsg();
 
-        var page = $.mobile.activePage;
-        $('.episodeCorrectionPopup', page).popup("close");
-
         if (e.status == 0) {
+
             Dashboard.alert({
                 title: 'Auto-Organize',
                 message: 'The operation is going to take a little longer. The view will be updated on completion.'
             });
         }
         else {
+
             Dashboard.alert({
                 title: Globalize.translate('AutoOrganizeError'),
-                message: Globalize.translate('ErrorOrganizingFileWithErrorCode', e.getResponseHeader("X-Application-Error-Code"))
+                message: Globalize.translate('ErrorOrganizingFileWithErrorCode', e.headers.get('X-Application-Error-Code'))
             });
         }
     }
@@ -318,10 +317,9 @@
             ApiClient.clearOrganizationLog().then(function () {
                 reloadItems(page);
             }, onApiFailure);
-
         });
 
-    }).on('pageshow', "#libraryFileOrganizerLogPage", function () {
+    }).on('pageshow', '#libraryFileOrganizerLogPage', function () {
 
         LibraryMenu.setTabs('autoorganize', 0, getTabs);
 
@@ -337,9 +335,9 @@
             taskKey: 'AutoOrganize'
         });
 
-        Events.on(ApiClient, "websocketmessage", onWebSocketMessage);
+        Events.on(ApiClient, 'websocketmessage', onWebSocketMessage);
 
-    }).on('pagebeforehide', "#libraryFileOrganizerLogPage", function () {
+    }).on('pagebeforehide', '#libraryFileOrganizerLogPage', function () {
 
         var page = this;
 
@@ -350,7 +348,7 @@
             mode: 'off'
         });
 
-        Events.off(ApiClient, "websocketmessage", onWebSocketMessage);
+        Events.off(ApiClient, 'websocketmessage', onWebSocketMessage);
     });
 
 });

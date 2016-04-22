@@ -69,7 +69,19 @@ namespace MediaBrowser.Api.Playback
 
         public List<string> PlayableStreamFileNames { get; set; }
 
-        public int SegmentLength = 3;
+        public int SegmentLength
+        {
+            get
+            {
+                if (string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                {
+                    return 10;
+                }
+
+                return 3;
+            }
+        }
+
         public int HlsListSize
         {
             get

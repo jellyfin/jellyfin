@@ -4,14 +4,17 @@
     var extractedYear;
     var currentNewItem;
     var existingSeriesHtml;
+    var seriesLocationsCount = 0;
 
     function onApiFailure(e) {
 
         Dashboard.hideLoadingMsg();
 
-        Dashboard.alert({
-            title: Globalize.translate('AutoOrganizeError'),
-            message: Globalize.translate('ErrorOrganizingFileWithErrorCode', e.getResponseHeader("X-Application-Error-Code"))
+        require(['alert'], function (alert) {
+            alert({
+                title: Globalize.translate('AutoOrganizeError'),
+                text: Globalize.translate('ErrorOrganizingFileWithErrorCode', e.headers.get("X-Application-Error-Code"))
+            });
         });
     }
 
@@ -29,7 +32,7 @@
         context.querySelector('#txtSeason').value = item.ExtractedSeasonNumber;
         context.querySelector('#txtEpisode').value = item.ExtractedEpisodeNumber;
         context.querySelector('#txtEndingEpisode').value = item.ExtractedEndingEpisodeNumber;
-        //context.querySelector('.extractedName').value = item.ExtractedName;
+        //context.querySelector('.extractedName').innerHTML = item.ExtractedName;
 
         extractedName = item.ExtractedName;
         extractedYear = item.ExtractedYear;
@@ -78,6 +81,8 @@
                         }
                     }
                 }
+
+                seriesLocationsCount = seriesLocations.length;
 
                 var seriesFolderHtml = seriesLocations.map(function (s) {
                     return '<option value="' + s.value + '">' + s.display + '</option>';
@@ -139,6 +144,17 @@
     }
 
     function showNewSeriesDialog(dlg) {
+
+        if (seriesLocationsCount == 0) {
+
+            require(['alert'], function (alert) {
+                alert({
+                    title: Globalize.translate('AutoOrganizeError'),
+                    text: Globalize.translate('NoTvFoldersConfigured')
+                });
+            });
+            return;
+        }
 
         require(['components/itemidentifier/itemidentifier'], function (itemidentifier) {
 

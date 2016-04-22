@@ -318,9 +318,7 @@ define(['browser'], function (browser) {
                 AudioCodec: hlsVideoAudioCodecs.join(','),
                 VideoCodec: 'h264',
                 Context: 'Streaming',
-                Protocol: 'hls',
-                // Can't use this when autoplay is not supported
-                ForceLiveStream: options.supportsCustomSeeking ? true : false
+                Protocol: 'hls'
             });
         }
 
