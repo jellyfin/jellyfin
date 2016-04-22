@@ -2202,7 +2202,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/connectlogin.html',
-            dependencies: [],
+            dependencies: ['paper-button'],
             autoFocus: false,
             anonymous: true
         });
@@ -2357,7 +2357,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/itemdetails.html',
-            dependencies: [],
+            dependencies: ['paper-button'],
             autoFocus: false
         });
 
@@ -2476,7 +2476,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/login.html',
-            dependencies: [],
+            dependencies: ['paper-button'],
             autoFocus: false,
             anonymous: true
         });
@@ -2531,31 +2531,31 @@ var AppInfo = {};
 
         defineRoute({
             path: '/mypreferencesdisplay.html',
-            dependencies: [],
+            dependencies: ['paper-button'],
             autoFocus: false
         });
 
         defineRoute({
             path: '/mypreferenceshome.html',
-            dependencies: [],
+            dependencies: ['paper-button'],
             autoFocus: false
         });
 
         defineRoute({
             path: '/mypreferenceslanguages.html',
-            dependencies: [],
+            dependencies: ['paper-button'],
             autoFocus: false
         });
 
         defineRoute({
             path: '/mypreferencesmenu.html',
-            dependencies: [],
+            dependencies: ['paper-button'],
             autoFocus: false
         });
 
         defineRoute({
             path: '/myprofile.html',
-            dependencies: [],
+            dependencies: ['paper-button'],
             autoFocus: false
         });
 
