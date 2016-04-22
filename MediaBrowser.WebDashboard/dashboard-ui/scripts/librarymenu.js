@@ -1,4 +1,4 @@
-﻿define(['imageLoader', 'layoutManager', 'jQuery', 'paper-icon-button', 'paper-button', 'emby-icons'], function (imageLoader, layoutManager, $) {
+﻿define(['imageLoader', 'layoutManager', 'jQuery', 'paper-icon-button', 'emby-icons'], function (imageLoader, layoutManager, $) {
 
     var mainDrawerPanel = document.querySelector('.mainDrawerPanel');
 
@@ -36,7 +36,7 @@
 
         html += '<paper-icon-button icon="mic" class="headerButton headerButtonRight headerVoiceButton hide"></paper-icon-button>';
 
-        html += '<paper-button class="headerButton headerButtonRight btnNotifications subdued" type="button" title="Notifications"><div class="btnNotificationsInner">0</div></paper-button>';
+        html += '<button class="headerButton headerButtonRight btnNotifications clearButton" type="button" title="Notifications"><div class="btnNotificationsInner">0</div></button>';
 
         html += '<paper-icon-button icon="person" class="headerButton headerButtonRight headerUserButton"></paper-icon-button>';
 
