@@ -1,0 +1,107 @@
+<script>
+    
+    require(['imageFetcher'], function (imageFetcher) {
+        window.ImageFetcherLazyloadImage = imageFetcher;
+    });
+
+    /**
+     * <lazyload-image>
+     * HTMLImageElement extension for lazy loading.
+     * http://github.com/1000ch/lazyload-image
+     *
+     * Copyright 1000ch
+     * licensed under the MIT license.
+     */
+    window.LazyloadImage = (function () {
+        'use strict';
+
+        var FALLBACK_IMAGE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAEElEQVR42gEFAPr/AP///wAI/AL+Sr4t6gAAAABJRU5ErkJggg==';
+        var DEFAULT_OFFSET = 0;
+
+        // create prototype from HTMLImageElement
+        var LazyloadImagePrototype = Object.create(HTMLImageElement.prototype);
+
+        function fadeIn(elem) {
+
+            if (elem.classList.contains('noFade')) {
+                return;
+            }
+
+            var keyframes = [
+              { opacity: '0', offset: 0 },
+              { opacity: '1', offset: 1 }];
+            var timing = { duration: 300, iterations: 1 };
+            elem.animate(keyframes, timing);
+        }
+
+        function imgObserver(that, mutations) {
+            mutations.forEach(function (mutation) {
+
+                if (mutation.attributeName != 'src') {
+                    return;
+                }
+
+                var src = that.src;
+
+                if (src && src != FALLBACK_IMAGE) {
+
+                    if (!that.loadingSrc) {
+                        that.src = FALLBACK_IMAGE;
+                        that.loadingSrc = src;
+
+                        if (ImageFetcherLazyloadImage) {
+                            ImageFetcherLazyloadImage.loadImage(that, src);
+                        } else {
+                            that.src = src;
+                        }
+                    } else {
+                        that.loadingSrc = null;
+                    }
+
+                } else if (!src) {
+                    that.src = FALLBACK_IMAGE;
+                }
+            });
+        }
+
+        //// lifecycle callbacks
+        //LazyloadImagePrototype.createdCallback = function () {
+
+        //    var that = this;
+
+        //    // swap original src attribute
+        //    this.original = this.currentSrc || this.src;
+        //    this.src = FALLBACK_IMAGE;
+
+        //    var observer = new MutationObserver(function (mutations) {
+        //        imgObserver(that, mutations);
+        //    });
+
+        //    // pass in the target node, as well as the observer options
+        //    observer.observe(this, { attributes: true, childList: false, characterData: false });
+
+        //    this.observer = observer;
+        //};
+
+        //LazyloadImagePrototype.attachedCallback = function () {
+
+
+        //};
+
+        LazyloadImagePrototype.detachedCallback = function () {
+
+            if (this.observer) {
+                // later, you can stop observing
+                this.observer.disconnect();
+            }
+
+        };
+
+        return document.registerElement('lazyload-image', {
+            prototype: LazyloadImagePrototype,
+            extends: 'img'
+        });
+
+    })();
+
+</script>

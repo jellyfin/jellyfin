@@ -1606,6 +1606,7 @@ var AppInfo = {};
         var paths = {
             velocity: bowerPath + "/velocity/velocity.min",
             tvguide: 'components/tvguide/tvguide',
+            ironCardList: 'components/ironcardlist',
             directorybrowser: 'components/directorybrowser/directorybrowser',
             collectioneditor: 'components/collectioneditor/collectioneditor',
             playlisteditor: 'components/playlisteditor/playlisteditor',
@@ -1714,6 +1715,7 @@ var AppInfo = {};
         // Done
         define("emby-icons", ["html!" + bowerPath + "/emby-icons/emby-icons.html"]);
 
+        define("lazyload-image", ["html!" + bowerPath + "/emby-lazyload-image/lazyload-image.html"]);
         define("paper-spinner", ["html!" + bowerPath + "/paper-spinner/paper-spinner.html"]);
         define("paper-toast", ["html!" + bowerPath + "/paper-toast/paper-toast.html"]);
         define("paper-slider", ["html!" + bowerPath + "/paper-slider/paper-slider.html"]);
@@ -2732,7 +2734,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/tv.html',
-            dependencies: ['paper-tabs', 'paper-checkbox'],
+            dependencies: ['paper-tabs', 'paper-checkbox', 'paper-button'],
             autoFocus: false,
             controller: 'scripts/tvrecommended'
         });
