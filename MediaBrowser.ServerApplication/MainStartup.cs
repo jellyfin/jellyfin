@@ -321,6 +321,11 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
+        public static void Invoke(Action action)
+        {
+            _serverNotifyIcon.Invoke(action);
+        }
+
         /// <summary>
         /// Starts the service.
         /// </summary>

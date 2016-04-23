@@ -5,6 +5,7 @@ using MediaBrowser.ServerApplication.Networking;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Windows.Forms;
 using CommonIO;
 using MediaBrowser.Controller.Power;
 using MediaBrowser.Server.Startup.Common.FFMpeg;
@@ -134,7 +135,12 @@ namespace MediaBrowser.ServerApplication.Native
 
         public void PreventSystemStandby()
         {
-            Standby.PreventSystemStandby();
+            MainStartup.Invoke(Standby.PreventSleep);
+        }
+
+        public void AllowSystemStandby()
+        {
+            MainStartup.Invoke(Standby.AllowSleep);
         }
 
         public IPowerManagement GetPowerManagement()
