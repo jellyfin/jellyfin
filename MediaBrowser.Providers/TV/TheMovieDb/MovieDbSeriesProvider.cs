@@ -24,7 +24,7 @@ namespace MediaBrowser.Providers.TV
 {
     public class MovieDbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
     {
-        private const string GetTvInfo3 = @"http://api.themoviedb.org/3/tv/{0}?api_key={1}&append_to_response=credits,images,keywords,external_ids,videos,content_ratings";
+        private const string GetTvInfo3 = @"https://api.themoviedb.org/3/tv/{0}?api_key={1}&append_to_response=credits,images,keywords,external_ids,videos,content_ratings";
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         internal static MovieDbSeriesProvider Current { get; private set; }
@@ -438,7 +438,7 @@ namespace MediaBrowser.Providers.TV
 
         private async Task<RemoteSearchResult> FindByExternalId(string id, string externalSource, CancellationToken cancellationToken)
         {
-            var url = string.Format("http://api.themoviedb.org/3/tv/find/{0}?api_key={1}&external_source={2}",
+            var url = string.Format("https://api.themoviedb.org/3/tv/find/{0}?api_key={1}&external_source={2}",
                 id,
                 MovieDbProvider.ApiKey,
                 externalSource);

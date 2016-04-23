@@ -37,7 +37,7 @@ namespace MediaBrowser.Providers.Omdb
 
             var imdbParam = imdbId.StartsWith("tt", StringComparison.OrdinalIgnoreCase) ? imdbId : "tt" + imdbId;
 
-            var url = string.Format("http://www.omdbapi.com/?i={0}&tomatoes=true", imdbParam);
+            var url = string.Format("https://www.omdbapi.com/?i={0}&tomatoes=true", imdbParam);
 
             using (var stream = await _httpClient.Get(new HttpRequestOptions
             {
