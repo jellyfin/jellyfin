@@ -19,7 +19,7 @@ namespace MediaBrowser.Providers.Music
 {
     class FanartUpdatesPostScanTask : ILibraryPostScanTask
     {
-        private const string UpdatesUrl = "http://api.fanart.tv/webservice/newmusic/{0}/{1}/";
+        private const string UpdatesUrl = "https://api.fanart.tv/webservice/newmusic/{0}/{1}/";
 
         /// <summary>
         /// The _HTTP client
