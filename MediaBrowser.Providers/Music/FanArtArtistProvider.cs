@@ -26,7 +26,7 @@ namespace MediaBrowser.Providers.Music
     {
         internal readonly SemaphoreSlim FanArtResourcePool = new SemaphoreSlim(3, 3);
         internal const string ApiKey = "5c6b04c68e904cfed1e6cbc9a9e683d4";
-        private const string FanArtBaseUrl = "http://webservice.fanart.tv/v3.1/music/{1}?api_key={0}";
+        private const string FanArtBaseUrl = "https://webservice.fanart.tv/v3.1/music/{1}?api_key={0}";
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IServerConfigurationManager _config;
