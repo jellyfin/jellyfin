@@ -96,15 +96,6 @@
         $('.divMatchInfos', page).html(html);
     }
 
-    function onApiFailure(e) {
-
-        Dashboard.hideLoadingMsg();
-
-        Dashboard.alert({
-            message: Globalize.translate('DefaultErrorMessage')
-        });
-    }
-
     function getTabs() {
         return [
         {
@@ -142,7 +133,7 @@
 
                 reloadList(page);
 
-            }, onApiFailure);
+            }, Dashboard.processErrorResponse);
 
         });
 

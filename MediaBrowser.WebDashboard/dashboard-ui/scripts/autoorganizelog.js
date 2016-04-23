@@ -43,7 +43,7 @@
 
                     reloadItems(page);
 
-                }, onApiFailure);
+                }, Dashboard.processErrorResponse);
             });
         });
     }
@@ -101,7 +101,7 @@
 
                     reloadItems(page);
 
-                }, onApiFailure);
+                }, Dashboard.processErrorResponse);
             });
         });
     }
@@ -116,7 +116,7 @@
             renderResults(page, result);
 
             Dashboard.hideLoadingMsg();
-        }, onApiFailure);
+        }, Dashboard.processErrorResponse);
     }
 
     function getStatusText(item, enhance) {
@@ -273,26 +273,6 @@
         }
     }
 
-    function onApiFailure(e) {
-
-        Dashboard.hideLoadingMsg();
-
-        if (e.status == 0) {
-
-            Dashboard.alert({
-                title: 'Auto-Organize',
-                message: 'The operation is going to take a little longer. The view will be updated on completion.'
-            });
-        }
-        else {
-
-            Dashboard.alert({
-                title: Globalize.translate('AutoOrganizeError'),
-                message: Globalize.translate('ErrorOrganizingFileWithErrorCode', e.headers.get('X-Application-Error-Code'))
-            });
-        }
-    }
-
     function getTabs() {
         return [
         {
@@ -317,7 +297,7 @@
 
             ApiClient.clearOrganizationLog().then(function () {
                 reloadItems(page);
-            }, onApiFailure);
+            }, Dashboard.processErrorResponse);
         });
 
     }).on('pageshow', '#libraryFileOrganizerLogPage', function () {
