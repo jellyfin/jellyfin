@@ -455,6 +455,22 @@ var Dashboard = {
         });
     },
 
+    processErrorResponse: function (response) {
+
+        Dashboard.hideLoadingMsg();
+
+        var status = '' + response.status;
+
+        if (response.statusText) {
+            status = response.statusText;
+        }
+
+        Dashboard.alert({
+            title: status,
+            message: response.headers ? response.headers.get('X-Application-Error-Code') : null
+        });
+    },
+
     alert: function (options) {
 
         if (typeof options == "string") {
