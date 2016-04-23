@@ -15,7 +15,7 @@
         function getScrollSize() {
 
             if (!scrollSize) {
-                scrollSize = horizontal ? (elem.scrollWidth - elem.clientWidth) : (elem.scrollHeight - elem.clientHeight);
+                scrollSize = horizontal ? (elem.scrollWidth - elem.clientWidth) : (elem.scrollHeight - elem.offsetHeight);
             }
             return scrollSize;
         }
@@ -27,6 +27,8 @@
             }
 
             var position = horizontal ? elem.scrollLeft : elem.scrollTop;
+
+            //console.log('onscroll: ' + position + '-' + getScrollSize());
 
             // Detect upper threshold
             if (!upperTriggered && position < upperTolerance) {
