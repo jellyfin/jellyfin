@@ -1133,7 +1133,8 @@
         renderHeader();
         headerCreated = true;
 
-        if (userRequiresUpdateAfterHeader) {
+        var user = userRequiresUpdateAfterHeader;
+        if (user) {
             updateUserInHeader(user);
         }
         userRequiresUpdateAfterHeader = null;
