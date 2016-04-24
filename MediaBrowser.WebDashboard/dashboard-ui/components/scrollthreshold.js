@@ -2,20 +2,26 @@
 
     function thresholdMonitor(elem, horizontal, lowerTolerance, upperTolerance) {
 
-        var defaultTolerance = horizontal ? (screen.availWidth / 2) : (screen.availHeight / 2);
+        var defaultTolerance = horizontal ? (screen.availWidth / 3) : (screen.availHeight / 3);
         lowerTolerance = lowerTolerance || defaultTolerance;
         upperTolerance = upperTolerance || defaultTolerance;
 
         var self = this;
-        var upperTriggered = false;
+        var upperTriggered = true;
         var lowerTriggered = false;
+        var isWindow = elem == window || elem.tagName == 'HTML' || elem.tagName == 'BODY';
 
         var scrollSize;
 
         function getScrollSize() {
 
             if (!scrollSize) {
-                scrollSize = horizontal ? (elem.scrollWidth - elem.clientWidth) : (elem.scrollHeight - elem.offsetHeight);
+
+                if (isWindow) {
+                    scrollSize = horizontal ? (document.documentElement.scrollWidth - document.documentElement.offsetWidth) : (document.documentElement.scrollHeight - document.documentElement.offsetHeight);
+                } else {
+                    scrollSize = horizontal ? (elem.scrollWidth - elem.offsetWidth) : (elem.scrollHeight - elem.offsetHeight);
+                }
             }
             return scrollSize;
         }
@@ -26,25 +32,40 @@
                 return;
             }
 
-            var position = horizontal ? elem.scrollLeft : elem.scrollTop;
+            var position;
+
+            if (isWindow) {
+                position = horizontal ? window.pageXOffset : window.pageYOffset;
+            } else {
+                position = horizontal ? elem.scrollLeft : elem.scrollTop;
+            }
 
             //console.log('onscroll: ' + position + '-' + getScrollSize());
 
             // Detect upper threshold
-            if (!upperTriggered && position < upperTolerance) {
-                upperTriggered = true;
-                events.trigger(self, 'upper-threshold');
+            if (position < upperTolerance) {
+                if (!upperTriggered) {
+                    upperTriggered = true;
+                    events.trigger(self, 'upper-threshold');
+                }
+            } else {
+                upperTriggered = false;
             }
+
             // Detect lower threshold
-            if (!lowerTriggered && position >= (getScrollSize() - lowerTolerance)) {
+            if (position >= (getScrollSize() - lowerTolerance)) {
+                if (!lowerTriggered) {
+                    lowerTriggered = true;
+                    events.trigger(self, 'lower-threshold');
+                }
+            } else {
                 lowerTriggered = false;
-                events.trigger(self, 'lower-threshold');
             }
         }
 
         self.reset = function () {
             self.resetSize();
-            upperTriggered = false;
+            upperTriggered = true;
             lowerTriggered = false;
         };
 

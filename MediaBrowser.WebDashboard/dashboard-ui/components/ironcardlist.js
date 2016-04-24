@@ -6,6 +6,8 @@
 
         var maxPhysical = 80;
 
+        // is="lazyload-image" 
+
         html += '<template is="dom-bind">\
 	<iron-list as="item" id="ironList" scroll-target="' + scrollTarget + '" max-physical-count="' + maxPhysical + '" style="width:96%;" grid>\
 		<template>\
@@ -14,7 +16,7 @@
 					<div class="cardScalable">\
 						<div class="cardPadder"></div>\
 						<a onclick$="{{item.onclick}}" data-action$="{{item.defaultAction}}" class$="{{item.anchorClass}}" href$="{{item.href}}">\
-							<img class$="{{item.imageClass}}" is="lazyload-image" src$="{{item.imgUrl}}" />\
+							<img class$="{{item.imageClass}}" src$="{{item.imgUrl}}" />\
                             <div inner-h-t-m-l="{{item.overlayHtml}}"></div>\
 						</a>\
 					</div>\
