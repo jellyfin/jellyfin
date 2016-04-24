@@ -1,13 +1,16 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Startup.Common;
 using MediaBrowser.ServerApplication.Networking;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using CommonIO;
 using MediaBrowser.Controller.Power;
 using MediaBrowser.Server.Startup.Common.FFMpeg;
+using OperatingSystem = MediaBrowser.Server.Startup.Common.OperatingSystem;
 
 namespace MediaBrowser.ServerApplication.Native
 {
@@ -154,6 +157,42 @@ namespace MediaBrowser.ServerApplication.Native
             info.DownloadUrls = GetDownloadUrls();
 
             return info;
+        }
+
+        public void LaunchUrl(string url)
+        {
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = url
+                },
+
+                EnableRaisingEvents = true,
+            };
+
+            process.Exited += ProcessExited;
+
+            try
+            {
+                process.Start();
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error launching url: {0}", ex, url);
+
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Processes the exited.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        private static void ProcessExited(object sender, EventArgs e)
+        {
+            ((Process)sender).Dispose();
         }
 
         private string[] GetDownloadUrls()
