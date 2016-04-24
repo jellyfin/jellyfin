@@ -217,6 +217,11 @@ namespace MediaBrowser.Server.Mono.Native
             return GetInfo(Environment);
         }
 
+        public void LaunchUrl(string url)
+        {
+            throw new NotImplementedException();
+        }
+
         public static FFMpegInstallInfo GetInfo(NativeEnvironment environment)
         {
             var info = new FFMpegInstallInfo();

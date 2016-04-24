@@ -1404,5 +1404,10 @@ namespace MediaBrowser.Server.Startup.Common
                 return externalDns;
             }
         }
+
+        public void LaunchUrl(string url)
+        {
+            NativeApp.LaunchUrl(url);
+        }
     }
 }
