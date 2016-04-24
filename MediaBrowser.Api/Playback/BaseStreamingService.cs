@@ -2222,9 +2222,10 @@ namespace MediaBrowser.Api.Playback
 
             if (state.VideoRequest != null)
             {
+                // Important: If this is ever re-enabled, make sure not to use it with wtv because it breaks seeking
                 if (string.Equals(state.OutputContainer, "mkv", StringComparison.OrdinalIgnoreCase) && state.VideoRequest.CopyTimestamps)
                 {
-                    inputModifier += " -noaccurate_seek";
+                    //inputModifier += " -noaccurate_seek";
                 }
             }
 
