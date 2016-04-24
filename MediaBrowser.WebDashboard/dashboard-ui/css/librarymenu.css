@@ -10,6 +10,12 @@
     padding-top: 98px !important;
 }
 
+.absolutePageTabContent {
+    margin: 0 !important;
+    width: 100% !important;
+    top: 98px !important;
+}
+
 .sidebarDivider {
     height: 1px;
     background: #eaeaea;

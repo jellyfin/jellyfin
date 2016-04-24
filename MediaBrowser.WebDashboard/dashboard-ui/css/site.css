@@ -870,7 +870,7 @@ paper-input + .fieldDescription {
     padding: 1em;
 }
 
-.page > .ui-content, .pageWithAbsoluteTabs .pageTabContent {
+.page > .ui-content, .pageWithAbsoluteTabs .pageTabContent, .absolutePageTabContent .itemsContainer {
     /* Need this so that the audio player doesn't cover content, but also for unveil lazy loading. */
     padding-bottom: 160px;
 }
