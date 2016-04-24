@@ -1606,7 +1606,7 @@ var AppInfo = {};
         var paths = {
             velocity: bowerPath + "/velocity/velocity.min",
             tvguide: 'components/tvguide/tvguide',
-            ironCardList: 'components/ironcardlist',
+            ironCardList: 'components/ironcardlist/ironcardlist',
             scrollThreshold: 'components/scrollthreshold',
             directorybrowser: 'components/directorybrowser/directorybrowser',
             collectioneditor: 'components/collectioneditor/collectioneditor',
