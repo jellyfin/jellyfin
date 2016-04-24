@@ -4,7 +4,7 @@
 
         var html = '';
 
-        var maxPhysical = 60;
+        var maxPhysical = 80;
 
         html += '<template is="dom-bind">\
 	<iron-list as="item" id="ironList" scroll-target="' + scrollTarget + '" max-physical-count="' + maxPhysical + '" style="width:96%;" grid>\

@@ -49,11 +49,7 @@
                         that.src = FALLBACK_IMAGE;
                         that.loadingSrc = src;
 
-                        if (ImageFetcherLazyloadImage) {
-                            ImageFetcherLazyloadImage.loadImage(that, src);
-                        } else {
-                            that.src = src;
-                        }
+                        ImageFetcherLazyloadImage.loadImage(that, src);
                     } else {
                         that.loadingSrc = null;
                     }
@@ -64,24 +60,26 @@
             });
         }
 
-        //// lifecycle callbacks
-        //LazyloadImagePrototype.createdCallback = function () {
+        // lifecycle callbacks
+        LazyloadImagePrototype.createdCallback = function () {
 
-        //    var that = this;
+            var that = this;
 
-        //    // swap original src attribute
-        //    this.original = this.currentSrc || this.src;
-        //    this.src = FALLBACK_IMAGE;
+            if (window.ImageFetcherLazyloadImage) {
+                // swap original src attribute
+                this.original = this.currentSrc || this.src;
+                this.src = FALLBACK_IMAGE;
 
-        //    var observer = new MutationObserver(function (mutations) {
-        //        imgObserver(that, mutations);
-        //    });
+                var observer = new MutationObserver(function (mutations) {
+                    imgObserver(that, mutations);
+                });
 
-        //    // pass in the target node, as well as the observer options
-        //    observer.observe(this, { attributes: true, childList: false, characterData: false });
+                // pass in the target node, as well as the observer options
+                observer.observe(this, { attributes: true, childList: false, characterData: false });
 
-        //    this.observer = observer;
-        //};
+                this.observer = observer;
+            }
+        };
 
         //LazyloadImagePrototype.attachedCallback = function () {
 
