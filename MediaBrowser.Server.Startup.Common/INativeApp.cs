@@ -102,5 +102,7 @@ namespace MediaBrowser.Server.Startup.Common
         IPowerManagement GetPowerManagement();
 
         FFMpegInstallInfo GetFfmpegInstallInfo();
+
+        void LaunchUrl(string url);
     }
 }
