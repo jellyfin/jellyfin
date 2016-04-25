@@ -64,8 +64,6 @@ namespace MediaBrowser.Providers.Omdb
         {
             var episodeSearchInfo = searchInfo as EpisodeInfo;
 
-            var list = new List<RemoteSearchResult>();
-
             var imdbId = searchInfo.GetProviderId(MetadataProviders.Imdb);
 
             var url = "http://www.omdbapi.com/?plot=full&r=json";
@@ -148,14 +146,13 @@ namespace MediaBrowser.Providers.Omdb
                     }
                 }
 
-                foreach (var result in resultList)
+                return resultList.Select(result =>
                 {
                     var item = new RemoteSearchResult
                     {
                         IndexNumber = searchInfo.IndexNumber,
                         Name = result.Title,
                         ParentIndexNumber = searchInfo.ParentIndexNumber,
-                        ProviderIds = searchInfo.ProviderIds,
                         SearchProviderName = Name
                     };
 
@@ -185,11 +182,9 @@ namespace MediaBrowser.Providers.Omdb
                         item.ImageUrl = result.Poster;
                     }
 
-                    list.Add(item);
-                }
+                    return item;
+                });
             }
-
-            return list;
         }
 
         public Task<MetadataResult<Trailer>> GetMetadata(TrailerInfo info, CancellationToken cancellationToken)

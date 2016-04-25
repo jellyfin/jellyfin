@@ -20,6 +20,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.Manager
 {
@@ -60,6 +61,7 @@ namespace MediaBrowser.Providers.Manager
         private IEnumerable<IMetadataSaver> _savers;
         private IImageSaver[] _imageSavers;
         private readonly IServerApplicationPaths _appPaths;
+        private readonly IJsonSerializer _json;
 
         private IExternalId[] _externalIds;
 
@@ -73,7 +75,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="libraryMonitor">The directory watchers.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="fileSystem">The file system.</param>
-        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, ILibraryMonitor libraryMonitor, ILogManager logManager, IFileSystem fileSystem, IServerApplicationPaths appPaths, Func<ILibraryManager> libraryManagerFactory)
+        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, ILibraryMonitor libraryMonitor, ILogManager logManager, IFileSystem fileSystem, IServerApplicationPaths appPaths, Func<ILibraryManager> libraryManagerFactory, IJsonSerializer json)
         {
             _logger = logManager.GetLogger("ProviderManager");
             _httpClient = httpClient;
@@ -82,6 +84,7 @@ namespace MediaBrowser.Providers.Manager
             _fileSystem = fileSystem;
             _appPaths = appPaths;
             _libraryManagerFactory = libraryManagerFactory;
+            _json = json;
         }
 
         /// <summary>
@@ -730,8 +733,6 @@ namespace MediaBrowser.Providers.Manager
             where TItemType : BaseItem, new()
             where TLookupType : ItemLookupInfo
         {
-            const int maxResults = 10;
-
             // Give it a dummy path just so that it looks like a file system item
             var dummy = new TItemType
             {
@@ -761,7 +762,6 @@ namespace MediaBrowser.Providers.Manager
             }
 
             var resultList = new List<RemoteSearchResult>();
-            var foundProviderIds = new Dictionary<Tuple<string, string>, RemoteSearchResult>();
 
             foreach (var provider in providers)
             {
@@ -771,31 +771,26 @@ namespace MediaBrowser.Providers.Manager
 
                     foreach (var result in results)
                     {
-                        var bFound = false;
+                        var existingMatch = resultList.FirstOrDefault(i => i.ProviderIds.Any(p => string.Equals(result.GetProviderId(p.Key), p.Value, StringComparison.OrdinalIgnoreCase)));
 
-                        // This check prevents duplicate search results by comparing provider ids
-                        foreach (var providerId in result.ProviderIds)
-                        {
-                            var idTuple = new Tuple<string, string>(providerId.Key.ToLower(), providerId.Value.ToLower());
-
-                            if (!foundProviderIds.ContainsKey(idTuple))
-                            {
-                                foundProviderIds.Add(idTuple, result);
-                            }
-                            else
-                            {
-                                bFound = true;
-                                var existingResult = foundProviderIds[idTuple];
-                                if (string.IsNullOrEmpty(existingResult.ImageUrl) && !string.IsNullOrEmpty(result.ImageUrl))
-                                {
-                                    existingResult.ImageUrl = result.ImageUrl;
-                                }
-                            }
-                        }
-
-                        if (!bFound && resultList.Count < maxResults)
+                        if (existingMatch == null)
                         {
                             resultList.Add(result);
+                        }
+                        else
+                        {
+                            foreach (var providerId in result.ProviderIds)
+                            {
+                                if (!existingMatch.ProviderIds.ContainsKey(providerId.Key))
+                                {
+                                    existingMatch.ProviderIds.Add(providerId.Key, providerId.Value);
+                                }
+                            }
+
+                            if (string.IsNullOrWhiteSpace(existingMatch.ImageUrl))
+                            {
+                                existingMatch.ImageUrl = result.ImageUrl;
+                            }
                         }
                     }
                 }
@@ -804,6 +799,8 @@ namespace MediaBrowser.Providers.Manager
                     // Logged at lower levels
                 }
             }
+
+            //_logger.Debug("Returning search results {0}", _json.SerializeToString(resultList));
 
             return resultList;
         }
