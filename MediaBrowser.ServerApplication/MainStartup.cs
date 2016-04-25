@@ -317,8 +317,13 @@ namespace MediaBrowser.ServerApplication
         {
             if (e.Reason == SessionSwitchReason.SessionLogon)
             {
-                BrowserLauncher.OpenDashboard(_appHost, _logger);
+                BrowserLauncher.OpenDashboard(_appHost);
             }
+        }
+
+        public static void Invoke(Action action)
+        {
+            _serverNotifyIcon.Invoke(action);
         }
 
         /// <summary>

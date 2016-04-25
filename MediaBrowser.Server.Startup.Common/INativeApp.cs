@@ -93,6 +93,8 @@ namespace MediaBrowser.Server.Startup.Common
         /// </summary>
         void PreventSystemStandby();
 
+        void AllowSystemStandby();
+
         /// <summary>
         /// Gets the power management.
         /// </summary>
@@ -100,5 +102,7 @@ namespace MediaBrowser.Server.Startup.Common
         IPowerManagement GetPowerManagement();
 
         FFMpegInstallInfo GetFfmpegInstallInfo();
+
+        void LaunchUrl(string url);
     }
 }
