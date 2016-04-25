@@ -3107,11 +3107,11 @@ pageClassOn('viewshow', "page", function () {
         page.classList.remove('ui-body-a');
     }
 
-    if (currentTheme != 'a' && !browserInfo.mobile) {
-        document.documentElement.classList.add('darkScrollbars');
-    } else {
-        document.documentElement.classList.remove('darkScrollbars');
-    }
+    //if (currentTheme != 'a' && !browserInfo.mobile) {
+    //    document.documentElement.classList.add('darkScrollbars');
+    //} else {
+    //    document.documentElement.classList.remove('darkScrollbars');
+    //}
 
     var apiClient = window.ApiClient;
 

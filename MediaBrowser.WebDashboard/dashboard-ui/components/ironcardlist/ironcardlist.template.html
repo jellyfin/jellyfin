@@ -6,7 +6,7 @@
                     <div class="cardScalable">
                         <div class="cardPadder"></div>
                         <a onclick$="{{item.onclick}}" data-action$="{{item.defaultAction}}" class$="{{item.anchorClass}}" href$="{{item.href}}">
-                            <img class$="{{item.imageClass}}" src$="{{item.imgUrl}}" />
+                            <img is="lazyload-image" class$="{{item.imageClass}}" src$="{{item.imgUrl}}" />
                             <div inner-h-t-m-l="{{item.overlayHtml}}"></div>
                         </a>
                     </div>

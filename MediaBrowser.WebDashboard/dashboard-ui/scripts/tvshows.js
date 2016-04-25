@@ -153,7 +153,6 @@
 
                 // Hack: notifyResize needs to be done after the items have been rendered
                 setTimeout(function () {
-
                     ironList.notifyResize();
                     self.scrollThreshold.resetSize();
                 }, 300);
@@ -213,7 +212,7 @@
                 self.showFilterMenu();
             });
 
-            tabContent.querySelector('.btnSort').addEventListener('click', function () {
+            tabContent.querySelector('.btnSort').addEventListener('click', function (e) {
                 libraryBrowser.showSortMenu({
                     items: [{
                         name: Globalize.translate('OptionNameSort'),
@@ -251,7 +250,8 @@
                         getQuery(tabContent).StartIndex = 0;
                         reloadItems(tabContent);
                     },
-                    query: getQuery(tabContent)
+                    query: getQuery(tabContent),
+                    button: e.target
                 });
             });
 
@@ -287,6 +287,11 @@
 
                 tabContent.querySelector('.itemsContainer').innerHTML = html;
                 self.listCreated = true;
+
+                return new Promise(function (resolve, reject) {
+
+                    setTimeout(resolve, 2000);
+                });
             });
         }
 
