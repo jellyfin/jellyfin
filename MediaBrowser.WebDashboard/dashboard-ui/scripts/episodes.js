@@ -183,7 +183,7 @@
                 self.showFilterMenu();
             });
 
-            tabContent.querySelector('.btnSort').addEventListener('click', function () {
+            tabContent.querySelector('.btnSort').addEventListener('click', function (e) {
                 libraryBrowser.showSortMenu({
                     items: [{
                         name: Globalize.translate('OptionNameSort'),
@@ -224,7 +224,8 @@
                     callback: function () {
                         reloadItems(tabContent);
                     },
-                    query: getQuery(tabContent)
+                    query: getQuery(tabContent),
+                    button: e.target
                 });
             });
 

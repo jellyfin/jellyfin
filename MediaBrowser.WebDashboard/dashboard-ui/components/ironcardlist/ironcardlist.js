@@ -2,7 +2,7 @@
 
     function getTemplate(scrollTarget) {
 
-        var maxPhysical = 80;
+        var maxPhysical = 200;
 
         // is="lazyload-image" 
 

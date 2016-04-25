@@ -2163,7 +2163,6 @@
                         item['data-' + att.name] = att.value;
                     }
                 }
-                console.log(item['data-commands']);
 
                 var defaultAction = options.defaultAction;
                 if (defaultAction == 'play' || defaultAction == 'playallfromhere') {

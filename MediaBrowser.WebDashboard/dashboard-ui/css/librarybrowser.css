@@ -1192,7 +1192,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .layout-desktop .absolutePageTabContent .alphabetPicker {
-    right: 15px;
+    right: 20px;
 }
 
 .alphabetPicker a {
