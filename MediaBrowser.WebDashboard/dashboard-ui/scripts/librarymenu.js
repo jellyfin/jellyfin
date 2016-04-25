@@ -1,4 +1,4 @@
-﻿define(['imageLoader', 'layoutManager', 'jQuery', 'paper-icon-button', 'emby-icons'], function (imageLoader, layoutManager, $) {
+﻿define(['imageLoader', 'layoutManager', 'jQuery'], function (imageLoader, layoutManager, $) {
 
     var mainDrawerPanel = document.querySelector('.mainDrawerPanel');
 
@@ -87,7 +87,7 @@
                 var url = user.imageUrl;
 
                 if (user.supportsImageParams) {
-                    url += "&height=" + (userButtonHeight * Math.max(window.devicePixelRatio || 1, 2));
+                    url += "&height=" + Math.round((userButtonHeight * Math.max(window.devicePixelRatio || 1, 2)));
                 }
 
                 if (headerUserButton) {
@@ -993,7 +993,7 @@
 
         if (!e.detail.isRestored) {
             // Scroll back up so in case vertical scroll was messed with
-            window.scrollTo(0, 0);
+            //window.scrollTo(0, 0);
         }
 
         updateTitle(page);
@@ -1126,8 +1126,19 @@
     }
 
     mainDrawerPanel.addEventListener('iron-select', onMainDrawerSelect);
+    var headerCreated;
+    var userRequiresUpdateAfterHeader;
 
-    renderHeader();
+    require(['paper-icon-button', 'emby-icons'], function () {
+        renderHeader();
+        headerCreated = true;
+
+        var user = userRequiresUpdateAfterHeader;
+        if (user) {
+            updateUserInHeader(user);
+        }
+        userRequiresUpdateAfterHeader = null;
+    });
 
     Events.on(ConnectionManager, 'apiclientcreated', function (e, apiClient) {
         initializeApiClient(apiClient);
@@ -1138,7 +1149,12 @@
         var apiClient = ConnectionManager.getApiClient(user.ServerId);
         ConnectionManager.user(ConnectionManager.getApiClient(user.ServerId)).then(function (user) {
             refreshLibraryDrawer(user);
-            updateUserInHeader(user);
+
+            if (headerCreated) {
+                updateUserInHeader(user);
+            } else {
+                userRequiresUpdateAfterHeader = user;
+            }
         });
 
         if (!AppInfo.isNativeApp) {

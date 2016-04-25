@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller
     public interface IServerApplicationHost : IApplicationHost
     {
         event EventHandler HasUpdateAvailableChanged;
-        
+
         /// <summary>
         /// Gets the system info.
         /// </summary>
@@ -86,5 +86,7 @@ namespace MediaBrowser.Controller
         /// <param name="ipAddress">The ip address.</param>
         /// <returns>System.String.</returns>
         string GetLocalApiUrl(IPAddress ipAddress);
+
+        void LaunchUrl(string url);
     }
 }

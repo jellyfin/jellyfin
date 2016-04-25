@@ -69,6 +69,11 @@ namespace MediaBrowser.Server.Mono.Native
 
         }
 
+        public void AllowSystemStandby()
+        {
+
+        }
+
         public List<Assembly> GetAssembliesWithParts()
         {
             var list = new List<Assembly>();
@@ -215,6 +220,11 @@ namespace MediaBrowser.Server.Mono.Native
         public FFMpegInstallInfo GetFfmpegInstallInfo()
         {
             return GetInfo(Environment);
+        }
+
+        public void LaunchUrl(string url)
+        {
+            throw new NotImplementedException();
         }
 
         public static FFMpegInstallInfo GetInfo(NativeEnvironment environment)

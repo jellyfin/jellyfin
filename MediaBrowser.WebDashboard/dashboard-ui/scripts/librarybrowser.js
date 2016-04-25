@@ -173,6 +173,7 @@
 
             enableFullPaperTabs: function () {
 
+                return true;
                 if (browserInfo.animate && !browserInfo.mobile) {
                     //return true;
                 }
@@ -1489,48 +1490,93 @@
                 return outerHtml;
             },
 
-            getItemDataAttributes: function (item, options, index) {
+            getItemDataAttributesList: function (item, options, index) {
 
                 var atts = [];
 
                 var itemCommands = LibraryBrowser.getItemCommands(item, options);
 
-                atts.push('data-itemid="' + item.Id + '"');
-                atts.push('data-commands="' + itemCommands.join(',') + '"');
+                atts.push({
+                    name: 'itemid',
+                    value: item.Id
+                });
+                atts.push({
+                    name: 'commands',
+                    value: itemCommands.join(',')
+                });
 
                 if (options.context) {
-                    atts.push('data-context="' + (options.context || '') + '"');
+                    atts.push({
+                        name: 'context',
+                        value: options.context || ''
+                    });
                 }
 
                 if (item.IsFolder) {
-                    atts.push('data-isfolder="' + item.IsFolder + '"');
+                    atts.push({
+                        name: 'isfolder',
+                        value: item.IsFolder
+                    });
                 }
 
-                atts.push('data-itemtype="' + item.Type + '"');
+                atts.push({
+                    name: 'itemtype',
+                    value: item.Type
+                });
 
                 if (item.MediaType) {
-                    atts.push('data-mediatype="' + (item.MediaType || '') + '"');
+                    atts.push({
+                        name: 'mediatype',
+                        value: item.MediaType || ''
+                    });
                 }
 
                 if (item.UserData.PlaybackPositionTicks) {
-                    atts.push('data-positionticks="' + (item.UserData.PlaybackPositionTicks || 0) + '"');
+                    atts.push({
+                        name: 'positionticks',
+                        value: (item.UserData.PlaybackPositionTicks || 0)
+                    });
                 }
 
-                atts.push('data-playaccess="' + (item.PlayAccess || '') + '"');
-                atts.push('data-locationtype="' + (item.LocationType || '') + '"');
-                atts.push('data-index="' + index + '"');
+                atts.push({
+                    name: 'playaccess',
+                    value: item.PlayAccess || ''
+                });
+
+                atts.push({
+                    name: 'locationtype',
+                    value: item.LocationType || ''
+                });
 
                 if (item.AlbumId) {
-                    atts.push('data-albumid="' + item.AlbumId + '"');
+                    atts.push({
+                        name: 'albumid',
+                        value: item.AlbumId
+                    });
                 }
 
                 if (item.ChannelId) {
-                    atts.push('data-channelid="' + item.ChannelId + '"');
+                    atts.push({
+                        name: 'channelid',
+                        value: item.ChannelId
+                    });
                 }
 
                 if (item.ArtistItems && item.ArtistItems.length) {
-                    atts.push('data-artistid="' + item.ArtistItems[0].Id + '"');
+                    atts.push({
+                        name: 'artistid',
+                        value: item.ArtistItems[0].Id
+                    });
                 }
+
+                return atts;
+            },
+
+            getItemDataAttributes: function (item, options, index) {
+
+                var atts = LibraryBrowser.getItemDataAttributesList(item, options, index).map(function (i) {
+                    return 'data-' + i.name + '="' + i.value + '"';
+                });
 
                 var html = atts.join(' ');
 
@@ -1754,14 +1800,11 @@
                 return result;
             },
 
-            getPosterViewHtml: function (options) {
+            setPosterViewData: function (options) {
 
                 var items = options.items;
-                var currentIndexValue;
 
                 options.shape = options.shape || "portrait";
-
-                var html = "";
 
                 var primaryImageAspectRatio = LibraryBrowser.getAveragePrimaryImageAspectRatio(items);
                 var isThumbAspectRatio = primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.777777778) < .3;
@@ -1827,8 +1870,446 @@
                     thumbWidth = 320;
                 }
 
+                options.uiAspect = getDesiredAspect(options.shape);
+                options.primaryImageAspectRatio = primaryImageAspectRatio;
+                options.posterWidth = posterWidth;
+                options.thumbWidth = thumbWidth;
+                options.bannerWidth = bannerWidth;
+                options.squareSize = squareSize;
+            },
+
+            setPosterViewDataOnItems: function (options, items) {
+
+                LibraryBrowser.setPosterViewData(options);
+
+                options.shape = options.shape || "portrait";
+
+                var html = "";
+
+                var primaryImageAspectRatio;
+                var thumbWidth = options.thumbWidth;
+                var posterWidth = options.posterWidth;
+                var squareSize = options.squareSize;
+                var bannerWidth = options.bannerWidth;
+
+                var uiAspect = options.uiAspect;
+
+                for (var i = 0, length = items.length; i < length; i++) {
+
+                    var item = items[i];
+
+                    primaryImageAspectRatio = LibraryBrowser.getAveragePrimaryImageAspectRatio([item]);
+
+                    LibraryBrowser.setPosterViewDataOnItem(item, i, options, primaryImageAspectRatio, thumbWidth, posterWidth, squareSize, bannerWidth, uiAspect);
+                }
+
+                return html;
+            },
+
+            setPosterViewDataOnItem: function (item, index, options, primaryImageAspectRatio, thumbWidth, posterWidth, squareSize, bannerWidth, uiAspect) {
+
+                var imgUrl = null;
+                var icon;
+                var width = null;
+                var height = null;
+
+                var forceName = false;
+
+                var enableImageEnhancers = options.enableImageEnhancers !== false;
+
+                var cssClass = "card";
+
+                if (options.fullWidthOnMobile) {
+                    cssClass += " fullWidthCardOnMobile";
+                }
+
+                var showTitle = options.showTitle == 'auto' ? true : options.showTitle;
+                var coverImage = options.coverImage;
+
+                if (options.autoThumb && item.ImageTags && item.ImageTags.Primary && item.PrimaryImageAspectRatio && item.PrimaryImageAspectRatio >= 1.34) {
+
+                    width = posterWidth;
+                    height = primaryImageAspectRatio ? Math.round(posterWidth / primaryImageAspectRatio) : null;
+
+                    imgUrl = ApiClient.getImageUrl(item.Id, {
+                        type: "Primary",
+                        maxHeight: height,
+                        maxWidth: width,
+                        tag: item.ImageTags.Primary,
+                        enableImageEnhancers: enableImageEnhancers
+                    });
+
+                    if (primaryImageAspectRatio) {
+                        if (uiAspect) {
+                            if (Math.abs(primaryImageAspectRatio - uiAspect) <= .2) {
+                                coverImage = true;
+                            }
+                        }
+                    }
+
+                } else if (options.autoThumb && item.ImageTags && item.ImageTags.Thumb) {
+
+                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                        type: "Thumb",
+                        maxWidth: thumbWidth,
+                        tag: item.ImageTags.Thumb,
+                        enableImageEnhancers: enableImageEnhancers
+                    });
+
+                } else if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
+
+                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                        type: "Backdrop",
+                        maxWidth: thumbWidth,
+                        tag: item.BackdropImageTags[0],
+                        enableImageEnhancers: enableImageEnhancers
+                    });
+
+                } else if (options.preferThumb && item.ImageTags && item.ImageTags.Thumb) {
+
+                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                        type: "Thumb",
+                        maxWidth: thumbWidth,
+                        tag: item.ImageTags.Thumb,
+                        enableImageEnhancers: enableImageEnhancers
+                    });
+
+                } else if (options.preferBanner && item.ImageTags && item.ImageTags.Banner) {
+
+                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                        type: "Banner",
+                        maxWidth: bannerWidth,
+                        tag: item.ImageTags.Banner,
+                        enableImageEnhancers: enableImageEnhancers
+                    });
+
+                } else if (options.preferThumb && item.SeriesThumbImageTag && options.inheritThumb !== false) {
+
+                    imgUrl = ApiClient.getScaledImageUrl(item.SeriesId, {
+                        type: "Thumb",
+                        maxWidth: thumbWidth,
+                        tag: item.SeriesThumbImageTag,
+                        enableImageEnhancers: enableImageEnhancers
+                    });
+
+                } else if (options.preferThumb && item.ParentThumbItemId && options.inheritThumb !== false) {
+
+                    imgUrl = ApiClient.getThumbImageUrl(item.ParentThumbItemId, {
+                        type: "Thumb",
+                        maxWidth: thumbWidth,
+                        enableImageEnhancers: enableImageEnhancers
+                    });
+
+                } else if (options.preferThumb && item.BackdropImageTags && item.BackdropImageTags.length) {
+
+                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                        type: "Backdrop",
+                        maxWidth: thumbWidth,
+                        tag: item.BackdropImageTags[0],
+                        enableImageEnhancers: enableImageEnhancers
+                    });
+
+                    forceName = true;
+
+                } else if (item.ImageTags && item.ImageTags.Primary) {
+
+                    width = posterWidth;
+                    height = primaryImageAspectRatio ? Math.round(posterWidth / primaryImageAspectRatio) : null;
+
+                    imgUrl = ApiClient.getImageUrl(item.Id, {
+                        type: "Primary",
+                        maxHeight: height,
+                        maxWidth: width,
+                        tag: item.ImageTags.Primary,
+                        enableImageEnhancers: enableImageEnhancers
+                    });
+
+                    if (primaryImageAspectRatio) {
+                        if (uiAspect) {
+                            if (Math.abs(primaryImageAspectRatio - uiAspect) <= .2) {
+                                coverImage = true;
+                            }
+                        }
+                    }
+                }
+                else if (item.ParentPrimaryImageTag) {
+
+                    imgUrl = ApiClient.getImageUrl(item.ParentPrimaryImageItemId, {
+                        type: "Primary",
+                        maxWidth: posterWidth,
+                        tag: item.ParentPrimaryImageTag,
+                        enableImageEnhancers: enableImageEnhancers
+                    });
+                }
+                else if (item.AlbumId && item.AlbumPrimaryImageTag) {
+
+                    height = squareSize;
+                    width = primaryImageAspectRatio ? Math.round(height * primaryImageAspectRatio) : null;
+
+                    imgUrl = ApiClient.getScaledImageUrl(item.AlbumId, {
+                        type: "Primary",
+                        maxHeight: height,
+                        maxWidth: width,
+                        tag: item.AlbumPrimaryImageTag,
+                        enableImageEnhancers: enableImageEnhancers
+                    });
+
+                    if (primaryImageAspectRatio) {
+                        if (uiAspect) {
+                            if (Math.abs(primaryImageAspectRatio - uiAspect) <= .2) {
+                                coverImage = true;
+                            }
+                        }
+                    }
+                }
+                else if (item.Type == 'Season' && item.ImageTags && item.ImageTags.Thumb) {
+
+                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                        type: "Thumb",
+                        maxWidth: thumbWidth,
+                        tag: item.ImageTags.Thumb,
+                        enableImageEnhancers: enableImageEnhancers
+                    });
+
+                }
+                else if (item.BackdropImageTags && item.BackdropImageTags.length) {
+
+                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                        type: "Backdrop",
+                        maxWidth: thumbWidth,
+                        tag: item.BackdropImageTags[0],
+                        enableImageEnhancers: enableImageEnhancers
+                    });
+
+                } else if (item.ImageTags && item.ImageTags.Thumb) {
+
+                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                        type: "Thumb",
+                        maxWidth: thumbWidth,
+                        tag: item.ImageTags.Thumb,
+                        enableImageEnhancers: enableImageEnhancers
+                    });
+
+                } else if (item.SeriesThumbImageTag) {
+
+                    imgUrl = ApiClient.getScaledImageUrl(item.SeriesId, {
+                        type: "Thumb",
+                        maxWidth: thumbWidth,
+                        tag: item.SeriesThumbImageTag,
+                        enableImageEnhancers: enableImageEnhancers
+                    });
+
+                } else if (item.ParentThumbItemId) {
+
+                    imgUrl = ApiClient.getThumbImageUrl(item, {
+                        type: "Thumb",
+                        maxWidth: thumbWidth,
+                        enableImageEnhancers: enableImageEnhancers
+                    });
+
+                } else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
+
+                    if (item.Name && showTitle) {
+                        icon = 'library-music';
+                    }
+                    cssClass += " defaultBackground";
+
+                } else if (item.Type == "Recording" || item.Type == "Program" || item.Type == "TvChannel") {
+
+                    if (item.Name && showTitle) {
+                        icon = 'folder-open';
+                    }
+
+                    cssClass += " defaultBackground";
+                } else if (item.MediaType == "Video" || item.Type == "Season" || item.Type == "Series") {
+
+                    if (item.Name && showTitle) {
+                        icon = 'videocam';
+                    }
+                    cssClass += " defaultBackground";
+                } else if (item.Type == "Person") {
+
+                    if (item.Name && showTitle) {
+                        icon = 'person';
+                    }
+                    cssClass += " defaultBackground";
+                } else {
+                    if (item.Name && showTitle) {
+                        icon = 'folder-open';
+                    }
+                    cssClass += " defaultBackground";
+                }
+
+                icon = item.icon || icon;
+                cssClass += ' ' + options.shape + 'Card';
+
+                var mediaSourceCount = item.MediaSourceCount || 1;
+
+                var href = options.linkItem === false ? '#' : LibraryBrowser.getHref(item, options.context);
+
+                if (options.showChildCountIndicator && item.ChildCount && options.showLatestItemsPopup !== false) {
+                    cssClass += ' groupedCard';
+                }
+
+                if ((showTitle || options.showItemCounts) && !options.overlayText) {
+                    cssClass += ' bottomPaddedCard';
+                }
+
+                var dataAttributes = LibraryBrowser.getItemDataAttributesList(item, options, index);
+
+                for (var i = 0, length = dataAttributes.length; i < length; i++) {
+                    var att = dataAttributes[i];
+                    if (att.value) {
+                        item['data-' + att.name] = att.value;
+                    }
+                }
+                console.log(item['data-commands']);
+
+                var defaultAction = options.defaultAction;
+                if (defaultAction == 'play' || defaultAction == 'playallfromhere') {
+                    if (item.PlayAccess != 'Full') {
+                        defaultAction = null;
+                    }
+                }
+
+                // card
+                //html += '<div' + dataAttributes + ' class="' + cssClass + '">';
+                item.elemClass = cssClass;
+                item.defaultAction = defaultAction;
+
+                var style = "";
+
+                if (imgUrl && !options.lazy) {
+                    style += 'background-image:url(\'' + imgUrl + '\');';
+                }
+
+                var imageCssClass = 'cardImage';
+
+                if (icon) {
+                    imageCssClass += " iconCardImage";
+                }
+
+                if (coverImage) {
+                    imageCssClass += " coveredCardImage";
+                    if (item.MediaType == 'Photo' || item.Type == 'PhotoAlbum' || item.Type == 'Folder' || item.Type == 'Program' || item.Type == 'Recording') {
+                        imageCssClass += " noScale";
+                    }
+                }
+                if (options.centerImage) {
+                    imageCssClass += " centeredCardImage";
+                }
+
+                var dataSrc = "";
+
+                if (options.lazy && imgUrl) {
+                    imageCssClass += " lazy";
+                    dataSrc = ' data-src="' + imgUrl + '"';
+                }
+
+                var cardboxCssClass = 'cardBox';
+
+                if (options.cardLayout) {
+                    cardboxCssClass += ' visualCardBox';
+                }
+
+                item.cardBoxClass = cardboxCssClass;
+
+                var anchorCssClass = "cardContent";
+
+                anchorCssClass += ' mediaItem';
+
+                if (defaultAction) {
+                    anchorCssClass += ' itemWithAction';
+                }
+
+                item.anchorClass = anchorCssClass;
+                item.href = href;
+                item.imgUrl = imgUrl;
+                item.imageClass = imageCssClass;
+
+                if (imgUrl) {
+                    item.imageStyle = 'background-image:url("' + imgUrl + '");';
+                } else {
+                    item.imageStyle = null;
+                }
+
+                var overlayHtml = '';
+
+                if (item.LocationType == "Virtual" || item.LocationType == "Offline") {
+                    if (options.showLocationTypeIndicator !== false) {
+                        overlayHtml += LibraryBrowser.getOfflineIndicatorHtml(item);
+                    }
+                } else if (options.showUnplayedIndicator !== false) {
+                    overlayHtml += LibraryBrowser.getPlayedIndicatorHtml(item);
+                } else if (options.showChildCountIndicator) {
+                    overlayHtml += LibraryBrowser.getGroupCountIndicator(item);
+                }
+
+                overlayHtml += LibraryBrowser.getSyncIndicator(item);
+
+                if (mediaSourceCount > 1) {
+                    overlayHtml += '<div class="mediaSourceIndicator">' + mediaSourceCount + '</div>';
+                }
+
+                var progressHtml = options.showProgress === false || item.IsFolder ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
+
+                var footerOverlayed = false;
+
+                if (options.overlayText || (forceName && !showTitle)) {
+
+                    var footerCssClass = progressHtml ? 'cardFooter fullCardFooter' : 'cardFooter';
+
+                    overlayHtml += LibraryBrowser.getCardFooterText(item, options, showTitle, imgUrl, forceName, footerCssClass, progressHtml);
+                    footerOverlayed = true;
+                }
+                else if (progressHtml) {
+                    overlayHtml += '<div class="cardFooter fullCardFooter lightCardFooter">';
+                    overlayHtml += "<div class='cardProgress cardText'>";
+                    overlayHtml += progressHtml;
+                    overlayHtml += "</div>";
+                    //cardFooter
+                    overlayHtml += "</div>";
+
+                    progressHtml = '';
+                }
+
+                if (options.overlayPlayButton && !item.IsPlaceHolder && (item.LocationType != 'Virtual' || !item.MediaType || item.Type == 'Program') && item.Type != 'Person') {
+                    overlayHtml += '<div class="cardOverlayButtonContainer"><paper-icon-button icon="play-arrow" class="cardOverlayPlayButton" onclick="return false;"></paper-icon-button></div>';
+                }
+                if (options.overlayMoreButton) {
+                    overlayHtml += '<div class="cardOverlayButtonContainer"><paper-icon-button icon="' + AppInfo.moreIcon + '" class="cardOverlayMoreButton" onclick="return false;"></paper-icon-button></div>';
+                }
+
+                //// cardScalable
+
+                if (!options.overlayText && !footerOverlayed) {
+                    item.footerHtml = LibraryBrowser.getCardFooterText(item, options, showTitle, imgUrl, forceName, 'cardFooter outerCardFooter', progressHtml);
+                } else {
+                    item.footerHtml = '';
+                }
+
+                item.overlayHtml = overlayHtml;
+            },
+
+            getPosterViewHtml: function (options) {
+
+                LibraryBrowser.setPosterViewData(options);
+
+                var items = options.items;
+                var currentIndexValue;
+
+                options.shape = options.shape || "portrait";
+
+                var html = "";
+
+                var primaryImageAspectRatio;
+                var thumbWidth = options.thumbWidth;
+                var posterWidth = options.posterWidth;
+                var squareSize = options.squareSize;
+                var bannerWidth = options.bannerWidth;
+
                 var dateText;
-                var uiAspect = getDesiredAspect(options.shape);
+                var uiAspect = options.uiAspect;
 
                 for (var i = 0, length = items.length; i < length; i++) {
 
@@ -2765,23 +3246,24 @@
                 }
             },
 
-            getDefaultPageSizeSelections: function () {
+            showLayoutMenu: function (button, currentLayout, views) {
 
-                return [20, 50, 100, 200, 300, 400, 500];
-            },
+                var dispatchEvent = true;
 
-            showLayoutMenu: function (button, currentLayout) {
+                if (!views) {
 
-                // Add banner and list once all screens support them
-                var views = button.getAttribute('data-layouts');
+                    dispatchEvent = false;
+                    // Add banner and list once all screens support them
+                    views = button.getAttribute('data-layouts');
 
-                views = views ? views.split(',') : ['List', 'Poster', 'PosterCard', 'Thumb', 'ThumbCard'];
+                    views = views ? views.split(',') : ['List', 'Poster', 'PosterCard', 'Thumb', 'ThumbCard'];
+                }
 
                 var menuItems = views.map(function (v) {
                     return {
                         name: Globalize.translate('Option' + v),
                         id: v,
-                        ironIcon: currentLayout == v ? 'check' : null
+                        selected: currentLayout == v
                     };
                 });
 
@@ -2792,10 +3274,20 @@
                         positionTo: button,
                         callback: function (id) {
 
-                            // TODO: remove jQuery
-                            require(['jQuery'], function ($) {
-                                $(button).trigger('layoutchange', [id]);
-                            });
+                            if (dispatchEvent) {
+                                button.dispatchEvent(new CustomEvent('layoutchange', {
+                                    detail: {
+                                        viewStyle: id
+                                    },
+                                    bubbles: true,
+                                    cancelable: false
+                                }));
+                            } else {
+                                // TODO: remove jQuery
+                                require(['jQuery'], function ($) {
+                                    $(button).trigger('layoutchange', [id]);
+                                });
+                            }
                         }
                     });
 
@@ -2866,7 +3358,7 @@
 
                         var id = "selectPageSize";
 
-                        var pageSizes = options.pageSizes || LibraryBrowser.getDefaultPageSizeSelections();
+                        var pageSizes = options.pageSizes || [20, 50, 100, 200, 300, 400, 500];
 
                         var optionsHtml = pageSizes.map(function (val) {
 

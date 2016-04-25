@@ -16,8 +16,7 @@
                     IncludeItemTypes: "Series",
                     Recursive: true,
                     Fields: "DateCreated,ItemCounts",
-                    StartIndex: 0,
-                    Limit: LibraryBrowser.getDefaultPageSize()
+                    StartIndex: 0
                 }
             };
 
@@ -40,17 +39,7 @@
 
         ApiClient.getStudios(Dashboard.getCurrentUserId(), query).then(function (result) {
 
-            // Scroll back up so they can see the results from the beginning
-            window.scrollTo(0, 0);
-
             var html = '';
-
-            $('.listTopPaging', context).html(LibraryBrowser.getQueryPagingHtml({
-                startIndex: query.StartIndex,
-                limit: query.Limit,
-                totalRecordCount: result.TotalRecordCount,
-                showLimit: false
-            }));
 
             html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
@@ -67,16 +56,6 @@
             var elem = context.querySelector('#items');
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
-
-            $('.btnNextPage', context).on('click', function () {
-                query.StartIndex += query.Limit;
-                reloadItems(context, params);
-            });
-
-            $('.btnPreviousPage', context).on('click', function () {
-                query.StartIndex -= query.Limit;
-                reloadItems(context, params);
-            });
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
             Dashboard.hideLoadingMsg();

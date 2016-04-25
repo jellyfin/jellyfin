@@ -4,16 +4,8 @@ define([], function () {
 
         if (elem.tagName !== "IMG") {
 
-            return new Promise(function (resolve, reject) {
-
-                var tmp = new Image();
-
-                tmp.onload = function () {
-                    elem.style.backgroundImage = "url('" + url + "')";
-                    resolve(elem);
-                };
-                tmp.src = url;
-            });
+            elem.style.backgroundImage = "url('" + url + "')";
+            return Promise.resolve(elem);
 
         } else {
             elem.setAttribute("src", url);

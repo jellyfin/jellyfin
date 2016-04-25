@@ -255,7 +255,7 @@ namespace MediaBrowser.Controller.Entities.TV
             // Refresh current item
             await RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
 
-            // Refresh TV
+            // Refresh seasons
             foreach (var item in seasons)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -268,12 +268,30 @@ namespace MediaBrowser.Controller.Entities.TV
                 progress.Report(percent * 100);
             }
 
-            // Refresh all non-songs
+            // Refresh episodes and other children
             foreach (var item in otherItems)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                var skipItem = false;
+
+                var episode = item as Episode;
+
+                if (episode != null
+                    && refreshOptions.MetadataRefreshMode != MetadataRefreshMode.FullRefresh
+                    && !refreshOptions.ReplaceAllMetadata
+                    && episode.IsMissingEpisode 
+                    && episode.LocationType == Model.Entities.LocationType.Virtual 
+                    && episode.PremiereDate.HasValue 
+                    && (DateTime.UtcNow - episode.PremiereDate.Value).TotalDays > 30)
+                {
+                    skipItem = true;
+                }
+
+                if (!skipItem)
+                {
+                    await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                }
 
                 numComplete++;
                 double percent = numComplete;
