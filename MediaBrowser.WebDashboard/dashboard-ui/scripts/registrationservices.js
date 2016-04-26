@@ -297,4 +297,5 @@
         }
     };
 
+    return window.RegistrationServices;
 });

@@ -13,7 +13,8 @@
 .absolutePageTabContent {
     margin: 0 !important;
     width: 100% !important;
-    top: 98px !important;
+    /* Page needs to supply padding */
+    top: 92px !important;
 }
 
 .sidebarDivider {

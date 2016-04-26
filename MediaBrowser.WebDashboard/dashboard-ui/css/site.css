@@ -300,6 +300,10 @@ body {
     height: 100%;
 }
 
+    body.autoScrollY {
+        overflow-y: auto !important;
+    }
+
 /* Without this, no content will be displayed in mobile safari */
 .pageContainer {
     overflow-x: visible !important;

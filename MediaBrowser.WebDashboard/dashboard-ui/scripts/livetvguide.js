@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['tvguide', 'embyRouter'], function (tvguide, embyRouter) {
 
     window.LiveTvPage.initGuideTab = function (page, tabContent) {
 
@@ -11,12 +11,9 @@
                 page.guideInstance.refresh();
             }
         } else {
-            require(['tvguide'], function (tvguide) {
-
-                page.guideInstance = new tvguide({
-                    element: tabContent,
-                    enableHeadRoom: true
-                });
+            page.guideInstance = new tvguide({
+                element: tabContent,
+                enableHeadRoom: true
             });
         }
     };

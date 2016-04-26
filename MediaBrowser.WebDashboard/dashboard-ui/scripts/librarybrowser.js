@@ -3877,13 +3877,13 @@
                 if (item.IsSeries && !item.IsRepeat) {
 
                     require(['livetvcss']);
-                    miscInfo.push('<span class="newTvProgram">' + Globalize.translate('LabelNewProgram') + '</span>');
+                    miscInfo.push('<span class="newTvProgram">' + Globalize.translate('AttributeNew') + '</span>');
 
                 }
 
                 if (item.IsLive) {
 
-                    miscInfo.push('<span class="liveTvProgram">' + Globalize.translate('LabelLiveProgram') + '</span>');
+                    miscInfo.push('<span class="liveTvProgram">' + Globalize.translate('AttributeLive') + '</span>');
 
                 }
 
