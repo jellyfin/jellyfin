@@ -1,4 +1,4 @@
-﻿define(['ironCardList', 'scrollThreshold', 'events', 'libraryBrowser', 'jQuery'], function (ironCardList, scrollThreshold, events, libraryBrowser, $) {
+﻿define(['events', 'libraryBrowser', 'imageLoader', 'jQuery'], function (events, libraryBrowser, imageLoader, $) {
 
     return function (view, params, tabContent) {
 
@@ -46,122 +46,116 @@
             return context.savedQueryKey;
         }
 
-        function setCardOptions(result) {
-
-            var cardOptions;
-
-            var view = self.getCurrentViewStyle();
-
-            if (view == "Thumb") {
-
-                cardOptions = {
-                    items: result.Items,
-                    shape: "backdrop",
-                    preferThumb: true,
-                    context: 'tv',
-                    lazy: true,
-                    overlayPlayButton: true
-                };
-            }
-            else if (view == "ThumbCard") {
-
-                cardOptions = {
-                    items: result.Items,
-                    shape: "backdrop",
-                    preferThumb: true,
-                    context: 'tv',
-                    lazy: true,
-                    cardLayout: true,
-                    showTitle: true,
-                    showSeriesYear: true
-                };
-            }
-            else if (view == "Banner") {
-
-                cardOptions = {
-                    items: result.Items,
-                    shape: "banner",
-                    preferBanner: true,
-                    context: 'tv',
-                    lazy: true
-                };
-            }
-            else if (view == "List") {
-
-                html = libraryBrowser.getListViewHtml({
-                    items: result.Items,
-                    context: 'tv',
-                    sortBy: query.SortBy
-                });
-            }
-            else if (view == "PosterCard") {
-                cardOptions = {
-                    items: result.Items,
-                    shape: "portrait",
-                    context: 'tv',
-                    showTitle: true,
-                    showYear: true,
-                    lazy: true,
-                    cardLayout: true
-                };
-            }
-            else {
-
-                // Poster
-                cardOptions = {
-                    items: result.Items,
-                    shape: "portrait",
-                    context: 'tv',
-                    centerText: true,
-                    lazy: true,
-                    overlayPlayButton: true
-                };
-            }
-
-            self.cardOptions = cardOptions;
-        }
-
         function reloadItems(page) {
 
-            self.isLoading = true;
             Dashboard.showLoadingMsg();
 
             var query = getQuery(page);
-            var startIndex = query.StartIndex;
-            var reloadList = !self.cardOptions || startIndex == 0;
 
             ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (result) {
 
                 updateFilterControls(page);
 
-                var pushItems = true;
-                if (reloadList) {
-                    setCardOptions(result);
-                    pushItems = false;
-                }
-                libraryBrowser.setPosterViewData(self.cardOptions);
-                libraryBrowser.setPosterViewDataOnItems(self.cardOptions, result.Items);
+                var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+                    startIndex: query.StartIndex,
+                    limit: query.Limit,
+                    totalRecordCount: result.TotalRecordCount,
+                    showLimit: false,
+                    updatePageSizeSetting: false,
+                    addLayoutButton: false,
+                    sortButton: false,
+                    filterButton: false
+                });
 
-                var ironList = page.querySelector('#ironList');
-                if (pushItems) {
-                    for (var i = 0, length = result.Items.length; i < length; i++) {
-                        ironList.push('items', result.Items[i]);
-                    }
-                } else {
-                    ironList.items = result.Items;
+                var html;
+                var viewStyle = self.getCurrentViewStyle();
+
+                if (viewStyle == "Thumb") {
+
+                    html = libraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "backdrop",
+                        preferThumb: true,
+                        context: 'tv',
+                        lazy: true,
+                        overlayPlayButton: true
+                    });
+                }
+                else if (viewStyle == "ThumbCard") {
+
+                    html = libraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "backdrop",
+                        preferThumb: true,
+                        context: 'tv',
+                        lazy: true,
+                        cardLayout: true,
+                        showTitle: true,
+                        showSeriesYear: true
+                    });
+                }
+                else if (viewStyle == "Banner") {
+
+                    html = libraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "banner",
+                        preferBanner: true,
+                        context: 'tv',
+                        lazy: true
+                    });
+                }
+                else if (viewStyle == "List") {
+
+                    html = libraryBrowser.getListViewHtml({
+                        items: result.Items,
+                        context: 'tv',
+                        sortBy: query.SortBy
+                    });
+                }
+                else if (viewStyle == "PosterCard") {
+
+                    html = libraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "portrait",
+                        context: 'tv',
+                        showTitle: true,
+                        showYear: true,
+                        lazy: true,
+                        cardLayout: true
+                    });
+                }
+                else {
+
+                    // Poster
+                    html = libraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "portrait",
+                        context: 'tv',
+                        centerText: true,
+                        lazy: true,
+                        overlayPlayButton: true
+                    });
                 }
 
-                // Hack: notifyResize needs to be done after the items have been rendered
-                setTimeout(function () {
-                    ironList.notifyResize();
-                    self.scrollThreshold.resetSize();
-                }, 300);
+                $('.paging', tabContent).html(pagingHtml);
+
+                $('.btnNextPage', tabContent).on('click', function () {
+                    query.StartIndex += query.Limit;
+                    reloadItems(tabContent);
+                });
+
+                $('.btnPreviousPage', tabContent).on('click', function () {
+                    query.StartIndex -= query.Limit;
+                    reloadItems(tabContent);
+                });
+
+                var itemsContainer = tabContent.querySelector('.itemsContainer');
+                itemsContainer.innerHTML = html;
+                imageLoader.lazyChildren(itemsContainer);
 
                 libraryBrowser.saveQueryValues(getSavedQueryKey(page), query);
 
                 Dashboard.hideLoadingMsg();
-                self.hasMoreItems = result.TotalRecordCount > (startIndex + result.Items.length);
-                self.isLoading = false;
             });
         }
 
@@ -277,49 +271,13 @@
 
         initPage(tabContent);
 
-        function createList() {
-
-            if (self.listCreated) {
-                return Promise.resolve();
-            }
-
-            return ironCardList.getTemplate('seriesTab').then(function (html) {
-
-                tabContent.querySelector('.itemsContainer').innerHTML = html;
-                self.listCreated = true;
-
-                return new Promise(function (resolve, reject) {
-
-                    setTimeout(resolve, 2000);
-                });
-            });
-        }
-
-        function loadMoreItems() {
-
-            if (!self.isLoading && self.hasMoreItems) {
-
-                getQuery(tabContent).StartIndex += pageSize;
-                reloadItems(tabContent);
-            }
-        }
-
-        self.scrollThreshold = new scrollThreshold(tabContent, false);
-        events.on(self.scrollThreshold, 'lower-threshold', loadMoreItems);
-
         self.renderTab = function () {
 
-            createList().then(function () {
-                reloadItems(tabContent);
-                updateFilterControls(tabContent);
-            });
+            reloadItems(tabContent);
+            updateFilterControls(tabContent);
         };
 
         self.destroy = function () {
-            events.off(self.scrollThreshold, 'lower-threshold', loadMoreItems);
-            if (self.scrollThreshold) {
-                self.scrollThreshold.destroy();
-            }
         };
     };
 });

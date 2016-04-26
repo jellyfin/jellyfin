@@ -173,7 +173,6 @@
 
             enableFullPaperTabs: function () {
 
-                return true;
                 if (browserInfo.animate && !browserInfo.mobile) {
                     //return true;
                 }
