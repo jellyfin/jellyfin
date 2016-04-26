@@ -25,17 +25,17 @@
 
         //};
 
-        LazyloadImagePrototype.attachedCallback = function () {
+        //LazyloadImagePrototype.attachedCallback = function () {
 
-            var original = this.currentSrc || this.src;
+        //    var original = this.currentSrc || this.src;
 
-            if (original && window.ImageFetcherLazyloadImage) {
-                //console.log(original);
-                this.src = FALLBACK_IMAGE;
-                console.log('loading ' + original);
-                ImageFetcherLazyloadImage.loadImage(this, original);
-            }
-        };
+        //    if (original && window.ImageFetcherLazyloadImage) {
+        //        //console.log(original);
+        //        this.src = FALLBACK_IMAGE;
+        //        console.log('loading ' + original);
+        //        ImageFetcherLazyloadImage.loadImage(this, original);
+        //    }
+        //};
 
         return document.registerElement('lazyload-image', {
             prototype: LazyloadImagePrototype,
