@@ -1,5 +1,6 @@
 <!doctype html>
 <!--
+@license
 Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
 The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
@@ -23,12 +24,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <link rel="import" href="../../test-fixture/test-fixture.html">
   <link rel="import" href="test-validatable.html">
+  <link rel="import" href="cats-only.html">
+  <link rel="import" href="dogs-only.html">
 
 </head>
 <body>
 
   <test-fixture id="basic">
     <template>
+      <test-validatable></test-validatable>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="validators">
+    <template>
+      <cats-only></cats-only>
+      <dogs-only></dogs-only>
       <test-validatable></test-validatable>
     </template>
   </test-fixture>
@@ -49,6 +60,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var node = fixture('basic');
         var valid = node.validate();
         assert.isTrue(valid);
+      });
+
+      test('changing the validator works', function() {
+        var node = fixture('validators');
+        var input = node[2];
+
+        // Initially there's no validator, so everything is valid.
+        assert.isTrue(input.validate(''));
+        assert.isTrue(input.validate('cats'));
+
+        // Only valid if the value is 'cats'.
+        input.validator = 'cats-only';
+        assert.isFalse(input.validate('ca'));
+        assert.isTrue(input.validate('cats'));
+
+        // Only valid if the value is 'dogs'.
+        input.validator = 'dogs-only';
+        assert.isFalse(input.validate('cats'));
+        assert.isTrue(input.validate('dogs'));
       });
 
     });

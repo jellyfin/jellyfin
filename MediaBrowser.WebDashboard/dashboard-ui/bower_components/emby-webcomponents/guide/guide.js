@@ -588,10 +588,12 @@
             }
         }
 
-        fetch(baseUrl + '/tvguide.template.html', { mode: 'no-cors' }).then(function (response) {
-            return response.text();
-        }).then(function (template) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', baseUrl + '/tvguide.template.html', true);
 
+        xhr.onload = function (e) {
+
+            var template = this.response;
             var context = options.element;
             context.innerHTML = globalize.translateDocument(template, 'core');
 
@@ -622,7 +624,9 @@
             itemShortcuts.on(context);
 
             self.refresh();
-        });
+        }
+
+        xhr.send();
     };
 
     Guide.setBaseUrl = function (url) {
