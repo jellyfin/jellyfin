@@ -64,31 +64,41 @@
                 </p>
             </div>
         </div>
-        <div id="seriesTab" class="pageTabContent absolutePageTabContent hide smoothScrollY" data-index="3">
+        <div id="seriesTab" class="pageTabContent hide" data-index="3">
 
             <div style="text-align: center;padding:.7em 0;">
-                <paper-icon-button class="btnSelectView" icon="view-comfy" title="${ButtonSelectView}"></paper-icon-button>
-                <paper-icon-button class="btnSort" title="${ButtonSort}" icon="sort-by-alpha"></paper-icon-button>
-                <paper-icon-button class="btnFilter" title="${ButtonFilter}" icon="filter-list"></paper-icon-button>
+                <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
+                    <div class="paging"></div>
+                    <paper-icon-button class="btnSelectView" icon="view-comfy" title="${ButtonSelectView}"></paper-icon-button>
+                    <paper-icon-button class="btnSort" title="${ButtonSort}" icon="sort-by-alpha"></paper-icon-button>
+                    <paper-icon-button class="btnFilter" title="${ButtonFilter}" icon="filter-list"></paper-icon-button>
+                </div>
             </div>
 
             <div class="alphabetPicker">
             </div>
 
-            <div class="itemsContainer" style="margin-left:-10px;">
+            <div class="itemsContainer">
+            </div>
+            <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
+                <div class="paging"></div>
             </div>
         </div>
-        <div id="episodesTab" class="pageTabContent absolutePageTabContent hide smoothScrollY" data-index="4">
-            <div style="text-align: center;padding:.7em 0;">
+        <div id="episodesTab" class="pageTabContent hide" data-index="4">
+            <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
+                <div class="paging"></div>
                 <paper-icon-button class="btnSelectView" icon="view-comfy" title="${ButtonSelectView}"></paper-icon-button>
                 <paper-icon-button class="btnSort" title="${ButtonSort}" icon="sort-by-alpha"></paper-icon-button>
                 <paper-icon-button class="btnFilter" title="${ButtonFilter}" icon="filter-list"></paper-icon-button>
             </div>
             <div class="itemsContainer">
             </div>
+            <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
+                <div class="paging"></div>
+            </div>
         </div>
         <div class="pageTabContent hide" data-index="5">
-            <div style="text-align: center;">
+            <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
                 <paper-icon-button class="btnSelectView" icon="view-comfy" title="${ButtonSelectView}"></paper-icon-button>
             </div>
             <div id="items" class="itemsContainer paddedItemsContainer"></div>

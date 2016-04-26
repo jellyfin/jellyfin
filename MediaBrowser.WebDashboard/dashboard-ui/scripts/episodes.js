@@ -1,4 +1,4 @@
-﻿define(['ironCardList', 'scrollThreshold', 'events', 'libraryBrowser', 'jQuery'], function (ironCardList, scrollThreshold, events, libraryBrowser, $) {
+﻿define(['events', 'libraryBrowser', 'imageLoader', 'jQuery'], function (events, libraryBrowser, imageLoader, $) {
 
     return function (view, params, tabContent) {
 
@@ -48,88 +48,81 @@
             return context.savedQueryKey;
         }
 
-        function setCardOptions(result) {
-
-            var cardOptions;
-
-            var view = self.getCurrentViewStyle();
-
-            if (view == "List") {
-
-                html = libraryBrowser.getListViewHtml({
-                    items: result.Items,
-                    sortBy: query.SortBy
-                });
-            }
-            else if (view == "PosterCard") {
-                cardOptions = {
-                    items: result.Items,
-                    shape: "backdrop",
-                    showTitle: true,
-                    showParentTitle: true,
-                    lazy: true,
-                    cardLayout: true,
-                    showDetailsMenu: true
-                };
-            }
-            else {
-                // poster
-                cardOptions = {
-                    items: result.Items,
-                    shape: "backdrop",
-                    showTitle: true,
-                    showParentTitle: true,
-                    overlayText: true,
-                    lazy: true,
-                    showDetailsMenu: true,
-                    overlayPlayButton: true
-                };
-            }
-
-            self.cardOptions = cardOptions;
-        }
-
         function reloadItems(page) {
 
-            self.isLoading = true;
             Dashboard.showLoadingMsg();
 
             var query = getQuery(page);
-            var startIndex = query.StartIndex;
-            var reloadList = !self.cardOptions || startIndex == 0;
 
             ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (result) {
 
-                updateFilterControls(page);
+                var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+                    startIndex: query.StartIndex,
+                    limit: query.Limit,
+                    totalRecordCount: result.TotalRecordCount,
+                    showLimit: false,
+                    updatePageSizeSetting: false,
+                    addLayoutButton: false,
+                    sortButton: false,
+                    filterButton: false
+                });
 
-                var pushItems = true;
-                if (reloadList) {
-                    setCardOptions(result);
-                    pushItems = false;
+                var viewStyle = self.getCurrentViewStyle();
+
+                var html;
+
+                if (viewStyle == "List") {
+
+                    html = libraryBrowser.getListViewHtml({
+                        items: result.Items,
+                        sortBy: query.SortBy
+                    });
                 }
-                libraryBrowser.setPosterViewData(self.cardOptions);
-                libraryBrowser.setPosterViewDataOnItems(self.cardOptions, result.Items);
+                else if (viewStyle == "PosterCard") {
+                    html = libraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "backdrop",
+                        showTitle: true,
+                        showParentTitle: true,
+                        lazy: true,
+                        cardLayout: true,
+                        showDetailsMenu: true
+                    });
+                }
+                else {
 
-                var ironList = page.querySelector('#ironList');
-                if (pushItems) {
-                    for (var i = 0, length = result.Items.length; i < length; i++) {
-                        ironList.push('items', result.Items[i]);
-                    }
-                } else {
-                    ironList.items = result.Items;
+                    // poster
+                    html = libraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "backdrop",
+                        showTitle: true,
+                        showParentTitle: true,
+                        overlayText: true,
+                        lazy: true,
+                        showDetailsMenu: true,
+                        overlayPlayButton: true
+                    });
                 }
 
-                // Hack: notifyResize needs to be done after the items have been rendered
-                setTimeout(function () {
-                    ironList.notifyResize();
-                    self.scrollThreshold.resetSize();
-                }, 300);
+                $('.paging', tabContent).html(pagingHtml);
+
+                $('.btnNextPage', tabContent).on('click', function () {
+                    query.StartIndex += query.Limit;
+                    reloadItems(tabContent);
+                });
+
+                $('.btnPreviousPage', tabContent).on('click', function () {
+                    query.StartIndex -= query.Limit;
+                    reloadItems(tabContent);
+                });
+
+                var itemsContainer = tabContent.querySelector('.itemsContainer');
+                itemsContainer.innerHTML = html;
+                imageLoader.lazyChildren(itemsContainer);
 
                 libraryBrowser.saveQueryValues(getSavedQueryKey(page), query);
 
                 Dashboard.hideLoadingMsg();
-                self.hasMoreItems = result.TotalRecordCount > (startIndex + result.Items.length);
-                self.isLoading = false;
             });
         }
 
@@ -149,30 +142,7 @@
             });
         };
 
-        function updateFilterControls(tabContent) {
-
-            var query = getQuery(tabContent);
-
-            $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWithOrGreater);
-        }
-
         function initPage(tabContent) {
-
-            $('.alphabetPicker', tabContent).on('alphaselect', function (e, character) {
-
-                var query = getQuery(tabContent);
-                query.NameStartsWithOrGreater = character;
-                query.StartIndex = 0;
-
-                reloadItems(tabContent);
-
-            }).on('alphaclear', function (e) {
-
-                var query = getQuery(tabContent);
-                query.NameStartsWithOrGreater = '';
-
-                reloadItems(tabContent);
-            });
 
             $('.itemsContainer', tabContent).on('needsrefresh', function () {
 
@@ -248,44 +218,13 @@
         };
 
         initPage(tabContent);
-        function createList() {
-
-            if (self.listCreated) {
-                return Promise.resolve();
-            }
-
-            return ironCardList.getTemplate('episodesTab').then(function (html) {
-
-                tabContent.querySelector('.itemsContainer').innerHTML = html;
-                self.listCreated = true;
-            });
-        }
-
-        function loadMoreItems() {
-
-            if (!self.isLoading && self.hasMoreItems) {
-
-                getQuery(tabContent).StartIndex += pageSize;
-                reloadItems(tabContent);
-            }
-        }
-
-        self.scrollThreshold = new scrollThreshold(tabContent, false);
-        events.on(self.scrollThreshold, 'lower-threshold', loadMoreItems);
 
         self.renderTab = function () {
 
-            createList().then(function () {
-                reloadItems(tabContent);
-                updateFilterControls(tabContent);
-            });
+            reloadItems(tabContent);
         };
 
         self.destroy = function () {
-            events.off(self.scrollThreshold, 'lower-threshold', loadMoreItems);
-            if (self.scrollThreshold) {
-                self.scrollThreshold.destroy();
-            }
         };
     };
 });
