@@ -1,4 +1,4 @@
-﻿define(['globalize', 'connectionManager', 'loading', 'scrollHelper', 'datetime', 'focusManager', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationservices', 'clearButtonStyle', 'css!./guide.css', 'scrollStyles'], function (globalize, connectionManager, loading, scrollHelper, datetime, focusManager, imageLoader, events, layoutManager, itemShortcuts, registrationServices) {
+﻿define(['globalize', 'connectionManager', 'loading', 'scrollHelper', 'datetime', 'focusManager', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationservices', 'clearButtonStyle', 'css!./guide.css', 'html!./icons.html', 'scrollStyles'], function (globalize, connectionManager, loading, scrollHelper, datetime, focusManager, imageLoader, events, layoutManager, itemShortcuts, registrationServices) {
 
     var baseUrl;
 
@@ -268,14 +268,14 @@
                 html += '</div>';
 
                 if (program.IsHD) {
-                    html += '<iron-icon icon="core:hd"></iron-icon>';
+                    html += '<iron-icon icon="guide:hd"></iron-icon>';
                 }
 
                 if (program.SeriesTimerId) {
-                    html += '<iron-icon class="seriesTimerIcon" icon="core:fiber-smart-record"></iron-icon>';
+                    html += '<iron-icon class="seriesTimerIcon" icon="guide:fiber-smart-record"></iron-icon>';
                 }
                 else if (program.TimerId) {
-                    html += '<iron-icon class="timerIcon" icon="core:fiber-manual-record"></iron-icon>';
+                    html += '<iron-icon class="timerIcon" icon="guide:fiber-manual-record"></iron-icon>';
                 }
 
                 if (addAccent) {

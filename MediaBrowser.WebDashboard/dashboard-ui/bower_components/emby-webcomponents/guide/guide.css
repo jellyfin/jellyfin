@@ -280,7 +280,28 @@
 }
 
 .timeslotHeader, .channelTimeslotHeader {
-    height: 5.75vh;
+    height: 12vh;
+}
+
+@media all and (min-height: 500px) {
+
+    .timeslotHeader, .channelTimeslotHeader {
+        height: 8vh;
+    }
+}
+
+@media all and (min-height: 600px) {
+
+    .timeslotHeader, .channelTimeslotHeader {
+        height: 7vh;
+    }
+}
+
+@media all and (min-height: 720px) {
+
+    .timeslotHeader, .channelTimeslotHeader {
+        height: 5.75vh;
+    }
 }
 
 .pointerInput .channelHeaderCell:hover {
