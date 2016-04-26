@@ -280,20 +280,20 @@
 }
 
 .timeslotHeader, .channelTimeslotHeader {
-    height: 12vh;
+    height: 14vh;
 }
 
 @media all and (min-height: 500px) {
 
     .timeslotHeader, .channelTimeslotHeader {
-        height: 8vh;
+        height: 10vh;
     }
 }
 
 @media all and (min-height: 600px) {
 
     .timeslotHeader, .channelTimeslotHeader {
-        height: 7vh;
+        height: 8vh;
     }
 }
 
