@@ -15,7 +15,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// The banner URL
         /// </summary>
-        public static readonly string BannerUrl = "http://www.thetvdb.com/banners/";
+        public static readonly string BannerUrl = "https://www.thetvdb.com/banners/";
 
         /// <summary>
         /// Gets the air days.
