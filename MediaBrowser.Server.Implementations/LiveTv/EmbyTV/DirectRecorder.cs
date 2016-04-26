@@ -42,10 +42,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                     _logger.Info("Copying recording stream to file {0}", targetFile);
 
-                    var durationToken = new CancellationTokenSource(duration);
-                    var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+                    if (!mediaSource.RunTimeTicks.HasValue)
+                    {
+                        var durationToken = new CancellationTokenSource(duration);
+                        cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+                    }
 
-                    await response.Content.CopyToAsync(output, StreamDefaults.DefaultCopyToBufferSize, linkedToken).ConfigureAwait(false);
+                    await response.Content.CopyToAsync(output, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
                 }
             }
 

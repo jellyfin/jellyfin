@@ -143,6 +143,7 @@ namespace MediaBrowser.Server.Implementations.Library
         private readonly Func<ILibraryMonitor> _libraryMonitorFactory;
         private readonly Func<IProviderManager> _providerManagerFactory;
         private readonly Func<IUserViewManager> _userviewManager;
+        public bool IsScanRunning { get; private set; }
 
         /// <summary>
         /// The _library items cache
@@ -1102,6 +1103,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public async Task ValidateMediaLibraryInternal(IProgress<double> progress, CancellationToken cancellationToken)
         {
+            IsScanRunning = true;
             _libraryMonitorFactory().Stop();
 
             try
@@ -1111,6 +1113,7 @@ namespace MediaBrowser.Server.Implementations.Library
             finally
             {
                 _libraryMonitorFactory().Start();
+                IsScanRunning = false;
             }
         }
 
