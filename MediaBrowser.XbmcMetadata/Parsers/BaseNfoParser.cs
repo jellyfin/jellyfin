@@ -662,7 +662,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         {
                             if (!string.IsNullOrWhiteSpace(val))
                             {
-                                val = val.Replace("plugin://plugin.video.youtube/?action=play_video&videoid=", "http://www.youtube.com/watch?v=", StringComparison.OrdinalIgnoreCase);
+                                val = val.Replace("plugin://plugin.video.youtube/?action=play_video&videoid=", "https://www.youtube.com/watch?v=", StringComparison.OrdinalIgnoreCase);
 
                                 hasTrailer.AddTrailerUrl(val, false);
                             }

@@ -889,7 +889,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
         {
             // This is what xbmc expects
 
-            return url.Replace("http://www.youtube.com/watch?v=",
+            return url.Replace("https://www.youtube.com/watch?v=",
                 "plugin://plugin.video.youtube/?action=play_video&videoid=",
                 StringComparison.OrdinalIgnoreCase);
         }
