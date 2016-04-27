@@ -42,6 +42,8 @@ namespace MediaBrowser.Model.Entities
         /// <value><c>true</c> if this instance is interlaced; otherwise, <c>false</c>.</value>
         public bool IsInterlaced { get; set; }
 
+        public bool? IsAVC { get; set; }
+
         /// <summary>
         /// Gets or sets the channel layout.
         /// </summary>
