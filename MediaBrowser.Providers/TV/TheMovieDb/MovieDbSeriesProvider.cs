@@ -414,7 +414,7 @@ namespace MediaBrowser.Providers.TV
             return Path.Combine(path, filename);
         }
 
-        public bool HasChanged(IHasMetadata item, DateTime date)
+        public bool HasChanged(IHasMetadata item)
         {
             if (!MovieDbProvider.Current.GetTheMovieDbOptions().EnableAutomaticUpdates)
             {
@@ -430,7 +430,7 @@ namespace MediaBrowser.Providers.TV
 
                 var fileInfo = _fileSystem.GetFileInfo(dataFilePath);
 
-                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
+                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > item.DateLastRefreshed;
             }
 
             return false;
