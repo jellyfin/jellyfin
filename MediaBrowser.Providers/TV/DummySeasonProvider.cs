@@ -40,7 +40,7 @@ namespace MediaBrowser.Providers.TV
 
             if (hasNewSeasons)
             {
-                var directoryService = new DirectoryService(_fileSystem);
+                //var directoryService = new DirectoryService(_fileSystem);
 
                 //await series.RefreshMetadata(new MetadataRefreshOptions(directoryService), cancellationToken).ConfigureAwait(false);
 
@@ -163,7 +163,7 @@ namespace MediaBrowser.Providers.TV
 
                     // Season does not have a number
                     // Remove if there are no episodes directly in series without a season number
-                    return episodes.All(s => s.ParentIndexNumber.HasValue || !s.IsInSeasonFolder);
+                    return episodes.All(s => s.ParentIndexNumber.HasValue || s.IsInSeasonFolder);
                 })
                 .ToList();
 
