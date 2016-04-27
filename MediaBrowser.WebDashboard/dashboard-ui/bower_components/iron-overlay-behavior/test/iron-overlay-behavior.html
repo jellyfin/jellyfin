@@ -155,6 +155,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           assert.equal(getComputedStyle(overlay).display, 'none', 'overlay starts hidden');
         });
 
+        test('_renderOpened called only after is attached', function(done) {
+          var overlay = document.createElement('test-overlay');
+          // The overlay is ready at this point, but not yet attached.
+          var spy = sinon.spy(overlay, '_renderOpened');
+          // This triggers _openedChanged.
+          overlay.opened = true;
+          // Even if not attached yet, overlay should be the current overlay!
+          assert.equal(overlay, overlay._manager.currentOverlay(), 'currentOverlay ok');
+          // Wait long enough for requestAnimationFrame callback.
+          overlay.async(function() {
+            assert.isFalse(spy.called, '_renderOpened not called');
+            done();
+          }, 100);
+        });
+
         test('overlay open/close events', function(done) {
           var nevents = 0;
 
@@ -749,6 +764,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             assert.isFalse(overlay.backdropElement.opened, 'backdrop is closed');
             assert.isNotOk(overlay.backdropElement.parentNode, 'backdrop is removed from document');
             done();
+          });
+        });
+
+        test('withBackdrop = true prevents click outside event', function(done) {
+          runAfterOpen(overlay, function() {
+            overlay.addEventListener('iron-overlay-canceled', function(event) {
+              assert.isTrue(event.detail.defaultPrevented, 'click event prevented');
+              done();
+            });
+            MockInteractions.tap(document.body);
+          });
+        });
+
+        test('withBackdrop = false does not prevent click outside event', function(done) {
+          overlay.withBackdrop = false;
+          runAfterOpen(overlay, function() {
+            overlay.addEventListener('iron-overlay-canceled', function(event) {
+              assert.isFalse(event.detail.defaultPrevented, 'click event not prevented');
+              done();
+            });
+            MockInteractions.tap(document.body);
           });
         });
       });
