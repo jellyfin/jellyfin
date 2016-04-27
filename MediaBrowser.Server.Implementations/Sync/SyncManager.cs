@@ -775,6 +775,13 @@ namespace MediaBrowser.Server.Implementations.Sync
                             removeFromDevice = true;
                         }
                     }
+                    else if (libraryItem != null && libraryItem.DateModified.Ticks != jobItem.ItemDateModifiedTicks && jobItem.ItemDateModifiedTicks > 0)
+                    {
+                        _logger.Info("Setting status to Queued for {0} because the media has been modified since the original sync.", jobItem.ItemId);
+                        jobItem.Status = SyncJobItemStatus.Queued;
+                        jobItem.Progress = 0;
+                        requiresSaving = true;
+                    }
                 }
                 else
                 {
@@ -880,6 +887,13 @@ namespace MediaBrowser.Server.Implementations.Sync
                             _logger.Info("Adding ItemIdsToRemove {0} because it has been marked played.", jobItem.Id);
                             removeFromDevice = true;
                         }
+                    }
+                    else if (libraryItem != null && libraryItem.DateModified.Ticks != jobItem.ItemDateModifiedTicks && jobItem.ItemDateModifiedTicks > 0)
+                    {
+                        _logger.Info("Setting status to Queued for {0} because the media has been modified since the original sync.", jobItem.ItemId);
+                        jobItem.Status = SyncJobItemStatus.Queued;
+                        jobItem.Progress = 0;
+                        requiresSaving = true;
                     }
                 }
                 else
@@ -1117,7 +1131,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         public SyncJobOptions GetAudioOptions(SyncJobItem jobItem, SyncJob job)
         {
             var options = GetSyncJobOptions(jobItem.TargetId, null, null);
-            
+
             if (job.Bitrate.HasValue)
             {
                 options.DeviceProfile.MaxStaticBitrate = job.Bitrate.Value;
