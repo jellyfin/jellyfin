@@ -1555,6 +1555,15 @@ namespace MediaBrowser.Controller.Entities
             return null;
         }
 
+        [IgnoreDataMember]
+        public virtual bool EnableRememberingTrackSelections
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         /// <summary>
         /// Adds a studio to the item
         /// </summary>
