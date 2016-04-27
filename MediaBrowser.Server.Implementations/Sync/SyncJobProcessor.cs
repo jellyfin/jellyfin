@@ -149,6 +149,11 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             var job = _syncRepo.GetJob(id);
 
+            if (job == null)
+            {
+                return Task.FromResult(true);
+            }
+
             var result = _syncManager.GetJobItems(new SyncJobItemQuery
             {
                 JobId = job.Id,
@@ -632,6 +637,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                     }, innerProgress, cancellationToken);
 
+                    jobItem.ItemDateModifiedTicks = item.DateModified.Ticks;
                     _syncManager.OnConversionComplete(jobItem);
                 }
                 catch (OperationCanceledException)
@@ -668,6 +674,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                     throw new InvalidOperationException(string.Format("Cannot direct stream {0} protocol", mediaSource.Protocol));
                 }
 
+                jobItem.ItemDateModifiedTicks = item.DateModified.Ticks;
                 jobItem.MediaSource = mediaSource;
             }
 
@@ -819,6 +826,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                     }, innerProgress, cancellationToken);
 
+                    jobItem.ItemDateModifiedTicks = item.DateModified.Ticks;
                     _syncManager.OnConversionComplete(jobItem);
                 }
                 catch (OperationCanceledException)
@@ -855,6 +863,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                     throw new InvalidOperationException(string.Format("Cannot direct stream {0} protocol", mediaSource.Protocol));
                 }
 
+                jobItem.ItemDateModifiedTicks = item.DateModified.Ticks;
                 jobItem.MediaSource = mediaSource;
             }
 
@@ -871,6 +880,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             jobItem.Progress = 50;
             jobItem.Status = SyncJobItemStatus.ReadyToTransfer;
+            jobItem.ItemDateModifiedTicks = item.DateModified.Ticks;
             await _syncManager.UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
         }
 
@@ -880,6 +890,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             jobItem.Progress = 50;
             jobItem.Status = SyncJobItemStatus.ReadyToTransfer;
+            jobItem.ItemDateModifiedTicks = item.DateModified.Ticks;
             await _syncManager.UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
         }
 
