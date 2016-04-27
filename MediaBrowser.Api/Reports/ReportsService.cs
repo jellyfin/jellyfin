@@ -326,15 +326,15 @@ namespace MediaBrowser.Api.Reports
             }
 
             // Min official rating
-            if (!string.IsNullOrEmpty(request.MinOfficialRating))
+            if (!string.IsNullOrWhiteSpace(request.MinOfficialRating))
             {
                 query.MinParentalRating = _localization.GetRatingLevel(request.MinOfficialRating);
             }
 
             // Max official rating
-            if (!string.IsNullOrEmpty(request.MaxOfficialRating))
+            if (!string.IsNullOrWhiteSpace(request.MaxOfficialRating))
             {
-                query.MaxParentalRating = _localization.GetRatingLevel(request.MinOfficialRating);
+                query.MaxParentalRating = _localization.GetRatingLevel(request.MaxOfficialRating);
             }
 
             // Artists
