@@ -10,3 +10,8 @@
 .guideVerticalScroller {
     padding-bottom: 160px;
 }
+
+.tvGuideHeader.headroom--unpinned {
+    -webkit-transform: none;
+    transform: none;
+}

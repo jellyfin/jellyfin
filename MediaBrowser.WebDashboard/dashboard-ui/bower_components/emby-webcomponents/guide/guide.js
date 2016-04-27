@@ -16,6 +16,8 @@
             items = {};
         };
 
+        self.options = options;
+
         // 30 mins
         var cellCurationMinutes = 30;
         var cellDurationMs = cellCurationMinutes * 60 * 1000;
@@ -622,6 +624,8 @@
 
             createVerticalScroller(context, self);
             itemShortcuts.on(context);
+
+            events.trigger(self, 'load');
 
             self.refresh();
         }

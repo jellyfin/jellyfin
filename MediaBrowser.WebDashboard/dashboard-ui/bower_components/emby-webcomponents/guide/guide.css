@@ -10,11 +10,6 @@
     flex-shrink: 0;
 }
 
-    .tvGuideHeader.headroom--unpinned {
-        -webkit-transform: translateY(-98px);
-        transform: translateY(-98px);
-    }
-
 .tvProgramSectionHeader {
     margin: 0;
 }

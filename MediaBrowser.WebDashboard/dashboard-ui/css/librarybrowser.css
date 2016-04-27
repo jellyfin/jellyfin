@@ -66,14 +66,6 @@
     padding-top: 10px;
 }
 
-.absolutePageTabContent {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-}
-
 /*.pageWithAbsoluteTabs .pageTabContent {
     padding-left: .5em !important;
     padding-right: .5em !important;

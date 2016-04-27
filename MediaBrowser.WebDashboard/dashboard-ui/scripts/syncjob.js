@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'paper-progress', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'paper-icon-button'], function ($) {
+﻿define(['jQuery', 'paper-progress', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'paper-icon-button', 'paper-button'], function ($) {
 
     function renderJob(page, job, dialogOptions) {
 

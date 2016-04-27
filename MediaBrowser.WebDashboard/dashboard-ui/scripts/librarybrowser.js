@@ -3419,10 +3419,6 @@
                     html += '</paper-radio-group>';
                     html += '</div>';
 
-                    //html += '<div class="buttons">';
-                    //html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonClose') + '</paper-button>';
-                    //html += '</div>';
-
                     dlg.innerHTML = html;
                     document.body.appendChild(dlg);
 
