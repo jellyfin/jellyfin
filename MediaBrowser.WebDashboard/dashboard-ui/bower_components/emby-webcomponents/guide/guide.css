@@ -327,6 +327,8 @@
     text-decoration: none;
     overflow: hidden;
     align-items: center;
+    /* Needed for Firefox */
+    text-align: left;
 }
 
 .timeslotCellInner {
