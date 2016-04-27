@@ -1483,6 +1483,10 @@
                 attributes.push(createAttribute(Globalize.translate('MediaInfoCodecTag'), stream.CodecTag));
             }
 
+            if (stream.IsAVC != null) {
+                attributes.push(createAttribute('AVC', stream.IsAVC));
+            }
+
             if (stream.Profile) {
                 attributes.push(createAttribute(Globalize.translate('MediaInfoProfile'), stream.Profile));
             }

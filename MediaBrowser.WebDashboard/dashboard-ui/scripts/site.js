@@ -1481,7 +1481,7 @@ var AppInfo = {};
                                 console.log('loaded ApiClient singleton');
                                 resolve();
                             });
-                        } 
+                        }
                     });
                 });
             });
@@ -1605,7 +1605,6 @@ var AppInfo = {};
 
         var paths = {
             velocity: bowerPath + "/velocity/velocity.min",
-            tvguide: 'components/tvguide/tvguide',
             ironCardList: 'components/ironcardlist/ironcardlist',
             scrollThreshold: 'components/scrollthreshold',
             directorybrowser: 'components/directorybrowser/directorybrowser',
@@ -1635,7 +1634,9 @@ var AppInfo = {};
             layoutManager: embyWebComponentsBowerPath + "/layoutmanager",
             pageJs: embyWebComponentsBowerPath + '/page.js/page',
             focusManager: embyWebComponentsBowerPath + "/focusmanager",
+            datetime: embyWebComponentsBowerPath + "/datetime",
             globalize: embyWebComponentsBowerPath + "/globalize",
+            itemShortcuts: embyWebComponentsBowerPath + "/shortcuts",
             imageLoader: embyWebComponentsBowerPath + "/images/imagehelper"
         };
 
@@ -1666,6 +1667,11 @@ var AppInfo = {};
 
         define("backdrop", [embyWebComponentsBowerPath + "/backdrop/backdrop"], returnFirstDependency);
         define("fetchHelper", [embyWebComponentsBowerPath + "/fetchhelper"], returnFirstDependency);
+
+        define("tvguide", [embyWebComponentsBowerPath + "/guide/guide", 'embyRouter'], function (tvGuide, embyRouter) {
+            tvGuide.setBaseUrl(embyRouter.baseUrl() + '/bower_components/emby-webcomponents/guide');
+            return tvGuide;
+        });
 
         define("viewManager", [embyWebComponentsBowerPath + "/viewmanager"], function (viewManager) {
             viewManager.dispatchPageEvents(true);
@@ -1786,12 +1792,13 @@ var AppInfo = {};
         define('webcomponentsjs', [bowerPath + '/webcomponentsjs/webcomponents-lite.min.js']);
         define('native-promise-only', [bowerPath + '/native-promise-only/lib/npo.src']);
         define("fingerprintjs2", [bowerPath + '/fingerprintjs2/fingerprint2'], returnFirstDependency);
+        define("clearButtonStyle", ['css!' + embyWebComponentsBowerPath + '/clearbutton']);
 
         if (Dashboard.isRunningInCordova()) {
-            define('registrationservices', ['cordova/registrationservices']);
+            define('registrationservices', ['cordova/registrationservices'], returnFirstDependency);
 
         } else {
-            define('registrationservices', ['scripts/registrationservices']);
+            define('registrationservices', ['scripts/registrationservices'], returnFirstDependency);
         }
 
         if (Dashboard.isRunningInCordova()) {
@@ -1867,6 +1874,12 @@ var AppInfo = {};
         });
 
         // mock this for now. not used in this app
+        define("playbackManager", [], function () {
+            return {
+            };
+        });
+
+        // mock this for now. not used in this app
         define("pluginManager", [], function () {
             return {
             };
@@ -1884,7 +1897,7 @@ var AppInfo = {};
 
         define('dialogText', ['globalize'], getDialogText());
 
-        define("router", [embyWebComponentsBowerPath + '/router'], function (embyRouter) {
+        define("embyRouter", [embyWebComponentsBowerPath + '/router'], function (embyRouter) {
 
             embyRouter.showLocalLogin = function (apiClient, serverId, manualLogin) {
                 Dashboard.navigate('login.html?serverid=' + serverId);
@@ -1905,6 +1918,17 @@ var AppInfo = {};
 
             embyRouter.showSettings = function () {
                 Dashboard.navigate('mypreferencesmenu.html?userId=' + ApiClient.getCurrentUserId());
+            };
+
+            embyRouter.showItem = function (item) {
+                if (typeof (item) === 'string') {
+                    require(['connectionManager'], function (connectionManager) {
+                        var apiClient = connectionManager.currentApiClient();
+                        apiClient.getItem(apiClient.getCurrentUserId(), item).then(showItem);
+                    });
+                } else {
+                    Dashboard.navigate(LibraryBrowser.getHref(item));
+                }
             };
 
             return embyRouter;
@@ -2521,7 +2545,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/movies.html',
-            dependencies: ['paper-tabs', 'paper-checkbox', 'paper-fab', 'scripts/alphapicker'],
+            dependencies: ['paper-tabs', 'paper-checkbox', 'paper-fab', 'scripts/alphapicker', 'paper-button'],
             autoFocus: false,
             controller: 'scripts/moviesrecommended'
         });
@@ -2873,7 +2897,7 @@ var AppInfo = {};
         var deps = [];
 
         deps.push('imageLoader');
-        deps.push('router');
+        deps.push('embyRouter');
         deps.push('layoutManager');
 
         if (!(AppInfo.isNativeApp && browserInfo.android)) {

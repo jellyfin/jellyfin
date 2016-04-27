@@ -113,7 +113,9 @@ context. You should place this element as a child of `<body>` whenever possible.
       },
 
       /**
-       * Returns the reason this dialog was last closed.
+       * Contains the reason(s) this overlay was last closed (see `iron-overlay-closed`).
+       * `IronOverlayBehavior` provides the `canceled` reason; implementers of the
+       * behavior can provide other reasons in addition to `canceled`.
        */
       closingReason: {
         // was a getter before, but needs to be a property so other
@@ -322,16 +324,23 @@ context. You should place this element as a child of `<body>` whenever possible.
 
       this._manager.addOrRemoveOverlay(this);
 
-      this.__isAnimating = true;
-
-      // requestAnimationFrame for non-blocking rendering
       if (this.__openChangedAsync) {
         window.cancelAnimationFrame(this.__openChangedAsync);
       }
+
+      // Defer any animation-related code on attached
+      // (_openedChanged gets called again on attached).
+      if (!this.isAttached) {
+        return;
+      }
+
+      this.__isAnimating = true;
+
       if (this.opened) {
         if (this.withBackdrop) {
           this.backdropElement.prepare();
         }
+        // requestAnimationFrame for non-blocking rendering
         this.__openChangedAsync = window.requestAnimationFrame(function() {
           this.__openChangedAsync = null;
           this._prepareRenderOpened();
@@ -574,24 +583,26 @@ context. You should place this element as a child of `<body>` whenever possible.
   Polymer.IronOverlayBehavior = [Polymer.IronFitBehavior, Polymer.IronResizableBehavior, Polymer.IronOverlayBehaviorImpl];
 
   /**
-  * Fired after the `iron-overlay` opens.
-  * @event iron-overlay-opened
-  */
+   * Fired after the overlay opens.
+   * @event iron-overlay-opened
+   */
 
   /**
-  * Fired when the `iron-overlay` is canceled, but before it is closed.
-  * Cancel the event to prevent the `iron-overlay` from closing.
-  * @event iron-overlay-canceled
-  * @param {Event} event The closing of the `iron-overlay` can be prevented
-  * by calling `event.preventDefault()`. The `event.detail` is the original event that originated
-  * the canceling (e.g. ESC keyboard event or click event outside the `iron-overlay`).
-  */
+   * Fired when the overlay is canceled, but before it is closed.
+   * @event iron-overlay-canceled
+   * @param {Event} event The closing of the overlay can be prevented
+   * by calling `event.preventDefault()`.
+   * @param {Event} event.detail It is the original event that originated
+   * the canceling (e.g. ESC keyboard event or click event outside the overlay).
+   */
 
   /**
-  * Fired after the `iron-overlay` closes.
-  * @event iron-overlay-closed
-  * @param {{canceled: (boolean|undefined)}} closingReason Contains `canceled` (whether the overlay was canceled).
-  */
+   * Fired after the overlay closes.
+   * @event iron-overlay-closed
+   * @param {Event} event The event
+   * @param {Object} event.detail It is the `closingReason` property (contains
+   * `canceled`, whether the overlay was canceled).
+   */
 
 })();
 </script>

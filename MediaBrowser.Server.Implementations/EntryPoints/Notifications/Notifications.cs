@@ -215,6 +215,12 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
                 return;
             }
 
+            var video = e.Item as Video;
+            if (video != null && video.IsThemeMedia)
+            {
+                return;
+            }
+
             var type = GetPlaybackNotificationType(item.MediaType);
 
             SendPlaybackNotification(type, e);
@@ -227,6 +233,12 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             if (item == null)
             {
                 _logger.Warn("PlaybackStopped reported with null media info.");
+                return;
+            }
+
+            var video = e.Item as Video;
+            if (video != null && video.IsThemeMedia)
+            {
                 return;
             }
 

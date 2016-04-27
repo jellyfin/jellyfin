@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'jQuery', 'appSettings', 'scrollStyles'], function (LibraryBrowser, $, appSettings) {
+﻿define(['libraryBrowser', 'jQuery', 'appSettings', 'scrollStyles', 'paper-button'], function (LibraryBrowser, $, appSettings) {
 
     function getUserViews(userId) {
 

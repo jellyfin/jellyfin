@@ -1,4 +1,4 @@
-define(['dialogHelper', 'jQuery'], function (dialogHelper, $) {
+define(['dialogHelper', 'jQuery', 'paper-button'], function (dialogHelper, $) {
 
     var currentRecognition;
     var lang = 'en-US';

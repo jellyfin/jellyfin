@@ -11,10 +11,23 @@
 }
 
 .absolutePageTabContent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
     margin: 0 !important;
     width: 100% !important;
-    top: 98px !important;
+    /* Page needs to supply padding */
+    top: 92px !important;
+    transition: transform 200ms ease-out;
 }
+
+    .absolutePageTabContent.headroomUnpinned {
+        transform: translateY(-92px);
+        bottom: -92px!important;
+    }
 
 .sidebarDivider {
     height: 1px;
