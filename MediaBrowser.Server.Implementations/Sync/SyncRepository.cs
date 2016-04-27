@@ -50,7 +50,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                                 "create table if not exists SyncJobs (Id GUID PRIMARY KEY, TargetId TEXT NOT NULL, Name TEXT NOT NULL, Profile TEXT, Quality TEXT, Bitrate INT, Status TEXT NOT NULL, Progress FLOAT, UserId TEXT NOT NULL, ItemIds TEXT NOT NULL, Category TEXT, ParentId TEXT, UnwatchedOnly BIT, ItemLimit INT, SyncNewContent BIT, DateCreated DateTime, DateLastModified DateTime, ItemCount int)",
                                 "create index if not exists idx_SyncJobs on SyncJobs(Id)",
 
-                                "create table if not exists SyncJobItems (Id GUID PRIMARY KEY, ItemId TEXT, ItemName TEXT, MediaSourceId TEXT, JobId TEXT, TemporaryPath TEXT, OutputPath TEXT, Status TEXT, TargetId TEXT, DateCreated DateTime, Progress FLOAT, AdditionalFiles TEXT, MediaSource TEXT, IsMarkedForRemoval BIT, JobItemIndex INT)",
+                                "create table if not exists SyncJobItems (Id GUID PRIMARY KEY, ItemId TEXT, ItemName TEXT, MediaSourceId TEXT, JobId TEXT, TemporaryPath TEXT, OutputPath TEXT, Status TEXT, TargetId TEXT, DateCreated DateTime, Progress FLOAT, AdditionalFiles TEXT, MediaSource TEXT, IsMarkedForRemoval BIT, JobItemIndex INT, ItemDateModifiedTicks BIGINT)",
                                 "create index if not exists idx_SyncJobItems on SyncJobs(Id)",
 
                                 //pragmas
@@ -63,6 +63,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             _connection.AddColumn(Logger, "SyncJobs", "Profile", "TEXT");
             _connection.AddColumn(Logger, "SyncJobs", "Bitrate", "INT");
+            _connection.AddColumn(Logger, "SyncJobItems", "ItemDateModifiedTicks", "BIGINT");
 
             PrepareStatements();
         }
@@ -678,6 +679,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 cmd.GetParameter(index++).Value = jobItem.MediaSource == null ? null : _json.SerializeToString(jobItem.MediaSource);
                 cmd.GetParameter(index++).Value = jobItem.IsMarkedForRemoval;
                 cmd.GetParameter(index++).Value = jobItem.JobItemIndex;
+                cmd.GetParameter(index++).Value = jobItem.ItemDateModifiedTicks;
 
                 cmd.Transaction = transaction;
 
@@ -781,6 +783,11 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             info.IsMarkedForRemoval = reader.GetBoolean(13);
             info.JobItemIndex = reader.GetInt32(14);
+
+            if (!reader.IsDBNull(15))
+            {
+                info.ItemDateModifiedTicks = reader.GetInt64(15);
+            }
 
             return info;
         }
