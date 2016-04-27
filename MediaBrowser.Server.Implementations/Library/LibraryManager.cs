@@ -801,11 +801,12 @@ namespace MediaBrowser.Server.Implementations.Library
             return _userRootFolder;
         }
 
-        public BaseItem FindByPath(string path)
+        public BaseItem FindByPath(string path, bool? isFolder)
         {
             var query = new InternalItemsQuery
             {
-                Path = path
+                Path = path,
+                IsFolder = isFolder
             };
 
             // Only use the database result if there's exactly one item, otherwise we run the risk of returning old data that hasn't been cleaned yet.
