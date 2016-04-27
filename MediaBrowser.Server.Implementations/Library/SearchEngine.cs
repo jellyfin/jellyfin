@@ -87,12 +87,15 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var searchTerm = query.SearchTerm;
 
+            if (searchTerm != null)
+            {
+                searchTerm = searchTerm.Trim().RemoveDiacritics();
+            }
+
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
                 throw new ArgumentNullException("searchTerm");
             }
-
-            searchTerm = searchTerm.Trim().RemoveDiacritics();
 
             var terms = GetWords(searchTerm);
 
