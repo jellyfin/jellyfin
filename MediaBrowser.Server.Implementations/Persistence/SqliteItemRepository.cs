@@ -1574,6 +1574,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 return "RuntimeTicks";
             }
+            if (string.Equals(name, ItemSortBy.IsFolder, StringComparison.OrdinalIgnoreCase))
+            {
+                return "IsFolder";
+            }
             if (string.Equals(name, ItemSortBy.Random, StringComparison.OrdinalIgnoreCase))
             {
                 return "RANDOM()";
