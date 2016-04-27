@@ -149,6 +149,11 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             var job = _syncRepo.GetJob(id);
 
+            if (job == null)
+            {
+                return Task.FromResult(true);
+            }
+
             var result = _syncManager.GetJobItems(new SyncJobItemQuery
             {
                 JobId = job.Id,

@@ -128,7 +128,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             // _insertJobItemCommand
             _insertJobItemCommand = _connection.CreateCommand();
-            _insertJobItemCommand.CommandText = "insert into SyncJobItems (Id, ItemId, ItemName, MediaSourceId, JobId, TemporaryPath, OutputPath, Status, TargetId, DateCreated, Progress, AdditionalFiles, MediaSource, IsMarkedForRemoval, JobItemIndex) values (@Id, @ItemId, @ItemName, @MediaSourceId, @JobId, @TemporaryPath, @OutputPath, @Status, @TargetId, @DateCreated, @Progress, @AdditionalFiles, @MediaSource, @IsMarkedForRemoval, @JobItemIndex)";
+            _insertJobItemCommand.CommandText = "insert into SyncJobItems (Id, ItemId, ItemName, MediaSourceId, JobId, TemporaryPath, OutputPath, Status, TargetId, DateCreated, Progress, AdditionalFiles, MediaSource, IsMarkedForRemoval, JobItemIndex, ItemDateModifiedTicks) values (@Id, @ItemId, @ItemName, @MediaSourceId, @JobId, @TemporaryPath, @OutputPath, @Status, @TargetId, @DateCreated, @Progress, @AdditionalFiles, @MediaSource, @IsMarkedForRemoval, @JobItemIndex, @ItemDateModifiedTicks)";
 
             _insertJobItemCommand.Parameters.Add(_insertJobItemCommand, "@Id");
             _insertJobItemCommand.Parameters.Add(_insertJobItemCommand, "@ItemId");
@@ -145,10 +145,11 @@ namespace MediaBrowser.Server.Implementations.Sync
             _insertJobItemCommand.Parameters.Add(_insertJobItemCommand, "@MediaSource");
             _insertJobItemCommand.Parameters.Add(_insertJobItemCommand, "@IsMarkedForRemoval");
             _insertJobItemCommand.Parameters.Add(_insertJobItemCommand, "@JobItemIndex");
+            _insertJobItemCommand.Parameters.Add(_insertJobItemCommand, "@ItemDateModifiedTicks");
 
             // _updateJobItemCommand
             _updateJobItemCommand = _connection.CreateCommand();
-            _updateJobItemCommand.CommandText = "update SyncJobItems set ItemId=@ItemId,ItemName=@ItemName,MediaSourceId=@MediaSourceId,JobId=@JobId,TemporaryPath=@TemporaryPath,OutputPath=@OutputPath,Status=@Status,TargetId=@TargetId,DateCreated=@DateCreated,Progress=@Progress,AdditionalFiles=@AdditionalFiles,MediaSource=@MediaSource,IsMarkedForRemoval=@IsMarkedForRemoval,JobItemIndex=@JobItemIndex where Id=@Id";
+            _updateJobItemCommand.CommandText = "update SyncJobItems set ItemId=@ItemId,ItemName=@ItemName,MediaSourceId=@MediaSourceId,JobId=@JobId,TemporaryPath=@TemporaryPath,OutputPath=@OutputPath,Status=@Status,TargetId=@TargetId,DateCreated=@DateCreated,Progress=@Progress,AdditionalFiles=@AdditionalFiles,MediaSource=@MediaSource,IsMarkedForRemoval=@IsMarkedForRemoval,JobItemIndex=@JobItemIndex,ItemDateModifiedTicks=@ItemDateModifiedTicks where Id=@Id";
 
             _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@Id");
             _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@ItemId");
@@ -165,10 +166,11 @@ namespace MediaBrowser.Server.Implementations.Sync
             _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@MediaSource");
             _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@IsMarkedForRemoval");
             _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@JobItemIndex");
+            _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@ItemDateModifiedTicks");
         }
 
         private const string BaseJobSelectText = "select Id, TargetId, Name, Profile, Quality, Bitrate, Status, Progress, UserId, ItemIds, Category, ParentId, UnwatchedOnly, ItemLimit, SyncNewContent, DateCreated, DateLastModified, ItemCount from SyncJobs";
-        private const string BaseJobItemSelectText = "select Id, ItemId, ItemName, MediaSourceId, JobId, TemporaryPath, OutputPath, Status, TargetId, DateCreated, Progress, AdditionalFiles, MediaSource, IsMarkedForRemoval, JobItemIndex from SyncJobItems";
+        private const string BaseJobItemSelectText = "select Id, ItemId, ItemName, MediaSourceId, JobId, TemporaryPath, OutputPath, Status, TargetId, DateCreated, Progress, AdditionalFiles, MediaSource, IsMarkedForRemoval, JobItemIndex, ItemDateModifiedTicks from SyncJobItems";
 
         public SyncJob GetJob(string id)
         {
