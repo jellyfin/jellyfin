@@ -45,6 +45,15 @@ namespace MediaBrowser.Controller.LiveTv
             set { }
         }
 
+        [IgnoreDataMember]
+        public override bool EnableRememberingTrackSelections
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the number.
         /// </summary>
