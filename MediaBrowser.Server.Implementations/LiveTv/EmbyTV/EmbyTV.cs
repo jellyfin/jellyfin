@@ -927,13 +927,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private async Task<IRecorder> GetRecorder()
         {
-            if (GetConfiguration().EnableRecordingEncoding)
+            var config = GetConfiguration();
+
+            if (config.EnableRecordingEncoding)
             {
                 var regInfo = await _security.GetRegistrationStatus("embytvrecordingconversion").ConfigureAwait(false);
 
                 if (regInfo.IsValid)
                 {
-                    return new EncodedRecorder(_logger, _fileSystem, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer);
+                    return new EncodedRecorder(_logger, _fileSystem, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer, config);
                 }
             }
 

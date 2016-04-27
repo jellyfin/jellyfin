@@ -12,6 +12,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 
@@ -23,6 +24,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         private readonly IFileSystem _fileSystem;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IApplicationPaths _appPaths;
+        private readonly LiveTvOptions _liveTvOptions;
         private bool _hasExited;
         private Stream _logFileStream;
         private string _targetPath;
@@ -30,13 +32,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         private readonly IJsonSerializer _json;
         private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
 
-        public EncodedRecorder(ILogger logger, IFileSystem fileSystem, IMediaEncoder mediaEncoder, IApplicationPaths appPaths, IJsonSerializer json)
+        public EncodedRecorder(ILogger logger, IFileSystem fileSystem, IMediaEncoder mediaEncoder, IApplicationPaths appPaths, IJsonSerializer json, LiveTvOptions liveTvOptions)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _mediaEncoder = mediaEncoder;
             _appPaths = appPaths;
             _json = json;
+            _liveTvOptions = liveTvOptions;
         }
 
         public async Task Record(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
@@ -129,7 +132,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         {
             var copyAudio = new[] { "aac", "mp3" };
             var mediaStreams = mediaSource.MediaStreams ?? new List<MediaStream>();
-            if (mediaStreams.Any(i => i.Type == MediaStreamType.Audio && copyAudio.Contains(i.Codec, StringComparer.OrdinalIgnoreCase)))
+            if (_liveTvOptions.EnableOriginalAudioWithEncodedRecordings || mediaStreams.Any(i => i.Type == MediaStreamType.Audio && copyAudio.Contains(i.Codec, StringComparer.OrdinalIgnoreCase)))
             {
                 return "-codec:a:0 copy";
             }
