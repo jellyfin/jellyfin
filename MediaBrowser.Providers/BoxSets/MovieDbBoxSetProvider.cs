@@ -190,7 +190,7 @@ namespace MediaBrowser.Providers.BoxSets
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (mainResult != null && string.IsNullOrEmpty(mainResult.overview))
+            if (mainResult != null && string.IsNullOrEmpty(mainResult.name))
             {
                 if (!string.IsNullOrEmpty(language) && !string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
                 {
