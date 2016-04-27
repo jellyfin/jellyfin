@@ -295,22 +295,17 @@ namespace MediaBrowser.Providers.Manager
                 return true;
             }
 
-            if (item is BoxSet || item is IItemByName || item is Playlist)
+            if (!(item is Audio) && !(item is Video))
+            {
+                return true;
+            }
+
+            if (item is IItemByName)
             {
                 return true;
             }
 
             if (item.SourceType != SourceType.Library)
-            {
-                return true;
-            }
-
-            if (item is ICollectionFolder)
-            {
-                return true;
-            }
-
-            if (!(item is Audio) && !(item is Video))
             {
                 return true;
             }

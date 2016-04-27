@@ -27,9 +27,9 @@ namespace MediaBrowser.Providers.Music
             get { return MovieDbProvider.Current.Name; }
         }
 
-        public bool HasChanged(IHasMetadata item, DateTime date)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
-            return MovieDbProvider.Current.HasChanged(item, date);
+            return MovieDbProvider.Current.HasChanged(item);
         }
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
