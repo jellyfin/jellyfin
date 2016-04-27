@@ -288,9 +288,9 @@ namespace MediaBrowser.Api.Playback
         {
             if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
             {
-                
-                    return "h264_qsv";
-               
+
+                return "h264_qsv";
+
             }
 
             return "libx264";
@@ -1800,6 +1800,15 @@ namespace MediaBrowser.Api.Playback
             {
                 if (request.SubtitleMethod == SubtitleDeliveryMethod.Encode)
                 {
+                    return false;
+                }
+            }
+
+            if (string.Equals("h264", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
+            {
+                if (videoStream.IsAVC.HasValue && !videoStream.IsAVC.Value)
+                {
+                    Logger.Debug("Cannot stream copy video. Stream is marked as not AVC");
                     return false;
                 }
             }

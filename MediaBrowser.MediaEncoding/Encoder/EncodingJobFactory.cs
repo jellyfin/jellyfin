@@ -575,6 +575,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return false;
             }
 
+            if (string.Equals("h264", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
+            {
+                if (videoStream.IsAVC.HasValue && !videoStream.IsAVC.Value)
+                {
+                    return false;
+                }
+            }
+
             // If client is requesting a specific video profile, it must match the source
             if (!string.IsNullOrEmpty(request.Profile))
             {
