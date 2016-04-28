@@ -1273,7 +1273,6 @@ var AppInfo = {};
         AppInfo.enableDetailPageChapters = true;
         AppInfo.enableDetailsMenuImages = true;
         AppInfo.enableMovieHomeSuggestions = true;
-        AppInfo.enableNavDrawer = true;
         AppInfo.enableSearchInTopMenu = true;
         AppInfo.enableHomeFavorites = true;
         AppInfo.enableNowPlayingBar = true;
@@ -1294,7 +1293,6 @@ var AppInfo = {};
 
             if (isCordova) {
                 //AppInfo.enableSectionTransitions = true;
-                AppInfo.enableNavDrawer = false;
                 AppInfo.enableSearchInTopMenu = false;
                 AppInfo.enableHomeFavorites = false;
                 AppInfo.enableHomeTabs = false;
