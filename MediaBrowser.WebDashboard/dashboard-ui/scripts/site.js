@@ -1651,12 +1651,12 @@ var AppInfo = {};
         paths.hlsjs = bowerPath + "/hls.js/dist/hls.min";
 
         if (Dashboard.isRunningInCordova()) {
-            paths.sharingwidget = "cordova/sharingwidget";
+            paths.sharingMenu = "cordova/sharingwidget";
             paths.serverdiscovery = "cordova/serverdiscovery";
             paths.wakeonlan = "cordova/wakeonlan";
             paths.actionsheet = "cordova/actionsheet";
         } else {
-            paths.sharingwidget = "components/sharingwidget";
+            paths.sharingMenu = "components/sharingwidget";
             paths.serverdiscovery = apiClientBowerPath + "/serverdiscovery";
             paths.wakeonlan = apiClientBowerPath + "/wakeonlan";
 
@@ -1677,6 +1677,8 @@ var AppInfo = {};
             viewManager.dispatchPageEvents(true);
             return viewManager;
         });
+
+        define("sharingmanager", [embyWebComponentsBowerPath + "/sharing/sharingmanager"], returnFirstDependency);
 
         // hack for an android test before browserInfo is loaded
         if (Dashboard.isRunningInCordova() && window.MainActivity) {
@@ -2027,8 +2029,6 @@ var AppInfo = {};
         define("livetvcss", ['css!css/livetv.css']);
         define("detailtablecss", ['css!css/detailtable.css']);
         define("tileitemcss", ['css!css/tileitem.css']);
-
-        define("sharingmanager", ["scripts/sharingmanager"]);
 
         if (Dashboard.isRunningInCordova() && browserInfo.safari) {
             define("searchmenu", ["cordova/searchmenu"]);

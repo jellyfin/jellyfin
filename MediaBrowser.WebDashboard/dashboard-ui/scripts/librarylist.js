@@ -576,8 +576,8 @@
                                 LibraryBrowser.playInExternalPlayer(itemId);
                                 break;
                             case 'share':
-                                require(['sharingmanager'], function () {
-                                    SharingManager.showMenu(Dashboard.getCurrentUserId(), itemId);
+                                require(['sharingmanager'], function (sharingManager) {
+                                    sharingManager.showMenu(ApiClient, itemId);
                                 });
                                 break;
                             case 'removefromplaylist':

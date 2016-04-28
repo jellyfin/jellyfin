@@ -378,7 +378,7 @@
 .guideChannelName {
     margin-left: auto;
     margin-right: 1em;
-    max-width: 50%;
+    max-width: 40%;
     text-overflow: ellipsis;
     overflow: hidden;
 }
