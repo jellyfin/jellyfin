@@ -2349,5 +2349,7 @@
   "MetadataSettingChangeHelp": "Changing metadata settings will affect new content that is added going forward. To refresh existing content, open the detail screen and click the refresh button, or perform bulk refreshes using the metadata manager.",
   "LabelTitle": "Title:",
   "LabelOriginalTitle": "Original title:",
-  "LabelSortTitle": "Sort title:"
+  "LabelSortTitle": "Sort title:",
+  "OptionConvertRecordingPreserveAudio": "Preserve original audio when converting recordings",
+  "OptionConvertRecordingPreserveAudioHelp": "This will provide better audio but may require transcoding during playback on some devices."
 }

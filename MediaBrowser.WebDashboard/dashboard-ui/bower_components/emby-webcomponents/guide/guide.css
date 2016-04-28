@@ -181,6 +181,8 @@
     align-items: center;
     color: #fff !important;
     text-decoration: none;
+    /* Needed in firefox */
+    text-align: left;
 }
 
 @media all and (min-width: 500px) {
@@ -232,7 +234,7 @@
 
 @media all and (max-width: 1280px) {
 
-    .guideChannelInfoWithImage .guideChannelName {
+    .channelHeaderCell.withImage .guideChannelNumber {
         display: none;
     }
 }
@@ -366,20 +368,26 @@
         margin-left: .25em;
     }
 
-.guideChannelInfo {
-    display: inline-block;
-    max-width: 110px;
+.guideChannelNumber {
+    padding-left: 1em;
+    max-width: 30%;
+    text-overflow: ellipsis;
     overflow: hidden;
-    white-space: nowrap;
-    padding-left: .7em;
 }
 
 .guideChannelName {
     margin-left: auto;
-    margin-right: .3em;
-    max-width: 6vw;
+    margin-right: 1em;
+    max-width: 40%;
     text-overflow: ellipsis;
     overflow: hidden;
+}
+
+@media all and (max-width: 1000px) {
+
+    .guideChannelName {
+        display: none;
+    }
 }
 
 .channelList, .programGrid {

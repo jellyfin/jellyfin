@@ -249,6 +249,7 @@
 
         var albumid = card.getAttribute('data-albumid');
         var artistid = card.getAttribute('data-artistid');
+        var serverId = ApiClient.serverInfo().Id;
 
         Dashboard.getCurrentUser().then(function (user) {
 
@@ -494,7 +495,8 @@
                                         fileDownloader.download([
                                         {
                                             url: downloadHref,
-                                            itemId: itemId
+                                            itemId: itemId,
+                                            serverId: serverId
                                         }]);
                                     });
 
@@ -576,8 +578,11 @@
                                 LibraryBrowser.playInExternalPlayer(itemId);
                                 break;
                             case 'share':
-                                require(['sharingmanager'], function () {
-                                    SharingManager.showMenu(Dashboard.getCurrentUserId(), itemId);
+                                require(['sharingmanager'], function (sharingManager) {
+                                    sharingManager.showMenu({
+                                        serverId: serverId,
+                                        itemId: itemId
+                                    });
                                 });
                                 break;
                             case 'removefromplaylist':

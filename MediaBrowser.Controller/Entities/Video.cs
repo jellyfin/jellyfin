@@ -317,6 +317,11 @@ namespace MediaBrowser.Controller.Entities
                 {
                     return false;
                 }
+
+                if (newAsVideo.VideoType != VideoType)
+                {
+                    return false;
+                }
             }
 
             return base.IsValidFromResolver(newItem);

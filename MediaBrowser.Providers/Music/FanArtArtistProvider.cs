@@ -22,7 +22,7 @@ using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class FanartArtistProvider : IRemoteImageProvider, IHasChangeMonitor, IHasOrder
+    public class FanartArtistProvider : IRemoteImageProvider, IHasItemChangeMonitor, IHasOrder
     {
         internal readonly SemaphoreSlim FanArtResourcePool = new SemaphoreSlim(3, 3);
         internal const string ApiKey = "5c6b04c68e904cfed1e6cbc9a9e683d4";
@@ -207,7 +207,7 @@ namespace MediaBrowser.Providers.Music
             });
         }
 
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
             var options = FanartSeriesProvider.Current.GetFanartOptions();
             if (!options.EnableAutomaticUpdates)
@@ -224,7 +224,7 @@ namespace MediaBrowser.Providers.Music
 
                 var fileInfo = _fileSystem.GetFileInfo(artistJsonPath);
 
-                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
+                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > item.DateLastRefreshed;
             }
 
             return false;

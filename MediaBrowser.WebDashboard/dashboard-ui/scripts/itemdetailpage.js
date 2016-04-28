@@ -1484,7 +1484,7 @@
             }
 
             if (stream.IsAVC != null) {
-                attributes.push(createAttribute('AVC', stream.IsAVC));
+                attributes.push(createAttribute('AVC', (stream.IsAVC ? 'Yes' : 'No')));
             }
 
             if (stream.Profile) {

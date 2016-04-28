@@ -94,6 +94,8 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
                 'filedownload'
             ];
 
+            features.push('sharing');
+
             return features.indexOf(command.toLowerCase()) != -1;
         },
         appInfo: function () {

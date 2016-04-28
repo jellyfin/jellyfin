@@ -80,7 +80,7 @@
     position: absolute;
 }
 
-.btnSlideshowExit {
+.topActionButtons {
     right: .5vh;
     top: .5vh;
     z-index: 1002;

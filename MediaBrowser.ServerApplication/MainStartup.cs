@@ -273,11 +273,13 @@ namespace MediaBrowser.ServerApplication
         }
 
         private static ServerNotifyIcon _serverNotifyIcon;
+        private static TaskScheduler _mainTaskScheduler;
         private static void ShowTrayIcon()
         {
             //Application.EnableVisualStyles();
             //Application.SetCompatibleTextRenderingDefault(false);
             _serverNotifyIcon = new ServerNotifyIcon(_appHost.LogManager, _appHost, _appHost.ServerConfigurationManager, _appHost.LocalizationManager);
+            _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
             Application.Run();
         }
 
@@ -323,7 +325,14 @@ namespace MediaBrowser.ServerApplication
 
         public static void Invoke(Action action)
         {
-            _serverNotifyIcon.Invoke(action);
+            if (_isRunningAsService)
+            {
+                action();
+            }
+            else
+            {
+                Task.Factory.StartNew(action, CancellationToken.None, TaskCreationOptions.None, _mainTaskScheduler ?? TaskScheduler.Current);
+            }
         }
 
         /// <summary>

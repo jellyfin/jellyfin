@@ -950,6 +950,8 @@
                     });
                 }
 
+                var serverId = ApiClient.serverInfo().Id;
+
                 require(['actionsheet'], function (actionsheet) {
 
                     actionsheet.show({
@@ -960,8 +962,11 @@
                             switch (id) {
 
                                 case 'share':
-                                    require(['sharingmanager'], function () {
-                                        SharingManager.showMenu(Dashboard.getCurrentUserId(), itemId);
+                                    require(['sharingmanager'], function (sharingManager) {
+                                        sharingManager.showMenu({
+                                            serverId: serverId,
+                                            itemId: itemId
+                                        });
                                     });
                                     break;
                                 case 'addtocollection':
@@ -990,7 +995,8 @@
                                             fileDownloader.download([
                                             {
                                                 url: downloadHref,
-                                                itemId: itemId
+                                                itemId: itemId,
+                                                serverId: serverId
                                             }]);
                                         });
 
@@ -1545,6 +1551,11 @@
                 atts.push({
                     name: 'locationtype',
                     value: item.LocationType || ''
+                });
+
+                atts.push({
+                    name: 'index',
+                    value: index
                 });
 
                 if (item.AlbumId) {
