@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'thirdparty/social-share-kit-1.0.4/dist/js/social-share-kit.min', 'css!thirdparty/social-share-kit-1.0.4/dist/css/social-share-kit.css'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'thirdparty/social-share-kit-1.0.4/dist/js/social-share-kit.min', 'css!thirdparty/social-share-kit-1.0.4/dist/css/social-share-kit.css'], function (dialogHelper) {
 
     function showMenu(options, successCallback, cancelCallback) {
 
@@ -58,11 +58,16 @@
             }
         });
 
-        // Has to be assigned a z-index after the call to .open() 
-        $('.ssk', dlg).on('click', function () {
+        function onSskButtonClick(e) {
             isShared = true;
             dialogHelper.close(dlg);
-        });
+        }
+
+        // Has to be assigned a z-index after the call to .open() 
+        var sskButtons = dlg.querySelectorAll('.ssk');
+        for (var i = 0, length = sskButtons.length; i < length; i++) {
+            sskButtons[i].addEventListener('click', onSskButtonClick);
+        }
 
         // Has to be assigned a z-index after the call to .open() 
         dlg.querySelector('.btnCancel').addEventListener('click', function () {
