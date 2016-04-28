@@ -950,6 +950,8 @@
                     });
                 }
 
+                var serverId = ApiClient.serverInfo().Id;
+
                 require(['actionsheet'], function (actionsheet) {
 
                     actionsheet.show({
@@ -961,7 +963,10 @@
 
                                 case 'share':
                                     require(['sharingmanager'], function (sharingManager) {
-                                        sharingManager.showMenu(ApiClient, itemId);
+                                        sharingManager.showMenu({
+                                            serverId: serverId,
+                                            itemId: itemId
+                                        });
                                     });
                                     break;
                                 case 'addtocollection':
@@ -990,7 +995,8 @@
                                             fileDownloader.download([
                                             {
                                                 url: downloadHref,
-                                                itemId: itemId
+                                                itemId: itemId,
+                                                serverId: serverId
                                             }]);
                                         });
 

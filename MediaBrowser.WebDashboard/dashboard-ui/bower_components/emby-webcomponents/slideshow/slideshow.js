@@ -133,6 +133,9 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
                     if (appHost.supports('filedownload')) {
                         html += '<paper-icon-button icon="slideshow:file-download" class="btnDownload slideshowButton"></paper-icon-button>';
                     }
+                    if (appHost.supports('sharing')) {
+                        html += '<paper-icon-button icon="slideshow:share" class="btnShare slideshowButton"></paper-icon-button>';
+                    }
                 }
                 html += '<paper-icon-button icon="slideshow:close" class="btnSlideshowExit" tabindex="-1"></paper-icon-button>';
                 html += '</div>';
@@ -144,6 +147,9 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
                     html += '<paper-icon-button icon="slideshow:pause" class="btnSlideshowPause slideshowButton" autoFocus></paper-icon-button>';
                     if (appHost.supports('filedownload')) {
                         html += '<paper-icon-button icon="slideshow:file-download" class="btnDownload slideshowButton"></paper-icon-button>';
+                    }
+                    if (appHost.supports('sharing')) {
+                        html += '<paper-icon-button icon="slideshow:share" class="btnShare slideshowButton"></paper-icon-button>';
                     }
 
                     html += '</div>';
@@ -240,7 +246,8 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
                 originalImage: getImgUrl(item, true),
                 //title: item.Name,
                 //description: item.Overview
-                Id: item.Id
+                Id: item.Id,
+                ServerId: item.ServerId
             });
         }
 
@@ -265,7 +272,7 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
         function getSwiperSlideHtmlFromSlide(item) {
 
             var html = '';
-            html += '<div class="swiper-slide" data-original="' + item.originalImage + '" data-itemid="' + item.Id + '">';
+            html += '<div class="swiper-slide" data-original="' + item.originalImage + '" data-itemid="' + item.Id + '" data-serverid="' + item.ServerId + '">';
             html += '<img data-src="' + item.imageUrl + '" class="swiper-lazy">';
             html += '<paper-spinner></paper-spinner>';
             if (item.title || item.subtitle) {
@@ -316,21 +323,19 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
             }
         }
 
-        function getCurrentItemId() {
-
+        function getCurrentImageInfo() {
 
             if (swiperInstance) {
-                return document.querySelector('.swiper-slide-active').getAttribute('data-itemid');
-            } else {
+                var slide = document.querySelector('.swiper-slide-active');
+
+                if (slide) {
+                    return {
+                        url: slide.getAttribute('data-original'),
+                        itemId: slide.getAttribute('data-itemid'),
+                        serverId: slide.getAttribute('data-serverid')
+                    };
+                }
                 return null;
-            }
-        }
-
-        function getCurrentImageUrl() {
-
-
-            if (swiperInstance) {
-                return document.querySelector('.swiper-slide-active').getAttribute('data-original');
             } else {
                 return null;
             }
@@ -338,20 +343,20 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
 
         function download() {
 
-            var url = getCurrentImageUrl();
-            var itemId = getCurrentItemId();
+            var imageInfo = getCurrentImageInfo();
 
             require(['fileDownloader'], function (fileDownloader) {
-                fileDownloader.download([
-                {
-                    url: url,
-                    itemId: itemId
-                }]);
+                fileDownloader.download([imageInfo]);
             });
         }
 
         function share() {
 
+            var imageInfo = getCurrentImageInfo();
+
+            require(['sharingmanager'], function (sharingManager) {
+                sharingManager.showMenu(imageInfo);
+            });
         }
 
         function play() {

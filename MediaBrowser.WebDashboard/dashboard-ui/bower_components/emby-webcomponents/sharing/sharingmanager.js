@@ -20,9 +20,11 @@
         });
     }
 
-    function showMenu(apiClient, itemId) {
+    function showMenu(options) {
 
         loading.show();
+        var itemId = options.itemId;
+        var apiClient = options.apiClient || connectionManager.getApiClient(options.serverId);
         var userId = apiClient.getCurrentUserId();
 
         return apiClient.getItem(userId, itemId).then(function () {
