@@ -26,14 +26,14 @@
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
   "main": "iron-meta.html",
-  "homepage": "https://github.com/PolymerElements/iron-meta",
+  "homepage": "https://github.com/polymerelements/iron-meta",
   "_release": "1.1.1",
   "_resolution": {
     "type": "version",
     "tag": "v1.1.1",
     "commit": "e171ee234b482219c9514e6f9551df48ef48bd9f"
   },
-  "_source": "git://github.com/PolymerElements/iron-meta.git",
+  "_source": "git://github.com/polymerelements/iron-meta.git",
   "_target": "^1.0.0",
-  "_originalSource": "PolymerElements/iron-meta"
+  "_originalSource": "polymerelements/iron-meta"
 }

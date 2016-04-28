@@ -120,23 +120,34 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
 
             if (options.interactive) {
 
+                var actionButtonsOnTop = layoutManager.mobile;
+
                 html += '<div>';
                 html += '<div class="slideshowSwiperContainer"><div class="swiper-wrapper"></div></div>';
 
                 html += '<paper-icon-button icon="slideshow:keyboard-arrow-left" class="btnSlideshowPrevious slideshowButton" tabindex="-1"></paper-icon-button>';
                 html += '<paper-icon-button icon="slideshow:keyboard-arrow-right" class="btnSlideshowNext slideshowButton" tabindex="-1"></paper-icon-button>';
 
-                html += '<paper-icon-button icon="slideshow:close" class="btnSlideshowExit" tabindex="-1"></paper-icon-button>';
-
-                html += '<div class="slideshowBottomBar hide">';
-
-                //html += '<paper-icon-button icon="slideshow:share" class="btnShare slideshowButton"></paper-icon-button>';
-                html += '<paper-icon-button icon="slideshow:pause" class="btnSlideshowPause slideshowButton" autoFocus></paper-icon-button>';
-                if (appHost.supports('filedownload')) {
-                    html += '<paper-icon-button icon="slideshow:file-download" class="btnDownload slideshowButton"></paper-icon-button>';
+                html += '<div class="topActionButtons">';
+                if (actionButtonsOnTop) {
+                    if (appHost.supports('filedownload')) {
+                        html += '<paper-icon-button icon="slideshow:file-download" class="btnDownload slideshowButton"></paper-icon-button>';
+                    }
                 }
-
+                html += '<paper-icon-button icon="slideshow:close" class="btnSlideshowExit" tabindex="-1"></paper-icon-button>';
                 html += '</div>';
+
+                if (!actionButtonsOnTop) {
+                    html += '<div class="slideshowBottomBar hide">';
+
+                    //html += '<paper-icon-button icon="slideshow:share" class="btnShare slideshowButton"></paper-icon-button>';
+                    html += '<paper-icon-button icon="slideshow:pause" class="btnSlideshowPause slideshowButton" autoFocus></paper-icon-button>';
+                    if (appHost.supports('filedownload')) {
+                        html += '<paper-icon-button icon="slideshow:file-download" class="btnDownload slideshowButton"></paper-icon-button>';
+                    }
+
+                    html += '</div>';
+                }
 
                 html += '</div>';
 
@@ -329,7 +340,7 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
 
             var url = getCurrentImageUrl();
             var itemId = getCurrentItemId();
-            alert(itemId);
+
             require(['fileDownloader'], function (fileDownloader) {
                 fileDownloader.download([
                 {
@@ -345,13 +356,21 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
 
         function play() {
 
-            dlg.querySelector('.btnSlideshowPause').icon = "slideshow:pause";
+            var btnSlideshowPause = dlg.querySelector('.btnSlideshowPause');
+            if (btnSlideshowPause) {
+                btnSlideshowPause.icon = "slideshow:pause";
+            }
+
             swiperInstance.startAutoplay();
         }
 
         function pause() {
 
-            dlg.querySelector('.btnSlideshowPause').icon = "slideshow:play-arrow";
+            var btnSlideshowPause = dlg.querySelector('.btnSlideshowPause');
+            if (btnSlideshowPause) {
+                btnSlideshowPause.icon = "slideshow:play-arrow";
+            }
+
             swiperInstance.stopAutoplay();
         }
 
@@ -403,13 +422,19 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
 
         function showOsd() {
 
-            slideUpToShow(getOsdBottom());
-            startHideTimer();
+            var bottom = getOsdBottom();
+            if (bottom) {
+                slideUpToShow(bottom);
+                startHideTimer();
+            }
         }
 
         function hideOsd() {
 
-            slideDownToHide(getOsdBottom());
+            var bottom = getOsdBottom();
+            if (bottom) {
+                slideDownToHide(bottom);
+            }
         }
 
         var hideTimeout;

@@ -328,11 +328,18 @@
                     dataSrc = ' data-src="' + url + '"';
                 }
 
-                html += '<button type="button" class="channelHeaderCell clearButton itemAction lazy"' + dataSrc + ' data-action="link" data-isfolder="' + channel.IsFolder + '" data-id="' + channel.Id + '" data-serverid="' + channel.ServerId + '" data-type="' + channel.Type + '">';
+                var cssClass = 'channelHeaderCell clearButton itemAction lazy';
+                if (hasChannelImage) {
+                    cssClass += ' withImage';
+                }
 
-                var cssClass = hasChannelImage ? 'guideChannelInfo guideChannelInfoWithImage' : 'guideChannelInfo';
+                html += '<button type="button" class="' + cssClass + '"' + dataSrc + ' data-action="link" data-isfolder="' + channel.IsFolder + '" data-id="' + channel.Id + '" data-serverid="' + channel.ServerId + '" data-type="' + channel.Type + '">';
 
-                html += '<div class="' + cssClass + '"><div class="guideChannelName">' + channel.Number + '</div></div>';
+                html += '<div class="guideChannelNumber">' + channel.Number + '</div>';
+
+                if (!hasChannelImage) {
+                    html += '<div class="guideChannelName">' + channel.Name + '</div>';
+                }
 
                 html += '</button>';
             }
