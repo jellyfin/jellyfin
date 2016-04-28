@@ -1553,6 +1553,11 @@
                     value: item.LocationType || ''
                 });
 
+                atts.push({
+                    name: 'index',
+                    value: index
+                });
+
                 if (item.AlbumId) {
                     atts.push({
                         name: 'albumid',
