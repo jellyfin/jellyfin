@@ -17,7 +17,7 @@ using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Server.Implementations.Photos
 {
-    public abstract class BaseDynamicImageProvider<T> : IHasChangeMonitor, IForcedProvider, ICustomMetadataProvider<T>, IHasOrder
+    public abstract class BaseDynamicImageProvider<T> : IHasItemChangeMonitor, IForcedProvider, ICustomMetadataProvider<T>, IHasOrder
         where T : IHasMetadata
     {
         protected IFileSystem FileSystem { get; private set; }
@@ -247,7 +247,7 @@ namespace MediaBrowser.Server.Implementations.Photos
             get { return 7; }
         }
 
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryServicee)
         {
             if (!Supports(item))
             {

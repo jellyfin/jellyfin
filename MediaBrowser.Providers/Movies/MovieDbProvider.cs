@@ -414,7 +414,7 @@ namespace MediaBrowser.Providers.Movies
             return _configurationManager.GetConfiguration<TheMovieDbOptions>("themoviedb");
         }
 
-        public bool HasChanged(IHasMetadata item, DateTime date)
+        public bool HasChanged(IHasMetadata item)
         {
             if (!GetTheMovieDbOptions().EnableAutomaticUpdates)
             {
@@ -430,7 +430,7 @@ namespace MediaBrowser.Providers.Movies
 
                 var fileInfo = _fileSystem.GetFileInfo(dataFilePath);
 
-                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
+                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > item.DateLastRefreshed;
             }
 
             return false;

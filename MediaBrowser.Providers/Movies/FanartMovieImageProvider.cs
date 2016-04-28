@@ -23,7 +23,7 @@ using MediaBrowser.Providers.TV;
 
 namespace MediaBrowser.Providers.Movies
 {
-    public class FanartMovieImageProvider : IRemoteImageProvider, IHasChangeMonitor, IHasOrder
+    public class FanartMovieImageProvider : IRemoteImageProvider, IHasItemChangeMonitor, IHasOrder
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IServerConfigurationManager _config;
@@ -239,7 +239,7 @@ namespace MediaBrowser.Providers.Movies
             });
         }
 
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
             var options = FanartSeriesProvider.Current.GetFanartOptions();
             if (!options.EnableAutomaticUpdates)
@@ -260,7 +260,7 @@ namespace MediaBrowser.Providers.Movies
 
                 var fileInfo = _fileSystem.GetFileInfo(path);
 
-                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
+                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > item.DateLastRefreshed;
             }
 
             return false;
