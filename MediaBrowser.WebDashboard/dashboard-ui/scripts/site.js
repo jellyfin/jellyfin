@@ -12,13 +12,6 @@
 
 })();
 
-// Compatibility
-window.Logger = {
-    log: function (msg) {
-        console.log(msg);
-    }
-};
-
 var Dashboard = {
 
     isConnectMode: function () {
@@ -2001,6 +1994,7 @@ var AppInfo = {};
         }
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
+
             if (MainActivity.getChromeVersion() >= 48) {
                 define("audiorenderer", ["scripts/htmlmediarenderer"]);
                 //define("audiorenderer", ["cordova/android/vlcplayer"]);
@@ -2011,7 +2005,7 @@ var AppInfo = {};
             define("videorenderer", ["cordova/android/vlcplayer"]);
         }
         else if (Dashboard.isRunningInCordova() && browserInfo.safari) {
-            define("audiorenderer", ["cordova/ios/vlcplayer"]);
+            define("audiorenderer", ["cordova/audioplayer"]);
             define("videorenderer", ["scripts/htmlmediarenderer"]);
         }
         else {
@@ -2982,8 +2976,8 @@ var AppInfo = {};
                 if (browserInfo.safari) {
 
                     postInitDependencies.push('cordova/ios/chromecast');
-
                     postInitDependencies.push('cordova/ios/orientation');
+                    postInitDependencies.push('cordova/ios/remotecontrols');
 
                     if (Dashboard.capabilities().SupportsSync) {
 

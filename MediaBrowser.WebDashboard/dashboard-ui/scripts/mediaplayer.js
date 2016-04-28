@@ -196,10 +196,6 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
 
         function updateDeviceProfileForIOS(profile) {
 
-            profile.DirectPlayProfiles.push({
-                Container: "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus,flac",
-                Type: 'Audio'
-            });
         }
 
         self.getDeviceProfile = function (maxHeight) {
