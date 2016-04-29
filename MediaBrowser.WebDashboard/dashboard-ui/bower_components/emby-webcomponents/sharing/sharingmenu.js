@@ -1,10 +1,10 @@
-﻿define(['dialogHelper', 'dialogText', './social-share-kit-1.0.4/dist/js/social-share-kit.min', 'css!./social-share-kit-1.0.4/dist/css/social-share-kit.css'], function (dialogHelper, dialogText) {
+﻿define(['dialogHelper', 'layoutManager', 'dialogText', './social-share-kit-1.0.4/dist/js/social-share-kit.min', 'css!./social-share-kit-1.0.4/dist/css/social-share-kit.css'], function (dialogHelper, layoutManager, dialogText) {
 
     function showMenu(options) {
 
         var dlg = dialogHelper.createDialog({
             removeOnClose: true,
-            autoFocus: false
+            autoFocus: layoutManager.tv
         });
 
         dlg.id = 'dlg' + new Date().getTime();
