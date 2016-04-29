@@ -41,19 +41,36 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            const string vn = " -vn";
-
             var threads = GetNumberOfThreads(state, false);
 
             var inputModifier = GetInputModifier(state);
 
-            return string.Format("{0} {1} -threads {2}{3} {4} -id3v2_version 3 -write_id3v1 1 -y \"{5}\"",
+            var albumCoverInput = string.Empty;
+            var mapArgs = string.Empty;
+            var metadata = string.Empty;
+            var vn = string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(state.AlbumCoverPath))
+            {
+                albumCoverInput = " -i \"" + state.AlbumCoverPath + "\"";
+                mapArgs = " -map 0:a -map 1:v -c:v copy";
+                metadata = " -metadata:s:v title=\"Album cover\" -metadata:s:v comment=\"Cover(Front)\"";
+            }
+            else
+            {
+                vn = " -vn";
+            }
+
+            return string.Format("{0} {1}{6}{7} -threads {2}{3} {4} -id3v2_version 3 -write_id3v1 1{8} -y \"{5}\"",
                 inputModifier,
                 GetInputArgument(state),
                 threads,
                 vn,
                 string.Join(" ", audioTranscodeParams.ToArray()),
-                state.OutputFilePath).Trim();
+                state.OutputFilePath,
+                albumCoverInput,
+                mapArgs,
+                metadata).Trim();
         }
 
         protected override string GetOutputFileExtension(EncodingJob state)

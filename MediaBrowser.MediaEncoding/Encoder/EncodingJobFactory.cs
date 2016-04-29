@@ -60,6 +60,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             state.IsInputVideo = string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
 
+            var primaryImage = item.GetImageInfo(ImageType.Primary, 0) ??
+                               item.Parents.Select(i => i.GetImageInfo(ImageType.Primary, 0)).FirstOrDefault(i => i != null);
+
+            if (primaryImage != null)
+            {
+                state.AlbumCoverPath = primaryImage.Path;
+            }
+
             var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(request.ItemId, null, false, new[] { MediaType.Audio, MediaType.Video }, cancellationToken).ConfigureAwait(false);
 
             var mediaSource = string.IsNullOrEmpty(request.MediaSourceId)

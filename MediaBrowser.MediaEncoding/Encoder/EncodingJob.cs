@@ -64,6 +64,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public long? InputFileSize { get; set; }
         public string OutputAudioSync = "1";
         public string OutputVideoSync = "vfr";
+        public string AlbumCoverPath { get; set; }
 
         public string GetMimeType(string outputPath)
         {
