@@ -69,7 +69,7 @@ namespace MediaBrowser.Providers.TV
                 var obj = _jsonSerializer.DeserializeFromFile<RootObject>(dataFilePath);
 
                 var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
-                var tmdbImageUrl = tmdbSettings.images.base_url + "original";
+                var tmdbImageUrl = tmdbSettings.images.secure_base_url + "original";
 
                 var remoteResult = new RemoteSearchResult
                 {
@@ -460,7 +460,7 @@ namespace MediaBrowser.Providers.TV
                     if (tv != null)
                     {
                         var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
-                        var tmdbImageUrl = tmdbSettings.images.base_url + "original";
+                        var tmdbImageUrl = tmdbSettings.images.secure_base_url + "original";
 
                         var remoteResult = new RemoteSearchResult
                         {

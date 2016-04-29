@@ -78,7 +78,7 @@ namespace MediaBrowser.Providers.Movies
 
                 var tmdbSettings = await GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
-                var tmdbImageUrl = tmdbSettings.images.base_url + "original";
+                var tmdbImageUrl = tmdbSettings.images.secure_base_url + "original";
 
                 var remoteResult = new RemoteSearchResult
                 {
