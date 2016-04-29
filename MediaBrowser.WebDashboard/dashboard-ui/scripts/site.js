@@ -1671,13 +1671,17 @@ var AppInfo = {};
 
         define("sharingmanager", [embyWebComponentsBowerPath + "/sharing/sharingmanager"], returnFirstDependency);
 
+        if (Dashboard.isRunningInCordova()) {
+            paths.apphost = "cordova/apphost";
+        } else {
+            paths.apphost = "components/apphost";
+        }
+
         // hack for an android test before browserInfo is loaded
         if (Dashboard.isRunningInCordova() && window.MainActivity) {
             paths.appStorage = "cordova/android/appstorage";
-            paths.apphost = "cordova/apphost";
         } else {
             paths.appStorage = apiClientBowerPath + "/appstorage";
-            paths.apphost = "components/apphost";
         }
 
         paths.playlistManager = "scripts/playlistmanager";

@@ -48,6 +48,7 @@ class Hls {
           maxBufferHole: 0.5,
           maxSeekHole: 2,
           seekHoleNudgeDuration : 0.01,
+          stalledInBufferedNudgeThreshold: 10,
           maxFragLookUpTolerance : 0.2,
           liveSyncDurationCount:3,
           liveMaxLatencyDurationCount: Infinity,
