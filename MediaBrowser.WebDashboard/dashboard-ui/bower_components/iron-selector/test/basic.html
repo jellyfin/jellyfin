@@ -154,6 +154,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         expect(s2.items.length).to.be.equal(6);
       });
 
+      suite('`select()` and `selectIndex()`', function() {
+        test('`select()` selects an item with the given value', function() {
+          s2.select('item1');
+          assert.equal(s2.selected, 'item1');
+
+          s2.select('item3');
+          assert.equal(s2.selected, 'item3');
+
+          s2.select('item2');
+          assert.equal(s2.selected, 'item2');
+        });
+
+        test('`selectIndex()` selects an item with the given index', function() {
+          assert.equal(s2.selectedItem, undefined);
+
+          s2.selectIndex(1);
+          assert.equal(s2.selected, 'item1');
+          assert.equal(s2.selectedItem, s2.items[1]);
+
+          s2.selectIndex(3);
+          assert.equal(s2.selected, 'item3');
+          assert.equal(s2.selectedItem, s2.items[3]);
+
+          s2.selectIndex(4);
+          assert.equal(s2.selected, 'item4');
+          assert.equal(s2.selectedItem, s2.items[4]);
+        });
+      });
+
       suite('items changing', function() {
         var s1;
 
