@@ -27,13 +27,16 @@ namespace MediaBrowser.Server.Implementations.Library
                 .Cast<IHasTrailers>()
                 .ToList();
 
+            var trailerTypes = Enum.GetNames(typeof(TrailerType))
+                    .Select(i => (TrailerType)Enum.Parse(typeof(TrailerType), i, true))
+                    .Except(new[] { TrailerType.LocalTrailer })
+                    .ToArray();
+
             var trailers = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(Trailer).Name },
-                ExcludeTrailerTypes = new[]
-                {
-                    TrailerType.LocalTrailer
-                }
+                TrailerTypes = trailerTypes
+
             }).ToArray();
 
             var numComplete = 0;
