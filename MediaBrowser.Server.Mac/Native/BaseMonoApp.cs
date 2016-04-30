@@ -106,6 +106,11 @@ namespace MediaBrowser.Server.Mac
         {
         }
 
+        public void LaunchUrl(string url)
+        {
+            throw new NotImplementedException();
+        }
+
         public INetworkManager CreateNetworkManager(ILogger logger)
         {
             return new NetworkManager(logger);
