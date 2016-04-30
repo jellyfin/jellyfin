@@ -96,20 +96,42 @@ namespace MediaBrowser.MediaEncoding.Encoder
             FFMpegPath = ffMpegPath;
         }
 
+        private List<string> _encoders = new List<string>();
         public void SetAvailableEncoders(List<string> list)
         {
-
+            _encoders = list.ToList();
+            //_logger.Info("Supported encoders: {0}", string.Join(",", list.ToArray()));
         }
 
         private List<string> _decoders = new List<string>();
         public void SetAvailableDecoders(List<string> list)
         {
             _decoders = list.ToList();
+            //_logger.Info("Supported decoders: {0}", string.Join(",", list.ToArray()));
+        }
+
+        public bool SupportsEncoder(string decoder)
+        {
+            return _encoders.Contains(decoder, StringComparer.OrdinalIgnoreCase);
         }
 
         public bool SupportsDecoder(string decoder)
         {
             return _decoders.Contains(decoder, StringComparer.OrdinalIgnoreCase);
+        }
+
+        public bool CanEncodeToAudioCodec(string codec)
+        {
+            if (string.Equals(codec, "opus", StringComparison.OrdinalIgnoreCase))
+            {
+                codec = "libopus";
+            }
+            else if (string.Equals(codec, "mp3", StringComparison.OrdinalIgnoreCase))
+            {
+                codec = "libmp3lame";
+            }
+
+            return SupportsEncoder(codec);
         }
 
         /// <summary>
@@ -296,7 +318,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                                           formats.Contains("ts", StringComparer.OrdinalIgnoreCase) ||
                                           formats.Contains("mpegts", StringComparer.OrdinalIgnoreCase) ||
                                           formats.Contains("wtv", StringComparer.OrdinalIgnoreCase);
-            
+
             // If it's mpeg based, assume true
             if ((videoStream.Codec ?? string.Empty).IndexOf("mpeg", StringComparison.OrdinalIgnoreCase) != -1)
             {

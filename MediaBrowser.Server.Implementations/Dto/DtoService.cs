@@ -282,7 +282,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 else if (dto.HasSyncJob.Value)
                 {
-                    dto.SyncStatus = SyncJobItemStatus.Queued;
+                    dto.SyncStatus = syncProgress.Where(i => string.Equals(i.ItemId, dto.Id, StringComparison.OrdinalIgnoreCase)).Select(i => i.Status).Max();
                 }
             }
         }
@@ -307,7 +307,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 else if (dto.HasSyncJob.Value)
                 {
-                    dto.SyncStatus = SyncJobItemStatus.Queued;
+                    dto.SyncStatus = syncProgress.Where(i => string.Equals(i.ItemId, dto.Id, StringComparison.OrdinalIgnoreCase)).Select(i => i.Status).Max();
                 }
             }
         }
