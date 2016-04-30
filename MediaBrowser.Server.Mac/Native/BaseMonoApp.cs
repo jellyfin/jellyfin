@@ -122,16 +122,7 @@ namespace MediaBrowser.Server.Mac
 
             process.Exited += ProcessExited;
 
-            try
-            {
-                process.Start();
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error launching url: {0}", ex, url);
-
-                throw;
-            }
+			process.Start();
         }
 
         /// <summary>
