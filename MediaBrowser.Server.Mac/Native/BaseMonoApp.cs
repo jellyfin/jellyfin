@@ -111,6 +111,52 @@ namespace MediaBrowser.Server.Mac
             throw new NotImplementedException();
         }
 
+        public FFMpegInstallInfo GetFfmpegInstallInfo()
+        {
+            return GetInfo(Environment);
+        }
+
+        public static FFMpegDownloadInfo GetInfo(NativeEnvironment environment)
+        {
+            var info = new FFMpegDownloadInfo();
+
+            info.ArchiveType = "7z";
+
+            switch (environment.SystemArchitecture)
+            {
+                case Architecture.X86_X64:
+                    info.Version = "20160124";
+                    break;
+                case Architecture.X86:
+                    info.Version = "20150110";
+                    break;
+            }
+
+            info.DownloadUrls = GetDownloadUrls(environment);
+
+            return info;
+        }
+
+        private static string[] GetDownloadUrls(NativeEnvironment environment)
+        {
+            switch (environment.SystemArchitecture)
+            {
+                case Architecture.X86_X64:
+                    return new[]
+                    {
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/osx/ffmpeg-x64-2.8.5.7z"
+                            };
+                case Architecture.X86:
+                    return new[]
+                    {
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/osx/ffmpeg-x86-2.5.3.7z"
+                            };
+            }
+
+            // No version available 
+            return new string[] { };
+        }
+
         public INetworkManager CreateNetworkManager(ILogger logger)
         {
             return new NetworkManager(logger);
