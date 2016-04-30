@@ -514,6 +514,10 @@
                                     ReplaceAllImages: false,
                                     ReplaceAllMetadata: true
                                 });
+
+                                require(['toast'], function (toast) {
+                                    toast(Globalize.translate('MessageRefreshQueued'));
+                                });
                                 break;
                             case 'instantmix':
                                 MediaController.instantMix(itemId);
@@ -1241,6 +1245,10 @@
                                         ReplaceAllMetadata: true
                                     });
 
+                                });
+
+                                require(['toast'], function (toast) {
+                                    toast(Globalize.translate('MessageRefreshQueued'));
                                 });
                                 hideSelections();
                                 break;
