@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using MediaBrowser.Controller.Power;
+using MediaBrowser.Server.Startup.Common.FFMpeg;
 
 namespace MediaBrowser.Server.Mac
 {
@@ -116,9 +117,9 @@ namespace MediaBrowser.Server.Mac
             return GetInfo(Environment);
         }
 
-        public static FFMpegDownloadInfo GetInfo(NativeEnvironment environment)
+        public static FFMpegInstallInfo GetInfo(NativeEnvironment environment)
         {
-            var info = new FFMpegDownloadInfo();
+            var info = new FFMpegInstallInfo();
 
             info.ArchiveType = "7z";
 
