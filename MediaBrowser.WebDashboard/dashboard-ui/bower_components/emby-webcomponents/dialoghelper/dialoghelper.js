@@ -24,8 +24,6 @@
         function onBackCommand(e) {
 
             if (e.detail.command == 'back') {
-                inputManager.off(dlg, onBackCommand);
-
                 self.closedByBack = true;
                 closeDialog(dlg);
                 e.preventDefault();
@@ -34,15 +32,15 @@
 
         function onDialogClosed() {
 
+            inputManager.off(dlg, onBackCommand);
+            window.removeEventListener('popstate', onHashChange);
+
             removeBackdrop(dlg);
             dlg.classList.remove('opened');
 
             if (removeScrollLockOnClose) {
                 document.body.classList.remove('noScroll');
             }
-
-            window.removeEventListener('popstate', onHashChange);
-            inputManager.off(dlg, onBackCommand);
 
             if (!self.closedByBack && isHistoryEnabled(dlg)) {
                 var state = history.state || {};

@@ -1038,6 +1038,18 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
+            // Check audio codec
+            List<string> audioCodecs = profile.GetAudioCodecs();
+            if (audioCodecs.Count > 0)
+            {
+                // Check audio codecs
+                string audioCodec = audioStream == null ? null : audioStream.Codec;
+                if (string.IsNullOrEmpty(audioCodec) || !ListHelper.ContainsIgnoreCase(audioCodecs, audioCodec))
+                {
+                    return false;
+                }
+            }
+
             return true;
         }
 
@@ -1073,6 +1085,7 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
+            // Check audio codec
             List<string> audioCodecs = profile.GetAudioCodecs();
             if (audioCodecs.Count > 0)
             {

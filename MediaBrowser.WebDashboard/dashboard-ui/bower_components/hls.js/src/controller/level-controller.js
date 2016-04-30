@@ -113,7 +113,8 @@ class LevelController extends EventHandler {
   }
 
   set level(newLevel) {
-    if (this._level !== newLevel || this._levels[newLevel].details === undefined) {
+    if (this._levels && this._levels.length > newLevel &&
+      (this._level !== newLevel || this._levels[newLevel].details === undefined)) {
       this.setLevelInternal(newLevel);
     }
   }

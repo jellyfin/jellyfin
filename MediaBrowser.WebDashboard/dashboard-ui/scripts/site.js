@@ -12,13 +12,6 @@
 
 })();
 
-// Compatibility
-window.Logger = {
-    log: function (msg) {
-        console.log(msg);
-    }
-};
-
 var Dashboard = {
 
     isConnectMode: function () {
@@ -1280,7 +1273,6 @@ var AppInfo = {};
         AppInfo.enableDetailPageChapters = true;
         AppInfo.enableDetailsMenuImages = true;
         AppInfo.enableMovieHomeSuggestions = true;
-        AppInfo.enableNavDrawer = true;
         AppInfo.enableSearchInTopMenu = true;
         AppInfo.enableHomeFavorites = true;
         AppInfo.enableNowPlayingBar = true;
@@ -1301,7 +1293,6 @@ var AppInfo = {};
 
             if (isCordova) {
                 //AppInfo.enableSectionTransitions = true;
-                AppInfo.enableNavDrawer = false;
                 AppInfo.enableSearchInTopMenu = false;
                 AppInfo.enableHomeFavorites = false;
                 AppInfo.enableHomeTabs = false;
@@ -1656,10 +1647,10 @@ var AppInfo = {};
             paths.wakeonlan = "cordova/wakeonlan";
             paths.actionsheet = "cordova/actionsheet";
         } else {
-            paths.sharingMenu = "components/sharingwidget";
             paths.serverdiscovery = apiClientBowerPath + "/serverdiscovery";
             paths.wakeonlan = apiClientBowerPath + "/wakeonlan";
 
+            define("sharingMenu", [embyWebComponentsBowerPath + "/sharing/sharingmenu"], returnFirstDependency);
             define("actionsheet", [embyWebComponentsBowerPath + "/actionsheet/actionsheet"], returnFirstDependency);
         }
 
@@ -1680,13 +1671,17 @@ var AppInfo = {};
 
         define("sharingmanager", [embyWebComponentsBowerPath + "/sharing/sharingmanager"], returnFirstDependency);
 
+        if (Dashboard.isRunningInCordova()) {
+            paths.apphost = "cordova/apphost";
+        } else {
+            paths.apphost = "components/apphost";
+        }
+
         // hack for an android test before browserInfo is loaded
         if (Dashboard.isRunningInCordova() && window.MainActivity) {
             paths.appStorage = "cordova/android/appstorage";
-            paths.apphost = "cordova/apphost";
         } else {
             paths.appStorage = apiClientBowerPath + "/appstorage";
-            paths.apphost = "components/apphost";
         }
 
         paths.playlistManager = "scripts/playlistmanager";
@@ -2001,6 +1996,7 @@ var AppInfo = {};
         }
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
+
             if (MainActivity.getChromeVersion() >= 48) {
                 define("audiorenderer", ["scripts/htmlmediarenderer"]);
                 //define("audiorenderer", ["cordova/android/vlcplayer"]);
@@ -2011,7 +2007,7 @@ var AppInfo = {};
             define("videorenderer", ["cordova/android/vlcplayer"]);
         }
         else if (Dashboard.isRunningInCordova() && browserInfo.safari) {
-            define("audiorenderer", ["cordova/ios/vlcplayer"]);
+            define("audiorenderer", ["cordova/audioplayer"]);
             define("videorenderer", ["scripts/htmlmediarenderer"]);
         }
         else {
@@ -2078,6 +2074,9 @@ var AppInfo = {};
         if (browserInfo.safari) {
             drawer.disableEdgeSwipe = true;
         }
+
+        // Default is 600px
+        drawer.responsiveWidth = '640px';
 
         var deps = [];
         deps.push('scripts/extensions');
@@ -2982,8 +2981,8 @@ var AppInfo = {};
                 if (browserInfo.safari) {
 
                     postInitDependencies.push('cordova/ios/chromecast');
-
                     postInitDependencies.push('cordova/ios/orientation');
+                    postInitDependencies.push('cordova/ios/remotecontrols');
 
                     if (Dashboard.capabilities().SupportsSync) {
 

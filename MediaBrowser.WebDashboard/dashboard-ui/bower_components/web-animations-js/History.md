@@ -1,3 +1,21 @@
+### 2.2.1 - *April 28 2016*
+  * [Deprecated invalid timing inputs](https://github.com/web-animations/web-animations-next/pull/437) as they will soon throw [TypeErrors](https://github.com/web-animations/web-animations-next/pull/426) in native browsers.
+
+    For example, this is deprecated and will eventually throw a TypeError:
+
+        element.animate([], {
+            duration: -1,
+            iterationStart: -1,
+            iterations: -1,
+            easing: 'garbage string',
+        });
+
+  * [Fixed polyfill crash in browsers based on Chromium 36 to 46.](https://github.com/web-animations/web-animations-next/pull/434)
+
+  * [Increased cubic-bezier accuracy.](https://github.com/web-animations/web-animations-next/pull/428)
+
+  * [Added support for grad and turn units for angles.](https://github.com/web-animations/web-animations-next/pull/427)
+
 ### 2.2.0 - *April 6 2016*
   * Deprecated the use of hyphens in property names.
 

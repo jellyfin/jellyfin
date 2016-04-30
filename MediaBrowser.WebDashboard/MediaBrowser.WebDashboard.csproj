@@ -368,9 +368,6 @@
     <Content Include="dashboard-ui\scripts\shared.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\components\sharingwidget.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="dashboard-ui\scripts\supporterkeypage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -471,17 +468,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\paper-button-style.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\social-share-kit-1.0.4\.gitignore" />
-    <Content Include="dashboard-ui\thirdparty\social-share-kit-1.0.4\dist\css\social-share-kit.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\social-share-kit-1.0.4\dist\fonts\social-share-kit.svg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\social-share-kit-1.0.4\dist\js\social-share-kit.js" />
-    <Content Include="dashboard-ui\thirdparty\social-share-kit-1.0.4\dist\js\social-share-kit.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\components\tvproviders\schedulesdirect.js">
@@ -1730,17 +1716,6 @@
     <None Include="dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile-1.4.5.min.map">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="dashboard-ui\thirdparty\social-share-kit-1.0.4\dist\fonts\social-share-kit.eot">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="dashboard-ui\thirdparty\social-share-kit-1.0.4\dist\fonts\social-share-kit.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="dashboard-ui\thirdparty\social-share-kit-1.0.4\dist\fonts\social-share-kit.woff">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="dashboard-ui\thirdparty\social-share-kit-1.0.4\LICENSE" />
-    <None Include="dashboard-ui\thirdparty\social-share-kit-1.0.4\README.md" />
     <None Include="dashboard-ui\voice\grammar\en-US.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

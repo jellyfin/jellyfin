@@ -249,7 +249,7 @@ namespace MediaBrowser.Providers.Movies
             }
 
             resultItem.ResetPeople();
-            var tmdbImageUrl = settings.images.base_url + "original";
+            var tmdbImageUrl = settings.images.secure_base_url + "original";
 
             //Actors, Directors, Writers - all in People
             //actors come from cast

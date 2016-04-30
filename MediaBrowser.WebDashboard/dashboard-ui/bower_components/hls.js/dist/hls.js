@@ -1410,7 +1410,7 @@ var LevelController = function (_EventHandler) {
       return this._level;
     },
     set: function set(newLevel) {
-      if (this._level !== newLevel || this._levels[newLevel].details === undefined) {
+      if (this._levels && this._levels.length > newLevel && (this._level !== newLevel || this._levels[newLevel].details === undefined)) {
         this.setLevelInternal(newLevel);
       }
     }
@@ -2533,6 +2533,7 @@ var StreamController = function (_EventHandler) {
           // check buffer upfront
           // if less than jumpThreshold second is buffered, and media is expected to play but playhead is not moving,
           // and we have a new buffer range available upfront, let's seek to that one
+          var configSeekHoleNudgeDuration = this.config.seekHoleNudgeDuration;
           if (expectedPlaying && bufferInfo.len <= jumpThreshold) {
             if (playheadMoving) {
               // playhead moving
@@ -2546,7 +2547,7 @@ var StreamController = function (_EventHandler) {
                 this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.MEDIA_ERROR, details: _errors.ErrorDetails.BUFFER_STALLED_ERROR, fatal: false });
                 this.stalled = true;
               } else {
-                this.seekHoleNudgeDuration += this.config.seekHoleNudgeDuration;
+                this.seekHoleNudgeDuration += configSeekHoleNudgeDuration;
               }
             }
             // if we are below threshold, try to jump if next buffer range is close
@@ -2563,10 +2564,30 @@ var StreamController = function (_EventHandler) {
                 this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.MEDIA_ERROR, details: _errors.ErrorDetails.BUFFER_SEEK_OVER_HOLE, fatal: false, hole: hole });
               }
             }
+            // in any case reset stalledInBuffered
+            this.stalledInBuffered = 0;
           } else {
             if (targetSeekPosition && media.currentTime !== targetSeekPosition) {
               _logger.logger.log('adjust currentTime from ' + media.currentTime + ' to ' + targetSeekPosition);
               media.currentTime = targetSeekPosition;
+            } else if (expectedPlaying && !playheadMoving) {
+              // if we are in this condition, it means that currentTime is in a buffered area, but playhead is not moving
+              // if that happens, we wait for a couple of cycle (config.stalledInBufferedNudgeThreshold), then we nudge
+              // media.currentTime to try to recover that situation.
+              if (this.stalledInBuffered !== undefined) {
+                this.stalledInBuffered++;
+              } else {
+                this.stalledInBuffered = 1;
+              }
+              if (this.stalledInBuffered >= this.config.stalledInBufferedNudgeThreshold) {
+                _logger.logger.log('playback stuck @ ' + media.currentTime + ', in buffered area, nudge currentTime by ' + configSeekHoleNudgeDuration);
+                this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.MEDIA_ERROR, details: _errors.ErrorDetails.BUFFER_SEEK_STUCK_IN_BUFFERED, fatal: false });
+                media.currentTime += configSeekHoleNudgeDuration;
+                this.stalledInBuffered = 0;
+              }
+            } else {
+              // currentTime is buffered, playhead is moving or playback not expected... everything is fine
+              this.stalledInBuffered = 0;
             }
           }
         }
@@ -5175,6 +5196,8 @@ var ErrorDetails = exports.ErrorDetails = {
   BUFFER_FULL_ERROR: 'bufferFullError',
   // Identifier for a buffer seek over hole event
   BUFFER_SEEK_OVER_HOLE: 'bufferSeekOverHole',
+  // Identifier for a seek triggered to workaround a playback stuck although currentTime is buffered
+  BUFFER_SEEK_STUCK_IN_BUFFERED: 'bufferSeekStuckInBuffered',
   // Identifier for an internal exception happening inside hls.js while handling an event
   INTERNAL_EXCEPTION: 'internalException'
 };
@@ -5197,6 +5220,12 @@ var _createClass = function () { function defineProperties(target, props) { for 
 var _logger = require('./utils/logger');
 
 var _errors = require('./errors');
+
+var _events = require('./events');
+
+var _events2 = _interopRequireDefault(_events);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -5272,7 +5301,7 @@ var EventHandler = function () {
         eventToFunction.call(this, event, data).call();
       } catch (err) {
         _logger.logger.error('internal error happened while processing ' + event + ':' + err.message);
-        this.hls.trigger(Event.ERROR, { type: _errors.ErrorTypes.OTHER_ERROR, details: _errors.ErrorDetails.INTERNAL_EXCEPTION, fatal: false, event: event, err: err });
+        this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.OTHER_ERROR, details: _errors.ErrorDetails.INTERNAL_EXCEPTION, fatal: false, event: event, err: err });
       }
     }
   }]);
@@ -5282,7 +5311,7 @@ var EventHandler = function () {
 
 exports.default = EventHandler;
 
-},{"./errors":20,"./utils/logger":36}],22:[function(require,module,exports){
+},{"./errors":20,"./events":22,"./utils/logger":36}],22:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -5713,6 +5742,7 @@ var Hls = function () {
           maxBufferHole: 0.5,
           maxSeekHole: 2,
           seekHoleNudgeDuration: 0.01,
+          stalledInBufferedNudgeThreshold: 10,
           maxFragLookUpTolerance: 0.2,
           liveSyncDurationCount: 3,
           liveMaxLatencyDurationCount: Infinity,

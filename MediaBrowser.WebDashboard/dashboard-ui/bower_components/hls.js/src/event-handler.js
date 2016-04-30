@@ -6,6 +6,7 @@
 
 import {logger} from './utils/logger';
 import {ErrorTypes, ErrorDetails} from './errors';
+import Event from './events';
 
 class EventHandler {
 

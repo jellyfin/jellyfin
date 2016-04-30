@@ -86,25 +86,12 @@ each error is categorized by :
     - ```Hls.ErrorTypes.MEDIA_ERROR```for media/video related errors
     - ```Hls.ErrorTypes.OTHER_ERROR```for all other errors
   - its details:
-    - ```Hls.ErrorDetails.MANIFEST_LOAD_ERROR```raised when manifest loading fails because of a network error
-    - ```Hls.ErrorDetails.MANIFEST_LOAD_TIMEOUT```raised when manifest loading fails because of a timeout
-    - ```Hls.ErrorDetails.MANIFEST_PARSING_ERROR```raised when manifest parsing failed to find proper content
-    - ```Hls.ErrorDetails.LEVEL_LOAD_ERROR```raised when level loading fails because of a network error
-    - ```Hls.ErrorDetails.LEVEL_LOAD_TIMEOUT```raised when level loading fails because of a timeout
-    - ```Hls.ErrorDetails.LEVEL_SWITCH_ERROR```raised when level switching fails
-    - ```Hls.ErrorDetails.FRAG_LOAD_ERROR```raised when fragment loading fails because of a network error
-    - ```Hls.ErrorDetails.FRAG_LOOP_LOADING_ERROR```raised upon detection of same fragment being requested in loop
-    - ```Hls.ErrorDetails.FRAG_LOAD_TIMEOUT```raised when fragment loading fails because of a timeout
-    - ```Hls.ErrorDetails.FRAG_DECRYPT_ERROR```raised when fragment decryption fails
-    - ```Hls.ErrorDetails.FRAG_PARSING_ERROR```raised when fragment parsing fails
-    - ```Hls.ErrorDetails.BUFFER_APPEND_ERROR```raised when exception is raised while preparing buffer append
-    - ```Hls.ErrorDetails.BUFFER_APPENDING_ERROR```raised when exception is raised during buffer appending
-    - ```Hls.ErrorDetails.BUFFER_STALLED_ERROR```raised when playback stalls because the buffer runs out
+    - refer to [Errors details](#Errors)
   - its fatality:
     - ```false```if error is not fatal, hls.js will try to recover it
     - ```true```if error is fatal, an action is required to (try to) recover it.
 
- full details is described [below](##Errors)
+ full details is described [below](#Errors)
 
 
  see sample code below to listen to errors:
@@ -678,7 +665,9 @@ full list of Errors is described below:
   - ```Hls.ErrorDetails.BUFFER_FULL_ERROR```raised when no data can be appended anymore in media buffer because it is full. this error is recovered automatically by performing a smooth level switching that empty buffers (without disrupting the playback) and reducing the max buffer length.
     - data: { type : ```MEDIA_ERROR```, details : ```Hls.ErrorDetails.BUFFER_FULL_ERROR```, fatal : ```false```}
   - ```Hls.ErrorDetails.BUFFER_SEEK_OVER_HOLE```raised after hls.js seeks over a buffer hole to unstuck the playback, 
-    - data: { type : ```MEDIA_ERROR```, details : ```Hls.ErrorDetails.BUFFER_SEEK_OVER_HOLE```, fatal : ```false```}
+    - data: { type : ```MEDIA_ERROR```, details : ```Hls.ErrorDetails.BUFFER_SEEK_OVER_HOLE```, fatal : ```false```, hole : hole duration}
+  - ```Hls.ErrorDetails.BUFFER_SEEK_STUCK_IN_BUFFERED```raised after hls.js seeks to workaround a playback stuck although currentTime is buffered
+    - data: { type : ```MEDIA_ERROR```, details : ```Hls.ErrorDetails.BUFFER_SEEK_STUCK_IN_BUFFERED```, fatal : ```false```}
 
 ## Objects
 ### Level

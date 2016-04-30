@@ -123,7 +123,6 @@ namespace MediaBrowser.Controller.Entities
         public SourceType[] SourceTypes { get; set; }
         public SourceType[] ExcludeSourceTypes { get; set; }
         public TrailerType[] TrailerTypes { get; set; }
-        public TrailerType[] ExcludeTrailerTypes { get; set; }
 
         public DayOfWeek[] AirDays { get; set; }
         public SeriesStatus[] SeriesStatuses { get; set; }
@@ -165,7 +164,6 @@ namespace MediaBrowser.Controller.Entities
             SourceTypes = new SourceType[] { };
             ExcludeSourceTypes = new SourceType[] { };
             TrailerTypes = new TrailerType[] { };
-            ExcludeTrailerTypes = new TrailerType[] { };
             AirDays = new DayOfWeek[] { };
             SeriesStatuses = new SeriesStatus[] { };
         }

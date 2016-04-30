@@ -2,6 +2,10 @@
     font-size: 15px;
 }
 
+body:not(.dashboardDocument) .mainDrawerButton {
+    display: none !important;
+}
+
 .ui-body-b select {
     -webkit-appearance: none;
 }

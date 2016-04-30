@@ -44,6 +44,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public async Task Record(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
+            if (mediaSource.RunTimeTicks.HasValue)
+            {
+                // The media source already has a fixed duration
+                // But add another stop 1 minute later just in case the recording gets stuck for any reason
+                var durationToken = new CancellationTokenSource(duration.Add(TimeSpan.FromMinutes(1)));
+                cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+            }
+            else
+            {
+                // The media source if infinite so we need to handle stopping ourselves
+                var durationToken = new CancellationTokenSource(duration);
+                cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+            }
+
             _targetPath = targetFile;
             _fileSystem.CreateDirectory(Path.GetDirectoryName(targetFile));
 
@@ -143,7 +157,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 audioChannels = audioStream.Channels ?? audioChannels;
             }
-            return "-codec:a:0 aac -strict experimental -ab 320000";
+            return "-codec:a:0 aac -strict experimental -ab 320000 -af \"async=1000\"";
         }
 
         private bool EncodeVideo(MediaSourceInfo mediaSource)
