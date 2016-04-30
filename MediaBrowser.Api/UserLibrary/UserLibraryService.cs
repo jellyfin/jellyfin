@@ -519,10 +519,8 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = string.IsNullOrEmpty(itemId) ? user.RootFolder : _libraryManager.GetItemById(itemId);
 
-            var key = item.GetUserDataKey();
-
             // Get the user data for this item
-            var data = _userDataRepository.GetUserData(user.Id, key);
+            var data = _userDataRepository.GetUserData(user, item);
 
             // Set favorite status
             data.IsFavorite = isFavorite;
@@ -567,10 +565,8 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = string.IsNullOrEmpty(itemId) ? user.RootFolder : _libraryManager.GetItemById(itemId);
 
-            var key = item.GetUserDataKey();
-
             // Get the user data for this item
-            var data = _userDataRepository.GetUserData(user.Id, key);
+            var data = _userDataRepository.GetUserData(user, item);
 
             data.Likes = likes;
 

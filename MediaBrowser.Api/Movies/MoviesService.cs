@@ -247,7 +247,7 @@ namespace MediaBrowser.Api.Movies
             var recentlyPlayedMovies = allMoviesForCategories
                 .Select(i =>
                 {
-                    var userdata = _userDataRepository.GetUserData(user.Id, i.GetUserDataKey());
+                    var userdata = _userDataRepository.GetUserData(user, i);
                     return new Tuple<BaseItem, bool, DateTime>(i, userdata.Played, userdata.LastPlayedDate ?? DateTime.MinValue);
                 })
                 .Where(i => i.Item2)
@@ -260,7 +260,7 @@ namespace MediaBrowser.Api.Movies
                 .Select(i =>
                 {
                     var score = 0;
-                    var userData = _userDataRepository.GetUserData(user.Id, i.GetUserDataKey());
+                    var userData = _userDataRepository.GetUserData(user, i);
 
                     if (userData.IsFavorite)
                     {

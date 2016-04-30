@@ -172,6 +172,21 @@ namespace MediaBrowser.Server.Implementations.Library
             return userId + key;
         }
 
+        public UserItemData GetUserData(IHasUserData user, IHasUserData item)
+        {
+            return GetUserData(user.Id, item.GetUserDataKey());
+        }
+
+        public UserItemData GetUserData(string userId, IHasUserData item)
+        {
+            return GetUserData(userId, item.GetUserDataKey());
+        }
+
+        public UserItemData GetUserData(Guid userId, IHasUserData item)
+        {
+            return GetUserData(userId, item.GetUserDataKey());
+        }
+
         public UserItemDataDto GetUserDataDto(IHasUserData item, User user)
         {
             var userData = GetUserData(user.Id, item.GetUserDataKey());

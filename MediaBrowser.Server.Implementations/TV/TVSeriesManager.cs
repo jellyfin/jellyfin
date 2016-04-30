@@ -85,7 +85,7 @@ namespace MediaBrowser.Server.Implementations.TV
                 {
                     var episode = i.Item1;
 
-                    var seriesUserData = _userDataManager.GetUserData(user.Id, episode.Series.GetUserDataKey());
+                    var seriesUserData = _userDataManager.GetUserData(user, episode.Series);
 
                     if (seriesUserData.IsFavorite)
                     {
@@ -128,7 +128,7 @@ namespace MediaBrowser.Server.Implementations.TV
             // Go back starting with the most recent episodes
             foreach (var episode in allEpisodes)
             {
-                var userData = _userDataManager.GetUserData(user.Id, episode.GetUserDataKey());
+                var userData = _userDataManager.GetUserData(user, episode);
 
                 if (userData.Played)
                 {

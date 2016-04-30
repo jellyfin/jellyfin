@@ -687,7 +687,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         private Task ReportOfflinePlayedItem(UserAction action)
         {
             var item = _libraryManager.GetItemById(action.ItemId);
-            var userData = _userDataManager.GetUserData(new Guid(action.UserId), item.GetUserDataKey());
+            var userData = _userDataManager.GetUserData(action.UserId, item);
 
             userData.LastPlayedDate = action.Date;
             _userDataManager.UpdatePlayState(item, userData, action.PositionTicks);

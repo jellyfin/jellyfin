@@ -111,7 +111,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
             var newbookmark = int.Parse(sparams["PosSecond"], _usCulture);
 
-            var userdata = _userDataManager.GetUserData(user.Id, item.GetUserDataKey());
+            var userdata = _userDataManager.GetUserData(user, item);
 
             userdata.PlaybackPositionTicks = TimeSpan.FromSeconds(newbookmark).Ticks;
 

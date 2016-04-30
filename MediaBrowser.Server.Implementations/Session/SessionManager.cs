@@ -601,11 +601,9 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (libraryItem != null)
             {
-                var key = libraryItem.GetUserDataKey();
-
                 foreach (var user in users)
                 {
-                    await OnPlaybackStart(user.Id, key, libraryItem).ConfigureAwait(false);
+                    await OnPlaybackStart(user.Id, libraryItem).ConfigureAwait(false);
                 }
             }
 
@@ -632,12 +630,11 @@ namespace MediaBrowser.Server.Implementations.Session
         /// Called when [playback start].
         /// </summary>
         /// <param name="userId">The user identifier.</param>
-        /// <param name="userDataKey">The user data key.</param>
         /// <param name="item">The item.</param>
         /// <returns>Task.</returns>
-        private async Task OnPlaybackStart(Guid userId, string userDataKey, IHasUserData item)
+        private async Task OnPlaybackStart(Guid userId, IHasUserData item)
         {
-            var data = _userDataRepository.GetUserData(userId, userDataKey);
+            var data = _userDataRepository.GetUserData(userId, item);
 
             data.PlayCount++;
             data.LastPlayedDate = DateTime.UtcNow;
@@ -676,11 +673,9 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (libraryItem != null)
             {
-                var key = libraryItem.GetUserDataKey();
-
                 foreach (var user in users)
                 {
-                    await OnPlaybackProgress(user, key, libraryItem, info).ConfigureAwait(false);
+                    await OnPlaybackProgress(user, libraryItem, info).ConfigureAwait(false);
                 }
             }
 
@@ -714,9 +709,9 @@ namespace MediaBrowser.Server.Implementations.Session
             StartIdleCheckTimer();
         }
 
-        private async Task OnPlaybackProgress(User user, string userDataKey, BaseItem item, PlaybackProgressInfo info)
+        private async Task OnPlaybackProgress(User user, BaseItem item, PlaybackProgressInfo info)
         {
-            var data = _userDataRepository.GetUserData(user.Id, userDataKey);
+            var data = _userDataRepository.GetUserData(user.Id, item);
 
             var positionTicks = info.PositionTicks;
 
@@ -811,11 +806,9 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (libraryItem != null)
             {
-                var key = libraryItem.GetUserDataKey();
-
                 foreach (var user in users)
                 {
-                    playedToCompletion = await OnPlaybackStopped(user.Id, key, libraryItem, info.PositionTicks, info.Failed).ConfigureAwait(false);
+                    playedToCompletion = await OnPlaybackStopped(user.Id, libraryItem, info.PositionTicks, info.Failed).ConfigureAwait(false);
                 }
             }
 
@@ -848,13 +841,13 @@ namespace MediaBrowser.Server.Implementations.Session
             await SendPlaybackStoppedNotification(session, CancellationToken.None).ConfigureAwait(false);
         }
 
-        private async Task<bool> OnPlaybackStopped(Guid userId, string userDataKey, BaseItem item, long? positionTicks, bool playbackFailed)
+        private async Task<bool> OnPlaybackStopped(Guid userId, BaseItem item, long? positionTicks, bool playbackFailed)
         {
             bool playedToCompletion = false;
 
             if (!playbackFailed)
             {
-                var data = _userDataRepository.GetUserData(userId, userDataKey);
+                var data = _userDataRepository.GetUserData(userId, item);
                 
                 if (positionTicks.HasValue)
                 {
