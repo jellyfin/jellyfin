@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using MediaBrowser.Controller.Power;
 using MediaBrowser.Server.Startup.Common.FFMpeg;
+using System.Diagnostics;
 
 namespace MediaBrowser.Server.Mac
 {
@@ -109,7 +110,38 @@ namespace MediaBrowser.Server.Mac
 
         public void LaunchUrl(string url)
         {
-            throw new NotImplementedException();
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = url
+                },
+
+                EnableRaisingEvents = true,
+            };
+
+            process.Exited += ProcessExited;
+
+            try
+            {
+                process.Start();
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error launching url: {0}", ex, url);
+
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Processes the exited.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        private static void ProcessExited(object sender, EventArgs e)
+        {
+            ((Process)sender).Dispose();
         }
 
         public FFMpegInstallInfo GetFfmpegInstallInfo()
