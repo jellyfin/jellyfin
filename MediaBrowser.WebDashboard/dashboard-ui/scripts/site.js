@@ -2075,6 +2075,9 @@ var AppInfo = {};
             drawer.disableEdgeSwipe = true;
         }
 
+        // Default is 600px
+        drawer.responsiveWidth = '640px';
+
         var deps = [];
         deps.push('scripts/extensions');
 
