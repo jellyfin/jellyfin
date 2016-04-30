@@ -4,13 +4,14 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
     /// <summary>
     /// Interface IMediaEncoder
     /// </summary>
-    public interface IMediaEncoder
+    public interface IMediaEncoder : ITranscoderSupport
     {
         /// <summary>
         /// Gets the encoder path.
