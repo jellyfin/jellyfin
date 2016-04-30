@@ -18,6 +18,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.LiveTv;
@@ -80,7 +81,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        private const int LatestSchemaVersion = 64;
+        private const int LatestSchemaVersion = 65;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -226,6 +227,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "CriticRatingSummary", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "DateModifiedDuringLastRefresh", "DATETIME");
             _connection.AddColumn(Logger, "TypedBaseItems", "InheritedTags", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "CleanName", "Text");
 
             PrepareStatements();
 
@@ -466,7 +468,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "CriticRating",
                 "CriticRatingSummary",
                 "DateModifiedDuringLastRefresh",
-                "InheritedTags"
+                "InheritedTags",
+                "CleanName"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -790,6 +793,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     else
                     {
                         _saveItemCommand.GetParameter(index++).Value = null;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(item.Name))
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = item.Name.RemoveDiacritics();
                     }
 
                     _saveItemCommand.Transaction = transaction;
@@ -1986,7 +1998,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (!string.IsNullOrWhiteSpace(query.NameContains))
             {
-                whereClauses.Add("Name like @NameContains");
+                whereClauses.Add("CleanName like @NameContains");
                 cmd.Parameters.Add(cmd, "@NameContains", DbType.String).Value = "%" + query.NameContains + "%";
             }
 
