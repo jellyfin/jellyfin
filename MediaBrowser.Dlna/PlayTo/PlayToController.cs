@@ -18,6 +18,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.MediaEncoding;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -35,6 +36,7 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly ILocalizationManager _localization;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IConfigurationManager _config;
+        private readonly IMediaEncoder _mediaEncoder;
 
         private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly string _serverAddress;
@@ -74,7 +76,7 @@ namespace MediaBrowser.Dlna.PlayTo
             get { return IsSessionActive; }
         }
 
-        public PlayToController(SessionInfo session, ISessionManager sessionManager, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IImageProcessor imageProcessor, string serverAddress, string accessToken, IDeviceDiscovery deviceDiscovery, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IConfigurationManager config)
+        public PlayToController(SessionInfo session, ISessionManager sessionManager, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IImageProcessor imageProcessor, string serverAddress, string accessToken, IDeviceDiscovery deviceDiscovery, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IConfigurationManager config, IMediaEncoder mediaEncoder)
         {
             _session = session;
             _sessionManager = sessionManager;
@@ -88,6 +90,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _localization = localization;
             _mediaSourceManager = mediaSourceManager;
             _config = config;
+            _mediaEncoder = mediaEncoder;
             _accessToken = accessToken;
             _logger = logger;
             _creationTime = DateTime.UtcNow;
@@ -478,7 +481,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             playlistItem.StreamUrl = playlistItem.StreamInfo.ToDlnaUrl(_serverAddress, _accessToken);
 
-            var itemXml = new DidlBuilder(profile, user, _imageProcessor, _serverAddress, _accessToken, _userDataManager, _localization, _mediaSourceManager, _logger, _libraryManager)
+            var itemXml = new DidlBuilder(profile, user, _imageProcessor, _serverAddress, _accessToken, _userDataManager, _localization, _mediaSourceManager, _logger, _libraryManager, _mediaEncoder)
                 .GetItemDidl(_config.GetDlnaConfiguration(), item, null, _session.DeviceId, new Filter(), playlistItem.StreamInfo);
 
             playlistItem.Didl = itemXml;
@@ -550,7 +553,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 return new PlaylistItem
                 {
-                    StreamInfo = new StreamBuilder(GetStreamBuilderLogger()).BuildVideoItem(new VideoOptions
+                    StreamInfo = new StreamBuilder(_mediaEncoder, GetStreamBuilderLogger()).BuildVideoItem(new VideoOptions
                     {
                         ItemId = item.Id.ToString("N"),
                         MediaSources = mediaSources,
@@ -570,7 +573,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 return new PlaylistItem
                 {
-                    StreamInfo = new StreamBuilder(GetStreamBuilderLogger()).BuildAudioItem(new AudioOptions
+                    StreamInfo = new StreamBuilder(_mediaEncoder, GetStreamBuilderLogger()).BuildAudioItem(new AudioOptions
                     {
                         ItemId = item.Id.ToString("N"),
                         MediaSources = mediaSources,

@@ -23,6 +23,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using MediaBrowser.Controller.MediaEncoding;
 
 namespace MediaBrowser.Dlna.ContentDirectory
 {
@@ -34,6 +35,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
         private readonly IServerConfigurationManager _config;
         private readonly User _user;
         private readonly IUserViewManager _userViewManager;
+        private readonly IMediaEncoder _mediaEncoder;
 
         private const string NS_DC = "http://purl.org/dc/elements/1.1/";
         private const string NS_DIDL = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";
@@ -47,7 +49,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private readonly DeviceProfile _profile;
 
-        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, string accessToken, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config, ILocalizationManager localization, IChannelManager channelManager, IMediaSourceManager mediaSourceManager, IUserViewManager userViewManager)
+        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, string accessToken, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config, ILocalizationManager localization, IChannelManager channelManager, IMediaSourceManager mediaSourceManager, IUserViewManager userViewManager, IMediaEncoder mediaEncoder)
             : base(config, logger)
         {
             _libraryManager = libraryManager;
@@ -56,10 +58,11 @@ namespace MediaBrowser.Dlna.ContentDirectory
             _systemUpdateId = systemUpdateId;
             _channelManager = channelManager;
             _userViewManager = userViewManager;
+            _mediaEncoder = mediaEncoder;
             _profile = profile;
             _config = config;
 
-            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, accessToken, userDataManager, localization, mediaSourceManager, Logger, libraryManager);
+            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, accessToken, userDataManager, localization, mediaSourceManager, Logger, libraryManager, _mediaEncoder);
         }
 
         protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, Headers methodParams)

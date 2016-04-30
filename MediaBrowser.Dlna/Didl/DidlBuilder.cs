@@ -19,6 +19,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Dlna.Didl
@@ -42,8 +43,9 @@ namespace MediaBrowser.Dlna.Didl
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
+        private readonly IMediaEncoder _mediaEncoder;
 
-        public DidlBuilder(DeviceProfile profile, User user, IImageProcessor imageProcessor, string serverAddress, string accessToken, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, ILogger logger, ILibraryManager libraryManager)
+        public DidlBuilder(DeviceProfile profile, User user, IImageProcessor imageProcessor, string serverAddress, string accessToken, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, ILogger logger, ILibraryManager libraryManager, IMediaEncoder mediaEncoder)
         {
             _profile = profile;
             _imageProcessor = imageProcessor;
@@ -53,6 +55,7 @@ namespace MediaBrowser.Dlna.Didl
             _mediaSourceManager = mediaSourceManager;
             _logger = logger;
             _libraryManager = libraryManager;
+            _mediaEncoder = mediaEncoder;
             _accessToken = accessToken;
             _user = user;
         }
@@ -142,7 +145,7 @@ namespace MediaBrowser.Dlna.Didl
             {
                 var sources = _mediaSourceManager.GetStaticMediaSources(video, true, _user).ToList();
 
-                streamInfo = new StreamBuilder(GetStreamBuilderLogger(options)).BuildVideoItem(new VideoOptions
+                streamInfo = new StreamBuilder(_mediaEncoder, GetStreamBuilderLogger(options)).BuildVideoItem(new VideoOptions
                 {
                     ItemId = GetClientId(video),
                     MediaSources = sources,
@@ -385,7 +388,7 @@ namespace MediaBrowser.Dlna.Didl
             {
                 var sources = _mediaSourceManager.GetStaticMediaSources(audio, true, _user).ToList();
 
-                streamInfo = new StreamBuilder(GetStreamBuilderLogger(options)).BuildAudioItem(new AudioOptions
+                streamInfo = new StreamBuilder(_mediaEncoder, GetStreamBuilderLogger(options)).BuildAudioItem(new AudioOptions
                {
                    ItemId = GetClientId(audio),
                    MediaSources = sources,
