@@ -1023,6 +1023,10 @@
                                         ReplaceAllImages: false,
                                         ReplaceAllMetadata: true
                                     });
+
+                                    require(['toast'], function (toast) {
+                                        toast(Globalize.translate('MessageRefreshQueued'));
+                                    });
                                     break;
                                 default:
                                     break;
