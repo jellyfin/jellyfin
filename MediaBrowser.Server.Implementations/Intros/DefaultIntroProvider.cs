@@ -102,15 +102,10 @@ namespace MediaBrowser.Server.Implementations.Intros
 
             if (trailerTypes.Count > 0)
             {
-                var excludeTrailerTypes = Enum.GetNames(typeof(TrailerType))
-                        .Select(i => (TrailerType)Enum.Parse(typeof(TrailerType), i, true))
-                        .Except(trailerTypes)
-                        .ToArray();
-
                 var trailerResult = _libraryManager.GetItemList(new InternalItemsQuery
                 {
                     IncludeItemTypes = new[] { typeof(Trailer).Name },
-                    ExcludeTrailerTypes = excludeTrailerTypes
+                    TrailerTypes = trailerTypes.ToArray()
                 });
 
                 candidates.AddRange(trailerResult.Select(i => new ItemWithTrailer
