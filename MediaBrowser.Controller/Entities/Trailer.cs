@@ -56,26 +56,6 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The revenue.</value>
         public double? Revenue { get; set; }
 
-        protected override string CreateUserDataKey()
-        {
-            var key = Movie.GetMovieUserDataKey(this);
-
-            if (!string.IsNullOrWhiteSpace(key))
-            {
-                key = key + "-trailer";
-
-                // Make sure different trailers have their own data.
-                if (RunTimeTicks.HasValue)
-                {
-                    key += "-" + RunTimeTicks.Value.ToString(CultureInfo.InvariantCulture);
-                }
-
-                return key;
-            }
-
-            return base.CreateUserDataKey();
-        }
-
         public override UnratedItem GetBlockUnratedType()
         {
             return UnratedItem.Trailer;

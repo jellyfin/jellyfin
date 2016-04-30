@@ -1158,7 +1158,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (string.IsNullOrWhiteSpace(_userDataKey))
             {
-                var key = CreateUserDataKey();
+                var key = GetUserDataKeys().First();
                 _userDataKey = key;
                 return key;
             }
@@ -1166,16 +1166,20 @@ namespace MediaBrowser.Controller.Entities
             return _userDataKey;
         }
 
-        protected virtual string CreateUserDataKey()
+        public virtual List<string> GetUserDataKeys()
         {
+            var list = new List<string>();
+
             if (SourceType == SourceType.Channel)
             {
                 if (!string.IsNullOrWhiteSpace(ExternalId))
                 {
-                    return ExternalId;
+                    list.Add(ExternalId);
                 }
             }
-            return Id.ToString();
+
+            list.Add(Id.ToString());
+            return list;
         }
 
         internal virtual bool IsValidFromResolver(BaseItem newItem)

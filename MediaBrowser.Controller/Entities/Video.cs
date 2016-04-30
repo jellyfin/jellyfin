@@ -131,27 +131,65 @@ namespace MediaBrowser.Controller.Entities
             return LocalAlternateVersions.Select(i => LibraryManager.GetNewItemId(i, typeof(Video)));
         }
 
-        protected override string CreateUserDataKey()
+        [IgnoreDataMember]
+        protected virtual bool EnableDefaultVideoUserDataKeys
         {
-            if (ExtraType.HasValue)
+            get
             {
-                var key = this.GetProviderId(MetadataProviders.Imdb) ?? this.GetProviderId(MetadataProviders.Tmdb);
+                return true;
+            }
+        }
 
-                if (!string.IsNullOrWhiteSpace(key))
+        public override List<string> GetUserDataKeys()
+        {
+            var list = base.GetUserDataKeys();
+
+            if (EnableDefaultVideoUserDataKeys)
+            {
+                if (ExtraType.HasValue)
                 {
-                    key = key + "-" + ExtraType.ToString().ToLower();
-
-                    // Make sure different trailers have their own data.
-                    if (RunTimeTicks.HasValue)
+                    var key = this.GetProviderId(MetadataProviders.Tmdb);
+                    if (!string.IsNullOrWhiteSpace(key))
                     {
-                        key += "-" + RunTimeTicks.Value.ToString(CultureInfo.InvariantCulture);
+                        list.Insert(0, GetUserDataKey(key));
                     }
 
-                    return key;
+                    key = this.GetProviderId(MetadataProviders.Imdb);
+                    if (!string.IsNullOrWhiteSpace(key))
+                    {
+                        list.Insert(0, GetUserDataKey(key));
+                    }
+                }
+                else
+                {
+                    var key = this.GetProviderId(MetadataProviders.Imdb);
+                    if (!string.IsNullOrWhiteSpace(key))
+                    {
+                        list.Insert(0, key);
+                    }
+
+                    key = this.GetProviderId(MetadataProviders.Tmdb);
+                    if (!string.IsNullOrWhiteSpace(key))
+                    {
+                        list.Insert(0, key);
+                    }
                 }
             }
 
-            return base.CreateUserDataKey();
+            return list;
+        }
+
+        private string GetUserDataKey(string providerId)
+        {
+            var key = providerId + "-" + ExtraType.ToString().ToLower();
+
+            // Make sure different trailers have their own data.
+            if (RunTimeTicks.HasValue)
+            {
+                key += "-" + RunTimeTicks.Value.ToString(CultureInfo.InvariantCulture);
+            }
+
+            return key;
         }
 
         /// <summary>
