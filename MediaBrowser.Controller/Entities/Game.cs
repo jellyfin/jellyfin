@@ -76,15 +76,16 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public List<string> MultiPartGameFiles { get; set; }
 
-        protected override string CreateUserDataKey()
+        public override List<string> GetUserDataKeys()
         {
+            var list = base.GetUserDataKeys();
             var id = this.GetProviderId(MetadataProviders.Gamesdb);
 
             if (!string.IsNullOrEmpty(id))
             {
-                return "Game-Gamesdb-" + id;
+                list.Insert(0, "Game-Gamesdb-" + id);
             }
-            return base.CreateUserDataKey();
+            return list;
         }
 
         public override IEnumerable<string> GetDeletePaths()

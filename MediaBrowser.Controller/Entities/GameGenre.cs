@@ -7,13 +7,12 @@ namespace MediaBrowser.Controller.Entities
 {
     public class GameGenre : BaseItem, IItemByName
     {
-        /// <summary>
-        /// Gets the user data key.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        protected override string CreateUserDataKey()
+        public override List<string> GetUserDataKeys()
         {
-            return "GameGenre-" + Name;
+            var list = base.GetUserDataKeys();
+
+            list.Insert(0, "GameGenre-" + Name);
+            return list;
         }
 
         /// <summary>

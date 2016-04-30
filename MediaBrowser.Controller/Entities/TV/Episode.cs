@@ -98,20 +98,26 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
-        /// <summary>
-        /// Gets the user data key.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        protected override string CreateUserDataKey()
+        [IgnoreDataMember]
+        protected override bool EnableDefaultVideoUserDataKeys
         {
-            var series = Series;
+            get
+            {
+                return false;
+            }
+        }
 
+        public override List<string> GetUserDataKeys()
+        {
+            var list = base.GetUserDataKeys();
+
+            var series = Series;
             if (series != null && ParentIndexNumber.HasValue && IndexNumber.HasValue)
             {
-                return series.GetUserDataKey() + ParentIndexNumber.Value.ToString("000") + IndexNumber.Value.ToString("000");
+                list.InsertRange(0, series.GetUserDataKeys().Select(i => i + ParentIndexNumber.Value.ToString("000") + IndexNumber.Value.ToString("000")));
             }
 
-            return base.CreateUserDataKey();
+            return list;
         }
 
         /// <summary>
