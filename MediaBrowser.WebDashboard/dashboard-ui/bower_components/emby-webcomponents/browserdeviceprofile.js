@@ -416,6 +416,12 @@ define(['browser'], function (browser) {
             ]
         });
 
+        var maxLevel = '41';
+
+        if (browser.chrome && !browser.mobile) {
+            maxLevel = '51';
+        }
+
         profile.CodecProfiles.push({
             Type: 'Video',
             Codec: 'h264',
@@ -434,7 +440,7 @@ define(['browser'], function (browser) {
             {
                 Condition: 'LessThanEqual',
                 Property: 'VideoLevel',
-                Value: '41'
+                Value: maxLevel
             }]
         });
 
