@@ -1960,20 +1960,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 whereClauses.Add(clause);
             }
 
-            if (query.ExcludeTrailerTypes.Length > 0)
-            {
-                var clauses = new List<string>();
-                var index = 0;
-                foreach (var type in query.ExcludeTrailerTypes)
-                {
-                    clauses.Add("(TrailerTypes is null OR TrailerTypes not like @TrailerTypes" + index + ")");
-                    cmd.Parameters.Add(cmd, "@TrailerTypes" + index, DbType.String).Value = "%" + type + "%";
-                    index++;
-                }
-                var clause = "(" + string.Join(" AND ", clauses.ToArray()) + ")";
-                whereClauses.Add(clause);
-            }
-
             if (query.IsAiring.HasValue)
             {
                 if (query.IsAiring.Value)
