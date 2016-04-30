@@ -1635,7 +1635,7 @@ namespace MediaBrowser.Controller.Entities
 
                 var isUnplayed = true;
 
-                var itemUserData = UserDataManager.GetUserData(user.Id, child.GetUserDataKey());
+                var itemUserData = UserDataManager.GetUserData(user, child);
 
                 // Incrememt totalPercentPlayed
                 if (itemUserData != null)

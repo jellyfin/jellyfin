@@ -1617,9 +1617,7 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException();
             }
 
-            var key = GetUserDataKey();
-
-            var data = UserDataManager.GetUserData(user.Id, key);
+            var data = UserDataManager.GetUserData(user, this);
 
             if (datePlayed.HasValue)
             {
@@ -1654,9 +1652,7 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException();
             }
 
-            var key = GetUserDataKey();
-
-            var data = UserDataManager.GetUserData(user.Id, key);
+            var data = UserDataManager.GetUserData(user, this);
 
             //I think it is okay to do this here.
             // if this is only called when a user is manually forcing something to un-played
@@ -1987,14 +1983,14 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool IsPlayed(User user)
         {
-            var userdata = UserDataManager.GetUserData(user.Id, GetUserDataKey());
+            var userdata = UserDataManager.GetUserData(user, this);
 
             return userdata != null && userdata.Played;
         }
 
         public bool IsFavoriteOrLiked(User user)
         {
-            var userdata = UserDataManager.GetUserData(user.Id, GetUserDataKey());
+            var userdata = UserDataManager.GetUserData(user, this);
 
             return userdata != null && (userdata.IsFavorite || (userdata.Likes ?? false));
         }
@@ -2006,7 +2002,7 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException("user");
             }
 
-            var userdata = UserDataManager.GetUserData(user.Id, GetUserDataKey());
+            var userdata = UserDataManager.GetUserData(user, this);
 
             return userdata == null || !userdata.Played;
         }
