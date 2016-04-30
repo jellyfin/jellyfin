@@ -821,9 +821,14 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected string GetVideoDecoder(StreamState state)
         {
-            if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                if (state.VideoStream != null && !string.IsNullOrWhiteSpace(state.VideoStream.Codec))
+                return null;
+            }
+
+            if (state.VideoStream != null && !string.IsNullOrWhiteSpace(state.VideoStream.Codec))
+            {
+                if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
                 {
                     switch (state.MediaSource.VideoStream.Codec.ToLower())
                     {
@@ -831,7 +836,8 @@ namespace MediaBrowser.Api.Playback
                         case "h264":
                             if (MediaEncoder.SupportsDecoder("h264_qsv"))
                             {
-                                return "-c:v h264_qsv ";
+                                // Seeing stalls and failures with decoding. Not worth it compared to encoding.
+                                //return "-c:v h264_qsv ";
                             }
                             break;
                         case "mpeg2video":
@@ -1033,7 +1039,7 @@ namespace MediaBrowser.Api.Playback
             process.BeginOutputReadLine();
 
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
-            StartStreamingLog(transcodingJob, state, process.StandardError.BaseStream, state.LogFileStream);
+            Task.Run(() => StartStreamingLog(transcodingJob, state, process.StandardError.BaseStream, state.LogFileStream));
 
             // Wait for the file to exist before proceeeding
             while (!FileSystem.FileExists(state.WaitForPath ?? outputPath) && !transcodingJob.HasExited)
@@ -1076,7 +1082,7 @@ namespace MediaBrowser.Api.Playback
             return true;
         }
 
-        private async void StartStreamingLog(TranscodingJob transcodingJob, StreamState state, Stream source, Stream target)
+        private async Task StartStreamingLog(TranscodingJob transcodingJob, StreamState state, Stream source, Stream target)
         {
             try
             {
