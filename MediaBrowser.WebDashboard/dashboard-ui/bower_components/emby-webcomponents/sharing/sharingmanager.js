@@ -1,10 +1,5 @@
 ﻿define(['connectionManager', 'sharingMenu', 'loading'], function (connectionManager, sharingMenu, loading) {
 
-    function onSharingSuccess(options) {
-
-        console.log('share success. shareId: ' + options.share.Id);
-    }
-
     function onSharingCancel(options, apiClient) {
 
         var shareId = options.share.Id;
@@ -24,7 +19,7 @@
 
         loading.show();
         var itemId = options.itemId;
-        var apiClient = options.apiClient || connectionManager.getApiClient(options.serverId);
+        var apiClient = connectionManager.getApiClient(options.serverId);
         var userId = apiClient.getCurrentUserId();
 
         return apiClient.getItem(userId, itemId).then(function () {
@@ -45,7 +40,10 @@
                 };
 
                 loading.hide();
-                sharingMenu.showMenu(options, onSharingSuccess, function (options) {
+
+                sharingMenu.showMenu(options).then(function() {
+                    console.log('share success. shareId: ' + options.share.Id);
+                }, function () {
                     onSharingCancel(options, apiClient);
                 });
 

@@ -1647,10 +1647,10 @@ var AppInfo = {};
             paths.wakeonlan = "cordova/wakeonlan";
             paths.actionsheet = "cordova/actionsheet";
         } else {
-            paths.sharingMenu = "components/sharingwidget";
             paths.serverdiscovery = apiClientBowerPath + "/serverdiscovery";
             paths.wakeonlan = apiClientBowerPath + "/wakeonlan";
 
+            define("sharingMenu", [embyWebComponentsBowerPath + "/sharing/sharingmenu"], returnFirstDependency);
             define("actionsheet", [embyWebComponentsBowerPath + "/actionsheet/actionsheet"], returnFirstDependency);
         }
 
@@ -1671,13 +1671,17 @@ var AppInfo = {};
 
         define("sharingmanager", [embyWebComponentsBowerPath + "/sharing/sharingmanager"], returnFirstDependency);
 
+        if (Dashboard.isRunningInCordova()) {
+            paths.apphost = "cordova/apphost";
+        } else {
+            paths.apphost = "components/apphost";
+        }
+
         // hack for an android test before browserInfo is loaded
         if (Dashboard.isRunningInCordova() && window.MainActivity) {
             paths.appStorage = "cordova/android/appstorage";
-            paths.apphost = "cordova/apphost";
         } else {
             paths.appStorage = apiClientBowerPath + "/appstorage";
-            paths.apphost = "components/apphost";
         }
 
         paths.playlistManager = "scripts/playlistmanager";
@@ -2070,6 +2074,9 @@ var AppInfo = {};
         if (browserInfo.safari) {
             drawer.disableEdgeSwipe = true;
         }
+
+        // Default is 600px
+        drawer.responsiveWidth = '640px';
 
         var deps = [];
         deps.push('scripts/extensions');
