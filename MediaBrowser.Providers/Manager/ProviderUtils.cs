@@ -40,6 +40,15 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
+            if (replaceData || string.IsNullOrEmpty(target.OriginalTitle))
+            {
+                // Safeguard against incoming data having an emtpy name
+                if (!string.IsNullOrWhiteSpace(source.OriginalTitle))
+                {
+                    target.OriginalTitle = source.OriginalTitle;
+                }
+            }
+
             if (replaceData || !target.CommunityRating.HasValue)
             {
                 target.CommunityRating = source.CommunityRating;

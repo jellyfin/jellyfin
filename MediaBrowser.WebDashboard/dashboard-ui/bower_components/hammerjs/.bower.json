@@ -14,14 +14,14 @@
     "package.json"
   ],
   "homepage": "https://github.com/hammerjs/hammer.js",
-  "version": "2.0.6",
-  "_release": "2.0.6",
+  "version": "2.0.8",
+  "_release": "2.0.8",
   "_resolution": {
     "type": "version",
-    "tag": "v2.0.6",
-    "commit": "05f0872c6130daf537bad27a393310cd5833c9a1"
+    "tag": "v2.0.8",
+    "commit": "ee611316bec077fcfbba3fd604ebc4b0b35ac288"
   },
-  "_source": "git://github.com/hammerjs/hammer.js.git",
+  "_source": "https://github.com/hammerjs/hammer.js.git",
   "_target": "~2.0.4",
   "_originalSource": "hammer.js"
 }

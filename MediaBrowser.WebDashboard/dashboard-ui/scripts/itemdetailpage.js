@@ -45,7 +45,6 @@
         getPromise().then(function (item) {
 
             reloadFromItem(page, item);
-            window.scrollTo(0, 0);
         });
     }
 
@@ -1482,6 +1481,10 @@
 
             if (stream.CodecTag) {
                 attributes.push(createAttribute(Globalize.translate('MediaInfoCodecTag'), stream.CodecTag));
+            }
+
+            if (stream.IsAVC != null) {
+                attributes.push(createAttribute('AVC', (stream.IsAVC ? 'Yes' : 'No')));
             }
 
             if (stream.Profile) {

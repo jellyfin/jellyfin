@@ -164,5 +164,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 
             return list;
         }
+
+        public string ApplyDuration(string streamPath, TimeSpan duration)
+        {
+            return streamPath;
+        }
     }
 }

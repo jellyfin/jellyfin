@@ -300,6 +300,10 @@ body {
     height: 100%;
 }
 
+    body.autoScrollY {
+        overflow-y: auto !important;
+    }
+
 /* Without this, no content will be displayed in mobile safari */
 .pageContainer {
     overflow-x: visible !important;
@@ -870,7 +874,7 @@ paper-input + .fieldDescription {
     padding: 1em;
 }
 
-.page > .ui-content, .pageWithAbsoluteTabs .pageTabContent {
+.page > .ui-content, .pageWithAbsoluteTabs .pageTabContent, .absolutePageTabContent .itemsContainer {
     /* Need this so that the audio player doesn't cover content, but also for unveil lazy loading. */
     padding-bottom: 160px;
 }

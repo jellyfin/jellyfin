@@ -21,7 +21,7 @@ using CommonIO;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class FanArtSeasonProvider : IRemoteImageProvider, IHasOrder, IHasChangeMonitor
+    public class FanArtSeasonProvider : IRemoteImageProvider, IHasOrder, IHasItemChangeMonitor
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IServerConfigurationManager _config;
@@ -225,7 +225,7 @@ namespace MediaBrowser.Providers.TV
             });
         }
 
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
             var options = FanartSeriesProvider.Current.GetFanartOptions();
             if (!options.EnableAutomaticUpdates)
@@ -250,7 +250,7 @@ namespace MediaBrowser.Providers.TV
 
                 var fileInfo = _fileSystem.GetFileInfo(imagesFilePath);
 
-                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
+                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > item.DateLastRefreshed;
             }
 
             return false;

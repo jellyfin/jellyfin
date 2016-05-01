@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'appStorage', 'libraryBrowser', 'jQuery'], function (appSettings, appStorage, LibraryBrowser, $) {
+﻿define(['appSettings', 'appStorage', 'libraryBrowser', 'apphost', 'jQuery'], function (appSettings, appStorage, LibraryBrowser, appHost, $) {
 
     var showOverlayTimeout;
 
@@ -249,6 +249,7 @@
 
         var albumid = card.getAttribute('data-albumid');
         var artistid = card.getAttribute('data-artistid');
+        var serverId = ApiClient.serverInfo().Id;
 
         Dashboard.getCurrentUser().then(function (user) {
 
@@ -270,7 +271,7 @@
                 });
             }
 
-            if (user.Policy.EnableContentDownloading && AppInfo.supportsDownloading) {
+            if (user.Policy.EnableContentDownloading && appHost.supports('filedownload')) {
                 if (mediaType) {
                     items.push({
                         name: Globalize.translate('ButtonDownload'),
@@ -491,9 +492,11 @@
                                             api_key: ApiClient.accessToken()
                                         });
 
-                                        fileDownloader([{
+                                        fileDownloader.download([
+                                        {
                                             url: downloadHref,
-                                            itemId: itemId
+                                            itemId: itemId,
+                                            serverId: serverId
                                         }]);
                                     });
 
@@ -510,6 +513,10 @@
                                     MetadataRefreshMode: 'FullRefresh',
                                     ReplaceAllImages: false,
                                     ReplaceAllMetadata: true
+                                });
+
+                                require(['toast'], function (toast) {
+                                    toast(Globalize.translate('MessageRefreshQueued'));
                                 });
                                 break;
                             case 'instantmix':
@@ -575,8 +582,11 @@
                                 LibraryBrowser.playInExternalPlayer(itemId);
                                 break;
                             case 'share':
-                                require(['sharingmanager'], function () {
-                                    SharingManager.showMenu(Dashboard.getCurrentUserId(), itemId);
+                                require(['sharingmanager'], function (sharingManager) {
+                                    sharingManager.showMenu({
+                                        serverId: serverId,
+                                        itemId: itemId
+                                    });
                                 });
                                 break;
                             case 'removefromplaylist':
@@ -670,7 +680,7 @@
             if (itemSelectionPanel) {
                 return onItemSelectionPanelClick(e, itemSelectionPanel);
             }
-            if (card.classList.contains('groupedCard')) {
+            else if (card.classList.contains('groupedCard')) {
                 return onGroupedCardClick(e, card);
             }
         }
@@ -890,7 +900,6 @@
             element.classList.add('hasTapHold');
 
             manager.on('press', onTapHold);
-            manager.on('pressup', onTapHoldUp);
         });
 
         showTapHoldHelp(element);
@@ -936,6 +945,7 @@
 
             showSelections(card);
 
+            // It won't have this if it's a hammer event
             if (e.stopPropagation) {
                 e.stopPropagation();
             }
@@ -943,25 +953,11 @@
             return false;
         }
         e.preventDefault();
-        e.stopPropagation();
-        return false;
-    }
-
-    function onTapHoldUp(e) {
-
-        var itemSelectionPanel = parentWithClass(e.target, 'itemSelectionPanel');
-
-        if (itemSelectionPanel) {
-            if (!parentWithClass(e.target, 'chkItemSelect')) {
-                var chkItemSelect = itemSelectionPanel.querySelector('.chkItemSelect');
-
-                if (chkItemSelect) {
-                    chkItemSelect.checked = !chkItemSelect.checked;
-                }
-            }
-            e.preventDefault();
-            return false;
+        // It won't have this if it's a hammer event
+        if (e.stopPropagation) {
+            e.stopPropagation();
         }
+        return false;
     }
 
     function onItemSelectionPanelClick(e, itemSelectionPanel) {
@@ -971,9 +967,14 @@
             var chkItemSelect = itemSelectionPanel.querySelector('.chkItemSelect');
 
             if (chkItemSelect) {
-                var newValue = !chkItemSelect.checked;
-                chkItemSelect.checked = newValue;
-                updateItemSelection(chkItemSelect, newValue);
+
+                if (chkItemSelect.classList.contains('checkedInitial')) {
+                    chkItemSelect.classList.remove('checkedInitial');
+                } else {
+                    var newValue = !chkItemSelect.checked;
+                    chkItemSelect.checked = newValue;
+                    updateItemSelection(chkItemSelect, newValue);
+                }
             }
         }
 
@@ -986,7 +987,7 @@
         updateItemSelection(this, this.checked);
     }
 
-    function showSelection(item) {
+    function showSelection(item, isChecked) {
 
         var itemSelectionPanel = item.querySelector('.itemSelectionPanel');
 
@@ -997,12 +998,16 @@
 
             item.querySelector('.cardContent').appendChild(itemSelectionPanel);
 
-            var chkItemSelect = document.createElement('paper-checkbox');
-            chkItemSelect.classList.add('chkItemSelect');
-
-            $(chkItemSelect).on('change', onSelectionChange);
-
-            itemSelectionPanel.appendChild(chkItemSelect);
+            var cssClass = 'chkItemSelect';
+            if (isChecked && !browserInfo.firefox) {
+                // In firefox, the initial tap hold doesnt' get treated as a click
+                // In other browsers it does, so we need to make sure that initial click is ignored
+                cssClass += ' checkedInitial';
+            }
+            var checkedAttribute = isChecked ? ' checked' : '';
+            itemSelectionPanel.innerHTML = '<paper-checkbox class="' + cssClass + '"' + checkedAttribute + '></paper-checkbox>';
+            var chkItemSelect = itemSelectionPanel.querySelector('paper-checkbox');
+            chkItemSelect.addEventListener('change', onSelectionChange);
         }
     }
 
@@ -1054,7 +1059,10 @@
           { transform: 'translate3d(-10px, 0, 0)', offset: 0.9 },
           { transform: 'translate3d(0, 0, 0)', offset: 1 }];
         var timing = { duration: 900, iterations: iterations };
-        return elem.animate(keyframes, timing);
+
+        if (elem.animate) {
+            elem.animate(keyframes, timing);
+        }
     }
 
     function showSelections(initialCard) {
@@ -1062,11 +1070,10 @@
         require(['paper-checkbox'], function () {
             var cards = document.querySelectorAll('.card');
             for (var i = 0, length = cards.length; i < length; i++) {
-                showSelection(cards[i]);
+                showSelection(cards[i], initialCard == cards[i]);
             }
 
             showSelectionCommands();
-            initialCard.querySelector('.chkItemSelect').checked = true;
             updateItemSelection(initialCard, true);
         });
     }
@@ -1143,7 +1150,7 @@
                 });
             }
 
-            if (user.Policy.EnableContentDownloading && AppInfo.supportsDownloading) {
+            if (user.Policy.EnableContentDownloading && appHost.supports('filedownload')) {
                 //items.push({
                 //    name: Globalize.translate('ButtonDownload'),
                 //    id: 'download',
@@ -1214,7 +1221,7 @@
                                 combineVersions($.mobile.activePage, items);
                                 break;
                             case 'markplayed':
-                                items.forEach(function(itemId) {
+                                items.forEach(function (itemId) {
                                     ApiClient.markPlayed(Dashboard.getCurrentUserId(), itemId);
                                 });
                                 hideSelections();
@@ -1238,6 +1245,10 @@
                                         ReplaceAllMetadata: true
                                     });
 
+                                });
+
+                                require(['toast'], function (toast) {
+                                    toast(Globalize.translate('MessageRefreshQueued'));
                                 });
                                 hideSelections();
                                 break;

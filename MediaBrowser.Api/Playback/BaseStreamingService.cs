@@ -288,9 +288,9 @@ namespace MediaBrowser.Api.Playback
         {
             if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
             {
-                
-                    return "h264_qsv";
-               
+
+                return "h264_qsv";
+
             }
 
             return "libx264";
@@ -821,9 +821,14 @@ namespace MediaBrowser.Api.Playback
         /// <returns>System.String.</returns>
         protected string GetVideoDecoder(StreamState state)
         {
-            if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                if (state.VideoStream != null && !string.IsNullOrWhiteSpace(state.VideoStream.Codec))
+                return null;
+            }
+
+            if (state.VideoStream != null && !string.IsNullOrWhiteSpace(state.VideoStream.Codec))
+            {
+                if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
                 {
                     switch (state.MediaSource.VideoStream.Codec.ToLower())
                     {
@@ -831,7 +836,8 @@ namespace MediaBrowser.Api.Playback
                         case "h264":
                             if (MediaEncoder.SupportsDecoder("h264_qsv"))
                             {
-                                return "-c:v h264_qsv ";
+                                // Seeing stalls and failures with decoding. Not worth it compared to encoding.
+                                //return "-c:v h264_qsv ";
                             }
                             break;
                         case "mpeg2video":
@@ -1033,7 +1039,7 @@ namespace MediaBrowser.Api.Playback
             process.BeginOutputReadLine();
 
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
-            StartStreamingLog(transcodingJob, state, process.StandardError.BaseStream, state.LogFileStream);
+            Task.Run(() => StartStreamingLog(transcodingJob, state, process.StandardError.BaseStream, state.LogFileStream));
 
             // Wait for the file to exist before proceeeding
             while (!FileSystem.FileExists(state.WaitForPath ?? outputPath) && !transcodingJob.HasExited)
@@ -1076,7 +1082,7 @@ namespace MediaBrowser.Api.Playback
             return true;
         }
 
-        private async void StartStreamingLog(TranscodingJob transcodingJob, StreamState state, Stream source, Stream target)
+        private async Task StartStreamingLog(TranscodingJob transcodingJob, StreamState state, Stream source, Stream target)
         {
             try
             {
@@ -1804,6 +1810,15 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
+            if (string.Equals("h264", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
+            {
+                if (videoStream.IsAVC.HasValue && !videoStream.IsAVC.Value)
+                {
+                    Logger.Debug("Cannot stream copy video. Stream is marked as not AVC");
+                    return false;
+                }
+            }
+
             // Source and target codecs must match
             if (!string.Equals(request.VideoCodec, videoStream.Codec, StringComparison.OrdinalIgnoreCase))
             {
@@ -2222,9 +2237,10 @@ namespace MediaBrowser.Api.Playback
 
             if (state.VideoRequest != null)
             {
+                // Important: If this is ever re-enabled, make sure not to use it with wtv because it breaks seeking
                 if (string.Equals(state.OutputContainer, "mkv", StringComparison.OrdinalIgnoreCase) && state.VideoRequest.CopyTimestamps)
                 {
-                    inputModifier += " -noaccurate_seek";
+                    //inputModifier += " -noaccurate_seek";
                 }
             }
 

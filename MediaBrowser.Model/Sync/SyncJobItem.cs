@@ -102,6 +102,8 @@ namespace MediaBrowser.Model.Sync
         /// <value>The index of the job item.</value>
         public int JobItemIndex { get; set; }
 
+        public long ItemDateModifiedTicks { get; set; }
+
         public SyncJobItem()
         {
             AdditionalFiles = new List<ItemFileInfo>();

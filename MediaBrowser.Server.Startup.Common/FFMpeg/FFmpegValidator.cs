@@ -42,6 +42,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             catch
             {
             }
+            //_logger.Debug("ffmpeg decoder query result: {0}", output ?? string.Empty);
 
             var found = new List<string>();
             var required = new[]
@@ -78,6 +79,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             catch
             {
             }
+            //_logger.Debug("ffmpeg encoder query result: {0}", output ?? string.Empty);
 
             var found = new List<string>();
             var required = new[]
@@ -89,8 +91,8 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                 //"libvpx",
                 //"libvpx-vp9",
                 "aac",
-                "ac3",
                 "libmp3lame",
+                "libopus",
                 //"libvorbis",
                 "srt"
             };

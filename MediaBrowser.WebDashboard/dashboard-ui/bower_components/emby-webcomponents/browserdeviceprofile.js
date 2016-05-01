@@ -77,8 +77,15 @@ define(['browser'], function (browser) {
         // Unfortunately there's no real way to detect mkv support
         if (browser.chrome) {
 
+            var userAgent = navigator.userAgent.toLowerCase();
+
             // Not supported on opera tv
             if (browser.operaTv) {
+                return false;
+            }
+
+            // Filter out browsers based on chromium that don't support mkv
+            if (userAgent.indexOf('vivaldi') != -1 || userAgent.indexOf('opera') != -1) {
                 return false;
             }
 
@@ -318,9 +325,7 @@ define(['browser'], function (browser) {
                 AudioCodec: hlsVideoAudioCodecs.join(','),
                 VideoCodec: 'h264',
                 Context: 'Streaming',
-                Protocol: 'hls',
-                // Can't use this when autoplay is not supported
-                ForceLiveStream: options.supportsCustomSeeking ? true : false
+                Protocol: 'hls'
             });
         }
 
@@ -411,6 +416,12 @@ define(['browser'], function (browser) {
             ]
         });
 
+        var maxLevel = '41';
+
+        if (browser.chrome && !browser.mobile) {
+            maxLevel = '51';
+        }
+
         profile.CodecProfiles.push({
             Type: 'Video',
             Codec: 'h264',
@@ -429,7 +440,7 @@ define(['browser'], function (browser) {
             {
                 Condition: 'LessThanEqual',
                 Property: 'VideoLevel',
-                Value: '41'
+                Value: maxLevel
             }]
         });
 

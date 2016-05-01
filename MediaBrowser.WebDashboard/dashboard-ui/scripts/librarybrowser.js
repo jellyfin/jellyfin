@@ -1,4 +1,4 @@
-﻿define(['playlistManager', 'appSettings', 'appStorage', 'jQuery', 'scrollStyles'], function (playlistManager, appSettings, appStorage, $) {
+﻿define(['playlistManager', 'appSettings', 'appStorage', 'apphost', 'jQuery', 'scrollStyles'], function (playlistManager, appSettings, appStorage, appHost, $) {
 
     var libraryBrowser = (function (window, document, screen) {
 
@@ -769,7 +769,7 @@
                 }
 
                 if (item.CanDownload) {
-                    if (AppInfo.supportsDownloading) {
+                    if (appHost.supports('filedownload')) {
                         commands.push('download');
                     }
                 }
@@ -950,6 +950,8 @@
                     });
                 }
 
+                var serverId = ApiClient.serverInfo().Id;
+
                 require(['actionsheet'], function (actionsheet) {
 
                     actionsheet.show({
@@ -960,8 +962,11 @@
                             switch (id) {
 
                                 case 'share':
-                                    require(['sharingmanager'], function () {
-                                        SharingManager.showMenu(Dashboard.getCurrentUserId(), itemId);
+                                    require(['sharingmanager'], function (sharingManager) {
+                                        sharingManager.showMenu({
+                                            serverId: serverId,
+                                            itemId: itemId
+                                        });
                                     });
                                     break;
                                 case 'addtocollection':
@@ -987,9 +992,11 @@
                                                 api_key: ApiClient.accessToken()
                                             });
 
-                                            fileDownloader([{
+                                            fileDownloader.download([
+                                            {
                                                 url: downloadHref,
-                                                itemId: itemId
+                                                itemId: itemId,
+                                                serverId: serverId
                                             }]);
                                         });
 
@@ -1015,6 +1022,10 @@
                                         MetadataRefreshMode: 'FullRefresh',
                                         ReplaceAllImages: false,
                                         ReplaceAllMetadata: true
+                                    });
+
+                                    require(['toast'], function (toast) {
+                                        toast(Globalize.translate('MessageRefreshQueued'));
                                     });
                                     break;
                                 default:
@@ -1488,48 +1499,98 @@
                 return outerHtml;
             },
 
-            getItemDataAttributes: function (item, options, index) {
+            getItemDataAttributesList: function (item, options, index) {
 
                 var atts = [];
 
                 var itemCommands = LibraryBrowser.getItemCommands(item, options);
 
-                atts.push('data-itemid="' + item.Id + '"');
-                atts.push('data-commands="' + itemCommands.join(',') + '"');
+                atts.push({
+                    name: 'itemid',
+                    value: item.Id
+                });
+                atts.push({
+                    name: 'commands',
+                    value: itemCommands.join(',')
+                });
 
                 if (options.context) {
-                    atts.push('data-context="' + (options.context || '') + '"');
+                    atts.push({
+                        name: 'context',
+                        value: options.context || ''
+                    });
                 }
 
                 if (item.IsFolder) {
-                    atts.push('data-isfolder="' + item.IsFolder + '"');
+                    atts.push({
+                        name: 'isfolder',
+                        value: item.IsFolder
+                    });
                 }
 
-                atts.push('data-itemtype="' + item.Type + '"');
+                atts.push({
+                    name: 'itemtype',
+                    value: item.Type
+                });
 
                 if (item.MediaType) {
-                    atts.push('data-mediatype="' + (item.MediaType || '') + '"');
+                    atts.push({
+                        name: 'mediatype',
+                        value: item.MediaType || ''
+                    });
                 }
 
                 if (item.UserData.PlaybackPositionTicks) {
-                    atts.push('data-positionticks="' + (item.UserData.PlaybackPositionTicks || 0) + '"');
+                    atts.push({
+                        name: 'positionticks',
+                        value: (item.UserData.PlaybackPositionTicks || 0)
+                    });
                 }
 
-                atts.push('data-playaccess="' + (item.PlayAccess || '') + '"');
-                atts.push('data-locationtype="' + (item.LocationType || '') + '"');
-                atts.push('data-index="' + index + '"');
+                atts.push({
+                    name: 'playaccess',
+                    value: item.PlayAccess || ''
+                });
+
+                atts.push({
+                    name: 'locationtype',
+                    value: item.LocationType || ''
+                });
+
+                atts.push({
+                    name: 'index',
+                    value: index
+                });
 
                 if (item.AlbumId) {
-                    atts.push('data-albumid="' + item.AlbumId + '"');
+                    atts.push({
+                        name: 'albumid',
+                        value: item.AlbumId
+                    });
                 }
 
                 if (item.ChannelId) {
-                    atts.push('data-channelid="' + item.ChannelId + '"');
+                    atts.push({
+                        name: 'channelid',
+                        value: item.ChannelId
+                    });
                 }
 
                 if (item.ArtistItems && item.ArtistItems.length) {
-                    atts.push('data-artistid="' + item.ArtistItems[0].Id + '"');
+                    atts.push({
+                        name: 'artistid',
+                        value: item.ArtistItems[0].Id
+                    });
                 }
+
+                return atts;
+            },
+
+            getItemDataAttributes: function (item, options, index) {
+
+                var atts = LibraryBrowser.getItemDataAttributesList(item, options, index).map(function (i) {
+                    return 'data-' + i.name + '="' + i.value + '"';
+                });
 
                 var html = atts.join(' ');
 
@@ -1753,14 +1814,11 @@
                 return result;
             },
 
-            getPosterViewHtml: function (options) {
+            setPosterViewData: function (options) {
 
                 var items = options.items;
-                var currentIndexValue;
 
                 options.shape = options.shape || "portrait";
-
-                var html = "";
 
                 var primaryImageAspectRatio = LibraryBrowser.getAveragePrimaryImageAspectRatio(items);
                 var isThumbAspectRatio = primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.777777778) < .3;
@@ -1826,8 +1884,33 @@
                     thumbWidth = 320;
                 }
 
+                options.uiAspect = getDesiredAspect(options.shape);
+                options.primaryImageAspectRatio = primaryImageAspectRatio;
+                options.posterWidth = posterWidth;
+                options.thumbWidth = thumbWidth;
+                options.bannerWidth = bannerWidth;
+                options.squareSize = squareSize;
+            },
+
+            getPosterViewHtml: function (options) {
+
+                LibraryBrowser.setPosterViewData(options);
+
+                var items = options.items;
+                var currentIndexValue;
+
+                options.shape = options.shape || "portrait";
+
+                var html = "";
+
+                var primaryImageAspectRatio;
+                var thumbWidth = options.thumbWidth;
+                var posterWidth = options.posterWidth;
+                var squareSize = options.squareSize;
+                var bannerWidth = options.bannerWidth;
+
                 var dateText;
-                var uiAspect = getDesiredAspect(options.shape);
+                var uiAspect = options.uiAspect;
 
                 for (var i = 0, length = items.length; i < length; i++) {
 
@@ -1890,6 +1973,10 @@
                 }
 
                 var showTitle = options.showTitle == 'auto' ? true : options.showTitle;
+
+                if (item.Type == 'PhotoAlbum') {
+                    showTitle = true;
+                }
                 var coverImage = options.coverImage;
 
                 if (options.autoThumb && item.ImageTags && item.ImageTags.Primary && item.PrimaryImageAspectRatio && item.PrimaryImageAspectRatio >= 1.34) {
@@ -2764,23 +2851,24 @@
                 }
             },
 
-            getDefaultPageSizeSelections: function () {
+            showLayoutMenu: function (button, currentLayout, views) {
 
-                return [20, 50, 100, 200, 300, 400, 500];
-            },
+                var dispatchEvent = true;
 
-            showLayoutMenu: function (button, currentLayout) {
+                if (!views) {
 
-                // Add banner and list once all screens support them
-                var views = button.getAttribute('data-layouts');
+                    dispatchEvent = false;
+                    // Add banner and list once all screens support them
+                    views = button.getAttribute('data-layouts');
 
-                views = views ? views.split(',') : ['List', 'Poster', 'PosterCard', 'Thumb', 'ThumbCard'];
+                    views = views ? views.split(',') : ['List', 'Poster', 'PosterCard', 'Thumb', 'ThumbCard'];
+                }
 
                 var menuItems = views.map(function (v) {
                     return {
                         name: Globalize.translate('Option' + v),
                         id: v,
-                        ironIcon: currentLayout == v ? 'check' : null
+                        selected: currentLayout == v
                     };
                 });
 
@@ -2791,10 +2879,20 @@
                         positionTo: button,
                         callback: function (id) {
 
-                            // TODO: remove jQuery
-                            require(['jQuery'], function ($) {
-                                $(button).trigger('layoutchange', [id]);
-                            });
+                            if (dispatchEvent) {
+                                button.dispatchEvent(new CustomEvent('layoutchange', {
+                                    detail: {
+                                        viewStyle: id
+                                    },
+                                    bubbles: true,
+                                    cancelable: false
+                                }));
+                            } else {
+                                // TODO: remove jQuery
+                                require(['jQuery'], function ($) {
+                                    $(button).trigger('layoutchange', [id]);
+                                });
+                            }
                         }
                     });
 
@@ -2865,7 +2963,7 @@
 
                         var id = "selectPageSize";
 
-                        var pageSizes = options.pageSizes || LibraryBrowser.getDefaultPageSizeSelections();
+                        var pageSizes = options.pageSizes || [20, 50, 100, 200, 300, 400, 500];
 
                         var optionsHtml = pageSizes.map(function (val) {
 
@@ -2927,10 +3025,6 @@
                     html += '<paper-radio-button name="Descending" style="display:block;"  class="menuSortOrder block">' + Globalize.translate('OptionDescending') + '</paper-radio-button>';
                     html += '</paper-radio-group>';
                     html += '</div>';
-
-                    //html += '<div class="buttons">';
-                    //html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonClose') + '</paper-button>';
-                    //html += '</div>';
 
                     dlg.innerHTML = html;
                     document.body.appendChild(dlg);
@@ -3386,13 +3480,13 @@
                 if (item.IsSeries && !item.IsRepeat) {
 
                     require(['livetvcss']);
-                    miscInfo.push('<span class="newTvProgram">' + Globalize.translate('LabelNewProgram') + '</span>');
+                    miscInfo.push('<span class="newTvProgram">' + Globalize.translate('AttributeNew') + '</span>');
 
                 }
 
                 if (item.IsLive) {
 
-                    miscInfo.push('<span class="liveTvProgram">' + Globalize.translate('LabelLiveProgram') + '</span>');
+                    miscInfo.push('<span class="liveTvProgram">' + Globalize.translate('AttributeLive') + '</span>');
 
                 }
 

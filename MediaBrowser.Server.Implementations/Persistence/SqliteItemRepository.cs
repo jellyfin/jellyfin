@@ -18,6 +18,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.LiveTv;
@@ -80,7 +81,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        private const int LatestSchemaVersion = 64;
+        private const int LatestSchemaVersion = 65;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -124,7 +125,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection = await SqliteExtensions.ConnectToDb(dbFile, Logger).ConfigureAwait(false);
 
             var createMediaStreamsTableCommand
-               = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, PRIMARY KEY (ItemId, StreamIndex))";
+               = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, PRIMARY KEY (ItemId, StreamIndex))";
 
             string[] queries = {
 
@@ -226,6 +227,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "CriticRatingSummary", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "DateModifiedDuringLastRefresh", "DATETIME");
             _connection.AddColumn(Logger, "TypedBaseItems", "InheritedTags", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "CleanName", "Text");
 
             PrepareStatements();
 
@@ -391,7 +393,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "RefFrames",
             "CodecTag",
             "Comment",
-            "NalLengthSize"
+            "NalLengthSize",
+            "IsAvc"
         };
 
         /// <summary>
@@ -465,7 +468,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "CriticRating",
                 "CriticRatingSummary",
                 "DateModifiedDuringLastRefresh",
-                "InheritedTags"
+                "InheritedTags",
+                "CleanName"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -789,6 +793,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     else
                     {
                         _saveItemCommand.GetParameter(index++).Value = null;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(item.Name))
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = item.Name.RemoveDiacritics();
                     }
 
                     _saveItemCommand.Transaction = transaction;
@@ -1985,7 +1998,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (!string.IsNullOrWhiteSpace(query.NameContains))
             {
-                whereClauses.Add("Name like @NameContains");
+                whereClauses.Add("CleanName like @NameContains");
                 cmd.Parameters.Add(cmd, "@NameContains", DbType.String).Value = "%" + query.NameContains + "%";
             }
 
@@ -2883,6 +2896,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveStreamCommand.GetParameter(index++).Value = stream.CodecTag;
                     _saveStreamCommand.GetParameter(index++).Value = stream.Comment;
                     _saveStreamCommand.GetParameter(index++).Value = stream.NalLengthSize;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.IsAVC;
 
                     _saveStreamCommand.Transaction = transaction;
                     _saveStreamCommand.ExecuteNonQuery();
@@ -3044,6 +3058,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!reader.IsDBNull(27))
             {
                 item.NalLengthSize = reader.GetString(27);
+            }
+
+            if (!reader.IsDBNull(28))
+            {
+                item.IsAVC = reader.GetBoolean(28);
             }
 
             return item;

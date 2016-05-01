@@ -8,6 +8,7 @@ using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MoreLinq;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -96,7 +97,6 @@ namespace MediaBrowser.Controller.Entities
                     return false;
                 }
             }
-
 
             return base.IsValidFromResolver(newItem);
         }
@@ -200,9 +200,30 @@ namespace MediaBrowser.Controller.Entities
 
         public IEnumerable<Folder> GetPhysicalParents()
         {
-            return LibraryManager.RootFolder.Children
+            var rootChildren = LibraryManager.RootFolder.Children
                 .OfType<Folder>()
-                .Where(i => i.Path != null && PhysicalLocations.Contains(i.Path, StringComparer.OrdinalIgnoreCase));
+                .ToList();
+
+            return PhysicalLocations.Where(i => !string.Equals(i, Path, StringComparison.OrdinalIgnoreCase)).SelectMany(i => GetPhysicalParents(i, rootChildren)).DistinctBy(i => i.Id);
+        }
+
+        private IEnumerable<Folder> GetPhysicalParents(string path, List<Folder> rootChildren)
+        {
+            var result = rootChildren
+                .Where(i => string.Equals(i.Path, path, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (result.Count == 0)
+            {
+                var folder = LibraryManager.FindByPath(path, true) as Folder;
+
+                if (folder != null)
+                {
+                    result.Add(folder);
+                }
+            }
+
+            return result;
         }
 
         [IgnoreDataMember]

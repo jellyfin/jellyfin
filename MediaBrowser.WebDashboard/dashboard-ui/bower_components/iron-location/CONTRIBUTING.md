@@ -9,7 +9,7 @@ If you edit this file, your changes will get overridden :)
 You can however override the jsbin link with one that's customized to this
 specific element:
 
-jsbin=https://jsbin.com/cagaye/edit?html,output
+jsbin=https://jsbin.com/lebawa/edit?html,output
 -->
 # Polymer Elements
 ## Guide for Contributors

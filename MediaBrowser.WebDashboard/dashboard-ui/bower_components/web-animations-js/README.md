@@ -54,7 +54,7 @@ effect.
 
 Web Animations supports off-main-thread animations, and also allows procedural
 generation of animations and fine-grained control of animation playback. See
-<http://web-animations.github.io> for ideas and inspiration!
+<http://web-animations.github.io> for ideas and inspiration - or [web-animations-codelabs](https://github.com/web-animations/web-animations-codelabs).
 
 Native Fallback
 ---------------

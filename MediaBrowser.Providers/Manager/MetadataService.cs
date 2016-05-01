@@ -295,22 +295,17 @@ namespace MediaBrowser.Providers.Manager
                 return true;
             }
 
-            if (item is BoxSet || item is IItemByName || item is Playlist)
+            if (!(item is Audio) && !(item is Video))
+            {
+                return true;
+            }
+
+            if (item is IItemByName)
             {
                 return true;
             }
 
             if (item.SourceType != SourceType.Library)
-            {
-                return true;
-            }
-
-            if (item is ICollectionFolder)
-            {
-                return true;
-            }
-
-            if (!(item is Audio) && !(item is Video))
             {
                 return true;
             }
@@ -435,16 +430,16 @@ namespace MediaBrowser.Providers.Manager
                 var providersWithChanges = providers
                     .Where(i =>
                     {
-                        var hasChangeMonitor = i as IHasChangeMonitor;
-                        if (hasChangeMonitor != null)
-                        {
-                            return HasChanged(item, hasChangeMonitor, currentItem.DateLastSaved, options.DirectoryService);
-                        }
-
                         var hasFileChangeMonitor = i as IHasItemChangeMonitor;
                         if (hasFileChangeMonitor != null)
                         {
                             return HasChanged(item, hasFileChangeMonitor, options.DirectoryService);
+                        }
+
+                        var hasChangeMonitor = i as IHasChangeMonitor;
+                        if (hasChangeMonitor != null)
+                        {
+                            return HasChanged(item, hasChangeMonitor, currentItem.DateLastSaved, options.DirectoryService);
                         }
 
                         return false;

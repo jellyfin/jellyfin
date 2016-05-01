@@ -9,6 +9,7 @@ namespace MediaBrowser.Model.LiveTv
         public string RecordingPath { get; set; }
         public bool EnableAutoOrganize { get; set; }
         public bool EnableRecordingEncoding { get; set; }
+        public bool EnableOriginalAudioWithEncodedRecordings { get; set; }
 
         public List<TunerHostInfo> TunerHosts { get; set; }
         public List<ListingsProviderInfo> ListingProviders { get; set; }

@@ -294,5 +294,14 @@
 
             Events.off(MediaController, 'playbackstop', onPlaybackStop);
         });
+
+        view.addEventListener('viewdestroy', function (e) {
+
+            tabControllers.forEach(function (t) {
+                if (t.destroy) {
+                    t.destroy();
+                }
+            });
+        });
     };
 });

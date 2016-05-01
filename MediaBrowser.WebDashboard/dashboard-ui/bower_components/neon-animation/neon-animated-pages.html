@@ -40,7 +40,6 @@ animations to be run when switching to or switching out of the page.
       left: 0;
       bottom: 0;
       right: 0;
-      height: 100%;
     }
 
     :host > ::content > :not(.iron-selected):not(.neon-animating) {
@@ -94,7 +93,11 @@ animations to be run when switching to or switching out of the page.
 
     _onIronSelect: function(event) {
       var selectedPage = event.detail.item;
-      if (!selectedPage) return;
+
+      // Only consider child elements.
+      if (this.items.indexOf(selectedPage) < 0) {
+        return;
+      }
       
       var oldPage = this._valueToItem(this._prevSelected) || false;
       this._prevSelected = this.selected;

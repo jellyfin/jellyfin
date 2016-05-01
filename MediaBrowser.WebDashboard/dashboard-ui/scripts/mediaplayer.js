@@ -34,7 +34,7 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
 
             var targets = [{
                 name: Globalize.translate('MyDevice'),
-                id: AppInfo.deviceId,
+                id: ConnectionManager.deviceId(),
                 playerName: self.name,
                 playableMediaTypes: ['Audio', 'Video'],
                 isLocalPlayer: true,
@@ -154,6 +154,16 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
 
                 profile.TranscodingProfiles.filter(function (p) {
 
+                    return p.Type == 'Video' && p.CopyTimestamps == true;
+
+                }).forEach(function (p) {
+
+                    // Vlc doesn't seem to handle this well
+                    p.CopyTimestamps = false;
+                });
+
+                profile.TranscodingProfiles.filter(function (p) {
+
                     return p.Type == 'Video' && p.VideoCodec == 'h264';
 
                 }).forEach(function (p) {
@@ -186,10 +196,6 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
 
         function updateDeviceProfileForIOS(profile) {
 
-            profile.DirectPlayProfiles.push({
-                Container: "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus,flac",
-                Type: 'Audio'
-            });
         }
 
         self.getDeviceProfile = function (maxHeight) {
@@ -746,12 +752,8 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
 
                             } else {
 
-                                // Reports of stuttering with h264 stream copy in IE
-                                if (mediaUrl.indexOf('.mkv') == -1) {
-                                    mediaUrl += '&EnableAutoStreamCopy=false';
-                                }
-
                                 if (mediaUrl.toLowerCase().indexOf('copytimestamps=true') == -1) {
+                                    startPositionInSeekParam = 0;
                                     startTimeTicksOffset = startPosition || 0;
                                 }
 

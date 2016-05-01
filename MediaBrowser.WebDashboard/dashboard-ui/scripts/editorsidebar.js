@@ -60,7 +60,7 @@
         var htmlName = "<div class='" + cssClass + "'>";
 
         if (item.LockData) {
-            htmlName += '<img src="css/images/editor/lock.png" />';
+            htmlName += '<iron-icon icon="lock" style="height:18px"></iron-icon>';
         }
 
         htmlName += name;
@@ -394,7 +394,7 @@
 
     }).on('pagebeforeshow', ".metadataEditorPage", function () {
 
-        Dashboard.importCss('css/metadataeditor.css');
+        require(['css!css/metadataeditor.css']);
 
     }).on('pagebeforeshow', ".metadataEditorPage", function () {
 

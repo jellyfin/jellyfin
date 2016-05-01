@@ -23,7 +23,7 @@ using CommonIO;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class FanartSeriesProvider : IRemoteImageProvider, IHasOrder, IHasChangeMonitor
+    public class FanartSeriesProvider : IRemoteImageProvider, IHasOrder, IHasItemChangeMonitor
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IServerConfigurationManager _config;
@@ -31,7 +31,7 @@ namespace MediaBrowser.Providers.TV
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _json;
 
-        private const string FanArtBaseUrl = "http://webservice.fanart.tv/v3/tv/{1}?api_key={0}";
+        private const string FanArtBaseUrl = "https://webservice.fanart.tv/v3/tv/{1}?api_key={0}";
         // &client_key=52c813aa7b8c8b3bb87f4797532a2f8c
 
         internal static FanartSeriesProvider Current { get; private set; }
@@ -341,7 +341,7 @@ namespace MediaBrowser.Providers.TV
             }
         }
 
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
             var options = GetFanartOptions();
             if (!options.EnableAutomaticUpdates)
@@ -358,7 +358,7 @@ namespace MediaBrowser.Providers.TV
 
                 var fileInfo = _fileSystem.GetFileInfo(imagesFilePath);
 
-                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
+                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > item.DateLastRefreshed;
             }
 
             return false;

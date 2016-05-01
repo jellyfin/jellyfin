@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class MovieDbSeriesImageProvider : IRemoteImageProvider, IHasOrder, IHasChangeMonitor
+    public class MovieDbSeriesImageProvider : IRemoteImageProvider, IHasOrder, IHasItemChangeMonitor
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
@@ -64,7 +64,7 @@ namespace MediaBrowser.Providers.TV
 
             var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
-            var tmdbImageUrl = tmdbSettings.images.base_url + "original";
+            var tmdbImageUrl = tmdbSettings.images.secure_base_url + "original";
 
             list.AddRange(GetPosters(results).Select(i => new RemoteImageInfo
             {
@@ -196,9 +196,9 @@ namespace MediaBrowser.Providers.TV
             });
         }
 
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
-            return MovieDbSeriesProvider.Current.HasChanged(item, date);
+            return MovieDbSeriesProvider.Current.HasChanged(item);
         }
     }
 }

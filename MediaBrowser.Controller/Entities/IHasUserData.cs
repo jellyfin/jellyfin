@@ -20,5 +20,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="userData">The user data.</param>
         /// <param name="user">The user.</param>
         void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, User user);
+
+        bool EnableRememberingTrackSelections { get; }
     }
 }

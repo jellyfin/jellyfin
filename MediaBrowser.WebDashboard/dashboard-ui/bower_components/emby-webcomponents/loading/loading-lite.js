@@ -1,4 +1,4 @@
-define(['layoutManager', 'MaterialSpinner', 'css!./loading'], function (layoutManager) {
+define(['MaterialSpinner', 'css!./loading'], function () {
 
     return {
         show: function () {
@@ -10,10 +10,6 @@ define(['layoutManager', 'MaterialSpinner', 'css!./loading'], function (layoutMa
                 elem.classList.add('docspinner');
                 elem.classList.add('mdl-spinner');
                 elem.classList.add('mdl-js-spinner');
-
-                if (layoutManager.tv) {
-                    elem.classList.add('tv');
-                }
 
                 document.body.appendChild(elem);
                 componentHandler.upgradeElement(elem, 'MaterialSpinner');
