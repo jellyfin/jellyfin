@@ -1363,9 +1363,10 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 if (fields.Contains(ItemFields.MediaSourceCount))
                 {
-                    if (video.MediaSourceCount != 1)
+                    var mediaSourceCount = video.MediaSourceCount;
+                    if (mediaSourceCount != 1)
                     {
-                        dto.MediaSourceCount = video.MediaSourceCount;
+                        dto.MediaSourceCount = mediaSourceCount;
                     }
                 }
 
