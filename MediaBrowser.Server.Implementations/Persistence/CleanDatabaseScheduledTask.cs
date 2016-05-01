@@ -110,6 +110,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _config.SaveConfiguration();
             }
 
+            if (_config.Configuration.SchemaVersion < SqliteItemRepository.LatestSchemaVersion)
+            {
+                _config.Configuration.SchemaVersion = SqliteItemRepository.LatestSchemaVersion;
+                _config.SaveConfiguration();
+            }
+
             if (EnableUnavailableMessage)
             {
                 EnableUnavailableMessage = false;
