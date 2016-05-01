@@ -197,12 +197,7 @@ namespace MediaBrowser.Api.Movies
 
             var parentIds = new string[] { };
             var list = _libraryManager.GetItemList(query, parentIds)
-                .Where(i =>
-                {
-                    // Strip out secondary versions
-                    var v = i as Video;
-                    return v != null && !v.PrimaryVersionId.HasValue;
-                })
+                .DistinctBy(i => i.PresentationUniqueKey, StringComparer.OrdinalIgnoreCase)
                 .DistinctBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N"))
                 .ToList();
 

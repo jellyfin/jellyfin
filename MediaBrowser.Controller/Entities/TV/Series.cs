@@ -91,6 +91,12 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        [IgnoreDataMember]
+        public override string PresentationUniqueKey
+        {
+            get { return GetUserDataKey(); }
+        }
+
         /// <summary>
         /// Gets the user data key.
         /// </summary>

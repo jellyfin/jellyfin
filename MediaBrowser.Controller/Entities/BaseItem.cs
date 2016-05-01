@@ -1149,6 +1149,12 @@ namespace MediaBrowser.Controller.Entities
             get { return null; }
         }
 
+        [IgnoreDataMember]
+        public virtual string PresentationUniqueKey
+        {
+            get { return Id.ToString("N"); }
+        }
+
         private string _userDataKey;
         /// <summary>
         /// Gets the user data key.
