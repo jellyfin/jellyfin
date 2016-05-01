@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using MediaBrowser.Controller.Power;
+using MediaBrowser.Server.Startup.Common.FFMpeg;
+using System.Diagnostics;
 
 namespace MediaBrowser.Server.Mac
 {
@@ -104,6 +106,79 @@ namespace MediaBrowser.Server.Mac
 
         public void ConfigureAutoRun(bool autorun)
         {
+        }
+
+        public void LaunchUrl(string url)
+        {
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = url
+                },
+
+                EnableRaisingEvents = true,
+            };
+
+            process.Exited += ProcessExited;
+
+			process.Start();
+        }
+
+        /// <summary>
+        /// Processes the exited.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        private static void ProcessExited(object sender, EventArgs e)
+        {
+            ((Process)sender).Dispose();
+        }
+
+        public FFMpegInstallInfo GetFfmpegInstallInfo()
+        {
+            return GetInfo(Environment);
+        }
+
+        public static FFMpegInstallInfo GetInfo(NativeEnvironment environment)
+        {
+            var info = new FFMpegInstallInfo();
+
+            info.ArchiveType = "7z";
+
+            switch (environment.SystemArchitecture)
+            {
+                case Architecture.X86_X64:
+                    info.Version = "20160124";
+                    break;
+                case Architecture.X86:
+                    info.Version = "20150110";
+                    break;
+            }
+
+            info.DownloadUrls = GetDownloadUrls(environment);
+
+            return info;
+        }
+
+        private static string[] GetDownloadUrls(NativeEnvironment environment)
+        {
+            switch (environment.SystemArchitecture)
+            {
+                case Architecture.X86_X64:
+                    return new[]
+                    {
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/osx/ffmpeg-x64-2.8.5.7z"
+                            };
+                case Architecture.X86:
+                    return new[]
+                    {
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/osx/ffmpeg-x86-2.5.3.7z"
+                            };
+            }
+
+            // No version available 
+            return new string[] { };
         }
 
         public INetworkManager CreateNetworkManager(ILogger logger)
