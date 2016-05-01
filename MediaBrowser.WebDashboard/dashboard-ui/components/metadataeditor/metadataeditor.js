@@ -270,79 +270,17 @@
 
     function showRefreshMenu(context, button) {
 
-        var items = [];
-
-        items.push({
-            name: Globalize.translate('ButtonLocalRefresh'),
-            id: 'local',
-            ironIcon: 'refresh'
+        ApiClient.refreshItem(currentItem.Id, {
+            Recursive: true,
+            ImageRefreshMode: 'FullRefresh',
+            MetadataRefreshMode: 'FullRefresh',
+            ReplaceAllImages: false,
+            ReplaceAllMetadata: true
         });
 
-        items.push({
-            name: Globalize.translate('ButtonAddMissingData'),
-            id: 'missing',
-            ironIcon: 'refresh'
+        require(['toast'], function(toast) {
+            toast(Globalize.translate('MessageRefreshQueued'));
         });
-
-        items.push({
-            name: Globalize.translate('ButtonFullRefresh'),
-            id: 'full',
-            ironIcon: 'refresh'
-        });
-
-        require(['actionsheet'], function (actionsheet) {
-
-            actionsheet.show({
-                items: items,
-                positionTo: button,
-                callback: function (id) {
-
-                    if (id) {
-
-                        Dashboard.showLoadingMsg();
-                        // For now this is a hack
-                        setTimeout(function () {
-                            Dashboard.hideLoadingMsg();
-                        }, 5000);
-                    }
-
-                    switch (id) {
-
-                        case 'local':
-                            ApiClient.refreshItem(currentItem.Id, {
-                                Recursive: true,
-                                ImageRefreshMode: 'None',
-                                MetadataRefreshMode: 'ValidationOnly',
-                                ReplaceAllImages: false,
-                                ReplaceAllMetadata: false
-                            });
-                            break;
-                        case 'missing':
-                            ApiClient.refreshItem(currentItem.Id, {
-                                Recursive: true,
-                                ImageRefreshMode: 'FullRefresh',
-                                MetadataRefreshMode: 'FullRefresh',
-                                ReplaceAllImages: false,
-                                ReplaceAllMetadata: false
-                            });
-                            break;
-                        case 'full':
-                            ApiClient.refreshItem(currentItem.Id, {
-                                Recursive: true,
-                                ImageRefreshMode: 'FullRefresh',
-                                MetadataRefreshMode: 'FullRefresh',
-                                ReplaceAllImages: false,
-                                ReplaceAllMetadata: true
-                            });
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            });
-
-        });
-
     }
 
     function showMoreMenu(context, button) {

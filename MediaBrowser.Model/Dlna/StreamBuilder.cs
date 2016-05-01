@@ -13,15 +13,27 @@ namespace MediaBrowser.Model.Dlna
     {
         private readonly ILocalPlayer _localPlayer;
         private readonly ILogger _logger;
+        private readonly ITranscoderSupport _transcoderSupport;
 
-        public StreamBuilder(ILocalPlayer localPlayer, ILogger logger)
+        public StreamBuilder(ILocalPlayer localPlayer, ITranscoderSupport transcoderSupport, ILogger logger)
         {
+            _transcoderSupport = transcoderSupport;
             _localPlayer = localPlayer;
             _logger = logger;
         }
 
+        public StreamBuilder(ITranscoderSupport transcoderSupport, ILogger logger)
+            : this(new NullLocalPlayer(), transcoderSupport, logger)
+        {
+        }
+
+        public StreamBuilder(ILocalPlayer localPlayer, ILogger logger)
+            : this(localPlayer, new FullTranscoderSupport(), logger)
+        {
+        }
+
         public StreamBuilder(ILogger logger)
-            : this(new NullLocalPlayer(), logger)
+            : this(new NullLocalPlayer(), new FullTranscoderSupport(), logger)
         {
         }
 
@@ -185,8 +197,11 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (i.Type == playlistItem.MediaType && i.Context == options.Context)
                 {
-                    transcodingProfile = i;
-                    break;
+                    if (_transcoderSupport.CanEncodeToAudioCodec(i.AudioCodec ?? i.Container))
+                    {
+                        transcodingProfile = i;
+                        break;
+                    }
                 }
             }
 
