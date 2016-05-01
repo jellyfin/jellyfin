@@ -24,7 +24,7 @@ namespace MediaBrowser.Providers.TV
 {
     public class MovieDbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
     {
-        private const string GetTvInfo3 = @"http://api.themoviedb.org/3/tv/{0}?api_key={1}&append_to_response=credits,images,keywords,external_ids,videos";
+        private const string GetTvInfo3 = @"https://api.themoviedb.org/3/tv/{0}?api_key={1}&append_to_response=credits,images,keywords,external_ids,videos,content_ratings";
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         internal static MovieDbSeriesProvider Current { get; private set; }
@@ -69,7 +69,7 @@ namespace MediaBrowser.Providers.TV
                 var obj = _jsonSerializer.DeserializeFromFile<RootObject>(dataFilePath);
 
                 var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
-                var tmdbImageUrl = tmdbSettings.images.base_url + "original";
+                var tmdbImageUrl = tmdbSettings.images.secure_base_url + "original";
 
                 var remoteResult = new RemoteSearchResult
                 {
@@ -168,7 +168,7 @@ namespace MediaBrowser.Providers.TV
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                result.Item = await FetchMovieData(tmdbId, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                result.Item = await FetchMovieData(tmdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
 
                 result.HasMetadata = result.Item != null;
             }
@@ -176,7 +176,7 @@ namespace MediaBrowser.Providers.TV
             return result;
         }
 
-        private async Task<Series> FetchMovieData(string tmdbId, string language, CancellationToken cancellationToken)
+        private async Task<Series> FetchMovieData(string tmdbId, string language, string preferredCountryCode, CancellationToken cancellationToken)
         {
             string dataFilePath = null;
             RootObject seriesInfo = null;
@@ -201,12 +201,12 @@ namespace MediaBrowser.Providers.TV
 
             var item = new Series();
 
-            ProcessMainInfo(item, seriesInfo);
+            ProcessMainInfo(item, seriesInfo, preferredCountryCode);
 
             return item;
         }
 
-        private void ProcessMainInfo(Series series, RootObject seriesInfo)
+        private void ProcessMainInfo(Series series, RootObject seriesInfo, string preferredCountryCode)
         {
             series.Name = seriesInfo.name;
             series.SetProviderId(MetadataProviders.Tmdb, seriesInfo.id.ToString(_usCulture));
@@ -265,6 +265,26 @@ namespace MediaBrowser.Providers.TV
                     series.SetProviderId(MetadataProviders.Tvdb, ids.tvdb_id.ToString(_usCulture));
                 }
             }
+
+            var contentRatings = (seriesInfo.content_ratings ?? new ContentRatings()).results ?? new List<ContentRating>();
+
+            var ourRelease = contentRatings.FirstOrDefault(c => string.Equals(c.iso_3166_1, preferredCountryCode, StringComparison.OrdinalIgnoreCase));
+            var usRelease = contentRatings.FirstOrDefault(c => string.Equals(c.iso_3166_1, "US", StringComparison.OrdinalIgnoreCase));
+            var minimumRelease = contentRatings.FirstOrDefault();
+
+            if (ourRelease != null)
+            {
+                series.OfficialRating = ourRelease.rating;
+            }
+            else if (usRelease != null)
+            {
+                series.OfficialRating = usRelease.rating;
+            }
+            else if (minimumRelease != null)
+            {
+                series.OfficialRating = minimumRelease.rating;
+            }
+
         }
 
         internal static string GetSeriesDataPath(IApplicationPaths appPaths, string tmdbId)
@@ -394,7 +414,7 @@ namespace MediaBrowser.Providers.TV
             return Path.Combine(path, filename);
         }
 
-        public bool HasChanged(IHasMetadata item, DateTime date)
+        public bool HasChanged(IHasMetadata item)
         {
             if (!MovieDbProvider.Current.GetTheMovieDbOptions().EnableAutomaticUpdates)
             {
@@ -410,7 +430,7 @@ namespace MediaBrowser.Providers.TV
 
                 var fileInfo = _fileSystem.GetFileInfo(dataFilePath);
 
-                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
+                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > item.DateLastRefreshed;
             }
 
             return false;
@@ -418,7 +438,7 @@ namespace MediaBrowser.Providers.TV
 
         private async Task<RemoteSearchResult> FindByExternalId(string id, string externalSource, CancellationToken cancellationToken)
         {
-            var url = string.Format("http://api.themoviedb.org/3/tv/find/{0}?api_key={1}&external_source={2}",
+            var url = string.Format("https://api.themoviedb.org/3/tv/find/{0}?api_key={1}&external_source={2}",
                 id,
                 MovieDbProvider.ApiKey,
                 externalSource);
@@ -440,7 +460,7 @@ namespace MediaBrowser.Providers.TV
                     if (tv != null)
                     {
                         var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
-                        var tmdbImageUrl = tmdbSettings.images.base_url + "original";
+                        var tmdbImageUrl = tmdbSettings.images.secure_base_url + "original";
 
                         var remoteResult = new RemoteSearchResult
                         {
@@ -481,6 +501,7 @@ namespace MediaBrowser.Providers.TV
         public class Season
         {
             public string air_date { get; set; }
+            public int episode_count { get; set; }
             public int id { get; set; }
             public string poster_path { get; set; }
             public int season_number { get; set; }
@@ -528,7 +549,6 @@ namespace MediaBrowser.Providers.TV
             public double aspect_ratio { get; set; }
             public string file_path { get; set; }
             public int height { get; set; }
-            public string id { get; set; }
             public string iso_639_1 { get; set; }
             public double vote_average { get; set; }
             public int vote_count { get; set; }
@@ -558,6 +578,17 @@ namespace MediaBrowser.Providers.TV
         public class Videos
         {
             public List<object> results { get; set; }
+        }
+
+        public class ContentRating
+        {
+            public string iso_3166_1 { get; set; }
+            public string rating { get; set; }
+        }
+
+        public class ContentRatings
+        {
+            public List<ContentRating> results { get; set; }
         }
 
         public class RootObject
@@ -590,6 +621,7 @@ namespace MediaBrowser.Providers.TV
             public Keywords keywords { get; set; }
             public ExternalIds external_ids { get; set; }
             public Videos videos { get; set; }
+            public ContentRatings content_ratings { get; set; }
         }
 
         public int Order

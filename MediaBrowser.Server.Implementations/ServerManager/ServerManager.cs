@@ -71,6 +71,8 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <value>The web socket listeners.</value>
         private readonly List<IWebSocketListener> _webSocketListeners = new List<IWebSocketListener>();
 
+        private bool _disposed;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerManager" /> class.
         /// </summary>
@@ -143,6 +145,11 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <param name="e">The <see cref="WebSocketConnectEventArgs" /> instance containing the event data.</param>
         void HttpServer_WebSocketConnected(object sender, WebSocketConnectEventArgs e)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, _jsonSerializer, _logger)
             {
                 OnReceive = ProcessWebSocketMessageReceived,
@@ -164,6 +171,11 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <param name="result">The result.</param>
         private async void ProcessWebSocketMessageReceived(WebSocketMessageInfo result)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             //_logger.Debug("Websocket message received: {0}", result.MessageType);
 
             var tasks = _webSocketListeners.Select(i => Task.Run(async () =>
@@ -244,6 +256,11 @@ namespace MediaBrowser.Server.Implementations.ServerManager
                 throw new ArgumentNullException("dataFunction");
             }
 
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().Name);
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
 
             var connectionsList = connections.Where(s => s.State == WebSocketState.Open).ToList();
@@ -301,6 +318,8 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// </summary>
         public void Dispose()
         {
+            _disposed = true;
+
             Dispose(true);
             GC.SuppressFinalize(this);
         }

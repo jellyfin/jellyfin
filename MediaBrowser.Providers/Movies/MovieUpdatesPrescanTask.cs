@@ -22,7 +22,7 @@ namespace MediaBrowser.Providers.Movies
         /// <summary>
         /// The updates URL
         /// </summary>
-        private const string UpdatesUrl = "http://api.themoviedb.org/3/movie/changes?start_date={0}&api_key={1}&page={2}";
+        private const string UpdatesUrl = "https://api.themoviedb.org/3/movie/changes?start_date={0}&api_key={1}&page={2}";
 
         /// <summary>
         /// The _HTTP client

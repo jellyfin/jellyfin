@@ -366,9 +366,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <returns>System.String.</returns>
         protected string GetVideoDecoder(EncodingJob state)
         {
-            if (string.Equals(GetEncodingOptions().HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                if (state.VideoStream != null && !string.IsNullOrWhiteSpace(state.VideoStream.Codec))
+                return null;    
+            }
+
+            if (state.VideoStream != null && !string.IsNullOrWhiteSpace(state.VideoStream.Codec))
+            {
+                if (string.Equals(GetEncodingOptions().HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
                 {
                     switch (state.MediaSource.VideoStream.Codec.ToLower())
                     {
@@ -376,7 +381,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         case "h264":
                             if (MediaEncoder.SupportsDecoder("h264_qsv"))
                             {
-                                return "-c:v h264_qsv ";
+                                // Seeing stalls and failures with decoding. Not worth it compared to encoding.
+                                //return "-c:v h264_qsv ";
                             }
                             break;
                         case "mpeg2video":

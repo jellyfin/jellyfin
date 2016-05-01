@@ -18,7 +18,7 @@ namespace MediaBrowser.Providers.Music
 
         public string UrlFormatString
         {
-            get { return "http://musicbrainz.org/release-group/{0}"; }
+            get { return "https://musicbrainz.org/release-group/{0}"; }
         }
 
         public bool Supports(IHasProviderIds item)
@@ -41,7 +41,7 @@ namespace MediaBrowser.Providers.Music
 
         public string UrlFormatString
         {
-            get { return "http://musicbrainz.org/artist/{0}"; }
+            get { return "https://musicbrainz.org/artist/{0}"; }
         }
 
         public bool Supports(IHasProviderIds item)
@@ -64,7 +64,7 @@ namespace MediaBrowser.Providers.Music
 
         public string UrlFormatString
         {
-            get { return "http://musicbrainz.org/release/{0}"; }
+            get { return "https://musicbrainz.org/release/{0}"; }
         }
 
         public bool Supports(IHasProviderIds item)
@@ -87,7 +87,7 @@ namespace MediaBrowser.Providers.Music
 
         public string UrlFormatString
         {
-            get { return "http://musicbrainz.org/artist/{0}"; }
+            get { return "https://musicbrainz.org/artist/{0}"; }
         }
 
         public bool Supports(IHasProviderIds item)
@@ -110,7 +110,7 @@ namespace MediaBrowser.Providers.Music
 
         public string UrlFormatString
         {
-            get { return "http://musicbrainz.org/artist/{0}"; }
+            get { return "https://musicbrainz.org/artist/{0}"; }
         }
 
         public bool Supports(IHasProviderIds item)
@@ -133,7 +133,7 @@ namespace MediaBrowser.Providers.Music
 
         public string UrlFormatString
         {
-            get { return "http://musicbrainz.org/track/{0}"; }
+            get { return "https://musicbrainz.org/track/{0}"; }
         }
 
         public bool Supports(IHasProviderIds item)

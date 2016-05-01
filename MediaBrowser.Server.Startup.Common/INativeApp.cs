@@ -93,6 +93,8 @@ namespace MediaBrowser.Server.Startup.Common
         /// </summary>
         void PreventSystemStandby();
 
+        void AllowSystemStandby();
+
         /// <summary>
         /// Gets the power management.
         /// </summary>

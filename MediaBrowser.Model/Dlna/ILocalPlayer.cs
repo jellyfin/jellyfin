@@ -23,4 +23,17 @@ namespace MediaBrowser.Model.Dlna
         /// <returns><c>true</c> if this instance [can access URL] the specified URL; otherwise, <c>false</c>.</returns>
         bool CanAccessUrl(string url, bool requiresCustomRequestHeaders);
     }
+
+    public interface ITranscoderSupport
+    {
+        bool CanEncodeToAudioCodec(string codec);
+    }
+
+    public class FullTranscoderSupport : ITranscoderSupport
+    {
+        public bool CanEncodeToAudioCodec(string codec)
+        {
+            return true;
+        }
+    }
 }

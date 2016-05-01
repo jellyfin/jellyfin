@@ -591,7 +591,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             throw new ApplicationException("Tuner not found.");
         }
 
-        private async Task<Tuple<MediaSourceInfo, SemaphoreSlim>> GetChannelStreamInternal(string channelId, string streamId, CancellationToken cancellationToken)
+        private async Task<Tuple<MediaSourceInfo, ITunerHost, SemaphoreSlim>> GetChannelStreamInternal(string channelId, string streamId, CancellationToken cancellationToken)
         {
             _logger.Info("Streaming Channel " + channelId);
 
@@ -599,7 +599,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 try
                 {
-                    return await hostInstance.GetChannelStream(channelId, streamId, cancellationToken).ConfigureAwait(false);
+                    var result = await hostInstance.GetChannelStream(channelId, streamId, cancellationToken).ConfigureAwait(false);
+
+                    return new Tuple<MediaSourceInfo, ITunerHost, SemaphoreSlim>(result.Item1, hostInstance, result.Item2);
                 }
                 catch (Exception e)
                 {
@@ -797,8 +799,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     // HDHR doesn't seem to release the tuner right away after first probing with ffmpeg
                     //await Task.Delay(3000, cancellationToken).ConfigureAwait(false);
 
-                    var duration = recordingEndDate - DateTime.UtcNow;
-
                     var recorder = await GetRecorder().ConfigureAwait(false);
 
                     if (recorder is EncodedRecorder)
@@ -816,6 +816,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     recording.DateLastUpdated = DateTime.UtcNow;
                     _recordingProvider.AddOrUpdate(recording);
 
+                    var duration = recordingEndDate - DateTime.UtcNow;
+
                     _logger.Info("Beginning recording. Will record for {0} minutes.", duration.TotalMinutes.ToString(CultureInfo.InvariantCulture));
 
                     _logger.Info("Writing file to path: " + recordPath);
@@ -823,9 +825,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                     Action onStarted = () =>
                     {
-                        result.Item2.Release();
+                        result.Item3.Release();
                         isResourceOpen = false;
                     };
+
+                    var pathWithDuration = result.Item2.ApplyDuration(mediaStreamInfo.Path, duration);
+
+                    // If it supports supplying duration via url
+                    if (!string.Equals(pathWithDuration, mediaStreamInfo.Path, StringComparison.OrdinalIgnoreCase))
+                    {
+                        mediaStreamInfo.Path = pathWithDuration;
+                        mediaStreamInfo.RunTimeTicks = duration.Ticks;
+                    }
 
                     await recorder.Record(mediaStreamInfo, recordPath, duration, onStarted, cancellationToken).ConfigureAwait(false);
 
@@ -836,7 +847,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 {
                     if (isResourceOpen)
                     {
-                        result.Item2.Release();
+                        result.Item3.Release();
                     }
 
                     _libraryMonitor.ReportFileSystemChangeComplete(recordPath, false);
@@ -916,13 +927,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private async Task<IRecorder> GetRecorder()
         {
-            if (GetConfiguration().EnableRecordingEncoding)
+            var config = GetConfiguration();
+
+            if (config.EnableRecordingEncoding)
             {
                 var regInfo = await _security.GetRegistrationStatus("embytvrecordingconversion").ConfigureAwait(false);
 
                 if (regInfo.IsValid)
                 {
-                    return new EncodedRecorder(_logger, _fileSystem, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer);
+                    return new EncodedRecorder(_logger, _fileSystem, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer, config);
                 }
             }
 
