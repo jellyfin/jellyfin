@@ -27,11 +27,11 @@ namespace MediaBrowser.Server.Implementations.Activity
             _appPaths = appPaths;
         }
 
-        public async Task Initialize()
+        public async Task Initialize(IDbConnector dbConnector)
         {
             var dbFile = Path.Combine(_appPaths.DataPath, "activitylog.db");
 
-            _connection = await SqliteExtensions.ConnectToDb(dbFile, Logger).ConfigureAwait(false);
+            _connection = await dbConnector.Connect(dbFile).ConfigureAwait(false);
 
             string[] queries = {
 
