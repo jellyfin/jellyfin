@@ -3,16 +3,12 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Data;
-using System.Data.SQLite;
 using System.IO;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
-    /// <summary>
-    /// Class SQLiteExtensions
-    /// </summary>
-    static class SqliteExtensions
+    static class DataExtensions
     {
         /// <summary>
         /// Determines whether the specified conn is open.
@@ -28,11 +24,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             return (IDataParameter)cmd.Parameters[index];
         }
-        
+
         public static IDataParameter Add(this IDataParameterCollection paramCollection, IDbCommand cmd, string name, DbType type)
         {
             var param = cmd.CreateParameter();
-           
+
             param.ParameterName = name;
             param.DbType = type;
 
@@ -48,11 +44,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
             param.ParameterName = name;
 
             paramCollection.Add(param);
-            
+
             return param;
         }
 
-        
+
         /// <summary>
         /// Gets a stream from a DataReader at a given ordinal
         /// </summary>
@@ -120,38 +116,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     throw;
                 }
             }
-        }
-
-        /// <summary>
-        /// Connects to db.
-        /// </summary>
-        /// <param name="dbPath">The db path.</param>
-        /// <param name="logger">The logger.</param>
-        /// <returns>Task{IDbConnection}.</returns>
-        /// <exception cref="System.ArgumentNullException">dbPath</exception>
-        public static async Task<IDbConnection> ConnectToDb(string dbPath, ILogger logger)
-        {
-            if (string.IsNullOrEmpty(dbPath))
-            {
-                throw new ArgumentNullException("dbPath");
-            }
-
-            logger.Info("Sqlite {0} opening {1}", SQLiteConnection.SQLiteVersion, dbPath);
-
-            var connectionstr = new SQLiteConnectionStringBuilder
-            {
-                PageSize = 4096,
-                CacheSize = 2000,
-                SyncMode = SynchronizationModes.Full,
-                DataSource = dbPath,
-                JournalMode = SQLiteJournalModeEnum.Wal
-            };
-
-            var connection = new SQLiteConnection(connectionstr.ConnectionString);
-
-            await connection.OpenAsync().ConfigureAwait(false);
-
-            return connection;
         }
 
         public static void Attach(IDbConnection db, string path, string alias)

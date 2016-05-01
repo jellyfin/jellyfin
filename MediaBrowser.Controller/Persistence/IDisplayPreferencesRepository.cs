@@ -12,12 +12,6 @@ namespace MediaBrowser.Controller.Persistence
     public interface IDisplayPreferencesRepository : IRepository
     {
         /// <summary>
-        /// Opens the connection to the repository
-        /// </summary>
-        /// <returns>Task.</returns>
-        Task Initialize();
-
-        /// <summary>
         /// Saves display preferences for an item
         /// </summary>
         /// <param name="displayPreferences">The display preferences.</param>
