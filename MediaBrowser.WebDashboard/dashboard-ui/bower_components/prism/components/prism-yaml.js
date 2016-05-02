@@ -6,7 +6,7 @@ Prism.languages.yaml = {
 	},
 	'comment': /#.*/,
 	'key': {
-		pattern: /(\s*[:\-,[{\r\n?][ \t]*(![^\s]+)?[ \t]*)[^\r\n{[\]},#]+?(?=\s*:\s)/,
+		pattern: /(\s*(?:^|[:\-,[{\r\n?])[ \t]*(![^\s]+)?[ \t]*)[^\r\n{[\]},#\s]+?(?=\s*:\s)/,
 		lookbehind: true,
 		alias: 'atrule'
 	},

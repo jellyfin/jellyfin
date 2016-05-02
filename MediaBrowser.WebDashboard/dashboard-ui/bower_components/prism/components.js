@@ -44,6 +44,7 @@ var components = {
 		},
 		"markup": {
 			"title": "Markup",
+			"aliasTitles": { "html": "HTML", "xml": "XML", "svg": "SVG", "mathml": "MathML" },
 			"option": "default"
 		},
 		"css": {
@@ -59,9 +60,6 @@ var components = {
 			"option": "default",
 			"require": "clike"
 		},
-
-
-
 		"abap": {
 			"title": "ABAP",
 			"owner": "dellagustin"
@@ -120,6 +118,10 @@ var components = {
 		"brainfuck": {
 			"title": "Brainfuck",
 			"owner": "Golmote"
+		},
+		"bro": {
+			"title": "Bro",
+			"owner": "wayward710"
 		},
 		"c": {
 			"title": "C",
@@ -395,6 +397,11 @@ var components = {
 			"title": "Prolog",
 			"owner": "Golmote"
 		},
+		"protobuf": {
+			"title": "Protocol Buffers",
+			"require": "clike",
+			"owner": "just-boris"
+		},
 		"puppet": {
 			"title": "Puppet",
 			"owner": "Golmote"
@@ -605,11 +612,19 @@ var components = {
 		"keep-markup": {
 			"title": "Keep Markup",
 			"owner": "Golmote",
+			"after": "normalize-whitespace",
 			"noCSS": true
 		},
 		"command-line": {
 			"title": "Command Line",
 			"owner": "chriswells0"
+		},
+		"unescaped-markup": "Unescaped Markup",
+		"normalize-whitespace": {
+			"title": "Normalize Whitespace",
+			"owner": "zeitgeist87",
+			"after": "unescaped-markup",
+			"noCSS": true
 		}
 	}
 };
