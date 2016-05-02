@@ -499,8 +499,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     dto.ChildCount = GetChildCount(folder, user);
 
-                    // These are just far too slow. 
-                    if (!(folder is UserRootFolder) && !(folder is UserView) && !(folder is ICollectionFolder))
+                    if (!folder.SupportsUserDataFromChildren)
                     {
                         SetSpecialCounts(folder, user, dto, fields, syncProgress);
                     }
