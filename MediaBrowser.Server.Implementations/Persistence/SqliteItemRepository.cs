@@ -2071,6 +2071,30 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
                 cmd.Parameters.Add(cmd, "@NameContains", DbType.String).Value = "%" + query.NameContains + "%";
             }
+            if (!string.IsNullOrWhiteSpace(query.NameStartsWith))
+            {
+                if (_config.Configuration.SchemaVersion >= 66)
+                {
+                    whereClauses.Add("CleanName like @NameStartsWith");
+                }
+                else
+                {
+                    whereClauses.Add("Name like @NameStartsWith");
+                }
+                cmd.Parameters.Add(cmd, "@NameStartsWith", DbType.String).Value = query.NameStartsWith + "%";
+            }
+            if (!string.IsNullOrWhiteSpace(query.NameStartsWithOrGreater))
+            {
+                whereClauses.Add("SortName >= @NameStartsWithOrGreater");
+                // lowercase this because SortName is stored as lowercase
+                cmd.Parameters.Add(cmd, "@NameStartsWithOrGreater", DbType.String).Value = query.NameStartsWithOrGreater.ToLower();
+            }
+            if (!string.IsNullOrWhiteSpace(query.NameLessThan))
+            {
+                whereClauses.Add("SortName < @NameLessThan");
+                // lowercase this because SortName is stored as lowercase
+                cmd.Parameters.Add(cmd, "@NameLessThan", DbType.String).Value = query.NameLessThan.ToLower();
+            }
 
             if (query.Genres.Length > 0)
             {
