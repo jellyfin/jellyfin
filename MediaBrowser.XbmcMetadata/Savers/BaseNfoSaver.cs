@@ -936,7 +936,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 return;
             }
 
-            var userdata = userDataRepo.GetUserData(user.Id, item.GetUserDataKey());
+            var userdata = userDataRepo.GetUserData(user, item);
 
             writer.WriteElementString("isuserfavorite", userdata.IsFavorite.ToString().ToLower());
 

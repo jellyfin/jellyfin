@@ -487,7 +487,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             if (item.IsFolder)
             {
-                var userData = _userDataRepository.GetUserData(user.Id, item.GetUserDataKey());
+                var userData = _userDataRepository.GetUserData(user, item);
 
                 // Skip the user data manager because we've already looped through the recursive tree and don't want to do it twice
                 // TODO: Improve in future
@@ -1363,9 +1363,10 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 if (fields.Contains(ItemFields.MediaSourceCount))
                 {
-                    if (video.MediaSourceCount != 1)
+                    var mediaSourceCount = video.MediaSourceCount;
+                    if (mediaSourceCount != 1)
                     {
-                        dto.MediaSourceCount = video.MediaSourceCount;
+                        dto.MediaSourceCount = mediaSourceCount;
                     }
                 }
 
@@ -1686,7 +1687,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     dateLastMediaAdded = new[] { dateLastMediaAdded.Value, child.DateCreated }.Max();
                 }
 
-                var userdata = _userDataRepository.GetUserData(user.Id, child.GetUserDataKey());
+                var userdata = _userDataRepository.GetUserData(user, child);
 
                 recursiveItemCount++;
 

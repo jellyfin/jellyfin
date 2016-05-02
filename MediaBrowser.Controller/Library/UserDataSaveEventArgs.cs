@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -15,11 +16,7 @@ namespace MediaBrowser.Controller.Library
         /// <value>The user id.</value>
         public Guid UserId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the key.
-        /// </summary>
-        /// <value>The key.</value>
-        public string Key { get; set; }
+        public List<string> Keys { get; set; }
 
         /// <summary>
         /// Gets or sets the save reason.

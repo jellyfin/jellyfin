@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using CommonIO;
 using MediaBrowser.Controller.Power;
+using MediaBrowser.Server.Implementations.Persistence;
 using MediaBrowser.Server.Startup.Common.FFMpeg;
 using OperatingSystem = MediaBrowser.Server.Startup.Common.OperatingSystem;
 
@@ -189,6 +190,11 @@ namespace MediaBrowser.ServerApplication.Native
 
                 throw;
             }
+        }
+
+        public IDbConnector GetDbConnector()
+        {
+            return new DbConnector(_logger);
         }
 
         /// <summary>

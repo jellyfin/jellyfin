@@ -10,13 +10,12 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// </summary>
     public class MusicGenre : BaseItem, IItemByName
     {
-        /// <summary>
-        /// Gets the user data key.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        protected override string CreateUserDataKey()
+        public override List<string> GetUserDataKeys()
         {
-            return "MusicGenre-" + Name;
+            var list = base.GetUserDataKeys();
+
+            list.Insert(0, "MusicGenre-" + Name);
+            return list;
         }
 
         [IgnoreDataMember]

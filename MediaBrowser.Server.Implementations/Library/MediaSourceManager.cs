@@ -267,7 +267,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private void SetUserProperties(IHasUserData item, MediaSourceInfo source, User user)
         {
-            var userData = item == null ? new UserItemData() : _userDataManager.GetUserData(user.Id, item.GetUserDataKey());
+            var userData = item == null ? new UserItemData() : _userDataManager.GetUserData(user, item);
 
             var allowRememberingSelection = item == null || item.EnableRememberingTrackSelections;
 

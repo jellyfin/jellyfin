@@ -80,13 +80,12 @@ namespace MediaBrowser.Controller.Entities.Audio
             ProductionLocations = new List<string>();
         }
 
-        /// <summary>
-        /// Gets the user data key.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        protected override string CreateUserDataKey()
+        public override List<string> GetUserDataKeys()
         {
-            return GetUserDataKey(this);
+            var list = base.GetUserDataKeys();
+
+            list.InsertRange(0, GetUserDataKeys(this));
+            return list;
         }
 
         /// <summary>
@@ -121,16 +120,18 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
-        private static string GetUserDataKey(MusicArtist item)
+        private static List<string> GetUserDataKeys(MusicArtist item)
         {
+            var list = new List<string>();
             var id = item.GetProviderId(MetadataProviders.MusicBrainzArtist);
 
             if (!string.IsNullOrEmpty(id))
             {
-                return "Artist-Musicbrainz-" + id;
+                list.Add("Artist-Musicbrainz-" + id);
             }
 
-            return "Artist-" + item.Name;
+            list.Add("Artist-" + item.Name);
+            return list;
         }
 
         protected override bool GetBlockUnratedValue(UserPolicy config)

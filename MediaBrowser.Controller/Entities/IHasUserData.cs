@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Dto;
+﻿using System.Collections.Generic;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -12,6 +13,8 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <returns>System.String.</returns>
         string GetUserDataKey();
+
+        List<string> GetUserDataKeys();
 
         /// <summary>
         /// Fills the user data dto values.
