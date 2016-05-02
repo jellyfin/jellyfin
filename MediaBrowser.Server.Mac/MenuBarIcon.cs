@@ -88,17 +88,17 @@ namespace MediaBrowser.Server.Mac
 
 		private void Community(NSObject sender)
 		{
-			BrowserLauncher.OpenCommunity(Logger);
+			BrowserLauncher.OpenCommunity(MainClass.AppHost);
 		}
 
 		private void Configure(NSObject sender)
 		{
-			BrowserLauncher.OpenDashboard(MainClass.AppHost, Logger);
+			BrowserLauncher.OpenDashboard(MainClass.AppHost);
 		}
 
 		private void Browse(NSObject sender)
 		{
-			BrowserLauncher.OpenWebClient(MainClass.AppHost, Logger);
+			BrowserLauncher.OpenWebClient(MainClass.AppHost);
 		}
 
 		public void Terminate() 
