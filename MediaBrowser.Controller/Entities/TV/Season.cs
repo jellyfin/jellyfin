@@ -125,10 +125,15 @@ namespace MediaBrowser.Controller.Entities.TV
             get { return LocationType == LocationType.Virtual && GetEpisodes().All(i => i.IsMissingEpisode); }
         }
 
+        private bool GetIsUnaired()
+        {
+            return GetEpisodes().All(i => i.IsUnaired);
+        }
+
         [IgnoreDataMember]
         public bool IsUnaired
         {
-            get { return GetEpisodes().All(i => i.IsUnaired); }
+            get { return GetIsUnaired(); }
         }
 
         [IgnoreDataMember]
