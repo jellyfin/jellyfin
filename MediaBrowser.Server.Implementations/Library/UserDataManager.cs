@@ -56,27 +56,30 @@ namespace MediaBrowser.Server.Implementations.Library
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var key = item.GetUserDataKey();
+            var keys = item.GetUserDataKeys();
 
-            try
+            foreach (var key in keys)
             {
-                await Repository.SaveUserData(userId, key, userData, cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    await Repository.SaveUserData(userId, key, userData, cancellationToken).ConfigureAwait(false);
 
-                var newValue = userData;
+                    var newValue = userData;
 
-                // Once it succeeds, put it into the dictionary to make it available to everyone else
-                _userData.AddOrUpdate(GetCacheKey(userId, key), newValue, delegate { return newValue; });
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error saving user data", ex);
+                    // Once it succeeds, put it into the dictionary to make it available to everyone else
+                    _userData.AddOrUpdate(GetCacheKey(userId, key), newValue, delegate { return newValue; });
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error saving user data", ex);
 
-                throw;
+                    throw;
+                }
             }
 
             EventHelper.FireEventIfNotNull(UserDataSaved, this, new UserDataSaveEventArgs
             {
-                Key = key,
+                Keys = keys,
                 UserData = userData,
                 SaveReason = reason,
                 UserId = userId,
@@ -170,6 +173,21 @@ namespace MediaBrowser.Server.Implementations.Library
         private string GetCacheKey(Guid userId, string key)
         {
             return userId + key;
+        }
+
+        public UserItemData GetUserData(IHasUserData user, IHasUserData item)
+        {
+            return GetUserData(user.Id, item.GetUserDataKey());
+        }
+
+        public UserItemData GetUserData(string userId, IHasUserData item)
+        {
+            return GetUserData(userId, item.GetUserDataKey());
+        }
+
+        public UserItemData GetUserData(Guid userId, IHasUserData item)
+        {
+            return GetUserData(userId, item.GetUserDataKey());
         }
 
         public UserItemDataDto GetUserDataDto(IHasUserData item, User user)

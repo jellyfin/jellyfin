@@ -839,11 +839,6 @@ namespace MediaBrowser.Controller.Entities
                     Logger.Debug("Query requires post-filtering due to ItemSortBy.SeriesSortName");
                     return true;
                 }
-                if (query.SortBy.Contains(ItemSortBy.StartDate, StringComparer.OrdinalIgnoreCase))
-                {
-                    Logger.Debug("Query requires post-filtering due to ItemSortBy.StartDate");
-                    return true;
-                }
                 if (query.SortBy.Contains(ItemSortBy.Studio, StringComparer.OrdinalIgnoreCase))
                 {
                     Logger.Debug("Query requires post-filtering due to ItemSortBy.Studio");
@@ -1056,30 +1051,6 @@ namespace MediaBrowser.Controller.Entities
             if (!string.IsNullOrWhiteSpace(query.AdjacentTo))
             {
                 Logger.Debug("Query requires post-filtering due to AdjacentTo");
-                return true;
-            }
-
-            if (!string.IsNullOrWhiteSpace(query.NameContains))
-            {
-                Logger.Debug("Query requires post-filtering due to NameContains");
-                return true;
-            }
-
-            if (!string.IsNullOrWhiteSpace(query.NameLessThan))
-            {
-                Logger.Debug("Query requires post-filtering due to NameLessThan");
-                return true;
-            }
-
-            if (!string.IsNullOrWhiteSpace(query.NameStartsWith))
-            {
-                Logger.Debug("Query requires post-filtering due to NameStartsWith");
-                return true;
-            }
-
-            if (!string.IsNullOrWhiteSpace(query.NameStartsWithOrGreater))
-            {
-                Logger.Debug("Query requires post-filtering due to NameStartsWithOrGreater");
                 return true;
             }
 
@@ -1635,7 +1606,7 @@ namespace MediaBrowser.Controller.Entities
 
                 var isUnplayed = true;
 
-                var itemUserData = UserDataManager.GetUserData(user.Id, child.GetUserDataKey());
+                var itemUserData = UserDataManager.GetUserData(user, child);
 
                 // Incrememt totalPercentPlayed
                 if (itemUserData != null)

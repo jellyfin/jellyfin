@@ -91,25 +91,33 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        [IgnoreDataMember]
+        public override string PresentationUniqueKey
+        {
+            get { return GetUserDataKeys().First(); }
+        }
+
         /// <summary>
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>
-        protected override string CreateUserDataKey()
+        public override List<string> GetUserDataKeys()
         {
-            var key = this.GetProviderId(MetadataProviders.Tvdb);
+            var list = base.GetUserDataKeys();
 
-            if (string.IsNullOrWhiteSpace(key))
+            var key = this.GetProviderId(MetadataProviders.Imdb);
+            if (!string.IsNullOrWhiteSpace(key))
             {
-                key = this.GetProviderId(MetadataProviders.Imdb);
+                list.Insert(0, key);
             }
 
-            if (string.IsNullOrWhiteSpace(key))
+            key = this.GetProviderId(MetadataProviders.Tvdb);
+            if (!string.IsNullOrWhiteSpace(key))
             {
-                key = base.CreateUserDataKey();
+                list.Insert(0, key);
             }
 
-            return key;
+            return list;
         }
 
         /// <summary>
@@ -126,8 +134,8 @@ namespace MediaBrowser.Controller.Entities.TV
         // Studio, Genre and Rating will all be the same so makes no sense to index by these
         protected override IEnumerable<string> GetIndexByOptions()
         {
-            return new List<string> {            
-                {"None"}, 
+            return new List<string> {
+                {"None"},
                 {"Performer"},
                 {"Director"},
                 {"Year"},
@@ -183,8 +191,28 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public IEnumerable<Season> GetSeasons(User user, bool includeMissingSeasons, bool includeVirtualUnaired)
         {
-            var seasons = base.GetChildren(user, true)
-                .OfType<Season>();
+            var seriesIds = LibraryManager.GetItemIds(new InternalItemsQuery(user)
+            {
+                PresentationUniqueKey = PresentationUniqueKey,
+                IncludeItemTypes = new[] { typeof(Series).Name }
+            });
+
+            IEnumerable<Season> seasons;
+
+            if (seriesIds.Count > 1)
+            {
+                seasons = LibraryManager.GetItemList(new InternalItemsQuery(user)
+                {
+                    AncestorIds = seriesIds.Select(i => i.ToString("N")).ToArray(),
+                    IncludeItemTypes = new[] { typeof(Season).Name },
+                    SortBy = new[] { ItemSortBy.SortName }
+
+                }).OfType<Season>();
+            }
+            else
+            {
+                seasons = base.GetChildren(user, true).OfType<Season>();
+            }
 
             if (!includeMissingSeasons && !includeVirtualUnaired)
             {
@@ -202,9 +230,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 }
             }
 
-            return LibraryManager
-                .Sort(seasons, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending)
-                .Cast<Season>();
+            return seasons;
         }
 
         public IEnumerable<Episode> GetEpisodes(User user)
@@ -280,9 +306,9 @@ namespace MediaBrowser.Controller.Entities.TV
                 if (episode != null
                     && refreshOptions.MetadataRefreshMode != MetadataRefreshMode.FullRefresh
                     && !refreshOptions.ReplaceAllMetadata
-                    && episode.IsMissingEpisode 
-                    && episode.LocationType == Model.Entities.LocationType.Virtual 
-                    && episode.PremiereDate.HasValue 
+                    && episode.IsMissingEpisode
+                    && episode.LocationType == Model.Entities.LocationType.Virtual
+                    && episode.PremiereDate.HasValue
                     && (DateTime.UtcNow - episode.PremiereDate.Value).TotalDays > 30)
                 {
                     skipItem = true;
@@ -313,18 +339,31 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public IEnumerable<Episode> GetEpisodes(User user, int seasonNumber, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes)
         {
-            return GetEpisodes(user, seasonNumber, includeMissingEpisodes, includeVirtualUnairedEpisodes,
-                new List<Episode>());
-        }
+            var seriesIds = LibraryManager.GetItemIds(new InternalItemsQuery(user)
+            {
+                PresentationUniqueKey = PresentationUniqueKey,
+                IncludeItemTypes = new[] { typeof(Series).Name }
+            });
 
-        internal IEnumerable<Episode> GetEpisodes(User user, int seasonNumber, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes, IEnumerable<Episode> additionalEpisodes)
-        {
-            var episodes = GetRecursiveChildren(user, i => i is Episode)
-                .Cast<Episode>();
+            IEnumerable<Episode> episodes;
+
+            if (seriesIds.Count > 1)
+            {
+                episodes = LibraryManager.GetItemList(new InternalItemsQuery(user)
+                {
+                    AncestorIds = seriesIds.Select(i => i.ToString("N")).ToArray(),
+                    IncludeItemTypes = new[] { typeof(Episode).Name },
+                    SortBy = new[] { ItemSortBy.SortName }
+
+                }).OfType<Episode>();
+            }
+            else
+            {
+                episodes = GetRecursiveChildren(user, i => i is Episode)
+                    .Cast<Episode>();
+            }
 
             episodes = FilterEpisodesBySeason(episodes, seasonNumber, DisplaySpecialsWithSeasons);
-
-            episodes = episodes.Concat(additionalEpisodes).Distinct();
 
             if (!includeMissingEpisodes)
             {
@@ -352,7 +391,7 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             if (!includeSpecials || seasonNumber < 1)
             {
-                return episodes.Where(i => (i.PhysicalSeasonNumber ?? -1) == seasonNumber);
+                return episodes.Where(i => (i.ParentIndexNumber ?? -1) == seasonNumber);
             }
 
             return episodes.Where(i =>

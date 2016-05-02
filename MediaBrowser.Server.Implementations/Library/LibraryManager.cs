@@ -522,29 +522,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("items");
             }
 
-            var dict = new Dictionary<Guid, BaseItem>();
-
-            foreach (var item in items)
-            {
-                var video = item as Video;
-
-                if (video != null)
-                {
-                    if (video.PrimaryVersionId.HasValue)
-                    {
-                        var primary = GetItemById(video.PrimaryVersionId.Value) as Video;
-
-                        if (primary != null)
-                        {
-                            dict[primary.Id] = primary;
-                            continue;
-                        }
-                    }
-                }
-                dict[item.Id] = item;
-            }
-
-            return dict.Values;
+            return items.DistinctBy(i => i.PresentationUniqueKey, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
