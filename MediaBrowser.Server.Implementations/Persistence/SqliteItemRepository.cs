@@ -82,7 +82,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        public const int LatestSchemaVersion = 66;
+        public const int LatestSchemaVersion = 68;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -1936,6 +1936,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 cmd.Parameters.Add(cmd, "@Path", DbType.String).Value = query.Path;
             }
 
+            if (!string.IsNullOrWhiteSpace(query.PresentationUniqueKey))
+            {
+                whereClauses.Add("PresentationUniqueKey=@PresentationUniqueKey");
+                cmd.Parameters.Add(cmd, "@PresentationUniqueKey", DbType.String).Value = query.PresentationUniqueKey;
+            }
+
             if (query.MinCommunityRating.HasValue)
             {
                 whereClauses.Add("CommunityRating>=@MinCommunityRating");
@@ -2323,6 +2329,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private bool EnableGroupByPresentationUniqueKey(InternalItemsQuery query)
         {
+            if (!string.IsNullOrWhiteSpace(query.PresentationUniqueKey))
+            {
+                return false;
+            }
+
             if (query.IncludeItemTypes.Length == 0)
             {
                 return true;
@@ -2333,7 +2344,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 typeof(Video).Name ,
                 typeof(Movie).Name ,
                 typeof(MusicVideo).Name ,
-                typeof(Series).Name };
+                typeof(Series).Name ,
+                typeof(Season).Name };
 
             if (types.Any(i => query.IncludeItemTypes.Contains(i, StringComparer.OrdinalIgnoreCase)))
             {

@@ -92,6 +92,24 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        [IgnoreDataMember]
+        public override string PresentationUniqueKey
+        {
+            get
+            {
+                if (IndexNumber.HasValue)
+                {
+                    var series = Series;
+                    if (series != null)
+                    {
+                        return series.PresentationUniqueKey + "-" + (IndexNumber ?? 0).ToString("000");
+                    }
+                }
+
+                return base.PresentationUniqueKey;
+            }
+        }
+
         /// <summary>
         /// Creates the name of the sort.
         /// </summary>
@@ -169,15 +187,15 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public IEnumerable<Episode> GetEpisodes(User user, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes)
         {
-            var episodes = GetRecursiveChildren(user)
-                .OfType<Episode>();
-
             var series = Series;
 
             if (IndexNumber.HasValue && series != null)
             {
-                return series.GetEpisodes(user, IndexNumber.Value, includeMissingEpisodes, includeVirtualUnairedEpisodes, episodes);
+                return series.GetEpisodes(user, IndexNumber.Value, includeMissingEpisodes, includeVirtualUnairedEpisodes);
             }
+
+            var episodes = GetRecursiveChildren(user)
+                .OfType<Episode>();
 
             if (series != null && series.ContainsEpisodesWithoutSeasonFolders)
             {
