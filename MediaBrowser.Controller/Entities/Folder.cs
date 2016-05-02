@@ -1578,8 +1578,36 @@ namespace MediaBrowser.Controller.Entities
             return !IsPlayed(user);
         }
 
+        [IgnoreDataMember]
+        public virtual bool SupportsUserDataFromChildren
+        {
+            get
+            {
+                // These are just far too slow. 
+                if (this is ICollectionFolder)
+                {
+                    return false;
+                }
+                if (this is UserView)
+                {
+                    return false;
+                }
+                if (this is UserRootFolder)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
         public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, User user)
         {
+            if (!SupportsUserDataFromChildren)
+            {
+                return;
+            }
+
             var recursiveItemCount = 0;
             var unplayed = 0;
 
