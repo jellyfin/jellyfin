@@ -1,4 +1,4 @@
-﻿<div id="liveTvSettingsPage" data-role="page" class="page type-interior liveTvPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvsettings,paper-checkbox,paper-input,emby-collapsible">
+﻿<div id="liveTvSettingsPage" data-role="page" class="page type-interior liveTvPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvsettings,paper-checkbox,paper-input,emby-collapsible,paper-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -44,6 +44,11 @@
                     <paper-checkbox id="chkConvertRecordings">${OptionConvertRecordingsToStreamingFormat}</paper-checkbox>
                     <div class="fieldDescription paperCheckboxFieldDescription">${OptionConvertRecordingsToStreamingFormatHelp}</div>
                     <div class="fieldDescription paperCheckboxFieldDescription btnSupporterForConverting"><a href="https://emby.media/premiere" target="_blank" class="accent">${FeatureRequiresEmbyPremiere}</a></div>
+                </div>
+                <br />
+                <div>
+                    <paper-checkbox id="chkPreserveAudio">${OptionConvertRecordingPreserveAudio}</paper-checkbox>
+                    <div class="fieldDescription paperCheckboxFieldDescription">${OptionConvertRecordingPreserveAudioHelp}</div>
                 </div>
                 <br />
                 <br />

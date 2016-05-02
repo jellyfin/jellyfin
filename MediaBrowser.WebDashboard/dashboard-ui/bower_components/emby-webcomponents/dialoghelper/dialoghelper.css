@@ -127,6 +127,10 @@
     transition: opacity ease-out 0.2s;
 }
 
+.mouseIdle .dialog::backdrop {
+    cursor: none !important;
+}
+
 .dialog.opened::backdrop {
     opacity: .6;
 }

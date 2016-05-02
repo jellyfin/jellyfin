@@ -19,7 +19,7 @@ namespace MediaBrowser.Model.Dlna
 
         [XmlAttribute("protocol")]
         public string Protocol { get; set; }
-        
+
         [XmlAttribute("estimateContentLength")]
         public bool EstimateContentLength { get; set; }
 

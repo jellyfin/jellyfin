@@ -45,6 +45,11 @@ namespace MediaBrowser.Controller.Library
         /// <returns>Task{UserItemData}.</returns>
         UserItemData GetUserData(Guid userId, string key);
 
+        UserItemData GetUserData(IHasUserData user, IHasUserData item);
+
+        UserItemData GetUserData(string userId, IHasUserData item);
+        UserItemData GetUserData(Guid userId, IHasUserData item);
+
         /// <summary>
         /// Gets the user data dto.
         /// </summary>

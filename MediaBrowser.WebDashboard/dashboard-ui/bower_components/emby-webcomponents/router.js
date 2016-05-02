@@ -271,17 +271,17 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         var apiClient = connectionManager.currentApiClient();
         var pathname = ctx.pathname.toLowerCase();
 
-        console.log('Emby.Page - processing path request ' + pathname);
+        console.log('embyRouter - processing path request ' + pathname);
 
         if ((!apiClient || !apiClient.isLoggedIn()) && !route.anonymous) {
-            console.log('Emby.Page - route does not allow anonymous access, redirecting to login');
+            console.log('embyRouter - route does not allow anonymous access, redirecting to login');
             beginConnectionWizard();
             return;
         }
 
         if (apiClient && apiClient.isLoggedIn()) {
 
-            console.log('Emby.Page - user is authenticated');
+            console.log('embyRouter - user is authenticated');
 
             var isCurrentRouteStartup = currentRouteInfo ? currentRouteInfo.route.startup : true;
             if (ctx.isBack && (route.isDefaultRoute || route.startup) && !isCurrentRouteStartup) {
@@ -289,7 +289,7 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
                 return;
             }
             else if (route.isDefaultRoute) {
-                console.log('Emby.Page - loading skin home page');
+                console.log('embyRouter - loading skin home page');
                 skinManager.loadUserSkin();
                 return;
             } else if (route.roles) {
@@ -303,7 +303,7 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
             }
         }
 
-        console.log('Emby.Page - proceeding to ' + pathname);
+        console.log('embyRouter - proceeding to ' + pathname);
         callback();
     }
 
@@ -484,8 +484,10 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
     function showItem(item) {
 
         if (typeof (item) === 'string') {
-            Emby.Models.item(item).then(showItem);
-
+            require(['connectionManager'], function (connectionManager) {
+                var apiClient = connectionManager.currentApiClient();
+                apiClient.getItem(apiClient.getCurrentUserId(), item).then(showItem);
+            });
         } else {
             skinManager.getCurrentSkin().showItem(item);
         }

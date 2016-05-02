@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['apphost', 'jQuery'], function (appHost, $) {
 
     var currentDialogOptions;
 
@@ -82,12 +82,15 @@
         return new Promise(function (resolve, reject) {
 
             require(['paper-checkbox', 'paper-input', 'emby-collapsible'], function () {
-                renderFormInternal(options, resolve);
+
+                appHost.appInfo().then(function (appInfo) {
+                    renderFormInternal(options, appInfo, resolve);
+                });
             });
         });
     }
 
-    function renderFormInternal(options, resolve) {
+    function renderFormInternal(options, appInfo, resolve) {
 
         var elem = options.elem;
         var dialogOptions = options.dialogOptions;
@@ -113,7 +116,7 @@
 
             html += targets.map(function (t) {
 
-                var isSelected = t.Id == AppInfo.deviceId;
+                var isSelected = t.Id == appInfo.deviceId;
                 var selectedHtml = isSelected ? ' selected="selected"' : '';
                 return '<option' + selectedHtml + ' value="' + t.Id + '">' + t.Name + '</option>';
 

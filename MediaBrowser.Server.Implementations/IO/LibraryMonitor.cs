@@ -663,7 +663,7 @@ namespace MediaBrowser.Server.Implementations.IO
 
             while (item == null && !string.IsNullOrEmpty(path))
             {
-                item = LibraryManager.FindByPath(path);
+                item = LibraryManager.FindByPath(path, null);
 
                 path = Path.GetDirectoryName(path);
             }

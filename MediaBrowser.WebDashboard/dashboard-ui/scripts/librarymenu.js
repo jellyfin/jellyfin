@@ -1,4 +1,4 @@
-﻿define(['imageLoader', 'layoutManager', 'jQuery', 'paper-icon-button', 'paper-button', 'emby-icons'], function (imageLoader, layoutManager, $) {
+﻿define(['imageLoader', 'layoutManager', 'jQuery'], function (imageLoader, layoutManager, $) {
 
     var mainDrawerPanel = document.querySelector('.mainDrawerPanel');
 
@@ -11,9 +11,7 @@
 
         html += '<paper-icon-button icon="' + backIcon + '" class="headerButton headerButtonLeft headerBackButton hide"></paper-icon-button>';
 
-        if (AppInfo.enableNavDrawer) {
-            html += '<paper-icon-button icon="menu" class="headerButton mainDrawerButton barsMenuButton headerButtonLeft"></paper-icon-button>';
-        }
+        html += '<paper-icon-button icon="menu" class="headerButton mainDrawerButton barsMenuButton headerButtonLeft"></paper-icon-button>';
 
         html += '<paper-icon-button icon="menu" class="headerButton headerAppsButton barsMenuButton headerButtonLeft"></paper-icon-button>';
 
@@ -36,7 +34,7 @@
 
         html += '<paper-icon-button icon="mic" class="headerButton headerButtonRight headerVoiceButton hide"></paper-icon-button>';
 
-        html += '<paper-button class="headerButton headerButtonRight btnNotifications subdued" type="button" title="Notifications"><div class="btnNotificationsInner">0</div></paper-button>';
+        html += '<button class="headerButton headerButtonRight btnNotifications clearButton" type="button" title="Notifications"><div class="btnNotificationsInner">0</div></button>';
 
         html += '<paper-icon-button icon="person" class="headerButton headerButtonRight headerUserButton"></paper-icon-button>';
 
@@ -87,7 +85,7 @@
                 var url = user.imageUrl;
 
                 if (user.supportsImageParams) {
-                    url += "&height=" + (userButtonHeight * Math.max(window.devicePixelRatio || 1, 2));
+                    url += "&height=" + Math.round((userButtonHeight * Math.max(window.devicePixelRatio || 1, 2)));
                 }
 
                 if (headerUserButton) {
@@ -993,7 +991,7 @@
 
         if (!e.detail.isRestored) {
             // Scroll back up so in case vertical scroll was messed with
-            window.scrollTo(0, 0);
+            //window.scrollTo(0, 0);
         }
 
         updateTitle(page);
@@ -1126,8 +1124,19 @@
     }
 
     mainDrawerPanel.addEventListener('iron-select', onMainDrawerSelect);
+    var headerCreated;
+    var userRequiresUpdateAfterHeader;
 
-    renderHeader();
+    require(['paper-icon-button', 'emby-icons'], function () {
+        renderHeader();
+        headerCreated = true;
+
+        var user = userRequiresUpdateAfterHeader;
+        if (user) {
+            updateUserInHeader(user);
+        }
+        userRequiresUpdateAfterHeader = null;
+    });
 
     Events.on(ConnectionManager, 'apiclientcreated', function (e, apiClient) {
         initializeApiClient(apiClient);
@@ -1138,7 +1147,12 @@
         var apiClient = ConnectionManager.getApiClient(user.ServerId);
         ConnectionManager.user(ConnectionManager.getApiClient(user.ServerId)).then(function (user) {
             refreshLibraryDrawer(user);
-            updateUserInHeader(user);
+
+            if (headerCreated) {
+                updateUserInHeader(user);
+            } else {
+                userRequiresUpdateAfterHeader = user;
+            }
         });
 
         if (!AppInfo.isNativeApp) {

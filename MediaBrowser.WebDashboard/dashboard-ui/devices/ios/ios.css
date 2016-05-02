@@ -2,6 +2,10 @@
     font-size: 15px;
 }
 
+body:not(.dashboardDocument) .mainDrawerButton {
+    display: none !important;
+}
+
 .ui-body-b select {
     -webkit-appearance: none;
 }
@@ -106,14 +110,6 @@
     color: #52B54B !important;
 }
 
-.channelTimeslotHeader {
-    border-right-color: #52B54B !important;
-}
-
-.channelTimeslotHeader, .timeslotHeader {
-    background: #52B54B !important;
-}
-
 .libraryViewNav, paper-tabs {
     font-size: 12px;
 }
@@ -124,18 +120,6 @@ h1, h1 a {
 
 .btnNotificationsInner {
     font-weight: 400;
-}
-
-.channelList {
-    font-weight: 400;
-}
-
-.channelHeaderCellInner {
-    font-weight: 400;
-}
-
-.tvGuideHeader {
-    top: 86px !important;
 }
 
 .libraryMenuButtonText {
@@ -186,18 +170,6 @@ div.cardBox {
 
 .viewMenuSearch {
     background: #1c1c1c;
-}
-
-@media (min-width: 600px) {
-
-    /* This needs a little extra space to account for the longer date format */
-    .channelHeaderCell, .channelTimeslotHeader {
-        width: 209px;
-    }
-
-    .programGrid, .timeslotHeaders {
-        margin-left: 210px;
-    }
 }
 
 .bottomFab {

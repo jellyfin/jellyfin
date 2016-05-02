@@ -224,7 +224,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
                         var stream = await GetChannelStream(host, channelId, streamId, cancellationToken).ConfigureAwait(false);
 
-                        //await AddMediaInfo(stream, false, resourcePool, cancellationToken).ConfigureAwait(false);
+                        if (EnableMediaProbing)
+                        {
+                            await AddMediaInfo(stream, false, resourcePool, cancellationToken).ConfigureAwait(false);
+                        }
+
                         return new Tuple<MediaSourceInfo, SemaphoreSlim>(stream, resourcePool);
                     }
                     catch (Exception ex)
@@ -237,6 +241,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             }
 
             throw new LiveTvConflictException();
+        }
+
+        protected virtual bool EnableMediaProbing
+        {
+            get { return false; }
         }
 
         protected async Task<bool> IsAvailable(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken)
@@ -266,6 +275,25 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
         private SemaphoreSlim GetLock(string url)
         {
             return _semaphoreLocks.GetOrAdd(url, key => new SemaphoreSlim(1, 1));
+        }
+
+        private async Task AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
+        {
+            await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await AddMediaInfoInternal(mediaSource, isAudio, cancellationToken).ConfigureAwait(false);
+
+                // Leave the resource locked. it will be released upstream
+            }
+            catch (Exception)
+            {
+                // Release the resource if there's some kind of failure.
+                resourcePool.Release();
+
+                throw;
+            }
         }
 
         private async Task AddMediaInfoInternal(MediaSourceInfo mediaSource, bool isAudio, CancellationToken cancellationToken)

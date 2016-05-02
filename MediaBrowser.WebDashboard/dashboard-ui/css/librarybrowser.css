@@ -62,7 +62,7 @@
     padding-bottom: 0;
 }
 
-.pageWithAbsoluteTabs .pageTabContent, .libraryPage > .ui-content {
+.pageWithAbsoluteTabs .pageTabsContainer, .libraryPage > .ui-content {
     padding-top: 10px;
 }
 
@@ -1174,7 +1174,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .alphabetPicker {
     position: fixed;
-    right: 0;
+    right: 5px;
     bottom: 0;
     z-index: 999;
     text-align: center;
@@ -1183,16 +1183,20 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     line-height: 1;
 }
 
-    .alphabetPicker a {
-        display: block;
-        text-decoration: none;
-        padding: 1px 5px 1px 10px;
-        font-weight: 500;
-    }
+.layout-desktop .absolutePageTabContent .alphabetPicker {
+    right: 20px;
+}
 
-        .alphabetPicker a:not(.selectedCharacter) {
-            color: #bbb !important;
-        }
+.alphabetPicker a {
+    display: block;
+    text-decoration: none;
+    padding: 1px 2px 1px 5px;
+    font-weight: 500;
+}
+
+    .alphabetPicker a:not(.selectedCharacter) {
+        color: #bbb !important;
+    }
 
 
 .selectedCharacter {
@@ -1256,6 +1260,17 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .itemsContainerWithAlphaPicker {
         margin-right: 20px;
     }
+
+    .absolutePageTabContent .itemsContainerWithAlphaPicker {
+        margin-right: 30px;
+    }
+}
+
+@media all and (min-height: 480px) and (max-width: 800px) {
+
+    .absolutePageTabContent .itemsContainerWithAlphaPicker iron-list {
+        width: 99.5% !important;
+    }
 }
 
 @media all and (min-height: 500px) {
@@ -1267,7 +1282,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 @media all and (min-width: 1200px) {
 
-    .itemsContainerWithAlphaPicker {
+    .itemsContainerWithAlphaPicker, .absolutePageTabContent .itemsContainerWithAlphaPicker {
         margin-right: 0;
     }
 }

@@ -1,5 +1,5 @@
 #/bin/sh
 git checkout gh-pages
-git rebase master
+git rebase v0.5.x
 git push origin gh-pages --force
-git checkout master
+git checkout v0.5.x

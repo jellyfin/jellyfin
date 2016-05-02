@@ -11,13 +11,12 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Year : BaseItem, IItemByName
     {
-        /// <summary>
-        /// Gets the user data key.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        protected override string CreateUserDataKey()
+        public override List<string> GetUserDataKeys()
         {
-            return "Year-" + Name;
+            var list = base.GetUserDataKeys();
+
+            list.Insert(0, "Year-" + Name);
+            return list;
         }
 
         /// <summary>

@@ -273,11 +273,13 @@ namespace MediaBrowser.ServerApplication
         }
 
         private static ServerNotifyIcon _serverNotifyIcon;
+        private static TaskScheduler _mainTaskScheduler;
         private static void ShowTrayIcon()
         {
             //Application.EnableVisualStyles();
             //Application.SetCompatibleTextRenderingDefault(false);
             _serverNotifyIcon = new ServerNotifyIcon(_appHost.LogManager, _appHost, _appHost.ServerConfigurationManager, _appHost.LocalizationManager);
+            _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
             Application.Run();
         }
 
@@ -318,6 +320,18 @@ namespace MediaBrowser.ServerApplication
             if (e.Reason == SessionSwitchReason.SessionLogon)
             {
                 BrowserLauncher.OpenDashboard(_appHost);
+            }
+        }
+
+        public static void Invoke(Action action)
+        {
+            if (_isRunningAsService)
+            {
+                action();
+            }
+            else
+            {
+                Task.Factory.StartNew(action, CancellationToken.None, TaskCreationOptions.None, _mainTaskScheduler ?? TaskScheduler.Current);
             }
         }
 
@@ -555,9 +569,10 @@ namespace MediaBrowser.ServerApplication
 
         private static void ShutdownWindowsApplication()
         {
-            _logger.Info("Calling Application.Exit");
-            Application.Exit();
+            //_logger.Info("Calling Application.Exit");
+            //Application.Exit();
 
+            _logger.Info("Calling Environment.Exit");
             Environment.Exit(0);
 
             _logger.Info("Calling ApplicationTaskCompletionSource.SetResult");

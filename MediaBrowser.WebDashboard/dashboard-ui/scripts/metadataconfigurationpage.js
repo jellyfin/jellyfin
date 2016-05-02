@@ -9,6 +9,7 @@
         page.querySelector('#chkSaveLocal').checked = config.SaveLocalMeta;
         $('#selectLanguage', page).val(config.PreferredMetadataLanguage);
         $('#selectCountry', page).val(config.MetadataCountryCode);
+        $('#chkDownloadImagesInAdvance', page).checked(config.DownloadImagesInAdvance);
 
         Dashboard.hideLoadingMsg();
     }
@@ -24,12 +25,38 @@
             config.SaveLocalMeta = form.querySelector('#chkSaveLocal').checked;
             config.PreferredMetadataLanguage = $('#selectLanguage', form).val();
             config.MetadataCountryCode = $('#selectCountry', form).val();
+            config.DownloadImagesInAdvance = $('#chkDownloadImagesInAdvance', form).checked();
 
-            ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateServerConfiguration(config).then(function() {
+                Dashboard.processServerConfigurationUpdateResult();
+
+                showConfirmMessage(config);
+            });
         });
 
         // Disable default form submission
         return false;
+    }
+
+    function showConfirmMessage(config) {
+
+        var msg = [];
+
+        msg.push(Globalize.translate('MetadataSettingChangeHelp'));
+
+        if (config.DownloadImagesInAdvance) {
+            msg.push(Globalize.translate('DownloadImagesInAdvanceWarning'));
+        }
+
+        if (!msg.length) {
+            return;
+        }
+
+        require(['alert'], function (alert) {
+            alert({
+                text: msg.join('<br/><br/>')
+            });
+        });
     }
 
     function getTabs() {

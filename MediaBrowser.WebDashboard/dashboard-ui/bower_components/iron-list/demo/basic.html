@@ -1,0 +1,60 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<!doctype html>
+<html>
+<head>
+
+  <title>iron-list demo</title>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
+  <link rel="import" href="../../iron-ajax/iron-ajax.html">
+  <link rel="import" href="../iron-list.html">
+
+  <style is="custom-style">
+
+    iron-list {
+      @apply(--layout-fit);
+    }
+
+    .item {
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+    }
+
+  </style>
+
+</head>
+<body unresolved>
+
+  <template is="dom-bind">
+    <iron-ajax url="data/contacts.json" last-response="{{data}}" auto></iron-ajax>
+
+    <iron-list items="[[data]]" as="item">
+      <template>
+        <div class="item">
+        <b>#[[index]] - [[item.name]]</b>
+        <p>[[item.longText]]</p>
+        </div>
+      </template>
+    </iron-list>
+
+  </template>
+
+</body>
+</html>

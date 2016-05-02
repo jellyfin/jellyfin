@@ -48,10 +48,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     height: 50px;
     background-color: orange;
   }
-  
-  .full-screen {
-    width: 100vw;
-    height: 100vh;
+
+  .big {
+    width: 3000px;
+    height: 3000px;
   }
 </style>
 <body>
@@ -76,7 +76,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <template>
       <div class="container">
         <iron-dropdown horizontal-align="right" vertical-align="top">
-          <div class="dropdown-content full-screen"></div>
+          <div class="dropdown-content big"></div>
         </iron-dropdown>
       </div>
     </template>
@@ -143,10 +143,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         contentRect.height > 0;
     }
 
-    function runAfterOpen(overlay, cb) {
-      overlay.addEventListener('iron-overlay-opened', function () {
-        Polymer.Base.async(cb, 1);
-      });
+    function runAfterOpen(overlay, callback) {
+      overlay.addEventListener('iron-overlay-opened', callback);
       overlay.open();
     }
 
@@ -174,11 +172,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         test('hides dropdown content when outside is clicked', function(done) {
           runAfterOpen(dropdown, function () {
             expect(elementIsVisible(content)).to.be.equal(true);
-            MockInteractions.tap(dropdown.parentNode);
-            Polymer.Base.async(function() {
+            dropdown.addEventListener('iron-overlay-closed', function() {
               expect(elementIsVisible(content)).to.be.equal(false);
               done();
-            }, 10);
+            });
+            MockInteractions.tap(dropdown.parentNode);
           });
         });
 
@@ -208,7 +206,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       });
 
       suite('locking scroll', function() {
-        var dropdown;
 
         setup(function() {
           dropdown = fixture('TrivialDropdown');
@@ -236,14 +233,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       });
 
       suite('non locking scroll', function() {
-        var dropdown;
 
         setup(function() {
           dropdown = fixture('NonLockingDropdown');
         });
 
         test('can be disabled with `allowOutsideScroll`', function(done) {
-          runAfterOpen(dropdown, function () {
+          runAfterOpen(dropdown, function() {
             expect(Polymer.IronDropdownScrollManager.elementIsScrollLocked(document.body))
               .to.be.equal(false);
             done();
@@ -253,15 +249,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       suite('aligned dropdown', function() {
         var parent;
+        var parentRect;
+        var dropdownRect;
+
         setup(function() {
           parent = fixture('AlignedDropdown');
           dropdown = parent.querySelector('iron-dropdown');
         });
 
         test('can be re-aligned to the right and the top', function(done) {
-          var parentRect;
-          var dropdownRect;
-
           runAfterOpen(dropdown, function () {
             dropdownRect = dropdown.getBoundingClientRect();
             parentRect = parent.getBoundingClientRect();
@@ -274,9 +270,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         test('can be re-aligned to the bottom', function(done) {
-          var parentRect;
-          var dropdownRect;
-
           dropdown.verticalAlign = 'bottom';
           runAfterOpen(dropdown, function () {
             parentRect = parent.getBoundingClientRect();
@@ -290,8 +283,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         test('handles parent\'s stacking context', function(done) {
-          var parentRect;
-          var dropdownRect;
           // This will create a new stacking context.
           parent.style.transform = 'translateZ(0)';
           runAfterOpen(dropdown, function () {
@@ -309,7 +300,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       suite('when align is left/top, with an offset', function() {
         var dropdownRect;
         var offsetDropdownRect;
-        var dropdown;
         setup(function() {
           var parent = fixture('OffsetDropdownTopLeft');
           dropdown = parent.querySelector('iron-dropdown');
@@ -318,11 +308,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         test('can be offset towards the bottom right', function(done) {
           runAfterOpen(dropdown, function () {
             dropdownRect = dropdown.getBoundingClientRect();
-
             dropdown.verticalOffset = 10;
             dropdown.horizontalOffset = 10;
+            // Force refit instead of waiting for requestAnimationFrame.
+            dropdown.refit();
             offsetDropdownRect = dropdown.getBoundingClientRect();
-
             // verticalAlign is top, so a positive offset moves down.
             assert.equal(dropdownRect.top + 10, offsetDropdownRect.top, 'top ok');
             // horizontalAlign is left, so a positive offset moves to the right.
@@ -334,11 +324,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         test('can be offset towards the top left', function(done) {
           runAfterOpen(dropdown, function () {
             dropdownRect = dropdown.getBoundingClientRect();
-
             dropdown.verticalOffset = -10;
             dropdown.horizontalOffset = -10;
+            // Force refit instead of waiting for requestAnimationFrame.
+            dropdown.refit();
             offsetDropdownRect = dropdown.getBoundingClientRect();
-
             // verticalAlign is top, so a negative offset moves up.
             assert.equal(dropdownRect.top - 10, offsetDropdownRect.top, 'top ok');
             // horizontalAlign is left, so a negative offset moves to the left.
@@ -351,7 +341,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       suite('when align is right/bottom, with an offset', function() {
         var dropdownRect;
         var offsetDropdownRect;
-        var dropdown;
         setup(function() {
           var parent = fixture('OffsetDropdownBottomRight');
           dropdown = parent.querySelector('iron-dropdown');
@@ -360,11 +349,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         test('can be offset towards the top left', function(done) {
           runAfterOpen(dropdown, function () {
             dropdownRect = dropdown.getBoundingClientRect();
-
             dropdown.verticalOffset = 10;
             dropdown.horizontalOffset = 10;
+            // Force refit instead of waiting for requestAnimationFrame.
+            dropdown.refit();
             offsetDropdownRect = dropdown.getBoundingClientRect();
-
             // verticalAlign is bottom, so a positive offset moves up.
             assert.equal(dropdownRect.bottom - 10, offsetDropdownRect.bottom, 'bottom ok');
             // horizontalAlign is right, so a positive offset moves to the left.
@@ -376,11 +365,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         test('can be offset towards the bottom right', function(done) {
           runAfterOpen(dropdown, function () {
             dropdownRect = dropdown.getBoundingClientRect();
-
             dropdown.verticalOffset = -10;
             dropdown.horizontalOffset = -10;
+            // Force refit instead of waiting for requestAnimationFrame.
+            dropdown.refit();
             offsetDropdownRect = dropdown.getBoundingClientRect();
-
             // verticalAlign is bottom, so a negative offset moves down.
             assert.equal(dropdownRect.bottom + 10, offsetDropdownRect.bottom, 'bottom ok');
             // horizontalAlign is right, so a positive offset moves to the right.
@@ -391,7 +380,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       });
 
       suite('RTL', function() {
-        var dropdown;
         var dropdownRect;
 
         test('with horizontalAlign=left', function(done) {

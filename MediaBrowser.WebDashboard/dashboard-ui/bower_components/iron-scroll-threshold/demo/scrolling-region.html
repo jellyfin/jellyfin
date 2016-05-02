@@ -1,0 +1,102 @@
+<!doctype html>
+<!--
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<html>
+  <head>
+
+    <title>iron-scroll-threshold using a scrolling region</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+    <link rel="import" href="../iron-scroll-threshold.html">
+
+    <link rel="import" href="sample-content.html">
+
+    <style>
+
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      .toolbar {
+        background-color: #3367d6;
+        z-index: 1;
+        font: 15px arial;
+        height: 54px;
+        line-height: 54px;
+        padding-left: 20px;
+        padding-right: 20px;
+        color: white;
+      }
+
+      .loader {
+        background-color: #0b8043;
+        text-align: center;
+        height: 44px;
+        font: 13px arial;
+        line-height: 44px;
+        color: white;
+      }
+
+      .scrollState {
+        text-align: center;
+        font: 14px arial;
+        line-height: 30px;
+
+      }
+
+      iron-scroll-threshold {
+        position: absolute;
+        top: 25vh;
+        left: 25vh;
+        right: 25vh;
+        height: 50vh;
+        box-shadow: 0 0 60px rgba(0,0,0,0.5);
+      }
+
+    </style>
+
+  </head>
+  <body unresolved>
+
+    <template is="dom-bind" id="overlay" size="5">
+
+      <iron-scroll-threshold id="scrollThreshold" lower-threshold="500" on-lower-threshold="loadMoreData">
+
+        <div class="toolbar">iron-scroll-threshold using a scrolling region</div>
+
+        <sample-content size="[[size]]"></sample-content>
+
+        <div class="loader">Fetching new items...</div>
+
+      </iron-scroll-threshold>
+
+    </template>
+
+    <script>
+      (function(scope) {
+        scope.loadMoreData = function(e) {
+          if (scope.size) {
+            // Simulate network delay
+            setTimeout(function() {
+              scope.size = +scope.size + 5;
+              scope.$.scrollThreshold.clearTriggers();
+            }, 500);
+          }
+        };
+      })(document.querySelector('#overlay'));
+    </script>
+
+  </body>
+</html>

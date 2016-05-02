@@ -25,12 +25,17 @@
     transition: transform .3s cubic-bezier(.4,0,.2,1),opacity .2s cubic-bezier(.4,0,.2,1);
     transition: transform .3s cubic-bezier(.4,0,.2,1),opacity .2s cubic-bezier(.4,0,.2,1),-webkit-transform .3s cubic-bezier(.4,0,.2,1);
     z-index: -1;*/
+    max-height: 84%;
 }
 
-    .actionSheet.centered .actionSheetContent {
-        text-align: center;
-        align-items: center;
-    }
+.layout-tv .actionSheet {
+    max-height: none;
+}
+
+.actionSheet.centered .actionSheetContent {
+    text-align: center;
+    align-items: center;
+}
 
 .actionSheetContent {
     margin: 0 !important;

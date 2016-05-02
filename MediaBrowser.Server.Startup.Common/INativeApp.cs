@@ -3,6 +3,7 @@ using MediaBrowser.Model.Logging;
 using System.Collections.Generic;
 using System.Reflection;
 using MediaBrowser.Controller.Power;
+using MediaBrowser.Server.Implementations.Persistence;
 using MediaBrowser.Server.Startup.Common.FFMpeg;
 
 namespace MediaBrowser.Server.Startup.Common
@@ -93,6 +94,8 @@ namespace MediaBrowser.Server.Startup.Common
         /// </summary>
         void PreventSystemStandby();
 
+        void AllowSystemStandby();
+
         /// <summary>
         /// Gets the power management.
         /// </summary>
@@ -102,5 +105,7 @@ namespace MediaBrowser.Server.Startup.Common
         FFMpegInstallInfo GetFfmpegInstallInfo();
 
         void LaunchUrl(string url);
+
+        IDbConnector GetDbConnector();
     }
 }

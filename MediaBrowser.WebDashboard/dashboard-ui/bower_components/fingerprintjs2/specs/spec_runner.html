@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Fingerprint2 spec runner</title>
+
+  <link rel="shortcut icon" type="image/png" href="lib/jasmine-2.3.4/jasmine_favicon.png">
+  <link rel="stylesheet" href="lib/jasmine-2.3.4/jasmine.css">
+
+  <script src="lib/jasmine-2.3.4/jasmine.js"></script>
+  <script src="lib/jasmine-2.3.4/jasmine-html.js"></script>
+  <script src="lib/jasmine-2.3.4/boot.js"></script>
+  <script src="lib/jasmine-2.3.4/terminal.js"></script>
+  <script src="lib/jasmine-2.3.4/jasmine-matchers.js"></script>
+
+  <!-- include source files here... -->
+  <script src="../fingerprint2.js"></script>
+
+  <!-- include spec files here... -->
+  <script src="./specs.js"></script>
+
+  <script>
+    if(navigator.userAgent.match(/phantom/i)) {
+      jasmine.getEnv().addReporter(new jasmineReporters.TerminalReporter({
+        verbosity: 3,
+        color: true,
+        showStack: true
+      }));
+    }
+  </script>
+</head>
+
+<body>
+</body>
+</html>

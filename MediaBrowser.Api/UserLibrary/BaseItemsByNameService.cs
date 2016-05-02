@@ -274,7 +274,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 items = items.Where(i =>
                     {
-                        var userdata = UserDataRepository.GetUserData(user.Id, i.GetUserDataKey());
+                        var userdata = UserDataRepository.GetUserData(user, i);
 
                         return userdata != null && userdata.Likes.HasValue && !userdata.Likes.Value;
                     });
@@ -284,7 +284,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 items = items.Where(i =>
                 {
-                    var userdata = UserDataRepository.GetUserData(user.Id, i.GetUserDataKey());
+                    var userdata = UserDataRepository.GetUserData(user, i);
 
                     return userdata != null && userdata.Likes.HasValue && userdata.Likes.Value;
                 });
@@ -294,7 +294,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 items = items.Where(i =>
                 {
-                    var userdata = UserDataRepository.GetUserData(user.Id, i.GetUserDataKey());
+                    var userdata = UserDataRepository.GetUserData(user, i);
 
                     var likes = userdata.Likes ?? false;
                     var favorite = userdata.IsFavorite;
@@ -307,7 +307,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 items = items.Where(i =>
                 {
-                    var userdata = UserDataRepository.GetUserData(user.Id, i.GetUserDataKey());
+                    var userdata = UserDataRepository.GetUserData(user, i);
 
                     return userdata != null && userdata.IsFavorite;
                 });

@@ -11,7 +11,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Trailer
     /// </summary>
-    public class Trailer : Video, IHasCriticRating, IHasProductionLocations, IHasBudget, IHasKeywords, IHasTaglines, IHasMetascore, IHasLookupInfo<TrailerInfo>
+    public class Trailer : Video, IHasCriticRating, IHasProductionLocations, IHasBudget, IHasKeywords, IHasTaglines, IHasMetascore, IHasOriginalTitle, IHasLookupInfo<TrailerInfo>
     {
         public List<string> ProductionLocations { get; set; }
 
@@ -55,26 +55,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The revenue.</value>
         public double? Revenue { get; set; }
-
-        protected override string CreateUserDataKey()
-        {
-            var key = Movie.GetMovieUserDataKey(this);
-
-            if (!string.IsNullOrWhiteSpace(key))
-            {
-                key = key + "-trailer";
-
-                // Make sure different trailers have their own data.
-                if (RunTimeTicks.HasValue)
-                {
-                    key += "-" + RunTimeTicks.Value.ToString(CultureInfo.InvariantCulture);
-                }
-
-                return key;
-            }
-
-            return base.CreateUserDataKey();
-        }
 
         public override UnratedItem GetBlockUnratedType()
         {

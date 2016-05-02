@@ -813,7 +813,7 @@
 
         function init(context) {
 
-            Dashboard.importCss('css/nowplaying.css');
+            require(['css!css/nowplaying.css']);
             bindEvents(context);
 
             context.querySelector('.sendMessageForm').addEventListener('submit', onMessageSubmit);

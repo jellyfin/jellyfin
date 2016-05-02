@@ -1,4 +1,4 @@
-﻿define(['appStorage', 'jQuery'], function (appStorage, $) {
+﻿define(['appStorage', 'jQuery', 'paper-button'], function (appStorage, $) {
 
     $.fn.taskButton = function (options) {
 

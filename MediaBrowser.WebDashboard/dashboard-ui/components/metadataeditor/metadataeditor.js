@@ -122,6 +122,7 @@
             var item = {
                 Id: currentItem.Id,
                 Name: $('#txtName', form).val(),
+                OriginalTitle: $('#txtOriginalName', form).val(),
                 ForcedSortName: $('#txtSortName', form).val(),
                 DisplayMediaType: $('#txtDisplayMediaType', form).val(),
                 CommunityRating: $('#txtCommunityRating', form).val(),
@@ -269,79 +270,17 @@
 
     function showRefreshMenu(context, button) {
 
-        var items = [];
-
-        items.push({
-            name: Globalize.translate('ButtonLocalRefresh'),
-            id: 'local',
-            ironIcon: 'refresh'
+        ApiClient.refreshItem(currentItem.Id, {
+            Recursive: true,
+            ImageRefreshMode: 'FullRefresh',
+            MetadataRefreshMode: 'FullRefresh',
+            ReplaceAllImages: false,
+            ReplaceAllMetadata: true
         });
 
-        items.push({
-            name: Globalize.translate('ButtonAddMissingData'),
-            id: 'missing',
-            ironIcon: 'refresh'
+        require(['toast'], function(toast) {
+            toast(Globalize.translate('MessageRefreshQueued'));
         });
-
-        items.push({
-            name: Globalize.translate('ButtonFullRefresh'),
-            id: 'full',
-            ironIcon: 'refresh'
-        });
-
-        require(['actionsheet'], function (actionsheet) {
-
-            actionsheet.show({
-                items: items,
-                positionTo: button,
-                callback: function (id) {
-
-                    if (id) {
-                    
-                        Dashboard.showLoadingMsg();
-                        // For now this is a hack
-                        setTimeout(function () {
-                            Dashboard.hideLoadingMsg();
-                        }, 5000);
-                    }
-
-                    switch (id) {
-
-                        case 'local':
-                            ApiClient.refreshItem(currentItem.Id, {
-                                Recursive: true,
-                                ImageRefreshMode: 'None',
-                                MetadataRefreshMode: 'ValidationOnly',
-                                ReplaceAllImages: false,
-                                ReplaceAllMetadata: false
-                            });
-                            break;
-                        case 'missing':
-                            ApiClient.refreshItem(currentItem.Id, {
-                                Recursive: true,
-                                ImageRefreshMode: 'FullRefresh',
-                                MetadataRefreshMode: 'FullRefresh',
-                                ReplaceAllImages: false,
-                                ReplaceAllMetadata: false
-                            });
-                            break;
-                        case 'full':
-                            ApiClient.refreshItem(currentItem.Id, {
-                                Recursive: true,
-                                ImageRefreshMode: 'FullRefresh',
-                                MetadataRefreshMode: 'FullRefresh',
-                                ReplaceAllImages: false,
-                                ReplaceAllMetadata: true
-                            });
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            });
-
-        });
-
     }
 
     function showMoreMenu(context, button) {
@@ -590,6 +529,12 @@
             $('#fldPath', context).show();
         } else {
             $('#fldPath', context).hide();
+        }
+
+        if (item.Type == "Series" || item.Type == "Movie" || item.Type == "Trailer") {
+            $('#fldOriginalName', context).show();
+        } else {
+            $('#fldOriginalName', context).hide();
         }
 
         if (item.Type == "Series") {
@@ -878,6 +823,7 @@
 
         $('#txtPath', context).val(item.Path || '');
         $('#txtName', context).val(item.Name || "");
+        $('#txtOriginalName', context).val(item.OriginalTitle || "");
         context.querySelector('#txtOverview').value = item.Overview || '';
         $('#txtShortOverview', context).val(item.ShortOverview || "");
         $('#txtTagline', context).val((item.Taglines && item.Taglines.length ? item.Taglines[0] : ''));

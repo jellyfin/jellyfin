@@ -27,8 +27,6 @@
         $('#chkPeopleOthers', page).checked(config.PeopleMetadataOptions.DownloadOtherPeopleMetadata);
         $('#chkPeopleGuestStars', page).checked(config.PeopleMetadataOptions.DownloadGuestStarMetadata);
 
-        $('#chkDownloadImagesInAdvance', page).checked(config.DownloadImagesInAdvance);
-
         Dashboard.hideLoadingMsg();
     }
 
@@ -140,8 +138,6 @@
             config.EnableFanArtUpdates = $('#chkEnableFanartUpdates', form).checked();
             config.MetadataPath = $('#txtMetadataPath', form).val();
             config.FanartApiKey = $('#txtFanartApiKey', form).val();
-
-            config.DownloadImagesInAdvance = $('#chkDownloadImagesInAdvance', form).checked();
 
             config.PeopleMetadataOptions.DownloadActorMetadata = $('#chkPeopleActors', form).checked();
             config.PeopleMetadataOptions.DownloadComposerMetadata = $('#chkPeopleComposers', form).checked();

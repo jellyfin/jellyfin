@@ -59,13 +59,13 @@
             html += '<div class="tvProgramTime">';
 
             if (program.IsLive) {
-                html += '<span class="liveTvProgram">' + Globalize.translate('LabelLiveProgram') + '&nbsp;&nbsp;</span>';
+                html += '<span class="liveTvProgram">' + Globalize.translate('AttributeLive') + '&nbsp;&nbsp;</span>';
             }
             else if (program.IsPremiere) {
-                html += '<span class="premiereTvProgram">' + Globalize.translate('LabelPremiereProgram') + '&nbsp;&nbsp;</span>';
+                html += '<span class="premiereTvProgram">' + Globalize.translate('AttributePremiere') + '&nbsp;&nbsp;</span>';
             }
             else if (program.IsSeries && !program.IsRepeat) {
-                html += '<span class="newTvProgram">' + Globalize.translate('LabelNewProgram') + '&nbsp;&nbsp;</span>';
+                html += '<span class="newTvProgram">' + Globalize.translate('AttributeNew') + '&nbsp;&nbsp;</span>';
             }
 
             var minutes = program.RunTimeTicks / 600000000;

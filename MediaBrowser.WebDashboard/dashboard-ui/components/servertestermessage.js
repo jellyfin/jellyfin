@@ -1,4 +1,4 @@
-﻿define(['appSettings'], function (appSettings) {
+﻿define(['appSettings', 'paper-button'], function (appSettings) {
 
     function getReleases() {
 
