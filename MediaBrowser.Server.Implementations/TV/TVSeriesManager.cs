@@ -36,10 +36,25 @@ namespace MediaBrowser.Server.Implementations.TV
                 ? new string[] { }
                 : new[] { request.ParentId };
 
+            string presentationUniqueKey = null;
+            int? limit = null;
+            if (!string.IsNullOrWhiteSpace(request.SeriesId))
+            {
+                var series = _libraryManager.GetItemById(request.SeriesId);
+
+                if (series != null)
+                {
+                    presentationUniqueKey = series.PresentationUniqueKey;
+                    limit = 1;
+                }
+            }
+
             var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(Series).Name },
-                SortOrder = SortOrder.Ascending
+                SortOrder = SortOrder.Ascending,
+                PresentationUniqueKey = presentationUniqueKey,
+                Limit = limit
 
             }, parentIds).Cast<Series>();
 
@@ -58,10 +73,25 @@ namespace MediaBrowser.Server.Implementations.TV
                 throw new ArgumentException("User not found");
             }
 
+            string presentationUniqueKey = null;
+            int? limit = null;
+            if (!string.IsNullOrWhiteSpace(request.SeriesId))
+            {
+                var series = _libraryManager.GetItemById(request.SeriesId);
+
+                if (series != null)
+                {
+                    presentationUniqueKey = series.PresentationUniqueKey;
+                    limit = 1;
+                }
+            }
+
             var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(Series).Name },
-                SortOrder = SortOrder.Ascending
+                SortOrder = SortOrder.Ascending,
+                PresentationUniqueKey = presentationUniqueKey,
+                Limit = limit
 
             }, parentsFolders.Select(i => i.Id.ToString("N"))).Cast<Series>();
 
@@ -76,30 +106,30 @@ namespace MediaBrowser.Server.Implementations.TV
             // Avoid implicitly captured closure
             var currentUser = user;
 
-            return FilterSeries(request, series)
+            return series
                 .AsParallel()
                 .Select(i => GetNextUp(i, currentUser))
                 // Include if an episode was found, and either the series is not unwatched or the specific series was requested
                 .Where(i => i.Item1 != null && (!i.Item3 || !string.IsNullOrWhiteSpace(request.SeriesId)))
-                .OrderByDescending(i =>
-                {
-                    var episode = i.Item1;
+                //.OrderByDescending(i =>
+                //{
+                //    var episode = i.Item1;
 
-                    var seriesUserData = _userDataManager.GetUserData(user.Id, episode.Series.GetUserDataKey());
+                //    var seriesUserData = _userDataManager.GetUserData(user, episode.Series);
 
-                    if (seriesUserData.IsFavorite)
-                    {
-                        return 2;
-                    }
+                //    if (seriesUserData.IsFavorite)
+                //    {
+                //        return 2;
+                //    }
 
-                    if (seriesUserData.Likes.HasValue)
-                    {
-                        return seriesUserData.Likes.Value ? 1 : -1;
-                    }
+                //    if (seriesUserData.Likes.HasValue)
+                //    {
+                //        return seriesUserData.Likes.Value ? 1 : -1;
+                //    }
 
-                    return 0;
-                })
-                .ThenByDescending(i => i.Item2)
+                //    return 0;
+                //})
+                .OrderByDescending(i => i.Item2)
                 .ThenByDescending(i => i.Item1.PremiereDate ?? DateTime.MinValue)
                 .Select(i => i.Item1);
         }
@@ -128,7 +158,7 @@ namespace MediaBrowser.Server.Implementations.TV
             // Go back starting with the most recent episodes
             foreach (var episode in allEpisodes)
             {
-                var userData = _userDataManager.GetUserData(user.Id, episode.GetUserDataKey());
+                var userData = _userDataManager.GetUserData(user, episode);
 
                 if (userData.Played)
                 {
@@ -142,7 +172,7 @@ namespace MediaBrowser.Server.Implementations.TV
                 }
                 else
                 {
-                    if (!episode.IsVirtualUnaired && (!episode.IsMissingEpisode || includeMissing))
+                    if (!episode.IsVirtualUnaired && (includeMissing || !episode.IsMissingEpisode))
                     {
                         nextUp = episode;
                     }
@@ -154,22 +184,10 @@ namespace MediaBrowser.Server.Implementations.TV
                 return new Tuple<Episode, DateTime, bool>(nextUp, lastWatchedDate, false);
             }
 
-            var firstEpisode = allEpisodes.LastOrDefault(i => !i.IsVirtualUnaired && (!i.IsMissingEpisode || includeMissing) && !i.IsPlayed(user));
+            var firstEpisode = allEpisodes.LastOrDefault(i => !i.IsVirtualUnaired && (includeMissing || !i.IsMissingEpisode) && !i.IsPlayed(user));
 
             // Return the first episode
             return new Tuple<Episode, DateTime, bool>(firstEpisode, DateTime.MinValue, true);
-        }
-
-        private IEnumerable<Series> FilterSeries(NextUpQuery request, IEnumerable<Series> items)
-        {
-            if (!string.IsNullOrWhiteSpace(request.SeriesId))
-            {
-                var id = new Guid(request.SeriesId);
-
-                items = items.Where(i => i.Id == id);
-            }
-
-            return items;
         }
 
         private QueryResult<BaseItem> GetResult(IEnumerable<BaseItem> items, int? totalRecordLimit, NextUpQuery query)

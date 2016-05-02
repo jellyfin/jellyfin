@@ -18,13 +18,12 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The place of birth.</value>
         public string PlaceOfBirth { get; set; }
 
-        /// <summary>
-        /// Gets the user data key.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        protected override string CreateUserDataKey()
+        public override List<string> GetUserDataKeys()
         {
-            return "Person-" + Name;
+            var list = base.GetUserDataKeys();
+
+            list.Insert(0, "Person-" + Name);
+            return list;
         }
 
         public PersonLookupInfo GetLookupInfo()

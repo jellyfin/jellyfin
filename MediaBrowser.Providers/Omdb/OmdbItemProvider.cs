@@ -66,7 +66,7 @@ namespace MediaBrowser.Providers.Omdb
 
             var imdbId = searchInfo.GetProviderId(MetadataProviders.Imdb);
 
-            var url = "http://www.omdbapi.com/?plot=full&r=json";
+            var url = "https://www.omdbapi.com/?plot=full&r=json";
             if (type == "episode" && episodeSearchInfo != null)
             {
                 episodeSearchInfo.SeriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out imdbId);

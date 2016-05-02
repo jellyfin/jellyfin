@@ -12,12 +12,6 @@ namespace MediaBrowser.Controller.Persistence
     public interface IUserDataRepository : IRepository
     {
         /// <summary>
-        /// Opens the connection to the repository
-        /// </summary>
-        /// <returns>Task.</returns>
-        Task Initialize();
-
-        /// <summary>
         /// Saves the user data.
         /// </summary>
         /// <param name="userId">The user id.</param>

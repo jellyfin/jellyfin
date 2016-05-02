@@ -68,15 +68,16 @@
     <Reference Include="ServiceStack.Api.Swagger">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Api.Swagger.dll</HintPath>
     </Reference>
-    <Reference Include="SocketHttpListener, Version=1.0.5908.28560, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\SocketHttpListener.1.0.0.29\lib\net45\SocketHttpListener.dll</HintPath>
+    <Reference Include="SimpleInjector, Version=3.1.3.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.3.1.3\lib\net45\SimpleInjector.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SocketHttpListener, Version=1.0.5955.1537, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SocketHttpListener.1.0.0.30\lib\net45\SocketHttpListener.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.SQLite">
-      <HintPath>..\ThirdParty\System.Data.SQLite.ManagedOnly\1.0.94.0\System.Data.SQLite.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Net" />
@@ -257,6 +258,8 @@
     <Compile Include="Notifications\IConfigurableNotificationService.cs" />
     <Compile Include="Persistence\BaseSqliteRepository.cs" />
     <Compile Include="Persistence\CleanDatabaseScheduledTask.cs" />
+    <Compile Include="Persistence\DataExtensions.cs" />
+    <Compile Include="Persistence\IDbConnector.cs" />
     <Compile Include="Persistence\MediaStreamColumns.cs" />
     <Compile Include="Social\SharingManager.cs" />
     <Compile Include="Social\SharingRepository.cs" />
@@ -271,7 +274,6 @@
     <Compile Include="Notifications\InternalNotificationService.cs" />
     <Compile Include="Notifications\NotificationConfigurationFactory.cs" />
     <Compile Include="Notifications\NotificationManager.cs" />
-    <Compile Include="Persistence\SqliteExtensions.cs" />
     <Compile Include="Persistence\SqliteFileOrganizationRepository.cs" />
     <Compile Include="Notifications\SqliteNotificationsRepository.cs" />
     <Compile Include="Persistence\SqliteProviderInfoRepository.cs" />

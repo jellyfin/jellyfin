@@ -444,7 +444,11 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 if (string.IsNullOrWhiteSpace(video.Name) || string.Equals(video.Name, Path.GetFileNameWithoutExtension(video.Path), StringComparison.OrdinalIgnoreCase))
                 {
-                    video.Name = data.Name;
+                    // Don't use the embedded name for extras because it will often be the same name as the movie
+                    if (!video.ExtraType.HasValue && !video.IsOwnedItem)
+                    {
+                        video.Name = data.Name;
+                    }
                 }
             }
 

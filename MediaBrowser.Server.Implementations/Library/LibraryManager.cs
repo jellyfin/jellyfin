@@ -143,6 +143,7 @@ namespace MediaBrowser.Server.Implementations.Library
         private readonly Func<ILibraryMonitor> _libraryMonitorFactory;
         private readonly Func<IProviderManager> _providerManagerFactory;
         private readonly Func<IUserViewManager> _userviewManager;
+        public bool IsScanRunning { get; private set; }
 
         /// <summary>
         /// The _library items cache
@@ -521,29 +522,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("items");
             }
 
-            var dict = new Dictionary<Guid, BaseItem>();
-
-            foreach (var item in items)
-            {
-                var video = item as Video;
-
-                if (video != null)
-                {
-                    if (video.PrimaryVersionId.HasValue)
-                    {
-                        var primary = GetItemById(video.PrimaryVersionId.Value) as Video;
-
-                        if (primary != null)
-                        {
-                            dict[primary.Id] = primary;
-                            continue;
-                        }
-                    }
-                }
-                dict[item.Id] = item;
-            }
-
-            return dict.Values;
+            return items.DistinctBy(i => i.PresentationUniqueKey, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -800,11 +779,12 @@ namespace MediaBrowser.Server.Implementations.Library
             return _userRootFolder;
         }
 
-        public BaseItem FindByPath(string path)
+        public BaseItem FindByPath(string path, bool? isFolder)
         {
             var query = new InternalItemsQuery
             {
-                Path = path
+                Path = path,
+                IsFolder = isFolder
             };
 
             // Only use the database result if there's exactly one item, otherwise we run the risk of returning old data that hasn't been cleaned yet.
@@ -1102,6 +1082,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         public async Task ValidateMediaLibraryInternal(IProgress<double> progress, CancellationToken cancellationToken)
         {
+            IsScanRunning = true;
             _libraryMonitorFactory().Stop();
 
             try
@@ -1111,6 +1092,7 @@ namespace MediaBrowser.Server.Implementations.Library
             finally
             {
                 _libraryMonitorFactory().Start();
+                IsScanRunning = false;
             }
         }
 

@@ -201,6 +201,7 @@ namespace MediaBrowser.Model.Configuration
         public string[] Migrations { get; set; }
 
         public int MigrationVersion { get; set; }
+        public int SchemaVersion { get; set; }
 
         public bool DownloadImagesInAdvance { get; set; }
 

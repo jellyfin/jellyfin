@@ -16,7 +16,7 @@ namespace MediaBrowser.Providers.TV
 {
     public abstract class MovieDbProviderBase
     {
-        private const string EpisodeUrlPattern = @"http://api.themoviedb.org/3/tv/{0}/season/{1}/episode/{2}?api_key={3}&append_to_response=images,external_ids,credits,videos";
+        private const string EpisodeUrlPattern = @"https://api.themoviedb.org/3/tv/{0}/season/{1}/episode/{2}?api_key={3}&append_to_response=images,external_ids,credits,videos";
         private readonly IHttpClient _httpClient;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IJsonSerializer _jsonSerializer;

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using MediaBrowser.Controller.Power;
+using MediaBrowser.Server.Implementations.Persistence;
 using MediaBrowser.Server.Startup.Common.FFMpeg;
 using OperatingSystem = MediaBrowser.Server.Startup.Common.OperatingSystem;
 
@@ -17,9 +18,12 @@ namespace MediaBrowser.Server.Mono.Native
     public abstract class BaseMonoApp : INativeApp
     {
         protected StartupOptions StartupOptions { get; private set; }
-        protected BaseMonoApp(StartupOptions startupOptions)
+        protected ILogger Logger { get; private set; }
+
+        protected BaseMonoApp(StartupOptions startupOptions, ILogger logger)
         {
             StartupOptions = startupOptions;
+            Logger = logger;
         }
 
         /// <summary>
@@ -65,6 +69,11 @@ namespace MediaBrowser.Server.Mono.Native
         }
 
         public void PreventSystemStandby()
+        {
+
+        }
+
+        public void AllowSystemStandby()
         {
 
         }
@@ -220,6 +229,11 @@ namespace MediaBrowser.Server.Mono.Native
         public void LaunchUrl(string url)
         {
             throw new NotImplementedException();
+        }
+
+        public IDbConnector GetDbConnector()
+        {
+            return new DbConnector(Logger);
         }
 
         public static FFMpegInstallInfo GetInfo(NativeEnvironment environment)

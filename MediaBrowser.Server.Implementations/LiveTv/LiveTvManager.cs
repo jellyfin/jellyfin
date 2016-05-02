@@ -164,7 +164,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     var val = query.IsFavorite.Value;
 
                     channels = channels
-                        .Where(i => _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).IsFavorite == val);
+                        .Where(i => _userDataManager.GetUserData(user, i).IsFavorite == val);
                 }
 
                 if (query.IsLiked.HasValue)
@@ -174,7 +174,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     channels = channels
                         .Where(i =>
                         {
-                            var likes = _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).Likes;
+                            var likes = _userDataManager.GetUserData(user, i).Likes;
 
                             return likes.HasValue && likes.Value == val;
                         });
@@ -187,7 +187,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     channels = channels
                         .Where(i =>
                         {
-                            var likes = _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).Likes;
+                            var likes = _userDataManager.GetUserData(user, i).Likes;
 
                             return likes.HasValue && likes.Value != val;
                         });
@@ -200,7 +200,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 if (enableFavoriteSorting)
                 {
-                    var userData = _userDataManager.GetUserData(user.Id, i.GetUserDataKey());
+                    var userData = _userDataManager.GetUserData(user, i);
 
                     if (userData.IsFavorite)
                     {
@@ -1005,7 +1005,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var channel = GetInternalChannel(program.ChannelId);
 
-            var channelUserdata = _userDataManager.GetUserData(userId, channel.GetUserDataKey());
+            var channelUserdata = _userDataManager.GetUserData(userId, channel);
 
             if (channelUserdata.Likes ?? false)
             {
@@ -1036,7 +1036,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 if (genres.TryGetValue(i, out genre))
                 {
-                    var genreUserdata = _userDataManager.GetUserData(userId, genre.GetUserDataKey());
+                    var genreUserdata = _userDataManager.GetUserData(userId, genre);
 
                     if (genreUserdata.Likes ?? false)
                     {

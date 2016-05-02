@@ -14,6 +14,7 @@ using MediaBrowser.Dlna.Ssdp;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
+using MediaBrowser.Controller.MediaEncoding;
 
 namespace MediaBrowser.Dlna.Main
 {
@@ -34,6 +35,7 @@ namespace MediaBrowser.Dlna.Main
         private readonly IUserDataManager _userDataManager;
         private readonly ILocalizationManager _localization;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IMediaEncoder _mediaEncoder;
 
         private readonly SsdpHandler _ssdpHandler;
         private readonly IDeviceDiscovery _deviceDiscovery;
@@ -54,7 +56,7 @@ namespace MediaBrowser.Dlna.Main
             IUserDataManager userDataManager,
             ILocalizationManager localization,
             IMediaSourceManager mediaSourceManager,
-            ISsdpHandler ssdpHandler, IDeviceDiscovery deviceDiscovery)
+            ISsdpHandler ssdpHandler, IDeviceDiscovery deviceDiscovery, IMediaEncoder mediaEncoder)
         {
             _config = config;
             _appHost = appHost;
@@ -69,6 +71,7 @@ namespace MediaBrowser.Dlna.Main
             _localization = localization;
             _mediaSourceManager = mediaSourceManager;
             _deviceDiscovery = deviceDiscovery;
+            _mediaEncoder = mediaEncoder;
             _ssdpHandler = (SsdpHandler)ssdpHandler;
             _logger = logManager.GetLogger("Dlna");
         }
@@ -196,7 +199,8 @@ namespace MediaBrowser.Dlna.Main
                         _config,
                         _userDataManager,
                         _localization,
-                        _mediaSourceManager);
+                        _mediaSourceManager,
+                        _mediaEncoder);
 
                     _manager.Start();
                 }

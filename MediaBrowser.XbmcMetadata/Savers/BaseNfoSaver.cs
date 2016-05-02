@@ -479,7 +479,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
             writer.WriteElementString("dateadded", item.DateCreated.ToLocalTime().ToString(DateAddedFormat));
 
             writer.WriteElementString("title", item.Name ?? string.Empty);
-            writer.WriteElementString("originaltitle", item.Name ?? string.Empty);
 
             var hasOriginalTitle = item as IHasOriginalTitle;
             if (hasOriginalTitle != null)
@@ -890,7 +889,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
         {
             // This is what xbmc expects
 
-            return url.Replace("http://www.youtube.com/watch?v=",
+            return url.Replace("https://www.youtube.com/watch?v=",
                 "plugin://plugin.video.youtube/?action=play_video&videoid=",
                 StringComparison.OrdinalIgnoreCase);
         }
@@ -937,7 +936,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 return;
             }
 
-            var userdata = userDataRepo.GetUserData(user.Id, item.GetUserDataKey());
+            var userdata = userDataRepo.GetUserData(user, item);
 
             writer.WriteElementString("isuserfavorite", userdata.IsFavorite.ToString().ToLower());
 

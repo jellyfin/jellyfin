@@ -125,6 +125,8 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public string OriginalTitle { get; set; }
+
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
@@ -1147,6 +1149,12 @@ namespace MediaBrowser.Controller.Entities
             get { return null; }
         }
 
+        [IgnoreDataMember]
+        public virtual string PresentationUniqueKey
+        {
+            get { return Id.ToString("N"); }
+        }
+
         private string _userDataKey;
         /// <summary>
         /// Gets the user data key.
@@ -1156,7 +1164,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (string.IsNullOrWhiteSpace(_userDataKey))
             {
-                var key = CreateUserDataKey();
+                var key = GetUserDataKeys().First();
                 _userDataKey = key;
                 return key;
             }
@@ -1164,16 +1172,20 @@ namespace MediaBrowser.Controller.Entities
             return _userDataKey;
         }
 
-        protected virtual string CreateUserDataKey()
+        public virtual List<string> GetUserDataKeys()
         {
+            var list = new List<string>();
+
             if (SourceType == SourceType.Channel)
             {
                 if (!string.IsNullOrWhiteSpace(ExternalId))
                 {
-                    return ExternalId;
+                    list.Add(ExternalId);
                 }
             }
-            return Id.ToString();
+
+            list.Add(Id.ToString());
+            return list;
         }
 
         internal virtual bool IsValidFromResolver(BaseItem newItem)
@@ -1540,17 +1552,26 @@ namespace MediaBrowser.Controller.Entities
         {
             if (!string.IsNullOrEmpty(info.Path))
             {
-                var itemByPath = LibraryManager.FindByPath(info.Path);
+                var itemByPath = LibraryManager.FindByPath(info.Path, null);
 
                 if (itemByPath == null)
                 {
-                    Logger.Warn("Unable to find linked item at path {0}", info.Path);
+                    //Logger.Warn("Unable to find linked item at path {0}", info.Path);
                 }
 
                 return itemByPath;
             }
 
             return null;
+        }
+
+        [IgnoreDataMember]
+        public virtual bool EnableRememberingTrackSelections
+        {
+            get
+            {
+                return true;
+            }
         }
 
         /// <summary>
@@ -1606,9 +1627,7 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException();
             }
 
-            var key = GetUserDataKey();
-
-            var data = UserDataManager.GetUserData(user.Id, key);
+            var data = UserDataManager.GetUserData(user, this);
 
             if (datePlayed.HasValue)
             {
@@ -1643,9 +1662,7 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException();
             }
 
-            var key = GetUserDataKey();
-
-            var data = UserDataManager.GetUserData(user.Id, key);
+            var data = UserDataManager.GetUserData(user, this);
 
             //I think it is okay to do this here.
             // if this is only called when a user is manually forcing something to un-played
@@ -1976,14 +1993,14 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool IsPlayed(User user)
         {
-            var userdata = UserDataManager.GetUserData(user.Id, GetUserDataKey());
+            var userdata = UserDataManager.GetUserData(user, this);
 
             return userdata != null && userdata.Played;
         }
 
         public bool IsFavoriteOrLiked(User user)
         {
-            var userdata = UserDataManager.GetUserData(user.Id, GetUserDataKey());
+            var userdata = UserDataManager.GetUserData(user, this);
 
             return userdata != null && (userdata.IsFavorite || (userdata.Likes ?? false));
         }
@@ -1995,7 +2012,7 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException("user");
             }
 
-            var userdata = UserDataManager.GetUserData(user.Id, GetUserDataKey());
+            var userdata = UserDataManager.GetUserData(user, this);
 
             return userdata == null || !userdata.Played;
         }

@@ -133,7 +133,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             if (query.IsFavorite.HasValue)
             {
                 var val = query.IsFavorite.Value;
-                channels = channels.Where(i => _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).IsFavorite == val)
+                channels = channels.Where(i => _userDataManager.GetUserData(user,  i).IsFavorite == val)
                     .ToList();
             }
 
@@ -1437,7 +1437,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 case ItemFilter.IsFavoriteOrLikes:
                     return items.Where(item =>
                     {
-                        var userdata = _userDataManager.GetUserData(user.Id, item.GetUserDataKey());
+                        var userdata = _userDataManager.GetUserData(user, item);
 
                         if (userdata == null)
                         {
@@ -1453,7 +1453,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 case ItemFilter.Likes:
                     return items.Where(item =>
                     {
-                        var userdata = _userDataManager.GetUserData(user.Id, item.GetUserDataKey());
+                        var userdata = _userDataManager.GetUserData(user, item);
 
                         return userdata != null && userdata.Likes.HasValue && userdata.Likes.Value;
                     });
@@ -1461,7 +1461,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 case ItemFilter.Dislikes:
                     return items.Where(item =>
                     {
-                        var userdata = _userDataManager.GetUserData(user.Id, item.GetUserDataKey());
+                        var userdata = _userDataManager.GetUserData(user, item);
 
                         return userdata != null && userdata.Likes.HasValue && !userdata.Likes.Value;
                     });
@@ -1469,7 +1469,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 case ItemFilter.IsFavorite:
                     return items.Where(item =>
                     {
-                        var userdata = _userDataManager.GetUserData(user.Id, item.GetUserDataKey());
+                        var userdata = _userDataManager.GetUserData(user, item);
 
                         return userdata != null && userdata.IsFavorite;
                     });
@@ -1477,7 +1477,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 case ItemFilter.IsResumable:
                     return items.Where(item =>
                     {
-                        var userdata = _userDataManager.GetUserData(user.Id, item.GetUserDataKey());
+                        var userdata = _userDataManager.GetUserData(user, item);
 
                         return userdata != null && userdata.PlaybackPositionTicks > 0;
                     });
