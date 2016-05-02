@@ -55,13 +55,7 @@
 		}
 	];
 
-	Prism.languages.kotlin['string'] = {
-		pattern: Prism.languages.kotlin['string'],
-		inside: {
-			interpolation: interpolation
-		}
-	};
-	Prism.languages.kotlin['raw-string'].inside = {
+	Prism.languages.kotlin['string'].inside = Prism.languages.kotlin['raw-string'].inside = {
 		interpolation: interpolation
 	};
 

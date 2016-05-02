@@ -1,6 +1,6 @@
 {
   "name": "prismjs",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "Lightweight, robust, elegant syntax highlighting. A spin-off project from Dabblet.",
   "main": "prism.js",
   "scripts": {
@@ -27,5 +27,17 @@
     "gulp-replace": "^0.5.4",
     "mocha": "^2.2.5",
     "yargs": "^3.26.0"
+  },
+  "jspm": {
+    "main": "prism",
+    "registry": "jspm",
+    "jspmPackage": true,
+    "format": "global",
+    "files": [
+      "components/**/*.min.js",
+      "plugins/**/*",
+      "themes/*.css",
+      "prism.js"
+    ]
   }
 }

@@ -16,6 +16,7 @@
     "**/.*",
     "img",
     "templates",
+    "tests",
     "CNAME",
     "*.html",
     "style.css",

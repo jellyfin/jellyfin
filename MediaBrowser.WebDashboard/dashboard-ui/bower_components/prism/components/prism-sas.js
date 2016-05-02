@@ -23,7 +23,7 @@ Prism.languages.sas = {
 		alias: 'number'
 	},
 	'string': /(["'])(?:\1\1|(?!\1)[\s\S])*\1/,
-	'keyword': /\b(?:data|else|format|if|input|proc|run|then)\b/i,
+	'keyword': /\b(?:data|else|format|if|input|proc\s\w+|quit|run|then)\b/i,
 	// Decimal (1.2e23), hexadecimal (0c1x)
 	'number': /(?:\B-|\b)(?:[\da-f]+x|\d+(?:\.\d+)?(?:e[+-]?\d+)?)/i,
 	'operator': /\*\*?|\|\|?|!!?|¦¦?|<[>=]?|>[<=]?|[-+\/=&]|[~¬^]=?|\b(?:eq|ne|gt|lt|ge|le|in|not)\b/i,
