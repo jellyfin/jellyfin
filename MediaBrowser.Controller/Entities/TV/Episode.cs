@@ -58,25 +58,7 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             get
             {
-                return AirsAfterSeasonNumber ?? AirsBeforeSeasonNumber ?? PhysicalSeasonNumber;
-            }
-        }
-
-        [IgnoreDataMember]
-        public int? PhysicalSeasonNumber
-        {
-            get
-            {
-                var value = ParentIndexNumber;
-
-                if (value.HasValue)
-                {
-                    return value;
-                }
-
-                var season = Season;
-
-                return season != null ? season.IndexNumber : null;
+                return AirsAfterSeasonNumber ?? AirsBeforeSeasonNumber ?? ParentIndexNumber;
             }
         }
 
@@ -314,6 +296,19 @@ namespace MediaBrowser.Controller.Entities.TV
             catch (Exception ex)
             {
                 Logger.ErrorException("Error in FillMissingEpisodeNumbersFromPath. Episode: {0}", ex, Path ?? Name ?? Id.ToString());
+            }
+
+            if (!ParentIndexNumber.HasValue)
+            {
+                var season = Season;
+                if (season != null)
+                {
+                    if (season.ParentIndexNumber.HasValue)
+                    {
+                        ParentIndexNumber = season.ParentIndexNumber;
+                        hasChanges = true;
+                    }
+                }
             }
 
             return hasChanges;
