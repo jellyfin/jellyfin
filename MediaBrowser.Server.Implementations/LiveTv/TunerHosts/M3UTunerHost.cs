@@ -134,7 +134,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                         }
                     },
                     RequiresOpening = false,
-                    RequiresClosing = false
+                    RequiresClosing = false,
+
+                    ReadAtNativeFramerate = true
                 };
 
                 return new List<MediaSourceInfo> { mediaSource };
