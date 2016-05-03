@@ -54,7 +54,8 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
 
                 profile.DirectPlayProfiles.push({
                     Container: "m4v,3gp,ts,mpegts,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,m2v,avi,mpg,mpeg,mp4,webm",
-                    Type: 'Video'
+                    Type: 'Video',
+                    AudioCodec: 'aac,aac_latm,mp3,ac3,wma,dca,pcm,PCM_S16LE,PCM_S24LE,opus,flac'
                 });
 
                 profile.CodecProfiles = profile.CodecProfiles.filter(function (i) {
