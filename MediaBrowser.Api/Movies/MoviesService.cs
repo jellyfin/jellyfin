@@ -144,7 +144,6 @@ namespace MediaBrowser.Api.Movies
 
             var parentIds = string.IsNullOrWhiteSpace(request.ParentId) ? new string[] { } : new[] { request.ParentId };
             var movies = _libraryManager.GetItemList(query, parentIds);
-            movies = _libraryManager.ReplaceVideosWithPrimaryVersions(movies);
 
             var listEligibleForCategories = new List<BaseItem>();
             var listEligibleForSuggestion = new List<BaseItem>();
