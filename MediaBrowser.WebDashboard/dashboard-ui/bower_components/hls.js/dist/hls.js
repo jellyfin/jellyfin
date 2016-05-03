@@ -660,17 +660,19 @@ var BufferController = function (_EventHandler) {
     key: 'onMediaAttaching',
     value: function onMediaAttaching(data) {
       var media = this.media = data.media;
-      // setup the media source
-      var ms = this.mediaSource = new MediaSource();
-      //Media Source listeners
-      this.onmso = this.onMediaSourceOpen.bind(this);
-      this.onmse = this.onMediaSourceEnded.bind(this);
-      this.onmsc = this.onMediaSourceClose.bind(this);
-      ms.addEventListener('sourceopen', this.onmso);
-      ms.addEventListener('sourceended', this.onmse);
-      ms.addEventListener('sourceclose', this.onmsc);
-      // link video and media Source
-      media.src = URL.createObjectURL(ms);
+      if (media) {
+        // setup the media source
+        var ms = this.mediaSource = new MediaSource();
+        //Media Source listeners
+        this.onmso = this.onMediaSourceOpen.bind(this);
+        this.onmse = this.onMediaSourceEnded.bind(this);
+        this.onmsc = this.onMediaSourceClose.bind(this);
+        ms.addEventListener('sourceopen', this.onmso);
+        ms.addEventListener('sourceended', this.onmse);
+        ms.addEventListener('sourceclose', this.onmsc);
+        // link video and media Source
+        media.src = URL.createObjectURL(ms);
+      }
     }
   }, {
     key: 'onMediaDetaching',
@@ -774,23 +776,23 @@ var BufferController = function (_EventHandler) {
   }, {
     key: 'onBufferCodecs',
     value: function onBufferCodecs(tracks) {
-      var sb, trackName, track, codec, mimeType;
+      var mediaSource = this.mediaSource;
 
-      if (!this.media) {
+      // delay sourcebuffer creation if media source not opened yet
+      if (!mediaSource || mediaSource.readyState !== 'open') {
         this.pendingTracks = tracks;
         return;
       }
 
       if (!this.sourceBuffer) {
-        var sourceBuffer = {},
-            mediaSource = this.mediaSource;
-        for (trackName in tracks) {
-          track = tracks[trackName];
+        var sourceBuffer = {};
+        for (var trackName in tracks) {
+          var track = tracks[trackName];
           // use levelCodec as first priority
-          codec = track.levelCodec || track.codec;
-          mimeType = track.container + ';codecs=' + codec;
+          var codec = track.levelCodec || track.codec;
+          var mimeType = track.container + ';codecs=' + codec;
           _logger.logger.log('creating sourceBuffer with mimeType:' + mimeType);
-          sb = sourceBuffer[trackName] = mediaSource.addSourceBuffer(mimeType);
+          var sb = sourceBuffer[trackName] = mediaSource.addSourceBuffer(mimeType);
           sb.addEventListener('updateend', this.onsbue);
           sb.addEventListener('error', this.onsbe);
         }
@@ -1907,11 +1909,13 @@ var StreamController = function (_EventHandler) {
   }, {
     key: 'isBuffered',
     value: function isBuffered(position) {
-      var v = this.media,
-          buffered = v.buffered;
-      for (var i = 0; i < buffered.length; i++) {
-        if (position >= buffered.start(i) && position <= buffered.end(i)) {
-          return true;
+      var media = this.media;
+      if (media) {
+        var buffered = media.buffered;
+        for (var i = 0; i < buffered.length; i++) {
+          if (position >= buffered.start(i) && position <= buffered.end(i)) {
+            return true;
+          }
         }
       }
       return false;
@@ -1991,9 +1995,12 @@ var StreamController = function (_EventHandler) {
     key: 'immediateLevelSwitchEnd',
     value: function immediateLevelSwitchEnd() {
       this.immediateSwitch = false;
-      this.media.currentTime -= 0.0001;
-      if (!this.previouslyPaused) {
-        this.media.play();
+      var media = this.media;
+      if (media && media.readyState) {
+        media.currentTime -= 0.0001;
+        if (!this.previouslyPaused) {
+          media.play();
+        }
       }
     }
   }, {
@@ -2004,45 +2011,51 @@ var StreamController = function (_EventHandler) {
         we need to find the next flushable buffer range
         we should take into account new segment fetch time
       */
-      var fetchdelay, currentRange, nextRange;
-      // increase fragment load Index to avoid frag loop loading error after buffer flush
-      this.fragLoadIdx += 2 * this.config.fragLoadingLoopThreshold;
-      currentRange = this.getBufferRange(this.media.currentTime);
-      if (currentRange && currentRange.start > 1) {
-        // flush buffer preceding current fragment (flush until current fragment start offset)
-        // minus 1s to avoid video freezing, that could happen if we flush keyframe of current video ...
-        this.state = State.PAUSED;
-        this.hls.trigger(_events2.default.BUFFER_FLUSHING, { startOffset: 0, endOffset: currentRange.start - 1 });
-      }
-      if (!this.media.paused) {
-        // add a safety delay of 1s
-        var nextLevelId = this.hls.nextLoadLevel,
-            nextLevel = this.levels[nextLevelId],
-            fragLastKbps = this.fragLastKbps;
-        if (fragLastKbps && this.fragCurrent) {
-          fetchdelay = this.fragCurrent.duration * nextLevel.bitrate / (1000 * fragLastKbps) + 1;
+      var media = this.media;
+      // ensure that media is defined and that metadata are available (to retrieve currentTime)
+      if (media && media.readyState) {
+        var fetchdelay = void 0,
+            currentRange = void 0,
+            nextRange = void 0;
+        // increase fragment load Index to avoid frag loop loading error after buffer flush
+        this.fragLoadIdx += 2 * this.config.fragLoadingLoopThreshold;
+        currentRange = this.getBufferRange(media.currentTime);
+        if (currentRange && currentRange.start > 1) {
+          // flush buffer preceding current fragment (flush until current fragment start offset)
+          // minus 1s to avoid video freezing, that could happen if we flush keyframe of current video ...
+          this.state = State.PAUSED;
+          this.hls.trigger(_events2.default.BUFFER_FLUSHING, { startOffset: 0, endOffset: currentRange.start - 1 });
+        }
+        if (!media.paused) {
+          // add a safety delay of 1s
+          var nextLevelId = this.hls.nextLoadLevel,
+              nextLevel = this.levels[nextLevelId],
+              fragLastKbps = this.fragLastKbps;
+          if (fragLastKbps && this.fragCurrent) {
+            fetchdelay = this.fragCurrent.duration * nextLevel.bitrate / (1000 * fragLastKbps) + 1;
+          } else {
+            fetchdelay = 0;
+          }
         } else {
           fetchdelay = 0;
         }
-      } else {
-        fetchdelay = 0;
-      }
-      //logger.log('fetchdelay:'+fetchdelay);
-      // find buffer range that will be reached once new fragment will be fetched
-      nextRange = this.getBufferRange(this.media.currentTime + fetchdelay);
-      if (nextRange) {
-        // we can flush buffer range following this one without stalling playback
-        nextRange = this.followingBufferRange(nextRange);
+        //logger.log('fetchdelay:'+fetchdelay);
+        // find buffer range that will be reached once new fragment will be fetched
+        nextRange = this.getBufferRange(media.currentTime + fetchdelay);
         if (nextRange) {
-          // if we are here, we can also cancel any loading/demuxing in progress, as they are useless
-          var fragCurrent = this.fragCurrent;
-          if (fragCurrent && fragCurrent.loader) {
-            fragCurrent.loader.abort();
+          // we can flush buffer range following this one without stalling playback
+          nextRange = this.followingBufferRange(nextRange);
+          if (nextRange) {
+            // if we are here, we can also cancel any loading/demuxing in progress, as they are useless
+            var fragCurrent = this.fragCurrent;
+            if (fragCurrent && fragCurrent.loader) {
+              fragCurrent.loader.abort();
+            }
+            this.fragCurrent = null;
+            // flush position is the start position of this new buffer
+            this.state = State.PAUSED;
+            this.hls.trigger(_events2.default.BUFFER_FLUSHING, { startOffset: nextRange.start, endOffset: Number.POSITIVE_INFINITY });
           }
-          this.fragCurrent = null;
-          // flush position is the start position of this new buffer
-          this.state = State.PAUSED;
-          this.hls.trigger(_events2.default.BUFFER_FLUSHING, { startOffset: nextRange.start, endOffset: Number.POSITIVE_INFINITY });
         }
       }
     }
@@ -2271,7 +2284,10 @@ var StreamController = function (_EventHandler) {
           }
           this.pendingAppending = 0;
           _logger.logger.log('Demuxing ' + sn + ' of [' + details.startSN + ' ,' + details.endSN + '],level ' + level);
-          this.demuxer.push(data.payload, audioCodec, currentLevel.videoCodec, start, fragCurrent.cc, level, sn, duration, fragCurrent.decryptdata);
+          var demuxer = this.demuxer;
+          if (demuxer) {
+            demuxer.push(data.payload, audioCodec, currentLevel.videoCodec, start, fragCurrent.cc, level, sn, duration, fragCurrent.decryptdata);
+          }
         }
       }
       this.fragLoadError = 0;
@@ -2533,7 +2549,6 @@ var StreamController = function (_EventHandler) {
           // check buffer upfront
           // if less than jumpThreshold second is buffered, and media is expected to play but playhead is not moving,
           // and we have a new buffer range available upfront, let's seek to that one
-          var configSeekHoleNudgeDuration = this.config.seekHoleNudgeDuration;
           if (expectedPlaying && bufferInfo.len <= jumpThreshold) {
             if (playheadMoving) {
               // playhead moving
@@ -2547,7 +2562,7 @@ var StreamController = function (_EventHandler) {
                 this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.MEDIA_ERROR, details: _errors.ErrorDetails.BUFFER_STALLED_ERROR, fatal: false });
                 this.stalled = true;
               } else {
-                this.seekHoleNudgeDuration += configSeekHoleNudgeDuration;
+                this.seekHoleNudgeDuration += this.config.SeekHoleNudgeDuration;
               }
             }
             // if we are below threshold, try to jump if next buffer range is close
@@ -2564,30 +2579,10 @@ var StreamController = function (_EventHandler) {
                 this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.MEDIA_ERROR, details: _errors.ErrorDetails.BUFFER_SEEK_OVER_HOLE, fatal: false, hole: hole });
               }
             }
-            // in any case reset stalledInBuffered
-            this.stalledInBuffered = 0;
           } else {
             if (targetSeekPosition && media.currentTime !== targetSeekPosition) {
               _logger.logger.log('adjust currentTime from ' + media.currentTime + ' to ' + targetSeekPosition);
               media.currentTime = targetSeekPosition;
-            } else if (expectedPlaying && !playheadMoving) {
-              // if we are in this condition, it means that currentTime is in a buffered area, but playhead is not moving
-              // if that happens, we wait for a couple of cycle (config.stalledInBufferedNudgeThreshold), then we nudge
-              // media.currentTime to try to recover that situation.
-              if (this.stalledInBuffered !== undefined) {
-                this.stalledInBuffered++;
-              } else {
-                this.stalledInBuffered = 1;
-              }
-              if (this.stalledInBuffered >= this.config.stalledInBufferedNudgeThreshold) {
-                _logger.logger.log('playback stuck @ ' + media.currentTime + ', in buffered area, nudge currentTime by ' + configSeekHoleNudgeDuration);
-                this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.MEDIA_ERROR, details: _errors.ErrorDetails.BUFFER_SEEK_STUCK_IN_BUFFERED, fatal: false });
-                media.currentTime += configSeekHoleNudgeDuration;
-                this.stalledInBuffered = 0;
-              }
-            } else {
-              // currentTime is buffered, playhead is moving or playback not expected... everything is fine
-              this.stalledInBuffered = 0;
             }
           }
         }
@@ -5196,8 +5191,6 @@ var ErrorDetails = exports.ErrorDetails = {
   BUFFER_FULL_ERROR: 'bufferFullError',
   // Identifier for a buffer seek over hole event
   BUFFER_SEEK_OVER_HOLE: 'bufferSeekOverHole',
-  // Identifier for a seek triggered to workaround a playback stuck although currentTime is buffered
-  BUFFER_SEEK_STUCK_IN_BUFFERED: 'bufferSeekStuckInBuffered',
   // Identifier for an internal exception happening inside hls.js while handling an event
   INTERNAL_EXCEPTION: 'internalException'
 };
@@ -5467,6 +5460,12 @@ var BufferHelper = function () {
           buffered2.push(buffered[i]);
         }
       }
+
+      // in case current position is located before buffered time ranges, report area as not buffered
+      if (buffered2.length && pos < buffered2[0].start) {
+        return { len: 0, start: pos, end: pos, nextStart: buffered2[0].start };
+      }
+
       for (i = 0, bufferLen = 0, bufferStart = bufferEnd = pos; i < buffered2.length; i++) {
         var start = buffered2[i].start,
             end = buffered2[i].end;

@@ -46,8 +46,6 @@ export const ErrorDetails = {
   BUFFER_FULL_ERROR: 'bufferFullError',
   // Identifier for a buffer seek over hole event
   BUFFER_SEEK_OVER_HOLE: 'bufferSeekOverHole',
-  // Identifier for a seek triggered to workaround a playback stuck although currentTime is buffered
-  BUFFER_SEEK_STUCK_IN_BUFFERED : 'bufferSeekStuckInBuffered',
   // Identifier for an internal exception happening inside hls.js while handling an event
   INTERNAL_EXCEPTION: 'internalException'
 };

@@ -666,8 +666,6 @@ full list of Errors is described below:
     - data: { type : ```MEDIA_ERROR```, details : ```Hls.ErrorDetails.BUFFER_FULL_ERROR```, fatal : ```false```}
   - ```Hls.ErrorDetails.BUFFER_SEEK_OVER_HOLE```raised after hls.js seeks over a buffer hole to unstuck the playback, 
     - data: { type : ```MEDIA_ERROR```, details : ```Hls.ErrorDetails.BUFFER_SEEK_OVER_HOLE```, fatal : ```false```, hole : hole duration}
-  - ```Hls.ErrorDetails.BUFFER_SEEK_STUCK_IN_BUFFERED```raised after hls.js seeks to workaround a playback stuck although currentTime is buffered
-    - data: { type : ```MEDIA_ERROR```, details : ```Hls.ErrorDetails.BUFFER_SEEK_STUCK_IN_BUFFERED```, fatal : ```false```}
 
 ## Objects
 ### Level
