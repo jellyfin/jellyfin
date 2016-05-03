@@ -121,7 +121,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 var maxBitrate = 25000000;
                 videoArgs = string.Format(
-                        "-codec:v:0 libx264 -force_key_frames expr:gte(t,n_forced*5) {0} -pix_fmt yuv420p -preset superfast -crf 23 -b:v {1} -maxrate {1} -bufsize ({1}*2) -vsync vfr -profile:v high -level 41",
+                        "-codec:v:0 libx264 -force_key_frames expr:gte(t,n_forced*5) {0} -pix_fmt yuv420p -preset superfast -crf 23 -b:v {1} -maxrate {1} -bufsize ({1}*2) -vsync -1 -profile:v high -level 41",
                         GetOutputSizeParam(),
                         maxBitrate.ToString(CultureInfo.InvariantCulture));
             }
@@ -157,7 +157,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 audioChannels = audioStream.Channels ?? audioChannels;
             }
-            return "-codec:a:0 aac -strict experimental -ab 320000 -af \"async=1000\"";
+            return "-codec:a:0 aac -strict experimental -ab 320000";
         }
 
         private bool EncodeVideo(MediaSourceInfo mediaSource)
