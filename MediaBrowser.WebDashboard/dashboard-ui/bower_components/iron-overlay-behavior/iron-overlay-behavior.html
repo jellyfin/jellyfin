@@ -591,17 +591,15 @@ context. You should place this element as a child of `<body>` whenever possible.
    * Fired when the overlay is canceled, but before it is closed.
    * @event iron-overlay-canceled
    * @param {Event} event The closing of the overlay can be prevented
-   * by calling `event.preventDefault()`.
-   * @param {Event} event.detail It is the original event that originated
-   * the canceling (e.g. ESC keyboard event or click event outside the overlay).
+   * by calling `event.preventDefault()`. The `event.detail` is the original event that
+   * originated the canceling (e.g. ESC keyboard event or click event outside the overlay).
    */
 
   /**
    * Fired after the overlay closes.
    * @event iron-overlay-closed
-   * @param {Event} event The event
-   * @param {Object} event.detail It is the `closingReason` property (contains
-   * `canceled`, whether the overlay was canceled).
+   * @param {Event} event The `event.detail` is the `closingReason` property
+   * (contains `canceled`, whether the overlay was canceled).
    */
 
 })();

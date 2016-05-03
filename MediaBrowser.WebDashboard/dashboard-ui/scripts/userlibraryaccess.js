@@ -70,7 +70,7 @@
 
             var checkedAttribute = user.Policy.EnableAllDevices || user.Policy.EnabledDevices.indexOf(device.Id) != -1 ? ' checked="checked"' : '';
 
-            html += '<paper-checkbox class="chkChannel" data-id="' + device.Id + '" type="checkbox"' + checkedAttribute + '>' + device.Name + ' - ' + device.AppName + '</paper-checkbox>';
+            html += '<paper-checkbox class="chkDevice" data-id="' + device.Id + '" type="checkbox"' + checkedAttribute + '>' + device.Name + ' - ' + device.AppName + '</paper-checkbox>';
         }
 
         html += '</div>';

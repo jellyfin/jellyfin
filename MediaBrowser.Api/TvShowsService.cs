@@ -508,8 +508,7 @@ namespace MediaBrowser.Api
                 returnItems = UserViewBuilder.FilterForAdjacency(returnItems, request.AdjacentTo);
             }
 
-            var returnList = _libraryManager.ReplaceVideosWithPrimaryVersions(returnItems)
-                .ToList();
+            var returnList = returnItems.ToList();
 
             var pagedItems = ApplyPaging(returnList, request.StartIndex, request.Limit);
 

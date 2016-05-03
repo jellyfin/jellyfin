@@ -733,6 +733,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             else if (info.IsSeries)
             {
                 recordPath = Path.Combine(recordPath, "Series", _fileSystem.GetValidFilename(info.Name).Trim());
+
+                if (info.SeasonNumber.HasValue)
+                {
+                    var folderName = string.Format("Season {0}", info.SeasonNumber.Value.ToString(CultureInfo.InvariantCulture));
+                    recordPath = Path.Combine(recordPath, folderName);
+                }
             }
             else if (info.IsKids)
             {
