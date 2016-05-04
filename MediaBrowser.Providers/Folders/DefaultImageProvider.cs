@@ -117,7 +117,7 @@ namespace MediaBrowser.Providers.Folders
             }
             if (string.IsNullOrWhiteSpace(viewType))
             {
-                return urlPrefix + "generic.jpg";
+                //return urlPrefix + "generic.jpg";
             }
 
             return null;
