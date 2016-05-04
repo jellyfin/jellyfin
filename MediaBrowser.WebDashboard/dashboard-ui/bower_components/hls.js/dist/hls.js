@@ -2562,7 +2562,7 @@ var StreamController = function (_EventHandler) {
                 this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.MEDIA_ERROR, details: _errors.ErrorDetails.BUFFER_STALLED_ERROR, fatal: false });
                 this.stalled = true;
               } else {
-                this.seekHoleNudgeDuration += this.config.SeekHoleNudgeDuration;
+                this.seekHoleNudgeDuration += this.config.seekHoleNudgeDuration;
               }
             }
             // if we are below threshold, try to jump if next buffer range is close
@@ -6342,6 +6342,17 @@ var PlaylistLoader = function (_EventHandler) {
           retry,
           timeout,
           retryDelay;
+
+      if (this.loading && this.loader) {
+        if (this.url === url && this.id === id1 && this.id2 === id2) {
+          // same request than last pending one, don't do anything
+          return;
+        } else {
+          // one playlist load request is pending, but with different params, abort it before loading new playlist
+          this.loader.abort();
+        }
+      }
+
       this.url = url;
       this.id = id1;
       this.id2 = id2;
@@ -6355,6 +6366,7 @@ var PlaylistLoader = function (_EventHandler) {
         retryDelay = config.levelLoadingRetryDelay;
       }
       this.loader = typeof config.pLoader !== 'undefined' ? new config.pLoader(config) : new config.loader(config);
+      this.loading = true;
       this.loader.load(url, '', this.loadsuccess.bind(this), this.loaderror.bind(this), this.loadtimeout.bind(this), timeout, retry, retryDelay);
     }
   }, {
@@ -6536,6 +6548,8 @@ var PlaylistLoader = function (_EventHandler) {
           id2 = this.id2,
           hls = this.hls,
           levels;
+
+      this.loading = false;
       // responseURL not supported on some browsers (it is used to detect URL redirection)
       if (url === undefined) {
         // fallback to initial URL
@@ -6582,6 +6596,7 @@ var PlaylistLoader = function (_EventHandler) {
       if (this.loader) {
         this.loader.abort();
       }
+      this.loading = false;
       this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.NETWORK_ERROR, details: details, fatal: fatal, url: this.url, loader: this.loader, response: event.currentTarget, level: this.id, id: this.id2 });
     }
   }, {
@@ -6598,6 +6613,7 @@ var PlaylistLoader = function (_EventHandler) {
       if (this.loader) {
         this.loader.abort();
       }
+      this.loading = false;
       this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.NETWORK_ERROR, details: details, fatal: fatal, url: this.url, loader: this.loader, level: this.id, id: this.id2 });
     }
   }]);

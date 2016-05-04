@@ -1044,7 +1044,7 @@ _checkBuffer() {
               this.hls.trigger(Event.ERROR, {type: ErrorTypes.MEDIA_ERROR, details: ErrorDetails.BUFFER_STALLED_ERROR, fatal: false});
               this.stalled = true;
             } else {
-              this.seekHoleNudgeDuration += this.config.SeekHoleNudgeDuration;
+              this.seekHoleNudgeDuration += this.config.seekHoleNudgeDuration;
             }
           }
           // if we are below threshold, try to jump if next buffer range is close
