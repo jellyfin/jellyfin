@@ -17,25 +17,6 @@
                 }
 
                 list.push(view);
-
-                if (view.CollectionType == 'livetv') {
-
-                    var guideView = $.extend({}, view);
-                    guideView.Name = Globalize.translate('ButtonGuide');
-                    guideView.ImageTags = {};
-                    guideView.icon = 'dvr';
-                    guideView.url = 'livetv.html?tab=1';
-                    guideView.onclick = "LibraryBrowser.showTab('livetv.html', 1);event.preventDefault();event.stopPropagation();return false;";
-                    list.push(guideView);
-
-                    var recordedTvView = $.extend({}, view);
-                    recordedTvView.Name = Globalize.translate('ButtonRecordedTv');
-                    recordedTvView.ImageTags = {};
-                    recordedTvView.icon = 'video-library';
-                    recordedTvView.url = 'livetv.html?tab=3';
-                    recordedTvView.onclick = "LibraryBrowser.showTab('livetv.html', 3);event.preventDefault();event.stopPropagation();return false;";
-                    list.push(recordedTvView);
-                }
             }
 
             return list;

@@ -509,14 +509,6 @@
                     guideView.url = 'livetv.html?tab=1';
                     guideView.onclick = "LibraryBrowser.showTab('livetv.html', 1);";
                     list.push(guideView);
-
-                    var recordedTvView = Object.assign({}, view);
-                    recordedTvView.Name = Globalize.translate('ButtonRecordedTv');
-                    recordedTvView.ImageTags = {};
-                    recordedTvView.icon = 'video-library';
-                    recordedTvView.url = 'livetv.html?tab=3';
-                    recordedTvView.onclick = "LibraryBrowser.showTab('livetv.html', 3);";
-                    list.push(recordedTvView);
                 }
             }
 

@@ -11,9 +11,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../polymer/polymer.html">
 
 <script>
-
 /**
-Polymer.IronFitBehavior fits an element in another element using `max-height` and `max-width`, and
+`Polymer.IronFitBehavior` fits an element in another element using `max-height` and `max-width`, and
 optionally centers it in the window or another element.
 
 The element will only be sized and/or positioned if it has not already been sized and/or positioned
@@ -24,8 +23,25 @@ CSS properties               | Action
 `position` set               | Element is not centered horizontally or vertically
 `top` or `bottom` set        | Element is not vertically centered
 `left` or `right` set        | Element is not horizontally centered
-`max-height` or `height` set | Element respects `max-height` or `height`
-`max-width` or `width` set   | Element respects `max-width` or `width`
+`max-height` set             | Element respects `max-height`
+`max-width` set              | Element respects `max-width`
+
+`Polymer.IronFitBehavior` can position an element into another element using
+`verticalAlign` and `horizontalAlign`. This will override the element's css position.
+
+      <div class="container">
+        <iron-fit-impl vertical-align="top" horizontal-align="auto">
+          Positioned into the container
+        </iron-fit-impl>
+      </div>
+
+Use `noOverlap` to position the element around another element without overlapping it.
+
+      <div class="container">
+        <iron-fit-impl no-overlap vertical-align="auto" horizontal-align="auto">
+          Positioned around the container
+        </iron-fit-impl>
+      </div>
 
 @demo demo/index.html
 @polymerBehavior
@@ -57,6 +73,78 @@ CSS properties               | Action
       },
 
       /**
+       * Will position the element around the positionTarget without overlapping it.
+       */
+      noOverlap: {
+        type: Boolean
+      },
+
+      /**
+       * The element that should be used to position the element. If not set, it will
+       * default to the parent node.
+       * @type {!Element}
+       */
+      positionTarget: {
+        type: Element
+      },
+
+      /**
+       * The orientation against which to align the element horizontally
+       * relative to the `positionTarget`. Possible values are "left", "right", "auto".
+       */
+      horizontalAlign: {
+        type: String
+      },
+
+      /**
+       * The orientation against which to align the element vertically
+       * relative to the `positionTarget`. Possible values are "top", "bottom", "auto".
+       */
+      verticalAlign: {
+        type: String
+      },
+
+      /**
+       * A pixel value that will be added to the position calculated for the
+       * given `horizontalAlign`, in the direction of alignment. You can think
+       * of it as increasing or decreasing the distance to the side of the
+       * screen given by `horizontalAlign`.
+       *
+       * If `horizontalAlign` is "left", this offset will increase or decrease
+       * the distance to the left side of the screen: a negative offset will
+       * move the element to the left; a positive one, to the right.
+       *
+       * Conversely if `horizontalAlign` is "right", this offset will increase
+       * or decrease the distance to the right side of the screen: a negative
+       * offset will move the element to the right; a positive one, to the left.
+       */
+      horizontalOffset: {
+        type: Number,
+        value: 0,
+        notify: true
+      },
+
+      /**
+       * A pixel value that will be added to the position calculated for the
+       * given `verticalAlign`, in the direction of alignment. You can think
+       * of it as increasing or decreasing the distance to the side of the
+       * screen given by `verticalAlign`.
+       *
+       * If `verticalAlign` is "top", this offset will increase or decrease
+       * the distance to the top side of the screen: a negative offset will
+       * move the element upwards; a positive one, downwards.
+       *
+       * Conversely if `verticalAlign` is "bottom", this offset will increase
+       * or decrease the distance to the bottom side of the screen: a negative
+       * offset will move the element downwards; a positive one, upwards.
+       */
+      verticalOffset: {
+        type: Number,
+        value: 0,
+        notify: true
+      },
+
+      /**
        * Set to true to auto-fit on attach.
        */
       autoFitOnAttach: {
@@ -68,7 +156,6 @@ CSS properties               | Action
       _fitInfo: {
         type: Object
       }
-
     },
 
     get _fitWidth() {
@@ -111,7 +198,40 @@ CSS properties               | Action
       return fitTop;
     },
 
+    /**
+     * The element that should be used to position the element,
+     * if no position target is configured.
+     */
+    get _defaultPositionTarget() {
+      var parent = Polymer.dom(this).parentNode;
+
+      if (parent.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+        parent = parent.host;
+      }
+
+      return parent;
+    },
+
+    /**
+     * The horizontal align value, accounting for the RTL/LTR text direction.
+     */
+    get _localeHorizontalAlign() {
+      if (this._isRTL) {
+        // In RTL, "left" becomes "right".
+        if (this.horizontalAlign === 'right') {
+          return 'left';
+        }
+        if (this.horizontalAlign === 'left') {
+          return 'right';
+        }
+      }
+      return this.horizontalAlign;
+    },
+
     attached: function() {
+      // Memoize this to avoid expensive calculations & relayouts.
+      this._isRTL = window.getComputedStyle(this).direction == 'rtl';
+      this.positionTarget = this.positionTarget || this._defaultPositionTarget;
       if (this.autoFitOnAttach) {
         if (window.getComputedStyle(this).display === 'none') {
           setTimeout(function() {
@@ -124,10 +244,11 @@ CSS properties               | Action
     },
 
     /**
-     * Fits and optionally centers the element into the window, or `fitInfo` if specified.
+     * Positions and fits the element into the `fitInto` element.
      */
     fit: function() {
       this._discoverInfo();
+      this.position();
       this.constrain();
       this.center();
     },
@@ -144,18 +265,25 @@ CSS properties               | Action
       this._fitInfo = {
         inlineStyle: {
           top: this.style.top || '',
-          left: this.style.left || ''
+          left: this.style.left || '',
+          position: this.style.position || ''
+        },
+        sizerInlineStyle: {
+          maxWidth: this.sizingTarget.style.maxWidth || '',
+          maxHeight: this.sizingTarget.style.maxHeight || '',
+          boxSizing: this.sizingTarget.style.boxSizing || ''
         },
         positionedBy: {
           vertically: target.top !== 'auto' ? 'top' : (target.bottom !== 'auto' ?
             'bottom' : null),
           horizontally: target.left !== 'auto' ? 'left' : (target.right !== 'auto' ?
-            'right' : null),
-          css: target.position
+            'right' : null)
         },
         sizedBy: {
           height: sizer.maxHeight !== 'none',
-          width: sizer.maxWidth !== 'none'
+          width: sizer.maxWidth !== 'none',
+          minWidth: parseInt(sizer.minWidth, 10) || 0,
+          minHeight: parseInt(sizer.minHeight, 10) || 0
         },
         margin: {
           top: parseInt(target.marginTop, 10) || 0,
@@ -171,23 +299,21 @@ CSS properties               | Action
      * the memoized data.
      */
     resetFit: function() {
-      if (!this._fitInfo || !this._fitInfo.sizedBy.width) {
-        this.sizingTarget.style.maxWidth = '';
+      var info = this._fitInfo || {};
+      for (var property in info.sizerInlineStyle) {
+        this.sizingTarget.style[property] = info.sizerInlineStyle[property];
       }
-      if (!this._fitInfo || !this._fitInfo.sizedBy.height) {
-        this.sizingTarget.style.maxHeight = '';
+      for (var property in info.inlineStyle) {
+        this.style[property] = info.inlineStyle[property];
       }
-      this.style.top = this._fitInfo ? this._fitInfo.inlineStyle.top : '';
-      this.style.left = this._fitInfo ? this._fitInfo.inlineStyle.left : '';
-      if (this._fitInfo) {
-        this.style.position = this._fitInfo.positionedBy.css;
-      }
+
       this._fitInfo = null;
     },
 
     /**
-     * Equivalent to calling `resetFit()` and `fit()`. Useful to call this after the element,
-     * the window, or the `fitInfo` element has been resized.
+     * Equivalent to calling `resetFit()` and `fit()`. Useful to call this after
+     * the element or the `fitInto` element has been resized, or if any of the
+     * positioning properties (e.g. `horizontalAlign, verticalAlign`) is updated.
      */
     refit: function() {
       this.resetFit();
@@ -195,37 +321,129 @@ CSS properties               | Action
     },
 
     /**
-     * Constrains the size of the element to the window or `fitInfo` by setting `max-height`
+     * Positions the element according to `horizontalAlign, verticalAlign`.
+     */
+    position: function() {
+      if (!this.horizontalAlign && !this.verticalAlign) {
+        // needs to be centered, and it is done after constrain.
+        return;
+      }
+
+      this.style.position = 'fixed';
+      // Need border-box for margin/padding.
+      this.sizingTarget.style.boxSizing = 'border-box';
+      // Set to 0, 0 in order to discover any offset caused by parent stacking contexts.
+      this.style.left = '0px';
+      this.style.top = '0px';
+
+      var rect = this.getBoundingClientRect();
+      var positionRect = this.__getNormalizedRect(this.positionTarget);
+      var fitRect = this.__getNormalizedRect(this.fitInto);
+
+      var alignRight = this.__isAlignRight(this._localeHorizontalAlign, rect, positionRect, fitRect);
+      var alignBottom = this.__isAlignBottom(this.verticalAlign, rect, positionRect, fitRect);
+
+      var top = alignBottom ? positionRect.bottom - rect.height - this.verticalOffset : positionRect.top + this.verticalOffset;
+      var left = alignRight ? positionRect.right - rect.width - this.horizontalOffset : positionRect.left + this.horizontalOffset;
+
+      if (this.noOverlap) {
+        // We can overlap one of the dimensions, choose the one that minimizes the cropped area.
+        var noOverlapLeft = left + positionRect.width * (alignRight ? -1 : 1);
+        var noOverlapTop = top + positionRect.height * (alignBottom ? -1 : 1);
+        var areaOverlapLeft = this.__getCroppedArea({
+          top: noOverlapTop,
+          left: left,
+          width: rect.width,
+          height: rect.height
+        }, fitRect);
+        var areaOverlapTop = this.__getCroppedArea({
+          top: top,
+          left: noOverlapLeft,
+          width: rect.width,
+          height: rect.height
+        }, fitRect);
+        if (areaOverlapLeft < areaOverlapTop) {
+          left = noOverlapLeft;
+        } else {
+          top = noOverlapTop;
+        }
+      }
+
+      var right = left + rect.width;
+      var bottom = top + rect.height;
+
+      left = Math.max(left, 0);
+      top = Math.max(top, 0);
+
+      var maxWidth = Math.min(fitRect.right, right) - left;
+      var maxHeight = Math.min(fitRect.bottom, bottom) - top;
+
+      var minWidth = this._fitInfo.sizedBy.minWidth;
+      var minHeight = this._fitInfo.sizedBy.minHeight;
+
+      if (maxWidth < minWidth || right < minWidth) {
+        left = -9999;
+        maxWidth = 0;
+      }
+      if (maxHeight < minHeight || bottom < minHeight) {
+        top = -9999;
+        maxHeight = 0;
+      }
+
+      this.sizingTarget.style.maxWidth = maxWidth + 'px';
+      this.sizingTarget.style.maxHeight = maxHeight + 'px';
+
+      // Remove the offset caused by any stacking context.
+      this.style.left = (left - rect.left) + 'px';
+      this.style.top = (top - rect.top) + 'px';
+    },
+
+    /**
+     * Constrains the size of the element to `fitInto` by setting `max-height`
      * and/or `max-width`.
      */
     constrain: function() {
+      if (this.horizontalAlign || this.verticalAlign) {
+        return;
+      }
       var info = this._fitInfo;
       // position at (0px, 0px) if not already positioned, so we can measure the natural size.
-      if (!this._fitInfo.positionedBy.vertically) {
+      if (!info.positionedBy.vertically) {
+        this.style.position = 'fixed';
         this.style.top = '0px';
       }
-      if (!this._fitInfo.positionedBy.horizontally) {
+      if (!info.positionedBy.horizontally) {
+        this.style.position = 'fixed';
         this.style.left = '0px';
       }
-      if (!this._fitInfo.positionedBy.vertically || !this._fitInfo.positionedBy.horizontally) {
-        // need position:fixed to properly size the element
-        this.style.position = 'fixed';
-      }
+
       // need border-box for margin/padding
       this.sizingTarget.style.boxSizing = 'border-box';
       // constrain the width and height if not already set
       var rect = this.getBoundingClientRect();
       if (!info.sizedBy.height) {
-        this._sizeDimension(rect, info.positionedBy.vertically, 'top', 'bottom', 'Height');
+        this.__sizeDimension(rect, info.positionedBy.vertically, 'top', 'bottom', 'Height');
       }
       if (!info.sizedBy.width) {
-        this._sizeDimension(rect, info.positionedBy.horizontally, 'left', 'right', 'Width');
+        this.__sizeDimension(rect, info.positionedBy.horizontally, 'left', 'right', 'Width');
       }
     },
 
+    /**
+     * @protected
+     * @deprecated
+     */
     _sizeDimension: function(rect, positionedBy, start, end, extent) {
+      this.__sizeDimension(rect, positionedBy, start, end, extent);
+    },
+
+    /**
+     * @private
+     */
+    __sizeDimension: function(rect, positionedBy, start, end, extent) {
       var info = this._fitInfo;
-      var max = extent === 'Width' ? this._fitWidth : this._fitHeight;
+      var fitRect = this.__getNormalizedRect(this.fitInto);
+      var max = extent === 'Width' ? fitRect.width : fitRect.height;
       var flip = (positionedBy === end);
       var offset = flip ? max - rect[end] : rect[start];
       var margin = info.margin[flip ? start : end];
@@ -239,6 +457,9 @@ CSS properties               | Action
      * `position:fixed`.
      */
     center: function() {
+      if (this.horizontalAlign || this.verticalAlign) {
+        return;
+      }
       var positionedBy = this._fitInfo.positionedBy;
       if (positionedBy.vertically && positionedBy.horizontally) {
         // Already positioned.
@@ -257,16 +478,58 @@ CSS properties               | Action
       }
       // It will take in consideration margins and transforms
       var rect = this.getBoundingClientRect();
+      var fitRect = this.__getNormalizedRect(this.fitInto);
       if (!positionedBy.vertically) {
-        var top = this._fitTop - rect.top + (this._fitHeight - rect.height) / 2;
+        var top = fitRect.top - rect.top + (fitRect.height - rect.height) / 2;
         this.style.top = top + 'px';
       }
       if (!positionedBy.horizontally) {
-        var left = this._fitLeft - rect.left + (this._fitWidth - rect.width) / 2;
+        var left = fitRect.left - rect.left + (fitRect.width - rect.width) / 2;
         this.style.left = left + 'px';
       }
+    },
+
+    __getNormalizedRect: function(target) {
+      if (target === document.documentElement || target === window) {
+        return {
+          top: 0,
+          left: 0,
+          width: window.innerWidth,
+          height: window.innerHeight,
+          right: window.innerWidth,
+          bottom: window.innerHeight
+        };
+      }
+      return target.getBoundingClientRect();
+    },
+
+    __isAlignRight: function(hAlign, rect, positionRect, fitRect) {
+      if (hAlign === 'right') {
+        return true;
+      }
+      if (hAlign === 'auto') {
+        return positionRect.left + positionRect.width/2 > fitRect.left + fitRect.width/2 ||
+          (!this.noOverlap && positionRect.left < 0 && positionRect.right - rect.width > positionRect.left);
+      }
+      return false;
+    },
+
+    __isAlignBottom: function(vAlign, rect, positionRect, fitRect) {
+      if (vAlign === 'bottom') {
+        return true;
+      }
+      if (vAlign === 'auto') {
+        return positionRect.top + positionRect.height/2 > fitRect.top + fitRect.height/2 ||
+          (!this.noOverlap && positionRect.top < 0 && positionRect.bottom - rect.height > positionRect.top);
+      }
+      return false;
+    },
+
+    __getCroppedArea: function(rect, fitRect) {
+      var verticalCrop = Math.min(0, rect.top) + Math.min(0, fitRect.bottom - (rect.top + rect.height));
+      var horizontalCrop = Math.min(0, rect.left) + Math.min(0, fitRect.right - (rect.left + rect.width));
+      return verticalCrop * rect.width + horizontalCrop * rect.height;
     }
 
   };
-
 </script>

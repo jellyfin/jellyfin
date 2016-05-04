@@ -39,16 +39,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       .sized-x {
-        width: 200px;
+        width: 100px;
       }
 
       .sized-y {
-        height: 200px;
-      }
-
-      .sized-xy {
-        width: 200px;
-        height: 200px;
+        height: 100px;
       }
 
       .positioned-left {
@@ -83,11 +78,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         margin: 20px;
       }
 
+      .constrain {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        width: 150px;
+        height: 150px;
+        border: 1px solid black;
+        box-sizing: border-box;
+      }
+
     </style>
 
   </head>
   <body>
 
+    <div class="constrain"></div>
 
     <test-fixture id="absolute">
       <template>
@@ -110,16 +116,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <test-fit auto-fit-on-attach class="sized-x">
           Sized (x), auto center/center
         </test-fit>
-      </template>
-    </test-fixture>
-
-    <test-fixture id="with-max-width">
-      <template>
-        <div class="constrain" style="position: fixed; top: 20px; left: 100px; width: 50vw; height: 50vh; border: 1px solid black;">
-          <test-fit auto-fit-on-attach class="with-max-width el">
-            with-max-width, auto center/center
-          </test-fit>
-        </div>
       </template>
     </test-fixture>
 
@@ -152,8 +148,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <test-fixture id="constrain-target">
       <template>
-        <div class="constrain" style="position: fixed; top: 20px; left: 100px; width: 50vw; height: 50vh; border: 1px solid black;">
-          <test-fit auto-fit-on-attach class="el sized-xy">
+        <div class="constrain">
+          <test-fit auto-fit-on-attach class="el sized-x sized-y">
             <div>
               Auto center/center to parent element
             </div>
@@ -186,6 +182,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         for (var i = 0; i < 20; i++) {
           el.appendChild(template.content.cloneNode(true));
         }
+      }
+
+      function intersects(r1, r2) {
+        return !(r2.left >= r1.right || r2.right <= r1.left || r2.top >= r1.bottom || r2.bottom <= r1.top);
       }
 
       suite('manual positioning', function() {
@@ -380,7 +380,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         test('element centers in another element', function() {
           var constrain = fixture('constrain-target');
-          var el = Polymer.dom(constrain).querySelector('.el')
+          var el = Polymer.dom(constrain).querySelector('.el');
           makeScrolling(el);
           el.fitInto = constrain;
           el.refit();
@@ -391,8 +391,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         test('element with max-width centers in another element', function() {
-          var constrain = fixture('with-max-width');
-          var el = Polymer.dom(constrain).querySelector('.el');
+          var constrain = document.querySelector('.constrain');
+          var el = fixture('sized-xy');
+          el.classList.add('with-max-width');
           el.fitInto = constrain;
           el.refit();
           var rect = el.getBoundingClientRect();
@@ -403,6 +404,324 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       });
 
+      suite('horizontal/vertical align', function() {
+        var parent, parentRect;
+        var el, elRect;
+        var fitRect = {
+          left: 0,
+          top: 0,
+          right: window.innerWidth,
+          bottom: window.innerHeight,
+          width: window.innerWidth,
+          height: window.innerHeight
+        };
+
+        setup(function() {
+          parent = fixture('constrain-target');
+          parentRect = parent.getBoundingClientRect();
+          el = Polymer.dom(parent).querySelector('.el');
+          elRect = el.getBoundingClientRect();
+        });
+
+        test('intersects works', function() {
+          var base = {top: 0, bottom: 1, left:0, right: 1};
+          assert.isTrue(intersects(base, base), 'intersects itself');
+          assert.isFalse(intersects(base, {top:1, bottom: 2, left: 0, right: 1}), 'no intersect on edge');
+          assert.isFalse(intersects(base, {top:-2, bottom: -1, left: 0, right: 1}), 'no intersect on edge (negative values)');
+          assert.isFalse(intersects(base, {top:2, bottom: 3, left: 0, right: 1}), 'no intersect');
+        });
+
+        suite('when verticalAlign is top', function() {
+          test('element is aligned to the positionTarget top', function() {
+            el.verticalAlign = 'top';
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.top, parentRect.top, 'top ok');
+            assert.equal(rect.height, elRect.height, 'no cropping');
+          });
+
+          test('element is aligned to the positionTarget top without overlapping it', function() {
+            // Allow enough space on the parent's bottom & right.
+            parent.style.width = '10px';
+            parent.style.height = '10px';
+            parentRect = parent.getBoundingClientRect();
+            el.verticalAlign = 'top';
+            el.noOverlap = true;
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.isFalse(intersects(rect, parentRect), 'no overlap');
+            assert.equal(rect.height, elRect.height, 'no cropping');
+          });
+
+          test('verticalOffset is applied', function() {
+            el.verticalAlign = 'top';
+            el.verticalOffset = 10;
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.top, parentRect.top + 10, 'top ok');
+            assert.equal(rect.height, elRect.height, 'no cropping');
+          });
+
+          test('max-height is updated', function() {
+            parent.style.top = '-10px';
+            el.verticalAlign = 'top';
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.top, 0, 'top ok');
+            assert.isBelow(rect.height, elRect.height, 'height ok');
+          });
+
+          test('min-height is respected: element is hidden if does not have enough height', function() {
+            parent.style.top = '-10px';
+            el.verticalAlign = 'top';
+            el.style.minHeight = elRect.height + 'px';
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.isFalse(intersects(rect, fitRect), 'not visible');
+          });
+        });
+
+        suite('when verticalAlign is bottom', function() {
+          test('element is aligned to the positionTarget bottom', function() {
+            el.verticalAlign = 'bottom';
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.bottom, parentRect.bottom, 'bottom ok');
+            assert.equal(rect.height, elRect.height, 'no cropping');
+          });
+
+          test('element is aligned to the positionTarget bottom without overlapping it', function() {
+            el.verticalAlign = 'bottom';
+            el.noOverlap = true;
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.isFalse(intersects(rect, parentRect), 'no overlap');
+            assert.equal(rect.height, elRect.height, 'no cropping');
+          });
+
+          test('verticalOffset is applied', function() {
+            el.verticalAlign = 'bottom';
+            el.verticalOffset = 10;
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.bottom, parentRect.bottom - 10, 'bottom ok');
+            assert.equal(rect.height, elRect.height, 'no cropping');
+          });
+
+          test('element max-height is updated', function() {
+            parent.style.top = (100 - parentRect.height) + 'px';
+            el.verticalAlign = 'bottom';
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.bottom, 100, 'bottom ok');
+            assert.equal(rect.height, 100, 'height ok');
+          });
+
+          test('min-height is respected: element is hidden if does not have enough height', function() {
+            parent.style.top = (elRect.height - 10 - parentRect.height) + 'px';
+            el.verticalAlign = 'bottom';
+            el.style.minHeight = elRect.height + 'px';
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.isFalse(intersects(rect, fitRect), 'not visible');
+          });
+        });
+
+        suite('when verticalAlign is auto', function() {
+          test('element is aligned to the positionTarget top', function() {
+            el.verticalAlign = 'auto';
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.top, parentRect.top, 'auto aligned to top');
+            assert.equal(rect.height, elRect.height, 'no cropping');
+          });
+
+          test('element is aligned to the positionTarget top without overlapping it', function() {
+            // Allow enough space on the parent's bottom & right.
+            parent.style.width = '10px';
+            parent.style.height = '10px';
+            parentRect = parent.getBoundingClientRect();
+            el.verticalAlign = 'auto';
+            el.noOverlap = true;
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.height, elRect.height, 'no cropping');
+            assert.isFalse(intersects(rect, parentRect), 'no overlap');
+          });
+
+          test('bottom is preferred to top if it diminishes the cropped area', function() {
+            // This would cause a cropping of the element, so it should automatically
+            // align to the bottom to avoid it.
+            parent.style.top = '-10px';
+            parentRect = parent.getBoundingClientRect();
+            el.verticalAlign = 'auto';
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.bottom, parentRect.bottom, 'auto aligned to bottom');
+            assert.equal(rect.height, elRect.height, 'no cropping');
+          });
+
+          test('bottom is preferred to top if it diminishes the cropped area, without overlapping positionTarget', function() {
+            // This would cause a cropping of the element, so it should automatically
+            // align to the bottom to avoid it.
+            parent.style.top = '-10px';
+            parentRect = parent.getBoundingClientRect();
+            el.verticalAlign = 'auto';
+            el.noOverlap = true;
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.height, elRect.height, 'no cropping');
+            assert.isFalse(intersects(rect, parentRect), 'no overlap');
+          });
+        });
+
+        suite('when horizontalAlign is left', function() {
+          test('element is aligned to the positionTarget left', function() {
+            el.horizontalAlign = 'left';
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.left, parentRect.left, 'left ok');
+            assert.equal(rect.width, elRect.width, 'no cropping');
+          });
+
+          test('element is aligned to the positionTarget left without overlapping it', function() {
+            // Make space at the parent's right.
+            parent.style.width = '10px';
+            parentRect = parent.getBoundingClientRect();
+            el.horizontalAlign = 'left';
+            el.noOverlap = true;
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.isFalse(intersects(rect, parentRect), 'no overlap');
+            assert.equal(rect.width, elRect.width, 'no cropping');
+          });
+
+          test('horizontalOffset is applied', function() {
+            el.horizontalAlign = 'left';
+            el.horizontalOffset = 10;
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.left, parentRect.left + 10, 'left ok');
+            assert.equal(rect.width, elRect.width, 'no cropping');
+          });
+
+          test('element max-width is updated', function() {
+            parent.style.left = '-10px';
+            el.horizontalAlign = 'left';
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.left, 0, 'left ok');
+            assert.isBelow(rect.width, elRect.width, 'width ok');
+          });
+
+          test('min-width is respected: element is hidden if does not have enough width', function() {
+            parent.style.left = '-10px';
+            el.style.minWidth = elRect.width + 'px';
+            el.horizontalAlign = 'left';
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.isFalse(intersects(rect, fitRect), 'not visible');
+          });
+        });
+
+        suite('when horizontalAlign is right', function() {
+          test('element is aligned to the positionTarget right', function() {
+            el.horizontalAlign = 'right';
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.right, parentRect.right, 'right ok');
+            assert.equal(rect.width, elRect.width, 'no cropping');
+          });
+
+          test('element is aligned to the positionTarget right without overlapping it', function() {
+            // Make space at the parent's left.
+            parent.style.left = elRect.width + 'px';
+            parentRect = parent.getBoundingClientRect();
+            el.horizontalAlign = 'right';
+            el.noOverlap = true;
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.isFalse(intersects(rect, parentRect), 'no overlap');
+            assert.equal(rect.width, elRect.width, 'no cropping');
+          });
+
+          test('horizontalOffset is applied', function() {
+            el.horizontalAlign = 'right';
+            el.horizontalOffset = 10;
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.right, parentRect.right - 10, 'right ok');
+            assert.equal(rect.width, elRect.width, 'no cropping');
+          });
+
+          test('element max-width is updated', function() {
+            parent.style.left = (100 - parentRect.width) + 'px';
+            el.horizontalAlign = 'right';
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.right, 100, 'right ok');
+            assert.equal(rect.width, 100, 'width ok');
+          });
+
+          test('min-width is respected: element is hidden if does not have enough width', function() {
+            parent.style.left = (elRect.width - 10 - parentRect.width) + 'px';
+            el.horizontalAlign = 'right';
+            el.style.minWidth = elRect.width + 'px';
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.isFalse(intersects(rect, fitRect), 'not visible');
+          });
+
+        });
+
+        suite('when horizontalAlign is auto', function() {
+          test('element is aligned to the positionTarget left', function() {
+            el.horizontalAlign = 'auto';
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.left, parentRect.left, 'auto aligned to left');
+            assert.equal(rect.width, elRect.width, 'no cropping');
+          });
+
+          test('element is aligned to the positionTarget left without overlapping positionTarget', function() {
+            // Make space at the parent's left.
+            parent.style.left = elRect.width + 'px';
+            parentRect = parent.getBoundingClientRect();
+            el.horizontalAlign = 'auto';
+            el.noOverlap = true;
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.width, elRect.width, 'no cropping');
+            assert.isFalse(intersects(rect, parentRect), 'no overlap');
+          });
+
+          test('right is preferred to left if it diminishes the cropped area', function() {
+            // This would cause a cropping of the element, so it should automatically
+            // align to the right to avoid it.
+            parent.style.left = '-10px';
+            parentRect = parent.getBoundingClientRect();
+            el.horizontalAlign = 'auto';
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.right, parentRect.right, 'auto aligned to right');
+            assert.equal(rect.width, elRect.width, 'no cropping');
+          });
+
+          test('right is preferred to left if it diminishes the cropped area, without overlapping positionTarget', function() {
+            // Make space at the parent's right.
+            parent.style.width = '10px';
+            parentRect = parent.getBoundingClientRect();
+            el.horizontalAlign = 'auto';
+            el.noOverlap = true;
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.width, elRect.width, 'no cropping');
+            assert.isFalse(intersects(rect, parentRect), 'no overlap');
+          });
+
+        });
+
+      });
     </script>
 
   </body>

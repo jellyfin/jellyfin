@@ -10,6 +10,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
+<link rel="import" href="iron-overlay-backdrop.html">
 
 <script>
 
@@ -224,7 +225,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      * Updates the backdrop z-index.
      */
     trackBackdrop: function() {
-      this.backdropElement.style.zIndex = this.backdropZ();
+      var overlay = this._overlayWithBackdrop();
+      // Avoid creating the backdrop if there is no overlay with backdrop.
+      if (!overlay && !this._backdropElement) {
+        return;
+      }
+      this.backdropElement.style.zIndex = this._getZ(overlay) - 1;
+      this.backdropElement.opened = !!overlay;
     },
 
     /**
