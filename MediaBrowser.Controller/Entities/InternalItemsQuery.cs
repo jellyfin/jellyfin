@@ -48,7 +48,8 @@ namespace MediaBrowser.Controller.Entities
 
         public string PresentationUniqueKey { get; set; }
         public string Path { get; set; }
-        
+        public string Name { get; set; }
+
         public string Person { get; set; }
         public string[] PersonIds { get; set; }
         public string[] ItemIds { get; set; }
@@ -107,6 +108,7 @@ namespace MediaBrowser.Controller.Entities
 
         internal List<Guid> ItemIdsFromPersonFilters { get; set; }
         public int? ParentIndexNumber { get; set; }
+        public int? IndexNumber { get; set; }
         public int? MinParentalRating { get; set; }
         public int? MaxParentalRating { get; set; }
 

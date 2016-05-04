@@ -153,7 +153,8 @@ namespace MediaBrowser.Server.Implementations.UserViews
                 CollectionType.HomeVideos,
                 CollectionType.BoxSets,
                 CollectionType.Playlists,
-                CollectionType.Photos
+                CollectionType.Photos,
+                string.Empty
             };
 
             return collectionStripViewTypes.Contains(view.ViewType ?? string.Empty);
