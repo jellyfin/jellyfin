@@ -952,10 +952,15 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (isArtist)
             {
-                var existing = RootFolder
-                    .GetRecursiveChildren(i => i is T && NameExtensions.AreEqual(i.Name, name))
-                    .Cast<T>()
-                    .FirstOrDefault();
+                var existing = GetItemList(new InternalItemsQuery
+                {
+                    IncludeItemTypes = new[] { typeof(T).Name },
+                    Name = name
+
+                }).Cast<MusicArtist>()
+                .Where(i => !i.IsAccessedByName)
+                .Cast<T>()
+                .FirstOrDefault();
 
                 if (existing != null)
                 {
@@ -2557,6 +2562,108 @@ namespace MediaBrowser.Server.Implementations.Library
             await item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
             throw new InvalidOperationException();
+        }
+
+        public void AddVirtualFolder(string name, string collectionType, string[] mediaPaths, bool refreshLibrary)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentNullException("name");
+            }
+
+             name = _fileSystem.GetValidFilename(name);
+            
+            var rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
+
+            var virtualFolderPath = Path.Combine(rootFolderPath, name);
+            while (_fileSystem.DirectoryExists(virtualFolderPath))
+            {
+                name += "1";
+                virtualFolderPath = Path.Combine(rootFolderPath, name);
+            }
+
+            if (mediaPaths != null)
+            {
+                var invalidpath = mediaPaths.FirstOrDefault(i => !_fileSystem.DirectoryExists(i));
+                if (invalidpath != null)
+                {
+                    throw new ArgumentException("The specified path does not exist: " + invalidpath + ".");
+                }
+            }
+
+            _libraryMonitorFactory().Stop();
+
+            try
+            {
+                _fileSystem.CreateDirectory(virtualFolderPath);
+
+                if (!string.IsNullOrEmpty(collectionType))
+                {
+                    var path = Path.Combine(virtualFolderPath, collectionType + ".collection");
+
+                    using (File.Create(path))
+                    {
+
+                    }
+                }
+
+                if (mediaPaths != null)
+                {
+                    foreach (var path in mediaPaths)
+                    {
+                        AddMediaPath(name, path);
+                    }
+                }
+            }
+            finally
+            {
+                Task.Run(() =>
+                {
+                    // No need to start if scanning the library because it will handle it
+                    if (refreshLibrary)
+                    {
+                        ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+                    }
+                    else
+                    {
+                        // Need to add a delay here or directory watchers may still pick up the changes
+                        var task = Task.Delay(1000);
+                        // Have to block here to allow exceptions to bubble
+                        Task.WaitAll(task);
+
+                        _libraryMonitorFactory().Start();
+                    }
+                });
+            }
+        }
+
+        private const string ShortcutFileExtension = ".mblink";
+        public void AddMediaPath(string virtualFolderName, string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
+            if (!_fileSystem.DirectoryExists(path))
+            {
+                throw new DirectoryNotFoundException("The path does not exist.");
+            }
+
+            var rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
+            var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
+
+            var shortcutFilename = _fileSystem.GetFileNameWithoutExtension(path);
+
+            var lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
+
+            while (_fileSystem.FileExists(lnk))
+            {
+                shortcutFilename += "1";
+                lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
+            }
+
+            _fileSystem.CreateShortcut(lnk, path);
         }
     }
 }

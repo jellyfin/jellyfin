@@ -569,5 +569,8 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parent">The parent.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         bool IgnoreFile(FileSystemMetadata file, BaseItem parent);
+
+        void AddVirtualFolder(string name, string collectionType, string[] mediaPaths, bool refreshLibrary);
+        void AddMediaPath(string virtualFolderName, string path);
     }
 }
