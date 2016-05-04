@@ -1966,9 +1966,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
             //    cmd.Parameters.Add(cmd, "@MaxPlayers", DbType.Int32).Value = query.MaxPlayers.Value;
             //}
 
+            if (query.IndexNumber.HasValue)
+            {
+                whereClauses.Add("IndexNumber=@IndexNumber");
+                cmd.Parameters.Add(cmd, "@IndexNumber", DbType.Int32).Value = query.IndexNumber.Value;
+            }
             if (query.ParentIndexNumber.HasValue)
             {
-                whereClauses.Add("ParentIndexNumber=@MinEndDate");
+                whereClauses.Add("ParentIndexNumber=@ParentIndexNumber");
                 cmd.Parameters.Add(cmd, "@ParentIndexNumber", DbType.Int32).Value = query.ParentIndexNumber.Value;
             }
             if (query.MinEndDate.HasValue)
@@ -2063,6 +2068,19 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 whereClauses.Add("Guid in (select ItemId from People where Name=@PersonName)");
                 cmd.Parameters.Add(cmd, "@PersonName", DbType.String).Value = query.Person;
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.Name))
+            {
+                if (_config.Configuration.SchemaVersion >= 66)
+                {
+                    whereClauses.Add("CleanName=@Name");
+                }
+                else
+                {
+                    whereClauses.Add("Name=@Name");
+                }
+                cmd.Parameters.Add(cmd, "@Name", DbType.String).Value = query.Name;
             }
 
             if (!string.IsNullOrWhiteSpace(query.NameContains))
