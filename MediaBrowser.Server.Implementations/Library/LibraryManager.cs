@@ -909,7 +909,10 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("name");
             }
 
-            var validFilename = _fileSystem.GetValidFilename(name).Trim();
+            // Trim the period at the end because windows will have a hard time with that
+            var validFilename = _fileSystem.GetValidFilename(name)
+                .Trim()
+                .TrimEnd('.');
 
             string subFolderPrefix = null;
 
