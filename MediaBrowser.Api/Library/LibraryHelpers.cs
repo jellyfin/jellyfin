@@ -50,40 +50,5 @@ namespace MediaBrowser.Api.Library
                 fileSystem.DeleteFile(shortcut);
             }
         }
-
-        /// <summary>
-        /// Adds an additional mediaPath to an existing virtual folder, within either the default view or a user view
-        /// </summary>
-        /// <param name="fileSystem">The file system.</param>
-        /// <param name="virtualFolderName">Name of the virtual folder.</param>
-        /// <param name="path">The path.</param>
-        /// <param name="appPaths">The app paths.</param>
-        public static void AddMediaPath(IFileSystem fileSystem, string virtualFolderName, string path, IServerApplicationPaths appPaths)
-        {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                throw new ArgumentNullException("path");
-            }
-
-			if (!fileSystem.DirectoryExists(path))
-            {
-                throw new DirectoryNotFoundException("The path does not exist.");
-            }
-
-            var rootFolderPath = appPaths.DefaultUserViewsPath;
-            var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
-
-            var shortcutFilename = fileSystem.GetFileNameWithoutExtension(path);
-
-            var lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
-
-			while (fileSystem.FileExists(lnk))
-            {
-                shortcutFilename += "1";
-                lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
-            }
-
-            fileSystem.CreateShortcut(lnk, path);
-        }
     }
 }
