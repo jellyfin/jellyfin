@@ -700,10 +700,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         test('backdrop is opened when overlay is opened', function(done) {
-          assert.isDefined(overlay.backdropElement, 'backdrop is defined');
+          assert.isOk(overlay.backdropElement, 'backdrop is defined');
           runAfterOpen(overlay, function() {
             assert.isTrue(overlay.backdropElement.opened, 'backdrop is opened');
-            assert.isDefined(overlay.backdropElement.parentNode, 'backdrop is inserted in the DOM');
+            assert.isOk(overlay.backdropElement.parentNode, 'backdrop is inserted in the DOM');
             done();
           });
         });

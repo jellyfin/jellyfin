@@ -9,35 +9,124 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <html>
-  <head>
 
-    <title>iron-fit-behavior demo</title>
+<head>
 
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <title>iron-fit-behavior demo</title>
 
-    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-    <link href="../../paper-styles/demo-pages.html" rel="import">
-    <link rel="import" href="simple-fit.html">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
 
-    <style>
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="simple-fit.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
 
-      .sized {
-        max-width: 50%;
-        max-height: 50%;
-        padding: 20px;
+  <style is="custom-style" include="demo-pages-shared-styles">
+    demo-snippet {
+      --demo-snippet-code: {
+        max-height: 250px;
       }
+    }
+  </style>
 
-    </style>
+</head>
 
-  </head>
-  <body unresolved>
+<body unresolved class="centered">
+  <h3>
+    An element with <code>IronFitBehavior</code> can be centered in
+    <code>fitInto</code> or positioned around a <code>positionTarget</code>
+  </h3>
+  <demo-snippet>
+    <template>
+      <style>
+        .target {
+          cursor: pointer;
+          text-align: center;
+          display: inline-block;
+          box-sizing: border-box;
+          border: 1px solid;
+          width: 100px;
+          padding: 20px 0;
+          margin: 5px;
+        }
 
-    <simple-fit id="myFit" auto-fit-on-attach class="sized" onclick="myFit.refit()">
-        Centered in window.<br><br>
-        Resize the window and click here to refit.
-    </simple-fit>
+        #myFit {
+          z-index: 10;
+          padding: 20px;
+          overflow: auto;
+          width: 220px;
+        }
+      </style>
+      <template is="dom-bind">
+        <template is="dom-repeat" items="[[containers]]">
+          <div class="target" on-tap="updatePositionTarget">Target</div>
+        </template>
+        <simple-fit id="myFit" auto-fit-on-attach>
+          <h2>Align</h2>
+          <p>
+            <button on-tap="updateAlign" vertical-align="top">top</button>
+            <button on-tap="updateAlign" vertical-align="bottom">bottom</button>
+            <button on-tap="updateAlign" vertical-align="auto">auto</button>
+            <button on-tap="updateAlign" vertical-align>null</button>
+          </p>
+          <p>
+            <button on-tap="updateAlign" horizontal-align="left">left</button>
+            <button on-tap="updateAlign" horizontal-align="right">right</button>
+            <button on-tap="updateAlign" horizontal-align="auto">auto</button>
+            <button on-tap="updateAlign" horizontal-align>null</button>
+          </p>
+          <button on-tap="toggleNoOverlap">Toggle overlap</button>
+        </simple-fit>
+        <script>
+          var defaultTarget = Polymer.dom(myFit).parentNode;
+          var template = document.querySelector('template[is="dom-bind"]');
 
-  </body>
+          template.containers = new Array(30);
+
+          template.updatePositionTarget = function(e) {
+            var target = Polymer.dom(e).rootTarget;
+            target = myFit.positionTarget === target ? defaultTarget : target;
+            myFit.positionTarget.style.backgroundColor = '';
+            target.style.backgroundColor = 'orange';
+            myFit.positionTarget = target;
+            template.refit();
+          };
+
+          template._raf = null;
+          template.refit = function() {
+            template._raf && window.cancelAnimationFrame(template._raf);
+            template._raf = window.requestAnimationFrame(function() {
+              template._raf = null;
+              myFit.refit();
+            });
+          };
+
+          template.updateAlign = function(e) {
+            var target = Polymer.dom(e).rootTarget;
+            if (target.hasAttribute('horizontal-align')) {
+              myFit.horizontalAlign = target.getAttribute('horizontal-align');
+            }
+            if (target.hasAttribute('vertical-align')) {
+              myFit.verticalAlign = target.getAttribute('vertical-align');
+            }
+            template.refit();
+          };
+
+          template.toggleNoOverlap = function() {
+            myFit.noOverlap = !myFit.noOverlap;
+            template.refit();
+          };
+
+          // Listen for resize and scroll on window.
+          window.addEventListener('resize', template.refit);
+          window.addEventListener('scroll', template.refit);
+        </script>
+      </template>
+    </template>
+  </demo-snippet>
+
+</body>
+
 </html>
