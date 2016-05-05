@@ -128,8 +128,12 @@ Custom property | Description | Default
       }
     },
 
-    _openedChanged: function() {
-      if (this.opened) {
+    /**
+     * @param {boolean} opened
+     * @private
+     */
+    _openedChanged: function(opened) {
+      if (opened) {
         // Auto-attach.
         this.prepare();
       } else {

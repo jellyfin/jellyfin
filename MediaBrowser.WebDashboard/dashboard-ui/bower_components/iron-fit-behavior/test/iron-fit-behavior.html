@@ -453,6 +453,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             assert.equal(rect.height, elRect.height, 'no cropping');
           });
 
+          test('element margin is considered as offset', function() {
+            el.verticalAlign = 'top';
+            el.style.marginTop = '10px';
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.top, parentRect.top + 10, 'top ok');
+            assert.equal(rect.height, elRect.height, 'no cropping');
+
+            el.style.marginTop = '-10px';
+            el.refit();
+            rect = el.getBoundingClientRect();
+            assert.equal(rect.top, parentRect.top - 10, 'top ok');
+            assert.equal(rect.height, elRect.height, 'no cropping');
+          });
+
           test('verticalOffset is applied', function() {
             el.verticalAlign = 'top';
             el.verticalOffset = 10;
@@ -496,6 +511,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             el.refit();
             var rect = el.getBoundingClientRect();
             assert.isFalse(intersects(rect, parentRect), 'no overlap');
+            assert.equal(rect.height, elRect.height, 'no cropping');
+          });
+
+          test('element margin is considered as offset', function() {
+            el.verticalAlign = 'bottom';
+            el.style.marginBottom = '10px';
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.bottom, parentRect.bottom - 10, 'bottom ok');
+            assert.equal(rect.height, elRect.height, 'no cropping');
+
+            el.style.marginBottom = '-10px';
+            el.refit();
+            rect = el.getBoundingClientRect();
+            assert.equal(rect.bottom, parentRect.bottom + 10, 'bottom ok');
             assert.equal(rect.height, elRect.height, 'no cropping');
           });
 
@@ -596,6 +626,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             assert.equal(rect.width, elRect.width, 'no cropping');
           });
 
+          test('element margin is considered as offset', function() {
+            el.horizontalAlign = 'left';
+            el.style.marginLeft = '10px';
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.left, parentRect.left + 10, 'left ok');
+            assert.equal(rect.width, elRect.width, 'no cropping');
+
+            el.style.marginLeft = '-10px';
+            el.refit();
+            rect = el.getBoundingClientRect();
+            assert.equal(rect.left, parentRect.left - 10, 'left ok');
+            assert.equal(rect.width, elRect.width, 'no cropping');
+          });
+
           test('horizontalOffset is applied', function() {
             el.horizontalAlign = 'left';
             el.horizontalOffset = 10;
@@ -642,6 +687,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             el.refit();
             var rect = el.getBoundingClientRect();
             assert.isFalse(intersects(rect, parentRect), 'no overlap');
+            assert.equal(rect.width, elRect.width, 'no cropping');
+          });
+
+          test('element margin is considered as offset', function() {
+            el.horizontalAlign = 'right';
+            el.style.marginRight = '10px';
+            el.refit();
+            var rect = el.getBoundingClientRect();
+            assert.equal(rect.right, parentRect.right - 10, 'right ok');
+            assert.equal(rect.width, elRect.width, 'no cropping');
+
+            el.style.marginRight = '-10px';
+            el.refit();
+            rect = el.getBoundingClientRect();
+            assert.equal(rect.right, parentRect.right + 10, 'right ok');
             assert.equal(rect.width, elRect.width, 'no cropping');
           });
 

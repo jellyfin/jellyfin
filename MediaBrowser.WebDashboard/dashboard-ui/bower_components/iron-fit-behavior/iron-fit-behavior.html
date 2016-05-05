@@ -105,18 +105,8 @@ Use `noOverlap` to position the element around another element without overlappi
       },
 
       /**
-       * A pixel value that will be added to the position calculated for the
-       * given `horizontalAlign`, in the direction of alignment. You can think
-       * of it as increasing or decreasing the distance to the side of the
-       * screen given by `horizontalAlign`.
-       *
-       * If `horizontalAlign` is "left", this offset will increase or decrease
-       * the distance to the left side of the screen: a negative offset will
-       * move the element to the left; a positive one, to the right.
-       *
-       * Conversely if `horizontalAlign` is "right", this offset will increase
-       * or decrease the distance to the right side of the screen: a negative
-       * offset will move the element to the right; a positive one, to the left.
+       * The same as setting margin-left and margin-right css properties.
+       * @deprecated
        */
       horizontalOffset: {
         type: Number,
@@ -125,18 +115,8 @@ Use `noOverlap` to position the element around another element without overlappi
       },
 
       /**
-       * A pixel value that will be added to the position calculated for the
-       * given `verticalAlign`, in the direction of alignment. You can think
-       * of it as increasing or decreasing the distance to the side of the
-       * screen given by `verticalAlign`.
-       *
-       * If `verticalAlign` is "top", this offset will increase or decrease
-       * the distance to the top side of the screen: a negative offset will
-       * move the element upwards; a positive one, downwards.
-       *
-       * Conversely if `verticalAlign` is "bottom", this offset will increase
-       * or decrease the distance to the bottom side of the screen: a negative
-       * offset will move the element downwards; a positive one, upwards.
+       * The same as setting margin-top and margin-bottom css properties.
+       * @deprecated
        */
       verticalOffset: {
         type: Number,
@@ -205,7 +185,7 @@ Use `noOverlap` to position the element around another element without overlappi
     get _defaultPositionTarget() {
       var parent = Polymer.dom(this).parentNode;
 
-      if (parent.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+      if (parent && parent.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
         parent = parent.host;
       }
 
@@ -262,6 +242,7 @@ Use `noOverlap` to position the element around another element without overlappi
       }
       var target = window.getComputedStyle(this);
       var sizer = window.getComputedStyle(this.sizingTarget);
+
       this._fitInfo = {
         inlineStyle: {
           top: this.style.top || '',
@@ -292,6 +273,20 @@ Use `noOverlap` to position the element around another element without overlappi
           left: parseInt(target.marginLeft, 10) || 0
         }
       };
+
+      // Support these properties until they are removed.
+      if (this.verticalOffset) {
+        this._fitInfo.margin.top = this._fitInfo.margin.bottom = this.verticalOffset;
+        this._fitInfo.inlineStyle.marginTop = this.style.marginTop || '';
+        this._fitInfo.inlineStyle.marginBottom = this.style.marginBottom || '';
+        this.style.marginTop = this.style.marginBottom = this.verticalOffset + 'px';
+      }
+      if (this.horizontalOffset) {
+        this._fitInfo.margin.left = this._fitInfo.margin.right = this.horizontalOffset;
+        this._fitInfo.inlineStyle.marginLeft = this.style.marginLeft || '';
+        this._fitInfo.inlineStyle.marginRight = this.style.marginRight || '';
+        this.style.marginLeft = this.style.marginRight = this.horizontalOffset + 'px';
+      }
     },
 
     /**
@@ -340,11 +335,15 @@ Use `noOverlap` to position the element around another element without overlappi
       var positionRect = this.__getNormalizedRect(this.positionTarget);
       var fitRect = this.__getNormalizedRect(this.fitInto);
 
-      var alignRight = this.__isAlignRight(this._localeHorizontalAlign, rect, positionRect, fitRect);
-      var alignBottom = this.__isAlignBottom(this.verticalAlign, rect, positionRect, fitRect);
+      // Consider the margin as part of the size for position calculations.
+      var width = rect.width + this._fitInfo.margin.left + this._fitInfo.margin.right;
+      var height = rect.height + this._fitInfo.margin.top + this._fitInfo.margin.bottom;
 
-      var top = alignBottom ? positionRect.bottom - rect.height - this.verticalOffset : positionRect.top + this.verticalOffset;
-      var left = alignRight ? positionRect.right - rect.width - this.horizontalOffset : positionRect.left + this.horizontalOffset;
+      var alignRight = this.__isAlignRight(this._localeHorizontalAlign, width, positionRect, fitRect);
+      var alignBottom = this.__isAlignBottom(this.verticalAlign, height, positionRect, fitRect);
+
+      var top = alignBottom ? positionRect.bottom - height : positionRect.top;
+      var left = alignRight ? positionRect.right - width : positionRect.left;
 
       if (this.noOverlap) {
         // We can overlap one of the dimensions, choose the one that minimizes the cropped area.
@@ -353,30 +352,34 @@ Use `noOverlap` to position the element around another element without overlappi
         var areaOverlapLeft = this.__getCroppedArea({
           top: noOverlapTop,
           left: left,
-          width: rect.width,
-          height: rect.height
+          width: width,
+          height: height
         }, fitRect);
         var areaOverlapTop = this.__getCroppedArea({
           top: top,
           left: noOverlapLeft,
-          width: rect.width,
-          height: rect.height
+          width: width,
+          height: height
         }, fitRect);
-        if (areaOverlapLeft < areaOverlapTop) {
+        if (areaOverlapLeft >= areaOverlapTop) {
           left = noOverlapLeft;
         } else {
           top = noOverlapTop;
         }
       }
 
+      left += this._fitInfo.margin.left;
+      top += this._fitInfo.margin.top;
+
+      // Use original size (without margin)
       var right = left + rect.width;
       var bottom = top + rect.height;
 
-      left = Math.max(left, 0);
-      top = Math.max(top, 0);
+      left = Math.max(left, this._fitInfo.margin.left);
+      top = Math.max(top, this._fitInfo.margin.top);
 
-      var maxWidth = Math.min(fitRect.right, right) - left;
-      var maxHeight = Math.min(fitRect.bottom, bottom) - top;
+      var maxWidth = Math.min(fitRect.right - this._fitInfo.margin.right, right) - left;
+      var maxHeight = Math.min(fitRect.bottom - this._fitInfo.margin.bottom, bottom) - top;
 
       var minWidth = this._fitInfo.sizedBy.minWidth;
       var minHeight = this._fitInfo.sizedBy.minHeight;
@@ -503,24 +506,38 @@ Use `noOverlap` to position the element around another element without overlappi
       return target.getBoundingClientRect();
     },
 
-    __isAlignRight: function(hAlign, rect, positionRect, fitRect) {
+    __isAlignRight: function(hAlign, size, positionRect, fitRect) {
       if (hAlign === 'right') {
         return true;
       }
       if (hAlign === 'auto') {
-        return positionRect.left + positionRect.width/2 > fitRect.left + fitRect.width/2 ||
-          (!this.noOverlap && positionRect.left < 0 && positionRect.right - rect.width > positionRect.left);
+        // We should align on the right if positionTarget is on the right of fitInto,
+        // or if we can overlap and aligning on the left would cause more cropping
+        // than aligning on the right.
+        var positionTargetCenter = positionRect.left + positionRect.width/2;
+        var fitIntoCenter = fitRect.left + fitRect.width/2;
+        var croppedLeft = Math.abs(Math.min(0, positionRect.left));
+        var croppedRight = Math.abs(Math.min(0, positionRect.right - size));
+        return positionTargetCenter > fitIntoCenter ||
+          (!this.noOverlap && croppedLeft > croppedRight);
       }
       return false;
     },
 
-    __isAlignBottom: function(vAlign, rect, positionRect, fitRect) {
+    __isAlignBottom: function(vAlign, size, positionRect, fitRect) {
       if (vAlign === 'bottom') {
         return true;
       }
       if (vAlign === 'auto') {
-        return positionRect.top + positionRect.height/2 > fitRect.top + fitRect.height/2 ||
-          (!this.noOverlap && positionRect.top < 0 && positionRect.bottom - rect.height > positionRect.top);
+        // We should align on the bottom if positionTarget is on the bottom of fitInto,
+        // or if we can overlap and aligning on the top would cause more cropping
+        // than aligning on the bottom.
+        var positionTargetCenter = positionRect.top + positionRect.height/2;
+        var fitIntoCenter = fitRect.top + fitRect.height/2;
+        var croppedTop = Math.abs(Math.min(0, positionRect.top));
+        var croppedBottom = Math.abs(Math.min(0, positionRect.bottom - size));
+        return positionTargetCenter > fitIntoCenter ||
+          (!this.noOverlap && croppedTop > croppedBottom);
       }
       return false;
     },
@@ -528,7 +545,7 @@ Use `noOverlap` to position the element around another element without overlappi
     __getCroppedArea: function(rect, fitRect) {
       var verticalCrop = Math.min(0, rect.top) + Math.min(0, fitRect.bottom - (rect.top + rect.height));
       var horizontalCrop = Math.min(0, rect.left) + Math.min(0, fitRect.right - (rect.left + rect.width));
-      return verticalCrop * rect.width + horizontalCrop * rect.height;
+      return Math.abs(verticalCrop) * rect.width + Math.abs(horizontalCrop) * rect.height;
     }
 
   };

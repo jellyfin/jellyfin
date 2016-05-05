@@ -31,10 +31,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
-   <test-fixture id="LightDOM">
+  <test-fixture id="LightDOM">
     <template>
       <test-light-dom>
         <input id="input">
+        <nested-focusable></nested-focusable>
       </test-light-dom>
     </template>
   </test-fixture>
@@ -119,11 +120,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
     suite('elements in the light dom', function() {
-      var lightDOM, input;
+      var lightDOM, input, lightDescendantShadowInput;
 
       setup(function() {
         lightDOM = fixture('LightDOM');
         input = document.querySelector('#input');
+        lightDescendantShadowInput = Polymer.dom(lightDOM)
+            .querySelector('nested-focusable').$.input;
       });
 
       test('should not fire the focus event', function() {
@@ -134,6 +137,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         MockInteractions.focus(input);
+
+        expect(nFocusEvents).to.be.equal(0);
+      });
+
+      test('should not fire the focus event from shadow descendants', function() {
+        var nFocusEvents = 0;
+
+        lightDOM.addEventListener('focus', function() {
+          nFocusEvents += 1;
+        });
+
+        MockInteractions.focus(lightDescendantShadowInput);
 
         expect(nFocusEvents).to.be.equal(0);
       });

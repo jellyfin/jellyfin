@@ -73,7 +73,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       if (event.target === this) {
         this._setFocused(event.type === 'focus');
-      } else if (!this.shadowRoot && !this.isLightDescendant(event.target)) {
+      } else if (!this.shadowRoot &&
+          !this.isLightDescendant(Polymer.dom(event).localTarget)) {
         this.fire(event.type, {sourceEvent: event}, {
           node: this,
           bubbles: event.bubbles,
