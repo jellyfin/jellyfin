@@ -600,6 +600,24 @@
         var xhr = new XMLHttpRequest();
         xhr.open('GET', baseUrl + '/tvguide.template.html', true);
 
+        var supportsCaptureOption = false;
+        try {
+            var opts = Object.defineProperty({}, 'capture', {
+                get: function () {
+                    supportsCaptureOption = true;
+                }
+            });
+            window.addEventListener("test", null, opts);
+        } catch (e) { }
+
+        function addEventListenerWithOptions(target, type, handler, options) {
+            var optionsOrCapture = options;
+            if (!supportsCaptureOption) {
+                optionsOrCapture = options.capture;
+            }
+            target.addEventListener(type, handler, optionsOrCapture);
+        }
+
         xhr.onload = function (e) {
 
             var template = this.response;
@@ -610,13 +628,17 @@
             var timeslotHeaders = context.querySelector('.timeslotHeaders');
 
             programGrid.addEventListener('focus', onProgramGridFocus, true);
-            programGrid.addEventListener('scroll', function () {
 
+            addEventListenerWithOptions(programGrid, 'scroll', function () {
                 onProgramGridScroll(context, this, timeslotHeaders);
+            }, {
+                passive: true
             });
 
-            timeslotHeaders.addEventListener('scroll', function () {
+            addEventListenerWithOptions(timeslotHeaders, 'scroll', function () {
                 onTimeslotHeadersScroll(context, this, programGrid);
+            }, {
+                passive: true
             });
 
             context.querySelector('.btnSelectDate').addEventListener('click', function () {
