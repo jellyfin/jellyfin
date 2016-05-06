@@ -2097,14 +2097,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             if (!string.IsNullOrWhiteSpace(query.NameStartsWith))
             {
-                if (_config.Configuration.SchemaVersion >= 66)
-                {
-                    whereClauses.Add("CleanName like @NameStartsWith");
-                }
-                else
-                {
-                    whereClauses.Add("Name like @NameStartsWith");
-                }
+                whereClauses.Add("SortName like @NameStartsWith");
                 cmd.Parameters.Add(cmd, "@NameStartsWith", DbType.String).Value = query.NameStartsWith + "%";
             }
             if (!string.IsNullOrWhiteSpace(query.NameStartsWithOrGreater))
