@@ -58,14 +58,6 @@ iron-list .card {
     border-radius: 3px;
 }
 
-.defaultBackground .cardImage {
-    background-color: #303030;
-}
-
-.homeTopViews .defaultBackground .cardImage {
-    background-color: #181818;
-}
-
 .cardOverlayButtonContainer {
     position: absolute;
     bottom: 0;
@@ -109,8 +101,11 @@ iron-list .card {
 }
 
 .ui-body-b .visualCardBox {
-    background: rgba(56,56,56,.85);
     border-radius: 3px;
+}
+
+.defaultBackground .cardImage, .ui-body-b .visualCardBox {
+    background-color: #262626;
 }
 
 .cardScalable {

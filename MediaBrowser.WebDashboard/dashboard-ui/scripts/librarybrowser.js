@@ -2412,6 +2412,15 @@
                     lines.push(item.ProductionYear || '');
                 }
 
+                 if (item.Type == 'TvChannel') {
+
+                    if (item.CurrentProgram) {
+                        lines.push(LibraryBrowser.getPosterViewDisplayName(item.CurrentProgram));
+                    } else {
+                        lines.push('');
+                    }
+                }
+
                 if (options.showSeriesYear) {
 
                     if (item.Status == "Continuing") {
