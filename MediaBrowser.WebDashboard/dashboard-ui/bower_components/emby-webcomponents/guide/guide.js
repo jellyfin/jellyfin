@@ -449,7 +449,7 @@
             weekday[6] = globalize.translate('core#OptionSaturdayShort');
 
             var day = weekday[date.getDay()];
-            date = date.toLocaleDateString();
+            date = datetime.toLocaleDateString(date);
 
             if (date.toLowerCase().indexOf(day.toLowerCase()) == -1) {
                 return day + " " + date;

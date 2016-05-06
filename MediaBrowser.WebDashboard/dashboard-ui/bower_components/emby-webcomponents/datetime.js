@@ -103,6 +103,15 @@
         return false;
     }();
 
+    function toLocaleDateString(date) {
+        
+        var currentLocale = globalize.getCurrentLocale();
+
+        return currentLocale && toLocaleTimeStringSupportsLocales ?
+            date.toLocaleDateString(currentLocale) :
+            date.toLocaleDateString();
+    }
+
     function getDisplayTime(date) {
 
         var currentLocale = globalize.getCurrentLocale();
@@ -144,6 +153,7 @@
     return {
         parseISO8601Date: parseISO8601Date,
         getDisplayRunningTime: getDisplayRunningTime,
+        toLocaleDateString: toLocaleDateString,
         getDisplayTime: getDisplayTime
     };
 });

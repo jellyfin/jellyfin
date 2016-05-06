@@ -72,10 +72,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.getRipple().upAction();
       },
 
-      ensureRipple: function() {
+      /**
+       * @param {...*} var_args
+       */
+      ensureRipple: function(var_args) {
+        var lastRipple = this._ripple;
         Polymer.PaperRippleBehavior.ensureRipple.apply(this, arguments);
-        this._ripple.center = true;
-        this._ripple.classList.add('circle');
+        if (this._ripple && this._ripple !== lastRipple) {
+          this._ripple.center = true;
+          this._ripple.classList.add('circle');
+        }
       }
     });
   </script>
