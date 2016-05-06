@@ -1730,6 +1730,7 @@ var AppInfo = {};
         define("paper-dialog-scrollable", ["html!" + bowerPath + "/paper-dialog-scrollable/paper-dialog-scrollable.html"]);
         define("paper-button", ["html!" + bowerPath + "/paper-button/paper-button.html"]);
         define("paper-icon-button", ["html!" + bowerPath + "/paper-icon-button/paper-icon-button.html"]);
+        define("paper-icon-button-light", ["html!" + bowerPath + "/paper-icon-button/paper-icon-button-light.html"]);
         define("paper-drawer-panel", ["html!" + bowerPath + "/paper-drawer-panel/paper-drawer-panel.html"]);
         define("paper-radio-group", ["html!" + bowerPath + "/paper-radio-group/paper-radio-group.html"]);
         define("paper-radio-button", ["html!" + bowerPath + "/paper-radio-button/paper-radio-button.html"]);
