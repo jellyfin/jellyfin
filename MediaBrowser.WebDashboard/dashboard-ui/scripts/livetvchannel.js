@@ -1,4 +1,4 @@
-﻿define(['datetime'], function (datetime) {
+﻿define(['datetime', 'tvguide'], function (datetime) {
 
     function renderPrograms(page, result) {
 
@@ -12,10 +12,10 @@
 
             var program = result.Items[i];
 
-            var startDate = parseISO8601Date(program.StartDate, { toLocal: true });
+            var startDate = datetime.parseISO8601Date(program.StartDate, true);
             var startDateText = LibraryBrowser.getFutureDateText(startDate);
 
-            var endDate = parseISO8601Date(program.EndDate, { toLocal: true });
+            var endDate = datetime.parseISO8601Date(program.EndDate, true);
 
             if (startDateText != currentIndexValue) {
 

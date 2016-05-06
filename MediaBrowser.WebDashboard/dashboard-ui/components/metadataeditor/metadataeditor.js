@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'paper-checkbox', 'paper-input', 'paper-item-body', 'paper-icon-item', 'paper-textarea', 'paper-fab'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'datetime', 'jQuery', 'paper-checkbox', 'paper-input', 'paper-item-body', 'paper-icon-item', 'paper-textarea', 'paper-fab'], function (dialogHelper, $, datetime) {
 
     var currentContext;
     var metadataEditorInfo;
@@ -96,7 +96,7 @@
 
         if (currentItem[property]) {
 
-            var date = parseISO8601Date(currentItem[property], { toLocal: true });
+            var date = datetime.parseISO8601Date(currentItem[property], true);
 
             var parts = date.toISOString().split('T');
 
@@ -278,7 +278,7 @@
             ReplaceAllMetadata: true
         });
 
-        require(['toast'], function(toast) {
+        require(['toast'], function (toast) {
             toast(Globalize.translate('MessageRefreshQueued'));
         });
     }
@@ -873,7 +873,7 @@
 
         if (item.DateCreated) {
             try {
-                date = parseISO8601Date(item.DateCreated, { toLocal: true });
+                date = datetime.parseISO8601Date(item.DateCreated, true);
 
                 $('#txtDateAdded', context).val(date.toISOString().slice(0, 10));
             } catch (e) {
@@ -885,7 +885,7 @@
 
         if (item.PremiereDate) {
             try {
-                date = parseISO8601Date(item.PremiereDate, { toLocal: true });
+                date = datetime.parseISO8601Date(item.PremiereDate, true);
 
                 $('#txtPremiereDate', context).val(date.toISOString().slice(0, 10));
             } catch (e) {
@@ -897,7 +897,7 @@
 
         if (item.EndDate) {
             try {
-                date = parseISO8601Date(item.EndDate, { toLocal: true });
+                date = datetime.parseISO8601Date(item.EndDate, true);
 
                 $('#txtEndDate', context).val(date.toISOString().slice(0, 10));
             } catch (e) {

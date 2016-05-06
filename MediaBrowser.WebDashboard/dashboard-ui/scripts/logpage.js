@@ -61,7 +61,7 @@
 
                     logHtml += "<div>" + log.Name + "</div>";
 
-                    var date = parseISO8601Date(log.DateModified, { toLocal: true });
+                    var date = datetime.parseISO8601Date(log.DateModified, true);
 
                     var text = date.toLocaleDateString();
 

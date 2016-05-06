@@ -59,7 +59,7 @@
 
             html += '<td style="vertical-align:middle;">';
 
-            var date = parseISO8601Date(item.DateCreated, { toLocal: true });
+            var date = datetime.parseISO8601Date(item.DateCreated, true);
 
             html += datetime.toLocaleDateString(date) + ' ' + datetime.getDisplayTime(date);
 

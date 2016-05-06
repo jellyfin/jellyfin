@@ -13,7 +13,7 @@
 
                     var timer = timers[i];
 
-                    var startDateText = LibraryBrowser.getFutureDateText(parseISO8601Date(timer.StartDate, { toLocal: true }));
+                    var startDateText = LibraryBrowser.getFutureDateText(datetime.parseISO8601Date(timer.StartDate, true));
 
                     if (startDateText != index) {
 
@@ -130,7 +130,7 @@
             if (airDate && item.IsRepeat) {
 
                 try {
-                    airDate = parseISO8601Date(airDate, { toLocal: true }).toLocaleDateString();
+                    airDate = datetime.parseISO8601Date(airDate, true).toLocaleDateString();
                 }
                 catch (e) {
                     console.log("Error parsing date: " + airDate);

@@ -1916,7 +1916,7 @@
                         if (item.StartDate) {
                             try {
 
-                                dateText = LibraryBrowser.getFutureDateText(parseISO8601Date(item.StartDate, { toLocal: true }), true);
+                                dateText = LibraryBrowser.getFutureDateText(datetime.parseISO8601Date(item.StartDate, true), true);
 
                             } catch (err) {
                             }
@@ -2426,7 +2426,7 @@
 
                 if (options.showProgramAirInfo) {
 
-                    var date = parseISO8601Date(item.StartDate, { toLocal: true });
+                    var date = datetime.parseISO8601Date(item.StartDate, true);
 
                     var text = item.StartDate ?
                         date.toLocaleString() :
@@ -2614,7 +2614,7 @@
                 if (item.Type == 'Episode') {
                     try {
 
-                        var date = parseISO8601Date(item.PremiereDate, { toLocal: true });
+                        var date = datetime.parseISO8601Date(item.PremiereDate, true);
 
                         if (item.PremiereDate && (new Date().getTime() < date.getTime())) {
                             return '<div class="posterRibbon unairedPosterRibbon">' + Globalize.translate('HeaderUnaired') + '</div>';
@@ -3442,7 +3442,7 @@
                     if (item.PremiereDate) {
 
                         try {
-                            date = parseISO8601Date(item.PremiereDate, { toLocal: true });
+                            date = datetime.parseISO8601Date(item.PremiereDate, true);
 
                             text = date.toLocaleDateString();
                             miscInfo.push(text);
@@ -3456,7 +3456,7 @@
                 if (item.StartDate) {
 
                     try {
-                        date = parseISO8601Date(item.StartDate, { toLocal: true });
+                        date = datetime.parseISO8601Date(item.StartDate, true);
 
                         text = date.toLocaleDateString();
                         miscInfo.push(text);
@@ -3485,10 +3485,10 @@
 
                             try {
 
-                                var endYear = parseISO8601Date(item.EndDate, { toLocal: true }).getFullYear();
+                                var endYear = datetime.parseISO8601Date(item.EndDate, true).getFullYear();
 
                                 if (endYear != item.ProductionYear) {
-                                    text += "-" + parseISO8601Date(item.EndDate, { toLocal: true }).getFullYear();
+                                    text += "-" + datetime.parseISO8601Date(item.EndDate, true).getFullYear();
                                 }
 
                             }
@@ -3510,7 +3510,7 @@
                     else if (item.PremiereDate) {
 
                         try {
-                            text = parseISO8601Date(item.PremiereDate, { toLocal: true }).getFullYear();
+                            text = datetime.parseISO8601Date(item.PremiereDate, true).getFullYear();
                             miscInfo.push(text);
                         }
                         catch (e) {
@@ -3678,7 +3678,7 @@
                 if (item.PremiereDate) {
                     try {
 
-                        var date = parseISO8601Date(item.PremiereDate, { toLocal: true });
+                        var date = datetime.parseISO8601Date(item.PremiereDate, true);
 
                         var translationKey = new Date().getTime() > date.getTime() ? "ValuePremiered" : "ValuePremieres";
 

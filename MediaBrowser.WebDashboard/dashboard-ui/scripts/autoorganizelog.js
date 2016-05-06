@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'datetime'], function ($, datetime) {
 
     var query = {
 
@@ -160,7 +160,7 @@
 
             html += '<td>';
 
-            var date = parseISO8601Date(item.Date, { toLocal: true });
+            var date = datetime.parseISO8601Date(item.Date, true);
             html += date.toLocaleDateString();
 
             html += '</td>';
