@@ -1,4 +1,4 @@
-define(['browser', 'appSettings'], function (browser, appSettings) {
+define(['browser', 'appSettings', 'events'], function (browser, appSettings, events) {
 
     function setLayout(self, layout, selectedLayout) {
 
@@ -32,6 +32,8 @@ define(['browser', 'appSettings'], function (browser, appSettings) {
                     appSettings.set('layout', layout);
                 }
             }
+
+            events.trigger(self, 'modechange');
         };
 
         self.getSavedLayout = function (layout) {

@@ -45,7 +45,7 @@
     top: 50%;
 }
 
-.slideshowDialog paper-icon-button {
+.slideshowDialog .slideshowButton {
     width: 5.2vh;
     height: 5.2vh;
     color: #fff;
@@ -54,7 +54,7 @@
     min-height: 40px;
 }
 
-.layout-tv .slideshowDialog paper-icon-button {
+.layout-tv .slideshowDialog .slideshowButtonn {
     width: 7vh;
     height: 7vh;
 }

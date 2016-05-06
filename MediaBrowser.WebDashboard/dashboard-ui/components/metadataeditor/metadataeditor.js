@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'datetime', 'jQuery', 'paper-checkbox', 'paper-input', 'paper-item-body', 'paper-icon-item', 'paper-textarea', 'paper-fab'], function (dialogHelper, $, datetime) {
+﻿define(['dialogHelper', 'datetime', 'jQuery', 'paper-checkbox', 'paper-input', 'paper-item-body', 'paper-icon-item', 'paper-textarea', 'paper-fab'], function (dialogHelper, datetime, $) {
 
     var currentContext;
     var metadataEditorInfo;
