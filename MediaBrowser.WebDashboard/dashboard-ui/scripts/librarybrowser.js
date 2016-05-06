@@ -2425,6 +2425,11 @@
                     lines.push(item.ProductionYear || '');
                 }
 
+                if (options.showChannelName) {
+
+                    lines.push(item.ChannelName || '');
+                }
+
                 if (options.showAirTime) {
 
                     var airTimeText;

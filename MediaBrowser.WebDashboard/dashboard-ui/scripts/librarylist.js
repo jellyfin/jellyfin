@@ -229,6 +229,27 @@
         }
     }
 
+    function deleteTimer(id, itemsContainer) {
+
+        require(['confirm'], function (confirm) {
+
+            confirm(Globalize.translate('MessageConfirmRecordingCancellation'), Globalize.translate('HeaderConfirmRecordingCancellation')).then(function () {
+
+                Dashboard.showLoadingMsg();
+
+                ApiClient.cancelLiveTvTimer(id).then(function () {
+
+                    require(['toast'], function (toast) {
+                        toast(Globalize.translate('MessageRecordingCancelled'));
+                    });
+
+                    Dashboard.hideLoadingMsg();
+                    itemsContainer.dispatchEvent(new CustomEvent('timercancelled', {}));
+                });
+            });
+        });
+    }
+
     function showContextMenu(card, options) {
 
         var displayContextItem = card;
@@ -323,8 +344,16 @@
                 });
             }
 
+            if (itemType == 'Timer' && user.Policy.EnableLiveTvManagement) {
+                items.push({
+                    name: Globalize.translate('ButtonCancel'),
+                    id: 'canceltimer',
+                    ironIcon: 'cancel'
+                });
+            }
+
             items.push({
-                name: Globalize.translate('ButtonOpen'),
+                name: itemType == 'Timer' ? Globalize.translate('ButtonEdit') : Globalize.translate('ButtonOpen'),
                 id: 'open',
                 ironIcon: 'folder-open'
             });
@@ -580,6 +609,9 @@
                                 break;
                             case 'externalplayer':
                                 LibraryBrowser.playInExternalPlayer(itemId);
+                                break;
+                            case 'canceltimer':
+                                deleteTimer(itemId, $(card).parents('.itemsContainer')[0]);
                                 break;
                             case 'share':
                                 require(['sharingmanager'], function (sharingManager) {

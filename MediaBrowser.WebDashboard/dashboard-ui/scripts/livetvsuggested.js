@@ -165,6 +165,7 @@
                 break;
             case 3:
                 depends.push('scripts/livetvrecordings');
+                initMethod = 'initRecordingsTab';
                 renderMethod = 'renderRecordingsTab';
                 break;
             case 4:

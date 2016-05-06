@@ -108,26 +108,6 @@
         });
     }
 
-    function deleteTimer(page, id) {
-
-        require(['confirm'], function (confirm) {
-
-            confirm(Globalize.translate('MessageConfirmRecordingCancellation'), Globalize.translate('HeaderConfirmRecordingCancellation')).then(function () {
-
-                Dashboard.showLoadingMsg();
-
-                ApiClient.cancelLiveTvTimer(id).then(function () {
-
-                    require(['toast'], function (toast) {
-                        toast(Globalize.translate('MessageRecordingCancelled'));
-                    });
-
-                    reload(page);
-                });
-            });
-        });
-    }
-
     function renderTimers(page, timers) {
 
         LiveTvHelpers.getTimersHtml(timers).then(function (html) {
@@ -143,13 +123,6 @@
             elem.querySelector('.itemsContainer').innerHTML = html;
 
             ImageLoader.lazyChildren(elem);
-
-            $('.btnDeleteTimer', elem).on('click', function () {
-
-                var id = this.getAttribute('data-timerid');
-
-                deleteTimer(page, id);
-            });
         });
     }
 
@@ -181,11 +154,16 @@
         });
     }
 
+    window.LiveTvPage.initRecordingsTab = function (page, tabContent) {
+
+        tabContent.querySelector('#upcomingRecordings .itemsContainer').addEventListener('timercancelled', function () {
+            reload(tabContent);
+        });
+    };
+
     window.LiveTvPage.renderRecordingsTab = function (page, tabContent) {
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
-            reload(tabContent);
-        }
+        reload(tabContent);
     };
 
 });
