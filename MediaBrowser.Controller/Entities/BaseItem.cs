@@ -44,6 +44,9 @@ namespace MediaBrowser.Controller.Entities
             ImageInfos = new List<ItemImageInfo>();
         }
 
+        public static readonly char[] SlugReplaceChars = { '?', '/', '&' };
+        public static char SlugChar = '-';
+
         /// <summary>
         /// The supported image extensions
         /// </summary>
@@ -122,6 +125,21 @@ namespace MediaBrowser.Controller.Entities
 
                 // lazy load this again
                 _sortName = null;
+            }
+        }
+
+        [IgnoreDataMember]
+        public string SlugName
+        {
+            get
+            {
+                var name = Name;
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    return string.Empty;
+                }
+
+                return SlugReplaceChars.Aggregate(name, (current, c) => current.Replace(c, SlugChar));
             }
         }
 
@@ -728,12 +746,14 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the critic rating.
         /// </summary>
         /// <value>The critic rating.</value>
+        [IgnoreDataMember]
         public float? CriticRating { get; set; }
 
         /// <summary>
         /// Gets or sets the critic rating summary.
         /// </summary>
         /// <value>The critic rating summary.</value>
+        [IgnoreDataMember]
         public string CriticRatingSummary { get; set; }
 
         /// <summary>

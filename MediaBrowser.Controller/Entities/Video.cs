@@ -28,7 +28,8 @@ namespace MediaBrowser.Controller.Entities
         IThemeMedia,
         IArchivable
     {
-        public Guid? PrimaryVersionId { get; set; }
+        [IgnoreDataMember]
+        public string PrimaryVersionId { get; set; }
 
         public List<string> AdditionalParts { get; set; }
         public List<string> LocalAlternateVersions { get; set; }
@@ -49,9 +50,9 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (PrimaryVersionId.HasValue)
+                if (!string.IsNullOrWhiteSpace(PrimaryVersionId))
                 {
-                    return PrimaryVersionId.Value.ToString("N");
+                    return PrimaryVersionId;
                 }
 
                 return base.PresentationUniqueKey;
@@ -69,6 +70,72 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The timestamp.</value>
         public TransportStreamTimestamp? Timestamp { get; set; }
+
+        /// <summary>
+        /// Gets or sets the subtitle paths.
+        /// </summary>
+        /// <value>The subtitle paths.</value>
+        public List<string> SubtitleFiles { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance has subtitles.
+        /// </summary>
+        /// <value><c>true</c> if this instance has subtitles; otherwise, <c>false</c>.</value>
+        public bool HasSubtitles { get; set; }
+
+        public bool IsPlaceHolder { get; set; }
+        public bool IsShortcut { get; set; }
+        public string ShortcutPath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the video bit rate.
+        /// </summary>
+        /// <value>The video bit rate.</value>
+        public int? VideoBitRate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default index of the video stream.
+        /// </summary>
+        /// <value>The default index of the video stream.</value>
+        public int? DefaultVideoStreamIndex { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the video.
+        /// </summary>
+        /// <value>The type of the video.</value>
+        public VideoType VideoType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the iso.
+        /// </summary>
+        /// <value>The type of the iso.</value>
+        public IsoType? IsoType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the video3 D format.
+        /// </summary>
+        /// <value>The video3 D format.</value>
+        public Video3DFormat? Video3DFormat { get; set; }
+
+        /// <summary>
+        /// If the video is a folder-rip, this will hold the file list for the largest playlist
+        /// </summary>
+        public List<string> PlayableStreamFileNames { get; set; }
+
+        /// <summary>
+        /// Gets the playable stream files.
+        /// </summary>
+        /// <returns>List{System.String}.</returns>
+        public List<string> GetPlayableStreamFiles()
+        {
+            return GetPlayableStreamFiles(Path);
+        }
+
+        /// <summary>
+        /// Gets or sets the aspect ratio.
+        /// </summary>
+        /// <value>The aspect ratio.</value>
+        public string AspectRatio { get; set; }
 
         public Video()
         {
@@ -104,9 +171,9 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (PrimaryVersionId.HasValue)
+                if (!string.IsNullOrWhiteSpace(PrimaryVersionId))
                 {
-                    var item = LibraryManager.GetItemById(PrimaryVersionId.Value) as Video;
+                    var item = LibraryManager.GetItemById(PrimaryVersionId) as Video;
                     if (item != null)
                     {
                         return item.MediaSourceCount;
@@ -237,72 +304,6 @@ namespace MediaBrowser.Controller.Entities
                 .OfType<Video>()
                 .OrderBy(i => i.SortName);
         }
-
-        /// <summary>
-        /// Gets or sets the subtitle paths.
-        /// </summary>
-        /// <value>The subtitle paths.</value>
-        public List<string> SubtitleFiles { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance has subtitles.
-        /// </summary>
-        /// <value><c>true</c> if this instance has subtitles; otherwise, <c>false</c>.</value>
-        public bool HasSubtitles { get; set; }
-
-        public bool IsPlaceHolder { get; set; }
-        public bool IsShortcut { get; set; }
-        public string ShortcutPath { get; set; }
-
-        /// <summary>
-        /// Gets or sets the video bit rate.
-        /// </summary>
-        /// <value>The video bit rate.</value>
-        public int? VideoBitRate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the default index of the video stream.
-        /// </summary>
-        /// <value>The default index of the video stream.</value>
-        public int? DefaultVideoStreamIndex { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of the video.
-        /// </summary>
-        /// <value>The type of the video.</value>
-        public VideoType VideoType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of the iso.
-        /// </summary>
-        /// <value>The type of the iso.</value>
-        public IsoType? IsoType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the video3 D format.
-        /// </summary>
-        /// <value>The video3 D format.</value>
-        public Video3DFormat? Video3DFormat { get; set; }
-
-        /// <summary>
-        /// If the video is a folder-rip, this will hold the file list for the largest playlist
-        /// </summary>
-        public List<string> PlayableStreamFileNames { get; set; }
-
-        /// <summary>
-        /// Gets the playable stream files.
-        /// </summary>
-        /// <returns>List{System.String}.</returns>
-        public List<string> GetPlayableStreamFiles()
-        {
-            return GetPlayableStreamFiles(Path);
-        }
-
-        /// <summary>
-        /// Gets or sets the aspect ratio.
-        /// </summary>
-        /// <value>The aspect ratio.</value>
-        public string AspectRatio { get; set; }
 
         [IgnoreDataMember]
         public override string ContainingFolderPath
@@ -520,9 +521,9 @@ namespace MediaBrowser.Controller.Entities
             list.Add(new Tuple<Video, MediaSourceType>(this, MediaSourceType.Default));
             list.AddRange(GetLinkedAlternateVersions().Select(i => new Tuple<Video, MediaSourceType>(i, MediaSourceType.Grouping)));
 
-            if (PrimaryVersionId.HasValue)
+            if (!string.IsNullOrWhiteSpace(PrimaryVersionId))
             {
-                var primary = LibraryManager.GetItemById(PrimaryVersionId.Value) as Video;
+                var primary = LibraryManager.GetItemById(PrimaryVersionId) as Video;
                 if (primary != null)
                 {
                     var existingIds = list.Select(i => i.Item1.Id).ToList();

@@ -397,12 +397,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                     collectionFolder.GetViewType(user);
             }
 
-            var playlist = item as Playlist;
-            if (playlist != null)
-            {
-                AttachLinkedChildImages(dto, playlist, user, options);
-            }
-
             if (fields.Contains(ItemFields.CanDelete))
             {
                 dto.CanDelete = user == null
@@ -1560,45 +1554,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 if (channel != null)
                 {
                     dto.ChannelName = channel.Name;
-                }
-            }
-        }
-
-        private void AttachLinkedChildImages(BaseItemDto dto, Folder folder, User user, DtoOptions options)
-        {
-            List<BaseItem> linkedChildren = null;
-
-            var backdropLimit = options.GetImageLimit(ImageType.Backdrop);
-
-            if (backdropLimit > 0 && dto.BackdropImageTags.Count == 0)
-            {
-                linkedChildren = user == null
-                    ? folder.GetRecursiveChildren().ToList()
-                    : folder.GetRecursiveChildren(user).ToList();
-
-                var parentWithBackdrop = linkedChildren.FirstOrDefault(i => i.GetImages(ImageType.Backdrop).Any());
-
-                if (parentWithBackdrop != null)
-                {
-                    dto.ParentBackdropItemId = GetDtoId(parentWithBackdrop);
-                    dto.ParentBackdropImageTags = GetBackdropImageTags(parentWithBackdrop, backdropLimit);
-                }
-            }
-
-            if (!dto.ImageTags.ContainsKey(ImageType.Primary) && options.GetImageLimit(ImageType.Primary) > 0)
-            {
-                if (linkedChildren == null)
-                {
-                    linkedChildren = user == null
-                        ? folder.GetRecursiveChildren().ToList()
-                        : folder.GetRecursiveChildren(user).ToList();
-                }
-                var parentWithImage = linkedChildren.FirstOrDefault(i => i.GetImages(ImageType.Primary).Any());
-
-                if (parentWithImage != null)
-                {
-                    dto.ParentPrimaryImageItemId = GetDtoId(parentWithImage);
-                    dto.ParentPrimaryImageTag = GetImageCacheTag(parentWithImage, ImageType.Primary);
                 }
             }
         }

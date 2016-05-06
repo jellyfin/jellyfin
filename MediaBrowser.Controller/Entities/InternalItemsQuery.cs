@@ -49,6 +49,7 @@ namespace MediaBrowser.Controller.Entities
         public string PresentationUniqueKey { get; set; }
         public string Path { get; set; }
         public string Name { get; set; }
+        public string SlugName { get; set; }
 
         public string Person { get; set; }
         public string[] PersonIds { get; set; }
@@ -133,9 +134,13 @@ namespace MediaBrowser.Controller.Entities
 
         public string[] AlbumNames { get; set; }
         public string[] ArtistNames { get; set; }
-        
+
+        public bool GroupByPresentationUniqueKey { get; set; }
+
         public InternalItemsQuery()
         {
+            GroupByPresentationUniqueKey = true;
+
             AlbumNames = new string[] { };
             ArtistNames = new string[] { };
             
