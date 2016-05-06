@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'jQuery', 'scrollStyles'], function (layoutManager, $) {
+﻿define(['layoutManager', 'datetime', 'jQuery', 'scrollStyles'], function (layoutManager, datetime, $) {
 
     var currentItem;
 
@@ -341,7 +341,7 @@
             });
 
             var itemsContainer = section.querySelector('.nextUpItems');
-            
+
             itemsContainer.innerHTML = html;
             ImageLoader.lazyChildren(itemsContainer);
             $(itemsContainer).createCardMenus();
@@ -1402,7 +1402,7 @@
             html += '<div class="cardFooter">';
             html += '<div class="cardText">' + chapterName + '</div>';
             html += '<div class="cardText">';
-            html += Dashboard.getDisplayTime(chapter.StartPositionTicks);
+            html += datetime.getDisplayRunningTime(chapter.StartPositionTicks);
             html += '</div>';
 
             //cardFooter
@@ -1639,7 +1639,7 @@
             html += '<div class="cardText">' + item.Name + '</div>';
             html += '<div class="cardText">';
             if (item.RunTimeTicks != "") {
-                html += Dashboard.getDisplayTime(item.RunTimeTicks);
+                html += datetime.getDisplayRunningTime(item.RunTimeTicks);
             }
             else {
                 html += "&nbsp;";

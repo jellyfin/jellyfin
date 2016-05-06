@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'jQuery', 'scrollStyles'], function (appSettings, $) {
+﻿define(['appSettings', 'datetime', 'jQuery', 'scrollStyles'], function (appSettings, datetime, $) {
 
     function createVideoPlayer(self) {
 
@@ -495,7 +495,7 @@
                     if (c.Name) {
                         chapterHtml += '<div class="cardText">' + c.Name + '</div>';
                     }
-                    chapterHtml += '<div class="cardText">' + Dashboard.getDisplayTime(c.StartPositionTicks) + '</div>';
+                    chapterHtml += '<div class="cardText">' + datetime.getDisplayRunningTime(c.StartPositionTicks) + '</div>';
                     chapterHtml += '</div>';
                     chapterHtml += '</div>';
 
@@ -789,7 +789,7 @@
                 ticks /= 100;
                 ticks *= value;
 
-                this.pinValue = Dashboard.getDisplayTime(ticks);
+                this.pinValue = datetime.getDisplayRunningTime(ticks);
             };
 
             volumeSlider = $('.videoVolumeSlider', parent).on('change', function () {

@@ -1,4 +1,4 @@
-define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, userSettings, appStorage) {
+define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appSettings, userSettings, appStorage, datetime) {
 
     function mediaPlayer() {
 
@@ -42,216 +42,6 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
             }];
 
             return targets;
-        };
-
-        function updateDeviceProfileForAndroid(profile) {
-
-            // Just here as an easy escape out, if ever needed
-            var enableVlcVideo = true;
-            var enableVlcAudio = window.VlcAudio;
-
-            if (enableVlcVideo) {
-
-                profile.DirectPlayProfiles.push({
-                    Container: "m4v,3gp,ts,mpegts,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,m2v,avi,mpg,mpeg,mp4,webm",
-                    Type: 'Video',
-                    AudioCodec: 'aac,aac_latm,mp3,ac3,wma,dca,pcm,PCM_S16LE,PCM_S24LE,opus,flac'
-                });
-
-                profile.CodecProfiles = profile.CodecProfiles.filter(function (i) {
-                    return i.Type == 'Audio';
-                });
-
-                profile.SubtitleProfiles = [];
-                profile.SubtitleProfiles.push({
-                    Format: 'srt',
-                    Method: 'External'
-                });
-                profile.SubtitleProfiles.push({
-                    Format: 'srt',
-                    Method: 'Embed'
-                });
-                profile.SubtitleProfiles.push({
-                    Format: 'subrip',
-                    Method: 'Embed'
-                });
-                profile.SubtitleProfiles.push({
-                    Format: 'ass',
-                    Method: 'Embed'
-                });
-                profile.SubtitleProfiles.push({
-                    Format: 'ssa',
-                    Method: 'Embed'
-                });
-                profile.SubtitleProfiles.push({
-                    Format: 'pgs',
-                    Method: 'Embed'
-                });
-                profile.SubtitleProfiles.push({
-                    Format: 'pgssub',
-                    Method: 'Embed'
-                });
-                profile.SubtitleProfiles.push({
-                    Format: 'dvdsub',
-                    Method: 'Embed'
-                });
-                profile.SubtitleProfiles.push({
-                    Format: 'vtt',
-                    Method: 'Embed'
-                });
-                profile.SubtitleProfiles.push({
-                    Format: 'sub',
-                    Method: 'Embed'
-                });
-                profile.SubtitleProfiles.push({
-                    Format: 'idx',
-                    Method: 'Embed'
-                });
-                profile.SubtitleProfiles.push({
-                    Format: 'smi',
-                    Method: 'Embed'
-                });
-
-                // These don't play very well
-                profile.CodecProfiles.push({
-                    Type: 'VideoAudio',
-                    Codec: 'dca',
-                    Conditions: [
-                        {
-                            Condition: 'LessThanEqual',
-                            Property: 'AudioChannels',
-                            Value: 6
-                        }
-                    ]
-                });
-
-                profile.CodecProfiles.push({
-                    Type: 'VideoAudio',
-                    Codec: 'aac,mp3',
-                    Conditions: [
-                        {
-                            Condition: 'LessThanEqual',
-                            Property: 'AudioChannels',
-                            Value: '6'
-                        }
-                    ]
-                });
-
-                profile.CodecProfiles.push({
-                    Type: 'Video',
-                    Codec: 'h264',
-                    Conditions: [
-                    {
-                        Condition: 'EqualsAny',
-                        Property: 'VideoProfile',
-                        Value: 'high|main|baseline|constrained baseline'
-                    },
-                    {
-                        Condition: 'LessThanEqual',
-                        Property: 'VideoLevel',
-                        Value: '41'
-                    }]
-                });
-
-                profile.TranscodingProfiles.filter(function (p) {
-
-                    return p.Type == 'Video' && p.CopyTimestamps == true;
-
-                }).forEach(function (p) {
-
-                    // Vlc doesn't seem to handle this well
-                    p.CopyTimestamps = false;
-                });
-
-                profile.TranscodingProfiles.filter(function (p) {
-
-                    return p.Type == 'Video' && p.VideoCodec == 'h264';
-
-                }).forEach(function (p) {
-
-                    p.AudioCodec += ',ac3';
-                });
-            }
-
-            if (enableVlcAudio) {
-
-                profile.DirectPlayProfiles.push({
-                    Container: "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus",
-                    Type: 'Audio'
-                });
-
-                profile.CodecProfiles = profile.CodecProfiles.filter(function (i) {
-                    return i.Type != 'Audio';
-                });
-
-                profile.CodecProfiles.push({
-                    Type: 'Audio',
-                    Conditions: [{
-                        Condition: 'LessThanEqual',
-                        Property: 'AudioChannels',
-                        Value: '2'
-                    }]
-                });
-            }
-        }
-
-        function updateDeviceProfileForIOS(profile) {
-
-        }
-
-        self.getDeviceProfile = function (maxHeight) {
-
-            return new Promise(function (resolve, reject) {
-
-                require(['browserdeviceprofile', 'qualityoptions'], function (profileBuilder, qualityoptions) {
-
-                    var supportsCustomSeeking = false;
-                    if (!browserInfo.mobile) {
-                        supportsCustomSeeking = true;
-                    } else if (AppInfo.isNativeApp && browserInfo.safari) {
-                        if (navigator.userAgent.toLowerCase().indexOf('ipad') == -1) {
-                            // Need to disable it in order to support picture in picture
-                            supportsCustomSeeking = true;
-                        }
-                    } else if (AppInfo.isNativeApp) {
-                        supportsCustomSeeking = true;
-                    }
-
-                    var profile = profileBuilder({
-                        supportsCustomSeeking: supportsCustomSeeking
-                    });
-
-                    if (!(AppInfo.isNativeApp && browserInfo.android)) {
-                        profile.SubtitleProfiles.push({
-                            Format: 'ass',
-                            Method: 'External'
-                        });
-                        profile.SubtitleProfiles.push({
-                            Format: 'ssa',
-                            Method: 'External'
-                        });
-                    }
-
-                    var bitrateSetting = appSettings.maxStreamingBitrate();
-
-                    if (!maxHeight) {
-                        maxHeight = qualityoptions.getVideoQualityOptions(bitrateSetting).filter(function (q) {
-                            return q.selected;
-                        })[0].maxHeight;
-                    }
-
-                    if (AppInfo.isNativeApp && browserInfo.android) {
-                        updateDeviceProfileForAndroid(profile);
-                    }
-                    else if (AppInfo.isNativeApp && browserInfo.safari) {
-                        updateDeviceProfileForIOS(profile);
-                    }
-
-                    profile.MaxStreamingBitrate = bitrateSetting;
-
-                    resolve(profile);
-                });
-            });
         };
 
         var supportsTextTracks;
@@ -378,7 +168,7 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
             var playSessionId = getParameterByName('PlaySessionId', currentSrc);
             var liveStreamId = getParameterByName('LiveStreamId', currentSrc);
 
-            self.getDeviceProfile().then(function (deviceProfile) {
+            Dashboard.getDeviceProfile().then(function (deviceProfile) {
 
                 var audioStreamIndex = params.AudioStreamIndex == null ? (getParameterByName('AudioStreamIndex', currentSrc) || null) : params.AudioStreamIndex;
                 if (typeof (audioStreamIndex) == 'string') {
@@ -481,12 +271,12 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
             // Convert to ticks
             ticks = Math.floor(ticks);
 
-            var timeText = Dashboard.getDisplayTime(ticks);
+            var timeText = datetime.getDisplayRunningTime(ticks);
             var mediaRenderer = self.currentMediaRenderer;
 
             if (self.currentDurationTicks) {
 
-                timeText += " / " + Dashboard.getDisplayTime(self.currentDurationTicks);
+                timeText += " / " + datetime.getDisplayRunningTime(self.currentDurationTicks);
 
                 if (positionSlider) {
 
@@ -864,7 +654,7 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
             }
 
             var onBitrateDetected = function () {
-                self.getDeviceProfile().then(function (deviceProfile) {
+                Dashboard.getDeviceProfile().then(function (deviceProfile) {
                     playOnDeviceProfileCreated(deviceProfile, item, startPosition, callback);
                 });
             };

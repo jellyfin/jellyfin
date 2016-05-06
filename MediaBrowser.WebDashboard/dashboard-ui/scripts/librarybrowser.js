@@ -3525,7 +3525,7 @@
 
                     if (item.Type == "Audio") {
 
-                        miscInfo.push(Dashboard.getDisplayTime(item.RunTimeTicks));
+                        miscInfo.push(datetime.getDisplayRunningTime(item.RunTimeTicks));
 
                     } else {
                         minutes = item.RunTimeTicks / 600000000;
@@ -3538,7 +3538,7 @@
 
                 if (item.CumulativeRunTimeTicks && item.Type != "Series" && item.Type != "Season") {
 
-                    miscInfo.push(Dashboard.getDisplayTime(item.CumulativeRunTimeTicks));
+                    miscInfo.push(datetime.getDisplayRunningTime(item.CumulativeRunTimeTicks));
                 }
 
                 if (item.OfficialRating && item.Type !== "Season" && item.Type !== "Episode") {

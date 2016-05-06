@@ -411,7 +411,7 @@
 
             if (session.TranscodingInfo && session.TranscodingInfo.Framerate) {
 
-                html += ' - '+session.TranscodingInfo.Framerate + ' fps';
+                html += ' - ' + session.TranscodingInfo.Framerate + ' fps';
             }
         }
         else if (session.PlayState.PlayMethod == 'DirectStream') {
@@ -465,7 +465,7 @@
         var html = '';
 
         if (session.PlayState.PositionTicks) {
-            html += Dashboard.getDisplayTime(session.PlayState.PositionTicks);
+            html += datetime.getDisplayRunningTime(session.PlayState.PositionTicks);
         } else {
             html += '--:--:--';
         }
@@ -475,7 +475,7 @@
         var nowPlayingItem = session.NowPlayingItem;
 
         if (nowPlayingItem && nowPlayingItem.RunTimeTicks) {
-            html += Dashboard.getDisplayTime(nowPlayingItem.RunTimeTicks);
+            html += datetime.getDisplayRunningTime(nowPlayingItem.RunTimeTicks);
         } else {
             html += '--:--:--';
         }
