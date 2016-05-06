@@ -82,7 +82,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        public const int LatestSchemaVersion = 69;
+        public const int LatestSchemaVersion = 71;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -226,6 +226,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "InheritedTags", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "CleanName", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "PresentationUniqueKey", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "SlugName", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "OriginalTitle", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "PrimaryVersionId", "Text");
 
             string[] postQueries =
                 {
@@ -367,7 +370,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "Tags",
             "SourceType",
             "TrailerTypes",
-            "DateModifiedDuringLastRefresh"
+            "DateModifiedDuringLastRefresh",
+            "OriginalTitle",
+            "PrimaryVersionId"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -476,7 +481,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "DateModifiedDuringLastRefresh",
                 "InheritedTags",
                 "CleanName",
-                "PresentationUniqueKey"
+                "PresentationUniqueKey",
+                "SlugName",
+                "OriginalTitle",
+                "PrimaryVersionId"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -810,7 +818,20 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     {
                         _saveItemCommand.GetParameter(index++).Value = item.Name.RemoveDiacritics();
                     }
+
                     _saveItemCommand.GetParameter(index++).Value = item.PresentationUniqueKey;
+                    _saveItemCommand.GetParameter(index++).Value = item.SlugName;
+                    _saveItemCommand.GetParameter(index++).Value = item.OriginalTitle;
+
+                    var video = item as Video;
+                    if (video != null)
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = video.PrimaryVersionId;
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
 
                     _saveItemCommand.Transaction = transaction;
 
@@ -1187,6 +1208,20 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!reader.IsDBNull(51))
             {
                 item.DateModifiedDuringLastRefresh = reader.GetDateTime(51).ToUniversalTime();
+            }
+
+            if (!reader.IsDBNull(52))
+            {
+                item.OriginalTitle = reader.GetString(52);
+            }
+
+            var video = item as Video;
+            if (video != null)
+            {
+                if (!reader.IsDBNull(53))
+                {
+                    video.PrimaryVersionId = reader.GetString(53);
+                }
             }
 
             return item;
@@ -2070,6 +2105,19 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 cmd.Parameters.Add(cmd, "@PersonName", DbType.String).Value = query.Person;
             }
 
+            if (!string.IsNullOrWhiteSpace(query.SlugName))
+            {
+                if (_config.Configuration.SchemaVersion >= 70)
+                {
+                    whereClauses.Add("SlugName=@SlugName");
+                }
+                else
+                {
+                    whereClauses.Add("Name=@SlugName");
+                }
+                cmd.Parameters.Add(cmd, "@SlugName", DbType.String).Value = query.SlugName;
+            }
+
             if (!string.IsNullOrWhiteSpace(query.Name))
             {
                 if (_config.Configuration.SchemaVersion >= 66)
@@ -2340,6 +2388,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private bool EnableGroupByPresentationUniqueKey(InternalItemsQuery query)
         {
+            if (!query.GroupByPresentationUniqueKey)
+            {
+                return false;
+            }
+
             if (!string.IsNullOrWhiteSpace(query.PresentationUniqueKey))
             {
                 return false;
