@@ -170,7 +170,9 @@ namespace MediaBrowser.Controller.Entities.TV
             }
             else
             {
-                items = GetEpisodes(query.User).Where(filter);
+                items = query.Recursive
+                   ? GetRecursiveChildren(user, filter)
+                   : GetChildren(user, true).Where(filter);
             }
 
             var result = PostFilterAndSort(items, query);
@@ -265,6 +267,11 @@ namespace MediaBrowser.Controller.Entities.TV
         public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
             return GetEpisodes(user);
+        }
+
+        public override IEnumerable<BaseItem> GetRecursiveChildren(User user, Func<BaseItem, bool> filter)
+        {
+            return GetEpisodes(user).Where(filter);
         }
 
         protected override bool GetBlockUnratedValue(UserPolicy config)
