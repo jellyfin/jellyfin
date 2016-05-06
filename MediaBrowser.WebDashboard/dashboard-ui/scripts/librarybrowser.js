@@ -1380,19 +1380,10 @@
                     }
 
                     if (imgUrl) {
-                        var minLazyIndex = 16;
                         if (options.smallIcon) {
-                            if (index < minLazyIndex) {
-                                html += '<div class="listviewImage small" style="background-image:url(\'' + imgUrl + '\');" item-icon></div>';
-                            } else {
-                                html += '<div class="listviewImage lazy small" data-src="' + imgUrl + '" item-icon></div>';
-                            }
+                            html += '<div class="listviewImage lazy small" data-src="' + imgUrl + '" item-icon></div>';
                         } else {
-                            if (index < minLazyIndex) {
-                                html += '<div class="listviewImage" style="background-image:url(\'' + imgUrl + '\');" item-icon></div>';
-                            } else {
-                                html += '<div class="listviewImage lazy" data-src="' + imgUrl + '" item-icon></div>';
-                            }
+                            html += '<div class="listviewImage lazy" data-src="' + imgUrl + '" item-icon></div>';
                         }
                     } else {
                         if (options.smallIcon) {

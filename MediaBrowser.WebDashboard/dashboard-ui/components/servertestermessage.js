@@ -26,9 +26,13 @@
                     if (!result.dev && release.target_commitish == 'dev') {
                         result.dev = release;
                     }
+                } else {
+                    if (!result.stable && release.target_commitish == 'master') {
+                        result.stable = release;
+                    }
                 }
 
-                if (result.beta && result.dev) {
+                if (result.beta && result.dev && result.stable) {
                     break;
                 }
             }
@@ -43,62 +47,59 @@
         return str.split(find).join(replace);
     }
 
-    function showInternal() {
+    function showInternal(releases) {
 
-        getReleases().then(function (releases) {
+        require(['dialogHelper'], function (dialogHelper) {
+            var dlg = dialogHelper.createDialog({
+                size: 'small',
+                removeOnClose: true,
+                autoFocus: false
+            });
 
-            require(['dialogHelper'], function (dialogHelper) {
-                var dlg = dialogHelper.createDialog({
-                    size: 'small',
-                    removeOnClose: true,
-                    autoFocus: false
-                });
+            dlg.classList.add('ui-body-b');
+            dlg.classList.add('background-theme-b');
 
-                dlg.classList.add('ui-body-b');
-                dlg.classList.add('background-theme-b');
+            var html = '';
 
-                var html = '';
+            html += '<div class="dialogHeader">';
+            html += '<paper-icon-button icon="arrow-back" class="btnCancel" tabindex="-1"></paper-icon-button>';
+            html += '<div class="dialogHeaderTitle">';
+            html += 'Emby';
+            html += '</div>';
+            html += '</div>';
 
-                html += '<div class="dialogHeader">';
-                html += '<paper-icon-button icon="arrow-back" class="btnCancel" tabindex="-1"></paper-icon-button>';
-                html += '<div class="dialogHeaderTitle">';
-                html += 'Emby';
+            html += '<h1>Welcome Emby Tester!</h1>';
+
+            html += '<p>If you\'re seeing this message, it\s because you\'re running a pre-release version of Emby Server. Thank you for being a part of the Emby pre-release testing process.</p>';
+
+            html += '<p>Please take a moment to leave your testing feedback about this version in the <a target="_blank" href="https://emby.media/community">Emby Community.</a></p>';
+
+            html += '<a target="_blank" href="https://emby.media/community" class="clearLink" style="display:block;"><paper-button raised class="accent block">Visit Emby Community</paper-button></a>';
+
+            if (releases.beta) {
+                html += '<h1 style="margin-bottom:0;margin-top:1.5em;">Beta Release Notes</h1>';
+
+                html += '<div style="margin-top:0;">';
+                html += replaceAll((releases.beta.body || ''), '*', '<br/>');
                 html += '</div>';
+            }
+
+            if (releases.dev) {
+                html += '<h1 style="margin-bottom:0;margin-top:1.5em;">Dev Release Notes</h1>';
+
+                html += '<div style="margin-top:0;">';
+                html += replaceAll((releases.dev.body || ''), '*', '<br/>');
                 html += '</div>';
+            }
 
-                html += '<h1>Welcome Emby Tester!</h1>';
+            dlg.innerHTML = html;
+            document.body.appendChild(dlg);
 
-                html += '<p>If you\'re seeing this message, it\s because you\'re running a pre-release version of Emby Server. Thank you for being a part of the Emby pre-release testing process.</p>';
+            dialogHelper.open(dlg);
 
-                html += '<p>Please take a moment to leave your testing feedback about this version in the <a target="_blank" href="https://emby.media/community">Emby Community.</a></p>';
+            dlg.querySelector('.btnCancel', dlg).addEventListener('click', function () {
 
-                html += '<a target="_blank" href="https://emby.media/community" class="clearLink" style="display:block;"><paper-button raised class="accent block">Visit Emby Community</paper-button></a>';
-
-                if (releases.beta) {
-                    html += '<h1 style="margin-bottom:0;margin-top:1.5em;">Beta Release Notes</h1>';
-
-                    html += '<div style="margin-top:0;">';
-                    html += replaceAll((releases.beta.body || ''), '*', '<br/>');
-                    html += '</div>';
-                }
-
-                if (releases.dev) {
-                    html += '<h1 style="margin-bottom:0;margin-top:1.5em;">Dev Release Notes</h1>';
-
-                    html += '<div style="margin-top:0;">';
-                    html += replaceAll((releases.dev.body || ''), '*', '<br/>');
-                    html += '</div>';
-                }
-
-                dlg.innerHTML = html;
-                document.body.appendChild(dlg);
-
-                dialogHelper.open(dlg);
-
-                dlg.querySelector('.btnCancel', dlg).addEventListener('click', function () {
-
-                    dialogHelper.close(dlg);
-                });
+                dialogHelper.close(dlg);
             });
         });
     }
@@ -132,7 +133,7 @@
         var key = 'servertestermessagetime';
         var lastShown = parseInt(appSettings.get(key) || '0');
 
-        if ((new Date().getTime() - lastShown) < 259200000) {
+        if ((new Date().getTime() - lastShown) < 345600000) {
             return;
         }
 
@@ -143,11 +144,12 @@
             return;
         }
 
-        apiClient.getPublicSystemInfo().then(function (info) {
-
-            if (compareVersions(info.Version, '3.0.5934') == 1) {
-                showInternal();
-            }
+        getReleases().then(function (releases) {
+            apiClient.getPublicSystemInfo().then(function (info) {
+                if (releases.stable && compareVersions(info.Version, releases.stable.tag_name) == 1) {
+                    showInternal(releases);
+                }
+            });
         });
     }
 
