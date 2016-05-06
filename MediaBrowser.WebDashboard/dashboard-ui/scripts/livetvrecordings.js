@@ -78,9 +78,7 @@
         ImageLoader.lazyChildren(recordingItems);
     }
 
-    function reload(page) {
-
-        Dashboard.showLoadingMsg();
+    function renderActiveRecordings(page) {
 
         ApiClient.getLiveTvRecordings({
 
@@ -93,6 +91,9 @@
             renderRecordings(page.querySelector('#activeRecordings'), result.Items);
 
         });
+    }
+
+    function renderLatestRecordings(page) {
 
         ApiClient.getLiveTvRecordings({
 
@@ -105,6 +106,68 @@
 
             renderRecordings(page.querySelector('#latestRecordings'), result.Items);
         });
+    }
+
+    function deleteTimer(page, id) {
+
+        require(['confirm'], function (confirm) {
+
+            confirm(Globalize.translate('MessageConfirmRecordingCancellation'), Globalize.translate('HeaderConfirmRecordingCancellation')).then(function () {
+
+                Dashboard.showLoadingMsg();
+
+                ApiClient.cancelLiveTvTimer(id).then(function () {
+
+                    require(['toast'], function (toast) {
+                        toast(Globalize.translate('MessageRecordingCancelled'));
+                    });
+
+                    reload(page);
+                });
+            });
+        });
+    }
+
+    function renderTimers(page, timers) {
+
+        LiveTvHelpers.getTimersHtml(timers).then(function (html) {
+
+            var elem = page.querySelector('#upcomingRecordings');
+
+            if (html) {
+                elem.classList.remove('hide');
+            } else {
+                elem.classList.add('hide');
+            }
+
+            elem.querySelector('.itemsContainer').innerHTML = html;
+
+            ImageLoader.lazyChildren(elem);
+
+            $('.btnDeleteTimer', elem).on('click', function () {
+
+                var id = this.getAttribute('data-timerid');
+
+                deleteTimer(page, id);
+            });
+        });
+    }
+
+    function renderUpcomingRecordings(page) {
+
+        ApiClient.getLiveTvTimers().then(function (result) {
+
+            renderTimers(page, result.Items);
+        });
+    }
+
+    function reload(page) {
+
+        Dashboard.showLoadingMsg();
+
+        renderUpcomingRecordings(page);
+        renderActiveRecordings(page);
+        renderLatestRecordings(page);
 
         ApiClient.getLiveTvRecordingGroups({
 

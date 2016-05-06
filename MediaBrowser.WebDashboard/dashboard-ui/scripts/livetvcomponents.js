@@ -2,6 +2,23 @@
 
     function getTimersHtml(timers) {
 
+        var items = timers.map(function (t) {
+            t.Type = 'Timer';
+            return t;
+        });
+
+        var html = LibraryBrowser.getPosterViewHtml({
+            items: items,
+            shape: "square",
+            showTitle: true,
+            showAirTime: true,
+            lazy: true,
+            cardLayout: true,
+            showDetailsMenu: true
+        });
+
+        return Promise.resolve(html);
+
         return new Promise(function (resolve, reject) {
 
             require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {

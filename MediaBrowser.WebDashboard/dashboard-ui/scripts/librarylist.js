@@ -420,7 +420,7 @@
                 });
             }
 
-            if (user.Policy.EnablePublicSharing) {
+            if (user.Policy.EnablePublicSharing && commands.indexOf('share') != -1) {
                 items.push({
                     name: Globalize.translate('ButtonShare'),
                     id: 'share',

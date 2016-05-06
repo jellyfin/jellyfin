@@ -168,10 +168,6 @@
                 renderMethod = 'renderRecordingsTab';
                 break;
             case 4:
-                depends.push('scripts/livetvtimers');
-                renderMethod = 'renderTimersTab';
-                break;
-            case 5:
                 depends.push('scripts/livetvseriestimers');
                 renderMethod = 'renderSeriesTimersTab';
                 break;
