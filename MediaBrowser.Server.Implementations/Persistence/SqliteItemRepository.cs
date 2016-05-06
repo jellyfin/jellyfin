@@ -2398,6 +2398,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 return false;
             }
 
+            if (query.User == null)
+            {
+                return false;
+            }
+
             if (query.IncludeItemTypes.Length == 0)
             {
                 return true;
