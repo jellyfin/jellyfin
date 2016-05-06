@@ -707,8 +707,8 @@ namespace MediaBrowser.Controller.Entities
         {
             return ItemRepository.GetItemIdsList(new InternalItemsQuery
             {
-                ParentId = Id
-
+                ParentId = Id,
+                GroupByPresentationUniqueKey = false
             });
         }
 

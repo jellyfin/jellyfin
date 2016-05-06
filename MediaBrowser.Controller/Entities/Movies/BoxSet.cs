@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using MediaBrowser.Controller.Entities.Audio;
 
 namespace MediaBrowser.Controller.Entities.Movies
 {
@@ -118,7 +119,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             // Gather all possible ratings
             var ratings = GetRecursiveChildren()
                 .Concat(GetLinkedChildren())
-                .Where(i => i is Movie || i is Series)
+                .Where(i => i is Movie || i is Series || i is MusicAlbum || i is Game)
                 .Select(i => i.OfficialRating)
                 .Where(i => !string.IsNullOrEmpty(i))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
