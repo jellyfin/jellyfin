@@ -1,4 +1,11 @@
-define(['dialogHelper', 'layoutManager', 'dialogText', 'html!./icons.html', 'css!./style.css', 'paper-button', 'paper-input'], function (dialogHelper, layoutManager, dialogText) {
+define(['dialogHelper', 'layoutManager', 'dialogText', 'html!./icons.html', 'css!./style.css', 'paper-button', 'paper-icon-button-light', 'paper-input'], function (dialogHelper, layoutManager, dialogText) {
+
+    function getIcon(icon, cssClass, canFocus, autoFocus) {
+
+        var tabIndex = canFocus ? '' : ' tabindex="-1"';
+        autoFocus = autoFocus ? ' autofocus' : '';
+        return '<button is="paper-icon-button-light" class="' + cssClass + '"' + tabIndex + autoFocus + '><iron-icon icon="' + icon + '"></iron-icon></button>';
+    }
 
     return function (options) {
 
@@ -36,7 +43,7 @@ define(['dialogHelper', 'layoutManager', 'dialogText', 'html!./icons.html', 'css
 
         html += '<div class="promptDialogContent">';
         if (backButton) {
-            html += '<paper-icon-button tabindex="-1" icon="dialog:arrow-back" class="btnPromptExit"></paper-icon-button>';
+            html += getIcon('dialog:arrow-back', 'btnPromptExit', false);
         }
 
         if (options.title) {

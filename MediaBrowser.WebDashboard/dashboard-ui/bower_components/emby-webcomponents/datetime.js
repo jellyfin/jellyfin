@@ -134,6 +134,7 @@
 
         if (timeLower.indexOf('am') != -1 || timeLower.indexOf('pm') != -1) {
 
+            time = timeLower;
             var hour = date.getHours() % 12;
             var suffix = date.getHours() > 11 ? 'pm' : 'am';
             if (!hour) {

@@ -489,7 +489,7 @@ div[data-role='page'] {
     outline: none;
 }
 
-a[data-role='button'], button:not([data-role='none']):not(.clearButton) {
+a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearButton) {
     -webkit-font-smoothing: antialiased;
     -webkit-user-select: none;
     background-clip: padding-box;
@@ -512,24 +512,18 @@ a[data-role='button'], button:not([data-role='none']):not(.clearButton) {
     box-shadow: 0 1px 3px /*{global-box-shadow-size}*/ rgba(0,0,0,.15) /*{global-box-shadow-color}*/;
 }
 
-    a[data-role='button'][data-iconpos='notext'], button[data-iconpos='notext']:not([data-role='none']):not(.clearButton) {
+    a[data-role='button'][data-iconpos='notext'], .type-interior button[data-iconpos='notext']:not([data-role='none']):not(.clearButton) {
         padding: 4px;
         border-radius: 50px;
         outline: 0;
     }
 
-    a[data-role='button']:not([data-inline='true']), button:not([data-role='none']):not([data-inline='true']):not(.clearButton) {
+    a[data-role='button']:not([data-inline='true']), .type-interior button:not([data-role='none']):not([data-inline='true']):not(.clearButton) {
         display: block;
         margin: .5em 0 !important;
     }
 
-    a[data-role='button']:focus, button:not([data-role='none']):focus {
-        -webkit-box-shadow: 0 0 12px #3388cc /*{a-active-background-color}*/;
-        -moz-box-shadow: 0 0 12px #3388cc /*{a-active-background-color}*/;
-        box-shadow: 0 0 12px #3388cc /*{a-active-background-color}*/;
-    }
-
-button:not([data-role='none']):not([data-inline='true']):not(.clearButton) {
+.type-interior button:not([data-role='none']):not([data-inline='true']):not(.clearButton) {
     width: 100%;
 }
 

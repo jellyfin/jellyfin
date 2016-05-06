@@ -1,4 +1,4 @@
-define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'focusManager', 'apphost', 'css!./style', 'html!./icons', 'iron-icon-set', 'paper-icon-button', 'paper-spinner'], function (dialogHelper, inputmanager, connectionManager, layoutManager, focusManager, appHost) {
+define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'focusManager', 'apphost', 'css!./style', 'html!./icons', 'iron-icon-set', 'paper-icon-button-light', 'paper-spinner'], function (dialogHelper, inputmanager, connectionManager, layoutManager, focusManager, appHost) {
 
     function getImageUrl(item, options, apiClient) {
 
@@ -96,6 +96,13 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
         }
     }
 
+    function getIcon(icon, cssClass, canFocus, autoFocus) {
+
+        var tabIndex = canFocus ? '' : ' tabindex="-1"';
+        autoFocus = autoFocus ? ' autofocus' : '';
+        return '<button is="paper-icon-button-light" class="' + cssClass + '"' + tabIndex + autoFocus + '><iron-icon icon="' + icon + '"></iron-icon></button>';
+    }
+
     return function (options) {
 
         var self = this;
@@ -125,31 +132,30 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
                 html += '<div>';
                 html += '<div class="slideshowSwiperContainer"><div class="swiper-wrapper"></div></div>';
 
-                html += '<paper-icon-button icon="slideshow:keyboard-arrow-left" class="btnSlideshowPrevious slideshowButton" tabindex="-1"></paper-icon-button>';
-                html += '<paper-icon-button icon="slideshow:keyboard-arrow-right" class="btnSlideshowNext slideshowButton" tabindex="-1"></paper-icon-button>';
+                html += getIcon('slideshow:keyboard-arrow-left', 'btnSlideshowPrevious slideshowButton', false);
+                html += getIcon('slideshow:keyboard-arrow-right', 'btnSlideshowNext slideshowButton', false);
 
                 html += '<div class="topActionButtons">';
                 if (actionButtonsOnTop) {
                     if (appHost.supports('filedownload')) {
-                        html += '<paper-icon-button icon="slideshow:file-download" class="btnDownload slideshowButton"></paper-icon-button>';
+                        html += getIcon('slideshow:file-download', 'btnDownload slideshowButton', true);
                     }
                     if (appHost.supports('sharing')) {
-                        html += '<paper-icon-button icon="slideshow:share" class="btnShare slideshowButton"></paper-icon-button>';
+                        html += getIcon('slideshow:share', 'btnShare slideshowButton', true);
                     }
                 }
-                html += '<paper-icon-button icon="slideshow:close" class="btnSlideshowExit" tabindex="-1"></paper-icon-button>';
+                html += getIcon('slideshow:close', 'slideshowButton btnSlideshowExit', false);
                 html += '</div>';
 
                 if (!actionButtonsOnTop) {
                     html += '<div class="slideshowBottomBar hide">';
 
-                    //html += '<paper-icon-button icon="slideshow:share" class="btnShare slideshowButton"></paper-icon-button>';
-                    html += '<paper-icon-button icon="slideshow:pause" class="btnSlideshowPause slideshowButton" autoFocus></paper-icon-button>';
+                    html += getIcon('slideshow:pause', 'btnSlideshowPause slideshowButton', true, true);
                     if (appHost.supports('filedownload')) {
-                        html += '<paper-icon-button icon="slideshow:file-download" class="btnDownload slideshowButton"></paper-icon-button>';
+                        html += getIcon('slideshow:file-download', 'btnDownload slideshowButton', true);
                     }
                     if (appHost.supports('sharing')) {
-                        html += '<paper-icon-button icon="slideshow:share" class="btnShare slideshowButton"></paper-icon-button>';
+                        html += getIcon('slideshow:share', 'btnShare slideshowButton', true);
                     }
 
                     html += '</div>';
@@ -361,7 +367,7 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
 
         function play() {
 
-            var btnSlideshowPause = dlg.querySelector('.btnSlideshowPause');
+            var btnSlideshowPause = dlg.querySelector('.btnSlideshowPause iron-icon');
             if (btnSlideshowPause) {
                 btnSlideshowPause.icon = "slideshow:pause";
             }
@@ -371,7 +377,7 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
 
         function pause() {
 
-            var btnSlideshowPause = dlg.querySelector('.btnSlideshowPause');
+            var btnSlideshowPause = dlg.querySelector('.btnSlideshowPause iron-icon');
             if (btnSlideshowPause) {
                 btnSlideshowPause.icon = "slideshow:play-arrow";
             }
@@ -381,7 +387,7 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
 
         function playPause() {
 
-            var paused = dlg.querySelector('.btnSlideshowPause').icon != "slideshow:pause";
+            var paused = dlg.querySelector('.btnSlideshowPause iron-icon').icon != "slideshow:pause";
             if (paused) {
                 play();
             } else {

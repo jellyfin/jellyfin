@@ -1,4 +1,4 @@
-﻿define(['datetime', 'jQuery'], function (datetime, $) {
+﻿define(['datetime', 'jQuery', 'paper-icon-button'], function (datetime, $) {
 
     var currentPlayer;
 
