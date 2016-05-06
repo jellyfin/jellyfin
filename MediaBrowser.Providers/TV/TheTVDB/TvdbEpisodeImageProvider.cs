@@ -176,19 +176,16 @@ namespace MediaBrowser.Providers.TV
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
-            var episode = (Episode)item;
-            
-            if (!episode.IsVirtualUnaired)
+            // For non-unaired items, only enable if configured
+            if (!TvdbSeriesProvider.Current.GetTvDbOptions().EnableAutomaticUpdates)
             {
-                // For non-unaired items, only enable if configured
-                if (!TvdbSeriesProvider.Current.GetTvDbOptions().EnableAutomaticUpdates)
-                {
-                    return false;
-                }
+                return false;
             }
 
             if (!item.HasImage(ImageType.Primary))
             {
+                var episode = (Episode)item;
+
                 var series = episode.Series;
 
                 if (series != null && TvdbSeriesProvider.IsValidSeries(series.ProviderIds))

@@ -53,7 +53,8 @@ namespace MediaBrowser.Providers.TV
             var seriesList = _libraryManager.GetItemList(new InternalItemsQuery()
             {
                 IncludeItemTypes = new[] { typeof(Series).Name },
-                Recursive = true
+                Recursive = true,
+                GroupByPresentationUniqueKey = false
 
             }).Cast<Series>().ToList();
 
@@ -207,7 +208,8 @@ namespace MediaBrowser.Providers.TV
             var seriesList = _libraryManager.GetItemList(new InternalItemsQuery()
             {
                 IncludeItemTypes = new[] { typeof(Series).Name },
-                Recursive = true
+                Recursive = true,
+                GroupByPresentationUniqueKey = false
 
             }).Cast<Series>().ToList();
 

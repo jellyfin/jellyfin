@@ -365,13 +365,9 @@ namespace MediaBrowser.Providers.TV
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
-            if (item.LocationType != LocationType.Virtual)
+            if (!TvdbSeriesProvider.Current.GetTvDbOptions().EnableAutomaticUpdates)
             {
-                // For non-virtual items, only enable if configured
-                if (!TvdbSeriesProvider.Current.GetTvDbOptions().EnableAutomaticUpdates)
-                {
-                    return false;
-                }
+                return false;
             }
 
             var season = (Season)item;
