@@ -146,8 +146,7 @@ namespace MediaBrowser.Providers.TV
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
-            // Only enable for virtual items
-            if (item.LocationType != LocationType.Virtual)
+            if (!TvdbSeriesProvider.Current.GetTvDbOptions().EnableAutomaticUpdates)
             {
                 return false;
             }
