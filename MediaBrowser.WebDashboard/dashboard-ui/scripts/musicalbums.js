@@ -206,7 +206,7 @@
 
         var query = getQuery(page);
 
-        $('.alphabetPicker', page).alphaValue(query.NameStartsWith);
+        $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
     }
 
     function initPage(tabContent) {

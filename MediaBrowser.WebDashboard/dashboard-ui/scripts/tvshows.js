@@ -183,7 +183,7 @@
         function updateFilterControls(tabContent) {
 
             var query = getQuery(tabContent);
-            $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWith);
+            $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWithOrGreater);
         }
 
         function initPage(tabContent) {
