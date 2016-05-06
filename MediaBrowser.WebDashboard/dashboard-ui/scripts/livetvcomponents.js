@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['datetime'], function (datetime) {
 
     function getTimersHtml(timers) {
 
@@ -69,8 +69,8 @@
                     html += '</div>';
 
                     html += '<div secondary>';
-                    html += LibraryBrowser.getDisplayTime(timer.StartDate);
-                    html += ' - ' + LibraryBrowser.getDisplayTime(timer.EndDate);
+                    html += datetime.getDisplayTime(timer.StartDate);
+                    html += ' - ' + datetime.getDisplayTime(timer.EndDate);
                     html += '</div>';
 
                     html += '</a>';

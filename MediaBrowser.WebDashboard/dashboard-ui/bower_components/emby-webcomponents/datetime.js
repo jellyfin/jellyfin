@@ -114,6 +114,16 @@
 
     function getDisplayTime(date) {
 
+        if ((typeof date).toString().toLowerCase() === 'string') {
+            try {
+
+                date = parseISO8601Date(date, true);
+
+            } catch (err) {
+                return date;
+            }
+        }
+
         var currentLocale = globalize.getCurrentLocale();
 
         var time = currentLocale && toLocaleTimeStringSupportsLocales ?
@@ -124,7 +134,6 @@
 
         if (timeLower.indexOf('am') != -1 || timeLower.indexOf('pm') != -1) {
 
-            time = timeLower;
             var hour = date.getHours() % 12;
             var suffix = date.getHours() > 11 ? 'pm' : 'am';
             if (!hour) {

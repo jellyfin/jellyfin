@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['datetime'], function (datetime) {
 
     function renderPrograms(page, result) {
 
@@ -32,7 +32,7 @@
             }
 
             html += '<div class="' + cssClass + '">';
-            html += '<div class="tvProgramTimeSlotInner">' + LibraryBrowser.getDisplayTime(startDate) + '</div>';
+            html += '<div class="tvProgramTimeSlotInner">' + datetime.getDisplayTime(startDate) + '</div>';
             html += '</div>';
 
             cssClass = "tvProgramInfo";
@@ -96,7 +96,7 @@
             html += '</a>';
         }
 
-        $('#childrenContent', page).html(html);
+        page.querySelector('#childrenContent').innerHTML = html;
     }
 
     function loadPrograms(page, channelId) {

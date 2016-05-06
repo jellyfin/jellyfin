@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['datetime', 'jQuery'], function (datetime, $) {
 
     var query = {
 
@@ -63,7 +63,7 @@
 
                 html += ' - ' + Globalize.translate('LabelAnytime');
             } else {
-                html += ' - ' + LibraryBrowser.getDisplayTime(timer.StartDate);
+                html += ' - ' + datetime.getDisplayTime(timer.StartDate);
             }
             html += '</div>';
 

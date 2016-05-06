@@ -1,4 +1,4 @@
-﻿define(['playlistManager', 'appSettings', 'appStorage', 'apphost', 'jQuery', 'scrollStyles'], function (playlistManager, appSettings, appStorage, appHost, $) {
+﻿define(['playlistManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'jQuery', 'scrollStyles'], function (playlistManager, appSettings, appStorage, appHost, datetime, $) {
 
     var libraryBrowser = (function (window, document, screen) {
 
@@ -3413,56 +3413,6 @@
                 detailImageProgressContainer.innerHTML = progressHtml || '';
             },
 
-            getDisplayTime: function (date) {
-
-                if ((typeof date).toString().toLowerCase() === 'string') {
-                    try {
-
-                        date = parseISO8601Date(date, { toLocal: true });
-
-                    } catch (err) {
-                        return date;
-                    }
-                }
-
-                var lower = date.toLocaleTimeString().toLowerCase();
-
-                var hours = date.getHours();
-                var minutes = date.getMinutes();
-
-                var text;
-
-                if (lower.indexOf('am') != -1 || lower.indexOf('pm') != -1) {
-
-                    var suffix = hours > 11 ? 'pm' : 'am';
-
-                    hours = (hours % 12) || 12;
-
-                    text = hours;
-
-                    if (minutes) {
-
-                        text += ':';
-                        if (minutes < 10) {
-                            text += '0';
-                        }
-                        text += minutes;
-                    }
-
-                    text += suffix;
-
-                } else {
-                    text = hours + ':';
-
-                    if (minutes < 10) {
-                        text += '0';
-                    }
-                    text += minutes;
-                }
-
-                return text;
-            },
-
             getMiscInfoHtml: function (item) {
 
                 var miscInfo = [];
@@ -3512,7 +3462,7 @@
                         miscInfo.push(text);
 
                         if (item.Type != "Recording") {
-                            text = LibraryBrowser.getDisplayTime(date);
+                            text = datetime.getDisplayTime(date);
                             miscInfo.push(text);
                         }
                     }
