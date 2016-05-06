@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['datetime'], function (datetime) {
 
     function getTimersHtml(timers) {
 
@@ -13,7 +13,7 @@
 
                     var timer = timers[i];
 
-                    var startDateText = LibraryBrowser.getFutureDateText(parseISO8601Date(timer.StartDate, { toLocal: true }));
+                    var startDateText = LibraryBrowser.getFutureDateText(datetime.parseISO8601Date(timer.StartDate, true));
 
                     if (startDateText != index) {
 
@@ -69,8 +69,8 @@
                     html += '</div>';
 
                     html += '<div secondary>';
-                    html += LibraryBrowser.getDisplayTime(timer.StartDate);
-                    html += ' - ' + LibraryBrowser.getDisplayTime(timer.EndDate);
+                    html += datetime.getDisplayTime(timer.StartDate);
+                    html += ' - ' + datetime.getDisplayTime(timer.EndDate);
                     html += '</div>';
 
                     html += '</a>';
@@ -130,7 +130,7 @@
             if (airDate && item.IsRepeat) {
 
                 try {
-                    airDate = parseISO8601Date(airDate, { toLocal: true }).toLocaleDateString();
+                    airDate = datetime.parseISO8601Date(airDate, true).toLocaleDateString();
                 }
                 catch (e) {
                     console.log("Error parsing date: " + airDate);

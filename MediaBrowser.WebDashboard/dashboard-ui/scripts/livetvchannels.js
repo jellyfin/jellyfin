@@ -35,9 +35,13 @@
 
     function getChannelsHtml(channels) {
 
-        return LibraryBrowser.getListViewHtml({
+        return LibraryBrowser.getPosterViewHtml({
             items: channels,
-            smallIcon: true
+            shape: "square",
+            showTitle: true,
+            lazy: true,
+            cardLayout: true,
+            showDetailsMenu: true
         });
     }
 

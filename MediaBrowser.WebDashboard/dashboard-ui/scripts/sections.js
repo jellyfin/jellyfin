@@ -163,12 +163,14 @@
 
     function getAppInfo() {
 
-        if (AppInfo.nativeApp) {
-            return Promise.resolve('');
+        var frequency = 86400000;
+
+        if (AppInfo.isNativeApp) {
+            frequency = 604800000;
         }
 
         var cacheKey = 'lastappinfopresent5';
-        if ((new Date().getTime() - parseInt(appSettings.get(cacheKey) || '0')) < 86400000) {
+        if ((new Date().getTime() - parseInt(appSettings.get(cacheKey) || '0')) < frequency) {
             return Promise.resolve('');
         }
 
@@ -180,7 +182,11 @@
                 return '';
             }
 
-            var infos = [getTheaterInfo, getPremiereInfo];
+            var infos = [getPremiereInfo];
+
+            if (!browserInfo.safari || !AppInfo.isNativeApp) {
+                infos.push(getTheaterInfo);
+            }
 
             appSettings.set(cacheKey, new Date().getTime());
 
@@ -198,7 +204,9 @@
         var html = '';
         html += '<div>';
         html += '<h1>Try Emby Theater<paper-icon-button icon="close" onclick="jQuery(this.parentNode.parentNode).remove();" style="margin-left:1em;"></paper-icon-button></h1>';
-        html += '<p>A beautiful app for your TV and large screen tablet. <a href="https://emby.media/download" target="_blank">Emby Theater</a> runs on Windows, Xbox One, Google Chrome, FireFox, Microsoft Edge and Opera.</p>';
+
+        var nameText = AppInfo.isNativeApp ? 'Emby Theater' : '<a href="https://emby.media/download" target="_blank">Emby Theater</a>';
+        html += '<p>A beautiful app for your TV and large screen tablet. ' + nameText + ' runs on Windows, Xbox One, Google Chrome, FireFox, Microsoft Edge and Opera.</p>';
         html += '<div class="itemsContainer">';
         html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/theater1.png', 'https://emby.media/download');
         html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/theater2.png', 'https://emby.media/download');
@@ -214,7 +222,10 @@
         var html = '';
         html += '<div>';
         html += '<h1>Try Emby Premiere<paper-icon-button icon="close" onclick="jQuery(this.parentNode.parentNode).remove();" style="margin-left:1em;"></paper-icon-button></h1>';
-        html += '<p>Design beautiful Cover Art, enjoy free access to Emby apps, and more. <a href="https://emby.media/premiere" target="_blank">Learn more</a></p>';
+
+        var learnMoreText = AppInfo.isNativeApp ? '' : '<a href="https://emby.media/premiere" target="_blank">Learn more</a>';
+
+        html += '<p>Design beautiful Cover Art, enjoy free access to Emby apps, and more. ' + learnMoreText + '</p>';
         html += '<div class="itemsContainer">';
         html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/theater1.png', 'https://emby.media/premiere');
         html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/theater2.png', 'https://emby.media/premiere');

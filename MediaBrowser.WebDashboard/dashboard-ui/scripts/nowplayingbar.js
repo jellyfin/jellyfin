@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['datetime', 'jQuery'], function (datetime, $) {
 
     var currentPlayer;
 
@@ -247,7 +247,7 @@
                 ticks /= 100;
                 ticks *= value;
 
-                this.pinValue = Dashboard.getDisplayTime(ticks);
+                this.pinValue = datetime.getDisplayRunningTime(ticks);
             };
         }, 300);
     }
@@ -375,11 +375,11 @@
             }
         }
 
-        var timeText = Dashboard.getDisplayTime(playState.PositionTicks);
+        var timeText = datetime.getDisplayRunningTime(playState.PositionTicks);
 
         if (nowPlayingItem.RunTimeTicks) {
 
-            timeText += " / " + Dashboard.getDisplayTime(nowPlayingItem.RunTimeTicks);
+            timeText += " / " + datetime.getDisplayRunningTime(nowPlayingItem.RunTimeTicks);
 
         }
 

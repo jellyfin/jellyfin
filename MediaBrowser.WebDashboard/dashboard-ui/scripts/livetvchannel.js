@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['datetime', 'tvguide'], function (datetime) {
 
     function renderPrograms(page, result) {
 
@@ -12,10 +12,10 @@
 
             var program = result.Items[i];
 
-            var startDate = parseISO8601Date(program.StartDate, { toLocal: true });
+            var startDate = datetime.parseISO8601Date(program.StartDate, true);
             var startDateText = LibraryBrowser.getFutureDateText(startDate);
 
-            var endDate = parseISO8601Date(program.EndDate, { toLocal: true });
+            var endDate = datetime.parseISO8601Date(program.EndDate, true);
 
             if (startDateText != currentIndexValue) {
 
@@ -32,7 +32,7 @@
             }
 
             html += '<div class="' + cssClass + '">';
-            html += '<div class="tvProgramTimeSlotInner">' + LibraryBrowser.getDisplayTime(startDate) + '</div>';
+            html += '<div class="tvProgramTimeSlotInner">' + datetime.getDisplayTime(startDate) + '</div>';
             html += '</div>';
 
             cssClass = "tvProgramInfo";
@@ -96,7 +96,7 @@
             html += '</a>';
         }
 
-        $('#childrenContent', page).html(html);
+        page.querySelector('#childrenContent').innerHTML = html;
     }
 
     function loadPrograms(page, channelId) {

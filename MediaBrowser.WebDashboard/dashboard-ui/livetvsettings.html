@@ -39,6 +39,23 @@
                     <div class="fieldDescription">${LabelRecordingPathHelp}</div>
                 </div>
                 <br />
+                <div>
+                    <paper-checkbox id="chkEnableRecordingSubfolders">${OptionEnableRecordingSubfolders}</paper-checkbox>
+                </div>
+                <div class="hide">
+                    <br />
+                    <paper-input id="txtMovieRecordingPath" label="${LabelMovieRecordingPath}" style="width:84%;display:inline-block;"></paper-input>
+                    <paper-icon-button id="btnSelectMovieRecordingPath" icon="search"></paper-icon-button>
+                </div>
+                <div class="hide">
+                    <paper-input id="txtSeriesRecordingPath" label="${LabelSeriesRecordingPath}" style="width:84%;display:inline-block;"></paper-input>
+                    <paper-icon-button id="btnSelectSeriesRecordingPath" icon="search"></paper-icon-button>
+                </div>
+                <br />
+                <div>
+                    <paper-checkbox id="chkOrganize">${OptionSendRecordingsToAutoOrganize}</paper-checkbox>
+                </div>
+                <br />
                 <br />
                 <div>
                     <paper-checkbox id="chkConvertRecordings">${OptionConvertRecordingsToStreamingFormat}</paper-checkbox>
@@ -49,12 +66,6 @@
                 <div>
                     <paper-checkbox id="chkPreserveAudio">${OptionConvertRecordingPreserveAudio}</paper-checkbox>
                     <div class="fieldDescription paperCheckboxFieldDescription">${OptionConvertRecordingPreserveAudioHelp}</div>
-                </div>
-                <br />
-                <br />
-                <div>
-                    <paper-checkbox id="chkOrganize">${OptionSendRecordingsToAutoOrganize}</paper-checkbox>
-                    <div class="fieldDescription paperCheckboxFieldDescription">${OptionSendRecordingsToAutoOrganizeHelp}</div>
                 </div>
                 <br />
                 <br />

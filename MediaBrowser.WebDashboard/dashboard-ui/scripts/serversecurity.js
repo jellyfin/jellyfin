@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['datetime', 'jQuery'], function (datetime, $) {
 
     function revoke(page, key) {
 
@@ -59,9 +59,9 @@
 
             html += '<td style="vertical-align:middle;">';
 
-            var date = parseISO8601Date(item.DateCreated, { toLocal: true });
+            var date = datetime.parseISO8601Date(item.DateCreated, true);
 
-            html += date.toLocaleDateString() + ' ' + LibraryBrowser.getDisplayTime(date);
+            html += datetime.toLocaleDateString(date) + ' ' + datetime.getDisplayTime(date);
 
             html += '</td>';
 

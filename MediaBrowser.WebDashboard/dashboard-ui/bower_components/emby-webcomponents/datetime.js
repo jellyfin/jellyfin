@@ -103,7 +103,26 @@
         return false;
     }();
 
+    function toLocaleDateString(date) {
+        
+        var currentLocale = globalize.getCurrentLocale();
+
+        return currentLocale && toLocaleTimeStringSupportsLocales ?
+            date.toLocaleDateString(currentLocale) :
+            date.toLocaleDateString();
+    }
+
     function getDisplayTime(date) {
+
+        if ((typeof date).toString().toLowerCase() === 'string') {
+            try {
+
+                date = parseISO8601Date(date, true);
+
+            } catch (err) {
+                return date;
+            }
+        }
 
         var currentLocale = globalize.getCurrentLocale();
 
@@ -115,7 +134,6 @@
 
         if (timeLower.indexOf('am') != -1 || timeLower.indexOf('pm') != -1) {
 
-            time = timeLower;
             var hour = date.getHours() % 12;
             var suffix = date.getHours() > 11 ? 'pm' : 'am';
             if (!hour) {
@@ -144,6 +162,7 @@
     return {
         parseISO8601Date: parseISO8601Date,
         getDisplayRunningTime: getDisplayRunningTime,
+        toLocaleDateString: toLocaleDateString,
         getDisplayTime: getDisplayTime
     };
 });

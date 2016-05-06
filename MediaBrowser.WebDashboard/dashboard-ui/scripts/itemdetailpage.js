@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'jQuery', 'scrollStyles'], function (layoutManager, $) {
+﻿define(['layoutManager', 'datetime', 'jQuery', 'scrollStyles'], function (layoutManager, datetime, $) {
 
     var currentItem;
 
@@ -93,7 +93,7 @@
 
                 var now = new Date();
 
-                if (now >= parseISO8601Date(item.StartDate, { toLocal: true }) && now < parseISO8601Date(item.EndDate, { toLocal: true })) {
+                if (now >= datetime.parseISO8601Date(item.StartDate, true) && now < datetime.parseISO8601Date(item.EndDate, true)) {
                     $('.btnPlay', page).removeClass('hide');
                     canPlay = true;
                 } else {
@@ -176,7 +176,7 @@
             if (item.Type == "Person" && item.PremiereDate) {
 
                 try {
-                    var birthday = parseISO8601Date(item.PremiereDate, { toLocal: true }).toDateString();
+                    var birthday = datetime.parseISO8601Date(item.PremiereDate, true).toDateString();
 
                     $('#itemBirthday', page).show().html(Globalize.translate('BirthDateValue').replace('{0}', birthday));
                 }
@@ -190,7 +190,7 @@
             if (item.Type == "Person" && item.EndDate) {
 
                 try {
-                    var deathday = parseISO8601Date(item.EndDate, { toLocal: true }).toDateString();
+                    var deathday = datetime.parseISO8601Date(item.EndDate, true).toDateString();
 
                     $('#itemDeathDate', page).show().html(Globalize.translate('DeathDateValue').replace('{0}', deathday));
                 }
@@ -222,7 +222,7 @@
 
         if (item.LocationType == "Virtual" && item.Type == "Episode") {
             try {
-                if (item.PremiereDate && (new Date().getTime() >= parseISO8601Date(item.PremiereDate, { toLocal: true }).getTime())) {
+                if (item.PremiereDate && (new Date().getTime() >= datetime.parseISO8601Date(item.PremiereDate, true).getTime())) {
                     isMissingEpisode = true;
                 }
             } catch (err) {
@@ -341,7 +341,7 @@
             });
 
             var itemsContainer = section.querySelector('.nextUpItems');
-            
+
             itemsContainer.innerHTML = html;
             ImageLoader.lazyChildren(itemsContainer);
             $(itemsContainer).createCardMenus();
@@ -1221,7 +1221,7 @@
 
                 try {
 
-                    var date = parseISO8601Date(review.Date, { toLocal: true }).toLocaleDateString();
+                    var date = datetime.parseISO8601Date(review.Date, true).toLocaleDateString();
 
                     html += '<span class="reviewDate">' + date + '</span>';
                 }
@@ -1402,7 +1402,7 @@
             html += '<div class="cardFooter">';
             html += '<div class="cardText">' + chapterName + '</div>';
             html += '<div class="cardText">';
-            html += Dashboard.getDisplayTime(chapter.StartPositionTicks);
+            html += datetime.getDisplayRunningTime(chapter.StartPositionTicks);
             html += '</div>';
 
             //cardFooter
@@ -1639,7 +1639,7 @@
             html += '<div class="cardText">' + item.Name + '</div>';
             html += '<div class="cardText">';
             if (item.RunTimeTicks != "") {
-                html += Dashboard.getDisplayTime(item.RunTimeTicks);
+                html += datetime.getDisplayRunningTime(item.RunTimeTicks);
             }
             else {
                 html += "&nbsp;";

@@ -268,46 +268,7 @@ namespace MediaBrowser.Api.Library
         /// <param name="request">The request.</param>
         public void Delete(RemoveVirtualFolder request)
         {
-            if (string.IsNullOrWhiteSpace(request.Name))
-            {
-                throw new ArgumentNullException("request");
-            }
-
-            var rootFolderPath = _appPaths.DefaultUserViewsPath;
-
-            var path = Path.Combine(rootFolderPath, request.Name);
-
-			if (!_fileSystem.DirectoryExists(path))
-            {
-                throw new DirectoryNotFoundException("The media folder does not exist");
-            }
-
-            _libraryMonitor.Stop();
-
-            try
-            {
-                _fileSystem.DeleteDirectory(path, true);
-            }
-            finally
-            {
-                Task.Run(() =>
-                {
-                    // No need to start if scanning the library because it will handle it
-                    if (request.RefreshLibrary)
-                    {
-                        _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
-                    }
-                    else
-                    {
-                        // Need to add a delay here or directory watchers may still pick up the changes
-                        var task = Task.Delay(1000);
-                        // Have to block here to allow exceptions to bubble
-                        Task.WaitAll(task);
-
-                        _libraryMonitor.Start();
-                    }
-                });
-            }
+            _libraryManager.RemoveVirtualFolder(request.Name, request.RefreshLibrary);
         }
 
         /// <summary>
@@ -364,7 +325,7 @@ namespace MediaBrowser.Api.Library
 
             try
             {
-                LibraryHelpers.RemoveMediaPath(_fileSystem, request.Name, request.Path, _appPaths);
+                _libraryManager.RemoveMediaPath(request.Name, request.Path);
             }
             finally
             {

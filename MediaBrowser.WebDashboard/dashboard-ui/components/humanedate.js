@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['datetime'], function (datetime) {
 
     /*
      * Javascript Humane Dates
@@ -29,7 +29,7 @@
         ];
 
         var dt = new Date;
-        var date = parseISO8601Date(date_str, { toLocal: true });
+        var date = datetime.parseISO8601Date(date_str, true);
 
         var seconds = ((dt - date) / 1000);
         var token = ' ago';

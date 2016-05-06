@@ -175,7 +175,7 @@ namespace MediaBrowser.Api
 
             foreach (var item in items.Where(i => i.Id != primaryVersion.Id))
             {
-                item.PrimaryVersionId = primaryVersion.Id;
+                item.PrimaryVersionId = primaryVersion.Id.ToString("N");
 
                 await item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 

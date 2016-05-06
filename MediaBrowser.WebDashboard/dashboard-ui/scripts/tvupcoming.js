@@ -1,4 +1,4 @@
-﻿define(['scrollStyles'], function () {
+﻿define(['datetime', 'scrollStyles'], function (datetime) {
 
     function loadUpcoming(context, params) {
 
@@ -62,7 +62,7 @@
             if (item.PremiereDate) {
                 try {
 
-                    var premiereDate = parseISO8601Date(item.PremiereDate, { toLocal: true });
+                    var premiereDate = datetime.parseISO8601Date(item.PremiereDate, true);
 
                     if (premiereDate.getDate() == new Date().getDate() - 1) {
                         dateText = Globalize.translate('Yesterday');

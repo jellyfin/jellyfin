@@ -1,4 +1,4 @@
-﻿define(['browser', 'jQuery', 'paper-fab', 'paper-tabs', 'paper-slider', 'paper-icon-button'], function (browser, $) {
+﻿define(['browser', 'datetime', 'jQuery', 'paper-fab', 'paper-tabs', 'paper-slider', 'paper-icon-button'], function (browser, datetime, $) {
 
     function showSlideshowMenu(context) {
         require(['scripts/slideshow'], function () {
@@ -343,11 +343,11 @@
             if (playState.PositionTicks == null) {
                 context.querySelector('.positionTime').innerHTML = '--:--';
             } else {
-                context.querySelector('.positionTime').innerHTML = Dashboard.getDisplayTime(playState.PositionTicks);
+                context.querySelector('.positionTime').innerHTML = datetime.getDisplayRunningTime(playState.PositionTicks);
             }
 
             if (item && item.RunTimeTicks != null) {
-                context.querySelector('.runtime').innerHTML = Dashboard.getDisplayTime(item.RunTimeTicks);
+                context.querySelector('.runtime').innerHTML = datetime.getDisplayRunningTime(item.RunTimeTicks);
             } else {
                 context.querySelector('.runtime').innerHTML = '--:--';
             }
@@ -733,7 +733,7 @@
                 ticks /= 100;
                 ticks *= value;
 
-                this.pinValue = Dashboard.getDisplayTime(ticks);
+                this.pinValue = datetime.getDisplayRunningTime(ticks);
             };
 
             context.addEventListener('click', onContextClick);

@@ -1,0 +1,57 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <title>paper-icon-button-light demo</title>
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+    <link rel="import" href="../../iron-icons/iron-icons.html">
+    <link rel="import" href="../../paper-styles/color.html">
+    <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+    <link rel="import" href="../paper-icon-button-light.html">
+
+    <style is="custom-style" include="demo-pages-shared-styles"></style>
+  </head>
+  <body unresolved>
+    <div class="vertical-section-container centered">
+      <h3>paper-icon-button-light can contain iron-icons or external images and can be disabled</h3>
+      <demo-snippet class="centered-demo">
+        <template>
+          <style is="custom-style">
+            button[is=paper-icon-button-light] {
+              width: 40px;
+              height: 40px;
+              padding: 8px;
+              margin: 10px;
+            }
+
+            button[is=paper-icon-button-light] > img {
+              width: 24px;
+              height: 24px;
+            }
+          </style>
+
+          <button is="paper-icon-button-light" title="heart">
+            <iron-icon icon="favorite"></iron-icon>
+          </button>
+          <button is="paper-icon-button-light" title="octocat">
+            <img src="https://assets-cdn.github.com/images/modules/logos_page/Octocat.png" alt="octocat">
+          </button>
+          <button is="paper-icon-button-light" title="reply" disabled>
+            <iron-icon icon="reply"></iron-icon>
+          </button>
+        </template>
+      </demo-snippet>
+    </div>
+  </body>
+</html>

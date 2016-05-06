@@ -34,7 +34,7 @@
 
         html += '<paper-icon-button icon="mic" class="headerButton headerButtonRight headerVoiceButton hide"></paper-icon-button>';
 
-        html += '<button class="headerButton headerButtonRight btnNotifications clearButton" type="button" title="Notifications"><div class="btnNotificationsInner">0</div></button>';
+        html += '<paper-button class="headerButton headerButtonRight btnNotifications clearButton" type="button" title="Notifications"><div class="btnNotificationsInner">0</div></paper-button>';
 
         html += '<paper-icon-button icon="person" class="headerButton headerButtonRight headerUserButton"></paper-icon-button>';
 
@@ -1119,7 +1119,7 @@
     var headerCreated;
     var userRequiresUpdateAfterHeader;
 
-    require(['paper-icon-button', 'emby-icons'], function () {
+    require(['paper-icon-button', 'emby-icons', 'paper-button'], function () {
         renderHeader();
         headerCreated = true;
 

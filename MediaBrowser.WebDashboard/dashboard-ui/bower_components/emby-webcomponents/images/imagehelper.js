@@ -43,6 +43,24 @@ define(['visibleinviewport', 'imageFetcher'], function (visibleinviewport, image
         }
     }
 
+    var supportsCaptureOption = false;
+    try {
+        var opts = Object.defineProperty({}, 'capture', {
+            get: function () {
+                supportsCaptureOption = true;
+            }
+        });
+        window.addEventListener("test", null, opts);
+    } catch (e) { }
+
+    function addEventListenerWithOptions(target, type, handler, options) {
+        var optionsOrCapture = options;
+        if (!supportsCaptureOption) {
+            optionsOrCapture = options.capture;
+        }
+        target.addEventListener(type, handler, optionsOrCapture);
+    }
+
     function unveilElements(images) {
 
         if (!images.length) {
@@ -103,10 +121,19 @@ define(['visibleinviewport', 'imageFetcher'], function (visibleinviewport, image
             }, 1);
         }
 
-        document.addEventListener('scroll', unveil, true);
+        addEventListenerWithOptions(document, 'scroll', unveil, {
+            capture: true,
+            passive: true
+        });
         document.addEventListener('focus', unveil, true);
-        document.addEventListener(wheelEvent, unveil, true);
-        window.addEventListener('resize', unveil, true);
+        addEventListenerWithOptions(document, wheelEvent, unveil, {
+            capture: true,
+            passive: true
+        });
+        addEventListenerWithOptions(window, 'resize', unveil, {
+            capture: true,
+            passive: true
+        });
 
         unveil();
     }

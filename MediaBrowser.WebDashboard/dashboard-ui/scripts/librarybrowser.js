@@ -1,4 +1,4 @@
-﻿define(['playlistManager', 'appSettings', 'appStorage', 'apphost', 'jQuery', 'scrollStyles'], function (playlistManager, appSettings, appStorage, appHost, $) {
+﻿define(['playlistManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'jQuery', 'scrollStyles'], function (playlistManager, appSettings, appStorage, appHost, datetime, $) {
 
     var libraryBrowser = (function (window, document, screen) {
 
@@ -1380,19 +1380,10 @@
                     }
 
                     if (imgUrl) {
-                        var minLazyIndex = 16;
                         if (options.smallIcon) {
-                            if (index < minLazyIndex) {
-                                html += '<div class="listviewImage small" style="background-image:url(\'' + imgUrl + '\');" item-icon></div>';
-                            } else {
-                                html += '<div class="listviewImage lazy small" data-src="' + imgUrl + '" item-icon></div>';
-                            }
+                            html += '<div class="listviewImage lazy small" data-src="' + imgUrl + '" item-icon></div>';
                         } else {
-                            if (index < minLazyIndex) {
-                                html += '<div class="listviewImage" style="background-image:url(\'' + imgUrl + '\');" item-icon></div>';
-                            } else {
-                                html += '<div class="listviewImage lazy" data-src="' + imgUrl + '" item-icon></div>';
-                            }
+                            html += '<div class="listviewImage lazy" data-src="' + imgUrl + '" item-icon></div>';
                         }
                     } else {
                         if (options.smallIcon) {
@@ -1925,7 +1916,7 @@
                         if (item.StartDate) {
                             try {
 
-                                dateText = LibraryBrowser.getFutureDateText(parseISO8601Date(item.StartDate, { toLocal: true }), true);
+                                dateText = LibraryBrowser.getFutureDateText(datetime.parseISO8601Date(item.StartDate, true), true);
 
                             } catch (err) {
                             }
@@ -2421,6 +2412,15 @@
                     lines.push(item.ProductionYear || '');
                 }
 
+                 if (item.Type == 'TvChannel') {
+
+                    if (item.CurrentProgram) {
+                        lines.push(LibraryBrowser.getPosterViewDisplayName(item.CurrentProgram));
+                    } else {
+                        lines.push('');
+                    }
+                }
+
                 if (options.showSeriesYear) {
 
                     if (item.Status == "Continuing") {
@@ -2435,7 +2435,7 @@
 
                 if (options.showProgramAirInfo) {
 
-                    var date = parseISO8601Date(item.StartDate, { toLocal: true });
+                    var date = datetime.parseISO8601Date(item.StartDate, true);
 
                     var text = item.StartDate ?
                         date.toLocaleString() :
@@ -2623,7 +2623,7 @@
                 if (item.Type == 'Episode') {
                     try {
 
-                        var date = parseISO8601Date(item.PremiereDate, { toLocal: true });
+                        var date = datetime.parseISO8601Date(item.PremiereDate, true);
 
                         if (item.PremiereDate && (new Date().getTime() < date.getTime())) {
                             return '<div class="posterRibbon unairedPosterRibbon">' + Globalize.translate('HeaderUnaired') + '</div>';
@@ -3422,56 +3422,6 @@
                 detailImageProgressContainer.innerHTML = progressHtml || '';
             },
 
-            getDisplayTime: function (date) {
-
-                if ((typeof date).toString().toLowerCase() === 'string') {
-                    try {
-
-                        date = parseISO8601Date(date, { toLocal: true });
-
-                    } catch (err) {
-                        return date;
-                    }
-                }
-
-                var lower = date.toLocaleTimeString().toLowerCase();
-
-                var hours = date.getHours();
-                var minutes = date.getMinutes();
-
-                var text;
-
-                if (lower.indexOf('am') != -1 || lower.indexOf('pm') != -1) {
-
-                    var suffix = hours > 11 ? 'pm' : 'am';
-
-                    hours = (hours % 12) || 12;
-
-                    text = hours;
-
-                    if (minutes) {
-
-                        text += ':';
-                        if (minutes < 10) {
-                            text += '0';
-                        }
-                        text += minutes;
-                    }
-
-                    text += suffix;
-
-                } else {
-                    text = hours + ':';
-
-                    if (minutes < 10) {
-                        text += '0';
-                    }
-                    text += minutes;
-                }
-
-                return text;
-            },
-
             getMiscInfoHtml: function (item) {
 
                 var miscInfo = [];
@@ -3501,7 +3451,7 @@
                     if (item.PremiereDate) {
 
                         try {
-                            date = parseISO8601Date(item.PremiereDate, { toLocal: true });
+                            date = datetime.parseISO8601Date(item.PremiereDate, true);
 
                             text = date.toLocaleDateString();
                             miscInfo.push(text);
@@ -3515,13 +3465,13 @@
                 if (item.StartDate) {
 
                     try {
-                        date = parseISO8601Date(item.StartDate, { toLocal: true });
+                        date = datetime.parseISO8601Date(item.StartDate, true);
 
                         text = date.toLocaleDateString();
                         miscInfo.push(text);
 
                         if (item.Type != "Recording") {
-                            text = LibraryBrowser.getDisplayTime(date);
+                            text = datetime.getDisplayTime(date);
                             miscInfo.push(text);
                         }
                     }
@@ -3544,10 +3494,10 @@
 
                             try {
 
-                                var endYear = parseISO8601Date(item.EndDate, { toLocal: true }).getFullYear();
+                                var endYear = datetime.parseISO8601Date(item.EndDate, true).getFullYear();
 
                                 if (endYear != item.ProductionYear) {
-                                    text += "-" + parseISO8601Date(item.EndDate, { toLocal: true }).getFullYear();
+                                    text += "-" + datetime.parseISO8601Date(item.EndDate, true).getFullYear();
                                 }
 
                             }
@@ -3569,7 +3519,7 @@
                     else if (item.PremiereDate) {
 
                         try {
-                            text = parseISO8601Date(item.PremiereDate, { toLocal: true }).getFullYear();
+                            text = datetime.parseISO8601Date(item.PremiereDate, true).getFullYear();
                             miscInfo.push(text);
                         }
                         catch (e) {
@@ -3584,7 +3534,7 @@
 
                     if (item.Type == "Audio") {
 
-                        miscInfo.push(Dashboard.getDisplayTime(item.RunTimeTicks));
+                        miscInfo.push(datetime.getDisplayRunningTime(item.RunTimeTicks));
 
                     } else {
                         minutes = item.RunTimeTicks / 600000000;
@@ -3597,7 +3547,7 @@
 
                 if (item.CumulativeRunTimeTicks && item.Type != "Series" && item.Type != "Season") {
 
-                    miscInfo.push(Dashboard.getDisplayTime(item.CumulativeRunTimeTicks));
+                    miscInfo.push(datetime.getDisplayRunningTime(item.CumulativeRunTimeTicks));
                 }
 
                 if (item.OfficialRating && item.Type !== "Season" && item.Type !== "Episode") {
@@ -3737,7 +3687,7 @@
                 if (item.PremiereDate) {
                     try {
 
-                        var date = parseISO8601Date(item.PremiereDate, { toLocal: true });
+                        var date = datetime.parseISO8601Date(item.PremiereDate, true);
 
                         var translationKey = new Date().getTime() > date.getTime() ? "ValuePremiered" : "ValuePremieres";
 

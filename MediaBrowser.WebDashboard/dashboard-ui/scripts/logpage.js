@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function ($) {
+﻿define(['datetime', 'jQuery', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (datetime, $) {
 
     function getTabs() {
         return [
@@ -61,11 +61,11 @@
 
                     logHtml += "<div>" + log.Name + "</div>";
 
-                    var date = parseISO8601Date(log.DateModified, { toLocal: true });
+                    var date = datetime.parseISO8601Date(log.DateModified, true);
 
                     var text = date.toLocaleDateString();
 
-                    text += ' ' + LibraryBrowser.getDisplayTime(date);
+                    text += ' ' + datetime.getDisplayTime(date);
 
                     logHtml += '<div secondary>' + text + '</div>';
 

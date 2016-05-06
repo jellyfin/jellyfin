@@ -1,11 +1,11 @@
-﻿define(['jQuery', 'paper-progress', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'paper-icon-button', 'paper-button'], function ($) {
+﻿define(['jQuery', 'datetime', 'paper-progress', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'paper-icon-button', 'paper-button'], function ($, datetime) {
 
     function renderJob(page, job, dialogOptions) {
 
         var html = '';
 
         html += '<div>';
-        html += Globalize.translate('ValueDateCreated', parseISO8601Date(job.DateCreated, { toLocal: true }).toLocaleString());
+        html += Globalize.translate('ValueDateCreated', datetime.parseISO8601Date(job.DateCreated, true).toLocaleString());
         html += '</div>';
         html += '<br/>';
         html += '<div class="formFields"></div>';

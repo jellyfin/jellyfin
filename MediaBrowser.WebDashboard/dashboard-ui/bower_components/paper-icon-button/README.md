@@ -2,7 +2,7 @@
 <!---
 
 This README is automatically generated from the comments in these files:
-paper-icon-button.html
+paper-icon-button-light.html  paper-icon-button.html
 
 Edit those files, and our readme bot will duplicate them over here!
 Edit this file, and the bot will squash your changes :)
@@ -77,3 +77,5 @@ The following custom properties and mixins are available for styling:
 | `--paper-icon-button-hover` | Mixin for button on hover | `{}` |
 
 
+
+<!-- No docs for <paper-icon-button-light> found. -->

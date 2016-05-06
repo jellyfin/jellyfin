@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['datetime', 'jQuery'], function (datetime, $) {
 
     function getNode(item, folderState, selected) {
 
@@ -84,7 +84,7 @@
         if (item.Type == "Episode" && item.LocationType == "Virtual") {
 
             try {
-                if (item.PremiereDate && (new Date().getTime() >= parseISO8601Date(item.PremiereDate, { toLocal: true }).getTime())) {
+                if (item.PremiereDate && (new Date().getTime() >= datetime.parseISO8601Date(item.PremiereDate, true).getTime())) {
                     htmlName += '<img src="css/images/editor/missing.png" title="' + Globalize.translate('MissingEpisode') + '" />';
                 }
             } catch (err) {
@@ -446,7 +446,7 @@
     }
 
     window.MetadataEditor = {
-        getItemPromise: function() {
+        getItemPromise: function () {
             var currentItemId = getCurrentItemId();
 
             if (currentItemId) {
