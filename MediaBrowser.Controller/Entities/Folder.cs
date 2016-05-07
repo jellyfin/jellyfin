@@ -199,8 +199,8 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Dictionary{System.StringFunc{UserIEnumerable{BaseItem}}}.</returns>
         protected virtual IEnumerable<string> GetIndexByOptions()
         {
-            return new List<string> {            
-                {"None"}, 
+            return new List<string> {
+                {"None"},
                 {"Performer"},
                 {"Genre"},
                 {"Director"},
@@ -1569,7 +1569,15 @@ namespace MediaBrowser.Controller.Entities
 
         public override bool IsPlayed(User user)
         {
-            return GetRecursiveChildren(user, i => !i.IsFolder && i.LocationType != LocationType.Virtual)
+            var itemsResult = GetItems(new InternalItemsQuery(user)
+            {
+                Recursive = true,
+                IsFolder = false,
+                ExcludeLocationTypes = new[] { LocationType.Virtual }
+
+            }).Result;
+
+            return itemsResult.Items
                 .All(i => i.IsPlayed(user));
         }
 
@@ -1613,19 +1621,15 @@ namespace MediaBrowser.Controller.Entities
 
             double totalPercentPlayed = 0;
 
-            IEnumerable<BaseItem> children;
-            var folder = this;
-
-            var season = folder as Season;
-
-            if (season != null)
+            var itemsResult = GetItems(new InternalItemsQuery(user)
             {
-                children = season.GetEpisodes(user).Where(i => i.LocationType != LocationType.Virtual);
-            }
-            else
-            {
-                children = folder.GetRecursiveChildren(user, i => !i.IsFolder && i.LocationType != LocationType.Virtual);
-            }
+                Recursive = true,
+                IsFolder = false,
+                ExcludeLocationTypes = new[] { LocationType.Virtual }
+
+            }).Result;
+
+            var children = itemsResult.Items;
 
             // Loop through each recursive child
             foreach (var child in children)
