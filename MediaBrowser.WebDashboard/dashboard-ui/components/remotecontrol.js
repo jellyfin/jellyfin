@@ -1,4 +1,4 @@
-﻿define(['browser', 'datetime', 'jQuery', 'paper-fab', 'paper-tabs', 'paper-slider', 'paper-icon-button'], function (browser, datetime, $) {
+﻿define(['browser', 'datetime', 'jQuery', 'paper-fab', 'paper-tabs', 'paper-slider'], function (browser, datetime, $) {
 
     function showSlideshowMenu(context) {
         require(['scripts/slideshow'], function () {
@@ -557,13 +557,13 @@
 
             if (info.isLocalPlayer) {
 
-                btnCast.icon = 'cast';
+                btnCast.querySelector('iron-icon').icon = 'cast';
                 btnCast.classList.remove('btnActiveCast');
                 context.querySelector('.nowPlayingSelectedPlayer').innerHTML = '';
 
             } else {
 
-                btnCast.icon = 'cast-connected';
+                btnCast.querySelector('iron-icon').icon = 'cast-connected';
                 btnCast.classList.add('btnActiveCast');
                 context.querySelector('.nowPlayingSelectedPlayer').innerHTML = info.deviceName || info.name;
             }

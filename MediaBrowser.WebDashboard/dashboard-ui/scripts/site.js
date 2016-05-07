@@ -2922,7 +2922,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/tv.html',
-            dependencies: ['paper-tabs', 'paper-checkbox', 'paper-button'],
+            dependencies: ['paper-tabs', 'paper-checkbox', 'paper-button', 'paper-icon-button-light'],
             autoFocus: false,
             controller: 'scripts/tvrecommended'
         });

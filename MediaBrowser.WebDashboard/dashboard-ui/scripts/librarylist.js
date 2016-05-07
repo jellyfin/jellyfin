@@ -149,24 +149,22 @@
 
         html += '<div>';
 
-        var buttonMargin = isPortrait || isSquare ? "margin:0 4px 0 0;" : "margin:0 10px 0 0;";
-
         var buttonCount = 0;
 
         if (MediaController.canPlay(item)) {
 
             var resumePosition = (item.UserData || {}).PlaybackPositionTicks || 0;
 
-            html += '<paper-icon-button icon="play-circle-outline" class="btnPlayItem" data-itemid="' + item.Id + '" data-itemtype="' + item.Type + '" data-isfolder="' + item.IsFolder + '" data-mediatype="' + item.MediaType + '" data-resumeposition="' + resumePosition + '"></paper-icon-button>';
+            html += '<button is="paper-icon-button-light" class="btnPlayItem" data-itemid="' + item.Id + '" data-itemtype="' + item.Type + '" data-isfolder="' + item.IsFolder + '" data-mediatype="' + item.MediaType + '" data-resumeposition="' + resumePosition + '"><iron-icon icon="play-circle-outline"></iron-icon></button>';
             buttonCount++;
         }
 
         if (commands.indexOf('trailer') != -1) {
-            html += '<paper-icon-button icon="videocam" class="btnPlayTrailer" data-itemid="' + item.Id + '"></paper-icon-button>';
+            html += '<button is="paper-icon-button-light" class="btnPlayTrailer" data-itemid="' + item.Id + '"><iron-icon icon="videocam"></iron-icon></button>';
             buttonCount++;
         }
 
-        html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnMoreCommands"></paper-icon-button>';
+        html += '<button is="paper-icon-button-light" class="btnMoreCommands"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
         buttonCount++;
 
         html += '</div>';
@@ -1057,11 +1055,11 @@
             var html = '';
 
             html += '<div style="float:left;">';
-            html += '<paper-icon-button class="btnCloseSelectionPanel" icon="close"></paper-icon-button>';
+            html += '<button is="paper-icon-button-light" class="btnCloseSelectionPanel"><iron-icon icon="close"></iron-icon></button>';
             html += '<span class="itemSelectionCount"></span>';
             html += '</div>';
 
-            html += '<paper-icon-button class="btnSelectionPanelOptions" icon="more-vert" style="margin-left:auto;"></paper-icon-button>';
+            html += '<button is="paper-icon-button-light" class="btnSelectionPanelOptions" style="margin-left:auto;"><iron-icon icon="more-vert"></iron-icon></button>';
 
             selectionCommandsPanel.innerHTML = html;
 

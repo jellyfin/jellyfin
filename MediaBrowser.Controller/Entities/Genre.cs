@@ -66,6 +66,14 @@ namespace MediaBrowser.Controller.Entities
             return i => !(i is Game) && !(i is IHasMusicGenres) && i.Genres.Contains(Name, StringComparer.OrdinalIgnoreCase);
         }
 
+        public IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query)
+        {
+            query.Genres = new[] { Name };
+            query.ExcludeItemTypes = new[] { typeof(Game).Name, typeof(MusicVideo).Name, typeof(Audio.Audio).Name, typeof(MusicAlbum).Name, typeof(MusicArtist).Name };
+
+            return LibraryManager.GetItemList(query);
+        }
+
         [IgnoreDataMember]
         public override bool SupportsPeople
         {

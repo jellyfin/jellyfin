@@ -287,7 +287,6 @@
     <Compile Include="Entities\MetadataFields.cs" />
     <Compile Include="Entities\UserDataSaveReason.cs" />
     <Compile Include="Entities\Video3DFormat.cs" />
-    <Compile Include="Games\GameSystem.cs" />
     <Compile Include="IO\IIsoManager.cs" />
     <Compile Include="IO\IIsoMount.cs" />
     <Compile Include="IO\IIsoMounter.cs" />

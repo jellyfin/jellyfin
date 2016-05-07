@@ -1482,7 +1482,7 @@
                     html += '</a>';
                     html += '</paper-item-body>';
 
-                    html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="listviewMenuButton"></paper-icon-button>';
+                    html += '<button is="paper-icon-button-light" class="listviewMenuButton"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
                     html += '<span class="listViewUserDataButtons">';
                     html += LibraryBrowser.getUserDataIconsHtml(item);
                     html += '</span>';
@@ -2323,10 +2323,10 @@
                 html += '</a>';
 
                 if (options.overlayPlayButton && !item.IsPlaceHolder && (item.LocationType != 'Virtual' || !item.MediaType || item.Type == 'Program') && item.Type != 'Person') {
-                    html += '<div class="cardOverlayButtonContainer"><paper-icon-button icon="play-arrow" class="cardOverlayPlayButton" onclick="return false;"></paper-icon-button></div>';
+                    html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayPlayButton" onclick="return false;"><iron-icon icon="play-arrow"></iron-icon></button></div>';
                 }
                 if (options.overlayMoreButton) {
-                    html += '<div class="cardOverlayButtonContainer"><paper-icon-button icon="' + AppInfo.moreIcon + '" class="cardOverlayMoreButton" onclick="return false;"></paper-icon-button></div>';
+                    html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayMoreButton" onclick="return false;"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button></div>';
                 }
 
                 // cardScalable
@@ -2351,7 +2351,7 @@
 
                 if (options.cardLayout) {
                     html += '<div class="cardButtonContainer">';
-                    html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="listviewMenuButton btnCardOptions"></paper-icon-button>';
+                    html += '<button is="paper-icon-button-light" class="listviewMenuButton btnCardOptions"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
                     html += "</div>";
                 }
 
@@ -2981,23 +2981,23 @@
 
                     if (showControls) {
 
-                        html += '<paper-icon-button class="btnPreviousPage" icon="arrow-back" ' + (startIndex ? '' : 'disabled') + '></paper-icon-button>';
-                        html += '<paper-icon-button class="btnNextPage" icon="arrow-forward" ' + (startIndex + limit >= totalRecordCount ? 'disabled' : '') + '></paper-icon-button>';
+                        html += '<button is="paper-icon-button-light" class="btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '><iron-icon icon="arrow-back"></iron-icon></button>';
+                        html += '<button is="paper-icon-button-light" class="btnNextPage" ' + (startIndex + limit >= totalRecordCount ? 'disabled' : '') + '><iron-icon icon="arrow-forward"></iron-icon></button>';
                     }
 
                     if (options.addLayoutButton) {
 
-                        html += '<paper-icon-button title="' + Globalize.translate('ButtonSelectView') + '" class="btnChangeLayout" data-layouts="' + (options.layouts || '') + '" onclick="LibraryBrowser.showLayoutMenu(this, \'' + (options.currentLayout || '') + '\');" icon="view-comfy"></paper-icon-button>';
+                        html += '<button is="paper-icon-button-light" title="' + Globalize.translate('ButtonSelectView') + '" class="btnChangeLayout" data-layouts="' + (options.layouts || '') + '" onclick="LibraryBrowser.showLayoutMenu(this, \'' + (options.currentLayout || '') + '\');"><iron-icon icon="view-comfy"></iron-icon></button>';
                     }
 
                     if (options.sortButton) {
 
-                        html += '<paper-icon-button class="btnSort" title="' + Globalize.translate('ButtonSort') + '" icon="sort-by-alpha"></paper-icon-button>';
+                        html += '<button is="paper-icon-button-light" class="btnSort" title="' + Globalize.translate('ButtonSort') + '"><iron-icon icon="sort-by-alpha"></iron-icon></button>';
                     }
 
                     if (options.filterButton) {
 
-                        html += '<paper-icon-button class="btnFilter" title="' + Globalize.translate('ButtonFilter') + '" icon="filter-list"></paper-icon-button>';
+                        html += '<button is="paper-icon-button-light" class="btnFilter" title="' + Globalize.translate('ButtonFilter') + '"><iron-icon icon="filter-list"></iron-icon></button>';
                     }
 
                     html += '</div>';
@@ -3164,10 +3164,13 @@
 
             getUserDataButtonHtml: function (method, itemId, btnCssClass, icon, tooltip, style) {
 
-                var tagName = style == 'fab' ? 'paper-fab' : 'paper-icon-button';
+                if (style == 'fab') {
+                    
+                    var tagName = 'paper-fab';
+                    return '<' + tagName + ' title="' + tooltip + '" data-itemid="' + itemId + '" icon="' + icon + '" class="' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"></' + tagName + '>';
+                }
 
-                return '<' + tagName + ' title="' + tooltip + '" data-itemid="' + itemId + '" icon="' + icon + '" class="' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"></' + tagName + '>';
-
+                return '<button is="paper-icon-button-light" title="' + tooltip + '" data-itemid="' + itemId + '"  class="' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"><iron-icon icon="' + icon + '"></iron-icon></button>';
             },
 
             getUserDataIconsHtml: function (item, includePlayed, style) {
@@ -3190,22 +3193,6 @@
                             }
                         }
                     }
-                }
-
-                var tooltipLike = Globalize.translate('TooltipLike');
-                var tooltipDislike = Globalize.translate('TooltipDislike');
-
-                if (typeof userData.Likes == "undefined") {
-                    html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating', 'thumb-down', tooltipDislike, style);
-                    html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating', 'thumb-up', tooltipLike, style);
-                }
-                else if (userData.Likes) {
-                    html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating', 'thumb-down', tooltipDislike, style);
-                    html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating btnUserItemRatingOn', 'thumb-up', tooltipLike, style);
-                }
-                else {
-                    html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating btnUserItemRatingOn', 'thumb-down', tooltipDislike, style);
-                    html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating', 'thumb-up', tooltipLike, style);
                 }
 
                 var tooltipFavorite = Globalize.translate('TooltipFavorite');
@@ -3251,56 +3238,6 @@
                     } else {
                         $link.removeClass('btnUserItemRatingOn');
                     }
-                });
-            },
-
-            markLike: function (link) {
-
-                // TODO: remove jQuery
-                require(['jQuery'], function ($) {
-                    var id = link.getAttribute('data-itemid');
-
-                    var $link = $(link);
-
-                    if (!$link.hasClass('btnUserItemRatingOn')) {
-
-                        ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, true);
-
-                        $link.addClass('btnUserItemRatingOn');
-
-                    } else {
-
-                        ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
-
-                        $link.removeClass('btnUserItemRatingOn');
-                    }
-
-                    $link.prev().removeClass('btnUserItemRatingOn');
-                });
-            },
-
-            markDislike: function (link) {
-
-                // TODO: remove jQuery
-                require(['jQuery'], function ($) {
-                    var id = link.getAttribute('data-itemid');
-
-                    var $link = $(link);
-
-                    if (!$link.hasClass('btnUserItemRatingOn')) {
-
-                        ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, false);
-
-                        $link.addClass('btnUserItemRatingOn');
-
-                    } else {
-
-                        ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
-
-                        $link.removeClass('btnUserItemRatingOn');
-                    }
-
-                    $link.next().removeClass('btnUserItemRatingOn');
                 });
             },
 

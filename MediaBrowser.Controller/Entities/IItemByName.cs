@@ -20,6 +20,8 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <returns>Func&lt;BaseItem, System.Boolean&gt;.</returns>
         Func<BaseItem, bool> GetItemFilter();
+
+        IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query);
     }
 
     public interface IHasDualAccess : IItemByName

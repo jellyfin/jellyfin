@@ -1236,12 +1236,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     padding: 0 .75em 0 .25em;
     display: flex;
     align-items: center;
+    color: #fff;
 }
-
-    .selectionCommandsPanel paper-icon-button {
-        color: #fff;
-        vertical-align: middle;
-    }
 
 .itemSelectionCount {
     font-size: 28px;

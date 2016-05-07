@@ -1150,7 +1150,6 @@
     }
 
     function renderUserDataIcons(page, item) {
-
         $('.userDataIcons', page).html(LibraryBrowser.getUserDataIconsHtml(item, true, 'icon-button'));
     }
 

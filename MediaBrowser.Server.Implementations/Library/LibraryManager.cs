@@ -961,7 +961,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     Name = name
 
                 }).Cast<MusicArtist>()
-                .Where(i => !i.IsAccessedByName)
+                .OrderBy(i => i.IsAccessedByName ? 1 : 0)
                 .Cast<T>()
                 .FirstOrDefault();
 
@@ -983,11 +983,6 @@ namespace MediaBrowser.Server.Implementations.Library
                     DateModified = DateTime.UtcNow,
                     Path = path
                 };
-
-                if (isArtist)
-                {
-                    (item as MusicArtist).IsAccessedByName = true;
-                }
 
                 var task = CreateItem(item, CancellationToken.None);
                 Task.WaitAll(task);
@@ -2574,8 +2569,8 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("name");
             }
 
-             name = _fileSystem.GetValidFilename(name);
-            
+            name = _fileSystem.GetValidFilename(name);
+
             var rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
 
             var virtualFolderPath = Path.Combine(rootFolderPath, name);

@@ -1,4 +1,4 @@
-﻿<div id="itemDetailPage" data-role="page" class="page libraryPage itemDetailPage noSecondaryNavPage selfBackdropPage" data-theme="b" data-require="scripts/itemdetailpage,tileitemcss,scripts/livetvcomponents,paper-fab,paper-item-body,paper-icon-item,paper-button">
+﻿<div id="itemDetailPage" data-role="page" class="page libraryPage itemDetailPage noSecondaryNavPage selfBackdropPage" data-theme="b" data-require="scripts/itemdetailpage,tileitemcss,scripts/livetvcomponents,paper-fab,paper-item-body,paper-icon-item,paper-button,paper-icon-button-light">
 
     <div id="itemBackdrop" class="itemBackdrop noBackdrop">
         <div class="itemBackdropContent">
@@ -149,7 +149,9 @@
             <div id="scenesCollapsible" style="display: none;" class="detailSection">
                 <h1>
                     ${HeaderScenes}
-                    <a class="detailSectionHeaderButton chapterSettingsButton clearLink" style="margin-top:-8px;display:inline-block;" href="metadataadvanced.html" title="${ButtonSettings}" style="display:none;"><paper-icon-button icon="settings"></paper-icon-button></a>
+                    <a class="detailSectionHeaderButton chapterSettingsButton clearLink" style="margin-top: -8px; display: inline-block;" href="metadataadvanced.html" title="${ButtonSettings}" style="display: none;">
+                        <button is="paper-icon-button-light"><iron-icon icon="settings"></iron-icon></button>
+                    </a>
                 </h1>
                 <div id="scenesContent" class="smallItemsContainer"></div>
             </div>

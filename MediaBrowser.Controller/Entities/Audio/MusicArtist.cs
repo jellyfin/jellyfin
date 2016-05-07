@@ -17,7 +17,12 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// </summary>
     public class MusicArtist : Folder, IMetadataContainer, IItemByName, IHasMusicGenres, IHasDualAccess, IHasProductionLocations, IHasLookupInfo<ArtistInfo>
     {
-        public bool IsAccessedByName { get; set; }
+        [IgnoreDataMember]
+        public bool IsAccessedByName
+        {
+            get { return ParentId == Guid.Empty; }
+        }
+
         public List<string> ProductionLocations { get; set; }
 
         [IgnoreDataMember]
@@ -38,6 +43,20 @@ namespace MediaBrowser.Controller.Entities.Audio
         public override bool CanDelete()
         {
             return !IsAccessedByName;
+        }
+
+        public IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query)
+        {
+            var itemByNameFilter = GetItemFilter();
+
+            if (query.User != null)
+            {
+                return query.User.RootFolder
+                    .GetRecursiveChildren(query.User, i => !i.IsFolder && itemByNameFilter(i));
+            }
+
+            return LibraryManager.RootFolder
+                .GetRecursiveChildren(i => !i.IsFolder && itemByNameFilter(i));
         }
 
         protected override IEnumerable<BaseItem> ActualChildren
