@@ -170,7 +170,15 @@
         }
 
         var cacheKey = 'lastappinfopresent5';
-        if ((new Date().getTime() - parseInt(appSettings.get(cacheKey) || '0')) < frequency) {
+        var lastDatePresented = parseInt(appSettings.get(cacheKey) || '0');
+
+        // Don't show the first time, right after installation
+        if (!lastDatePresented) {
+            appSettings.set(cacheKey, new Date().getTime());
+            return Promise.resolve('');
+        }
+
+        if ((new Date().getTime() - lastDatePresented) < frequency) {
             return Promise.resolve('');
         }
 

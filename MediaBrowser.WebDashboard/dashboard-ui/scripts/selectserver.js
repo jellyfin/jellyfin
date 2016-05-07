@@ -1,4 +1,4 @@
-﻿define(['paper-icon-button-light', 'jQuery'], function ($) {
+﻿define(['jQuery', 'paper-icon-button-light'], function ($) {
 
     function connectToServer(page, server) {
 
