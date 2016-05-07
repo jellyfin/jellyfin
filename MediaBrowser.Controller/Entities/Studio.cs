@@ -65,6 +65,13 @@ namespace MediaBrowser.Controller.Entities
             return i => i.Studios.Contains(Name, StringComparer.OrdinalIgnoreCase);
         }
 
+        public IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query)
+        {
+            query.Studios = new[] { Name };
+
+            return LibraryManager.GetItemList(query);
+        }
+
         [IgnoreDataMember]
         public override bool SupportsPeople
         {

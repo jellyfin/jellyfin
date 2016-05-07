@@ -109,6 +109,21 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         protected async Task<ItemUpdateType> FetchAsync(IHasImages item, ImageType imageType, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
+            var image = item.GetImageInfo(imageType, 0);
+
+            if (image != null)
+            {
+                if (!image.IsLocalFile)
+                {
+                    return ItemUpdateType.None;
+                }
+
+                if (!FileSystem.ContainsSubPath(item.GetInternalMetadataPath(), image.Path))
+                {
+                    return ItemUpdateType.None;
+                }
+            }
+
             var items = await GetItemsWithImages(item).ConfigureAwait(false);
 
             return await FetchToFileInternal(item, items, imageType, cancellationToken).ConfigureAwait(false);
