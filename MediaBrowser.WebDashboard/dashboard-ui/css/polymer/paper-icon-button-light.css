@@ -1,7 +1,7 @@
 [is=paper-icon-button-light] {
     width: 40px;
     height: 40px;
-    padding: .5em;
+    padding: 8px;
 }
 
     [is=paper-icon-button-light] iron-icon, [is=paper-icon-button-light] img {

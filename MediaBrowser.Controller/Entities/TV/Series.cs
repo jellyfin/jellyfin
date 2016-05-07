@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MoreLinq;
 
 namespace MediaBrowser.Controller.Entities.TV
 {
@@ -180,7 +181,7 @@ namespace MediaBrowser.Controller.Entities.TV
             else
             {
                 items = query.Recursive
-                   ? GetRecursiveChildren(user, filter)
+                   ? GetSeasons(user).Cast<BaseItem>().Concat(GetEpisodes(user)).Where(filter)
                    : GetSeasons(user).Where(filter);
             }
 
@@ -211,7 +212,7 @@ namespace MediaBrowser.Controller.Entities.TV
             }
             else
             {
-                seasons = base.GetChildren(user, true).OfType<Season>();
+                seasons = LibraryManager.Sort(base.GetChildren(user, true), user, new[] { ItemSortBy.SortName }, SortOrder.Ascending).OfType<Season>();
             }
 
             if (!includeMissingSeasons && !includeVirtualUnaired)
@@ -250,17 +251,8 @@ namespace MediaBrowser.Controller.Entities.TV
             // Specials could appear twice based on above - once in season 0, once in the aired season
             // This depends on settings for that series
             // When this happens, remove the duplicate from season 0
-            var returnList = new List<Episode>();
 
-            foreach (var episode in allEpisodes)
-            {
-                if (!returnList.Contains(episode))
-                {
-                    returnList.Insert(0, episode);
-                }
-            }
-
-            return returnList;
+            return allEpisodes.DistinctBy(i => i.Id).Reverse();
         }
 
         public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)

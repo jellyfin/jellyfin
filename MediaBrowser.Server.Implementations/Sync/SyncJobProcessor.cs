@@ -326,32 +326,26 @@ namespace MediaBrowser.Server.Implementations.Sync
             var itemByName = item as IItemByName;
             if (itemByName != null)
             {
-                var itemByNameFilter = itemByName.GetItemFilter();
-
-                return user.RootFolder
-                    .GetRecursiveChildren(user, i => !i.IsFolder && itemByNameFilter(i));
-            }
-
-            var series = item as Series;
-            if (series != null)
-            {
-                return series.GetEpisodes(user, false, false);
-            }
-
-            var season = item as Season;
-            if (season != null)
-            {
-                return season.GetEpisodes(user, false, false);
+                return itemByName.GetTaggedItems(new InternalItemsQuery(user)
+                {
+                    IsFolder = false,
+                    Recursive = true
+                });
             }
 
             if (item.IsFolder)
             {
                 var folder = (Folder)item;
-                var items = folder.GetRecursiveChildren(user, i => !i.IsFolder);
+                var items = folder.GetItems(new InternalItemsQuery(user)
+                {
+                    Recursive = true,
+                    IsFolder = false
+
+                }).Result.Items;
 
                 if (!folder.IsPreSorted)
                 {
-                    items = items.OrderBy(i => i.SortName);
+                    items = items.OrderBy(i => i.SortName).ToArray();
                 }
 
                 return items;

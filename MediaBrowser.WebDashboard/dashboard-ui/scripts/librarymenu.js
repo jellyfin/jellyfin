@@ -795,14 +795,14 @@
 
         if (info.isLocalPlayer) {
 
-            btnCast.icon = 'cast';
+            btnCast.querySelector('iron-icon').icon = 'cast';
             btnCast.classList.remove('btnActiveCast');
 
             context.querySelector('.headerSelectedPlayer').innerHTML = '';
 
         } else {
 
-            btnCast.icon = 'cast-connected';
+            btnCast.querySelector('iron-icon').icon = 'cast-connected';
             btnCast.classList.add('btnActiveCast');
             context.querySelector('.headerSelectedPlayer').innerHTML = info.deviceName || info.name;
         }

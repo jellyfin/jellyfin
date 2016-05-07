@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'jQuery', 'appSettings', 'scrollStyles', 'paper-button'], function (LibraryBrowser, $, appSettings) {
+﻿define(['libraryBrowser', 'jQuery', 'appSettings', 'scrollStyles', 'paper-button', 'paper-icon-button-light'], function (LibraryBrowser, $, appSettings) {
 
     function getUserViews(userId) {
 
@@ -203,7 +203,7 @@
 
         var html = '';
         html += '<div>';
-        html += '<h1>Try Emby Theater<paper-icon-button icon="close" onclick="jQuery(this.parentNode.parentNode).remove();" style="margin-left:1em;"></paper-icon-button></h1>';
+        html += '<h1>Try Emby Theater<button is="paper-icon-button-light" style="margin-left:1em;" onclick="jQuery(this.parentNode.parentNode).remove();"><iron-icon icon="close"></iron-icon></button></h1>';
 
         var nameText = AppInfo.isNativeApp ? 'Emby Theater' : '<a href="https://emby.media/download" target="_blank">Emby Theater</a>';
         html += '<p>A beautiful app for your TV and large screen tablet. ' + nameText + ' runs on Windows, Xbox One, Google Chrome, FireFox, Microsoft Edge and Opera.</p>';
@@ -221,7 +221,7 @@
 
         var html = '';
         html += '<div>';
-        html += '<h1>Try Emby Premiere<paper-icon-button icon="close" onclick="jQuery(this.parentNode.parentNode).remove();" style="margin-left:1em;"></paper-icon-button></h1>';
+        html += '<h1>Try Emby Premiere<button is="paper-icon-button-light" style="margin-left:1em;" onclick="jQuery(this.parentNode.parentNode).remove();"><iron-icon icon="close"></iron-icon></button></h1>';
 
         var learnMoreText = AppInfo.isNativeApp ? '' : '<a href="https://emby.media/premiere" target="_blank">Learn more</a>';
 

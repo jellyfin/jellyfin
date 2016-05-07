@@ -1,12 +1,12 @@
-﻿<div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage noSecondaryNavPage selfBackdropPage" data-contextname="${TitleRemoteControl}" data-theme="b" data-require="scripts/nowplayingpage,paper-tabs,paper-icon-button,paper-slider,paper-button">
+﻿<div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage noSecondaryNavPage selfBackdropPage" data-contextname="${TitleRemoteControl}" data-theme="b" data-require="scripts/nowplayingpage,paper-tabs,paper-icon-button-light,paper-slider,paper-button">
 
     <div class="remoteControlContent">
 
         <div style="background: #080808;">
-            <paper-icon-button icon="arrow-back" class="btnExitRemoteControl" style="position: absolute; top: .5em; left: .5em; z-index: 1;" tabindex="-1"></paper-icon-button>
+            <button is="paper-icon-button-light" style="position: absolute; top: .5em; left: .5em; z-index: 1;" tabindex="-1" class="btnExitRemoteControl"><iron-icon icon="arrow-back"></iron-icon></button>
             <div style="float: right; position: absolute; top: .5em; right: .5em; text-align: right;" class="topRightContainer">
                 <span class="nowPlayingSelectedPlayer"></span>
-                <paper-icon-button icon="cast" class="nowPlayingCastIcon" style="vertical-align:middle;z-index:1;" tabindex="-1"></paper-icon-button>
+                <button is="paper-icon-button-light" class="nowPlayingCastIcon" style="vertical-align: middle; z-index: 1;" tabindex="-1"><iron-icon icon="cast"></iron-icon></button>
             </div>
         </div>
         <div class="libraryViewNav hide" style="position: static;">

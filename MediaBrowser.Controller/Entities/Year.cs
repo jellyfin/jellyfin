@@ -70,6 +70,22 @@ namespace MediaBrowser.Controller.Entities
             return inputItems.Where(i => i.ProductionYear.HasValue && i.ProductionYear.Value == year);
         }
 
+        public IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query)
+        {
+            int year;
+
+            var usCulture = new CultureInfo("en-US");
+
+            if (!int.TryParse(Name, NumberStyles.Integer, usCulture, out year))
+            {
+                return new List<BaseItem>();
+            }
+
+            query.Years = new[] { year };
+
+            return LibraryManager.GetItemList(query);
+        }
+
         public int? GetYearValue()
         {
             int i;

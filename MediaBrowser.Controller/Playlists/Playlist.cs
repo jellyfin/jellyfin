@@ -99,11 +99,12 @@ namespace MediaBrowser.Controller.Playlists
             var musicGenre = item as MusicGenre;
             if (musicGenre != null)
             {
-                Func<BaseItem, bool> filter = i => i is Audio && i.Genres.Contains(musicGenre.Name, StringComparer.OrdinalIgnoreCase);
-
-                var items = user == null
-                    ? LibraryManager.RootFolder.GetRecursiveChildren(filter)
-                    : user.RootFolder.GetRecursiveChildren(user, filter);
+                var items = LibraryManager.GetItemList(new InternalItemsQuery(user)
+                {
+                    Recursive = true,
+                    IncludeItemTypes = new[] { typeof(Audio).Name },
+                    Genres = new[] { musicGenre.Name }
+                });
 
                 return LibraryManager.Sort(items, user, new[] { ItemSortBy.AlbumArtist, ItemSortBy.Album, ItemSortBy.SortName }, SortOrder.Ascending);
             }
