@@ -156,24 +156,16 @@ namespace MediaBrowser.Controller.Entities.TV
 
         protected override Task<QueryResult<BaseItem>> GetItemsInternal(InternalItemsQuery query)
         {
+            if (query.User == null)
+            {
+                return base.GetItemsInternal(query);
+            }
+
             var user = query.User;
 
             Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
 
-            IEnumerable<BaseItem> items;
-
-            if (query.User == null)
-            {
-                items = query.Recursive
-                   ? GetRecursiveChildren(filter)
-                   : Children.Where(filter);
-            }
-            else
-            {
-                items = query.Recursive
-                   ? GetRecursiveChildren(user, filter)
-                   : GetChildren(user, true).Where(filter);
-            }
+            var items = GetEpisodes(user).Where(filter);
 
             var result = PostFilterAndSort(items, query);
 
@@ -267,11 +259,6 @@ namespace MediaBrowser.Controller.Entities.TV
         public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
             return GetEpisodes(user);
-        }
-
-        public override IEnumerable<BaseItem> GetRecursiveChildren(User user, Func<BaseItem, bool> filter)
-        {
-            return GetEpisodes(user).Where(filter);
         }
 
         protected override bool GetBlockUnratedValue(UserPolicy config)
