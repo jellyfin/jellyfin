@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'paper-checkbox', 'paper-input', 'paper-button'], function (dialogHelper) {
+﻿define(['dialogHelper', 'paper-checkbox', 'paper-input', 'paper-button', 'paper-icon-button-light'], function (dialogHelper) {
 
     var extractedName;
     var extractedYear;

@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'scripts/livetvcomponents', 'livetvcss', 'paper-checkbox', 'paper-input', 'paper-toggle-button'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'scripts/livetvcomponents', 'livetvcss', 'paper-checkbox', 'paper-input', 'paper-toggle-button', 'paper-icon-button-light'], function (dialogHelper, $) {
 
     var currentProgramId;
     var currentDialog;

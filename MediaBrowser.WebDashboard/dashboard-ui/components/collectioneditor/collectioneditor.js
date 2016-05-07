@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'paper-checkbox', 'paper-input'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'paper-checkbox', 'paper-input', 'paper-icon-button-light'], function (dialogHelper, $) {
 
     function onSubmit() {
         Dashboard.showLoadingMsg();
@@ -202,7 +202,7 @@
             var title = items.length ? Globalize.translate('HeaderAddToCollection') : Globalize.translate('HeaderNewCollection');
 
             html += '<div class="dialogHeader">';
-            html += '<paper-icon-button icon="arrow-back" class="btnCancel" tabindex="-1"></paper-icon-button>';
+            html += '<button is="paper-icon-button-light" class="btnCancel" tabindex="-1"><iron-icon icon="arrow-back"></iron-icon></button>';
             html += '<div class="dialogHeaderTitle">';
             html += title;
             html += '</div>';

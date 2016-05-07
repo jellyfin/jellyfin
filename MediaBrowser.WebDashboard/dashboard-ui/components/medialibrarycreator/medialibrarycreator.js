@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'paper-input', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'paper-input', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light'], function (dialogHelper, $) {
 
     var currentDeferred;
     var hasChanges;
@@ -124,7 +124,7 @@
         html += path;
         html += '</paper-item-body>';
 
-        html += '<paper-icon-button icon="remove-circle" class="btnRemovePath" data-index="' + index + '"></paper-icon-button>';
+        html += '<button is="paper-icon-button-light"" class="btnRemovePath" data-index="' + index + '"><iron-icon icon="remove-circle"></iron-icon></button>';
 
         html += '</paper-icon-item>';
 

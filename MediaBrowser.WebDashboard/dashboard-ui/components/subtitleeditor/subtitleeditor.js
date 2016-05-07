@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'appStorage', 'jQuery', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (dialogHelper, appStorage, $) {
+﻿define(['dialogHelper', 'appStorage', 'jQuery', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light'], function (dialogHelper, appStorage, $) {
 
     var currentItem;
 
@@ -145,7 +145,7 @@
                 itemHtml += '</paper-item-body>';
 
                 if (s.Path) {
-                    itemHtml += '<paper-icon-button icon="delete" data-index="' + s.Index + '" title="' + Globalize.translate('Delete') + '" class="btnDelete"></paper-icon-button>';
+                    itemHtml += '<button is="paper-icon-button-light" data-index="' + s.Index + '" title="' + Globalize.translate('Delete') + '" class="btnDelete"><iron-icon icon="delete"></iron-icon></button>';
                 }
 
                 itemHtml += '</paper-icon-item>';
@@ -363,7 +363,7 @@
 
                 var html = '';
                 html += '<div class="dialogHeader">';
-                html += '<paper-icon-button icon="arrow-back" class="btnCancel" tabindex="-1"></paper-icon-button>';
+                html += '<button is="paper-icon-button-light" class="btnCancel" tabindex="-1"><iron-icon icon="arrow-back"></iron-icon></button>';
                 html += '<div class="dialogHeaderTitle">';
                 html += item.Name;
                 html += '</div>';
