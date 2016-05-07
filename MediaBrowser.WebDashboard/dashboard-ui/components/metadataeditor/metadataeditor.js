@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'datetime', 'jQuery', 'paper-checkbox', 'paper-input', 'paper-item-body', 'paper-icon-item', 'paper-textarea', 'paper-fab'], function (dialogHelper, datetime, $) {
+﻿define(['dialogHelper', 'datetime', 'jQuery', 'paper-checkbox', 'paper-input', 'paper-item-body', 'paper-icon-item', 'paper-textarea', 'paper-fab', 'paper-icon-button-light'], function (dialogHelper, datetime, $) {
 
     var currentContext;
     var metadataEditorInfo;
@@ -512,7 +512,7 @@
             html += '<paper-input style="display:inline-block;width:80%;" class="txtExternalId" value="' + value + '" data-providerkey="' + idInfo.Key + '" data-formatstring="' + formatString + '" data-buttonclass="' + buttonId + '" id="' + id + '" label="' + labelText + '"></paper-input>';
 
             if (formatString) {
-                html += '<a class="clearLink ' + buttonId + '" href="#" target="_blank" data-role="none" style="float: none; width: 1.75em"><paper-icon-button icon="open-in-browser"></paper-icon-button></a>';
+                html += '<a class="clearLink ' + buttonId + '" href="#" target="_blank" data-role="none" style="float: none; width: 1.75em"><button type="button" is="paper-icon-button-light"><iron-icon icon="open-in-browser"></iron-icon></button></a>';
             }
 
             html += '</div>';
@@ -996,7 +996,7 @@
 
             html += '</paper-item-body>';
 
-            html += '<paper-icon-button icon="delete" data-index="' + i + '" class="btnRemoveFromEditorList"></paper-icon-button>';
+            html += '<button type="button" is="paper-icon-button-light" data-index="' + i + '" class="btnRemoveFromEditorList"><iron-icon icon="delete"></iron-icon></button>';
 
             html += '</paper-icon-item>';
         }
@@ -1033,7 +1033,7 @@
             html += '</a>';
             html += '</paper-item-body>';
 
-            html += '<paper-icon-button icon="delete" data-index="' + i + '" class="btnDeletePerson"></paper-icon-button>';
+            html += '<button type="button" is="paper-icon-button-light" data-index="' + i + '" class="btnDeletePerson"><iron-icon icon="delete"></iron-icon></button>';
 
             html += '</paper-icon-item>';
         }

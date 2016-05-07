@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'paper-icon-button-light'], function (dialogHelper, $) {
 
     return {
         show: function (person) {

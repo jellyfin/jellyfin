@@ -1115,7 +1115,6 @@
 
     Events.on(ConnectionManager, 'localusersignedin', function (e, user) {
         setDrawerClass();
-        var apiClient = ConnectionManager.getApiClient(user.ServerId);
         ConnectionManager.user(ConnectionManager.getApiClient(user.ServerId)).then(function (user) {
             refreshLibraryDrawer(user);
 
@@ -1125,12 +1124,6 @@
                 userRequiresUpdateAfterHeader = user;
             }
         });
-
-        if (!AppInfo.isNativeApp) {
-            require(['components/servertestermessage'], function (message) {
-                message.show(apiClient);
-            });
-        }
     });
 
     Events.on(ConnectionManager, 'localusersignedout', updateUserInHeader);
