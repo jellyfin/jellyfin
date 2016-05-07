@@ -17,7 +17,12 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// </summary>
     public class MusicArtist : Folder, IMetadataContainer, IItemByName, IHasMusicGenres, IHasDualAccess, IHasProductionLocations, IHasLookupInfo<ArtistInfo>
     {
-        public bool IsAccessedByName { get; set; }
+        [IgnoreDataMember]
+        public bool IsAccessedByName
+        {
+            get { return ParentId == Guid.Empty; }
+        }
+
         public List<string> ProductionLocations { get; set; }
 
         [IgnoreDataMember]
