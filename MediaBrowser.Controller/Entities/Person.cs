@@ -31,6 +31,13 @@ namespace MediaBrowser.Controller.Entities
             return GetItemLookupInfo<PersonLookupInfo>();
         }
 
+        public IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query)
+        {
+            query.Person = Name;
+
+            return LibraryManager.GetItemList(query);
+        }
+
         /// <summary>
         /// Returns the folder containing the item.
         /// If the item is a folder, it returns the folder itself

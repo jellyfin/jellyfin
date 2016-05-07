@@ -62,6 +62,14 @@ namespace MediaBrowser.Controller.Entities
             return i => i is Game && i.Genres.Contains(Name, StringComparer.OrdinalIgnoreCase);
         }
 
+        public IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query)
+        {
+            query.Genres = new[] { Name };
+            query.IncludeItemTypes = new[] { typeof(Game).Name };
+
+            return LibraryManager.GetItemList(query);
+        }
+
         [IgnoreDataMember]
         public override bool SupportsPeople
         {

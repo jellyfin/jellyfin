@@ -848,7 +848,7 @@ namespace MediaBrowser.Server.Implementations.Session
             if (!playbackFailed)
             {
                 var data = _userDataRepository.GetUserData(userId, item);
-                
+
                 if (positionTicks.HasValue)
                 {
                     playedToCompletion = _userDataRepository.UpdatePlayState(item, data, positionTicks.Value);
@@ -1026,11 +1026,11 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (byName != null)
             {
-                var itemFilter = byName.GetItemFilter();
-
-                var items = user == null ?
-                    _libraryManager.RootFolder.GetRecursiveChildren(i => !i.IsFolder && itemFilter(i)) :
-                    user.RootFolder.GetRecursiveChildren(user, i => !i.IsFolder && itemFilter(i));
+                var items = byName.GetTaggedItems(new InternalItemsQuery(user)
+                {
+                    IsFolder = false,
+                    Recursive = true
+                });
 
                 return FilterToSingleMediaType(items)
                     .OrderBy(i => i.SortName);
@@ -1040,9 +1040,12 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 var folder = (Folder)item;
 
-                var items = user == null ?
-                    folder.GetRecursiveChildren(i => !i.IsFolder) :
-                    folder.GetRecursiveChildren(user, i => !i.IsFolder);
+                var items = folder.GetItems(new InternalItemsQuery(user)
+                {
+                    Recursive = true,
+                    IsFolder = false
+
+                }).Result.Items;
 
                 return FilterToSingleMediaType(items)
                     .OrderBy(i => i.SortName);
@@ -1367,8 +1370,8 @@ namespace MediaBrowser.Server.Implementations.Session
                 ServerId = _appHost.SystemId
             };
         }
-        
-        
+
+
         private async Task<string> GetAuthorizationToken(string userId, string deviceId, string app, string appVersion, string deviceName)
         {
             var existing = _authRepo.Get(new AuthenticationInfoQuery

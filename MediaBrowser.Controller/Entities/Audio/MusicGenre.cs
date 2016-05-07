@@ -79,5 +79,13 @@ namespace MediaBrowser.Controller.Entities.Audio
                 return false;
             }
         }
+
+        public IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query)
+        {
+            query.Genres = new[] { Name };
+            query.ExcludeItemTypes = new[] { typeof(MusicVideo).Name, typeof(Audio).Name, typeof(MusicAlbum).Name, typeof(MusicArtist).Name };
+
+            return LibraryManager.GetItemList(query);
+        }
     }
 }

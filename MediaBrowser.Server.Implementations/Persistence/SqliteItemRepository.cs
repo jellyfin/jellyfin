@@ -2334,6 +2334,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var inClause = string.Join(",", query.AncestorIds.Select(i => "'" + new Guid(i).ToString("N") + "'").ToArray());
                 whereClauses.Add(string.Format("Guid in (select itemId from AncestorIds where AncestorIdText in ({0}))", inClause));
             }
+            if (!string.IsNullOrWhiteSpace(query.AncestorWithPresentationUniqueKey))
+            {
+                var inClause = "select guid from TypedBaseItems where PresentationUniqueKey=@AncestorWithPresentationUniqueKey";
+                whereClauses.Add(string.Format("Guid in (select itemId from AncestorIds where AncestorId in ({0}))", inClause));
+                cmd.Parameters.Add(cmd, "@AncestorWithPresentationUniqueKey", DbType.String).Value = query.AncestorWithPresentationUniqueKey;
+            }
 
             if (query.BlockUnratedItems.Length == 1)
             {

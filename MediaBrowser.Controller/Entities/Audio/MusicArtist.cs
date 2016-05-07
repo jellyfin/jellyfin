@@ -40,6 +40,20 @@ namespace MediaBrowser.Controller.Entities.Audio
             return !IsAccessedByName;
         }
 
+        public IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query)
+        {
+            var itemByNameFilter = GetItemFilter();
+
+            if (query.User != null)
+            {
+                return query.User.RootFolder
+                    .GetRecursiveChildren(query.User, i => !i.IsFolder && itemByNameFilter(i));
+            }
+
+            return LibraryManager.RootFolder
+                .GetRecursiveChildren(i => !i.IsFolder && itemByNameFilter(i));
+        }
+
         protected override IEnumerable<BaseItem> ActualChildren
         {
             get
