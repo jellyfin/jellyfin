@@ -43,7 +43,7 @@
 
                 itemHtml += '</paper-item-body>';
 
-                itemHtml += '<paper-icon-button icon="mode-edit"></paper-icon-button>';
+                itemHtml += '<button type="button" is="paper-icon-button-light"><iron-icon icon="mode-edit"></iron-icon></button>';
 
                 itemHtml += '</paper-icon-item>';
                 itemHtml += '</a>';

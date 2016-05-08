@@ -107,11 +107,11 @@
 
             if (index > 0) {
 
-                currentHtml += '<paper-icon-button icon="keyboard-arrow-up" class="btnViewItemUp btnViewItemMove" title="' + Globalize.translate('ButtonUp') + '"></paper-icon-button>';
+                currentHtml += '<button type="button" is="paper-icon-button-light" class="btnViewItemUp btnViewItemMove" title="' + Globalize.translate('ButtonUp') + '"><iron-icon icon="keyboard-arrow-up"></iron-icon></button>';
             }
             else if (result.Items.length > 1) {
 
-                currentHtml += '<paper-icon-button icon="keyboard-arrow-down" class="btnViewItemDown btnViewItemMove" title="' + Globalize.translate('ButtonDown') + '"></paper-icon-button>';
+                currentHtml += '<button type="button" is="paper-icon-button-light" class="btnViewItemDown btnViewItemMove" title="' + Globalize.translate('ButtonDown') + '"><iron-icon icon="keyboard-arrow-down"></iron-icon></button>';
             }
 
 

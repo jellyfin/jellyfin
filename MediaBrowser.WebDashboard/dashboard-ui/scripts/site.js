@@ -2136,9 +2136,7 @@ var AppInfo = {};
             define("alert", [embyWebComponentsBowerPath + "/alert/alert"], returnFirstDependency);
         }
 
-        if (browser.animate) {
-            define("loading", [embyWebComponentsBowerPath + "/loading/loading"], returnFirstDependency);
-        } else if (browser.tv) {
+        if (browser.tv) {
             define("loading", [embyWebComponentsBowerPath + "/loading/loading-smarttv"], returnFirstDependency);
         } else {
             define("loading", [embyWebComponentsBowerPath + "/loading/loading-lite"], returnFirstDependency);
@@ -2922,7 +2920,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/tv.html',
-            dependencies: ['paper-tabs', 'paper-checkbox', 'paper-button', 'paper-icon-button-light'],
+            dependencies: ['paper-checkbox', 'paper-button', 'paper-icon-button-light', 'material-design-lite'],
             autoFocus: false,
             controller: 'scripts/tvrecommended'
         });

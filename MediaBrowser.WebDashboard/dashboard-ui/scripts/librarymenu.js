@@ -9,10 +9,10 @@
         html += '<div class="primaryIcons">';
         var backIcon = browserInfo.safari ? 'chevron-left' : 'arrow-back';
 
-        html += '<button is="paper-icon-button-light" class="headerButton headerButtonLeft headerBackButton hide"><iron-icon icon="' + backIcon + '"></iron-icon></button>';
+        html += '<button type="button" is="paper-icon-button-light" class="headerButton headerButtonLeft headerBackButton hide"><iron-icon icon="' + backIcon + '"></iron-icon></button>';
 
-        html += '<button is="paper-icon-button-light" class="headerButton mainDrawerButton barsMenuButton headerButtonLeft"><iron-icon icon="menu"></iron-icon></button>';
-        html += '<button is="paper-icon-button-light" class="headerButton headerAppsButton barsMenuButton headerButtonLeft"><iron-icon icon="menu"></iron-icon></button>';
+        html += '<button type="button" is="paper-icon-button-light" class="headerButton mainDrawerButton barsMenuButton headerButtonLeft"><iron-icon icon="menu"></iron-icon></button>';
+        html += '<button type="button" is="paper-icon-button-light" class="headerButton headerAppsButton barsMenuButton headerButtonLeft"><iron-icon icon="menu"></iron-icon></button>';
 
         html += '<div class="libraryMenuButtonText headerButton">' + Globalize.translate('ButtonHome') + '</div>';
 

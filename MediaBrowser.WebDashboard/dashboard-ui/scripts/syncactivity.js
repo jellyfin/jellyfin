@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'paper-icon-button-light'], function ($) {
 
     function cancelJob(page, id) {
 
@@ -133,7 +133,7 @@
         }
 
         html += '<div class="cardText" style="text-align:right; float:right;padding:0;">';
-        html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnJobMenu"></paper-icon-button>';
+        html += '<button type="button" is="paper-icon-button-light" class="btnJobMenu"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
         html += "</div>";
 
         for (var i = 0, length = textLines.length; i < length; i++) {

@@ -346,7 +346,7 @@
 
         if (virtualFolder.showMenu !== false) {
             html += '<div class="cardText" style="text-align:right; float:right;padding-top:5px;">';
-            html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnCardMenu"></paper-icon-button>';
+            html += '<button type="button" is="paper-icon-button-light" class="btnCardMenu"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
             html += "</div>";
         }
 

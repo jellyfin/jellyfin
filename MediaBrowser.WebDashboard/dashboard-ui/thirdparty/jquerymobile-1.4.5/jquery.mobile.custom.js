@@ -956,7 +956,6 @@
                     }
                     // Add ARIA role
                     content.setAttribute("role", "main");
-                    content.classList.add("ui-content");
                 }
             };
 
