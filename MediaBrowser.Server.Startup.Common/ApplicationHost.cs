@@ -562,10 +562,10 @@ namespace MediaBrowser.Server.Startup.Common
             RegisterSingleInstance(SubtitleEncoder);
             
             await displayPreferencesRepo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
+            await ConfigureUserDataRepositories().ConfigureAwait(false);
             await itemRepo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
             await providerRepo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
             ((LibraryManager)LibraryManager).ItemRepository = ItemRepository;
-            await ConfigureUserDataRepositories().ConfigureAwait(false);
             await ConfigureNotificationsRepository().ConfigureAwait(false);
             progress.Report(100);
 

@@ -208,7 +208,7 @@ namespace MediaBrowser.Controller.Entities.TV
                     IncludeItemTypes = new[] { typeof(Season).Name },
                     SortBy = new[] { ItemSortBy.SortName }
 
-                }).OfType<Season>();
+                }).Cast<Season>();
             }
             else
             {
@@ -347,7 +347,7 @@ namespace MediaBrowser.Controller.Entities.TV
                     IncludeItemTypes = new[] { typeof(Episode).Name },
                     SortBy = new[] { ItemSortBy.SortName }
 
-                }).OfType<Episode>();
+                }).Cast<Episode>();
             }
             else
             {

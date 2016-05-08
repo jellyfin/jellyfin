@@ -751,28 +751,38 @@ namespace MediaBrowser.Controller.Entities
                     return true;
                 }
             }
+            
+            var supportsUserDataQueries = ConfigurationManager.Configuration.SchemaVersion >= 76;
 
             if (query.SortBy != null && query.SortBy.Length > 0)
             {
-                if (query.SortBy.Contains(ItemSortBy.DatePlayed, StringComparer.OrdinalIgnoreCase))
+                if (!supportsUserDataQueries)
                 {
-                    Logger.Debug("Query requires post-filtering due to ItemSortBy.DatePlayed");
-                    return true;
-                }
-                if (query.SortBy.Contains(ItemSortBy.IsFavoriteOrLiked, StringComparer.OrdinalIgnoreCase))
-                {
-                    Logger.Debug("Query requires post-filtering due to ItemSortBy.IsFavoriteOrLiked");
-                    return true;
-                }
-                if (query.SortBy.Contains(ItemSortBy.IsPlayed, StringComparer.OrdinalIgnoreCase))
-                {
-                    Logger.Debug("Query requires post-filtering due to ItemSortBy.IsPlayed");
-                    return true;
-                }
-                if (query.SortBy.Contains(ItemSortBy.IsUnplayed, StringComparer.OrdinalIgnoreCase))
-                {
-                    Logger.Debug("Query requires post-filtering due to ItemSortBy.IsUnplayed");
-                    return true;
+                    if (query.SortBy.Contains(ItemSortBy.DatePlayed, StringComparer.OrdinalIgnoreCase))
+                    {
+                        Logger.Debug("Query requires post-filtering due to ItemSortBy.IsFavoriteOrLiked");
+                        return true;
+                    }
+                    if (query.SortBy.Contains(ItemSortBy.PlayCount, StringComparer.OrdinalIgnoreCase))
+                    {
+                        Logger.Debug("Query requires post-filtering due to ItemSortBy.PlayCount");
+                        return true;
+                    }
+                    if (query.SortBy.Contains(ItemSortBy.IsFavoriteOrLiked, StringComparer.OrdinalIgnoreCase))
+                    {
+                        Logger.Debug("Query requires post-filtering due to ItemSortBy.IsFavoriteOrLiked");
+                        return true;
+                    }
+                    if (query.SortBy.Contains(ItemSortBy.IsPlayed, StringComparer.OrdinalIgnoreCase))
+                    {
+                        Logger.Debug("Query requires post-filtering due to ItemSortBy.IsPlayed");
+                        return true;
+                    }
+                    if (query.SortBy.Contains(ItemSortBy.IsUnplayed, StringComparer.OrdinalIgnoreCase))
+                    {
+                        Logger.Debug("Query requires post-filtering due to ItemSortBy.IsUnplayed");
+                        return true;
+                    }
                 }
                 if (query.SortBy.Contains(ItemSortBy.AiredEpisodeOrder, StringComparer.OrdinalIgnoreCase))
                 {
@@ -819,11 +829,6 @@ namespace MediaBrowser.Controller.Entities
                     Logger.Debug("Query requires post-filtering due to ItemSortBy.OfficialRating");
                     return true;
                 }
-                if (query.SortBy.Contains(ItemSortBy.PlayCount, StringComparer.OrdinalIgnoreCase))
-                {
-                    Logger.Debug("Query requires post-filtering due to ItemSortBy.PlayCount");
-                    return true;
-                }
                 if (query.SortBy.Contains(ItemSortBy.Players, StringComparer.OrdinalIgnoreCase))
                 {
                     Logger.Debug("Query requires post-filtering due to ItemSortBy.Players");
@@ -863,34 +868,37 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (query.IsLiked.HasValue)
+            if (!supportsUserDataQueries)
             {
-                Logger.Debug("Query requires post-filtering due to IsLiked");
-                return true;
-            }
+                if (query.IsLiked.HasValue)
+                {
+                    Logger.Debug("Query requires post-filtering due to IsLiked");
+                    return true;
+                }
 
-            if (query.IsFavoriteOrLiked.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to IsFavoriteOrLiked");
-                return true;
-            }
+                if (query.IsFavoriteOrLiked.HasValue)
+                {
+                    Logger.Debug("Query requires post-filtering due to IsFavoriteOrLiked");
+                    return true;
+                }
 
-            if (query.IsFavorite.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to IsFavorite");
-                return true;
-            }
+                if (query.IsFavorite.HasValue)
+                {
+                    Logger.Debug("Query requires post-filtering due to IsFavorite");
+                    return true;
+                }
 
-            if (query.IsResumable.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to IsResumable");
-                return true;
-            }
+                if (query.IsResumable.HasValue)
+                {
+                    Logger.Debug("Query requires post-filtering due to IsResumable");
+                    return true;
+                }
 
-            if (query.IsPlayed.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to IsPlayed");
-                return true;
+                if (query.IsPlayed.HasValue)
+                {
+                    Logger.Debug("Query requires post-filtering due to IsPlayed");
+                    return true;
+                }
             }
 
             if (query.IsInBoxSet.HasValue)

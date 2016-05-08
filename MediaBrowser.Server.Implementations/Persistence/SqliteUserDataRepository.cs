@@ -47,6 +47,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                                 "create table if not exists userdata (key nvarchar, userId GUID, rating float null, played bit, playCount int, isFavorite bit, playbackPositionTicks bigint, lastPlayedDate datetime null)",
 
+                                "create index if not exists idx_userdata on userdata(key)",
                                 "create unique index if not exists userdataindex on userdata (key, userId)",
 
                                 //pragmas
