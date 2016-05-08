@@ -1,4 +1,4 @@
-﻿define(['datetime', 'jQuery'], function (datetime, $) {
+﻿define(['datetime', 'jQuery', 'paper-icon-button-light'], function (datetime, $) {
 
     var query = {
 
@@ -79,7 +79,7 @@
 
             html += '</paper-item-body>';
 
-            html += '<paper-icon-button icon="cancel" data-seriestimerid="' + timer.Id + '" title="' + Globalize.translate('ButtonCancelSeries') + '" class="btnCancelSeries"></paper-icon-button>';
+            html += '<button type="button" is="paper-icon-button-light" data-seriestimerid="' + timer.Id + '" title="' + Globalize.translate('ButtonCancelSeries') + '" class="btnCancelSeries"><iron-icon icon="cancel"></iron-icon></button>';
 
             html += '</paper-icon-item>';
         }

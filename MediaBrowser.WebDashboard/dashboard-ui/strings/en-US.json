@@ -2349,6 +2349,5 @@
   "LabelOriginalTitle": "Original title:",
   "LabelSortTitle": "Sort title:",
   "OptionConvertRecordingPreserveAudio": "Preserve original audio when converting recordings",
-  "OptionConvertRecordingPreserveAudioHelp": "This will provide better audio but may require transcoding during playback on some devices.",
-  "HeaderUpcomingRecordings":  "Upcoming Recordings"
+  "OptionConvertRecordingPreserveAudioHelp": "This will provide better audio but may require transcoding during playback on some devices."
 }

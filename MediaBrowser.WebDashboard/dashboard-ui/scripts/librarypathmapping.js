@@ -49,7 +49,7 @@
 
             mapHtml += '</paper-item-body>';
 
-            mapHtml += '<paper-icon-button data-index="' + index + '" icon="delete" class="btnDeletePath"></paper-icon-button>';
+            mapHtml += '<button type="button" is="paper-icon-button-light" data-index="' + index + '" class="btnDeletePath"><iron-icon icon="delete"></iron-icon></button>';
 
             mapHtml += '</paper-icon-item>';
 

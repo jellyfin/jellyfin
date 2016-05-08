@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'paper-icon-button-light'], function ($) {
 
     function deleteUser(page, id) {
 
@@ -136,7 +136,7 @@
         html += '<div class="cardFooter">';
 
         html += '<div class="cardText" style="text-align:right; float:right;padding:0;">';
-        html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnUserMenu"></paper-icon-button>';
+        html += '<button type="button" is="paper-icon-button-light" class="btnUserMenu"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
         html += "</div>";
 
         html += '<div class="cardText" style="padding-top:10px;padding-bottom:10px;">';
@@ -255,7 +255,7 @@
         html += '<div class="cardFooter">';
 
         html += '<div class="cardText" style="text-align:right; float:right;padding:0;">';
-        html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnUserMenu"></paper-icon-button>';
+        html += '<button type="button" is="paper-icon-button-light" class="btnUserMenu"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
         html += "</div>";
 
         html += '<div class="cardText" style="padding-top:10px;padding-bottom:10px;">';

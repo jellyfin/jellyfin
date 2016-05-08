@@ -176,7 +176,6 @@
                 if (browserInfo.animate && !browserInfo.mobile) {
                     //return true;
                 }
-
                 return AppInfo.isNativeApp;
             },
 
@@ -204,29 +203,6 @@
                 }
 
                 return true;
-            },
-
-            getTabsAnimationConfig: function (elem, reverse) {
-
-                if (browserInfo.mobile) {
-
-                }
-
-                return {
-                    // scale up
-                    'entry': {
-                        name: 'fade-in-animation',
-                        node: elem,
-                        timing: { duration: 160, easing: 'ease-out' }
-                    },
-                    // fade out
-                    'exit': {
-                        name: 'fade-out-animation',
-                        node: elem,
-                        timing: { duration: 200, easing: 'ease-out' }
-                    }
-                };
-
             },
 
             selectedTab: function (pageTabsContainer, selected) {

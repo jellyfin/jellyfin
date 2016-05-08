@@ -761,7 +761,7 @@
 
                     html += "<span style='color:#009F00;margin-left:5px;margin-right:5px;'>" + progress + "%</span>";
 
-                    html += '<paper-icon-button title="' + Globalize.translate('ButtonStop') + '" icon="cancel" onclick="DashboardPage.stopTask(\'' + task.Id + '\');"></paper-icon-button>';
+                    html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonStop') + '" onclick="DashboardPage.stopTask(\'' + task.Id + '\');"><iron-icon icon="cancel"></iron-icon></button>';
                 }
                 else if (task.State == "Cancelling") {
                     html += '<span style="color:#cc0000;">' + Globalize.translate('LabelStopping') + '</span>';
@@ -779,8 +779,6 @@
             if (systemInfo.LocalAddress) {
 
                 var localAccessHtml = Globalize.translate('LabelLocalAccessUrl', '<a href="' + systemInfo.LocalAddress + '" target="_blank">' + systemInfo.LocalAddress + '</a>');
-
-                //localAccessHtml += '<a class="clearLink" href="https://github.com/MediaBrowser/Wiki/wiki/Connectivity" target="_blank"><paper-icon-button icon="info"></paper-icon-button></a>';
 
                 $('.localUrl', page).html(localAccessHtml).show().trigger('create');
             } else {

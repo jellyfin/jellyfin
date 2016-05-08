@@ -47,7 +47,7 @@
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <paper-input type="text" id="txtCachePath" label="${LabelCachePath}" style="display:inline-block;width:85%;"></paper-input>
-                            <paper-icon-button id="btnSelectCachePath" icon="search">${ButtonSelectDirectory}</paper-icon-button>
+                            <button type="button" is="paper-icon-button-light" id="btnSelectCachePath" title="${ButtonSelectDirectory}"><iron-icon icon="search"></iron-icon></button>
                             <div class="fieldDescription">${LabelCachePathHelp}</div>
                         </li>
                     </ul>
@@ -114,7 +114,7 @@
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <paper-input type="text" id="txtDashboardSourcePath" label="${LabelDashboardSourcePath}" style="display: inline-block; width: 80%;"></paper-input>
-                            <paper-icon-button id="btnSelectDashboardSourcePath" icon="search" title="${ButtonSelectDirectory}"></paper-icon-button>
+                            <button type="button" is="paper-icon-button-light" id="btnSelectDashboardSourcePath" title="${ButtonSelectDirectory}"><iron-icon icon="search"></iron-icon></button>
                             <div class="fieldDescription">${LabelDashboardSourcePathHelp}</div>
                         </li>
                     </ul>

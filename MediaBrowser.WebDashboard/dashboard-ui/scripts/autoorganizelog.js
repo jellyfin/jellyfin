@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'datetime'], function ($, datetime) {
+﻿define(['jQuery', 'datetime', 'paper-icon-button-light'], function ($, datetime) {
 
     var query = {
 
@@ -191,8 +191,9 @@
             html += '<td class="organizerButtonCell">';
 
             if (item.Status != 'Success') {
-                html += '<paper-icon-button data-resultid="' + item.Id + '" icon="folder" class="btnProcessResult organizerButton" title="' + Globalize.translate('ButtonOrganizeFile') + '"></paper-icon-button>';
-                html += '<paper-icon-button data-resultid="' + item.Id + '" icon="delete" class="btnDeleteResult organizerButton" title="' + Globalize.translate('ButtonDeleteFile') + '"></paper-icon-button>';
+
+                html += '<button type="button" is="paper-icon-button-light" data-resultid="' + item.Id + '" class="btnProcessResult organizerButton" title="' + Globalize.translate('ButtonOrganizeFile') + '"><iron-icon icon="folder"></iron-icon></button>';
+                html += '<button type="button" is="paper-icon-button-light" data-resultid="' + item.Id + '" class="btnDeleteResult organizerButton" title="' + Globalize.translate('ButtonDeleteFile') + '"></iron-icon></button>';
             }
 
             html += '</td>';

@@ -1,0 +1,132 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <title>neon-animated-pages demo: declarative</title>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+    <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
+
+    <link rel="import" href="../../../iron-flex-layout/iron-flex-layout.html">
+    <link rel="import" href="../../../paper-styles/typography.html">
+    <link rel="import" href="../../../paper-styles/color.html">
+    <link rel="import" href="../../neon-animated-pages.html">
+    <link rel="import" href="../../neon-animatable.html">
+    <link rel="import" href="../../neon-animations.html">
+
+    <style is="custom-style">
+      body {
+        overflow: hidden;
+        @apply(--layout-fullbleed);
+        @apply(--layout-vertical);
+      }
+
+      .toolbar {
+        position: relative;
+
+        padding: 8px;
+
+        background-color: white;
+
+        z-index: 12;
+      }
+
+      neon-animated-pages {
+        @apply(--layout-flex);
+      }
+
+      neon-animatable {
+        color: white;
+        @apply(--layout-horizontal);
+        @apply(--layout-center-center);
+        @apply(--paper-font-display4);
+      }
+
+      neon-animatable:nth-child(1) {
+        background: var(--paper-red-500);
+      }
+
+      neon-animatable:nth-child(2) {
+        background: var(--paper-blue-500);
+      }
+
+      neon-animatable:nth-child(3) {
+        background: var(--paper-orange-500);
+      }
+
+      neon-animatable:nth-child(4) {
+        background: var(--paper-green-500);
+      }
+
+      neon-animatable:nth-child(5) {
+        background: var(--paper-purple-500);
+      }
+
+    </style>
+
+  </head>
+  <body>
+
+    <template is="dom-bind">
+
+      <div class="toolbar">
+        <button on-click="_onPrevClick">&#8678;</button>
+        <button on-click="_onNextClick">&#8680;</button>
+        <button on-click="_onUpClick">&#8679;</button>
+        <button on-click="_onDownClick">&#8681;</button>
+      </div>
+
+      <neon-animated-pages id="pages" selected="[[selected]]" entry-animation="[[entryAnimation]]" exit-animation="[[exitAnimation]]">
+        <neon-animatable>1</neon-animatable>
+        <neon-animatable>2</neon-animatable>
+        <neon-animatable>3</neon-animatable>
+        <neon-animatable>4</neon-animatable>
+        <neon-animatable>5</neon-animatable>
+      </neon-animated-pages>
+
+    </template>
+
+    <script>
+
+      var scope = document.querySelector('template[is="dom-bind"]');
+      scope.selected = 0;
+
+      scope._onPrevClick = function() {
+        this.entryAnimation = 'slide-from-left-animation';
+        this.exitAnimation = 'slide-right-animation';
+        this.selected = this.selected === 0 ? 4 : (this.selected - 1);
+      }
+
+      scope._onNextClick = function() {
+        this.entryAnimation = 'slide-from-right-animation';
+        this.exitAnimation = 'slide-left-animation';
+        this.selected = this.selected === 4 ? 0 : (this.selected + 1);
+      }
+
+      scope._onUpClick = function() {
+        this.entryAnimation = 'slide-from-top-animation';
+        this.exitAnimation = 'slide-down-animation';
+        this.selected = this.selected === 4 ? 0 : (this.selected + 1);
+      }
+
+      scope._onDownClick = function() {
+        this.entryAnimation = 'slide-from-bottom-animation';
+        this.exitAnimation = 'slide-up-animation';
+        this.selected = this.selected === 0 ? 4 : (this.selected - 1);
+      }
+
+    </script>
+
+  </body>
+</html>

@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'datetime', 'paper-progress', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'paper-icon-button', 'paper-button'], function ($, datetime) {
+﻿define(['jQuery', 'datetime', 'paper-progress', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light', 'paper-button'], function ($, datetime) {
 
     function renderJob(page, job, dialogOptions) {
 
@@ -95,9 +95,9 @@
 
         if (hasActions) {
 
-            html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnJobItemMenu"></paper-icon-button>';
+            html += '<button type="button" is="paper-icon-button-light" class="btnJobItemMenu"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
         } else {
-            html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnJobItemMenu" disabled></paper-icon-button>';
+            html += '<button type="button" is="paper-icon-button-light" class="btnJobItemMenu" disabled><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
         }
 
         html += '</paper-icon-item>';

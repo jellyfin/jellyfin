@@ -120,9 +120,10 @@
                 elem.classList.add('hide');
             }
 
-            elem.querySelector('.itemsContainer').innerHTML = html;
+            elem.querySelector('.recordingItems').innerHTML = html;
 
             ImageLoader.lazyChildren(elem);
+            $(elem).createCardMenus();
         });
     }
 
@@ -156,7 +157,7 @@
 
     window.LiveTvPage.initRecordingsTab = function (page, tabContent) {
 
-        tabContent.querySelector('#upcomingRecordings .itemsContainer').addEventListener('timercancelled', function () {
+        tabContent.querySelector('#upcomingRecordings .recordingItems').addEventListener('timercancelled', function () {
             reload(tabContent);
         });
     };
