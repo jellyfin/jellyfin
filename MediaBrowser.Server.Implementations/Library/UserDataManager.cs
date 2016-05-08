@@ -157,7 +157,7 @@ namespace MediaBrowser.Server.Implementations.Library
             return _userData.GetOrAdd(GetCacheKey(userId, key), keyName => GetUserDataFromRepository(userId, key));
         }
 
-        public UserItemData GetUserDataFromRepository(Guid userId, string key)
+        private UserItemData GetUserDataFromRepository(Guid userId, string key)
         {
             var data = Repository.GetUserData(userId, key);
 

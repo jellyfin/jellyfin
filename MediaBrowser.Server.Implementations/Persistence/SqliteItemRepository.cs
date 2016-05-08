@@ -79,10 +79,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _deleteAncestorsCommand;
         private IDbCommand _saveAncestorCommand;
 
+        private IDbCommand _deleteUserDataKeysCommand;
+        private IDbCommand _saveUserDataKeysCommand;
+
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        public const int LatestSchemaVersion = 73;
+        public const int LatestSchemaVersion = 76;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -135,15 +138,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create index if not exists idx_AncestorIds1 on AncestorIds(AncestorId)",
                                 "create index if not exists idx_AncestorIds2 on AncestorIds(AncestorIdText)",
 
+                                "create table if not exists UserDataKeys (ItemId GUID, UserDataKey TEXT, PRIMARY KEY (ItemId, UserDataKey))",
+                                "create index if not exists idx_UserDataKeys1 on UserDataKeys(ItemId)",
+
                                 "create table if not exists People (ItemId GUID, Name TEXT NOT NULL, Role TEXT, PersonType TEXT, SortOrder int, ListOrder int)",
                                 "create index if not exists idxPeopleItemId on People(ItemId)",
                                 "create index if not exists idxPeopleName on People(Name)",
 
                                 "create table if not exists "+ChaptersTableName+" (ItemId GUID, ChapterIndex INT, StartPositionTicks BIGINT, Name TEXT, ImagePath TEXT, PRIMARY KEY (ItemId, ChapterIndex))",
-                                "create index if not exists idx_"+ChaptersTableName+" on "+ChaptersTableName+"(ItemId, ChapterIndex)",
+                                "create index if not exists idx_"+ChaptersTableName+"1 on "+ChaptersTableName+"(ItemId)",
 
                                 createMediaStreamsTableCommand,
-                                "create index if not exists idx_mediastreams on mediastreams(ItemId, StreamIndex)",
+                                "create index if not exists idx_mediastreams1 on mediastreams(ItemId)",
 
                                 //pragmas
                                 "pragma temp_store = memory",
@@ -229,6 +235,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "SlugName", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "OriginalTitle", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "PrimaryVersionId", "Text");
+            _connection.AddColumn(Logger, "UserDataKeys", "Priority", "INT");
 
             string[] postQueries =
                 {
@@ -242,17 +249,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             new MediaStreamColumns(_connection, Logger).AddColumns();
 
-            var chapterDbFile = Path.Combine(_config.ApplicationPaths.DataPath, "chapters.db");
-            if (File.Exists(chapterDbFile))
-            {
-                MigrateChapters(chapterDbFile);
-            }
-
             var mediaStreamsDbFile = Path.Combine(_config.ApplicationPaths.DataPath, "mediainfo.db");
             if (File.Exists(mediaStreamsDbFile))
             {
                 MigrateMediaStreams(mediaStreamsDbFile);
             }
+
+            DataExtensions.Attach(_connection, Path.Combine(_config.ApplicationPaths.DataPath, "userdata_v2.db"), "UserDataDb");
         }
 
         private void MigrateMediaStreams(string file)
@@ -274,30 +277,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             catch (Exception ex)
             {
                 Logger.ErrorException("Error migrating media info database", ex);
-            }
-            finally
-            {
-                TryDeleteFile(file);
-            }
-        }
-
-        private void MigrateChapters(string file)
-        {
-            try
-            {
-                var backupFile = file + ".bak";
-                File.Copy(file, backupFile, true);
-                DataExtensions.Attach(_connection, backupFile, "ChaptersOld");
-
-                string[] queries = {
-                                "REPLACE INTO "+ChaptersTableName+"(ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath) SELECT ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath FROM ChaptersOld.Chapters;"
-                               };
-
-                _connection.RunQueries(queries, Logger);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error migrating chapter database", ex);
             }
             finally
             {
@@ -569,6 +548,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _updateInheritedTagsCommand.CommandText = "Update TypedBaseItems set InheritedTags=@InheritedTags where Guid=@Guid";
             _updateInheritedTagsCommand.Parameters.Add(_updateInheritedTagsCommand, "@Guid");
             _updateInheritedTagsCommand.Parameters.Add(_updateInheritedTagsCommand, "@InheritedTags");
+
+            // user data
+            _deleteUserDataKeysCommand = _connection.CreateCommand();
+            _deleteUserDataKeysCommand.CommandText = "delete from UserDataKeys where ItemId=@Id";
+            _deleteUserDataKeysCommand.Parameters.Add(_deleteUserDataKeysCommand, "@Id");
+
+            _saveUserDataKeysCommand = _connection.CreateCommand();
+            _saveUserDataKeysCommand.CommandText = "insert into UserDataKeys (ItemId, UserDataKey, Priority) values (@ItemId, @UserDataKey, @Priority)";
+            _saveUserDataKeysCommand.Parameters.Add(_saveUserDataKeysCommand, "@ItemId");
+            _saveUserDataKeysCommand.Parameters.Add(_saveUserDataKeysCommand, "@UserDataKey");
+            _saveUserDataKeysCommand.Parameters.Add(_saveUserDataKeysCommand, "@Priority");
+
         }
 
         /// <summary>
@@ -841,6 +832,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     {
                         UpdateAncestors(item.Id, item.GetAncestorIds().Distinct().ToList(), transaction);
                     }
+
+                    UpdateUserDataKeys(item.Id, item.GetUserDataKeys(), transaction);
                 }
 
                 transaction.Commit();
@@ -1467,34 +1460,96 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
 
-        public IEnumerable<BaseItem> GetItemsOfType(Type type)
+        private bool EnableJoinUserData(InternalItemsQuery query)
         {
-            if (type == null)
+            if (_config.Configuration.SchemaVersion < 76)
             {
-                throw new ArgumentNullException("type");
+                return false;
             }
 
-            CheckDisposed();
-
-            using (var cmd = _connection.CreateCommand())
+            if (query.User == null)
             {
-                cmd.CommandText = "select " + string.Join(",", _retriveItemColumns) + " from TypedBaseItems where type = @type";
+                return false;
+            }
 
-                cmd.Parameters.Add(cmd, "@type", DbType.String).Value = type.FullName;
-
-                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+            if (query.SortBy != null && query.SortBy.Length > 0)
+            {
+                if (query.SortBy.Contains(ItemSortBy.IsFavoriteOrLiked, StringComparer.OrdinalIgnoreCase))
                 {
-                    while (reader.Read())
-                    {
-                        var item = GetItem(reader);
-
-                        if (item != null)
-                        {
-                            yield return item;
-                        }
-                    }
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.IsPlayed, StringComparer.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.IsUnplayed, StringComparer.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.PlayCount, StringComparer.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+                if (query.SortBy.Contains(ItemSortBy.DatePlayed, StringComparer.OrdinalIgnoreCase))
+                {
+                    return true;
                 }
             }
+
+            if (query.IsFavoriteOrLiked.HasValue)
+            {
+                return true;
+            }
+
+            if (query.IsFavorite.HasValue)
+            {
+                return true;
+            }
+
+            if (query.IsResumable.HasValue)
+            {
+                return true;
+            }
+
+            if (query.IsPlayed.HasValue)
+            {
+                return true;
+            }
+
+            if (query.IsLiked.HasValue)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private string[] GetFinalColumnsToSelect(InternalItemsQuery query, string[] startColumns)
+        {
+            var list = startColumns.ToList();
+
+            if (EnableJoinUserData(query))
+            {
+                list.Add("UserDataDb.UserData.UserId");
+                list.Add("UserDataDb.UserData.lastPlayedDate");
+                list.Add("UserDataDb.UserData.playbackPositionTicks");
+                list.Add("UserDataDb.UserData.playcount");
+                list.Add("UserDataDb.UserData.isFavorite");
+                list.Add("UserDataDb.UserData.played");
+                list.Add("UserDataDb.UserData.rating");
+            }
+
+            return list.ToArray();
+        }
+
+        private string GetJoinUserDataText(InternalItemsQuery query)
+        {
+            if (!EnableJoinUserData(query))
+            {
+                return string.Empty;
+            }
+
+            return " left join UserDataDb.UserData on (select UserDataKey from UserDataKeys where ItemId=Guid order by Priority LIMIT 1)=UserDataDb.UserData.Key";
         }
 
         public IEnumerable<BaseItem> GetItemList(InternalItemsQuery query)
@@ -1510,9 +1565,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select " + string.Join(",", _retriveItemColumns) + " from TypedBaseItems";
+                cmd.CommandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, _retriveItemColumns)) + " from TypedBaseItems";
+                cmd.CommandText += GetJoinUserDataText(query);
 
-                var whereClauses = GetWhereClauses(query, cmd, true);
+                if (EnableJoinUserData(query))
+                {
+                    cmd.Parameters.Add(cmd, "@UserId", DbType.Guid).Value = query.User.Id;
+                }
+
+                var whereClauses = GetWhereClauses(query, cmd);
 
                 var whereText = whereClauses.Count == 0 ?
                     string.Empty :
@@ -1527,14 +1588,21 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 cmd.CommandText += GetOrderByText(query);
 
-                if (query.Limit.HasValue)
+                if (query.Limit.HasValue || query.StartIndex.HasValue)
                 {
-                    cmd.CommandText += " LIMIT " + query.Limit.Value.ToString(CultureInfo.InvariantCulture);
+                    var limit = query.Limit ?? int.MaxValue;
+
+                    cmd.CommandText += " LIMIT " + limit.ToString(CultureInfo.InvariantCulture);
+
+                    if (query.StartIndex.HasValue)
+                    {
+                        cmd.CommandText += " OFFSET " + query.StartIndex.Value.ToString(CultureInfo.InvariantCulture);
+                    }
                 }
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
                 {
-                    Logger.Debug("GetItemList query time: {0}ms. Query: {1}", 
+                    Logger.Debug("GetItemList query time: {0}ms. Query: {1}",
                         Convert.ToInt32((DateTime.UtcNow - now).TotalMilliseconds),
                         cmd.CommandText);
 
@@ -1563,15 +1631,19 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select " + string.Join(",", _retriveItemColumns) + " from TypedBaseItems";
+                cmd.CommandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, _retriveItemColumns)) + " from TypedBaseItems";
+                cmd.CommandText += GetJoinUserDataText(query);
 
-                var whereClauses = GetWhereClauses(query, cmd, false);
+                if (EnableJoinUserData(query))
+                {
+                    cmd.Parameters.Add(cmd, "@UserId", DbType.Guid).Value = query.User.Id;
+                }
+
+                var whereClauses = GetWhereClauses(query, cmd);
 
                 var whereTextWithoutPaging = whereClauses.Count == 0 ?
                     string.Empty :
                     " where " + string.Join(" AND ", whereClauses.ToArray());
-
-                whereClauses = GetWhereClauses(query, cmd, true);
 
                 var whereText = whereClauses.Count == 0 ?
                     string.Empty :
@@ -1586,19 +1658,29 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 cmd.CommandText += GetOrderByText(query);
 
-                if (query.Limit.HasValue)
+                if (query.Limit.HasValue || query.StartIndex.HasValue)
                 {
-                    cmd.CommandText += " LIMIT " + query.Limit.Value.ToString(CultureInfo.InvariantCulture);
+                    var limit = query.Limit ?? int.MaxValue;
+
+                    cmd.CommandText += " LIMIT " + limit.ToString(CultureInfo.InvariantCulture);
+
+                    if (query.StartIndex.HasValue)
+                    {
+                        cmd.CommandText += " OFFSET " + query.StartIndex.Value.ToString(CultureInfo.InvariantCulture);
+                    }
                 }
 
-                if (_config.Configuration.SchemaVersion >= 66)
+                if (EnableGroupByPresentationUniqueKey(query) && _config.Configuration.SchemaVersion >= 66)
                 {
-                    cmd.CommandText += "; select count (distinct PresentationUniqueKey) from TypedBaseItems" + whereTextWithoutPaging;
+                    cmd.CommandText += "; select count (distinct PresentationUniqueKey) from TypedBaseItems";
                 }
                 else
                 {
-                    cmd.CommandText += "; select count (guid) from TypedBaseItems" + whereTextWithoutPaging;
+                    cmd.CommandText += "; select count (guid) from TypedBaseItems";
                 }
+
+                cmd.CommandText += GetJoinUserDataText(query);
+                cmd.CommandText += whereTextWithoutPaging;
 
                 var list = new List<BaseItem>();
                 var count = 0;
@@ -1639,32 +1721,64 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 return string.Empty;
             }
 
-            var sortOrder = query.SortOrder == SortOrder.Descending ? "DESC" : "ASC";
+            var isAscending = query.SortOrder != SortOrder.Descending;
 
-            return " ORDER BY " + string.Join(",", query.SortBy.Select(i => MapOrderByField(i) + " " + sortOrder).ToArray());
+            return " ORDER BY " + string.Join(",", query.SortBy.Select(i =>
+            {
+                var columnMap = MapOrderByField(i);
+                var columnAscending = isAscending;
+                if (columnMap.Item2)
+                {
+                    columnAscending = !columnAscending;
+                }
+
+                var sortOrder = columnAscending ? "ASC" : "DESC";
+
+                return columnMap.Item1 + " " + sortOrder;
+            }).ToArray());
         }
 
-        private string MapOrderByField(string name)
+        private Tuple<string,bool> MapOrderByField(string name)
         {
             if (string.Equals(name, ItemSortBy.AirTime, StringComparison.OrdinalIgnoreCase))
             {
                 // TODO
-                return "SortName";
+                return new Tuple<string, bool>("SortName", false);
             }
             if (string.Equals(name, ItemSortBy.Runtime, StringComparison.OrdinalIgnoreCase))
             {
-                return "RuntimeTicks";
-            }
-            if (string.Equals(name, ItemSortBy.IsFolder, StringComparison.OrdinalIgnoreCase))
-            {
-                return "IsFolder";
+                return new Tuple<string, bool>("RuntimeTicks", false);
             }
             if (string.Equals(name, ItemSortBy.Random, StringComparison.OrdinalIgnoreCase))
             {
-                return "RANDOM()";
+                return new Tuple<string, bool>("RANDOM()", false);
+            }
+            if (string.Equals(name, ItemSortBy.DatePlayed, StringComparison.OrdinalIgnoreCase))
+            {
+                return new Tuple<string, bool>("LastPlayedDate", false);
+            }
+            if (string.Equals(name, ItemSortBy.PlayCount, StringComparison.OrdinalIgnoreCase))
+            {
+                return new Tuple<string, bool>("PlayCount", false);
+            }
+            if (string.Equals(name, ItemSortBy.IsFavoriteOrLiked, StringComparison.OrdinalIgnoreCase))
+            {
+                return new Tuple<string, bool>("IsFavorite", true);
+            }
+            if (string.Equals(name, ItemSortBy.IsFolder, StringComparison.OrdinalIgnoreCase))
+            {
+                return new Tuple<string, bool>("IsFolder", true);
+            }
+            if (string.Equals(name, ItemSortBy.IsPlayed, StringComparison.OrdinalIgnoreCase))
+            {
+                return new Tuple<string, bool>("played", true);
+            }
+            if (string.Equals(name, ItemSortBy.IsUnplayed, StringComparison.OrdinalIgnoreCase))
+            {
+                return new Tuple<string, bool>("played", false);
             }
 
-            return name;
+            return new Tuple<string, bool>(name, false);
         }
 
         public List<Guid> GetItemIdsList(InternalItemsQuery query)
@@ -1680,9 +1794,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select guid from TypedBaseItems";
+                cmd.CommandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, new[] { "guid" })) + " from TypedBaseItems";
+                cmd.CommandText += GetJoinUserDataText(query);
 
-                var whereClauses = GetWhereClauses(query, cmd, true);
+                if (EnableJoinUserData(query))
+                {
+                    cmd.Parameters.Add(cmd, "@UserId", DbType.Guid).Value = query.User.Id;
+                }
+
+                var whereClauses = GetWhereClauses(query, cmd);
 
                 var whereText = whereClauses.Count == 0 ?
                     string.Empty :
@@ -1697,9 +1817,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 cmd.CommandText += GetOrderByText(query);
 
-                if (query.Limit.HasValue)
+                if (query.Limit.HasValue || query.StartIndex.HasValue)
                 {
-                    cmd.CommandText += " LIMIT " + query.Limit.Value.ToString(CultureInfo.InvariantCulture);
+                    var limit = query.Limit ?? int.MaxValue;
+
+                    cmd.CommandText += " LIMIT " + limit.ToString(CultureInfo.InvariantCulture);
+
+                    if (query.StartIndex.HasValue)
+                    {
+                        cmd.CommandText += " OFFSET " + query.StartIndex.Value.ToString(CultureInfo.InvariantCulture);
+                    }
                 }
 
                 var list = new List<Guid>();
@@ -1733,13 +1860,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 cmd.CommandText = "select guid,path from TypedBaseItems";
 
-                var whereClauses = GetWhereClauses(query, cmd, false);
+                var whereClauses = GetWhereClauses(query, cmd);
 
                 var whereTextWithoutPaging = whereClauses.Count == 0 ?
                     string.Empty :
                     " where " + string.Join(" AND ", whereClauses.ToArray());
-
-                whereClauses = GetWhereClauses(query, cmd, true, false);
 
                 var whereText = whereClauses.Count == 0 ?
                     string.Empty :
@@ -1754,9 +1879,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 cmd.CommandText += GetOrderByText(query);
 
-                if (query.Limit.HasValue)
+                if (query.Limit.HasValue || query.StartIndex.HasValue)
                 {
-                    cmd.CommandText += " LIMIT " + query.Limit.Value.ToString(CultureInfo.InvariantCulture);
+                    var limit = query.Limit ?? int.MaxValue;
+
+                    cmd.CommandText += " LIMIT " + limit.ToString(CultureInfo.InvariantCulture);
+
+                    if (query.StartIndex.HasValue)
+                    {
+                        cmd.CommandText += " OFFSET " + query.StartIndex.Value.ToString(CultureInfo.InvariantCulture);
+                    }
                 }
 
                 cmd.CommandText += "; select count (guid) from TypedBaseItems" + whereTextWithoutPaging;
@@ -1807,15 +1939,19 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select guid from TypedBaseItems";
+                cmd.CommandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, new[] { "guid" })) + " from TypedBaseItems";
 
-                var whereClauses = GetWhereClauses(query, cmd, false);
+                var whereClauses = GetWhereClauses(query, cmd);
+                cmd.CommandText += GetJoinUserDataText(query);
+
+                if (EnableJoinUserData(query))
+                {
+                    cmd.Parameters.Add(cmd, "@UserId", DbType.Guid).Value = query.User.Id;
+                }
 
                 var whereTextWithoutPaging = whereClauses.Count == 0 ?
                     string.Empty :
                     " where " + string.Join(" AND ", whereClauses.ToArray());
-
-                whereClauses = GetWhereClauses(query, cmd, true);
 
                 var whereText = whereClauses.Count == 0 ?
                     string.Empty :
@@ -1830,19 +1966,29 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 cmd.CommandText += GetOrderByText(query);
 
-                if (query.Limit.HasValue)
+                if (query.Limit.HasValue || query.StartIndex.HasValue)
                 {
-                    cmd.CommandText += " LIMIT " + query.Limit.Value.ToString(CultureInfo.InvariantCulture);
+                    var limit = query.Limit ?? int.MaxValue;
+
+                    cmd.CommandText += " LIMIT " + limit.ToString(CultureInfo.InvariantCulture);
+
+                    if (query.StartIndex.HasValue)
+                    {
+                        cmd.CommandText += " OFFSET " + query.StartIndex.Value.ToString(CultureInfo.InvariantCulture);
+                    }
                 }
 
                 if (EnableGroupByPresentationUniqueKey(query) && _config.Configuration.SchemaVersion >= 66)
                 {
-                    cmd.CommandText += "; select count (distinct PresentationUniqueKey) from TypedBaseItems" + whereTextWithoutPaging;
+                    cmd.CommandText += "; select count (distinct PresentationUniqueKey) from TypedBaseItems";
                 }
                 else
                 {
-                    cmd.CommandText += "; select count (guid) from TypedBaseItems" + whereTextWithoutPaging;
+                    cmd.CommandText += "; select count (guid) from TypedBaseItems";
                 }
+
+                cmd.CommandText += GetJoinUserDataText(query);
+                cmd.CommandText += whereTextWithoutPaging;
 
                 var list = new List<Guid>();
                 var count = 0;
@@ -1872,7 +2018,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
 
-        private List<string> GetWhereClauses(InternalItemsQuery query, IDbCommand cmd, bool addPaging, bool enablePresentationUniqueKey = true)
+        private List<string> GetWhereClauses(InternalItemsQuery query, IDbCommand cmd)
         {
             var whereClauses = new List<string>();
 
@@ -2161,6 +2307,60 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 cmd.Parameters.Add(cmd, "@NameLessThan", DbType.String).Value = query.NameLessThan.ToLower();
             }
 
+            if (query.IsLiked.HasValue)
+            {
+                if (query.IsLiked.Value)
+                {
+                    whereClauses.Add("rating>=@UserRating");
+                    cmd.Parameters.Add(cmd, "@UserRating", DbType.Double).Value = UserItemData.MinLikeValue;
+                }
+                else
+                {
+                    whereClauses.Add("(rating is null or rating<@UserRating)");
+                    cmd.Parameters.Add(cmd, "@UserRating", DbType.Double).Value = UserItemData.MinLikeValue;
+                }
+            }
+
+            if (query.IsFavoriteOrLiked.HasValue)
+            {
+                if (query.IsFavoriteOrLiked.Value)
+                {
+                    whereClauses.Add("(IsFavorite=@IsFavoriteOrLiked or rating>=@UserRatingIsFavoriteOrLiked)");
+                    cmd.Parameters.Add(cmd, "@IsFavoriteOrLiked", DbType.Boolean).Value = true;
+                    cmd.Parameters.Add(cmd, "@UserRatingIsFavoriteOrLiked", DbType.Double).Value = UserItemData.MinLikeValue;
+                }
+                else
+                {
+                    whereClauses.Add("(IsFavorite=@IsFavoriteOrLiked or rating is null or rating<@UserRatingIsFavoriteOrLiked)");
+                    cmd.Parameters.Add(cmd, "@IsFavoriteOrLiked", DbType.Boolean).Value = false;
+                    cmd.Parameters.Add(cmd, "@UserRatingIsFavoriteOrLiked", DbType.Double).Value = UserItemData.MinLikeValue;
+                }
+            }
+
+            if (query.IsFavorite.HasValue)
+            {
+                whereClauses.Add("IsFavorite=@IsFavorite");
+                cmd.Parameters.Add(cmd, "@IsFavorite", DbType.Boolean).Value = query.IsFavorite.Value;
+            }
+
+            if (query.IsPlayed.HasValue)
+            {
+                whereClauses.Add("played=@IsPlayed");
+                cmd.Parameters.Add(cmd, "@IsPlayed", DbType.Boolean).Value = query.IsPlayed.Value;
+            }
+
+            if (query.IsResumable.HasValue)
+            {
+                if (query.IsResumable.Value)
+                {
+                    whereClauses.Add("playbackPositionTicks > 0");
+                }
+                else
+                {
+                    whereClauses.Add("(playbackPositionTicks is null or playbackPositionTicks = 0)");
+                }
+            }
+
             if (query.Genres.Length > 0)
             {
                 var clauses = new List<string>();
@@ -2366,27 +2566,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 whereClauses.Add("(InheritedTags is null OR InheritedTags not like @excludeInheritedTag" + excludeTagIndex + ")");
                 cmd.Parameters.Add(cmd, "@excludeInheritedTag" + excludeTagIndex, DbType.String).Value = "%" + excludeTag + "%";
                 excludeTagIndex++;
-            }
-
-            if (addPaging)
-            {
-                if (query.StartIndex.HasValue && query.StartIndex.Value > 0)
-                {
-                    var pagingWhereText = whereClauses.Count == 0 ?
-                        string.Empty :
-                        " where " + string.Join(" AND ", whereClauses.ToArray());
-
-                    if (enablePresentationUniqueKey && EnableGroupByPresentationUniqueKey(query) && _config.Configuration.SchemaVersion >= 66)
-                    {
-                        pagingWhereText += " Group by PresentationUniqueKey";
-                    }
-
-                    var orderBy = GetOrderByText(query);
-
-                    whereClauses.Add(string.Format("guid NOT IN (SELECT guid FROM TypedBaseItems {0}" + orderBy + " LIMIT {1})",
-                        pagingWhereText,
-                        query.StartIndex.Value.ToString(CultureInfo.InvariantCulture)));
-                }
             }
 
             return whereClauses;
@@ -2694,6 +2873,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _deleteAncestorsCommand.Transaction = transaction;
                 _deleteAncestorsCommand.ExecuteNonQuery();
 
+                // Delete user data keys
+                _deleteUserDataKeysCommand.GetParameter(0).Value = id;
+                _deleteUserDataKeysCommand.Transaction = transaction;
+                _deleteUserDataKeysCommand.ExecuteNonQuery();
+
                 // Delete the item
                 _deleteItemCommand.GetParameter(0).Value = id;
                 _deleteItemCommand.Transaction = transaction;
@@ -2883,6 +3067,39 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _saveAncestorCommand.Transaction = transaction;
 
                 _saveAncestorCommand.ExecuteNonQuery();
+            }
+        }
+
+        private void UpdateUserDataKeys(Guid itemId, List<string> keys, IDbTransaction transaction)
+        {
+            if (itemId == Guid.Empty)
+            {
+                throw new ArgumentNullException("itemId");
+            }
+
+            if (keys == null)
+            {
+                throw new ArgumentNullException("keys");
+            }
+
+            CheckDisposed();
+
+            // First delete 
+            _deleteUserDataKeysCommand.GetParameter(0).Value = itemId;
+            _deleteUserDataKeysCommand.Transaction = transaction;
+
+            _deleteUserDataKeysCommand.ExecuteNonQuery();
+            var index = 0;
+
+            foreach (var key in keys)
+            {
+                _saveUserDataKeysCommand.GetParameter(0).Value = itemId;
+                _saveUserDataKeysCommand.GetParameter(1).Value = key;
+                _saveUserDataKeysCommand.GetParameter(2).Value = index;
+                index++;
+                _saveUserDataKeysCommand.Transaction = transaction;
+
+                _saveUserDataKeysCommand.ExecuteNonQuery();
             }
         }
 
