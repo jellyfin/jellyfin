@@ -1,26 +1,17 @@
 ﻿<div id="moviesPage" data-role="page" data-dom-cache="true" class="page libraryPage backdropPage pageWithAbsoluteTabs collectionEditorPage" data-backdroptype="movie">
 
-    <div class="libraryViewNav libraryViewNavWithMinHeight">
-        <paper-tabs hidescrollbuttons noink>
-            <paper-tab>${TabSuggestions}</paper-tab>
-            <paper-tab>${TabMovies}</paper-tab>
-            <paper-tab class="movieTrailersTab">${TabTrailers}</paper-tab>
-            <paper-tab>${TabCollections}</paper-tab>
-            <paper-tab>${TabGenres}</paper-tab>
-            <paper-tab class="movieStudiosTab">${TabStudios}</paper-tab>
-        </paper-tabs>
-        <div class="legacyTabs scopedLibraryViewNav">
-            <a href="movies.html">${TabSuggestions}</a>
-            <a href="movies.html?tab=1">${TabMovies}</a>
-            <a href="movies.html?tab=2" class="movieTrailersTab">${TabTrailers}</a>
-            <a href="movies.html?tab=3">${TabCollections}</a>
-            <a href="movies.html?tab=4">${TabGenres}</a>
-            <a href="movies.html?tab=5" class="movieStudiosTab">${TabStudios}</a>
+    <div class="mdl-tabs mdl-js-tabs mdl-js-ripple-effect">
+        <div class="libraryViewNav">
+            <div class="mdl-tabs__tab-bar">
+                <a href="#suggestionsTab" class="mdl-tabs__tab is-active" data-index="0">${TabSuggestions}</a>
+                <a href="#moviesTab" class="mdl-tabs__tab" data-index="1">${TabMovies}</a>
+                <a href="#trailersTab" class="mdl-tabs__tab movieTrailersTab" data-index="2">${TabTrailers}</a>
+                <a href="#collectionsTab" class="mdl-tabs__tab" data-index="3">${TabCollections}</a>
+                <a href="#genresTab" class="mdl-tabs__tab" data-index="4">${TabGenres}</a>
+                <a href="#studiosTab" class="mdl-tabs__tab movieStudiosTab" data-index="5">${TabStudios}</a>
+            </div>
         </div>
-    </div>
-
-    <div class="ehsContent fullWidth pageTabsContainer">
-        <div class="pageTabContent hide" data-index="0">
+        <div class="mdl-tabs__panel is-active pageTabContent ehsContent" id="suggestionsTab" data-index="0">
             <div id="resumableSection" style="display: none;" class="homePageSection">
                 <div>
                     <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderResume}</h1>
@@ -48,7 +39,7 @@
                 <p>${MessageNoMovieSuggestionsAvailable}</p>
             </div>
         </div>
-        <div class="pageTabContent hide" data-index="1">
+        <div class="mdl-tabs__panel pageTabContent ehsContent" id="moviesTab" data-index="1">
             <div class="alphabetPicker">
             </div>
             <div class="viewSettings">
@@ -57,7 +48,7 @@
             </div>
             <div class="itemsContainer" style="text-align:center;"></div>
         </div>
-        <div class="pageTabContent hide" data-index="2">
+        <div class="mdl-tabs__panel pageTabContent ehsContent" id="trailersTab" data-index="2">
             <div class="alphabetPicker">
             </div>
             <div class="viewSettings">
@@ -67,7 +58,7 @@
             <div class="itemsContainer" style="text-align:center;"></div>
             <p class="noItemsMessage" style="display:none;text-align:center;">${MessageNoTrailersFound}</p>
         </div>
-        <div class="pageTabContent hide" data-index="3">
+        <div class="mdl-tabs__panel pageTabContent ehsContent" id="collectionsTab" data-index="3">
             <div class="viewSettings">
 
                 <div class="listTopPaging">
@@ -81,14 +72,14 @@
 
             <paper-fab class="btnNewCollection bottomFab" icon="add" style="position:fixed;right:20px;background-color:#db4437;"></paper-fab>
         </div>
-        <div class="pageTabContent hide" data-index="4">
+        <div class="mdl-tabs__panel pageTabContent ehsContent" id="genresTab" data-index="4">
             <div class="viewSettings">
                 <div class="listTopPaging">
                 </div>
             </div>
             <div class="itemsContainer"></div>
         </div>
-        <div class="pageTabContent hide" data-index="5">
+        <div class="mdl-tabs__panel pageTabContent ehsContent" id="studiosTab" data-index="5">
             <div class="viewSettings">
                 <div class="listTopPaging">
                 </div>

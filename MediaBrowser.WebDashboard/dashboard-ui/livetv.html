@@ -1,24 +1,16 @@
-﻿<div id="liveTvSuggestedPage" data-dom-cache="true" data-role="page" class="page libraryPage liveTvPage pageWithAbsoluteTabs" data-contextname="${HeaderLiveTv}" data-backdroptype="series,movie" data-require="scripts/livetvsuggested,livetvcss,scripts/livetvcomponents,paper-tabs,paper-checkbox,paper-button">
+﻿<div id="liveTvSuggestedPage" data-dom-cache="true" data-role="page" class="page libraryPage liveTvPage pageWithAbsoluteTabs" data-contextname="${HeaderLiveTv}" data-backdroptype="series,movie" data-require="scripts/livetvsuggested,livetvcss,scripts/livetvcomponents,MaterialTabs,paper-checkbox,paper-button">
 
-    <div class="libraryViewNav libraryViewNavWithMinHeight">
-        <paper-tabs hidescrollbuttons noink>
-            <paper-tab>${TabSuggestions}</paper-tab>
-            <paper-tab>${TabGuide}</paper-tab>
-            <paper-tab>${TabChannels}</paper-tab>
-            <paper-tab>${TabRecordings}</paper-tab>
-            <paper-tab>${TabSeries}</paper-tab>
-        </paper-tabs>
-        <div class="legacyTabs">
-            <a href="livetv.html">${TabSuggestions}</a>
-            <a href="livetv.html?tab=1">${TabGuide}</a>
-            <a href="livetv.html?tab=2">${TabChannels}</a>
-            <a href="livetv.html?tab=3">${TabRecordings}</a>
-            <a href="livetv.html?tab=4">${TabSeries}</a>
+    <div class="mdl-tabs mdl-js-tabs mdl-js-ripple-effect">
+        <div class="libraryViewNav">
+            <div class="mdl-tabs__tab-bar">
+                <a href="#suggestionsTab" class="mdl-tabs__tab is-active" data-index="0">${TabSuggestions}</a>
+                <a href="#guideTab" class="mdl-tabs__tab" data-index="1">${TabGuide}</a>
+                <a href="#channelsTab" class="mdl-tabs__tab" data-index="2">${TabChannels}</a>
+                <a href="#recordingsTab" class="mdl-tabs__tab" data-index="3">${TabRecordings}</a>
+                <a href="#seriesTab" class="mdl-tabs__tab" data-index="4">${TabSeries}</a>
+            </div>
         </div>
-    </div>
-
-    <div class="ehsContent fullWidth pageTabsContainer">
-        <div class="pageTabContent suggestedTabContent hide" data-index="0">
+        <div class="mdl-tabs__panel is-active pageTabContent ehsContent" id="suggestionsTab" data-index="0">
             <div id="activePrograms" class="homePageSection">
                 <h1 class="listHeader">${HeaderWhatsOnTV}</h1>
                 <div class="activeProgramItems itemsContainer noautoinit"></div>
@@ -54,16 +46,16 @@
                 <br />
             </div>
         </div>
-        <div class="pageTabContent absolutePageTabContent guideTabContent hide" style="width: auto; display: flex;padding-bottom: 0;" data-index="1">
+        <div class="mdl-tabs__panel pageTabContent ehsContent fullWidth flexPageTabContent absolutePageTabContent" id="guideTab" data-index="1" style="width:auto;padding-top:0; padding-bottom: 0;">
         </div>
-        <div class="pageTabContent channelsTabContent hide" data-index="2">
+        <div class="mdl-tabs__panel pageTabContent ehsContent" id="channelsTab" data-index="2">
             <div class="viewSettings">
                 <div class="listTopPaging">
                 </div>
             </div>
             <div id="items" class="itemsContainer"></div>
         </div>
-        <div class="pageTabContent recordingsTabContent hide" data-index="3">
+        <div class="mdl-tabs__panel pageTabContent ehsContent" id="recordingsTab" data-index="3">
             <div id="activeRecordings" class="homePageSection hide">
                 <h1 class="listHeader">${HeaderActiveRecordings}</h1>
                 <div class="recordingItems itemsContainer"></div>
@@ -88,7 +80,7 @@
                 <div id="recordingGroupItems"></div>
             </div>
         </div>
-        <div class="pageTabContent seriesTimersTabContent hide" data-index="4">
+        <div class="mdl-tabs__panel pageTabContent ehsContent" id="seriesTab" data-index="4">
             <div style="max-width: 700px; margin: 0 auto;" id="items">
             </div>
         </div>

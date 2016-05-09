@@ -2,14 +2,14 @@
     background-color: #000;
 }
 
-.libraryViewNav, .libraryViewNav paper-tabs {
+.libraryViewNav {
     background-color: #161616;
     box-shadow: none;
     text-transform: lowercase;
     font-size: 220%;
 }
 
-    .libraryViewNav a, paper-tab {
+    .libraryViewNav .mdl-tabs__tab {
         font-weight: 400 !important;
     }
 
@@ -17,17 +17,13 @@
     background: #161616;
 }
 
-.libraryViewNav #selectionBar {
-    background-color: transparent !important;
-}
-
-.libraryViewNav .ui-btn-active, .libraryViewNav .iron-selected, .btnActiveCast {
+.libraryViewNav .mdl-tabs__tab.is-active {
     color: #52B54B !important;
 }
 
-.libraryViewNav .ui-btn-active {
-    border-bottom-color: transparent;
-}
+    .libraryViewNav .mdl-tabs__tab.is-active:after {
+        background-color: transparent !important;
+    }
 
 .libraryPage:not(.noSecondaryNavPage) {
     padding-top: 105px !important;

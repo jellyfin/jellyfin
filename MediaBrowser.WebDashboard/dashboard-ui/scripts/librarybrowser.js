@@ -1,5 +1,18 @@
 ﻿define(['playlistManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'jQuery', 'scrollStyles'], function (playlistManager, appSettings, appStorage, appHost, datetime, $) {
 
+    function parentWithClass(elem, className) {
+
+        while (!elem.classList || !elem.classList.contains(className)) {
+            elem = elem.parentNode;
+
+            if (!elem) {
+                return null;
+            }
+        }
+
+        return elem;
+    }
+
     var libraryBrowser = (function (window, document, screen) {
 
         // Regular Expressions for parsing tags and attributes
@@ -171,14 +184,6 @@
                 elem.classList.add('hasrefreshtime');
             },
 
-            enableFullPaperTabs: function () {
-
-                if (browserInfo.animate && !browserInfo.mobile) {
-                    //return true;
-                }
-                return AppInfo.isNativeApp;
-            },
-
             allowSwipe: function (target) {
 
                 function allowSwipeOn(elem) {
@@ -188,7 +193,7 @@
                     }
 
                     if (elem.classList) {
-                        return !elem.classList.contains('hiddenScrollX') && !elem.classList.contains('smoothScrollX');
+                        return !elem.classList.contains('hiddenScrollX') && !elem.classList.contains('smoothScrollX') && !elem.classList.contains('libraryViewNav');
                     }
 
                     return true;
@@ -205,119 +210,79 @@
                 return true;
             },
 
-            selectedTab: function (pageTabsContainer, selected) {
+            selectedTab: function (tabs, selected) {
 
                 if (selected == null) {
 
-                    return pageTabsContainer.selectedTabIndex;
+                    var elem = tabs.querySelector('.mdl-tabs__tab.is-active');
+                    if (elem) {
+                        return parseInt(elem.getAttribute('data-index'));
+                    }
+                    return 0;
                 }
 
-                var tabs = pageTabsContainer.querySelectorAll('.pageTabContent');
-                for (var i = 0, length = tabs.length; i < length; i++) {
-                    if (i == selected) {
-                        tabs[i].classList.remove('hide');
-                    } else {
-                        tabs[i].classList.add('hide');
-                    }
+                var current = LibraryBrowser.selectedTab(tabs);
+                if (current == selected) {
+                    tabs.dispatchEvent(new CustomEvent("tabchange", {
+                        detail: {
+                            selectedTabIndex: selected
+                        }
+                    }));
+                } else {
+                    var tabButtons = tabs.querySelectorAll('.mdl-tabs__tab');
+                    tabButtons[selected].click();
                 }
-                pageTabsContainer.selectedTabIndex = selected;
-                pageTabsContainer.dispatchEvent(new CustomEvent("tabchange", {
-                    detail: {
-                        selectedTabIndex: selected
-                    }
-                }));
             },
 
-            configureSwipeTabs: function (ownerpage, tabs, pageTabsContainer) {
+            configureSwipeTabs: function (ownerpage, tabs) {
 
-                var pageCount = pageTabsContainer.querySelectorAll('.pageTabContent').length;
+                var pageCount = tabs.querySelectorAll('.mdl-tabs__panel').length;
 
                 require(['hammer'], function (Hammer) {
 
-                    var hammertime = new Hammer(pageTabsContainer);
+                    var hammertime = new Hammer(tabs);
                     hammertime.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL });
 
                     hammertime.on('swipeleft', function (e) {
                         if (LibraryBrowser.allowSwipe(e.target)) {
-                            var selected = parseInt(LibraryBrowser.selectedTab(pageTabsContainer) || '0');
+                            var selected = parseInt(LibraryBrowser.selectedTab(tabs) || '0');
                             if (selected < (pageCount - 1)) {
-                                tabs.selectNext();
+                                LibraryBrowser.selectedTab(tabs, selected + 1);
                             }
                         }
                     });
 
                     hammertime.on('swiperight', function (e) {
                         if (LibraryBrowser.allowSwipe(e.target)) {
-                            var selected = parseInt(LibraryBrowser.selectedTab(pageTabsContainer) || '0');
+                            var selected = parseInt(LibraryBrowser.selectedTab(tabs) || '0');
                             if (selected > 0) {
-                                tabs.selectPrevious();
+                                LibraryBrowser.selectedTab(tabs, selected - 1);
                             }
                         }
                     });
                 });
             },
 
-            navigateOnLibraryTabSelect: function () {
-                return !LibraryBrowser.enableFullPaperTabs();
-            },
+            configurePaperLibraryTabs: function (ownerpage, tabs) {
 
-            configurePaperLibraryTabs: function (ownerpage, tabs, pageTabsContainer) {
-
-                // Causing iron-select to not fire in IE and safari
-                if (browserInfo.chrome) {
-                    tabs.noink = true;
+                if (!browserInfo.safari) {
+                    LibraryBrowser.configureSwipeTabs(ownerpage, tabs);
                 }
 
-                var libraryViewNav = ownerpage.querySelector('.libraryViewNav');
-                if (LibraryBrowser.enableFullPaperTabs()) {
+                tabs.querySelector('.mdl-tabs__tab-bar').addEventListener('click', function (e) {
 
-                    if (browserInfo.safari) {
-                        tabs.noSlide = true;
-                        tabs.noBar = true;
-                    } else {
-                        LibraryBrowser.configureSwipeTabs(ownerpage, tabs, pageTabsContainer);
-                    }
+                    var link = parentWithClass(e.target, 'mdl-tabs__tab');
 
-                    if (libraryViewNav) {
-                        libraryViewNav.classList.add('paperLibraryViewNav');
-                        libraryViewNav.classList.remove('libraryViewNavWithMinHeight');
-                    }
-
-                } else {
-
-                    tabs.noSlide = true;
-                    tabs.noBar = true;
-
-                    var legacyTabs = ownerpage.querySelector('.legacyTabs');
-
-                    if (legacyTabs) {
-                        pageTabsContainer.addEventListener('tabchange', function (e) {
-
-                            var selected = e.detail.selectedTabIndex;
-                            var anchors = legacyTabs.querySelectorAll('a');
-                            for (var i = 0, length = anchors.length; i < length; i++) {
-                                if (i == selected) {
-                                    anchors[i].classList.add('ui-btn-active');
-                                } else {
-                                    anchors[i].classList.remove('ui-btn-active');
-                                }
+                    if (link) {
+                        tabs.dispatchEvent(new CustomEvent("tabchange", {
+                            detail: {
+                                selectedTabIndex: parseInt(link.getAttribute('data-index'))
                             }
-                        });
+                        }));
                     }
-
-                    if (libraryViewNav) {
-                        libraryViewNav.classList.remove('libraryViewNavWithMinHeight');
-                    }
-                }
+                });
 
                 ownerpage.addEventListener('viewbeforeshow', LibraryBrowser.onTabbedpagebeforeshow);
-
-                if (!LibraryBrowser.navigateOnLibraryTabSelect()) {
-                    tabs.addEventListener('iron-select', function () {
-
-                        LibraryBrowser.selectedTab(pageTabsContainer, this.selected);
-                    });
-                }
             },
 
             onTabbedpagebeforeshow: function (e) {
@@ -344,38 +309,24 @@
 
             onTabbedpagebeforeshowInternal: function (page, e, isFirstLoad) {
 
-                var pageTabsContainer = page.querySelector('.pageTabsContainer');
+                var pageTabsContainer = page.querySelector('.mdl-tabs');
 
                 if (isFirstLoad) {
 
                     console.log('selected tab is null, checking query string');
 
-                    var selected = parseInt(getParameterByName('tab') || '0');
+                    var selected = page.firstTabIndex != null ? page.firstTabIndex : parseInt(getParameterByName('tab') || '0');
 
                     console.log('selected tab will be ' + selected);
 
-                    if (LibraryBrowser.enableFullPaperTabs()) {
-
-                        var tabs = page.querySelector('paper-tabs');
-                        if (tabs.selected) {
-                            // showTab was called
-                            return;
-                        }
-                        tabs.selected = selected;
-
-                    } else {
-                        LibraryBrowser.selectedTab(pageTabsContainer, selected);
-                    }
+                    LibraryBrowser.selectedTab(pageTabsContainer, selected);
 
                 } else {
 
                     // Go back to the first tab
-                    if (LibraryBrowser.enableFullPaperTabs() && !e.detail.isRestored) {
-                        if (LibraryBrowser.selectedTab(pageTabsContainer)) {
-
-                            page.querySelector('paper-tabs').selected = 0;
-                            return;
-                        }
+                    if (!e.detail.isRestored) {
+                        LibraryBrowser.selectedTab(pageTabsContainer, 0);
+                        return;
                     }
                     pageTabsContainer.dispatchEvent(new CustomEvent("tabchange", {
                         detail: {
@@ -387,37 +338,13 @@
 
             showTab: function (url, index) {
 
-                if (!LibraryBrowser.enableFullPaperTabs()) {
-
-                    if (index) {
-                        url = replaceQueryString(url, 'tab', index);
-                    }
-                    Dashboard.navigate(url);
-                    return;
-                }
-
                 var afterNavigate = function () {
 
                     document.removeEventListener('pagebeforeshow', afterNavigate);
+
                     if (window.location.href.toLowerCase().indexOf(url.toLowerCase()) != -1) {
 
-                        var pageTabsContainer = this.querySelector('.pageTabsContainer');
-
-                        if (pageTabsContainer) {
-
-                            var tabs = this.querySelector('paper-tabs');
-
-                            // For some reason the live tv page will not switch tabs in IE and safari
-                            var delay = browserInfo.chrome ? 0 : 100;
-
-                            setTimeout(function () {
-                                var noSlide = tabs.noSlide;
-                                tabs.noSlide = true;
-                                tabs.selected = index;
-                                tabs.noSlide = noSlide;
-
-                            }, delay);
-                        }
+                        this.firstTabIndex = index;
                     }
                 };
 
@@ -425,6 +352,7 @@
 
                     afterNavigate.call($.mobile.activePage);
                 } else {
+
                     pageClassOn('pagebeforeshow', 'page', afterNavigate);
                     Dashboard.navigate(url);
                 }
@@ -2431,7 +2359,7 @@
                     lines.push(airTimeText || '');
                 }
 
-                 if (item.Type == 'TvChannel') {
+                if (item.Type == 'TvChannel') {
 
                     if (item.CurrentProgram) {
                         lines.push(LibraryBrowser.getPosterViewDisplayName(item.CurrentProgram));
@@ -3141,7 +3069,7 @@
             getUserDataButtonHtml: function (method, itemId, btnCssClass, icon, tooltip, style) {
 
                 if (style == 'fab') {
-                    
+
                     var tagName = 'paper-fab';
                     return '<' + tagName + ' title="' + tooltip + '" data-itemid="' + itemId + '" icon="' + icon + '" class="' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"></' + tagName + '>';
                 }
@@ -3711,12 +3639,6 @@
                 return hasbackdrop;
             }
         };
-
-        if (libraryBrowser.enableFullPaperTabs()) {
-            document.documentElement.classList.add('fullPaperLibraryTabs');
-        } else {
-            document.documentElement.classList.add('basicPaperLibraryTabs');
-        }
 
         return libraryBrowser;
 

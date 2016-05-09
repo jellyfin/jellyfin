@@ -852,7 +852,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         UpdateAncestors(item.Id, item.GetAncestorIds().Distinct().ToList(), transaction);
                     }
 
-                    UpdateUserDataKeys(item.Id, item.GetUserDataKeys(), transaction);
+                    UpdateUserDataKeys(item.Id, item.GetUserDataKeys().Distinct(StringComparer.OrdinalIgnoreCase).ToList(), transaction);
                 }
 
                 transaction.Commit();

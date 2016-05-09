@@ -26,7 +26,7 @@
 
     .absolutePageTabContent.headroomUnpinned {
         transform: translateY(-92px);
-        bottom: -92px!important;
+        bottom: -92px !important;
     }
 
 .sidebarDivider {
@@ -188,14 +188,44 @@
     box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
 }
 
+    .libraryViewNav.bottom {
+        top: auto!important;
+        bottom: 0;
+    }
+
+
+    .libraryViewNav .mdl-tabs__tab-bar {
+        -webkit-justify-content: initial;
+        justify-content: initial;
+        display: inline-flex;
+        text-align: center;
+        margin: 0 auto;
+    }
+
+
+    .libraryViewNav .mdl-tabs__tab {
+        color: #888 !important;
+        padding: 0 1.25em;
+        float: none;
+        flex-shrink: 0;
+    }
+
+        .libraryViewNav .mdl-tabs__tab.is-active {
+            color: #fff !important;
+        }
+
+            .libraryViewNav .mdl-tabs__tab.is-active:after {
+                background: #52B54B !important;
+            }
+
     .libraryViewNav::-webkit-scrollbar {
         height: 0 !important;
         display: none;
     }
 
-.libraryViewNavWithMinHeight {
-    min-height: 48px;
-}
+    .libraryViewNav .mdl-tabs__tab .mdl-tabs__ripple-container .mdl-ripple {
+        background: #52B54B !important;
+    }
 
 .viewMenuBar, .libraryViewNav {
     background-color: #020202;
@@ -333,72 +363,6 @@
 
 .ui-panel.ui-body-b {
     background-color: #212121;
-}
-
-.libraryViewNav a {
-    display: inline-block;
-    padding: 14px 13px 11px;
-    color: rgba(255,255,255,.8) !important;
-    text-decoration: none;
-    margin: 0 0;
-    position: relative;
-    font-weight: normal;
-    border-bottom: 2px solid transparent;
-}
-
-.libraryViewNav .ui-btn-active {
-    border-bottom-color: #52B54B;
-    color: #fff !important;
-}
-
-.libraryViewNav .iron-selected a {
-    color: inherit !important;
-    text-decoration: none;
-    text-align: center;
-}
-
-.libraryViewNav #tabsContainer {
-    margin: auto;
-    -ms-flex: none;
-    -webkit-flex: none;
-    flex: none;
-    flex-shrink: 0;
-    flex-grow: 1;
-    touch-action: auto !important;
-}
-
-.libraryViewNav paper-tabs {
-    flex: none;
-    flex-shrink: 0;
-    flex-grow: 1;
-    overflow-x: visible !important;
-}
-
-.libraryViewNav paper-tab {
-    flex: none;
-    flex-shrink: 0;
-    flex-grow: 1;
-}
-
-.basicPaperLibraryTabs .libraryViewNav paper-tabs {
-    display: none;
-}
-
-.fullPaperLibraryTabs .legacyTabs {
-    display: none;
-}
-
-.minimumSizeTabs .libraryViewNav .tab-content {
-    display: block !important;
-}
-
-.minimumSizeTabs .libraryViewNav paper-tab {
-    height: auto !important;
-    flex-grow: 0 !important;
-}
-
-.minimumSizeTabs .libraryViewNav #tabsContainer {
-    flex-grow: 0 !important;
 }
 
 @media all and (max-width: 400px) {

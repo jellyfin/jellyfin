@@ -1,4 +1,4 @@
-﻿define(['browser', 'datetime', 'jQuery', 'paper-fab', 'paper-tabs', 'paper-slider'], function (browser, datetime, $) {
+﻿define(['browser', 'datetime', 'jQuery', 'paper-fab', 'paper-slider'], function (browser, datetime, $) {
 
     function showSlideshowMenu(context) {
         require(['scripts/slideshow'], function () {
@@ -459,7 +459,7 @@
         }
 
         function isPlaylistOpen(context) {
-            return context.querySelector('paper-tabs').selected == 2;
+            return LibraryBrowser.selectedTab(context.querySelector('.mdl-tabs')) == 2;
         }
 
         function onStateChanged(e, state) {
@@ -793,24 +793,6 @@
             return false;
         }
 
-        function showTab(index) {
-
-            var all = dlg.querySelectorAll('.nowPlayingPageTab');
-
-            index = (index || 0).toString();
-
-            for (var i = 0, length = all.length; i < length; i++) {
-
-                var tab = all[i];
-
-                if (tab.getAttribute('data-tab') == index) {
-                    tab.classList.remove('hide');
-                } else {
-                    tab.classList.add('hide');
-                }
-            }
-        }
-
         function init(context) {
 
             require(['css!css/nowplaying.css']);
@@ -831,39 +813,18 @@
             //    showSlideshowMenu(context);
             //});
 
-            var tabs = context.querySelector('paper-tabs');
+            var mdlTabs = context.querySelector('.mdl-tabs');
 
             if (AppInfo.enableNowPlayingPageBottomTabs) {
-                tabs.classList.remove('hide');
-                context.querySelector('.libraryViewNav').classList.add('hide');
+                context.querySelector('.libraryViewNav').classList.add('bottom');
             } else {
-                tabs.classList.add('hide');
-                context.querySelector('.libraryViewNav').classList.remove('hide');
+                context.querySelector('.libraryViewNav').classList.remove('bottom');
             }
 
-            tabs.noSlide = true;
-
-            tabs.addEventListener('iron-select', function (e) {
-
-                var btn = context.querySelector('.libraryViewNav a.ui-btn-active');
-
-                if (btn) {
-                    btn.classList.remove('ui-btn-active');
-                }
-
-                context.querySelector('.libraryViewNav a[data-index=\'' + e.target.selected + '\']').classList.add('ui-btn-active');
-
-                if (e.target.selected == 2 && playlistNeedsRefresh) {
+            mdlTabs.addEventListener('tabchange', function (e) {
+                if (e.detail.selectedTabIndex == 2 && playlistNeedsRefresh) {
                     loadPlaylist(context);
                 }
-
-                showTab(e.target.selected);
-            });
-
-            $(context.querySelectorAll('.libraryViewNav a')).on('click', function () {
-                var newSelected = this.getAttribute('data-index');
-
-                tabs.selected = newSelected;
             });
 
             Events.on(MediaController, 'playerchange', onPlayerChange);
@@ -887,21 +848,6 @@
 
             bindToPlayer(context, MediaController.getCurrentPlayer());
 
-            var selected = tab == '#playlist' ? 2 : 0;
-
-            var delay = browser.animate ? 0 : 1000;
-
-            // hack alert. doing this because the neon elements don't seem to be initialized yet
-            setTimeout(function () {
-
-                if (AppInfo.enableNowPlayingPageBottomTabs) {
-                    context.querySelector('paper-tabs').selected = selected;
-                } else {
-
-                    showTab(selected);
-                }
-            }, delay);
-
             updateCastIcon(context);
         }
 
@@ -914,6 +860,7 @@
                 context.querySelector('.topRightContainer').style.position = 'relative';
             }
 
+            componentHandler.upgradeAllRegistered(dlg);
             init(dlg);
         };
 

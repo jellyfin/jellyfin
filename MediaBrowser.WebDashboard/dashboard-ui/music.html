@@ -1,28 +1,18 @@
-﻿<div id="musicRecommendedPage" data-dom-cache="true" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs" data-backdroptype="musicartist" data-require="scripts/musicrecommended,paper-tabs,paper-checkbox,scripts/alphapicker">
-    <div class="libraryViewNav libraryViewNavWithMinHeight">
-        <paper-tabs hidescrollbuttons noink>
-            <paper-tab>${TabSuggestions}</paper-tab>
-            <paper-tab>${TabAlbums}</paper-tab>
-            <paper-tab>${TabAlbumArtists}</paper-tab>
-            <paper-tab>${TabArtists}</paper-tab>
-            <paper-tab>${TabSongs}</paper-tab>
-            <paper-tab>${TabGenres}</paper-tab>
-            <paper-tab>${TabFolders}</paper-tab>
-        </paper-tabs>
-        <div class="legacyTabs scopedLibraryViewNav">
-            <a href="music.html">${TabSuggestions}</a>
-            <a href="music.html?tab=1">${TabAlbums}</a>
-            <a href="music.html?tab=2">${TabAlbumArtists}</a>
-            <a href="music.html?tab=3">${TabArtists}</a>
-            <a href="music.html?tab=4">${TabSongs}</a>
-            <a href="music.html?tab=5">${TabGenres}</a>
-            <a href="music.html?tab=6">${TabFolders}</a>
+﻿<div id="musicRecommendedPage" data-dom-cache="true" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs" data-backdroptype="musicartist" data-require="scripts/musicrecommended,MaterialTabs,paper-checkbox,scripts/alphapicker">
+
+    <div class="mdl-tabs mdl-js-tabs mdl-js-ripple-effect">
+        <div class="libraryViewNav">
+            <div class="mdl-tabs__tab-bar">
+                <a href="#suggestionsTab" class="mdl-tabs__tab is-active" data-index="0">${TabSuggestions}</a>
+                <a href="#albumsTab" class="mdl-tabs__tab" data-index="1">${TabAlbums}</a>
+                <a href="#albumArtistsTab" class="mdl-tabs__tab" data-index="2">${TabAlbumArtists}</a>
+                <a href="#artistsTab" class="mdl-tabs__tab" data-index="3">${TabArtists}</a>
+                <a href="#songsTab" class="mdl-tabs__tab" data-index="4">${TabSongs}</a>
+                <a href="#genresTab" class="mdl-tabs__tab" data-index="5">${TabGenres}</a>
+                <a href="#foldersTab" class="mdl-tabs__tab" data-index="6">${TabFolders}</a>
+            </div>
         </div>
-    </div>
-
-    <div class="ehsContent fullWidth pageTabsContainer">
-
-        <div class="pageTabContent hide" data-index="0">
+        <div class="mdl-tabs__panel is-active pageTabContent ehsContent" id="suggestionsTab" data-index="0">
             <div class="homePageSection">
                 <h1 class="listHeader">${HeaderLatestMusic}</h1>
 
@@ -53,7 +43,7 @@
 
             <div class="favoriteSections homePageSection"></div>
         </div>
-        <div class="pageTabContent hide" data-index="1">
+        <div class="mdl-tabs__panel pageTabContent ehsContent" id="albumsTab" data-index="1">
             <div class="alphabetPicker">
             </div>
             <div class="viewSettings">
@@ -62,7 +52,7 @@
             </div>
             <div id="items" class="itemsContainer paddedItemsContainer"></div>
         </div>
-        <div class="pageTabContent hide" data-index="2">
+        <div class="mdl-tabs__panel pageTabContent ehsContent" id="albumArtistsTab" data-index="2">
             <div class="alphabetPicker">
             </div>
             <div class="viewSettings">
@@ -71,7 +61,7 @@
             </div>
             <div id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
         </div>
-        <div class="pageTabContent hide" data-index="3">
+        <div class="mdl-tabs__panel pageTabContent ehsContent" id="artistsTab" data-index="3">
             <div class="alphabetPicker">
             </div>
             <div class="viewSettings">
@@ -80,21 +70,21 @@
             </div>
             <div id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
         </div>
-        <div class="pageTabContent hide" data-index="4">
+        <div class="mdl-tabs__panel pageTabContent ehsContent" id="songsTab" data-index="4">
             <div class="viewSettings">
                 <div class="listTopPaging">
                 </div>
             </div>
             <div id="items" class="itemsContainer" style="max-width:1000px;margin: 0 auto;"></div>
         </div>
-        <div class="pageTabContent hide" data-index="5">
+        <div class="mdl-tabs__panel pageTabContent ehsContent" id="genresTab" data-index="5">
             <div class="viewSettings">
                 <div class="listTopPaging">
                 </div>
             </div>
             <div id="items" class="itemsContainer paddedItemsContainer"></div>
         </div>
-        <div class="pageTabContent hide" data-index="6">
+        <div class="mdl-tabs__panel pageTabContent ehsContent" id="foldersTab" data-index="6">
             <div class="viewSettings">
                 <div class="listTopPaging">
                 </div>

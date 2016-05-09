@@ -1,3 +1,18 @@
-﻿.libraryViewNav a, paper-tab, paper-tab a {
+﻿paper-tab, paper-tab a {
     font-weight: bold !important;
+}
+
+.libraryViewNav .mdl-tabs__tab {
+    font-weight: bold !important;
+}
+
+@media all and (min-width: 800px) {
+
+    .libraryViewNav .mdl-tabs__tab-bar {
+        display: flex;
+    }
+
+    .libraryViewNav .mdl-tabs__tab {
+        flex-grow: 1;
+    }
 }

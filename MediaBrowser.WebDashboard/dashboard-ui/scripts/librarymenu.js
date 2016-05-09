@@ -896,16 +896,18 @@
 
         var viewMenuBar = document.querySelector('.viewMenuBar');
 
-        if (page.classList.contains('standalonePage')) {
-            viewMenuBar.classList.add('hide');
-        } else {
-            viewMenuBar.classList.remove('hide');
-        }
+        if (viewMenuBar) {
+            if (page.classList.contains('standalonePage')) {
+                viewMenuBar.classList.add('hide');
+            } else {
+                viewMenuBar.classList.remove('hide');
+            }
 
-        if (page.classList.contains('type-interior') && !layoutManager.mobile) {
-            viewMenuBar.classList.add('headroomDisabled');
-        } else {
-            viewMenuBar.classList.remove('headroomDisabled');
+            if (page.classList.contains('type-interior') && !layoutManager.mobile) {
+                viewMenuBar.classList.add('headroomDisabled');
+            } else {
+                viewMenuBar.classList.remove('headroomDisabled');
+            }
         }
 
         if (requiresUserRefresh) {

@@ -181,7 +181,7 @@
 
         function loadTab(page, index) {
 
-            var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+            var tabContent = page.querySelector('.mdl-tabs__panel[data-index=\'' + index + '\']');
             var depends = [];
 
             switch (index) {
@@ -232,21 +232,21 @@
             });
         }
 
+        var mdlTabs = view.querySelector('.mdl-tabs');
+
         function onPlaybackStop(e, state) {
 
             if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
 
-                var pageTabsContainer = view.querySelector('.pageTabsContainer');
-
-                pageTabsContainer.dispatchEvent(new CustomEvent("tabchange", {
+                mdlTabs.dispatchEvent(new CustomEvent("tabchange", {
                     detail: {
-                        selectedTabIndex: libraryBrowser.selectedTab(pageTabsContainer)
+                        selectedTabIndex: libraryBrowser.selectedTab(mdlTabs)
                     }
                 }));
             }
         }
 
-        var pageTabsContainer = view.querySelector('.pageTabsContainer');
+        componentHandler.upgradeAllRegistered(view);
 
         var baseUrl = 'tv.html';
         var topParentId = params.topParentId;
@@ -260,10 +260,9 @@
             view.querySelector('#resumableItems').classList.remove('hiddenScrollX');
         }
         libraryBrowser.createCardMenus(view.querySelector('#resumableItems'));
+        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs);
 
-        libraryBrowser.configurePaperLibraryTabs(view, view.querySelector('paper-tabs'), pageTabsContainer, baseUrl);
-
-        pageTabsContainer.addEventListener('tabchange', function (e) {
+        mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));
         });
 
