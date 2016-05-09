@@ -55,7 +55,7 @@ namespace MediaBrowser.Server.Implementations.Sorting
                 }
             }
 
-            return x.DateCreated;
+            return DateTime.MinValue;
         }
 
         /// <summary>
