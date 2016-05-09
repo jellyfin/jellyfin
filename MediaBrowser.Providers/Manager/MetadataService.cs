@@ -444,9 +444,10 @@ namespace MediaBrowser.Providers.Manager
                 var folder = item as Folder;
                 if (folder != null && folder.SupportsDateLastMediaAdded)
                 {
-                    var date = folder.GetRecursiveChildren(i => !i.IsFolder).Select(i => i.DateCreated).Max();
+                    var items = folder.GetRecursiveChildren(i => !i.IsFolder).Select(i => i.DateCreated).ToList();
+                    var date = items.Count == 0 ? (DateTime?)null : items.Max();
 
-                    if (!folder.DateLastMediaAdded.HasValue || folder.DateLastMediaAdded.Value != date)
+                    if ((!folder.DateLastMediaAdded.HasValue && date.HasValue) || folder.DateLastMediaAdded != date)
                     {
                         folder.DateLastMediaAdded = date;
                         updateType = ItemUpdateType.MetadataEdit;
