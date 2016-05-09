@@ -421,7 +421,8 @@ namespace MediaBrowser.Providers.Manager
                 var folder = item as Folder;
                 if (folder != null && folder.SupportsCumulativeRunTimeTicks)
                 {
-                    var ticks = folder.GetRecursiveChildren(i => !i.IsFolder).Select(i => i.RunTimeTicks ?? 0).Sum();
+                    var items = folder.GetRecursiveChildren(i => !i.IsFolder).ToList();
+                    var ticks = items.Select(i => i.RunTimeTicks ?? 0).Sum();
 
                     if (!folder.RunTimeTicks.HasValue || folder.RunTimeTicks.Value != ticks)
                     {
