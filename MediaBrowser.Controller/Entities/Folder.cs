@@ -1293,33 +1293,41 @@ namespace MediaBrowser.Controller.Entities
 
         public IList<BaseItem> GetRecursiveChildren(Func<BaseItem, bool> filter)
         {
-            var list = new List<BaseItem>();
+            var result = new Dictionary<Guid, BaseItem>();
 
-            AddChildrenToList(list, true, filter);
+            AddChildrenToList(result, true, true, filter);
 
-            return list;
+            return result.Values.ToList();
         }
 
         /// <summary>
         /// Adds the children to list.
         /// </summary>
-        /// <param name="list">The list.</param>
-        /// <param name="recursive">if set to <c>true</c> [recursive].</param>
-        /// <param name="filter">The filter.</param>
-        private void AddChildrenToList(List<BaseItem> list, bool recursive, Func<BaseItem, bool> filter)
+        private void AddChildrenToList(Dictionary<Guid,BaseItem> result, bool includeLinkedChildren, bool recursive, Func<BaseItem, bool> filter)
         {
             foreach (var child in Children)
             {
                 if (filter == null || filter(child))
                 {
-                    list.Add(child);
+                    result[child.Id] = child;
                 }
 
                 if (recursive && child.IsFolder)
                 {
                     var folder = (Folder)child;
 
-                    folder.AddChildrenToList(list, true, filter);
+                    folder.AddChildrenToList(result, includeLinkedChildren, true, filter);
+                }
+            }
+
+            if (includeLinkedChildren)
+            {
+                foreach (var child in GetLinkedChildren())
+                {
+                    if (filter == null || filter(child))
+                    {
+                        result[child.Id] = child;
+                    }
                 }
             }
         }
