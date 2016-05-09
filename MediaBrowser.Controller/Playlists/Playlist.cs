@@ -39,6 +39,15 @@ namespace MediaBrowser.Controller.Playlists
             }
         }
 
+        [IgnoreDataMember]
+        public override bool SupportsCumulativeRunTimeTicks
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public override bool IsAuthorizedToDelete(User user)
         {
             return true;

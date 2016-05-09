@@ -112,7 +112,8 @@
                 ExcludeLocationTypes: "Virtual",
                 ParentId: parentId,
                 ImageTypeLimit: 1,
-                EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+                EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+                EnableTotalRecordCount: 0
             };
 
             ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {

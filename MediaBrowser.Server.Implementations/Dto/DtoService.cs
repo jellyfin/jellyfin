@@ -499,6 +499,16 @@ namespace MediaBrowser.Server.Implementations.Dto
                     }
                 }
 
+                if (fields.Contains(ItemFields.CumulativeRunTimeTicks))
+                {
+                    dto.CumulativeRunTimeTicks = dto.RunTimeTicks;
+                }
+
+                if (fields.Contains(ItemFields.DateLastMediaAdded))
+                {
+                    dto.DateLastMediaAdded = folder.DateLastMediaAdded;
+                }
+
                 dto.UserData.Played = dto.UserData.PlayedPercentage.HasValue && dto.UserData.PlayedPercentage.Value >= 100;
             }
 
@@ -1613,9 +1623,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             var recursiveItemCount = 0;
             var unplayed = 0;
-            long runtime = 0;
 
-            DateTime? dateLastMediaAdded = null;
             double totalPercentPlayed = 0;
             double totalSyncPercent = 0;
             var addSyncInfo = fields.Contains(ItemFields.SyncInfo);
@@ -1632,15 +1640,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             // Loop through each recursive child
             foreach (var child in children)
             {
-                if (!dateLastMediaAdded.HasValue)
-                {
-                    dateLastMediaAdded = child.DateCreated;
-                }
-                else
-                {
-                    dateLastMediaAdded = new[] { dateLastMediaAdded.Value, child.DateCreated }.Max();
-                }
-
                 var userdata = _userDataRepository.GetUserData(user, child);
 
                 recursiveItemCount++;
@@ -1668,8 +1667,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     unplayed++;
                 }
-
-                runtime += child.RunTimeTicks ?? 0;
 
                 if (addSyncInfo)
                 {
@@ -1708,16 +1705,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                         dto.SyncPercent = pct;
                     }
                 }
-            }
-
-            if (runtime > 0 && fields.Contains(ItemFields.CumulativeRunTimeTicks))
-            {
-                dto.CumulativeRunTimeTicks = runtime;
-            }
-
-            if (fields.Contains(ItemFields.DateLastMediaAdded))
-            {
-                dto.DateLastMediaAdded = dateLastMediaAdded;
             }
         }
 

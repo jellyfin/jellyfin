@@ -44,7 +44,7 @@ iron-list .card {
 }
 
 .cardBox {
-    margin: 4px;
+    margin: 5px;
 }
 
 @media all and (max-width: 500px) {

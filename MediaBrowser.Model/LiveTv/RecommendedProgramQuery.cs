@@ -13,7 +13,14 @@ namespace MediaBrowser.Model.LiveTv
         public bool? EnableImages { get; set; }
         public int? ImageTypeLimit { get; set; }
         public ImageType[] EnableImageTypes { get; set; }
-        
+
+        public bool EnableTotalRecordCount { get; set; }
+
+        public RecommendedProgramQuery()
+        {
+            EnableTotalRecordCount = true;
+        }
+
         /// <summary>
         /// Gets or sets the user identifier.
         /// </summary>

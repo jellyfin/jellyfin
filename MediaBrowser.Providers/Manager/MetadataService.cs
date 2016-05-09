@@ -310,6 +310,11 @@ namespace MediaBrowser.Providers.Manager
                 return true;
             }
 
+            if (item is MusicVideo)
+            {
+                return true;
+            }
+
             return false;
         }
 
@@ -390,7 +395,6 @@ namespace MediaBrowser.Providers.Manager
             return _cachedTask;
         }
 
-        private readonly Task<ItemUpdateType> _cachedResult = Task.FromResult(ItemUpdateType.None);
         /// <summary>
         /// Befores the save.
         /// </summary>
@@ -398,9 +402,58 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="isFullRefresh">if set to <c>true</c> [is full refresh].</param>
         /// <param name="currentUpdateType">Type of the current update.</param>
         /// <returns>ItemUpdateType.</returns>
-        protected virtual Task<ItemUpdateType> BeforeSave(TItemType item, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        protected virtual async Task<ItemUpdateType> BeforeSave(TItemType item, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
-            return _cachedResult;
+            var updateType = ItemUpdateType.None;
+
+            updateType |= SaveCumulativeRunTimeTicks(item, isFullRefresh, currentUpdateType);
+            updateType |= SaveDateLastMediaAdded(item, isFullRefresh, currentUpdateType);
+
+            return updateType;
+        }
+
+        private ItemUpdateType SaveCumulativeRunTimeTicks(TItemType item, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        {
+            var updateType = ItemUpdateType.None;
+
+            if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
+            {
+                var folder = item as Folder;
+                if (folder != null && folder.SupportsCumulativeRunTimeTicks)
+                {
+                    var ticks = folder.GetRecursiveChildren(i => !i.IsFolder).Select(i => i.RunTimeTicks ?? 0).Sum();
+
+                    if (!folder.RunTimeTicks.HasValue || folder.RunTimeTicks.Value != ticks)
+                    {
+                        folder.RunTimeTicks = ticks;
+                        updateType = ItemUpdateType.MetadataEdit;
+                    }
+                }
+            }
+
+            return updateType;
+        }
+
+        private ItemUpdateType SaveDateLastMediaAdded(TItemType item, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        {
+            var updateType = ItemUpdateType.None;
+
+            if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
+            {
+                var folder = item as Folder;
+                if (folder != null && folder.SupportsDateLastMediaAdded)
+                {
+                    var date = folder.GetRecursiveChildren(i => !i.IsFolder).Select(i => i.DateCreated).Max();
+
+                    if (!folder.DateLastMediaAdded.HasValue || folder.DateLastMediaAdded.Value != date)
+                    {
+                        folder.DateLastMediaAdded = date;
+                        updateType = ItemUpdateType.MetadataEdit;
+                    }
+                }
+            }
+
+            return updateType;
         }
 
         /// <summary>
@@ -420,7 +473,7 @@ namespace MediaBrowser.Providers.Manager
                 : status.DateLastMetadataRefresh ?? default(DateTime);
 
             // Run all if either of these flags are true
-            var runAllProviders = options.ReplaceAllMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || dateLastRefresh == default(DateTime);
+            var runAllProviders = options.ReplaceAllMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || dateLastRefresh == default(DateTime) || item.RequiresRefresh();
 
             if (!runAllProviders)
             {

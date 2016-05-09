@@ -62,12 +62,25 @@ namespace MediaBrowser.Providers.Music
 
         private IEnumerable<RemoteSearchResult> GetResultsFromResponse(XmlDocument doc)
         {
-            var ns = new XmlNamespaceManager(doc.NameTable);
-            ns.AddNamespace("mb", "https://musicbrainz.org/ns/mmd-2.0#");
+            //var ns = new XmlNamespaceManager(doc.NameTable);
+            //ns.AddNamespace("mb", "https://musicbrainz.org/ns/mmd-2.0#");
 
             var list = new List<RemoteSearchResult>();
 
-            var nodes = doc.SelectNodes("//mb:artist-list/mb:artist", ns);
+            var docElem = doc.DocumentElement;
+
+            if (docElem == null)
+            {
+                return list;
+            }
+
+            var artistList = docElem.FirstChild;
+            if (artistList == null)
+            {
+                return list;
+            }
+
+            var nodes = artistList.ChildNodes;
 
             if (nodes != null)
             {
@@ -79,11 +92,13 @@ namespace MediaBrowser.Providers.Music
 
                         string mbzId = node.Attributes["id"].Value;
 
-                        var nameNode = node.SelectSingleNode("//mb:name", ns);
-
-                        if (nameNode != null)
+                        foreach (var child in node.ChildNodes.Cast<XmlNode>())
                         {
-                            name = nameNode.InnerText;
+                            if (string.Equals(child.Name, "name", StringComparison.OrdinalIgnoreCase))
+                            {
+                                name = node.InnerText;
+                                break;
+                            }
                         }
 
                         if (!string.IsNullOrWhiteSpace(mbzId) && !string.IsNullOrWhiteSpace(name))

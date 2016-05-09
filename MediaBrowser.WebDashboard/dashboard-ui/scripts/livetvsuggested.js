@@ -31,7 +31,8 @@
             IsAiring: true,
             limit: getLimit() * 2,
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary"
+            EnableImageTypes: "Primary",
+            EnableTotalRecordCount: false
 
         }).then(function (result) {
 
@@ -54,7 +55,8 @@
             IsMovie: false,
             IsSports: false,
             IsKids: false,
-            IsSeries: true
+            IsSeries: true,
+            EnableTotalRecordCount: false
 
         }).then(function (result) {
 
@@ -67,7 +69,8 @@
             IsAiring: false,
             HasAired: false,
             limit: getLimit(),
-            IsMovie: true
+            IsMovie: true,
+            EnableTotalRecordCount: false
 
         }).then(function (result) {
 
@@ -80,7 +83,8 @@
             IsAiring: false,
             HasAired: false,
             limit: getLimit(),
-            IsSports: true
+            IsSports: true,
+            EnableTotalRecordCount: false
 
         }).then(function (result) {
 
@@ -93,7 +97,8 @@
             IsAiring: false,
             HasAired: false,
             limit: getLimit(),
-            IsKids: true
+            IsKids: true,
+            EnableTotalRecordCount: false
 
         }).then(function (result) {
 

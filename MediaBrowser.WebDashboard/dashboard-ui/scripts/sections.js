@@ -498,7 +498,8 @@
             CollapseBoxSetItems: false,
             ExcludeLocationTypes: "Virtual",
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+            EnableTotalRecordCount: 0
         };
 
         return ApiClient.getItems(userId, options).then(function (result) {

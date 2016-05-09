@@ -112,7 +112,8 @@
                         }).join(','),
                         ImageTypeLimit: 1,
                         EnableImageTypes: "Primary,Backdrop",
-                        SortBy: "StartDate"
+                        SortBy: "StartDate",
+                        EnableTotalRecordCount: false
 
                     }).then(function (programsResult) {
 
