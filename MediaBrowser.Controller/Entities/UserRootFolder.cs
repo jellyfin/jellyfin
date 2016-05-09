@@ -102,10 +102,5 @@ namespace MediaBrowser.Controller.Entities
                 LibraryManager.RegisterItem(item);
             }
         }
-
-        public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, User user)
-        {
-            // Nothing meaninful here and will only waste resources
-        }
     }
 }

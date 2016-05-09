@@ -1,7 +1,26 @@
-define(['visibleinviewport', 'imageFetcher'], function (visibleinviewport, imageFetcher) {
+define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events'], function (visibleinviewport, imageFetcher, layoutManager, events) {
 
-    var thresholdX = screen.availWidth;
-    var thresholdY = screen.availHeight;
+    var thresholdX;
+    var thresholdY;
+
+    function resetThresholds() {
+
+        var x = screen.availWidth;
+        var y = screen.availHeight;
+
+        if (layoutManager.mobile) {
+            x *= 2;
+            y *= 2;
+        }
+
+        thresholdX = x;
+        thresholdY = y;
+    }
+
+    resetThresholds();
+
+    window.addEventListener("orientationchange", resetThresholds);
+    events.on(layoutManager, 'modechange', resetThresholds);
 
     var wheelEvent = (document.implementation.hasFeature('Event.wheel', '3.0') ? 'wheel' : 'mousewheel');
 

@@ -10,12 +10,6 @@ namespace MediaBrowser.Controller.Entities
     public class MusicVideo : Video, IHasArtist, IHasMusicGenres, IHasProductionLocations, IHasBudget, IHasLookupInfo<MusicVideoInfo>
     {
         /// <summary>
-        /// Gets or sets the album.
-        /// </summary>
-        /// <value>The album.</value>
-        public string Album { get; set; }
-
-        /// <summary>
         /// Gets or sets the budget.
         /// </summary>
         /// <value>The budget.</value>

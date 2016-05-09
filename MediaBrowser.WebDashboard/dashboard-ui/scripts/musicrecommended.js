@@ -27,7 +27,8 @@
             Fields: "PrimaryImageAspectRatio,SyncInfo",
             ParentId: parentId,
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+            EnableTotalRecordCount: false
         };
 
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).then(function (items) {
@@ -66,7 +67,8 @@
             Filters: "IsPlayed",
             ParentId: parentId,
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+            EnableTotalRecordCount: false
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
@@ -111,7 +113,8 @@
             Filters: "IsPlayed",
             ParentId: parentId,
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+            EnableTotalRecordCount: false
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
@@ -153,7 +156,8 @@
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SortName,CumulativeRunTimeTicks,CanDelete,SyncInfo",
             StartIndex: 0,
-            Limit: itemsPerRow()
+            Limit: itemsPerRow(),
+            EnableTotalRecordCount: false
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {

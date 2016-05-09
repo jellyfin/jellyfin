@@ -28,6 +28,9 @@ namespace MediaBrowser.Controller.Entities
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }
 
+        [IgnoreDataMember]
+        public DateTime? DateLastMediaAdded { get; set; }
+
         public Folder()
         {
             LinkedChildren = new List<LinkedChild>();
@@ -53,6 +56,36 @@ namespace MediaBrowser.Controller.Entities
             {
                 return true;
             }
+        }
+
+        [IgnoreDataMember]
+        public virtual bool SupportsCumulativeRunTimeTicks
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        [IgnoreDataMember]
+        public virtual bool SupportsDateLastMediaAdded
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool RequiresRefresh()
+        {
+            var baseResult = base.RequiresRefresh();
+
+            if (SupportsCumulativeRunTimeTicks && !RunTimeTicks.HasValue)
+            {
+                baseResult = true;
+            }
+
+            return baseResult;
         }
 
         [IgnoreDataMember]
@@ -789,11 +822,6 @@ namespace MediaBrowser.Controller.Entities
                     Logger.Debug("Query requires post-filtering due to ItemSortBy.AiredEpisodeOrder");
                     return true;
                 }
-                if (query.SortBy.Contains(ItemSortBy.Album, StringComparer.OrdinalIgnoreCase))
-                {
-                    Logger.Debug("Query requires post-filtering due to ItemSortBy.Album");
-                    return true;
-                }
                 if (query.SortBy.Contains(ItemSortBy.AlbumArtist, StringComparer.OrdinalIgnoreCase))
                 {
                     Logger.Debug("Query requires post-filtering due to ItemSortBy.AlbumArtist");
@@ -807,11 +835,6 @@ namespace MediaBrowser.Controller.Entities
                 if (query.SortBy.Contains(ItemSortBy.Budget, StringComparer.OrdinalIgnoreCase))
                 {
                     Logger.Debug("Query requires post-filtering due to ItemSortBy.Budget");
-                    return true;
-                }
-                if (query.SortBy.Contains(ItemSortBy.DateLastContentAdded, StringComparer.OrdinalIgnoreCase))
-                {
-                    Logger.Debug("Query requires post-filtering due to ItemSortBy.DateLastContentAdded");
                     return true;
                 }
                 if (query.SortBy.Contains(ItemSortBy.GameSystem, StringComparer.OrdinalIgnoreCase))
@@ -1083,12 +1106,6 @@ namespace MediaBrowser.Controller.Entities
             if (!string.IsNullOrWhiteSpace(query.AlbumArtistStartsWithOrGreater))
             {
                 Logger.Debug("Query requires post-filtering due to AlbumArtistStartsWithOrGreater");
-                return true;
-            }
-
-            if (query.AlbumNames.Length > 0)
-            {
-                Logger.Debug("Query requires post-filtering due to AlbumNames");
                 return true;
             }
 
