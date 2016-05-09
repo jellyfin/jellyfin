@@ -237,20 +237,6 @@
         }
     }
 
-    function onPlaybackStop(e, state) {
-
-        if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
-            var page = $.mobile.activePage;
-            var pageTabsContainer = page.querySelector('.pageTabsContainer');
-
-            pageTabsContainer.dispatchEvent(new CustomEvent("tabchange", {
-                detail: {
-                    selectedTabIndex: libraryBrowser.selectedTab(pageTabsContainer)
-                }
-            }));
-        }
-    }
-
     function getDisplayPreferences(key, userId) {
 
         return ApiClient.getDisplayPreferences(key, userId, displayPreferencesKey());
@@ -261,20 +247,21 @@
         var self = this;
 
         self.renderTab = function () {
-            var tabContent = view.querySelector('.pageTabContent[data-index=\'' + 0 + '\']');
+            var tabContent = view.querySelector('.mdl-tabs__panel[data-index=\'' + 0 + '\']');
             loadHomeTab(view, tabContent);
         };
 
-        var pageTabsContainer = view.querySelector('.pageTabsContainer');
+        var mdlTabs = view.querySelector('.mdl-tabs');
 
-        libraryBrowser.configurePaperLibraryTabs(view, view.querySelector('paper-tabs'), pageTabsContainer, 'home.html');
+        componentHandler.upgradeAllRegistered(view);
+        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs);
 
         var tabControllers = [];
         var renderedTabs = [];
 
         function loadTab(page, index) {
 
-            var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+            var tabContent = view.querySelector('.mdl-tabs__panel[data-index=\'' + index + '\']');
             var depends = [];
 
             switch (index) {
@@ -293,7 +280,6 @@
                     break;
                 default:
                     return;
-                    break;
             }
 
             require(depends, function (controllerFactory) {
@@ -318,7 +304,7 @@
             });
         }
 
-        pageTabsContainer.addEventListener('tabchange', function (e) {
+        mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));
         });
 
@@ -332,6 +318,18 @@
         } else {
             view.classList.add('noSecondaryNavPage');
             view.querySelector('.libraryViewNav').classList.add('hide');
+        }
+
+        function onPlaybackStop(e, state) {
+
+            if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
+
+                mdlTabs.dispatchEvent(new CustomEvent("tabchange", {
+                    detail: {
+                        selectedTabIndex: libraryBrowser.selectedTab(mdlTabs)
+                    }
+                }));
+            }
         }
 
         view.addEventListener('viewshow', function (e) {

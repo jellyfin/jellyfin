@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'scrollStyles'], function ($) {
+﻿define(['jQuery', 'libraryBrowser', 'scrollStyles'], function ($, libraryBrowser) {
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
@@ -37,7 +37,7 @@
         }).then(function (result) {
 
             renderItems(page, result.Items, 'activeProgramItems', 'play');
-            LibraryBrowser.setLastRefreshed(page);
+            libraryBrowser.setLastRefreshed(page);
             Dashboard.hideLoadingMsg();
         });
     }
@@ -108,7 +108,7 @@
 
     function renderItems(page, items, sectionClass, overlayButton, shape) {
 
-        var html = LibraryBrowser.getPosterViewHtml({
+        var html = libraryBrowser.getPosterViewHtml({
             items: items,
             shape: shape || (enableScrollX() ? getSquareShape() : 'auto'),
             showTitle: true,
@@ -137,18 +137,20 @@
 
     function renderSuggestedTab(page, tabContent) {
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
+        if (libraryBrowser.needsRefresh(tabContent)) {
             reload(tabContent);
         }
     }
 
     function loadTab(page, index) {
 
-        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+        var tabContent = page.querySelector('.mdl-tabs__panel[data-index=\'' + index + '\']');
         var depends = [];
         var scope = 'LiveTvPage';
         var renderMethod = '';
         var initMethod = '';
+
+        var viewMenuBar = document.querySelector('.viewMenuBar');
 
         switch (index) {
 
@@ -198,15 +200,15 @@
 
         var page = this;
 
-        var tabs = page.querySelector('paper-tabs');
-        var pageTabsContainer = page.querySelector('.pageTabsContainer');
+        var mdlTabs = page.querySelector('.mdl-tabs');
 
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pageTabsContainer, 'livetv.html');
+        componentHandler.upgradeAllRegistered(page);
 
-        pageTabsContainer.addEventListener('tabchange', function (e) {
+        libraryBrowser.configurePaperLibraryTabs(page, mdlTabs);
+
+        mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(page, parseInt(e.detail.selectedTabIndex));
         });
-
     });
 
     pageIdOn('viewshow', "liveTvSuggestedPage", function () {

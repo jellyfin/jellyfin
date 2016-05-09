@@ -1,29 +1,18 @@
 ﻿<div id="tvRecommendedPage" data-dom-cache="true" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs" data-backdroptype="series">
 
-    <div class="libraryViewNav libraryViewNavWithMinHeight">
-        <paper-tabs hidescrollbuttons noink>
-            <paper-tab>${TabSuggestions}</paper-tab>
-            <paper-tab>${TabLatest}</paper-tab>
-            <paper-tab>${TabUpcoming}</paper-tab>
-            <paper-tab>${TabShows}</paper-tab>
-            <paper-tab class="tvEpisodesTab">${TabEpisodes}</paper-tab>
-            <paper-tab>${TabGenres}</paper-tab>
-            <paper-tab class="tvStudiosTab">${TabNetworks}</paper-tab>
-        </paper-tabs>
-        <div class="legacyTabs scopedLibraryViewNav">
-            <a href="tv.html">${TabSuggestions}</a>
-            <a href="tv.html?tab=1">${TabLatest}</a>
-            <a href="tv.html?tab=2">${TabUpcoming}</a>
-            <a href="tv.html?tab=3">${TabShows}</a>
-            <a href="tv.html?tab=4" class="tvEpisodesTab">${TabEpisodes}</a>
-            <a href="tv.html?tab=5">${TabGenres}</a>
-            <a href="tv.html?tab=6" class="tvStudiosTab">${TabNetworks}</a>
+    <div class="mdl-tabs mdl-js-tabs mdl-js-ripple-effect">
+        <div class="libraryViewNav">
+            <div class="mdl-tabs__tab-bar">
+                <a href="#suggestionsTab" class="mdl-tabs__tab is-active" data-index="0">${TabSuggestions}</a>
+                <a href="#latestTab" class="mdl-tabs__tab" data-index="1">${TabLatest}</a>
+                <a href="#upcomingTab" class="mdl-tabs__tab" data-index="2">${TabUpcoming}</a>
+                <a href="#seriesTab" class="mdl-tabs__tab" data-index="3">${TabShows}</a>
+                <a href="#episodesTab" class="mdl-tabs__tab" data-index="4">${TabEpisodes}</a>
+                <a href="#genresTab" class="mdl-tabs__tab" data-index="5">${TabGenres}</a>
+                <a href="#studiosTab" class="mdl-tabs__tab" data-index="6">${TabNetworks}</a>
+            </div>
         </div>
-    </div>
-
-    <div class="ehsContent fullWidth pageTabsContainer">
-
-        <div class="pageTabContent hide" data-index="0">
+        <div class="mdl-tabs__panel is-active pageTabContent ehsContent" id="suggestionsTab" data-index="0">
             <div id="resumableSection" class="homePageSection">
                 <div>
                     <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderResume}</h1>
@@ -44,7 +33,7 @@
             </div>
             <p class="noNextUpItems" style="display: none;">${NoNextUpItemsMessage}</p>
         </div>
-        <div class="pageTabContent hide" data-index="1">
+        <div class="mdl-tabs__panel pageTabContent ehsContent" id="latestTab" data-index="1">
             <div class="homePageSection">
                 <div>
                     <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderLatestEpisodes}</h1>
@@ -54,7 +43,7 @@
                 </div>
             </div>
         </div>
-        <div class="pageTabContent hide" data-index="2">
+        <div class="mdl-tabs__panel pageTabContent ehsContent" id="upcomingTab" data-index="2">
             <div id="upcomingItems">
             </div>
             <div class="noItemsMessage" style="display: none;">
@@ -64,8 +53,7 @@
                 </p>
             </div>
         </div>
-        <div id="seriesTab" class="pageTabContent hide" data-index="3">
-
+        <div class="mdl-tabs__panel pageTabContent ehsContent" id="seriesTab" data-index="3">
             <div style="text-align: center;padding:.7em 0;">
                 <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
                     <div class="paging"></div>
@@ -84,7 +72,7 @@
                 <div class="paging"></div>
             </div>
         </div>
-        <div id="episodesTab" class="pageTabContent hide" data-index="4">
+        <div class="mdl-tabs__panel pageTabContent ehsContent" id="episodesTab" data-index="4">
             <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
                 <div class="paging"></div>
                 <button is="paper-icon-button-light" class="btnSelectView" title="${ButtonSelectView}"><iron-icon icon="view-comfy"></iron-icon></button>
@@ -97,13 +85,13 @@
                 <div class="paging"></div>
             </div>
         </div>
-        <div class="pageTabContent hide" data-index="5">
+        <div class="mdl-tabs__panel pageTabContent ehsContent" id="genresTab" data-index="5">
             <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
                 <button is="paper-icon-button-light" class="btnSelectView" title="${ButtonSelectView}"><iron-icon icon="view-comfy"></iron-icon></button>
             </div>
             <div id="items" class="itemsContainer paddedItemsContainer"></div>
         </div>
-        <div class="pageTabContent hide" data-index="6">
+        <div class="mdl-tabs__panel pageTabContent ehsContent" id="studiosTab" data-index="6">
             <div class="viewSettings">
                 <div class="listTopPaging">
                 </div>

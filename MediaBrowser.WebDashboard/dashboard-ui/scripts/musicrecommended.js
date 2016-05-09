@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'scrollStyles'], function ($) {
+﻿define(['jQuery', 'libraryBrowser', 'scrollStyles'], function ($, libraryBrowser) {
 
     function itemsPerRow() {
 
@@ -34,7 +34,7 @@
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).then(function (items) {
 
             var elem = page.querySelector('#recentlyAddedSongs');
-            elem.innerHTML = LibraryBrowser.getPosterViewHtml({
+            elem.innerHTML = libraryBrowser.getPosterViewHtml({
                 items: items,
                 showUnplayedIndicator: false,
                 showLatestItemsPopup: false,
@@ -50,7 +50,7 @@
 
             Dashboard.hideLoadingMsg();
 
-            LibraryBrowser.setLastRefreshed(page);
+            libraryBrowser.setLastRefreshed(page);
         });
     }
 
@@ -82,7 +82,7 @@
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
-            itemsContainer.innerHTML = LibraryBrowser.getPosterViewHtml({
+            itemsContainer.innerHTML = libraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 showUnplayedIndicator: false,
                 shape: getSquareShape(),
@@ -128,7 +128,7 @@
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
-            itemsContainer.innerHTML = LibraryBrowser.getPosterViewHtml({
+            itemsContainer.innerHTML = libraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 showUnplayedIndicator: false,
                 shape: getSquareShape(),
@@ -171,7 +171,7 @@
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
-            itemsContainer.innerHTML = LibraryBrowser.getPosterViewHtml({
+            itemsContainer.innerHTML = libraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: getSquareShape(),
                 showTitle: true,
@@ -203,7 +203,7 @@
 
         var parentId = LibraryMenu.getTopParentId();
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
+        if (libraryBrowser.needsRefresh(tabContent)) {
             console.log('loadSuggestionsTab');
             loadLatest(tabContent, parentId);
             loadPlaylists(tabContent, parentId);
@@ -220,7 +220,7 @@
 
     function loadTab(page, index) {
 
-        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+        var tabContent = page.querySelector('.mdl-tabs__panel[data-index=\'' + index + '\']');
         var depends = [];
         var scope = 'MusicPage';
         var renderMethod = '';
@@ -289,8 +289,7 @@
 
         $('.recommendations', page).createCardMenus();
 
-        var tabs = page.querySelector('paper-tabs');
-        var pageTabsContainer = page.querySelector('.pageTabsContainer');
+        var mdlTabs = page.querySelector('.mdl-tabs');
 
         var baseUrl = 'music.html';
         var topParentId = LibraryMenu.getTopParentId();
@@ -298,9 +297,10 @@
             baseUrl += '?topParentId=' + topParentId;
         }
 
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pageTabsContainer, baseUrl);
+        componentHandler.upgradeAllRegistered(page);
+        libraryBrowser.configurePaperLibraryTabs(page, mdlTabs);
 
-        pageTabsContainer.addEventListener('tabchange', function (e) {
+        mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(page, parseInt(e.detail.selectedTabIndex));
         });
 
