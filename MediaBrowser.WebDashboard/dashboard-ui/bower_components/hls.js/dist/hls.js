@@ -693,9 +693,14 @@ var BufferController = function (_EventHandler) {
         ms.removeEventListener('sourceopen', this.onmso);
         ms.removeEventListener('sourceended', this.onmse);
         ms.removeEventListener('sourceclose', this.onmsc);
-        // unlink MediaSource from video tag
-        this.media.src = '';
-        this.media.removeAttribute('src');
+
+        try {
+          // unlink MediaSource from video tag
+          this.media.src = '';
+          this.media.removeAttribute('src');
+        } catch (err) {
+          _logger.logger.warn('onMediaDetaching:' + err.message + ' while unlinking video.src');
+        }
         this.mediaSource = null;
         this.media = null;
         this.pendingTracks = null;
@@ -1191,7 +1196,7 @@ var LevelController = function (_EventHandler) {
     key: 'destroy',
     value: function destroy() {
       if (this.timer) {
-        clearInterval(this.timer);
+        clearTimeout(this.timer);
         this.timer = null;
       }
       this._manualLevel = -1;
@@ -1291,17 +1296,18 @@ var LevelController = function (_EventHandler) {
   }, {
     key: 'setLevelInternal',
     value: function setLevelInternal(newLevel) {
+      var levels = this._levels;
       // check if level idx is valid
-      if (newLevel >= 0 && newLevel < this._levels.length) {
+      if (newLevel >= 0 && newLevel < levels.length) {
         // stopping live reloading timer if any
         if (this.timer) {
-          clearInterval(this.timer);
+          clearTimeout(this.timer);
           this.timer = null;
         }
         this._level = newLevel;
         _logger.logger.log('switching to level ' + newLevel);
         this.hls.trigger(_events2.default.LEVEL_SWITCH, { level: newLevel });
-        var level = this._levels[newLevel];
+        var level = levels[newLevel];
         // check if we need to load playlist for this level
         if (level.details === undefined || level.details.live === true) {
           // level not retrieved yet, or live playlist we need to (re)load it
@@ -1366,7 +1372,7 @@ var LevelController = function (_EventHandler) {
               this._level = undefined;
               // stopping live reloading timer if any
               if (this.timer) {
-                clearInterval(this.timer);
+                clearTimeout(this.timer);
                 this.timer = null;
               }
               // redispatch same error but with fatal set to true
@@ -1379,16 +1385,30 @@ var LevelController = function (_EventHandler) {
   }, {
     key: 'onLevelLoaded',
     value: function onLevelLoaded(data) {
-      // check if current playlist is a live playlist
-      if (data.details.live && !this.timer) {
-        // if live playlist we will have to reload it periodically
-        // set reload period to playlist target duration
-        this.timer = setInterval(this.ontick, 1000 * data.details.targetduration);
-      }
-      if (!data.details.live && this.timer) {
-        // playlist is not live and timer is armed : stopping it
-        clearInterval(this.timer);
-        this.timer = null;
+      // only process level loaded events matching with expected level
+      if (data.level === this._level) {
+        var newDetails = data.details;
+        // if current playlist is a live playlist, arm a timer to reload it
+        if (newDetails.live) {
+          var reloadInterval = 1000 * newDetails.targetduration,
+              curLevel = this._levels[data.level],
+              curDetails = curLevel.details;
+          if (curDetails && newDetails.endSN === curDetails.endSN) {
+            // follow HLS Spec, If the client reloads a Playlist file and finds that it has not
+            // changed then it MUST wait for a period of one-half the target
+            // duration before retrying.
+            reloadInterval /= 2;
+            _logger.logger.log('same live playlist, reload twice faster');
+          }
+          // decrement reloadInterval with level loading delay
+          reloadInterval -= performance.now() - data.stats.trequest;
+          // in any case, don't reload more than every second
+          reloadInterval = Math.max(1000, Math.round(reloadInterval));
+          _logger.logger.log('live playlist, reload in ' + reloadInterval + ' ms');
+          this.timer = setTimeout(this.ontick, reloadInterval);
+        } else {
+          this.timer = null;
+        }
       }
     }
   }, {
@@ -1412,8 +1432,11 @@ var LevelController = function (_EventHandler) {
       return this._level;
     },
     set: function set(newLevel) {
-      if (this._levels && this._levels.length > newLevel && (this._level !== newLevel || this._levels[newLevel].details === undefined)) {
-        this.setLevelInternal(newLevel);
+      var levels = this._levels;
+      if (levels && levels.length > newLevel) {
+        if (this._level !== newLevel || levels[newLevel].details === undefined) {
+          this.setLevelInternal(newLevel);
+        }
       }
     }
   }, {
@@ -1423,6 +1446,9 @@ var LevelController = function (_EventHandler) {
     },
     set: function set(newLevel) {
       this._manualLevel = newLevel;
+      if (this._startLevel === undefined) {
+        this._startLevel = newLevel;
+      }
       if (newLevel !== -1) {
         this.level = newLevel;
       }
@@ -5460,12 +5486,6 @@ var BufferHelper = function () {
           buffered2.push(buffered[i]);
         }
       }
-
-      // in case current position is located before buffered time ranges, report area as not buffered
-      if (buffered2.length && pos < buffered2[0].start) {
-        return { len: 0, start: pos, end: pos, nextStart: buffered2[0].start };
-      }
-
       for (i = 0, bufferLen = 0, bufferStart = bufferEnd = pos; i < buffered2.length; i++) {
         var start = buffered2[i].start,
             end = buffered2[i].end;

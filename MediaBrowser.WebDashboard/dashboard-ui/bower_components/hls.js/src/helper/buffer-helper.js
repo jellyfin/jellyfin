@@ -55,12 +55,6 @@ class BufferHelper {
         buffered2.push(buffered[i]);
       }
     }
-
-    // in case current position is located before buffered time ranges, report area as not buffered
-    if (buffered2.length && pos < buffered2[0].start) {
-      return {len: 0, start: pos, end: pos, nextStart : buffered2[0].start};
-    }
-
     for (i = 0, bufferLen = 0, bufferStart = bufferEnd = pos; i < buffered2.length; i++) {
       var start =  buffered2[i].start,
           end = buffered2[i].end;
