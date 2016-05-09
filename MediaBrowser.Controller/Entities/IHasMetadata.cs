@@ -49,5 +49,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value><c>true</c> if [supports people]; otherwise, <c>false</c>.</value>
         bool SupportsPeople { get; }
+
+        bool RequiresRefresh();
     }
 }

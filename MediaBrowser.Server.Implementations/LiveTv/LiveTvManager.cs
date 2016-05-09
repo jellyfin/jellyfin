@@ -886,7 +886,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 StartIndex = query.StartIndex,
                 Limit = query.Limit,
                 SortBy = query.SortBy,
-                SortOrder = query.SortOrder ?? SortOrder.Ascending
+                SortOrder = query.SortOrder ?? SortOrder.Ascending,
+                EnableTotalRecordCount = query.EnableTotalRecordCount
             };
 
             if (query.HasAired.HasValue)
@@ -924,7 +925,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 IsAiring = query.IsAiring,
                 IsMovie = query.IsMovie,
                 IsSports = query.IsSports,
-                IsKids = query.IsKids
+                IsKids = query.IsKids,
+                EnableTotalRecordCount = query.EnableTotalRecordCount
             };
 
             if (query.HasAired.HasValue)
@@ -1263,11 +1265,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private async Task CleanDatabaseInternal(List<Guid> currentIdList, string[] validTypes, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var list = _itemRepo.GetItemIds(new InternalItemsQuery
+            var list = _itemRepo.GetItemIdsList(new InternalItemsQuery
             {
                 IncludeItemTypes = validTypes
 
-            }).Items.ToList();
+            }).ToList();
 
             var numComplete = 0;
 

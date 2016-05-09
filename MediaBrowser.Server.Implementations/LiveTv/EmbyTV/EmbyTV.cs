@@ -760,7 +760,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             if (info.IsMovie)
             {
                 var customRecordingPath = config.MovieRecordingPath;
-                if ((string.IsNullOrWhiteSpace(customRecordingPath) || string.Equals(customRecordingPath, recordPath, StringComparison.OrdinalIgnoreCase)) && config.EnableRecordingSubfolders)
+                var allowSubfolder = true;
+                if (!string.IsNullOrWhiteSpace(customRecordingPath))
+                {
+                    allowSubfolder = string.Equals(customRecordingPath, recordPath, StringComparison.OrdinalIgnoreCase);
+                    recordPath = customRecordingPath;
+                }
+
+                if (allowSubfolder && config.EnableRecordingSubfolders)
                 {
                     recordPath = Path.Combine(recordPath, "Movies");
                 }
@@ -775,7 +782,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             else if (info.IsSeries)
             {
                 var customRecordingPath = config.SeriesRecordingPath;
-                if ((string.IsNullOrWhiteSpace(customRecordingPath) || string.Equals(customRecordingPath, recordPath, StringComparison.OrdinalIgnoreCase)) && config.EnableRecordingSubfolders)
+                var allowSubfolder = true;
+                if (!string.IsNullOrWhiteSpace(customRecordingPath))
+                {
+                    allowSubfolder = string.Equals(customRecordingPath, recordPath, StringComparison.OrdinalIgnoreCase);
+                    recordPath = customRecordingPath;
+                }
+
+                if (allowSubfolder && config.EnableRecordingSubfolders)
                 {
                     recordPath = Path.Combine(recordPath, "Series");
                 }

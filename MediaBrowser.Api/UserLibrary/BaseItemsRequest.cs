@@ -12,6 +12,7 @@ namespace MediaBrowser.Api.UserLibrary
         protected BaseItemsRequest()
         {
             EnableImages = true;
+            EnableTotalRecordCount = true;
         }
 
         /// <summary>
@@ -104,7 +105,9 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "IsInBoxSet", Description = "Optional filter by items that are in boxsets, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsInBoxSet { get; set; }
-        
+
+        public bool EnableTotalRecordCount { get; set; }
+
         /// <summary>
         /// Skips over a given number of items within the results. Use for paging.
         /// </summary>

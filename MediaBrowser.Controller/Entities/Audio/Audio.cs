@@ -40,12 +40,6 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public List<string> AlbumArtists { get; set; }
 
-        /// <summary>
-        /// Gets or sets the album.
-        /// </summary>
-        /// <value>The album.</value>
-        public string Album { get; set; }
-
         [IgnoreDataMember]
         public bool IsThemeMedia
         {

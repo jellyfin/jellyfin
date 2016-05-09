@@ -70,6 +70,12 @@ namespace MediaBrowser.Controller.Entities
         public List<ItemImageInfo> ImageInfos { get; set; }
 
         /// <summary>
+        /// Gets or sets the album.
+        /// </summary>
+        /// <value>The album.</value>
+        public string Album { get; set; }
+
+        /// <summary>
         /// Gets or sets the channel identifier.
         /// </summary>
         /// <value>The channel identifier.</value>
@@ -1173,6 +1179,11 @@ namespace MediaBrowser.Controller.Entities
         public virtual string PresentationUniqueKey
         {
             get { return Id.ToString("N"); }
+        }
+
+        public virtual bool RequiresRefresh()
+        {
+            return false;
         }
 
         private string _userDataKey;

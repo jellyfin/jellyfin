@@ -142,8 +142,6 @@
     <None Include="App.config" />
     <None Include="app.manifest" />
     <EmbeddedResource Include="Native\RegisterServer.bat" />
-    <EmbeddedResource Include="ffmpeg\ffmpegx64.7z" />
-    <EmbeddedResource Include="ffmpeg\ffmpegx86.7z" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

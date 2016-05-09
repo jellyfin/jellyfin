@@ -158,9 +158,9 @@ namespace MediaBrowser.ServerApplication.Native
 
             info.FFMpegFilename = "ffmpeg.exe";
             info.FFProbeFilename = "ffprobe.exe";
-            info.Version = "20160401";
+            info.Version = "20160508";
             info.ArchiveType = "7z";
-            info.IsEmbedded = true;
+            info.IsEmbedded = false;
             info.DownloadUrls = GetDownloadUrls();
 
             return info;
@@ -212,11 +212,18 @@ namespace MediaBrowser.ServerApplication.Native
             switch (Environment.SystemArchitecture)
             {
                 case Architecture.X86_X64:
-                    return new[] { "MediaBrowser.ServerApplication.ffmpeg.ffmpegx64.7z" };
+                    return new[]
+                    {
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20160508-win64.7z",
+                                "https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-20160508-git-caee88d-win64-static.7z"
+                            };
                 case Architecture.X86:
-                    return new[] { "MediaBrowser.ServerApplication.ffmpeg.ffmpegx86.7z" };
+                    return new[]
+                    {
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20160508-win32.7z",
+                                "https://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20160508-git-caee88d-win32-static.7z"
+                            };
             }
-
             return new string[] { };
         }
     }

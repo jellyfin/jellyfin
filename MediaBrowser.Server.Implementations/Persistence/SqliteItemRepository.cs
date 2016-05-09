@@ -85,7 +85,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        public const int LatestSchemaVersion = 76;
+        public const int LatestSchemaVersion = 77;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -235,6 +235,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "SlugName", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "OriginalTitle", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "PrimaryVersionId", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "DateLastMediaAdded", "DATETIME");
+            _connection.AddColumn(Logger, "TypedBaseItems", "Album", "Text");
+
             _connection.AddColumn(Logger, "UserDataKeys", "Priority", "INT");
 
             string[] postQueries =
@@ -351,7 +354,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "TrailerTypes",
             "DateModifiedDuringLastRefresh",
             "OriginalTitle",
-            "PrimaryVersionId"
+            "PrimaryVersionId",
+            "DateLastMediaAdded",
+            "Album"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -463,7 +468,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "PresentationUniqueKey",
                 "SlugName",
                 "OriginalTitle",
-                "PrimaryVersionId"
+                "PrimaryVersionId",
+                "DateLastMediaAdded",
+                "Album"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -823,6 +830,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     {
                         _saveItemCommand.GetParameter(index++).Value = null;
                     }
+
+                    var folder = item as Folder;
+                    if (folder != null && folder.DateLastMediaAdded.HasValue)
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = folder.DateLastMediaAdded.Value;
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
+
+                    _saveItemCommand.GetParameter(index++).Value = item.Album;
 
                     _saveItemCommand.Transaction = transaction;
 
@@ -1215,6 +1234,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     video.PrimaryVersionId = reader.GetString(53);
                 }
+            }
+
+            var folder = item as Folder;
+            if (folder != null && !reader.IsDBNull(54))
+            {
+                folder.DateLastMediaAdded = reader.GetDateTime(54).ToUniversalTime();
+            }
+
+            if (!reader.IsDBNull(55))
+            {
+                item.Album = reader.GetString(55);
             }
 
             return item;
@@ -1776,6 +1806,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (string.Equals(name, ItemSortBy.IsUnplayed, StringComparison.OrdinalIgnoreCase))
             {
                 return new Tuple<string, bool>("played", false);
+            }
+            if (string.Equals(name, ItemSortBy.DateLastContentAdded, StringComparison.OrdinalIgnoreCase))
+            {
+                return new Tuple<string, bool>("DateLastMediaAdded", false);
             }
 
             return new Tuple<string, bool>(name, false);
@@ -2484,13 +2518,33 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (query.MediaTypes.Length == 1)
             {
                 whereClauses.Add("MediaType=@MediaTypes");
-                cmd.Parameters.Add(cmd, "@MediaTypes", DbType.String).Value = query.MediaTypes[0].ToString();
+                cmd.Parameters.Add(cmd, "@MediaTypes", DbType.String).Value = query.MediaTypes[0];
             }
             if (query.MediaTypes.Length > 1)
             {
                 var val = string.Join(",", query.MediaTypes.Select(i => "'" + i + "'").ToArray());
 
                 whereClauses.Add("MediaType in (" + val + ")");
+            }
+
+            if (query.AlbumNames.Length > 0)
+            {
+                var clause = "(";
+
+                var index = 0;
+                foreach (var name in query.AlbumNames)
+                {
+                    if (index > 0)
+                    {
+                        clause += " OR ";
+                    }
+                    clause += "Album=@AlbumName" + index;
+                    index++;
+                    cmd.Parameters.Add(cmd, "@AlbumName" + index, DbType.String).Value = name;
+                }
+
+                clause += ")";
+                whereClauses.Add(clause);
             }
 
             //var enableItemsByName = query.IncludeItemsByName ?? query.IncludeItemTypes.Length > 0;

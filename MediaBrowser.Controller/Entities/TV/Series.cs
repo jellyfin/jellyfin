@@ -48,6 +48,15 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        [IgnoreDataMember]
+        public override bool SupportsDateLastMediaAdded
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public bool DisplaySpecialsWithSeasons { get; set; }
 
         public List<Guid> LocalTrailerIds { get; set; }

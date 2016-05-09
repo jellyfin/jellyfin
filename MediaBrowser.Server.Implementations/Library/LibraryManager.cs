@@ -1354,12 +1354,20 @@ namespace MediaBrowser.Server.Implementations.Library
                 AddUserToQuery(query, query.User);
             }
 
-            var initialResult = ItemRepository.GetItemIds(query);
+            if (query.EnableTotalRecordCount)
+            {
+                var initialResult = ItemRepository.GetItemIds(query);
+
+                return new QueryResult<BaseItem>
+                {
+                    TotalRecordCount = initialResult.TotalRecordCount,
+                    Items = initialResult.Items.Select(GetItemById).Where(i => i != null).ToArray()
+                };
+            }
 
             return new QueryResult<BaseItem>
             {
-                TotalRecordCount = initialResult.TotalRecordCount,
-                Items = initialResult.Items.Select(GetItemById).Where(i => i != null).ToArray()
+                Items = ItemRepository.GetItemIdsList(query).Select(GetItemById).Where(i => i != null).ToArray()
             };
         }
 
