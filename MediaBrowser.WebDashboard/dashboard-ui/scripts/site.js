@@ -2920,7 +2920,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/tv.html',
-            dependencies: ['paper-checkbox', 'paper-button', 'paper-icon-button-light', 'material-design-lite'],
+            dependencies: ['paper-checkbox', 'paper-button', 'paper-icon-button-light', 'paper-tabs'],
             autoFocus: false,
             controller: 'scripts/tvrecommended'
         });
