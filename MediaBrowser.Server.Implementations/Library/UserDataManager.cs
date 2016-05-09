@@ -22,7 +22,7 @@ namespace MediaBrowser.Server.Implementations.Library
     {
         public event EventHandler<UserDataSaveEventArgs> UserDataSaved;
 
-        private readonly ConcurrentDictionary<string, UserItemData> _userData = new ConcurrentDictionary<string, UserItemData>();
+        private readonly Dictionary<string, UserItemData> _userData = new Dictionary<string, UserItemData>(StringComparer.OrdinalIgnoreCase);
 
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
@@ -66,8 +66,10 @@ namespace MediaBrowser.Server.Implementations.Library
 
                     var newValue = userData;
 
-                    // Once it succeeds, put it into the dictionary to make it available to everyone else
-                    _userData.AddOrUpdate(GetCacheKey(userId, key), newValue, delegate { return newValue; });
+                    lock (_userData)
+                    {
+                        _userData[GetCacheKey(userId, key)] = newValue;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -154,13 +156,33 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("key");
             }
 
-            return _userData.GetOrAdd(GetCacheKey(userId, key), keyName => GetUserDataFromRepository(userId, key));
+            lock (_userData)
+            {
+                var cacheKey = GetCacheKey(userId, key);
+                UserItemData value;
+                if (_userData.TryGetValue(cacheKey, out value))
+                {
+                    return value;
+                }
+
+                value = GetUserDataFromRepository(userId, key);
+                _userData[cacheKey] = value;
+                return value;
+            }
         }
 
         private UserItemData GetUserDataFromRepository(Guid userId, string key)
         {
             var data = Repository.GetUserData(userId, key);
 
+            if (data == null)
+            {
+                data = new UserItemData
+                {
+                    UserId = userId,
+                    Key = key
+                };
+            }
             return data;
         }
 
