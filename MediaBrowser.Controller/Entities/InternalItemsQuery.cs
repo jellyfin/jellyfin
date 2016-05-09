@@ -137,10 +137,12 @@ namespace MediaBrowser.Controller.Entities
         public string AncestorWithPresentationUniqueKey { get; set; }
 
         public bool GroupByPresentationUniqueKey { get; set; }
+        public bool EnableTotalRecordCount { get; set; }
 
         public InternalItemsQuery()
         {
             GroupByPresentationUniqueKey = true;
+            EnableTotalRecordCount = true;
 
             AlbumNames = new string[] { };
             ArtistNames = new string[] { };

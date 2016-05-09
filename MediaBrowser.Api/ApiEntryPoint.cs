@@ -488,13 +488,17 @@ namespace MediaBrowser.Api
                 {
                     try
                     {
-                        Logger.Info("Killing ffmpeg process for {0}", job.Path);
+                        Logger.Info("Stopping ffmpeg process with q command for {0}", job.Path);
 
                         //process.Kill();
                         process.StandardInput.WriteLine("q");
 
                         // Need to wait because killing is asynchronous
-                        process.WaitForExit(5000);
+                        if (!process.WaitForExit(5000))
+                        {
+                            Logger.Info("Killing ffmpeg process for {0}", job.Path);
+                            process.Kill();
+                        }
                     }
                     catch (Exception ex)
                     {
