@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Server.Implementations.ScheduledTasks
 {
@@ -85,8 +86,13 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <returns>Task.</returns>
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var videos = _libraryManager.RootFolder.GetRecursiveChildren(i => i is Video)
-                .Cast<Video>()
+            var videos = _libraryManager.GetItemList(new InternalItemsQuery
+            {
+                MediaTypes = new[] { MediaType.Video },
+                IsFolder = false,
+                Recursive = true
+            })
+                .OfType<Video>()
                 .ToList();
 
             var numComplete = 0;
@@ -97,7 +103,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
             try
             {
-				previouslyFailedImages = _fileSystem.ReadAllText(failHistoryPath)
+                previouslyFailedImages = _fileSystem.ReadAllText(failHistoryPath)
                     .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
                     .ToList();
             }

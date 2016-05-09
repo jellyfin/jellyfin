@@ -296,11 +296,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     }
                 }
 
-                return new UserItemData
-                {
-                    UserId = userId,
-                    Key = key
-                };
+                return null;
             }
         }
 

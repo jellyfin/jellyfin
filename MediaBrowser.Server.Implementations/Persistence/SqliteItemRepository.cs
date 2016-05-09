@@ -2056,6 +2056,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var whereClauses = new List<string>();
 
+            if (EnableJoinUserData(query))
+            {
+                whereClauses.Add("UserId=@UserId");
+            }
             if (query.IsCurrentSchema.HasValue)
             {
                 if (query.IsCurrentSchema.Value)
