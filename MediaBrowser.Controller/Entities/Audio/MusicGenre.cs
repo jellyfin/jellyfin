@@ -83,7 +83,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         public IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
             query.Genres = new[] { Name };
-            query.ExcludeItemTypes = new[] { typeof(MusicVideo).Name, typeof(Audio).Name, typeof(MusicAlbum).Name, typeof(MusicArtist).Name };
+            query.IncludeItemTypes = new[] { typeof(MusicVideo).Name, typeof(Audio).Name, typeof(MusicAlbum).Name, typeof(MusicArtist).Name };
 
             return LibraryManager.GetItemList(query);
         }

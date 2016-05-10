@@ -1571,35 +1571,6 @@ namespace MediaBrowser.Controller.Entities
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// Finds an item by path, recursively
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>BaseItem.</returns>
-        /// <exception cref="System.ArgumentNullException"></exception>
-        public BaseItem FindByPath(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException();
-            }
-
-            if (string.Equals(Path, path, StringComparison.OrdinalIgnoreCase))
-            {
-                return this;
-            }
-
-            if (PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase))
-            {
-                return this;
-            }
-
-            return GetRecursiveChildren(i => string.Equals(i.Path, path, StringComparison.OrdinalIgnoreCase) ||
-                (!i.IsFolder && !i.IsInMixedFolder && string.Equals(i.ContainingFolderPath, path, StringComparison.OrdinalIgnoreCase)) ||
-                i.PhysicalLocations.Contains(path, StringComparer.OrdinalIgnoreCase))
-                .FirstOrDefault();
-        }
-
         public override bool IsPlayed(User user)
         {
             var itemsResult = GetItems(new InternalItemsQuery(user)

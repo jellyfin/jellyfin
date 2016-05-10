@@ -306,9 +306,14 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         private async Task UpdateSeasonZeroNames(string newName, CancellationToken cancellationToken)
         {
-            var seasons = RootFolder.GetRecursiveChildren(i => i is Season)
-                .Cast<Season>()
-                .Where(i => i.IndexNumber.HasValue && i.IndexNumber.Value == 0 && !string.Equals(i.Name, newName, StringComparison.Ordinal))
+            var seasons = GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { typeof(Season).Name },
+                Recursive = true,
+                IndexNumber = 0
+
+            }).Cast<Season>()
+                .Where(i => !string.Equals(i.Name, newName, StringComparison.Ordinal))
                 .ToList();
 
             foreach (var season in seasons)
@@ -787,20 +792,14 @@ namespace MediaBrowser.Server.Implementations.Library
                 IsFolder = isFolder
             };
 
-            // Only use the database result if there's exactly one item, otherwise we run the risk of returning old data that hasn't been cleaned yet.
-            var items = GetItemIds(query).Select(GetItemById).Where(i => i != null).ToArray();
+            // If this returns multiple items it could be tricky figuring out which one is correct. 
+            // In most cases, the newest one will be and the others obsolete but not yet cleaned up
 
-            if (items.Length == 1)
-            {
-                return items[0];
-            }
-
-            if (items.Length == 0)
-            {
-                return null;
-            }
-
-            return RootFolder.FindByPath(path);
+            return GetItemIds(query)
+                .Select(GetItemById)
+                .Where(i => i != null)
+                .OrderByDescending(i => i.DateCreated)
+                .FirstOrDefault();
         }
 
         /// <summary>

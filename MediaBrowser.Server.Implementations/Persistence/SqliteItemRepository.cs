@@ -1304,6 +1304,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 throw new ArgumentNullException("id");
             }
+            var list = new List<ChapterInfo>();
 
             using (var cmd = _connection.CreateCommand())
             {
@@ -1315,10 +1316,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     while (reader.Read())
                     {
-                        yield return GetChapter(reader);
+                        list.Add(GetChapter(reader));
                     }
                 }
             }
+
+            return list;
         }
 
         /// <summary>
@@ -1632,9 +1635,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
                 {
-                    Logger.Debug("GetItemList query time: {0}ms. Query: {1}",
-                        Convert.ToInt32((DateTime.UtcNow - now).TotalMilliseconds),
-                        cmd.CommandText);
+                    //Logger.Debug("GetItemList query time: {0}ms. Query: {1}",
+                    //    Convert.ToInt32((DateTime.UtcNow - now).TotalMilliseconds),
+                    //    cmd.CommandText);
 
                     while (reader.Read())
                     {
@@ -1717,9 +1720,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
                 {
-                    Logger.Debug("GetItems query time: {0}ms. Query: {1}",
-                        Convert.ToInt32((DateTime.UtcNow - now).TotalMilliseconds),
-                        cmd.CommandText);
+                    //Logger.Debug("GetItems query time: {0}ms. Query: {1}",
+                    //    Convert.ToInt32((DateTime.UtcNow - now).TotalMilliseconds),
+                    //    cmd.CommandText);
 
                     while (reader.Read())
                     {
@@ -2029,9 +2032,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
                 {
-                    Logger.Debug("GetItemIds query time: {0}ms. Query: {1}",
-                        Convert.ToInt32((DateTime.UtcNow - now).TotalMilliseconds),
-                        cmd.CommandText);
+                    //Logger.Debug("GetItemIds query time: {0}ms. Query: {1}",
+                    //    Convert.ToInt32((DateTime.UtcNow - now).TotalMilliseconds),
+                    //    cmd.CommandText);
 
                     while (reader.Read())
                     {
@@ -3288,6 +3291,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("query");
             }
 
+            var list = new List<MediaStream>();
+
             using (var cmd = _connection.CreateCommand())
             {
                 var cmdText = "select " + string.Join(",", _mediaStreamSaveColumns) + " from mediastreams where";
@@ -3315,10 +3320,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     while (reader.Read())
                     {
-                        yield return GetMediaStream(reader);
+                        list.Add(GetMediaStream(reader));
                     }
                 }
             }
+
+            return list;
         }
 
         public async Task SaveMediaStreams(Guid id, IEnumerable<MediaStream> streams, CancellationToken cancellationToken)
