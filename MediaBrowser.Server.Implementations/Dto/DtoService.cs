@@ -194,24 +194,13 @@ namespace MediaBrowser.Server.Implementations.Dto
 
         private List<BaseItem> GetTaggedItems(IItemByName byName, User user)
         {
-            var person = byName as Person;
-
-            if (person != null)
+            var items = byName.GetTaggedItems(new InternalItemsQuery(user)
             {
-                var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
-                {
-                    Person = byName.Name
+                Recursive = true
 
-                }, new string[] { });
+            }).ToList();
 
-                return items.ToList();
-            }
-
-            var itemFilter = byName.GetItemFilter();
-
-            return user != null ?
-               user.RootFolder.GetRecursiveChildren(user, itemFilter).ToList() :
-               _libraryManager.RootFolder.GetRecursiveChildren(itemFilter).ToList();
+            return items;
         }
 
         private SyncedItemProgress[] GetSyncedItemProgress(DtoOptions options)
