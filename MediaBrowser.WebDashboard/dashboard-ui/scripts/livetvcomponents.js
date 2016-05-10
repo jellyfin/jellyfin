@@ -74,7 +74,8 @@
                 showChannelName: true,
                 lazy: true,
                 cardLayout: true,
-                showDetailsMenu: true
+                showDetailsMenu: true,
+                defaultAction: 'edit'
 
             });
             html += '</div>';

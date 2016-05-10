@@ -2629,12 +2629,6 @@ var AppInfo = {};
         });
 
         defineRoute({
-            path: '/livetvtimer.html',
-            dependencies: ['scrollStyles'],
-            autoFocus: false
-        });
-
-        defineRoute({
             path: '/livetvtunerprovider-hdhomerun.html',
             dependencies: [],
             autoFocus: false,

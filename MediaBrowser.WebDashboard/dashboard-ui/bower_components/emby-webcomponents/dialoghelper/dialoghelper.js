@@ -150,11 +150,7 @@
         // The dialog may have just been created and webComponents may not have completed initialiazation yet.
         // Without this, seeing some script errors in Firefox
 
-        var delay = browser.animate ? 0 : 500;
-        if (!delay) {
-            focusManager.autoFocus(dlg);
-            return;
-        }
+        var delay = browser.animate ? 200 : 500;
 
         setTimeout(function () {
             focusManager.autoFocus(dlg);
@@ -266,7 +262,7 @@
 
     function animateDialogOpen(dlg) {
 
-        var onAnimationFinish = function() {
+        var onAnimationFinish = function () {
         };
 
         if (!dlg.animationConfig || !dlg.animate) {
@@ -324,8 +320,12 @@
         // Also not working well in samsung tizen browser, content inside not clickable
         if (!dlg.showModal || browser.tv) {
             dlg = document.createElement('div');
+        } else {
+            // Just go ahead and always use a plain div because we're seeing issues overlaying absoltutely positioned content over a modal dialog
+            dlg = document.createElement('div');
         }
 
+        dlg.classList.add('focuscontainer');
         dlg.classList.add('hide');
 
         if (shouldLockDocumentScroll(options)) {
