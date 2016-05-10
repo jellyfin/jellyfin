@@ -49,6 +49,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 percent *= 100;
 
                 progress.Report(percent);
+                yearNumber++;
             }
         }
     }
