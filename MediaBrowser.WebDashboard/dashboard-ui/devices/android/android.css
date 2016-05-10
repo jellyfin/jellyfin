@@ -6,7 +6,7 @@
     font-weight: bold !important;
 }
 
-@media all and (min-width: 800px) {
+@media all and (min-width: 300px) {
 
     .libraryViewNav .mdl-tabs__tab-bar {
         display: flex;

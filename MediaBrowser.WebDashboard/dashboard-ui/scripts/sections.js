@@ -166,7 +166,7 @@
         var frequency = 86400000;
 
         if (AppInfo.isNativeApp) {
-            frequency = 604800000;
+            frequency = 259200000;
         }
 
         var cacheKey = 'lastappinfopresent5';

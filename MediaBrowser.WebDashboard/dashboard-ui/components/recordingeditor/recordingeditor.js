@@ -120,7 +120,8 @@
                 var template = this.response;
                 var dlg = dialogHelper.createDialog({
                     removeOnClose: true,
-                    size: 'small'
+                    size: 'small',
+                    autoFocus: false
                 });
 
                 dlg.classList.add('ui-body-b');
