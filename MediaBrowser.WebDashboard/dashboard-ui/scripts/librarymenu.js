@@ -72,6 +72,9 @@
     function updateUserInHeader(user) {
 
         var header = document.querySelector('.viewMenuBar');
+        if (!header) {
+            return;
+        }
 
         var headerUserButton = header.querySelector('.headerUserButton');
         var hasImage;
