@@ -1154,7 +1154,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                         IncludeItemTypes = new[] { typeof(Episode).Name },
                         ParentIndexNumber = program.SeasonNumber.Value,
                         IndexNumber = program.EpisodeNumber.Value,
-                        AncestorIds = seriesIds
+                        AncestorIds = seriesIds,
+                        ExcludeLocationTypes = new[] { LocationType.Virtual }
                     });
 
                     if (result.TotalRecordCount > 0)
@@ -1169,7 +1170,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     {
                         IncludeItemTypes = new[] { typeof(Episode).Name },
                         Name = program.EpisodeTitle,
-                        AncestorIds = seriesIds
+                        AncestorIds = seriesIds,
+                        ExcludeLocationTypes = new[] { LocationType.Virtual }
                     });
 
                     if (result.TotalRecordCount > 0)
