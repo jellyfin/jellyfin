@@ -72,7 +72,8 @@
                         showItemCounts: true,
                         centerText: true,
                         lazy: true,
-                        overlayPlayButton: true
+                        overlayPlayButton: true,
+                        context: 'movies'
                     });
                 }
                 else if (viewStyle == "ThumbCard") {
@@ -84,7 +85,8 @@
                         showItemCounts: true,
                         cardLayout: true,
                         showTitle: true,
-                        lazy: true
+                        lazy: true,
+                        context: 'movies'
                     });
                 }
                 else if (viewStyle == "PosterCard") {
@@ -94,7 +96,8 @@
                         showItemCounts: true,
                         lazy: true,
                         cardLayout: true,
-                        showTitle: true
+                        showTitle: true,
+                        context: 'movies'
                     });
                 }
                 else if (viewStyle == "Poster") {
@@ -104,7 +107,8 @@
                         centerText: true,
                         showItemCounts: true,
                         lazy: true,
-                        overlayPlayButton: true
+                        overlayPlayButton: true,
+                        context: 'movies'
                     });
                 }
 

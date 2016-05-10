@@ -230,6 +230,7 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
                     preloadImages: false,
                     // Enable lazy loading
                     lazyLoading: true,
+                    lazyLoadingInPrevNext: true,
                     autoplayDisableOnInteraction: false,
                     initialSlide: options.startIndex || 0
                 });
