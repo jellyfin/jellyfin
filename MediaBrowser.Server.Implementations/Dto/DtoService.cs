@@ -501,7 +501,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 if (fields.Contains(ItemFields.CumulativeRunTimeTicks))
                 {
-                    dto.CumulativeRunTimeTicks = dto.RunTimeTicks;
+                    dto.CumulativeRunTimeTicks = item.RunTimeTicks;
                 }
 
                 if (fields.Contains(ItemFields.DateLastMediaAdded))
