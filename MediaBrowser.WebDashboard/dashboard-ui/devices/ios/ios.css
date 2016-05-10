@@ -59,26 +59,16 @@ body:not(.dashboardDocument) .mainDrawerButton {
         padding: 12px 13px 8px;
     }
 
-    .libraryViewNav .tab-content {
-        display: block !important;
+    .libraryViewNav .mdl-tabs__ripple-container {
+        display: none !important;
     }
 
-    .libraryViewNav paper-tabs {
-        flex-grow: 0 !important;
-        height: 36px;
+    .libraryViewNav .mdl-tabs__tab.is-active:after {
+        display: none !important;
     }
 
-    .libraryViewNav paper-tab {
-        height: auto !important;
-        flex-grow: 0 !important;
-    }
-
-    .libraryViewNav #selectionBar {
-        background-color: transparent !important;
-    }
-
-    .libraryViewNav #tabsContainer {
-        flex-grow: 0 !important;
+    .libraryViewNav .mdl-tabs__tab.is-active {
+        color: #52B54B !important;
     }
 
 .ui-body-b .paperList:not(.criticReviewPaperList) {
@@ -102,15 +92,11 @@ body:not(.dashboardDocument) .mainDrawerButton {
     }
 }
 
-.libraryViewNav a {
-    border-bottom: 0;
-}
-
-.libraryViewNav .ui-btn-active, .libraryViewNav .iron-selected, .btnActiveCast {
+.btnActiveCast {
     color: #52B54B !important;
 }
 
-.libraryViewNav, paper-tabs {
+.libraryViewNav {
     font-size: 12px;
 }
 
@@ -143,10 +129,6 @@ h1, h1 a {
     margin-top: 0;
 }
 
-paper-tab {
-    text-transform: none !important;
-}
-
 .visualCardBox {
     background: none !important;
     -moz-box-shadow: none;
@@ -158,11 +140,6 @@ paper-tab {
     .visualCardBox .outerCardFooter {
         padding: 0;
     }
-
-/* Need the div specifier to gain preference over the value in card.css */
-div.cardBox {
-    margin: 5px;
-}
 
 .cardImage {
     border-radius: 10px;

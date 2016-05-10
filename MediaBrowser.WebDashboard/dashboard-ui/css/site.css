@@ -1554,3 +1554,23 @@ emby-collapsible > .style-scope {
     padding: 1em 1.25em;
     background-color: #fff;
 }
+
+.ui-body-b .emby-collapsible-button {
+    border: 1px solid #222;
+    background-color: #444;
+    text-transform: none;
+}
+
+.ui-body-b .emby-collapsible-title {
+    margin: .25em 0;
+    color: #fff;
+    padding: 0 0 0 .5em;
+    font-weight: 500;
+}
+
+.ui-body-b .emby-collapsible-content {
+    border: 1px solid #222;
+    border-width: 0 1px 1px 1px;
+    padding: 1em 1.25em;
+    background-color: #333;
+}

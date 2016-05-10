@@ -2051,7 +2051,7 @@
 
             Dashboard.getCurrentUser().then(function (user) {
 
-                LibraryBrowser.showMoreCommands(button, currentItem.Id, LibraryBrowser.getMoreCommands(currentItem, user));
+                LibraryBrowser.showMoreCommands(button, currentItem.Id, currentItem.Type, LibraryBrowser.getMoreCommands(currentItem, user));
             });
         });
 

@@ -1033,6 +1033,13 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background-color: #52B54B;
 }
 
+.seriesTimerIndicator {
+    color: #cc3333;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+}
+
 .playedIndicator + .syncIndicator {
     top: 32px;
 }

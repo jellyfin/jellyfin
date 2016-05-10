@@ -532,7 +532,11 @@
                                     break;
                                 }
                             case 'edit':
-                                LibraryBrowser.editMetadata(itemId);
+                                if (itemType == 'Timer') {
+                                    LibraryBrowser.editTimer(itemId);
+                                } else {
+                                    LibraryBrowser.editMetadata(itemId);
+                                }
                                 break;
                             case 'refresh':
                                 ApiClient.refreshItem(itemId, {
@@ -555,7 +559,11 @@
                                 MediaController.shuffle(itemId);
                                 break;
                             case 'open':
-                                Dashboard.navigate(href);
+                                if (itemType == 'Timer') {
+                                    LibraryBrowser.editTimer(itemId);
+                                } else {
+                                    Dashboard.navigate(href);
+                                }
                                 break;
                             case 'album':
                                 Dashboard.navigate('itemdetails.html?id=' + albumid);
@@ -1377,6 +1385,15 @@
         else if (action == 'instantmix') {
 
             MediaController.instantMix(itemId);
+        }
+        else if (action == 'edit') {
+
+            var itemType = elemWithAttributes.getAttribute('data-itemtype');
+            if (itemType == 'Timer') {
+                LibraryBrowser.editTimer(itemId);
+            } else {
+                LibraryBrowser.editMetadata(itemId);
+            }
         }
 
         e.stopPropagation();

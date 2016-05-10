@@ -42,6 +42,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _liveTvOptions = liveTvOptions;
         }
 
+        public string GetOutputPath(MediaSourceInfo mediaSource, string targetFile)
+        {
+            if (_liveTvOptions.EnableOriginalAudioWithEncodedRecordings)
+            {
+                return Path.ChangeExtension(targetFile, ".mkv");
+            }
+
+            return Path.ChangeExtension(targetFile, ".mp4");
+        }
+
         public async Task Record(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
             if (mediaSource.RunTimeTicks.HasValue)

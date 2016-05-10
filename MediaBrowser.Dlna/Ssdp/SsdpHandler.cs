@@ -479,7 +479,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
             var msg = new SsdpMessageBuilder().BuildMessage(header, values);
 
-            SendDatagram(msg, _ssdpEndp, new IPEndPoint(dev.Address, 0), true, 1);
+            SendDatagram(msg, _ssdpEndp, new IPEndPoint(dev.Address, 0), true, 2);
             //SendUnicastRequest(msg, 1);
         }
 

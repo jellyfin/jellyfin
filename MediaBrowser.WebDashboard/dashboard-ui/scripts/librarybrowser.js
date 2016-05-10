@@ -776,7 +776,15 @@
                 });
             },
 
-            showMoreCommands: function (positionTo, itemId, commands) {
+            editTimer: function (id) {
+
+                require(['components/recordingeditor/recordingeditor'], function (recordingeditor) {
+
+                    recordingeditor.show(id);
+                });
+            },
+
+            showMoreCommands: function (positionTo, itemId, itemType, commands) {
 
                 var items = [];
 
@@ -913,7 +921,11 @@
                                         break;
                                     }
                                 case 'edit':
-                                    LibraryBrowser.editMetadata(itemId);
+                                    if (itemType == 'Timer') {
+                                        LibraryBrowser.editTimer(itemId);
+                                    } else {
+                                        LibraryBrowser.editMetadata(itemId);
+                                    }
                                     break;
                                 case 'editsubtitles':
                                     LibraryBrowser.editSubtitles(itemId);
@@ -1049,9 +1061,6 @@
                     return "itemdetails.html?id=" + id;
                 }
 
-                if (item.Type == "Timer") {
-                    return "livetvtimer.html?id=" + id;
-                }
                 if (item.Type == "BoxSet") {
                     return "itemdetails.html?id=" + id;
                 }
@@ -2193,6 +2202,10 @@
                     html += LibraryBrowser.getPlayedIndicatorHtml(item);
                 } else if (options.showChildCountIndicator) {
                     html += LibraryBrowser.getGroupCountIndicator(item);
+                }
+
+                if (item.SeriesTimerId) {
+                    html += '<iron-icon icon="fiber-smart-record" class="seriesTimerIndicator"></iron-icon>';
                 }
 
                 html += LibraryBrowser.getSyncIndicator(item);
@@ -3470,9 +3483,9 @@
                 else if (item.TimerId) {
 
                     var html = '';
-                    html += '<a href="livetvtimer.html?id=' + item.TimerId + '">';
+                    html += '<button type="button" class="clearButton" onclick="LibraryBrowser.editTimer(\'' + item.TimerId + '\');">';
                     html += '<div class="timerCircle"></div>';
-                    html += '</a>';
+                    html += '</button>';
                     miscInfo.push(html);
                     require(['livetvcss']);
                 }

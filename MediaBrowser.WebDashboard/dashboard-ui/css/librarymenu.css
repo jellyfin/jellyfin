@@ -204,7 +204,7 @@
 
 
     .libraryViewNav .mdl-tabs__tab {
-        color: #888 !important;
+        color: #aaa !important;
         padding: 0 1.25em;
         float: none;
         flex-shrink: 0;
@@ -499,22 +499,6 @@ body:not(.dashboardDocument) .btnNotifications {
     .adminDrawerPanel .sidebarLink.selectedSidebarLink .sidebarLinkIcon {
         color: #fff !important;
     }
-
-.adminDrawerPanel #drawer .emby-collapsible-button {
-    padding-top: 0;
-    padding-bottom: 0;
-    padding-left: 1em;
-}
-
-.adminDrawerPanel #drawer .emby-collapsible-title {
-    font-size: inherit;
-    text-transform: none;
-    margin: .7em 0;
-}
-
-.adminDrawerPanel #drawer #expandButton {
-    color: #333;
-}
 
 .adminDrawerLogo {
     padding: 1.5em 1em 1.2em;
