@@ -30,26 +30,21 @@
     <p style="margin-top: 2em;" class="timerStatus">
     </p>
 </div>
-<br />
 <form class="liveTvTimerForm" style="margin: 0 auto;">
-    <h1>${HeaderRecordingOptions}</h1>
-
-    <emby-collapsible title="${HeaderAdvanced}">
-        <br />
-        <div>
-            <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
-        </div>
-        <br />
-        <div>
-            <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
-        </div>
-        <br />
-    </emby-collapsible>
-    <br />
     <br />
     <div>
-        <button type="submit" data-role="none" class="clearButton btnSave">
-            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-        </button>
+        <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
     </div>
+    <br />
+    <div>
+        <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
+    </div>
+    <br />
+    <br />
+    <button type="submit" data-role="none" class="clearButton btnSave">
+        <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+    </button>
+    <br />
+    <br />
+    <br />
 </form>

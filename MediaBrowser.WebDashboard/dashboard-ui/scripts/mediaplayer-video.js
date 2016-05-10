@@ -696,7 +696,9 @@
             html += '<div id="pause" class="status"></div>';
             html += '</div>';
 
-            html += '<div class="videoTopControls hiddenOnIdle">';
+            var hiddenOnIdleClass = AppInfo.isNativeApp && browserInfo.android ? 'hiddenOnIdle hide' : 'hiddenOnIdle';
+
+            html += '<div class="videoTopControls ' + hiddenOnIdleClass + '">';
             html += '<div class="videoTopControlsLogo"></div>';
             html += '<div class="videoAdvancedControls">';
 
@@ -713,7 +715,7 @@
             html += '</div>'; // videoTopControls
 
             // Create controls
-            html += '<div class="videoControls hiddenOnIdle">';
+            html += '<div class="videoControls ' + hiddenOnIdleClass + '">';
 
             html += '<div class="nowPlayingInfo hide">';
             html += '<div class="nowPlayingImage"></div>';
