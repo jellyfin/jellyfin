@@ -8,12 +8,6 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public interface IHasUserData : IHasId
     {
-        /// <summary>
-        /// Gets the user data key.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        string GetUserDataKey();
-
         List<string> GetUserDataKeys();
 
         /// <summary>

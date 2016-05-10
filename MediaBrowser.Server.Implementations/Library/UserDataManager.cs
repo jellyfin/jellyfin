@@ -10,6 +10,7 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -199,22 +200,22 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public UserItemData GetUserData(IHasUserData user, IHasUserData item)
         {
-            return GetUserData(user.Id, item.GetUserDataKey());
+            return GetUserData(user.Id, item.GetUserDataKeys().First());
         }
 
         public UserItemData GetUserData(string userId, IHasUserData item)
         {
-            return GetUserData(userId, item.GetUserDataKey());
+            return GetUserData(userId, item.GetUserDataKeys().First());
         }
 
         public UserItemData GetUserData(Guid userId, IHasUserData item)
         {
-            return GetUserData(userId, item.GetUserDataKey());
+            return GetUserData(userId, item.GetUserDataKeys().First());
         }
 
         public UserItemDataDto GetUserDataDto(IHasUserData item, User user)
         {
-            var userData = GetUserData(user.Id, item.GetUserDataKey());
+            var userData = GetUserData(user.Id, item.GetUserDataKeys().First());
             var dto = GetUserItemDataDto(userData);
 
             item.FillUserDataDtoValues(dto, userData, user);
