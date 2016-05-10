@@ -2058,7 +2058,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (EnableJoinUserData(query))
             {
-                whereClauses.Add("UserId=@UserId");
+                whereClauses.Add("(UserId is null or UserId=@UserId)");
             }
             if (query.IsCurrentSchema.HasValue)
             {
@@ -2363,27 +2363,38 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 if (query.IsFavoriteOrLiked.Value)
                 {
-                    whereClauses.Add("(IsFavorite=@IsFavoriteOrLiked or rating>=@UserRatingIsFavoriteOrLiked)");
-                    cmd.Parameters.Add(cmd, "@IsFavoriteOrLiked", DbType.Boolean).Value = true;
-                    cmd.Parameters.Add(cmd, "@UserRatingIsFavoriteOrLiked", DbType.Double).Value = UserItemData.MinLikeValue;
+                    whereClauses.Add("IsFavorite=@IsFavoriteOrLiked");
                 }
                 else
                 {
-                    whereClauses.Add("(IsFavorite=@IsFavoriteOrLiked or rating is null or rating<@UserRatingIsFavoriteOrLiked)");
-                    cmd.Parameters.Add(cmd, "@IsFavoriteOrLiked", DbType.Boolean).Value = false;
-                    cmd.Parameters.Add(cmd, "@UserRatingIsFavoriteOrLiked", DbType.Double).Value = UserItemData.MinLikeValue;
+                    whereClauses.Add("(IsFavorite is null or IsFavorite=@IsFavoriteOrLiked)");
                 }
+                cmd.Parameters.Add(cmd, "@IsFavoriteOrLiked", DbType.Boolean).Value = query.IsFavoriteOrLiked.Value;
             }
 
             if (query.IsFavorite.HasValue)
             {
-                whereClauses.Add("IsFavorite=@IsFavorite");
+                if (query.IsFavorite.Value)
+                {
+                    whereClauses.Add("IsFavorite=@IsFavorite");
+                }
+                else
+                {
+                    whereClauses.Add("(IsFavorite is null or IsFavorite=@IsFavorite)");
+                }
                 cmd.Parameters.Add(cmd, "@IsFavorite", DbType.Boolean).Value = query.IsFavorite.Value;
             }
 
             if (query.IsPlayed.HasValue)
             {
-                whereClauses.Add("played=@IsPlayed");
+                if (query.IsPlayed.Value)
+                {
+                    whereClauses.Add("(played=@IsPlayed)");
+                }
+                else
+                {
+                    whereClauses.Add("(played is null or played=@IsPlayed)");
+                }
                 cmd.Parameters.Add(cmd, "@IsPlayed", DbType.Boolean).Value = query.IsPlayed.Value;
             }
 
