@@ -93,16 +93,13 @@
         if (center) {
             centerDialog(dlg);
         }
-        animateDialogOpen(dlg);
-
-        if (dlg.getAttribute('data-autofocus') == 'true') {
-            autoFocus(dlg);
-        }
 
         if (dlg.getAttribute('data-lockscroll') == 'true' && !document.body.classList.contains('noScroll')) {
             document.body.classList.add('noScroll');
             removeScrollLockOnClose = true;
         }
+
+        animateDialogOpen(dlg);
 
         if (isHistoryEnabled(dlg)) {
             historyManager.pushState({ dialogId: hash }, "Dialog", hash);
@@ -149,8 +146,9 @@
 
         // The dialog may have just been created and webComponents may not have completed initialiazation yet.
         // Without this, seeing some script errors in Firefox
+        // Also for some reason it won't auto-focus without a delay here, still investigating that
 
-        var delay = browser.animate ? 200 : 500;
+        var delay = browser.animate ? 0 : 300;
 
         setTimeout(function () {
             focusManager.autoFocus(dlg);
@@ -263,6 +261,9 @@
     function animateDialogOpen(dlg) {
 
         var onAnimationFinish = function () {
+            if (dlg.getAttribute('data-autofocus') == 'true') {
+                autoFocus(dlg);
+            }
         };
 
         if (!dlg.animationConfig || !dlg.animate) {
