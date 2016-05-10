@@ -306,9 +306,14 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <returns>Task.</returns>
         private async Task UpdateSeasonZeroNames(string newName, CancellationToken cancellationToken)
         {
-            var seasons = RootFolder.GetRecursiveChildren(i => i is Season)
-                .Cast<Season>()
-                .Where(i => i.IndexNumber.HasValue && i.IndexNumber.Value == 0 && !string.Equals(i.Name, newName, StringComparison.Ordinal))
+            var seasons = GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { typeof(Season).Name },
+                Recursive = true,
+                IndexNumber = 0
+
+            }).Cast<Season>()
+                .Where(i => !string.Equals(i.Name, newName, StringComparison.Ordinal))
                 .ToList();
 
             foreach (var season in seasons)
