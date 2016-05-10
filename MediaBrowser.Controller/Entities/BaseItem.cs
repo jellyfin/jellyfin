@@ -1186,23 +1186,6 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
-        private string _userDataKey;
-        /// <summary>
-        /// Gets the user data key.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        public string GetUserDataKey()
-        {
-            if (string.IsNullOrWhiteSpace(_userDataKey))
-            {
-                var key = GetUserDataKeys().First();
-                _userDataKey = key;
-                return key;
-            }
-
-            return _userDataKey;
-        }
-
         public virtual List<string> GetUserDataKeys()
         {
             var list = new List<string>();
@@ -1229,7 +1212,6 @@ namespace MediaBrowser.Controller.Entities
         public void AfterMetadataRefresh()
         {
             _sortName = null;
-            _userDataKey = null;
         }
 
         /// <summary>
@@ -2074,7 +2056,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public virtual bool BeforeMetadataRefresh()
         {
-            _userDataKey = null;
             _sortName = null;
 
             var hasChanges = false;
