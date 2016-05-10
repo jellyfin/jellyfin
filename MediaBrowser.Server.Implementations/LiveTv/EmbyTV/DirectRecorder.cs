@@ -23,6 +23,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _fileSystem = fileSystem;
         }
 
+        public string GetOutputPath(MediaSourceInfo mediaSource, string targetFile)
+        {
+            return targetFile;
+        }
+
         public async Task Record(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
             var httpRequestOptions = new HttpRequestOptions()

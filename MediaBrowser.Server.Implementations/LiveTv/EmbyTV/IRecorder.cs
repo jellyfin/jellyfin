@@ -17,5 +17,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task Record(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken);
+
+        string GetOutputPath(MediaSourceInfo mediaSource, string targetFile);
     }
 }
