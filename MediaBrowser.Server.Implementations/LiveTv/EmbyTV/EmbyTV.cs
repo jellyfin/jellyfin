@@ -898,10 +898,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                     var recorder = await GetRecorder().ConfigureAwait(false);
 
-                    if (recorder is EncodedRecorder)
-                    {
-                        recordPath = Path.ChangeExtension(recordPath, ".mp4");
-                    }
+                    recordPath = recorder.GetOutputPath(mediaStreamInfo, recordPath);
                     recordPath = EnsureFileUnique(recordPath, timer.Id);
                     _fileSystem.CreateDirectory(Path.GetDirectoryName(recordPath));
                     activeRecordingInfo.Path = recordPath;
