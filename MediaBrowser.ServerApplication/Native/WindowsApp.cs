@@ -158,7 +158,7 @@ namespace MediaBrowser.ServerApplication.Native
 
             info.FFMpegFilename = "ffmpeg.exe";
             info.FFProbeFilename = "ffprobe.exe";
-            info.Version = "20160508";
+            info.Version = "20160410";
             info.ArchiveType = "7z";
             info.IsEmbedded = false;
             info.DownloadUrls = GetDownloadUrls();
@@ -214,14 +214,14 @@ namespace MediaBrowser.ServerApplication.Native
                 case Architecture.X86_X64:
                     return new[]
                     {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20160508-win64.7z",
-                                "https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-20160508-git-caee88d-win64-static.7z"
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20160410-win64.7z",
+                                "https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-20160409-git-0c90b2e-win64-static.7z"
                             };
                 case Architecture.X86:
                     return new[]
                     {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20160508-win32.7z",
-                                "https://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20160508-git-caee88d-win32-static.7z"
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20160410-win32.7z",
+                                "https://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20160409-git-0c90b2e-win32-static.7z"
                             };
             }
             return new string[] { };

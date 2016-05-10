@@ -345,7 +345,8 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 if (!folder.IsPreSorted)
                 {
-                    items = items.OrderBy(i => i.SortName).ToArray();
+                    items = _libraryManager.Sort(items, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending)
+                        .ToArray();
                 }
 
                 return items;
