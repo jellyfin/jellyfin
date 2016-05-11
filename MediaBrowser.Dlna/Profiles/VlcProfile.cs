@@ -1,5 +1,5 @@
-﻿using System.Xml.Serialization;
-using MediaBrowser.Model.Dlna;
+﻿using MediaBrowser.Model.Dlna;
+using System.Xml.Serialization;
 
 namespace MediaBrowser.Dlna.Profiles
 {
@@ -9,6 +9,7 @@ namespace MediaBrowser.Dlna.Profiles
         public VlcProfile()
         {
             Name = "Vlc";
+
 
             TimelineOffsetSeconds = 5;
 
@@ -27,16 +28,18 @@ namespace MediaBrowser.Dlna.Profiles
                 new TranscodingProfile
                 {
                     Container = "mp3",
-                    Type = DlnaProfileType.Audio,
-                    AudioCodec = "mp3"
+                    AudioCodec = "mp3",
+                    Type = DlnaProfileType.Audio
                 },
+
                 new TranscodingProfile
                 {
                     Container = "ts",
                     Type = DlnaProfileType.Video,
-                    VideoCodec = "h264",
-                    AudioCodec = "aac"
+                    AudioCodec = "aac",
+                    VideoCodec = "h264"
                 },
+
                 new TranscodingProfile
                 {
                     Container = "jpeg",
@@ -48,21 +51,20 @@ namespace MediaBrowser.Dlna.Profiles
             {
                 new DirectPlayProfile
                 {
-                    Container = "avi,mpeg,mkv,ts,mp4,mov,m4v,asf,webm,ogg,ogv,iso",
+                    Container = "",
                     Type = DlnaProfileType.Video
                 },
 
                 new DirectPlayProfile
                 {
-                    Container = "mp3,flac,asf,off,oga,aac",
+                    Container = "",
                     Type = DlnaProfileType.Audio
                 },
 
                 new DirectPlayProfile
                 {
+                    Container = "",
                     Type = DlnaProfileType.Photo,
-
-                    Container = "jpeg,png,gif,bmp,tiff"
                 }
             };
 
@@ -71,6 +73,77 @@ namespace MediaBrowser.Dlna.Profiles
             ContainerProfiles = new ContainerProfile[] { };
 
             CodecProfiles = new CodecProfile[] { };
+
+            SubtitleProfiles = new[]
+            {
+                new SubtitleProfile
+                {
+                    Format = "srt",
+                    Method = SubtitleDeliveryMethod.External,
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "sub",
+                    Method = SubtitleDeliveryMethod.External,
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "srt",
+                    Method = SubtitleDeliveryMethod.Embed,
+                    DidlMode = "",
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "ass",
+                    Method = SubtitleDeliveryMethod.Embed,
+                    DidlMode = "",
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "ssa",
+                    Method = SubtitleDeliveryMethod.Embed,
+                    DidlMode = "",
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "smi",
+                    Method = SubtitleDeliveryMethod.Embed,
+                    DidlMode = "",
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "dvdsub",
+                    Method = SubtitleDeliveryMethod.Embed,
+                    DidlMode = "",
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "pgs",
+                    Method = SubtitleDeliveryMethod.Embed,
+                    DidlMode = "",
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "pgssub",
+                    Method = SubtitleDeliveryMethod.Embed,
+                    DidlMode = "",
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "sub",
+                    Method = SubtitleDeliveryMethod.Embed,
+                    DidlMode = "",
+                }
+            };
         }
     }
 }

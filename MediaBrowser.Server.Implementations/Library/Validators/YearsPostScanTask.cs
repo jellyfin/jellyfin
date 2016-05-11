@@ -25,7 +25,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
             var count = maxYear - yearNumber + 1;
             var numComplete = 0;
 
-            while (yearNumber < DateTime.UtcNow.Year + 3)
+            while (yearNumber < maxYear)
             {
                 try
                 {
