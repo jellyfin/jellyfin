@@ -749,7 +749,7 @@ namespace MediaBrowser.Providers.TV
         private void AddPeople<T>(MetadataResult<T> result, string val, string personType)
         {
             // Sometimes tvdb actors have leading spaces
-            foreach (var person in val.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries)
+            foreach (var person in val.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
                                             .Where(i => !string.IsNullOrWhiteSpace(i))
                                             .Select(str => new PersonInfo { Type = personType, Name = str.Trim() }))
             {
