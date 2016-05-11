@@ -35,9 +35,9 @@
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <XmlRootAttributes />
   <DirectPlayProfiles>
-    <DirectPlayProfile container="avi,mpeg,mkv,ts,mp4,mov,m4v,asf,webm,ogg,ogv,iso" type="Video" />
-    <DirectPlayProfile container="mp3,flac,asf,off,oga,aac" type="Audio" />
-    <DirectPlayProfile container="jpeg,png,gif,bmp,tiff" type="Photo" />
+    <DirectPlayProfile container="" type="Video" />
+    <DirectPlayProfile container="" type="Audio" />
+    <DirectPlayProfile container="" type="Photo" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
     <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" />
@@ -47,5 +47,16 @@
   <ContainerProfiles />
   <CodecProfiles />
   <ResponseProfiles />
-  <SubtitleProfiles />
+  <SubtitleProfiles>
+    <SubtitleProfile format="srt" method="External" />
+    <SubtitleProfile format="sub" method="External" />
+    <SubtitleProfile format="srt" method="Embed" didlMode="" />
+    <SubtitleProfile format="ass" method="Embed" didlMode="" />
+    <SubtitleProfile format="ssa" method="Embed" didlMode="" />
+    <SubtitleProfile format="smi" method="Embed" didlMode="" />
+    <SubtitleProfile format="dvdsub" method="Embed" didlMode="" />
+    <SubtitleProfile format="pgs" method="Embed" didlMode="" />
+    <SubtitleProfile format="pgssub" method="Embed" didlMode="" />
+    <SubtitleProfile format="sub" method="Embed" didlMode="" />
+  </SubtitleProfiles>
 </Profile>
