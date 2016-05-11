@@ -1,4 +1,4 @@
-﻿define(['playlistManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'jQuery', 'scrollStyles'], function (playlistManager, appSettings, appStorage, appHost, datetime, $) {
+﻿define(['playlistManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'jQuery', 'itemHelper', 'scrollStyles'], function (playlistManager, appSettings, appStorage, appHost, datetime, $, itemHelper) {
 
     function parentWithClass(elem, className) {
 
@@ -695,8 +695,8 @@
                 return commands;
             },
 
-            canIdentify: function(user, itemType) {
-                
+            canIdentify: function (user, itemType) {
+
                 if (itemType == "Movie" ||
                   itemType == "Trailer" ||
                   itemType == "Series" ||
@@ -1332,7 +1332,7 @@
                         textlines.push(item.AlbumArtist || '&nbsp;');
                     }
 
-                    var displayName = LibraryBrowser.getPosterViewDisplayName(item);
+                    var displayName = itemHelper.getDisplayName(item);
 
                     if (options.showIndexNumber && item.IndexNumber != null) {
                         displayName = item.IndexNumber + ". " + displayName;
@@ -1359,7 +1359,7 @@
                     else if (item.Type == 'TvChannel') {
 
                         if (item.CurrentProgram) {
-                            textlines.push(LibraryBrowser.getPosterViewDisplayName(item.CurrentProgram));
+                            textlines.push(itemHelper.getDisplayName(item.CurrentProgram));
                         }
                     }
                     else {
@@ -2281,7 +2281,7 @@
                     html += "</div>";
                 }
 
-                var name = options.showTitle == 'auto' && !item.IsFolder && item.MediaType == 'Photo' ? '' : LibraryBrowser.getPosterViewDisplayName(item, options.displayAsSpecial);
+                var name = options.showTitle == 'auto' && !item.IsFolder && item.MediaType == 'Photo' ? '' : itemHelper.getDisplayName(item);
 
                 if (!imgUrl && !showTitle) {
                     html += "<div class='cardDefaultText'>";
@@ -2384,7 +2384,7 @@
                 if (item.Type == 'TvChannel') {
 
                     if (item.CurrentProgram) {
-                        lines.push(LibraryBrowser.getPosterViewDisplayName(item.CurrentProgram));
+                        lines.push(itemHelper.getDisplayName(item.CurrentProgram));
                     } else {
                         lines.push('');
                     }
@@ -2541,48 +2541,6 @@
                 return day;
             },
 
-            getPosterViewDisplayName: function (item, displayAsSpecial, includeParentInfo) {
-
-                if (!item) {
-                    throw new Error("null item passed into getPosterViewDisplayName");
-                }
-
-                var name = item.EpisodeTitle || item.Name || '';
-
-                if (item.Type == "TvChannel") {
-
-                    if (item.Number) {
-                        return item.Number + ' ' + name;
-                    }
-                    return name;
-                }
-                if (displayAsSpecial && item.Type == "Episode" && item.ParentIndexNumber == 0) {
-
-                    name = Globalize.translate('ValueSpecialEpisodeName', name);
-
-                } else if (item.Type == "Episode" && item.IndexNumber != null && item.ParentIndexNumber != null) {
-
-                    var displayIndexNumber = item.IndexNumber;
-
-                    var number = "E" + displayIndexNumber;
-
-                    if (includeParentInfo !== false) {
-                        number = "S" + item.ParentIndexNumber + ", " + number;
-                    }
-
-                    if (item.IndexNumberEnd) {
-
-                        displayIndexNumber = item.IndexNumberEnd;
-                        number += "-" + displayIndexNumber;
-                    }
-
-                    name = number + " - " + name;
-
-                }
-
-                return name;
-            },
-
             getOfflineIndicatorHtml: function (item) {
 
                 if (item.LocationType == "Offline") {
@@ -2735,7 +2693,9 @@
 
             renderName: function (item, nameElem, linkToElement, context) {
 
-                var name = LibraryBrowser.getPosterViewDisplayName(item, false, false);
+                var name = itemHelper.getDisplayName(item, {
+                    includeParentInfo: false
+                });
 
                 Dashboard.setPageTitle(name);
 

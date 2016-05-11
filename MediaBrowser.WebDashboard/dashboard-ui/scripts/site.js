@@ -1790,6 +1790,7 @@ var AppInfo = {};
             focusManager: embyWebComponentsBowerPath + "/focusmanager",
             datetime: embyWebComponentsBowerPath + "/datetime",
             globalize: embyWebComponentsBowerPath + "/globalize",
+            itemHelper: embyWebComponentsBowerPath + '/itemhelper',
             itemShortcuts: embyWebComponentsBowerPath + "/shortcuts",
             imageLoader: embyWebComponentsBowerPath + "/images/imagehelper"
         };

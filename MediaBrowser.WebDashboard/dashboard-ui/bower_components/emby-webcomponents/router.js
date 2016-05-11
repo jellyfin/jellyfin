@@ -167,6 +167,11 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
     var currentViewLoadRequest;
     function sendRouteToViewManager(ctx, next, route, controllerFactory) {
 
+        if (isDummyBackToHome && route.type == 'home') {
+            isDummyBackToHome = false;
+            return;
+        }
+
         cancelCurrentLoadRequest();
 
         var isBackNav = ctx.isBack;
@@ -203,7 +208,6 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
                 return;
             }
         }
-
         viewManager.tryRestoreView(currentRequest).then(function () {
 
             // done
@@ -331,21 +335,21 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
     }
 
     var isHandlingBackToDefault;
+    var isDummyBackToHome;
+
     function handleBackToDefault() {
 
+        isDummyBackToHome = true;
         skinManager.loadUserSkin();
 
         if (isHandlingBackToDefault) {
             return;
         }
 
-        isHandlingBackToDefault = true;
-
         // This must result in a call to either 
         // skinManager.loadUserSkin();
         // Logout
         // Or exit app
-
         skinManager.getCurrentSkin().showBackMenu().then(function () {
 
             isHandlingBackToDefault = false;

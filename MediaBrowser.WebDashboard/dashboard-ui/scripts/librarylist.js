@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'appStorage', 'libraryBrowser', 'apphost', 'jQuery'], function (appSettings, appStorage, LibraryBrowser, appHost, $) {
+﻿define(['appSettings', 'appStorage', 'libraryBrowser', 'apphost', 'jQuery', 'itemHelper'], function (appSettings, appStorage, LibraryBrowser, appHost, $, itemHelper) {
 
     var showOverlayTimeout;
 
@@ -81,7 +81,7 @@
         var isSquare = className.indexOf('square') != -1;
 
         var parentName = isSmallItem || isMiniItem || isPortrait ? null : item.SeriesName;
-        var name = LibraryBrowser.getPosterViewDisplayName(item, true);
+        var name = itemHelper.getDisplayName(item);
 
         html += '<div style="margin-bottom:1em;">';
         var logoHeight = isSmallItem || isMiniItem ? 20 : 26;
