@@ -485,11 +485,11 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         return show(pluginManager.mapRoute(skin, homeRoute));
     }
 
-    function showItem(item) {
+    function showItem(item, serverId) {
 
         if (typeof (item) === 'string') {
             require(['connectionManager'], function (connectionManager) {
-                var apiClient = connectionManager.currentApiClient();
+                var apiClient = serverId ? connectionManager.getApiClient(serverId) : connectionManager.currentApiClient();
                 apiClient.getItem(apiClient.getCurrentUserId(), item).then(showItem);
             });
         } else {

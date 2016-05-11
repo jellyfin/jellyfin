@@ -46,7 +46,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         {
             if (_liveTvOptions.EnableOriginalAudioWithEncodedRecordings)
             {
-                return Path.ChangeExtension(targetFile, ".mkv");
+                // if the audio is aac_latm, stream copying to mp4 will fail
+                var streams = mediaSource.MediaStreams ?? new List<MediaStream>();
+                if (streams.Any(i => i.Type == MediaStreamType.Audio && (i.Codec ?? string.Empty).IndexOf("aac", StringComparison.OrdinalIgnoreCase) != -1))
+                {
+                    return Path.ChangeExtension(targetFile, ".mkv");
+                }
             }
 
             return Path.ChangeExtension(targetFile, ".mp4");

@@ -135,7 +135,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var channels = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { typeof(LiveTvChannel).Name }
+                IncludeItemTypes = new[] { typeof(LiveTvChannel).Name },
+                SortBy = new[] { ItemSortBy.SortName }
 
             }).Cast<LiveTvChannel>();
 

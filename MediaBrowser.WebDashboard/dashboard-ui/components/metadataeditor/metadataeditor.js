@@ -669,14 +669,12 @@
             $('#tagsCollapsible', context).hide();
             $('#metadataSettingsCollapsible', context).hide();
             $('#fldPremiereDate', context).hide();
-            $('#fldSortName', context).hide();
             $('#fldDateAdded', context).hide();
             $('#fldYear', context).hide();
         } else {
             $('#tagsCollapsible', context).show();
             $('#metadataSettingsCollapsible', context).show();
             $('#fldPremiereDate', context).show();
-            $('#fldSortName', context).show();
             $('#fldDateAdded', context).show();
             $('#fldYear', context).show();
         }

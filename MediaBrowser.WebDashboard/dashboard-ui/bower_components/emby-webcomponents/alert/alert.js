@@ -1,4 +1,4 @@
-define(['dialogHelper', 'layoutManager', 'dialogText', 'html!./../prompt/icons.html', 'css!./../prompt/style.css', 'paper-button', 'paper-icon-button-light', 'paper-input'], function (dialogHelper, layoutManager, dialogText) {
+define(['dialogHelper', 'layoutManager', 'dialogText', 'html!./../icons/nav.html', 'css!./../prompt/style.css', 'paper-button', 'paper-icon-button-light', 'paper-input'], function (dialogHelper, layoutManager, dialogText) {
 
     function getIcon(icon, cssClass, canFocus, autoFocus) {
 
@@ -72,7 +72,7 @@ define(['dialogHelper', 'layoutManager', 'dialogText', 'html!./../prompt/icons.h
 
         var buttonText = options.type == 'error' ? 'Ok' : 'GotIt';
         if (raisedButtons) {
-            html += '<paper-button raised class="btnSubmit"><iron-icon icon="dialog:check"></iron-icon><span>' + dialogText.get(buttonText) + '</span></paper-button>';
+            html += '<paper-button raised class="btnSubmit"><iron-icon icon="nav:check"></iron-icon><span>' + dialogText.get(buttonText) + '</span></paper-button>';
         } else {
             html += '<div class="buttons" style="text-align:right;">';
             html += '<paper-button class="btnSubmit">' + dialogText.get(buttonText) + '</paper-button>';

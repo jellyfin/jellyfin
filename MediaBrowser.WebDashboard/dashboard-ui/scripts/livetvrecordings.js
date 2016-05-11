@@ -98,7 +98,7 @@
         ApiClient.getLiveTvRecordings({
 
             userId: Dashboard.getCurrentUserId(),
-            limit: 12,
+            limit: 6,
             IsInProgress: false,
             Fields: 'CanDelete,PrimaryImageAspectRatio'
 
