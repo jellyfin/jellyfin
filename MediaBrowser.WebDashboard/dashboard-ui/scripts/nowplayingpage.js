@@ -1,43 +1,30 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['components/remotecontrol'], function (remotecontrolFactory) {
 
-    pageIdOn('pageinit', "nowPlayingPage", function () {
+    return function (view, params) {
 
-        var page = this;
+        var self = this;
 
-        require(['components/remotecontrol'], function (remotecontrolFactory) {
-            page.remoteControl = new remotecontrolFactory();
-            page.remoteControl.init(page.querySelector('.remoteControlContent'));
-            page.remoteControl.onShow();
-            page.remoteControlInitComplete = true;
-        });
-    });
+        var remoteControl = new remotecontrolFactory();
+        remoteControl.init(view, view.querySelector('.remoteControlContent'));
 
-    pageIdOn('pagebeforeshow', "nowPlayingPage", function () {
+        view.addEventListener('viewbeforeshow', function (e) {
+            document.body.classList.add('hiddenViewMenuBar');
+            document.body.classList.add('hiddenNowPlayingBar');
 
-        var page = this;
-
-        document.body.classList.add('hiddenViewMenuBar');
-        document.body.classList.add('hiddenNowPlayingBar');
-
-        if (page.remoteControl) {
-
-            if (!page.remoteControlInitComplete) {
-                page.remoteControlInitComplete = true;
-            } else {
-                page.remoteControl.onShow();
+            if (remoteControl) {
+                remoteControl.onShow();
             }
-        }
-    });
+        });
 
-    pageIdOn('pagebeforehide', "nowPlayingPage", function () {
+        view.addEventListener('viewbeforehide', function (e) {
 
-        var page = this;
+            if (remoteControl) {
+                remoteControl.destroy();
+            }
 
-        if (page.remoteControl) {
-            page.remoteControl.destroy();
-        }
-        document.body.classList.remove('hiddenViewMenuBar');
-        document.body.classList.remove('hiddenNowPlayingBar');
-    });
+            document.body.classList.remove('hiddenViewMenuBar');
+            document.body.classList.remove('hiddenNowPlayingBar');
+        });
+    };
 
 });

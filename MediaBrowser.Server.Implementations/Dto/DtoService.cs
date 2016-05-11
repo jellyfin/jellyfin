@@ -617,9 +617,12 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             if (!string.IsNullOrEmpty(item.Album))
             {
-                var parentAlbum = _libraryManager.RootFolder
-                    .GetRecursiveChildren(i => i is MusicAlbum && string.Equals(i.Name, item.Album, StringComparison.OrdinalIgnoreCase))
-                    .FirstOrDefault();
+                var parentAlbum = _libraryManager.GetItemList(new InternalItemsQuery
+                {
+                    IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
+                    Name = item.Album
+
+                }).FirstOrDefault();
 
                 if (parentAlbum != null)
                 {

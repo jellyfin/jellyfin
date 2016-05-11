@@ -2783,7 +2783,8 @@ var AppInfo = {};
 
         defineRoute({
             path: '/nowplaying.html',
-            dependencies: [],
+            dependencies: ['MaterialTabs', 'paper-icon-button-light', 'paper-slider', 'paper-button'],
+            controller: 'scripts/nowplayingpage',
             autoFocus: false
         });
 

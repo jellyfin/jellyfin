@@ -1870,9 +1870,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
                 {
-                    Logger.Debug("GetItemIdsList query time: {0}ms. Query: {1}",
-                        Convert.ToInt32((DateTime.UtcNow - now).TotalMilliseconds),
-                        cmd.CommandText);
+                    //Logger.Debug("GetItemIdsList query time: {0}ms. Query: {1}",
+                    //    Convert.ToInt32((DateTime.UtcNow - now).TotalMilliseconds),
+                    //    cmd.CommandText);
 
                     while (reader.Read())
                     {

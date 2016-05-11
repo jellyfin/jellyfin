@@ -7,10 +7,6 @@
 
 <form class="liveTvNewRecordingForm" style="margin: 0 auto;">
 
-    <div style="text-align: right; display: flex; justify-content: flex-end;">
-        <paper-toggle-button class="chkAdvanced">${ButtonAdvanced}</paper-toggle-button>
-    </div>
-
     <p><span class="itemName inlineItemName"></span></p>
     <p class="itemEpisodeName"></p>
     <p class="itemMiscInfo"></p>
@@ -52,14 +48,12 @@
         <div class="fieldDescription paperCheckboxFieldDescription btnSupporterForConverting hide"><a href="https://emby.media/premiere" target="_blank" class="accent">${FeatureRequiresEmbyPremiere}</a></div>
     </div>
     <br />
-    <div class="advancedToggle hide">
-        <div>
-            <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
-        </div>
-        <br />
-        <div>
-            <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
-        </div>
+    <div>
+        <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
+    </div>
+    <br />
+    <div>
+        <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
     </div>
     <br />
     <div>

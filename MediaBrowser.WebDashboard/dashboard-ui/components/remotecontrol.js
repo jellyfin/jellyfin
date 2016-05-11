@@ -1,4 +1,4 @@
-﻿define(['browser', 'datetime', 'jQuery', 'paper-fab', 'paper-slider'], function (browser, datetime, $) {
+﻿define(['browser', 'datetime', 'jQuery', 'libraryBrowser', 'paper-fab', 'paper-slider'], function (browser, datetime, $, libraryBrowser) {
 
     function showSlideshowMenu(context) {
         require(['scripts/slideshow'], function () {
@@ -202,7 +202,7 @@
             }
 
             ApiClient.getItem(Dashboard.getCurrentUserId(), item.Id).then(function (fullItem) {
-                context.querySelector('.nowPlayingPageUserDataButtons').innerHTML = LibraryBrowser.getUserDataIconsHtml(fullItem, false);
+                context.querySelector('.nowPlayingPageUserDataButtons').innerHTML = libraryBrowser.getUserDataIconsHtml(fullItem, false);
             });
         } else {
             context.querySelector('.nowPlayingPageUserDataButtons').innerHTML = '';
@@ -417,7 +417,7 @@
 
             if (playlistOpen) {
 
-                html += LibraryBrowser.getListViewHtml({
+                html += libraryBrowser.getListViewHtml({
                     items: MediaController.playlist(),
                     smallIcon: true
                 });
@@ -459,7 +459,7 @@
         }
 
         function isPlaylistOpen(context) {
-            return LibraryBrowser.selectedTab(context.querySelector('.mdl-tabs')) == 2;
+            return libraryBrowser.selectedTab(context.querySelector('.mdl-tabs')) == 2;
         }
 
         function onStateChanged(e, state) {
@@ -609,7 +609,7 @@
 
             var mediaItem = parentWithClass(e.target, 'mediaItem');
             if (mediaItem != null) {
-                var info = LibraryBrowser.getListItemInfo(mediaItem);
+                var info = libraryBrowser.getListItemInfo(mediaItem);
 
                 MediaController.currentPlaylistIndex(info.index);
 
@@ -793,7 +793,7 @@
             return false;
         }
 
-        function init(context) {
+        function init(ownerView, context) {
 
             require(['css!css/nowplaying.css']);
             bindEvents(context);
@@ -820,6 +820,8 @@
             } else {
                 context.querySelector('.libraryViewNav').classList.remove('bottom');
             }
+
+            libraryBrowser.configurePaperLibraryTabs(ownerView, mdlTabs);
 
             mdlTabs.addEventListener('tabchange', function (e) {
                 if (e.detail.selectedTabIndex == 2 && playlistNeedsRefresh) {
@@ -851,7 +853,7 @@
             updateCastIcon(context);
         }
 
-        self.init = function (context) {
+        self.init = function (ownerView, context) {
 
             dlg = context;
 
@@ -861,7 +863,7 @@
             }
 
             componentHandler.upgradeAllRegistered(dlg);
-            init(dlg);
+            init(ownerView, dlg);
         };
 
         self.onShow = function () {

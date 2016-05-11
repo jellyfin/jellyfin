@@ -688,23 +688,32 @@
                     commands.push('share');
                 }
 
-                if (item.Type == "Movie" ||
-                    item.Type == "Trailer" ||
-                    item.Type == "Series" ||
-                    item.Type == "Game" ||
-                    item.Type == "BoxSet" ||
-                    item.Type == "Person" ||
-                    item.Type == "Book" ||
-                    item.Type == "MusicAlbum" ||
-                    item.Type == "MusicArtist") {
-
-                    if (user.Policy.IsAdministrator) {
-
-                        commands.push('identify');
-                    }
+                if (LibraryBrowser.canIdentify(user, item.Type)) {
+                    commands.push('identify');
                 }
 
                 return commands;
+            },
+
+            canIdentify: function(user, itemType) {
+                
+                if (itemType == "Movie" ||
+                  itemType == "Trailer" ||
+                  itemType == "Series" ||
+                  itemType == "Game" ||
+                  itemType == "BoxSet" ||
+                  itemType == "Person" ||
+                  itemType == "Book" ||
+                  itemType == "MusicAlbum" ||
+                  itemType == "MusicArtist") {
+
+                    if (user.Policy.IsAdministrator) {
+
+                        return true;
+                    }
+                }
+
+                return false;
             },
 
             refreshItem: function (itemId) {
