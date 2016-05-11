@@ -9,7 +9,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="animations/opaque-animation.html">
 
 <script>
 
@@ -51,21 +50,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     _entryAnimationChanged: function() {
       this.animationConfig = this.animationConfig || {};
-      if (this.entryAnimation !== 'fade-in-animation') {
-        // insert polyfill hack
-        this.animationConfig['entry'] = [{
-          name: 'opaque-animation',
-          node: this
-        }, {
-          name: this.entryAnimation,
-          node: this
-        }];
-      } else {
-        this.animationConfig['entry'] = [{
-          name: this.entryAnimation,
-          node: this
-        }];
-      }
+      this.animationConfig['entry'] = [{
+        name: this.entryAnimation,
+        node: this
+      }];
     },
 
     _exitAnimationChanged: function() {

@@ -66,13 +66,14 @@ Configuration:
       var scaleY = diameter / fromRect.height;
       var scale = 'scale(' + scaleX + ',' + scaleY + ')';
 
-      this.setPrefixedProperty(shared.from, 'transformOrigin', '50% 50%');
-      shared.from.style.borderRadius = '50%';
-
       this._effect = new KeyframeEffect(shared.from, [
         {'transform': translate + ' ' + scale},
         {'transform': translate + ' scale(0)'}
       ], this.timingFromConfig(config));
+
+      this.setPrefixedProperty(shared.from, 'transformOrigin', '50% 50%');
+      shared.from.style.borderRadius = '50%';
+
       return this._effect;
     },
 

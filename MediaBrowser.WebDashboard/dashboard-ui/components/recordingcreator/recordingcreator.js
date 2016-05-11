@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'scripts/livetvcomponents', 'livetvcss', 'paper-checkbox', 'paper-input', 'paper-toggle-button', 'paper-icon-button-light'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'scripts/livetvcomponents', 'livetvcss', 'paper-checkbox', 'paper-input', 'paper-icon-button-light'], function (dialogHelper, $) {
 
     var currentProgramId;
     var currentDialog;
@@ -200,20 +200,6 @@
         $('.btnCancel', context).on('click', function () {
 
             closeDialog(false);
-        });
-
-        context.querySelector('.chkAdvanced').addEventListener('change', function (e) {
-
-            var elems = context.querySelectorAll('.advancedToggle');
-            var isChecked = e.target.checked;
-
-            for (var i = 0, length = elems.length; i < length; i++) {
-                if (isChecked) {
-                    slideDownToShow(elems[i]);
-                } else {
-                    slideUpToHide(elems[i]);
-                }
-            }
         });
 
         $('form', context).off('submit', onSubmit).on('submit', onSubmit);

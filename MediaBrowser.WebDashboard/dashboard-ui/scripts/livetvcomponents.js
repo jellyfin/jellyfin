@@ -4,6 +4,10 @@
         return browserInfo.mobile && AppInfo.enableAppLayouts;
     }
 
+    function getSquareShape() {
+        return enableScrollX() ? 'overflowSquare' : 'square';
+    }
+
     function getTimersHtml(timers) {
 
         var items = timers.map(function (t) {
@@ -68,7 +72,7 @@
 
             html += LibraryBrowser.getPosterViewHtml({
                 items: group.items,
-                shape: "square",
+                shape: getSquareShape(),
                 showTitle: true,
                 showAirTime: true,
                 showChannelName: true,

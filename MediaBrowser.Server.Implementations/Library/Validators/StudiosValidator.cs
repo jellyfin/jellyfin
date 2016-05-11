@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,20 +35,25 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var items = _libraryManager.GetItemList(new InternalItemsQuery
-            {
-                IncludeItemTypes = new[] { typeof(Studio).Name }
-
-            }).ToList();
+            var items = _libraryManager.RootFolder.GetRecursiveChildren(i => true)
+                .SelectMany(i => i.Studios)
+                .DistinctNames()
+                .ToList();
 
             var numComplete = 0;
             var count = items.Count;
 
-            foreach (var item in items)
+            var validIds = new List<Guid>();
+
+            foreach (var name in items)
             {
                 try
                 {
-                    await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                    var itemByName = _libraryManager.GetStudio(name);
+
+                    validIds.Add(itemByName.Id);
+
+                    await itemByName.RefreshMetadata(cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -56,7 +62,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error refreshing {0}", ex, item.Name);
+                    _logger.ErrorException("Error refreshing {0}", ex, name);
                 }
 
                 numComplete++;

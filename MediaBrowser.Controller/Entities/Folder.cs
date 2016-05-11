@@ -1316,7 +1316,8 @@ namespace MediaBrowser.Controller.Entities
                 {
                     var folder = (Folder)child;
 
-                    folder.AddChildrenToList(result, includeLinkedChildren, true, filter);
+                    // We can only support includeLinkedChildren for the first folder, or we might end up stuck in a loop of linked items
+                    folder.AddChildrenToList(result, false, true, filter);
                 }
             }
 

@@ -283,7 +283,7 @@
         });
     }
 
-    function showMoreMenu(context, button) {
+    function showMoreMenu(context, button, user) {
 
         var items = [];
 
@@ -293,11 +293,13 @@
             ironIcon: 'photo'
         });
 
-        items.push({
-            name: Globalize.translate('ButtonIdentify'),
-            id: 'identify',
-            ironIcon: 'info'
-        });
+        if (LibraryBrowser.canIdentify(user, currentItem.Type)) {
+            items.push({
+                name: Globalize.translate('ButtonIdentify'),
+                id: 'identify',
+                ironIcon: 'info'
+            });
+        }
 
         items.push({
             name: Globalize.translate('ButtonRefresh'),
@@ -378,7 +380,10 @@
 
         context.querySelector('.btnMore').addEventListener('click', function (e) {
 
-            showMoreMenu(context, e.target);
+            Dashboard.getCurrentUser().then(function (user) {
+                showMoreMenu(context, e.target, user);
+            });
+
         });
 
         context.querySelector('.btnHeaderSave').addEventListener('click', function (e) {
@@ -675,16 +680,6 @@
             $('#fldDateAdded', context).show();
             $('#fldYear', context).show();
         }
-
-        Dashboard.getCurrentUser().then(function (user) {
-
-            if (LibraryBrowser.getMoreCommands(item, user).indexOf('identify') != -1) {
-
-                $('#btnIdentify', context).show();
-            } else {
-                $('#btnIdentify', context).hide();
-            }
-        });
 
         if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "BoxSet") {
             $('#keywordsCollapsible', context).show();

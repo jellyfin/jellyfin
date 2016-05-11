@@ -190,7 +190,7 @@
 
         elem.querySelector('.playlistButton').addEventListener('click', function () {
 
-            showRemoteControl('playlist');
+            showRemoteControl(2);
         });
 
         toggleRepeatButton = $('.toggleRepeatButton', elem).on('click', function () {
@@ -254,10 +254,10 @@
         }, 300);
     }
 
-    function showRemoteControl(tab) {
+    function showRemoteControl(tabIndex) {
 
-        if (tab) {
-            Dashboard.navigate('nowplaying.html?tab=' + tab);
+        if (tabIndex) {
+            Dashboard.navigate('nowplaying.html?tab=' + tabIndex);
         } else {
             Dashboard.navigate('nowplaying.html');
         }
