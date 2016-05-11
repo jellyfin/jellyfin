@@ -429,7 +429,7 @@ namespace MediaBrowser.Api
             if (request.IsMissing.HasValue)
             {
                 var val = request.IsMissing.Value;
-                items = items.Where(i => i.IsMissingSeason == val);
+                items = items.Where(i => (i.IsMissingSeason ?? false) == val);
             }
 
             if (request.IsVirtualUnaired.HasValue)

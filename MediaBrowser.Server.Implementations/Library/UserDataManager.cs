@@ -140,6 +140,54 @@ namespace MediaBrowser.Server.Implementations.Library
             return Repository.GetAllUserData(userId);
         }
 
+        public UserItemData GetUserData(Guid userId, List<string> keys)
+        {
+            if (userId == Guid.Empty)
+            {
+                throw new ArgumentNullException("userId");
+            }
+            if (keys == null)
+            {
+                throw new ArgumentNullException("keys");
+            }
+
+            lock (_userData)
+            {
+                foreach (var key in keys)
+                {
+                    var cacheKey = GetCacheKey(userId, key);
+                    UserItemData value;
+                    if (_userData.TryGetValue(cacheKey, out value))
+                    {
+                        return value;
+                    }
+
+                    value = Repository.GetUserData(userId, key);
+
+                    if (value != null)
+                    {
+                        _userData[cacheKey] = value;
+                        return value;
+                    }
+                }
+
+                if (keys.Count > 0)
+                {
+                    var key = keys[0];
+                    var cacheKey = GetCacheKey(userId, key);
+                    var userdata = new UserItemData
+                    {
+                        UserId = userId,
+                        Key = key
+                    };
+                    _userData[cacheKey] = userdata;
+                    return userdata;
+                }
+
+                return null;
+            }
+        }
+
         /// <summary>
         /// Gets the user data.
         /// </summary>
@@ -166,25 +214,20 @@ namespace MediaBrowser.Server.Implementations.Library
                     return value;
                 }
 
-                value = GetUserDataFromRepository(userId, key);
+                value = Repository.GetUserData(userId, key);
+
+                if (value == null)
+                {
+                    value = new UserItemData
+                    {
+                        UserId = userId,
+                        Key = key
+                    };
+                }
+
                 _userData[cacheKey] = value;
                 return value;
             }
-        }
-
-        private UserItemData GetUserDataFromRepository(Guid userId, string key)
-        {
-            var data = Repository.GetUserData(userId, key);
-
-            if (data == null)
-            {
-                data = new UserItemData
-                {
-                    UserId = userId,
-                    Key = key
-                };
-            }
-            return data;
         }
 
         /// <summary>
@@ -200,22 +243,22 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public UserItemData GetUserData(IHasUserData user, IHasUserData item)
         {
-            return GetUserData(user.Id, item.GetUserDataKeys().First());
+            return GetUserData(user.Id, item);
         }
 
         public UserItemData GetUserData(string userId, IHasUserData item)
         {
-            return GetUserData(userId, item.GetUserDataKeys().First());
+            return GetUserData(new Guid(userId), item);
         }
 
         public UserItemData GetUserData(Guid userId, IHasUserData item)
         {
-            return GetUserData(userId, item.GetUserDataKeys().First());
+            return GetUserData(userId, item.GetUserDataKeys());
         }
 
         public UserItemDataDto GetUserDataDto(IHasUserData item, User user)
         {
-            var userData = GetUserData(user.Id, item.GetUserDataKeys().First());
+            var userData = GetUserData(user.Id, item);
             var dto = GetUserItemDataDto(userData);
 
             item.FillUserDataDtoValues(dto, userData, user);
@@ -301,11 +344,6 @@ namespace MediaBrowser.Server.Implementations.Library
             data.PlaybackPositionTicks = positionTicks;
 
             return playedToCompletion;
-        }
-
-        public UserItemData GetUserData(string userId, string key)
-        {
-            return GetUserData(new Guid(userId), key);
         }
     }
 }

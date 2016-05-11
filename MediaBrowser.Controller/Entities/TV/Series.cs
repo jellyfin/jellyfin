@@ -201,23 +201,30 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public IEnumerable<Season> GetSeasons(User user, bool includeMissingSeasons, bool includeVirtualUnaired)
         {
-            var seriesIds = LibraryManager.GetItemIds(new InternalItemsQuery(user)
-            {
-                PresentationUniqueKey = PresentationUniqueKey,
-                IncludeItemTypes = new[] { typeof(Series).Name }
-            });
-
             IEnumerable<Season> seasons;
 
-            if (seriesIds.Count > 1)
+            if (EnablePooling())
             {
-                seasons = LibraryManager.GetItemList(new InternalItemsQuery(user)
+                var seriesIds = LibraryManager.GetItemIds(new InternalItemsQuery(user)
                 {
-                    AncestorIds = seriesIds.Select(i => i.ToString("N")).ToArray(),
-                    IncludeItemTypes = new[] { typeof(Season).Name },
-                    SortBy = new[] { ItemSortBy.SortName }
+                    PresentationUniqueKey = PresentationUniqueKey,
+                    IncludeItemTypes = new[] { typeof(Series).Name }
+                });
 
-                }).Cast<Season>();
+                if (seriesIds.Count > 1)
+                {
+                    seasons = LibraryManager.GetItemList(new InternalItemsQuery(user)
+                    {
+                        AncestorIds = seriesIds.Select(i => i.ToString("N")).ToArray(),
+                        IncludeItemTypes = new[] { typeof(Season).Name },
+                        SortBy = new[] { ItemSortBy.SortName }
+
+                    }).Cast<Season>();
+                }
+                else
+                {
+                    seasons = LibraryManager.Sort(base.GetChildren(user, true), user, new[] { ItemSortBy.SortName }, SortOrder.Ascending).OfType<Season>();
+                }
             }
             else
             {
@@ -232,7 +239,7 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 if (!includeMissingSeasons)
                 {
-                    seasons = seasons.Where(i => !i.IsMissingSeason);
+                    seasons = seasons.Where(i => !(i.IsMissingSeason ?? false));
                 }
                 if (!includeVirtualUnaired)
                 {
@@ -338,25 +345,38 @@ namespace MediaBrowser.Controller.Entities.TV
             return GetEpisodes(user, seasonNumber, config.DisplayMissingEpisodes, config.DisplayUnairedEpisodes);
         }
 
+        private bool EnablePooling()
+        {
+            return false;
+        }
+
         public IEnumerable<Episode> GetEpisodes(User user, int seasonNumber, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes)
         {
-            var seriesIds = LibraryManager.GetItemIds(new InternalItemsQuery(user)
-            {
-                PresentationUniqueKey = PresentationUniqueKey,
-                IncludeItemTypes = new[] { typeof(Series).Name }
-            });
-
             IEnumerable<Episode> episodes;
 
-            if (seriesIds.Count > 1)
+            if (EnablePooling())
             {
-                episodes = LibraryManager.GetItemList(new InternalItemsQuery(user)
+                var seriesIds = LibraryManager.GetItemIds(new InternalItemsQuery(user)
                 {
-                    AncestorIds = seriesIds.Select(i => i.ToString("N")).ToArray(),
-                    IncludeItemTypes = new[] { typeof(Episode).Name },
-                    SortBy = new[] { ItemSortBy.SortName }
+                    PresentationUniqueKey = PresentationUniqueKey,
+                    IncludeItemTypes = new[] { typeof(Series).Name }
+                });
 
-                }).Cast<Episode>();
+                if (seriesIds.Count > 1)
+                {
+                    episodes = LibraryManager.GetItemList(new InternalItemsQuery(user)
+                    {
+                        AncestorIds = seriesIds.Select(i => i.ToString("N")).ToArray(),
+                        IncludeItemTypes = new[] { typeof(Episode).Name },
+                        SortBy = new[] { ItemSortBy.SortName }
+
+                    }).Cast<Episode>();
+                }
+                else
+                {
+                    episodes = GetRecursiveChildren(user, i => i is Episode)
+                        .Cast<Episode>();
+                }
             }
             else
             {

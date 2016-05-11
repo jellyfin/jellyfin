@@ -211,12 +211,6 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
-        public bool IsUnaired
-        {
-            get { return PremiereDate.HasValue && PremiereDate.Value.ToLocalTime().Date >= DateTime.Now.Date; }
-        }
-
-        [IgnoreDataMember]
         public bool IsVirtualUnaired
         {
             get { return LocationType == LocationType.Virtual && IsUnaired; }

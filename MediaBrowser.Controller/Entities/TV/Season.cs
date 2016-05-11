@@ -54,8 +54,8 @@ namespace MediaBrowser.Controller.Entities.TV
         // Genre, Rating and Stuido will all be the same
         protected override IEnumerable<string> GetIndexByOptions()
         {
-            return new List<string> {            
-                {"None"}, 
+            return new List<string> {
+                {"None"},
                 {"Performer"},
                 {"Director"},
                 {"Year"},
@@ -128,22 +128,23 @@ namespace MediaBrowser.Controller.Entities.TV
             return IndexNumber != null ? IndexNumber.Value.ToString("0000") : Name;
         }
 
-        [IgnoreDataMember]
-        public bool IsMissingSeason
+        public override bool RequiresRefresh()
         {
-            get { return LocationType == LocationType.Virtual && GetEpisodes().All(i => i.IsMissingEpisode); }
+            var result = base.RequiresRefresh();
+
+            if (!result)
+            {
+                if (!IsMissingSeason.HasValue)
+                {
+                    return true;
+                }
+            }
+
+            return result;
         }
 
-        private bool GetIsUnaired()
-        {
-            return GetEpisodes().All(i => i.IsUnaired);
-        }
-
         [IgnoreDataMember]
-        public bool IsUnaired
-        {
-            get { return GetIsUnaired(); }
-        }
+        public bool? IsMissingSeason { get; set; }
 
         [IgnoreDataMember]
         public bool IsVirtualUnaired
@@ -154,7 +155,7 @@ namespace MediaBrowser.Controller.Entities.TV
         [IgnoreDataMember]
         public bool IsMissingOrVirtualUnaired
         {
-            get { return LocationType == LocationType.Virtual && GetEpisodes().All(i => i.IsVirtualUnaired || i.IsMissingEpisode); }
+            get { return (IsMissingSeason ?? false) || (LocationType == LocationType.Virtual && IsUnaired); }
         }
 
         [IgnoreDataMember]
@@ -223,7 +224,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
                 episodes = list.DistinctBy(i => i.Id);
             }
-            
+
             if (!includeMissingEpisodes)
             {
                 episodes = episodes.Where(i => !i.IsMissingEpisode);
@@ -238,7 +239,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 .Cast<Episode>();
         }
 
-        private IEnumerable<Episode> GetEpisodes()
+        public IEnumerable<Episode> GetEpisodes()
         {
             var episodes = GetRecursiveChildren().OfType<Episode>();
             var series = Series;
