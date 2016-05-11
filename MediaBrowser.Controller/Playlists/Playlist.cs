@@ -142,7 +142,8 @@ namespace MediaBrowser.Controller.Playlists
                     Recursive = true,
                     IsFolder = false,
                     SortBy = new[] { ItemSortBy.SortName },
-                    MediaTypes = new[] { mediaType }
+                    MediaTypes = new[] { mediaType },
+                    EnableTotalRecordCount = false
                 };
 
                 var itemsResult = await folder.GetItems(query).ConfigureAwait(false);

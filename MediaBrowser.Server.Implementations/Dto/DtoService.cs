@@ -115,11 +115,10 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     if (options.Fields.Contains(ItemFields.ItemCounts))
                     {
-                        var itemFilter = byName.GetItemFilter();
-
-                        var libraryItems = user != null ?
-                           user.RootFolder.GetRecursiveChildren(user, itemFilter) :
-                           _libraryManager.RootFolder.GetRecursiveChildren(itemFilter);
+                        var libraryItems = byName.GetTaggedItems(new InternalItemsQuery(user)
+                        {
+                            Recursive = true
+                        });
 
                         SetItemByNameInfo(item, dto, libraryItems.ToList(), user);
                     }
