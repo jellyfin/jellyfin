@@ -29,6 +29,7 @@ namespace MediaBrowser.ServerApplication.Networking
         /// <returns>IEnumerable{NetworkShare}.</returns>
         public IEnumerable<NetworkShare> GetNetworkShares(string path)
         {
+            Logger.Info("Getting network shares from {0}", path);
             return new ShareCollection(path).OfType<Share>().Select(ToNetworkShare);
         }
 
