@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'datetime', 'jQuery', 'scrollStyles'], function (layoutManager, datetime, $) {
+﻿define(['layoutManager', 'datetime', 'jQuery', 'mediaInfo', 'scrollStyles'], function (layoutManager, datetime, $, mediaInfo) {
 
     var currentItem;
 
@@ -170,8 +170,6 @@
             } else {
                 $('.chapterSettingsButton', page).hide();
             }
-
-            LiveTvHelpers.renderOriginalAirDate($('.airDate', page), item);
 
             if (item.Type == "Person" && item.PremiereDate) {
 
@@ -467,11 +465,13 @@
             bottomOverview.classList.add('hide');
         }
 
-        $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item));
-
         LibraryBrowser.renderAwardSummary($('#awardSummary', page), item);
 
-        $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
+        $('.itemMiscInfo', page).each(function () {
+            mediaInfo.fillPrimaryMediaInfo(this, item, {
+                interactive: true
+            });
+        });
 
         LibraryBrowser.renderGenres($('.itemGenres', page), item, null, isStatic);
         LibraryBrowser.renderStudios($('.itemStudios', page), item, isStatic);
@@ -1319,7 +1319,7 @@
             IncludeItemTypes: "MusicVideo",
             Recursive: true,
             Fields: "DateCreated,SyncInfo,CanDelete",
-            Albums: item.Name
+            AlbumNames: item.Name
 
         }).then(function (result) {
             if (result.Items.length) {

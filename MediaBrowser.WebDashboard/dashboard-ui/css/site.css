@@ -304,6 +304,11 @@ body {
         overflow-y: auto !important;
     }
 
+iron-icon {
+    min-width: 24px;
+    min-height: 24px;
+}
+
 /* Without this, no content will be displayed in mobile safari */
 .pageContainer {
     overflow-x: visible !important;

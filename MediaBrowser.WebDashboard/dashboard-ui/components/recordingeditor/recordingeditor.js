@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'loading', 'jQuery', 'paper-checkbox', 'paper-input', 'emby-collapsible', 'paper-button', 'paper-icon-button-light'], function (dialogHelper, loading, $) {
+﻿define(['dialogHelper', 'loading', 'jQuery', 'mediaInfo', 'paper-checkbox', 'paper-input', 'emby-collapsible', 'paper-button', 'paper-icon-button-light'], function (dialogHelper, loading, $, mediaInfo) {
 
     var currentDialog;
     var recordingUpdated = false;
@@ -11,8 +11,6 @@
         $('.itemName', context).html(item.Name);
 
         $('.itemEpisodeName', context).html(programInfo.EpisodeTitle || '');
-
-        $('.itemCommunityRating', context).html(LibraryBrowser.getRatingHtml(programInfo));
 
         LibraryBrowser.renderGenres($('.itemGenres', context), programInfo);
         LibraryBrowser.renderOverview(context.querySelectorAll('.itemOverview'), programInfo);
@@ -33,7 +31,8 @@
             $('.timerPageImageContainer', context).hide();
         }
 
-        $('.itemMiscInfo', context).html(LibraryBrowser.getMiscInfoHtml(programInfo));
+        $('.itemMiscInfoPrimary', context).html(mediaInfo.getPrimaryMediaInfoHtml(programInfo));
+        $('.itemMiscInfoSecondary', context).html(mediaInfo.getSecondaryMediaInfoHtml(programInfo));
 
         $('#txtPrePaddingMinutes', context).val(item.PrePaddingSeconds / 60);
         $('#txtPostPaddingMinutes', context).val(item.PostPaddingSeconds / 60);

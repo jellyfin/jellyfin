@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'appStorage', 'libraryBrowser', 'apphost', 'jQuery', 'itemHelper'], function (appSettings, appStorage, LibraryBrowser, appHost, $, itemHelper) {
+﻿define(['appSettings', 'appStorage', 'libraryBrowser', 'apphost', 'jQuery', 'itemHelper', 'mediaInfo'], function (appSettings, appStorage, LibraryBrowser, appHost, $, itemHelper, mediaInfo) {
 
     var showOverlayTimeout;
 
@@ -118,27 +118,21 @@
             html += name;
             html += '</p>';
         } else if (!isSmallItem && !isMiniItem) {
-            html += '<p class="itemMiscInfo" style="white-space:nowrap;">';
-            html += LibraryBrowser.getMiscInfoHtml(item);
-            html += '</p>';
+            html += '<div class="itemMiscInfo">';
+            html += mediaInfo.getPrimaryMediaInfoHtml(item, {
+                endsAt: false
+            });
+            html += '</div>';
         }
 
         if (!isMiniItem) {
             html += '<div style="margin:1em 0 .75em;">';
 
             if (isPortrait) {
-                html += '<div class="itemCommunityRating">';
-                html += LibraryBrowser.getRatingHtml(item, false);
-                html += '</div>';
-
                 html += '<div class="userDataIcons" style="margin:.5em 0 0em;">';
                 html += LibraryBrowser.getUserDataIconsHtml(item);
                 html += '</div>';
             } else {
-
-                html += '<span class="itemCommunityRating" style="vertical-align:middle;">';
-                html += LibraryBrowser.getRatingHtml(item, false);
-                html += '</span>';
 
                 html += '<span class="userDataIcons" style="vertical-align:middle;">';
                 html += LibraryBrowser.getUserDataIconsHtml(item);

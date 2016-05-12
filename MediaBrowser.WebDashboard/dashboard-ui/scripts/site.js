@@ -1797,6 +1797,7 @@ var AppInfo = {};
 
         if (navigator.webkitPersistentStorage) {
             paths.imageFetcher = embyWebComponentsBowerPath + "/images/persistentimagefetcher";
+            //paths.imageFetcher = embyWebComponentsBowerPath + "/images/basicimagefetcher";
         } else if (Dashboard.isRunningInCordova()) {
             paths.imageFetcher = 'cordova/imagestore';
         } else {
@@ -1820,7 +1821,7 @@ var AppInfo = {};
 
         define("libjass", [bowerPath + "/libjass/libjass", "css!" + bowerPath + "/libjass/libjass"], returnFirstDependency);
 
-        define("mediaInfo", [embyWebComponentsBowerPath + "/mediaInfo/mediaInfo"], returnFirstDependency);
+        define("mediaInfo", [embyWebComponentsBowerPath + "/mediainfo/mediainfo"], returnFirstDependency);
         define("backdrop", [embyWebComponentsBowerPath + "/backdrop/backdrop"], returnFirstDependency);
         define("fetchHelper", [embyWebComponentsBowerPath + "/fetchhelper"], returnFirstDependency);
 
@@ -3289,12 +3290,6 @@ pageClassOn('viewshow', "page", function () {
         page.classList.add('ui-body-b');
         page.classList.remove('ui-body-a');
     }
-
-    //if (currentTheme != 'a' && !browserInfo.mobile) {
-    //    document.documentElement.classList.add('darkScrollbars');
-    //} else {
-    //    document.documentElement.classList.remove('darkScrollbars');
-    //}
 
     var apiClient = window.ApiClient;
 

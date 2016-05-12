@@ -490,7 +490,9 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         if (typeof (item) === 'string') {
             require(['connectionManager'], function (connectionManager) {
                 var apiClient = serverId ? connectionManager.getApiClient(serverId) : connectionManager.currentApiClient();
-                apiClient.getItem(apiClient.getCurrentUserId(), item).then(showItem);
+                apiClient.getItem(apiClient.getCurrentUserId(), item).then(function (item) {
+                    embyRouter.showItem(item);
+                });
             });
         } else {
             skinManager.getCurrentSkin().showItem(item);

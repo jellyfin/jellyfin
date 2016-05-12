@@ -114,25 +114,6 @@
             });
         },
 
-        renderOriginalAirDate: function (elem, item) {
-
-            var airDate = item.PremiereDate;
-
-            if (airDate && item.IsRepeat) {
-
-                try {
-                    airDate = datetime.parseISO8601Date(airDate, true).toLocaleDateString();
-                }
-                catch (e) {
-                    console.log("Error parsing date: " + airDate);
-                }
-
-
-                elem.html(Globalize.translate('ValueOriginalAirDate').replace('{0}', airDate)).show();
-            } else {
-                elem.hide();
-            }
-        },
         getTimersHtml: getTimersHtml
 
     };

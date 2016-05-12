@@ -1,4 +1,4 @@
-define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html'], function (datetime, globalize, embyRouter) {
+define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html', 'css!./mediainfo.css'], function (datetime, globalize, embyRouter) {
 
     function getProgramInfoHtml(item, options) {
         var html = '';
@@ -38,6 +38,17 @@ define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html']
 
         if (item.ChannelNumber) {
             miscInfo.push('CH ' + item.ChannelNumber);
+        }
+
+        if (item.SeriesTimerId) {
+            miscInfo.push({
+                html: '<iron-icon class="mediaInfoItem timerIcon" icon="mediainfo:fiber-smart-record"></iron-icon>'
+            });
+        }
+        else if (item.TimerId) {
+            miscInfo.push({
+                html: '<iron-icon class="mediaInfoItem timerIcon" icon="mediainfo:fiber-manual-record"></iron-icon>'
+            });
         }
 
         html += miscInfo.map(function (m) {
@@ -145,6 +156,22 @@ define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html']
 
         if (item.Type == 'Program') {
 
+            if (item.IsLive) {
+                miscInfo.push({
+                    html: '<div class="mediaInfoProgramAttribute mediaInfoItem">' + globalize.translate('core#AttributeLive') + '</div>'
+                });
+            }
+            else if (item.IsPremiere) {
+                miscInfo.push({
+                    html: '<div class="mediaInfoProgramAttribute mediaInfoItem">' + globalize.translate('core#AttributePremiere') + '</div>'
+                });
+            }
+            else if (item.IsSeries && !item.IsRepeat) {
+                miscInfo.push({
+                    html: '<div class="mediaInfoProgramAttribute mediaInfoItem">' + globalize.translate('core#AttributeNew') + '</div>'
+                });
+            }
+
             if (item.PremiereDate) {
 
                 try {
@@ -201,12 +228,6 @@ define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html']
             });
         }
 
-        if (item.HasSubtitles && options.subtitles !== false) {
-            miscInfo.push({
-                html: '<iron-icon class="mediaInfoItem closedCaptionIcon" icon="core:closed-caption"></iron-icon>'
-            });
-        }
-
         if (item.Video3DFormat) {
             miscInfo.push("3D");
         }
@@ -220,6 +241,10 @@ define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html']
         }).join('');
 
         html += getStarIconsHtml(item);
+
+        if (item.HasSubtitles && options.subtitles !== false) {
+            html += '<iron-icon class="mediaInfoItem closedCaptionIcon" icon="mediainfo:closed-caption"></iron-icon>';
+        }
 
         if (item.CriticRating && options.criticRating !== false) {
 
@@ -295,20 +320,8 @@ define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html']
         if (rating) {
             html += '<div class="starRatingContainer mediaInfoItem">';
 
-            for (var i = 0; i < 5; i++) {
-                var starValue = (i + 1) * 2;
-
-                if (rating < starValue - 2) {
-                    html += '<iron-icon icon="core:star" class="emptyStar"></iron-icon>';
-                }
-                else if (rating < starValue) {
-                    html += '<iron-icon icon="core:star-half"></iron-icon>';
-                }
-                else {
-                    html += '<iron-icon icon="core:star"></iron-icon>';
-                }
-            }
-
+            html += '<iron-icon icon="mediainfo:star"></iron-icon>';
+            html += rating;
             html += '</div>';
         }
 

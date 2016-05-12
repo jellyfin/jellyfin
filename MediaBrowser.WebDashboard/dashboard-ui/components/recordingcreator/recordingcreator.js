@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'scripts/livetvcomponents', 'livetvcss', 'paper-checkbox', 'paper-input', 'paper-icon-button-light'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'mediaInfo', 'scripts/livetvcomponents', 'livetvcss', 'paper-checkbox', 'paper-input', 'paper-icon-button-light'], function (dialogHelper, $, mediaInfo) {
 
     var currentProgramId;
     var currentDialog;
@@ -243,7 +243,8 @@
 
         $('.itemEpisodeName', context).html(program.EpisodeTitle || '');
 
-        $('.itemMiscInfo', context).html(LibraryBrowser.getMiscInfoHtml(program));
+        $('.itemMiscInfoPrimary', context).html(mediaInfo.getPrimaryMediaInfoHtml(program));
+        $('.itemMiscInfoSecondary', context).html(mediaInfo.getSecondaryMediaInfoHtml(program));
 
         $('.itemMiscInfo a').each(function () {
             $(this).replaceWith(this.innerHTML);

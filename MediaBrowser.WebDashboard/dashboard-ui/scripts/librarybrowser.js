@@ -1,4 +1,4 @@
-﻿define(['playlistManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'jQuery', 'itemHelper', 'scrollStyles'], function (playlistManager, appSettings, appStorage, appHost, datetime, $, itemHelper) {
+﻿define(['playlistManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'jQuery', 'itemHelper', 'mediaInfo', 'scrollStyles'], function (playlistManager, appSettings, appStorage, appHost, datetime, $, itemHelper, mediaInfo) {
 
     function parentWithClass(elem, className) {
 
@@ -1363,7 +1363,9 @@
                         }
                     }
                     else {
-                        textlines.push(LibraryBrowser.getMiscInfoHtml(item));
+                        textlines.push('<div class="itemMiscInfo">' + mediaInfo.getPrimaryMediaInfoHtml(item, {
+                            endsAt: false
+                        }) + '</div>');
                     }
 
                     if (textlines.length > 2) {
@@ -2992,44 +2994,6 @@
                 });
             },
 
-            getRatingHtml: function (item, metascore) {
-
-                var html = "";
-
-                if (item.CommunityRating) {
-
-                    html += "<div class='starRating' title='" + item.CommunityRating + "'></div>";
-                    html += '<div class="starRatingValue">';
-                    html += item.CommunityRating.toFixed(1);
-                    html += '</div>';
-                }
-
-                if (item.CriticRating != null) {
-
-                    if (item.CriticRating >= 60) {
-                        html += '<div class="fresh rottentomatoesicon" title="Rotten Tomatoes"></div>';
-                    } else {
-                        html += '<div class="rotten rottentomatoesicon" title="Rotten Tomatoes"></div>';
-                    }
-
-                    html += '<div class="criticRating" title="Rotten Tomatoes">' + item.CriticRating + '%</div>';
-                }
-
-                //if (item.Metascore && metascore !== false) {
-
-                //    if (item.Metascore >= 60) {
-                //        html += '<div class="metascore metascorehigh" title="Metascore">' + item.Metascore + '</div>';
-                //    }
-                //    else if (item.Metascore >= 40) {
-                //        html += '<div class="metascore metascoremid" title="Metascore">' + item.Metascore + '</div>';
-                //    } else {
-                //        html += '<div class="metascore metascorelow" title="Metascore">' + item.Metascore + '</div>';
-                //    }
-                //}
-
-                return html;
-            },
-
             getItemProgressBarHtml: function (item) {
 
 
@@ -3286,180 +3250,6 @@
                 var detailImageProgressContainer = elem.querySelector('.detailImageProgressContainer');
 
                 detailImageProgressContainer.innerHTML = progressHtml || '';
-            },
-
-            getMiscInfoHtml: function (item) {
-
-                var miscInfo = [];
-                var text, date;
-
-                if (item.IsSeries && !item.IsRepeat) {
-
-                    require(['livetvcss']);
-                    miscInfo.push('<span class="newTvProgram">' + Globalize.translate('AttributeNew') + '</span>');
-
-                }
-
-                if (item.IsLive) {
-
-                    miscInfo.push('<span class="liveTvProgram">' + Globalize.translate('AttributeLive') + '</span>');
-
-                }
-
-                if (item.ChannelId && item.ChannelName) {
-                    if (item.Type == 'Program' || item.Type == 'Recording') {
-                        miscInfo.push('<a class="textlink" href="itemdetails.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>');
-                    }
-                }
-
-                if (item.Type == "Episode" || item.MediaType == 'Photo') {
-
-                    if (item.PremiereDate) {
-
-                        try {
-                            date = datetime.parseISO8601Date(item.PremiereDate, true);
-
-                            text = date.toLocaleDateString();
-                            miscInfo.push(text);
-                        }
-                        catch (e) {
-                            console.log("Error parsing date: " + item.PremiereDate);
-                        }
-                    }
-                }
-
-                if (item.StartDate) {
-
-                    try {
-                        date = datetime.parseISO8601Date(item.StartDate, true);
-
-                        text = date.toLocaleDateString();
-                        miscInfo.push(text);
-
-                        if (item.Type != "Recording") {
-                            text = datetime.getDisplayTime(date);
-                            miscInfo.push(text);
-                        }
-                    }
-                    catch (e) {
-                        console.log("Error parsing date: " + item.PremiereDate);
-                    }
-                }
-
-                if (item.ProductionYear && item.Type == "Series") {
-
-                    if (item.Status == "Continuing") {
-                        miscInfo.push(Globalize.translate('ValueSeriesYearToPresent', item.ProductionYear));
-
-                    }
-                    else if (item.ProductionYear) {
-
-                        text = item.ProductionYear;
-
-                        if (item.EndDate) {
-
-                            try {
-
-                                var endYear = datetime.parseISO8601Date(item.EndDate, true).getFullYear();
-
-                                if (endYear != item.ProductionYear) {
-                                    text += "-" + datetime.parseISO8601Date(item.EndDate, true).getFullYear();
-                                }
-
-                            }
-                            catch (e) {
-                                console.log("Error parsing date: " + item.EndDate);
-                            }
-                        }
-
-                        miscInfo.push(text);
-                    }
-                }
-
-                if (item.Type != "Series" && item.Type != "Episode" && item.MediaType != 'Photo') {
-
-                    if (item.ProductionYear) {
-
-                        miscInfo.push(item.ProductionYear);
-                    }
-                    else if (item.PremiereDate) {
-
-                        try {
-                            text = datetime.parseISO8601Date(item.PremiereDate, true).getFullYear();
-                            miscInfo.push(text);
-                        }
-                        catch (e) {
-                            console.log("Error parsing date: " + item.PremiereDate);
-                        }
-                    }
-                }
-
-                var minutes;
-
-                if (item.RunTimeTicks && item.Type != "Series") {
-
-                    if (item.Type == "Audio") {
-
-                        miscInfo.push(datetime.getDisplayRunningTime(item.RunTimeTicks));
-
-                    } else {
-                        minutes = item.RunTimeTicks / 600000000;
-
-                        minutes = minutes || 1;
-
-                        miscInfo.push(Math.round(minutes) + "min");
-                    }
-                }
-
-                if (item.CumulativeRunTimeTicks && item.Type != "Series" && item.Type != "Season") {
-
-                    miscInfo.push(datetime.getDisplayRunningTime(item.CumulativeRunTimeTicks));
-                }
-
-                if (item.OfficialRating && item.Type !== "Season" && item.Type !== "Episode") {
-                    miscInfo.push(item.OfficialRating);
-                }
-
-                if (item.IsHD) {
-
-                    miscInfo.push(Globalize.translate('LabelHDProgram'));
-                }
-
-                //if (item.Audio) {
-
-                //    miscInfo.push(item.Audio);
-
-                //}
-
-                if (item.Video3DFormat) {
-                    miscInfo.push("3D");
-                }
-
-                if (item.MediaType == 'Photo' && item.Width && item.Height) {
-                    miscInfo.push(item.Width + "x" + item.Height);
-                }
-
-                if (item.SeriesTimerId) {
-                    var html = '';
-                    html += '<a href="livetvseriestimer.html?id=' + item.SeriesTimerId + '" title="' + Globalize.translate('ButtonViewSeriesRecording') + '">';
-                    html += '<div class="timerCircle seriesTimerCircle"></div>';
-                    html += '<div class="timerCircle seriesTimerCircle"></div>';
-                    html += '<div class="timerCircle seriesTimerCircle"></div>';
-                    html += '</a>';
-                    miscInfo.push(html);
-                    require(['livetvcss']);
-                }
-                else if (item.TimerId) {
-
-                    var html = '';
-                    html += '<button type="button" class="clearButton" onclick="LibraryBrowser.editTimer(\'' + item.TimerId + '\');">';
-                    html += '<div class="timerCircle"></div>';
-                    html += '</button>';
-                    miscInfo.push(html);
-                    require(['livetvcss']);
-                }
-
-                return miscInfo.join('&nbsp;&nbsp;&nbsp;&nbsp;');
             },
 
             renderOverview: function (elems, item) {
