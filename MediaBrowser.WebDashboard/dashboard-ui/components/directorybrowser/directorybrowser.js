@@ -137,7 +137,7 @@
         html += '<div>';
         html += '<paper-input id="txtDirectoryPickerPath" type="text" required="required" style="width:82%;display:inline-block;" label="' + Globalize.translate('LabelCurrentPath') + '"></paper-input>';
 
-        html += '<button is="paper-icon-button-light" class="btnRefreshDirectories" title="' + Globalize.translate('ButtonRefresh') + '"><iron-icon icon="refresh"></iron-icon></button>';
+        html += '<button type="button" is="paper-icon-button-light" class="btnRefreshDirectories" title="' + Globalize.translate('ButtonRefresh') + '"><iron-icon icon="refresh"></iron-icon></button>';
         html += '</div>';
 
         html += '<div class="results paperList" style="height: 180px; overflow-y: auto;"></div>';

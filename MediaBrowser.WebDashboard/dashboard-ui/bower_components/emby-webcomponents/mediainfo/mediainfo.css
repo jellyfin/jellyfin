@@ -1,0 +1,65 @@
+.mediaInfoItem {
+    margin: 0 1em 0 0;
+}
+
+iron-icon.mediaInfoItem {
+    width: 3vh;
+    height: 3vh;
+    margin-right: .6em;
+}
+
+.mediaInfoItem:last-child {
+    margin-right: 0;
+}
+
+.starRatingContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+    .starRatingContainer iron-icon {
+        color: #CB272A;
+        width: 3vh;
+        height: 3vh;
+    }
+
+.mediaInfoItem.criticRating {
+    padding-left: 3.15vh;
+    background-position: left center;
+    background-repeat: no-repeat;
+    background-size: auto 2.6vh;
+    min-height: 2.6vh;
+    display: flex;
+    align-items: center;
+}
+
+.mediaInfoItem.criticRatingFresh {
+    background-image: url(fresh.png);
+}
+
+.mediaInfoItem.criticRatingRotten {
+    background-image: url(rotten.png);
+}
+
+.mediaInfoItem.timerIcon {
+    color: #CB272A;
+}
+
+.mediaInfoProgramAttribute {
+    color: yellow;
+    text-transform: uppercase;
+}
+
+.layout-tv iron-icon.mediaInfoItem {
+    width: 4vh;
+    height: 4vh;
+}
+
+.layout-tv .starRatingContainer iron-icon {
+    width: 3.4vh;
+    height: 3.4vh;
+}

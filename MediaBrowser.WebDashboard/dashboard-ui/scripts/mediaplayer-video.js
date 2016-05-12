@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'datetime', 'jQuery', 'scrollStyles', 'paper-icon-button-light'], function (appSettings, datetime, $) {
+﻿define(['appSettings', 'datetime', 'jQuery', 'mediaInfo', 'scrollStyles', 'paper-icon-button-light'], function (appSettings, datetime, $, mediaInfo) {
 
     function createVideoPlayer(self) {
 
@@ -444,16 +444,10 @@
             var nameHtml = MediaController.getNowPlayingNameHtml(item, false);
             nameHtml = '<div class="videoNowPlayingName">' + nameHtml + '</div>';
 
-            var miscInfo = LibraryBrowser.getMiscInfoHtml(item);
+            var miscInfo = mediaInfo.getPrimaryMediaInfoHtml(item);
             if (miscInfo) {
 
                 nameHtml += '<div class="videoNowPlayingRating">' + miscInfo + '</div>';
-            }
-
-            var ratingHtml = LibraryBrowser.getRatingHtml(item);
-            if (ratingHtml) {
-
-                nameHtml += '<div class="videoNowPlayingRating">' + ratingHtml + '</div>';
             }
 
             if (item.Overview) {

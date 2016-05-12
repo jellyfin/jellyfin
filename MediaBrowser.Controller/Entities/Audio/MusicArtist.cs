@@ -61,11 +61,31 @@ namespace MediaBrowser.Controller.Entities.Audio
             if (query.User != null)
             {
                 return query.User.RootFolder
-                    .GetRecursiveChildren(query.User, i => !i.IsFolder && itemByNameFilter(i));
+                    .GetRecursiveChildren(query.User, i =>
+                    {
+                        if (query.IsFolder.HasValue)
+                        {
+                            if (query.IsFolder.Value != i.IsFolder)
+                            {
+                                return false;
+                            }
+                        }
+                        return itemByNameFilter(i);
+                    });
             }
 
             return LibraryManager.RootFolder
-                .GetRecursiveChildren(i => !i.IsFolder && itemByNameFilter(i));
+                .GetRecursiveChildren(i =>
+                {
+                    if (query.IsFolder.HasValue)
+                    {
+                        if (query.IsFolder.Value != i.IsFolder)
+                        {
+                            return false;
+                        }
+                    }
+                    return itemByNameFilter(i);
+                });
         }
 
         protected override IEnumerable<BaseItem> ActualChildren

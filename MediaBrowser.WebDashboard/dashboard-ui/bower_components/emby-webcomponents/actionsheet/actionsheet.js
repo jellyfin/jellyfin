@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'layoutManager', 'dialogText', 'paper-button', 'css!./actionsheet'], function (dialogHelper, layoutManager, dialogText) {
+﻿define(['dialogHelper', 'layoutManager', 'dialogText', 'paper-button', 'css!./actionsheet', 'html!./../icons/nav.html'], function (dialogHelper, layoutManager, dialogText) {
 
     function parentWithClass(elem, className) {
 
@@ -132,7 +132,7 @@
         html += '<div class="actionSheetScroller">';
 
         options.items.forEach(function (o) {
-            o.ironIcon = o.selected ? 'check' : null;
+            o.ironIcon = o.selected ? 'nav:check' : null;
         });
 
         var itemsWithIcons = options.items.filter(function (o) {

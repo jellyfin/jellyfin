@@ -167,6 +167,11 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
     var currentViewLoadRequest;
     function sendRouteToViewManager(ctx, next, route, controllerFactory) {
 
+        if (isDummyBackToHome && route.type == 'home') {
+            isDummyBackToHome = false;
+            return;
+        }
+
         cancelCurrentLoadRequest();
 
         var isBackNav = ctx.isBack;
@@ -203,7 +208,6 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
                 return;
             }
         }
-
         viewManager.tryRestoreView(currentRequest).then(function () {
 
             // done
@@ -331,21 +335,21 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
     }
 
     var isHandlingBackToDefault;
+    var isDummyBackToHome;
+
     function handleBackToDefault() {
 
+        isDummyBackToHome = true;
         skinManager.loadUserSkin();
 
         if (isHandlingBackToDefault) {
             return;
         }
 
-        isHandlingBackToDefault = true;
-
         // This must result in a call to either 
         // skinManager.loadUserSkin();
         // Logout
         // Or exit app
-
         skinManager.getCurrentSkin().showBackMenu().then(function () {
 
             isHandlingBackToDefault = false;
@@ -481,12 +485,14 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         return show(pluginManager.mapRoute(skin, homeRoute));
     }
 
-    function showItem(item) {
+    function showItem(item, serverId) {
 
         if (typeof (item) === 'string') {
             require(['connectionManager'], function (connectionManager) {
-                var apiClient = connectionManager.currentApiClient();
-                apiClient.getItem(apiClient.getCurrentUserId(), item).then(showItem);
+                var apiClient = serverId ? connectionManager.getApiClient(serverId) : connectionManager.currentApiClient();
+                apiClient.getItem(apiClient.getCurrentUserId(), item).then(function (item) {
+                    embyRouter.showItem(item);
+                });
             });
         } else {
             skinManager.getCurrentSkin().showItem(item);

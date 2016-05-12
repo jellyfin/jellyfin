@@ -1986,10 +1986,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     cmd.Parameters.Add(cmd, "@UserId", DbType.Guid).Value = query.User.Id;
                 }
 
-                var whereTextWithoutPaging = whereClauses.Count == 0 ?
-                    string.Empty :
-                    " where " + string.Join(" AND ", whereClauses.ToArray());
-
                 var whereText = whereClauses.Count == 0 ?
                     string.Empty :
                     " where " + string.Join(" AND ", whereClauses.ToArray());
@@ -2025,7 +2021,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
 
                 cmd.CommandText += GetJoinUserDataText(query);
-                cmd.CommandText += whereTextWithoutPaging;
+                cmd.CommandText += whereText;
 
                 var list = new List<Guid>();
                 var count = 0;

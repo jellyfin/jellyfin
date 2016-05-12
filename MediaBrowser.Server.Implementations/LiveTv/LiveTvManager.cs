@@ -135,7 +135,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var channels = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { typeof(LiveTvChannel).Name }
+                IncludeItemTypes = new[] { typeof(LiveTvChannel).Name },
+                SortBy = new[] { ItemSortBy.SortName }
 
             }).Cast<LiveTvChannel>();
 
@@ -1515,6 +1516,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     {
                         dto.ChannelName = channel.Name;
                         dto.MediaType = channel.MediaType;
+                        dto.ChannelNumber = channel.Number;
 
                         if (channel.HasImage(ImageType.Primary))
                         {
@@ -1854,6 +1856,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 var channel = tuple.Item2;
 
                 dto.Number = channel.Number;
+                dto.ChannelNumber = channel.Number;
                 dto.ChannelType = channel.ChannelType;
                 dto.ServiceName = GetService(channel).Name;
 

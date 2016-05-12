@@ -83,47 +83,12 @@
     background-color: #0B487D;
 }
 
-.timerCircle {
-    display: inline-block;
-    width: 1em;
-    height: 1em;
-    border-radius: 50%;
-    background: #cc0000;
-    border: 1px solid #cc3333;
-    margin-left: 1em;
-}
-
-.seriesTimerCircle {
-    position: relative;
-    margin-left: 0;
-    left: 21px;
-    opacity: .3;
-}
-
-.itemMiscInfo .seriesTimerCircle:first-child {
-    margin-left: 1em;
-}
-
-.seriesTimerCircle + .seriesTimerCircle {
-    opacity: .65;
-    left: 0;
-}
-
-    .seriesTimerCircle + .seriesTimerCircle + .seriesTimerCircle {
-        opacity: 1;
-        left: -21px;
-    }
-
 .channelTimeslotHeader {
     float: left;
 }
 
 .timeslotHeaders {
     white-space: nowrap;
-}
-
-.mobileGuide .timeslotHeaders {
-    overflow-x: hidden;
 }
 
 .programContainer {
