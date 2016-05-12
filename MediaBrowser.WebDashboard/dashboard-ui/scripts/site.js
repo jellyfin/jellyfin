@@ -1797,7 +1797,7 @@ var AppInfo = {};
 
         if (navigator.webkitPersistentStorage) {
             paths.imageFetcher = embyWebComponentsBowerPath + "/images/persistentimagefetcher";
-            //paths.imageFetcher = embyWebComponentsBowerPath + "/images/basicimagefetcher";
+            paths.imageFetcher = embyWebComponentsBowerPath + "/images/basicimagefetcher";
         } else if (Dashboard.isRunningInCordova()) {
             paths.imageFetcher = 'cordova/imagestore';
         } else {
@@ -1925,8 +1925,6 @@ var AppInfo = {};
         define("emby-collapsible", ["html!" + bowerPath + "/emby-collapsible/emby-collapsible.html"]);
 
         define("jstree", [bowerPath + "/jstree/dist/jstree", "css!thirdparty/jstree/themes/default/style.min.css"]);
-
-        define('jqm', ['thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js']);
 
         define("jqmbase", ['css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.css']);
         define("jqmicons", ['jqmbase', 'css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css']);
@@ -2266,9 +2264,28 @@ var AppInfo = {};
 
                     window.Globalize = globalize;
 
-                    loadCoreDictionary(globalize).then(onGlobalizeInit);
+                    Promise.all([loadCoreDictionary(globalize), loadSharedComponentsDictionary(globalize)]).then(onGlobalizeInit);
                 });
             });
+        });
+    }
+
+    function loadSharedComponentsDictionary(globalize) {
+
+        var baseUrl = 'bower_components/emby-webcomponents/strings/';
+
+        var languages = ['en-US'];
+
+        var translations = languages.map(function (i) {
+            return {
+                lang: i,
+                path: baseUrl + i + '.json'
+            };
+        });
+
+        globalize.loadStrings({
+            name: 'sharedcomponents',
+            translations: translations
         });
     }
 

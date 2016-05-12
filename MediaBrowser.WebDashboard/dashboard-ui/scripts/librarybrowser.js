@@ -146,44 +146,6 @@
                 });
             },
 
-            needsRefresh: function (elem) {
-
-                var last = parseInt(elem.getAttribute('data-lastrefresh') || '0');
-
-                if (!last) {
-                    return true;
-                }
-
-                //if (NavHelper.isBack()) {
-                //    console.log('Not refreshing data because IsBack=true');
-                //    return false;
-                //}
-
-                var now = new Date().getTime();
-                var cacheDuration;
-
-                if (AppInfo.isNativeApp) {
-                    cacheDuration = 300000;
-                } else if (browserInfo.ipad || browserInfo.iphone || browserInfo.android) {
-                    cacheDuration = 10000;
-                } else {
-                    cacheDuration = 30000;
-                }
-
-                if ((now - last) < cacheDuration) {
-                    console.log('Not refreshing data due to age');
-                    return false;
-                }
-
-                return true;
-            },
-
-            setLastRefreshed: function (elem) {
-
-                elem.setAttribute('data-lastrefresh', new Date().getTime());
-                elem.classList.add('hasrefreshtime');
-            },
-
             allowSwipe: function (target) {
 
                 function allowSwipeOn(elem) {

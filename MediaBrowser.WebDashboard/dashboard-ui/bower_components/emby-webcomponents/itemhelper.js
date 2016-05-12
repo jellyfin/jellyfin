@@ -19,7 +19,7 @@ define([], function () {
         }
         if (/*options.isInlineSpecial &&*/ item.Type == "Episode" && item.ParentIndexNumber == 0) {
 
-            name = Globalize.translate('core#ValueSpecialEpisodeName', name);
+            name = Globalize.translate('sharedcomponents#ValueSpecialEpisodeName', name);
 
         } else if ((item.Type == "Episode" || item.Type == 'Program') && item.IndexNumber != null && item.ParentIndexNumber != null) {
 

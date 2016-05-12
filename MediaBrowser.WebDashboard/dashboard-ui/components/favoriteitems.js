@@ -161,8 +161,6 @@
 
         Promise.all(promises).then(function () {
             Dashboard.hideLoadingMsg();
-
-            libraryBrowser.setLastRefreshed(page);
         });
     }
 

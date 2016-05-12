@@ -2,6 +2,7 @@
 using MediaBrowser.Model.Tasks;
 using System;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Common.ScheduledTasks
 {
@@ -30,7 +31,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// </summary>
         /// <param name="lastResult">The last result.</param>
         /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
-        public async void Start(TaskResult lastResult, bool isApplicationStartup)
+        public async void Start(TaskResult lastResult, ILogger logger, string taskName, bool isApplicationStartup)
         {
             if (isApplicationStartup)
             {

@@ -108,16 +108,12 @@
             require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
                 renderTimers(page, result.Items);
             });
-
-            LibraryBrowser.setLastRefreshed(page);
         });
     }
 
     window.LiveTvPage.renderSeriesTimersTab = function (page, tabContent) {
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
-            reload(tabContent);
-        }
+        reload(tabContent);
     };
 
 });

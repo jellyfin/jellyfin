@@ -541,7 +541,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .itemName {
     font-weight: normal !important;
-    margin: 0;
+    margin: .5em 0;
 }
 
 .empty {
@@ -818,6 +818,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     flex-wrap: wrap;
     align-items: center;
 }
+
 .mediaInfoItem {
     white-space: nowrap;
 }

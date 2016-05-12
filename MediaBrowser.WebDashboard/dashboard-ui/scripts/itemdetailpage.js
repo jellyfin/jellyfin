@@ -1319,7 +1319,7 @@
             IncludeItemTypes: "MusicVideo",
             Recursive: true,
             Fields: "DateCreated,SyncInfo,CanDelete",
-            AlbumNames: item.Name
+            Albums: item.Name
 
         }).then(function (result) {
             if (result.Items.length) {

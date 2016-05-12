@@ -1,4 +1,3 @@
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -85,7 +84,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        public const int LatestSchemaVersion = 77;
+        public const int LatestSchemaVersion = 78;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -356,7 +355,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "OriginalTitle",
             "PrimaryVersionId",
             "DateLastMediaAdded",
-            "Album"
+            "Album",
+            "CriticRating",
+            "CriticRatingSummary"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -1245,6 +1246,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!reader.IsDBNull(55))
             {
                 item.Album = reader.GetString(55);
+            }
+
+            if (!reader.IsDBNull(56))
+            {
+                item.CriticRating = reader.GetFloat(56);
+            }
+
+            if (!reader.IsDBNull(57))
+            {
+                item.CriticRatingSummary = reader.GetString(57);
             }
 
             return item;

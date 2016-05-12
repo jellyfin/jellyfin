@@ -246,10 +246,6 @@
         $('.itemMiscInfoPrimary', context).html(mediaInfo.getPrimaryMediaInfoHtml(program));
         $('.itemMiscInfoSecondary', context).html(mediaInfo.getSecondaryMediaInfoHtml(program));
 
-        $('.itemMiscInfo a').each(function () {
-            $(this).replaceWith(this.innerHTML);
-        });
-
         $('#chkNewOnly', context).checked(defaultTimer.RecordNewOnly);
         $('#chkAllChannels', context).checked(defaultTimer.RecordAnyChannel);
         $('#chkAnyTime', context).checked(defaultTimer.RecordAnyTime);

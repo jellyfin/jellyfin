@@ -1,7 +1,9 @@
 ﻿using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Tasks;
 using System;
+using System.Globalization;
 using System.Threading;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Common.ScheduledTasks
 {
@@ -35,7 +37,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// </summary>
         /// <param name="lastResult">The last result.</param>
         /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
-        public void Start(TaskResult lastResult, bool isApplicationStartup)
+        public void Start(TaskResult lastResult, ILogger logger, string taskName, bool isApplicationStartup)
         {
             DisposeTimer();
 
@@ -44,7 +46,11 @@ namespace MediaBrowser.Common.ScheduledTasks
             var triggerDate = now.TimeOfDay > TimeOfDay ? now.Date.AddDays(1) : now.Date;
             triggerDate = triggerDate.Add(TimeOfDay);
 
-            Timer = new Timer(state => OnTriggered(), null, triggerDate - now, TimeSpan.FromMilliseconds(-1));
+            var dueTime = triggerDate - now;
+
+            logger.Info("Daily trigger for {0} set to fire at {1}, which is {2} minutes from now.", taskName, triggerDate.ToString(), dueTime.TotalMinutes.ToString(CultureInfo.InvariantCulture));
+
+            Timer = new Timer(state => OnTriggered(), null, dueTime, TimeSpan.FromMilliseconds(-1));
         }
 
         /// <summary>

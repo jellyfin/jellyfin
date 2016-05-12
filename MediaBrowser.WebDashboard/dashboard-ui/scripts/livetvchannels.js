@@ -111,16 +111,12 @@
             renderChannels(page, result);
 
             Dashboard.hideLoadingMsg();
-
-            LibraryBrowser.setLastRefreshed(page);
         });
     }
 
     window.LiveTvPage.renderChannelsTab = function (page, tabContent) {
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
-            reloadItems(tabContent);
-        }
+        reloadItems(tabContent);
     };
 
 });

@@ -245,8 +245,6 @@
 
                 LibraryBrowser.saveQueryValues(getSavedQueryKey(context), query);
 
-                LibraryBrowser.setLastRefreshed(context);
-
                 Dashboard.hideLoadingMsg();
             });
         }
