@@ -89,10 +89,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
         /// </summary>
-        /// appPaths
-        /// or
-        /// jsonSerializer
-        /// </exception>
         public SqliteItemRepository(IServerConfigurationManager config, IJsonSerializer jsonSerializer, ILogManager logManager)
             : base(logManager)
         {
@@ -2317,12 +2313,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 if (_config.Configuration.SchemaVersion >= 66)
                 {
                     whereClauses.Add("CleanName=@Name");
+                    cmd.Parameters.Add(cmd, "@Name", DbType.String).Value = query.Name.RemoveDiacritics();
                 }
                 else
                 {
                     whereClauses.Add("Name=@Name");
+                    cmd.Parameters.Add(cmd, "@Name", DbType.String).Value = query.Name;
                 }
-                cmd.Parameters.Add(cmd, "@Name", DbType.String).Value = query.Name;
             }
 
             if (!string.IsNullOrWhiteSpace(query.NameContains))
@@ -2335,7 +2332,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     whereClauses.Add("Name like @NameContains");
                 }
-                cmd.Parameters.Add(cmd, "@NameContains", DbType.String).Value = "%" + query.NameContains + "%";
+                cmd.Parameters.Add(cmd, "@NameContains", DbType.String).Value = "%" + query.NameContains.RemoveDiacritics() + "%";
             }
             if (!string.IsNullOrWhiteSpace(query.NameStartsWith))
             {
