@@ -2032,8 +2032,8 @@
         $('.btnRecord,.btnFloatingRecord', page).on('click', function () {
 
             var id = getParameterByName('id');
-            require(['components/recordingcreator/recordingcreator'], function (recordingcreator) {
-                recordingcreator.show(id).then(function () {
+            require(['recordingCreator'], function (recordingCreator) {
+                recordingCreator.show(id, currentItem.ServerId).then(function () {
                     reload(page);
                 });
             });

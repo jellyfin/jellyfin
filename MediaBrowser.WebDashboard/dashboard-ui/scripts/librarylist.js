@@ -563,8 +563,8 @@
                                 Dashboard.navigate('itemdetails.html?id=' + albumid);
                                 break;
                             case 'record':
-                                require(['components/recordingcreator/recordingcreator'], function (recordingcreator) {
-                                    recordingcreator.show(itemId);
+                                require(['recordingCreator'], function (recordingCreator) {
+                                    recordingCreator.show(itemId, serverId);
                                 });
                                 break;
                             case 'artist':

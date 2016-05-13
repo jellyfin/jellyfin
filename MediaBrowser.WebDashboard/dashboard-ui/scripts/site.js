@@ -1821,14 +1821,12 @@ var AppInfo = {};
 
         define("libjass", [bowerPath + "/libjass/libjass", "css!" + bowerPath + "/libjass/libjass"], returnFirstDependency);
 
+        define("recordingCreator", [embyWebComponentsBowerPath + "/recordingcreator/recordingcreator"], returnFirstDependency);
         define("mediaInfo", [embyWebComponentsBowerPath + "/mediainfo/mediainfo"], returnFirstDependency);
         define("backdrop", [embyWebComponentsBowerPath + "/backdrop/backdrop"], returnFirstDependency);
         define("fetchHelper", [embyWebComponentsBowerPath + "/fetchhelper"], returnFirstDependency);
 
-        define("tvguide", [embyWebComponentsBowerPath + "/guide/guide", 'embyRouter'], function (tvGuide, embyRouter) {
-            tvGuide.setBaseUrl(embyRouter.baseUrl() + '/bower_components/emby-webcomponents/guide');
-            return tvGuide;
-        });
+        define("tvguide", [embyWebComponentsBowerPath + "/guide/guide", 'embyRouter'], returnFirstDependency);
 
         define("viewManager", [embyWebComponentsBowerPath + "/viewmanager"], function (viewManager) {
             viewManager.dispatchPageEvents(true);
@@ -1869,8 +1867,9 @@ var AppInfo = {};
             waitSeconds: 0,
             map: {
                 '*': {
-                    'css': bowerPath + '/emby-webcomponents/requirecss',
-                    'html': bowerPath + '/emby-webcomponents/requirehtml'
+                    'css': bowerPath + '/emby-webcomponents/require/requirecss',
+                    'html': bowerPath + '/emby-webcomponents/require/requirehtml',
+                    'text': bowerPath + '/emby-webcomponents/require/requiretext'
                 }
             },
             urlArgs: urlArgs,

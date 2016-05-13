@@ -1,6 +1,4 @@
-﻿define(['globalize', 'connectionManager', 'loading', 'scrollHelper', 'datetime', 'focusManager', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationservices', 'clearButtonStyle', 'css!./guide.css', 'html!./../icons/mediainfo.html', 'html!./../icons/nav.html', 'scrollStyles'], function (globalize, connectionManager, loading, scrollHelper, datetime, focusManager, imageLoader, events, layoutManager, itemShortcuts, registrationServices) {
-
-    var baseUrl;
+﻿define(['require', 'globalize', 'connectionManager', 'loading', 'scrollHelper', 'datetime', 'focusManager', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationservices', 'clearButtonStyle', 'css!./guide.css', 'html!./../icons/mediainfo.html', 'html!./../icons/nav.html', 'scrollStyles'], function (require, globalize, connectionManager, loading, scrollHelper, datetime, focusManager, imageLoader, events, layoutManager, itemShortcuts, registrationServices) {
 
     function Guide(options) {
 
@@ -598,9 +596,6 @@
             }
         }
 
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', baseUrl + '/tvguide.template.html', true);
-
         var supportsCaptureOption = false;
         try {
             var opts = Object.defineProperty({}, 'capture', {
@@ -619,9 +614,7 @@
             target.addEventListener(type, handler, optionsOrCapture);
         }
 
-        xhr.onload = function (e) {
-
-            var template = this.response;
+        require(['text!./tvguide.template.html'], function (template) {
             var context = options.element;
             context.innerHTML = globalize.translateDocument(template, 'core');
 
@@ -658,13 +651,7 @@
             events.trigger(self, 'load');
 
             self.refresh();
-        }
-
-        xhr.send();
-    };
-
-    Guide.setBaseUrl = function (url) {
-        baseUrl = url;
+        });
     };
 
     return Guide;

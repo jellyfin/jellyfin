@@ -1,15 +1,21 @@
-﻿define(['dialogHelper', 'jQuery', 'mediaInfo', 'scripts/livetvcomponents', 'livetvcss', 'paper-checkbox', 'paper-input', 'paper-icon-button-light'], function (dialogHelper, $, mediaInfo) {
+﻿define(['dialogHelper', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'paper-checkbox', 'paper-input', 'paper-icon-button-light'], function (dialogHelper, mediaInfo, appHost, connectionManager, require, loading) {
 
     var currentProgramId;
+    var currentServerId;
     var currentDialog;
     var recordingCreated = false;
 
     function getDaysOfWeek() {
 
-        // Do not localize. These are used as values, not text.
-        return LiveTvHelpers.getDaysOfWeek().map(function (d) {
-            return d.value;
-        });
+        return [
+         'Sunday',
+         'Monday',
+         'Tuesday',
+         'Wednesday',
+         'Thursday',
+         'Friday',
+         'Saturday'
+        ];
     }
 
     function getDays(context) {
@@ -22,7 +28,7 @@
 
             var day = daysOfWeek[i];
 
-            if ($('#chk' + day, context).checked()) {
+            if (context.querySelector('#chk' + day).checked) {
                 days.push(day);
             }
 
@@ -43,68 +49,71 @@
         dialogHelper.close(currentDialog);
     }
 
-    function onSubmit() {
+    function onSubmit(e) {
 
-        Dashboard.showLoadingMsg();
+        loading.show();
 
         var form = this;
 
-        ApiClient.getNamedConfiguration("livetv").then(function (config) {
+        var apiClient = connectionManager.getApiClient(currentServerId);
 
-            config.EnableRecordingEncoding = $('#chkConvertRecordings', form).checked();
+        apiClient.getNamedConfiguration("livetv").then(function (config) {
 
-            ApiClient.updateNamedConfiguration("livetv", config).then(Dashboard.processServerConfigurationUpdateResult);
+            config.EnableRecordingEncoding = form.querySelector('#chkConvertRecordings').checked;
+
+            apiClient.updateNamedConfiguration("livetv", config);
         });
 
-        ApiClient.getNewLiveTvTimerDefaults({ programId: currentProgramId }).then(function (item) {
+        apiClient.getNewLiveTvTimerDefaults({ programId: currentProgramId }).then(function (item) {
 
-            item.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
-            item.PostPaddingSeconds = $('#txtPostPaddingMinutes', form).val() * 60;
+            item.PrePaddingSeconds = form.querySelector('#txtPrePaddingMinutes').value * 60;
+            item.PostPaddingSeconds = form.querySelector('#txtPostPaddingMinutes').value * 60;
 
-            item.RecordNewOnly = $('#chkNewOnly', form).checked();
-            item.RecordAnyChannel = $('#chkAllChannels', form).checked();
-            item.RecordAnyTime = $('#chkAnyTime', form).checked();
+            item.RecordNewOnly = form.querySelector('#chkNewOnly').checked;
+            item.RecordAnyChannel = form.querySelector('#chkAllChannels').checked;
+            item.RecordAnyTime = form.querySelector('#chkAnyTime').checked;
 
             item.Days = getDays(form);
 
-            if ($('#chkRecordSeries', form).checked()) {
+            if (form.querySelector('#chkRecordSeries').checked) {
 
-                ApiClient.createLiveTvSeriesTimer(item).then(function () {
+                apiClient.createLiveTvSeriesTimer(item).then(function () {
 
-                    Dashboard.hideLoadingMsg();
+                    loading.hide();
                     closeDialog(true);
                 });
 
             } else {
-                ApiClient.createLiveTvTimer(item).then(function () {
+                apiClient.createLiveTvTimer(item).then(function () {
 
-                    Dashboard.hideLoadingMsg();
+                    loading.hide();
                     closeDialog(true);
                 });
             }
         });
 
         // Disable default form submission
+        e.preventDefault();
         return false;
     }
 
-    function getRegistration(programId) {
+    function getRegistration(programId, apiClient) {
 
-        Dashboard.showLoadingMsg();
+        loading.show();
 
-        return ApiClient.getJSON(ApiClient.getUrl('LiveTv/Registration', {
+        return apiClient.getJSON(apiClient.getUrl('LiveTv/Registration', {
 
             ProgramId: programId,
             Feature: 'seriesrecordings'
 
         })).then(function (result) {
 
-            Dashboard.hideLoadingMsg();
+            loading.hide();
             return result;
 
         }, function () {
 
-            Dashboard.hideLoadingMsg();
+            loading.hide();
 
             return {
                 TrialVersion: true,
@@ -114,11 +123,11 @@
         });
     }
 
-    function showSeriesRecordingFields(context) {
+    function showSeriesRecordingFields(context, apiClient) {
         slideDownToShow(context.querySelector('#seriesFields'));
         context.querySelector('.btnSubmitContainer').classList.remove('hide');
 
-        getRegistration(currentProgramId).then(function (regInfo) {
+        getRegistration(currentProgramId, apiClient).then(function (regInfo) {
 
             if (regInfo.IsValid) {
                 context.querySelector('.btnSubmitContainer').classList.remove('hide');
@@ -188,40 +197,42 @@
 
     function init(context) {
 
-        $('#chkRecordSeries', context).on('change', function () {
+        var apiClient = connectionManager.getApiClient(currentServerId);
+
+        context.querySelector('#chkRecordSeries').addEventListener('change', function () {
 
             if (this.checked) {
-                showSeriesRecordingFields(context);
+                showSeriesRecordingFields(context, apiClient);
             } else {
                 hideSeriesRecordingFields(context);
             }
         });
 
-        $('.btnCancel', context).on('click', function () {
+        context.querySelector('.btnCancel').addEventListener('click', function () {
 
             closeDialog(false);
         });
 
-        $('form', context).off('submit', onSubmit).on('submit', onSubmit);
+        context.querySelector('form', context).addEventListener('submit', onSubmit);
 
         var supporterButtons = context.querySelectorAll('.btnSupporter');
         for (var i = 0, length = supporterButtons.length; i < length; i++) {
-            if (AppInfo.enableSupporterMembership) {
+            if (appHost.supports('externalpremium')) {
                 supporterButtons[i].classList.remove('hide');
             } else {
                 supporterButtons[i].classList.add('hide');
             }
         }
 
-        if (AppInfo.enableSupporterMembership) {
+        if (appHost.supports('externalpremium')) {
             context.querySelector('.btnSupporterForConverting a').href = 'https://emby.media/premiere';
         } else {
             context.querySelector('.btnSupporterForConverting a').href = '#';
         }
 
-        ApiClient.getNamedConfiguration("livetv").then(function (config) {
+        apiClient.getNamedConfiguration("livetv").then(function (config) {
 
-            $('#chkConvertRecordings', context).checked(config.EnableRecordingEncoding);
+            context.querySelector('#chkConvertRecordings').checked = config.EnableRecordingEncoding;
         });
     }
 
@@ -233,47 +244,46 @@
 
             var day = daysOfWeek[i];
 
-            $('#chk' + day, page).checked(days.indexOf(day) != -1);
+            page.querySelector('#chk' + day).checked = days.indexOf(day) != -1;
         }
     }
 
-    function renderRecording(context, defaultTimer, program) {
+    function renderRecording(context, defaultTimer, program, apiClient) {
 
-        $('.itemName', context).html(program.Name);
+        context.querySelector('.itemName').innerHTML = program.Name;
+        context.querySelector('.itemEpisodeName').innerHTML = program.EpisodeTitle || '';
 
-        $('.itemEpisodeName', context).html(program.EpisodeTitle || '');
+        context.querySelector('.itemMiscInfoPrimary').innerHTML = mediaInfo.getPrimaryMediaInfoHtml(program);
+        context.querySelector('.itemMiscInfoSecondary').innerHTML = mediaInfo.getSecondaryMediaInfoHtml(program);
 
-        $('.itemMiscInfoPrimary', context).html(mediaInfo.getPrimaryMediaInfoHtml(program));
-        $('.itemMiscInfoSecondary', context).html(mediaInfo.getSecondaryMediaInfoHtml(program));
+        context.querySelector('#chkNewOnly').checked = defaultTimer.RecordNewOnly;
+        context.querySelector('#chkAllChannels').checked = defaultTimer.RecordAnyChannel;
+        context.querySelector('#chkAnyTime').checked = defaultTimer.RecordAnyTime;
 
-        $('#chkNewOnly', context).checked(defaultTimer.RecordNewOnly);
-        $('#chkAllChannels', context).checked(defaultTimer.RecordAnyChannel);
-        $('#chkAnyTime', context).checked(defaultTimer.RecordAnyTime);
-
-        $('#txtPrePaddingMinutes', context).val(defaultTimer.PrePaddingSeconds / 60);
-        $('#txtPostPaddingMinutes', context).val(defaultTimer.PostPaddingSeconds / 60);
+        context.querySelector('#txtPrePaddingMinutes').value = defaultTimer.PrePaddingSeconds / 60;
+        context.querySelector('#txtPostPaddingMinutes').value = defaultTimer.PostPaddingSeconds / 60;
 
         if (program.IsSeries) {
-            $('#eligibleForSeriesFields', context).show();
+            context.querySelector('#eligibleForSeriesFields').classList.remove('hide');
         } else {
-            $('#eligibleForSeriesFields', context).hide();
+            context.querySelector('#eligibleForSeriesFields').classList.add('hide');
         }
 
         selectDays(context, defaultTimer.Days);
 
         if (program.ServiceName == 'Emby') {
             context.querySelector('.convertRecordingsContainer').classList.remove('hide');
-            showConvertRecordingsUnlockMessage(context);
+            showConvertRecordingsUnlockMessage(context, apiClient);
         } else {
             context.querySelector('.convertRecordingsContainer').classList.add('hide');
         }
 
-        Dashboard.hideLoadingMsg();
+        loading.hide();
     }
 
-    function showConvertRecordingsUnlockMessage(context) {
+    function showConvertRecordingsUnlockMessage(context, apiClient) {
 
-        Dashboard.getPluginSecurityInfo().then(function(regInfo) {
+        apiClient.getPluginSecurityInfo().then(function (regInfo) {
 
             if (regInfo.IsMBSupporter) {
                 context.querySelector('.btnSupporterForConverting').classList.add('hide');
@@ -281,42 +291,40 @@
                 context.querySelector('.btnSupporterForConverting').classList.remove('hide');
             }
 
-        }, function() {
-            
+        }, function () {
+
             context.querySelector('.btnSupporterForConverting').classList.remove('hide');
         });
     }
 
     function reload(context, programId) {
 
-        Dashboard.showLoadingMsg();
+        loading.show();
 
-        var promise1 = ApiClient.getNewLiveTvTimerDefaults({ programId: programId });
-        var promise2 = ApiClient.getLiveTvProgram(programId, Dashboard.getCurrentUserId());
+        var apiClient = connectionManager.getApiClient(currentServerId);
+
+        var promise1 = apiClient.getNewLiveTvTimerDefaults({ programId: programId });
+        var promise2 = apiClient.getLiveTvProgram(programId, apiClient.getCurrentUserId());
 
         Promise.all([promise1, promise2]).then(function (responses) {
 
             var defaults = responses[0];
             var program = responses[1];
 
-            renderRecording(context, defaults, program);
+            renderRecording(context, defaults, program, apiClient);
         });
     }
 
-    function showEditor(itemId) {
+    function showEditor(itemId, serverId) {
 
         return new Promise(function (resolve, reject) {
 
             recordingCreated = false;
             currentProgramId = itemId;
-            Dashboard.showLoadingMsg();
+            currentServerId = serverId;
+            loading.show();
 
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', 'components/recordingcreator/recordingcreator.template.html', true);
-
-            xhr.onload = function (e) {
-
-                var template = this.response;
+            require(['text!./recordingcreator.template.html'], function (template) {
                 var dlg = dialogHelper.createDialog({
                     removeOnClose: true,
                     size: 'small'
@@ -354,9 +362,7 @@
                 init(dlg);
 
                 reload(dlg, itemId);
-            }
-
-            xhr.send();
+            });
         });
     }
 
