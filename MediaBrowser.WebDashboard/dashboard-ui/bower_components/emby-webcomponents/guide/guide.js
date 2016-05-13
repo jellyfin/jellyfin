@@ -70,7 +70,7 @@
                 var limit = 5;
 
                 context.querySelector('.guideRequiresUnlock').classList.remove('hide');
-                context.querySelector('.unlockText').innerHTML = globalize.translate('MessageLiveTvGuideRequiresUnlock', limit);
+                context.querySelector('.unlockText').innerHTML = globalize.translate('LiveTvGuideRequiresUnlock', limit);
 
                 return limit;
             });

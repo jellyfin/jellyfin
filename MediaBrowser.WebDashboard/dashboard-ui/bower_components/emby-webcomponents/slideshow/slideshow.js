@@ -118,7 +118,8 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
             dlg = dialogHelper.createDialog({
                 exitAnimationDuration: options.interactive ? 400 : 800,
                 size: 'fullscreen',
-                autoFocus: false
+                autoFocus: false,
+                scrollY: false
             });
 
             dlg.classList.add('slideshowDialog');

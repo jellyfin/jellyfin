@@ -88,7 +88,8 @@
         // title
         var dialogOptions = {
             removeOnClose: true,
-            enableHistory: options.enableHistory
+            enableHistory: options.enableHistory,
+            scrollY: false
         };
 
         var backButton = false;
