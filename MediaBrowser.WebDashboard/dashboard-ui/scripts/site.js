@@ -1833,6 +1833,12 @@ var AppInfo = {};
             return viewManager;
         });
 
+        if (Dashboard.isRunningInCordova() && browserInfo.android) {
+            define("shell", ["cordova/android/shell"], returnFirstDependency);
+        } else {
+            define("shell", [embyWebComponentsBowerPath + "/shell"], returnFirstDependency);
+        }
+
         define("sharingmanager", [embyWebComponentsBowerPath + "/sharing/sharingmanager"], returnFirstDependency);
 
         if (Dashboard.isRunningInCordova()) {
@@ -1979,7 +1985,6 @@ var AppInfo = {};
 
         define("swiper", [bowerPath + "/Swiper/dist/js/swiper.min", "css!" + bowerPath + "/Swiper/dist/css/swiper.min"], returnFirstDependency);
 
-        define("dialogHelper", [embyWebComponentsBowerPath + "/dialoghelper/dialoghelper"], returnFirstDependency);
         define("toast", [embyWebComponentsBowerPath + "/toast/toast"], returnFirstDependency);
         define("scrollHelper", [embyWebComponentsBowerPath + "/scrollhelper"], returnFirstDependency);
 
@@ -2007,6 +2012,12 @@ var AppInfo = {};
                 jQuery.ajax = ApiClient.ajax;
             }
             return jQuery;
+        });
+
+        define("dialogHelper", [embyWebComponentsBowerPath + "/dialoghelper/dialoghelper"], function (dialoghelper) {
+
+            dialoghelper.setOnOpen(onDialogOpen);
+            return dialoghelper;
         });
 
         // alias
@@ -2056,8 +2067,6 @@ var AppInfo = {};
                 return window.ApiClient;
             };
         });
-
-        define('dialogText', ['globalize'], getDialogText());
 
         define("embyRouter", [embyWebComponentsBowerPath + '/router'], function (embyRouter) {
 
@@ -2111,14 +2120,13 @@ var AppInfo = {};
         return appSettings;
     }
 
-    function getDialogText() {
-        return function (globalize) {
-            return {
-                get: function (text) {
-                    return globalize.translate('Button' + text);
-                }
-            };
-        };
+    function onDialogOpen(dlg) {
+        if (dlg.classList.contains('formDialog')) {
+            if (!dlg.classList.contains('background-theme-a')) {
+                dlg.classList.add('background-theme-b');
+                dlg.classList.add('ui-body-b');
+            }
+        }
     }
 
     function initRequireWithBrowser(browser) {

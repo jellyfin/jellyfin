@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'scrollStyles', 'paper-checkbox', 'paper-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'html!./../icons/mediainfo.html', 'html!./../icons/nav.html'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper) {
+﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'scrollStyles', 'paper-checkbox', 'emby-collapsible', 'paper-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'html!./../icons/mediainfo.html', 'html!./../icons/nav.html'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper) {
 
     var currentProgramId;
     var currentServerId;
@@ -261,6 +261,12 @@
 
             context.querySelector('#chkConvertRecordings').checked = config.EnableRecordingEncoding;
         });
+
+        if (layoutManager.tv) {
+            context.querySelector('.advanced').classList.add('hide');
+        } else {
+            context.querySelector('.advanced').classList.remove('hide');
+        }
     }
 
     function selectDays(page, days) {
@@ -399,9 +405,7 @@
 
                 reload(dlg, itemId);
 
-                setTimeout(function () {
-                    dialogHelper.open(dlg);
-                }, 1000);
+                dialogHelper.open(dlg);
             });
         });
     }

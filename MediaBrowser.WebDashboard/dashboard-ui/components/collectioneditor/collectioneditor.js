@@ -201,7 +201,7 @@
             var html = '';
             var title = items.length ? Globalize.translate('HeaderAddToCollection') : Globalize.translate('HeaderNewCollection');
 
-            html += '<div class="dialogHeader">';
+            html += '<div class="dialogHeader" style="margin:0 0 2em;">';
             html += '<button is="paper-icon-button-light" class="btnCancel" tabindex="-1"><iron-icon icon="arrow-back"></iron-icon></button>';
             html += '<div class="dialogHeaderTitle">';
             html += title;

@@ -43,15 +43,23 @@
             <br />
             <paper-checkbox id="chkConvertRecordings">${OptionConvertRecordingsToStreamingFormat}</paper-checkbox>
             <div class="fieldDescription paperCheckboxFieldDescription">${OptionConvertRecordingsToStreamingFormatHelp}</div>
-            <div class="fieldDescription paperCheckboxFieldDescription btnSupporterForConverting hide"><a target="_blank" class="accent lnkPremiere">${FeatureRequiresEmbyPremiere}</a></div>
+            <div class="fieldDescription paperCheckboxFieldDescription btnSupporterForConverting hide">
+                <a href="#" class="accent lnkPremiere">${FeatureRequiresEmbyPremiere}</a>
+            </div>
         </div>
-        <br />
-        <div>
-            <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${PrePaddingMinutes}"></paper-input>
-        </div>
-        <br />
-        <div>
-            <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${PostPaddingMinutes}"></paper-input>
+        <div class="advanced hide">
+            <br />
+            <br />
+            <emby-collapsible title="${Advanced}">
+                <div>
+                    <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${PrePaddingMinutes}"></paper-input>
+                </div>
+                <br />
+                <div>
+                    <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${PostPaddingMinutes}"></paper-input>
+                </div>
+            </emby-collapsible>
+            <br />
         </div>
         <br />
         <div>
@@ -60,7 +68,7 @@
                 <p class="supporterTrial hide">${HeaderEnjoyDayTrial}</p>
                 <a class="clearLink btnSupporter hide" href="http://emby.media/premiere" target="_blank"><paper-button raised class="accent block"><iron-icon icon="nav:check"></iron-icon><span>${HeaderBecomeProjectSupporter}</span></paper-button></a>
             </div>
-            <paper-button raised class="submit btnSubmit block"><iron-icon icon="mediainfo:fiber-manual-record"></iron-icon><span>${Record}</span></paper-button>
+            <paper-button raised class="btnSubmit block"><iron-icon icon="mediainfo:fiber-manual-record"></iron-icon><span>${Record}</span></paper-button>
         </div>
         <br />
         <br />

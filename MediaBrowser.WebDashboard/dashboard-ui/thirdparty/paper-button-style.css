@@ -525,7 +525,6 @@ paper-radio-group > * {
 }
 
 div.dialogHeader {
-    margin: 0 0 2em !important;
     padding: .35em .5em;
     display: flex;
     align-items: center;

@@ -1,5 +1,7 @@
 ﻿define(['historyManager', 'focusManager', 'browser', 'layoutManager', 'inputManager', 'scrollHelper', 'css!./dialoghelper.css', 'scrollStyles'], function (historyManager, focusManager, browser, layoutManager, inputManager, scrollHelper) {
 
+    var globalOnOpenCallback;
+
     function dialogHashHandler(dlg, hash, resolve) {
 
         var self = this;
@@ -183,6 +185,10 @@
     }
 
     function open(dlg) {
+
+        if (globalOnOpenCallback) {
+            globalOnOpenCallback(dlg);
+        }
 
         return new Promise(function (resolve, reject) {
 
@@ -403,6 +409,9 @@
     return {
         open: open,
         close: close,
-        createDialog: createDialog
+        createDialog: createDialog,
+        setOnOpen: function (val) {
+            globalOnOpenCallback = val;
+        }
     };
 });

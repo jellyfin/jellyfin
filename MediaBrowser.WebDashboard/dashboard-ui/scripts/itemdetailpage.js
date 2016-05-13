@@ -2032,6 +2032,8 @@
         $('.btnRecord,.btnFloatingRecord', page).on('click', function () {
 
             var id = getParameterByName('id');
+            Dashboard.showLoadingMsg();
+
             require(['recordingCreator'], function (recordingCreator) {
                 recordingCreator.show(id, currentItem.ServerId).then(function () {
                     reload(page);

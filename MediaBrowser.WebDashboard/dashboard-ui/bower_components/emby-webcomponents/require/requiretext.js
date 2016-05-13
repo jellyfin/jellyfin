@@ -1,7 +1,5 @@
 define(function () {
 
-    var importedFiles = [];
-
     return {
 
         load: function (url, req, load, config) {
@@ -10,7 +8,9 @@ define(function () {
                 url = config.baseUrl + url;
             }
 
-            url = url + "?" + config.urlArgs;
+            if (config.urlArgs) {
+                url += config.urlArgs(url, url);
+            }
 
             var xhr = new XMLHttpRequest();
             xhr.open('GET', url, true);
