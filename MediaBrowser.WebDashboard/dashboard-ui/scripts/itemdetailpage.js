@@ -1319,7 +1319,7 @@
             IncludeItemTypes: "MusicVideo",
             Recursive: true,
             Fields: "DateCreated,SyncInfo,CanDelete",
-            AlbumNames: item.Name
+            Albums: item.Name
 
         }).then(function (result) {
             if (result.Items.length) {
@@ -2032,8 +2032,10 @@
         $('.btnRecord,.btnFloatingRecord', page).on('click', function () {
 
             var id = getParameterByName('id');
-            require(['components/recordingcreator/recordingcreator'], function (recordingcreator) {
-                recordingcreator.show(id).then(function () {
+            Dashboard.showLoadingMsg();
+
+            require(['recordingCreator'], function (recordingCreator) {
+                recordingCreator.show(id, currentItem.ServerId).then(function () {
                     reload(page);
                 });
             });

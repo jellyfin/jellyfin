@@ -1,4 +1,6 @@
-﻿define(['historyManager', 'focusManager', 'browser', 'layoutManager', 'inputManager', 'css!./dialoghelper.css'], function (historyManager, focusManager, browser, layoutManager, inputManager) {
+﻿define(['historyManager', 'focusManager', 'browser', 'layoutManager', 'inputManager', 'scrollHelper', 'css!./dialoghelper.css', 'scrollStyles'], function (historyManager, focusManager, browser, layoutManager, inputManager, scrollHelper) {
+
+    var globalOnOpenCallback;
 
     function dialogHashHandler(dlg, hash, resolve) {
 
@@ -183,6 +185,10 @@
     }
 
     function open(dlg) {
+
+        if (globalOnOpenCallback) {
+            globalOnOpenCallback(dlg);
+        }
 
         return new Promise(function (resolve, reject) {
 
@@ -380,11 +386,12 @@
 
         dlg.classList.add('dialog');
 
-        dlg.classList.add('scrollY');
+        if (options.scrollY !== false) {
+            dlg.classList.add('smoothScrollY');
 
-        if (layoutManager.tv || layoutManager.mobile) {
-            // Need scrollbars for mouse use
-            dlg.classList.add('hiddenScroll');
+            if (layoutManager.tv) {
+                scrollHelper.centerFocus.on(dlg, false);
+            }
         }
 
         if (options.removeOnClose) {
@@ -402,6 +409,9 @@
     return {
         open: open,
         close: close,
-        createDialog: createDialog
+        createDialog: createDialog,
+        setOnOpen: function (val) {
+            globalOnOpenCallback = val;
+        }
     };
 });

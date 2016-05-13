@@ -8,10 +8,8 @@
 
         // Delete the share since it was cancelled
         apiClient.ajax({
-
             type: 'DELETE',
             url: apiClient.getUrl('Social/Shares/' + shareId)
-
         });
     }
 
@@ -41,7 +39,7 @@
 
                 loading.hide();
 
-                sharingMenu.showMenu(options).then(function() {
+                return sharingMenu.showMenu(options).then(function () {
                     console.log('share success. shareId: ' + options.share.Id);
                 }, function () {
                     onSharingCancel(options, apiClient);

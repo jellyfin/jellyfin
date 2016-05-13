@@ -125,9 +125,7 @@
 
     window.MusicPage.renderGenresTab = function (page, tabContent) {
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
-            reloadItems(tabContent);
-        }
+        reloadItems(tabContent);
     };
 
 });

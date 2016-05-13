@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'layoutManager', 'dialogText', './social-share-kit-1.0.4/dist/js/social-share-kit.min', 'css!./social-share-kit-1.0.4/dist/css/social-share-kit.css'], function (dialogHelper, layoutManager, dialogText) {
+﻿define(['dialogHelper', 'layoutManager', 'globalize', './social-share-kit-1.0.4/dist/js/social-share-kit.min', 'css!./social-share-kit-1.0.4/dist/css/social-share-kit.css'], function (dialogHelper, layoutManager, globalize) {
 
     function showMenu(options) {
 
@@ -22,7 +22,7 @@
         html += '</div>';
 
         html += '<div class="buttons">';
-        html += '<paper-button class="btnCancel">' + dialogText.get('Cancel') + '</paper-button>';
+        html += '<paper-button class="btnCancel">' + globalize.translate('sharedcomponents#ButtonCancel') + '</paper-button>';
         html += '</div>';
 
         dlg.innerHTML = html;

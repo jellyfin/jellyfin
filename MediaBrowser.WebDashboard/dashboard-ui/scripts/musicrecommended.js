@@ -49,8 +49,6 @@
             ImageLoader.lazyChildren(elem);
 
             Dashboard.hideLoadingMsg();
-
-            libraryBrowser.setLastRefreshed(page);
         });
     }
 
@@ -203,19 +201,17 @@
 
         var parentId = LibraryMenu.getTopParentId();
 
-        if (libraryBrowser.needsRefresh(tabContent)) {
-            console.log('loadSuggestionsTab');
-            loadLatest(tabContent, parentId);
-            loadPlaylists(tabContent, parentId);
-            loadRecentlyPlayed(tabContent, parentId);
-            loadFrequentlyPlayed(tabContent, parentId);
+        console.log('loadSuggestionsTab');
+        loadLatest(tabContent, parentId);
+        loadPlaylists(tabContent, parentId);
+        loadRecentlyPlayed(tabContent, parentId);
+        loadFrequentlyPlayed(tabContent, parentId);
 
-            require(['components/favoriteitems'], function (favoriteItems) {
+        require(['components/favoriteitems'], function (favoriteItems) {
 
-                favoriteItems.render(tabContent, Dashboard.getCurrentUserId(), parentId, ['favoriteArtists', 'favoriteAlbums', 'favoriteSongs']);
+            favoriteItems.render(tabContent, Dashboard.getCurrentUserId(), parentId, ['favoriteArtists', 'favoriteAlbums', 'favoriteSongs']);
 
-            });
-        }
+        });
     }
 
     function loadTab(page, index) {

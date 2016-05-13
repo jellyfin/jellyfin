@@ -212,28 +212,24 @@
 
     function loadHomeTab(page, tabContent) {
 
-        if (libraryBrowser.needsRefresh(tabContent)) {
-            if (window.ApiClient) {
-                var userId = Dashboard.getCurrentUserId();
-                Dashboard.showLoadingMsg();
+        if (window.ApiClient) {
+            var userId = Dashboard.getCurrentUserId();
+            Dashboard.showLoadingMsg();
 
-                getDisplayPreferences('home', userId).then(function (result) {
+            getDisplayPreferences('home', userId).then(function (result) {
 
-                    Dashboard.getCurrentUser().then(function (user) {
+                Dashboard.getCurrentUser().then(function (user) {
 
-                        loadSections(tabContent, user, result).then(function () {
+                    loadSections(tabContent, user, result).then(function () {
 
-                            if (!AppInfo.isNativeApp) {
-                                showWelcomeIfNeeded(page, result);
-                            }
-                            Dashboard.hideLoadingMsg();
-
-                            libraryBrowser.setLastRefreshed(tabContent);
-                        });
-
+                        if (!AppInfo.isNativeApp) {
+                            showWelcomeIfNeeded(page, result);
+                        }
+                        Dashboard.hideLoadingMsg();
                     });
+
                 });
-            }
+            });
         }
     }
 

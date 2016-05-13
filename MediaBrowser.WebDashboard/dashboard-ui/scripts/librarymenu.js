@@ -794,6 +794,10 @@
 
         var btnCast = context.querySelector('.btnCast');
 
+        if (!btnCast) {
+            return;
+        }
+
         var info = MediaController.getPlayerInfo();
 
         if (info.isLocalPlayer) {

@@ -933,21 +933,10 @@ namespace MediaBrowser.Server.Implementations.Library
                 Path.Combine(path, validFilename) :
                 Path.Combine(path, subFolderPrefix, validFilename);
 
-            var id = GetNewItemId(fullPath, type);
-
-            BaseItem obj;
-
-            if (!_libraryItemsCache.TryGetValue(id, out obj))
-            {
-                obj = CreateItemByName<T>(fullPath, name, id);
-
-                RegisterItem(id, obj);
-            }
-
-            return obj as T;
+            return CreateItemByName<T>(fullPath, name);
         }
 
-        private T CreateItemByName<T>(string path, string name, Guid id)
+        private T CreateItemByName<T>(string path, string name)
             where T : BaseItem, new()
         {
             var isArtist = typeof(T) == typeof(MusicArtist);
@@ -969,6 +958,8 @@ namespace MediaBrowser.Server.Implementations.Library
                     return existing;
                 }
             }
+
+            var id = GetNewItemId(path, typeof(T));
 
             var item = GetItemById(id) as T;
 

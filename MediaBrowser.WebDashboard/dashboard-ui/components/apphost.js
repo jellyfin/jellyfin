@@ -91,7 +91,8 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
         supports: function (command) {
 
             var features = [
-                'filedownload'
+                'filedownload',
+                'externalpremium'
             ];
 
             features.push('sharing');

@@ -71,8 +71,8 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
                     require(['alert'], function (alert) {
                         alert({
 
-                            text: Globalize.translate('core#ServerUpdateNeeded', 'https://emby.media'),
-                            html: Globalize.translate('core#ServerUpdateNeeded', '<a href="https://emby.media">https://emby.media</a>')
+                            text: Globalize.translate('sharedcomponents#ServerUpdateNeeded', 'https://emby.media'),
+                            html: Globalize.translate('sharedcomponents#ServerUpdateNeeded', '<a href="https://emby.media">https://emby.media</a>')
 
                         }).then(function () {
                             embyRouter.showSelectServer();

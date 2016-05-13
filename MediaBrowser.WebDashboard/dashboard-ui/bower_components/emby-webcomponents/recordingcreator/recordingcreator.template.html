@@ -1,0 +1,77 @@
+﻿<div class="dialogHeader">
+    <button is="paper-icon-button-light" class="btnCancel" tabindex="-1"><iron-icon icon="nav:arrow-back"></iron-icon></button>
+    <div class="dialogHeaderTitle">
+        ${HeaderNewRecording}
+    </div>
+</div>
+<div class="dialogContent smoothScrollY">
+    <form class="dialogContentInner">
+
+        <h1 class="itemName"></h1>
+        <p class="itemEpisodeName"></p>
+        <p class="itemMiscInfoPrimary" style="display: flex; align-items: center;"></p>
+        <p class="itemMiscInfoSecondary" style="display: flex; align-items: center;"></p>
+
+        <div id="eligibleForSeriesFields" class="hide">
+            <br />
+            <div>
+                <paper-checkbox id="chkRecordSeries">${RecordSeries}</paper-checkbox>
+            </div>
+
+            <div id="seriesFields" class="hide">
+                <div>
+                    <h1>${Days}</h1>
+                </div>
+                <div class="paperCheckboxList">
+                    <paper-checkbox id="chkSunday">${Sunday}</paper-checkbox>
+                    <paper-checkbox id="chkMonday">${Monday}</paper-checkbox>
+                    <paper-checkbox id="chkTuesday">${Tuesday}</paper-checkbox>
+                    <paper-checkbox id="chkWednesday">${Wednesday}</paper-checkbox>
+                    <paper-checkbox id="chkThursday">${Thursday}</paper-checkbox>
+                    <paper-checkbox id="chkFriday">${Friday}</paper-checkbox>
+                    <paper-checkbox id="chkSaturday">${Saturday}</paper-checkbox>
+                </div>
+                <br />
+                <div class="paperCheckboxList">
+                    <paper-checkbox id="chkNewOnly">${RecordOnlyNewEpisodes}</paper-checkbox>
+                    <paper-checkbox id="chkAnyTime">${RecordAnytime}</paper-checkbox>
+                    <paper-checkbox id="chkAllChannels">${RecordOnAllChannels}</paper-checkbox>
+                </div>
+            </div>
+        </div>
+        <div class="convertRecordingsContainer hide">
+            <br />
+            <paper-checkbox id="chkConvertRecordings">${OptionConvertRecordingsToStreamingFormat}</paper-checkbox>
+            <div class="fieldDescription paperCheckboxFieldDescription">${OptionConvertRecordingsToStreamingFormatHelp}</div>
+            <div class="fieldDescription paperCheckboxFieldDescription btnSupporterForConverting hide">
+                <a href="#" class="accent lnkPremiere">${FeatureRequiresEmbyPremiere}</a>
+            </div>
+        </div>
+        <div class="advanced hide">
+            <br />
+            <br />
+            <emby-collapsible title="${Advanced}">
+                <div>
+                    <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${PrePaddingMinutes}"></paper-input>
+                </div>
+                <br />
+                <div>
+                    <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${PostPaddingMinutes}"></paper-input>
+                </div>
+            </emby-collapsible>
+            <br />
+        </div>
+        <br />
+        <div>
+            <div class="supporterContainer hide">
+                <p>${MessageActiveSubscriptionRequiredSeriesRecordings}</p>
+                <p class="supporterTrial hide">${HeaderEnjoyDayTrial}</p>
+                <a class="clearLink btnSupporter hide" href="http://emby.media/premiere" target="_blank"><paper-button raised class="accent block"><iron-icon icon="nav:check"></iron-icon><span>${HeaderBecomeProjectSupporter}</span></paper-button></a>
+            </div>
+            <paper-button raised class="btnSubmit block"><iron-icon icon="mediainfo:fiber-manual-record"></iron-icon><span>${Record}</span></paper-button>
+        </div>
+        <br />
+        <br />
+        <br />
+    </form>
+</div>

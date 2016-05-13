@@ -217,7 +217,6 @@
                     bubbles: true
                 }));
 
-                libraryBrowser.setLastRefreshed(view);
                 Dashboard.hideLoadingMsg();
             });
         }

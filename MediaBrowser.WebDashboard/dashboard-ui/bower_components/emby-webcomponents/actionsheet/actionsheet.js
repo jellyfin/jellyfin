@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'layoutManager', 'dialogText', 'paper-button', 'css!./actionsheet', 'html!./../icons/nav.html'], function (dialogHelper, layoutManager, dialogText) {
+﻿define(['dialogHelper', 'layoutManager', 'globalize', 'paper-button', 'css!./actionsheet', 'html!./../icons/nav.html'], function (dialogHelper, layoutManager, globalize) {
 
     function parentWithClass(elem, className) {
 
@@ -88,7 +88,8 @@
         // title
         var dialogOptions = {
             removeOnClose: true,
-            enableHistory: options.enableHistory
+            enableHistory: options.enableHistory,
+            scrollY: false
         };
 
         var backButton = false;
@@ -179,7 +180,7 @@
 
         if (options.showCancel) {
             html += '<div class="buttons">';
-            html += '<paper-button class="btnCancel">' + dialogText.get('Cancel') + '</paper-button>';
+            html += '<paper-button class="btnCancel">' + globalize.translate('sharedcomponents#ButtonCancel') + '</paper-button>';
             html += '</div>';
         }
         html += '</div>';

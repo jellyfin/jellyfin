@@ -258,13 +258,6 @@ iron-list .card {
     padding-top: 7px;
 }
 
-@media all and (max-width: 600px) {
-
-    .packageReviewText {
-        display: none;
-    }
-}
-
 .cardImage {
     background-size: contain;
     background-repeat: no-repeat;

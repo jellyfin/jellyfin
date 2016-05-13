@@ -37,7 +37,6 @@
         }).then(function (result) {
 
             renderItems(page, result.Items, 'activeProgramItems', 'play');
-            libraryBrowser.setLastRefreshed(page);
             Dashboard.hideLoadingMsg();
         });
     }
@@ -137,9 +136,7 @@
 
     function renderSuggestedTab(page, tabContent) {
 
-        if (libraryBrowser.needsRefresh(tabContent)) {
-            reload(tabContent);
-        }
+        reload(tabContent);
     }
 
     function loadTab(page, index) {

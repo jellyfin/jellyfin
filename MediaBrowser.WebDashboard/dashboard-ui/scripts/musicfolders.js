@@ -91,7 +91,6 @@
             });
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
-            LibraryBrowser.setLastRefreshed(page);
             Dashboard.hideLoadingMsg();
         });
     }
@@ -102,9 +101,7 @@
 
     window.MusicPage.renderFoldersTab = function (page, tabContent) {
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
-            reloadItems(tabContent);
-        }
+        reloadItems(tabContent);
     };
 
 });

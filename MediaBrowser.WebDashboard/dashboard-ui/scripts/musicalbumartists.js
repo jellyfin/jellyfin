@@ -127,7 +127,6 @@
             });
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(page), query);
-            LibraryBrowser.setLastRefreshed(page);
             Dashboard.hideLoadingMsg();
         });
     }
@@ -184,9 +183,7 @@
 
     window.MusicPage.renderAlbumArtistsTab = function (page, tabContent) {
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
-            reloadItems(tabContent);
-        }
+        reloadItems(tabContent);
     };
 
 });

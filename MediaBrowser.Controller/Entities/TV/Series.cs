@@ -104,7 +104,14 @@ namespace MediaBrowser.Controller.Entities.TV
         [IgnoreDataMember]
         public override string PresentationUniqueKey
         {
-            get { return GetUserDataKeys().First(); }
+            get
+            {
+                if (EnablePooling())
+                {
+                    return GetUserDataKeys().First();
+                }
+                return base.PresentationUniqueKey;
+            }
         }
 
         /// <summary>

@@ -71,7 +71,7 @@ define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html',
 
             if (count) {
 
-                miscInfo.push(globalize.translate('core#TrackCount', count));
+                miscInfo.push(globalize.translate('sharedcomponents#TrackCount', count));
             }
 
             if (item.CumulativeRunTimeTicks) {
@@ -86,7 +86,7 @@ define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html',
 
             if (count) {
 
-                miscInfo.push(globalize.translate('core#ItemCount', count));
+                miscInfo.push(globalize.translate('sharedcomponents#ItemCount', count));
             }
         }
 
@@ -127,7 +127,7 @@ define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html',
         if (item.ProductionYear && item.Type == "Series") {
 
             if (item.Status == "Continuing") {
-                miscInfo.push(globalize.translate('core#ValueSeriesYearToPresent', item.ProductionYear));
+                miscInfo.push(globalize.translate('sharedcomponents#ValueSeriesYearToPresent', item.ProductionYear));
 
             }
             else if (item.ProductionYear) {
@@ -158,17 +158,17 @@ define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html',
 
             if (item.IsLive) {
                 miscInfo.push({
-                    html: '<div class="mediaInfoProgramAttribute mediaInfoItem">' + globalize.translate('core#AttributeLive') + '</div>'
+                    html: '<div class="mediaInfoProgramAttribute mediaInfoItem">' + globalize.translate('sharedcomponents#AttributeLive') + '</div>'
                 });
             }
             else if (item.IsPremiere) {
                 miscInfo.push({
-                    html: '<div class="mediaInfoProgramAttribute mediaInfoItem">' + globalize.translate('core#AttributePremiere') + '</div>'
+                    html: '<div class="mediaInfoProgramAttribute mediaInfoItem">' + globalize.translate('sharedcomponents#AttributePremiere') + '</div>'
                 });
             }
             else if (item.IsSeries && !item.IsRepeat) {
                 miscInfo.push({
-                    html: '<div class="mediaInfoProgramAttribute mediaInfoItem">' + globalize.translate('core#AttributeNew') + '</div>'
+                    html: '<div class="mediaInfoProgramAttribute mediaInfoItem">' + globalize.translate('sharedcomponents#AttributeNew') + '</div>'
                 });
             }
 
@@ -176,14 +176,14 @@ define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html',
 
                 try {
                     date = datetime.parseISO8601Date(item.PremiereDate);
-                    text = globalize.translate('core#OriginalAirDateValue', date.toLocaleDateString());
+                    text = globalize.translate('sharedcomponents#OriginalAirDateValue', date.toLocaleDateString());
                     miscInfo.push(text);
                 }
                 catch (e) {
                     console.log("Error parsing date: " + item.PremiereDate);
                 }
             } else if (item.ProductionYear) {
-                text = globalize.translate('core#ReleaseYearValue', item.ProductionYear);
+                text = globalize.translate('sharedcomponents#ReleaseYearValue', item.ProductionYear);
                 miscInfo.push(text);
             }
         }
@@ -275,7 +275,7 @@ define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html',
                 endDate = new Date(endDate);
 
                 var displayTime = datetime.getDisplayTime(endDate);
-                return globalize.translate('core#EndsAtValue', displayTime);
+                return globalize.translate('sharedcomponents#EndsAtValue', displayTime);
             }
         }
 
@@ -292,7 +292,7 @@ define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html',
         if (includeText === false) {
             return displayTime;
         }
-        return globalize.translate('core#EndsAtValue', displayTime);
+        return globalize.translate('sharedcomponents#EndsAtValue', displayTime);
     }
 
     function getMediaInfoItem(m, cssClass) {
@@ -400,7 +400,7 @@ define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html',
         }
         if (options.isInlineSpecial && item.Type == "Episode" && item.ParentIndexNumber == 0) {
 
-            name = globalize.translate('core#ValueSpecialEpisodeName', name);
+            name = globalize.translate('sharedcomponents#ValueSpecialEpisodeName', name);
 
         } else if (item.Type == "Episode" && item.IndexNumber != null && item.ParentIndexNumber != null) {
 

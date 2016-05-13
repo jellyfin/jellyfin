@@ -1,4 +1,4 @@
-define(['dialogHelper', 'layoutManager', 'dialogText', 'html!./../icons/nav.html', 'css!./style.css', 'paper-button', 'paper-icon-button-light', 'paper-input'], function (dialogHelper, layoutManager, dialogText) {
+define(['dialogHelper', 'layoutManager', 'globalize', 'html!./../icons/nav.html', 'css!./style.css', 'paper-button', 'paper-icon-button-light', 'paper-input'], function (dialogHelper, layoutManager, globalize) {
 
     function getIcon(icon, cssClass, canFocus, autoFocus) {
 
@@ -64,11 +64,11 @@ define(['dialogHelper', 'layoutManager', 'dialogText', 'html!./../icons/nav.html
 
         html += '<br/>';
         if (raisedButtons) {
-            html += '<paper-button raised class="btnSubmit"><iron-icon icon="nav:check"></iron-icon><span>' + dialogText.get('Ok') + '</span></paper-button>';
+            html += '<paper-button raised class="btnSubmit"><iron-icon icon="nav:check"></iron-icon><span>' + globalize.translate('sharedcomponents#ButtonOk') + '</span></paper-button>';
         } else {
             html += '<div class="buttons">';
-            html += '<paper-button class="btnSubmit">' + dialogText.get('Ok') + '</paper-button>';
-            html += '<paper-button class="btnPromptExit">' + dialogText.get('Cancel') + '</paper-button>';
+            html += '<paper-button class="btnSubmit">' + globalize.translate('sharedcomponents#ButtonOk') + '</paper-button>';
+            html += '<paper-button class="btnPromptExit">' + globalize.translate('sharedcomponents#ButtonCancel') + '</paper-button>';
             html += '</div>';
         }
         html += '</form>';

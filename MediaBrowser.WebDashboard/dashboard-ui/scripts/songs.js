@@ -160,9 +160,7 @@
 
     window.MusicPage.renderSongsTab = function (page, tabContent) {
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
-            reloadItems(tabContent);
-        }
+        reloadItems(tabContent);
     };
 
 });

@@ -1,6 +1,4 @@
-﻿define(['globalize', 'connectionManager', 'loading', 'scrollHelper', 'datetime', 'focusManager', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationservices', 'clearButtonStyle', 'css!./guide.css', 'html!./../icons/mediainfo.html', 'html!./../icons/nav.html', 'scrollStyles'], function (globalize, connectionManager, loading, scrollHelper, datetime, focusManager, imageLoader, events, layoutManager, itemShortcuts, registrationServices) {
-
-    var baseUrl;
+﻿define(['require', 'globalize', 'connectionManager', 'loading', 'scrollHelper', 'datetime', 'focusManager', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationservices', 'clearButtonStyle', 'css!./guide.css', 'html!./../icons/mediainfo.html', 'html!./../icons/nav.html', 'scrollStyles'], function (require, globalize, connectionManager, loading, scrollHelper, datetime, focusManager, imageLoader, events, layoutManager, itemShortcuts, registrationServices) {
 
     function Guide(options) {
 
@@ -72,7 +70,7 @@
                 var limit = 5;
 
                 context.querySelector('.guideRequiresUnlock').classList.remove('hide');
-                context.querySelector('.unlockText').innerHTML = globalize.translate('MessageLiveTvGuideRequiresUnlock', limit);
+                context.querySelector('.unlockText').innerHTML = globalize.translate('LiveTvGuideRequiresUnlock', limit);
 
                 return limit;
             });
@@ -258,13 +256,13 @@
                 html += '<div class="' + guideProgramNameClass + '">';
 
                 if (program.IsLive) {
-                    html += '<span class="liveTvProgram">' + globalize.translate('core#AttributeLive') + '&nbsp;</span>';
+                    html += '<span class="liveTvProgram">' + globalize.translate('sharedcomponents#AttributeLive') + '&nbsp;</span>';
                 }
                 else if (program.IsPremiere) {
-                    html += '<span class="premiereTvProgram">' + globalize.translate('core#AttributePremiere') + '&nbsp;</span>';
+                    html += '<span class="premiereTvProgram">' + globalize.translate('sharedcomponents#AttributePremiere') + '&nbsp;</span>';
                 }
                 else if (program.IsSeries && !program.IsRepeat) {
-                    html += '<span class="newTvProgram">' + globalize.translate('core#AttributeNew') + '&nbsp;</span>';
+                    html += '<span class="newTvProgram">' + globalize.translate('sharedcomponents#AttributeNew') + '&nbsp;</span>';
                 }
 
                 html += program.Name;
@@ -441,13 +439,13 @@
         function getFutureDateText(date) {
 
             var weekday = [];
-            weekday[0] = globalize.translate('core#OptionSundayShort');
-            weekday[1] = globalize.translate('core#OptionMondayShort');
-            weekday[2] = globalize.translate('core#OptionTuesdayShort');
-            weekday[3] = globalize.translate('core#OptionWednesdayShort');
-            weekday[4] = globalize.translate('core#OptionThursdayShort');
-            weekday[5] = globalize.translate('core#OptionFridayShort');
-            weekday[6] = globalize.translate('core#OptionSaturdayShort');
+            weekday[0] = globalize.translate('sharedcomponents#OptionSundayShort');
+            weekday[1] = globalize.translate('sharedcomponents#OptionMondayShort');
+            weekday[2] = globalize.translate('sharedcomponents#OptionTuesdayShort');
+            weekday[3] = globalize.translate('sharedcomponents#OptionWednesdayShort');
+            weekday[4] = globalize.translate('sharedcomponents#OptionThursdayShort');
+            weekday[5] = globalize.translate('sharedcomponents#OptionFridayShort');
+            weekday[6] = globalize.translate('sharedcomponents#OptionSaturdayShort');
 
             var day = weekday[date.getDay()];
             date = datetime.toLocaleDateString(date);
@@ -530,7 +528,7 @@
 
                 actionsheet.show({
                     items: dateOptions,
-                    title: globalize.translate('core#HeaderSelectDate'),
+                    title: globalize.translate('sharedcomponents#HeaderSelectDate'),
                     callback: function (id) {
 
                         var date = new Date();
@@ -598,9 +596,6 @@
             }
         }
 
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', baseUrl + '/tvguide.template.html', true);
-
         var supportsCaptureOption = false;
         try {
             var opts = Object.defineProperty({}, 'capture', {
@@ -619,9 +614,7 @@
             target.addEventListener(type, handler, optionsOrCapture);
         }
 
-        xhr.onload = function (e) {
-
-            var template = this.response;
+        require(['text!./tvguide.template.html'], function (template) {
             var context = options.element;
             context.innerHTML = globalize.translateDocument(template, 'core');
 
@@ -658,13 +651,7 @@
             events.trigger(self, 'load');
 
             self.refresh();
-        }
-
-        xhr.send();
-    };
-
-    Guide.setBaseUrl = function (url) {
-        baseUrl = url;
+        });
     };
 
     return Guide;

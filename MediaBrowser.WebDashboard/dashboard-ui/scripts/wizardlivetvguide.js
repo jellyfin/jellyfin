@@ -44,7 +44,7 @@
         ApiClient.ajax({
 
             type: 'GET',
-            url: 'components/tvproviders/' + type + '.template.html'
+            url: 'components/tvproviders/' + type.toLowerCase() + '.template.html'
 
         }).then(function (html) {
 
