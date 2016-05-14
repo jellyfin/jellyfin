@@ -1828,12 +1828,13 @@ var AppInfo = {};
 
         define("tvguide", [embyWebComponentsBowerPath + "/guide/guide", 'embyRouter'], returnFirstDependency);
 
-        define("viewManager", [embyWebComponentsBowerPath + "/viewmanager"], function (viewManager) {
+        define("viewManager", [embyWebComponentsBowerPath + "/viewmanager/viewmanager"], function (viewManager) {
             viewManager.dispatchPageEvents(true);
             return viewManager;
         });
 
-        if (Dashboard.isRunningInCordova() && browserInfo.android) {
+        // hack for an android test before browserInfo is loaded
+        if (Dashboard.isRunningInCordova() && window.MainActivity) {
             define("shell", ["cordova/android/shell"], returnFirstDependency);
         } else {
             define("shell", [embyWebComponentsBowerPath + "/shell"], returnFirstDependency);

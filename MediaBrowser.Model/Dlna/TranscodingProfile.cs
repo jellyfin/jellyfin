@@ -38,6 +38,9 @@ namespace MediaBrowser.Model.Dlna
         [XmlAttribute("forceLiveStream")]
         public bool ForceLiveStream { get; set; }
 
+        [XmlAttribute("maxAudioChannels")]
+        public string MaxAudioChannels { get; set; }
+
         public List<string> GetAudioCodecs()
         {
             List<string> list = new List<string>();

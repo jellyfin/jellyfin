@@ -459,6 +459,15 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.VideoCodec = transcodingProfile.VideoCodec;
                 playlistItem.CopyTimestamps = transcodingProfile.CopyTimestamps;
                 playlistItem.ForceLiveStream = transcodingProfile.ForceLiveStream;
+
+                if (!string.IsNullOrEmpty(transcodingProfile.MaxAudioChannels))
+                {
+                    int transcodingMaxAudioChannels;
+                    if (IntHelper.TryParseCultureInvariant(transcodingProfile.MaxAudioChannels, out transcodingMaxAudioChannels))
+                    {
+                        playlistItem.TranscodingMaxAudioChannels = transcodingMaxAudioChannels;
+                    }
+                }
                 playlistItem.SubProtocol = transcodingProfile.Protocol;
                 playlistItem.AudioStreamIndex = audioStreamIndex;
 

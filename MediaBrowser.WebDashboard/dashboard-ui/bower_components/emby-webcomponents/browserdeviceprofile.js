@@ -329,6 +329,20 @@ define(['browser'], function (browser) {
             });
         }
 
+        // Put mp4 ahead of webm
+        if (browser.firefox) {
+            profile.TranscodingProfiles.push({
+                Container: 'mp4',
+                Type: 'Video',
+                AudioCodec: videoAudioCodecs.join(','),
+                VideoCodec: 'h264',
+                Context: 'Streaming',
+                Protocol: 'http',
+                // If audio transcoding is needed, limit to 2 channel
+                MaxAudioChannels: '2'
+            });
+        }
+
         if (canPlayWebm) {
 
             profile.TranscodingProfiles.push({
