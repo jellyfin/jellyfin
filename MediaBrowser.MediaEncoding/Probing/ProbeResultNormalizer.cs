@@ -432,6 +432,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 stream.Language = GetDictionaryValue(streamInfo.tags, "language");
                 stream.Comment = GetDictionaryValue(streamInfo.tags, "comment");
+                stream.Title = GetDictionaryValue(streamInfo.tags, "title");
             }
 
             if (string.Equals(streamInfo.codec_type, "audio", StringComparison.OrdinalIgnoreCase))
@@ -540,7 +541,22 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.IsForced = string.Equals(isForced, "1", StringComparison.OrdinalIgnoreCase);
             }
 
+            NormalizeStreamTitle(stream);
+
             return stream;
+        }
+
+        private void NormalizeStreamTitle(MediaStream stream)
+        {
+            if (string.Equals(stream.Title, "sdh", StringComparison.OrdinalIgnoreCase))
+            {
+                stream.Title = null;
+            }
+
+            if (stream.Type == MediaStreamType.EmbeddedImage)
+            {
+                stream.Title = null;
+            }
         }
 
         /// <summary>
