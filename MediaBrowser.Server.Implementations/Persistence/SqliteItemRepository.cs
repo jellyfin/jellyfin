@@ -120,7 +120,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection = await dbConnector.Connect(dbFile).ConfigureAwait(false);
 
             var createMediaStreamsTableCommand
-               = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, PRIMARY KEY (ItemId, StreamIndex))";
+               = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, Title TEXT NULL, PRIMARY KEY (ItemId, StreamIndex))";
 
             string[] queries = {
 
@@ -386,7 +386,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "CodecTag",
             "Comment",
             "NalLengthSize",
-            "IsAvc"
+            "IsAvc",
+            "Title"
         };
 
         /// <summary>
@@ -3403,6 +3404,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveStreamCommand.GetParameter(index++).Value = stream.Comment;
                     _saveStreamCommand.GetParameter(index++).Value = stream.NalLengthSize;
                     _saveStreamCommand.GetParameter(index++).Value = stream.IsAVC;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.Title;
 
                     _saveStreamCommand.Transaction = transaction;
                     _saveStreamCommand.ExecuteNonQuery();
@@ -3569,6 +3571,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!reader.IsDBNull(28))
             {
                 item.IsAVC = reader.GetBoolean(28);
+            }
+
+            if (!reader.IsDBNull(29))
+            {
+                item.Title = reader.GetString(29);
             }
 
             return item;
