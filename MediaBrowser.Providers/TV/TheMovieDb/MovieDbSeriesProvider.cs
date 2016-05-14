@@ -168,7 +168,7 @@ namespace MediaBrowser.Providers.TV
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                result.Item = await FetchSeriesData(tmdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                result = await FetchMovieData(tmdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
 
                 result.HasMetadata = result.Item != null;
             }
@@ -176,7 +176,7 @@ namespace MediaBrowser.Providers.TV
             return result;
         }
 
-        private async Task<Series> FetchSeriesData(string tmdbId, string language, string preferredCountryCode, CancellationToken cancellationToken)
+        private async Task<MetadataResult<Series>> FetchMovieData(string tmdbId, string language, string preferredCountryCode, CancellationToken cancellationToken)
         {
             string dataFilePath = null;
             RootObject seriesInfo = null;
@@ -199,11 +199,13 @@ namespace MediaBrowser.Providers.TV
 
             await EnsureSeriesInfo(tmdbId, language, cancellationToken).ConfigureAwait(false);
 
-            var item = new Series();
+            var result = new MetadataResult<Series>();
+            result.Item = new Series();
+            result.ResultLanguage = seriesInfo.ResultLanguage;
 
-            ProcessMainInfo(item, seriesInfo, preferredCountryCode);
+            ProcessMainInfo(result.Item, seriesInfo, preferredCountryCode);
 
-            return item;
+            return result;
         }
 
         private void ProcessMainInfo(Series series, RootObject seriesInfo, string preferredCountryCode)
@@ -354,6 +356,11 @@ namespace MediaBrowser.Providers.TV
             }).ConfigureAwait(false))
             {
                 mainResult = _jsonSerializer.DeserializeFromStream<RootObject>(json);
+
+                if (!string.IsNullOrEmpty(language))
+                {
+                    mainResult.ResultLanguage = language;
+                }
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -385,6 +392,7 @@ namespace MediaBrowser.Providers.TV
                     var englishResult = _jsonSerializer.DeserializeFromStream<RootObject>(json);
 
                     mainResult.overview = englishResult.overview;
+                    mainResult.ResultLanguage = "en";
                 }
             }
 
@@ -627,6 +635,7 @@ namespace MediaBrowser.Providers.TV
             public ExternalIds external_ids { get; set; }
             public Videos videos { get; set; }
             public ContentRatings content_ratings { get; set; }
+            public string ResultLanguage { get; set; }
         }
 
         public int Order

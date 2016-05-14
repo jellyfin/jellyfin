@@ -715,6 +715,17 @@ namespace MediaBrowser.Providers.TV
 
 								break;
 							}
+						case "Language":
+							{
+								var val = reader.ReadElementContentAsString();
+
+								if (!string.IsNullOrWhiteSpace(val))
+								{
+                                    result.ResultLanguage = val;
+								}
+
+								break;
+							}
 
 						default:
 							reader.Skip();
