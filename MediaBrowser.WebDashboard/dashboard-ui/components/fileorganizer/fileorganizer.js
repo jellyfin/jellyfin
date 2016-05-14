@@ -20,7 +20,7 @@
 
     function initEpisodeForm(context, item) {
 
-        if (!item.ExtractedName || item.ExtractedName.length < 4) {
+        if (!item.ExtractedName || item.ExtractedName.length < 3) {
             context.querySelector('.fldRemember').classList.add('hide');
         }
         else {

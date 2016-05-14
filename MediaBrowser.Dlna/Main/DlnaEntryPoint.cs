@@ -85,14 +85,14 @@ namespace MediaBrowser.Dlna.Main
             _config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;
         }
 
-        private bool _lastEnableUPnP;
+        private bool _lastEnableUpnP;
         void _config_ConfigurationUpdated(object sender, EventArgs e)
         {
-            if (_lastEnableUPnP != _config.Configuration.EnableUPnP)
+            if (_lastEnableUpnP != _config.Configuration.EnableUPnP)
             {
                 ReloadComponents();
             }
-            _lastEnableUPnP = _config.Configuration.EnableUPnP;
+            _lastEnableUpnP = _config.Configuration.EnableUPnP;
         }
 
         void _config_NamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
@@ -111,7 +111,10 @@ namespace MediaBrowser.Dlna.Main
             {
                 if (_ssdpHandlerStarted)
                 {
-                    StopSsdpHandler();
+                    // Sat/ip live tv depends on device discovery, as well as hd homerun detection
+                    // In order to allow this to be disabled, we need a modular way of knowing if there are 
+                    // any parts of the system that are dependant on it
+                    // DisposeSsdpHandler();
                 }
                 return;
             }
@@ -149,10 +152,9 @@ namespace MediaBrowser.Dlna.Main
             try
             {
                 _ssdpHandler.Start();
-
-                ((DeviceDiscovery)_deviceDiscovery).Start(_ssdpHandler);
-
                 _ssdpHandlerStarted = true;
+
+                StartDeviceDiscovery();
             }
             catch (Exception ex)
             {
@@ -160,8 +162,34 @@ namespace MediaBrowser.Dlna.Main
             }
         }
 
-        private void StopSsdpHandler()
+        private void StartDeviceDiscovery()
         {
+            try
+            {
+                ((DeviceDiscovery)_deviceDiscovery).Start(_ssdpHandler);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error starting device discovery", ex);
+            }
+        }
+
+        private void DisposeDeviceDiscovery()
+        {
+            try
+            {
+                ((DeviceDiscovery)_deviceDiscovery).Dispose();
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error stopping device discovery", ex);
+            }
+        }
+
+        private void DisposeSsdpHandler()
+        {
+            DisposeDeviceDiscovery();
+
             try
             {
                 ((DeviceDiscovery)_deviceDiscovery).Dispose();
@@ -277,6 +305,7 @@ namespace MediaBrowser.Dlna.Main
         {
             DisposeDlnaServer();
             DisposePlayToManager();
+            DisposeSsdpHandler();
         }
 
         public void DisposeDlnaServer()
