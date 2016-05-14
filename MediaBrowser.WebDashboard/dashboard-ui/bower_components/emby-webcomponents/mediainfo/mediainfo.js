@@ -65,7 +65,9 @@ define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html',
         options = options || {};
         var text, date, minutes;
 
-        if (item.Type == "MusicAlbum" || item.MediaType == 'MusicArtist' || item.MediaType == 'Playlist' || item.MediaType == 'MusicGenre') {
+        var showFolderRuntime = item.Type == "MusicAlbum" || item.MediaType == 'MusicArtist' || item.MediaType == 'Playlist' || item.MediaType == 'MusicGenre';
+
+        if (showFolderRuntime) {
 
             var count = item.SongCount || item.ChildCount;
 
@@ -74,9 +76,8 @@ define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html',
                 miscInfo.push(globalize.translate('sharedcomponents#TrackCount', count));
             }
 
-            if (item.CumulativeRunTimeTicks) {
-
-                miscInfo.push(datetime.getDisplayRunningTime(item.CumulativeRunTimeTicks));
+            if (item.RunTimeTicks) {
+                miscInfo.push(datetime.getDisplayRunningTime(item.RunTimeTicks));
             }
         }
 
@@ -206,7 +207,7 @@ define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html',
             }
         }
 
-        if (item.RunTimeTicks && item.Type != "Series" && item.Type != 'Program' && options.runtime !== false) {
+        if (item.RunTimeTicks && item.Type != "Series" && item.Type != 'Program' && !showFolderRuntime && options.runtime !== false) {
 
             if (item.Type == "Audio") {
 
