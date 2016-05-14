@@ -51,7 +51,9 @@ namespace MediaBrowser.Api.Playback
 
         [ApiMember(Name = "MaxAudioChannels", Description = "Optional. Specify a maximum number of audio channels to encode to, e.g. 2", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? MaxAudioChannels { get; set; }
-        
+
+        public int? TranscodingMaxAudioChannels { get; set; }
+
         /// <summary>
         /// Gets or sets the audio sample rate.
         /// </summary>

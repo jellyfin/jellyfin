@@ -712,15 +712,16 @@ namespace MediaBrowser.Api.Playback
                 inputChannels = null;
             }
 
+            int? resultChannels = null;
             var codec = outputAudioCodec ?? string.Empty;
 
             if (codec.IndexOf("wma", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 // wmav2 currently only supports two channel output
-                return Math.Min(2, inputChannels ?? 2);
+                resultChannels = Math.Min(2, inputChannels ?? 2);
             }
 
-            if (request.MaxAudioChannels.HasValue)
+            else if (request.MaxAudioChannels.HasValue)
             {
                 var channelLimit = codec.IndexOf("mp3", StringComparison.OrdinalIgnoreCase) != -1
                    ? 2
@@ -732,10 +733,18 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 // If we don't have any media info then limit it to 5 to prevent encoding errors due to asking for too many channels
-                return Math.Min(request.MaxAudioChannels.Value, channelLimit);
+                resultChannels = Math.Min(request.MaxAudioChannels.Value, channelLimit);
             }
 
-            return request.AudioChannels;
+            if (resultChannels.HasValue && !string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+            {
+                if (request.TranscodingMaxAudioChannels.HasValue)
+                {
+                    resultChannels = Math.Min(request.TranscodingMaxAudioChannels.Value, resultChannels.Value);
+                }
+            }
+
+            return resultChannels ?? request.AudioChannels;
         }
 
         /// <summary>
@@ -1503,6 +1512,10 @@ namespace MediaBrowser.Api.Playback
                             videoRequest.SubtitleMethod = method;
                         }
                     }
+                }
+                else if (i == 26)
+                {
+                    request.TranscodingMaxAudioChannels = int.Parse(val, UsCulture);
                 }
             }
         }
