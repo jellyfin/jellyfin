@@ -119,8 +119,6 @@ namespace MediaBrowser.Api.Library
     {
         private readonly IFileOrganizationService _iFileOrganizationService;
 
-        /// The _json serializer
-        /// </summary>
         private readonly IJsonSerializer _jsonSerializer;
 
         public FileOrganizationService(IFileOrganizationService iFileOrganizationService, IJsonSerializer jsonSerializer)

@@ -356,6 +356,11 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
         private void SaveSmartMatchString(string matchString, Series series, AutoOrganizeOptions options)
         {
+            if (string.IsNullOrEmpty(matchString) || matchString.Length < 3)
+            {
+                return;
+            }
+
             SmartMatchInfo info = options.SmartMatchInfos.FirstOrDefault(i => string.Equals(i.ItemName, series.Name, StringComparison.OrdinalIgnoreCase));
 
             if (info == null)
