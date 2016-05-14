@@ -110,7 +110,7 @@
                 }
 
                 var opt = {
-                    name: name,
+                    name: stream.DisplayTitle || name,
                     id: stream.Index
                 };
 
@@ -229,7 +229,7 @@
                 }
 
                 var opt = {
-                    name: name,
+                    name: stream.DisplayTitle || name,
                     id: stream.Index
                 };
 

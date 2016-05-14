@@ -1557,6 +1557,10 @@
                 attributes.push(createAttribute(Globalize.translate('MediaInfoTimestamp'), version.Timestamp));
             }
 
+            if (stream.DisplayTitle) {
+                attributes.push(createAttribute('Title', stream.DisplayTitle));
+            }
+
             html += attributes.join('<br/>');
 
             html += '</div>';
