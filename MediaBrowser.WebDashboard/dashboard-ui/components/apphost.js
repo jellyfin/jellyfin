@@ -92,10 +92,9 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
 
             var features = [
                 'filedownload',
-                'externalpremium'
+                'externalpremium',
+                'sharing'
             ];
-
-            features.push('sharing');
 
             return features.indexOf(command.toLowerCase()) != -1;
         },
