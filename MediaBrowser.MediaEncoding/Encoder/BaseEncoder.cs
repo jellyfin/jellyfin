@@ -1008,7 +1008,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Boost volume to 200% when downsampling from 6ch to 2ch
             if (channels.HasValue && channels.Value <= 2)
             {
-                if (state.AudioStream != null && state.AudioStream.Channels.HasValue && state.AudioStream.Channels.Value > 5)
+                if (state.AudioStream != null && state.AudioStream.Channels.HasValue && state.AudioStream.Channels.Value > 5 && !GetEncodingOptions().DownMixAudioBoost.Equals(1))
                 {
                     volParam = ",volume=" + GetEncodingOptions().DownMixAudioBoost.ToString(UsCulture);
                 }

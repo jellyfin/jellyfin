@@ -47,5 +47,7 @@
   "FeatureRequiresEmbyPremiere": "This feature requires an active Emby Premiere subscription.",
   "Record": "Record",
   "Download": "Download",
-  "Advanced": "Advanced"
+  "Advanced": "Advanced",
+  "Refresh": "Refresh",
+  "RefreshQueued": "Refresh queued"
 }

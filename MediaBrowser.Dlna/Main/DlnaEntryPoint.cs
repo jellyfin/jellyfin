@@ -41,6 +41,7 @@ namespace MediaBrowser.Dlna.Main
         private readonly IDeviceDiscovery _deviceDiscovery;
 
         private readonly List<string> _registeredServerIds = new List<string>();
+        private bool _ssdpHandlerStarted;
         private bool _dlnaServerStarted;
 
         public DlnaEntryPoint(IServerConfigurationManager config,
@@ -78,10 +79,20 @@ namespace MediaBrowser.Dlna.Main
 
         public void Run()
         {
-            StartSsdpHandler();
             ReloadComponents();
 
+            _config.ConfigurationUpdated += _config_ConfigurationUpdated;
             _config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;
+        }
+
+        private bool _lastEnableUpnP;
+        void _config_ConfigurationUpdated(object sender, EventArgs e)
+        {
+            if (_lastEnableUpnP != _config.Configuration.EnableUPnP)
+            {
+                ReloadComponents();
+            }
+            _lastEnableUpnP = _config.Configuration.EnableUPnP;
         }
 
         void _config_NamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
@@ -94,9 +105,26 @@ namespace MediaBrowser.Dlna.Main
 
         private void ReloadComponents()
         {
-            var isServerStarted = _dlnaServerStarted;
-
             var options = _config.GetDlnaConfiguration();
+
+            if (!options.EnableServer && !options.EnablePlayTo && !_config.Configuration.EnableUPnP)
+            {
+                if (_ssdpHandlerStarted)
+                {
+                    // Sat/ip live tv depends on device discovery, as well as hd homerun detection
+                    // In order to allow this to be disabled, we need a modular way of knowing if there are 
+                    // any parts of the system that are dependant on it
+                    // DisposeSsdpHandler();
+                }
+                return;
+            }
+
+            if (!_ssdpHandlerStarted)
+            {
+                StartSsdpHandler();
+            }
+
+            var isServerStarted = _dlnaServerStarted;
 
             if (options.EnableServer && !isServerStarted)
             {
@@ -124,12 +152,55 @@ namespace MediaBrowser.Dlna.Main
             try
             {
                 _ssdpHandler.Start();
+                _ssdpHandlerStarted = true;
 
-                ((DeviceDiscovery)_deviceDiscovery).Start(_ssdpHandler);
+                StartDeviceDiscovery();
             }
             catch (Exception ex)
             {
                 _logger.ErrorException("Error starting ssdp handlers", ex);
+            }
+        }
+
+        private void StartDeviceDiscovery()
+        {
+            try
+            {
+                ((DeviceDiscovery)_deviceDiscovery).Start(_ssdpHandler);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error starting device discovery", ex);
+            }
+        }
+
+        private void DisposeDeviceDiscovery()
+        {
+            try
+            {
+                ((DeviceDiscovery)_deviceDiscovery).Dispose();
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error stopping device discovery", ex);
+            }
+        }
+
+        private void DisposeSsdpHandler()
+        {
+            DisposeDeviceDiscovery();
+
+            try
+            {
+                ((DeviceDiscovery)_deviceDiscovery).Dispose();
+
+                _ssdpHandler.Dispose();
+
+                _ssdpHandlerStarted = false;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error stopping ssdp handlers", ex);
             }
         }
 
@@ -234,6 +305,7 @@ namespace MediaBrowser.Dlna.Main
         {
             DisposeDlnaServer();
             DisposePlayToManager();
+            DisposeSsdpHandler();
         }
 
         public void DisposeDlnaServer()

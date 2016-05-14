@@ -18,6 +18,14 @@ define(['apphost', 'globalize', 'connectionManager'], function (appHost, globali
                 });
             }
 
+            if (user.Policy.IsAdministrator) {
+
+                commands.push({
+                    name: globalize.translate('Refresh'),
+                    id: 'refresh'
+                });
+            }
+
             if (item.Type != 'Timer' && user.Policy.EnablePublicSharing && appHost.supports('sharing')) {
                 commands.push({
                     name: globalize.translate('Share'),
@@ -58,6 +66,11 @@ define(['apphost', 'globalize', 'connectionManager'], function (appHost, globali
 
                         break;
                     }
+                case 'refresh':
+                    {
+                        refresh(apiClient, itemId);
+                        break;
+                    }
                 case 'share':
                     {
                         require(['sharingmanager'], function (sharingManager) {
@@ -72,6 +85,23 @@ define(['apphost', 'globalize', 'connectionManager'], function (appHost, globali
                 default:
                     break;
             }
+        });
+    }
+
+    function refresh(apiClient, itemId) {
+
+        apiClient.refreshItem(itemId, {
+
+            Recursive: true,
+            ImageRefreshMode: 'FullRefresh',
+            MetadataRefreshMode: 'FullRefresh',
+            ReplaceAllImages: false,
+            ReplaceAllMetadata: true
+
+        });
+
+        require(['toast'], function (toast) {
+            toast(globalize.translate('sharedcomponents#RefreshQueued'));
         });
     }
 
