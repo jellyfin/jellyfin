@@ -646,6 +646,8 @@ namespace MediaBrowser.Providers.Manager
         {
             var refreshResult = new RefreshResult();
 
+            var results = new List<MetadataResult<TItemType>>();
+
             foreach (var provider in providers)
             {
                 var providerName = provider.GetType().Name;
@@ -662,7 +664,7 @@ namespace MediaBrowser.Providers.Manager
 
                     if (result.HasMetadata)
                     {
-                        MergeData(result, temp, new List<MetadataFields>(), false, false);
+                        results.Add(result);
 
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataDownload;
                     }
@@ -681,6 +683,38 @@ namespace MediaBrowser.Providers.Manager
                     refreshResult.ErrorMessage = ex.Message;
                     Logger.ErrorException("Error in {0}", ex, provider.Name);
                 }
+            }
+
+            var orderedResults = new List<MetadataResult<TItemType>>();
+
+            if (string.IsNullOrEmpty(id.MetadataLanguage))
+            {
+                orderedResults.AddRange(results);
+            }
+            else
+            {
+                // prioritize results with matching ResultLanguage
+                foreach (var result in results)
+                {
+                    if (!string.IsNullOrEmpty(result.ResultLanguage) && result.ResultLanguage == id.MetadataLanguage)
+                    {
+                        orderedResults.Add(result);
+                    }
+                }
+
+                // add all other results
+                foreach (var result in results)
+                {
+                    if (!orderedResults.Contains(result))
+                    {
+                        orderedResults.Add(result);
+                    }
+                }
+            }
+
+            foreach (var result in results)
+            {
+                MergeData(result, temp, new List<MetadataFields>(), false, false);
             }
 
             return refreshResult;

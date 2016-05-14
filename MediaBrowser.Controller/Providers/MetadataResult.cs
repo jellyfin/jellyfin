@@ -13,13 +13,14 @@ namespace MediaBrowser.Controller.Providers
         public MetadataResult()
         {
             Images = new List<LocalImageInfo>();
+            ResultLanguage = "en";
         }
 
         public List<PersonInfo> People { get; set; }
 
         public bool HasMetadata { get; set; }
         public T Item { get; set; }
-
+        public string ResultLanguage { get; set; }
         public void AddPerson(PersonInfo p)
         {
             if (People == null)

@@ -92,6 +92,12 @@ namespace MediaBrowser.Providers.TV
 
                 result.HasMetadata = true;
 
+                if (!string.IsNullOrEmpty(response.overview))
+                {
+                    // if overview is non-empty, we can assume that localized data was returned
+                    result.ResultLanguage = info.MetadataLanguage;
+                }
+
                 var item = new Episode();
                 result.Item = item;
 
