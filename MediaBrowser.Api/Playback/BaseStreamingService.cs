@@ -962,6 +962,21 @@ namespace MediaBrowser.Api.Playback
 
             await AcquireResources(state, cancellationTokenSource).ConfigureAwait(false);
 
+            if (state.VideoRequest != null && !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            {
+                var auth = AuthorizationContext.GetAuthorizationInfo(Request);
+                if (!string.IsNullOrWhiteSpace(auth.UserId))
+                {
+                    var user = UserManager.GetUserById(auth.UserId);
+                    if (!user.Policy.EnableVideoPlaybackTranscoding)
+                    {
+                        ApiEntryPoint.Instance.OnTranscodeFailedToStart(outputPath, TranscodingJobType, state);
+
+                        throw new ArgumentException("User does not have access to video transcoding");
+                    }
+                }
+            }
+
             var transcodingId = Guid.NewGuid().ToString("N");
             var commandLineArgs = GetCommandLineArguments(outputPath, state, true);
 
