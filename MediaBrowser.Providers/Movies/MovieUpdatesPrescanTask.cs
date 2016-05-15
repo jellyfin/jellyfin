@@ -22,7 +22,7 @@ namespace MediaBrowser.Providers.Movies
         /// <summary>
         /// The updates URL
         /// </summary>
-        private const string UpdatesUrl = "http://api.themoviedb.org/3/movie/changes?start_date={0}&api_key={1}&page={2}";
+        private const string UpdatesUrl = "https://api.themoviedb.org/3/movie/changes?start_date={0}&api_key={1}&page={2}";
 
         /// <summary>
         /// The _HTTP client
@@ -176,9 +176,13 @@ namespace MediaBrowser.Providers.Movies
             var numComplete = 0;
 
             // Gather all movies into a lookup by tmdb id
-            var allMovies = _libraryManager.RootFolder
-                .GetRecursiveChildren(i => i is Movie && !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tmdb)))
-                .ToLookup(i => i.GetProviderId(MetadataProviders.Tmdb));
+            var allMovies = _libraryManager.GetItemList(new Controller.Entities.InternalItemsQuery
+            {
+                IncludeItemTypes = new[] {typeof (Movie).Name},
+                Recursive = true
+
+            }).Where(i => !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tmdb)))
+            .ToLookup(i => i.GetProviderId(MetadataProviders.Tmdb));
 
             foreach (var id in list)
             {

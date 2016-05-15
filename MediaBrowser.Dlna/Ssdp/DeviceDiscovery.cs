@@ -109,30 +109,26 @@ namespace MediaBrowser.Dlna.Ssdp
 
 					var endPoint = new IPEndPoint(localIp, 1900);
 
-                    var socket = GetMulticastSocket(localIp, endPoint);
-
-                    var receiveBuffer = new byte[64000];
-
-                    CreateNotifier(localIp);
-
-                    while (!_tokenSource.IsCancellationRequested)
+                    using (var socket = GetMulticastSocket(localIp, endPoint))
                     {
-                        var receivedBytes = await socket.ReceiveAsync(receiveBuffer, 0, 64000);
+                        var receiveBuffer = new byte[64000];
 
-                        if (receivedBytes > 0)
+                        CreateNotifier(localIp);
+
+                        while (!_tokenSource.IsCancellationRequested)
                         {
-                            var args = SsdpHelper.ParseSsdpResponse(receiveBuffer);
-                            args.EndPoint = endPoint;
-                            args.LocalEndPoint = new IPEndPoint(localIp, 0);
+                            var receivedBytes = await socket.ReceiveAsync(receiveBuffer, 0, 64000);
 
-                            if (_ssdpHandler.IgnoreMessage(args, true))
+                            if (receivedBytes > 0)
                             {
-                                return;
+                                var args = SsdpHelper.ParseSsdpResponse(receiveBuffer);
+                                args.EndPoint = endPoint;
+                                args.LocalEndPoint = new IPEndPoint(localIp, 0);
+
+                                _ssdpHandler.LogMessageReceived(args, true);
+
+                                TryCreateDevice(args);
                             }
-
-                            _ssdpHandler.LogMessageReceived(args, true);
-
-                            TryCreateDevice(args);
                         }
                     }
 

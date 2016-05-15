@@ -26,11 +26,11 @@ namespace MediaBrowser.Server.Implementations.Social
         /// Opens the connection to the database
         /// </summary>
         /// <returns>Task.</returns>
-        public async Task Initialize()
+        public async Task Initialize(IDbConnector dbConnector)
         {
             var dbFile = Path.Combine(_appPaths.DataPath, "shares.db");
 
-            _connection = await SqliteExtensions.ConnectToDb(dbFile, Logger).ConfigureAwait(false);
+            _connection = await dbConnector.Connect(dbFile).ConfigureAwait(false);
 
             string[] queries = {
 

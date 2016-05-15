@@ -115,11 +115,10 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     if (options.Fields.Contains(ItemFields.ItemCounts))
                     {
-                        var itemFilter = byName.GetItemFilter();
-
-                        var libraryItems = user != null ?
-                           user.RootFolder.GetRecursiveChildren(user, itemFilter) :
-                           _libraryManager.RootFolder.GetRecursiveChildren(itemFilter);
+                        var libraryItems = byName.GetTaggedItems(new InternalItemsQuery(user)
+                        {
+                            Recursive = true
+                        });
 
                         SetItemByNameInfo(item, dto, libraryItems.ToList(), user);
                     }
@@ -194,24 +193,13 @@ namespace MediaBrowser.Server.Implementations.Dto
 
         private List<BaseItem> GetTaggedItems(IItemByName byName, User user)
         {
-            var person = byName as Person;
-
-            if (person != null)
+            var items = byName.GetTaggedItems(new InternalItemsQuery(user)
             {
-                var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
-                {
-                    Person = byName.Name
+                Recursive = true
 
-                }, new string[] { });
+            }).ToList();
 
-                return items.ToList();
-            }
-
-            var itemFilter = byName.GetItemFilter();
-
-            return user != null ?
-               user.RootFolder.GetRecursiveChildren(user, itemFilter).ToList() :
-               _libraryManager.RootFolder.GetRecursiveChildren(itemFilter).ToList();
+            return items;
         }
 
         private SyncedItemProgress[] GetSyncedItemProgress(DtoOptions options)
@@ -282,7 +270,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 else if (dto.HasSyncJob.Value)
                 {
-                    dto.SyncStatus = SyncJobItemStatus.Queued;
+                    dto.SyncStatus = syncProgress.Where(i => string.Equals(i.ItemId, dto.Id, StringComparison.OrdinalIgnoreCase)).Select(i => i.Status).Max();
                 }
             }
         }
@@ -307,7 +295,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 else if (dto.HasSyncJob.Value)
                 {
-                    dto.SyncStatus = SyncJobItemStatus.Queued;
+                    dto.SyncStatus = syncProgress.Where(i => string.Equals(i.ItemId, dto.Id, StringComparison.OrdinalIgnoreCase)).Select(i => i.Status).Max();
                 }
             }
         }
@@ -397,12 +385,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                     collectionFolder.GetViewType(user);
             }
 
-            var playlist = item as Playlist;
-            if (playlist != null)
-            {
-                AttachLinkedChildImages(dto, playlist, user, options);
-            }
-
             if (fields.Contains(ItemFields.CanDelete))
             {
                 dto.CanDelete = user == null
@@ -487,7 +469,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             if (item.IsFolder)
             {
-                var userData = _userDataRepository.GetUserData(user.Id, item.GetUserDataKey());
+                var userData = _userDataRepository.GetUserData(user, item);
 
                 // Skip the user data manager because we've already looped through the recursive tree and don't want to do it twice
                 // TODO: Improve in future
@@ -499,11 +481,20 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     dto.ChildCount = GetChildCount(folder, user);
 
-                    // These are just far too slow. 
-                    if (!(folder is UserRootFolder) && !(folder is UserView) && !(folder is ICollectionFolder))
+                    if (folder.SupportsUserDataFromChildren)
                     {
                         SetSpecialCounts(folder, user, dto, fields, syncProgress);
                     }
+                }
+
+                if (fields.Contains(ItemFields.CumulativeRunTimeTicks))
+                {
+                    dto.CumulativeRunTimeTicks = item.RunTimeTicks;
+                }
+
+                if (fields.Contains(ItemFields.DateLastMediaAdded))
+                {
+                    dto.DateLastMediaAdded = folder.DateLastMediaAdded;
                 }
 
                 dto.UserData.Played = dto.UserData.PlayedPercentage.HasValue && dto.UserData.PlayedPercentage.Value >= 100;
@@ -626,9 +617,12 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             if (!string.IsNullOrEmpty(item.Album))
             {
-                var parentAlbum = _libraryManager.RootFolder
-                    .GetRecursiveChildren(i => i is MusicAlbum && string.Equals(i.Name, item.Album, StringComparison.OrdinalIgnoreCase))
-                    .FirstOrDefault();
+                var parentAlbum = _libraryManager.GetItemList(new InternalItemsQuery
+                {
+                    IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
+                    Name = item.Album
+
+                }).FirstOrDefault();
 
                 if (parentAlbum != null)
                 {
@@ -1126,6 +1120,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.Overview = item.Overview;
             }
 
+            if (fields.Contains(ItemFields.OriginalTitle))
+            {
+                dto.OriginalTitle = item.OriginalTitle;
+            }
+
             if (fields.Contains(ItemFields.ShortOverview))
             {
                 var hasShortOverview = item as IHasShortOverview;
@@ -1358,9 +1357,10 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 if (fields.Contains(ItemFields.MediaSourceCount))
                 {
-                    if (video.MediaSourceCount != 1)
+                    var mediaSourceCount = video.MediaSourceCount;
+                    if (mediaSourceCount != 1)
                     {
-                        dto.MediaSourceCount = video.MediaSourceCount;
+                        dto.MediaSourceCount = mediaSourceCount;
                     }
                 }
 
@@ -1559,45 +1559,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
         }
 
-        private void AttachLinkedChildImages(BaseItemDto dto, Folder folder, User user, DtoOptions options)
-        {
-            List<BaseItem> linkedChildren = null;
-
-            var backdropLimit = options.GetImageLimit(ImageType.Backdrop);
-
-            if (backdropLimit > 0 && dto.BackdropImageTags.Count == 0)
-            {
-                linkedChildren = user == null
-                    ? folder.GetRecursiveChildren().ToList()
-                    : folder.GetRecursiveChildren(user).ToList();
-
-                var parentWithBackdrop = linkedChildren.FirstOrDefault(i => i.GetImages(ImageType.Backdrop).Any());
-
-                if (parentWithBackdrop != null)
-                {
-                    dto.ParentBackdropItemId = GetDtoId(parentWithBackdrop);
-                    dto.ParentBackdropImageTags = GetBackdropImageTags(parentWithBackdrop, backdropLimit);
-                }
-            }
-
-            if (!dto.ImageTags.ContainsKey(ImageType.Primary) && options.GetImageLimit(ImageType.Primary) > 0)
-            {
-                if (linkedChildren == null)
-                {
-                    linkedChildren = user == null
-                        ? folder.GetRecursiveChildren().ToList()
-                        : folder.GetRecursiveChildren(user).ToList();
-                }
-                var parentWithImage = linkedChildren.FirstOrDefault(i => i.GetImages(ImageType.Primary).Any());
-
-                if (parentWithImage != null)
-                {
-                    dto.ParentPrimaryImageItemId = GetDtoId(parentWithImage);
-                    dto.ParentPrimaryImageTag = GetImageCacheTag(parentWithImage, ImageType.Primary);
-                }
-            }
-        }
-
         private string GetMappedPath(IHasMetadata item)
         {
             var path = item.Path;
@@ -1653,9 +1614,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             var recursiveItemCount = 0;
             var unplayed = 0;
-            long runtime = 0;
 
-            DateTime? dateLastMediaAdded = null;
             double totalPercentPlayed = 0;
             double totalSyncPercent = 0;
             var addSyncInfo = fields.Contains(ItemFields.SyncInfo);
@@ -1672,16 +1631,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             // Loop through each recursive child
             foreach (var child in children)
             {
-                if (!dateLastMediaAdded.HasValue)
-                {
-                    dateLastMediaAdded = child.DateCreated;
-                }
-                else
-                {
-                    dateLastMediaAdded = new[] { dateLastMediaAdded.Value, child.DateCreated }.Max();
-                }
-
-                var userdata = _userDataRepository.GetUserData(user.Id, child.GetUserDataKey());
+                var userdata = _userDataRepository.GetUserData(user, child);
 
                 recursiveItemCount++;
 
@@ -1708,8 +1658,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     unplayed++;
                 }
-
-                runtime += child.RunTimeTicks ?? 0;
 
                 if (addSyncInfo)
                 {
@@ -1748,16 +1696,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                         dto.SyncPercent = pct;
                     }
                 }
-            }
-
-            if (runtime > 0 && fields.Contains(ItemFields.CumulativeRunTimeTicks))
-            {
-                dto.CumulativeRunTimeTicks = runtime;
-            }
-
-            if (fields.Contains(ItemFields.DateLastMediaAdded))
-            {
-                dto.DateLastMediaAdded = dateLastMediaAdded;
             }
         }
 

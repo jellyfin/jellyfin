@@ -429,7 +429,7 @@ namespace MediaBrowser.Api
             if (request.IsMissing.HasValue)
             {
                 var val = request.IsMissing.Value;
-                items = items.Where(i => i.IsMissingSeason == val);
+                items = items.Where(i => (i.IsMissingSeason ?? false) == val);
             }
 
             if (request.IsVirtualUnaired.HasValue)
@@ -508,8 +508,7 @@ namespace MediaBrowser.Api
                 returnItems = UserViewBuilder.FilterForAdjacency(returnItems, request.AdjacentTo);
             }
 
-            var returnList = _libraryManager.ReplaceVideosWithPrimaryVersions(returnItems)
-                .ToList();
+            var returnList = returnItems.ToList();
 
             var pagedItems = ApplyPaging(returnList, request.StartIndex, request.Limit);
 

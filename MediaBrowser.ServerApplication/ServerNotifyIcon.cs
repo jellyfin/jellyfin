@@ -36,8 +36,13 @@ namespace MediaBrowser.ServerApplication
             set
             {
                 Action act = () => notifyIcon1.Visible = false;
-                contextMenuStrip1.Invoke(act);
+                Invoke(act);
             }
+        }
+
+        public void Invoke(Action action)
+        {
+            contextMenuStrip1.Invoke(action);
         }
 
         public ServerNotifyIcon(ILogManager logManager,

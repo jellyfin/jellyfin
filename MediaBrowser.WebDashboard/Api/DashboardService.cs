@@ -316,7 +316,7 @@ namespace MediaBrowser.WebDashboard.Api
             DeleteFilesByExtension(bowerPath, ".txt");
             DeleteFilesByExtension(bowerPath, ".map");
             DeleteFilesByExtension(bowerPath, ".md");
-            DeleteFilesByExtension(bowerPath, ".json");
+            DeleteFilesByExtension(bowerPath, ".json", "strings\\");
             DeleteFilesByExtension(bowerPath, ".gz");
             DeleteFilesByExtension(bowerPath, ".bat");
             DeleteFilesByExtension(bowerPath, ".sh");
@@ -346,7 +346,9 @@ namespace MediaBrowser.WebDashboard.Api
             }
 
             _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "jquery", "src"), true);
-          
+            _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "fingerprintjs2", "flash"), true);
+            _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "fingerprintjs2", "specs"), true);
+
             DeleteCryptoFiles(Path.Combine(bowerPath, "cryptojslib", "components"));
 
             DeleteFoldersByName(Path.Combine(bowerPath, "jquery"), "src");
@@ -399,7 +401,7 @@ namespace MediaBrowser.WebDashboard.Api
             }
         }
 
-        private void DeleteFilesByExtension(string path, string extension)
+        private void DeleteFilesByExtension(string path, string extension, string exclude = null)
         {
             var files = _fileSystem.GetFiles(path, true)
                 .Where(i => string.Equals(i.Extension, extension, StringComparison.OrdinalIgnoreCase))
@@ -407,6 +409,13 @@ namespace MediaBrowser.WebDashboard.Api
 
             foreach (var file in files)
             {
+                if (!string.IsNullOrWhiteSpace(exclude))
+                {
+                    if (file.FullName.IndexOf(exclude, StringComparison.OrdinalIgnoreCase) != -1)
+                    {
+                        continue;
+                    }
+                }
                 _fileSystem.DeleteFile(file.FullName);
             }
         }

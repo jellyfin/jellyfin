@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using CommonIO;
+using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -26,12 +27,12 @@ namespace MediaBrowser.Providers.TV
         /// <summary>
         /// The server time URL
         /// </summary>
-        private const string ServerTimeUrl = "http://thetvdb.com/api/Updates.php?type=none";
+        private const string ServerTimeUrl = "https://thetvdb.com/api/Updates.php?type=none";
 
         /// <summary>
         /// The updates URL
         /// </summary>
-        private const string UpdatesUrl = "http://thetvdb.com/api/Updates.php?type=all&time={0}";
+        private const string UpdatesUrl = "https://thetvdb.com/api/Updates.php?type=all&time={0}";
 
         /// <summary>
         /// The _HTTP client
@@ -89,7 +90,7 @@ namespace MediaBrowser.Providers.TV
 
             var path = TvdbSeriesProvider.GetSeriesDataPath(_config.CommonApplicationPaths);
 
-			_fileSystem.CreateDirectory(path);
+            _fileSystem.CreateDirectory(path);
 
             var timestampFile = Path.Combine(path, "time.txt");
 
@@ -102,7 +103,7 @@ namespace MediaBrowser.Providers.TV
             }
 
             // Find out the last time we queried tvdb for updates
-			var lastUpdateTime = timestampFileInfo.Exists ? _fileSystem.ReadAllText(timestampFile, Encoding.UTF8) : string.Empty;
+            var lastUpdateTime = timestampFileInfo.Exists ? _fileSystem.ReadAllText(timestampFile, Encoding.UTF8) : string.Empty;
 
             string newUpdateTime;
 
@@ -110,15 +111,21 @@ namespace MediaBrowser.Providers.TV
                 .Select(Path.GetFileName)
                 .ToList();
 
-            var seriesIdsInLibrary = _libraryManager.RootFolder
-                .GetRecursiveChildren(i => i is Series && !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tvdb)))
-               .Cast<Series>()
+            var seriesList = _libraryManager.GetItemList(new InternalItemsQuery()
+            {
+                IncludeItemTypes = new[] { typeof(Series).Name },
+                Recursive = true,
+                GroupByPresentationUniqueKey = false
+            }).Cast<Series>();
+
+            var seriesIdsInLibrary = seriesList
+               .Where(i => !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tvdb)))
                .Select(i => i.GetProviderId(MetadataProviders.Tvdb))
                .ToList();
 
             var missingSeries = seriesIdsInLibrary.Except(existingDirectories, StringComparer.OrdinalIgnoreCase)
                 .ToList();
-            
+
             // If this is our first time, update all series
             if (string.IsNullOrEmpty(lastUpdateTime))
             {
@@ -157,7 +164,7 @@ namespace MediaBrowser.Providers.TV
                 await UpdateSeries(listToUpdate, path, nullableUpdateValue, progress, cancellationToken).ConfigureAwait(false);
             }
 
-			_fileSystem.WriteAllText(timestampFile, newUpdateTime, Encoding.UTF8);
+            _fileSystem.WriteAllText(timestampFile, newUpdateTime, Encoding.UTF8);
             progress.Report(100);
         }
 
@@ -300,10 +307,17 @@ namespace MediaBrowser.Providers.TV
             var list = seriesIds.ToList();
             var numComplete = 0;
 
+            var seriesList = _libraryManager.GetItemList(new InternalItemsQuery()
+            {
+                IncludeItemTypes = new[] { typeof(Series).Name },
+                Recursive = true,
+                GroupByPresentationUniqueKey = false
+
+            }).Cast<Series>();
+
             // Gather all series into a lookup by tvdb id
-            var allSeries = _libraryManager.RootFolder
-                .GetRecursiveChildren(i => i is Series && !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tvdb)))
-                .Cast<Series>()
+            var allSeries = seriesList
+                .Where(i => !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tvdb)))
                 .ToLookup(i => i.GetProviderId(MetadataProviders.Tvdb));
 
             foreach (var seriesId in list)
@@ -323,7 +337,7 @@ namespace MediaBrowser.Providers.TV
                     catch (HttpException ex)
                     {
                         _logger.ErrorException("Error updating tvdb series id {0}, language {1}", ex, seriesId, language);
-                        
+
                         // Already logged at lower levels, but don't fail the whole operation, unless timed out
                         // We have to fail this to make it run again otherwise new episode data could potentially be missing
                         if (ex.IsTimedOut)
@@ -357,7 +371,7 @@ namespace MediaBrowser.Providers.TV
 
             seriesDataPath = Path.Combine(seriesDataPath, id);
 
-			_fileSystem.CreateDirectory(seriesDataPath);
+            _fileSystem.CreateDirectory(seriesDataPath);
 
             return TvdbSeriesProvider.Current.DownloadSeriesZip(id, MetadataProviders.Tvdb.ToString(), seriesDataPath, lastTvDbUpdateTime, preferredMetadataLanguage, cancellationToken);
         }

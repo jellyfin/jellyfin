@@ -662,9 +662,6 @@
     <Compile Include="..\MediaBrowser.Model\FileOrganization\TvFileOrganizationOptions.cs">
       <Link>FileOrganization\TvFileOrganizationOptions.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Games\GameSystem.cs">
-      <Link>Games\GameSystem.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Globalization\CountryInfo.cs">
       <Link>Globalization\CountryInfo.cs</Link>
     </Compile>

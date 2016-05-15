@@ -10,6 +10,7 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,7 +23,7 @@ namespace MediaBrowser.Server.Implementations.Library
     {
         public event EventHandler<UserDataSaveEventArgs> UserDataSaved;
 
-        private readonly ConcurrentDictionary<string, UserItemData> _userData = new ConcurrentDictionary<string, UserItemData>();
+        private readonly Dictionary<string, UserItemData> _userData = new Dictionary<string, UserItemData>(StringComparer.OrdinalIgnoreCase);
 
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
@@ -56,27 +57,32 @@ namespace MediaBrowser.Server.Implementations.Library
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var key = item.GetUserDataKey();
+            var keys = item.GetUserDataKeys();
 
-            try
+            foreach (var key in keys)
             {
-                await Repository.SaveUserData(userId, key, userData, cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    await Repository.SaveUserData(userId, key, userData, cancellationToken).ConfigureAwait(false);
 
-                var newValue = userData;
+                    var newValue = userData;
 
-                // Once it succeeds, put it into the dictionary to make it available to everyone else
-                _userData.AddOrUpdate(GetCacheKey(userId, key), newValue, delegate { return newValue; });
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error saving user data", ex);
+                    lock (_userData)
+                    {
+                        _userData[GetCacheKey(userId, key)] = newValue;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error saving user data", ex);
 
-                throw;
+                    throw;
+                }
             }
 
             EventHelper.FireEventIfNotNull(UserDataSaved, this, new UserDataSaveEventArgs
             {
-                Key = key,
+                Keys = keys,
                 UserData = userData,
                 SaveReason = reason,
                 UserId = userId,
@@ -134,6 +140,54 @@ namespace MediaBrowser.Server.Implementations.Library
             return Repository.GetAllUserData(userId);
         }
 
+        public UserItemData GetUserData(Guid userId, List<string> keys)
+        {
+            if (userId == Guid.Empty)
+            {
+                throw new ArgumentNullException("userId");
+            }
+            if (keys == null)
+            {
+                throw new ArgumentNullException("keys");
+            }
+
+            lock (_userData)
+            {
+                foreach (var key in keys)
+                {
+                    var cacheKey = GetCacheKey(userId, key);
+                    UserItemData value;
+                    if (_userData.TryGetValue(cacheKey, out value))
+                    {
+                        return value;
+                    }
+
+                    value = Repository.GetUserData(userId, key);
+
+                    if (value != null)
+                    {
+                        _userData[cacheKey] = value;
+                        return value;
+                    }
+                }
+
+                if (keys.Count > 0)
+                {
+                    var key = keys[0];
+                    var cacheKey = GetCacheKey(userId, key);
+                    var userdata = new UserItemData
+                    {
+                        UserId = userId,
+                        Key = key
+                    };
+                    _userData[cacheKey] = userdata;
+                    return userdata;
+                }
+
+                return null;
+            }
+        }
+
         /// <summary>
         /// Gets the user data.
         /// </summary>
@@ -151,14 +205,29 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("key");
             }
 
-            return _userData.GetOrAdd(GetCacheKey(userId, key), keyName => GetUserDataFromRepository(userId, key));
-        }
+            lock (_userData)
+            {
+                var cacheKey = GetCacheKey(userId, key);
+                UserItemData value;
+                if (_userData.TryGetValue(cacheKey, out value))
+                {
+                    return value;
+                }
 
-        public UserItemData GetUserDataFromRepository(Guid userId, string key)
-        {
-            var data = Repository.GetUserData(userId, key);
+                value = Repository.GetUserData(userId, key);
 
-            return data;
+                if (value == null)
+                {
+                    value = new UserItemData
+                    {
+                        UserId = userId,
+                        Key = key
+                    };
+                }
+
+                _userData[cacheKey] = value;
+                return value;
+            }
         }
 
         /// <summary>
@@ -172,9 +241,24 @@ namespace MediaBrowser.Server.Implementations.Library
             return userId + key;
         }
 
+        public UserItemData GetUserData(IHasUserData user, IHasUserData item)
+        {
+            return GetUserData(user.Id, item);
+        }
+
+        public UserItemData GetUserData(string userId, IHasUserData item)
+        {
+            return GetUserData(new Guid(userId), item);
+        }
+
+        public UserItemData GetUserData(Guid userId, IHasUserData item)
+        {
+            return GetUserData(userId, item.GetUserDataKeys());
+        }
+
         public UserItemDataDto GetUserDataDto(IHasUserData item, User user)
         {
-            var userData = GetUserData(user.Id, item.GetUserDataKey());
+            var userData = GetUserData(user.Id, item);
             var dto = GetUserItemDataDto(userData);
 
             item.FillUserDataDtoValues(dto, userData, user);
@@ -260,11 +344,6 @@ namespace MediaBrowser.Server.Implementations.Library
             data.PlaybackPositionTicks = positionTicks;
 
             return playedToCompletion;
-        }
-
-        public UserItemData GetUserData(string userId, string key)
-        {
-            return GetUserData(new Guid(userId), key);
         }
     }
 }

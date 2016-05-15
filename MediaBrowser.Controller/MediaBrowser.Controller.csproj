@@ -180,6 +180,7 @@
     <Compile Include="Entities\UserView.cs" />
     <Compile Include="Entities\UserViewBuilder.cs" />
     <Compile Include="FileOrganization\IFileOrganizationService.cs" />
+    <Compile Include="Health\IHealthMonitor.cs" />
     <Compile Include="IO\ThrottledStream.cs" />
     <Compile Include="Library\DeleteOptions.cs" />
     <Compile Include="Library\ILibraryPostScanTask.cs" />

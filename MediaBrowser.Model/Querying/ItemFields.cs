@@ -130,6 +130,8 @@
         /// </summary>
         Metascore,
 
+        OriginalTitle,
+
         /// <summary>
         /// The item overview
         /// </summary>

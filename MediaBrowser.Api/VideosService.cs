@@ -130,6 +130,7 @@ namespace MediaBrowser.Api
             var items = request.Ids.Split(',')
                 .Select(i => new Guid(i))
                 .Select(i => _libraryManager.GetItemById(i))
+                .OfType<Video>()
                 .ToList();
 
             if (items.Count < 2)
@@ -137,14 +138,7 @@ namespace MediaBrowser.Api
                 throw new ArgumentException("Please supply at least two videos to merge.");
             }
 
-            if (items.Any(i => !(i is Video)))
-            {
-                throw new ArgumentException("Only videos can be grouped together.");
-            }
-
-            var videos = items.Cast<Video>().ToList();
-
-            var videosWithVersions = videos.Where(i => i.MediaSourceCount > 1)
+            var videosWithVersions = items.Where(i => i.MediaSourceCount > 1)
                 .ToList();
 
             if (videosWithVersions.Count > 1)
@@ -156,7 +150,7 @@ namespace MediaBrowser.Api
 
             if (primaryVersion == null)
             {
-                primaryVersion = videos.OrderBy(i =>
+                primaryVersion = items.OrderBy(i =>
                 {
                     if (i.Video3DFormat.HasValue)
                     {
@@ -179,9 +173,9 @@ namespace MediaBrowser.Api
                     }).First();
             }
 
-            foreach (var item in videos.Where(i => i.Id != primaryVersion.Id))
+            foreach (var item in items.Where(i => i.Id != primaryVersion.Id))
             {
-                item.PrimaryVersionId = primaryVersion.Id;
+                item.PrimaryVersionId = primaryVersion.Id.ToString("N");
 
                 await item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 

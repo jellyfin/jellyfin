@@ -24,7 +24,7 @@ namespace MediaBrowser.Providers.TV
     /// <summary>
     /// Class RemoteEpisodeProvider
     /// </summary>
-    class TvdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IItemIdentityProvider<EpisodeInfo>, IHasChangeMonitor
+    class TvdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IItemIdentityProvider<EpisodeInfo>, IHasItemChangeMonitor
     {
         private static readonly string FullIdKey = MetadataProviders.Tvdb + "-Full";
 
@@ -144,10 +144,9 @@ namespace MediaBrowser.Providers.TV
             return result;
         }
 
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
-            // Only enable for virtual items
-            if (item.LocationType != LocationType.Virtual)
+            if (!TvdbSeriesProvider.Current.GetTvDbOptions().EnableAutomaticUpdates)
             {
                 return false;
             }
@@ -160,7 +159,7 @@ namespace MediaBrowser.Providers.TV
                 // Process images
 				var seriesXmlPath = TvdbSeriesProvider.Current.GetSeriesXmlPath(series.ProviderIds, series.GetPreferredMetadataLanguage());
 
-				return _fileSystem.GetLastWriteTimeUtc(seriesXmlPath) > date;
+				return _fileSystem.GetLastWriteTimeUtc(seriesXmlPath) > item.DateLastRefreshed;
             }
 
             return false;
@@ -750,7 +749,7 @@ namespace MediaBrowser.Providers.TV
         private void AddPeople<T>(MetadataResult<T> result, string val, string personType)
         {
             // Sometimes tvdb actors have leading spaces
-            foreach (var person in val.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries)
+            foreach (var person in val.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
                                             .Where(i => !string.IsNullOrWhiteSpace(i))
                                             .Select(str => new PersonInfo { Type = personType, Name = str.Trim() }))
             {

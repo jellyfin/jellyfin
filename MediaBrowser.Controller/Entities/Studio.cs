@@ -10,13 +10,12 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Studio : BaseItem, IItemByName, IHasTags
     {
-        /// <summary>
-        /// Gets the user data key.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        protected override string CreateUserDataKey()
+        public override List<string> GetUserDataKeys()
         {
-            return "Studio-" + Name;
+            var list = base.GetUserDataKeys();
+
+            list.Insert(0, "Studio-" + Name);
+            return list;
         }
 
         /// <summary>
@@ -64,6 +63,13 @@ namespace MediaBrowser.Controller.Entities
         public Func<BaseItem, bool> GetItemFilter()
         {
             return i => i.Studios.Contains(Name, StringComparer.OrdinalIgnoreCase);
+        }
+
+        public IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query)
+        {
+            query.Studios = new[] { Name };
+
+            return LibraryManager.GetItemList(query);
         }
 
         [IgnoreDataMember]

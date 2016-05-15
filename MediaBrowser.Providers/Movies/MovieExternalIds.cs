@@ -21,7 +21,7 @@ namespace MediaBrowser.Providers.Movies
 
         public string UrlFormatString
         {
-            get { return "http://www.themoviedb.org/movie/{0}"; }
+            get { return "https://www.themoviedb.org/movie/{0}"; }
         }
 
         public bool Supports(IHasProviderIds item)
@@ -51,7 +51,7 @@ namespace MediaBrowser.Providers.Movies
 
         public string UrlFormatString
         {
-            get { return "http://www.themoviedb.org/tv/{0}"; }
+            get { return "https://www.themoviedb.org/tv/{0}"; }
         }
 
         public bool Supports(IHasProviderIds item)
@@ -74,7 +74,7 @@ namespace MediaBrowser.Providers.Movies
 
         public string UrlFormatString
         {
-            get { return "http://www.themoviedb.org/collection/{0}"; }
+            get { return "https://www.themoviedb.org/collection/{0}"; }
         }
 
         public bool Supports(IHasProviderIds item)
@@ -97,7 +97,7 @@ namespace MediaBrowser.Providers.Movies
 
         public string UrlFormatString
         {
-            get { return "http://www.themoviedb.org/person/{0}"; }
+            get { return "https://www.themoviedb.org/person/{0}"; }
         }
 
         public bool Supports(IHasProviderIds item)
@@ -120,7 +120,7 @@ namespace MediaBrowser.Providers.Movies
 
         public string UrlFormatString
         {
-            get { return "http://www.themoviedb.org/collection/{0}"; }
+            get { return "https://www.themoviedb.org/collection/{0}"; }
         }
 
         public bool Supports(IHasProviderIds item)

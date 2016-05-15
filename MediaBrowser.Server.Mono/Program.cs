@@ -79,7 +79,7 @@ namespace MediaBrowser.Server.Mono
             var fileSystem = new ManagedFileSystem(new PatternsLogger(logManager.GetLogger("FileSystem")), false, false);
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
-            var nativeApp = new NativeApp(options);
+            var nativeApp = new NativeApp(options, logManager.GetLogger("App"));
 
             _appHost = new ApplicationHost(appPaths, logManager, options, fileSystem, "emby.mono.zip", nativeApp);
 

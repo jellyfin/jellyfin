@@ -26,6 +26,70 @@ namespace MediaBrowser.Server.Implementations.Persistence
             AddCodecTagColumn();
             AddCommentColumn();
             AddNalColumn();
+            AddIsAvcColumn();
+            AddTitleColumn();
+        }
+
+        private void AddIsAvcColumn()
+        {
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "PRAGMA table_info(mediastreams)";
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        if (!reader.IsDBNull(1))
+                        {
+                            var name = reader.GetString(1);
+
+                            if (string.Equals(name, "IsAvc", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            var builder = new StringBuilder();
+
+            builder.AppendLine("alter table mediastreams");
+            builder.AppendLine("add column IsAvc BIT NULL");
+
+            _connection.RunQueries(new[] { builder.ToString() }, _logger);
+        }
+
+        private void AddTitleColumn()
+        {
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "PRAGMA table_info(mediastreams)";
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        if (!reader.IsDBNull(1))
+                        {
+                            var name = reader.GetString(1);
+
+                            if (string.Equals(name, "Title", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            var builder = new StringBuilder();
+
+            builder.AppendLine("alter table mediastreams");
+            builder.AppendLine("add column Title TEXT");
+
+            _connection.RunQueries(new[] { builder.ToString() }, _logger);
         }
 
         private void AddNalColumn()

@@ -11,13 +11,12 @@ namespace MediaBrowser.Controller.LiveTv
 {
     public class LiveTvChannel : BaseItem, IHasMediaSources
     {
-        /// <summary>
-        /// Gets the user data key.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        protected override string CreateUserDataKey()
+        public override List<string> GetUserDataKeys()
         {
-            return GetClientTypeName() + "-" + Name;
+            var list = base.GetUserDataKeys();
+
+            list.Insert(0, GetClientTypeName() + "-" + Name);
+            return list;
         }
 
         public override UnratedItem GetBlockUnratedType()
@@ -43,6 +42,15 @@ namespace MediaBrowser.Controller.LiveTv
         {
             get { return SourceType.LiveTV; }
             set { }
+        }
+
+        [IgnoreDataMember]
+        public override bool EnableRememberingTrackSelections
+        {
+            get
+            {
+                return false;
+            }
         }
 
         /// <summary>
