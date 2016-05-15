@@ -49,9 +49,11 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                                 "create table if not exists SyncJobs (Id GUID PRIMARY KEY, TargetId TEXT NOT NULL, Name TEXT NOT NULL, Profile TEXT, Quality TEXT, Bitrate INT, Status TEXT NOT NULL, Progress FLOAT, UserId TEXT NOT NULL, ItemIds TEXT NOT NULL, Category TEXT, ParentId TEXT, UnwatchedOnly BIT, ItemLimit INT, SyncNewContent BIT, DateCreated DateTime, DateLastModified DateTime, ItemCount int)",
                                 "create index if not exists idx_SyncJobs on SyncJobs(Id)",
+                                "create index if not exists idx_SyncJobs1 on SyncJobs(TargetId)",
 
                                 "create table if not exists SyncJobItems (Id GUID PRIMARY KEY, ItemId TEXT, ItemName TEXT, MediaSourceId TEXT, JobId TEXT, TemporaryPath TEXT, OutputPath TEXT, Status TEXT, TargetId TEXT, DateCreated DateTime, Progress FLOAT, AdditionalFiles TEXT, MediaSource TEXT, IsMarkedForRemoval BIT, JobItemIndex INT, ItemDateModifiedTicks BIGINT)",
-                                "create index if not exists idx_SyncJobItems on SyncJobs(Id)",
+                                "create index if not exists idx_SyncJobItems1 on SyncJobItems(Id)",
+                                "create index if not exists idx_SyncJobItems2 on SyncJobItems(TargetId)",
 
                                 //pragmas
                                 "pragma temp_store = memory",

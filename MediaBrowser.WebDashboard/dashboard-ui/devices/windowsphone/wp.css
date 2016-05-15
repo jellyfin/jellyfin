@@ -17,13 +17,9 @@
     background: #161616;
 }
 
-.libraryViewNav .mdl-tabs__tab.is-active {
+.libraryViewNav .pageTabButton.is-active {
     color: #52B54B !important;
 }
-
-    .libraryViewNav .mdl-tabs__tab.is-active:after {
-        background-color: transparent !important;
-    }
 
 .libraryPage:not(.noSecondaryNavPage) {
     padding-top: 105px !important;

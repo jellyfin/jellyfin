@@ -225,7 +225,7 @@
                 });
             },
 
-            configurePaperLibraryTabs: function (ownerpage, tabs, panels) {
+            configurePaperLibraryTabs: function (ownerpage, tabs, panels, animate) {
 
                 if (!browserInfo.safari) {
                     LibraryBrowser.configureSwipeTabs(ownerpage, tabs);
@@ -235,6 +235,8 @@
                 for (var i = 0, length = buttons.length; i < length; i++) {
                     buttons[i].classList.add('mdl-button');
                     buttons[i].classList.add('mdl-js-button');
+                    buttons[i].classList.add('mdl-js-ripple-effect');
+                    componentHandler.upgradeElement(buttons[i], 'MaterialButton');
                 }
 
                 tabs.classList.add('hiddenScrollX');
@@ -275,9 +277,9 @@
 
                         panels[index].classList.add('is-active');
 
-                        //if (browserInfo.animate) {
-                        //    fadeInRight(panels[index]);
-                        //}
+                        if (browserInfo.animate && animate) {
+                            fadeInRight(panels[index]);
+                        }
 
                         // If toCenter is called syncronously within the click event, it sometimes ends up canceling it
                         //setTimeout(function() {
@@ -1905,7 +1907,8 @@
 
                 var showTitle = options.showTitle == 'auto' ? true : options.showTitle;
 
-                if (item.Type == 'PhotoAlbum') {
+                // Force the title for these
+                if (item.Type == 'PhotoAlbum' || item.Type == 'Folder') {
                     showTitle = true;
                 }
                 var coverImage = options.coverImage;

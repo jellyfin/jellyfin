@@ -125,106 +125,110 @@
         ImageLoader.lazyChildren(elem);
     }
 
-    function initSuggestedTab(page, tabContent) {
+    return function (view, params) {
 
-        if (enableScrollX()) {
-            $('.itemsContainer', tabContent).addClass('hiddenScrollX').createCardMenus();
-        } else {
-            $('.itemsContainer', tabContent).removeClass('hiddenScrollX').createCardMenus();
-        }
-    }
+        var self = this;
 
-    function renderSuggestedTab(page, tabContent) {
+        self.initTab = function () {
 
-        reload(tabContent);
-    }
+            var tabContent = view.querySelector('.pageTabContent[data-index=\'' + 0 + '\']');
+            if (enableScrollX()) {
+                $('.itemsContainer', tabContent).addClass('hiddenScrollX').createCardMenus();
+            } else {
+                $('.itemsContainer', tabContent).removeClass('hiddenScrollX').createCardMenus();
+            }
+        };
 
-    function loadTab(page, index) {
+        self.renderTab = function () {
+            var tabContent = view.querySelector('.pageTabContent[data-index=\'' + 0 + '\']');
+            reload(tabContent);
+        };
 
-        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
-        var depends = [];
-        var scope = 'LiveTvPage';
-        var renderMethod = '';
-        var initMethod = '';
+        var tabControllers = [];
+        var renderedTabs = [];
 
-        var viewMenuBar = document.querySelector('.viewMenuBar');
+        function loadTab(page, index) {
 
-        switch (index) {
+            var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+            var depends = [];
 
-            case 0:
-                renderMethod = 'renderSuggestedTab';
-                initMethod = 'initSuggestedTab';
-                break;
-            case 1:
-                depends.push('registrationservices');
-                depends.push('scripts/livetvguide');
-                renderMethod = 'renderGuideTab';
-                initMethod = 'initGuideTab';
-                break;
-            case 2:
-                depends.push('scripts/livetvchannels');
-                depends.push('paper-icon-item');
-                depends.push('paper-item-body');
-                renderMethod = 'renderChannelsTab';
-                break;
-            case 3:
-                depends.push('scripts/livetvrecordings');
-                initMethod = 'initRecordingsTab';
-                renderMethod = 'renderRecordingsTab';
-                break;
-            case 4:
-                depends.push('scripts/livetvseriestimers');
-                renderMethod = 'renderSeriesTimersTab';
-                break;
-            default:
-                break;
-        }
+            switch (index) {
 
-        require(depends, function () {
-
-            if (initMethod && !tabContent.initComplete) {
-
-                window[scope][initMethod](page, tabContent);
-                tabContent.initComplete = true;
+                case 0:
+                    break;
+                case 1:
+                    depends.push('scripts/livetvguide');
+                    break;
+                case 2:
+                    depends.push('scripts/livetvchannels');
+                    depends.push('paper-icon-item');
+                    depends.push('paper-item-body');
+                    break;
+                case 3:
+                    depends.push('scripts/livetvrecordings');
+                    break;
+                case 4:
+                    depends.push('scripts/livetvseriestimers');
+                    break;
+                default:
+                    break;
             }
 
-            window[scope][renderMethod](page, tabContent);
+            require(depends, function (controllerFactory) {
 
-        });
-    }
+                if (index == 0) {
+                    self.tabContent = tabContent;
+                }
+                var controller = tabControllers[index];
+                if (!controller) {
+                    controller = index ? new controllerFactory(view, params, tabContent) : self;
+                    tabControllers[index] = controller;
 
-    pageIdOn('pageinit', "liveTvSuggestedPage", function () {
+                    if (controller.initTab) {
+                        controller.initTab();
+                    }
+                }
 
-        var page = this;
+                if (renderedTabs.indexOf(index) == -1) {
+                    renderedTabs.push(index);
+                    controller.renderTab();
+                }
+            });
+        }
 
-        var mdlTabs = page.querySelector('.libraryViewNav');
+        var mdlTabs = view.querySelector('.libraryViewNav');
 
-        libraryBrowser.configurePaperLibraryTabs(page, mdlTabs, page.querySelectorAll('.pageTabContent'));
+        var baseUrl = 'tv.html';
+        var topParentId = params.topParentId;
+        if (topParentId) {
+            baseUrl += '?topParentId=' + topParentId;
+        }
+
+        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'), true);
 
         mdlTabs.addEventListener('tabchange', function (e) {
-            loadTab(page, parseInt(e.detail.selectedTabIndex));
+            loadTab(view, parseInt(e.detail.selectedTabIndex));
         });
-    });
 
-    pageIdOn('viewshow', "liveTvSuggestedPage", function () {
+        view.addEventListener('viewshow', function (e) {
 
-        var page = this;
+            // Needed on the guide tab
+            // Ideally this should be moved to the guide tab on show/hide
+            document.body.classList.add('autoScrollY');
+        });
 
-        // Needed on the guide tab
-        // Ideally this should be moved to the guide tab on show/hide
-        document.body.classList.add('autoScrollY');
-    });
+        view.addEventListener('viewbeforehide', function (e) {
 
-    pageIdOn('viewbeforehide', "liveTvSuggestedPage", function () {
+            document.body.classList.remove('autoScrollY');
+        });
 
-        var page = this;
+        view.addEventListener('viewdestroy', function (e) {
 
-        document.body.classList.remove('autoScrollY');
-    });
-
-    window.LiveTvPage = {
-        renderSuggestedTab: renderSuggestedTab,
-        initSuggestedTab: initSuggestedTab
+            tabControllers.forEach(function (t) {
+                if (t.destroy) {
+                    t.destroy();
+                }
+            });
+        });
     };
-
 });

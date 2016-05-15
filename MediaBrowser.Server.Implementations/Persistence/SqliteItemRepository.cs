@@ -1643,9 +1643,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
                 {
-                    //Logger.Debug("GetItemList query time: {0}ms. Query: {1}",
-                    //    Convert.ToInt32((DateTime.UtcNow - now).TotalMilliseconds),
-                    //    cmd.CommandText);
+                    LogQueryTime("GetItemList", cmd, now);
 
                     while (reader.Read())
                     {
@@ -1656,6 +1654,26 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         }
                     }
                 }
+            }
+        }
+
+        private void LogQueryTime(string methodName, IDbCommand cmd, DateTime startDate)
+        {
+            var elapsed = (DateTime.UtcNow - startDate).TotalMilliseconds;
+
+            if (elapsed >= 500)
+            {
+                Logger.Debug("{2} query time (slow): {0}ms. Query: {1}",
+                    Convert.ToInt32(elapsed),
+                    cmd.CommandText,
+                    methodName);
+            }
+            else
+            {
+                //Logger.Debug("{2} query time: {0}ms. Query: {1}",
+                //    Convert.ToInt32(elapsed),
+                //    cmd.CommandText,
+                //    methodName);
             }
         }
 
@@ -1728,9 +1746,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
                 {
-                    //Logger.Debug("GetItems query time: {0}ms. Query: {1}",
-                    //    Convert.ToInt32((DateTime.UtcNow - now).TotalMilliseconds),
-                    //    cmd.CommandText);
+                    LogQueryTime("GetItems", cmd, now);
 
                     while (reader.Read())
                     {
@@ -1878,9 +1894,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
                 {
-                    //Logger.Debug("GetItemIdsList query time: {0}ms. Query: {1}",
-                    //    Convert.ToInt32((DateTime.UtcNow - now).TotalMilliseconds),
-                    //    cmd.CommandText);
+                    LogQueryTime("GetItemIdsList", cmd, now);
 
                     while (reader.Read())
                     {
@@ -2036,9 +2050,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
                 {
-                    //Logger.Debug("GetItemIds query time: {0}ms. Query: {1}",
-                    //    Convert.ToInt32((DateTime.UtcNow - now).TotalMilliseconds),
-                    //    cmd.CommandText);
+                    LogQueryTime("GetItemIds", cmd, now);
 
                     while (reader.Read())
                     {
@@ -2562,8 +2574,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         clause += " OR ";
                     }
                     clause += "Album=@AlbumName" + index;
-                    index++;
                     cmd.Parameters.Add(cmd, "@AlbumName" + index, DbType.String).Value = name;
+                    index++;
                 }
 
                 clause += ")";

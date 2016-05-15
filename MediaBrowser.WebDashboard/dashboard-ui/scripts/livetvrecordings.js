@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'scripts/livetvcomponents'], function ($) {
 
     function getRecordingGroupHtml(group) {
 
@@ -30,12 +30,12 @@
         return html;
     }
 
-    function renderRecordingGroups(page, groups) {
+    function renderRecordingGroups(context, groups) {
 
         if (groups.length) {
-            $('#recordingGroups', page).show();
+            $('#recordingGroups', context).show();
         } else {
-            $('#recordingGroups', page).hide();
+            $('#recordingGroups', context).hide();
         }
 
         var html = '';
@@ -49,7 +49,7 @@
 
         html += '</div>';
 
-        page.querySelector('#recordingGroupItems').innerHTML = html;
+        context.querySelector('#recordingGroupItems').innerHTML = html;
 
         Dashboard.hideLoadingMsg();
     }
@@ -78,7 +78,7 @@
         ImageLoader.lazyChildren(recordingItems);
     }
 
-    function renderActiveRecordings(page) {
+    function renderActiveRecordings(context) {
 
         ApiClient.getLiveTvRecordings({
 
@@ -88,12 +88,12 @@
 
         }).then(function (result) {
 
-            renderRecordings(page.querySelector('#activeRecordings'), result.Items);
+            renderRecordings(context.querySelector('#activeRecordings'), result.Items);
 
         });
     }
 
-    function renderLatestRecordings(page) {
+    function renderLatestRecordings(context) {
 
         ApiClient.getLiveTvRecordings({
 
@@ -104,15 +104,15 @@
 
         }).then(function (result) {
 
-            renderRecordings(page.querySelector('#latestRecordings'), result.Items);
+            renderRecordings(context.querySelector('#latestRecordings'), result.Items);
         });
     }
 
-    function renderTimers(page, timers) {
+    function renderTimers(context, timers) {
 
         LiveTvHelpers.getTimersHtml(timers).then(function (html) {
 
-            var elem = page.querySelector('#upcomingRecordings');
+            var elem = context.querySelector('#upcomingRecordings');
 
             if (html) {
                 elem.classList.remove('hide');
@@ -127,21 +127,21 @@
         });
     }
 
-    function renderUpcomingRecordings(page) {
+    function renderUpcomingRecordings(context) {
 
         ApiClient.getLiveTvTimers().then(function (result) {
 
-            renderTimers(page, result.Items);
+            renderTimers(context, result.Items);
         });
     }
 
-    function reload(page) {
+    function reload(context) {
 
         Dashboard.showLoadingMsg();
 
-        renderUpcomingRecordings(page);
-        renderActiveRecordings(page);
-        renderLatestRecordings(page);
+        renderUpcomingRecordings(context);
+        renderActiveRecordings(context);
+        renderLatestRecordings(context);
 
         ApiClient.getLiveTvRecordingGroups({
 
@@ -150,21 +150,21 @@
         }).then(function (result) {
 
             require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
-                renderRecordingGroups(page, result.Items);
+                renderRecordingGroups(context, result.Items);
             });
         });
     }
 
-    window.LiveTvPage.initRecordingsTab = function (page, tabContent) {
+    return function (view, params, tabContent) {
 
-        tabContent.querySelector('#upcomingRecordings .recordingItems').addEventListener('timercancelled', function () {
+        var self = this;
+        tabContent.querySelector('#upcomingRecordings .recordingItems').addEventListener('timercancelled', function () {
             reload(tabContent);
         });
-    };
 
-    window.LiveTvPage.renderRecordingsTab = function (page, tabContent) {
-
-        reload(tabContent);
+        self.renderTab = function () {
+            reload(tabContent);
+        };
     };
 
 });

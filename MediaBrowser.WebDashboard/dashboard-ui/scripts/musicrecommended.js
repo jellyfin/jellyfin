@@ -185,18 +185,6 @@
         });
     }
 
-    function initSuggestedTab(page, tabContent) {
-
-        var containers = tabContent.querySelectorAll('.itemsContainer');
-        if (enableScrollX()) {
-            $(containers).addClass('hiddenScrollX');
-        } else {
-            $(containers).removeClass('hiddenScrollX');
-        }
-
-        $(containers).createCardMenus();
-    }
-
     function loadSuggestionsTab(page, tabContent) {
 
         var parentId = LibraryMenu.getTopParentId();
@@ -213,93 +201,6 @@
 
         });
     }
-
-    function loadTab(page, index) {
-
-        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
-        var depends = [];
-        var scope = 'MusicPage';
-        var renderMethod = '';
-        var initMethod = '';
-
-        switch (index) {
-
-            case 0:
-                initMethod = 'initSuggestedTab';
-                renderMethod = 'renderSuggestedTab';
-                break;
-            case 1:
-                depends.push('scripts/musicalbums');
-                renderMethod = 'renderAlbumsTab';
-                initMethod = 'initAlbumsTab';
-                break;
-            case 2:
-                depends.push('scripts/musicalbumartists');
-                renderMethod = 'renderAlbumArtistsTab';
-                initMethod = 'initAlbumArtistsTab';
-                break;
-            case 3:
-                depends.push('scripts/musicartists');
-                renderMethod = 'renderArtistsTab';
-                initMethod = 'initArtistsTab';
-                break;
-            case 4:
-                depends.push('scripts/songs');
-                renderMethod = 'renderSongsTab';
-                depends.push('paper-icon-item');
-                depends.push('paper-item-body');
-                break;
-            case 5:
-                depends.push('scripts/musicgenres');
-                renderMethod = 'renderGenresTab';
-                break;
-            case 6:
-                depends.push('scripts/musicfolders');
-                renderMethod = 'renderFoldersTab';
-                initMethod = 'initFoldersTab';
-                break;
-            default:
-                break;
-        }
-
-        require(depends, function () {
-
-            if (initMethod && !tabContent.initComplete) {
-
-                window[scope][initMethod](page, tabContent);
-                tabContent.initComplete = true;
-            }
-
-            window[scope][renderMethod](page, tabContent);
-
-        });
-    }
-
-    window.MusicPage = window.MusicPage || {};
-    window.MusicPage.renderSuggestedTab = loadSuggestionsTab;
-    window.MusicPage.initSuggestedTab = initSuggestedTab;
-
-    pageIdOn('pageinit', "musicRecommendedPage", function () {
-
-        var page = this;
-
-        $('.recommendations', page).createCardMenus();
-
-        var mdlTabs = page.querySelector('.libraryViewNav');
-
-        var baseUrl = 'music.html';
-        var topParentId = LibraryMenu.getTopParentId();
-        if (topParentId) {
-            baseUrl += '?topParentId=' + topParentId;
-        }
-
-        libraryBrowser.configurePaperLibraryTabs(page, mdlTabs, page.querySelectorAll('.pageTabContent'));
-
-        mdlTabs.addEventListener('tabchange', function (e) {
-            loadTab(page, parseInt(e.detail.selectedTabIndex));
-        });
-
-    });
 
     pageIdOn('pagebeforeshow', "musicRecommendedPage", function () {
 
@@ -326,5 +227,124 @@
 
     });
 
+    return function (view, params) {
+
+        var self = this;
+
+        function reload() {
+
+            Dashboard.showLoadingMsg();
+
+            var tabContent = view.querySelector('.pageTabContent[data-index=\'' + 0 + '\']');
+            loadSuggestionsTab(view, tabContent);
+        }
+
+        function enableScrollX() {
+            return browserInfo.mobile && AppInfo.enableAppLayouts;
+        }
+
+        function getThumbShape() {
+            return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
+        }
+
+        self.initTab = function () {
+
+            var tabContent = view.querySelector('.pageTabContent[data-index=\'' + 0 + '\']');
+
+            var containers = tabContent.querySelectorAll('.itemsContainer');
+            if (enableScrollX()) {
+                $(containers).addClass('hiddenScrollX');
+            } else {
+                $(containers).removeClass('hiddenScrollX');
+            }
+
+            $(containers).createCardMenus();
+        };
+
+        self.renderTab = function () {
+            reload();
+        };
+
+        var tabControllers = [];
+        var renderedTabs = [];
+
+        function loadTab(page, index) {
+
+            var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+            var depends = [];
+
+            switch (index) {
+
+                case 0:
+                    break;
+                case 1:
+                    depends.push('scripts/musicalbums');
+                    break;
+                case 2:
+                    depends.push('scripts/musicalbumartists');
+                    break;
+                case 3:
+                    depends.push('scripts/musicartists');
+                    break;
+                case 4:
+                    depends.push('scripts/songs');
+                    depends.push('paper-icon-item');
+                    depends.push('paper-item-body');
+                    break;
+                case 5:
+                    depends.push('scripts/musicgenres');
+                    break;
+                case 6:
+                    depends.push('scripts/musicfolders');
+                    break;
+                default:
+                    break;
+            }
+
+            require(depends, function (controllerFactory) {
+
+                if (index == 0) {
+                    self.tabContent = tabContent;
+                }
+                var controller = tabControllers[index];
+                if (!controller) {
+                    controller = index ? new controllerFactory(view, params, tabContent) : self;
+                    tabControllers[index] = controller;
+
+                    if (controller.initTab) {
+                        controller.initTab();
+                    }
+                }
+
+                if (renderedTabs.indexOf(index) == -1) {
+                    renderedTabs.push(index);
+                    controller.renderTab();
+                }
+            });
+        }
+
+        var mdlTabs = view.querySelector('.libraryViewNav');
+
+        var baseUrl = 'music.html';
+        var topParentId = params.topParentId;
+        if (topParentId) {
+            baseUrl += '?topParentId=' + topParentId;
+        }
+
+        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'));
+
+        mdlTabs.addEventListener('tabchange', function (e) {
+            loadTab(view, parseInt(e.detail.selectedTabIndex));
+        });
+
+        view.addEventListener('viewdestroy', function (e) {
+
+            tabControllers.forEach(function (t) {
+                if (t.destroy) {
+                    t.destroy();
+                }
+            });
+        });
+    };
 
 });
