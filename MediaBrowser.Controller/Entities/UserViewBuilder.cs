@@ -399,8 +399,6 @@ namespace MediaBrowser.Controller.Entities
 
             query.SortBy = new string[] { };
 
-            //var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos }, i => i is MusicVideo || i is Audio.Audio && FilterItem(i, query));
-
             return PostFilterAndSort(items, parent, null, query);
         }
 
@@ -599,9 +597,13 @@ namespace MediaBrowser.Controller.Entities
         {
             if (query.Recursive)
             {
-                var items = GetRecursiveChildren(parent, user, new[] { CollectionType.TvShows, string.Empty }, i => (i is Series || i is Season || i is Episode) && FilterItem(i, query));
+                query.Recursive = true;
+                query.ParentId = parent.Id;
+                query.SetUser(user);
 
-                return PostFilterAndSort(items, parent, null, query);
+                query.IncludeItemTypes = new[] { typeof(Series).Name, typeof(Season).Name, typeof(Episode).Name };
+
+                return _libraryManager.GetItemsResult(query);
             }
 
             var list = new List<BaseItem>();
