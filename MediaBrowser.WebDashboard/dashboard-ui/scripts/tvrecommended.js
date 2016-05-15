@@ -181,7 +181,7 @@
 
         function loadTab(page, index) {
 
-            var tabContent = page.querySelector('.mdl-tabs__panel[data-index=\'' + index + '\']');
+            var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
             var depends = [];
 
             switch (index) {
@@ -232,7 +232,7 @@
             });
         }
 
-        var mdlTabs = view.querySelector('.mdl-tabs');
+        var mdlTabs = view.querySelector('.libraryViewNav');
 
         function onPlaybackStop(e, state) {
 
@@ -246,8 +246,6 @@
             }
         }
 
-        componentHandler.upgradeAllRegistered(view);
-
         var baseUrl = 'tv.html';
         var topParentId = params.topParentId;
         if (topParentId) {
@@ -260,7 +258,7 @@
             view.querySelector('#resumableItems').classList.remove('hiddenScrollX');
         }
         libraryBrowser.createCardMenus(view.querySelector('#resumableItems'));
-        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs);
+        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'));
 
         mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));

@@ -29,6 +29,10 @@
         bottom: -92px !important;
     }
 
+.pageTabContent:not(.is-active) {
+    display: none !important;
+}
+
 .sidebarDivider {
     height: 1px;
     background: #eaeaea;
@@ -181,51 +185,71 @@
     text-transform: uppercase;
     white-space: nowrap;
     padding: 0 0 0;
-    overflow-x: scroll;
-    -ms-overflow-style: none;
-    overflow: -moz-scrollbars-none;
-    -webkit-overflow-scrolling: touch;
     box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
 }
 
     .libraryViewNav.bottom {
-        top: auto!important;
+        top: auto !important;
         bottom: 0;
     }
 
 
-    .libraryViewNav .mdl-tabs__tab-bar {
-        -webkit-justify-content: initial;
-        justify-content: initial;
-        display: inline-flex;
-        text-align: center;
-        margin: 0 auto;
-    }
+.libraryViewNav {
+    justify-content: center;
+    display: flex;
+    display: block;
+    text-align: center;
+    margin: 0 auto;
+    align-items: center;
+}
 
-
-    .libraryViewNav .mdl-tabs__tab {
-        color: #aaa !important;
-        padding: 0 1.25em;
-        float: none;
+    .libraryViewNav .pageTabButton {
+        background: transparent;
+        border: 0 !important;
+        cursor: pointer;
+        outline: none !important;
+        width: auto;
+        font-family: inherit;
+        font-size: inherit;
+        color: #999 !important;
+        display: inline-block;
+        vertical-align: middle;
         flex-shrink: 0;
+        margin: 0;
+        padding: 1.2em .9em;
+        transition: none !important;
+        position: relative;
+        text-transform: uppercase;
+        font-weight: 500 !important;
+        height: auto;
+        min-width: initial;
+        line-height: initial;
     }
 
-        .libraryViewNav .mdl-tabs__tab.is-active {
+        .libraryViewNav .pageTabButton:focus {
+            font-weight: 500 !important;
+        }
+
+        .libraryViewNav .pageTabButton.is-active {
             color: #fff !important;
         }
 
-            .libraryViewNav .mdl-tabs__tab.is-active:after {
-                background: #52B54B !important;
-            }
+        .libraryViewNav .pageTabButton:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            border: 0;
+            bottom: 0;
+            height: 2px;
+            transition: all .12s cubic-bezier(.4,0,1,1);
+            right: 0;
+            transform: translateX(-100%);
+        }
 
-    .libraryViewNav::-webkit-scrollbar {
-        height: 0 !important;
-        display: none;
-    }
-
-    .libraryViewNav .mdl-tabs__tab .mdl-tabs__ripple-container .mdl-ripple {
-        background: #52B54B !important;
-    }
+        .libraryViewNav .pageTabButton.is-active:before {
+            transform: none;
+            background: #52B54B;
+        }
 
 .viewMenuBar, .libraryViewNav {
     background-color: #020202;

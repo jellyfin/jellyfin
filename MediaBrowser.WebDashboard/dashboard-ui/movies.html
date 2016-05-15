@@ -1,91 +1,87 @@
 ﻿<div id="moviesPage" data-role="page" data-dom-cache="true" class="page libraryPage backdropPage pageWithAbsoluteTabs collectionEditorPage" data-backdroptype="movie">
 
-    <div class="mdl-tabs mdl-js-tabs mdl-js-ripple-effect">
-        <div class="libraryViewNav">
-            <div class="mdl-tabs__tab-bar">
-                <a href="#suggestionsTab" class="mdl-tabs__tab is-active" data-index="0">${TabSuggestions}</a>
-                <a href="#moviesTab" class="mdl-tabs__tab" data-index="1">${TabMovies}</a>
-                <a href="#trailersTab" class="mdl-tabs__tab movieTrailersTab" data-index="2">${TabTrailers}</a>
-                <a href="#collectionsTab" class="mdl-tabs__tab" data-index="3">${TabCollections}</a>
-                <a href="#genresTab" class="mdl-tabs__tab" data-index="4">${TabGenres}</a>
-                <a href="#studiosTab" class="mdl-tabs__tab movieStudiosTab" data-index="5">${TabStudios}</a>
-            </div>
-        </div>
-        <div class="mdl-tabs__panel is-active pageTabContent ehsContent" id="suggestionsTab" data-index="0">
-            <div id="resumableSection" style="display: none;" class="homePageSection">
-                <div>
-                    <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderResume}</h1>
-                    <paper-button raised class="submit mini categorySyncButton" data-category="Resume"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
-                </div>
-
-                <div id="resumableItems" class="itemsContainer noautoinit">
-                </div>
+    <div class="libraryViewNav">
+        <button class="pageTabButton is-active" data-index="0">${TabSuggestions}</button>
+        <button class="pageTabButton" data-index="1">${TabMovies}</button>
+        <button class="pageTabButton movieTrailersTab" data-index="2">${TabTrailers}</button>
+        <button class="pageTabButton" data-index="3">${TabCollections}</button>
+        <button class="pageTabButton" data-index="4">${TabGenres}</button>
+        <button class="pageTabButton movieStudiosTab" data-index="5">${TabStudios}</button>
+    </div>
+    <div class="is-active pageTabContent ehsContent" id="suggestionsTab" data-index="0">
+        <div id="resumableSection" style="display: none;" class="homePageSection">
+            <div>
+                <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderResume}</h1>
+                <paper-button raised class="submit mini categorySyncButton" data-category="Resume"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
             </div>
 
-            <div class="homePageSection">
-                <div>
-                    <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderLatestMovies}</h1>
-                    <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
-                </div>
-
-                <div id="recentlyAddedItems" class="itemsContainer noautoinit">
-                </div>
-            </div>
-
-            <div class="recommendations homePageSection">
-            </div>
-            <div class="noItemsMessage" style="display: none;">
-                <br />
-                <p>${MessageNoMovieSuggestionsAvailable}</p>
+            <div id="resumableItems" class="itemsContainer noautoinit">
             </div>
         </div>
-        <div class="mdl-tabs__panel pageTabContent ehsContent" id="moviesTab" data-index="1">
-            <div class="alphabetPicker">
-            </div>
-            <div class="viewSettings">
-                <div class="listTopPaging">
-                </div>
-            </div>
-            <div class="itemsContainer" style="text-align:center;"></div>
-        </div>
-        <div class="mdl-tabs__panel pageTabContent ehsContent" id="trailersTab" data-index="2">
-            <div class="alphabetPicker">
-            </div>
-            <div class="viewSettings">
-                <div class="listTopPaging">
-                </div>
-            </div>
-            <div class="itemsContainer" style="text-align:center;"></div>
-            <p class="noItemsMessage" style="display:none;text-align:center;">${MessageNoTrailersFound}</p>
-        </div>
-        <div class="mdl-tabs__panel pageTabContent ehsContent" id="collectionsTab" data-index="3">
-            <div class="viewSettings">
 
-                <div class="listTopPaging">
-                    &nbsp;
-                </div>
-            </div>
-            <div class="itemsContainer" style="text-align:center;"></div>
-            <div class="noItemsMessage" style="display: none; text-align: center;">
-                <p>${MessageNoCollectionsAvailable}</p>
+        <div class="homePageSection">
+            <div>
+                <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderLatestMovies}</h1>
+                <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
             </div>
 
-            <paper-fab class="btnNewCollection bottomFab" icon="add" style="position:fixed;right:20px;background-color:#db4437;"></paper-fab>
-        </div>
-        <div class="mdl-tabs__panel pageTabContent ehsContent" id="genresTab" data-index="4">
-            <div class="viewSettings">
-                <div class="listTopPaging">
-                </div>
+            <div id="recentlyAddedItems" class="itemsContainer noautoinit">
             </div>
-            <div class="itemsContainer"></div>
         </div>
-        <div class="mdl-tabs__panel pageTabContent ehsContent" id="studiosTab" data-index="5">
-            <div class="viewSettings">
-                <div class="listTopPaging">
-                </div>
+
+        <div class="recommendations homePageSection">
+        </div>
+        <div class="noItemsMessage" style="display: none;">
+            <br />
+            <p>${MessageNoMovieSuggestionsAvailable}</p>
+        </div>
+    </div>
+    <div class="pageTabContent ehsContent" id="moviesTab" data-index="1">
+        <div class="alphabetPicker">
+        </div>
+        <div class="viewSettings">
+            <div class="listTopPaging">
             </div>
-            <div class="itemsContainer" style="text-align:center;"></div>
         </div>
+        <div class="itemsContainer" style="text-align:center;"></div>
+    </div>
+    <div class="pageTabContent ehsContent" id="trailersTab" data-index="2">
+        <div class="alphabetPicker">
+        </div>
+        <div class="viewSettings">
+            <div class="listTopPaging">
+            </div>
+        </div>
+        <div class="itemsContainer" style="text-align:center;"></div>
+        <p class="noItemsMessage" style="display:none;text-align:center;">${MessageNoTrailersFound}</p>
+    </div>
+    <div class="pageTabContent ehsContent" id="collectionsTab" data-index="3">
+        <div class="viewSettings">
+
+            <div class="listTopPaging">
+                &nbsp;
+            </div>
+        </div>
+        <div class="itemsContainer" style="text-align:center;"></div>
+        <div class="noItemsMessage" style="display: none; text-align: center;">
+            <p>${MessageNoCollectionsAvailable}</p>
+        </div>
+
+        <paper-fab class="btnNewCollection bottomFab" icon="add" style="position:fixed;right:20px;background-color:#db4437;"></paper-fab>
+    </div>
+    <div class="pageTabContent ehsContent" id="genresTab" data-index="4">
+        <div class="viewSettings">
+            <div class="listTopPaging">
+            </div>
+        </div>
+        <div class="itemsContainer"></div>
+    </div>
+    <div class="pageTabContent ehsContent" id="studiosTab" data-index="5">
+        <div class="viewSettings">
+            <div class="listTopPaging">
+            </div>
+        </div>
+        <div class="itemsContainer" style="text-align:center;"></div>
     </div>
 
     <div data-role="content">

@@ -32,12 +32,12 @@
             }
 
             var menuItem = {
-                name: name,
+                name: s.DisplayTitle || name,
                 id: s.Index
             };
 
             if (s.Index == currentIndex) {
-                menuItem.ironIcon = 'check';
+                menuItem.selected = true;
             }
 
             return menuItem;
@@ -83,12 +83,12 @@
             }
 
             var menuItem = {
-                name: name,
+                name: s.DisplayTitle || name,
                 id: s.Index
             };
 
             if (s.Index == currentIndex) {
-                menuItem.ironIcon = 'check';
+                menuItem.selected = true;
             }
 
             return menuItem;
@@ -459,7 +459,7 @@
         }
 
         function isPlaylistOpen(context) {
-            return libraryBrowser.selectedTab(context.querySelector('.mdl-tabs')) == 2;
+            return libraryBrowser.selectedTab(context.querySelector('.libraryViewNav')) == 2;
         }
 
         function onStateChanged(e, state) {
@@ -813,7 +813,7 @@
             //    showSlideshowMenu(context);
             //});
 
-            var mdlTabs = context.querySelector('.mdl-tabs');
+            var mdlTabs = context.querySelector('.libraryViewNav');
 
             if (AppInfo.enableNowPlayingPageBottomTabs) {
                 context.querySelector('.libraryViewNav').classList.add('bottom');
@@ -821,7 +821,7 @@
                 context.querySelector('.libraryViewNav').classList.remove('bottom');
             }
 
-            libraryBrowser.configurePaperLibraryTabs(ownerView, mdlTabs);
+            libraryBrowser.configurePaperLibraryTabs(ownerView, mdlTabs, ownerView.querySelectorAll('.pageTabContent'));
 
             mdlTabs.addEventListener('tabchange', function (e) {
                 if (e.detail.selectedTabIndex == 2 && playlistNeedsRefresh) {
@@ -862,7 +862,6 @@
                 context.querySelector('.topRightContainer').style.position = 'relative';
             }
 
-            componentHandler.upgradeAllRegistered(dlg);
             init(ownerView, dlg);
         };
 

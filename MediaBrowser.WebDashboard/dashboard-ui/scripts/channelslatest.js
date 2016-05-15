@@ -26,7 +26,7 @@
     pageIdOn('pageinit', "channelsPage", function () {
 
         var page = this;
-        var mdlTabs = page.querySelector('.mdl-tabs');
+        var mdlTabs = page.querySelector('.libraryViewNav');
 
         mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(page, parseInt(e.detail.selectedTabIndex));

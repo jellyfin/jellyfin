@@ -1,20 +1,16 @@
-﻿<div id="channelsPage" data-role="page" data-dom-cache="true" class="page libraryPage channelsPage pageWithAbsoluteTabs" data-contextname="${HeaderChannels}" data-require="scripts/channels,scripts/channelslatest,scripts/sections,MaterialTabs">
+﻿<div id="channelsPage" data-role="page" data-dom-cache="true" class="page libraryPage channelsPage pageWithAbsoluteTabs" data-contextname="${HeaderChannels}" data-require="scripts/channels,scripts/channelslatest,scripts/sections">
 
-    <div class="mdl-tabs mdl-js-tabs mdl-js-ripple-effect">
-        <div class="libraryViewNav">
-            <div class="mdl-tabs__tab-bar">
-                <a href="#latestTab" class="mdl-tabs__tab is-active" data-index="0">${TabLatest}</a>
-                <a href="#channelsTab" class="mdl-tabs__tab" data-index="1">${TabChannels}</a>
-            </div>
+    <div class="libraryViewNav">
+        <button class="pageTabButton is-active" data-index="0">${TabLatest}</button>
+        <button class="pageTabButton" data-index="1">${TabChannels}</button>
+    </div>
+    <div class="is-active pageTabContent ehsContent" id="latestTab" data-index="0">
+        <div class="latestItems"></div>
+    </div>
+    <div class="pageTabContent ehsContent" id="channelsTab" data-index="1">
+        <div class="viewSettings">
         </div>
-        <div class="mdl-tabs__panel is-active pageTabContent ehsContent" id="latestTab" data-index="0">
-            <div class="latestItems"></div>
-        </div>
-        <div class="mdl-tabs__panel pageTabContent ehsContent" id="channelsTab" data-index="1">
-            <div class="viewSettings">
-            </div>
-            <div id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
-        </div>
+        <div id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
     </div>
 
     <div data-role="content">

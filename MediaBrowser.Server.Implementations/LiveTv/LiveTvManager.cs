@@ -1383,12 +1383,43 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
         }
 
+        private QueryResult<BaseItem> GetEmbyRecordings(RecordingQuery query, User user)
+        {
+            var folders = EmbyTV.EmbyTV.Current.GetRecordingFolders()
+                .SelectMany(i => i.Locations)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(i => _libraryManager.FindByPath(i, true))
+                .Where(i => i != null)
+                .Where(i => i.IsVisibleStandalone(user))
+                .ToList();
+
+            var items = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
+            {
+                MediaTypes = new[] { MediaType.Video },
+                Recursive = true,
+                AncestorIds = folders.Select(i => i.Id.ToString("N")).ToArray(),
+                ExcludeLocationTypes = new[] { LocationType.Virtual },
+                Limit = Math.Min(10, query.Limit ?? int.MaxValue)
+            });
+
+            return items;
+        }
+
         public async Task<QueryResult<BaseItem>> GetInternalRecordings(RecordingQuery query, CancellationToken cancellationToken)
         {
             var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
             if (user != null && !IsLiveTvEnabled(user))
             {
                 return new QueryResult<BaseItem>();
+            }
+
+            if (user != null && !(query.IsInProgress ?? false))
+            {
+                var initialResult = GetEmbyRecordings(query, user);
+                if (initialResult.TotalRecordCount > 0)
+                {
+                    return initialResult;
+                }
             }
 
             await RefreshRecordings(cancellationToken).ConfigureAwait(false);
@@ -2060,7 +2091,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             }, cancellationToken).ConfigureAwait(false);
 
-            var recordings = recordingResult.Items.Cast<ILiveTvRecording>().ToList();
+            var recordings = recordingResult.Items.OfType<ILiveTvRecording>().ToList();
 
             var groups = new List<BaseItemDto>();
 

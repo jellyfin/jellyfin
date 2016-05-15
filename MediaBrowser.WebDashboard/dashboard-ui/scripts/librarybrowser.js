@@ -1,4 +1,4 @@
-﻿define(['playlistManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'jQuery', 'itemHelper', 'mediaInfo', 'scrollStyles'], function (playlistManager, appSettings, appStorage, appHost, datetime, $, itemHelper, mediaInfo) {
+﻿define(['playlistManager', 'scrollHelper', 'appSettings', 'appStorage', 'apphost', 'datetime', 'jQuery', 'itemHelper', 'mediaInfo', 'scrollStyles'], function (playlistManager, scrollHelper, appSettings, appStorage, appHost, datetime, $, itemHelper, mediaInfo) {
 
     function parentWithClass(elem, className) {
 
@@ -176,7 +176,7 @@
 
                 if (selected == null) {
 
-                    var elem = tabs.querySelector('.mdl-tabs__tab.is-active');
+                    var elem = tabs.querySelector('.pageTabButton.is-active');
                     if (elem) {
                         return parseInt(elem.getAttribute('data-index'));
                     }
@@ -191,18 +191,18 @@
                         }
                     }));
                 } else {
-                    var tabButtons = tabs.querySelectorAll('.mdl-tabs__tab');
+                    var tabButtons = tabs.querySelectorAll('.pageTabButton');
                     tabButtons[selected].click();
                 }
             },
 
             configureSwipeTabs: function (ownerpage, tabs) {
 
-                var pageCount = tabs.querySelectorAll('.mdl-tabs__panel').length;
+                var pageCount = ownerpage.querySelectorAll('.pageTabContent').length;
 
                 require(['hammer'], function (Hammer) {
 
-                    var hammertime = new Hammer(tabs);
+                    var hammertime = new Hammer(ownerpage);
                     hammertime.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL });
 
                     hammertime.on('swipeleft', function (e) {
@@ -225,22 +225,64 @@
                 });
             },
 
-            configurePaperLibraryTabs: function (ownerpage, tabs) {
+            configurePaperLibraryTabs: function (ownerpage, tabs, panels) {
 
                 if (!browserInfo.safari) {
                     LibraryBrowser.configureSwipeTabs(ownerpage, tabs);
                 }
 
-                tabs.querySelector('.mdl-tabs__tab-bar').addEventListener('click', function (e) {
+                var buttons = tabs.querySelectorAll('.pageTabButton');
+                for (var i = 0, length = buttons.length; i < length; i++) {
+                    buttons[i].classList.add('mdl-button');
+                    buttons[i].classList.add('mdl-js-button');
+                }
 
-                    var link = parentWithClass(e.target, 'mdl-tabs__tab');
+                tabs.classList.add('hiddenScrollX');
 
-                    if (link) {
+                function fadeInRight(elem) {
+
+                    var pct = browserInfo.mobile ? '1%' : '0.5%';
+
+                    var keyframes = [
+                      { opacity: '0', transform: 'translate3d(' + pct + ', 0, 0)', offset: 0 },
+                      { opacity: '1', transform: 'none', offset: 1 }];
+
+                    elem.animate(keyframes, {
+                        duration: 300,
+                        iterations: 1,
+                        easing: 'ease-out'
+                    });
+                }
+
+                tabs.addEventListener('click', function (e) {
+
+                    var current = tabs.querySelector('.is-active');
+                    var link = parentWithClass(e.target, 'pageTabButton');
+
+                    if (link && link != current) {
+
+                        if (current) {
+                            current.classList.remove('is-active');
+                            panels[parseInt(current.getAttribute('data-index'))].classList.remove('is-active');
+                        }
+                        link.classList.add('is-active');
+                        var index = parseInt(link.getAttribute('data-index'));
                         tabs.dispatchEvent(new CustomEvent("tabchange", {
                             detail: {
-                                selectedTabIndex: parseInt(link.getAttribute('data-index'))
+                                selectedTabIndex: index
                             }
                         }));
+
+                        panels[index].classList.add('is-active');
+
+                        //if (browserInfo.animate) {
+                        //    fadeInRight(panels[index]);
+                        //}
+
+                        // If toCenter is called syncronously within the click event, it sometimes ends up canceling it
+                        //setTimeout(function() {
+                        //    scrollHelper.toCenter(tabs, link, true);
+                        //}, 10);
                     }
                 });
 
@@ -271,7 +313,7 @@
 
             onTabbedpagebeforeshowInternal: function (page, e, isFirstLoad) {
 
-                var pageTabsContainer = page.querySelector('.mdl-tabs');
+                var pageTabsContainer = page.querySelector('.libraryViewNav');
 
                 if (isFirstLoad) {
 
