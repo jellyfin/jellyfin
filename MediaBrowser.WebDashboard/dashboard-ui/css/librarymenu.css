@@ -185,7 +185,6 @@
     text-transform: uppercase;
     white-space: nowrap;
     padding: 0 0 0;
-    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
 }
 
     .libraryViewNav.bottom {
@@ -253,6 +252,7 @@
             right: 0;
             transform: translateX(-100%);
             border-radius: 0;
+            z-index: 1;
         }
 
         .libraryViewNav .pageTabButton.is-active:after {
@@ -457,6 +457,9 @@ body:not(.dashboardDocument) .btnNotifications {
 
 .darkDrawerPanel #drawer {
     background-color: #212121 !important;
+    /*background-color: rgba(40,40,40,.8) !important;
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);*/
     box-shadow: none !important;
 }
 
