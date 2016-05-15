@@ -1,103 +1,99 @@
 ﻿<div id="tvRecommendedPage" data-dom-cache="true" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs" data-backdroptype="series">
 
-    <div class="mdl-tabs mdl-js-tabs mdl-js-ripple-effect">
-        <div class="libraryViewNav">
-            <div class="mdl-tabs__tab-bar">
-                <a href="#suggestionsTab" class="mdl-tabs__tab is-active" data-index="0">${TabSuggestions}</a>
-                <a href="#latestTab" class="mdl-tabs__tab" data-index="1">${TabLatest}</a>
-                <a href="#upcomingTab" class="mdl-tabs__tab" data-index="2">${TabUpcoming}</a>
-                <a href="#seriesTab" class="mdl-tabs__tab" data-index="3">${TabShows}</a>
-                <a href="#episodesTab" class="mdl-tabs__tab" data-index="4">${TabEpisodes}</a>
-                <a href="#genresTab" class="mdl-tabs__tab" data-index="5">${TabGenres}</a>
-                <a href="#studiosTab" class="mdl-tabs__tab" data-index="6">${TabNetworks}</a>
-            </div>
-        </div>
-        <div class="mdl-tabs__panel is-active pageTabContent ehsContent" id="suggestionsTab" data-index="0">
-            <div id="resumableSection" class="homePageSection">
-                <div>
-                    <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderResume}</h1>
-                    <paper-button raised class="submit mini categorySyncButton" data-category="Resume"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
-                </div>
-
-                <div id="resumableItems" class="itemsContainer noautoinit">
-                </div>
+    <div class="libraryViewNav">
+        <button class="pageTabButton is-active" data-index="0">${TabSuggestions}</button>
+        <button class="pageTabButton" data-index="1">${TabLatest}</button>
+        <button class="pageTabButton" data-index="2">${TabUpcoming}</button>
+        <button class="pageTabButton" data-index="3">${TabShows}</button>
+        <button class="pageTabButton" data-index="4">${TabEpisodes}</button>
+        <button class="pageTabButton" data-index="5">${TabGenres}</button>
+        <button class="pageTabButton" data-index="6">${TabNetworks}</button>
+    </div>
+    <div class="is-active pageTabContent ehsContent" id="suggestionsTab" data-index="0">
+        <div id="resumableSection" class="homePageSection">
+            <div>
+                <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderResume}</h1>
+                <paper-button raised class="submit mini categorySyncButton" data-category="Resume"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
             </div>
 
-            <div class="homePageSection">
-                <div>
-                    <h1 class="listHeader nextUpHeader" style="display: inline-block; vertical-align: middle;">${HeaderNextUp}</h1>
-                    <paper-button raised class="submit mini categorySyncButton" data-category="NextUp"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
-                </div>
-                <div id="nextUpItems" class="itemsContainer">
-                </div>
-            </div>
-            <p class="noNextUpItems" style="display: none;">${NoNextUpItemsMessage}</p>
-        </div>
-        <div class="mdl-tabs__panel pageTabContent ehsContent" id="latestTab" data-index="1">
-            <div class="homePageSection">
-                <div>
-                    <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderLatestEpisodes}</h1>
-                    <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
-                </div>
-                <div id="latestEpisodes" class="itemsContainer">
-                </div>
+            <div id="resumableItems" class="itemsContainer noautoinit">
             </div>
         </div>
-        <div class="mdl-tabs__panel pageTabContent ehsContent" id="upcomingTab" data-index="2">
-            <div id="upcomingItems">
-            </div>
-            <div class="noItemsMessage" style="display: none;">
-                <p>${MessageNothingHere}</p>
-                <p>
-                    <a href="metadata.html">${MessagePleaseEnsureInternetMetadata}</a>
-                </p>
-            </div>
-        </div>
-        <div class="mdl-tabs__panel pageTabContent ehsContent" id="seriesTab" data-index="3">
-            <div style="text-align: center;padding:.7em 0;">
-                <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
-                    <div class="paging"></div>
-                    <button is="paper-icon-button-light" class="btnSelectView" title="${ButtonSelectView}"><iron-icon icon="view-comfy"></iron-icon></button>
-                    <button is="paper-icon-button-light" class="btnSort" title="${ButtonSort}"><iron-icon icon="sort-by-alpha"></iron-icon></button>
-                    <button is="paper-icon-button-light" class="btnFilter" title="${ButtonFilter}"><iron-icon icon="filter-list"></iron-icon></button>
-                </div>
-            </div>
 
-            <div class="alphabetPicker">
+        <div class="homePageSection">
+            <div>
+                <h1 class="listHeader nextUpHeader" style="display: inline-block; vertical-align: middle;">${HeaderNextUp}</h1>
+                <paper-button raised class="submit mini categorySyncButton" data-category="NextUp"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
             </div>
-
-            <div class="itemsContainer">
-            </div>
-            <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
-                <div class="paging"></div>
+            <div id="nextUpItems" class="itemsContainer">
             </div>
         </div>
-        <div class="mdl-tabs__panel pageTabContent ehsContent" id="episodesTab" data-index="4">
+        <p class="noNextUpItems" style="display: none;">${NoNextUpItemsMessage}</p>
+    </div>
+    <div class="pageTabContent ehsContent" id="latestTab" data-index="1">
+        <div class="homePageSection">
+            <div>
+                <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderLatestEpisodes}</h1>
+                <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
+            </div>
+            <div id="latestEpisodes" class="itemsContainer">
+            </div>
+        </div>
+    </div>
+    <div class="pageTabContent ehsContent" id="upcomingTab" data-index="2">
+        <div id="upcomingItems">
+        </div>
+        <div class="noItemsMessage" style="display: none;">
+            <p>${MessageNothingHere}</p>
+            <p>
+                <a href="metadata.html">${MessagePleaseEnsureInternetMetadata}</a>
+            </p>
+        </div>
+    </div>
+    <div class="pageTabContent ehsContent" id="seriesTab" data-index="3">
+        <div style="text-align: center;padding:.7em 0;">
             <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
                 <div class="paging"></div>
                 <button is="paper-icon-button-light" class="btnSelectView" title="${ButtonSelectView}"><iron-icon icon="view-comfy"></iron-icon></button>
                 <button is="paper-icon-button-light" class="btnSort" title="${ButtonSort}"><iron-icon icon="sort-by-alpha"></iron-icon></button>
                 <button is="paper-icon-button-light" class="btnFilter" title="${ButtonFilter}"><iron-icon icon="filter-list"></iron-icon></button>
             </div>
-            <div class="itemsContainer">
-            </div>
-            <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
-                <div class="paging"></div>
+        </div>
+
+        <div class="alphabetPicker">
+        </div>
+
+        <div class="itemsContainer">
+        </div>
+        <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
+            <div class="paging"></div>
+        </div>
+    </div>
+    <div class="pageTabContent ehsContent" id="episodesTab" data-index="4">
+        <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
+            <div class="paging"></div>
+            <button is="paper-icon-button-light" class="btnSelectView" title="${ButtonSelectView}"><iron-icon icon="view-comfy"></iron-icon></button>
+            <button is="paper-icon-button-light" class="btnSort" title="${ButtonSort}"><iron-icon icon="sort-by-alpha"></iron-icon></button>
+            <button is="paper-icon-button-light" class="btnFilter" title="${ButtonFilter}"><iron-icon icon="filter-list"></iron-icon></button>
+        </div>
+        <div class="itemsContainer">
+        </div>
+        <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
+            <div class="paging"></div>
+        </div>
+    </div>
+    <div class="pageTabContent ehsContent" id="genresTab" data-index="5">
+        <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
+            <button is="paper-icon-button-light" class="btnSelectView" title="${ButtonSelectView}"><iron-icon icon="view-comfy"></iron-icon></button>
+        </div>
+        <div id="items" class="itemsContainer paddedItemsContainer"></div>
+    </div>
+    <div class="pageTabContent ehsContent" id="studiosTab" data-index="6">
+        <div class="viewSettings">
+            <div class="listTopPaging">
             </div>
         </div>
-        <div class="mdl-tabs__panel pageTabContent ehsContent" id="genresTab" data-index="5">
-            <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
-                <button is="paper-icon-button-light" class="btnSelectView" title="${ButtonSelectView}"><iron-icon icon="view-comfy"></iron-icon></button>
-            </div>
-            <div id="items" class="itemsContainer paddedItemsContainer"></div>
-        </div>
-        <div class="mdl-tabs__panel pageTabContent ehsContent" id="studiosTab" data-index="6">
-            <div class="viewSettings">
-                <div class="listTopPaging">
-                </div>
-            </div>
-            <div id="items" class="itemsContainer paddedItemsContainer" style="text-align: center;"></div>
-        </div>
+        <div id="items" class="itemsContainer paddedItemsContainer" style="text-align: center;"></div>
     </div>
 
     <div data-role="content">
