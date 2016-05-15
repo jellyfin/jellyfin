@@ -20,7 +20,7 @@ using CommonIO;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class TvdbSeasonImageProvider : IRemoteImageProvider, IHasOrder, IHasChangeMonitor
+    public class TvdbSeasonImageProvider : IRemoteImageProvider, IHasOrder, IHasItemChangeMonitor
     {
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
@@ -363,15 +363,11 @@ namespace MediaBrowser.Providers.TV
             });
         }
 
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
-            if (item.LocationType != LocationType.Virtual)
+            if (!TvdbSeriesProvider.Current.GetTvDbOptions().EnableAutomaticUpdates)
             {
-                // For non-virtual items, only enable if configured
-                if (!TvdbSeriesProvider.Current.GetTvDbOptions().EnableAutomaticUpdates)
-                {
-                    return false;
-                }
+                return false;
             }
 
             var season = (Season)item;
@@ -384,7 +380,7 @@ namespace MediaBrowser.Providers.TV
 
                 var fileInfo = _fileSystem.GetFileInfo(imagesXmlPath);
 
-                return fileInfo.Exists && _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
+                return fileInfo.Exists && _fileSystem.GetLastWriteTimeUtc(fileInfo) > item.DateLastRefreshed;
             }
 
             return false;

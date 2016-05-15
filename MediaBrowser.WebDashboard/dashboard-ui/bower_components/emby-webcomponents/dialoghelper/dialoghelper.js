@@ -1,4 +1,6 @@
-﻿define(['historyManager', 'focusManager', 'browser', 'layoutManager', 'inputManager', 'css!./dialoghelper.css'], function (historyManager, focusManager, browser, layoutManager, inputManager) {
+﻿define(['historyManager', 'focusManager', 'browser', 'layoutManager', 'inputManager', 'scrollHelper', 'css!./dialoghelper.css', 'scrollStyles'], function (historyManager, focusManager, browser, layoutManager, inputManager, scrollHelper) {
+
+    var globalOnOpenCallback;
 
     function dialogHashHandler(dlg, hash, resolve) {
 
@@ -24,8 +26,6 @@
         function onBackCommand(e) {
 
             if (e.detail.command == 'back') {
-                inputManager.off(dlg, onBackCommand);
-
                 self.closedByBack = true;
                 closeDialog(dlg);
                 e.preventDefault();
@@ -34,15 +34,15 @@
 
         function onDialogClosed() {
 
+            inputManager.off(dlg, onBackCommand);
+            window.removeEventListener('popstate', onHashChange);
+
             removeBackdrop(dlg);
             dlg.classList.remove('opened');
 
             if (removeScrollLockOnClose) {
                 document.body.classList.remove('noScroll');
             }
-
-            window.removeEventListener('popstate', onHashChange);
-            inputManager.off(dlg, onBackCommand);
 
             if (!self.closedByBack && isHistoryEnabled(dlg)) {
                 var state = history.state || {};
@@ -95,16 +95,13 @@
         if (center) {
             centerDialog(dlg);
         }
-        animateDialogOpen(dlg);
-
-        if (dlg.getAttribute('data-autofocus') == 'true') {
-            autoFocus(dlg);
-        }
 
         if (dlg.getAttribute('data-lockscroll') == 'true' && !document.body.classList.contains('noScroll')) {
             document.body.classList.add('noScroll');
             removeScrollLockOnClose = true;
         }
+
+        animateDialogOpen(dlg);
 
         if (isHistoryEnabled(dlg)) {
             historyManager.pushState({ dialogId: hash }, "Dialog", hash);
@@ -151,12 +148,9 @@
 
         // The dialog may have just been created and webComponents may not have completed initialiazation yet.
         // Without this, seeing some script errors in Firefox
+        // Also for some reason it won't auto-focus without a delay here, still investigating that
 
-        var delay = browser.animate ? 0 : 500;
-        if (!delay) {
-            focusManager.autoFocus(dlg);
-            return;
-        }
+        var delay = browser.animate ? 0 : 300;
 
         setTimeout(function () {
             focusManager.autoFocus(dlg);
@@ -191,6 +185,10 @@
     }
 
     function open(dlg) {
+
+        if (globalOnOpenCallback) {
+            globalOnOpenCallback(dlg);
+        }
 
         return new Promise(function (resolve, reject) {
 
@@ -268,7 +266,10 @@
 
     function animateDialogOpen(dlg) {
 
-        var onAnimationFinish = function() {
+        var onAnimationFinish = function () {
+            if (dlg.getAttribute('data-autofocus') == 'true') {
+                autoFocus(dlg);
+            }
         };
 
         if (!dlg.animationConfig || !dlg.animate) {
@@ -326,8 +327,12 @@
         // Also not working well in samsung tizen browser, content inside not clickable
         if (!dlg.showModal || browser.tv) {
             dlg = document.createElement('div');
+        } else {
+            // Just go ahead and always use a plain div because we're seeing issues overlaying absoltutely positioned content over a modal dialog
+            dlg = document.createElement('div');
         }
 
+        dlg.classList.add('focuscontainer');
         dlg.classList.add('hide');
 
         if (shouldLockDocumentScroll(options)) {
@@ -381,11 +386,12 @@
 
         dlg.classList.add('dialog');
 
-        dlg.classList.add('scrollY');
+        if (options.scrollY !== false) {
+            dlg.classList.add('smoothScrollY');
 
-        if (layoutManager.tv || layoutManager.mobile) {
-            // Need scrollbars for mouse use
-            dlg.classList.add('hiddenScroll');
+            if (layoutManager.tv) {
+                scrollHelper.centerFocus.on(dlg, false);
+            }
         }
 
         if (options.removeOnClose) {
@@ -403,6 +409,9 @@
     return {
         open: open,
         close: close,
-        createDialog: createDialog
+        createDialog: createDialog,
+        setOnOpen: function (val) {
+            globalOnOpenCallback = val;
+        }
     };
 });

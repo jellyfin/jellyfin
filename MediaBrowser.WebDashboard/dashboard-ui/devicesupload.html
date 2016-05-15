@@ -1,4 +1,4 @@
-﻿<div id="devicesUploadPage" data-role="page" class="page type-interior devicesPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Camera%20upload" data-require="scripts/devicesupload,paper-input,paper-checkbox">
+﻿<div id="devicesUploadPage" data-role="page" class="page type-interior devicesPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Camera%20upload" data-require="scripts/devicesupload,paper-input,paper-checkbox,paper-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -20,7 +20,7 @@
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <paper-input id="txtUploadPath" label="${LabelCameraUploadPath}" style="width:84%;display:inline-block;"></paper-input>
-                            <paper-icon-button id="btnSelectUploadPath" icon="search"></paper-icon-button>
+                            <button type="button" is="paper-icon-button-light" id="btnSelectUploadPath" title="${ButtonSelectDirectory}"><iron-icon icon="search"></iron-icon></button>
                             <div class="fieldDescription">${LabelCameraUploadPathHelp}</div>
                         </li>
                         <li>

@@ -1,4 +1,4 @@
-﻿<div id="encodingSettingsPage" data-role="page" class="page type-interior playbackConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Transcoding" data-require="scripts/encodingsettings,paper-input,paper-checkbox">
+﻿<div id="encodingSettingsPage" data-role="page" class="page type-interior playbackConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Transcoding" data-require="scripts/encodingsettings,paper-input,paper-checkbox,paper-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -9,7 +9,7 @@
                     <li>
                         <label for="selectVideoDecoder" class="selectLabel">${LabelHardwareAccelerationType}</label>
                         <select id="selectVideoDecoder" data-mini="true">
-                            <option value="">${OptionAuto}</option>
+                            <option value="">${OptionNone}</option>
                             <option value="qsv">Intel Quick Sync</option>
                         </select>
                         <div class="fieldDescription">${LabelHardwareAccelerationTypeHelp}</div>
@@ -37,7 +37,7 @@
                     </li>
                     <li>
                         <paper-input id="txtTranscodingTempPath" label="${LabelTranscodingTempPath}" style="width:80%;display:inline-block;"></paper-input>
-                        <paper-icon-button id="btnSelectTranscodingTempPath" icon="search"></paper-icon-button>
+                        <button type="button" is="paper-icon-button-light" id="btnSelectTranscodingTempPath" title="${ButtonSelectDirectory}"><iron-icon icon="search"></iron-icon></button>
                         <div class="fieldDescription">
                             ${LabelTranscodingTempPathHelp}
                         </div>

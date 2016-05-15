@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'css!css/metadataeditor.css', 'paper-fab'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'css!css/metadataeditor.css', 'paper-fab', 'paper-icon-button-light'], function (dialogHelper, $) {
 
     var currentItem;
     var currentDeferred;
@@ -81,24 +81,24 @@
             if (image.ImageType == "Backdrop" || image.ImageType == "Screenshot") {
 
                 if (i > 0) {
-                    html += '<paper-icon-button class="btnMoveImage" icon="chevron-left" data-imagetype="' + image.ImageType + '" data-index="' + image.ImageIndex + '" data-newindex="' + (image.ImageIndex - 1) + '" title="' + Globalize.translate('ButtonMoveLeft') + '"></paper-icon-button>';
+                    html += '<button is="paper-icon-button-light"" class="btnMoveImage" data-imagetype="' + image.ImageType + '" data-index="' + image.ImageIndex + '" data-newindex="' + (image.ImageIndex - 1) + '" title="' + Globalize.translate('ButtonMoveLeft') + '"><iron-icon icon="chevron-left"></iron-icon></button>';
                 } else {
-                    html += '<paper-icon-button icon="chevron-left" disabled title="' + Globalize.translate('ButtonMoveLeft') + '"></paper-icon-button>';
+                    html += '<button is="paper-icon-button-light"" disabled title="' + Globalize.translate('ButtonMoveLeft') + '"><iron-icon icon="chevron-left"></iron-icon></button>';
                 }
 
                 if (i < length - 1) {
-                    html += '<paper-icon-button class="btnMoveImage" icon="chevron-right" data-imagetype="' + image.ImageType + '" data-index="' + image.ImageIndex + '" data-newindex="' + (image.ImageIndex + 1) + '" title="' + Globalize.translate('ButtonMoveRight') + '"></paper-icon-button>';
+                    html += '<button is="paper-icon-button-light"" class="btnMoveImage" data-imagetype="' + image.ImageType + '" data-index="' + image.ImageIndex + '" data-newindex="' + (image.ImageIndex + 1) + '" title="' + Globalize.translate('ButtonMoveRight') + '"><iron-icon icon="chevron-right"></iron-icon></button>';
                 } else {
-                    html += '<paper-icon-button icon="chevron-right" disabled title="' + Globalize.translate('ButtonMoveRight') + '"></paper-icon-button>';
+                    html += '<button is="paper-icon-button-light"" disabled title="' + Globalize.translate('ButtonMoveRight') + '"><iron-icon icon="chevron-right"></iron-icon></button>';
                 }
             }
             else {
                 if (imageProviders.length) {
-                    html += '<paper-icon-button icon="search" data-imagetype="' + image.ImageType + '" class="btnSearchImages" title="' + Globalize.translate('ButtonBrowseOnlineImages') + '"></paper-icon-button>';
+                    html += '<button is="paper-icon-button-light"" data-imagetype="' + image.ImageType + '" class="btnSearchImages" title="' + Globalize.translate('ButtonBrowseOnlineImages') + '"><iron-icon icon="search"></iron-icon></button>';
                 }
             }
 
-            html += '<paper-icon-button icon="delete" data-imagetype="' + image.ImageType + '" data-index="' + (image.ImageIndex != null ? image.ImageIndex : "null") + '" class="btnDeleteImage" title="' + Globalize.translate('Delete') + '"></paper-icon-button>';
+            html += '<button is="paper-icon-button-light"" data-imagetype="' + image.ImageType + '" data-index="' + (image.ImageIndex != null ? image.ImageIndex : "null") + '" class="btnDeleteImage" title="' + Globalize.translate('Delete') + '"><iron-icon icon="delete"></iron-icon></button>';
 
             html += '</div>';
 

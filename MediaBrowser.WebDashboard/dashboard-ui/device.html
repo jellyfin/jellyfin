@@ -1,4 +1,4 @@
-﻿<div id="devicePage" data-role="page" class="page type-interior devicesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Devices" data-require="scripts/device,paper-input">
+﻿<div id="devicePage" data-role="page" class="page type-interior devicesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Devices" data-require="scripts/device,paper-input,paper-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -17,7 +17,7 @@
                         </li>
                         <li id="fldCameraUploadPath" style="display:none;">
                             <paper-input id="txtUploadPath" label="${LabelCameraUploadPath}" style="width:85%;display:inline-block;"></paper-input>
-                            <paper-icon-button id="btnSelectUploadPath" icon="search"></paper-icon-button>
+                            <button type="button" is="paper-icon-button-light" id="btnSelectUploadPath" title="${ButtonSelectDirectory}"><iron-icon icon="search"></iron-icon></button>
                             <div class="fieldDescription">${LabelCameraUploadPathHelp}</div>
                         </li>
 

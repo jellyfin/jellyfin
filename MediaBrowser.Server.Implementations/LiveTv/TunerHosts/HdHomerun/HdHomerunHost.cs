@@ -59,6 +59,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return id;
         }
 
+        public string ApplyDuration(string streamPath, TimeSpan duration)
+        {
+            streamPath += streamPath.IndexOf('?') == -1 ? "?" : "&";
+            streamPath += "duration=" + Convert.ToInt32(duration.TotalSeconds).ToString(CultureInfo.InvariantCulture);
+
+            return streamPath;
+        }
+
         private async Task<IEnumerable<Channels>> GetLineup(TunerHostInfo info, CancellationToken cancellationToken)
         {
             var options = new HttpRequestOptions

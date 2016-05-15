@@ -1,4 +1,4 @@
-﻿<div id="librarySettingsPage" data-role="page" class="page type-interior librarySectionPage withTabs" data-require="emby-collapsible,scripts/librarysettings,paper-input,paper-checkbox">
+﻿<div id="librarySettingsPage" data-role="page" class="page type-interior librarySectionPage withTabs" data-require="emby-collapsible,scripts/librarysettings,paper-input,paper-checkbox,paper-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -26,7 +26,7 @@
                     </li>
                     <li>
                         <paper-input id="txtMetadataPath" label="${LabelMetadataPath}" style="width:85%;display:inline-block;"></paper-input>
-                        <paper-icon-button id="btnSelectMetadataPath" icon="search"></paper-icon-button>
+                        <button type="button" is="paper-icon-button-light" id="btnSelectMetadataPath" title="${ButtonSelectDirectory}"><iron-icon icon="search"></iron-icon></button>
                         <div class="fieldDescription">${LabelMetadataPathHelp}</div>
                         <br />
                     </li>
@@ -86,15 +86,6 @@
                     <div>
                         <paper-checkbox id="chkExtractChaptersDuringLibraryScan">${LabelExtractChaptersDuringLibraryScan}</paper-checkbox>
                         <div class="fieldDescription paperCheckboxFieldDescription">${LabelExtractChaptersDuringLibraryScanHelp}</div>
-                    </div>
-                    <br />
-                </emby-collapsible>
-
-                <emby-collapsible title="${HeaderImages}">
-                    <br />
-                    <div>
-                        <paper-checkbox id="chkDownloadImagesInAdvance">${OptionDownloadImagesInAdvance}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${OptionDownloadImagesInAdvanceHelp}</div>
                     </div>
                     <br />
                 </emby-collapsible>

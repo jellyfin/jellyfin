@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'paper-checkbox', 'paper-input', 'paper-button'], function (dialogHelper) {
+﻿define(['dialogHelper', 'paper-checkbox', 'paper-input', 'paper-button', 'paper-icon-button-light'], function (dialogHelper) {
 
     var extractedName;
     var extractedYear;
@@ -20,7 +20,7 @@
 
     function initEpisodeForm(context, item) {
 
-        if (!item.ExtractedName || item.ExtractedName.length < 4) {
+        if (!item.ExtractedName || item.ExtractedName.length < 3) {
             context.querySelector('.fldRemember').classList.add('hide');
         }
         else {

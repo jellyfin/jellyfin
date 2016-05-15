@@ -1,5 +1,6 @@
 <!doctype html>
 <!--
+@license
 Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
 The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
@@ -59,9 +60,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           assert.equal(event.detail.toPage, pages[1]);
           assert.isTrue(animatedPages._completeAnimations.calledTwice);
           var a$ = animatedPages._completeAnimations.getCall(1).args[0];
-          assert.isTrue(a$[0].animation.isNeonAnimation, 'default animation is not a registered animation');
-          assert.isTrue(a$[1].animation.isNeonAnimation, 'entry animation is not a registered animation');
-          assert.isTrue(a$[2].animation.isNeonAnimation, 'exit animation is not a registered animation');
+          assert.isTrue(a$[0].animation.isNeonAnimation, 'entry animation is not a registered animation');
+          assert.isTrue(a$[1].animation.isNeonAnimation, 'exit animation is not a registered animation');
           done();
         });
         animatedPages.selected = 0;

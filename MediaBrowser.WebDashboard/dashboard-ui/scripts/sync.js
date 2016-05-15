@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['apphost', 'jQuery', 'paper-icon-button-light'], function (appHost, $) {
 
     var currentDialogOptions;
 
@@ -82,12 +82,15 @@
         return new Promise(function (resolve, reject) {
 
             require(['paper-checkbox', 'paper-input', 'emby-collapsible'], function () {
-                renderFormInternal(options, resolve);
+
+                appHost.appInfo().then(function (appInfo) {
+                    renderFormInternal(options, appInfo, resolve);
+                });
             });
         });
     }
 
-    function renderFormInternal(options, resolve) {
+    function renderFormInternal(options, appInfo, resolve) {
 
         var elem = options.elem;
         var dialogOptions = options.dialogOptions;
@@ -113,7 +116,7 @@
 
             html += targets.map(function (t) {
 
-                var isSelected = t.Id == AppInfo.deviceId;
+                var isSelected = t.Id == appInfo.deviceId;
                 var selectedHtml = isSelected ? ' selected="selected"' : '';
                 return '<option' + selectedHtml + ' value="' + t.Id + '">' + t.Name + '</option>';
 
@@ -246,8 +249,8 @@
                 dlg.classList.add('popupEditor');
 
                 var html = '';
-                html += '<div class="dialogHeader">';
-                html += '<paper-icon-button icon="arrow-back" class="btnCancel" tabindex="-1"></paper-icon-button>';
+                html += '<div class="dialogHeader" style="margin:0 0 2em;">';
+                html += '<button is="paper-icon-button-light" class="btnCancel" tabindex="-1"><iron-icon icon="arrow-back"></iron-icon></button>';
                 html += '<div class="dialogHeaderTitle">';
                 html += Globalize.translate('SyncMedia');
                 html += '</div>';

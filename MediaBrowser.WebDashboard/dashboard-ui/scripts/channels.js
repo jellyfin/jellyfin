@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['libraryBrowser'], function (libraryBrowser) {
 
     // The base query options
     var query = {
@@ -23,7 +23,7 @@
 
             if (view == "Thumb") {
 
-                html = LibraryBrowser.getPosterViewHtml({
+                html = libraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "backdrop",
                     context: 'channels',
@@ -36,7 +36,7 @@
             }
             else if (view == "ThumbCard") {
 
-                html = LibraryBrowser.getPosterViewHtml({
+                html = libraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "backdrop",
                     preferThumb: true,
@@ -51,7 +51,7 @@
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
 
-            LibraryBrowser.saveQueryValues('channels', query);
+            libraryBrowser.saveQueryValues('channels', query);
 
             Dashboard.hideLoadingMsg();
         });
@@ -62,7 +62,7 @@
         switch (index) {
 
             case 1:
-                LibraryBrowser.loadSavedQueryValues('channels', query);
+                libraryBrowser.loadSavedQueryValues('channels', query);
                 reloadItems(page);
                 break;
             default:
@@ -74,12 +74,11 @@
 
         var page = this;
 
-        var tabs = page.querySelector('paper-tabs');
-        var pageTabsContainer = page.querySelector('.pageTabsContainer');
+        var mdlTabs = page.querySelector('.libraryViewNav');
 
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pageTabsContainer, 'channels.html');
+        libraryBrowser.configurePaperLibraryTabs(page, mdlTabs, page.querySelectorAll('.pageTabContent'));
 
-        pageTabsContainer.addEventListener('tabchange', function (e) {
+        mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(page, parseInt(e.detail.selectedTabIndex));
         });
 

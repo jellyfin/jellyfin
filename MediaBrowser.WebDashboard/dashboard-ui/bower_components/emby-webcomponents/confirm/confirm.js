@@ -1,4 +1,4 @@
-define(['layoutManager', 'dialogText'], function (layoutManager, dialogText) {
+define(['layoutManager', 'globalize'], function (layoutManager, globalize) {
 
     function showTvConfirm(options) {
         return new Promise(function (resolve, reject) {
@@ -8,12 +8,12 @@ define(['layoutManager', 'dialogText'], function (layoutManager, dialogText) {
                 var items = [];
 
                 items.push({
-                    name: dialogText.get('Ok'),
+                    name: globalize.translate('sharedcomponents#ButtonOk'),
                     id: 'ok'
                 });
 
                 items.push({
-                    name: dialogText.get('Cancel'),
+                    name: globalize.translate('sharedcomponents#ButtonCancel'),
                     id: 'cancel'
                 });
 
@@ -74,9 +74,9 @@ define(['layoutManager', 'dialogText'], function (layoutManager, dialogText) {
 
         html += '<div class="buttons">';
 
-        html += '<paper-button class="btnConfirm" autofocus>' + dialogText.get('Ok') + '</paper-button>';
+        html += '<paper-button class="btnConfirm" autofocus>' + globalize.translate('sharedcomponents#ButtonOk') + '</paper-button>';
 
-        html += '<paper-button class="btnCancel">' + dialogText.get('Cancel') + '</paper-button>';
+        html += '<paper-button class="btnCancel">' + globalize.translate('sharedcomponents#ButtonCancel') + '</paper-button>';
 
         html += '</div>';
 

@@ -30,18 +30,20 @@ class BufferController extends EventHandler {
   }
 
   onMediaAttaching(data) {
-    var media = this.media = data.media;
-    // setup the media source
-    var ms = this.mediaSource = new MediaSource();
-    //Media Source listeners
-    this.onmso = this.onMediaSourceOpen.bind(this);
-    this.onmse = this.onMediaSourceEnded.bind(this);
-    this.onmsc = this.onMediaSourceClose.bind(this);
-    ms.addEventListener('sourceopen', this.onmso);
-    ms.addEventListener('sourceended', this.onmse);
-    ms.addEventListener('sourceclose', this.onmsc);
-    // link video and media Source
-    media.src = URL.createObjectURL(ms);
+    let media = this.media = data.media;
+    if (media) {
+      // setup the media source
+      var ms = this.mediaSource = new MediaSource();
+      //Media Source listeners
+      this.onmso = this.onMediaSourceOpen.bind(this);
+      this.onmse = this.onMediaSourceEnded.bind(this);
+      this.onmsc = this.onMediaSourceClose.bind(this);
+      ms.addEventListener('sourceopen', this.onmso);
+      ms.addEventListener('sourceended', this.onmse);
+      ms.addEventListener('sourceclose', this.onmsc);
+      // link video and media Source
+      media.src = URL.createObjectURL(ms);
+    }
   }
 
   onMediaDetaching() {
@@ -61,13 +63,18 @@ class BufferController extends EventHandler {
       ms.removeEventListener('sourceopen', this.onmso);
       ms.removeEventListener('sourceended', this.onmse);
       ms.removeEventListener('sourceclose', this.onmsc);
-      // unlink MediaSource from video tag
-      this.media.src = '';
-      this.media.removeAttribute('src');
+
+      try {
+        // unlink MediaSource from video tag
+        this.media.src = '';
+        this.media.removeAttribute('src');
+      } catch(err) {
+        logger.warn(`onMediaDetaching:${err.message} while unlinking video.src`);
+      }
       this.mediaSource = null;
       this.media = null;
       this.pendingTracks = null;
-      this.sourceBuffer = {};
+      this.sourceBuffer = null;
     }
     this.onmso = this.onmse = this.onmsc = null;
     this.hls.trigger(Event.MEDIA_DETACHED);
@@ -122,46 +129,44 @@ class BufferController extends EventHandler {
 
   onBufferReset() {
     var sourceBuffer = this.sourceBuffer;
-    for(var type in sourceBuffer) {
-      var sb = sourceBuffer[type];
-      try {
-        this.mediaSource.removeSourceBuffer(sb);
-        sb.removeEventListener('updateend', this.onsbue);
-        sb.removeEventListener('error', this.onsbe);
-      } catch(err) {
+    if (sourceBuffer) {
+      for(var type in sourceBuffer) {
+        var sb = sourceBuffer[type];
+        try {
+          this.mediaSource.removeSourceBuffer(sb);
+          sb.removeEventListener('updateend', this.onsbue);
+          sb.removeEventListener('error', this.onsbe);
+        } catch(err) {
+        }
       }
+      this.sourceBuffer = null;
     }
-    this.sourceBuffer = {};
     this.flushRange = [];
     this.appended = 0;
   }
 
   onBufferCodecs(tracks) {
-    var sb,trackName,track, codec, mimeType;
+    let mediaSource = this.mediaSource;
 
-    if (!this.media) {
+    // delay sourcebuffer creation if media source not opened yet
+    if(!mediaSource || mediaSource.readyState !== 'open') {
       this.pendingTracks = tracks;
       return;
     }
 
-    var sourceBuffer = this.sourceBuffer,mediaSource = this.mediaSource;
-
-    for (trackName in tracks) {
-      if(!sourceBuffer[trackName]) {
-        track = tracks[trackName];
+    if (!this.sourceBuffer) {
+      let sourceBuffer = {};
+      for (let trackName in tracks) {
+        let track = tracks[trackName];
         // use levelCodec as first priority
-        codec = track.levelCodec || track.codec;
-        mimeType = `${track.container};codecs=${codec}`;
+        let codec = track.levelCodec || track.codec;
+        let mimeType = `${track.container};codecs=${codec}`;
         logger.log(`creating sourceBuffer with mimeType:${mimeType}`);
-        try {
-          sb = sourceBuffer[trackName] = mediaSource.addSourceBuffer(mimeType);
-          sb.addEventListener('updateend', this.onsbue);
-          sb.addEventListener('error', this.onsbe);
-        } catch(err) {
-          logger.error(`error while trying to add sourceBuffer:${err.message}`);
-          this.hls.trigger(Event.ERROR, {type: ErrorTypes.MEDIA_ERROR, details: ErrorDetails.BUFFER_ADD_CODEC_ERROR, fatal: false, err: err, mimeType : mimeType});
-        }
+        let sb = sourceBuffer[trackName] = mediaSource.addSourceBuffer(mimeType);
+        sb.addEventListener('updateend', this.onsbue);
+        sb.addEventListener('error', this.onsbe);
       }
+      this.sourceBuffer = sourceBuffer;
     }
   }
 
@@ -226,8 +231,10 @@ class BufferController extends EventHandler {
       // let's recompute this.appended, which is used to avoid flush looping
       var appended = 0;
       var sourceBuffer = this.sourceBuffer;
-      for (var type in sourceBuffer) {
-        appended += sourceBuffer[type].buffered.length;
+      if (sourceBuffer) {
+        for (var type in sourceBuffer) {
+          appended += sourceBuffer[type].buffered.length;
+        }
       }
       this.appended = appended;
       this.hls.trigger(Event.BUFFER_FLUSHED);
@@ -252,16 +259,9 @@ class BufferController extends EventHandler {
         var segment = segments.shift();
         try {
           //logger.log(`appending ${segment.type} SB, size:${segment.data.length});
-          if(sourceBuffer[segment.type]) {
-            sourceBuffer[segment.type].appendBuffer(segment.data);
-            this.appendError = 0;
-            this.appended++;
-          } else {
-            // in case we don't have any source buffer matching with this segment type,
-            // it means that Mediasource fails to create sourcebuffer
-            // discard this segment, and trigger update end
-            this.onSBUpdateEnd();
-          }
+          sourceBuffer[segment.type].appendBuffer(segment.data);
+          this.appendError = 0;
+          this.appended++;
         } catch(err) {
           // in case any error occured while appending, put back segment in segments table
           logger.error(`error while trying to append buffer:${err.message}`);

@@ -58,7 +58,7 @@
                 html += '</paper-item-body>';
 
                 if (profile.Type == 'User') {
-                    html += '<paper-icon-button icon="delete" class="btnDeleteProfile" data-profileid="' + profile.Id + '" title="' + Globalize.translate('ButtonDelete') + '"></paper-icon-button>';
+                    html += '<button type="button" is="paper-icon-button-light" class="btnDeleteProfile" data-profileid="' + profile.Id + '" title="' + Globalize.translate('ButtonDelete') + '"><iron-icon icon="delete"></iron-icon></button>';
                 }
 
                 html += '</paper-icon-item>';

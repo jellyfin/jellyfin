@@ -1,4 +1,17 @@
-﻿define(['playlistManager', 'appSettings', 'appStorage', 'jQuery', 'scrollStyles'], function (playlistManager, appSettings, appStorage, $) {
+﻿define(['playlistManager', 'scrollHelper', 'appSettings', 'appStorage', 'apphost', 'datetime', 'jQuery', 'itemHelper', 'mediaInfo', 'scrollStyles'], function (playlistManager, scrollHelper, appSettings, appStorage, appHost, datetime, $, itemHelper, mediaInfo) {
+
+    function parentWithClass(elem, className) {
+
+        while (!elem.classList || !elem.classList.contains(className)) {
+            elem = elem.parentNode;
+
+            if (!elem) {
+                return null;
+            }
+        }
+
+        return elem;
+    }
 
     var libraryBrowser = (function (window, document, screen) {
 
@@ -133,53 +146,6 @@
                 });
             },
 
-            needsRefresh: function (elem) {
-
-                var last = parseInt(elem.getAttribute('data-lastrefresh') || '0');
-
-                if (!last) {
-                    return true;
-                }
-
-                //if (NavHelper.isBack()) {
-                //    console.log('Not refreshing data because IsBack=true');
-                //    return false;
-                //}
-
-                var now = new Date().getTime();
-                var cacheDuration;
-
-                if (AppInfo.isNativeApp) {
-                    cacheDuration = 300000;
-                } else if (browserInfo.ipad || browserInfo.iphone || browserInfo.android) {
-                    cacheDuration = 10000;
-                } else {
-                    cacheDuration = 30000;
-                }
-
-                if ((now - last) < cacheDuration) {
-                    console.log('Not refreshing data due to age');
-                    return false;
-                }
-
-                return true;
-            },
-
-            setLastRefreshed: function (elem) {
-
-                elem.setAttribute('data-lastrefresh', new Date().getTime());
-                elem.classList.add('hasrefreshtime');
-            },
-
-            enableFullPaperTabs: function () {
-
-                if (browserInfo.animate && !browserInfo.mobile) {
-                    //return true;
-                }
-
-                return AppInfo.isNativeApp;
-            },
-
             allowSwipe: function (target) {
 
                 function allowSwipeOn(elem) {
@@ -189,7 +155,7 @@
                     }
 
                     if (elem.classList) {
-                        return !elem.classList.contains('hiddenScrollX') && !elem.classList.contains('smoothScrollX');
+                        return !elem.classList.contains('hiddenScrollX') && !elem.classList.contains('smoothScrollX') && !elem.classList.contains('libraryViewNav');
                     }
 
                     return true;
@@ -206,142 +172,121 @@
                 return true;
             },
 
-            getTabsAnimationConfig: function (elem, reverse) {
-
-                if (browserInfo.mobile) {
-
-                }
-
-                return {
-                    // scale up
-                    'entry': {
-                        name: 'fade-in-animation',
-                        node: elem,
-                        timing: { duration: 160, easing: 'ease-out' }
-                    },
-                    // fade out
-                    'exit': {
-                        name: 'fade-out-animation',
-                        node: elem,
-                        timing: { duration: 200, easing: 'ease-out' }
-                    }
-                };
-
-            },
-
-            selectedTab: function (pageTabsContainer, selected) {
+            selectedTab: function (tabs, selected) {
 
                 if (selected == null) {
 
-                    return pageTabsContainer.selectedTabIndex;
+                    var elem = tabs.querySelector('.pageTabButton.is-active');
+                    if (elem) {
+                        return parseInt(elem.getAttribute('data-index'));
+                    }
+                    return 0;
                 }
 
-                var tabs = pageTabsContainer.querySelectorAll('.pageTabContent');
-                for (var i = 0, length = tabs.length; i < length; i++) {
-                    if (i == selected) {
-                        tabs[i].classList.remove('hide');
-                    } else {
-                        tabs[i].classList.add('hide');
-                    }
+                var current = LibraryBrowser.selectedTab(tabs);
+                if (current == selected) {
+                    tabs.dispatchEvent(new CustomEvent("tabchange", {
+                        detail: {
+                            selectedTabIndex: selected
+                        }
+                    }));
+                } else {
+                    var tabButtons = tabs.querySelectorAll('.pageTabButton');
+                    tabButtons[selected].click();
                 }
-                pageTabsContainer.selectedTabIndex = selected;
-                pageTabsContainer.dispatchEvent(new CustomEvent("tabchange", {
-                    detail: {
-                        selectedTabIndex: selected
-                    }
-                }));
             },
 
-            configureSwipeTabs: function (ownerpage, tabs, pageTabsContainer) {
+            configureSwipeTabs: function (ownerpage, tabs) {
 
-                var pageCount = pageTabsContainer.querySelectorAll('.pageTabContent').length;
+                var pageCount = ownerpage.querySelectorAll('.pageTabContent').length;
 
                 require(['hammer'], function (Hammer) {
 
-                    var hammertime = new Hammer(pageTabsContainer);
+                    var hammertime = new Hammer(ownerpage);
                     hammertime.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL });
 
                     hammertime.on('swipeleft', function (e) {
                         if (LibraryBrowser.allowSwipe(e.target)) {
-                            var selected = parseInt(LibraryBrowser.selectedTab(pageTabsContainer) || '0');
+                            var selected = parseInt(LibraryBrowser.selectedTab(tabs) || '0');
                             if (selected < (pageCount - 1)) {
-                                tabs.selectNext();
+                                LibraryBrowser.selectedTab(tabs, selected + 1);
                             }
                         }
                     });
 
                     hammertime.on('swiperight', function (e) {
                         if (LibraryBrowser.allowSwipe(e.target)) {
-                            var selected = parseInt(LibraryBrowser.selectedTab(pageTabsContainer) || '0');
+                            var selected = parseInt(LibraryBrowser.selectedTab(tabs) || '0');
                             if (selected > 0) {
-                                tabs.selectPrevious();
+                                LibraryBrowser.selectedTab(tabs, selected - 1);
                             }
                         }
                     });
                 });
             },
 
-            navigateOnLibraryTabSelect: function () {
-                return !LibraryBrowser.enableFullPaperTabs();
-            },
+            configurePaperLibraryTabs: function (ownerpage, tabs, panels) {
 
-            configurePaperLibraryTabs: function (ownerpage, tabs, pageTabsContainer) {
-
-                // Causing iron-select to not fire in IE and safari
-                if (browserInfo.chrome) {
-                    tabs.noink = true;
+                if (!browserInfo.safari) {
+                    LibraryBrowser.configureSwipeTabs(ownerpage, tabs);
                 }
 
-                var libraryViewNav = ownerpage.querySelector('.libraryViewNav');
-                if (LibraryBrowser.enableFullPaperTabs()) {
-
-                    if (browserInfo.safari) {
-                        tabs.noSlide = true;
-                        tabs.noBar = true;
-                    } else {
-                        LibraryBrowser.configureSwipeTabs(ownerpage, tabs, pageTabsContainer);
-                    }
-
-                    if (libraryViewNav) {
-                        libraryViewNav.classList.add('paperLibraryViewNav');
-                        libraryViewNav.classList.remove('libraryViewNavWithMinHeight');
-                    }
-
-                } else {
-
-                    tabs.noSlide = true;
-                    tabs.noBar = true;
-
-                    var legacyTabs = ownerpage.querySelector('.legacyTabs');
-
-                    if (legacyTabs) {
-                        pageTabsContainer.addEventListener('tabchange', function (e) {
-
-                            var selected = e.detail.selectedTabIndex;
-                            var anchors = legacyTabs.querySelectorAll('a');
-                            for (var i = 0, length = anchors.length; i < length; i++) {
-                                if (i == selected) {
-                                    anchors[i].classList.add('ui-btn-active');
-                                } else {
-                                    anchors[i].classList.remove('ui-btn-active');
-                                }
-                            }
-                        });
-                    }
-
-                    if (libraryViewNav) {
-                        libraryViewNav.classList.remove('libraryViewNavWithMinHeight');
-                    }
+                var buttons = tabs.querySelectorAll('.pageTabButton');
+                for (var i = 0, length = buttons.length; i < length; i++) {
+                    buttons[i].classList.add('mdl-button');
+                    buttons[i].classList.add('mdl-js-button');
                 }
 
-                ownerpage.addEventListener('viewbeforeshow', LibraryBrowser.onTabbedpagebeforeshow);
+                tabs.classList.add('hiddenScrollX');
 
-                if (!LibraryBrowser.navigateOnLibraryTabSelect()) {
-                    tabs.addEventListener('iron-select', function () {
+                function fadeInRight(elem) {
 
-                        LibraryBrowser.selectedTab(pageTabsContainer, this.selected);
+                    var pct = browserInfo.mobile ? '1%' : '0.5%';
+
+                    var keyframes = [
+                      { opacity: '0', transform: 'translate3d(' + pct + ', 0, 0)', offset: 0 },
+                      { opacity: '1', transform: 'none', offset: 1 }];
+
+                    elem.animate(keyframes, {
+                        duration: 300,
+                        iterations: 1,
+                        easing: 'ease-out'
                     });
                 }
+
+                tabs.addEventListener('click', function (e) {
+
+                    var current = tabs.querySelector('.is-active');
+                    var link = parentWithClass(e.target, 'pageTabButton');
+
+                    if (link && link != current) {
+
+                        if (current) {
+                            current.classList.remove('is-active');
+                            panels[parseInt(current.getAttribute('data-index'))].classList.remove('is-active');
+                        }
+                        link.classList.add('is-active');
+                        var index = parseInt(link.getAttribute('data-index'));
+                        tabs.dispatchEvent(new CustomEvent("tabchange", {
+                            detail: {
+                                selectedTabIndex: index
+                            }
+                        }));
+
+                        panels[index].classList.add('is-active');
+
+                        //if (browserInfo.animate) {
+                        //    fadeInRight(panels[index]);
+                        //}
+
+                        // If toCenter is called syncronously within the click event, it sometimes ends up canceling it
+                        //setTimeout(function() {
+                        //    scrollHelper.toCenter(tabs, link, true);
+                        //}, 10);
+                    }
+                });
+
+                ownerpage.addEventListener('viewbeforeshow', LibraryBrowser.onTabbedpagebeforeshow);
             },
 
             onTabbedpagebeforeshow: function (e) {
@@ -368,38 +313,24 @@
 
             onTabbedpagebeforeshowInternal: function (page, e, isFirstLoad) {
 
-                var pageTabsContainer = page.querySelector('.pageTabsContainer');
+                var pageTabsContainer = page.querySelector('.libraryViewNav');
 
                 if (isFirstLoad) {
 
                     console.log('selected tab is null, checking query string');
 
-                    var selected = parseInt(getParameterByName('tab') || '0');
+                    var selected = page.firstTabIndex != null ? page.firstTabIndex : parseInt(getParameterByName('tab') || '0');
 
                     console.log('selected tab will be ' + selected);
 
-                    if (LibraryBrowser.enableFullPaperTabs()) {
-
-                        var tabs = page.querySelector('paper-tabs');
-                        if (tabs.selected) {
-                            // showTab was called
-                            return;
-                        }
-                        tabs.selected = selected;
-
-                    } else {
-                        LibraryBrowser.selectedTab(pageTabsContainer, selected);
-                    }
+                    LibraryBrowser.selectedTab(pageTabsContainer, selected);
 
                 } else {
 
                     // Go back to the first tab
-                    if (LibraryBrowser.enableFullPaperTabs() && !e.detail.isRestored) {
-                        if (LibraryBrowser.selectedTab(pageTabsContainer)) {
-
-                            page.querySelector('paper-tabs').selected = 0;
-                            return;
-                        }
+                    if (!e.detail.isRestored) {
+                        LibraryBrowser.selectedTab(pageTabsContainer, 0);
+                        return;
                     }
                     pageTabsContainer.dispatchEvent(new CustomEvent("tabchange", {
                         detail: {
@@ -411,37 +342,13 @@
 
             showTab: function (url, index) {
 
-                if (!LibraryBrowser.enableFullPaperTabs()) {
-
-                    if (index) {
-                        url = replaceQueryString(url, 'tab', index);
-                    }
-                    Dashboard.navigate(url);
-                    return;
-                }
-
                 var afterNavigate = function () {
 
                     document.removeEventListener('pagebeforeshow', afterNavigate);
+
                     if (window.location.href.toLowerCase().indexOf(url.toLowerCase()) != -1) {
 
-                        var pageTabsContainer = this.querySelector('.pageTabsContainer');
-
-                        if (pageTabsContainer) {
-
-                            var tabs = this.querySelector('paper-tabs');
-
-                            // For some reason the live tv page will not switch tabs in IE and safari
-                            var delay = browserInfo.chrome ? 0 : 100;
-
-                            setTimeout(function () {
-                                var noSlide = tabs.noSlide;
-                                tabs.noSlide = true;
-                                tabs.selected = index;
-                                tabs.noSlide = noSlide;
-
-                            }, delay);
-                        }
+                        this.firstTabIndex = index;
                     }
                 };
 
@@ -449,6 +356,7 @@
 
                     afterNavigate.call($.mobile.activePage);
                 } else {
+
                     pageClassOn('pagebeforeshow', 'page', afterNavigate);
                     Dashboard.navigate(url);
                 }
@@ -456,6 +364,9 @@
 
             canShare: function (item, user) {
 
+                if (item.Type == 'Timer') {
+                    return false;
+                }
                 return user.Policy.EnablePublicSharing;
             },
 
@@ -721,7 +632,7 @@
 
             supportsEditing: function (itemType) {
 
-                if (itemType == "UserRootFolder" || /*itemType == "CollectionFolder" ||*/ itemType == "UserView") {
+                if (itemType == "UserRootFolder" || /*itemType == "CollectionFolder" ||*/ itemType == "UserView" || itemType == 'Timer') {
                     return false;
                 }
 
@@ -756,7 +667,10 @@
                     if (item.MediaType == 'Video' && item.Type != 'TvChannel' && item.Type != 'Program' && item.LocationType != 'Virtual') {
                         commands.push('editsubtitles');
                     }
-                    commands.push('editimages');
+
+                    if (item.Type != 'Timer') {
+                        commands.push('editimages');
+                    }
                 }
 
                 if (user.Policy.IsAdministrator) {
@@ -769,7 +683,7 @@
                 }
 
                 if (item.CanDownload) {
-                    if (AppInfo.supportsDownloading) {
+                    if (appHost.supports('filedownload')) {
                         commands.push('download');
                     }
                 }
@@ -778,23 +692,32 @@
                     commands.push('share');
                 }
 
-                if (item.Type == "Movie" ||
-                    item.Type == "Trailer" ||
-                    item.Type == "Series" ||
-                    item.Type == "Game" ||
-                    item.Type == "BoxSet" ||
-                    item.Type == "Person" ||
-                    item.Type == "Book" ||
-                    item.Type == "MusicAlbum" ||
-                    item.Type == "MusicArtist") {
-
-                    if (user.Policy.IsAdministrator) {
-
-                        commands.push('identify');
-                    }
+                if (LibraryBrowser.canIdentify(user, item.Type)) {
+                    commands.push('identify');
                 }
 
                 return commands;
+            },
+
+            canIdentify: function (user, itemType) {
+
+                if (itemType == "Movie" ||
+                  itemType == "Trailer" ||
+                  itemType == "Series" ||
+                  itemType == "Game" ||
+                  itemType == "BoxSet" ||
+                  itemType == "Person" ||
+                  itemType == "Book" ||
+                  itemType == "MusicAlbum" ||
+                  itemType == "MusicArtist") {
+
+                    if (user.Policy.IsAdministrator) {
+
+                        return true;
+                    }
+                }
+
+                return false;
             },
 
             refreshItem: function (itemId) {
@@ -866,7 +789,15 @@
                 });
             },
 
-            showMoreCommands: function (positionTo, itemId, commands) {
+            editTimer: function (id) {
+
+                require(['components/recordingeditor/recordingeditor'], function (recordingeditor) {
+
+                    recordingeditor.show(id);
+                });
+            },
+
+            showMoreCommands: function (positionTo, itemId, itemType, commands) {
 
                 var items = [];
 
@@ -950,6 +881,8 @@
                     });
                 }
 
+                var serverId = ApiClient.serverInfo().Id;
+
                 require(['actionsheet'], function (actionsheet) {
 
                     actionsheet.show({
@@ -960,8 +893,11 @@
                             switch (id) {
 
                                 case 'share':
-                                    require(['sharingmanager'], function () {
-                                        SharingManager.showMenu(Dashboard.getCurrentUserId(), itemId);
+                                    require(['sharingmanager'], function (sharingManager) {
+                                        sharingManager.showMenu({
+                                            serverId: serverId,
+                                            itemId: itemId
+                                        });
                                     });
                                     break;
                                 case 'addtocollection':
@@ -987,16 +923,22 @@
                                                 api_key: ApiClient.accessToken()
                                             });
 
-                                            fileDownloader([{
+                                            fileDownloader.download([
+                                            {
                                                 url: downloadHref,
-                                                itemId: itemId
+                                                itemId: itemId,
+                                                serverId: serverId
                                             }]);
                                         });
 
                                         break;
                                     }
                                 case 'edit':
-                                    LibraryBrowser.editMetadata(itemId);
+                                    if (itemType == 'Timer') {
+                                        LibraryBrowser.editTimer(itemId);
+                                    } else {
+                                        LibraryBrowser.editMetadata(itemId);
+                                    }
                                     break;
                                 case 'editsubtitles':
                                     LibraryBrowser.editSubtitles(itemId);
@@ -1015,6 +957,10 @@
                                         MetadataRefreshMode: 'FullRefresh',
                                         ReplaceAllImages: false,
                                         ReplaceAllMetadata: true
+                                    });
+
+                                    require(['toast'], function (toast) {
+                                        toast(Globalize.translate('MessageRefreshQueued'));
                                     });
                                     break;
                                 default:
@@ -1369,19 +1315,10 @@
                     }
 
                     if (imgUrl) {
-                        var minLazyIndex = 16;
                         if (options.smallIcon) {
-                            if (index < minLazyIndex) {
-                                html += '<div class="listviewImage small" style="background-image:url(\'' + imgUrl + '\');" item-icon></div>';
-                            } else {
-                                html += '<div class="listviewImage lazy small" data-src="' + imgUrl + '" item-icon></div>';
-                            }
+                            html += '<div class="listviewImage lazy small" data-src="' + imgUrl + '" item-icon></div>';
                         } else {
-                            if (index < minLazyIndex) {
-                                html += '<div class="listviewImage" style="background-image:url(\'' + imgUrl + '\');" item-icon></div>';
-                            } else {
-                                html += '<div class="listviewImage lazy" data-src="' + imgUrl + '" item-icon></div>';
-                            }
+                            html += '<div class="listviewImage lazy" data-src="' + imgUrl + '" item-icon></div>';
                         }
                     } else {
                         if (options.smallIcon) {
@@ -1399,7 +1336,7 @@
                         textlines.push(item.AlbumArtist || '&nbsp;');
                     }
 
-                    var displayName = LibraryBrowser.getPosterViewDisplayName(item);
+                    var displayName = itemHelper.getDisplayName(item);
 
                     if (options.showIndexNumber && item.IndexNumber != null) {
                         displayName = item.IndexNumber + ". " + displayName;
@@ -1426,11 +1363,13 @@
                     else if (item.Type == 'TvChannel') {
 
                         if (item.CurrentProgram) {
-                            textlines.push(LibraryBrowser.getPosterViewDisplayName(item.CurrentProgram));
+                            textlines.push(itemHelper.getDisplayName(item.CurrentProgram));
                         }
                     }
                     else {
-                        textlines.push(LibraryBrowser.getMiscInfoHtml(item));
+                        textlines.push('<div class="itemMiscInfo">' + mediaInfo.getPrimaryMediaInfoHtml(item, {
+                            endsAt: false
+                        }) + '</div>');
                     }
 
                     if (textlines.length > 2) {
@@ -1471,7 +1410,7 @@
                     html += '</a>';
                     html += '</paper-item-body>';
 
-                    html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="listviewMenuButton"></paper-icon-button>';
+                    html += '<button is="paper-icon-button-light" class="listviewMenuButton"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
                     html += '<span class="listViewUserDataButtons">';
                     html += LibraryBrowser.getUserDataIconsHtml(item);
                     html += '</span>';
@@ -1488,48 +1427,98 @@
                 return outerHtml;
             },
 
-            getItemDataAttributes: function (item, options, index) {
+            getItemDataAttributesList: function (item, options, index) {
 
                 var atts = [];
 
                 var itemCommands = LibraryBrowser.getItemCommands(item, options);
 
-                atts.push('data-itemid="' + item.Id + '"');
-                atts.push('data-commands="' + itemCommands.join(',') + '"');
+                atts.push({
+                    name: 'itemid',
+                    value: item.Id
+                });
+                atts.push({
+                    name: 'commands',
+                    value: itemCommands.join(',')
+                });
 
                 if (options.context) {
-                    atts.push('data-context="' + (options.context || '') + '"');
+                    atts.push({
+                        name: 'context',
+                        value: options.context || ''
+                    });
                 }
 
                 if (item.IsFolder) {
-                    atts.push('data-isfolder="' + item.IsFolder + '"');
+                    atts.push({
+                        name: 'isfolder',
+                        value: item.IsFolder
+                    });
                 }
 
-                atts.push('data-itemtype="' + item.Type + '"');
+                atts.push({
+                    name: 'itemtype',
+                    value: item.Type
+                });
 
                 if (item.MediaType) {
-                    atts.push('data-mediatype="' + (item.MediaType || '') + '"');
+                    atts.push({
+                        name: 'mediatype',
+                        value: item.MediaType || ''
+                    });
                 }
 
-                if (item.UserData.PlaybackPositionTicks) {
-                    atts.push('data-positionticks="' + (item.UserData.PlaybackPositionTicks || 0) + '"');
+                if (item.UserData && item.UserData.PlaybackPositionTicks) {
+                    atts.push({
+                        name: 'positionticks',
+                        value: (item.UserData.PlaybackPositionTicks || 0)
+                    });
                 }
 
-                atts.push('data-playaccess="' + (item.PlayAccess || '') + '"');
-                atts.push('data-locationtype="' + (item.LocationType || '') + '"');
-                atts.push('data-index="' + index + '"');
+                atts.push({
+                    name: 'playaccess',
+                    value: item.PlayAccess || ''
+                });
+
+                atts.push({
+                    name: 'locationtype',
+                    value: item.LocationType || ''
+                });
+
+                atts.push({
+                    name: 'index',
+                    value: index
+                });
 
                 if (item.AlbumId) {
-                    atts.push('data-albumid="' + item.AlbumId + '"');
+                    atts.push({
+                        name: 'albumid',
+                        value: item.AlbumId
+                    });
                 }
 
                 if (item.ChannelId) {
-                    atts.push('data-channelid="' + item.ChannelId + '"');
+                    atts.push({
+                        name: 'channelid',
+                        value: item.ChannelId
+                    });
                 }
 
                 if (item.ArtistItems && item.ArtistItems.length) {
-                    atts.push('data-artistid="' + item.ArtistItems[0].Id + '"');
+                    atts.push({
+                        name: 'artistid',
+                        value: item.ArtistItems[0].Id
+                    });
                 }
+
+                return atts;
+            },
+
+            getItemDataAttributes: function (item, options, index) {
+
+                var atts = LibraryBrowser.getItemDataAttributesList(item, options, index).map(function (i) {
+                    return 'data-' + i.name + '="' + i.value + '"';
+                });
 
                 var html = atts.join(' ');
 
@@ -1542,7 +1531,7 @@
 
             supportsAddingToCollection: function (item) {
 
-                var invalidTypes = ['Person', 'Genre', 'MusicGenre', 'Studio', 'GameGenre', 'BoxSet', 'Playlist', 'UserView', 'CollectionFolder', 'Audio', 'Episode', 'TvChannel', 'Program', 'MusicAlbum'];
+                var invalidTypes = ['Person', 'Genre', 'MusicGenre', 'Studio', 'GameGenre', 'BoxSet', 'Playlist', 'UserView', 'CollectionFolder', 'Audio', 'Episode', 'TvChannel', 'Program', 'MusicAlbum', 'Timer'];
 
                 return !item.CollectionType && invalidTypes.indexOf(item.Type) == -1 && item.MediaType != 'Photo';
             },
@@ -1623,7 +1612,10 @@
                 if (item.MediaType == 'Video' && item.Type != 'TvChannel' && item.Type != 'Program' && item.LocationType != 'Virtual') {
                     itemCommands.push('editsubtitles');
                 }
-                itemCommands.push('editimages');
+
+                if (item.Type != 'Timer') {
+                    itemCommands.push('editimages');
+                }
 
                 return itemCommands;
             },
@@ -1753,14 +1745,11 @@
                 return result;
             },
 
-            getPosterViewHtml: function (options) {
+            setPosterViewData: function (options) {
 
                 var items = options.items;
-                var currentIndexValue;
 
                 options.shape = options.shape || "portrait";
-
-                var html = "";
 
                 var primaryImageAspectRatio = LibraryBrowser.getAveragePrimaryImageAspectRatio(items);
                 var isThumbAspectRatio = primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.777777778) < .3;
@@ -1826,8 +1815,33 @@
                     thumbWidth = 320;
                 }
 
+                options.uiAspect = getDesiredAspect(options.shape);
+                options.primaryImageAspectRatio = primaryImageAspectRatio;
+                options.posterWidth = posterWidth;
+                options.thumbWidth = thumbWidth;
+                options.bannerWidth = bannerWidth;
+                options.squareSize = squareSize;
+            },
+
+            getPosterViewHtml: function (options) {
+
+                LibraryBrowser.setPosterViewData(options);
+
+                var items = options.items;
+                var currentIndexValue;
+
+                options.shape = options.shape || "portrait";
+
+                var html = "";
+
+                var primaryImageAspectRatio;
+                var thumbWidth = options.thumbWidth;
+                var posterWidth = options.posterWidth;
+                var squareSize = options.squareSize;
+                var bannerWidth = options.bannerWidth;
+
                 var dateText;
-                var uiAspect = getDesiredAspect(options.shape);
+                var uiAspect = options.uiAspect;
 
                 for (var i = 0, length = items.length; i < length; i++) {
 
@@ -1842,7 +1856,7 @@
                         if (item.StartDate) {
                             try {
 
-                                dateText = LibraryBrowser.getFutureDateText(parseISO8601Date(item.StartDate, { toLocal: true }), true);
+                                dateText = LibraryBrowser.getFutureDateText(datetime.parseISO8601Date(item.StartDate, true), true);
 
                             } catch (err) {
                             }
@@ -1890,18 +1904,23 @@
                 }
 
                 var showTitle = options.showTitle == 'auto' ? true : options.showTitle;
-                var coverImage = options.coverImage;
 
-                if (options.autoThumb && item.ImageTags && item.ImageTags.Primary && item.PrimaryImageAspectRatio && item.PrimaryImageAspectRatio >= 1.34) {
+                if (item.Type == 'PhotoAlbum') {
+                    showTitle = true;
+                }
+                var coverImage = options.coverImage;
+                var imageItem = item.Type == 'Timer' ? (item.ProgramInfo || item) : item;
+
+                if (options.autoThumb && imageItem.ImageTags && imageItem.ImageTags.Primary && imageItem.PrimaryImageAspectRatio && imageItem.PrimaryImageAspectRatio >= 1.34) {
 
                     width = posterWidth;
                     height = primaryImageAspectRatio ? Math.round(posterWidth / primaryImageAspectRatio) : null;
 
-                    imgUrl = ApiClient.getImageUrl(item.Id, {
+                    imgUrl = ApiClient.getImageUrl(imageItem.Id, {
                         type: "Primary",
                         maxHeight: height,
                         maxWidth: width,
-                        tag: item.ImageTags.Primary,
+                        tag: imageItem.ImageTags.Primary,
                         enableImageEnhancers: enableImageEnhancers
                     });
 
@@ -1913,80 +1932,80 @@
                         }
                     }
 
-                } else if (options.autoThumb && item.ImageTags && item.ImageTags.Thumb) {
+                } else if (options.autoThumb && imageItem.ImageTags && imageItem.ImageTags.Thumb) {
 
-                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                    imgUrl = ApiClient.getScaledImageUrl(imageItem.Id, {
                         type: "Thumb",
                         maxWidth: thumbWidth,
-                        tag: item.ImageTags.Thumb,
+                        tag: imageItem.ImageTags.Thumb,
                         enableImageEnhancers: enableImageEnhancers
                     });
 
-                } else if (options.preferBackdrop && item.BackdropImageTags && item.BackdropImageTags.length) {
+                } else if (options.preferBackdrop && imageItem.BackdropImageTags && imageItem.BackdropImageTags.length) {
 
-                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                    imgUrl = ApiClient.getScaledImageUrl(imageItem.Id, {
                         type: "Backdrop",
                         maxWidth: thumbWidth,
-                        tag: item.BackdropImageTags[0],
+                        tag: imageItem.BackdropImageTags[0],
                         enableImageEnhancers: enableImageEnhancers
                     });
 
-                } else if (options.preferThumb && item.ImageTags && item.ImageTags.Thumb) {
+                } else if (options.preferThumb && imageItem.ImageTags && imageItem.ImageTags.Thumb) {
 
-                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                    imgUrl = ApiClient.getScaledImageUrl(imageItem.Id, {
                         type: "Thumb",
                         maxWidth: thumbWidth,
-                        tag: item.ImageTags.Thumb,
+                        tag: imageItem.ImageTags.Thumb,
                         enableImageEnhancers: enableImageEnhancers
                     });
 
-                } else if (options.preferBanner && item.ImageTags && item.ImageTags.Banner) {
+                } else if (options.preferBanner && imageItem.ImageTags && imageItem.ImageTags.Banner) {
 
-                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                    imgUrl = ApiClient.getScaledImageUrl(imageItem.Id, {
                         type: "Banner",
                         maxWidth: bannerWidth,
-                        tag: item.ImageTags.Banner,
+                        tag: imageItem.ImageTags.Banner,
                         enableImageEnhancers: enableImageEnhancers
                     });
 
-                } else if (options.preferThumb && item.SeriesThumbImageTag && options.inheritThumb !== false) {
+                } else if (options.preferThumb && imageItem.SeriesThumbImageTag && options.inheritThumb !== false) {
 
-                    imgUrl = ApiClient.getScaledImageUrl(item.SeriesId, {
+                    imgUrl = ApiClient.getScaledImageUrl(imageItem.SeriesId, {
                         type: "Thumb",
                         maxWidth: thumbWidth,
-                        tag: item.SeriesThumbImageTag,
+                        tag: imageItem.SeriesThumbImageTag,
                         enableImageEnhancers: enableImageEnhancers
                     });
 
-                } else if (options.preferThumb && item.ParentThumbItemId && options.inheritThumb !== false) {
+                } else if (options.preferThumb && imageItem.ParentThumbItemId && options.inheritThumb !== false) {
 
-                    imgUrl = ApiClient.getThumbImageUrl(item.ParentThumbItemId, {
+                    imgUrl = ApiClient.getThumbImageUrl(imageItem.ParentThumbItemId, {
                         type: "Thumb",
                         maxWidth: thumbWidth,
                         enableImageEnhancers: enableImageEnhancers
                     });
 
-                } else if (options.preferThumb && item.BackdropImageTags && item.BackdropImageTags.length) {
+                } else if (options.preferThumb && imageItem.BackdropImageTags && imageItem.BackdropImageTags.length) {
 
-                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                    imgUrl = ApiClient.getScaledImageUrl(imageItem.Id, {
                         type: "Backdrop",
                         maxWidth: thumbWidth,
-                        tag: item.BackdropImageTags[0],
+                        tag: imageItem.BackdropImageTags[0],
                         enableImageEnhancers: enableImageEnhancers
                     });
 
                     forceName = true;
 
-                } else if (item.ImageTags && item.ImageTags.Primary) {
+                } else if (imageItem.ImageTags && imageItem.ImageTags.Primary) {
 
                     width = posterWidth;
                     height = primaryImageAspectRatio ? Math.round(posterWidth / primaryImageAspectRatio) : null;
 
-                    imgUrl = ApiClient.getImageUrl(item.Id, {
+                    imgUrl = ApiClient.getImageUrl(imageItem.Id, {
                         type: "Primary",
                         maxHeight: height,
                         maxWidth: width,
-                        tag: item.ImageTags.Primary,
+                        tag: imageItem.ImageTags.Primary,
                         enableImageEnhancers: enableImageEnhancers
                     });
 
@@ -1998,25 +2017,25 @@
                         }
                     }
                 }
-                else if (item.ParentPrimaryImageTag) {
+                else if (imageItem.ParentPrimaryImageTag) {
 
-                    imgUrl = ApiClient.getImageUrl(item.ParentPrimaryImageItemId, {
+                    imgUrl = ApiClient.getImageUrl(imageItem.ParentPrimaryImageItemId, {
                         type: "Primary",
                         maxWidth: posterWidth,
                         tag: item.ParentPrimaryImageTag,
                         enableImageEnhancers: enableImageEnhancers
                     });
                 }
-                else if (item.AlbumId && item.AlbumPrimaryImageTag) {
+                else if (imageItem.AlbumId && imageItem.AlbumPrimaryImageTag) {
 
                     height = squareSize;
                     width = primaryImageAspectRatio ? Math.round(height * primaryImageAspectRatio) : null;
 
-                    imgUrl = ApiClient.getScaledImageUrl(item.AlbumId, {
+                    imgUrl = ApiClient.getScaledImageUrl(imageItem.AlbumId, {
                         type: "Primary",
                         maxHeight: height,
                         maxWidth: width,
-                        tag: item.AlbumPrimaryImageTag,
+                        tag: imageItem.AlbumPrimaryImageTag,
                         enableImageEnhancers: enableImageEnhancers
                     });
 
@@ -2028,46 +2047,46 @@
                         }
                     }
                 }
-                else if (item.Type == 'Season' && item.ImageTags && item.ImageTags.Thumb) {
+                else if (imageItem.Type == 'Season' && imageItem.ImageTags && imageItem.ImageTags.Thumb) {
 
-                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                    imgUrl = ApiClient.getScaledImageUrl(imageItem.Id, {
                         type: "Thumb",
                         maxWidth: thumbWidth,
-                        tag: item.ImageTags.Thumb,
+                        tag: imageItem.ImageTags.Thumb,
                         enableImageEnhancers: enableImageEnhancers
                     });
 
                 }
-                else if (item.BackdropImageTags && item.BackdropImageTags.length) {
+                else if (imageItem.BackdropImageTags && imageItem.BackdropImageTags.length) {
 
-                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                    imgUrl = ApiClient.getScaledImageUrl(imageItem.Id, {
                         type: "Backdrop",
                         maxWidth: thumbWidth,
-                        tag: item.BackdropImageTags[0],
+                        tag: imageItem.BackdropImageTags[0],
                         enableImageEnhancers: enableImageEnhancers
                     });
 
-                } else if (item.ImageTags && item.ImageTags.Thumb) {
+                } else if (imageItem.ImageTags && imageItem.ImageTags.Thumb) {
 
-                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                    imgUrl = ApiClient.getScaledImageUrl(imageItem.Id, {
                         type: "Thumb",
                         maxWidth: thumbWidth,
-                        tag: item.ImageTags.Thumb,
+                        tag: imageItem.ImageTags.Thumb,
                         enableImageEnhancers: enableImageEnhancers
                     });
 
-                } else if (item.SeriesThumbImageTag) {
+                } else if (imageItem.SeriesThumbImageTag) {
 
-                    imgUrl = ApiClient.getScaledImageUrl(item.SeriesId, {
+                    imgUrl = ApiClient.getScaledImageUrl(imageItem.SeriesId, {
                         type: "Thumb",
                         maxWidth: thumbWidth,
-                        tag: item.SeriesThumbImageTag,
+                        tag: imageItem.SeriesThumbImageTag,
                         enableImageEnhancers: enableImageEnhancers
                     });
 
-                } else if (item.ParentThumbItemId) {
+                } else if (imageItem.ParentThumbItemId) {
 
-                    imgUrl = ApiClient.getThumbImageUrl(item, {
+                    imgUrl = ApiClient.getThumbImageUrl(imageItem, {
                         type: "Thumb",
                         maxWidth: thumbWidth,
                         enableImageEnhancers: enableImageEnhancers
@@ -2200,13 +2219,17 @@
                     html += LibraryBrowser.getGroupCountIndicator(item);
                 }
 
+                if (item.SeriesTimerId) {
+                    html += '<iron-icon icon="fiber-smart-record" class="seriesTimerIndicator"></iron-icon>';
+                }
+
                 html += LibraryBrowser.getSyncIndicator(item);
 
                 if (mediaSourceCount > 1) {
                     html += '<div class="mediaSourceIndicator">' + mediaSourceCount + '</div>';
                 }
 
-                var progressHtml = options.showProgress === false || item.IsFolder ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
+                var progressHtml = options.showProgress === false || item.IsFolder ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData || {}));
 
                 var footerOverlayed = false;
 
@@ -2232,10 +2255,10 @@
                 html += '</a>';
 
                 if (options.overlayPlayButton && !item.IsPlaceHolder && (item.LocationType != 'Virtual' || !item.MediaType || item.Type == 'Program') && item.Type != 'Person') {
-                    html += '<div class="cardOverlayButtonContainer"><paper-icon-button icon="play-arrow" class="cardOverlayPlayButton" onclick="return false;"></paper-icon-button></div>';
+                    html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayPlayButton" onclick="return false;"><iron-icon icon="play-arrow"></iron-icon></button></div>';
                 }
                 if (options.overlayMoreButton) {
-                    html += '<div class="cardOverlayButtonContainer"><paper-icon-button icon="' + AppInfo.moreIcon + '" class="cardOverlayMoreButton" onclick="return false;"></paper-icon-button></div>';
+                    html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayMoreButton" onclick="return false;"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button></div>';
                 }
 
                 // cardScalable
@@ -2260,11 +2283,11 @@
 
                 if (options.cardLayout) {
                     html += '<div class="cardButtonContainer">';
-                    html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="listviewMenuButton btnCardOptions"></paper-icon-button>';
+                    html += '<button is="paper-icon-button-light" class="listviewMenuButton btnCardOptions"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
                     html += "</div>";
                 }
 
-                var name = options.showTitle == 'auto' && !item.IsFolder && item.MediaType == 'Photo' ? '' : LibraryBrowser.getPosterViewDisplayName(item, options.displayAsSpecial);
+                var name = options.showTitle == 'auto' && !item.IsFolder && item.MediaType == 'Photo' ? '' : itemHelper.getDisplayName(item);
 
                 if (!imgUrl && !showTitle) {
                     html += "<div class='cardDefaultText'>";
@@ -2334,6 +2357,45 @@
                     lines.push(item.ProductionYear || '');
                 }
 
+                if (options.showChannelName) {
+
+                    lines.push(item.ChannelName || '');
+                }
+
+                if (options.showAirTime) {
+
+                    var airTimeText;
+                    if (item.StartDate) {
+
+                        try {
+                            var date = datetime.parseISO8601Date(item.StartDate);
+
+                            airTimeText = date.toLocaleDateString();
+
+                            airTimeText += ', ' + datetime.getDisplayTime(date);
+
+                            if (item.EndDate) {
+                                date = datetime.parseISO8601Date(item.EndDate);
+                                airTimeText += ' - ' + datetime.getDisplayTime(date);
+                            }
+                        }
+                        catch (e) {
+                            console.log("Error parsing date: " + item.PremiereDate);
+                        }
+                    }
+
+                    lines.push(airTimeText || '');
+                }
+
+                if (item.Type == 'TvChannel') {
+
+                    if (item.CurrentProgram) {
+                        lines.push(itemHelper.getDisplayName(item.CurrentProgram));
+                    } else {
+                        lines.push('');
+                    }
+                }
+
                 if (options.showSeriesYear) {
 
                     if (item.Status == "Continuing") {
@@ -2348,7 +2410,7 @@
 
                 if (options.showProgramAirInfo) {
 
-                    var date = parseISO8601Date(item.StartDate, { toLocal: true });
+                    var date = datetime.parseISO8601Date(item.StartDate, true);
 
                     var text = item.StartDate ?
                         date.toLocaleString() :
@@ -2485,48 +2547,6 @@
                 return day;
             },
 
-            getPosterViewDisplayName: function (item, displayAsSpecial, includeParentInfo) {
-
-                if (!item) {
-                    throw new Error("null item passed into getPosterViewDisplayName");
-                }
-
-                var name = item.EpisodeTitle || item.Name || '';
-
-                if (item.Type == "TvChannel") {
-
-                    if (item.Number) {
-                        return item.Number + ' ' + name;
-                    }
-                    return name;
-                }
-                if (displayAsSpecial && item.Type == "Episode" && item.ParentIndexNumber == 0) {
-
-                    name = Globalize.translate('ValueSpecialEpisodeName', name);
-
-                } else if (item.Type == "Episode" && item.IndexNumber != null && item.ParentIndexNumber != null) {
-
-                    var displayIndexNumber = item.IndexNumber;
-
-                    var number = "E" + displayIndexNumber;
-
-                    if (includeParentInfo !== false) {
-                        number = "S" + item.ParentIndexNumber + ", " + number;
-                    }
-
-                    if (item.IndexNumberEnd) {
-
-                        displayIndexNumber = item.IndexNumberEnd;
-                        number += "-" + displayIndexNumber;
-                    }
-
-                    name = number + " - " + name;
-
-                }
-
-                return name;
-            },
-
             getOfflineIndicatorHtml: function (item) {
 
                 if (item.LocationType == "Offline") {
@@ -2536,7 +2556,7 @@
                 if (item.Type == 'Episode') {
                     try {
 
-                        var date = parseISO8601Date(item.PremiereDate, { toLocal: true });
+                        var date = datetime.parseISO8601Date(item.PremiereDate, true);
 
                         if (item.PremiereDate && (new Date().getTime() < date.getTime())) {
                             return '<div class="posterRibbon unairedPosterRibbon">' + Globalize.translate('HeaderUnaired') + '</div>';
@@ -2679,7 +2699,9 @@
 
             renderName: function (item, nameElem, linkToElement, context) {
 
-                var name = LibraryBrowser.getPosterViewDisplayName(item, false, false);
+                var name = itemHelper.getDisplayName(item, {
+                    includeParentInfo: false
+                });
 
                 Dashboard.setPageTitle(name);
 
@@ -2764,23 +2786,24 @@
                 }
             },
 
-            getDefaultPageSizeSelections: function () {
+            showLayoutMenu: function (button, currentLayout, views) {
 
-                return [20, 50, 100, 200, 300, 400, 500];
-            },
+                var dispatchEvent = true;
 
-            showLayoutMenu: function (button, currentLayout) {
+                if (!views) {
 
-                // Add banner and list once all screens support them
-                var views = button.getAttribute('data-layouts');
+                    dispatchEvent = false;
+                    // Add banner and list once all screens support them
+                    views = button.getAttribute('data-layouts');
 
-                views = views ? views.split(',') : ['List', 'Poster', 'PosterCard', 'Thumb', 'ThumbCard'];
+                    views = views ? views.split(',') : ['List', 'Poster', 'PosterCard', 'Thumb', 'ThumbCard'];
+                }
 
                 var menuItems = views.map(function (v) {
                     return {
                         name: Globalize.translate('Option' + v),
                         id: v,
-                        ironIcon: currentLayout == v ? 'check' : null
+                        selected: currentLayout == v
                     };
                 });
 
@@ -2791,10 +2814,20 @@
                         positionTo: button,
                         callback: function (id) {
 
-                            // TODO: remove jQuery
-                            require(['jQuery'], function ($) {
-                                $(button).trigger('layoutchange', [id]);
-                            });
+                            if (dispatchEvent) {
+                                button.dispatchEvent(new CustomEvent('layoutchange', {
+                                    detail: {
+                                        viewStyle: id
+                                    },
+                                    bubbles: true,
+                                    cancelable: false
+                                }));
+                            } else {
+                                // TODO: remove jQuery
+                                require(['jQuery'], function ($) {
+                                    $(button).trigger('layoutchange', [id]);
+                                });
+                            }
                         }
                     });
 
@@ -2840,23 +2873,23 @@
 
                     if (showControls) {
 
-                        html += '<paper-icon-button class="btnPreviousPage" icon="arrow-back" ' + (startIndex ? '' : 'disabled') + '></paper-icon-button>';
-                        html += '<paper-icon-button class="btnNextPage" icon="arrow-forward" ' + (startIndex + limit >= totalRecordCount ? 'disabled' : '') + '></paper-icon-button>';
+                        html += '<button is="paper-icon-button-light" class="btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '><iron-icon icon="arrow-back"></iron-icon></button>';
+                        html += '<button is="paper-icon-button-light" class="btnNextPage" ' + (startIndex + limit >= totalRecordCount ? 'disabled' : '') + '><iron-icon icon="arrow-forward"></iron-icon></button>';
                     }
 
                     if (options.addLayoutButton) {
 
-                        html += '<paper-icon-button title="' + Globalize.translate('ButtonSelectView') + '" class="btnChangeLayout" data-layouts="' + (options.layouts || '') + '" onclick="LibraryBrowser.showLayoutMenu(this, \'' + (options.currentLayout || '') + '\');" icon="view-comfy"></paper-icon-button>';
+                        html += '<button is="paper-icon-button-light" title="' + Globalize.translate('ButtonSelectView') + '" class="btnChangeLayout" data-layouts="' + (options.layouts || '') + '" onclick="LibraryBrowser.showLayoutMenu(this, \'' + (options.currentLayout || '') + '\');"><iron-icon icon="view-comfy"></iron-icon></button>';
                     }
 
                     if (options.sortButton) {
 
-                        html += '<paper-icon-button class="btnSort" title="' + Globalize.translate('ButtonSort') + '" icon="sort-by-alpha"></paper-icon-button>';
+                        html += '<button is="paper-icon-button-light" class="btnSort" title="' + Globalize.translate('ButtonSort') + '"><iron-icon icon="sort-by-alpha"></iron-icon></button>';
                     }
 
                     if (options.filterButton) {
 
-                        html += '<paper-icon-button class="btnFilter" title="' + Globalize.translate('ButtonFilter') + '" icon="filter-list"></paper-icon-button>';
+                        html += '<button is="paper-icon-button-light" class="btnFilter" title="' + Globalize.translate('ButtonFilter') + '"><iron-icon icon="filter-list"></iron-icon></button>';
                     }
 
                     html += '</div>';
@@ -2865,7 +2898,7 @@
 
                         var id = "selectPageSize";
 
-                        var pageSizes = options.pageSizes || LibraryBrowser.getDefaultPageSizeSelections();
+                        var pageSizes = options.pageSizes || [20, 50, 100, 200, 300, 400, 500];
 
                         var optionsHtml = pageSizes.map(function (val) {
 
@@ -2928,10 +2961,6 @@
                     html += '</paper-radio-group>';
                     html += '</div>';
 
-                    //html += '<div class="buttons">';
-                    //html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonClose') + '</paper-button>';
-                    //html += '</div>';
-
                     dlg.innerHTML = html;
                     document.body.appendChild(dlg);
 
@@ -2969,44 +2998,6 @@
                 });
             },
 
-            getRatingHtml: function (item, metascore) {
-
-                var html = "";
-
-                if (item.CommunityRating) {
-
-                    html += "<div class='starRating' title='" + item.CommunityRating + "'></div>";
-                    html += '<div class="starRatingValue">';
-                    html += item.CommunityRating.toFixed(1);
-                    html += '</div>';
-                }
-
-                if (item.CriticRating != null) {
-
-                    if (item.CriticRating >= 60) {
-                        html += '<div class="fresh rottentomatoesicon" title="Rotten Tomatoes"></div>';
-                    } else {
-                        html += '<div class="rotten rottentomatoesicon" title="Rotten Tomatoes"></div>';
-                    }
-
-                    html += '<div class="criticRating" title="Rotten Tomatoes">' + item.CriticRating + '%</div>';
-                }
-
-                //if (item.Metascore && metascore !== false) {
-
-                //    if (item.Metascore >= 60) {
-                //        html += '<div class="metascore metascorehigh" title="Metascore">' + item.Metascore + '</div>';
-                //    }
-                //    else if (item.Metascore >= 40) {
-                //        html += '<div class="metascore metascoremid" title="Metascore">' + item.Metascore + '</div>';
-                //    } else {
-                //        html += '<div class="metascore metascorelow" title="Metascore">' + item.Metascore + '</div>';
-                //    }
-                //}
-
-                return html;
-            },
-
             getItemProgressBarHtml: function (item) {
 
 
@@ -3027,10 +3018,13 @@
 
             getUserDataButtonHtml: function (method, itemId, btnCssClass, icon, tooltip, style) {
 
-                var tagName = style == 'fab' ? 'paper-fab' : 'paper-icon-button';
+                if (style == 'fab') {
 
-                return '<' + tagName + ' title="' + tooltip + '" data-itemid="' + itemId + '" icon="' + icon + '" class="' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"></' + tagName + '>';
+                    var tagName = 'paper-fab';
+                    return '<' + tagName + ' title="' + tooltip + '" data-itemid="' + itemId + '" icon="' + icon + '" class="' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"></' + tagName + '>';
+                }
 
+                return '<button is="paper-icon-button-light" title="' + tooltip + '" data-itemid="' + itemId + '"  class="' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"><iron-icon icon="' + icon + '"></iron-icon></button>';
             },
 
             getUserDataIconsHtml: function (item, includePlayed, style) {
@@ -3053,22 +3047,6 @@
                             }
                         }
                     }
-                }
-
-                var tooltipLike = Globalize.translate('TooltipLike');
-                var tooltipDislike = Globalize.translate('TooltipDislike');
-
-                if (typeof userData.Likes == "undefined") {
-                    html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating', 'thumb-down', tooltipDislike, style);
-                    html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating', 'thumb-up', tooltipLike, style);
-                }
-                else if (userData.Likes) {
-                    html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating', 'thumb-down', tooltipDislike, style);
-                    html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating btnUserItemRatingOn', 'thumb-up', tooltipLike, style);
-                }
-                else {
-                    html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating btnUserItemRatingOn', 'thumb-down', tooltipDislike, style);
-                    html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating', 'thumb-up', tooltipLike, style);
                 }
 
                 var tooltipFavorite = Globalize.translate('TooltipFavorite');
@@ -3114,56 +3092,6 @@
                     } else {
                         $link.removeClass('btnUserItemRatingOn');
                     }
-                });
-            },
-
-            markLike: function (link) {
-
-                // TODO: remove jQuery
-                require(['jQuery'], function ($) {
-                    var id = link.getAttribute('data-itemid');
-
-                    var $link = $(link);
-
-                    if (!$link.hasClass('btnUserItemRatingOn')) {
-
-                        ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, true);
-
-                        $link.addClass('btnUserItemRatingOn');
-
-                    } else {
-
-                        ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
-
-                        $link.removeClass('btnUserItemRatingOn');
-                    }
-
-                    $link.prev().removeClass('btnUserItemRatingOn');
-                });
-            },
-
-            markDislike: function (link) {
-
-                // TODO: remove jQuery
-                require(['jQuery'], function ($) {
-                    var id = link.getAttribute('data-itemid');
-
-                    var $link = $(link);
-
-                    if (!$link.hasClass('btnUserItemRatingOn')) {
-
-                        ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, false);
-
-                        $link.addClass('btnUserItemRatingOn');
-
-                    } else {
-
-                        ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
-
-                        $link.removeClass('btnUserItemRatingOn');
-                    }
-
-                    $link.next().removeClass('btnUserItemRatingOn');
                 });
             },
 
@@ -3328,230 +3256,6 @@
                 detailImageProgressContainer.innerHTML = progressHtml || '';
             },
 
-            getDisplayTime: function (date) {
-
-                if ((typeof date).toString().toLowerCase() === 'string') {
-                    try {
-
-                        date = parseISO8601Date(date, { toLocal: true });
-
-                    } catch (err) {
-                        return date;
-                    }
-                }
-
-                var lower = date.toLocaleTimeString().toLowerCase();
-
-                var hours = date.getHours();
-                var minutes = date.getMinutes();
-
-                var text;
-
-                if (lower.indexOf('am') != -1 || lower.indexOf('pm') != -1) {
-
-                    var suffix = hours > 11 ? 'pm' : 'am';
-
-                    hours = (hours % 12) || 12;
-
-                    text = hours;
-
-                    if (minutes) {
-
-                        text += ':';
-                        if (minutes < 10) {
-                            text += '0';
-                        }
-                        text += minutes;
-                    }
-
-                    text += suffix;
-
-                } else {
-                    text = hours + ':';
-
-                    if (minutes < 10) {
-                        text += '0';
-                    }
-                    text += minutes;
-                }
-
-                return text;
-            },
-
-            getMiscInfoHtml: function (item) {
-
-                var miscInfo = [];
-                var text, date;
-
-                if (item.IsSeries && !item.IsRepeat) {
-
-                    require(['livetvcss']);
-                    miscInfo.push('<span class="newTvProgram">' + Globalize.translate('LabelNewProgram') + '</span>');
-
-                }
-
-                if (item.IsLive) {
-
-                    miscInfo.push('<span class="liveTvProgram">' + Globalize.translate('LabelLiveProgram') + '</span>');
-
-                }
-
-                if (item.ChannelId && item.ChannelName) {
-                    if (item.Type == 'Program' || item.Type == 'Recording') {
-                        miscInfo.push('<a class="textlink" href="itemdetails.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>');
-                    }
-                }
-
-                if (item.Type == "Episode" || item.MediaType == 'Photo') {
-
-                    if (item.PremiereDate) {
-
-                        try {
-                            date = parseISO8601Date(item.PremiereDate, { toLocal: true });
-
-                            text = date.toLocaleDateString();
-                            miscInfo.push(text);
-                        }
-                        catch (e) {
-                            console.log("Error parsing date: " + item.PremiereDate);
-                        }
-                    }
-                }
-
-                if (item.StartDate) {
-
-                    try {
-                        date = parseISO8601Date(item.StartDate, { toLocal: true });
-
-                        text = date.toLocaleDateString();
-                        miscInfo.push(text);
-
-                        if (item.Type != "Recording") {
-                            text = LibraryBrowser.getDisplayTime(date);
-                            miscInfo.push(text);
-                        }
-                    }
-                    catch (e) {
-                        console.log("Error parsing date: " + item.PremiereDate);
-                    }
-                }
-
-                if (item.ProductionYear && item.Type == "Series") {
-
-                    if (item.Status == "Continuing") {
-                        miscInfo.push(Globalize.translate('ValueSeriesYearToPresent', item.ProductionYear));
-
-                    }
-                    else if (item.ProductionYear) {
-
-                        text = item.ProductionYear;
-
-                        if (item.EndDate) {
-
-                            try {
-
-                                var endYear = parseISO8601Date(item.EndDate, { toLocal: true }).getFullYear();
-
-                                if (endYear != item.ProductionYear) {
-                                    text += "-" + parseISO8601Date(item.EndDate, { toLocal: true }).getFullYear();
-                                }
-
-                            }
-                            catch (e) {
-                                console.log("Error parsing date: " + item.EndDate);
-                            }
-                        }
-
-                        miscInfo.push(text);
-                    }
-                }
-
-                if (item.Type != "Series" && item.Type != "Episode" && item.MediaType != 'Photo') {
-
-                    if (item.ProductionYear) {
-
-                        miscInfo.push(item.ProductionYear);
-                    }
-                    else if (item.PremiereDate) {
-
-                        try {
-                            text = parseISO8601Date(item.PremiereDate, { toLocal: true }).getFullYear();
-                            miscInfo.push(text);
-                        }
-                        catch (e) {
-                            console.log("Error parsing date: " + item.PremiereDate);
-                        }
-                    }
-                }
-
-                var minutes;
-
-                if (item.RunTimeTicks && item.Type != "Series") {
-
-                    if (item.Type == "Audio") {
-
-                        miscInfo.push(Dashboard.getDisplayTime(item.RunTimeTicks));
-
-                    } else {
-                        minutes = item.RunTimeTicks / 600000000;
-
-                        minutes = minutes || 1;
-
-                        miscInfo.push(Math.round(minutes) + "min");
-                    }
-                }
-
-                if (item.CumulativeRunTimeTicks && item.Type != "Series" && item.Type != "Season") {
-
-                    miscInfo.push(Dashboard.getDisplayTime(item.CumulativeRunTimeTicks));
-                }
-
-                if (item.OfficialRating && item.Type !== "Season" && item.Type !== "Episode") {
-                    miscInfo.push(item.OfficialRating);
-                }
-
-                if (item.IsHD) {
-
-                    miscInfo.push(Globalize.translate('LabelHDProgram'));
-                }
-
-                //if (item.Audio) {
-
-                //    miscInfo.push(item.Audio);
-
-                //}
-
-                if (item.Video3DFormat) {
-                    miscInfo.push("3D");
-                }
-
-                if (item.MediaType == 'Photo' && item.Width && item.Height) {
-                    miscInfo.push(item.Width + "x" + item.Height);
-                }
-
-                if (item.SeriesTimerId) {
-                    var html = '';
-                    html += '<a href="livetvseriestimer.html?id=' + item.SeriesTimerId + '" title="' + Globalize.translate('ButtonViewSeriesRecording') + '">';
-                    html += '<div class="timerCircle seriesTimerCircle"></div>';
-                    html += '<div class="timerCircle seriesTimerCircle"></div>';
-                    html += '<div class="timerCircle seriesTimerCircle"></div>';
-                    html += '</a>';
-                    miscInfo.push(html);
-                    require(['livetvcss']);
-                }
-                else if (item.TimerId) {
-
-                    var html = '';
-                    html += '<a href="livetvtimer.html?id=' + item.TimerId + '">';
-                    html += '<div class="timerCircle"></div>';
-                    html += '</a>';
-                    miscInfo.push(html);
-                    require(['livetvcss']);
-                }
-
-                return miscInfo.join('&nbsp;&nbsp;&nbsp;&nbsp;');
-            },
-
             renderOverview: function (elems, item) {
 
                 for (var i = 0, length = elems.length; i < length; i++) {
@@ -3643,7 +3347,7 @@
                 if (item.PremiereDate) {
                     try {
 
-                        var date = parseISO8601Date(item.PremiereDate, { toLocal: true });
+                        var date = datetime.parseISO8601Date(item.PremiereDate, true);
 
                         var translationKey = new Date().getTime() > date.getTime() ? "ValuePremiered" : "ValuePremieres";
 
@@ -3711,12 +3415,6 @@
                 return hasbackdrop;
             }
         };
-
-        if (libraryBrowser.enableFullPaperTabs()) {
-            document.documentElement.classList.add('fullPaperLibraryTabs');
-        } else {
-            document.documentElement.classList.add('basicPaperLibraryTabs');
-        }
 
         return libraryBrowser;
 

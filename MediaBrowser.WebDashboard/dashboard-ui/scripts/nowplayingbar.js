@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['datetime', 'jQuery', 'paper-icon-button-light'], function (datetime, $) {
 
     var currentPlayer;
 
@@ -13,6 +13,7 @@
     var pauseButton;
     var positionSlider;
     var toggleRepeatButton;
+    var toggleRepeatButtonIcon;
 
     var lastPlayerState;
 
@@ -34,34 +35,33 @@
         // The onclicks are needed due to the return false above
         html += '<div class="nowPlayingBarCenter">';
 
-        html += '<paper-icon-button icon="skip-previous" class="previousTrackButton mediaButton"></paper-icon-button>';
+        html += '<button is="paper-icon-button-light" class="previousTrackButton mediaButton"><iron-icon icon="skip-previous"></iron-icon></button>';
 
-        html += '<paper-icon-button icon="play-arrow" class="mediaButton unpauseButton"></paper-icon-button>';
-        html += '<paper-icon-button icon="pause" class="mediaButton pauseButton"></paper-icon-button>';
+        html += '<button is="paper-icon-button-light" class="unpauseButton mediaButton"><iron-icon icon="play-arrow"></iron-icon></button>';
+        html += '<button is="paper-icon-button-light" class="pauseButton mediaButton"><iron-icon icon="pause"></iron-icon></button>';
 
-        html += '<paper-icon-button icon="stop" class="stopButton mediaButton"></paper-icon-button>';
-
-        html += '<paper-icon-button icon="skip-next" class="nextTrackButton mediaButton"></paper-icon-button>';
+        html += '<button is="paper-icon-button-light" class="stopButton mediaButton"><iron-icon icon="stop"></iron-icon></button>';
+        html += '<button is="paper-icon-button-light" class="nextTrackButton mediaButton"><iron-icon icon="skip-next"></iron-icon></button>';
 
         html += '<div class="nowPlayingBarCurrentTime"></div>';
         html += '</div>';
 
         html += '<div class="nowPlayingBarRight">';
 
-        html += '<paper-icon-button icon="volume-up" class="muteButton mediaButton"></paper-icon-button>';
-        html += '<paper-icon-button icon="volume-off" class="unmuteButton mediaButton"></paper-icon-button>';
+        html += '<button is="paper-icon-button-light" class="muteButton mediaButton"><iron-icon icon="volume-up"></iron-icon></button>';
+        html += '<button is="paper-icon-button-light" class="unmuteButton mediaButton"><iron-icon icon="volume-off"></iron-icon></button>';
 
         html += '<paper-slider pin step="1" min="0" max="100" value="0" class="nowPlayingBarVolumeSlider" style="width:100px;vertical-align:middle;display:inline-block;"></paper-slider>';
 
-        html += '<paper-icon-button icon="repeat" class="mediaButton toggleRepeatButton"></paper-icon-button>';
+        html += '<button is="paper-icon-button-light" class="toggleRepeatButton mediaButton"><iron-icon icon="repeat"></iron-icon></button>';
 
         html += '<div class="nowPlayingBarUserDataButtons">';
         html += '</div>';
 
-        html += '<paper-icon-button icon="play-arrow" class="mediaButton unpauseButton"></paper-icon-button>';
-        html += '<paper-icon-button icon="pause" class="mediaButton pauseButton"></paper-icon-button>';
-        html += '<paper-icon-button icon="tablet-android" class="mediaButton remoteControlButton"></paper-icon-button>';
-        html += '<paper-icon-button icon="queue-music" class="mediaButton playlistButton"></paper-icon-button>';
+        html += '<button is="paper-icon-button-light" class="unpauseButton mediaButton"><iron-icon icon="play-arrow"></iron-icon></button>';
+        html += '<button is="paper-icon-button-light" class="pauseButton mediaButton"><iron-icon icon="pause"></iron-icon></button>';
+        html += '<button is="paper-icon-button-light" class="remoteControlButton mediaButton"><iron-icon icon="tablet-android"></iron-icon></button>';
+        html += '<button is="paper-icon-button-light" class="playlistButton mediaButton"><iron-icon icon="queue-music"></iron-icon></button>';
 
         html += '</div>';
 
@@ -190,7 +190,7 @@
 
         elem.querySelector('.playlistButton').addEventListener('click', function () {
 
-            showRemoteControl('playlist');
+            showRemoteControl(2);
         });
 
         toggleRepeatButton = $('.toggleRepeatButton', elem).on('click', function () {
@@ -211,6 +211,8 @@
                 }
             }
         })[0];
+
+        toggleRepeatButtonIcon = toggleRepeatButton.querySelector('iron-icon');
 
         // Unfortunately this is necessary because the polymer elements might not be ready immediately and there doesn't seem to be an event-driven way to find out when
         setTimeout(function () {
@@ -247,15 +249,15 @@
                 ticks /= 100;
                 ticks *= value;
 
-                this.pinValue = Dashboard.getDisplayTime(ticks);
+                this.pinValue = datetime.getDisplayRunningTime(ticks);
             };
         }, 300);
     }
 
-    function showRemoteControl(tab) {
+    function showRemoteControl(tabIndex) {
 
-        if (tab) {
-            Dashboard.navigate('nowplaying.html?tab=' + tab);
+        if (tabIndex) {
+            Dashboard.navigate('nowplaying.html?tab=' + tabIndex);
         } else {
             Dashboard.navigate('nowplaying.html');
         }
@@ -375,11 +377,11 @@
             }
         }
 
-        var timeText = Dashboard.getDisplayTime(playState.PositionTicks);
+        var timeText = datetime.getDisplayRunningTime(playState.PositionTicks);
 
         if (nowPlayingItem.RunTimeTicks) {
 
-            timeText += " / " + Dashboard.getDisplayTime(nowPlayingItem.RunTimeTicks);
+            timeText += " / " + datetime.getDisplayRunningTime(nowPlayingItem.RunTimeTicks);
 
         }
 
@@ -422,14 +424,14 @@
         }
 
         if (playState.RepeatMode == 'RepeatAll') {
-            toggleRepeatButton.icon = "repeat";
+            toggleRepeatButtonIcon.icon = "repeat";
             toggleRepeatButton.classList.add('repeatActive');
         }
         else if (playState.RepeatMode == 'RepeatOne') {
-            toggleRepeatButton.icon = "repeat-one";
+            toggleRepeatButtonIcon.icon = "repeat-one";
             toggleRepeatButton.classList.add('repeatActive');
         } else {
-            toggleRepeatButton.icon = "repeat";
+            toggleRepeatButtonIcon.icon = "repeat";
             toggleRepeatButton.classList.remove('repeatActive');
         }
 

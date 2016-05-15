@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'paper-fab', 'paper-input', 'paper-checkbox'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'loading', 'jQuery', 'paper-fab', 'paper-input', 'paper-checkbox', 'paper-icon-button-light'], function (dialogHelper, loading, $) {
 
     var currentItem;
     var currentItemType;
@@ -56,7 +56,7 @@
             IncludeDisabledProviders: true
         };
 
-        Dashboard.showLoadingMsg();
+        loading.show();
 
         ApiClient.ajax({
             type: "POST",
@@ -67,7 +67,7 @@
 
         }).then(function (results) {
 
-            Dashboard.hideLoadingMsg();
+            loading.hide();
             showIdentificationSearchResults(page, results);
         });
     }
@@ -108,7 +108,7 @@
     function finishFindNewDialog(dlg, identifyResult) {
         currentSearchResult = identifyResult;
         hasChanges = true;
-        Dashboard.hideLoadingMsg();
+        loading.hide();
 
         dialogHelper.close(dlg);
     }
@@ -202,7 +202,7 @@
 
     function submitIdentficationResult(page) {
 
-        Dashboard.showLoadingMsg();
+        loading.show();
 
         var options = {
             ReplaceAllImages: $('#chkIdentifyReplaceImages', page).checked()
@@ -217,13 +217,13 @@
         }).then(function () {
 
             hasChanges = true;
-            Dashboard.hideLoadingMsg();
+            loading.hide();
 
             dialogHelper.close(page);
 
         }, function () {
 
-            Dashboard.hideLoadingMsg();
+            loading.hide();
 
             dialogHelper.close(page);
         });
@@ -249,12 +249,12 @@
 
                 var value = providerIds[idInfo.Key] || '';
 
-                html += '<paper-input class="txtLookupId" value="' + value + '" data-providerkey="' + idInfo.Key + '" id="' + id + '" label="' + idLabel + '"></paper-input>';
+                html += '<paper-input class="txtLookupId" data-providerkey="' + idInfo.Key + '" id="' + id + '" label="' + idLabel + '"></paper-input>';
 
                 html += '</div>';
             }
 
-            $('#txtLookupName', page).val(item.Name);
+            $('#txtLookupName', page).val('');
 
             if (item.Type == "Person" || item.Type == "BoxSet") {
 
@@ -263,7 +263,7 @@
             } else {
 
                 $('.fldLookupYear', page).show();
-                $('#txtLookupYear', page).val(item.ProductionYear);
+                $('#txtLookupYear', page).val('');
             }
 
             $('.identifyProviderIds', page).html(html);
@@ -274,7 +274,7 @@
 
     function showEditor(itemId) {
 
-        Dashboard.showLoadingMsg();
+        loading.show();
 
         var xhr = new XMLHttpRequest();
         xhr.open('GET', 'components/itemidentifier/itemidentifier.template.html', true);
@@ -282,7 +282,7 @@
         xhr.onload = function (e) {
 
             var template = this.response;
-            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).then(function (item) {
+            ApiClient.getItem(ApiClient.getCurrentUserId(), itemId).then(function (item) {
 
                 currentItem = item;
                 currentItemType = currentItem.Type;
@@ -327,7 +327,7 @@
                 dlg.classList.add('identifyDialog');
 
                 showIdentificationForm(dlg, item);
-                Dashboard.hideLoadingMsg();
+                loading.hide();
             });
         }
 
@@ -337,7 +337,7 @@
     function onDialogClosed() {
 
         $(this).remove();
-        Dashboard.hideLoadingMsg();
+        loading.hide();
         currentDeferred.resolveWith(null, [hasChanges]);
     }
 
@@ -382,7 +382,7 @@
 
             dlg.addEventListener('close', function () {
 
-                Dashboard.hideLoadingMsg();
+                loading.hide();
                 var foundItem = hasChanges ? currentSearchResult : null;
 
                 resolveFunc(foundItem);

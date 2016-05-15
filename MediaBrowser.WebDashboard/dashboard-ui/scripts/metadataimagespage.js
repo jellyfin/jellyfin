@@ -171,8 +171,8 @@
 
             html += '</paper-item-body>';
 
-            html += '<paper-icon-button class="btnUp" icon="keyboard-arrow-up" title="' + Globalize.translate('ButtonUp') + '" style="padding:3px 8px;"></paper-icon-button>';
-            html += '<paper-icon-button class="btnDown" icon="keyboard-arrow-down" title="' + Globalize.translate('ButtonDown') + '" style="padding:3px 8px;"></paper-icon-button>';
+            html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonUp') + '" class="btnUp" style="padding:3px 8px;"><iron-icon icon="keyboard-arrow-up"></iron-icon></button>';
+            html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonDown') + '" class="btnDown" style="padding:3px 8px;"><iron-icon icon="keyboard-arrow-down"></iron-icon></button>';
 
             html += '</paper-icon-item>';
         }
@@ -274,8 +274,8 @@
 
             html += '</paper-item-body>';
 
-            html += '<paper-icon-button class="btnUp" icon="keyboard-arrow-up" title="' + Globalize.translate('ButtonUp') + '" style="padding:3px 8px;"></paper-icon-button>';
-            html += '<paper-icon-button class="btnDown" icon="keyboard-arrow-down" title="' + Globalize.translate('ButtonDown') + '" style="padding:3px 8px;"></paper-icon-button>';
+            html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonUp') + '" class="btnUp" style="padding:3px 8px;"><iron-icon icon="keyboard-arrow-up"></iron-icon></button>';
+            html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonDown') + '" class="btnDown" style="padding:3px 8px;"><iron-icon icon="keyboard-arrow-down"></iron-icon></button>';
 
             html += '</paper-icon-item>';
         }
@@ -343,11 +343,11 @@
             html += '</paper-item-body>';
 
             if (i > 0) {
-                html += '<paper-icon-button title="' + Globalize.translate('ButtonUp') + '" icon="keyboard-arrow-up" class="btnLocalReaderUp btnLocalReaderMove" data-pluginindex="' + i + '"></paper-icon-button>';
+                html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonUp') + '" class="btnLocalReaderUp btnLocalReaderMove" data-pluginindex="' + i + '"><iron-icon icon="keyboard-arrow-up"></iron-icon></button>';
             }
             else if (plugins.length > 1) {
 
-                html += '<paper-icon-button title="' + Globalize.translate('ButtonDown') + '" icon="keyboard-arrow-down" class="btnLocalReaderDown btnLocalReaderMove" data-pluginindex="' + i + '"></paper-icon-button>';
+                html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonDown') + '" class="btnLocalReaderDown btnLocalReaderMove" data-pluginindex="' + i + '"><iron-icon icon="keyboard-arrow-down"></iron-icon></button>';
             }
 
             html += '</paper-icon-item>';

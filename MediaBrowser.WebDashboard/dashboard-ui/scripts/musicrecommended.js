@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'scrollStyles'], function ($) {
+﻿define(['jQuery', 'libraryBrowser', 'scrollStyles'], function ($, libraryBrowser) {
 
     function itemsPerRow() {
 
@@ -27,13 +27,14 @@
             Fields: "PrimaryImageAspectRatio,SyncInfo",
             ParentId: parentId,
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+            EnableTotalRecordCount: false
         };
 
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).then(function (items) {
 
             var elem = page.querySelector('#recentlyAddedSongs');
-            elem.innerHTML = LibraryBrowser.getPosterViewHtml({
+            elem.innerHTML = libraryBrowser.getPosterViewHtml({
                 items: items,
                 showUnplayedIndicator: false,
                 showLatestItemsPopup: false,
@@ -48,8 +49,6 @@
             ImageLoader.lazyChildren(elem);
 
             Dashboard.hideLoadingMsg();
-
-            LibraryBrowser.setLastRefreshed(page);
         });
     }
 
@@ -66,7 +65,8 @@
             Filters: "IsPlayed",
             ParentId: parentId,
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+            EnableTotalRecordCount: false
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
@@ -80,7 +80,7 @@
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
-            itemsContainer.innerHTML = LibraryBrowser.getPosterViewHtml({
+            itemsContainer.innerHTML = libraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 showUnplayedIndicator: false,
                 shape: getSquareShape(),
@@ -111,7 +111,8 @@
             Filters: "IsPlayed",
             ParentId: parentId,
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+            EnableTotalRecordCount: false
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
@@ -125,7 +126,7 @@
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
-            itemsContainer.innerHTML = LibraryBrowser.getPosterViewHtml({
+            itemsContainer.innerHTML = libraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 showUnplayedIndicator: false,
                 shape: getSquareShape(),
@@ -153,7 +154,8 @@
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SortName,CumulativeRunTimeTicks,CanDelete,SyncInfo",
             StartIndex: 0,
-            Limit: itemsPerRow()
+            Limit: itemsPerRow(),
+            EnableTotalRecordCount: false
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
@@ -167,7 +169,7 @@
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
-            itemsContainer.innerHTML = LibraryBrowser.getPosterViewHtml({
+            itemsContainer.innerHTML = libraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: getSquareShape(),
                 showTitle: true,
@@ -199,19 +201,17 @@
 
         var parentId = LibraryMenu.getTopParentId();
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
-            console.log('loadSuggestionsTab');
-            loadLatest(tabContent, parentId);
-            loadPlaylists(tabContent, parentId);
-            loadRecentlyPlayed(tabContent, parentId);
-            loadFrequentlyPlayed(tabContent, parentId);
+        console.log('loadSuggestionsTab');
+        loadLatest(tabContent, parentId);
+        loadPlaylists(tabContent, parentId);
+        loadRecentlyPlayed(tabContent, parentId);
+        loadFrequentlyPlayed(tabContent, parentId);
 
-            require(['components/favoriteitems'], function (favoriteItems) {
+        require(['components/favoriteitems'], function (favoriteItems) {
 
-                favoriteItems.render(tabContent, Dashboard.getCurrentUserId(), parentId, ['favoriteArtists', 'favoriteAlbums', 'favoriteSongs']);
+            favoriteItems.render(tabContent, Dashboard.getCurrentUserId(), parentId, ['favoriteArtists', 'favoriteAlbums', 'favoriteSongs']);
 
-            });
-        }
+        });
     }
 
     function loadTab(page, index) {
@@ -285,8 +285,7 @@
 
         $('.recommendations', page).createCardMenus();
 
-        var tabs = page.querySelector('paper-tabs');
-        var pageTabsContainer = page.querySelector('.pageTabsContainer');
+        var mdlTabs = page.querySelector('.libraryViewNav');
 
         var baseUrl = 'music.html';
         var topParentId = LibraryMenu.getTopParentId();
@@ -294,9 +293,9 @@
             baseUrl += '?topParentId=' + topParentId;
         }
 
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pageTabsContainer, baseUrl);
+        libraryBrowser.configurePaperLibraryTabs(page, mdlTabs, page.querySelectorAll('.pageTabContent'));
 
-        pageTabsContainer.addEventListener('tabchange', function (e) {
+        mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(page, parseInt(e.detail.selectedTabIndex));
         });
 

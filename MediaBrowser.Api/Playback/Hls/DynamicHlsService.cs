@@ -500,18 +500,6 @@ namespace MediaBrowser.Api.Playback.Hls
             return ResultFactory.GetResult(playlistText, MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
         }
 
-        private bool IsLiveStream(StreamState state)
-        {
-            var isLiveStream = (state.RunTimeTicks ?? 0) == 0;
-
-            if (state.VideoRequest.ForceLiveStream)
-            {
-                return true;
-            }
-
-            return isLiveStream;
-        }
-
         private string GetMasterPlaylistFileText(StreamState state, int totalBitrate)
         {
             var builder = new StringBuilder();
@@ -830,11 +818,10 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 if (state.VideoStream != null && IsH264(state.VideoStream) && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
                 {
-                    Logger.Debug("Enabling h264_mp4toannexb due to nal_length_size of {0}", state.VideoStream.NalLengthSize);
                     args += " -bsf:v h264_mp4toannexb";
                 }
 
-                args += " -flags -global_header -sc_threshold 0";
+                args += " -flags -global_header";
             }
             else
             {
@@ -859,7 +846,12 @@ namespace MediaBrowser.Api.Playback.Hls
                     args += GetGraphicalSubtitleParam(state, codec);
                 }
 
-                args += " -flags -global_header -sc_threshold 0";
+                args += " -flags -global_header";
+            }
+
+            if (EnableCopyTs(state) && args.IndexOf("-copyts", StringComparison.OrdinalIgnoreCase) == -1)
+            {
+                args += " -copyts";
             }
 
             return args;
@@ -867,7 +859,8 @@ namespace MediaBrowser.Api.Playback.Hls
 
         private bool EnableCopyTs(StreamState state)
         {
-            return state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.VideoRequest.SubtitleMethod == SubtitleDeliveryMethod.Encode;
+            //return state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.VideoRequest.SubtitleMethod == SubtitleDeliveryMethod.Encode;
+            return true;
         }
 
         protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
@@ -889,24 +882,28 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var mapArgs = state.IsOutputVideo ? GetMapArgs(state) : string.Empty;
 
-            //var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state);
+            var enableGenericSegmenter = false;
 
-            //return string.Format("{0} {11} {1}{10} -map_metadata -1 -threads {2} {3} {4} {5} -f segment -segment_time {6} -segment_format mpegts -segment_list_type m3u8 -segment_start_number {7} -segment_list \"{8}\" -y \"{9}\"",
-            //    inputModifier,
-            //    GetInputArgument(state),
-            //    threads,
-            //    mapArgs,
-            //    GetVideoArguments(state),
-            //    GetAudioArguments(state),
-            //    state.SegmentLength.ToString(UsCulture),
-            //    startNumberParam,
-            //    outputPath,
-            //    outputTsArg,
-            //            slowSeekParam,
-            //            toTimeParam
-            //    ).Trim();
+            if (enableGenericSegmenter)
+            {
+                var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state);
 
-            return string.Format("{0}{11} {1} -map_metadata -1 -threads {2} {3} {4}{5} {6} -hls_time {7} -start_number {8} -hls_list_size {9} -y \"{10}\"",
+                return string.Format("{0} {10} {1} -map_metadata -1 -threads {2} {3} {4} {5} -f segment -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero -segment_time {6} -segment_format mpegts -segment_list_type m3u8 -segment_start_number {7} -segment_list \"{8}\" -y \"{9}\"",
+                    inputModifier,
+                    GetInputArgument(state),
+                    threads,
+                    mapArgs,
+                    GetVideoArguments(state),
+                    GetAudioArguments(state),
+                    state.SegmentLength.ToString(UsCulture),
+                    startNumberParam,
+                    outputPath,
+                    outputTsArg,
+                            toTimeParam
+                    ).Trim();
+            }
+
+            return string.Format("{0}{11} {1} -map_metadata -1 -threads {2} {3} {4}{5} {6} -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero -hls_time {7} -start_number {8} -hls_list_size {9} -y \"{10}\"",
                             inputModifier,
                             GetInputArgument(state),
                             threads,
@@ -946,10 +943,10 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var isLiveStream = IsLiveStream(state);
 
-            if (!isLiveStream)
-            {
-                return false;
-            }
+            //if (!isLiveStream && Request.QueryString["AllowCustomSegmenting"] != "true")
+            //{
+            //    return false;
+            //}
 
             return base.CanStreamCopyVideo(state);
         }

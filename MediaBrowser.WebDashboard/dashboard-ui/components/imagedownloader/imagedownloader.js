@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'paper-checkbox', 'paper-fab'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'paper-checkbox', 'paper-fab', 'paper-icon-button-light'], function (dialogHelper, $) {
 
     var currentItemId;
     var currentItemType;
@@ -107,8 +107,8 @@
         if (showControls) {
             html += '<div data-role="controlgroup" data-type="horizontal" style="display:inline-block;">';
 
-            html += '<paper-icon-button icon="arrow-back" title="' + Globalize.translate('ButtonPreviousPage') + '" class="btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '></paper-icon-button>';
-            html += '<paper-icon-button icon="arrow-forward" title="' + Globalize.translate('ButtonNextPage') + '" class="btnNextPage" ' + (startIndex + limit >= totalRecordCount ? 'disabled' : '') + '></paper-icon-button>';
+            html += '<button is="paper-icon-button-light" title="' + Globalize.translate('ButtonPreviousPage') + '" class="btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '><iron-icon icon="arrow-back"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" title="' + Globalize.translate('ButtonNextPage') + '" class="btnNextPage" ' + (startIndex + limit >= totalRecordCount ? 'disabled' : '') + '><iron-icon icon="arrow-forward"></iron-icon></button>';
             html += '</div>';
         }
 
@@ -223,7 +223,7 @@
             html += '</div>';
         }
 
-        html += '<paper-icon-button icon="cloud-download" class="btnDownloadRemoteImage" raised data-imageprovider="' + image.ProviderName + '" data-imageurl="' + image.Url + '" data-imagetype="' + image.Type + '" title="' + Globalize.translate('ButtonDownload') + '"></paper-icon-button>';
+        html += '<button is="paper-icon-button-light" class="btnDownloadRemoteImage" raised data-imageprovider="' + image.ProviderName + '" data-imageurl="' + image.Url + '" data-imagetype="' + image.Type + '" title="' + Globalize.translate('ButtonDownload') + '"><iron-icon icon="cloud-download"></iron-icon></button>';
 
         html += '</div>';
         html += '</div>';

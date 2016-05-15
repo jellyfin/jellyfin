@@ -27,26 +27,25 @@ namespace MediaBrowser.Server.Startup.Common.EntryPoints
             _timer = new PeriodicTimer(obj =>
             {
                 var now = DateTime.UtcNow;
-                if (_sessionManager.Sessions.Any(i => (now - i.LastActivityDate).TotalMinutes < 15))
+                var nativeApp = ((ApplicationHost)_appHost).NativeApp;
+
+                try
                 {
-                    KeepAlive();
+                    if (_sessionManager.Sessions.Any(i => (now - i.LastActivityDate).TotalMinutes < 15))
+                    {
+                        nativeApp.PreventSystemStandby();
+                    }
+                    else
+                    {
+                        nativeApp.AllowSystemStandby();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error resetting system standby timer", ex);
                 }
 
             }, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
-        }
-
-        private void KeepAlive()
-        {
-            var nativeApp = ((ApplicationHost)_appHost).NativeApp;
-
-            try
-            {
-                nativeApp.PreventSystemStandby();
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error resetting system standby timer", ex);
-            }
         }
 
         public void Dispose()

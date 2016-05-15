@@ -49,6 +49,15 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         [IgnoreDataMember]
+        public override bool SupportsCumulativeRunTimeTicks
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        [IgnoreDataMember]
         public List<string> AllArtists
         {
             get
@@ -96,36 +105,34 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public List<string> Artists { get; set; }
 
-        /// <summary>
-        /// Gets the user data key.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        protected override string CreateUserDataKey()
+        public override List<string> GetUserDataKeys()
         {
-            var id = this.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
-
-            if (!string.IsNullOrWhiteSpace(id))
-            {
-                return "MusicAlbum-MusicBrainzReleaseGroup-" + id;
-            }
-
-            id = this.GetProviderId(MetadataProviders.MusicBrainzAlbum);
-
-            if (!string.IsNullOrWhiteSpace(id))
-            {
-                return "MusicAlbum-Musicbrainz-" + id;
-            }
+            var list = base.GetUserDataKeys();
 
             if (ConfigurationManager.Configuration.EnableStandaloneMusicKeys)
             {
                 var albumArtist = AlbumArtist;
                 if (!string.IsNullOrWhiteSpace(albumArtist))
                 {
-                    return albumArtist + "-" + Name;
+                    list.Insert(0, albumArtist + "-" + Name);
                 }
             }
 
-            return base.CreateUserDataKey();
+            var id = this.GetProviderId(MetadataProviders.MusicBrainzAlbum);
+
+            if (!string.IsNullOrWhiteSpace(id))
+            {
+                list.Insert(0, "MusicAlbum-Musicbrainz-" + id);
+            }
+
+            id = this.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
+
+            if (!string.IsNullOrWhiteSpace(id))
+            {
+                list.Insert(0, "MusicAlbum-MusicBrainzReleaseGroup-" + id);
+            }
+
+            return list;
         }
 
         protected override bool GetBlockUnratedValue(UserPolicy config)

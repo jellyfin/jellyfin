@@ -35,9 +35,7 @@
         });
     }
     function populateList(options) {
-        requirejs(['scripts/ratingdialog'], function () {
-            populateListInternal(options);
-        });
+        populateListInternal(options);
     }
 
     function populateListInternal(options) {
@@ -207,13 +205,18 @@
         html += "</div>";
 
         if (!plugin.isExternal) {
-            html += "<div class='cardText packageReviewText'>";
-            html += plugin.price > 0 ? "$" + plugin.price.toFixed(2) : Globalize.translate('LabelFree');
-            html += RatingHelpers.getStoreRatingHtml(plugin.avgRating, plugin.id, plugin.name, true);
+            html += "<div class='cardText' style='display:flex;align-items:center;'>";
 
-            html += "<span class='storeReviewCount'>";
-            html += " " + Globalize.translate('LabelNumberReviews').replace("{0}", plugin.totalRatings);
-            html += "</span>";
+            if (plugin.avgRating) {
+                html += '<iron-icon icon="star" style="color:#666;height:20px;width:20px;min-height:20px;min-width:20px;margin-right:.25em;"></iron-icon>';
+                html += plugin.avgRating.toFixed(1);
+            }
+
+            if (plugin.totalRatings) {
+                html += "<div style='margin-left:.5em;'>";
+                html += " " + Globalize.translate('LabelNumberReviews').replace("{0}", plugin.totalRatings);
+            }
+            html += "</div>";
 
             html += "</div>";
         }

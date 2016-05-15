@@ -1,0 +1,91 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<!doctype html>
+<html>
+<head>
+
+  <title>avg worst case</title>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <link rel="import" href="../../../polymer/polymer.html">
+  <link rel="import" href="../../iron-list.html">
+
+  <style is="custom-style">
+    body {
+      @apply(--layout-fullbleed);
+    }
+    
+    iron-list {
+      width: 500px;
+      height: 400px;
+      float: left;
+      margin: 10px;
+    }
+
+    .item {
+      background-color: green;
+      border-bottom: 1px solid white;
+    }
+
+  </style>
+
+</head>
+<body unresolved>
+
+  <template is="dom-bind">
+
+    <h1>The physical average is not useful in this situations</h1>
+    <p>The list is correct if it can render all the items without empty spaces.</p>
+    <iron-list id="list" items="[791, 671]" as="item" style="width: 300px; height: 300px;">
+      <template>
+        <div class="item" style$="[[_getStyle(item)]]"><span>[[index]]</span> height: <span>[[item]]</span>
+        </div>
+      </template>
+    </iron-list>
+
+    <iron-list id="list2" items="[791, 671]" as="item" style="width: 710px; height: 453px;">
+      <template>
+        <div class="item" style$="[[_getStyle(item)]]"><span>[[index]]</span> height: <span>[[item]]</span>
+        </div>
+      </template>
+    </iron-list>
+
+    <iron-list items="[512, 256, 128, 64, 16, 16, 16, 16, 16, 16, 8, 4]" as="item" style="height: 256px;">
+      <template>
+        <div class="item" style$="[[_getStyle(item)]]"><span>[[index]]</span> height: <span>[[item]]</span>
+        </div>
+      </template>
+    </iron-list>
+  </template>
+
+  <script>
+    HTMLImports.whenReady(function() {
+      document.querySelector('template[is=dom-bind]')._getStyle = function(item) {
+        return 'height:' + item + 'px; ';
+      };
+
+      setTimeout(function() {
+        document.querySelector('#list').push('items', 251, 191, 151, 191, 51, 51, 51);
+      }, 100);
+
+       setTimeout(function() {
+        document.querySelector('#list2').push('items', 251, 191, 151, 191, 51, 51, 51);
+      }, 300);
+    });
+  </script>
+</body>
+</html>

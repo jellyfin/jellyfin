@@ -2,13 +2,6 @@
     padding-top: 0 !important;
 }
 
-.nowPlayingPagePaperTabs.bottom {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-}
-
 .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
     margin: 2px 1px;
 }

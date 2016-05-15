@@ -1,7 +1,26 @@
-define(['visibleinviewport', 'imageFetcher'], function (visibleinviewport, imageFetcher) {
+define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events'], function (visibleinviewport, imageFetcher, layoutManager, events) {
 
-    var thresholdX = screen.availWidth;
-    var thresholdY = screen.availHeight;
+    var thresholdX;
+    var thresholdY;
+
+    function resetThresholds() {
+
+        var x = screen.availWidth;
+        var y = screen.availHeight;
+
+        if (layoutManager.mobile) {
+            x *= 2;
+            y *= 2;
+        }
+
+        thresholdX = x;
+        thresholdY = y;
+    }
+
+    resetThresholds();
+
+    window.addEventListener("orientationchange", resetThresholds);
+    events.on(layoutManager, 'modechange', resetThresholds);
 
     var wheelEvent = (document.implementation.hasFeature('Event.wheel', '3.0') ? 'wheel' : 'mousewheel');
 
@@ -41,6 +60,24 @@ define(['visibleinviewport', 'imageFetcher'], function (visibleinviewport, image
 
             tokens[i] = true;
         }
+    }
+
+    var supportsCaptureOption = false;
+    try {
+        var opts = Object.defineProperty({}, 'capture', {
+            get: function () {
+                supportsCaptureOption = true;
+            }
+        });
+        window.addEventListener("test", null, opts);
+    } catch (e) { }
+
+    function addEventListenerWithOptions(target, type, handler, options) {
+        var optionsOrCapture = options;
+        if (!supportsCaptureOption) {
+            optionsOrCapture = options.capture;
+        }
+        target.addEventListener(type, handler, optionsOrCapture);
     }
 
     function unveilElements(images) {
@@ -103,10 +140,19 @@ define(['visibleinviewport', 'imageFetcher'], function (visibleinviewport, image
             }, 1);
         }
 
-        document.addEventListener('scroll', unveil, true);
+        addEventListenerWithOptions(document, 'scroll', unveil, {
+            capture: true,
+            passive: true
+        });
         document.addEventListener('focus', unveil, true);
-        document.addEventListener(wheelEvent, unveil, true);
-        window.addEventListener('resize', unveil, true);
+        addEventListenerWithOptions(document, wheelEvent, unveil, {
+            capture: true,
+            passive: true
+        });
+        addEventListenerWithOptions(window, 'resize', unveil, {
+            capture: true,
+            passive: true
+        });
 
         unveil();
     }

@@ -180,7 +180,6 @@
             });
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(page), query);
-            LibraryBrowser.setLastRefreshed(page);
             Dashboard.hideLoadingMsg();
         });
     }
@@ -206,7 +205,7 @@
 
         var query = getQuery(page);
 
-        $('.alphabetPicker', page).alphaValue(query.NameStartsWith);
+        $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
     }
 
     function initPage(tabContent) {
@@ -245,9 +244,7 @@
 
     window.MusicPage.renderAlbumsTab = function (page, tabContent) {
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
-            reloadItems(tabContent);
-        }
+        reloadItems(tabContent);
     };
 
 });

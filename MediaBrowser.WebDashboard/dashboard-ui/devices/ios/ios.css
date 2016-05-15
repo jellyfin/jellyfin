@@ -2,6 +2,10 @@
     font-size: 15px;
 }
 
+body:not(.dashboardDocument) .mainDrawerButton {
+    display: none !important;
+}
+
 .ui-body-b select {
     -webkit-appearance: none;
 }
@@ -55,26 +59,12 @@
         padding: 12px 13px 8px;
     }
 
-    .libraryViewNav .tab-content {
-        display: block !important;
+    .libraryViewNav .pageTabButton.is-active:after {
+        display: none !important;
     }
 
-    .libraryViewNav paper-tabs {
-        flex-grow: 0 !important;
-        height: 36px;
-    }
-
-    .libraryViewNav paper-tab {
-        height: auto !important;
-        flex-grow: 0 !important;
-    }
-
-    .libraryViewNav #selectionBar {
-        background-color: transparent !important;
-    }
-
-    .libraryViewNav #tabsContainer {
-        flex-grow: 0 !important;
+    .libraryViewNav .pageTabButton.is-active {
+        color: #52B54B !important;
     }
 
 .ui-body-b .paperList:not(.criticReviewPaperList) {
@@ -98,23 +88,11 @@
     }
 }
 
-.libraryViewNav a {
-    border-bottom: 0;
-}
-
-.libraryViewNav .ui-btn-active, .libraryViewNav .iron-selected, .btnActiveCast {
+.btnActiveCast {
     color: #52B54B !important;
 }
 
-.channelTimeslotHeader {
-    border-right-color: #52B54B !important;
-}
-
-.channelTimeslotHeader, .timeslotHeader {
-    background: #52B54B !important;
-}
-
-.libraryViewNav, paper-tabs {
+.libraryViewNav {
     font-size: 12px;
 }
 
@@ -124,18 +102,6 @@ h1, h1 a {
 
 .btnNotificationsInner {
     font-weight: 400;
-}
-
-.channelList {
-    font-weight: 400;
-}
-
-.channelHeaderCellInner {
-    font-weight: 400;
-}
-
-.tvGuideHeader {
-    top: 86px !important;
 }
 
 .libraryMenuButtonText {
@@ -159,10 +125,6 @@ h1, h1 a {
     margin-top: 0;
 }
 
-paper-tab {
-    text-transform: none !important;
-}
-
 .visualCardBox {
     background: none !important;
     -moz-box-shadow: none;
@@ -175,29 +137,12 @@ paper-tab {
         padding: 0;
     }
 
-/* Need the div specifier to gain preference over the value in card.css */
-div.cardBox {
-    margin: 5px;
-}
-
 .cardImage {
     border-radius: 10px;
 }
 
 .viewMenuSearch {
     background: #1c1c1c;
-}
-
-@media (min-width: 600px) {
-
-    /* This needs a little extra space to account for the longer date format */
-    .channelHeaderCell, .channelTimeslotHeader {
-        width: 209px;
-    }
-
-    .programGrid, .timeslotHeaders {
-        margin-left: 210px;
-    }
 }
 
 .bottomFab {

@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['datetime', 'jQuery'], function (datetime, $) {
 
     var currentItem;
 
@@ -52,7 +52,7 @@
             $('.time', page).html(Globalize.translate('LabelAnytime')).trigger('create');
         }
         else if (item.ChannelId) {
-            $('.time', page).html(LibraryBrowser.getDisplayTime(item.StartDate)).trigger('create');
+            $('.time', page).html(datetime.getDisplayTime(item.StartDate)).trigger('create');
         }
 
         Dashboard.hideLoadingMsg();

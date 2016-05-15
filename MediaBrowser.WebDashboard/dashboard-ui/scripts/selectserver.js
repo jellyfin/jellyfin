@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'paper-icon-button-light'], function ($) {
 
     function connectToServer(page, server) {
 
@@ -73,7 +73,7 @@
         html += '</paper-item-body>';
 
         if (server.Id) {
-            html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnServerMenu"></paper-icon-button>';
+            html += '<button is="paper-icon-button-light" class="btnServerMenu"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
         }
 
         html += '</paper-icon-item>';
@@ -275,7 +275,7 @@
 
         html += '</paper-item-body>';
 
-        html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnInviteMenu"></paper-icon-button>';
+        html += '<button is="paper-icon-button-light" class="btnInviteMenu"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
 
         html += '</paper-icon-item>';
 

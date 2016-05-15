@@ -1,3 +1,22 @@
-﻿.libraryViewNav a, paper-tab, paper-tab a {
+﻿paper-tab, paper-tab a {
     font-weight: bold !important;
+}
+
+.libraryViewNav .pageTabButton {
+    font-weight: bold !important;
+}
+
+    .libraryViewNav .pageTabButton:focus {
+        font-weight: bold !important;
+    }
+
+@media all and (min-width: 300px) {
+
+    .libraryViewNav {
+        display: flex;
+    }
+
+        .libraryViewNav .pageTabButton {
+            flex-grow: 1;
+        }
 }

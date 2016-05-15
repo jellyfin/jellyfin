@@ -86,26 +86,12 @@ each error is categorized by :
     - ```Hls.ErrorTypes.MEDIA_ERROR```for media/video related errors
     - ```Hls.ErrorTypes.OTHER_ERROR```for all other errors
   - its details:
-    - ```Hls.ErrorDetails.MANIFEST_LOAD_ERROR```raised when manifest loading fails because of a network error
-    - ```Hls.ErrorDetails.MANIFEST_LOAD_TIMEOUT```raised when manifest loading fails because of a timeout
-    - ```Hls.ErrorDetails.MANIFEST_PARSING_ERROR```raised when manifest parsing failed to find proper content
-    - ```Hls.ErrorDetails.LEVEL_LOAD_ERROR```raised when level loading fails because of a network error
-    - ```Hls.ErrorDetails.LEVEL_LOAD_TIMEOUT```raised when level loading fails because of a timeout
-    - ```Hls.ErrorDetails.LEVEL_SWITCH_ERROR```raised when level switching fails
-    - ```Hls.ErrorDetails.FRAG_LOAD_ERROR```raised when fragment loading fails because of a network error
-    - ```Hls.ErrorDetails.FRAG_LOOP_LOADING_ERROR```raised upon detection of same fragment being requested in loop
-    - ```Hls.ErrorDetails.FRAG_LOAD_TIMEOUT```raised when fragment loading fails because of a timeout
-    - ```Hls.ErrorDetails.FRAG_DECRYPT_ERROR```raised when fragment decryption fails
-    - ```Hls.ErrorDetails.FRAG_PARSING_ERROR```raised when fragment parsing fails
-    - ```Hls.ErrorDetails.BUFFER_ADD_CODEC_ERROR```raised when exception is raised while adding a new sourceBuffer to MediaSource
-    - ```Hls.ErrorDetails.BUFFER_APPEND_ERROR```raised when exception is raised while preparing buffer append
-    - ```Hls.ErrorDetails.BUFFER_APPENDING_ERROR```raised when exception is raised during buffer appending
-    - ```Hls.ErrorDetails.BUFFER_STALLED_ERROR```raised when playback stalls because the buffer runs out
+    - refer to [Errors details](#Errors)
   - its fatality:
     - ```false```if error is not fatal, hls.js will try to recover it
     - ```true```if error is fatal, an action is required to (try to) recover it.
 
- full details is described [below](##Errors)
+ full details is described [below](#Errors)
 
 
  see sample code below to listen to errors:
@@ -560,10 +546,6 @@ get/set : capping/max level value that could be used by ABR Controller
 default value is -1 (no level capping)
 
 
-## Version Control
-
-#### ```Hls.version```
-static getter: return hls.js dist version number
 
 ## Network Loading Control API
 
@@ -620,7 +602,7 @@ full list of Events available below :
   - `Hls.Events.FRAG_LOADING`  - fired when a fragment loading starts
     -  data: { frag : fragment object}
   - `Hls.Events.FRAG_LOAD_PROGRESS`  - fired when a fragment load is in progress
-    - data: { frag : fragment object with frag.loaded=stats.loaded, stats : { trequest, tfirst, loaded, total} }
+    - data: { frag : fragment object with frag.loaded=stats.loaded, stats : { trequest, tfirst, loaded} }
   - `Hls.Events.FRAG_LOADED`  - fired when a fragment loading is completed
     -  data: { frag : fragment object, payload : fragment payload, stats : { trequest, tfirst, tload, length}}
   - `Hls.Events.FRAG_PARSING_INIT_SEGMENT` - fired when Init Segment has been extracted from fragment
@@ -637,8 +619,6 @@ full list of Events available below :
     -  data: { frag : fragment object }
   - `Hls.Events.FPS_DROP` - triggered when FPS drop in last monitoring period is higher than given threshold
     -  data: {curentDropped : nb of dropped frames in last monitoring period, currentDecoded: nb of decoded frames in last monitoring period, totalDropped : total dropped frames on this video element}
-  - `Hls.Events.FPS_DROP_LEVEL_CAPPING` - triggered when FPS drop triggers auto level capping
-    - data: { level: suggested new auto level capping by fps controller, droppedLevel : level has to much dropped frame will be restricted }
   - `Hls.Events.ERROR` -  Identifier for an error event
     - data: { type : error Type, details : error details, fatal : is error fatal or not, other error specific data}
   - `Hls.Events.DESTROYING` -  fired when hls.js instance starts destroying. Different from MEDIA_DETACHED as one could want to detach and reattach a video to the instance of hls.js to handle mid-rolls for example.
@@ -676,8 +656,6 @@ full list of Errors is described below:
 ### Media Errors
   - ```Hls.ErrorDetails.MANIFEST_INCOMPATIBLE_CODECS_ERROR```raised when manifest only contains quality level with codecs incompatible with MediaSource Engine.
     - data: { type : ```MEDIA_ERROR```, details : ```Hls.ErrorDetails.MANIFEST_INCOMPATIBLE_CODECS_ERROR```, fatal : ```true```, url : manifest URL}
-  - ```Hls.ErrorDetails.BUFFER_ADD_CODEC_ERROR```raised when MediaSource fails to add new sourceBuffer
-    - data: { type : ```MEDIA_ERROR```, details : ```Hls.ErrorDetails.BUFFER_ADD_CODEC_ERROR```, fatal : ```false```, err : error raised by MediaSource, mimeType: mimeType on which the failure happened}
   - ```Hls.ErrorDetails.BUFFER_APPEND_ERROR```raised when exception is raised while calling buffer append
     - data: { type : ```MEDIA_ERROR```, details : ```Hls.ErrorDetails.BUFFER_APPEND_ERROR```, fatal : ```true```, frag : fragment object}
   - ```Hls.ErrorDetails.BUFFER_APPENDING_ERROR```raised when exception is raised during buffer appending
@@ -687,7 +665,7 @@ full list of Errors is described below:
   - ```Hls.ErrorDetails.BUFFER_FULL_ERROR```raised when no data can be appended anymore in media buffer because it is full. this error is recovered automatically by performing a smooth level switching that empty buffers (without disrupting the playback) and reducing the max buffer length.
     - data: { type : ```MEDIA_ERROR```, details : ```Hls.ErrorDetails.BUFFER_FULL_ERROR```, fatal : ```false```}
   - ```Hls.ErrorDetails.BUFFER_SEEK_OVER_HOLE```raised after hls.js seeks over a buffer hole to unstuck the playback, 
-    - data: { type : ```MEDIA_ERROR```, details : ```Hls.ErrorDetails.BUFFER_SEEK_OVER_HOLE```, fatal : ```false```}
+    - data: { type : ```MEDIA_ERROR```, details : ```Hls.ErrorDetails.BUFFER_SEEK_OVER_HOLE```, fatal : ```false```, hole : hole duration}
 
 ## Objects
 ### Level

@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         IArchivable
     {
         public List<ChannelMediaInfo> ChannelMediaSources { get; set; }
-        
+
         public long? Size { get; set; }
         public string Container { get; set; }
         public int? TotalBitrate { get; set; }
@@ -39,12 +39,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         public List<string> Artists { get; set; }
 
         public List<string> AlbumArtists { get; set; }
-
-        /// <summary>
-        /// Gets or sets the album.
-        /// </summary>
-        /// <value>The album.</value>
-        public string Album { get; set; }
 
         [IgnoreDataMember]
         public bool IsThemeMedia
@@ -150,12 +144,10 @@ namespace MediaBrowser.Controller.Entities.Audio
                     + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ") : "") + Name;
         }
 
-        /// <summary>
-        /// Gets the user data key.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        protected override string CreateUserDataKey()
+        public override List<string> GetUserDataKeys()
         {
+            var list = base.GetUserDataKeys();
+
             if (ConfigurationManager.Configuration.EnableStandaloneMusicKeys)
             {
                 var songKey = IndexNumber.HasValue ? IndexNumber.Value.ToString("0000") : string.Empty;
@@ -165,7 +157,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                 {
                     songKey = ParentIndexNumber.Value.ToString("0000") + "-" + songKey;
                 }
-                songKey+= Name;
+                songKey += Name;
 
                 if (!string.IsNullOrWhiteSpace(Album))
                 {
@@ -178,25 +170,25 @@ namespace MediaBrowser.Controller.Entities.Audio
                     songKey = albumArtist + "-" + songKey;
                 }
 
-                return songKey;
+                list.Insert(0, songKey);
             }
-
-            var parent = AlbumEntity;
-
-            if (parent != null)
+            else
             {
-                var parentKey = parent.GetUserDataKey();
+                var parent = AlbumEntity;
 
-                if (IndexNumber.HasValue)
+                if (parent != null && IndexNumber.HasValue)
                 {
-                    var songKey = (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("0000 - ") : "")
-                                  + IndexNumber.Value.ToString("0000 - ");
+                    list.InsertRange(0, parent.GetUserDataKeys().Select(i =>
+                    {
+                        var songKey = (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("0000 - ") : "")
+                                      + IndexNumber.Value.ToString("0000 - ");
 
-                    return parentKey + songKey;
+                        return i + songKey;
+                    }));
                 }
             }
 
-            return base.CreateUserDataKey();
+            return list;
         }
 
         public override UnratedItem GetBlockUnratedType()

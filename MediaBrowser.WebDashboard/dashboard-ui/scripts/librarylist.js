@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'appStorage', 'libraryBrowser', 'jQuery'], function (appSettings, appStorage, LibraryBrowser, $) {
+﻿define(['appSettings', 'appStorage', 'libraryBrowser', 'apphost', 'jQuery', 'itemHelper', 'mediaInfo'], function (appSettings, appStorage, LibraryBrowser, appHost, $, itemHelper, mediaInfo) {
 
     var showOverlayTimeout;
 
@@ -81,7 +81,7 @@
         var isSquare = className.indexOf('square') != -1;
 
         var parentName = isSmallItem || isMiniItem || isPortrait ? null : item.SeriesName;
-        var name = LibraryBrowser.getPosterViewDisplayName(item, true);
+        var name = itemHelper.getDisplayName(item);
 
         html += '<div style="margin-bottom:1em;">';
         var logoHeight = isSmallItem || isMiniItem ? 20 : 26;
@@ -118,27 +118,21 @@
             html += name;
             html += '</p>';
         } else if (!isSmallItem && !isMiniItem) {
-            html += '<p class="itemMiscInfo" style="white-space:nowrap;">';
-            html += LibraryBrowser.getMiscInfoHtml(item);
-            html += '</p>';
+            html += '<div class="itemMiscInfo">';
+            html += mediaInfo.getPrimaryMediaInfoHtml(item, {
+                endsAt: false
+            });
+            html += '</div>';
         }
 
         if (!isMiniItem) {
             html += '<div style="margin:1em 0 .75em;">';
 
             if (isPortrait) {
-                html += '<div class="itemCommunityRating">';
-                html += LibraryBrowser.getRatingHtml(item, false);
-                html += '</div>';
-
                 html += '<div class="userDataIcons" style="margin:.5em 0 0em;">';
                 html += LibraryBrowser.getUserDataIconsHtml(item);
                 html += '</div>';
             } else {
-
-                html += '<span class="itemCommunityRating" style="vertical-align:middle;">';
-                html += LibraryBrowser.getRatingHtml(item, false);
-                html += '</span>';
 
                 html += '<span class="userDataIcons" style="vertical-align:middle;">';
                 html += LibraryBrowser.getUserDataIconsHtml(item);
@@ -149,24 +143,22 @@
 
         html += '<div>';
 
-        var buttonMargin = isPortrait || isSquare ? "margin:0 4px 0 0;" : "margin:0 10px 0 0;";
-
         var buttonCount = 0;
 
         if (MediaController.canPlay(item)) {
 
             var resumePosition = (item.UserData || {}).PlaybackPositionTicks || 0;
 
-            html += '<paper-icon-button icon="play-circle-outline" class="btnPlayItem" data-itemid="' + item.Id + '" data-itemtype="' + item.Type + '" data-isfolder="' + item.IsFolder + '" data-mediatype="' + item.MediaType + '" data-resumeposition="' + resumePosition + '"></paper-icon-button>';
+            html += '<button is="paper-icon-button-light" class="btnPlayItem" data-itemid="' + item.Id + '" data-itemtype="' + item.Type + '" data-isfolder="' + item.IsFolder + '" data-mediatype="' + item.MediaType + '" data-resumeposition="' + resumePosition + '"><iron-icon icon="play-circle-outline"></iron-icon></button>';
             buttonCount++;
         }
 
         if (commands.indexOf('trailer') != -1) {
-            html += '<paper-icon-button icon="videocam" class="btnPlayTrailer" data-itemid="' + item.Id + '"></paper-icon-button>';
+            html += '<button is="paper-icon-button-light" class="btnPlayTrailer" data-itemid="' + item.Id + '"><iron-icon icon="videocam"></iron-icon></button>';
             buttonCount++;
         }
 
-        html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnMoreCommands"></paper-icon-button>';
+        html += '<button is="paper-icon-button-light" class="btnMoreCommands"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
         buttonCount++;
 
         html += '</div>';
@@ -229,6 +221,29 @@
         }
     }
 
+    function deleteTimer(id, itemsContainer) {
+
+        require(['confirm'], function (confirm) {
+
+            confirm(Globalize.translate('MessageConfirmRecordingCancellation'), Globalize.translate('HeaderConfirmRecordingCancellation')).then(function () {
+
+                Dashboard.showLoadingMsg();
+
+                ApiClient.cancelLiveTvTimer(id).then(function () {
+
+                    require(['toast'], function (toast) {
+                        toast(Globalize.translate('MessageRecordingCancelled'));
+                    });
+
+                    Dashboard.hideLoadingMsg();
+                    itemsContainer.dispatchEvent(new CustomEvent('timercancelled', {
+                        bubbles: true
+                    }));
+                });
+            });
+        });
+    }
+
     function showContextMenu(card, options) {
 
         var displayContextItem = card;
@@ -249,6 +264,7 @@
 
         var albumid = card.getAttribute('data-albumid');
         var artistid = card.getAttribute('data-artistid');
+        var serverId = ApiClient.serverInfo().Id;
 
         Dashboard.getCurrentUser().then(function (user) {
 
@@ -270,7 +286,7 @@
                 });
             }
 
-            if (user.Policy.EnableContentDownloading && AppInfo.supportsDownloading) {
+            if (user.Policy.EnableContentDownloading && appHost.supports('filedownload')) {
                 if (mediaType) {
                     items.push({
                         name: Globalize.translate('ButtonDownload'),
@@ -322,8 +338,16 @@
                 });
             }
 
+            if (itemType == 'Timer' && user.Policy.EnableLiveTvManagement) {
+                items.push({
+                    name: Globalize.translate('ButtonCancel'),
+                    id: 'canceltimer',
+                    ironIcon: 'cancel'
+                });
+            }
+
             items.push({
-                name: Globalize.translate('ButtonOpen'),
+                name: itemType == 'Timer' ? Globalize.translate('ButtonEdit') : Globalize.translate('ButtonOpen'),
                 id: 'open',
                 ironIcon: 'folder-open'
             });
@@ -419,7 +443,7 @@
                 });
             }
 
-            if (user.Policy.EnablePublicSharing) {
+            if (user.Policy.EnablePublicSharing && commands.indexOf('share') != -1) {
                 items.push({
                     name: Globalize.translate('ButtonShare'),
                     id: 'share',
@@ -491,16 +515,22 @@
                                             api_key: ApiClient.accessToken()
                                         });
 
-                                        fileDownloader([{
+                                        fileDownloader.download([
+                                        {
                                             url: downloadHref,
-                                            itemId: itemId
+                                            itemId: itemId,
+                                            serverId: serverId
                                         }]);
                                     });
 
                                     break;
                                 }
                             case 'edit':
-                                LibraryBrowser.editMetadata(itemId);
+                                if (itemType == 'Timer') {
+                                    LibraryBrowser.editTimer(itemId);
+                                } else {
+                                    LibraryBrowser.editMetadata(itemId);
+                                }
                                 break;
                             case 'refresh':
                                 ApiClient.refreshItem(itemId, {
@@ -511,6 +541,10 @@
                                     ReplaceAllImages: false,
                                     ReplaceAllMetadata: true
                                 });
+
+                                require(['toast'], function (toast) {
+                                    toast(Globalize.translate('MessageRefreshQueued'));
+                                });
                                 break;
                             case 'instantmix':
                                 MediaController.instantMix(itemId);
@@ -519,14 +553,18 @@
                                 MediaController.shuffle(itemId);
                                 break;
                             case 'open':
-                                Dashboard.navigate(href);
+                                if (itemType == 'Timer') {
+                                    LibraryBrowser.editTimer(itemId);
+                                } else {
+                                    Dashboard.navigate(href);
+                                }
                                 break;
                             case 'album':
                                 Dashboard.navigate('itemdetails.html?id=' + albumid);
                                 break;
                             case 'record':
-                                require(['components/recordingcreator/recordingcreator'], function (recordingcreator) {
-                                    recordingcreator.show(itemId);
+                                require(['recordingCreator'], function (recordingCreator) {
+                                    recordingCreator.show(itemId, serverId);
                                 });
                                 break;
                             case 'artist':
@@ -574,9 +612,15 @@
                             case 'externalplayer':
                                 LibraryBrowser.playInExternalPlayer(itemId);
                                 break;
+                            case 'canceltimer':
+                                deleteTimer(itemId, $(card).parents('.itemsContainer')[0]);
+                                break;
                             case 'share':
-                                require(['sharingmanager'], function () {
-                                    SharingManager.showMenu(Dashboard.getCurrentUserId(), itemId);
+                                require(['sharingmanager'], function (sharingManager) {
+                                    sharingManager.showMenu({
+                                        serverId: serverId,
+                                        itemId: itemId
+                                    });
                                 });
                                 break;
                             case 'removefromplaylist':
@@ -670,7 +714,7 @@
             if (itemSelectionPanel) {
                 return onItemSelectionPanelClick(e, itemSelectionPanel);
             }
-            if (card.classList.contains('groupedCard')) {
+            else if (card.classList.contains('groupedCard')) {
                 return onGroupedCardClick(e, card);
             }
         }
@@ -890,7 +934,6 @@
             element.classList.add('hasTapHold');
 
             manager.on('press', onTapHold);
-            manager.on('pressup', onTapHoldUp);
         });
 
         showTapHoldHelp(element);
@@ -936,6 +979,7 @@
 
             showSelections(card);
 
+            // It won't have this if it's a hammer event
             if (e.stopPropagation) {
                 e.stopPropagation();
             }
@@ -943,25 +987,11 @@
             return false;
         }
         e.preventDefault();
-        e.stopPropagation();
-        return false;
-    }
-
-    function onTapHoldUp(e) {
-
-        var itemSelectionPanel = parentWithClass(e.target, 'itemSelectionPanel');
-
-        if (itemSelectionPanel) {
-            if (!parentWithClass(e.target, 'chkItemSelect')) {
-                var chkItemSelect = itemSelectionPanel.querySelector('.chkItemSelect');
-
-                if (chkItemSelect) {
-                    chkItemSelect.checked = !chkItemSelect.checked;
-                }
-            }
-            e.preventDefault();
-            return false;
+        // It won't have this if it's a hammer event
+        if (e.stopPropagation) {
+            e.stopPropagation();
         }
+        return false;
     }
 
     function onItemSelectionPanelClick(e, itemSelectionPanel) {
@@ -971,9 +1001,14 @@
             var chkItemSelect = itemSelectionPanel.querySelector('.chkItemSelect');
 
             if (chkItemSelect) {
-                var newValue = !chkItemSelect.checked;
-                chkItemSelect.checked = newValue;
-                updateItemSelection(chkItemSelect, newValue);
+
+                if (chkItemSelect.classList.contains('checkedInitial')) {
+                    chkItemSelect.classList.remove('checkedInitial');
+                } else {
+                    var newValue = !chkItemSelect.checked;
+                    chkItemSelect.checked = newValue;
+                    updateItemSelection(chkItemSelect, newValue);
+                }
             }
         }
 
@@ -986,7 +1021,7 @@
         updateItemSelection(this, this.checked);
     }
 
-    function showSelection(item) {
+    function showSelection(item, isChecked) {
 
         var itemSelectionPanel = item.querySelector('.itemSelectionPanel');
 
@@ -997,12 +1032,16 @@
 
             item.querySelector('.cardContent').appendChild(itemSelectionPanel);
 
-            var chkItemSelect = document.createElement('paper-checkbox');
-            chkItemSelect.classList.add('chkItemSelect');
-
-            $(chkItemSelect).on('change', onSelectionChange);
-
-            itemSelectionPanel.appendChild(chkItemSelect);
+            var cssClass = 'chkItemSelect';
+            if (isChecked && !browserInfo.firefox) {
+                // In firefox, the initial tap hold doesnt' get treated as a click
+                // In other browsers it does, so we need to make sure that initial click is ignored
+                cssClass += ' checkedInitial';
+            }
+            var checkedAttribute = isChecked ? ' checked' : '';
+            itemSelectionPanel.innerHTML = '<paper-checkbox class="' + cssClass + '"' + checkedAttribute + '></paper-checkbox>';
+            var chkItemSelect = itemSelectionPanel.querySelector('paper-checkbox');
+            chkItemSelect.addEventListener('change', onSelectionChange);
         }
     }
 
@@ -1020,11 +1059,11 @@
             var html = '';
 
             html += '<div style="float:left;">';
-            html += '<paper-icon-button class="btnCloseSelectionPanel" icon="close"></paper-icon-button>';
+            html += '<button is="paper-icon-button-light" class="btnCloseSelectionPanel"><iron-icon icon="close"></iron-icon></button>';
             html += '<span class="itemSelectionCount"></span>';
             html += '</div>';
 
-            html += '<paper-icon-button class="btnSelectionPanelOptions" icon="more-vert" style="margin-left:auto;"></paper-icon-button>';
+            html += '<button is="paper-icon-button-light" class="btnSelectionPanelOptions" style="margin-left:auto;"><iron-icon icon="more-vert"></iron-icon></button>';
 
             selectionCommandsPanel.innerHTML = html;
 
@@ -1054,7 +1093,10 @@
           { transform: 'translate3d(-10px, 0, 0)', offset: 0.9 },
           { transform: 'translate3d(0, 0, 0)', offset: 1 }];
         var timing = { duration: 900, iterations: iterations };
-        return elem.animate(keyframes, timing);
+
+        if (elem.animate) {
+            elem.animate(keyframes, timing);
+        }
     }
 
     function showSelections(initialCard) {
@@ -1062,11 +1104,10 @@
         require(['paper-checkbox'], function () {
             var cards = document.querySelectorAll('.card');
             for (var i = 0, length = cards.length; i < length; i++) {
-                showSelection(cards[i]);
+                showSelection(cards[i], initialCard == cards[i]);
             }
 
             showSelectionCommands();
-            initialCard.querySelector('.chkItemSelect').checked = true;
             updateItemSelection(initialCard, true);
         });
     }
@@ -1143,7 +1184,7 @@
                 });
             }
 
-            if (user.Policy.EnableContentDownloading && AppInfo.supportsDownloading) {
+            if (user.Policy.EnableContentDownloading && appHost.supports('filedownload')) {
                 //items.push({
                 //    name: Globalize.translate('ButtonDownload'),
                 //    id: 'download',
@@ -1214,7 +1255,7 @@
                                 combineVersions($.mobile.activePage, items);
                                 break;
                             case 'markplayed':
-                                items.forEach(function(itemId) {
+                                items.forEach(function (itemId) {
                                     ApiClient.markPlayed(Dashboard.getCurrentUserId(), itemId);
                                 });
                                 hideSelections();
@@ -1238,6 +1279,10 @@
                                         ReplaceAllMetadata: true
                                     });
 
+                                });
+
+                                require(['toast'], function (toast) {
+                                    toast(Globalize.translate('MessageRefreshQueued'));
                                 });
                                 hideSelections();
                                 break;
@@ -1334,6 +1379,15 @@
         else if (action == 'instantmix') {
 
             MediaController.instantMix(itemId);
+        }
+        else if (action == 'edit') {
+
+            var itemType = elemWithAttributes.getAttribute('data-itemtype');
+            if (itemType == 'Timer') {
+                LibraryBrowser.editTimer(itemId);
+            } else {
+                LibraryBrowser.editMetadata(itemId);
+            }
         }
 
         e.stopPropagation();

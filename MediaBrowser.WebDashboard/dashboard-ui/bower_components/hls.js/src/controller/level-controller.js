@@ -20,7 +20,7 @@ class LevelController extends EventHandler {
 
   destroy() {
     if (this.timer) {
-      clearInterval(this.timer);
+      clearTimeout(this.timer);
       this.timer = null;
     }
     this._manualLevel = -1;
@@ -113,23 +113,27 @@ class LevelController extends EventHandler {
   }
 
   set level(newLevel) {
-    if (this._level !== newLevel || this._levels[newLevel].details === undefined) {
-      this.setLevelInternal(newLevel);
+    let levels = this._levels;
+    if (levels && levels.length > newLevel) {
+      if (this._level !== newLevel || levels[newLevel].details === undefined) {
+        this.setLevelInternal(newLevel);
+      }
     }
   }
 
  setLevelInternal(newLevel) {
+    let levels = this._levels;
     // check if level idx is valid
-    if (newLevel >= 0 && newLevel < this._levels.length) {
+    if (newLevel >= 0 && newLevel < levels.length) {
       // stopping live reloading timer if any
       if (this.timer) {
-       clearInterval(this.timer);
+       clearTimeout(this.timer);
        this.timer = null;
       }
       this._level = newLevel;
       logger.log(`switching to level ${newLevel}`);
       this.hls.trigger(Event.LEVEL_SWITCH, {level: newLevel});
-      var level = this._levels[newLevel];
+      var level = levels[newLevel];
        // check if we need to load playlist for this level
       if (level.details === undefined || level.details.live === true) {
         // level not retrieved yet, or live playlist we need to (re)load it
@@ -149,6 +153,9 @@ class LevelController extends EventHandler {
 
   set manualLevel(newLevel) {
     this._manualLevel = newLevel;
+    if (this._startLevel === undefined) {
+      this._startLevel = newLevel;
+    }
     if (newLevel !== -1) {
       this.level = newLevel;
     }
@@ -221,7 +228,7 @@ class LevelController extends EventHandler {
           this._level = undefined;
           // stopping live reloading timer if any
           if (this.timer) {
-            clearInterval(this.timer);
+            clearTimeout(this.timer);
             this.timer = null;
           }
           // redispatch same error but with fatal set to true
@@ -233,21 +240,30 @@ class LevelController extends EventHandler {
   }
 
   onLevelLoaded(data) {
-    // check if current playlist is a live playlist
-    if (data.details.live) {
-      // if live playlist we will have to reload it periodically
-      // set reload period to average of the frag duration, if average not set then use playlist target duration
-      let timerInterval = data.details.averagetargetduration ? data.details.averagetargetduration : data.details.targetduration;
-      if (!this.timer || timerInterval !== this.timerInterval) {
-        clearInterval(this.timer);
-        this.timer = setInterval(this.ontick, 1000 * timerInterval);
-        this.timerInterval = timerInterval;    
+     // only process level loaded events matching with expected level
+     if (data.level === this._level) {
+      let newDetails = data.details;
+      // if current playlist is a live playlist, arm a timer to reload it
+      if (newDetails.live) {
+        let reloadInterval = 1000*newDetails.targetduration,
+            curLevel = this._levels[data.level],
+            curDetails = curLevel.details;
+        if (curDetails && newDetails.endSN === curDetails.endSN) {
+          // follow HLS Spec, If the client reloads a Playlist file and finds that it has not
+          // changed then it MUST wait for a period of one-half the target
+          // duration before retrying.
+          reloadInterval /=2;
+          logger.log(`same live playlist, reload twice faster`);
+        }
+        // decrement reloadInterval with level loading delay
+        reloadInterval -= performance.now() - data.stats.trequest;
+        // in any case, don't reload more than every second
+        reloadInterval = Math.max(1000,Math.round(reloadInterval));
+        logger.log(`live playlist, reload in ${reloadInterval} ms`);
+        this.timer = setTimeout(this.ontick,reloadInterval);
+      } else {
+        this.timer = null;
       }
-    }
-    if (!data.details.live && this.timer) {
-      // playlist is not live and timer is armed : stopping it
-      clearInterval(this.timer);
-      this.timer = null;
     }
   }
 

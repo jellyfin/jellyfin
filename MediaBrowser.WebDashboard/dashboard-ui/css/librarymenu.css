@@ -10,6 +10,29 @@
     padding-top: 98px !important;
 }
 
+.absolutePageTabContent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    margin: 0 !important;
+    width: 100% !important;
+    /* Page needs to supply padding */
+    top: 92px !important;
+    transition: transform 200ms ease-out;
+}
+
+    .absolutePageTabContent.headroomUnpinned {
+        transform: translateY(-92px);
+        bottom: -92px !important;
+    }
+
+.pageTabContent:not(.is-active) {
+    display: none !important;
+}
+
 .sidebarDivider {
     height: 1px;
     background: #eaeaea;
@@ -162,21 +185,71 @@
     text-transform: uppercase;
     white-space: nowrap;
     padding: 0 0 0;
-    overflow-x: scroll;
-    -ms-overflow-style: none;
-    overflow: -moz-scrollbars-none;
-    -webkit-overflow-scrolling: touch;
     box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
 }
 
-    .libraryViewNav::-webkit-scrollbar {
-        height: 0 !important;
-        display: none;
+    .libraryViewNav.bottom {
+        top: auto !important;
+        bottom: 0;
     }
 
-.libraryViewNavWithMinHeight {
-    min-height: 48px;
+
+.libraryViewNav {
+    justify-content: center;
+    display: flex;
+    display: block;
+    text-align: center;
+    margin: 0 auto;
+    align-items: center;
 }
+
+    .libraryViewNav .pageTabButton {
+        background: transparent;
+        border: 0 !important;
+        cursor: pointer;
+        outline: none !important;
+        width: auto;
+        font-family: inherit;
+        font-size: inherit;
+        color: #999 !important;
+        display: inline-block;
+        vertical-align: middle;
+        flex-shrink: 0;
+        margin: 0;
+        padding: 1.2em .9em;
+        transition: none !important;
+        position: relative;
+        text-transform: uppercase;
+        font-weight: 500 !important;
+        height: auto;
+        min-width: initial;
+        line-height: initial;
+    }
+
+        .libraryViewNav .pageTabButton:focus {
+            font-weight: 500 !important;
+        }
+
+        .libraryViewNav .pageTabButton.is-active {
+            color: #fff !important;
+        }
+
+        .libraryViewNav .pageTabButton:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            border: 0;
+            bottom: 0;
+            height: 2px;
+            transition: all .12s cubic-bezier(.4,0,1,1);
+            right: 0;
+            transform: translateX(-100%);
+        }
+
+        .libraryViewNav .pageTabButton.is-active:before {
+            transform: none;
+            background: #52B54B;
+        }
 
 .viewMenuBar, .libraryViewNav {
     background-color: #020202;
@@ -191,7 +264,7 @@
     }
 
 .dashboardDocument .viewMenuBar {
-    background-color: #43A047;
+    background-color: #222;
     box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12);
     height: auto;
 }
@@ -205,7 +278,6 @@
 }
 
 .dashboardDocument .viewMenuBar #selectionBar {
-    background: #fff !important;
     height: 3px;
 }
 
@@ -315,72 +387,6 @@
 
 .ui-panel.ui-body-b {
     background-color: #212121;
-}
-
-.libraryViewNav a {
-    display: inline-block;
-    padding: 14px 13px 11px;
-    color: rgba(255,255,255,.8) !important;
-    text-decoration: none;
-    margin: 0 0;
-    position: relative;
-    font-weight: normal;
-    border-bottom: 2px solid transparent;
-}
-
-.libraryViewNav .ui-btn-active {
-    border-bottom-color: #52B54B;
-    color: #fff !important;
-}
-
-.libraryViewNav .iron-selected a {
-    color: inherit !important;
-    text-decoration: none;
-    text-align: center;
-}
-
-.libraryViewNav #tabsContainer {
-    margin: auto;
-    -ms-flex: none;
-    -webkit-flex: none;
-    flex: none;
-    flex-shrink: 0;
-    flex-grow: 1;
-    touch-action: auto !important;
-}
-
-.libraryViewNav paper-tabs {
-    flex: none;
-    flex-shrink: 0;
-    flex-grow: 1;
-    overflow-x: visible !important;
-}
-
-.libraryViewNav paper-tab {
-    flex: none;
-    flex-shrink: 0;
-    flex-grow: 1;
-}
-
-.basicPaperLibraryTabs .libraryViewNav paper-tabs {
-    display: none;
-}
-
-.fullPaperLibraryTabs .legacyTabs {
-    display: none;
-}
-
-.minimumSizeTabs .libraryViewNav .tab-content {
-    display: block !important;
-}
-
-.minimumSizeTabs .libraryViewNav paper-tab {
-    height: auto !important;
-    flex-grow: 0 !important;
-}
-
-.minimumSizeTabs .libraryViewNav #tabsContainer {
-    flex-grow: 0 !important;
 }
 
 @media all and (max-width: 400px) {
@@ -517,22 +523,6 @@ body:not(.dashboardDocument) .btnNotifications {
     .adminDrawerPanel .sidebarLink.selectedSidebarLink .sidebarLinkIcon {
         color: #fff !important;
     }
-
-.adminDrawerPanel #drawer .emby-collapsible-button {
-    padding-top: 0;
-    padding-bottom: 0;
-    padding-left: 1em;
-}
-
-.adminDrawerPanel #drawer .emby-collapsible-title {
-    font-size: inherit;
-    text-transform: none;
-    margin: .7em 0;
-}
-
-.adminDrawerPanel #drawer #expandButton {
-    color: #333;
-}
 
 .adminDrawerLogo {
     padding: 1.5em 1em 1.2em;

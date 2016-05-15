@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'scrollStyles'], function ($) {
+﻿define(['jQuery', 'libraryBrowser', 'scrollStyles'], function ($, libraryBrowser) {
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
@@ -31,12 +31,12 @@
             IsAiring: true,
             limit: getLimit() * 2,
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary"
+            EnableImageTypes: "Primary",
+            EnableTotalRecordCount: false
 
         }).then(function (result) {
 
             renderItems(page, result.Items, 'activeProgramItems', 'play');
-            LibraryBrowser.setLastRefreshed(page);
             Dashboard.hideLoadingMsg();
         });
     }
@@ -54,7 +54,8 @@
             IsMovie: false,
             IsSports: false,
             IsKids: false,
-            IsSeries: true
+            IsSeries: true,
+            EnableTotalRecordCount: false
 
         }).then(function (result) {
 
@@ -67,7 +68,8 @@
             IsAiring: false,
             HasAired: false,
             limit: getLimit(),
-            IsMovie: true
+            IsMovie: true,
+            EnableTotalRecordCount: false
 
         }).then(function (result) {
 
@@ -80,7 +82,8 @@
             IsAiring: false,
             HasAired: false,
             limit: getLimit(),
-            IsSports: true
+            IsSports: true,
+            EnableTotalRecordCount: false
 
         }).then(function (result) {
 
@@ -93,7 +96,8 @@
             IsAiring: false,
             HasAired: false,
             limit: getLimit(),
-            IsKids: true
+            IsKids: true,
+            EnableTotalRecordCount: false
 
         }).then(function (result) {
 
@@ -103,7 +107,7 @@
 
     function renderItems(page, items, sectionClass, overlayButton, shape) {
 
-        var html = LibraryBrowser.getPosterViewHtml({
+        var html = libraryBrowser.getPosterViewHtml({
             items: items,
             shape: shape || (enableScrollX() ? getSquareShape() : 'auto'),
             showTitle: true,
@@ -132,9 +136,7 @@
 
     function renderSuggestedTab(page, tabContent) {
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
-            reload(tabContent);
-        }
+        reload(tabContent);
     }
 
     function loadTab(page, index) {
@@ -144,6 +146,8 @@
         var scope = 'LiveTvPage';
         var renderMethod = '';
         var initMethod = '';
+
+        var viewMenuBar = document.querySelector('.viewMenuBar');
 
         switch (index) {
 
@@ -165,13 +169,10 @@
                 break;
             case 3:
                 depends.push('scripts/livetvrecordings');
+                initMethod = 'initRecordingsTab';
                 renderMethod = 'renderRecordingsTab';
                 break;
             case 4:
-                depends.push('scripts/livetvtimers');
-                renderMethod = 'renderTimersTab';
-                break;
-            case 5:
                 depends.push('scripts/livetvseriestimers');
                 renderMethod = 'renderSeriesTimersTab';
                 break;
@@ -196,15 +197,29 @@
 
         var page = this;
 
-        var tabs = page.querySelector('paper-tabs');
-        var pageTabsContainer = page.querySelector('.pageTabsContainer');
+        var mdlTabs = page.querySelector('.libraryViewNav');
 
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pageTabsContainer, 'livetv.html');
+        libraryBrowser.configurePaperLibraryTabs(page, mdlTabs, page.querySelectorAll('.pageTabContent'));
 
-        pageTabsContainer.addEventListener('tabchange', function (e) {
+        mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(page, parseInt(e.detail.selectedTabIndex));
         });
+    });
 
+    pageIdOn('viewshow', "liveTvSuggestedPage", function () {
+
+        var page = this;
+
+        // Needed on the guide tab
+        // Ideally this should be moved to the guide tab on show/hide
+        document.body.classList.add('autoScrollY');
+    });
+
+    pageIdOn('viewbeforehide', "liveTvSuggestedPage", function () {
+
+        var page = this;
+
+        document.body.classList.remove('autoScrollY');
     });
 
     window.LiveTvPage = {

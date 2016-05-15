@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'jQuery', 'appSettings', 'scrollStyles'], function (LibraryBrowser, $, appSettings) {
+﻿define(['libraryBrowser', 'jQuery', 'appSettings', 'scrollStyles', 'paper-button', 'paper-icon-button-light'], function (LibraryBrowser, $, appSettings) {
 
     function getUserViews(userId) {
 
@@ -17,25 +17,6 @@
                 }
 
                 list.push(view);
-
-                if (view.CollectionType == 'livetv') {
-
-                    var guideView = $.extend({}, view);
-                    guideView.Name = Globalize.translate('ButtonGuide');
-                    guideView.ImageTags = {};
-                    guideView.icon = 'dvr';
-                    guideView.url = 'livetv.html?tab=1';
-                    guideView.onclick = "LibraryBrowser.showTab('livetv.html', 1);event.preventDefault();event.stopPropagation();return false;";
-                    list.push(guideView);
-
-                    var recordedTvView = $.extend({}, view);
-                    recordedTvView.Name = Globalize.translate('ButtonRecordedTv');
-                    recordedTvView.ImageTags = {};
-                    recordedTvView.icon = 'video-library';
-                    recordedTvView.url = 'livetv.html?tab=3';
-                    recordedTvView.onclick = "LibraryBrowser.showTab('livetv.html', 3);event.preventDefault();event.stopPropagation();return false;";
-                    list.push(recordedTvView);
-                }
             }
 
             return list;
@@ -182,12 +163,22 @@
 
     function getAppInfo() {
 
-        if (AppInfo.nativeApp) {
-            return Promise.resolve('');
+        var frequency = 86400000;
+
+        if (AppInfo.isNativeApp) {
+            frequency = 259200000;
         }
 
         var cacheKey = 'lastappinfopresent5';
-        if ((new Date().getTime() - parseInt(appSettings.get(cacheKey) || '0')) < 86400000) {
+        var lastDatePresented = parseInt(appSettings.get(cacheKey) || '0');
+
+        // Don't show the first time, right after installation
+        if (!lastDatePresented) {
+            appSettings.set(cacheKey, new Date().getTime());
+            return Promise.resolve('');
+        }
+
+        if ((new Date().getTime() - lastDatePresented) < frequency) {
             return Promise.resolve('');
         }
 
@@ -199,7 +190,11 @@
                 return '';
             }
 
-            var infos = [getTheaterInfo, getPremiereInfo];
+            var infos = [getPremiereInfo];
+
+            if (!browserInfo.safari || !AppInfo.isNativeApp) {
+                infos.push(getTheaterInfo);
+            }
 
             appSettings.set(cacheKey, new Date().getTime());
 
@@ -216,8 +211,10 @@
 
         var html = '';
         html += '<div>';
-        html += '<h1>Try Emby Theater<paper-icon-button icon="close" onclick="jQuery(this.parentNode.parentNode).remove();" style="margin-left:1em;"></paper-icon-button></h1>';
-        html += '<p>A beautiful app for your TV and large screen tablet. <a href="https://emby.media/download" target="_blank">Emby Theater</a> runs on Windows, Xbox One, Google Chrome, FireFox, Microsoft Edge and Opera.</p>';
+        html += '<h1>Try Emby Theater<button is="paper-icon-button-light" style="margin-left:1em;" onclick="jQuery(this.parentNode.parentNode).remove();"><iron-icon icon="close"></iron-icon></button></h1>';
+
+        var nameText = AppInfo.isNativeApp ? 'Emby Theater' : '<a href="https://emby.media/download" target="_blank">Emby Theater</a>';
+        html += '<p>A beautiful app for your TV and large screen tablet. ' + nameText + ' runs on Windows, Xbox One, Google Chrome, FireFox, Microsoft Edge and Opera.</p>';
         html += '<div class="itemsContainer">';
         html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/theater1.png', 'https://emby.media/download');
         html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/theater2.png', 'https://emby.media/download');
@@ -232,8 +229,11 @@
 
         var html = '';
         html += '<div>';
-        html += '<h1>Try Emby Premiere<paper-icon-button icon="close" onclick="jQuery(this.parentNode.parentNode).remove();" style="margin-left:1em;"></paper-icon-button></h1>';
-        html += '<p>Design beautiful Cover Art, enjoy free access to Emby apps, and more. <a href="https://emby.media/premiere" target="_blank">Learn more</a></p>';
+        html += '<h1>Try Emby Premiere<button is="paper-icon-button-light" style="margin-left:1em;" onclick="jQuery(this.parentNode.parentNode).remove();"><iron-icon icon="close"></iron-icon></button></h1>';
+
+        var learnMoreText = AppInfo.isNativeApp ? '' : '<a href="https://emby.media/premiere" target="_blank">Learn more</a>';
+
+        html += '<p>Design beautiful Cover Art, enjoy free access to Emby apps, and more. ' + learnMoreText + '</p>';
         html += '<div class="itemsContainer">';
         html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/theater1.png', 'https://emby.media/premiere');
         html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/theater2.png', 'https://emby.media/premiere');
@@ -498,7 +498,8 @@
             CollapseBoxSetItems: false,
             ExcludeLocationTypes: "Virtual",
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+            EnableTotalRecordCount: 0
         };
 
         return ApiClient.getItems(userId, options).then(function (result) {

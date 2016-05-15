@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'appStorage', 'jQuery', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (dialogHelper, appStorage, $) {
+﻿define(['dialogHelper', 'appStorage', 'jQuery', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light'], function (dialogHelper, appStorage, $) {
 
     var currentItem;
 
@@ -145,7 +145,7 @@
                 itemHtml += '</paper-item-body>';
 
                 if (s.Path) {
-                    itemHtml += '<paper-icon-button icon="delete" data-index="' + s.Index + '" title="' + Globalize.translate('Delete') + '" class="btnDelete"></paper-icon-button>';
+                    itemHtml += '<button is="paper-icon-button-light" data-index="' + s.Index + '" title="' + Globalize.translate('Delete') + '" class="btnDelete"><iron-icon icon="delete"></iron-icon></button>';
                 }
 
                 itemHtml += '</paper-icon-item>';
@@ -258,7 +258,7 @@
 
             html += '<div style="font-size:86%;opacity:.7;">' + /*(result.CommunityRating || 0) + ' / ' +*/ (result.DownloadCount || 0) + '</div>';
 
-            html += '<paper-icon-button icon="cloud-download" data-subid="' + result.Id + '" title="' + Globalize.translate('ButtonDownload') + '" class="btnDownload"></paper-icon-button>';
+            html += '<button type="button" is="paper-icon-button-light" data-subid="' + result.Id + '" title="' + Globalize.translate('ButtonDownload') + '" class="btnDownload"><iron-icon icon="cloud-download"></iron-icon></button>';
 
             html += '</paper-icon-item>';
         }
@@ -362,8 +362,8 @@
                 dlg.classList.add('background-theme-b');
 
                 var html = '';
-                html += '<div class="dialogHeader">';
-                html += '<paper-icon-button icon="arrow-back" class="btnCancel" tabindex="-1"></paper-icon-button>';
+                html += '<div class="dialogHeader" style="margin:0 0 2em;">';
+                html += '<button is="paper-icon-button-light" class="btnCancel" tabindex="-1"><iron-icon icon="arrow-back"></iron-icon></button>';
                 html += '<div class="dialogHeaderTitle">';
                 html += item.Name;
                 html += '</div>';

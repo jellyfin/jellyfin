@@ -76,7 +76,7 @@
                 html += '</paper-item-body>';
 
                 if (tuner.CanReset) {
-                    html += '<paper-icon-button icon="refresh" data-tunerid="' + tuner.Id + '" title="' + Globalize.translate('ButtonResetTuner') + '" class="btnResetTuner"></paper-icon-button>';
+                    html += '<button type="button" is="paper-icon-button-light" data-tunerid="' + tuner.Id + '" title="' + Globalize.translate('ButtonResetTuner') + '" class="btnResetTuner"><iron-icon icon="refresh"></iron-icon></button>';
                 }
 
                 html += '</paper-icon-item>';
@@ -214,7 +214,7 @@
                 html += '</a>';
                 html += '</paper-item-body>';
 
-                html += '<paper-icon-button icon="delete" data-id="' + device.Id + '" title="' + Globalize.translate('ButtonDelete') + '" class="btnDeleteDevice"></paper-icon-button>';
+                html += '<button type="button" is="paper-icon-button-light" class="btnDeleteDevice" data-id="' + device.Id + '" title="' + Globalize.translate('ButtonDelete') + '"><iron-icon icon="delete"></iron-icon></button>';
                 html += '</paper-icon-item>';
             }
 
@@ -316,7 +316,7 @@
 
                 html += '</a>';
                 html += '</paper-item-body>';
-                html += '<paper-icon-button icon="delete" data-id="' + provider.Id + '" title="' + Globalize.translate('ButtonDelete') + '" class="btnDelete"></paper-icon-button>';
+                html += '<button type="button" is="paper-icon-button-light" class="btnDeleteDevice" data-id="' + provider.Id + '" title="' + Globalize.translate('ButtonDelete') + '"><iron-icon icon="delete"></iron-icon></button>';
                 html += '</paper-icon-item>';
             }
 

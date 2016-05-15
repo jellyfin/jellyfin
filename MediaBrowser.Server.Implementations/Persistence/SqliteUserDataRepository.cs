@@ -37,16 +37,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// Opens the connection to the database
         /// </summary>
         /// <returns>Task.</returns>
-        public async Task Initialize()
+        public async Task Initialize(IDbConnector dbConnector)
         {
             var dbFile = Path.Combine(_appPaths.DataPath, "userdata_v2.db");
 
-            _connection = await SqliteExtensions.ConnectToDb(dbFile, Logger).ConfigureAwait(false);
+            _connection = await dbConnector.Connect(dbFile).ConfigureAwait(false);
 
             string[] queries = {
 
                                 "create table if not exists userdata (key nvarchar, userId GUID, rating float null, played bit, playCount int, isFavorite bit, playbackPositionTicks bigint, lastPlayedDate datetime null)",
 
+                                "create index if not exists idx_userdata on userdata(key)",
                                 "create unique index if not exists userdataindex on userdata (key, userId)",
 
                                 //pragmas
@@ -295,11 +296,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     }
                 }
 
-                return new UserItemData
-                {
-                    UserId = userId,
-                    Key = key
-                };
+                return null;
             }
         }
 

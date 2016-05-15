@@ -161,8 +161,6 @@
                     query.StartIndex -= query.Limit;
                     reloadItems(parentItem);
                 });
-
-                libraryBrowser.setLastRefreshed(view);
                 Dashboard.hideLoadingMsg();
             });
         }
@@ -174,13 +172,11 @@
                 ApiClient.getItem(Dashboard.getCurrentUserId(), params.parentId).then(function (parent) {
                     LibraryMenu.setTitle(parent.Name);
 
-                    if (libraryBrowser.needsRefresh(view)) {
-                        reloadItems(parent);
-                    }
+                    reloadItems(parent);
                 });
             }
 
-            else if (libraryBrowser.needsRefresh(view)) {
+            else {
                 reloadItems();
             }
         });

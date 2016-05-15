@@ -1,4 +1,4 @@
-﻿<div id="cinemaModeConfigurationPage" data-role="page" class="page type-interior playbackConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Cinema-Mode" data-require="scripts/cinemamodeconfiguration,paper-checkbox,paper-input">
+﻿<div id="cinemaModeConfigurationPage" data-role="page" class="page type-interior playbackConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Cinema-Mode" data-require="scripts/cinemamodeconfiguration,paper-checkbox,paper-input,paper-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -49,7 +49,7 @@
                 <div>
                     <div>
                         <paper-input type="text" label="${LabelCustomIntrosPath}" id="txtCustomIntrosPath" style="display: inline-block; width: 85%;"></paper-input>
-                        <paper-icon-button id="btnSelectCustomIntrosPath" icon="search"></paper-icon-button>
+                        <button type="button" is="paper-icon-button-light" id="btnSelectCustomIntrosPath" title="${ButtonSelectDirectory}"><iron-icon icon="search"></iron-icon></button>
                     </div>
                     <div class="fieldDescription">${LabelCustomIntrosPathHelp}</div>
                 </div>
@@ -57,7 +57,7 @@
                 <div>
                     <div>
                         <paper-input type="text" label="${LabelCodecIntrosPath}" id="txtCodecIntrosPath" style="display: inline-block; width: 85%;"></paper-input>
-                        <paper-icon-button id="btnSelectCodecIntrosPath" icon="search"></paper-icon-button>
+                        <button type="button" is="paper-icon-button-light" id="btnSelectCodecIntrosPath" title="${ButtonSelectDirectory}"><iron-icon icon="search"></iron-icon></button>
                     </div>
                     <div class="fieldDescription">
                         <div>${LabelCodecIntrosPathHelp}</div>

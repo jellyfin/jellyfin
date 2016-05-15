@@ -1,7 +1,7 @@
 {
   "name": "neon-animation",
   "description": "A system for animating Polymer-based web components",
-  "version": "1.2.0",
+  "version": "1.2.3",
   "authors": [
     "The Polymer Authors"
   ],
@@ -34,7 +34,7 @@
     "iron-meta": "PolymerElements/iron-meta#^1.0.0",
     "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#^1.0.0",
     "iron-selector": "PolymerElements/iron-selector#^1.0.0",
-    "web-animations-js": "web-animations/web-animations-js#2.1.4"
+    "web-animations-js": "web-animations/web-animations-js#^2.2.0"
   },
   "devDependencies": {
     "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",
@@ -49,13 +49,13 @@
     "iron-icons": "PolymerElements/iron-icons#^1.0.0",
     "paper-icon-button": "PolymerElements/paper-icon-button#^1.0.0"
   },
-  "_release": "1.2.0",
+  "_release": "1.2.3",
   "_resolution": {
     "type": "version",
-    "tag": "v1.2.0",
-    "commit": "2d3416a01f865a25fe581ad0cfcda6ae4f9cf142"
+    "tag": "v1.2.3",
+    "commit": "c50d51e62825f4aa53f10e93f746796a174af232"
   },
-  "_source": "git://github.com/polymerelements/neon-animation.git",
-  "_target": "^1.0.0",
-  "_originalSource": "polymerelements/neon-animation"
+  "_source": "git://github.com/PolymerElements/neon-animation.git",
+  "_target": "^1.2.2",
+  "_originalSource": "PolymerElements/neon-animation"
 }

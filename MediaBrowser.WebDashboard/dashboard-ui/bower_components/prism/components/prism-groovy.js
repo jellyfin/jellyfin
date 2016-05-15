@@ -1,6 +1,15 @@
 Prism.languages.groovy = Prism.languages.extend('clike', {
 	'keyword': /\b(as|def|in|abstract|assert|boolean|break|byte|case|catch|char|class|const|continue|default|do|double|else|enum|extends|final|finally|float|for|goto|if|implements|import|instanceof|int|interface|long|native|new|package|private|protected|public|return|short|static|strictfp|super|switch|synchronized|this|throw|throws|trait|transient|try|void|volatile|while)\b/,
-	'string': /("""|''')[\W\w]*?\1|("|'|\/)(?:\\?.)*?\2|(\$\/)(\$\/\$|[\W\w])*?\/\$/,
+	'string': [
+		{
+			pattern: /("""|''')[\W\w]*?\1|(\$\/)(\$\/\$|[\W\w])*?\/\$/,
+			greedy: true
+		},
+		{
+			pattern: /("|'|\/)(?:\\?.)*?\1/,
+			greedy: true
+		},
+	],
 	'number': /\b(?:0b[01_]+|0x[\da-f_]+(?:\.[\da-f_p\-]+)?|[\d_]+(?:\.[\d_]+)?(?:e[+-]?[\d]+)?)[glidf]?\b/i,
 	'operator': {
 		pattern: /(^|[^.])(~|==?~?|\?[.:]?|\*(?:[.=]|\*=?)?|\.[@&]|\.\.<|\.{1,2}(?!\.)|-[-=>]?|\+[+=]?|!=?|<(?:<=?|=>?)?|>(?:>>?=?|=)?|&[&=]?|\|[|=]?|\/=?|\^=?|%=?)/,
@@ -22,6 +31,7 @@ Prism.languages.insertBefore('groovy', 'punctuation', {
 
 Prism.languages.insertBefore('groovy', 'function', {
 	'annotation': {
+		alias: 'punctuation',
 		pattern: /(^|[^.])@\w+/,
 		lookbehind: true
 	}
@@ -37,6 +47,10 @@ Prism.hooks.add('wrap', function(env) {
 			if (delimiter === '$') {
 				pattern = /([^\$])(\$(\{.*?\}|[\w\.]+))/;
 			}
+
+			// To prevent double HTML-ecoding we have to decode env.content first
+			env.content = env.content.replace(/&amp;/g, '&').replace(/&lt;/g, '<');
+
 			env.content = Prism.highlight(env.content, {
 				'expression': {
 					pattern: pattern,

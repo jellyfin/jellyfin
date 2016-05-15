@@ -1,0 +1,19 @@
+[is=paper-icon-button-light] {
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+}
+
+    [is=paper-icon-button-light] iron-icon, [is=paper-icon-button-light] img {
+        width: 100%;
+        height: 100%;
+    }
+
+    [is=paper-icon-button-light] #background {
+        transition: opacity .3s ease-out;
+    }
+
+    [is=paper-icon-button-light]:focus #background {
+        background-color: currentcolor !important;
+        opacity: .2 !important;
+    }

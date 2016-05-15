@@ -18,8 +18,6 @@ namespace MediaBrowser.Controller.Entities.Movies
     {
         public List<Guid> SpecialFeatureIds { get; set; }
 
-        public string OriginalTitle { get; set; }
-
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }
         public List<string> ProductionLocations { get; set; }
@@ -76,34 +74,6 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             get { return TmdbCollectionName; }
             set { TmdbCollectionName = value; }
-        }
-        
-        /// <summary>
-        /// Gets the user data key.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        protected override string CreateUserDataKey()
-        {
-            var key = GetMovieUserDataKey(this);
-
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                key = base.CreateUserDataKey();
-            }
-
-            return key;
-        }
-
-        public static string GetMovieUserDataKey(BaseItem movie)
-        {
-            var key = movie.GetProviderId(MetadataProviders.Tmdb);
-
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                key = movie.GetProviderId(MetadataProviders.Imdb);
-            }
-
-            return key;
         }
 
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)

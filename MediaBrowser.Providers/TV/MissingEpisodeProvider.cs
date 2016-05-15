@@ -27,6 +27,8 @@ namespace MediaBrowser.Providers.TV
         private readonly IFileSystem _fileSystem;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        private static readonly SemaphoreSlim _resourceLock = new SemaphoreSlim(1, 1);
+        public static bool IsRunning = false;
 
         public MissingEpisodeProvider(ILogger logger, IServerConfigurationManager config, ILibraryManager libraryManager, ILocalizationManager localization, IFileSystem fileSystem)
         {
@@ -37,13 +39,16 @@ namespace MediaBrowser.Providers.TV
             _fileSystem = fileSystem;
         }
 
-        public async Task Run(IEnumerable<IGrouping<string, Series>> series, CancellationToken cancellationToken)
+        public async Task Run(List<IGrouping<string, Series>> series, bool addNewItems, CancellationToken cancellationToken)
         {
+            await _resourceLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            IsRunning = true;
+
             foreach (var seriesGroup in series)
             {
                 try
                 {
-                    await Run(seriesGroup, cancellationToken).ConfigureAwait(false);
+                    await Run(seriesGroup, addNewItems, cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -58,9 +63,12 @@ namespace MediaBrowser.Providers.TV
                     _logger.ErrorException("Error in missing episode provider for series id {0}", ex, seriesGroup.Key);
                 }
             }
+
+            IsRunning = false;
+            _resourceLock.Release();
         }
 
-        private async Task Run(IGrouping<string, Series> group, CancellationToken cancellationToken)
+        private async Task Run(IGrouping<string, Series> group, bool addNewItems, CancellationToken cancellationToken)
         {
             var tvdbId = group.Key;
 
@@ -110,7 +118,7 @@ namespace MediaBrowser.Providers.TV
 
             var hasNewEpisodes = false;
 
-            if (_config.Configuration.EnableInternetProviders)
+            if (_config.Configuration.EnableInternetProviders && addNewItems)
             {
                 var seriesConfig = _config.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, typeof(Series).Name, StringComparison.OrdinalIgnoreCase));
 
@@ -427,7 +435,7 @@ namespace MediaBrowser.Providers.TV
 
             await season.AddChild(episode, cancellationToken).ConfigureAwait(false);
 
-			await episode.RefreshMetadata(new MetadataRefreshOptions(_fileSystem)
+            await episode.RefreshMetadata(new MetadataRefreshOptions(_fileSystem)
             {
             }, cancellationToken).ConfigureAwait(false);
         }

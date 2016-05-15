@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'jQuery', 'paper-slider', 'paper-button'], function (appSettings, $) {
+﻿define(['appSettings', 'datetime', 'jQuery', 'paper-slider', 'paper-button'], function (appSettings, datetime, $) {
 
     function getDeviceProfile(serverAddress, deviceId, item, startPositionTicks, maxBitrate, mediaSourceId, audioStreamIndex, subtitleStreamIndex) {
 
@@ -322,7 +322,7 @@
 
                 var time = item.RunTimeTicks * (Number(pct) * .01);
 
-                var tooltext = Dashboard.getDisplayTime(time);
+                var tooltext = datetime.getDisplayRunningTime(time);
 
                 $('.sliderValue', elem).html(tooltext);
 

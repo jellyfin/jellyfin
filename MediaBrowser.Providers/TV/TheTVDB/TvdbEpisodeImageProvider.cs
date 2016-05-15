@@ -17,7 +17,7 @@ using CommonIO;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class TvdbEpisodeImageProvider : IRemoteImageProvider, IHasChangeMonitor
+    public class TvdbEpisodeImageProvider : IRemoteImageProvider, IHasItemChangeMonitor
     {
         private readonly IServerConfigurationManager _config;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
@@ -174,21 +174,18 @@ namespace MediaBrowser.Providers.TV
             });
         }
 
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
-            var episode = (Episode)item;
-            
-            if (!episode.IsVirtualUnaired)
+            // For non-unaired items, only enable if configured
+            if (!TvdbSeriesProvider.Current.GetTvDbOptions().EnableAutomaticUpdates)
             {
-                // For non-unaired items, only enable if configured
-                if (!TvdbSeriesProvider.Current.GetTvDbOptions().EnableAutomaticUpdates)
-                {
-                    return false;
-                }
+                return false;
             }
 
             if (!item.HasImage(ImageType.Primary))
             {
+                var episode = (Episode)item;
+
                 var series = episode.Series;
 
                 if (series != null && TvdbSeriesProvider.IsValidSeries(series.ProviderIds))
@@ -196,7 +193,7 @@ namespace MediaBrowser.Providers.TV
                     // Process images
 					var seriesXmlPath = TvdbSeriesProvider.Current.GetSeriesXmlPath(series.ProviderIds, series.GetPreferredMetadataLanguage());
 
-					return _fileSystem.GetLastWriteTimeUtc(seriesXmlPath) > date;
+					return _fileSystem.GetLastWriteTimeUtc(seriesXmlPath) > item.DateLastRefreshed;
                 }
             }
 

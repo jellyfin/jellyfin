@@ -1,4 +1,4 @@
-﻿define(['imageLoader', 'layoutManager', 'jQuery', 'paper-icon-button', 'paper-button', 'emby-icons'], function (imageLoader, layoutManager, $) {
+﻿define(['imageLoader', 'layoutManager', 'jQuery'], function (imageLoader, layoutManager, $) {
 
     var mainDrawerPanel = document.querySelector('.mainDrawerPanel');
 
@@ -9,39 +9,36 @@
         html += '<div class="primaryIcons">';
         var backIcon = browserInfo.safari ? 'chevron-left' : 'arrow-back';
 
-        html += '<paper-icon-button icon="' + backIcon + '" class="headerButton headerButtonLeft headerBackButton hide"></paper-icon-button>';
+        html += '<button type="button" is="paper-icon-button-light" class="headerButton headerButtonLeft headerBackButton hide"><iron-icon icon="' + backIcon + '"></iron-icon></button>';
 
-        if (AppInfo.enableNavDrawer) {
-            html += '<paper-icon-button icon="menu" class="headerButton mainDrawerButton barsMenuButton headerButtonLeft"></paper-icon-button>';
-        }
-
-        html += '<paper-icon-button icon="menu" class="headerButton headerAppsButton barsMenuButton headerButtonLeft"></paper-icon-button>';
+        html += '<button type="button" is="paper-icon-button-light" class="headerButton mainDrawerButton barsMenuButton headerButtonLeft"><iron-icon icon="menu"></iron-icon></button>';
+        html += '<button type="button" is="paper-icon-button-light" class="headerButton headerAppsButton barsMenuButton headerButtonLeft"><iron-icon icon="menu"></iron-icon></button>';
 
         html += '<div class="libraryMenuButtonText headerButton">' + Globalize.translate('ButtonHome') + '</div>';
 
         html += '<div class="viewMenuSecondary">';
 
         html += '<span class="headerSelectedPlayer"></span>';
-        html += '<paper-icon-button icon="cast" class="btnCast headerButton headerButtonRight hide"></paper-icon-button>';
+        html += '<button is="paper-icon-button-light" class="btnCast headerButton headerButtonRight hide"><iron-icon icon="cast"></iron-icon></button>';
 
         if (AppInfo.enableSearchInTopMenu) {
-            html += '<paper-icon-button icon="search" class="headerButton headerButtonRight headerSearchButton hide" onclick="Search.showSearchPanel();"></paper-icon-button>';
+            html += '<button is="paper-icon-button-light" class=headerButton headerButtonRight headerSearchButton hide" onclick="Search.showSearchPanel();"><iron-icon icon="search"></iron-icon></button>';
             html += '<div class="viewMenuSearch hide">';
             html += '<form class="viewMenuSearchForm">';
             html += '<input type="text" data-role="none" data-type="search" class="headerSearchInput" autocomplete="off" spellcheck="off" />';
-            html += '<paper-icon-button icon="close" class="btnCloseSearch"></paper-icon-button>';
+            html += '<button is="paper-icon-button-light" class="btnCloseSearch"><iron-icon icon="close"></iron-icon></button>';
             html += '</form>';
             html += '</div>';
         }
 
-        html += '<paper-icon-button icon="mic" class="headerButton headerButtonRight headerVoiceButton hide"></paper-icon-button>';
+        html += '<button is="paper-icon-button-light" class="headerButton headerButtonRight headerVoiceButton hide"><iron-icon icon="mic"></iron-icon></button>';
 
-        html += '<paper-button class="headerButton headerButtonRight btnNotifications subdued" type="button" title="Notifications"><div class="btnNotificationsInner">0</div></paper-button>';
+        html += '<button is="paper-icon-button-light" class="headerButton headerButtonRight btnNotifications clearButton"><div class="btnNotificationsInner">0</div></button>';
 
-        html += '<paper-icon-button icon="person" class="headerButton headerButtonRight headerUserButton"></paper-icon-button>';
+        html += '<button is="paper-icon-button-light" class="headerButton headerButtonRight headerUserButton"><iron-icon icon="person"></iron-icon></button>';
 
         if (!browserInfo.mobile && !Dashboard.isConnectMode()) {
-            html += '<paper-icon-button icon="settings" class="headerButton headerButtonRight dashboardEntryHeaderButton" onclick="return LibraryMenu.onSettingsClicked(event);"></paper-icon-button>';
+            html += '<button is="paper-icon-button-light" class="headerButton headerButtonRight dashboardEntryHeaderButton" onclick="return LibraryMenu.onSettingsClicked(event);"><iron-icon icon="settings"></iron-icon></button>';
         }
 
         html += '</div>';
@@ -75,6 +72,9 @@
     function updateUserInHeader(user) {
 
         var header = document.querySelector('.viewMenuBar');
+        if (!header) {
+            return;
+        }
 
         var headerUserButton = header.querySelector('.headerUserButton');
         var hasImage;
@@ -87,7 +87,7 @@
                 var url = user.imageUrl;
 
                 if (user.supportsImageParams) {
-                    url += "&height=" + (userButtonHeight * Math.max(window.devicePixelRatio || 1, 2));
+                    url += "&height=" + Math.round((userButtonHeight * Math.max(window.devicePixelRatio || 1, 2)));
                 }
 
                 if (headerUserButton) {
@@ -110,26 +110,15 @@
 
     function updateHeaderUserButton(headerUserButton, src, icon) {
 
-        var oldButton = headerUserButton;
-
-        // There seems to be a bug in paper-icon-button where it doesn't refresh it's display after switching between icon and src image
-        // So work around that by just replacing the element altogether
-
-        var headerUserButton = document.createElement('paper-icon-button');
-        headerUserButton.className = oldButton.className;
-        headerUserButton.addEventListener('click', onHeaderUserButtonClick);
-
         if (src) {
             headerUserButton.classList.add('headerUserButtonRound');
-            headerUserButton.src = src;
+            headerUserButton.innerHTML = '<img src="' + src + '" />';
         } else if (icon) {
             headerUserButton.classList.remove('headerUserButtonRound');
-            headerUserButton.icon = icon;
+            headerUserButton.innerHTML = '<iron-icon icon="' + icon + '"></iron-icon>';
         } else {
             headerUserButton.classList.remove('headerUserButtonRound');
         }
-
-        oldButton.parentNode.replaceChild(headerUserButton, oldButton);
     }
 
     function updateLocalUser(user) {
@@ -210,7 +199,7 @@
             html += '<div class="adminAppsMenuRow">';
 
             html += '<a class="adminAppsButton" href="home.html">';
-            html += '<paper-icon-button icon="home"></paper-icon-button>';
+            html += '<button is="paper-icon-button-light"><iron-icon icon="home"></iron-icon></button>';
             html += '<div>' + Globalize.translate('ButtonHome') + '</div>';
             html += '</a>';
 
@@ -219,11 +208,11 @@
             html += '<div class="adminAppsMenuRow">';
 
             html += '<a class="adminAppsButton" href="edititemmetadata.html">';
-            html += '<paper-icon-button icon="mode-edit"></paper-icon-button>';
+            html += '<button is="paper-icon-button-light"><iron-icon icon="mode-edit"></iron-icon></button>';
             html += '<div>' + Globalize.translate('ButtonMetadataManager') + '</div>';
             html += '</a>';
             html += '<a class="adminAppsButton" href="reports.html">';
-            html += '<paper-icon-button icon="insert-chart"></paper-icon-button>';
+            html += '<button is="paper-icon-button-light"><iron-icon icon="insert-chart"></iron-icon></button>';
             html += '<div>' + Globalize.translate('ButtonReports') + '</div>';
             html += '</a>';
 
@@ -455,15 +444,6 @@
     function createDashboardMenu() {
         var html = '';
 
-        //html += '<div class="userHeader">';
-        //html += '<div class="userHeaderActionMenu">';
-        //html += '<div>';
-        //html += localUser.Name;
-        //html += '</div>';
-        //html += '<paper-icon-button icon="expand-more"></paper-icon-button>';
-        //html += '</div>';
-        //html += '</div>';
-
         html += '<a class="adminDrawerLogo clearLink" href="home.html">'
         html += '<img src="css/images/logo.png" />';
         html += '</a>';
@@ -511,14 +491,6 @@
                     guideView.url = 'livetv.html?tab=1';
                     guideView.onclick = "LibraryBrowser.showTab('livetv.html', 1);";
                     list.push(guideView);
-
-                    var recordedTvView = Object.assign({}, view);
-                    recordedTvView.Name = Globalize.translate('ButtonRecordedTv');
-                    recordedTvView.ImageTags = {};
-                    recordedTvView.icon = 'video-library';
-                    recordedTvView.url = 'livetv.html?tab=3';
-                    recordedTvView.onclick = "LibraryBrowser.showTab('livetv.html', 3);";
-                    list.push(recordedTvView);
                 }
             }
 
@@ -770,7 +742,7 @@
                 var helpUrl = page.getAttribute('data-helpurl');
 
                 if (helpUrl) {
-                    html += '<a href="' + helpUrl + '" target="_blank" class="clearLink" style="margin-left:1em;" title="' + Globalize.translate('ButtonHelp') + '"><paper-icon-button icon="info"></paper-icon-button></a>';
+                    html += '<a href="' + helpUrl + '" target="_blank" class="clearLink" style="margin-left:2em;" title="' + Globalize.translate('ButtonHelp') + '"><paper-button class="accent" style="margin:0;font-weight:normal;font-size:13px;padding:.25em;display:flex;align-items:center;"><iron-icon icon="info"></iron-icon><span>Help</span></paper-button></a>';
                 }
             }
 
@@ -822,18 +794,22 @@
 
         var btnCast = context.querySelector('.btnCast');
 
+        if (!btnCast) {
+            return;
+        }
+
         var info = MediaController.getPlayerInfo();
 
         if (info.isLocalPlayer) {
 
-            btnCast.icon = 'cast';
+            btnCast.querySelector('iron-icon').icon = 'cast';
             btnCast.classList.remove('btnActiveCast');
 
             context.querySelector('.headerSelectedPlayer').innerHTML = '';
 
         } else {
 
-            btnCast.icon = 'cast-connected';
+            btnCast.querySelector('iron-icon').icon = 'cast-connected';
             btnCast.classList.add('btnActiveCast');
             context.querySelector('.headerSelectedPlayer').innerHTML = info.deviceName || info.name;
         }
@@ -927,16 +903,18 @@
 
         var viewMenuBar = document.querySelector('.viewMenuBar');
 
-        if (page.classList.contains('standalonePage')) {
-            viewMenuBar.classList.add('hide');
-        } else {
-            viewMenuBar.classList.remove('hide');
-        }
+        if (viewMenuBar) {
+            if (page.classList.contains('standalonePage')) {
+                viewMenuBar.classList.add('hide');
+            } else {
+                viewMenuBar.classList.remove('hide');
+            }
 
-        if (page.classList.contains('type-interior') && !layoutManager.mobile) {
-            viewMenuBar.classList.add('headroomDisabled');
-        } else {
-            viewMenuBar.classList.remove('headroomDisabled');
+            if (page.classList.contains('type-interior') && !layoutManager.mobile) {
+                viewMenuBar.classList.add('headroomDisabled');
+            } else {
+                viewMenuBar.classList.remove('headroomDisabled');
+            }
         }
 
         if (requiresUserRefresh) {
@@ -993,7 +971,7 @@
 
         if (!e.detail.isRestored) {
             // Scroll back up so in case vertical scroll was messed with
-            window.scrollTo(0, 0);
+            //window.scrollTo(0, 0);
         }
 
         updateTitle(page);
@@ -1126,8 +1104,19 @@
     }
 
     mainDrawerPanel.addEventListener('iron-select', onMainDrawerSelect);
+    var headerCreated;
+    var userRequiresUpdateAfterHeader;
 
-    renderHeader();
+    require(['paper-icon-button-light', 'emby-icons'], function () {
+        renderHeader();
+        headerCreated = true;
+
+        var user = userRequiresUpdateAfterHeader;
+        if (user) {
+            updateUserInHeader(user);
+        }
+        userRequiresUpdateAfterHeader = null;
+    });
 
     Events.on(ConnectionManager, 'apiclientcreated', function (e, apiClient) {
         initializeApiClient(apiClient);
@@ -1135,17 +1124,15 @@
 
     Events.on(ConnectionManager, 'localusersignedin', function (e, user) {
         setDrawerClass();
-        var apiClient = ConnectionManager.getApiClient(user.ServerId);
         ConnectionManager.user(ConnectionManager.getApiClient(user.ServerId)).then(function (user) {
             refreshLibraryDrawer(user);
-            updateUserInHeader(user);
-        });
 
-        if (!AppInfo.isNativeApp) {
-            require(['components/servertestermessage'], function (message) {
-                message.show(apiClient);
-            });
-        }
+            if (headerCreated) {
+                updateUserInHeader(user);
+            } else {
+                userRequiresUpdateAfterHeader = user;
+            }
+        });
     });
 
     Events.on(ConnectionManager, 'localusersignedout', updateUserInHeader);

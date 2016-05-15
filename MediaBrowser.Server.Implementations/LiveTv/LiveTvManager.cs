@@ -135,7 +135,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var channels = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { typeof(LiveTvChannel).Name }
+                IncludeItemTypes = new[] { typeof(LiveTvChannel).Name },
+                SortBy = new[] { ItemSortBy.SortName }
 
             }).Cast<LiveTvChannel>();
 
@@ -164,7 +165,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     var val = query.IsFavorite.Value;
 
                     channels = channels
-                        .Where(i => _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).IsFavorite == val);
+                        .Where(i => _userDataManager.GetUserData(user, i).IsFavorite == val);
                 }
 
                 if (query.IsLiked.HasValue)
@@ -174,7 +175,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     channels = channels
                         .Where(i =>
                         {
-                            var likes = _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).Likes;
+                            var likes = _userDataManager.GetUserData(user, i).Likes;
 
                             return likes.HasValue && likes.Value == val;
                         });
@@ -187,7 +188,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     channels = channels
                         .Where(i =>
                         {
-                            var likes = _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).Likes;
+                            var likes = _userDataManager.GetUserData(user, i).Likes;
 
                             return likes.HasValue && likes.Value != val;
                         });
@@ -200,7 +201,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 if (enableFavoriteSorting)
                 {
-                    var userData = _userDataManager.GetUserData(user.Id, i.GetUserDataKey());
+                    var userData = _userDataManager.GetUserData(user, i);
 
                     if (userData.IsFavorite)
                     {
@@ -886,7 +887,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 StartIndex = query.StartIndex,
                 Limit = query.Limit,
                 SortBy = query.SortBy,
-                SortOrder = query.SortOrder ?? SortOrder.Ascending
+                SortOrder = query.SortOrder ?? SortOrder.Ascending,
+                EnableTotalRecordCount = query.EnableTotalRecordCount
             };
 
             if (query.HasAired.HasValue)
@@ -924,7 +926,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 IsAiring = query.IsAiring,
                 IsMovie = query.IsMovie,
                 IsSports = query.IsSports,
-                IsKids = query.IsKids
+                IsKids = query.IsKids,
+                EnableTotalRecordCount = query.EnableTotalRecordCount
             };
 
             if (query.HasAired.HasValue)
@@ -1005,7 +1008,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var channel = GetInternalChannel(program.ChannelId);
 
-            var channelUserdata = _userDataManager.GetUserData(userId, channel.GetUserDataKey());
+            var channelUserdata = _userDataManager.GetUserData(userId, channel);
 
             if (channelUserdata.Likes ?? false)
             {
@@ -1036,7 +1039,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 if (genres.TryGetValue(i, out genre))
                 {
-                    var genreUserdata = _userDataManager.GetUserData(userId, genre.GetUserDataKey());
+                    var genreUserdata = _userDataManager.GetUserData(userId, genre);
 
                     if (genreUserdata.Likes ?? false)
                     {
@@ -1263,11 +1266,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private async Task CleanDatabaseInternal(List<Guid> currentIdList, string[] validTypes, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var list = _itemRepo.GetItemIds(new InternalItemsQuery
+            var list = _itemRepo.GetItemIdsList(new InternalItemsQuery
             {
                 IncludeItemTypes = validTypes
 
-            }).Items.ToList();
+            }).ToList();
 
             var numComplete = 0;
 
@@ -1380,12 +1383,43 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
         }
 
+        private QueryResult<BaseItem> GetEmbyRecordings(RecordingQuery query, User user)
+        {
+            var folders = EmbyTV.EmbyTV.Current.GetRecordingFolders()
+                .SelectMany(i => i.Locations)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(i => _libraryManager.FindByPath(i, true))
+                .Where(i => i != null)
+                .Where(i => i.IsVisibleStandalone(user))
+                .ToList();
+
+            var items = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
+            {
+                MediaTypes = new[] { MediaType.Video },
+                Recursive = true,
+                AncestorIds = folders.Select(i => i.Id.ToString("N")).ToArray(),
+                ExcludeLocationTypes = new[] { LocationType.Virtual },
+                Limit = Math.Min(10, query.Limit ?? int.MaxValue)
+            });
+
+            return items;
+        }
+
         public async Task<QueryResult<BaseItem>> GetInternalRecordings(RecordingQuery query, CancellationToken cancellationToken)
         {
             var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
             if (user != null && !IsLiveTvEnabled(user))
             {
                 return new QueryResult<BaseItem>();
+            }
+
+            if (user != null && !(query.IsInProgress ?? false))
+            {
+                var initialResult = GetEmbyRecordings(query, user);
+                if (initialResult.TotalRecordCount > 0)
+                {
+                    return initialResult;
+                }
             }
 
             await RefreshRecordings(cancellationToken).ConfigureAwait(false);
@@ -1513,6 +1547,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     {
                         dto.ChannelName = channel.Name;
                         dto.MediaType = channel.MediaType;
+                        dto.ChannelNumber = channel.Number;
 
                         if (channel.HasImage(ImageType.Primary))
                         {
@@ -1852,6 +1887,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 var channel = tuple.Item2;
 
                 dto.Number = channel.Number;
+                dto.ChannelNumber = channel.Number;
                 dto.ChannelType = channel.ChannelType;
                 dto.ServiceName = GetService(channel).Name;
 
@@ -2055,7 +2091,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             }, cancellationToken).ConfigureAwait(false);
 
-            var recordings = recordingResult.Items.Cast<ILiveTvRecording>().ToList();
+            var recordings = recordingResult.Items.OfType<ILiveTvRecording>().ToList();
 
             var groups = new List<BaseItemDto>();
 

@@ -1,4 +1,4 @@
-﻿<div id="liveTvSettingsPage" data-role="page" class="page type-interior liveTvPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvsettings,paper-checkbox,paper-input,emby-collapsible">
+﻿<div id="liveTvSettingsPage" data-role="page" class="page type-interior liveTvPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvsettings,paper-checkbox,paper-input,emby-collapsible,paper-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -35,8 +35,25 @@
                 <div>
                     <br />
                     <paper-input id="txtRecordingPath" label="${LabelRecordingPath}" style="width:84%;display:inline-block;"></paper-input>
-                    <paper-icon-button id="btnSelectRecordingPath" icon="search"></paper-icon-button>
+                    <button type="button" is="paper-icon-button-light" id="btnSelectRecordingPath" title="${ButtonSelectDirectory}"><iron-icon icon="search"></iron-icon></button>
                     <div class="fieldDescription">${LabelRecordingPathHelp}</div>
+                </div>
+                <br />
+                <div>
+                    <paper-checkbox id="chkEnableRecordingSubfolders">${OptionEnableRecordingSubfolders}</paper-checkbox>
+                </div>
+                <div>
+                    <br />
+                    <paper-input id="txtMovieRecordingPath" label="${LabelMovieRecordingPath}" style="width:84%;display:inline-block;"></paper-input>
+                    <button type="button" is="paper-icon-button-light" id="btnSelectMovieRecordingPath" title="${ButtonSelectDirectory}"><iron-icon icon="search"></iron-icon></button>
+                </div>
+                <div>
+                    <paper-input id="txtSeriesRecordingPath" label="${LabelSeriesRecordingPath}" style="width:84%;display:inline-block;"></paper-input>
+                    <button type="button" is="paper-icon-button-light" id="btnSelectSeriesRecordingPath" title="${ButtonSelectDirectory}"><iron-icon icon="search"></iron-icon></button>
+                </div>
+                <br />
+                <div>
+                    <paper-checkbox id="chkOrganize">${OptionSendRecordingsToAutoOrganize}</paper-checkbox>
                 </div>
                 <br />
                 <br />
@@ -46,10 +63,9 @@
                     <div class="fieldDescription paperCheckboxFieldDescription btnSupporterForConverting"><a href="https://emby.media/premiere" target="_blank" class="accent">${FeatureRequiresEmbyPremiere}</a></div>
                 </div>
                 <br />
-                <br />
                 <div>
-                    <paper-checkbox id="chkOrganize">${OptionSendRecordingsToAutoOrganize}</paper-checkbox>
-                    <div class="fieldDescription paperCheckboxFieldDescription">${OptionSendRecordingsToAutoOrganizeHelp}</div>
+                    <paper-checkbox id="chkPreserveAudio">${OptionConvertRecordingPreserveAudio}</paper-checkbox>
+                    <div class="fieldDescription paperCheckboxFieldDescription">${OptionConvertRecordingPreserveAudioHelp}</div>
                 </div>
                 <br />
                 <br />

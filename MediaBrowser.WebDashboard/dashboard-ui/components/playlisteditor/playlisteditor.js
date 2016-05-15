@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'paper-input'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'paper-input', 'paper-icon-button-light'], function (dialogHelper, $) {
 
     var lastPlaylistId = '';
 
@@ -207,8 +207,8 @@
 
             var title = Globalize.translate('HeaderAddToPlaylist');
 
-            html += '<div class="dialogHeader">';
-            html += '<paper-icon-button icon="arrow-back" class="btnCancel" tabindex="-1"></paper-icon-button>';
+            html += '<div class="dialogHeader" style="margin:0 0 2em;">';
+            html += '<button is="paper-icon-button-light" class="btnCancel" tabindex="-1"><iron-icon icon="arrow-back"></iron-icon></button>';
             html += '<div class="dialogHeaderTitle">';
             html += title;
             html += '</div>';

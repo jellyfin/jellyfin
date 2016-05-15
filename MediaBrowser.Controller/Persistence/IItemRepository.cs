@@ -14,12 +14,6 @@ namespace MediaBrowser.Controller.Persistence
     public interface IItemRepository : IRepository
     {
         /// <summary>
-        /// Opens the connection to the repository
-        /// </summary>
-        /// <returns>Task.</returns>
-        Task Initialize();
-
-        /// <summary>
         /// Saves an item
         /// </summary>
         /// <param name="item">The item.</param>

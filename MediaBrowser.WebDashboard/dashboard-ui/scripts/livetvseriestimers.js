@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['datetime', 'jQuery', 'paper-icon-button-light'], function (datetime, $) {
 
     var query = {
 
@@ -63,7 +63,7 @@
 
                 html += ' - ' + Globalize.translate('LabelAnytime');
             } else {
-                html += ' - ' + LibraryBrowser.getDisplayTime(timer.StartDate);
+                html += ' - ' + datetime.getDisplayTime(timer.StartDate);
             }
             html += '</div>';
 
@@ -79,7 +79,7 @@
 
             html += '</paper-item-body>';
 
-            html += '<paper-icon-button icon="cancel" data-seriestimerid="' + timer.Id + '" title="' + Globalize.translate('ButtonCancelSeries') + '" class="btnCancelSeries"></paper-icon-button>';
+            html += '<button type="button" is="paper-icon-button-light" data-seriestimerid="' + timer.Id + '" title="' + Globalize.translate('ButtonCancelSeries') + '" class="btnCancelSeries"><iron-icon icon="cancel"></iron-icon></button>';
 
             html += '</paper-icon-item>';
         }
@@ -108,16 +108,12 @@
             require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
                 renderTimers(page, result.Items);
             });
-
-            LibraryBrowser.setLastRefreshed(page);
         });
     }
 
     window.LiveTvPage.renderSeriesTimersTab = function (page, tabContent) {
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
-            reload(tabContent);
-        }
+        reload(tabContent);
     };
 
 });

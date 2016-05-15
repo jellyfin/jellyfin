@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'jQuery', 'scrollStyles'], function (layoutManager, $) {
+﻿define(['layoutManager', 'datetime', 'jQuery', 'mediaInfo', 'scrollStyles'], function (layoutManager, datetime, $, mediaInfo) {
 
     var currentItem;
 
@@ -45,7 +45,6 @@
         getPromise().then(function (item) {
 
             reloadFromItem(page, item);
-            window.scrollTo(0, 0);
         });
     }
 
@@ -94,7 +93,7 @@
 
                 var now = new Date();
 
-                if (now >= parseISO8601Date(item.StartDate, { toLocal: true }) && now < parseISO8601Date(item.EndDate, { toLocal: true })) {
+                if (now >= datetime.parseISO8601Date(item.StartDate, true) && now < datetime.parseISO8601Date(item.EndDate, true)) {
                     $('.btnPlay', page).removeClass('hide');
                     canPlay = true;
                 } else {
@@ -172,12 +171,10 @@
                 $('.chapterSettingsButton', page).hide();
             }
 
-            LiveTvHelpers.renderOriginalAirDate($('.airDate', page), item);
-
             if (item.Type == "Person" && item.PremiereDate) {
 
                 try {
-                    var birthday = parseISO8601Date(item.PremiereDate, { toLocal: true }).toDateString();
+                    var birthday = datetime.parseISO8601Date(item.PremiereDate, true).toDateString();
 
                     $('#itemBirthday', page).show().html(Globalize.translate('BirthDateValue').replace('{0}', birthday));
                 }
@@ -191,7 +188,7 @@
             if (item.Type == "Person" && item.EndDate) {
 
                 try {
-                    var deathday = parseISO8601Date(item.EndDate, { toLocal: true }).toDateString();
+                    var deathday = datetime.parseISO8601Date(item.EndDate, true).toDateString();
 
                     $('#itemDeathDate', page).show().html(Globalize.translate('DeathDateValue').replace('{0}', deathday));
                 }
@@ -223,7 +220,7 @@
 
         if (item.LocationType == "Virtual" && item.Type == "Episode") {
             try {
-                if (item.PremiereDate && (new Date().getTime() >= parseISO8601Date(item.PremiereDate, { toLocal: true }).getTime())) {
+                if (item.PremiereDate && (new Date().getTime() >= datetime.parseISO8601Date(item.PremiereDate, true).getTime())) {
                     isMissingEpisode = true;
                 }
             } catch (err) {
@@ -342,7 +339,7 @@
             });
 
             var itemsContainer = section.querySelector('.nextUpItems');
-            
+
             itemsContainer.innerHTML = html;
             ImageLoader.lazyChildren(itemsContainer);
             $(itemsContainer).createCardMenus();
@@ -468,11 +465,13 @@
             bottomOverview.classList.add('hide');
         }
 
-        $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item));
-
         LibraryBrowser.renderAwardSummary($('#awardSummary', page), item);
 
-        $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
+        $('.itemMiscInfo', page).each(function () {
+            mediaInfo.fillPrimaryMediaInfo(this, item, {
+                interactive: true
+            });
+        });
 
         LibraryBrowser.renderGenres($('.itemGenres', page), item, null, isStatic);
         LibraryBrowser.renderStudios($('.itemStudios', page), item, isStatic);
@@ -1151,7 +1150,6 @@
     }
 
     function renderUserDataIcons(page, item) {
-
         $('.userDataIcons', page).html(LibraryBrowser.getUserDataIconsHtml(item, true, 'icon-button'));
     }
 
@@ -1222,7 +1220,7 @@
 
                 try {
 
-                    var date = parseISO8601Date(review.Date, { toLocal: true }).toLocaleDateString();
+                    var date = datetime.parseISO8601Date(review.Date, true).toLocaleDateString();
 
                     html += '<span class="reviewDate">' + date + '</span>';
                 }
@@ -1403,7 +1401,7 @@
             html += '<div class="cardFooter">';
             html += '<div class="cardText">' + chapterName + '</div>';
             html += '<div class="cardText">';
-            html += Dashboard.getDisplayTime(chapter.StartPositionTicks);
+            html += datetime.getDisplayRunningTime(chapter.StartPositionTicks);
             html += '</div>';
 
             //cardFooter
@@ -1484,6 +1482,10 @@
                 attributes.push(createAttribute(Globalize.translate('MediaInfoCodecTag'), stream.CodecTag));
             }
 
+            if (stream.IsAVC != null) {
+                attributes.push(createAttribute('AVC', (stream.IsAVC ? 'Yes' : 'No')));
+            }
+
             if (stream.Profile) {
                 attributes.push(createAttribute(Globalize.translate('MediaInfoProfile'), stream.Profile));
             }
@@ -1553,6 +1555,10 @@
 
             if (stream.Type == "Video" && version.Timestamp) {
                 attributes.push(createAttribute(Globalize.translate('MediaInfoTimestamp'), version.Timestamp));
+            }
+
+            if (stream.DisplayTitle) {
+                attributes.push(createAttribute('Title', stream.DisplayTitle));
             }
 
             html += attributes.join('<br/>');
@@ -1636,7 +1642,7 @@
             html += '<div class="cardText">' + item.Name + '</div>';
             html += '<div class="cardText">';
             if (item.RunTimeTicks != "") {
-                html += Dashboard.getDisplayTime(item.RunTimeTicks);
+                html += datetime.getDisplayRunningTime(item.RunTimeTicks);
             }
             else {
                 html += "&nbsp;";
@@ -2030,8 +2036,10 @@
         $('.btnRecord,.btnFloatingRecord', page).on('click', function () {
 
             var id = getParameterByName('id');
-            require(['components/recordingcreator/recordingcreator'], function (recordingcreator) {
-                recordingcreator.show(id).then(function () {
+            Dashboard.showLoadingMsg();
+
+            require(['recordingCreator'], function (recordingCreator) {
+                recordingCreator.show(id, currentItem.ServerId).then(function () {
                     reload(page);
                 });
             });
@@ -2049,7 +2057,7 @@
 
             Dashboard.getCurrentUser().then(function (user) {
 
-                LibraryBrowser.showMoreCommands(button, currentItem.Id, LibraryBrowser.getMoreCommands(currentItem, user));
+                LibraryBrowser.showMoreCommands(button, currentItem.Id, currentItem.Type, LibraryBrowser.getMoreCommands(currentItem, user));
             });
         });
 

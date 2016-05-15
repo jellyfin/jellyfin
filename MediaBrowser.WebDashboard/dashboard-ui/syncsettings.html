@@ -1,4 +1,4 @@
-﻿<div id="syncSettingsPage" data-role="page" class="page type-interior withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Sync" data-require="scripts/syncsettings,paper-checkbox,paper-input">
+﻿<div id="syncSettingsPage" data-role="page" class="page type-interior withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Sync" data-require="scripts/syncsettings,paper-checkbox,paper-input,paper-button,paper-icon-button-light">
 
     <div data-role="content">
         <div class="content-primary">
@@ -8,7 +8,7 @@
                 <ul data-role="listview" class="ulForm">
                     <li>
                         <paper-input type="text" id="txtSyncTempPath" label="${LabelSyncTempPath}" style="display: inline-block; width: 84%;"></paper-input>
-                        <paper-icon-button id="btnSelectSyncTempPath" icon="search" title="${ButtonSelectDirectory}"></paper-icon-button>
+                        <button type="button" is="paper-icon-button-light" id="btnSelectSyncTempPath" title="${ButtonSelectDirectory}"><iron-icon icon="search"></iron-icon></button>
                         <div class="fieldDescription">
                             ${LabelSyncTempPathHelp}
                         </div>

@@ -1,23 +1,21 @@
-﻿<div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage noSecondaryNavPage selfBackdropPage" data-contextname="${TitleRemoteControl}" data-theme="b" data-require="scripts/nowplayingpage,paper-tabs,paper-icon-button,paper-slider">
+﻿<div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage noSecondaryNavPage selfBackdropPage" data-contextname="${TitleRemoteControl}" data-theme="b">
 
     <div class="remoteControlContent">
 
         <div style="background: #080808;">
-            <paper-icon-button icon="arrow-back" class="btnExitRemoteControl" style="position: absolute; top: .5em; left: .5em; z-index: 1;" tabindex="-1"></paper-icon-button>
+            <button is="paper-icon-button-light" style="position: absolute; top: .5em; left: .5em; z-index: 1;" tabindex="-1" class="btnExitRemoteControl"><iron-icon icon="arrow-back"></iron-icon></button>
             <div style="float: right; position: absolute; top: .5em; right: .5em; text-align: right;" class="topRightContainer">
                 <span class="nowPlayingSelectedPlayer"></span>
-                <paper-icon-button icon="cast" class="nowPlayingCastIcon" style="vertical-align:middle;z-index:1;" tabindex="-1"></paper-icon-button>
-            </div>
-        </div>
-        <div class="libraryViewNav hide" style="position: static;">
-            <div>
-                <a href="#" data-index="0">${TabNowPlaying}</a>
-                <a href="#" data-index="1">${TabControls}</a>
-                <a href="#" data-index="2">${TabPlaylist}</a>
+                <button is="paper-icon-button-light" class="nowPlayingCastIcon" style="vertical-align: middle; z-index: 1;" tabindex="-1"><iron-icon icon="cast"></iron-icon></button>
             </div>
         </div>
 
-        <div class="nowPlayingPageTab hide" data-tab="0">
+        <div class="libraryViewNav headroomDisabled">
+            <button class="pageTabButton is-active" data-index="0">${TabNowPlaying}</button>
+            <button class="pageTabButton" data-index="1">${TabControls}</button>
+            <button class="pageTabButton" data-index="2">${TabPlaylist}</button>
+        </div>
+        <div class="is-active pageTabContent ehsContent" id="nowPlayingTab" data-index="0">
             <div style="text-align:center;">
                 <div class="nowPlayingPageTitle" style="line-height: normal;">
                 </div>
@@ -61,7 +59,7 @@
                 </div>
             </div>
         </div>
-        <div class="nowPlayingPageTab hide" data-tab="1">
+        <div class="pageTabContent ehsContent" id="controlsTab" data-index="1">
             <div style="text-align:center;">
                 <div>
                     <paper-fab icon="keyboard-arrow-up" class="btnArrowUp btnCommand subdued" title="${ButtonArrowUp}" data-command="MoveUp"></paper-fab>
@@ -121,15 +119,10 @@
                 </div>
             </div>
         </div>
-        <div class="nowPlayingPageTab hide" data-tab="2">
+        <div class="pageTabContent ehsContent" id="playlistTab" data-index="2">
             <div class="playlist itemsContainer" style="max-width: 800px; margin: 3em auto 0; padding-bottom: 200px;">
             </div>
         </div>
-        <paper-tabs class="nowPlayingPagePaperTabs bottom hide" alignbottom hidescrollbuttons noink disabledrag>
-            <paper-tab>${TabNowPlaying}</paper-tab>
-            <paper-tab>${TabControls}</paper-tab>
-            <paper-tab>${TabPlaylist}</paper-tab>
-        </paper-tabs>
     </div>
     <div data-role="content" style="overflow:visible;">
 

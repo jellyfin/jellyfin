@@ -51,7 +51,7 @@
             options.Limit = screenWidth >= 1920 ? 10 : (screenWidth >= 1440 ? 8 : 6);
 
             if (enableScrollX()) {
-                options.Limit = 16;
+                options.Limit = 20;
             }
         }
 
@@ -161,8 +161,6 @@
 
         Promise.all(promises).then(function () {
             Dashboard.hideLoadingMsg();
-
-            libraryBrowser.setLastRefreshed(page);
         });
     }
 

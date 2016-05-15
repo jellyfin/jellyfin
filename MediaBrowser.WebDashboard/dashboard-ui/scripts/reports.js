@@ -131,7 +131,7 @@
                 break;
             case "LockDataImage":
                 if (rRow.HasLockData) {
-                    html += '<img src="css/images/editor/lock.png"  style="width:18px"/>';
+                    html += '<iron-icon icon="lock" style="height:18px"></iron-icon>';
                 }
                 break;
             case "TagsPrimaryImage":

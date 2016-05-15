@@ -3,15 +3,15 @@
     var view = 'Poster';
 
     var data = {};
-    function getQuery(tab) {
+    function getQuery() {
 
-        var key = getSavedQueryKey(tab);
+        var key = getSavedQueryKey();
         var pageData = data[key];
 
         if (!pageData) {
             pageData = data[key] = {
                 query: {
-                    SortBy: "SortName",
+                    SortBy: "IsFolder,SortName",
                     SortOrder: "Ascending",
                     Fields: "PrimaryImageAspectRatio,SortName,SyncInfo",
                     ImageTypeLimit: 1,
@@ -20,24 +20,26 @@
                     Limit: LibraryBrowser.getDefaultPageSize()
                 }
             };
-            setQueryPerTab(tab, pageData.query);
-            pageData.query.ParentId = LibraryMenu.getTopParentId();
+
+            pageData.query.Recursive = false;
+            pageData.query.MediaTypes = null;
+            pageData.query.ParentId = getParameterByName('parentId') || LibraryMenu.getTopParentId();
+
             LibraryBrowser.loadSavedQueryValues(key, pageData.query);
         }
         return pageData.query;
     }
 
-    function getSavedQueryKey(tab) {
+    function getSavedQueryKey() {
 
-        return LibraryBrowser.getSavedQueryKey('tab=' + tab);
+        return LibraryBrowser.getSavedQueryKey('v1');
     }
 
-    function reloadItems(page, tabIndex) {
+    function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
 
-        var query = getQuery(tabIndex);
-
+        var query = getQuery();
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (result) {
 
             // Scroll back up so they can see the results from the beginning
@@ -63,7 +65,7 @@
                     overlayText: true,
                     lazy: true,
                     coverImage: true,
-                    showTitle: tabIndex == 0,
+                    showTitle: false,
                     centerText: true
                 });
             }
@@ -74,36 +76,18 @@
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
-                reloadItems(page, tabIndex);
+                reloadItems(page);
             });
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page, tabIndex);
+                reloadItems(page);
             });
 
-            LibraryBrowser.saveQueryValues(getSavedQueryKey(tabIndex), query);
+            LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
             Dashboard.hideLoadingMsg();
         });
-    }
-
-    function setQueryPerTab(tab, query) {
-
-        if (tab == 1) {
-            query.Recursive = true;
-            query.MediaTypes = 'Photo';
-        }
-        else if (tab == 2) {
-            query.Recursive = true;
-            query.MediaTypes = 'Video';
-        }
-        else if (tab == 0) {
-            query.Recursive = false;
-            query.MediaTypes = null;
-        }
-
-        query.ParentId = getParameterByName('parentId') || LibraryMenu.getTopParentId();
     }
 
     function startSlideshow(page, itemQuery, startItemId) {
@@ -155,34 +139,10 @@
         var info = LibraryBrowser.getListItemInfo(this);
 
         if (info.mediaType == 'Photo') {
-            var query = getQuery(LibraryBrowser.selectedTab(page.querySelector('.pageTabsContainer')));
+            var query = getQuery();
 
             Photos.startSlideshow(page, query, info.id);
             return false;
-        }
-    }
-
-    function loadTab(page, index) {
-
-        switch (index) {
-
-            case 0:
-                {
-                    reloadItems(page.querySelector('.albumTabContent'), 0);
-                }
-                break;
-            case 1:
-                {
-                    reloadItems(page.querySelector('.photoTabContent'), 1);
-                }
-                break;
-            case 2:
-                {
-                    reloadItems(page.querySelector('.videoTabContent'), 2);
-                }
-                break;
-            default:
-                break;
         }
     }
 
@@ -190,19 +150,7 @@
 
         var page = this;
 
-        var tabs = page.querySelector('paper-tabs');
-
-        var baseUrl = 'photos.html';
-        var topParentId = LibraryMenu.getTopParentId();
-        if (topParentId) {
-            baseUrl += '?topParentId=' + topParentId;
-        }
-
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, page.querySelector('.pageTabsContainer'), baseUrl);
-
-        page.querySelector('.pageTabsContainer').addEventListener('tabchange', function (e) {
-            loadTab(page, parseInt(e.detail.selectedTabIndex));
-        });
+        reloadItems(page, 0);
 
         $(page).on('click', '.mediaItem', onListItemClick);
 

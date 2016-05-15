@@ -1,18 +1,17 @@
 ﻿.card {
     display: inline-block;
     text-align: left;
-    -webkit-transition: all 500ms ease;
-    -moz-transition: all 500ms ease;
-    -o-transition: all 500ms ease;
-    -ms-transition: all 500ms ease;
-    transition: all 500ms ease;
     position: relative;
 }
 
-    .card, .card a {
-        text-decoration: none;
-        font-weight: 400 !important;
-    }
+iron-list .card {
+    display: block;
+}
+
+.card, .card a {
+    text-decoration: none;
+    font-weight: 400 !important;
+}
 
 .cardOverlayTarget {
     position: absolute;
@@ -45,7 +44,7 @@
 }
 
 .cardBox {
-    margin: 4px;
+    margin: 5px;
 }
 
 @media all and (max-width: 500px) {
@@ -57,14 +56,6 @@
 
 .cardImage {
     border-radius: 3px;
-}
-
-.defaultBackground .cardImage {
-    background-color: #303030;
-}
-
-.homeTopViews .defaultBackground .cardImage {
-    background-color: #181818;
 }
 
 .cardOverlayButtonContainer {
@@ -110,8 +101,11 @@
 }
 
 .ui-body-b .visualCardBox {
-    background: rgba(56,56,56,.85);
     border-radius: 3px;
+}
+
+.defaultBackground .cardImage, .ui-body-b .visualCardBox {
+    background-color: #262626;
 }
 
 .cardScalable {
@@ -262,13 +256,6 @@
 
 .outerCardFooter .cardText:first-child {
     padding-top: 7px;
-}
-
-@media all and (max-width: 600px) {
-
-    .packageReviewText {
-        display: none;
-    }
 }
 
 .cardImage {

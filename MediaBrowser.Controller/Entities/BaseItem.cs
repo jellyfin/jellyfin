@@ -44,6 +44,9 @@ namespace MediaBrowser.Controller.Entities
             ImageInfos = new List<ItemImageInfo>();
         }
 
+        public static readonly char[] SlugReplaceChars = { '?', '/', '&' };
+        public static char SlugChar = '-';
+
         /// <summary>
         /// The supported image extensions
         /// </summary>
@@ -65,6 +68,12 @@ namespace MediaBrowser.Controller.Entities
         public string PreferredMetadataLanguage { get; set; }
 
         public List<ItemImageInfo> ImageInfos { get; set; }
+
+        /// <summary>
+        /// Gets or sets the album.
+        /// </summary>
+        /// <value>The album.</value>
+        public string Album { get; set; }
 
         /// <summary>
         /// Gets or sets the channel identifier.
@@ -124,6 +133,29 @@ namespace MediaBrowser.Controller.Entities
                 _sortName = null;
             }
         }
+
+        [IgnoreDataMember]
+        public string SlugName
+        {
+            get
+            {
+                var name = Name;
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    return string.Empty;
+                }
+
+                return SlugReplaceChars.Aggregate(name, (current, c) => current.Replace(c, SlugChar));
+            }
+        }
+
+        [IgnoreDataMember]
+        public bool IsUnaired
+        {
+            get { return PremiereDate.HasValue && PremiereDate.Value.ToLocalTime().Date >= DateTime.Now.Date; }
+        }
+
+        public string OriginalTitle { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
@@ -726,12 +758,14 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the critic rating.
         /// </summary>
         /// <value>The critic rating.</value>
+        [IgnoreDataMember]
         public float? CriticRating { get; set; }
 
         /// <summary>
         /// Gets or sets the critic rating summary.
         /// </summary>
         /// <value>The critic rating summary.</value>
+        [IgnoreDataMember]
         public string CriticRatingSummary { get; set; }
 
         /// <summary>
@@ -1147,33 +1181,31 @@ namespace MediaBrowser.Controller.Entities
             get { return null; }
         }
 
-        private string _userDataKey;
-        /// <summary>
-        /// Gets the user data key.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        public string GetUserDataKey()
+        [IgnoreDataMember]
+        public virtual string PresentationUniqueKey
         {
-            if (string.IsNullOrWhiteSpace(_userDataKey))
-            {
-                var key = CreateUserDataKey();
-                _userDataKey = key;
-                return key;
-            }
-
-            return _userDataKey;
+            get { return Id.ToString("N"); }
         }
 
-        protected virtual string CreateUserDataKey()
+        public virtual bool RequiresRefresh()
         {
+            return false;
+        }
+
+        public virtual List<string> GetUserDataKeys()
+        {
+            var list = new List<string>();
+
             if (SourceType == SourceType.Channel)
             {
                 if (!string.IsNullOrWhiteSpace(ExternalId))
                 {
-                    return ExternalId;
+                    list.Add(ExternalId);
                 }
             }
-            return Id.ToString();
+
+            list.Add(Id.ToString());
+            return list;
         }
 
         internal virtual bool IsValidFromResolver(BaseItem newItem)
@@ -1186,7 +1218,6 @@ namespace MediaBrowser.Controller.Entities
         public void AfterMetadataRefresh()
         {
             _sortName = null;
-            _userDataKey = null;
         }
 
         /// <summary>
@@ -1540,17 +1571,26 @@ namespace MediaBrowser.Controller.Entities
         {
             if (!string.IsNullOrEmpty(info.Path))
             {
-                var itemByPath = LibraryManager.FindByPath(info.Path);
+                var itemByPath = LibraryManager.FindByPath(info.Path, null);
 
                 if (itemByPath == null)
                 {
-                    Logger.Warn("Unable to find linked item at path {0}", info.Path);
+                    //Logger.Warn("Unable to find linked item at path {0}", info.Path);
                 }
 
                 return itemByPath;
             }
 
             return null;
+        }
+
+        [IgnoreDataMember]
+        public virtual bool EnableRememberingTrackSelections
+        {
+            get
+            {
+                return true;
+            }
         }
 
         /// <summary>
@@ -1606,9 +1646,7 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException();
             }
 
-            var key = GetUserDataKey();
-
-            var data = UserDataManager.GetUserData(user.Id, key);
+            var data = UserDataManager.GetUserData(user, this);
 
             if (datePlayed.HasValue)
             {
@@ -1643,9 +1681,7 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException();
             }
 
-            var key = GetUserDataKey();
-
-            var data = UserDataManager.GetUserData(user.Id, key);
+            var data = UserDataManager.GetUserData(user, this);
 
             //I think it is okay to do this here.
             // if this is only called when a user is manually forcing something to un-played
@@ -1976,14 +2012,14 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool IsPlayed(User user)
         {
-            var userdata = UserDataManager.GetUserData(user.Id, GetUserDataKey());
+            var userdata = UserDataManager.GetUserData(user, this);
 
             return userdata != null && userdata.Played;
         }
 
         public bool IsFavoriteOrLiked(User user)
         {
-            var userdata = UserDataManager.GetUserData(user.Id, GetUserDataKey());
+            var userdata = UserDataManager.GetUserData(user, this);
 
             return userdata != null && (userdata.IsFavorite || (userdata.Likes ?? false));
         }
@@ -1995,7 +2031,7 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException("user");
             }
 
-            var userdata = UserDataManager.GetUserData(user.Id, GetUserDataKey());
+            var userdata = UserDataManager.GetUserData(user, this);
 
             return userdata == null || !userdata.Played;
         }
@@ -2026,7 +2062,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public virtual bool BeforeMetadataRefresh()
         {
-            _userDataKey = null;
             _sortName = null;
 
             var hasChanges = false;

@@ -1,0 +1,88 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-behaviors/paper-ripple-behavior.html">
+
+<!--
+@group Paper Elements
+@element paper-icon-button-light
+@demo demo/paper-icon-button-light.html
+-->
+<dom-module id="paper-icon-button-light">
+  <template strip-whitespace>
+    <style>
+      :host {
+        vertical-align: middle;
+        color: inherit;
+        outline: none;
+        width: 24px;
+        height: 24px;
+        background: none;
+        margin: 0;
+        border: none;
+        padding: 0;
+
+        position: relative;
+        cursor: pointer;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+      }
+
+      :host([disabled]) {
+        color: #9b9b9b;
+        pointer-events: none;
+        cursor: auto;
+      }
+
+      paper-ripple {
+        opacity: 0.6;
+        color: currentColor;
+      }
+    </style>
+    <content></content>
+  </template>
+  <script>
+    Polymer({
+      is: 'paper-icon-button-light',
+      extends: 'button',
+
+      behaviors: [
+        Polymer.PaperRippleBehavior
+      ],
+
+      listeners: {
+        'down': '_rippleDown',
+        'up': '_rippleUp',
+        'focus': '_rippleDown',
+        'blur': '_rippleUp',
+      },
+
+      _rippleDown: function() {
+        this.getRipple().downAction();
+      },
+
+      _rippleUp: function() {
+        this.getRipple().upAction();
+      },
+
+      /**
+       * @param {...*} var_args
+       */
+      ensureRipple: function(var_args) {
+        var lastRipple = this._ripple;
+        Polymer.PaperRippleBehavior.ensureRipple.apply(this, arguments);
+        if (this._ripple && this._ripple !== lastRipple) {
+          this._ripple.center = true;
+          this._ripple.classList.add('circle');
+        }
+      }
+    });
+  </script>
+</dom-module>

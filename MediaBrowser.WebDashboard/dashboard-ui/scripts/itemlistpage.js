@@ -12,7 +12,7 @@
             if (!pageData) {
                 pageData = data = {
                     query: {
-                        SortBy: "SortName",
+                        SortBy: "IsFolder,SortName",
                         SortOrder: "Ascending",
                         Fields: "DateCreated,PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
                         ImageTypeLimit: 1,
@@ -40,7 +40,7 @@
         function getSavedQueryKey() {
 
             if (!view.savedQueryKey) {
-                view.savedQueryKey = libraryBrowser.getSavedQueryKey('items');
+                view.savedQueryKey = libraryBrowser.getSavedQueryKey('itemsv1');
             }
             return view.savedQueryKey;
         }
@@ -217,7 +217,6 @@
                     bubbles: true
                 }));
 
-                libraryBrowser.setLastRefreshed(view);
                 Dashboard.hideLoadingMsg();
             });
         }

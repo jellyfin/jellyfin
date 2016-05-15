@@ -35,9 +35,13 @@
 
     function getChannelsHtml(channels) {
 
-        return LibraryBrowser.getListViewHtml({
+        return LibraryBrowser.getPosterViewHtml({
             items: channels,
-            smallIcon: true
+            shape: "square",
+            showTitle: true,
+            lazy: true,
+            cardLayout: true,
+            showDetailsMenu: true
         });
     }
 
@@ -107,16 +111,12 @@
             renderChannels(page, result);
 
             Dashboard.hideLoadingMsg();
-
-            LibraryBrowser.setLastRefreshed(page);
         });
     }
 
     window.LiveTvPage.renderChannelsTab = function (page, tabContent) {
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
-            reloadItems(tabContent);
-        }
+        reloadItems(tabContent);
     };
 
 });

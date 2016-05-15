@@ -95,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             return _repo.Delete(resultId);
         }
 
-        private AutoOrganizeOptions GetAutoOrganizeptions()
+        private AutoOrganizeOptions GetAutoOrganizeOptions()
         {
             return _config.GetAutoOrganizeOptions();
         }
@@ -112,7 +112,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             var organizer = new EpisodeFileOrganizer(this, _config, _fileSystem, _logger, _libraryManager,
                 _libraryMonitor, _providerManager);
 
-            await organizer.OrganizeEpisodeFile(result.OriginalPath, GetAutoOrganizeptions(), true, CancellationToken.None)
+            await organizer.OrganizeEpisodeFile(result.OriginalPath, GetAutoOrganizeOptions(), true, CancellationToken.None)
                     .ConfigureAwait(false);
         }
 
@@ -126,7 +126,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             var organizer = new EpisodeFileOrganizer(this, _config, _fileSystem, _logger, _libraryManager,
                 _libraryMonitor, _providerManager);
 
-            await organizer.OrganizeWithCorrection(request, GetAutoOrganizeptions(), CancellationToken.None).ConfigureAwait(false);
+            await organizer.OrganizeWithCorrection(request, GetAutoOrganizeOptions(), CancellationToken.None).ConfigureAwait(false);
         }
 
         public QueryResult<SmartMatchInfo> GetSmartMatchInfos(FileOrganizationResultQuery query)
@@ -136,7 +136,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 throw new ArgumentNullException("query");
             }
 
-            var options = GetAutoOrganizeptions();
+            var options = GetAutoOrganizeOptions();
 
             var items = options.SmartMatchInfos.Skip(query.StartIndex ?? 0).Take(query.Limit ?? Int32.MaxValue).ToArray();
 
@@ -159,7 +159,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 throw new ArgumentNullException("matchString");
             }
 
-            var options = GetAutoOrganizeptions();
+            var options = GetAutoOrganizeOptions();
 
             SmartMatchInfo info = options.SmartMatchInfos.FirstOrDefault(i => string.Equals(i.ItemName, itemName));
 

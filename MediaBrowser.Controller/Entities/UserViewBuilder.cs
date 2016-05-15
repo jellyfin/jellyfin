@@ -348,7 +348,7 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => !i.IsFolder)
                 .OfType<IHasAlbumArtist>();
 
-            var artists = _libraryManager.GetAlbumArtists(items).Where(i => _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).IsFavorite);
+            var artists = _libraryManager.GetAlbumArtists(items).Where(i => _userDataManager.GetUserData(user, i).IsFavorite);
 
             return GetResult(artists, parent, query);
         }
@@ -1077,7 +1077,7 @@ namespace MediaBrowser.Controller.Entities
                     var e = i as Season;
                     if (e != null)
                     {
-                        return e.IsMissingSeason == val;
+                        return (e.IsMissingSeason ?? false) == val;
                     }
                     return true;
                 });
@@ -1218,7 +1218,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsLiked.HasValue)
             {
-                userData = userData ?? userDataManager.GetUserData(user.Id, item.GetUserDataKey());
+                userData = userData ?? userDataManager.GetUserData(user, item);
 
                 if (!userData.Likes.HasValue || userData.Likes != query.IsLiked.Value)
                 {
@@ -1228,7 +1228,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsFavoriteOrLiked.HasValue)
             {
-                userData = userData ?? userDataManager.GetUserData(user.Id, item.GetUserDataKey());
+                userData = userData ?? userDataManager.GetUserData(user, item);
                 var isFavoriteOrLiked = userData.IsFavorite || (userData.Likes ?? false);
 
                 if (isFavoriteOrLiked != query.IsFavoriteOrLiked.Value)
@@ -1239,7 +1239,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsFavorite.HasValue)
             {
-                userData = userData ?? userDataManager.GetUserData(user.Id, item.GetUserDataKey());
+                userData = userData ?? userDataManager.GetUserData(user, item);
 
                 if (userData.IsFavorite != query.IsFavorite.Value)
                 {
@@ -1249,7 +1249,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsResumable.HasValue)
             {
-                userData = userData ?? userDataManager.GetUserData(user.Id, item.GetUserDataKey());
+                userData = userData ?? userDataManager.GetUserData(user, item);
                 var isResumable = userData.PlaybackPositionTicks > 0;
 
                 if (isResumable != query.IsResumable.Value)

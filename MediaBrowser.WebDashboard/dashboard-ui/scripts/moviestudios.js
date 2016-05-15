@@ -56,6 +56,7 @@
                 items: result.Items,
                 shape: "backdrop",
                 showTitle: false,
+                context: 'movies',
                 preferThumb: true,
                 showItemCounts: true,
                 centerText: true,

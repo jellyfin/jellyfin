@@ -67,6 +67,7 @@
                     shape: "backdrop",
                     preferThumb: true,
                     showItemCounts: true,
+                    context: 'music',
                     lazy: true,
                     centerText: true,
                     overlayPlayButton: true
@@ -78,6 +79,7 @@
                     items: result.Items,
                     shape: "backdrop",
                     preferThumb: true,
+                    context: 'music',
                     showItemCounts: true,
                     cardLayout: true,
                     lazy: true,
@@ -88,6 +90,7 @@
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "portrait",
+                    context: 'music',
                     centerText: true,
                     showItemCounts: true,
                     lazy: true
@@ -122,9 +125,7 @@
 
     window.MusicPage.renderGenresTab = function (page, tabContent) {
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
-            reloadItems(tabContent);
-        }
+        reloadItems(tabContent);
     };
 
 });

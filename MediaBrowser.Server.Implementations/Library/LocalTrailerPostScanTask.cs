@@ -6,6 +6,8 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -22,10 +24,12 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var items = _libraryManager.RootFolder
-                .GetRecursiveChildren(i => i is IHasTrailers)
-                .Cast<IHasTrailers>()
-                .ToList();
+            var items = _libraryManager.GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { typeof(BoxSet).Name, typeof(Game).Name, typeof(Movie).Name, typeof(Series).Name },
+                Recursive = true
+
+            }).OfType<IHasTrailers>().ToList();
 
             var trailerTypes = Enum.GetNames(typeof(TrailerType))
                     .Select(i => (TrailerType)Enum.Parse(typeof(TrailerType), i, true))
@@ -35,7 +39,8 @@ namespace MediaBrowser.Server.Implementations.Library
             var trailers = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(Trailer).Name },
-                TrailerTypes = trailerTypes
+                TrailerTypes = trailerTypes,
+                Recursive = true
 
             }).ToArray();
 

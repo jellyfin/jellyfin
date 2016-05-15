@@ -13,15 +13,27 @@ namespace MediaBrowser.Model.Dlna
     {
         private readonly ILocalPlayer _localPlayer;
         private readonly ILogger _logger;
+        private readonly ITranscoderSupport _transcoderSupport;
 
-        public StreamBuilder(ILocalPlayer localPlayer, ILogger logger)
+        public StreamBuilder(ILocalPlayer localPlayer, ITranscoderSupport transcoderSupport, ILogger logger)
         {
+            _transcoderSupport = transcoderSupport;
             _localPlayer = localPlayer;
             _logger = logger;
         }
 
+        public StreamBuilder(ITranscoderSupport transcoderSupport, ILogger logger)
+            : this(new NullLocalPlayer(), transcoderSupport, logger)
+        {
+        }
+
+        public StreamBuilder(ILocalPlayer localPlayer, ILogger logger)
+            : this(localPlayer, new FullTranscoderSupport(), logger)
+        {
+        }
+
         public StreamBuilder(ILogger logger)
-            : this(new NullLocalPlayer(), logger)
+            : this(new NullLocalPlayer(), new FullTranscoderSupport(), logger)
         {
         }
 
@@ -185,8 +197,11 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (i.Type == playlistItem.MediaType && i.Context == options.Context)
                 {
-                    transcodingProfile = i;
-                    break;
+                    if (_transcoderSupport.CanEncodeToAudioCodec(i.AudioCodec ?? i.Container))
+                    {
+                        transcodingProfile = i;
+                        break;
+                    }
                 }
             }
 
@@ -444,6 +459,15 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.VideoCodec = transcodingProfile.VideoCodec;
                 playlistItem.CopyTimestamps = transcodingProfile.CopyTimestamps;
                 playlistItem.ForceLiveStream = transcodingProfile.ForceLiveStream;
+
+                if (!string.IsNullOrEmpty(transcodingProfile.MaxAudioChannels))
+                {
+                    int transcodingMaxAudioChannels;
+                    if (IntHelper.TryParseCultureInvariant(transcodingProfile.MaxAudioChannels, out transcodingMaxAudioChannels))
+                    {
+                        playlistItem.TranscodingMaxAudioChannels = transcodingMaxAudioChannels;
+                    }
+                }
                 playlistItem.SubProtocol = transcodingProfile.Protocol;
                 playlistItem.AudioStreamIndex = audioStreamIndex;
 
@@ -1038,6 +1062,18 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
+            // Check audio codec
+            List<string> audioCodecs = profile.GetAudioCodecs();
+            if (audioCodecs.Count > 0)
+            {
+                // Check audio codecs
+                string audioCodec = audioStream == null ? null : audioStream.Codec;
+                if (string.IsNullOrEmpty(audioCodec) || !ListHelper.ContainsIgnoreCase(audioCodecs, audioCodec))
+                {
+                    return false;
+                }
+            }
+
             return true;
         }
 
@@ -1073,6 +1109,7 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
+            // Check audio codec
             List<string> audioCodecs = profile.GetAudioCodecs();
             if (audioCodecs.Count > 0)
             {

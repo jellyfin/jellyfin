@@ -112,7 +112,8 @@
                 ExcludeLocationTypes: "Virtual",
                 ParentId: parentId,
                 ImageTypeLimit: 1,
-                EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+                EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+                EnableTotalRecordCount: 0
             };
 
             ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
@@ -231,21 +232,19 @@
             });
         }
 
+        var mdlTabs = view.querySelector('.libraryViewNav');
+
         function onPlaybackStop(e, state) {
 
             if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
 
-                var pageTabsContainer = view.querySelector('.pageTabsContainer');
-
-                pageTabsContainer.dispatchEvent(new CustomEvent("tabchange", {
+                mdlTabs.dispatchEvent(new CustomEvent("tabchange", {
                     detail: {
-                        selectedTabIndex: libraryBrowser.selectedTab(pageTabsContainer)
+                        selectedTabIndex: libraryBrowser.selectedTab(mdlTabs)
                     }
                 }));
             }
         }
-
-        var pageTabsContainer = view.querySelector('.pageTabsContainer');
 
         var baseUrl = 'tv.html';
         var topParentId = params.topParentId;
@@ -259,10 +258,9 @@
             view.querySelector('#resumableItems').classList.remove('hiddenScrollX');
         }
         libraryBrowser.createCardMenus(view.querySelector('#resumableItems'));
+        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'));
 
-        libraryBrowser.configurePaperLibraryTabs(view, view.querySelector('paper-tabs'), pageTabsContainer, baseUrl);
-
-        pageTabsContainer.addEventListener('tabchange', function (e) {
+        mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));
         });
 
@@ -293,6 +291,15 @@
         view.addEventListener('viewbeforehide', function (e) {
 
             Events.off(MediaController, 'playbackstop', onPlaybackStop);
+        });
+
+        view.addEventListener('viewdestroy', function (e) {
+
+            tabControllers.forEach(function (t) {
+                if (t.destroy) {
+                    t.destroy();
+                }
+            });
         });
     };
 });

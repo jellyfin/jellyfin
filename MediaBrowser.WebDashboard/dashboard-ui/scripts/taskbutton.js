@@ -1,4 +1,4 @@
-﻿define(['appStorage', 'jQuery'], function (appStorage, $) {
+﻿define(['appStorage', 'jQuery', 'paper-button'], function (appStorage, $) {
 
     $.fn.taskButton = function (options) {
 
@@ -85,7 +85,7 @@
             var id = button.getAttribute('data-taskid');
 
             var key = 'scheduledTaskButton' + options.taskKey;
-            var expectedValue = new Date().getMonth() + '5';
+            var expectedValue = new Date().getMonth() + '6';
 
             if (appStorage.getItem(key) == expectedValue) {
                 onScheduledTaskMessageConfirmed(button, id);
@@ -99,7 +99,13 @@
 
                 require(['confirm'], function (confirm) {
 
-                    confirm(msg, Globalize.translate('HeaderConfirmation')).then(function () {
+                    confirm({
+
+                        title: Globalize.translate('HeaderConfirmation'),
+                        html: msg,
+                        text: Globalize.translate('ConfirmMessageScheduledTaskButton') + "\n\n" + Globalize.translate('ButtonScheduledTasks')
+
+                    }).then(function () {
                         appStorage.setItem(key, expectedValue);
                         onScheduledTaskMessageConfirmed(button, id);
                     });

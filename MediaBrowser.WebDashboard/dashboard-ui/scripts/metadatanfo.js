@@ -34,11 +34,28 @@
             config.EnablePathSubstitution = form.querySelector('#chkEnablePathSubstitution').checked;
             config.EnableExtraThumbsDuplication = form.querySelector('#chkEnableExtraThumbs').checked;
 
-            ApiClient.updateNamedConfiguration(metadataKey, config).then(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateNamedConfiguration(metadataKey, config).then(function () {
+                Dashboard.processServerConfigurationUpdateResult();
+
+                showConfirmMessage(config);
+            });
         });
 
         // Disable default form submission
         return false;
+    }
+
+    function showConfirmMessage(config) {
+
+        var msg = [];
+
+        msg.push(Globalize.translate('MetadataSettingChangeHelp'));
+
+        require(['alert'], function (alert) {
+            alert({
+                text: msg.join('<br/><br/>')
+            });
+        });
     }
 
     function getTabs() {

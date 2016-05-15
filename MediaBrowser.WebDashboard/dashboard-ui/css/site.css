@@ -300,6 +300,15 @@ body {
     height: 100%;
 }
 
+    body.autoScrollY {
+        overflow-y: auto !important;
+    }
+
+iron-icon {
+    min-width: 24px;
+    min-height: 24px;
+}
+
 /* Without this, no content will be displayed in mobile safari */
 .pageContainer {
     overflow-x: visible !important;
@@ -485,7 +494,7 @@ div[data-role='page'] {
     outline: none;
 }
 
-a[data-role='button'], button:not([data-role='none']):not(.clearButton) {
+a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearButton):not([is]) {
     -webkit-font-smoothing: antialiased;
     -webkit-user-select: none;
     background-clip: padding-box;
@@ -508,30 +517,19 @@ a[data-role='button'], button:not([data-role='none']):not(.clearButton) {
     box-shadow: 0 1px 3px /*{global-box-shadow-size}*/ rgba(0,0,0,.15) /*{global-box-shadow-color}*/;
 }
 
-    a[data-role='button'][data-iconpos='notext'], button[data-iconpos='notext']:not([data-role='none']):not(.clearButton) {
+    a[data-role='button'][data-iconpos='notext'], .type-interior button[data-iconpos='notext']:not([data-role='none']):not(.clearButton):not([is]) {
         padding: 4px;
         border-radius: 50px;
         outline: 0;
     }
 
-    a[data-role='button']:not([data-inline='true']), button:not([data-role='none']):not([data-inline='true']):not(.clearButton) {
+    a[data-role='button']:not([data-inline='true']), .type-interior button:not([data-role='none']):not([data-inline='true']):not(.clearButton):not([is]) {
         display: block;
         margin: .5em 0 !important;
     }
 
-    a[data-role='button']:focus, button:not([data-role='none']):focus {
-        -webkit-box-shadow: 0 0 12px #3388cc /*{a-active-background-color}*/;
-        -moz-box-shadow: 0 0 12px #3388cc /*{a-active-background-color}*/;
-        box-shadow: 0 0 12px #3388cc /*{a-active-background-color}*/;
-    }
-
-button:not([data-role='none']):not([data-inline='true']):not(.clearButton) {
+.type-interior button:not([data-role='none']):not([data-inline='true']):not(.clearButton):not([is]) {
     width: 100%;
-}
-
-a[data-role='button'][data-theme='b'], button[data-theme='b']:not([data-role='none']):not(.clearButton) {
-    background: #4285f4 !important;
-    color: #fff !important;
 }
 
 div[data-role="controlgroup"] a[data-role='button'] {
@@ -870,7 +868,7 @@ paper-input + .fieldDescription {
     padding: 1em;
 }
 
-.page > .ui-content, .pageWithAbsoluteTabs .pageTabContent {
+.page > .ui-content, .pageWithAbsoluteTabs .pageTabContent, .absolutePageTabContent .itemsContainer {
     /* Need this so that the audio player doesn't cover content, but also for unveil lazy loading. */
     padding-bottom: 160px;
 }
@@ -1560,4 +1558,24 @@ emby-collapsible > .style-scope {
     border-width: 0 1px 1px 1px;
     padding: 1em 1.25em;
     background-color: #fff;
+}
+
+.ui-body-b .emby-collapsible-button {
+    border: 1px solid #222;
+    background-color: #444;
+    text-transform: none;
+}
+
+.ui-body-b .emby-collapsible-title {
+    margin: .25em 0;
+    color: #fff;
+    padding: 0 0 0 .5em;
+    font-weight: 500;
+}
+
+.ui-body-b .emby-collapsible-content {
+    border: 1px solid #222;
+    border-width: 0 1px 1px 1px;
+    padding: 1em 1.25em;
+    background-color: #333;
 }

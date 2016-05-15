@@ -1,24 +1,16 @@
-﻿<div id="channelsPage" data-role="page" data-dom-cache="true" class="page libraryPage channelsPage pageWithAbsoluteTabs" data-contextname="${HeaderChannels}" data-require="scripts/channels,scripts/channelslatest,scripts/sections,paper-tabs">
+﻿<div id="channelsPage" data-role="page" data-dom-cache="true" class="page libraryPage channelsPage pageWithAbsoluteTabs" data-contextname="${HeaderChannels}" data-require="scripts/channels,scripts/channelslatest,scripts/sections">
 
-    <div class="libraryViewNav scopedLibraryViewNav libraryViewNavWithMinHeight">
-        <paper-tabs hidescrollbuttons noink>
-            <paper-tab>${TabLatest}</paper-tab>
-            <paper-tab>${TabChannels}</paper-tab>
-        </paper-tabs>
-        <div class="legacyTabs">
-            <a href="channels.html">${TabLatest}</a>
-            <a href="channels.html?tab=1">${TabChannels}</a>
-        </div>
+    <div class="libraryViewNav">
+        <button class="pageTabButton is-active" data-index="0">${TabLatest}</button>
+        <button class="pageTabButton" data-index="1">${TabChannels}</button>
     </div>
-    <div class="ehsContent fullWidth pageTabsContainer">
-        <div class="pageTabContent latestContent hide">
-            <div class="latestItems"></div>
+    <div class="is-active pageTabContent ehsContent" id="latestTab" data-index="0">
+        <div class="latestItems"></div>
+    </div>
+    <div class="pageTabContent ehsContent" id="channelsTab" data-index="1">
+        <div class="viewSettings">
         </div>
-        <div class="pageTabContent channelsContent hide">
-            <div class="viewSettings">
-            </div>
-            <div id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
-        </div>
+        <div id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
     </div>
 
     <div data-role="content">

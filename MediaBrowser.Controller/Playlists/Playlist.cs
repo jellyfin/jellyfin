@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Playlists
 {
@@ -38,6 +39,15 @@ namespace MediaBrowser.Controller.Playlists
             }
         }
 
+        [IgnoreDataMember]
+        public override bool SupportsCumulativeRunTimeTicks
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public override bool IsAuthorizedToDelete(User user)
         {
             return true;
@@ -50,12 +60,12 @@ namespace MediaBrowser.Controller.Playlists
 
         public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
-            return GetPlayableItems(user);
+            return GetPlayableItems(user).Result;
         }
 
         public override IEnumerable<BaseItem> GetRecursiveChildren(User user, Func<BaseItem, bool> filter)
         {
-            var items = GetPlayableItems(user);
+            var items = GetPlayableItems(user).Result;
 
             if (filter != null)
             {
@@ -70,32 +80,40 @@ namespace MediaBrowser.Controller.Playlists
             return GetLinkedChildrenInfos();
         }
 
-        private IEnumerable<BaseItem> GetPlayableItems(User user)
+        private Task<IEnumerable<BaseItem>> GetPlayableItems(User user)
         {
             return GetPlaylistItems(MediaType, base.GetChildren(user, true), user);
         }
 
-        public static IEnumerable<BaseItem> GetPlaylistItems(string playlistMediaType, IEnumerable<BaseItem> inputItems, User user)
+        public static async Task<IEnumerable<BaseItem>> GetPlaylistItems(string playlistMediaType, IEnumerable<BaseItem> inputItems, User user)
         {
             if (user != null)
             {
                 inputItems = inputItems.Where(i => i.IsVisible(user));
             }
 
-            return inputItems.SelectMany(i => GetPlaylistItems(i, user))
-                .Where(m => string.Equals(m.MediaType, playlistMediaType, StringComparison.OrdinalIgnoreCase));
+            var list = new List<BaseItem>();
+
+            foreach (var item in inputItems)
+            {
+                var playlistItems = await GetPlaylistItems(item, user, playlistMediaType).ConfigureAwait(false);
+                list.AddRange(playlistItems);
+            }
+
+            return list;
         }
 
-        private static IEnumerable<BaseItem> GetPlaylistItems(BaseItem item, User user)
+        private static async Task<IEnumerable<BaseItem>> GetPlaylistItems(BaseItem item, User user, string mediaType)
         {
             var musicGenre = item as MusicGenre;
             if (musicGenre != null)
             {
-                Func<BaseItem, bool> filter = i => i is Audio && i.Genres.Contains(musicGenre.Name, StringComparer.OrdinalIgnoreCase);
-
-                var items = user == null
-                    ? LibraryManager.RootFolder.GetRecursiveChildren(filter)
-                    : user.RootFolder.GetRecursiveChildren(user, filter);
+                var items = LibraryManager.GetItemList(new InternalItemsQuery(user)
+                {
+                    Recursive = true,
+                    IncludeItemTypes = new[] { typeof(Audio).Name },
+                    Genres = new[] { musicGenre.Name }
+                });
 
                 return LibraryManager.Sort(items, user, new[] { ItemSortBy.AlbumArtist, ItemSortBy.Album, ItemSortBy.SortName }, SortOrder.Ascending);
             }
@@ -119,15 +137,19 @@ namespace MediaBrowser.Controller.Playlists
             var folder = item as Folder;
             if (folder != null)
             {
-                var items = user == null
-                    ? folder.GetRecursiveChildren(m => !m.IsFolder)
-                    : folder.GetRecursiveChildren(user, m => !m.IsFolder);
-
-                if (folder.IsPreSorted)
+                var query = new InternalItemsQuery(user)
                 {
-                    return items;
-                }
-                return LibraryManager.Sort(items, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending);
+                    Recursive = true,
+                    IsFolder = false,
+                    SortBy = new[] { ItemSortBy.SortName },
+                    MediaTypes = new[] { mediaType },
+                    EnableTotalRecordCount = false
+                };
+
+                var itemsResult = await folder.GetItems(query).ConfigureAwait(false);
+                var items = itemsResult.Items;
+
+                return items;
             }
 
             return new[] { item };

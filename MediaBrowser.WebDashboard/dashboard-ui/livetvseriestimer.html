@@ -1,8 +1,9 @@
-﻿<div id="liveTvSeriesTimerPage" data-role="page" class="page libraryPage liveTvPage noSecondaryNavPage" data-contextname="${HeaderLiveTv}" data-require="jqmcheckbox,jqmcontrolgroup,jqmcollapsible,scripts/livetvcomponents,scripts/livetvseriestimer,livetvcss,paper-checkbox,paper-input" data-backbutton="true" data-menubutton="false">
+﻿<div id="liveTvSeriesTimerPage" data-role="page" class="page libraryPage liveTvPage noSecondaryNavPage" data-contextname="${HeaderLiveTv}" data-require="jqmcheckbox,jqmcontrolgroup,paper-button,jqmcollapsible,scripts/livetvcomponents,scripts/livetvseriestimer,livetvcss,paper-checkbox,paper-input" data-backbutton="true" data-menubutton="false">
 
     <div data-role="content">
-        <form class="liveTvSeriesTimerForm" style="margin: 0 auto; max-width: 720px;">
-            <p><span class="itemName inlineItemName"></span></p>
+
+        <div class="readOnlyContent" style="margin:auto; max-width: 720px;">
+            <h1 class="itemName"></h1>
 
             <p class="channel" style="margin-top: 2em;"></p>
             <p class="time"></p>
@@ -11,13 +12,15 @@
             <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="seriesTimerTabs">
                 <input type="radio" name="radioSeriesTimerTab" class="radioSeriesTimerTab" id="radioSettings" value="settings">
                 <label for="radioSettings">${TabSettings}</label>
-                <input type="radio" name="radioSeriesTimerTab" class="radioSeriesTimerTab" id="radioRecordings" value="recordings">
-                <label for="radioRecordings">${TabRecordings}</label>
                 <input type="radio" name="radioSeriesTimerTab" class="radioSeriesTimerTab" id="radioScheduled" value="schedule">
-                <label for="radioScheduled">${TabScheduled}</label>
+                <label for="radioScheduled">${TabRecordings}</label>
             </div>
-            <br />
-            <div class="settingsTab tab">
+            <div style="clear:both;"></div>
+        </div>
+        <br />
+        <div class="settingsTab tab">
+
+            <form class="liveTvSeriesTimerForm" style="margin: 0 auto; max-width: 720px;">
                 <div>
                     <h1>${HeaderDays}</h1>
                 </div>
@@ -61,10 +64,10 @@
 
                     <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
                 </div>
-            </div>
-            <div class="recordingsTab tab"></div>
-            <div class="scheduleTab tab"></div>
-        </form>
+            </form>
+
+        </div>
+        <div class="scheduleTab tab"></div>
     </div>
 
 </div>

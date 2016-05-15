@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'paper-checkbox', 'paper-input', 'paper-item-body', 'paper-icon-item', 'paper-textarea', 'paper-fab'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'datetime', 'jQuery', 'paper-checkbox', 'paper-input', 'paper-item-body', 'paper-icon-item', 'paper-textarea', 'paper-fab', 'paper-icon-button-light'], function (dialogHelper, datetime, $) {
 
     var currentContext;
     var metadataEditorInfo;
@@ -96,7 +96,7 @@
 
         if (currentItem[property]) {
 
-            var date = parseISO8601Date(currentItem[property], { toLocal: true });
+            var date = datetime.parseISO8601Date(currentItem[property], true);
 
             var parts = date.toISOString().split('T');
 
@@ -122,6 +122,7 @@
             var item = {
                 Id: currentItem.Id,
                 Name: $('#txtName', form).val(),
+                OriginalTitle: $('#txtOriginalName', form).val(),
                 ForcedSortName: $('#txtSortName', form).val(),
                 DisplayMediaType: $('#txtDisplayMediaType', form).val(),
                 CommunityRating: $('#txtCommunityRating', form).val(),
@@ -269,82 +270,20 @@
 
     function showRefreshMenu(context, button) {
 
-        var items = [];
-
-        items.push({
-            name: Globalize.translate('ButtonLocalRefresh'),
-            id: 'local',
-            ironIcon: 'refresh'
+        ApiClient.refreshItem(currentItem.Id, {
+            Recursive: true,
+            ImageRefreshMode: 'FullRefresh',
+            MetadataRefreshMode: 'FullRefresh',
+            ReplaceAllImages: false,
+            ReplaceAllMetadata: true
         });
 
-        items.push({
-            name: Globalize.translate('ButtonAddMissingData'),
-            id: 'missing',
-            ironIcon: 'refresh'
+        require(['toast'], function (toast) {
+            toast(Globalize.translate('MessageRefreshQueued'));
         });
-
-        items.push({
-            name: Globalize.translate('ButtonFullRefresh'),
-            id: 'full',
-            ironIcon: 'refresh'
-        });
-
-        require(['actionsheet'], function (actionsheet) {
-
-            actionsheet.show({
-                items: items,
-                positionTo: button,
-                callback: function (id) {
-
-                    if (id) {
-                    
-                        Dashboard.showLoadingMsg();
-                        // For now this is a hack
-                        setTimeout(function () {
-                            Dashboard.hideLoadingMsg();
-                        }, 5000);
-                    }
-
-                    switch (id) {
-
-                        case 'local':
-                            ApiClient.refreshItem(currentItem.Id, {
-                                Recursive: true,
-                                ImageRefreshMode: 'None',
-                                MetadataRefreshMode: 'ValidationOnly',
-                                ReplaceAllImages: false,
-                                ReplaceAllMetadata: false
-                            });
-                            break;
-                        case 'missing':
-                            ApiClient.refreshItem(currentItem.Id, {
-                                Recursive: true,
-                                ImageRefreshMode: 'FullRefresh',
-                                MetadataRefreshMode: 'FullRefresh',
-                                ReplaceAllImages: false,
-                                ReplaceAllMetadata: false
-                            });
-                            break;
-                        case 'full':
-                            ApiClient.refreshItem(currentItem.Id, {
-                                Recursive: true,
-                                ImageRefreshMode: 'FullRefresh',
-                                MetadataRefreshMode: 'FullRefresh',
-                                ReplaceAllImages: false,
-                                ReplaceAllMetadata: true
-                            });
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            });
-
-        });
-
     }
 
-    function showMoreMenu(context, button) {
+    function showMoreMenu(context, button, user) {
 
         var items = [];
 
@@ -354,11 +293,13 @@
             ironIcon: 'photo'
         });
 
-        items.push({
-            name: Globalize.translate('ButtonIdentify'),
-            id: 'identify',
-            ironIcon: 'info'
-        });
+        if (LibraryBrowser.canIdentify(user, currentItem.Type)) {
+            items.push({
+                name: Globalize.translate('ButtonIdentify'),
+                id: 'identify',
+                ironIcon: 'info'
+            });
+        }
 
         items.push({
             name: Globalize.translate('ButtonRefresh'),
@@ -439,7 +380,10 @@
 
         context.querySelector('.btnMore').addEventListener('click', function (e) {
 
-            showMoreMenu(context, e.target);
+            Dashboard.getCurrentUser().then(function (user) {
+                showMoreMenu(context, e.target, user);
+            });
+
         });
 
         context.querySelector('.btnHeaderSave').addEventListener('click', function (e) {
@@ -573,7 +517,7 @@
             html += '<paper-input style="display:inline-block;width:80%;" class="txtExternalId" value="' + value + '" data-providerkey="' + idInfo.Key + '" data-formatstring="' + formatString + '" data-buttonclass="' + buttonId + '" id="' + id + '" label="' + labelText + '"></paper-input>';
 
             if (formatString) {
-                html += '<a class="clearLink ' + buttonId + '" href="#" target="_blank" data-role="none" style="float: none; width: 1.75em"><paper-icon-button icon="open-in-browser"></paper-icon-button></a>';
+                html += '<a class="clearLink ' + buttonId + '" href="#" target="_blank" data-role="none" style="float: none; width: 1.75em"><button type="button" is="paper-icon-button-light"><iron-icon icon="open-in-browser"></iron-icon></button></a>';
             }
 
             html += '</div>';
@@ -590,6 +534,12 @@
             $('#fldPath', context).show();
         } else {
             $('#fldPath', context).hide();
+        }
+
+        if (item.Type == "Series" || item.Type == "Movie" || item.Type == "Trailer") {
+            $('#fldOriginalName', context).show();
+        } else {
+            $('#fldOriginalName', context).hide();
         }
 
         if (item.Type == "Series") {
@@ -719,27 +669,15 @@
             $('#tagsCollapsible', context).hide();
             $('#metadataSettingsCollapsible', context).hide();
             $('#fldPremiereDate', context).hide();
-            $('#fldSortName', context).hide();
             $('#fldDateAdded', context).hide();
             $('#fldYear', context).hide();
         } else {
             $('#tagsCollapsible', context).show();
             $('#metadataSettingsCollapsible', context).show();
             $('#fldPremiereDate', context).show();
-            $('#fldSortName', context).show();
             $('#fldDateAdded', context).show();
             $('#fldYear', context).show();
         }
-
-        Dashboard.getCurrentUser().then(function (user) {
-
-            if (LibraryBrowser.getMoreCommands(item, user).indexOf('identify') != -1) {
-
-                $('#btnIdentify', context).show();
-            } else {
-                $('#btnIdentify', context).hide();
-            }
-        });
 
         if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "BoxSet") {
             $('#keywordsCollapsible', context).show();
@@ -878,6 +816,7 @@
 
         $('#txtPath', context).val(item.Path || '');
         $('#txtName', context).val(item.Name || "");
+        $('#txtOriginalName', context).val(item.OriginalTitle || "");
         context.querySelector('#txtOverview').value = item.Overview || '';
         $('#txtShortOverview', context).val(item.ShortOverview || "");
         $('#txtTagline', context).val((item.Taglines && item.Taglines.length ? item.Taglines[0] : ''));
@@ -927,7 +866,7 @@
 
         if (item.DateCreated) {
             try {
-                date = parseISO8601Date(item.DateCreated, { toLocal: true });
+                date = datetime.parseISO8601Date(item.DateCreated, true);
 
                 $('#txtDateAdded', context).val(date.toISOString().slice(0, 10));
             } catch (e) {
@@ -939,7 +878,7 @@
 
         if (item.PremiereDate) {
             try {
-                date = parseISO8601Date(item.PremiereDate, { toLocal: true });
+                date = datetime.parseISO8601Date(item.PremiereDate, true);
 
                 $('#txtPremiereDate', context).val(date.toISOString().slice(0, 10));
             } catch (e) {
@@ -951,7 +890,7 @@
 
         if (item.EndDate) {
             try {
-                date = parseISO8601Date(item.EndDate, { toLocal: true });
+                date = datetime.parseISO8601Date(item.EndDate, true);
 
                 $('#txtEndDate', context).val(date.toISOString().slice(0, 10));
             } catch (e) {
@@ -1050,7 +989,7 @@
 
             html += '</paper-item-body>';
 
-            html += '<paper-icon-button icon="delete" data-index="' + i + '" class="btnRemoveFromEditorList"></paper-icon-button>';
+            html += '<button type="button" is="paper-icon-button-light" data-index="' + i + '" class="btnRemoveFromEditorList"><iron-icon icon="delete"></iron-icon></button>';
 
             html += '</paper-icon-item>';
         }
@@ -1087,7 +1026,7 @@
             html += '</a>';
             html += '</paper-item-body>';
 
-            html += '<paper-icon-button icon="delete" data-index="' + i + '" class="btnDeletePerson"></paper-icon-button>';
+            html += '<button type="button" is="paper-icon-button-light" data-index="' + i + '" class="btnDeletePerson"><iron-icon icon="delete"></iron-icon></button>';
 
             html += '</paper-icon-item>';
         }

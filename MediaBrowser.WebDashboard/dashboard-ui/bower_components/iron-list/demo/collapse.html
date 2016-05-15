@@ -1,0 +1,209 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<!doctype html>
+<html>
+<head>
+
+  <title>Collapsable items using iron-list</title>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
+  <link rel="import" href="../../app-layout/app-toolbar/app-toolbar.html">
+  <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+  <link rel="import" href="../../paper-styles/color.html">
+  <link rel="import" href="../../paper-styles/typography.html">
+  <link rel="import" href="../../iron-ajax/iron-ajax.html">
+  <link rel="import" href="../../iron-icons/iron-icons.html">
+  <link rel="import" href="../../iron-image/iron-image.html">
+  <link rel="import" href="../iron-list.html">
+
+  <style>
+    body {
+      background-color: #eee;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+<body unresolved>
+
+<dom-module id="x-collapse">
+  <template>
+    <style>
+      :host {
+        display: block;
+        @apply(--paper-font-common-base);
+      }
+
+      app-toolbar {
+        background-color: var(--google-green-700);
+        box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.3);
+        font-weight: bold;
+        color: white;
+        z-index: 1;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+      }
+
+      app-toolbar paper-icon-button {
+        --paper-icon-button-ink-color: white;
+      }
+
+      iron-list {
+        padding-top: 64px;
+        --iron-list-items-container: {
+          max-width: 800px;
+          margin: auto;
+          margin-top: 60px;
+          margin-bottom: 60px;
+          border-bottom: 1px solid #ddd;
+        };
+      }
+
+      .item {
+        @apply(--layout-horizontal);
+        padding: 20px;
+        background-color: white;
+        border: 1px solid #ddd;
+        cursor: pointer;
+        margin-bottom: 10px;
+      }
+
+      .avatar {
+        height: 40px;
+        width: 40px;
+        border-radius: 20px;
+        box-sizing: border-box;
+        background-color: #DDD;
+      }
+
+      .pad {
+        padding: 0 16px;
+        @apply(--layout-flex);
+        @apply(--layout-vertical);
+      }
+
+      .primary {
+        font-size: 16px;
+        font-weight: bold;
+      }
+
+      .shortText, .longText {
+        font-size: 14px;
+      }
+
+      .longText {
+        color: gray;
+        display: none;
+      }
+
+      .item:hover .shortText::after {
+        content: ' [+]';
+        color: gray;
+      }
+
+      .item.expanded:hover .shortText::after {
+        content: '';
+      }
+
+      .item.expanded .longText {
+        display: block;
+      }
+
+      .item.expanded:hover .longText::after {
+        content: ' [–]';
+      }
+
+      .spacer {
+        @apply(--layout-flex);
+      }
+
+      @media (max-width: 460px) {
+        paper-toolbar .bottom.title {
+          font-size: 14px;
+        }
+      }
+    </style>
+
+    <iron-ajax url="data/contacts.json" last-response="{{items}}" auto></iron-ajax>
+
+    <app-toolbar>
+      <div title>Collapsable items</div>
+      <paper-icon-button icon="search" alt="Search"></paper-icon-button>
+      <paper-icon-button icon="more-vert" alt="More options"></paper-icon-button>
+    </app-toolbar>
+
+    <iron-list id="list" items="[[items]]" as="item" selection-enabled multi-selection>
+      <template>
+        <div>
+          <div class$="[[getClassForItem(item, selected)]]" tabindex$="[[tabIndex]]">
+            <iron-image class="avatar" sizing="contain" src="[[item.image]]"></iron-image>
+            <div class="pad">
+              <div class="primary">[[item.name]]</div>
+              <div class="shortText">[[item.shortText]]</div>
+              <div class="longText">[[item.longText]]</div>
+            </div>
+            <iron-icon icon$="[[iconForItem(item)]]"></iron-icon>
+          </div>
+        </div>
+      </template>
+    </iron-list>
+
+  </template>
+
+  <script>
+
+    HTMLImports.whenReady(function() {
+
+      Polymer({
+        is: 'x-collapse',
+
+        properties: {
+
+          items: {
+            type: Array
+          }
+
+        },
+
+        attached: function() {
+          // Use the document element
+          this.$.list.scrollTarget = this.ownerDocument.documentElement;
+        },
+
+        iconForItem: function(item) {
+          return item ? (item.integer < 50 ? 'star-border' : 'star') : '';
+        },
+
+        getClassForItem: function(item, selected) {
+          return selected ? 'item expanded' : 'item';
+        }
+
+      });
+
+    });
+
+  </script>
+</dom-module>
+
+<x-collapse></x-collapse>
+
+</body>
+</html>
