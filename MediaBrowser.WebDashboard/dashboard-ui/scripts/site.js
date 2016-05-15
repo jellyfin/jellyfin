@@ -2613,7 +2613,8 @@ var AppInfo = {};
 
         defineRoute({
             path: '/livetv.html',
-            dependencies: ['paper-button'],
+            dependencies: ['paper-button', 'livetvcss', 'paper-checkbox'],
+            controller: 'scripts/livetvsuggested',
             autoFocus: false
         });
 

@@ -1,17 +1,15 @@
 ﻿define(['tvguide'], function (tvguide) {
 
-    window.LiveTvPage.initGuideTab = function (page, tabContent) {
+    return function (view, params, tabContent) {
 
+        var self = this;
+        var guideInstance;
+        self.renderTab = function () {
+            if (!guideInstance) {
+                guideInstance = new tvguide({
+                    element: tabContent
+                });
+            }
+        };
     };
-
-    window.LiveTvPage.renderGuideTab = function (page, tabContent) {
-
-        if (!page.guideInstance) {
-
-            page.guideInstance = new tvguide({
-                element: tabContent
-            });
-        }
-    };
-
 });

@@ -1,122 +1,126 @@
 ﻿define(['jQuery'], function ($) {
 
-    var data = {};
+    return function (view, params, tabContent) {
 
-    function getPageData(context) {
-        var key = getSavedQueryKey(context);
-        var pageData = data[key];
+        var self = this;
+        var data = {};
 
-        if (!pageData) {
-            pageData = data[key] = {
-                query: {
-                    StartIndex: 0,
-                    EnableFavoriteSorting: true,
-                    Limit: LibraryBrowser.getDefaultPageSize()
-                }
-            };
+        function getPageData(context) {
+            var key = getSavedQueryKey(context);
+            var pageData = data[key];
 
-            LibraryBrowser.loadSavedQueryValues(key, pageData.query);
+            if (!pageData) {
+                pageData = data[key] = {
+                    query: {
+                        StartIndex: 0,
+                        EnableFavoriteSorting: true,
+                        Limit: LibraryBrowser.getDefaultPageSize()
+                    }
+                };
+
+                LibraryBrowser.loadSavedQueryValues(key, pageData.query);
+            }
+            return pageData;
         }
-        return pageData;
-    }
 
-    function getQuery(context) {
+        function getQuery(context) {
 
-        return getPageData(context).query;
-    }
-
-    function getSavedQueryKey(context) {
-
-        if (!context.savedQueryKey) {
-            context.savedQueryKey = LibraryBrowser.getSavedQueryKey('channels');
+            return getPageData(context).query;
         }
-        return context.savedQueryKey;
-    }
 
-    function getChannelsHtml(channels) {
+        function getSavedQueryKey(context) {
 
-        return LibraryBrowser.getPosterViewHtml({
-            items: channels,
-            shape: "square",
-            showTitle: true,
-            lazy: true,
-            cardLayout: true,
-            showDetailsMenu: true
-        });
-    }
+            if (!context.savedQueryKey) {
+                context.savedQueryKey = LibraryBrowser.getSavedQueryKey('channels');
+            }
+            return context.savedQueryKey;
+        }
 
-    function renderChannels(page, result) {
+        function getChannelsHtml(channels) {
 
-        var query = getQuery(page);
+            return LibraryBrowser.getPosterViewHtml({
+                items: channels,
+                shape: "square",
+                showTitle: true,
+                lazy: true,
+                cardLayout: true,
+                showDetailsMenu: true
+            });
+        }
 
-        $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
-            startIndex: query.StartIndex,
-            limit: query.Limit,
-            totalRecordCount: result.TotalRecordCount,
-            showLimit: false,
-            updatePageSizeSetting: false,
-            filterButton: true
-        }));
+        function renderChannels(context, result) {
 
-        var html = getChannelsHtml(result.Items);
+            var query = getQuery(context);
 
-        var elem = page.querySelector('#items');
-        elem.innerHTML = html;
-        ImageLoader.lazyChildren(elem);
+            $('.listTopPaging', context).html(LibraryBrowser.getQueryPagingHtml({
+                startIndex: query.StartIndex,
+                limit: query.Limit,
+                totalRecordCount: result.TotalRecordCount,
+                showLimit: false,
+                updatePageSizeSetting: false,
+                filterButton: true
+            }));
 
-        $('.btnNextPage', page).on('click', function () {
-            query.StartIndex += query.Limit;
-            reloadItems(page);
-        });
+            var html = getChannelsHtml(result.Items);
 
-        $('.btnPreviousPage', page).on('click', function () {
-            query.StartIndex -= query.Limit;
-            reloadItems(page);
-        });
+            var elem = context.querySelector('#items');
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
 
-        $('.btnFilter', page).on('click', function () {
-            showFilterMenu(page);
-        });
-
-        LibraryBrowser.saveQueryValues(getSavedQueryKey(page), query);
-    }
-
-    function showFilterMenu(page) {
-
-        require(['components/filterdialog/filterdialog'], function (filterDialogFactory) {
-
-            var filterDialog = new filterDialogFactory({
-                query: getQuery(page),
-                mode: 'livetvchannels'
+            $('.btnNextPage', context).on('click', function () {
+                query.StartIndex += query.Limit;
+                reloadItems(context);
             });
 
-            Events.on(filterDialog, 'filterchange', function () {
-                reloadItems(page);
+            $('.btnPreviousPage', context).on('click', function () {
+                query.StartIndex -= query.Limit;
+                reloadItems(context);
             });
 
-            filterDialog.show();
-        });
-    }
+            $('.btnFilter', context).on('click', function () {
+                showFilterMenu(context);
+            });
 
-    function reloadItems(page) {
+            LibraryBrowser.saveQueryValues(getSavedQueryKey(context), query);
+        }
 
-        Dashboard.showLoadingMsg();
+        function showFilterMenu(context) {
 
-        var query = getQuery(page);
+            require(['components/filterdialog/filterdialog'], function (filterDialogFactory) {
 
-        query.UserId = Dashboard.getCurrentUserId();
+                var filterDialog = new filterDialogFactory({
+                    query: getQuery(context),
+                    mode: 'livetvchannels'
+                });
 
-        ApiClient.getLiveTvChannels(query).then(function (result) {
+                Events.on(filterDialog, 'filterchange', function () {
+                    reloadItems(context);
+                });
 
-            renderChannels(page, result);
+                filterDialog.show();
+            });
+        }
 
-            Dashboard.hideLoadingMsg();
-        });
-    }
+        function reloadItems(context) {
 
-    window.LiveTvPage.renderChannelsTab = function (page, tabContent) {
+            Dashboard.showLoadingMsg();
 
-        reloadItems(tabContent);
+            var query = getQuery(context);
+
+            query.UserId = Dashboard.getCurrentUserId();
+
+            ApiClient.getLiveTvChannels(query).then(function (result) {
+
+                renderChannels(context, result);
+
+                Dashboard.hideLoadingMsg();
+            });
+        }
+
+        self.renderTab = function () {
+
+            reloadItems(tabContent);
+        };
     };
 
 });

@@ -6,7 +6,7 @@
         SortOrder: "Ascending"
     };
 
-    function deleteSeriesTimer(page, id) {
+    function deleteSeriesTimer(context, id) {
 
         require(['confirm'], function (confirm) {
 
@@ -20,13 +20,13 @@
                         toast(Globalize.translate('MessageSeriesCancelled'));
                     });
 
-                    reload(page);
+                    reload(context);
                 });
             });
         });
     }
 
-    function renderTimers(page, timers) {
+    function renderTimers(context, timers) {
 
         var html = '';
 
@@ -88,32 +88,36 @@
             html += '</div>';
         }
 
-        var elem = $('#items', page).html(html);
+        var elem = $('#items', context).html(html);
 
         $('.btnCancelSeries', elem).on('click', function () {
 
-            deleteSeriesTimer(page, this.getAttribute('data-seriestimerid'));
+            deleteSeriesTimer(context, this.getAttribute('data-seriestimerid'));
 
         });
 
         Dashboard.hideLoadingMsg();
     }
 
-    function reload(page) {
+    function reload(context) {
 
         Dashboard.showLoadingMsg();
 
         ApiClient.getLiveTvSeriesTimers(query).then(function (result) {
 
             require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
-                renderTimers(page, result.Items);
+                renderTimers(context, result.Items);
             });
         });
     }
 
-    window.LiveTvPage.renderSeriesTimersTab = function (page, tabContent) {
+    return function (view, params, tabContent) {
 
-        reload(tabContent);
+        var self = this;
+        self.renderTab = function () {
+
+            reload(tabContent);
+        };
     };
 
 });
