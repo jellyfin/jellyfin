@@ -14,7 +14,9 @@ using MediaBrowser.Dlna.Ssdp;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Dlna.Channels;
 
 namespace MediaBrowser.Dlna.Main
 {
@@ -167,6 +169,8 @@ namespace MediaBrowser.Dlna.Main
             try
             {
                 ((DeviceDiscovery)_deviceDiscovery).Start(_ssdpHandler);
+
+                //DlnaChannel.Current.Start(() => _registeredServerIds.ToList());
             }
             catch (Exception ex)
             {
