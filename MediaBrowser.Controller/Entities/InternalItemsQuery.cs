@@ -182,6 +182,11 @@ namespace MediaBrowser.Controller.Entities
         public InternalItemsQuery(User user)
             : this()
         {
+            SetUser(user);
+        }
+
+        public void SetUser(User user)
+        {
             if (user != null)
             {
                 var policy = user.Policy;

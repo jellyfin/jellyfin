@@ -125,13 +125,13 @@ namespace MediaBrowser.Controller.Entities
                 case CollectionType.HomeVideos:
                 case CollectionType.Games:
                 case CollectionType.MusicVideos:
-                {
-                    if (query.Recursive)
                     {
-                        return GetResult(queryParent.GetRecursiveChildren(user, true), queryParent, query);
+                        if (query.Recursive)
+                        {
+                            return GetResult(queryParent.GetRecursiveChildren(user, true), queryParent, query);
+                        }
+                        return GetResult(queryParent.GetChildren(user, true), queryParent, query);
                     }
-                    return GetResult(queryParent.GetChildren(user, true), queryParent, query);
-                }
 
                 case CollectionType.Folders:
                     return GetResult(user.RootFolder.GetChildren(user, true), queryParent, query);
@@ -140,7 +140,7 @@ namespace MediaBrowser.Controller.Entities
                     return await GetPlaylistsView(queryParent, user, query).ConfigureAwait(false);
 
                 case CollectionType.BoxSets:
-                    return await GetBoxsetView(queryParent, user, query).ConfigureAwait(false);
+                    return GetBoxsetView(queryParent, user, query);
 
                 case CollectionType.TvShows:
                     return await GetTvView(queryParent, user, query).ConfigureAwait(false);
@@ -206,7 +206,7 @@ namespace MediaBrowser.Controller.Entities
                     return GetMusicLatest(queryParent, user, query);
 
                 case SpecialFolder.MusicPlaylists:
-                    return await GetMusicPlaylists(queryParent, user, query).ConfigureAwait(false);
+                    return GetMusicPlaylists(queryParent, user, query);
 
                 case SpecialFolder.MusicAlbums:
                     return GetMusicAlbums(queryParent, user, query);
@@ -353,12 +353,14 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(artists, parent, query);
         }
 
-        private Task<QueryResult<BaseItem>> GetMusicPlaylists(Folder parent, User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetMusicPlaylists(Folder parent, User user, InternalItemsQuery query)
         {
-            query.IncludeItemTypes = new[] { "Playlist" };
+            query.ParentId = null;
+            query.IncludeItemTypes = new[] { typeof(Playlist).Name };
+            query.SetUser(user);
             query.Recursive = true;
 
-            return parent.GetItems(query);
+            return _libraryManager.GetItemsResult(query);
         }
 
         private QueryResult<BaseItem> GetMusicAlbums(Folder parent, User user, InternalItemsQuery query)
@@ -559,11 +561,14 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(_playlistManager.GetPlaylists(user.Id.ToString("N")), parent, query);
         }
 
-        private async Task<QueryResult<BaseItem>> GetBoxsetView(Folder parent, User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetBoxsetView(Folder parent, User user, InternalItemsQuery query)
         {
-            var collections = _collectionManager.GetCollections(user);
+            query.ParentId = null;
+            query.IncludeItemTypes = new[] { typeof(BoxSet).Name };
+            query.SetUser(user);
+            query.Recursive = true;
 
-            return GetResult(collections, parent, query);
+            return _libraryManager.GetItemsResult(query);
         }
 
         private async Task<QueryResult<BaseItem>> GetTvView(Folder parent, User user, InternalItemsQuery query)
@@ -1735,7 +1740,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.SeriesStatuses.Length > 0)
             {
-                var ok = new[] { item }.OfType<Series>().Any(p => p.Status.HasValue && query.SeriesStatuses.Contains(p.Status.Value)); 
+                var ok = new[] { item }.OfType<Series>().Any(p => p.Status.HasValue && query.SeriesStatuses.Contains(p.Status.Value));
                 if (!ok)
                 {
                     return false;
