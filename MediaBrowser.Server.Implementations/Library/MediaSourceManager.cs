@@ -175,13 +175,6 @@ namespace MediaBrowser.Server.Implementations.Library
                             source.SupportsTranscoding = false;
                         }
                     }
-                    else if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (!user.Policy.EnableVideoPlaybackTranscoding)
-                        {
-                            source.SupportsTranscoding = false;
-                        }
-                    }
                 }
             }
 
