@@ -216,7 +216,7 @@
 
     function loadTab(page, index) {
 
-        var tabContent = page.querySelector('.mdl-tabs__panel[data-index=\'' + index + '\']');
+        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
         var depends = [];
         var scope = 'MusicPage';
         var renderMethod = '';
@@ -285,7 +285,7 @@
 
         $('.recommendations', page).createCardMenus();
 
-        var mdlTabs = page.querySelector('.mdl-tabs');
+        var mdlTabs = page.querySelector('.libraryViewNav');
 
         var baseUrl = 'music.html';
         var topParentId = LibraryMenu.getTopParentId();
@@ -293,8 +293,7 @@
             baseUrl += '?topParentId=' + topParentId;
         }
 
-        componentHandler.upgradeAllRegistered(page);
-        libraryBrowser.configurePaperLibraryTabs(page, mdlTabs);
+        libraryBrowser.configurePaperLibraryTabs(page, mdlTabs, page.querySelectorAll('.pageTabContent'));
 
         mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(page, parseInt(e.detail.selectedTabIndex));

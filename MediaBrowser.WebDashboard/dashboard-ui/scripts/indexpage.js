@@ -243,21 +243,20 @@
         var self = this;
 
         self.renderTab = function () {
-            var tabContent = view.querySelector('.mdl-tabs__panel[data-index=\'' + 0 + '\']');
+            var tabContent = view.querySelector('.pageTabContent[data-index=\'' + 0 + '\']');
             loadHomeTab(view, tabContent);
         };
 
-        var mdlTabs = view.querySelector('.mdl-tabs');
+        var mdlTabs = view.querySelector('.libraryViewNav');
 
-        componentHandler.upgradeAllRegistered(view);
-        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs);
+        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'));
 
         var tabControllers = [];
         var renderedTabs = [];
 
         function loadTab(page, index) {
 
-            var tabContent = view.querySelector('.mdl-tabs__panel[data-index=\'' + index + '\']');
+            var tabContent = view.querySelector('.pageTabContent[data-index=\'' + index + '\']');
             var depends = [];
 
             switch (index) {

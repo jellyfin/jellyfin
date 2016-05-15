@@ -2,17 +2,21 @@
     font-weight: bold !important;
 }
 
-.libraryViewNav .mdl-tabs__tab {
+.libraryViewNav .pageTabButton {
     font-weight: bold !important;
 }
 
+    .libraryViewNav .pageTabButton:focus {
+        font-weight: bold !important;
+    }
+
 @media all and (min-width: 300px) {
 
-    .libraryViewNav .mdl-tabs__tab-bar {
+    .libraryViewNav {
         display: flex;
     }
 
-    .libraryViewNav .mdl-tabs__tab {
-        flex-grow: 1;
-    }
+        .libraryViewNav .pageTabButton {
+            flex-grow: 1;
+        }
 }

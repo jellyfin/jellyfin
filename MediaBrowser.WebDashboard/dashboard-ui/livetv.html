@@ -1,88 +1,84 @@
-﻿<div id="liveTvSuggestedPage" data-dom-cache="true" data-role="page" class="page libraryPage liveTvPage pageWithAbsoluteTabs" data-contextname="${HeaderLiveTv}" data-backdroptype="series,movie" data-require="scripts/livetvsuggested,livetvcss,scripts/livetvcomponents,MaterialTabs,paper-checkbox,paper-button">
+﻿<div id="liveTvSuggestedPage" data-dom-cache="true" data-role="page" class="page libraryPage liveTvPage pageWithAbsoluteTabs" data-contextname="${HeaderLiveTv}" data-backdroptype="series,movie" data-require="scripts/livetvsuggested,livetvcss,scripts/livetvcomponents,paper-checkbox">
 
-    <div class="mdl-tabs mdl-js-tabs mdl-js-ripple-effect">
-        <div class="libraryViewNav">
-            <div class="mdl-tabs__tab-bar">
-                <a href="#suggestionsTab" class="mdl-tabs__tab is-active" data-index="0">${TabSuggestions}</a>
-                <a href="#guideTab" class="mdl-tabs__tab" data-index="1">${TabGuide}</a>
-                <a href="#channelsTab" class="mdl-tabs__tab" data-index="2">${TabChannels}</a>
-                <a href="#recordingsTab" class="mdl-tabs__tab" data-index="3">${TabRecordings}</a>
-                <a href="#seriesTab" class="mdl-tabs__tab" data-index="4">${TabSeries}</a>
+    <div class="libraryViewNav">
+        <button class="pageTabButton is-active" data-index="0">${TabSuggestions}</button>
+        <button class="pageTabButton" data-index="1">${TabGuide}</button>
+        <button class="pageTabButton" data-index="2">${TabChannels}</button>
+        <button class="pageTabButton" data-index="3">${TabRecordings}</button>
+        <button  class="pageTabButton" data-index="4">${TabSeries}</button>
+    </div>
+    <div class="is-active pageTabContent ehsContent" id="suggestionsTab" data-index="0">
+        <div id="activePrograms" class="homePageSection">
+            <h1 class="listHeader">${HeaderWhatsOnTV}</h1>
+            <div class="activeProgramItems itemsContainer noautoinit"></div>
+            <br />
+        </div>
+        <div id="upcomingPrograms" class="homePageSection" style="margin-top: 1em;">
+            <h1 class="listHeader">${HeaderUpcomingPrograms}</h1>
+            <div class="upcomingProgramItems itemsContainer noautoinit"></div>
+            <br />
+        </div>
+        <div id="upcomingTvMovies" class="homePageSection" style="margin-top: 1em;">
+            <div>
+                <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderUpcomingMovies}</h1>
+                <a href="livetvitems.html?type=movies" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
+            </div>
+            <div class="upcomingTvMovieItems itemsContainer noautoinit"></div>
+            <br />
+        </div>
+        <div id="upcomingSports" class="homePageSection" style="margin-top: 1em;">
+            <div>
+                <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderUpcomingSports}</h1>
+                <a href="livetvitems.html?type=sports" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
+            </div>
+            <div class="upcomingSportsItems itemsContainer noautoinit"></div>
+            <br />
+        </div>
+        <div id="upcomingKids" class="homePageSection" style="margin-top: 1em;">
+            <div>
+                <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderUpcomingForKids}</h1>
+                <a href="livetvitems.html?type=kids" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
+            </div>
+            <div class="upcomingKidsItems itemsContainer noautoinit"></div>
+            <br />
+        </div>
+    </div>
+    <div class="pageTabContent ehsContent fullWidth flexPageTabContent absolutePageTabContent" id="guideTab" data-index="1" style="width:auto;padding-top:0; padding-bottom: 0;">
+    </div>
+    <div class="pageTabContent ehsContent" id="channelsTab" data-index="2">
+        <div class="viewSettings">
+            <div class="listTopPaging">
             </div>
         </div>
-        <div class="mdl-tabs__panel is-active pageTabContent ehsContent" id="suggestionsTab" data-index="0">
-            <div id="activePrograms" class="homePageSection">
-                <h1 class="listHeader">${HeaderWhatsOnTV}</h1>
-                <div class="activeProgramItems itemsContainer noautoinit"></div>
-                <br />
-            </div>
-            <div id="upcomingPrograms" class="homePageSection" style="margin-top: 1em;">
-                <h1 class="listHeader">${HeaderUpcomingPrograms}</h1>
-                <div class="upcomingProgramItems itemsContainer noautoinit"></div>
-                <br />
-            </div>
-            <div id="upcomingTvMovies" class="homePageSection" style="margin-top: 1em;">
-                <div>
-                    <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderUpcomingMovies}</h1>
-                    <a href="livetvitems.html?type=movies" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
-                </div>
-                <div class="upcomingTvMovieItems itemsContainer noautoinit"></div>
-                <br />
-            </div>
-            <div id="upcomingSports" class="homePageSection" style="margin-top: 1em;">
-                <div>
-                    <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderUpcomingSports}</h1>
-                    <a href="livetvitems.html?type=sports" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
-                </div>
-                <div class="upcomingSportsItems itemsContainer noautoinit"></div>
-                <br />
-            </div>
-            <div id="upcomingKids" class="homePageSection" style="margin-top: 1em;">
-                <div>
-                    <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderUpcomingForKids}</h1>
-                    <a href="livetvitems.html?type=kids" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
-                </div>
-                <div class="upcomingKidsItems itemsContainer noautoinit"></div>
-                <br />
-            </div>
+        <div id="items" class="itemsContainer"></div>
+    </div>
+    <div class="pageTabContent ehsContent" id="recordingsTab" data-index="3">
+        <div id="activeRecordings" class="homePageSection hide">
+            <h1 class="listHeader">${HeaderActiveRecordings}</h1>
+            <div class="recordingItems itemsContainer"></div>
+            <br />
         </div>
-        <div class="mdl-tabs__panel pageTabContent ehsContent fullWidth flexPageTabContent absolutePageTabContent" id="guideTab" data-index="1" style="width:auto;padding-top:0; padding-bottom: 0;">
+        <div id="latestRecordings" class="homePageSection hide">
+            <div>
+                <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderLatestRecordings}</h1>
+                <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
+            </div>
+            <div class="recordingItems itemsContainer"></div>
+            <br />
         </div>
-        <div class="mdl-tabs__panel pageTabContent ehsContent" id="channelsTab" data-index="2">
-            <div class="viewSettings">
-                <div class="listTopPaging">
-                </div>
-            </div>
-            <div id="items" class="itemsContainer"></div>
+        <div id="upcomingRecordings" class="homePageSection hide">
+            <div class="recordingItems"></div>
+            <br />
         </div>
-        <div class="mdl-tabs__panel pageTabContent ehsContent" id="recordingsTab" data-index="3">
-            <div id="activeRecordings" class="homePageSection hide">
-                <h1 class="listHeader">${HeaderActiveRecordings}</h1>
-                <div class="recordingItems itemsContainer"></div>
-                <br />
-            </div>
-            <div id="latestRecordings" class="homePageSection hide">
-                <div>
-                    <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderLatestRecordings}</h1>
-                    <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
-                </div>
-                <div class="recordingItems itemsContainer"></div>
-                <br />
-            </div>
-            <div id="upcomingRecordings" class="homePageSection hide">
-                <div class="recordingItems"></div>
-                <br />
-            </div>
-            <div id="recordingGroups" style="display: none;" class="homePageSection">
-                <h1 class="listHeader">
-                    <a href="livetvrecordinglist.html">${HeaderAllRecordings}<img src="css/images/rightarrow.png" class="headerArrowImage" /></a>
-                </h1>
-                <div id="recordingGroupItems"></div>
-            </div>
+        <div id="recordingGroups" style="display: none;" class="homePageSection">
+            <h1 class="listHeader">
+                <a href="livetvrecordinglist.html">${HeaderAllRecordings}<img src="css/images/rightarrow.png" class="headerArrowImage" /></a>
+            </h1>
+            <div id="recordingGroupItems"></div>
         </div>
-        <div class="mdl-tabs__panel pageTabContent ehsContent" id="seriesTab" data-index="4">
-            <div style="max-width: 700px; margin: 0 auto;" id="items">
-            </div>
+    </div>
+    <div class="pageTabContent ehsContent" id="seriesTab" data-index="4">
+        <div style="max-width: 700px; margin: 0 auto;" id="items">
         </div>
     </div>
 

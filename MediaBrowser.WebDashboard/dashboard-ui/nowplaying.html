@@ -10,121 +10,117 @@
             </div>
         </div>
 
-        <div class="mdl-tabs mdl-js-tabs mdl-js-ripple-effect">
-            <div class="libraryViewNav headroomDisabled">
-                <div class="mdl-tabs__tab-bar">
-                    <a href="#nowPlayingTab" class="mdl-tabs__tab is-active" data-index="0">${TabNowPlaying}</a>
-                    <a href="#controlsTab" class="mdl-tabs__tab" data-index="1">${TabControls}</a>
-                    <a href="#playlistTab" class="mdl-tabs__tab" data-index="2">${TabPlaylist}</a>
+        <div class="libraryViewNav headroomDisabled">
+            <button class="pageTabButton is-active" data-index="0">${TabNowPlaying}</button>
+            <button class="pageTabButton" data-index="1">${TabControls}</button>
+            <button class="pageTabButton" data-index="2">${TabPlaylist}</button>
+        </div>
+        <div class="is-active pageTabContent ehsContent" id="nowPlayingTab" data-index="0">
+            <div style="text-align:center;">
+                <div class="nowPlayingPageTitle" style="line-height: normal;">
+                </div>
+                <div class="nowPlayingInfoMetadata">
+                    <div class="nowPlayingPageImage" style="margin: 1em auto;"></div>
+                    <div class="nowPlayingPageTimeContainer">
+                        <div>
+                            <paper-slider pin step="1" min="0" max="100" value="0" class="nowPlayingPositionSlider" style="width: 100%;"></paper-slider>
+                        </div>
+                        <div style="text-align:left;">
+                            <div class="positionTime" style="float:left;"></div>
+                            <div class="runtime" style="float: right;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="nowPlayingInfoButtons">
+
+                    <div>
+
+                        <paper-fab icon="skip-previous" class="btnPreviousTrack btnPlayStateCommand subdued" title="${ButtonPreviousTrack}"></paper-fab>
+                        <paper-fab icon="pause" class="btnPause btnPlayStateCommand subdued" title="${ButtonPause}"></paper-fab>
+                        <paper-fab icon="play-arrow" class="btnPlay btnPlayStateCommand subdued" title="${ButtonPlay}"></paper-fab>
+                        <paper-fab icon="stop" class="btnPlayStateCommand btnStop subdued" title="${ButtonStop}"></paper-fab>
+                        <paper-fab icon="skip-next" class="btnPlayStateCommand btnNextTrack subdued" title="${ButtonNextTrack}"></paper-fab>
+                    </div>
+                    <div class="buttonsRow2">
+
+                        <paper-fab icon="audiotrack" class="btnAudioTracks videoButton btnPlayStateCommand subdued" title="${ButtonAudioTracks}" data-command="GoToSearch"></paper-fab>
+                        <paper-fab icon="closed-caption" class="btnSubtitles videoButton btnPlayStateCommand subdued" title="${ButtonSubtitles}" data-command="GoToSearch"></paper-fab>
+                        <paper-fab icon="movie" class="btnChapters videoButton btnPlayStateCommand subdued" title="${ButtonScenes}" data-command="GoToSearch"></paper-fab>
+                        <paper-fab icon="fullscreen" class="btnToggleFullscreen videoButton btnPlayStateCommand subdued" title="${ButtonFullscreen}" data-command="ToggleFullscreen"></paper-fab>
+                    </div>
+                    <div>
+                        <paper-fab icon="repeat" class="btnCommand subdued repeatToggleButton" title="${ButtonRepeat}" data-command="SetRepeatMode"></paper-fab>
+                        <paper-fab icon="volume-off" class="btnCommand subdued volumeButton" title="${ButtonMute}" data-command="ToggleMute"></paper-fab>
+                        <paper-fab icon="volume-down" class="btnCommand subdued volumeButton" title="${ButtonVolumeDown}" data-command="VolumeDown"></paper-fab>
+                        <paper-fab icon="volume-up" class="btnCommand subdued volumeButton" title="${ButtonVolumeUp}" data-command="VolumeUp"></paper-fab>
+                    </div>
+                    <div class="nowPlayingPageUserDataButtons" style="margin-top:1em;">
+                    </div>
                 </div>
             </div>
-            <div class="mdl-tabs__panel is-active pageTabContent ehsContent" id="nowPlayingTab" data-index="0">
-                <div style="text-align:center;">
-                    <div class="nowPlayingPageTitle" style="line-height: normal;">
-                    </div>
-                    <div class="nowPlayingInfoMetadata">
-                        <div class="nowPlayingPageImage" style="margin: 1em auto;"></div>
-                        <div class="nowPlayingPageTimeContainer">
+        </div>
+        <div class="pageTabContent ehsContent" id="controlsTab" data-index="1">
+            <div style="text-align:center;">
+                <div>
+                    <paper-fab icon="keyboard-arrow-up" class="btnArrowUp btnCommand subdued" title="${ButtonArrowUp}" data-command="MoveUp"></paper-fab>
+                </div>
+                <div>
+                    <paper-fab icon="keyboard-arrow-left" class="btnArrowLeft btnCommand subdued" title="${ButtonArrowLeft}" data-command="MoveLeft"></paper-fab>
+                    <paper-fab icon="check" class="btnOk btnCommand subdued" title="${ButtonOk}" data-command="Select"></paper-fab>
+                    <paper-fab icon="keyboard-arrow-right" class="btnArrowRight btnCommand subdued" title="${ButtonArrowRight}" data-command="MoveRight"></paper-fab>
+                </div>
+                <div>
+                    <paper-fab icon="keyboard-arrow-down" class="btnArrowDown btnCommand subdued" title="${ButtonArrowDown}" data-command="MoveDown"></paper-fab>
+                </div>
+                <div>
+                    <paper-fab icon="arrow-back" class="btnBack btnCommand subdued" title="${ButtonBack}" data-command="Back"></paper-fab>
+                    <paper-fab icon="info" class="btnInfo btnCommand subdued" title="${ButtonInfo}" data-command="ToggleContextMenu"></paper-fab>
+                </div>
+                <br />
+                <div>
+                    <paper-fab icon="home" class="btnGoHome btnCommand subdued" title="${ButtonHome}" data-command="GoHome"></paper-fab>
+                    <paper-fab icon="search" class="btnShowSearch btnCommand subdued" title="${ButtonSearch}" data-command="GoToSearch"></paper-fab>
+                </div>
+                <div>
+                    <paper-fab icon="settings" class="bthShowSettings btnCommand subdued" title="${ButtonSettings}" data-command="GoToSettings"></paper-fab>
+                    <paper-fab icon="videocam" class="btnScreenshot btnCommand subdued" title="${ButtonTakeScreenshot}" data-command="TakeScreenshot"></paper-fab>
+                </div>
+            </div>
+            <div class="readOnlyContent" style="margin: 2em auto 0; padding: 0 1em 100px;">
+                <div class="sendMessageSection">
+                    <br /><h1>${HeaderSendMessage}</h1>
+                    <div style="text-align: left;">
+                        <form class="sendMessageForm">
                             <div>
-                                <paper-slider pin step="1" min="0" max="100" value="0" class="nowPlayingPositionSlider" style="width: 100%;"></paper-slider>
+                                <paper-input class="sendMessageElement" type="text" id="txtMessageTitle" label="${LabelMessageTitle}" required></paper-input>
                             </div>
-                            <div style="text-align:left;">
-                                <div class="positionTime" style="float:left;"></div>
-                                <div class="runtime" style="float: right;"></div>
+                            <br />
+                            <div>
+                                <paper-input class="sendMessageElement" type="text" id="txtMessageText" label="${LabelMessageText}" required></paper-input>
                             </div>
-                        </div>
+                            <p>
+                                <button class="sendMessageElement clearButton" type="submit" data-role="none" style="display:block;"><paper-button class="sendMessageElement accent" type="submit" raised style="display:block;">${ButtonSend}</paper-button></button>
+                            </p>
+                        </form>
                     </div>
-                    <div class="nowPlayingInfoButtons">
-
-                        <div>
-
-                            <paper-fab icon="skip-previous" class="btnPreviousTrack btnPlayStateCommand subdued" title="${ButtonPreviousTrack}"></paper-fab>
-                            <paper-fab icon="pause" class="btnPause btnPlayStateCommand subdued" title="${ButtonPause}"></paper-fab>
-                            <paper-fab icon="play-arrow" class="btnPlay btnPlayStateCommand subdued" title="${ButtonPlay}"></paper-fab>
-                            <paper-fab icon="stop" class="btnPlayStateCommand btnStop subdued" title="${ButtonStop}"></paper-fab>
-                            <paper-fab icon="skip-next" class="btnPlayStateCommand btnNextTrack subdued" title="${ButtonNextTrack}"></paper-fab>
-                        </div>
-                        <div class="buttonsRow2">
-
-                            <paper-fab icon="audiotrack" class="btnAudioTracks videoButton btnPlayStateCommand subdued" title="${ButtonAudioTracks}" data-command="GoToSearch"></paper-fab>
-                            <paper-fab icon="closed-caption" class="btnSubtitles videoButton btnPlayStateCommand subdued" title="${ButtonSubtitles}" data-command="GoToSearch"></paper-fab>
-                            <paper-fab icon="movie" class="btnChapters videoButton btnPlayStateCommand subdued" title="${ButtonScenes}" data-command="GoToSearch"></paper-fab>
-                            <paper-fab icon="fullscreen" class="btnToggleFullscreen videoButton btnPlayStateCommand subdued" title="${ButtonFullscreen}" data-command="ToggleFullscreen"></paper-fab>
-                        </div>
-                        <div>
-                            <paper-fab icon="repeat" class="btnCommand subdued repeatToggleButton" title="${ButtonRepeat}" data-command="SetRepeatMode"></paper-fab>
-                            <paper-fab icon="volume-off" class="btnCommand subdued volumeButton" title="${ButtonMute}" data-command="ToggleMute"></paper-fab>
-                            <paper-fab icon="volume-down" class="btnCommand subdued volumeButton" title="${ButtonVolumeDown}" data-command="VolumeDown"></paper-fab>
-                            <paper-fab icon="volume-up" class="btnCommand subdued volumeButton" title="${ButtonVolumeUp}" data-command="VolumeUp"></paper-fab>
-                        </div>
-                        <div class="nowPlayingPageUserDataButtons" style="margin-top:1em;">
-                        </div>
+                </div>
+                <div class="sendTextSection">
+                    <br /><h1>${HeaderTypeText}</h1>
+                    <div style="text-align: left;">
+                        <form class="typeTextForm">
+                            <div>
+                                <paper-input class="typeTextElement" type="text" id="txtTypeText" label="${LabelTypeText}" required></paper-input>
+                            </div>
+                            <p>
+                                <button class="typeTextElement clearButton" type="submit" data-role="none" style="display:block;"><paper-button class="typeTextElement accent" type="submit" raised style="display:block;">${ButtonSend}</paper-button></button>
+                            </p>
+                        </form>
                     </div>
                 </div>
             </div>
-            <div class="mdl-tabs__panel pageTabContent ehsContent" id="controlsTab" data-index="1">
-                <div style="text-align:center;">
-                    <div>
-                        <paper-fab icon="keyboard-arrow-up" class="btnArrowUp btnCommand subdued" title="${ButtonArrowUp}" data-command="MoveUp"></paper-fab>
-                    </div>
-                    <div>
-                        <paper-fab icon="keyboard-arrow-left" class="btnArrowLeft btnCommand subdued" title="${ButtonArrowLeft}" data-command="MoveLeft"></paper-fab>
-                        <paper-fab icon="check" class="btnOk btnCommand subdued" title="${ButtonOk}" data-command="Select"></paper-fab>
-                        <paper-fab icon="keyboard-arrow-right" class="btnArrowRight btnCommand subdued" title="${ButtonArrowRight}" data-command="MoveRight"></paper-fab>
-                    </div>
-                    <div>
-                        <paper-fab icon="keyboard-arrow-down" class="btnArrowDown btnCommand subdued" title="${ButtonArrowDown}" data-command="MoveDown"></paper-fab>
-                    </div>
-                    <div>
-                        <paper-fab icon="arrow-back" class="btnBack btnCommand subdued" title="${ButtonBack}" data-command="Back"></paper-fab>
-                        <paper-fab icon="info" class="btnInfo btnCommand subdued" title="${ButtonInfo}" data-command="ToggleContextMenu"></paper-fab>
-                    </div>
-                    <br />
-                    <div>
-                        <paper-fab icon="home" class="btnGoHome btnCommand subdued" title="${ButtonHome}" data-command="GoHome"></paper-fab>
-                        <paper-fab icon="search" class="btnShowSearch btnCommand subdued" title="${ButtonSearch}" data-command="GoToSearch"></paper-fab>
-                    </div>
-                    <div>
-                        <paper-fab icon="settings" class="bthShowSettings btnCommand subdued" title="${ButtonSettings}" data-command="GoToSettings"></paper-fab>
-                        <paper-fab icon="videocam" class="btnScreenshot btnCommand subdued" title="${ButtonTakeScreenshot}" data-command="TakeScreenshot"></paper-fab>
-                    </div>
-                </div>
-                <div class="readOnlyContent" style="margin: 2em auto 0; padding: 0 1em 100px;">
-                    <div class="sendMessageSection">
-                        <br /><h1>${HeaderSendMessage}</h1>
-                        <div style="text-align: left;">
-                            <form class="sendMessageForm">
-                                <div>
-                                    <paper-input class="sendMessageElement" type="text" id="txtMessageTitle" label="${LabelMessageTitle}" required></paper-input>
-                                </div>
-                                <br />
-                                <div>
-                                    <paper-input class="sendMessageElement" type="text" id="txtMessageText" label="${LabelMessageText}" required></paper-input>
-                                </div>
-                                <p>
-                                    <button class="sendMessageElement clearButton" type="submit" data-role="none" style="display:block;"><paper-button class="sendMessageElement accent" type="submit" raised style="display:block;">${ButtonSend}</paper-button></button>
-                                </p>
-                            </form>
-                        </div>
-                    </div>
-                    <div class="sendTextSection">
-                        <br /><h1>${HeaderTypeText}</h1>
-                        <div style="text-align: left;">
-                            <form class="typeTextForm">
-                                <div>
-                                    <paper-input class="typeTextElement" type="text" id="txtTypeText" label="${LabelTypeText}" required></paper-input>
-                                </div>
-                                <p>
-                                    <button class="typeTextElement clearButton" type="submit" data-role="none" style="display:block;"><paper-button class="typeTextElement accent" type="submit" raised style="display:block;">${ButtonSend}</paper-button></button>
-                                </p>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="mdl-tabs__panel pageTabContent ehsContent" id="playlistTab" data-index="2">
-                <div class="playlist itemsContainer" style="max-width: 800px; margin: 3em auto 0; padding-bottom: 200px;">
-                </div>
+        </div>
+        <div class="pageTabContent ehsContent" id="playlistTab" data-index="2">
+            <div class="playlist itemsContainer" style="max-width: 800px; margin: 3em auto 0; padding-bottom: 200px;">
             </div>
         </div>
     </div>

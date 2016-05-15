@@ -141,7 +141,7 @@
 
     function loadTab(page, index) {
 
-        var tabContent = page.querySelector('.mdl-tabs__panel[data-index=\'' + index + '\']');
+        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
         var depends = [];
         var scope = 'LiveTvPage';
         var renderMethod = '';
@@ -197,11 +197,9 @@
 
         var page = this;
 
-        var mdlTabs = page.querySelector('.mdl-tabs');
+        var mdlTabs = page.querySelector('.libraryViewNav');
 
-        componentHandler.upgradeAllRegistered(page);
-
-        libraryBrowser.configurePaperLibraryTabs(page, mdlTabs);
+        libraryBrowser.configurePaperLibraryTabs(page, mdlTabs, page.querySelectorAll('.pageTabContent'));
 
         mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(page, parseInt(e.detail.selectedTabIndex));

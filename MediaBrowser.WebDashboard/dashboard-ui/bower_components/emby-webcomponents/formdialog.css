@@ -24,9 +24,13 @@
     }
 
     .formDialog .dialogContentInner {
-        padding-bottom: 50vh;
+        padding-bottom: 10vh;
         padding-top: 1em;
     }
+
+.layout-tv .formDialog .dialogContentInner {
+    padding-bottom: 50vh;
+}
 
 @media all and (min-width: 1000px) {
 

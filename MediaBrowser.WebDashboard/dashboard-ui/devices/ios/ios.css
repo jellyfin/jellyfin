@@ -59,15 +59,11 @@ body:not(.dashboardDocument) .mainDrawerButton {
         padding: 12px 13px 8px;
     }
 
-    .libraryViewNav .mdl-tabs__ripple-container {
+    .libraryViewNav .pageTabButton.is-active:after {
         display: none !important;
     }
 
-    .libraryViewNav .mdl-tabs__tab.is-active:after {
-        display: none !important;
-    }
-
-    .libraryViewNav .mdl-tabs__tab.is-active {
+    .libraryViewNav .pageTabButton.is-active {
         color: #52B54B !important;
     }
 

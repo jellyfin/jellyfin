@@ -271,19 +271,19 @@
 
         var self = this;
 
-        self.initTab = function() {
-            var tabContent = view.querySelector('.mdl-tabs__panel[data-index=\'' + 0 + '\']');
+        self.initTab = function () {
+            var tabContent = view.querySelector('.pageTabContent[data-index=\'' + 0 + '\']');
             initSuggestedTab(view, tabContent);
         };
 
         self.renderTab = function () {
-            var tabContent = view.querySelector('.mdl-tabs__panel[data-index=\'' + 0 + '\']');
+            var tabContent = view.querySelector('.pageTabContent[data-index=\'' + 0 + '\']');
             loadSuggestionsTab(view, params, tabContent);
         };
 
         $('.recommendations', view).createCardMenus();
 
-        var mdlTabs = view.querySelector('.mdl-tabs');
+        var mdlTabs = view.querySelector('.libraryViewNav');
 
         function onPlaybackStop(e, state) {
 
@@ -297,22 +297,20 @@
             }
         }
 
-        componentHandler.upgradeAllRegistered(view);
-
         var baseUrl = 'movies.html';
         var topParentId = params.topParentId;
         if (topParentId) {
             baseUrl += '?topParentId=' + topParentId;
         }
 
-        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs);
+        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'));
 
         var tabControllers = [];
         var renderedTabs = [];
 
         function loadTab(page, index) {
 
-            var tabContent = page.querySelector('.mdl-tabs__panel[data-index=\'' + index + '\']');
+            var tabContent = view.querySelector('.pageTabContent[data-index=\'' + index + '\']');
             var depends = [];
 
             switch (index) {

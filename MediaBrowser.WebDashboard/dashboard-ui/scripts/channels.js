@@ -74,11 +74,9 @@
 
         var page = this;
 
-        var mdlTabs = page.querySelector('.mdl-tabs');
+        var mdlTabs = page.querySelector('.libraryViewNav');
 
-        componentHandler.upgradeAllRegistered(page);
-
-        libraryBrowser.configurePaperLibraryTabs(page, mdlTabs);
+        libraryBrowser.configurePaperLibraryTabs(page, mdlTabs, page.querySelectorAll('.pageTabContent'));
 
         mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(page, parseInt(e.detail.selectedTabIndex));

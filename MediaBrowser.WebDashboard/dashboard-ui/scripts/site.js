@@ -2004,7 +2004,6 @@ var AppInfo = {};
 
         define("material-design-lite", [bowerPath + "/material-design-lite/material.min", "css!" + bowerPath + "/material-design-lite/material"]);
         define("MaterialSpinner", ["material-design-lite"]);
-        define("MaterialTabs", ["material-design-lite"]);
 
         define("jQuery", [bowerPath + '/jquery/dist/jquery.slim.min'], function () {
 
@@ -2560,7 +2559,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/home.html',
-            dependencies: ['MaterialTabs'],
+            dependencies: [],
             autoFocus: false,
             controller: 'scripts/indexpage'
         });
@@ -2614,7 +2613,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/livetv.html',
-            dependencies: [],
+            dependencies: ['paper-button'],
             autoFocus: false
         });
 
@@ -2729,7 +2728,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/movies.html',
-            dependencies: ['MaterialTabs', 'paper-checkbox', 'paper-fab', 'scripts/alphapicker', 'paper-button'],
+            dependencies: ['paper-checkbox', 'paper-fab', 'scripts/alphapicker', 'paper-button'],
             autoFocus: false,
             controller: 'scripts/moviesrecommended'
         });
@@ -2811,7 +2810,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/nowplaying.html',
-            dependencies: ['MaterialTabs', 'paper-icon-button-light', 'paper-slider', 'paper-button'],
+            dependencies: ['paper-icon-button-light', 'paper-slider', 'paper-button'],
             controller: 'scripts/nowplayingpage',
             autoFocus: false
         });
@@ -2944,7 +2943,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/tv.html',
-            dependencies: ['paper-checkbox', 'paper-button', 'paper-icon-button-light', 'MaterialTabs'],
+            dependencies: ['paper-checkbox', 'paper-icon-button-light', 'paper-button'],
             autoFocus: false,
             controller: 'scripts/tvrecommended'
         });
