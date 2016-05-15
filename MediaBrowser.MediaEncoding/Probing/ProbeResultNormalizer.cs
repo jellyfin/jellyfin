@@ -548,7 +548,8 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private void NormalizeStreamTitle(MediaStream stream)
         {
-            if (string.Equals(stream.Title, "sdh", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(stream.Title, "sdh", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(stream.Title, "cc", StringComparison.OrdinalIgnoreCase))
             {
                 stream.Title = null;
             }
