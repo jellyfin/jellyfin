@@ -204,7 +204,7 @@
             baseUrl += '?topParentId=' + topParentId;
         }
 
-        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'));
+        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'), true);
 
         mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));

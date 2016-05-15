@@ -2281,7 +2281,7 @@ var AppInfo = {};
 
         var baseUrl = 'bower_components/emby-webcomponents/strings/';
 
-        var languages = ['en-US'];
+        var languages = ['en-US', 'kk', 'ru'];
 
         var translations = languages.map(function (i) {
             return {
@@ -2613,7 +2613,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/livetv.html',
-            dependencies: ['paper-button', 'livetvcss', 'paper-checkbox'],
+            dependencies: ['paper-button', 'livetvcss'],
             controller: 'scripts/livetvsuggested',
             autoFocus: false
         });
@@ -2736,7 +2736,8 @@ var AppInfo = {};
 
         defineRoute({
             path: '/music.html',
-            dependencies: [],
+            dependencies: ['scripts/alphapicker'],
+            controller: 'scripts/musicrecommended',
             autoFocus: false
         });
 

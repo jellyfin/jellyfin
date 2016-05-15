@@ -76,7 +76,7 @@
 
         var mdlTabs = page.querySelector('.libraryViewNav');
 
-        libraryBrowser.configurePaperLibraryTabs(page, mdlTabs, page.querySelectorAll('.pageTabContent'));
+        libraryBrowser.configurePaperLibraryTabs(page, mdlTabs, page.querySelectorAll('.pageTabContent'), true);
 
         mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(page, parseInt(e.detail.selectedTabIndex));

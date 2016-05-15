@@ -195,7 +195,6 @@
 
 
 .libraryViewNav {
-    justify-content: center;
     display: flex;
     display: block;
     text-align: center;
@@ -224,7 +223,16 @@
         height: auto;
         min-width: initial;
         line-height: initial;
+        border-radius: 0 !important;
     }
+
+        .libraryViewNav .pageTabButton:hover {
+            background-color: transparent;
+        }
+
+        .libraryViewNav .pageTabButton:active {
+            background-color: rgba(100,100,100, 0.20);
+        }
 
         .libraryViewNav .pageTabButton:focus {
             font-weight: 500 !important;
@@ -234,19 +242,20 @@
             color: #fff !important;
         }
 
-        .libraryViewNav .pageTabButton:before {
+        .libraryViewNav .pageTabButton:after {
             content: '';
             position: absolute;
             left: 0;
             border: 0;
             bottom: 0;
             height: 2px;
-            transition: all .12s cubic-bezier(.4,0,1,1);
+            transition: all .2s cubic-bezier(.4,0,1,1);
             right: 0;
             transform: translateX(-100%);
+            border-radius: 0;
         }
 
-        .libraryViewNav .pageTabButton.is-active:before {
+        .libraryViewNav .pageTabButton.is-active:after {
             transform: none;
             background: #52B54B;
         }
