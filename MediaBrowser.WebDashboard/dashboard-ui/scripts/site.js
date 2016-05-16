@@ -1166,7 +1166,7 @@ var Dashboard = {
             // The native app can handle a little bit more than safari
             if (AppInfo.isNativeApp) {
 
-                quality -= 10;
+                quality -= 5;
 
             } else {
 
@@ -1182,11 +1182,6 @@ var Dashboard = {
         if (AppInfo.hasLowImageBandwidth) {
 
             options.enableImageEnhancers = false;
-        }
-
-        if (AppInfo.forcedImageFormat && options.type != 'Logo') {
-            options.format = AppInfo.forcedImageFormat;
-            options.backgroundColor = '#1c1c1c';
         }
     },
 
@@ -1472,8 +1467,6 @@ var AppInfo = {};
                 AppInfo.enableDetailPageChapters = false;
                 AppInfo.enableDetailsMenuImages = false;
                 AppInfo.enableMovieHomeSuggestions = false;
-
-                AppInfo.forcedImageFormat = 'jpg';
             }
         }
 
@@ -1640,39 +1633,6 @@ var AppInfo = {};
                 });
             });
         });
-    }
-
-    function initFastClick() {
-
-        require(["fastclick"], function (FastClick) {
-
-            FastClick.attach(document.body, {
-                tapDelay: 0
-            });
-
-            function parentWithClass(elem, className) {
-
-                while (!elem.classList || !elem.classList.contains(className)) {
-                    elem = elem.parentNode;
-
-                    if (!elem) {
-                        return null;
-                    }
-                }
-
-                return elem;
-            }
-
-            // Have to work around this issue of fast click breaking the panel dismiss
-            document.body.addEventListener('touchstart', function (e) {
-
-                var tgt = parentWithClass(e.target, 'ui-panel-dismiss');
-                if (tgt) {
-                    $(tgt).click();
-                }
-            });
-        });
-
     }
 
     function setDocumentClasses(browser) {

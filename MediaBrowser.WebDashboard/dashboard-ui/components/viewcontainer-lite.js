@@ -1,6 +1,7 @@
 define(['browser'], function (browser) {
 
     var allPages = document.querySelectorAll('.mainAnimatedPage');
+    var currentUrls = [];
     var pageContainerCount = allPages.length;
     var animationDuration = 500;
     var allowAnimation = true;
@@ -98,6 +99,7 @@ define(['browser'], function (browser) {
                 animate(animatable, previousAnimatable, options.transition, options.isBack).then(function () {
 
                     selectedPageIndex = pageIndex;
+                    currentUrls[pageIndex] = options.url;
                     if (!options.cancel && previousAnimatable) {
                         afterAnimate(allPages, pageIndex);
                     }
@@ -147,7 +149,7 @@ define(['browser'], function (browser) {
     function normalizeNewView(options) {
 
         if (options.view.indexOf('data-role="page"') == -1) {
-            var html = '<div class="page-view" data-type="' + (options.type || '') + '" data-url="' + options.url + '">';
+            var html = '<div class="page-view" data-type="' + (options.type || '') + '">';
             html += options.view;
             html += '</div>';
             return html;
@@ -158,7 +160,7 @@ define(['browser'], function (browser) {
         var elem = parseHtml(options.view, hasScript);
         elem.classList.add('page-view');
         elem.setAttribute('data-type', options.type || '');
-        elem.setAttribute('data-url', options.url);
+
         return {
             elem: elem,
             hasScript: hasScript
@@ -321,21 +323,13 @@ define(['browser'], function (browser) {
     function tryRestoreView(options) {
 
         var url = options.url;
-        var view = document.querySelector(".page-view[data-url='" + url + "']");
-        var page = parentWithClass(view, 'mainAnimatedPage');
+        var index = currentUrls.indexOf(url);
 
-        if (view) {
+        if (index != -1) {
+            var page = allPages[index];
+            var view = page.querySelector(".page-view");
 
-            var index = -1;
-            var pages = allPages;
-            for (var i = 0, length = pages.length; i < length; i++) {
-                if (pages[i] == page) {
-                    index = i;
-                    break;
-                }
-            }
-
-            if (index != -1) {
+            if (view) {
 
                 if (options.cancel) {
                     return;
@@ -377,14 +371,7 @@ define(['browser'], function (browser) {
 
     function reset() {
 
-        var views = document.querySelectorAll(".mainAnimatedPage.hide .page-view");
-
-        for (var i = 0, length = views.length; i < length; i++) {
-
-            var view = views[i];
-            triggerDestroy(view);
-            view.parentNode.removeChild(view);
-        }
+        currentUrls = [];
     }
 
     function parentWithClass(elem, className) {
