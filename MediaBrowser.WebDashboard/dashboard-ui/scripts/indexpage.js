@@ -249,7 +249,7 @@
 
         var mdlTabs = view.querySelector('.libraryViewNav');
 
-        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'), true);
+        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'), [0,1,2,3]);
 
         var tabControllers = [];
         var renderedTabs = [];

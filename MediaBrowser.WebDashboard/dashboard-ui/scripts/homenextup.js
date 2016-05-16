@@ -9,13 +9,9 @@
 
     function loadNextUp(page) {
 
-        var limit = AppInfo.hasLowImageBandwidth ?
-         16 :
-         24;
-
         var query = {
 
-            Limit: limit,
+            Limit: 24,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
             UserId: Dashboard.getCurrentUserId(),
             ImageTypeLimit: 1,

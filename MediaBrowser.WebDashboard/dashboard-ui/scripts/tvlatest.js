@@ -13,16 +13,10 @@
 
         var parentId = params.topParentId;
 
-        var limit = 30;
-
-        if (AppInfo.hasLowImageBandwidth) {
-            limit = 16;
-        }
-
         var options = {
 
             IncludeItemTypes: "Episode",
-            Limit: limit,
+            Limit: 30,
             Fields: "PrimaryImageAspectRatio,SyncInfo",
             ParentId: parentId,
             ImageTypeLimit: 1,
