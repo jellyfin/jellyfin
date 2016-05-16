@@ -2,6 +2,7 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events'], functio
 
     var thresholdX;
     var thresholdY;
+    var windowSize;
 
     function resetThresholds() {
 
@@ -15,25 +16,36 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events'], functio
 
         thresholdX = x;
         thresholdY = y;
+        resetWindowSize();
     }
 
-    resetThresholds();
-
     window.addEventListener("orientationchange", resetThresholds);
+    window.addEventListener('resize', resetThresholds);
     events.on(layoutManager, 'modechange', resetThresholds);
 
     var wheelEvent = (document.implementation.hasFeature('Event.wheel', '3.0') ? 'wheel' : 'mousewheel');
 
-    function isVisible(elem, windowSize) {
+    function resetWindowSize() {
+        windowSize = {
+            innerHeight: window.innerHeight,
+            innerWidth: window.innerWidth
+        };
+    }
+    resetThresholds();
+
+    function isVisible(elem) {
         return visibleinviewport(elem, true, thresholdX, thresholdY, windowSize);
     }
 
     var self = {};
 
-    function fillImage(elem) {
-        var source = elem.getAttribute('data-src');
+    function fillImage(elem, source, enableEffects) {
+
+        if (!source) {
+            source = elem.getAttribute('data-src');
+        }
         if (source) {
-            if (self.enableFade) {
+            if (self.enableFade && enableEffects !== false) {
                 imageFetcher.loadImage(elem, source).then(fadeIn);
             } else {
                 imageFetcher.loadImage(elem, source);
@@ -43,10 +55,6 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events'], functio
     }
 
     function fadeIn(elem) {
-
-        if (elem.classList.contains('noFade')) {
-            return;
-        }
 
         var keyframes = [
           { opacity: '0', offset: 0 },
@@ -93,11 +101,6 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events'], functio
             var anyFound = false;
             var out = false;
 
-            var windowSize = {
-                innerHeight: window.innerHeight,
-                innerWidth: window.innerWidth
-            };
-
             // TODO: This out construct assumes left to right, top to bottom
 
             for (var i = 0, length = images.length; i < length; i++) {
@@ -106,7 +109,7 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events'], functio
                     return;
                 }
                 var img = images[i];
-                if (!out && isVisible(img, windowSize)) {
+                if (!out && isVisible(img)) {
                     anyFound = true;
                     fillImage(img);
                 } else {
@@ -115,6 +118,10 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events'], functio
                         out = true;
                     }
                     remaining.push(img);
+                }
+
+                if (out) {
+                    return;
                 }
             }
 
@@ -157,27 +164,9 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events'], functio
         unveil();
     }
 
-    function fillImages(elems) {
-
-        for (var i = 0, length = elems.length; i < length; i++) {
-            var elem = elems[0];
-            var source = elem.getAttribute('data-src');
-            if (source) {
-                ImageStore.setImageInto(elem, source);
-                elem.setAttribute("data-src", '');
-            }
-        }
-    }
-
     function lazyChildren(elem) {
 
         unveilElements(elem.getElementsByClassName('lazy'));
-    }
-
-    function lazyImage(elem, url) {
-
-        elem.setAttribute('data-src', url);
-        fillImages([elem]);
     }
 
     function getPrimaryImageAspectRatio(items) {
@@ -245,14 +234,8 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events'], functio
         }
     }
 
-    function lazyImage(elem, url) {
-
-        elem.setAttribute('data-src', url);
-        fillImage(elem);
-    }
-
     self.fillImages = fillImages;
-    self.lazyImage = lazyImage;
+    self.lazyImage = fillImage;
     self.lazyChildren = lazyChildren;
     self.getPrimaryImageAspectRatio = getPrimaryImageAspectRatio;
 

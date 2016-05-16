@@ -473,7 +473,9 @@
             });
         });
 
-        LibraryBrowser.renderGenres($('.itemGenres', page), item, null, isStatic);
+        $('.itemGenres', page).each(function() {
+            LibraryBrowser.renderGenres(this, item, null, isStatic);
+        });
         LibraryBrowser.renderStudios($('.itemStudios', page), item, isStatic);
         renderUserDataIcons(page, item);
         LibraryBrowser.renderLinks(page.querySelector('.itemExternalLinks'), item);

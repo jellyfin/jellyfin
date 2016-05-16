@@ -1385,6 +1385,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private QueryResult<BaseItem> GetEmbyRecordings(RecordingQuery query, User user)
         {
+            if (user == null || (query.IsInProgress ?? false))
+            {
+                return new QueryResult<BaseItem>();
+            }
+
             var folders = EmbyTV.EmbyTV.Current.GetRecordingFolders()
                 .SelectMany(i => i.Locations)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -1413,13 +1418,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 return new QueryResult<BaseItem>();
             }
 
-            if (user != null && !(query.IsInProgress ?? false))
+            if (_services.Count == 1)
             {
-                var initialResult = GetEmbyRecordings(query, user);
-                if (initialResult.TotalRecordCount > 0)
-                {
-                    return initialResult;
-                }
+                return GetEmbyRecordings(query, user);
             }
 
             await RefreshRecordings(cancellationToken).ConfigureAwait(false);

@@ -1,49 +1,65 @@
-define(['jQuery'], function ($) {
+define(['browser'], function (browser) {
 
-    var pageContainerCount;
+    var allPages = document.querySelectorAll('.mainAnimatedPage');
+    var pageContainerCount = allPages.length;
     var animationDuration = 500;
+    var allowAnimation = true;
+    var selectedPageIndex = -1;
+
+    function enableAnimation() {
+
+        if (!allowAnimation) {
+            return false;
+        }
+        if (browser.tv) {
+            return false;
+        }
+
+        return true;
+    }
 
     function loadView(options) {
 
+        if (options.cancel) {
+            return;
+        }
+
+        cancelActiveAnimations();
+
+        var selected = getSelectedIndex(allPages);
+        var previousAnimatable = selected == -1 ? null : allPages[selected];
+        var pageIndex = selected + 1;
+
+        if (pageIndex >= pageContainerCount) {
+            pageIndex = 0;
+        }
+
+        var newViewInfo = normalizeNewView(options);
+        var newView = newViewInfo.elem;
+
+        var dependencies = typeof (newView) == 'string' ? null : newView.getAttribute('data-require');
+        dependencies = dependencies ? dependencies.split(',') : [];
+
+        var isPluginpage = options.url.toLowerCase().indexOf('/configurationpage?') != -1;
+
+        if (isPluginpage) {
+            dependencies.push('jqmpopup');
+            dependencies.push('jqmcollapsible');
+            dependencies.push('jqmcheckbox');
+            dependencies.push('legacy/dashboard');
+            dependencies.push('legacy/selectmenu');
+            dependencies.push('jqmcontrolgroup');
+        }
+
+        if (isPluginpage || (newView.classList && newView.classList.contains('type-interior'))) {
+            dependencies.push('jqmlistview');
+            dependencies.push('scripts/notifications');
+        }
+
         return new Promise(function (resolve, reject) {
 
-            var animatedPages = document.querySelector('.mainAnimatedPages');
-
-            if (options.cancel) {
-                return;
-            }
-
-            var selected = getSelectedIndex(animatedPages);
-            var pageIndex = selected + 1;
-
-            if (pageIndex >= pageContainerCount) {
-                pageIndex = 0;
-            }
-
-            var newViewInfo = normalizeNewView(options);
-            var newView = newViewInfo.elem;
-
-            var dependencies = typeof (newView) == 'string' ? null : newView.getAttribute('data-require');
-            dependencies = dependencies ? dependencies.split(',') : [];
-
-            var isPluginpage = options.url.toLowerCase().indexOf('/configurationpage?') != -1;
-
-            if (isPluginpage) {
-                dependencies.push('jqmpopup');
-                dependencies.push('jqmcollapsible');
-                dependencies.push('jqmcheckbox');
-                dependencies.push('legacy/dashboard');
-                dependencies.push('legacy/selectmenu');
-                dependencies.push('jqmcontrolgroup');
-            }
-
-            if (isPluginpage || (newView.classList && newView.classList.contains('type-interior'))) {
-                dependencies.push('jqmlistview');
-                dependencies.push('scripts/notifications');
-            }
-
             require(dependencies, function () {
-                var allPages = animatedPages.querySelectorAll('.mainAnimatedPage');
+
                 var animatable = allPages[pageIndex];
 
                 var currentPage = animatable.querySelector('.page-view');
@@ -52,37 +68,45 @@ define(['jQuery'], function ($) {
                     triggerDestroy(currentPage);
                 }
 
-                for (var i = 0, length = allPages.length; i < length; i++) {
-                    if (pageIndex == i) {
-                        allPages[i].classList.remove('hide');
-                    } else {
-                        allPages[i].classList.add('hide');
-                    }
-                }
+                var view;
 
                 if (typeof (newView) == 'string') {
                     animatable.innerHTML = newView;
+                    view = animatable.querySelector('.page-view');
                 } else {
-                    animatable.innerHTML = '';
                     if (newViewInfo.hasScript) {
                         // TODO: figure this out without jQuery
+                        animatable.innerHTML = '';
                         $(newView).appendTo(animatable);
                     } else {
-                        animatable.appendChild(newView);
+                        if (currentPage) {
+                            animatable.replaceChild(newView, currentPage);
+                        } else {
+                            animatable.appendChild(newView);
+                        }
                     }
                     enhanceNewView(dependencies, newView);
+                    view = newView;
                 }
-
-                var view = animatable.querySelector('.page-view');
 
                 if (onBeforeChange) {
                     onBeforeChange(view, false, options);
                 }
 
-                $.mobile = $.mobile || {};
-                $.mobile.activePage = view;
+                beforeAnimate(allPages, pageIndex, selected);
+                // animate here
+                animate(animatable, previousAnimatable, options.transition, options.isBack).then(function () {
 
-                resolve(view);
+                    selectedPageIndex = pageIndex;
+                    if (!options.cancel && previousAnimatable) {
+                        afterAnimate(allPages, pageIndex);
+                    }
+
+                    $.mobile = $.mobile || {};
+                    $.mobile.activePage = view;
+
+                    resolve(view);
+                });
             });
         });
     }
@@ -141,86 +165,210 @@ define(['jQuery'], function ($) {
         };
     }
 
+    function beforeAnimate(allPages, newPageIndex, oldPageIndex) {
+        for (var i = 0, length = allPages.length; i < length; i++) {
+            if (newPageIndex == i || oldPageIndex == i) {
+                //allPages[i].classList.remove('hide');
+            } else {
+                allPages[i].classList.add('hide');
+            }
+        }
+    }
+
+    function afterAnimate(allPages, newPageIndex) {
+        for (var i = 0, length = allPages.length; i < length; i++) {
+            if (newPageIndex == i) {
+                //allPages[i].classList.remove('hide');
+            } else {
+                allPages[i].classList.add('hide');
+            }
+        }
+    }
+
+    function animate(newAnimatedPage, oldAnimatedPage, transition, isBack) {
+
+        if (enableAnimation() && newAnimatedPage.animate) {
+            if (transition == 'slide') {
+                return slide(newAnimatedPage, oldAnimatedPage, transition, isBack);
+            } else if (transition == 'fade') {
+                return fade(newAnimatedPage, oldAnimatedPage, transition, isBack);
+            }
+        }
+
+        return nullAnimation(newAnimatedPage, oldAnimatedPage, transition, isBack);
+    }
+
+    function nullAnimation(newAnimatedPage, oldAnimatedPage, transition, isBack) {
+
+        newAnimatedPage.classList.remove('hide');
+        return Promise.resolve();
+    }
+
+    function slide(newAnimatedPage, oldAnimatedPage, transition, isBack) {
+
+        var timings = {
+            duration: 450,
+            iterations: 1,
+            easing: 'ease-out',
+            fill: 'both'
+        }
+
+        var animations = [];
+
+        if (oldAnimatedPage) {
+            var destination = isBack ? '100%' : '-100%';
+
+            animations.push(oldAnimatedPage.animate([
+
+              { transform: 'none', offset: 0 },
+              { transform: 'translate3d(' + destination + ', 0, 0)', offset: 1 }
+
+            ], timings));
+        }
+
+        newAnimatedPage.classList.remove('hide');
+
+        var start = isBack ? '-100%' : '100%';
+
+        animations.push(newAnimatedPage.animate([
+
+          { transform: 'translate3d(' + start + ', 0, 0)', offset: 0 },
+          { transform: 'none', offset: 1 }
+
+        ], timings));
+
+        currentAnimations = animations;
+
+        return new Promise(function (resolve, reject) {
+            animations[animations.length - 1].onfinish = resolve;
+        });
+    }
+
+    function fade(newAnimatedPage, oldAnimatedPage, transition, isBack) {
+
+        var timings = {
+            duration: animationDuration,
+            iterations: 1,
+            easing: 'ease-out',
+            fill: 'both'
+        }
+
+        var animations = [];
+
+        if (oldAnimatedPage) {
+            animations.push(oldAnimatedPage.animate([
+
+              { opacity: 1, offset: 0 },
+              { opacity: 0, offset: 1 }
+
+            ], timings));
+        }
+
+        newAnimatedPage.classList.remove('hide');
+
+        animations.push(newAnimatedPage.animate([
+
+              { opacity: 0, offset: 0 },
+              { opacity: 1, offset: 1 }
+
+        ], timings));
+
+        currentAnimations = animations;
+
+        return new Promise(function (resolve, reject) {
+            animations[animations.length - 1].onfinish = resolve;
+        });
+    }
+
+    var currentAnimations = [];
+    function cancelActiveAnimations() {
+
+        var animations = currentAnimations;
+        for (var i = 0, length = animations.length; i < length; i++) {
+            cancelAnimation(animations[i]);
+        }
+    }
+
+    function cancelAnimation(animation) {
+
+        try {
+            animation.cancel();
+        } catch (err) {
+            console.log('Error canceling animation: ' + err);
+        }
+    }
+
     var onBeforeChange;
     function setOnBeforeChange(fn) {
         onBeforeChange = fn;
     }
 
-    function getSelectedIndex(animatedPages) {
-        var allPages = animatedPages.querySelectorAll('.mainAnimatedPage');
-        for (var i = 0, length = allPages.length; i < length; i++) {
-            if (!allPages[i].classList.contains('hide')) {
-                return i;
-            }
-        }
+    function sendResolve(resolve, view) {
 
-        return -1;
+        // Don't report completion until the animation has finished, otherwise rendering may not perform well
+        setTimeout(function () {
+
+            resolve(view);
+
+        }, animationDuration);
     }
 
-    function replaceAnimatedPages() {
-        var elem = document.querySelector('neon-animated-pages.mainAnimatedPages');
+    function getSelectedIndex(allPages) {
 
-        if (elem) {
-            var div = document.createElement('div');
-            div.classList.add('mainAnimatedPages');
-            div.classList.add('skinBody');
-            div.innerHTML = '<div class="mainAnimatedPage hide"></div><div class="mainAnimatedPage hide"></div><div class="mainAnimatedPage hide"></div>';
-            elem.parentNode.replaceChild(div, elem);
-        }
-
-        pageContainerCount = document.querySelectorAll('.mainAnimatedPage').length;
+        return selectedPageIndex;
     }
 
     function tryRestoreView(options) {
-        return new Promise(function (resolve, reject) {
 
-            var url = options.url;
-            var view = document.querySelector(".page-view[data-url='" + url + "']");
-            var page = parentWithClass(view, 'mainAnimatedPage');
+        var url = options.url;
+        var view = document.querySelector(".page-view[data-url='" + url + "']");
+        var page = parentWithClass(view, 'mainAnimatedPage');
 
-            if (view) {
+        if (view) {
 
-                var index = -1;
-                var pages = document.querySelectorAll('.mainAnimatedPage');
-                for (var i = 0, length = pages.length; i < length; i++) {
-                    if (pages[i] == page) {
-                        index = i;
-                        break;
-                    }
+            var index = -1;
+            var pages = allPages;
+            for (var i = 0, length = pages.length; i < length; i++) {
+                if (pages[i] == page) {
+                    index = i;
+                    break;
                 }
-                if (index != -1) {
+            }
 
-                    var animatedPages = document.querySelector('.mainAnimatedPages');
-                    if (options.cancel) {
-                        return;
-                    }
+            if (index != -1) {
 
-                    var allPages = animatedPages.querySelectorAll('.mainAnimatedPage');
-                    var animatable = allPages[index];
-                    var view = animatable.querySelector('.page-view');
+                if (options.cancel) {
+                    return;
+                }
 
-                    if (onBeforeChange) {
-                        onBeforeChange(view, true, options);
-                    }
+                cancelActiveAnimations();
 
-                    for (var i = 0, length = allPages.length; i < length; i++) {
-                        if (index == i) {
-                            allPages[i].classList.remove('hide');
-                        } else {
-                            allPages[i].classList.add('hide');
-                        }
+                var animatable = allPages[index];
+                var selected = getSelectedIndex(allPages);
+                var previousAnimatable = selected == -1 ? null : allPages[selected];
+
+                if (onBeforeChange) {
+                    onBeforeChange(view, true, options);
+                }
+
+                beforeAnimate(allPages, index, selected);
+
+                return animate(animatable, previousAnimatable, options.transition, options.isBack).then(function () {
+
+                    selectedPageIndex = index;
+                    if (!options.cancel && previousAnimatable) {
+                        afterAnimate(allPages, index);
                     }
 
                     $.mobile = $.mobile || {};
                     $.mobile.activePage = view;
 
-                    resolve(view);
-                    return;
-                }
+                    return view;
+                });
             }
+        }
 
-            reject();
-        });
+        return Promise.reject();
     }
 
     function triggerDestroy(view) {
@@ -252,12 +400,18 @@ define(['jQuery'], function ($) {
         return elem;
     }
 
-    replaceAnimatedPages();
+    function init(isAnimationAllowed) {
+
+        if (allowAnimation && enableAnimation() && !browser.animate) {
+            require(['webAnimations']);
+        }
+    }
 
     return {
         loadView: loadView,
         tryRestoreView: tryRestoreView,
         reset: reset,
-        setOnBeforeChange: setOnBeforeChange
+        setOnBeforeChange: setOnBeforeChange,
+        init: init
     };
 });

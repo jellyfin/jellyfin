@@ -1822,6 +1822,7 @@ var AppInfo = {};
         define("libjass", [bowerPath + "/libjass/libjass", "css!" + bowerPath + "/libjass/libjass"], returnFirstDependency);
 
         define("recordingCreator", [embyWebComponentsBowerPath + "/recordingcreator/recordingcreator"], returnFirstDependency);
+        define("recordingEditor", [embyWebComponentsBowerPath + "/recordingcreator/recordingeditor"], returnFirstDependency);
         define("mediaInfo", [embyWebComponentsBowerPath + "/mediainfo/mediainfo"], returnFirstDependency);
         define("backdrop", [embyWebComponentsBowerPath + "/backdrop/backdrop"], returnFirstDependency);
         define("fetchHelper", [embyWebComponentsBowerPath + "/fetchhelper"], returnFirstDependency);
@@ -3102,7 +3103,7 @@ var AppInfo = {};
         loadTheme();
 
         if (browserInfo.safari && browserInfo.mobile) {
-            initFastClick();
+            //initFastClick();
         }
 
         if (Dashboard.isRunningInCordova()) {
