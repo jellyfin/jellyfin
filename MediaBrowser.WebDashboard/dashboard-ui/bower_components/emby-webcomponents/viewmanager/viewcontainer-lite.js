@@ -3,7 +3,6 @@ define(['browser'], function (browser) {
     var allPages = document.querySelectorAll('.mainAnimatedPage');
     var currentUrls = [];
     var pageContainerCount = allPages.length;
-    var animationDuration = 500;
     var allowAnimation = true;
     var selectedPageIndex = -1;
 
@@ -154,7 +153,7 @@ define(['browser'], function (browser) {
     function fade(newAnimatedPage, oldAnimatedPage, transition, isBack) {
 
         var timings = {
-            duration: animationDuration,
+            duration: 200,
             iterations: 1,
             easing: 'ease-out',
             fill: 'both'
@@ -208,16 +207,6 @@ define(['browser'], function (browser) {
     var onBeforeChange;
     function setOnBeforeChange(fn) {
         onBeforeChange = fn;
-    }
-
-    function sendResolve(resolve, view) {
-
-        // Don't report completion until the animation has finished, otherwise rendering may not perform well
-        setTimeout(function () {
-
-            resolve(view);
-
-        }, animationDuration);
     }
 
     function getSelectedIndex(allPages) {
@@ -275,31 +264,14 @@ define(['browser'], function (browser) {
         currentUrls = [];
     }
 
-    function parentWithClass(elem, className) {
-
-        while (!elem.classList || !elem.classList.contains(className)) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
-    }
-
-    function init(isAnimationAllowed) {
-
-        if (allowAnimation && enableAnimation() && !browser.animate) {
-            require(['webAnimations']);
-        }
+    if (enableAnimation() && !browser.animate) {
+        require(['webAnimations']);
     }
 
     return {
         loadView: loadView,
         tryRestoreView: tryRestoreView,
         reset: reset,
-        setOnBeforeChange: setOnBeforeChange,
-        init: init
+        setOnBeforeChange: setOnBeforeChange
     };
 });

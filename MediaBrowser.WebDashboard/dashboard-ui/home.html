@@ -7,7 +7,7 @@
         <button class="pageTabButton" data-index="3">${TabUpcoming}</button>
     </div>
     <div class="is-active pageTabContent ehsContent" id="homeTab" data-index="0">
-        <div class="ui-bar-b readOnlyContent welcomeMessage" style="display: none; padding: 2em; border-radius: 10px; margin: 2em auto; font-weight: normal;">
+        <div class="ui-bar-b readOnlyContent welcomeMessage hide" style="padding: 2em; border-radius: 10px; margin: 2em auto; font-weight: normal;">
             <h1 style="margin-top: 0;" class="tourHeader"></h1>
             <p>
                 <paper-button raised class="submit block btnTakeTour"><iron-icon icon="check"></iron-icon><span class="tourButtonText"></span></paper-button>
@@ -25,7 +25,7 @@
             <div id="nextUpItems" class="itemsContainer">
             </div>
         </div>
-        <p class="noNextUpItems" style="display: none;">${NoNextUpItemsMessage}</p>
+        <p class="noNextUpItems hide">${NoNextUpItemsMessage}</p>
     </div>
     <div class="pageTabContent ehsContent" id="favoritesTab" data-index="2">
         <div class="favoriteSections"></div>
@@ -33,7 +33,7 @@
     <div class="pageTabContent ehsContent" id="upcomingTab" data-index="3">
         <div id="upcomingItems" class="itemsContainer">
         </div>
-        <div class="noItemsMessage" style="display: none;">
+        <div class="noItemsMessage hide">
             <p>${MessageNothingHere}</p>
             <p>
                 <a href="metadata.html">${MessagePleaseEnsureInternetMetadata}</a>

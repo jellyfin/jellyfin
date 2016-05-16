@@ -28,6 +28,33 @@
         });
     }
 
+    function animateSelectionBar(button) {
+
+        var elem = button.querySelector('.pageTabButtonSelectionBar');
+
+        var keyframes = [
+          { transform: 'translate3d(-100%, 0, 0)', offset: 0 },
+          { transform: 'none', offset: 1 }];
+
+        if (!elem.animate) {
+            return;
+        }
+        elem.animate(keyframes, {
+            duration: 160,
+            iterations: 1,
+            easing: 'ease-out'
+        });
+    }
+
+    function animateTabOnShow(newPanel, animateTabs, index) {
+        
+        if (animateTabs && animateTabs.indexOf(index) != -1 && /*browserInfo.animate &&*/ newPanel.animate) {
+            setTimeout(function () {
+                fadeInRight(newPanel);
+            }, 160);
+        }
+    }
+
     var libraryBrowser = (function (window, document, screen) {
 
         // Regular Expressions for parsing tags and attributes
@@ -248,10 +275,11 @@
 
                 var buttons = tabs.querySelectorAll('.pageTabButton');
                 for (var i = 0, length = buttons.length; i < length; i++) {
-                    buttons[i].classList.add('mdl-button');
-                    buttons[i].classList.add('mdl-js-button');
-                    buttons[i].classList.add('mdl-js-ripple-effect');
-                    componentHandler.upgradeElement(buttons[i], 'MaterialButton');
+                    //buttons[i].classList.add('mdl-button');
+                    //buttons[i].classList.add('mdl-js-button');
+                    var div = document.createElement('div');
+                    div.classList.add('pageTabButtonSelectionBar');
+                    buttons[i].appendChild(div);
                 }
 
                 tabs.classList.add('hiddenScrollX');
@@ -269,12 +297,11 @@
                         }
 
                         link.classList.add('is-active');
+                        animateSelectionBar(link);
                         var index = parseInt(link.getAttribute('data-index'));
                         var newPanel = panels[index];
 
-                        if (animateTabs && animateTabs.indexOf(index) != -1 && /*browserInfo.animate &&*/ newPanel.animate) {
-                            fadeInRight(newPanel);
-                        }
+                        animateTabOnShow(newPanel, animateTabs, index);
 
                         // If toCenter is called syncronously within the click event, it sometimes ends up canceling it
                         setTimeout(function () {
@@ -288,7 +315,7 @@
                             newPanel.classList.add('is-active');
 
                             //scrollHelper.toCenter(tabs, link, true);
-                        }, 100);
+                        }, 160);
                     }
                 });
 
