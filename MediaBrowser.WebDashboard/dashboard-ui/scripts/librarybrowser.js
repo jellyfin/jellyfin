@@ -793,9 +793,10 @@
 
             editTimer: function (id) {
 
-                require(['components/recordingeditor/recordingeditor'], function (recordingeditor) {
+                require(['recordingEditor'], function (recordingEditor) {
 
-                    recordingeditor.show(id);
+                    var serverId = ApiClient.serverInfo().Id;
+                    recordingEditor.show(id, serverId);
                 });
             },
 
@@ -3343,7 +3344,7 @@
                     }
                 }
 
-                elem.html(html).trigger('create');
+                elem.innerHTML = html;
             },
 
             renderPremiereDate: function (elem, item) {

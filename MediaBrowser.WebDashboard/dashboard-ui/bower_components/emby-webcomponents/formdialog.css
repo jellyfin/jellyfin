@@ -15,7 +15,7 @@
         margin-left: .75em;
     }
 
-    .formDialog form {
+    .formDialog .centeredContent {
         margin: 0 auto;
     }
 
@@ -25,16 +25,19 @@
 
     .formDialog .dialogContentInner {
         padding-bottom: 10vh;
-        padding-top: 1em;
     }
 
 .layout-tv .formDialog .dialogContentInner {
     padding-bottom: 50vh;
 }
 
+.formDialog .centeredContent {
+    max-width: 700px;
+}
+
 @media all and (min-width: 1000px) {
 
-    .formDialog form {
+    .layout-tv .formDialog .centeredContent {
         max-width: 70vw;
     }
 }

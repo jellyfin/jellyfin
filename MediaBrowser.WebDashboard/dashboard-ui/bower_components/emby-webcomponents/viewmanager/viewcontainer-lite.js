@@ -1,6 +1,7 @@
 define(['browser'], function (browser) {
 
     var allPages = document.querySelectorAll('.mainAnimatedPage');
+    var currentUrls = [];
     var pageContainerCount = allPages.length;
     var animationDuration = 500;
     var allowAnimation = true;
@@ -39,7 +40,6 @@ define(['browser'], function (browser) {
         if (options.type) {
             view.setAttribute('data-type', options.type);
         }
-        view.setAttribute('data-url', options.url);
         view.innerHTML = options.view;
 
         var animatable = allPages[pageIndex];
@@ -63,6 +63,7 @@ define(['browser'], function (browser) {
         return animate(animatable, previousAnimatable, options.transition, options.isBack).then(function () {
 
             selectedPageIndex = pageIndex;
+            currentUrls[pageIndex] = options.url;
             if (!options.cancel && previousAnimatable) {
                 afterAnimate(allPages, pageIndex);
             }
@@ -225,22 +226,15 @@ define(['browser'], function (browser) {
     }
 
     function tryRestoreView(options) {
+
         var url = options.url;
-        var view = document.querySelector(".page-view[data-url='" + url + "']");
-        var page = parentWithClass(view, 'mainAnimatedPage');
+        var index = currentUrls.indexOf(url);
 
-        if (view) {
+        if (index != -1) {
+            var page = allPages[index];
+            var view = page.querySelector(".page-view");
 
-            var index = -1;
-            var pages = allPages;
-            for (var i = 0, length = pages.length; i < length; i++) {
-                if (pages[i] == page) {
-                    index = i;
-                    break;
-                }
-            }
-
-            if (index != -1) {
+            if (view) {
 
                 if (options.cancel) {
                     return;
@@ -278,14 +272,7 @@ define(['browser'], function (browser) {
 
     function reset() {
 
-        var views = document.querySelectorAll(".mainAnimatedPage.hide .page-view");
-
-        for (var i = 0, length = views.length; i < length; i++) {
-
-            var view = views[i];
-            triggerDestroy(view);
-            view.parentNode.removeChild(view);
-        }
+        currentUrls = [];
     }
 
     function parentWithClass(elem, className) {

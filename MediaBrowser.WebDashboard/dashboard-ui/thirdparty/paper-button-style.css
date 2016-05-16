@@ -36,11 +36,11 @@
     }
 
     paper-button.submit {
-        color: #4285f4;
+        color: #52B54B;
     }
 
     paper-button[raised].submit {
-        background: #4285f4;
+        background: #52B54B;
         color: #fff;
     }
 
@@ -54,11 +54,11 @@
     }
 
     paper-button.secondary {
-        color: #52B54B;
+        color: #4285f4;
     }
 
     paper-button[raised].secondary {
-        background: #52B54B;
+        background: #4285f4;
         color: #fff;
     }
 
