@@ -243,7 +243,7 @@
 
                 function fadeInRight(elem) {
 
-                    var pct = browserInfo.mobile ? '1%' : '0.5%';
+                    var pct = browserInfo.mobile ? '1.5%' : '0.5%';
 
                     var keyframes = [
                       { opacity: '0', transform: 'translate3d(' + pct + ', 0, 0)', offset: 0 },
@@ -3390,9 +3390,8 @@
                         tag: item.BackdropImageTags[0]
                     });
 
-                    itemBackdropElement.classList.add('noFade');
                     itemBackdropElement.classList.remove('noBackdrop');
-                    ImageLoader.lazyImage(itemBackdropElement, imgUrl);
+                    ImageLoader.lazyImage(itemBackdropElement, imgUrl, false);
                     hasbackdrop = true;
                 }
                 else if (item.ParentBackdropItemId && item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
@@ -3404,9 +3403,8 @@
                         maxWidth: screenWidth
                     });
 
-                    itemBackdropElement.classList.add('noFade');
                     itemBackdropElement.classList.remove('noBackdrop');
-                    ImageLoader.lazyImage(itemBackdropElement, imgUrl);
+                    ImageLoader.lazyImage(itemBackdropElement, imgUrl, false);
                     hasbackdrop = true;
                 }
                 else {

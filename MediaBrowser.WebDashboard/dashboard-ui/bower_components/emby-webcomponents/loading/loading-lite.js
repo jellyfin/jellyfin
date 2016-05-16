@@ -1,12 +1,16 @@
 define(['MaterialSpinner', 'css!./loading'], function () {
 
+    var loadingElem;
+
     return {
         show: function () {
-            var elem = document.querySelector('.docspinner');
+            var elem = loadingElem;
 
             if (!elem) {
 
                 elem = document.createElement("div");
+                loadingElem = elem;
+
                 elem.classList.add('docspinner');
                 elem.classList.add('mdl-spinner');
                 elem.classList.add('mdl-js-spinner');
@@ -19,7 +23,7 @@ define(['MaterialSpinner', 'css!./loading'], function () {
             elem.classList.remove('loadingHide');
         },
         hide: function () {
-            var elem = document.querySelector('.docspinner');
+            var elem = loadingElem;
 
             if (elem) {
 

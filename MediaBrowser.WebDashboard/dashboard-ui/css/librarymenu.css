@@ -250,7 +250,7 @@
             height: 2px;
             transition: all .2s cubic-bezier(.4,0,1,1);
             right: 0;
-            transform: translateX(-100%);
+            transform: translate3d(-100%, 0, 0);
             border-radius: 0;
             z-index: 1;
         }

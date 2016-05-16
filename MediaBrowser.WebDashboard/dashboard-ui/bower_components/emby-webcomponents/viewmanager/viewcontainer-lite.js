@@ -4,6 +4,7 @@ define(['browser'], function (browser) {
     var pageContainerCount = allPages.length;
     var animationDuration = 500;
     var allowAnimation = true;
+    var selectedPageIndex = -1;
 
     function enableAnimation() {
 
@@ -33,9 +34,13 @@ define(['browser'], function (browser) {
             pageIndex = 0;
         }
 
-        var html = '<div class="page-view" data-type="' + (options.type || '') + '" data-url="' + options.url + '">';
-        html += options.view;
-        html += '</div>';
+        var view = document.createElement('div');
+        view.classList.add('page-view');
+        if (options.type) {
+            view.setAttribute('data-type', options.type);
+        }
+        view.setAttribute('data-url', options.url);
+        view.innerHTML = options.view;
 
         var animatable = allPages[pageIndex];
 
@@ -43,11 +48,10 @@ define(['browser'], function (browser) {
 
         if (currentPage) {
             triggerDestroy(currentPage);
+            animatable.replaceChild(view, currentPage);
+        } else {
+            animatable.appendChild(view);
         }
-
-        animatable.innerHTML = html;
-
-        var view = animatable.querySelector('.page-view');
 
         if (onBeforeChange) {
             onBeforeChange(view, false, options);
@@ -58,6 +62,7 @@ define(['browser'], function (browser) {
         // animate here
         return animate(animatable, previousAnimatable, options.transition, options.isBack).then(function () {
 
+            selectedPageIndex = pageIndex;
             if (!options.cancel && previousAnimatable) {
                 afterAnimate(allPages, pageIndex);
             }
@@ -122,7 +127,7 @@ define(['browser'], function (browser) {
             animations.push(oldAnimatedPage.animate([
 
               { transform: 'none', offset: 0 },
-              { transform: 'translateX(' + destination + ')', offset: 1 }
+              { transform: 'translate3d(' + destination + ', 0, 0)', offset: 1 }
 
             ], timings));
         }
@@ -133,7 +138,7 @@ define(['browser'], function (browser) {
 
         animations.push(newAnimatedPage.animate([
 
-          { transform: 'translateX(' + start + ')', offset: 0 },
+          { transform: 'translate3d(' + start + ', 0, 0)', offset: 0 },
           { transform: 'none', offset: 1 }
 
         ], timings));
@@ -215,13 +220,8 @@ define(['browser'], function (browser) {
     }
 
     function getSelectedIndex(allPages) {
-        for (var i = 0, length = allPages.length; i < length; i++) {
-            if (!allPages[i].classList.contains('hide')) {
-                return i;
-            }
-        }
 
-        return -1;
+        return selectedPageIndex;
     }
 
     function tryRestoreView(options) {
@@ -232,7 +232,7 @@ define(['browser'], function (browser) {
         if (view) {
 
             var index = -1;
-            var pages = document.querySelectorAll('.mainAnimatedPage');
+            var pages = allPages;
             for (var i = 0, length = pages.length; i < length; i++) {
                 if (pages[i] == page) {
                     index = i;
@@ -251,7 +251,6 @@ define(['browser'], function (browser) {
                 var animatable = allPages[index];
                 var selected = getSelectedIndex(allPages);
                 var previousAnimatable = selected == -1 ? null : allPages[selected];
-                var view = animatable.querySelector('.page-view');
 
                 if (onBeforeChange) {
                     onBeforeChange(view, true, options);
@@ -261,6 +260,7 @@ define(['browser'], function (browser) {
 
                 return animate(animatable, previousAnimatable, options.transition, options.isBack).then(function () {
 
+                    selectedPageIndex = index;
                     if (!options.cancel && previousAnimatable) {
                         afterAnimate(allPages, index);
                     }

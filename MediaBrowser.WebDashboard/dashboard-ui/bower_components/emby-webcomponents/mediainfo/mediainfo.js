@@ -360,9 +360,11 @@ define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html',
 
     function afterFill(elem, item, options) {
 
-        var endsAtElem = elem.querySelector('.endsAt');
-        if (endsAtElem) {
-            dynamicEndTime(endsAtElem, item);
+        if (options.endsAt !== false) {
+            var endsAtElem = elem.querySelector('.endsAt');
+            if (endsAtElem) {
+                dynamicEndTime(endsAtElem, item);
+            }
         }
 
         var lnkChannel = elem.querySelector('.lnkChannel');
