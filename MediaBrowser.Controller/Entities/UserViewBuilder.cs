@@ -444,7 +444,10 @@ namespace MediaBrowser.Controller.Entities
                 query.ParentId = parent.Id;
                 query.SetUser(user);
 
-                query.IncludeItemTypes = new[] { typeof(Movie).Name, typeof(BoxSet).Name };
+                if (query.IncludeItemTypes.Length == 0)
+                {
+                    query.IncludeItemTypes = new[] { typeof(Movie).Name, typeof(BoxSet).Name };
+                }
 
                 return _libraryManager.GetItemsResult(query);
             }
@@ -601,7 +604,10 @@ namespace MediaBrowser.Controller.Entities
                 query.ParentId = parent.Id;
                 query.SetUser(user);
 
-                query.IncludeItemTypes = new[] { typeof(Series).Name, typeof(Season).Name, typeof(Episode).Name };
+                if (query.IncludeItemTypes.Length == 0)
+                {
+                    query.IncludeItemTypes = new[] { typeof(Series).Name, typeof(Season).Name, typeof(Episode).Name };
+                }
 
                 return _libraryManager.GetItemsResult(query);
             }
