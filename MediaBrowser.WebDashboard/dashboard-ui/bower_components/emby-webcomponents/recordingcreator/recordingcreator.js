@@ -388,7 +388,7 @@
 
                     if (recordingCreated) {
                         require(['toast'], function (toast) {
-                            toast(globalize.translate('RecordingScheduled'));
+                            toast(globalize.translate('sharedcomponents#RecordingScheduled'));
                         });
                         resolve();
                     } else {

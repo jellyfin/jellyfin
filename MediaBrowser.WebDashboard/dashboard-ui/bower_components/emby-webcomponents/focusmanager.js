@@ -305,13 +305,7 @@ define([], function () {
         return intersectsInternal(a1, a2, b1, b2) || intersectsInternal(b1, b2, a1, a2);
     }
 
-    var enableDebugInfo = false;
-
     function getNearestElements(elementInfos, options, direction) {
-
-        if (enableDebugInfo) {
-            removeAll();
-        }
 
         // Get elements and work out x/y points
         var cache = [],
@@ -379,10 +373,6 @@ define([], function () {
                     break;
             }
 
-            if (enableDebugInfo) {
-                addDebugInfo(elem, distX, distY);
-            }
-
             var distT = Math.sqrt(distX * distX + distY * distY);
             var distT2 = Math.sqrt(distX2 * distX2 + distY2 * distY2);
 
@@ -403,36 +393,6 @@ define([], function () {
         //}
 
         return cache;
-    }
-
-    function addDebugInfo(elem, distX, distY) {
-
-        var div = elem.querySelector('focusInfo');
-
-        if (!div) {
-            div = document.createElement('div');
-            div.classList.add('focusInfo');
-            elem.appendChild(div);
-
-            if (getComputedStyle(elem, null).getPropertyValue('position') == 'static') {
-                elem.style.position = 'relative';
-            }
-            div.style.position = 'absolute';
-            div.style.left = '0';
-            div.style.top = '0';
-            div.style.color = 'white';
-            div.style.backgroundColor = 'red';
-            div.style.padding = '2px';
-        }
-
-        div.innerHTML = Math.round(distX) + ',' + Math.round(distY);
-    }
-
-    function removeAll() {
-        var elems = document.querySelectorAll('.focusInfo');
-        for (var i = 0, length = elems.length; i < length; i++) {
-            elems[i].parentNode.removeChild(elems[i]);
-        }
     }
 
     function sortNodesX(a, b) {

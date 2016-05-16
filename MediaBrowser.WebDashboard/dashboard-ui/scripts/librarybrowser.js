@@ -225,7 +225,7 @@
                 });
             },
 
-            configurePaperLibraryTabs: function (ownerpage, tabs, panels) {
+            configurePaperLibraryTabs: function (ownerpage, tabs, panels, animate) {
 
                 if (!browserInfo.safari) {
                     LibraryBrowser.configureSwipeTabs(ownerpage, tabs);
@@ -235,13 +235,15 @@
                 for (var i = 0, length = buttons.length; i < length; i++) {
                     buttons[i].classList.add('mdl-button');
                     buttons[i].classList.add('mdl-js-button');
+                    buttons[i].classList.add('mdl-js-ripple-effect');
+                    componentHandler.upgradeElement(buttons[i], 'MaterialButton');
                 }
 
                 tabs.classList.add('hiddenScrollX');
 
                 function fadeInRight(elem) {
 
-                    var pct = browserInfo.mobile ? '1%' : '0.5%';
+                    var pct = browserInfo.mobile ? '1.5%' : '0.5%';
 
                     var keyframes = [
                       { opacity: '0', transform: 'translate3d(' + pct + ', 0, 0)', offset: 0 },
@@ -275,9 +277,9 @@
 
                         panels[index].classList.add('is-active');
 
-                        //if (browserInfo.animate) {
-                        //    fadeInRight(panels[index]);
-                        //}
+                        if (browserInfo.animate && animate) {
+                            fadeInRight(panels[index]);
+                        }
 
                         // If toCenter is called syncronously within the click event, it sometimes ends up canceling it
                         //setTimeout(function() {
@@ -791,9 +793,10 @@
 
             editTimer: function (id) {
 
-                require(['components/recordingeditor/recordingeditor'], function (recordingeditor) {
+                require(['recordingEditor'], function (recordingEditor) {
 
-                    recordingeditor.show(id);
+                    var serverId = ApiClient.serverInfo().Id;
+                    recordingEditor.show(id, serverId);
                 });
             },
 
@@ -1905,7 +1908,8 @@
 
                 var showTitle = options.showTitle == 'auto' ? true : options.showTitle;
 
-                if (item.Type == 'PhotoAlbum') {
+                // Force the title for these
+                if (item.Type == 'PhotoAlbum' || item.Type == 'Folder') {
                     showTitle = true;
                 }
                 var coverImage = options.coverImage;
@@ -3340,7 +3344,7 @@
                     }
                 }
 
-                elem.html(html).trigger('create');
+                elem.innerHTML = html;
             },
 
             renderPremiereDate: function (elem, item) {
@@ -3387,9 +3391,8 @@
                         tag: item.BackdropImageTags[0]
                     });
 
-                    itemBackdropElement.classList.add('noFade');
                     itemBackdropElement.classList.remove('noBackdrop');
-                    ImageLoader.lazyImage(itemBackdropElement, imgUrl);
+                    ImageLoader.lazyImage(itemBackdropElement, imgUrl, false);
                     hasbackdrop = true;
                 }
                 else if (item.ParentBackdropItemId && item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
@@ -3401,9 +3404,8 @@
                         maxWidth: screenWidth
                     });
 
-                    itemBackdropElement.classList.add('noFade');
                     itemBackdropElement.classList.remove('noBackdrop');
-                    ImageLoader.lazyImage(itemBackdropElement, imgUrl);
+                    ImageLoader.lazyImage(itemBackdropElement, imgUrl, false);
                     hasbackdrop = true;
                 }
                 else {

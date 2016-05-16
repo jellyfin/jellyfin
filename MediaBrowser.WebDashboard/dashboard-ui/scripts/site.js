@@ -1822,6 +1822,7 @@ var AppInfo = {};
         define("libjass", [bowerPath + "/libjass/libjass", "css!" + bowerPath + "/libjass/libjass"], returnFirstDependency);
 
         define("recordingCreator", [embyWebComponentsBowerPath + "/recordingcreator/recordingcreator"], returnFirstDependency);
+        define("recordingEditor", [embyWebComponentsBowerPath + "/recordingcreator/recordingeditor"], returnFirstDependency);
         define("mediaInfo", [embyWebComponentsBowerPath + "/mediainfo/mediainfo"], returnFirstDependency);
         define("backdrop", [embyWebComponentsBowerPath + "/backdrop/backdrop"], returnFirstDependency);
         define("fetchHelper", [embyWebComponentsBowerPath + "/fetchhelper"], returnFirstDependency);
@@ -2281,7 +2282,7 @@ var AppInfo = {};
 
         var baseUrl = 'bower_components/emby-webcomponents/strings/';
 
-        var languages = ['en-US'];
+        var languages = ['en-US', 'kk', 'ru'];
 
         var translations = languages.map(function (i) {
             return {
@@ -2613,7 +2614,8 @@ var AppInfo = {};
 
         defineRoute({
             path: '/livetv.html',
-            dependencies: ['paper-button'],
+            dependencies: ['paper-button', 'livetvcss'],
+            controller: 'scripts/livetvsuggested',
             autoFocus: false
         });
 
@@ -2735,7 +2737,8 @@ var AppInfo = {};
 
         defineRoute({
             path: '/music.html',
-            dependencies: [],
+            dependencies: ['scripts/alphapicker'],
+            controller: 'scripts/musicrecommended',
             autoFocus: false
         });
 
@@ -3100,7 +3103,7 @@ var AppInfo = {};
         loadTheme();
 
         if (browserInfo.safari && browserInfo.mobile) {
-            initFastClick();
+            //initFastClick();
         }
 
         if (Dashboard.isRunningInCordova()) {
