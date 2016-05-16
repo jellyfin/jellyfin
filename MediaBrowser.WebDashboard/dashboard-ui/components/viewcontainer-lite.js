@@ -3,7 +3,6 @@ define(['browser'], function (browser) {
     var allPages = document.querySelectorAll('.mainAnimatedPage');
     var currentUrls = [];
     var pageContainerCount = allPages.length;
-    var animationDuration = 500;
     var allowAnimation = true;
     var selectedPageIndex = -1;
 
@@ -103,6 +102,11 @@ define(['browser'], function (browser) {
                     if (!options.cancel && previousAnimatable) {
                         afterAnimate(allPages, pageIndex);
                     }
+
+                    // Temporary hack
+                    // If a view renders UI in viewbeforeshow the lazy image loader will think the images aren't visible and won't load images
+                    // The views need to be updated to start loading data in beforeshow, but not render until show
+                    document.dispatchEvent(new CustomEvent('scroll', {}));
 
                     $.mobile = $.mobile || {};
                     $.mobile.activePage = view;
@@ -249,7 +253,7 @@ define(['browser'], function (browser) {
     function fade(newAnimatedPage, oldAnimatedPage, transition, isBack) {
 
         var timings = {
-            duration: animationDuration,
+            duration: 140,
             iterations: 1,
             easing: 'ease-out',
             fill: 'both'
@@ -305,16 +309,6 @@ define(['browser'], function (browser) {
         onBeforeChange = fn;
     }
 
-    function sendResolve(resolve, view) {
-
-        // Don't report completion until the animation has finished, otherwise rendering may not perform well
-        setTimeout(function () {
-
-            resolve(view);
-
-        }, animationDuration);
-    }
-
     function getSelectedIndex(allPages) {
 
         return selectedPageIndex;
@@ -354,6 +348,11 @@ define(['browser'], function (browser) {
                         afterAnimate(allPages, index);
                     }
 
+                    // Temporary hack
+                    // If a view renders UI in viewbeforeshow the lazy image loader will think the images aren't visible and won't load images
+                    // The views need to be updated to start loading data in beforeshow, but not render until show
+                    document.dispatchEvent(new CustomEvent('scroll', {}));
+
                     $.mobile = $.mobile || {};
                     $.mobile.activePage = view;
 
@@ -374,31 +373,14 @@ define(['browser'], function (browser) {
         currentUrls = [];
     }
 
-    function parentWithClass(elem, className) {
-
-        while (!elem.classList || !elem.classList.contains(className)) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
-    }
-
-    function init(isAnimationAllowed) {
-
-        if (allowAnimation && enableAnimation() && !browser.animate) {
-            require(['webAnimations']);
-        }
+    if (enableAnimation() && !browser.animate) {
+        require(['webAnimations']);
     }
 
     return {
         loadView: loadView,
         tryRestoreView: tryRestoreView,
         reset: reset,
-        setOnBeforeChange: setOnBeforeChange,
-        init: init
+        setOnBeforeChange: setOnBeforeChange
     };
 });
