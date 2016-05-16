@@ -54,6 +54,14 @@
         Dashboard.hideLoadingMsg();
     }
 
+    function getSquareShape() {
+        return enableScrollX() ? 'overflowSquare' : 'square';
+    }
+
+    function enableScrollX() {
+        return browserInfo.mobile && AppInfo.enableAppLayouts;
+    }
+
     function renderRecordings(elem, recordings) {
 
         if (recordings.length) {
@@ -63,9 +71,16 @@
         }
 
         var recordingItems = elem.querySelector('.recordingItems');
+
+        if (enableScrollX()) {
+            recordingItems.classList.add('hiddenScrollX');
+        } else {
+            recordingItems.classList.remove('hiddenScrollX');
+        }
+         
         recordingItems.innerHTML = LibraryBrowser.getPosterViewHtml({
             items: recordings,
-            shape: "auto",
+            shape: (enableScrollX() ? getSquareShape() : 'auto'),
             showTitle: true,
             showParentTitle: true,
             centerText: true,
