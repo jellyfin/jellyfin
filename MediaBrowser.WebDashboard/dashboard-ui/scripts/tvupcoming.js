@@ -4,13 +4,9 @@
 
         Dashboard.showLoadingMsg();
 
-        var limit = AppInfo.hasLowImageBandwidth && !enableScrollX() ?
-           24 :
-           40;
-
         var query = {
 
-            Limit: limit,
+            Limit: 40,
             Fields: "AirTime,UserData,SeriesStudio,SyncInfo",
             UserId: Dashboard.getCurrentUserId(),
             ImageTypeLimit: 1,

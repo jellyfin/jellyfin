@@ -35,10 +35,21 @@
     max-width: 700px;
 }
 
+.formDialog .dialogContentTitle {
+    margin-top: 1em;
+}
+
 @media all and (min-width: 1000px) {
 
     .layout-tv .formDialog .centeredContent {
         max-width: 70vw;
+    }
+}
+
+@media all and (max-height: 1400px) {
+
+    .itemOverview {
+        display: none;
     }
 }
 

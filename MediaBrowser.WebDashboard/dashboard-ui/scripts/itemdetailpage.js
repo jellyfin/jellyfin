@@ -63,6 +63,8 @@
 
         Dashboard.getCurrentUser().then(function (user) {
 
+            window.scrollTo(0, 0);
+
             renderImage(page, item, user);
 
             setInitialCollapsibleState(page, item, context, user);

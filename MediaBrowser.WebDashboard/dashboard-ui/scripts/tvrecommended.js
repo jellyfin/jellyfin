@@ -24,13 +24,9 @@
 
         function loadNextUp() {
 
-            var limit = AppInfo.hasLowImageBandwidth ?
-             16 :
-             24;
-
             var query = {
 
-                Limit: limit,
+                Limit: 24,
                 Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
                 UserId: Dashboard.getCurrentUserId(),
                 ImageTypeLimit: 1,
@@ -258,7 +254,7 @@
             view.querySelector('#resumableItems').classList.remove('hiddenScrollX');
         }
         libraryBrowser.createCardMenus(view.querySelector('#resumableItems'));
-        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'));
+        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'), [0, 1, 2, 4, 5, 6]);
 
         mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));
