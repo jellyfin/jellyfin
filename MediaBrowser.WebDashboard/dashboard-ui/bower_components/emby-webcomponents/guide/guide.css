@@ -195,6 +195,10 @@
     .guideCurrentDay {
         display: none;
     }
+
+    .newTvProgram, .liveTvProgram, .premiereTvProgram, .guideHdIcon {
+        display: none;
+    }
 }
 
 @media all and (max-width: 1280px) {
