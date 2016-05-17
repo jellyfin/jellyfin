@@ -527,6 +527,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private async Task<LiveTvChannel> GetChannel(ChannelInfo channelInfo, string serviceName, Guid parentFolderId, CancellationToken cancellationToken)
         {
             var isNew = false;
+            var forceUpdate = false;
 
             var id = _tvDtoService.GetInternalChannelId(serviceName, channelInfo.Id);
 
@@ -576,10 +577,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 if (!string.IsNullOrWhiteSpace(channelInfo.ImagePath))
                 {
                     item.SetImagePath(ImageType.Primary, channelInfo.ImagePath);
+                    forceUpdate = true;
                 }
                 else if (!string.IsNullOrWhiteSpace(channelInfo.ImageUrl))
                 {
                     item.SetImagePath(ImageType.Primary, channelInfo.ImageUrl);
+                    forceUpdate = true;
                 }
             }
 
@@ -588,9 +591,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 item.Name = channelInfo.Name;
             }
 
+            if (isNew)
+            {
+                await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
+            }
+            else if (forceUpdate)
+            {
+                await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+            }
+
             await item.RefreshMetadata(new MetadataRefreshOptions(_fileSystem)
             {
-                ForceSave = isNew
+                ForceSave = isNew || forceUpdate
 
             }, cancellationToken);
 

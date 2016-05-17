@@ -288,6 +288,8 @@ namespace MediaBrowser.Model.Querying
         [Obsolete]
         public string Person { get; set; }
 
+        public bool EnableTotalRecordCount { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemQuery" /> class.
         /// </summary>
@@ -305,6 +307,8 @@ namespace MediaBrowser.Model.Querying
             MediaTypes = new string[] { };
 
             VideoTypes = new VideoType[] { };
+
+            EnableTotalRecordCount = true;
 
             Artists = new string[] { };
             Studios = new string[] { };
