@@ -2405,17 +2405,20 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 cmd.Parameters.Add(cmd, "@IsFavorite", DbType.Boolean).Value = query.IsFavorite.Value;
             }
 
-            if (query.IsPlayed.HasValue)
+            if (EnableJoinUserData(query))
             {
-                if (query.IsPlayed.Value)
+                if (query.IsPlayed.HasValue)
                 {
-                    whereClauses.Add("(played=@IsPlayed)");
+                    if (query.IsPlayed.Value)
+                    {
+                        whereClauses.Add("(played=@IsPlayed)");
+                    }
+                    else
+                    {
+                        whereClauses.Add("(played is null or played=@IsPlayed)");
+                    }
+                    cmd.Parameters.Add(cmd, "@IsPlayed", DbType.Boolean).Value = query.IsPlayed.Value;
                 }
-                else
-                {
-                    whereClauses.Add("(played is null or played=@IsPlayed)");
-                }
-                cmd.Parameters.Add(cmd, "@IsPlayed", DbType.Boolean).Value = query.IsPlayed.Value;
             }
 
             if (query.IsResumable.HasValue)

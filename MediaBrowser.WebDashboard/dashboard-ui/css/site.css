@@ -1562,7 +1562,7 @@ emby-collapsible > .style-scope {
 
 .ui-body-b .emby-collapsible-button {
     border: 1px solid #222;
-    background-color: #383838;
+    background-color: #333;
     text-transform: none;
 }
 
@@ -1574,8 +1574,7 @@ emby-collapsible > .style-scope {
 }
 
 .ui-body-b .emby-collapsible-content {
-    border: 1px solid #222;
+    border: 1px solid #252525;
     border-width: 0 1px 1px 1px;
     padding: 1em 1.25em;
-    background-color: #333;
 }

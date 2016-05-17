@@ -973,7 +973,7 @@
 
         if (!e.detail.isRestored) {
             // Scroll back up so in case vertical scroll was messed with
-            //window.scrollTo(0, 0);
+            window.scrollTo(0, 0);
         }
 
         updateTitle(page);
