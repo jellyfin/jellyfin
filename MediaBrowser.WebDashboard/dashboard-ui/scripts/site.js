@@ -2714,49 +2714,57 @@ var AppInfo = {};
         defineRoute({
             path: '/mypreferencesdisplay.html',
             dependencies: ['paper-button'],
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
             path: '/mypreferenceshome.html',
             dependencies: ['paper-button'],
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
             path: '/mypreferenceslanguages.html',
             dependencies: ['paper-button'],
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
             path: '/mypreferencesmenu.html',
             dependencies: ['paper-button'],
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
             path: '/myprofile.html',
             dependencies: ['paper-button'],
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
             path: '/mysync.html',
             dependencies: [],
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
             path: '/mysyncjob.html',
             dependencies: [],
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
             path: '/mysyncsettings.html',
             dependencies: [],
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
@@ -2784,7 +2792,8 @@ var AppInfo = {};
             path: '/nowplaying.html',
             dependencies: ['paper-icon-button-light', 'paper-slider', 'paper-button'],
             controller: 'scripts/nowplayingpage',
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
