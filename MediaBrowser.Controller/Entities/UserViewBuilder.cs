@@ -251,7 +251,6 @@ namespace MediaBrowser.Controller.Entities
             if (query.Recursive)
             {
                 query.Recursive = true;
-                query.ParentId = parent.Id;
                 query.SetUser(user);
 
                 if (query.IncludeItemTypes.Length == 0)
@@ -259,7 +258,7 @@ namespace MediaBrowser.Controller.Entities
                     query.IncludeItemTypes = new[] { typeof(MusicArtist).Name, typeof(MusicAlbum).Name, typeof(Audio.Audio).Name, typeof(MusicVideo).Name };
                 }
 
-                return _libraryManager.GetItemsResult(query);
+                return parent.QueryRecursive(query);
             }
 
             var list = new List<BaseItem>();
@@ -448,7 +447,6 @@ namespace MediaBrowser.Controller.Entities
             if (query.Recursive)
             {
                 query.Recursive = true;
-                query.ParentId = parent.Id;
                 query.SetUser(user);
 
                 if (query.IncludeItemTypes.Length == 0)
@@ -456,7 +454,7 @@ namespace MediaBrowser.Controller.Entities
                     query.IncludeItemTypes = new[] { typeof(Movie).Name, typeof(BoxSet).Name };
                 }
 
-                return _libraryManager.GetItemsResult(query);
+                return parent.QueryRecursive(query);
             }
 
             var list = new List<BaseItem>();
@@ -613,7 +611,6 @@ namespace MediaBrowser.Controller.Entities
             if (query.Recursive)
             {
                 query.Recursive = true;
-                query.ParentId = parent.Id;
                 query.SetUser(user);
 
                 if (query.IncludeItemTypes.Length == 0)
@@ -621,7 +618,7 @@ namespace MediaBrowser.Controller.Entities
                     query.IncludeItemTypes = new[] { typeof(Series).Name, typeof(Season).Name, typeof(Episode).Name };
                 }
 
-                return _libraryManager.GetItemsResult(query);
+                return parent.QueryRecursive(query);
             }
 
             var list = new List<BaseItem>();
