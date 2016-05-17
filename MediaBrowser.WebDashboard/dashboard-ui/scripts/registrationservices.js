@@ -51,13 +51,6 @@
                 text: Globalize.translate('MobileSyncFeatureDescription')
             });
         }
-        else if (AppInfo.isNativeApp) {
-            list.push({
-                name: Globalize.translate('HeaderCloudSync'),
-                icon: 'sync',
-                text: Globalize.translate('CloudSyncFeatureDescription')
-            });
-        }
         else {
             list.push({
                 name: Globalize.translate('HeaderCinemaMode'),

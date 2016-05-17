@@ -22,7 +22,7 @@
         html += '<button is="paper-icon-button-light" class="btnCast headerButton headerButtonRight hide"><iron-icon icon="cast"></iron-icon></button>';
 
         if (AppInfo.enableSearchInTopMenu) {
-            html += '<button is="paper-icon-button-light" class=headerButton headerButtonRight headerSearchButton hide" onclick="Search.showSearchPanel();"><iron-icon icon="search"></iron-icon></button>';
+            html += '<button type="button" is="paper-icon-button-light" class=headerButton headerButtonRight headerSearchButton hide" onclick="Search.showSearchPanel();"><iron-icon icon="search"></iron-icon></button>';
             html += '<div class="viewMenuSearch hide">';
             html += '<form class="viewMenuSearchForm">';
             html += '<input type="text" data-role="none" data-type="search" class="headerSearchInput" autocomplete="off" spellcheck="off" />';
@@ -973,7 +973,7 @@
 
         if (!e.detail.isRestored) {
             // Scroll back up so in case vertical scroll was messed with
-            //window.scrollTo(0, 0);
+            window.scrollTo(0, 0);
         }
 
         updateTitle(page);

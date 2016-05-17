@@ -9,12 +9,12 @@
     font-size: 220%;
 }
 
-    .libraryViewNav .mdl-tabs__tab {
-        font-weight: 400 !important;
-    }
-
 .background-theme-b, .dialog.background-theme-b {
     background: #161616;
+}
+
+.pageTabButton.is-active .pageTabButtonSelectionBar {
+    display: none !important;
 }
 
 .libraryViewNav .pageTabButton.is-active {

@@ -47,7 +47,8 @@ _[Demo and API docs](https://elements.polymer-project.org/elements/iron-selector
   </iron-selector>
 ```
 
-  If no matching element is found using `attForSelected`, use `fallbackSelection` as fallback.
+  You can specify a default fallback with `fallbackSelection` in case the `selected` attribute does
+  not match the `attrForSelected` attribute of any elements.
 
   Example:
 

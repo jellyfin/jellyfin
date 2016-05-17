@@ -226,13 +226,13 @@
         overflow: hidden;
     }
 
-        .libraryViewNav .pageTabButton:hover {
+        /*.libraryViewNav .pageTabButton:hover {
             background-color: transparent;
         }
 
         .libraryViewNav .pageTabButton:active {
             background-color: rgba(100,100,100, 0.20);
-        }
+        }*/
 
         .libraryViewNav .pageTabButton:focus {
             font-weight: 500 !important;

@@ -24,12 +24,10 @@
 
     function loadLatest(page, userId, parentId) {
 
-        var limit = 18;
-
         var options = {
 
             IncludeItemTypes: "Movie",
-            Limit: limit,
+            Limit: 18,
             Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
             ParentId: parentId,
             ImageTypeLimit: 1,
@@ -214,8 +212,8 @@
         var url = ApiClient.getUrl("Movies/Recommendations", {
 
             userId: userId,
-            categoryLimit: screenWidth >= 1200 ? 4 : 3,
-            ItemLimit: screenWidth >= 1920 ? 9 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 7 : 6)),
+            categoryLimit: 6,
+            ItemLimit: screenWidth >= 1920 ? 8 : (screenWidth >= 1600 ? 7 : (screenWidth >= 1200 ? 6 : 5)),
             Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"

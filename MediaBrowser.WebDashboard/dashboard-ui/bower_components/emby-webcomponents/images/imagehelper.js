@@ -94,10 +94,11 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events'], functio
             return;
         }
 
+        var filledImages = [];
         var cancellationTokens = [];
+
         function unveilInternal(tokenIndex) {
 
-            var remaining = [];
             var anyFound = false;
             var out = false;
 
@@ -108,24 +109,21 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events'], functio
                 if (cancellationTokens[tokenIndex]) {
                     return;
                 }
+                if (filledImages[i]) {
+                    continue;
+                }
                 var img = images[i];
                 if (!out && isVisible(img)) {
                     anyFound = true;
+                    filledImages[i] = true;
                     fillImage(img);
                 } else {
 
                     if (anyFound) {
                         out = true;
                     }
-                    remaining.push(img);
-                }
-
-                if (out) {
-                    return;
                 }
             }
-
-            images = remaining;
 
             if (!images.length) {
                 document.removeEventListener('focus', unveil, true);

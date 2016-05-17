@@ -55,9 +55,9 @@
     <Reference Include="Interfaces.IO">
       <HintPath>..\packages\Interfaces.IO.1.0.0.5\lib\portable-net45+sl4+wp71+win8+wpa81\Interfaces.IO.dll</HintPath>
     </Reference>
-    <Reference Include="MediaBrowser.Naming, Version=1.0.5917.1514, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.49\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
+    <Reference Include="MediaBrowser.Naming, Version=1.0.5981.21615, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.50\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="MoreLinq">
       <HintPath>..\packages\morelinq.1.4.0\lib\net35\MoreLinq.dll</HintPath>
@@ -68,8 +68,8 @@
     <Reference Include="ServiceStack.Api.Swagger">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Api.Swagger.dll</HintPath>
     </Reference>
-    <Reference Include="SimpleInjector, Version=3.1.3.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
-      <HintPath>..\packages\SimpleInjector.3.1.3\lib\net45\SimpleInjector.dll</HintPath>
+    <Reference Include="SimpleInjector, Version=3.1.4.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.3.1.4\lib\net45\SimpleInjector.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="SocketHttpListener, Version=1.0.5955.1537, Culture=neutral, processorArchitecture=MSIL">

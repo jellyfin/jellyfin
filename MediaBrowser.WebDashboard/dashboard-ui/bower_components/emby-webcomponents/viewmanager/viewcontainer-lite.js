@@ -264,7 +264,7 @@ define(['browser'], function (browser) {
         currentUrls = [];
     }
 
-    if (enableAnimation() && !browser.animate) {
+    if (enableAnimation() && !document.documentElement.animate) {
         require(['webAnimations']);
     }
 

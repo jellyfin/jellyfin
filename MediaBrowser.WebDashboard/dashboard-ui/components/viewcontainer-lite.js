@@ -108,8 +108,10 @@ define(['browser'], function (browser) {
                     // The views need to be updated to start loading data in beforeshow, but not render until show
                     document.dispatchEvent(new CustomEvent('scroll', {}));
 
-                    $.mobile = $.mobile || {};
-                    $.mobile.activePage = view;
+                    if (window.$) {
+                        $.mobile = $.mobile || {};
+                        $.mobile.activePage = view;
+                    }
 
                     resolve(view);
                 });
@@ -353,8 +355,10 @@ define(['browser'], function (browser) {
                     // The views need to be updated to start loading data in beforeshow, but not render until show
                     document.dispatchEvent(new CustomEvent('scroll', {}));
 
-                    $.mobile = $.mobile || {};
-                    $.mobile.activePage = view;
+                    if (window.$) {
+                        $.mobile = $.mobile || {};
+                        $.mobile.activePage = view;
+                    }
 
                     return view;
                 });

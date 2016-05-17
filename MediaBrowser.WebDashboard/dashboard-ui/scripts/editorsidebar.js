@@ -249,9 +249,9 @@
 
     }
 
-    function scrollToNode(page, id) {
+    function scrollToNode(id) {
 
-        var elem = $('#' + id, page)[0];
+        var elem = $('#' + id)[0];
 
         if (elem) {
             // commenting out for now because it's causing the whole window to scroll in chrome
@@ -365,7 +365,7 @@
 
             setTimeout(function () {
 
-                scrollToNode($.mobile.activePage, selectedNodeId);
+                scrollToNode(selectedNodeId);
             }, 500);
         }
     }

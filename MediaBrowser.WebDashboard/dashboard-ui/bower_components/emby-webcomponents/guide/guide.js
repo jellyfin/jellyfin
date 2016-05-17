@@ -269,7 +269,7 @@
                 html += '</div>';
 
                 if (program.IsHD) {
-                    html += '<iron-icon icon="mediainfo:hd"></iron-icon>';
+                    html += '<iron-icon class="guideHdIcon" icon="mediainfo:hd"></iron-icon>';
                 }
 
                 if (program.SeriesTimerId) {
