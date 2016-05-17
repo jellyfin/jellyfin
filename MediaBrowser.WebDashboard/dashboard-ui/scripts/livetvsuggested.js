@@ -157,17 +157,21 @@
                 case 0:
                     break;
                 case 1:
+                    document.body.classList.add('autoScrollY');
                     depends.push('scripts/livetvguide');
                     break;
                 case 2:
+                    document.body.classList.remove('autoScrollY');
                     depends.push('scripts/livetvchannels');
                     depends.push('paper-icon-item');
                     depends.push('paper-item-body');
                     break;
                 case 3:
+                    document.body.classList.remove('autoScrollY');
                     depends.push('scripts/livetvrecordings');
                     break;
                 case 4:
+                    document.body.classList.remove('autoScrollY');
                     depends.push('scripts/livetvseriestimers');
                     break;
                 default:
@@ -208,13 +212,6 @@
 
         mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));
-        });
-
-        view.addEventListener('viewshow', function (e) {
-
-            // Needed on the guide tab
-            // Ideally this should be moved to the guide tab on show/hide
-            document.body.classList.add('autoScrollY');
         });
 
         view.addEventListener('viewbeforehide', function (e) {

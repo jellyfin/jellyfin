@@ -15,14 +15,14 @@
 
     function fadeInRight(elem) {
 
-        var pct = browserInfo.mobile ? '2%' : '1%';
+        var pct = browserInfo.mobile ? '2%' : '0.5%';
 
         var keyframes = [
           { opacity: '0', transform: 'translate3d(' + pct + ', 0, 0)', offset: 0 },
           { opacity: '1', transform: 'none', offset: 1 }];
 
         elem.animate(keyframes, {
-            duration: 300,
+            duration: 160,
             iterations: 1,
             easing: 'ease-out'
         });
@@ -40,19 +40,10 @@
             return;
         }
         elem.animate(keyframes, {
-            duration: 160,
+            duration: 120,
             iterations: 1,
             easing: 'ease-out'
         });
-    }
-
-    function animateTabOnShow(newPanel, animateTabs, index) {
-        
-        if (animateTabs && animateTabs.indexOf(index) != -1 && /*browserInfo.animate &&*/ newPanel.animate) {
-            setTimeout(function () {
-                fadeInRight(newPanel);
-            }, 160);
-        }
     }
 
     var libraryBrowser = (function (window, document, screen) {
@@ -301,10 +292,12 @@
                         var index = parseInt(link.getAttribute('data-index'));
                         var newPanel = panels[index];
 
-                        animateTabOnShow(newPanel, animateTabs, index);
-
                         // If toCenter is called syncronously within the click event, it sometimes ends up canceling it
                         setTimeout(function () {
+
+                            if (animateTabs && animateTabs.indexOf(index) != -1 && /*browserInfo.animate &&*/ newPanel.animate) {
+                                fadeInRight(newPanel);
+                            }
 
                             tabs.dispatchEvent(new CustomEvent("tabchange", {
                                 detail: {
@@ -315,7 +308,7 @@
                             newPanel.classList.add('is-active');
 
                             //scrollHelper.toCenter(tabs, link, true);
-                        }, 160);
+                        }, 120);
                     }
                 });
 

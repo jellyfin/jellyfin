@@ -5,7 +5,8 @@
 }
 
     [is=paper-icon-button-light] iron-icon, [is=paper-icon-button-light] img {
-        width: 100%;
+        /* Don't specify both dimensions or it may not get sized properly */
+        /*width: 100%;*/
         height: 100%;
     }
 
