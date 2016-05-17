@@ -13,6 +13,39 @@
         return elem;
     }
 
+    function fadeInRight(elem) {
+
+        var pct = browserInfo.mobile ? '2%' : '0.5%';
+
+        var keyframes = [
+          { opacity: '0', transform: 'translate3d(' + pct + ', 0, 0)', offset: 0 },
+          { opacity: '1', transform: 'none', offset: 1 }];
+
+        elem.animate(keyframes, {
+            duration: 160,
+            iterations: 1,
+            easing: 'ease-out'
+        });
+    }
+
+    function animateSelectionBar(button) {
+
+        var elem = button.querySelector('.pageTabButtonSelectionBar');
+
+        var keyframes = [
+          { transform: 'translate3d(-100%, 0, 0)', offset: 0 },
+          { transform: 'none', offset: 1 }];
+
+        if (!elem.animate) {
+            return;
+        }
+        elem.animate(keyframes, {
+            duration: 120,
+            iterations: 1,
+            easing: 'ease-out'
+        });
+    }
+
     var libraryBrowser = (function (window, document, screen) {
 
         // Regular Expressions for parsing tags and attributes
@@ -225,7 +258,7 @@
                 });
             },
 
-            configurePaperLibraryTabs: function (ownerpage, tabs, panels, animate) {
+            configurePaperLibraryTabs: function (ownerpage, tabs, panels, animateTabs) {
 
                 if (!browserInfo.safari) {
                     LibraryBrowser.configureSwipeTabs(ownerpage, tabs);
@@ -233,28 +266,14 @@
 
                 var buttons = tabs.querySelectorAll('.pageTabButton');
                 for (var i = 0, length = buttons.length; i < length; i++) {
-                    buttons[i].classList.add('mdl-button');
-                    buttons[i].classList.add('mdl-js-button');
-                    buttons[i].classList.add('mdl-js-ripple-effect');
-                    componentHandler.upgradeElement(buttons[i], 'MaterialButton');
+                    //buttons[i].classList.add('mdl-button');
+                    //buttons[i].classList.add('mdl-js-button');
+                    var div = document.createElement('div');
+                    div.classList.add('pageTabButtonSelectionBar');
+                    buttons[i].appendChild(div);
                 }
 
                 tabs.classList.add('hiddenScrollX');
-
-                function fadeInRight(elem) {
-
-                    var pct = browserInfo.mobile ? '1.5%' : '0.5%';
-
-                    var keyframes = [
-                      { opacity: '0', transform: 'translate3d(' + pct + ', 0, 0)', offset: 0 },
-                      { opacity: '1', transform: 'none', offset: 1 }];
-
-                    elem.animate(keyframes, {
-                        duration: 300,
-                        iterations: 1,
-                        easing: 'ease-out'
-                    });
-                }
 
                 tabs.addEventListener('click', function (e) {
 
@@ -267,24 +286,29 @@
                             current.classList.remove('is-active');
                             panels[parseInt(current.getAttribute('data-index'))].classList.remove('is-active');
                         }
+
                         link.classList.add('is-active');
+                        animateSelectionBar(link);
                         var index = parseInt(link.getAttribute('data-index'));
-                        tabs.dispatchEvent(new CustomEvent("tabchange", {
-                            detail: {
-                                selectedTabIndex: index
-                            }
-                        }));
-
-                        panels[index].classList.add('is-active');
-
-                        if (browserInfo.animate && animate) {
-                            fadeInRight(panels[index]);
-                        }
+                        var newPanel = panels[index];
 
                         // If toCenter is called syncronously within the click event, it sometimes ends up canceling it
-                        //setTimeout(function() {
-                        //    scrollHelper.toCenter(tabs, link, true);
-                        //}, 10);
+                        setTimeout(function () {
+
+                            if (animateTabs && animateTabs.indexOf(index) != -1 && /*browserInfo.animate &&*/ newPanel.animate) {
+                                fadeInRight(newPanel);
+                            }
+
+                            tabs.dispatchEvent(new CustomEvent("tabchange", {
+                                detail: {
+                                    selectedTabIndex: index
+                                }
+                            }));
+
+                            newPanel.classList.add('is-active');
+
+                            //scrollHelper.toCenter(tabs, link, true);
+                        }, 120);
                     }
                 });
 
@@ -1722,7 +1746,7 @@
 
                 if (AppInfo.hasLowImageBandwidth) {
                     if (!AppInfo.isNativeApp) {
-                        screenWidth *= .7;
+                        screenWidth *= .75;
                     }
                 } else {
                     screenWidth *= 1.2;

@@ -1183,11 +1183,6 @@ var Dashboard = {
 
             options.enableImageEnhancers = false;
         }
-
-        if (AppInfo.forcedImageFormat && options.type != 'Logo') {
-            options.format = AppInfo.forcedImageFormat;
-            options.backgroundColor = '#1c1c1c';
-        }
     },
 
     loadExternalPlayer: function () {
@@ -1472,8 +1467,6 @@ var AppInfo = {};
                 AppInfo.enableDetailPageChapters = false;
                 AppInfo.enableDetailsMenuImages = false;
                 AppInfo.enableMovieHomeSuggestions = false;
-
-                AppInfo.forcedImageFormat = 'jpg';
             }
         }
 
@@ -1642,39 +1635,6 @@ var AppInfo = {};
         });
     }
 
-    function initFastClick() {
-
-        require(["fastclick"], function (FastClick) {
-
-            FastClick.attach(document.body, {
-                tapDelay: 0
-            });
-
-            function parentWithClass(elem, className) {
-
-                while (!elem.classList || !elem.classList.contains(className)) {
-                    elem = elem.parentNode;
-
-                    if (!elem) {
-                        return null;
-                    }
-                }
-
-                return elem;
-            }
-
-            // Have to work around this issue of fast click breaking the panel dismiss
-            document.body.addEventListener('touchstart', function (e) {
-
-                var tgt = parentWithClass(e.target, 'ui-panel-dismiss');
-                if (tgt) {
-                    $(tgt).click();
-                }
-            });
-        });
-
-    }
-
     function setDocumentClasses(browser) {
 
         var elem = document.documentElement;
@@ -1792,7 +1752,8 @@ var AppInfo = {};
             globalize: embyWebComponentsBowerPath + "/globalize",
             itemHelper: embyWebComponentsBowerPath + '/itemhelper',
             itemShortcuts: embyWebComponentsBowerPath + "/shortcuts",
-            imageLoader: embyWebComponentsBowerPath + "/images/imagehelper"
+            imageLoader: embyWebComponentsBowerPath + "/images/imagehelper",
+            webAnimations: bowerPath + '/web-animations-js/web-animations-next-lite.min'
         };
 
         if (navigator.webkitPersistentStorage) {
@@ -2388,13 +2349,15 @@ var AppInfo = {};
         defineRoute({
             path: '/channelitems.html',
             dependencies: [],
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
             path: '/channels.html',
             dependencies: [],
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
@@ -2562,7 +2525,8 @@ var AppInfo = {};
             path: '/home.html',
             dependencies: [],
             autoFocus: false,
-            controller: 'scripts/indexpage'
+            controller: 'scripts/indexpage',
+            transition: 'fade'
         });
 
         defineRoute({
@@ -2575,14 +2539,16 @@ var AppInfo = {};
         defineRoute({
             path: '/itemdetails.html',
             dependencies: ['paper-button'],
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
             path: '/itemlist.html',
             dependencies: ['paper-checkbox', 'scripts/alphapicker'],
             autoFocus: false,
-            controller: 'scripts/itemlistpage'
+            controller: 'scripts/itemlistpage',
+            transition: 'fade'
         });
 
         defineRoute({
@@ -2616,7 +2582,8 @@ var AppInfo = {};
             path: '/livetv.html',
             dependencies: ['paper-button', 'livetvcss'],
             controller: 'scripts/livetvsuggested',
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
@@ -2732,62 +2699,72 @@ var AppInfo = {};
             path: '/movies.html',
             dependencies: ['paper-checkbox', 'paper-fab', 'scripts/alphapicker', 'paper-button'],
             autoFocus: false,
-            controller: 'scripts/moviesrecommended'
+            controller: 'scripts/moviesrecommended',
+            transition: 'fade'
         });
 
         defineRoute({
             path: '/music.html',
             dependencies: ['scripts/alphapicker'],
             controller: 'scripts/musicrecommended',
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
             path: '/mypreferencesdisplay.html',
             dependencies: ['paper-button'],
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
             path: '/mypreferenceshome.html',
             dependencies: ['paper-button'],
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
             path: '/mypreferenceslanguages.html',
             dependencies: ['paper-button'],
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
             path: '/mypreferencesmenu.html',
             dependencies: ['paper-button'],
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
             path: '/myprofile.html',
             dependencies: ['paper-button'],
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
             path: '/mysync.html',
             dependencies: [],
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
             path: '/mysyncjob.html',
             dependencies: [],
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
             path: '/mysyncsettings.html',
             dependencies: [],
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
@@ -2815,13 +2792,15 @@ var AppInfo = {};
             path: '/nowplaying.html',
             dependencies: ['paper-icon-button-light', 'paper-slider', 'paper-button'],
             controller: 'scripts/nowplayingpage',
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
             path: '/photos.html',
             dependencies: [],
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
@@ -2834,7 +2813,8 @@ var AppInfo = {};
         defineRoute({
             path: '/playlists.html',
             dependencies: [],
-            autoFocus: false
+            autoFocus: false,
+            transition: 'fade'
         });
 
         defineRoute({
@@ -2948,7 +2928,8 @@ var AppInfo = {};
             path: '/tv.html',
             dependencies: ['paper-checkbox', 'paper-icon-button-light', 'paper-button'],
             autoFocus: false,
-            controller: 'scripts/tvrecommended'
+            controller: 'scripts/tvrecommended',
+            transition: 'fade'
         });
 
         defineRoute({
@@ -3282,6 +3263,7 @@ pageClassOn('viewinit', "page", function () {
 
     page.classList.add("ui-page");
     page.classList.add("ui-page-theme-" + current);
+    page.classList.add("ui-body-" + current);
 
     var contents = page.querySelectorAll("div[data-role='content']");
 
@@ -3309,13 +3291,9 @@ pageClassOn('viewshow', "page", function () {
     if (currentTheme == 'a') {
         docElem.classList.add('background-theme-a');
         docElem.classList.remove('background-theme-b');
-        page.classList.add('ui-body-a');
-        page.classList.remove('ui-body-b');
     } else {
         docElem.classList.add('background-theme-b');
         docElem.classList.remove('background-theme-a');
-        page.classList.add('ui-body-b');
-        page.classList.remove('ui-body-a');
     }
 
     var apiClient = window.ApiClient;

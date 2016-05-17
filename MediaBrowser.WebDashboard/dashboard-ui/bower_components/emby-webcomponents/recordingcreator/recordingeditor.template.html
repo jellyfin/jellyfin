@@ -13,7 +13,7 @@
 
 <div class="dialogContent smoothScrollY">
     <div class="dialogContentInner centeredContent">
-        <h1 class="itemName"></h1>
+        <h1 class="itemName dialogContentTitle"></h1>
         <p class="itemEpisodeName"></p>
         <p class="itemMiscInfoPrimary" style="display: flex; align-items: center;"></p>
         <p class="itemMiscInfoSecondary" style="display: flex; align-items: center;"></p>
@@ -24,7 +24,6 @@
         </p>
 
         <form>
-            <br />
             <div>
                 <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
             </div>
@@ -33,11 +32,7 @@
                 <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
             </div>
             <br />
-            <br />
-            <paper-button raised class="btnSubmit block"><iron-icon icon="mediainfo:fiber-manual-record"></iron-icon><span>${Save}</span></paper-button>
-            <br />
-            <br />
-            <br />
+            <paper-button raised class="btnSubmit block" autofocus><iron-icon icon="mediainfo:fiber-manual-record"></iron-icon><span>${Save}</span></paper-button>
         </form>
     </div>
 </div>

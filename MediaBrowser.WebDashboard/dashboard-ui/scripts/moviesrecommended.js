@@ -303,7 +303,7 @@
             baseUrl += '?topParentId=' + topParentId;
         }
 
-        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'));
+        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'), [0, 4, 5]);
 
         var tabControllers = [];
         var renderedTabs = [];
