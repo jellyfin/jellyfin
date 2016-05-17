@@ -338,6 +338,47 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             done();
           });
         });
+
+        test('`tabIndex` properties of all items are updated when items change', function(done) {
+          var menu = fixture('basic');
+
+          function assertTabIndexCounts(nodes, expected) {
+            var tabIndexCounts = {};
+            for (var i = 0; i < nodes.length; i++) {
+              var tabIndex = nodes[i].tabIndex;
+              if (tabIndexCounts[tabIndex]) {
+                tabIndexCounts[tabIndex]++;
+              } else {
+                tabIndexCounts[tabIndex] = 1;
+              }
+            }
+
+            assert.equal(Object.keys(tabIndexCounts).length, Object.keys(expected).length);
+            Object.keys(expected).forEach(function(key) {
+              assert.equal(tabIndexCounts[key], expected[key]);
+            });
+          }
+
+          function divWithTabIndex(tabIndex) {
+            var div = document.createElement('div');
+            div.tabIndex = tabIndex;
+            return div;
+          }
+
+          // Only the selected item will have tabIndex 0.
+          menu.select(0);
+          assertTabIndexCounts(menu.items, {"-1": 2, "0": 1});
+
+          Polymer.dom(menu).appendChild(divWithTabIndex(1));
+          Polymer.dom(menu).appendChild(divWithTabIndex(2));
+          Polymer.dom(menu).appendChild(divWithTabIndex(3));
+
+          // Async wait for `observeNodes`.
+          Polymer.Base.async(function() {
+            assertTabIndexCounts(menu.items, {"-1": 5, "0": 1});
+            done();
+          });
+        });
       });
     </script>
   </body>

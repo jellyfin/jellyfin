@@ -1252,7 +1252,7 @@
                                 hideSelections();
                                 break;
                             case 'groupvideos':
-                                combineVersions($.mobile.activePage, items);
+                                combineVersions(parentWithClass(e.target, 'page'), items);
                                 break;
                             case 'markplayed':
                                 items.forEach(function (itemId) {

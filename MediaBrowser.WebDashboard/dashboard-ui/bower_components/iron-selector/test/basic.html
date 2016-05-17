@@ -196,8 +196,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           newItem.id = 'item999';
 
-          s2.addEventListener('iron-items-changed', function() {
+          s2.addEventListener('iron-items-changed', function(event) {
             changeCount++;
+            var mutation = event.detail;
+            assert.notEqual(mutation, undefined);
+            assert.notEqual(mutation.addedNodes, undefined);
+            assert.notEqual(mutation.removedNodes, undefined);
           });
 
           Polymer.dom(s2).appendChild(newItem);

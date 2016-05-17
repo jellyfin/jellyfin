@@ -21,22 +21,32 @@
 
     function saveUser(page, user) {
 
-        appSettings.syncPath(page.querySelector('#txtSyncPath').value);
+        var syncPath = page.querySelector('#txtSyncPath').value;
+
+        appSettings.syncPath(syncPath);
         appSettings.syncOnlyOnWifi(page.querySelector('#chkWifi').checked);
 
-        appSettings.cameraUploadServers($(".chkUploadServer", page).get().filter(function (i) {
+        var cameraUploadServers = $(".chkUploadServer", page).get().filter(function (i) {
 
             return i.checked;
 
         }).map(function (i) {
 
             return i.getAttribute('data-id');
-        }));
+        });
+
+        appSettings.cameraUploadServers(cameraUploadServers);
 
         Dashboard.hideLoadingMsg();
         require(['toast'], function (toast) {
             toast(Globalize.translate('SettingsSaved'));
         });
+
+        if (cameraUploadServers.length || syncPath) {
+            if (window.MainActivity) {
+                MainActivity.authorizeStorage();
+            }
+        }
     }
 
     function onSubmit() {

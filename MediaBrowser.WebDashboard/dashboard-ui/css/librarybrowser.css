@@ -221,14 +221,6 @@
         width: 30px;
     }
 
-.criticRating {
-    display: inline-block;
-    margin-left: 1px;
-    position: relative;
-    top: -1px;
-    vertical-align: middle;
-}
-
 .criticRatingScore {
     margin-bottom: .5em;
 }

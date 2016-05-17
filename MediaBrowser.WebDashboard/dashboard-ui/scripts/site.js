@@ -2243,7 +2243,7 @@ var AppInfo = {};
 
         var baseUrl = 'bower_components/emby-webcomponents/strings/';
 
-        var languages = ['en-US', 'kk', 'ru'];
+        var languages = ['da', 'en-US', 'kk', 'nl', 'ru'];
 
         var translations = languages.map(function (i) {
             return {
@@ -2655,9 +2655,10 @@ var AppInfo = {};
 
         defineRoute({
             path: '/login.html',
-            dependencies: ['paper-button'],
+            dependencies: ['paper-button', 'humanedate', 'paper-input'],
             autoFocus: false,
-            anonymous: true
+            anonymous: true,
+            controller: 'scripts/loginpage'
         });
 
         defineRoute({
