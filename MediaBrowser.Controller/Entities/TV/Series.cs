@@ -381,14 +381,18 @@ namespace MediaBrowser.Controller.Entities.TV
                 }
                 else
                 {
-                    episodes = GetRecursiveChildren(user, i => i is Episode)
-                        .Cast<Episode>();
+                    episodes = GetRecursiveChildren(user, new InternalItemsQuery(user)
+                    {
+                        IncludeItemTypes = new[] { typeof(Episode).Name }
+                    }).Cast<Episode>();
                 }
             }
             else
             {
-                episodes = GetRecursiveChildren(user, i => i is Episode)
-                    .Cast<Episode>();
+                episodes = GetRecursiveChildren(user, new InternalItemsQuery(user)
+                {
+                    IncludeItemTypes = new[] { typeof(Episode).Name }
+                }).Cast<Episode>();
             }
 
             episodes = FilterEpisodesBySeason(episodes, seasonNumber, DisplaySpecialsWithSeasons);

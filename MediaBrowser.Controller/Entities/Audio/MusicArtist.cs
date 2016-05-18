@@ -56,36 +56,20 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
-            var itemByNameFilter = GetItemFilter();
-
-            if (query.User != null)
+            if (query.IncludeItemTypes.Length == 0)
             {
-                return query.User.RootFolder
-                    .GetRecursiveChildren(query.User, i =>
-                    {
-                        if (query.IsFolder.HasValue)
-                        {
-                            if (query.IsFolder.Value != i.IsFolder)
-                            {
-                                return false;
-                            }
-                        }
-                        return itemByNameFilter(i);
-                    });
+                query.IncludeItemTypes = new[] { typeof(Audio).Name, typeof(MusicVideo).Name, typeof(MusicAlbum).Name };
+                query.ArtistNames = new[] { Name };
             }
 
-            return LibraryManager.RootFolder
-                .GetRecursiveChildren(i =>
-                {
-                    if (query.IsFolder.HasValue)
-                    {
-                        if (query.IsFolder.Value != i.IsFolder)
-                        {
-                            return false;
-                        }
-                    }
-                    return itemByNameFilter(i);
-                });
+            // Need this for now since the artist filter isn't yet supported by the db
+            if (ConfigurationManager.Configuration.SchemaVersion < 79)
+            {
+                var filter = GetItemFilter();
+                return LibraryManager.GetItemList(query).Where(filter);
+            }
+
+            return LibraryManager.GetItemList(query);
         }
 
         protected override IEnumerable<BaseItem> ActualChildren
