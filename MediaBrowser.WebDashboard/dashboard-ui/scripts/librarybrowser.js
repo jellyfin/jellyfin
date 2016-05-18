@@ -32,6 +32,10 @@
 
         var elem = button.querySelector('.pageTabButtonSelectionBar');
 
+        if (!elem) {
+            return;
+        }
+
         var keyframes = [
           { transform: 'translate3d(-100%, 0, 0)', offset: 0 },
           { transform: 'none', offset: 1 }];

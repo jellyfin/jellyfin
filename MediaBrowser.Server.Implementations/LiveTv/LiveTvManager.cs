@@ -1410,7 +1410,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 .Where(i => i.IsVisibleStandalone(user))
                 .ToList();
 
-            var items = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
+            return _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
                 MediaTypes = new[] { MediaType.Video },
                 Recursive = true,
@@ -1418,8 +1418,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 ExcludeLocationTypes = new[] { LocationType.Virtual },
                 Limit = Math.Min(10, query.Limit ?? int.MaxValue)
             });
-
-            return items;
         }
 
         public async Task<QueryResult<BaseItem>> GetInternalRecordings(RecordingQuery query, CancellationToken cancellationToken)

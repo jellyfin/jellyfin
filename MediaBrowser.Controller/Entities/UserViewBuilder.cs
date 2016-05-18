@@ -128,7 +128,11 @@ namespace MediaBrowser.Controller.Entities
                     {
                         if (query.Recursive)
                         {
-                            return GetResult(queryParent.GetRecursiveChildren(user, true), queryParent, query);
+                            query.Recursive = true;
+                            query.ParentId = queryParent.Id;
+                            query.SetUser(user);
+
+                            return _libraryManager.GetItemsResult(query);
                         }
                         return GetResult(queryParent.GetChildren(user, true), queryParent, query);
                     }
@@ -328,9 +332,13 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetMusicAlbumArtists(Folder parent, User user, InternalItemsQuery query)
         {
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
-                .Where(i => !i.IsFolder)
-                .OfType<IHasAlbumArtist>();
+            var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
+            {
+                Recursive = true,
+                ParentId = parent.Id,
+                IncludeItemTypes = new[] { typeof(Audio.Audio).Name }
+
+            }).Cast<IHasAlbumArtist>();
 
             var artists = _libraryManager.GetAlbumArtists(items);
 
@@ -339,9 +347,13 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetMusicArtists(Folder parent, User user, InternalItemsQuery query)
         {
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
-                .Where(i => !i.IsFolder)
-                .OfType<IHasArtist>();
+            var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
+            {
+                Recursive = true,
+                ParentId = parent.Id,
+                IncludeItemTypes = new[] { typeof(Audio.Audio).Name, typeof(MusicVideo).Name }
+
+            }).Cast<IHasArtist>();
 
             var artists = _libraryManager.GetArtists(items);
 
@@ -350,9 +362,13 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetFavoriteArtists(Folder parent, User user, InternalItemsQuery query)
         {
-            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
-                .Where(i => !i.IsFolder)
-                .OfType<IHasAlbumArtist>();
+            var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
+            {
+                Recursive = true,
+                ParentId = parent.Id,
+                IncludeItemTypes = new[] { typeof(Audio.Audio).Name }
+
+            }).Cast<IHasAlbumArtist>();
 
             var artists = _libraryManager.GetAlbumArtists(items).Where(i => _userDataManager.GetUserData(user, i).IsFavorite);
 
@@ -753,9 +769,9 @@ namespace MediaBrowser.Controller.Entities
             return PostFilterAndSort(items, queryParent, null, query, _libraryManager);
         }
 
-        public bool FilterItem(BaseItem item, InternalItemsQuery query)
+        public static bool FilterItem(BaseItem item, InternalItemsQuery query)
         {
-            return Filter(item, query.User, query, _userDataManager, _libraryManager);
+            return Filter(item, query.User, query, BaseItem.UserDataManager, BaseItem.LibraryManager);
         }
 
         private QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items,
@@ -1270,11 +1286,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             if (query.IsFolder.HasValue && query.IsFolder.Value != item.IsFolder)
-            {
-                return false;
-            }
-
-            if (query.Filter != null && !query.Filter(item))
             {
                 return false;
             }

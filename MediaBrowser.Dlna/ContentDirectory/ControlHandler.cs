@@ -401,10 +401,10 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 SortOrder = sort.SortOrder,
                 User = user,
                 Recursive = true,
-                Filter = FilterUnsupportedContent,
+                IsMissing = false,
+                ExcludeItemTypes = new[] { typeof(Game).Name, typeof(Book).Name },
                 IsFolder = isFolder,
                 MediaTypes = mediaTypes.ToArray()
-
             });
         }
 
@@ -461,8 +461,10 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 SortBy = sortOrders.ToArray(),
                 SortOrder = sort.SortOrder,
                 User = user,
-                Filter = FilterUnsupportedContent,
-                PresetViews = new[] { CollectionType.Movies, CollectionType.TvShows, CollectionType.Music }
+                IsMissing = false,
+                PresetViews = new[] { CollectionType.Movies, CollectionType.TvShows, CollectionType.Music },
+                ExcludeItemTypes = new[] { typeof(Game).Name, typeof(Book).Name },
+                IsPlaceHolder = false
 
             }).ConfigureAwait(false);
 
@@ -577,29 +579,6 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 Items = serverItems.ToArray(),
                 TotalRecordCount = serverItems.Count
             });
-        }
-
-        private bool FilterUnsupportedContent(BaseItem i)
-        {
-            // Unplayable
-            if (i.LocationType == LocationType.Virtual && !i.IsFolder)
-            {
-                return false;
-            }
-
-            // Unplayable
-            var supportsPlaceHolder = i as ISupportsPlaceHolders;
-            if (supportsPlaceHolder != null && supportsPlaceHolder.IsPlaceHolder)
-            {
-                return false;
-            }
-
-            if (i is Game || i is Book)
-            {
-                //return false;
-            }
-
-            return true;
         }
 
         private ServerItem GetItemFromObjectId(string id, User user)
