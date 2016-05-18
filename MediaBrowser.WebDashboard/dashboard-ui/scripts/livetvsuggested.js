@@ -8,14 +8,6 @@
         return enableScrollX() ? 'overflowPortrait' : 'portrait';
     }
 
-    function getThumbShape() {
-        return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
-    }
-
-    function getSquareShape() {
-        return enableScrollX() ? 'overflowSquare' : 'square';
-    }
-
     function getLimit() {
 
         return enableScrollX() ? 12 : 8;
@@ -109,7 +101,7 @@
 
         var html = libraryBrowser.getPosterViewHtml({
             items: items,
-            shape: shape || (enableScrollX() ? getSquareShape() : 'auto'),
+            shape: shape || (enableScrollX() ? 'autooverflow' : 'auto'),
             showTitle: true,
             centerText: true,
             coverImage: true,

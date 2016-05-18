@@ -1066,7 +1066,8 @@
                     }
 
                     if (item.CollectionType == 'games') {
-                        return 'gamesrecommended.html?topParentId=' + item.Id;
+                        return id ? "itemlist.html?parentId=" + id : "#";
+                        //return 'gamesrecommended.html?topParentId=' + item.Id;
                     }
                     if (item.CollectionType == 'playlists') {
                         return 'playlists.html?topParentId=' + item.Id;

@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Extensions;
 using System.Diagnostics;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Entities
 {
@@ -53,11 +53,11 @@ namespace MediaBrowser.Model.Entities
 
                     if (!string.IsNullOrEmpty(Language))
                     {
-                        attributes.Add(Language.FirstToUpper());
+                        attributes.Add(StringHelper.FirstToUpper(Language));
                     }
                     if (!string.IsNullOrEmpty(Codec) && !StringHelper.EqualsIgnoreCase(Codec, "dca"))
                     {
-                        attributes.Add(CodecHelper.FriendlyName(Codec));
+                        attributes.Add(AudioCodec.GetFriendlyName(Codec));
                     } 
                     else if (!string.IsNullOrEmpty(Profile) && !StringHelper.EqualsIgnoreCase(Profile, "lc"))
                     {
