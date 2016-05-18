@@ -2243,7 +2243,7 @@ var AppInfo = {};
 
         var baseUrl = 'bower_components/emby-webcomponents/strings/';
 
-        var languages = ['da', 'en-US', 'kk', 'nl', 'ru'];
+        var languages = ['da', 'en-US', 'es-MX', 'kk', 'nb', 'nl', 'ru'];
 
         var translations = languages.map(function (i) {
             return {
@@ -2404,9 +2404,10 @@ var AppInfo = {};
 
         defineRoute({
             path: '/dashboardhosting.html',
-            dependencies: [],
+            dependencies: ['paper-checkbox', 'paper-input', 'paper-button'],
             autoFocus: false,
-            roles: 'admin'
+            roles: 'admin',
+            controller: 'scripts/dashboardhosting'
         });
 
         defineRoute({
@@ -2698,7 +2699,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/movies.html',
-            dependencies: ['paper-checkbox', 'paper-fab', 'scripts/alphapicker', 'paper-button'],
+            dependencies: ['paper-checkbox', 'scripts/alphapicker', 'paper-button'],
             autoFocus: false,
             controller: 'scripts/moviesrecommended',
             transition: 'fade'

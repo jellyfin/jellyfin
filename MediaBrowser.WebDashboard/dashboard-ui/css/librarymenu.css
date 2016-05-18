@@ -242,20 +242,21 @@
             color: #fff !important;
         }
 
-        .pageTabButtonSelectionBar {
-            position: absolute;
-            left: 0;
-            border: 0;
-            bottom: 0;
-            height: 2px;
-            right: 0;
-            border-radius: 0;
-            z-index: 1;
-        }
+.pageTabButtonSelectionBar {
+    position: absolute;
+    left: 0;
+    border: 0;
+    /* Need this or it will be partially covered by the drop-shadow on android */
+    bottom: 1px;
+    height: 2px;
+    right: 0;
+    border-radius: 0;
+    z-index: 1000;
+}
 
-        .pageTabButton.is-active .pageTabButtonSelectionBar {
-            background: #52B54B;
-        }
+.pageTabButton.is-active .pageTabButtonSelectionBar {
+    background: #52B54B;
+}
 
 .viewMenuBar, .libraryViewNav {
     background-color: #020202;

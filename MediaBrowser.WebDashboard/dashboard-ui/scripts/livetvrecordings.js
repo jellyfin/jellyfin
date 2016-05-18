@@ -54,10 +54,6 @@
         Dashboard.hideLoadingMsg();
     }
 
-    function getSquareShape() {
-        return enableScrollX() ? 'overflowSquare' : 'square';
-    }
-
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
     }
@@ -80,14 +76,12 @@
          
         recordingItems.innerHTML = LibraryBrowser.getPosterViewHtml({
             items: recordings,
-            shape: (enableScrollX() ? getSquareShape() : 'auto'),
+            shape: (enableScrollX() ? 'autooverflow' : 'auto'),
             showTitle: true,
             showParentTitle: true,
-            centerText: true,
             coverImage: true,
             lazy: true,
-            overlayPlayButton: true
-
+            cardLayout: true
         });
 
         ImageLoader.lazyChildren(recordingItems);
@@ -113,7 +107,7 @@
         ApiClient.getLiveTvRecordings({
 
             userId: Dashboard.getCurrentUserId(),
-            limit: 4,
+            limit: enableScrollX() ? 12 : 4,
             IsInProgress: false,
             Fields: 'CanDelete,PrimaryImageAspectRatio'
 

@@ -1,22 +1,5 @@
 ﻿define(['jQuery'], function ($) {
 
-    function loadPage(page, config) {
-
-        $('#txtPortNumber', page).val(config.HttpServerPortNumber);
-        $('#txtPublicPort', page).val(config.PublicPort);
-        $('#txtPublicHttpsPort', page).val(config.PublicHttpsPort);
-
-        $('#chkEnableHttps', page).checked(config.EnableHttps);
-        $('#txtHttpsPort', page).val(config.HttpsPortNumber);
-
-        $('#txtDdns', page).val(config.WanDdns || '');
-        $('#txtCertificatePath', page).val(config.CertificatePath || '');
-
-        $('#chkEnableUpnp', page).checked(config.EnableUPnP);
-
-        Dashboard.hideLoadingMsg();
-    }
-
     function onSubmit() {
         Dashboard.showLoadingMsg();
 
@@ -52,24 +35,43 @@
          }];
     }
 
-    $(document).on('pageshow', "#dashboardHostingPage", function () {
+    return function (view, params) {
 
-        LibraryMenu.setTabs('adminadvanced', 0, getTabs);
-        Dashboard.showLoadingMsg();
+        var self = this;
 
-        var page = this;
+        function loadPage(page, config) {
 
-        ApiClient.getServerConfiguration().then(function (config) {
+            $('#txtPortNumber', page).val(config.HttpServerPortNumber);
+            $('#txtPublicPort', page).val(config.PublicPort);
+            $('#txtPublicHttpsPort', page).val(config.PublicHttpsPort);
 
-            loadPage(page, config);
+            var chkEnableHttps = page.querySelector('#chkEnableHttps');
+            chkEnableHttps.checked = config.EnableHttps;
 
-        });
+            $('#txtHttpsPort', page).val(config.HttpsPortNumber);
 
-    }).on('pageinit', "#dashboardHostingPage", function () {
+            $('#txtDdns', page).val(config.WanDdns || '');
 
-        var page = this;
+            var txtCertificatePath = page.querySelector('#txtCertificatePath');
+            txtCertificatePath.value = config.CertificatePath || '';
 
-        $('#btnSelectCertPath', page).on("click.selectDirectory", function () {
+            $('#chkEnableUpnp', page).checked(config.EnableUPnP);
+
+            onCertPathChange.call(txtCertificatePath);
+
+            Dashboard.hideLoadingMsg();
+        }
+
+        function onCertPathChange() {
+
+            if (this.value) {
+                view.querySelector('#txtDdns').setAttribute('required', 'required');
+            } else {
+                view.querySelector('#txtDdns').removeAttribute('required');
+            }
+        }
+
+        $('#btnSelectCertPath', view).on("click.selectDirectory", function () {
 
             require(['directorybrowser'], function (directoryBrowser) {
 
@@ -83,7 +85,7 @@
                     callback: function (path) {
 
                         if (path) {
-                            $('#txtCertificatePath', page).val(path);
+                            $('#txtCertificatePath', view).val(path);
                         }
                         picker.close();
                     },
@@ -94,6 +96,18 @@
         });
 
         $('.dashboardHostingForm').off('submit', onSubmit).on('submit', onSubmit);
-    });
 
+        view.querySelector('#txtCertificatePath').addEventListener('change', onCertPathChange);
+
+        view.addEventListener('viewshow', function (e) {
+            LibraryMenu.setTabs('adminadvanced', 0, getTabs);
+            Dashboard.showLoadingMsg();
+
+            ApiClient.getServerConfiguration().then(function (config) {
+
+                loadPage(view, config);
+
+            });
+        });
+    };
 });

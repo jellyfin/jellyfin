@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'datetime', 'jQuery', 'mediaInfo', 'scrollStyles'], function (layoutManager, datetime, $, mediaInfo) {
+﻿define(['layoutManager', 'datetime', 'jQuery', 'mediaInfo', 'backdrop', 'scrollStyles'], function (layoutManager, datetime, $, mediaInfo, backdrop) {
 
     var currentItem;
 
@@ -75,14 +75,13 @@
             // For these types, make the backdrop a little smaller so that the items are more quickly accessible
             if (item.Type == 'MusicArtist' || item.Type == "MusicAlbum" || item.Type == "Playlist" || item.Type == "BoxSet" || item.MediaType == "Audio" || !layoutManager.mobile) {
                 $('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
-                require(['backdrop'], function (backdrop) {
-                    backdrop.setBackdrops([item]);
-                });
+                backdrop.setBackdrops([item]);
             }
             else {
                 //$('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
                 //Backdrops.setBackdrops(page, [item]);
                 hasBackdrop = LibraryBrowser.renderDetailPageBackdrop(page, item);
+                backdrop.clear();
             }
 
             var transparentHeader = hasBackdrop && page.classList.contains('noSecondaryNavPage');
@@ -475,7 +474,7 @@
             });
         });
 
-        $('.itemGenres', page).each(function() {
+        $('.itemGenres', page).each(function () {
             LibraryBrowser.renderGenres(this, item, null, isStatic);
         });
         LibraryBrowser.renderStudios($('.itemStudios', page), item, isStatic);
@@ -1098,10 +1097,13 @@
 
         html += '<div class="detailSection">';
 
+        html += '<div style="display:flex;align-items:center;">';
         html += '<h1>';
         html += '<span>' + type.name + '</span>';
 
         html += '</h1>';
+        html += '<button class="btnAddToCollection" type="button" is="paper-icon-button-light" style="margin-left:1em;"><iron-icon icon="add"></iron-icon></button>';
+        html += '</div>';
 
         html += '<div class="detailSectionContent itemsContainer">';
 
@@ -1130,6 +1132,15 @@
         $(collectionItems).off('removefromcollection').on('removefromcollection', function (e, itemId) {
 
             removeFromCollection(page, parentItem, [itemId], user, context);
+        });
+
+        collectionItems.querySelector('.btnAddToCollection').addEventListener('click', function () {
+            require(['alert'], function (alert) {
+                alert({
+                    text: Globalize.translate('AddItemToCollectionHelp'),
+                    html: Globalize.translate('AddItemToCollectionHelp') + '<br/><br/><a target="_blank" href="https://github.com/MediaBrowser/Wiki/wiki/Collections">' + Globalize.translate('ButtonLearnMore') + '</a>'
+                });
+            });
         });
     }
 
