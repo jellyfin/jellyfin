@@ -53,18 +53,22 @@ namespace MediaBrowser.Model.Entities
 
                     if (!string.IsNullOrEmpty(Language))
                     {
-                        attributes.Add(Language);
+                        attributes.Add(Language.FirstToUpper());
                     }
                     if (!string.IsNullOrEmpty(Codec) && !StringHelper.EqualsIgnoreCase(Codec, "dca"))
                     {
-                        attributes.Add(Codec);
-                    }
-                    if (!string.IsNullOrEmpty(Profile) && !StringHelper.EqualsIgnoreCase(Profile, "lc"))
+                        attributes.Add(CodecHelper.FriendlyName(Codec));
+                    } 
+                    else if (!string.IsNullOrEmpty(Profile) && !StringHelper.EqualsIgnoreCase(Profile, "lc"))
                     {
                         attributes.Add(Profile);
                     }
 
-                    if (Channels.HasValue)
+                    if (!string.IsNullOrEmpty(ChannelLayout))
+                    {
+                        attributes.Add(ChannelLayout);
+                    }
+                    else if (Channels.HasValue)
                     {
                         attributes.Add(StringHelper.ToStringCultureInvariant(Channels.Value) + " ch");
                     }
