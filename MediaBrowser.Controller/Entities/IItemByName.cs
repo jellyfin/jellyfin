@@ -15,12 +15,6 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IEnumerable{BaseItem}.</returns>
         IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems);
 
-        /// <summary>
-        /// Gets the item filter.
-        /// </summary>
-        /// <returns>Func&lt;BaseItem, System.Boolean&gt;.</returns>
-        Func<BaseItem, bool> GetItemFilter();
-
         IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query);
     }
 

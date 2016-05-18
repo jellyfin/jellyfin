@@ -63,13 +63,13 @@ namespace MediaBrowser.Controller.Playlists
             return GetPlayableItems(user).Result;
         }
 
-        public override IEnumerable<BaseItem> GetRecursiveChildren(User user, Func<BaseItem, bool> filter)
+        public override IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
         {
             var items = GetPlayableItems(user).Result;
 
-            if (filter != null)
+            if (query != null)
             {
-                items = items.Where(filter);
+                items = items.Where(i => UserViewBuilder.FilterItem(i, query));
             }
 
             return items;
@@ -129,7 +129,11 @@ namespace MediaBrowser.Controller.Playlists
 
                 var items = user == null
                     ? LibraryManager.RootFolder.GetRecursiveChildren(filter)
-                    : user.RootFolder.GetRecursiveChildren(user, filter);
+                    : user.RootFolder.GetRecursiveChildren(user, new InternalItemsQuery(user)
+                    {
+                        IncludeItemTypes = new[] { typeof(Audio).Name },
+                        ArtistNames = new[] { musicArtist.Name }
+                    });
 
                 return LibraryManager.Sort(items, user, new[] { ItemSortBy.AlbumArtist, ItemSortBy.Album, ItemSortBy.SortName }, SortOrder.Ascending);
             }

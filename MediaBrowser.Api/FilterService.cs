@@ -103,7 +103,8 @@ namespace MediaBrowser.Api
                 User = user,
                 MediaTypes = request.GetMediaTypes(),
                 IncludeItemTypes = request.GetIncludeItemTypes(),
-                Recursive = true
+                Recursive = true,
+                EnableTotalRecordCount = false
             };
 
             return query;
