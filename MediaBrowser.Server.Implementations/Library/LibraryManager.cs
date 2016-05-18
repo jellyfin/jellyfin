@@ -1452,7 +1452,7 @@ namespace MediaBrowser.Server.Implementations.Library
                         .GetChildren(user, true)
                         .OfType<CollectionFolder>()
                         .Where(i => string.IsNullOrWhiteSpace(i.CollectionType) || string.Equals(i.CollectionType, view.ViewType, StringComparison.OrdinalIgnoreCase))
-                        .Where(i => user.Configuration.GroupedFolders.Contains(i.Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
+                        .Where(i => user.IsFolderGrouped(i.Id))
                         .SelectMany(i => GetTopParentsForQuery(i, user));
                 }
                 return new BaseItem[] { };
