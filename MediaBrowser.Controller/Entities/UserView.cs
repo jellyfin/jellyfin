@@ -66,7 +66,8 @@ namespace MediaBrowser.Controller.Entities
         {
             var result = GetItems(new InternalItemsQuery
             {
-                User = user
+                User = user,
+                EnableTotalRecordCount = false
 
             }).Result;
 
@@ -83,17 +84,19 @@ namespace MediaBrowser.Controller.Entities
             return true;
         }
 
-        public override IEnumerable<BaseItem> GetRecursiveChildren(User user, Func<BaseItem, bool> filter)
+        public override IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
         {
             var result = GetItems(new InternalItemsQuery
             {
                 User = user,
                 Recursive = true,
-                Filter = filter
+                EnableTotalRecordCount = false,
+
+                ForceDirect = true
 
             }).Result;
 
-            return result.Items;
+            return result.Items.Where(i => UserViewBuilder.FilterItem(i, query));
         }
 
         protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)

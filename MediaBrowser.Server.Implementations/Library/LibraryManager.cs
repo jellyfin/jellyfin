@@ -1448,8 +1448,12 @@ namespace MediaBrowser.Server.Implementations.Library
                 // Handle grouping
                 if (user != null && !string.IsNullOrWhiteSpace(view.ViewType) && UserView.IsEligibleForGrouping(view.ViewType))
                 {
-                    var collectionFolders = user.RootFolder.GetChildren(user, true).OfType<CollectionFolder>().Where(i => string.IsNullOrWhiteSpace(i.CollectionType) || string.Equals(i.CollectionType, view.ViewType, StringComparison.OrdinalIgnoreCase));
-                    return collectionFolders.SelectMany(i => GetTopParentsForQuery(i, user));
+                    return user.RootFolder
+                        .GetChildren(user, true)
+                        .OfType<CollectionFolder>()
+                        .Where(i => string.IsNullOrWhiteSpace(i.CollectionType) || string.Equals(i.CollectionType, view.ViewType, StringComparison.OrdinalIgnoreCase))
+                        .Where(i => user.Configuration.GroupedFolders.Contains(i.Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
+                        .SelectMany(i => GetTopParentsForQuery(i, user));
                 }
                 return new BaseItem[] { };
             }

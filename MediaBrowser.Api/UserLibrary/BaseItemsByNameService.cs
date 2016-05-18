@@ -121,6 +121,13 @@ namespace MediaBrowser.Api.UserLibrary
             var includeItemTypes = request.GetIncludeItemTypes();
             var mediaTypes = request.GetMediaTypes();
 
+            var query = new InternalItemsQuery(user)
+            {
+                ExcludeItemTypes = excludeItemTypes,
+                IncludeItemTypes = includeItemTypes,
+                MediaTypes = mediaTypes
+            };
+
             Func<BaseItem, bool> filter = i => FilterItem(request, i, excludeItemTypes, includeItemTypes, mediaTypes);
 
             if (parentItem.IsFolder)
@@ -130,7 +137,7 @@ namespace MediaBrowser.Api.UserLibrary
                 if (!string.IsNullOrWhiteSpace(request.UserId))
                 {
                     items = request.Recursive ?
-                        folder.GetRecursiveChildren(user, filter) :
+                        folder.GetRecursiveChildren(user, query) :
                         folder.GetChildren(user, true).Where(filter);
                 }
                 else

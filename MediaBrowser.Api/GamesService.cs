@@ -162,7 +162,10 @@ namespace MediaBrowser.Api
 
             var items = user == null ? 
                 system.GetRecursiveChildren(i => i is Game) :
-                system.GetRecursiveChildren(user, i => i is Game);
+                system.GetRecursiveChildren(user, new InternalItemsQuery(user)
+                {
+                    IncludeItemTypes = new[] { typeof(Game).Name }
+                });
 
             var games = items.Cast<Game>().ToList();
 
