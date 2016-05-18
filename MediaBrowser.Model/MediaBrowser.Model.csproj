@@ -137,6 +137,7 @@
     <Compile Include="Dto\MetadataEditorInfo.cs" />
     <Compile Include="Dto\NameIdPair.cs" />
     <Compile Include="Dto\NameValuePair.cs" />
+    <Compile Include="Extensions\CodecHelper.cs" />
     <Compile Include="FileOrganization\SmartMatchInfo.cs" />
     <Compile Include="MediaInfo\LiveStreamRequest.cs" />
     <Compile Include="MediaInfo\LiveStreamResponse.cs" />
