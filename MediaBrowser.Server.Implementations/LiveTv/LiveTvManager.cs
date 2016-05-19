@@ -1410,13 +1410,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 .Where(i => i.IsVisibleStandalone(user))
                 .ToList();
 
+            if (folders.Count == 0)
+            {
+                return new QueryResult<BaseItem>();
+            }
+
             return _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
                 MediaTypes = new[] { MediaType.Video },
                 Recursive = true,
                 AncestorIds = folders.Select(i => i.Id.ToString("N")).ToArray(),
                 ExcludeLocationTypes = new[] { LocationType.Virtual },
-                Limit = Math.Min(10, query.Limit ?? int.MaxValue)
+                Limit = Math.Min(10, query.Limit ?? int.MaxValue),
+                SortBy = new[] { ItemSortBy.DateCreated },
+                SortOrder = SortOrder.Descending
             });
         }
 

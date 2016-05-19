@@ -214,76 +214,78 @@ define(['browser'], function (browser) {
 
     function slide(newAnimatedPage, oldAnimatedPage, transition, isBack) {
 
-        var timings = {
-            duration: 450,
-            iterations: 1,
-            easing: 'ease-out',
-            fill: 'both'
-        }
+        return new Promise(function (resolve, reject) {
 
-        var animations = [];
+            // Do not use fill: both or the ability to swipe horizontally may be affected on Chrome 50
+            var timings = {
+                duration: 450,
+                iterations: 1,
+                easing: 'ease-out'
+            }
 
-        if (oldAnimatedPage) {
-            var destination = isBack ? '100%' : '-100%';
+            var animations = [];
 
-            animations.push(oldAnimatedPage.animate([
+            if (oldAnimatedPage) {
+                var destination = isBack ? '100%' : '-100%';
 
-              { transform: 'none', offset: 0 },
-              { transform: 'translate3d(' + destination + ', 0, 0)', offset: 1 }
+                animations.push(oldAnimatedPage.animate([
+
+                  { transform: 'none', offset: 0 },
+                  { transform: 'translate3d(' + destination + ', 0, 0)', offset: 1 }
+
+                ], timings));
+            }
+
+            newAnimatedPage.classList.remove('hide');
+
+            var start = isBack ? '-100%' : '100%';
+
+            animations.push(newAnimatedPage.animate([
+
+              { transform: 'translate3d(' + start + ', 0, 0)', offset: 0 },
+              { transform: 'none', offset: 1 }
 
             ], timings));
-        }
 
-        newAnimatedPage.classList.remove('hide');
+            currentAnimations = animations;
 
-        var start = isBack ? '-100%' : '100%';
-
-        animations.push(newAnimatedPage.animate([
-
-          { transform: 'translate3d(' + start + ', 0, 0)', offset: 0 },
-          { transform: 'none', offset: 1 }
-
-        ], timings));
-
-        currentAnimations = animations;
-
-        return new Promise(function (resolve, reject) {
             animations[animations.length - 1].onfinish = resolve;
         });
     }
 
     function fade(newAnimatedPage, oldAnimatedPage, transition, isBack) {
 
-        var timings = {
-            duration: 140,
-            iterations: 1,
-            easing: 'ease-out',
-            fill: 'both'
-        }
+        return new Promise(function (resolve, reject) {
 
-        var animations = [];
+            // Do not use fill: both or the ability to swipe horizontally may be affected on Chrome 50
+            var timings = {
+                duration: 140,
+                iterations: 1,
+                easing: 'ease-out'
+            }
 
-        if (oldAnimatedPage) {
-            animations.push(oldAnimatedPage.animate([
+            var animations = [];
 
-              { opacity: 1, offset: 0 },
-              { opacity: 0, offset: 1 }
+            if (oldAnimatedPage) {
+                animations.push(oldAnimatedPage.animate([
+
+                  { opacity: 1, offset: 0 },
+                  { opacity: 0, offset: 1 }
+
+                ], timings));
+            }
+
+            newAnimatedPage.classList.remove('hide');
+
+            animations.push(newAnimatedPage.animate([
+
+                  { opacity: 0, offset: 0 },
+                  { opacity: 1, offset: 1 }
 
             ], timings));
-        }
 
-        newAnimatedPage.classList.remove('hide');
+            currentAnimations = animations;
 
-        animations.push(newAnimatedPage.animate([
-
-              { opacity: 0, offset: 0 },
-              { opacity: 1, offset: 1 }
-
-        ], timings));
-
-        currentAnimations = animations;
-
-        return new Promise(function (resolve, reject) {
             animations[animations.length - 1].onfinish = resolve;
         });
     }
