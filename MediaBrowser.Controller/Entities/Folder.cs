@@ -285,6 +285,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the actual children.
         /// </summary>
         /// <value>The actual children.</value>
+        [IgnoreDataMember]
         protected virtual IEnumerable<BaseItem> ActualChildren
         {
             get

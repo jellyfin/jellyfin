@@ -10,7 +10,7 @@
             UserId: Dashboard.getCurrentUserId(),
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
-            EnableTotalRecordCount: 0
+            EnableTotalRecordCount: false
         };
 
         ApiClient.getJSON(ApiClient.getUrl("Shows/Upcoming", query)).then(function (result) {

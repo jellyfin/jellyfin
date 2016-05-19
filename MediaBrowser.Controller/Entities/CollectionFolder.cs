@@ -83,7 +83,34 @@ namespace MediaBrowser.Controller.Entities
 
         protected override IEnumerable<FileSystemMetadata> GetFileSystemChildren(IDirectoryService directoryService)
         {
-            return CreateResolveArgs(directoryService).FileSystemChildren;
+            return CreateResolveArgs(directoryService, true).FileSystemChildren;
+        }
+
+        private bool _requiresRefresh;
+        public override bool RequiresRefresh()
+        {
+            var changed = base.RequiresRefresh() || _requiresRefresh;
+
+            if (!changed)
+            {
+                var locations = PhysicalLocations.ToList();
+
+                var newLocations = CreateResolveArgs(new DirectoryService(BaseItem.FileSystem), false).PhysicalLocations.ToList();
+
+                if (!locations.SequenceEqual(newLocations))
+                {
+                    changed = true;
+                }
+            }
+
+            return changed;
+        }
+
+        public override bool BeforeMetadataRefresh()
+        {
+            var changed = base.BeforeMetadataRefresh() || _requiresRefresh;
+            _requiresRefresh = false;
+            return changed;
         }
 
         internal override bool IsValidFromResolver(BaseItem newItem)
@@ -101,7 +128,7 @@ namespace MediaBrowser.Controller.Entities
             return base.IsValidFromResolver(newItem);
         }
 
-        private ItemResolveArgs CreateResolveArgs(IDirectoryService directoryService)
+        private ItemResolveArgs CreateResolveArgs(IDirectoryService directoryService, bool setPhysicalLocations)
         {
             var path = ContainingFolderPath;
 
@@ -135,7 +162,11 @@ namespace MediaBrowser.Controller.Entities
                 args.FileSystemDictionary = fileSystemDictionary;
             }
 
-            PhysicalLocationsList = args.PhysicalLocations.ToList();
+            _requiresRefresh = _requiresRefresh || !args.PhysicalLocations.SequenceEqual(PhysicalLocations);
+            if (setPhysicalLocations)
+            {
+                PhysicalLocationsList = args.PhysicalLocations.ToList();
+            }
 
             return args;
         }
@@ -153,15 +184,6 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
         {
-            var list = PhysicalLocationsList.ToList();
-
-            CreateResolveArgs(directoryService);
-
-            if (!list.SequenceEqual(PhysicalLocationsList))
-            {
-                return UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken);
-            }
-
             return Task.FromResult(true);
         }
 
@@ -188,6 +210,7 @@ namespace MediaBrowser.Controller.Entities
         /// Our children are actually just references to the ones in the physical root...
         /// </summary>
         /// <value>The actual children.</value>
+        [IgnoreDataMember]
         protected override IEnumerable<BaseItem> ActualChildren
         {
             get { return GetActualChildren(); }

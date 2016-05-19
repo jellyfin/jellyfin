@@ -50,6 +50,9 @@
   "Edit": "Edit",
   "Download": "Download",
   "Advanced": "Advanced",
+  "Delete": "Delete",
+  "HeaderDeleteItem": "Delete Item",
+  "ConfirmDeleteItem": "Deleting this item will delete it from both the file system and your media library. Are you sure you wish to continue?",
   "Refresh": "Refresh",
   "RefreshQueued": "Refresh queued."
 }
