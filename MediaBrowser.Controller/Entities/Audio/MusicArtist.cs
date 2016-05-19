@@ -72,6 +72,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             return LibraryManager.GetItemList(query);
         }
 
+        [IgnoreDataMember]
         protected override IEnumerable<BaseItem> ActualChildren
         {
             get
