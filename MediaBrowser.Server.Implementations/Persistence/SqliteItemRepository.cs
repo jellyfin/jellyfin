@@ -739,7 +739,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         _saveItemCommand.GetParameter(index++).Value = item.DateLastRefreshed;
                     }
 
-                    _saveItemCommand.GetParameter(index++).Value = item.DateLastSaved;
+                    if (item.DateLastSaved == default(DateTime))
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = item.DateLastSaved;
+                    }
+
                     _saveItemCommand.GetParameter(index++).Value = item.IsInMixedFolder;
                     _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.LockedFields.Select(i => i.ToString()).ToArray());
                     _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.Studios.ToArray());
