@@ -127,9 +127,9 @@ namespace MediaBrowser.Controller.Entities
                 args.FileSystemDictionary = fileSystemDictionary;
             }
 
+            _requiresRefresh = _requiresRefresh || !args.PhysicalLocations.SequenceEqual(PhysicalLocations);
             if (setPhysicalLocations)
             {
-                _requiresRefresh = !args.PhysicalLocations.SequenceEqual(PhysicalLocations);
                 PhysicalLocationsList = args.PhysicalLocations.ToList();
             }
 
