@@ -88,9 +88,45 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events'], functio
         target.addEventListener(type, handler, optionsOrCapture);
     }
 
+    function unveilWithIntersection(images) {
+
+        var filledCount = 0;
+
+        var observer = new IntersectionObserver(function (entries) {
+            for (var j = 0, length2 = entries.length; j < length2; j++) {
+                var entry = entries[j];
+                var intersectionRatio = entry.intersectionRatio;
+                if (intersectionRatio) {
+
+                    var target = entry.target;
+                    observer.unobserve(target);
+                    fillImage(target);
+                    filledCount++;
+                }
+            }
+
+            if (filledCount >= images.length) {
+                //observer.disconnect();
+            }
+        },
+        {
+            /* Using default options. Details below */
+        }
+        );
+        // Start observing an element
+        for (var i = 0, length = images.length; i < length; i++) {
+            observer.observe(images[i]);
+        }
+    }
+
     function unveilElements(images) {
 
         if (!images.length) {
+            return;
+        }
+
+        if (window.IntersectionObserver) {
+            unveilWithIntersection(images);
             return;
         }
 

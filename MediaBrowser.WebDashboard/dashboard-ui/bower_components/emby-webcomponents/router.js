@@ -203,10 +203,10 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
 
         if (!isBackNav) {
             // Don't force a new view for home due to the back menu
-            if (route.type != 'home') {
+            //if (route.type != 'home') {
                 onNewViewNeeded();
                 return;
-            }
+            //}
         }
         viewManager.tryRestoreView(currentRequest).then(function () {
 
