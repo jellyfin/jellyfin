@@ -1280,19 +1280,6 @@ var Dashboard = {
                         Method: 'Embed'
                     });
 
-                    // These don't play very well
-                    profile.CodecProfiles.push({
-                        Type: 'VideoAudio',
-                        Codec: 'dca',
-                        Conditions: [
-                            {
-                                Condition: 'LessThanEqual',
-                                Property: 'AudioChannels',
-                                Value: 6
-                            }
-                        ]
-                    });
-
                     profile.CodecProfiles.push({
                         Type: 'VideoAudio',
                         Codec: 'aac,mp3',
@@ -2539,7 +2526,8 @@ var AppInfo = {};
 
         defineRoute({
             path: '/itemdetails.html',
-            dependencies: ['paper-button'],
+            dependencies: ['paper-button', 'tileitemcss', 'scripts/livetvcomponents', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light'],
+            controller: 'scripts/itemdetailpage',
             autoFocus: false,
             transition: 'fade'
         });

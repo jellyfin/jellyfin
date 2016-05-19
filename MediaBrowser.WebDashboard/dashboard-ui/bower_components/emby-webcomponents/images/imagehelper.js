@@ -1,4 +1,4 @@
-define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events'], function (visibleinviewport, imageFetcher, layoutManager, events) {
+define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser'], function (visibleinviewport, imageFetcher, layoutManager, events, browser) {
 
     var thresholdX;
     var thresholdY;
@@ -119,13 +119,29 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events'], functio
         }
     }
 
+    var supportsIntersectionObserver = function () {
+
+        if (window.IntersectionObserver) {
+
+            // The api exists in chrome 50 but doesn't work
+            if (browser.chrome) {
+
+                var version = parseInt(browser.version.split('.')[0]);
+                return version >= 51;
+            }
+            return true;
+        }
+
+        return false;
+    }();
+
     function unveilElements(images) {
 
         if (!images.length) {
             return;
         }
 
-        if (window.IntersectionObserver) {
+        if (supportsIntersectionObserver) {
             unveilWithIntersection(images);
             return;
         }
