@@ -2296,47 +2296,41 @@ var AppInfo = {};
             dependencies: [],
             autoFocus: false,
             controller: 'scripts/aboutpage',
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/addplugin.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/appservices.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/autoorganizelog.html',
             dependencies: [],
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/autoorganizesmart.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/autoorganizetv.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
@@ -2357,39 +2351,34 @@ var AppInfo = {};
             path: '/channelsettings.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/cinemamodeconfiguration.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/collections.html',
             dependencies: [],
-            autoFocus: false,
-            transition: 'fade'
+            autoFocus: false
         });
 
         defineRoute({
             path: '/connectlogin.html',
             dependencies: ['paper-button'],
             autoFocus: false,
-            anonymous: true,
-            transition: 'fade'
+            anonymous: true
         });
 
         defineRoute({
             path: '/dashboard.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
@@ -2397,8 +2386,7 @@ var AppInfo = {};
             dependencies: ['emby-collapsible', 'paper-textarea', 'paper-input', 'paper-checkbox'],
             controller: 'scripts/dashboardgeneral',
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
@@ -2406,64 +2394,56 @@ var AppInfo = {};
             dependencies: ['paper-checkbox', 'paper-input', 'paper-button'],
             autoFocus: false,
             roles: 'admin',
-            controller: 'scripts/dashboardhosting',
-            transition: 'fade'
+            controller: 'scripts/dashboardhosting'
         });
 
         defineRoute({
             path: '/device.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/devices.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/devicesupload.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/dlnaprofile.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/dlnaprofiles.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/dlnaserversettings.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/dlnasettings.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
@@ -2476,66 +2456,57 @@ var AppInfo = {};
             path: '/encodingsettings.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/favorites.html',
             dependencies: [],
             autoFocus: false,
-            controller: 'scripts/favorites',
-            transition: 'fade'
+            controller: 'scripts/favorites'
         });
 
         defineRoute({
             path: '/forgotpassword.html',
             dependencies: [],
-            anonymous: true,
-            transition: 'fade'
+            anonymous: true
         });
 
         defineRoute({
             path: '/forgotpasswordpin.html',
             dependencies: [],
             autoFocus: false,
-            anonymous: true,
-            transition: 'fade'
+            anonymous: true
         });
 
         defineRoute({
             path: '/gamegenres.html',
             dependencies: [],
-            autoFocus: false,
-            transition: 'fade'
+            autoFocus: false
         });
 
         defineRoute({
             path: '/games.html',
             dependencies: [],
-            autoFocus: false,
-            transition: 'fade'
+            autoFocus: false
         });
 
         defineRoute({
             path: '/gamesrecommended.html',
             dependencies: [],
-            autoFocus: false,
-            transition: 'fade'
+            autoFocus: false
         });
 
         defineRoute({
             path: '/gamestudios.html',
             dependencies: [],
-            autoFocus: false,
-            transition: 'fade'
+            autoFocus: false
         });
 
         defineRoute({
             path: '/gamesystems.html',
             dependencies: [],
-            autoFocus: false,
-            transition: 'fade'
+            autoFocus: false
         });
 
         defineRoute({
@@ -2579,24 +2550,21 @@ var AppInfo = {};
             path: '/library.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/librarypathmapping.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/librarysettings.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
@@ -2611,60 +2579,52 @@ var AppInfo = {};
             path: '/livetvguideprovider.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/livetvitems.html',
             dependencies: [],
-            autoFocus: false,
-            transition: 'fade'
+            autoFocus: false
         });
 
         defineRoute({
             path: '/livetvrecordinglist.html',
             dependencies: [],
-            autoFocus: false,
-            transition: 'fade'
+            autoFocus: false
         });
 
         defineRoute({
             path: '/livetvseriestimer.html',
             dependencies: [],
-            autoFocus: false,
-            transition: 'fade'
+            autoFocus: false
         });
 
         defineRoute({
             path: '/livetvsettings.html',
             dependencies: [],
-            autoFocus: false,
-            transition: 'fade'
+            autoFocus: false
         });
 
         defineRoute({
             path: '/livetvstatus.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/livetvtunerprovider-hdhomerun.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/livetvtunerprovider-m3u.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
@@ -2672,16 +2632,14 @@ var AppInfo = {};
             dependencies: ['paper-input', 'paper-checkbox'],
             autoFocus: false,
             roles: 'admin',
-            controller: 'scripts/livetvtunerprovider-satip',
-            transition: 'fade'
+            controller: 'scripts/livetvtunerprovider-satip'
         });
 
         defineRoute({
             path: '/log.html',
             dependencies: ['paper-toggle-button'],
             roles: 'admin',
-            controller: 'scripts/logpage',
-            transition: 'fade'
+            controller: 'scripts/logpage'
         });
 
         defineRoute({
@@ -2689,48 +2647,42 @@ var AppInfo = {};
             dependencies: ['paper-button', 'humanedate', 'paper-input'],
             autoFocus: false,
             anonymous: true,
-            controller: 'scripts/loginpage',
-            transition: 'fade'
+            controller: 'scripts/loginpage'
         });
 
         defineRoute({
             path: '/metadata.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/metadataadvanced.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/metadataimages.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/metadatanfo.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/metadatasubtitles.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
@@ -2808,16 +2760,14 @@ var AppInfo = {};
         defineRoute({
             path: '/notificationlist.html',
             dependencies: [],
-            autoFocus: false,
-            transition: 'fade'
+            autoFocus: false
         });
 
         defineRoute({
             path: '/notificationsetting.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
@@ -2825,8 +2775,7 @@ var AppInfo = {};
             controller: 'scripts/notificationsettings',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
@@ -2848,8 +2797,7 @@ var AppInfo = {};
             path: '/playbackconfiguration.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
@@ -2863,123 +2811,107 @@ var AppInfo = {};
             path: '/plugincatalog.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/plugins.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/reports.html',
             dependencies: [],
-            autoFocus: false,
-            transition: 'fade'
+            autoFocus: false
         });
 
         defineRoute({
             path: '/scheduledtask.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/scheduledtasks.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/search.html',
             dependencies: [],
-            autoFocus: false,
-            transition: 'fade'
+            autoFocus: false
         });
 
         defineRoute({
             path: '/secondaryitems.html',
             dependencies: [],
             autoFocus: false,
-            controller: 'scripts/secondaryitems',
-            transition: 'fade'
+            controller: 'scripts/secondaryitems'
         });
 
         defineRoute({
             path: '/selectserver.html',
             dependencies: [],
             autoFocus: false,
-            anonymous: true,
-            transition: 'fade'
+            anonymous: true
         });
 
         defineRoute({
             path: '/serversecurity.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/shared.html',
             dependencies: [],
             autoFocus: false,
-            anonymous: true,
-            transition: 'fade'
+            anonymous: true
         });
 
         defineRoute({
             path: '/streamingsettings.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/support.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/supporterkey.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/syncactivity.html',
             dependencies: [],
-            autoFocus: false,
-            transition: 'fade'
+            autoFocus: false
         });
 
         defineRoute({
             path: '/syncjob.html',
             dependencies: [],
-            autoFocus: false,
-            transition: 'fade'
+            autoFocus: false
         });
 
         defineRoute({
             path: '/syncsettings.html',
             dependencies: [],
-            autoFocus: false,
-            transition: 'fade'
+            autoFocus: false
         });
 
         defineRoute({
@@ -2994,119 +2926,104 @@ var AppInfo = {};
             path: '/useredit.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/userlibraryaccess.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/usernew.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/userparentalcontrol.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/userpassword.html',
             dependencies: [],
-            autoFocus: false,
-            transition: 'fade'
+            autoFocus: false
         });
 
         defineRoute({
             path: '/userprofiles.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin',
-            transition: 'fade'
+            roles: 'admin'
         });
 
         defineRoute({
             path: '/wizardagreement.html',
             dependencies: [],
             autoFocus: false,
-            anonymous: true,
-            transition: 'fade'
+            anonymous: true
         });
 
         defineRoute({
             path: '/wizardfinish.html',
             dependencies: [],
             autoFocus: false,
-            anonymous: true,
-            transition: 'fade'
+            anonymous: true
         });
 
         defineRoute({
             path: '/wizardlibrary.html',
             dependencies: [],
             autoFocus: false,
-            anonymous: true,
-            transition: 'fade'
+            anonymous: true
         });
 
         defineRoute({
             path: '/wizardlivetvguide.html',
             dependencies: [],
             autoFocus: false,
-            anonymous: true,
-            transition: 'fade'
+            anonymous: true
         });
 
         defineRoute({
             path: '/wizardlivetvtuner.html',
             dependencies: [],
             autoFocus: false,
-            anonymous: true,
-            transition: 'fade'
+            anonymous: true
         });
 
         defineRoute({
             path: '/wizardservice.html',
             dependencies: [],
             autoFocus: false,
-            anonymous: true,
-            transition: 'fade'
+            anonymous: true
         });
 
         defineRoute({
             path: '/wizardsettings.html',
             dependencies: [],
             autoFocus: false,
-            anonymous: true,
-            transition: 'fade'
+            anonymous: true
         });
 
         defineRoute({
             path: '/wizardstart.html',
             dependencies: [],
             autoFocus: false,
-            anonymous: true,
-            transition: 'fade'
+            anonymous: true
         });
 
         defineRoute({
             path: '/wizarduser.html',
             dependencies: [],
             autoFocus: false,
-            anonymous: true,
-            transition: 'fade'
+            anonymous: true
         });
 
         defineRoute({

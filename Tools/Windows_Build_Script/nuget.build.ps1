@@ -48,19 +48,6 @@ else
     Exit
 }
 
-Write-Host "Building Signed Model for Nuget..."
-$buildSucceeded = Invoke-MsBuild -Path "$PSScriptRoot\..\..\MediaBrowser.Model\MediaBrowser.Model.csproj" -MsBuildParameters "/target:Clean;Build /p:SignAssembly=true /p:AssemblyOriginatorKeyFile=MediaBrowser.Model.snk /p:OutputPath=""$PSScriptRoot\..\..\Nuget\dllssigned\net45"" /property:Configuration=Release;Platform=""Any CPU"" /verbosity:Quiet" -BuildLogDirectoryPath "$PSScriptRoot" 
-
-if ($buildSucceeded)
-{
-    Write-Host "Signed Model Build completed successfully."
-}
-else
-{
-    Write-Host "Signed Model Build failed. Check the build log file for errors."
-    Exit
-}
-
 Write-Host "Building Model for Nuget..."
 $buildSucceeded = Invoke-MsBuild -Path "$PSScriptRoot\..\..\MediaBrowser.Model\MediaBrowser.Model.csproj" -MsBuildParameters "/target:Clean;Build /p:OutputPath=""$PSScriptRoot\..\..\Nuget\dlls\net45"" /property:Configuration=Release;Platform=""Any CPU"" /verbosity:Quiet" -BuildLogDirectoryPath "$PSScriptRoot" 
 
