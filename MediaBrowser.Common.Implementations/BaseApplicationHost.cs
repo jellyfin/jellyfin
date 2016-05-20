@@ -552,7 +552,7 @@ namespace MediaBrowser.Common.Implementations
             }
             catch (Exception ex)
             {
-                Logger.Error("Error creating {0}", ex, type.Name);
+                Logger.ErrorException("Error creating {0}", ex, type.Name);
 
                 throw;
             }
@@ -571,7 +571,7 @@ namespace MediaBrowser.Common.Implementations
             }
             catch (Exception ex)
             {
-                Logger.Error("Error creating {0}", ex, type.Name);
+                Logger.ErrorException("Error creating {0}", ex, type.Name);
                 // Don't blow up in release mode
                 return null;
             }
