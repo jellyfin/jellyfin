@@ -23,19 +23,6 @@ namespace MediaBrowser.Controller.Entities
             PhysicalLocationsList = new List<string>();
         }
 
-        /// <summary>
-        /// Gets a value indicating whether this instance is virtual folder.
-        /// </summary>
-        /// <value><c>true</c> if this instance is virtual folder; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public override bool IsVirtualFolder
-        {
-            get
-            {
-                return true;
-            }
-        }
-
         [IgnoreDataMember]
         protected override bool SupportsShortcutChildren
         {

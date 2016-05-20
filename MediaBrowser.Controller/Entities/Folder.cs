@@ -126,19 +126,6 @@ namespace MediaBrowser.Controller.Entities
         /// <value><c>true</c> if this instance is root; otherwise, <c>false</c>.</value>
         public bool IsRoot { get; set; }
 
-        /// <summary>
-        /// Gets a value indicating whether this instance is virtual folder.
-        /// </summary>
-        /// <value><c>true</c> if this instance is virtual folder; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public virtual bool IsVirtualFolder
-        {
-            get
-            {
-                return false;
-            }
-        }
-
         public virtual List<LinkedChild> LinkedChildren { get; set; }
 
         [IgnoreDataMember]
