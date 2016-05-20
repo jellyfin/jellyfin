@@ -97,7 +97,7 @@ namespace MediaBrowser.Providers.TV
         /// </summary>
         public async Task<Season> AddSeason(Series series,
             int? seasonNumber,
-            bool isMissingSeason,
+            bool isVirtualItem,
             CancellationToken cancellationToken)
         {
             var seasonName = seasonNumber == 0 ?
@@ -111,7 +111,7 @@ namespace MediaBrowser.Providers.TV
                 Name = seasonName,
                 IndexNumber = seasonNumber,
                 Id = _libraryManager.GetNewItemId((series.Id + (seasonNumber ?? -1).ToString(_usCulture) + seasonName), typeof(Season)),
-                IsMissingSeason = isMissingSeason
+                IsVirtualItem = isVirtualItem
             };
 
             season.SetParent(series);

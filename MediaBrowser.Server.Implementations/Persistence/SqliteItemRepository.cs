@@ -238,6 +238,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "PrimaryVersionId", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "DateLastMediaAdded", "DATETIME");
             _connection.AddColumn(Logger, "TypedBaseItems", "Album", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "IsVirtualItem", "BIT");
 
             _connection.AddColumn(Logger, "UserDataKeys", "Priority", "INT");
 
@@ -359,7 +360,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "DateLastMediaAdded",
             "Album",
             "CriticRating",
-            "CriticRatingSummary"
+            "CriticRatingSummary",
+            "IsVirtualItem"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -474,7 +476,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "OriginalTitle",
                 "PrimaryVersionId",
                 "DateLastMediaAdded",
-                "Album"
+                "Album",
+                "IsVirtualItem"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -865,6 +868,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     }
 
                     _saveItemCommand.GetParameter(index++).Value = item.Album;
+
+                    var season = item as Season;
+                    if (season != null && season.IsVirtualItem.HasValue)
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = season.IsVirtualItem.Value;
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
 
                     _saveItemCommand.Transaction = transaction;
 
@@ -1279,6 +1292,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!reader.IsDBNull(57))
             {
                 item.CriticRatingSummary = reader.GetString(57);
+            }
+
+            var season = item as Season;
+            if (season != null && !reader.IsDBNull(58))
+            {
+                season.IsVirtualItem = reader.GetBoolean(58);
             }
 
             return item;

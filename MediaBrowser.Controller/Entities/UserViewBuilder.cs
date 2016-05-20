@@ -1134,22 +1134,6 @@ namespace MediaBrowser.Controller.Entities
             bool? isVirtualUnaired,
             bool? isUnaired)
         {
-            if (isMissing.HasValue && isVirtualUnaired.HasValue)
-            {
-                if (!isMissing.Value && !isVirtualUnaired.Value)
-                {
-                    return items.Where(i =>
-                    {
-                        var e = i as Season;
-                        if (e != null)
-                        {
-                            return !e.IsMissingOrVirtualUnaired;
-                        }
-                        return true;
-                    });
-                }
-            }
-
             if (isMissing.HasValue)
             {
                 var val = isMissing.Value;
@@ -1158,7 +1142,7 @@ namespace MediaBrowser.Controller.Entities
                     var e = i as Season;
                     if (e != null)
                     {
-                        return (e.IsMissingSeason ?? false) == val;
+                        return (e.IsMissingSeason) == val;
                     }
                     return true;
                 });

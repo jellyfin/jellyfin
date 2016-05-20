@@ -238,20 +238,13 @@ namespace MediaBrowser.Controller.Entities.TV
                 seasons = LibraryManager.Sort(base.GetChildren(user, true), user, new[] { ItemSortBy.SortName }, SortOrder.Ascending).OfType<Season>();
             }
 
-            if (!includeMissingSeasons && !includeVirtualUnaired)
+            if (!includeMissingSeasons)
             {
-                seasons = seasons.Where(i => !i.IsMissingOrVirtualUnaired);
+                seasons = seasons.Where(i => !(i.IsMissingSeason));
             }
-            else
+            if (!includeVirtualUnaired)
             {
-                if (!includeMissingSeasons)
-                {
-                    seasons = seasons.Where(i => !(i.IsMissingSeason ?? false));
-                }
-                if (!includeVirtualUnaired)
-                {
-                    seasons = seasons.Where(i => !i.IsVirtualUnaired);
-                }
+                seasons = seasons.Where(i => !i.IsVirtualUnaired);
             }
 
             return seasons;
