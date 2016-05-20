@@ -215,6 +215,9 @@ namespace MediaBrowser.Model.Configuration
         {
             Migrations = new string[] { };
 
+            EnableLocalizedGuids = true;
+            EnableCustomPathSubFolders = true;
+
             ImageSavingConvention = ImageSavingConvention.Compatible;
             PublicPort = 8096;
             PublicHttpsPort = 8920;
