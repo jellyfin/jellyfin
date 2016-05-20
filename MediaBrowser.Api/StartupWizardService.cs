@@ -65,11 +65,7 @@ namespace MediaBrowser.Api
         public void Post(ReportStartupWizardComplete request)
         {
             _config.Configuration.IsStartupWizardCompleted = true;
-            _config.Configuration.EnableLocalizedGuids = true;
-            _config.Configuration.EnableCustomPathSubFolders = true;
-            _config.Configuration.EnableDateLastRefresh = true;
-            _config.Configuration.EnableStandaloneMusicKeys = true;
-            _config.Configuration.EnableCaseSensitiveItemIds = true;
+            SetWizardFinishValues(_config.Configuration);
             _config.SaveConfiguration();
         }
 
@@ -109,6 +105,15 @@ namespace MediaBrowser.Api
             }
 
             return result;
+        }
+
+        private void SetWizardFinishValues(ServerConfiguration config)
+        {
+            config.EnableLocalizedGuids = true;
+            config.EnableCustomPathSubFolders = true;
+            config.EnableDateLastRefresh = true;
+            config.EnableStandaloneMusicKeys = true;
+            config.EnableCaseSensitiveItemIds = true;
         }
 
         public void Post(UpdateStartupConfiguration request)
