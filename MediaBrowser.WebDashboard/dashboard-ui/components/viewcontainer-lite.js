@@ -3,15 +3,15 @@ define(['browser'], function (browser) {
     var allPages = document.querySelectorAll('.mainAnimatedPage');
     var currentUrls = [];
     var pageContainerCount = allPages.length;
-    var allowAnimation = true;
     var selectedPageIndex = -1;
 
     function enableAnimation() {
 
-        if (!allowAnimation) {
+        if (browser.tv) {
             return false;
         }
-        if (browser.tv) {
+        if (browser.safari) {
+            // Right now they don't look good. Haven't figured out why yet.
             return false;
         }
 
