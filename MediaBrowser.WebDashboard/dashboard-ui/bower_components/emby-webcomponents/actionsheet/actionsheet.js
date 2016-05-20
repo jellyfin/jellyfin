@@ -148,14 +148,7 @@
             dlg.classList.add('centered');
         }
 
-        var enablePaperMenu = !layoutManager.tv;
-        enablePaperMenu = false;
         var itemTagName = 'paper-button';
-
-        if (enablePaperMenu) {
-            html += '<paper-menu>';
-            itemTagName = 'paper-menu-item';
-        }
 
         for (var i = 0, length = options.items.length; i < length; i++) {
 
@@ -172,10 +165,6 @@
             }
             html += '<div class="actionSheetItemText">' + option.name + '</div>';
             html += '</' + itemTagName + '>';
-        }
-
-        if (enablePaperMenu) {
-            html += '</paper-menu>';
         }
 
         if (options.showCancel) {

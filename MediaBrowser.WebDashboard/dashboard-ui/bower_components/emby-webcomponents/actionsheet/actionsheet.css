@@ -53,7 +53,6 @@
 .actionSheetScroller {
     /* Override default style being applied by polymer */
     margin-bottom: 0 !important;
-    flex-grow: 1;
 }
 
 .layout-tv .actionSheetScroller {

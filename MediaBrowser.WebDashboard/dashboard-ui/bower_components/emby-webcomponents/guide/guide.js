@@ -190,7 +190,7 @@
             return null;
         }
 
-        function getChannelProgramsHtml(context, date, channel, programs) {
+        function getChannelProgramsHtml(context, date, channel, programs, options) {
 
             var html = '';
 
@@ -255,20 +255,20 @@
 
                 html += '<div class="' + guideProgramNameClass + '">';
 
-                if (program.IsLive) {
+                if (program.IsLive && options.showLiveIndicator) {
                     html += '<span class="liveTvProgram">' + globalize.translate('sharedcomponents#AttributeLive') + '&nbsp;</span>';
                 }
-                else if (program.IsPremiere) {
+                else if (program.IsPremiere && options.showPremiereIndicator) {
                     html += '<span class="premiereTvProgram">' + globalize.translate('sharedcomponents#AttributePremiere') + '&nbsp;</span>';
                 }
-                else if (program.IsSeries && !program.IsRepeat) {
+                else if (program.IsSeries && !program.IsRepeat && options.showNewIndicator) {
                     html += '<span class="newTvProgram">' + globalize.translate('sharedcomponents#AttributeNew') + '&nbsp;</span>';
                 }
 
                 html += program.Name;
                 html += '</div>';
 
-                if (program.IsHD) {
+                if (program.IsHD && options.showHdIcon) {
                     html += '<iron-icon class="guideHdIcon" icon="mediainfo:hd"></iron-icon>';
                 }
 
@@ -295,9 +295,21 @@
 
             var html = [];
 
+            // Normally we'd want to just let responsive css handle this,
+            // but since mobile browsers are often underpowered, 
+            // it can help performance to get them out of the markup
+            var showIndicators = window.innerWidth >= 800;
+
+            var options = {
+                showHdIcon: showIndicators,
+                showLiveIndicator: showIndicators,
+                showPremiereIndicator: showIndicators,
+                showNewIndicator: showIndicators
+            };
+
             for (var i = 0, length = channels.length; i < length; i++) {
 
-                html.push(getChannelProgramsHtml(context, date, channels[i], programs));
+                html.push(getChannelProgramsHtml(context, date, channels[i], programs, options));
             }
 
             var programGrid = context.querySelector('.programGrid');
@@ -623,7 +635,7 @@
 
             programGrid.addEventListener('focus', onProgramGridFocus, true);
 
-            addEventListenerWithOptions(programGrid, 'scroll', function () {
+            addEventListenerWithOptions(programGrid, 'scroll', function (e) {
                 onProgramGridScroll(context, this, timeslotHeaders);
             }, {
                 passive: true
