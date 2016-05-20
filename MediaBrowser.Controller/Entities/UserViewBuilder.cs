@@ -1142,7 +1142,7 @@ namespace MediaBrowser.Controller.Entities
                     var e = i as Season;
                     if (e != null)
                     {
-                        return (e.IsMissingSeason ?? false) == val;
+                        return (e.IsMissingSeason) == val;
                     }
                     return true;
                 });

@@ -134,7 +134,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             if (!result)
             {
-                if (!IsMissingSeason.HasValue)
+                if (!IsVirtualItem.HasValue)
                 {
                     return true;
                 }
@@ -144,12 +144,18 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
-        public bool? IsMissingSeason { get; set; }
+        public bool? IsVirtualItem { get; set; }
+
+        [IgnoreDataMember]
+        public bool IsMissingSeason
+        {
+            get { return (IsVirtualItem ?? false) && !IsUnaired; }
+        }
 
         [IgnoreDataMember]
         public bool IsVirtualUnaired
         {
-            get { return LocationType == LocationType.Virtual && IsUnaired; }
+            get { return (IsVirtualItem ?? false) && IsUnaired; }
         }
 
         [IgnoreDataMember]
@@ -313,19 +319,14 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             var hasChanges = base.BeforeMetadataRefresh();
 
-            var locationType = LocationType;
-
-            if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
+            if (!IndexNumber.HasValue && !string.IsNullOrEmpty(Path))
             {
-                if (!IndexNumber.HasValue && !string.IsNullOrEmpty(Path))
-                {
-                    IndexNumber = IndexNumber ?? LibraryManager.GetSeasonNumberFromPath(Path);
+                IndexNumber = IndexNumber ?? LibraryManager.GetSeasonNumberFromPath(Path);
 
-                    // If a change was made record it
-                    if (IndexNumber.HasValue)
-                    {
-                        hasChanges = true;
-                    }
+                // If a change was made record it
+                if (IndexNumber.HasValue)
+                {
+                    hasChanges = true;
                 }
             }
 

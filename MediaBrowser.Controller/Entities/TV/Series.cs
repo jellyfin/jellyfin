@@ -240,7 +240,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             if (!includeMissingSeasons)
             {
-                seasons = seasons.Where(i => !(i.IsMissingSeason ?? false));
+                seasons = seasons.Where(i => !(i.IsMissingSeason));
             }
             if (!includeVirtualUnaired)
             {
