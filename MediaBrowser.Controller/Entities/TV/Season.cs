@@ -153,12 +153,6 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
-        public bool IsMissingOrVirtualUnaired
-        {
-            get { return (IsMissingSeason ?? false) || (LocationType == LocationType.Virtual && IsUnaired); }
-        }
-
-        [IgnoreDataMember]
         public bool IsSpecialSeason
         {
             get { return (IndexNumber ?? -1) == 0; }
