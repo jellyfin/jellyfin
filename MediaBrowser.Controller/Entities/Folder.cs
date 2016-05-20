@@ -772,7 +772,7 @@ namespace MediaBrowser.Controller.Entities
                     return true;
                 }
             }
-            
+
             var supportsUserDataQueries = ConfigurationManager.Configuration.SchemaVersion >= 76;
 
             if (query.SortBy != null && query.SortBy.Length > 0)
@@ -1294,7 +1294,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Adds the children to list.
         /// </summary>
-        private void AddChildrenToList(Dictionary<Guid,BaseItem> result, bool includeLinkedChildren, bool recursive, Func<BaseItem, bool> filter)
+        private void AddChildrenToList(Dictionary<Guid, BaseItem> result, bool includeLinkedChildren, bool recursive, Func<BaseItem, bool> filter)
         {
             foreach (var child in Children)
             {
@@ -1525,14 +1525,12 @@ namespace MediaBrowser.Controller.Entities
                 User = user,
                 Recursive = true,
                 IsFolder = false,
-                IsUnaired = false,
                 EnableTotalRecordCount = false
-
             };
 
-            if (!user.Configuration.DisplayMissingEpisodes)
+            if (!user.Configuration.DisplayMissingEpisodes || !user.Configuration.DisplayUnairedEpisodes)
             {
-                query.IsMissing = false;
+                query.ExcludeLocationTypes = new[] { LocationType.Virtual };
             }
 
             var itemsResult = await GetItems(query).ConfigureAwait(false);
