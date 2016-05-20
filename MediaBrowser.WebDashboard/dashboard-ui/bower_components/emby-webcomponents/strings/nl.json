@@ -1,4 +1,7 @@
 {
+    "Delete": "Verwijder",
+    "HeaderDeleteItem": "Item verwijderen",
+    "ConfirmDeleteItem": "Verwijderen van dit item zal het verwijderen uit zowel het bestandssysteem als de Media Bibliotheek. Weet u zeker dat u wilt doorgaan?",
     "ValueSpecialEpisodeName": "Speciaal - {0}",
     "Share": "Delen",
     "ServerUpdateNeeded": "Deze Emby Server moet worden bijgewerkt. Om de laatste versie te downloaden, gaat u naar {0}",

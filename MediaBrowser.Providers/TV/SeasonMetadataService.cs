@@ -69,7 +69,7 @@ namespace MediaBrowser.Providers.TV
 
         private ItemUpdateType SaveIsMissing(Season item, List<Episode> episodes)
         {
-            var isMissing = item.LocationType == LocationType.Virtual && episodes.All(i => i.IsMissingEpisode);
+            var isMissing = item.LocationType == LocationType.Virtual && (episodes.Count == 0 || episodes.All(i => i.IsMissingEpisode));
 
             if (item.IsMissingSeason != isMissing)
             {

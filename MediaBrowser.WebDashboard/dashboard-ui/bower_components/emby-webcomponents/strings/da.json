@@ -1,4 +1,7 @@
 {
+    "Delete": "Delete",
+    "HeaderDeleteItem": "Delete Item",
+    "ConfirmDeleteItem": "Deleting this item will delete it from both the file system and your media library. Are you sure you wish to continue?",
     "ValueSpecialEpisodeName": "Special - {0}",
     "Share": "Del",
     "ServerUpdateNeeded": "Denne Emby server b\u00f8r opdateres. For at downloade den nyeste version bes\u00f8g venligst {0}",

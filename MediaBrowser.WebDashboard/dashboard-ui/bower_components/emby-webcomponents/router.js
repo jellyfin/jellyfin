@@ -18,6 +18,12 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         },
         showSearch: function () {
             skinManager.getCurrentSkin().search();
+        },
+        showGuide: function () {
+            skinManager.getCurrentSkin().showGuide();
+        },
+        showLiveTV: function () {
+            skinManager.getCurrentSkin().showLiveTV();
         }
     };
 

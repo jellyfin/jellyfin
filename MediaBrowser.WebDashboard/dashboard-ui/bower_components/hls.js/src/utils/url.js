@@ -1,5 +1,4 @@
 var URLHelper = {
-
   // build an absolute URL from a relative one using the provided baseURL
   // if relativeURL is an absolute URL it will be returned as is.
   buildAbsoluteURL: function(baseURL, relativeURL) {
@@ -33,20 +32,29 @@ var URLHelper = {
       baseURL = baseURLQuerySplit[1];
     }
 
-    var baseURLDomainSplit = /^((([a-z]+):)?\/\/[a-z0-9\.\-_~]+(:[0-9]+)?\/)(.*)$/i.exec(baseURL);
-    var baseURLProtocol = baseURLDomainSplit[3];
-    var baseURLDomain = baseURLDomainSplit[1];
-    var baseURLPath = baseURLDomainSplit[5];
+    var baseURLDomainSplit = /^(([a-z]+:)?\/\/[a-z0-9\.\-_~]+(:[0-9]+)?)?(\/.*)$/i.exec(baseURL);
+    if (!baseURLDomainSplit) {
+      throw new Error('Error trying to parse base URL.');
+    }
+    
+    // e.g. 'http:', 'https:', ''
+    var baseURLProtocol = baseURLDomainSplit[2] || '';
+    // e.g. 'http://example.com', '//example.com', ''
+    var baseURLProtocolDomain = baseURLDomainSplit[1] || '';
+    // e.g. '/a/b/c/playlist.m3u8'
+    var baseURLPath = baseURLDomainSplit[4];
 
     var builtURL = null;
     if (/^\/\//.test(relativeURL)) {
-      builtURL = baseURLProtocol+'://'+URLHelper.buildAbsolutePath('', relativeURL.substring(2));
+      // relative url starts wth '//' so copy protocol (which may be '' if baseUrl didn't provide one)
+      builtURL = baseURLProtocol+'//'+URLHelper.buildAbsolutePath('', relativeURL.substring(2));
     }
     else if (/^\//.test(relativeURL)) {
-      builtURL = baseURLDomain+URLHelper.buildAbsolutePath('', relativeURL.substring(1));
+      // relative url starts with '/' so start from root of domain
+      builtURL = baseURLProtocolDomain+'/'+URLHelper.buildAbsolutePath('', relativeURL.substring(1));
     }
     else {
-      builtURL = URLHelper.buildAbsolutePath(baseURLDomain+baseURLPath, relativeURL);
+      builtURL = URLHelper.buildAbsolutePath(baseURLProtocolDomain+baseURLPath, relativeURL);
     }
 
     // put the query and hash parts back

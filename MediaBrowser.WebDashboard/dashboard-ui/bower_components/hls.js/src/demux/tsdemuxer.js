@@ -55,7 +55,8 @@
   push(data, audioCodec, videoCodec, timeOffset, cc, level, sn, duration) {
     var avcData, aacData, id3Data,
         start, len = data.length, stt, pid, atf, offset,
-        codecsOnly = this.remuxer.passthrough;
+        codecsOnly = this.remuxer.passthrough,
+        unknownPIDs = false;
 
     this.audioCodec = audioCodec;
     this.videoCodec = videoCodec;
@@ -169,6 +170,15 @@
             avcId = this._avcTrack.id;
             aacId = this._aacTrack.id;
             id3Id = this._id3Track.id;
+            if (unknownPIDs) {
+              logger.log('reparse from beginning');
+              unknownPIDs = false;
+              // we set it to -188, the += 188 in the for loop will reset start to 0
+              start = -188;
+            }
+          } else {
+            logger.log('unknown PID found before PAT/PMT');
+            unknownPIDs = true;
           }
         }
       } else {
@@ -472,8 +482,11 @@
     //build sample from PES
     // Annex B to MP4 conversion to be done
     if (units2.length) {
-      // only push AVC sample if keyframe already found. browsers expect a keyframe at first to start decoding
-      if (key === true || track.sps ) {
+      // only push AVC sample if keyframe already found in this fragment OR
+      //    keyframe found in last fragment (track.sps) AND
+      //        samples already appended (we already found a keyframe in this fragment) OR fragment is contiguous
+      if (key === true ||
+          (track.sps && (samples.length || this.contiguous))) {
         avcSample = {units: { units : units2, length : length}, pts: pes.pts, dts: pes.dts, key: key};
         samples.push(avcSample);
         track.len += length;
