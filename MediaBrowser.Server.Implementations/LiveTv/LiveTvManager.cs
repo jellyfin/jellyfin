@@ -1420,8 +1420,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 MediaTypes = new[] { MediaType.Video },
                 Recursive = true,
                 AncestorIds = folders.Select(i => i.Id.ToString("N")).ToArray(),
+                IsFolder = false,
                 ExcludeLocationTypes = new[] { LocationType.Virtual },
-                Limit = Math.Min(10, query.Limit ?? int.MaxValue),
+                Limit = Math.Min(200, query.Limit ?? int.MaxValue),
                 SortBy = new[] { ItemSortBy.DateCreated },
                 SortOrder = SortOrder.Descending
             });

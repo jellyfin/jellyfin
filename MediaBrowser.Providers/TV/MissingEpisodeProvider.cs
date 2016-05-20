@@ -418,7 +418,7 @@ namespace MediaBrowser.Providers.TV
             if (season == null)
             {
                 var provider = new DummySeasonProvider(_config, _logger, _localization, _libraryManager, _fileSystem);
-                season = await provider.AddSeason(series, seasonNumber, cancellationToken).ConfigureAwait(false);
+                season = await provider.AddSeason(series, seasonNumber, true, cancellationToken).ConfigureAwait(false);
             }
 
             var name = string.Format("Episode {0}", episodeNumber.ToString(_usCulture));

@@ -20,12 +20,15 @@ namespace MediaBrowser.Model.LiveTv
         public int PrePaddingSeconds { get; set; }
         public int PostPaddingSeconds { get; set; }
 
+        public string[] MediaLocationsCreated { get; set; }
+
         public LiveTvOptions()
         {
             EnableMovieProviders = true;
             EnableRecordingSubfolders = true;
             TunerHosts = new List<TunerHostInfo>();
             ListingProviders = new List<ListingsProviderInfo>();
+            MediaLocationsCreated = new string[] { };
         }
     }
 
