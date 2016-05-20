@@ -1721,7 +1721,6 @@ var AppInfo = {};
             humanedate: 'components/humanedate',
             libraryBrowser: 'scripts/librarybrowser',
             chromecasthelpers: 'components/chromecasthelpers',
-            fastclick: bowerPath + '/fastclick/lib/fastclick',
             events: apiClientBowerPath + '/events',
             credentialprovider: apiClientBowerPath + '/credentials',
             apiclient: apiClientBowerPath + '/apiclient',
@@ -2972,9 +2971,10 @@ var AppInfo = {};
 
         defineRoute({
             path: '/wizardfinish.html',
-            dependencies: [],
+            dependencies: ['paper-button'],
             autoFocus: false,
-            anonymous: true
+            anonymous: true,
+            controller: 'scripts/wizardfinishpage'
         });
 
         defineRoute({
@@ -3072,10 +3072,6 @@ var AppInfo = {};
         }
 
         loadTheme();
-
-        if (browserInfo.safari && browserInfo.mobile) {
-            //initFastClick();
-        }
 
         if (Dashboard.isRunningInCordova()) {
             deps.push('registrationservices');

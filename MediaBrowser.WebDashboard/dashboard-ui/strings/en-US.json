@@ -562,7 +562,7 @@
   "LabelEnableAutomaticPortMap": "Enable automatic port mapping",
   "LabelEnableAutomaticPortMapHelp": "Attempt to automatically map the public port to the local port via UPnP. This may not work with some router models.",
   "LabelExternalDDNS": "External domain:",
-  "LabelExternalDDNSHelp": "If you have a dynamic DNS enter it here. Emby apps will use it when connecting remotely. This field is required when used with a custom https certificate.",
+  "LabelExternalDDNSHelp": "If you have a dynamic DNS enter it here. Emby apps will use it when connecting remotely. This field is required when used with a custom ssl certificate.",
   "TabResume": "Resume",
   "TabWeather": "Weather",
   "TitleAppSettings": "App Settings",
@@ -2353,5 +2353,8 @@
   "OptionConvertRecordingPreserveAudio": "Preserve original audio when converting recordings",
   "OptionConvertRecordingPreserveAudioHelp": "This will provide better audio but may require transcoding during playback on some devices.",
   "CreateCollectionHelp": "Collections allow you to create personalized groupings of movies and other library content.",
-  "AddItemToCollectionHelp": "Add items to collections by searching for them and using their right-click or tap menus to add them to a collection."
+  "AddItemToCollectionHelp": "Add items to collections by searching for them and using their right-click or tap menus to add them to a collection.",
+  "HeaderHealthMonitor": "Health Monitor",
+  "HealthMonitorNoAlerts": "There are no active alerts.",
+  "RecordingPathChangeMessage": "Changing your recording folder will not migrate existing recordings from the old location to the new. You'll need to move them manually if desired."
 }
