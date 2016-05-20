@@ -93,7 +93,7 @@ define(['browser'], function (browser) {
 
     function animate(newAnimatedPage, oldAnimatedPage, transition, isBack) {
 
-        if (enableAnimation() && newAnimatedPage.animate) {
+        if (enableAnimation() && oldAnimatedPage && newAnimatedPage.animate) {
             if (transition == 'slide') {
                 return slide(newAnimatedPage, oldAnimatedPage, transition, isBack);
             } else if (transition == 'fade') {

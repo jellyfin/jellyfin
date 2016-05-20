@@ -699,7 +699,7 @@
             }
             html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                shape: enableScrollX() ? 'autoOverflow' : 'auto',
+                shape: enableScrollX() ? 'autooverflow' : 'auto',
                 showTitle: true,
                 showParentTitle: true,
                 coverImage: true,

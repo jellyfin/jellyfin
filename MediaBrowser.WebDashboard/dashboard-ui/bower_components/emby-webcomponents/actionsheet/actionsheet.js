@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'layoutManager', 'globalize', 'paper-button', 'css!./actionsheet', 'html!./../icons/nav.html'], function (dialogHelper, layoutManager, globalize) {
+﻿define(['dialogHelper', 'layoutManager', 'globalize', 'paper-button', 'css!./actionsheet', 'html!./../icons/nav.html', 'scrollStyles'], function (dialogHelper, layoutManager, globalize) {
 
     function parentWithClass(elem, className) {
 
@@ -130,7 +130,7 @@
             }
         }
 
-        html += '<div class="actionSheetScroller">';
+        html += '<div class="actionSheetScroller hiddenScrollY">';
 
         options.items.forEach(function (o) {
             o.ironIcon = o.selected ? 'nav:check' : null;
