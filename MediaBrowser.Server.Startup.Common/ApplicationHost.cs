@@ -338,7 +338,7 @@ namespace MediaBrowser.Server.Startup.Common
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error in {0}", ex, entryPoint.GetType().Name);
+                    Logger.ErrorException("Error in {0}", ex, entryPoint.GetType().FullName);
                 }
             });
 
