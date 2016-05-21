@@ -87,12 +87,6 @@ namespace MediaBrowser.Model.Configuration
         public bool SaveLocalMeta { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable localized guids].
-        /// </summary>
-        /// <value><c>true</c> if [enable localized guids]; otherwise, <c>false</c>.</value>
-        public bool EnableLocalizedGuids { get; set; }
-
-        /// <summary>
         /// Gets or sets the preferred metadata language.
         /// </summary>
         /// <value>The preferred metadata language.</value>
@@ -196,8 +190,6 @@ namespace MediaBrowser.Model.Configuration
 
         public int SharingExpirationDays { get; set; }
 
-        public bool EnableDateLastRefresh { get; set; }
-
         public string[] Migrations { get; set; }
 
         public int MigrationVersion { get; set; }
@@ -215,7 +207,6 @@ namespace MediaBrowser.Model.Configuration
         {
             Migrations = new string[] { };
 
-            EnableLocalizedGuids = true;
             EnableCustomPathSubFolders = true;
 
             ImageSavingConvention = ImageSavingConvention.Compatible;

@@ -276,7 +276,6 @@
     <Compile Include="Notifications\NotificationManager.cs" />
     <Compile Include="Persistence\SqliteFileOrganizationRepository.cs" />
     <Compile Include="Notifications\SqliteNotificationsRepository.cs" />
-    <Compile Include="Persistence\SqliteProviderInfoRepository.cs" />
     <Compile Include="Persistence\TypeMapper.cs" />
     <Compile Include="Photos\BaseDynamicImageProvider.cs" />
     <Compile Include="Playlists\ManualPlaylistsFolder.cs" />

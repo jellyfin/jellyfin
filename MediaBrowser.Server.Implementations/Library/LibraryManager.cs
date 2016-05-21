@@ -502,7 +502,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("type");
             }
 
-            if (ConfigurationManager.Configuration.EnableLocalizedGuids && key.StartsWith(ConfigurationManager.ApplicationPaths.ProgramDataPath))
+            if (key.StartsWith(ConfigurationManager.ApplicationPaths.ProgramDataPath))
             {
                 // Try to normalize paths located underneath program-data in an attempt to make them more portable
                 key = key.Substring(ConfigurationManager.ApplicationPaths.ProgramDataPath.Length)

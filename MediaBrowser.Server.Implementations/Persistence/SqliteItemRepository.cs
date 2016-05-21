@@ -254,51 +254,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             new MediaStreamColumns(_connection, Logger).AddColumns();
 
-            var mediaStreamsDbFile = Path.Combine(_config.ApplicationPaths.DataPath, "mediainfo.db");
-            if (File.Exists(mediaStreamsDbFile))
-            {
-                MigrateMediaStreams(mediaStreamsDbFile);
-            }
-
             DataExtensions.Attach(_connection, Path.Combine(_config.ApplicationPaths.DataPath, "userdata_v2.db"), "UserDataDb");
-        }
-
-        private void MigrateMediaStreams(string file)
-        {
-            try
-            {
-                var backupFile = file + ".bak";
-                File.Copy(file, backupFile, true);
-                DataExtensions.Attach(_connection, backupFile, "MediaInfoOld");
-
-                var columns = string.Join(",", _mediaStreamSaveColumns);
-
-                string[] queries = {
-                                "REPLACE INTO mediastreams("+columns+") SELECT "+columns+" FROM MediaInfoOld.mediastreams;"
-                               };
-
-                _connection.RunQueries(queries, Logger);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error migrating media info database", ex);
-            }
-            finally
-            {
-                TryDeleteFile(file);
-            }
-        }
-
-        private void TryDeleteFile(string file)
-        {
-            try
-            {
-                File.Delete(file);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error deleting file {0}", ex, file);
-            }
         }
 
         private readonly string[] _retriveItemColumns =
