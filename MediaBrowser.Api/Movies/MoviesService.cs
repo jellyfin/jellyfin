@@ -143,7 +143,8 @@ namespace MediaBrowser.Api.Movies
             }
 
             var parentIds = string.IsNullOrWhiteSpace(request.ParentId) ? new string[] { } : new[] { request.ParentId };
-            var movies = _libraryManager.GetItemList(query, parentIds);
+            var movies = _libraryManager.GetItemList(query, parentIds)
+                .OrderBy(i => (int)i.SourceType);
 
             var listEligibleForCategories = new List<BaseItem>();
             var listEligibleForSuggestion = new List<BaseItem>();
@@ -194,8 +195,8 @@ namespace MediaBrowser.Api.Movies
                 query.IncludeItemTypes = includeList.ToArray();
             }
 
-            var parentIds = new string[] { };
-            var list = _libraryManager.GetItemList(query, parentIds)
+            var list = _libraryManager.GetItemList(query)
+                .OrderBy(i => (int)i.SourceType)
                 .DistinctBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N"))
                 .ToList();
 
