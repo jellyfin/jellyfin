@@ -69,7 +69,7 @@ namespace MediaBrowser.Providers.TV
 
                 if (!hasSeason)
                 {
-                    await AddSeason(series, seasonNumber, cancellationToken).ConfigureAwait(false);
+                    await AddSeason(series, seasonNumber, false, cancellationToken).ConfigureAwait(false);
 
                     hasChanges = true;
                 }
@@ -83,7 +83,7 @@ namespace MediaBrowser.Providers.TV
 
                 if (!hasSeason)
                 {
-                    await AddSeason(series, null, cancellationToken).ConfigureAwait(false);
+                    await AddSeason(series, null, false, cancellationToken).ConfigureAwait(false);
 
                     hasChanges = true;
                 }
@@ -95,12 +95,9 @@ namespace MediaBrowser.Providers.TV
         /// <summary>
         /// Adds the season.
         /// </summary>
-        /// <param name="series">The series.</param>
-        /// <param name="seasonNumber">The season number.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{Season}.</returns>
         public async Task<Season> AddSeason(Series series,
             int? seasonNumber,
+            bool isVirtualItem,
             CancellationToken cancellationToken)
         {
             var seasonName = seasonNumber == 0 ?
@@ -113,7 +110,8 @@ namespace MediaBrowser.Providers.TV
             {
                 Name = seasonName,
                 IndexNumber = seasonNumber,
-                Id = _libraryManager.GetNewItemId((series.Id + (seasonNumber ?? -1).ToString(_usCulture) + seasonName), typeof(Season))
+                Id = _libraryManager.GetNewItemId((series.Id + (seasonNumber ?? -1).ToString(_usCulture) + seasonName), typeof(Season)),
+                IsVirtualItem = isVirtualItem
             };
 
             season.SetParent(series);

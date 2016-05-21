@@ -36,7 +36,7 @@ namespace MediaBrowser.Providers.TV
             {
                 var episodes = item.GetEpisodes().ToList();
                 updateType |= SavePremiereDate(item, episodes);
-                updateType |= SaveIsMissing(item, episodes);
+                updateType |= SaveIsVirtualItem(item, episodes);
             }
 
             return updateType;
@@ -67,13 +67,13 @@ namespace MediaBrowser.Providers.TV
             return ItemUpdateType.None;
         }
 
-        private ItemUpdateType SaveIsMissing(Season item, List<Episode> episodes)
+        private ItemUpdateType SaveIsVirtualItem(Season item, List<Episode> episodes)
         {
-            var isMissing = item.LocationType == LocationType.Virtual && episodes.All(i => i.IsMissingEpisode);
+            var isVirtualItem = item.LocationType == LocationType.Virtual && (episodes.Count == 0 || episodes.All(i => i.LocationType == LocationType.Virtual));
 
-            if (item.IsMissingSeason != isMissing)
+            if (item.IsVirtualItem != isVirtualItem)
             {
-                item.IsMissingSeason = isMissing;
+                item.IsVirtualItem = isVirtualItem;
                 return ItemUpdateType.MetadataEdit;
             }
 

@@ -115,16 +115,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         {
             var recordingFolders = GetRecordingFolders();
 
-            var defaultRecordingPath = DefaultRecordingPath;
-            if (!recordingFolders.Any(i => i.Locations.Contains(defaultRecordingPath, StringComparer.OrdinalIgnoreCase)))
-            {
-                RemovePathFromLibrary(defaultRecordingPath);
-            }
-
             var virtualFolders = _libraryManager.GetVirtualFolders()
                 .ToList();
 
             var allExistingPaths = virtualFolders.SelectMany(i => i.Locations).ToList();
+
+            var pathsAdded = new List<string>();
 
             foreach (var recordingFolder in recordingFolders)
             {
@@ -145,11 +141,33 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 {
                     _logger.ErrorException("Error creating virtual folder", ex);
                 }
+
+                pathsAdded.AddRange(pathsToCreate);
+            }
+
+            var config = GetConfiguration();
+
+            var pathsToRemove = config.MediaLocationsCreated
+                .Except(recordingFolders.SelectMany(i => i.Locations))
+                .ToList();
+
+            if (pathsAdded.Count > 0 || pathsToRemove.Count > 0)
+            {
+                pathsAdded.InsertRange(0, config.MediaLocationsCreated);
+                config.MediaLocationsCreated = pathsAdded.Except(pathsToRemove).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                _config.SaveConfiguration("livetv", config);
+            }
+
+            foreach (var path in pathsToRemove)
+            {
+                RemovePathFromLibrary(path);
             }
         }
 
         private void RemovePathFromLibrary(string path)
         {
+            _logger.Debug("Removing path from library: {0}", path);
+
             var requiresRefresh = false;
             var virtualFolders = _libraryManager.GetVirtualFolders()
                .ToList();

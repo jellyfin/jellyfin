@@ -81,10 +81,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _deleteUserDataKeysCommand;
         private IDbCommand _saveUserDataKeysCommand;
 
+        private IDbCommand _deleteItemValuesCommand;
+        private IDbCommand _saveItemValuesCommand;
+
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        public const int LatestSchemaVersion = 78;
+        public const int LatestSchemaVersion = 79;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -135,6 +138,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                                 "create table if not exists UserDataKeys (ItemId GUID, UserDataKey TEXT, PRIMARY KEY (ItemId, UserDataKey))",
                                 "create index if not exists idx_UserDataKeys1 on UserDataKeys(ItemId)",
+
+                                "create table if not exists ItemValues (ItemId GUID, Type INT, Value TEXT)",
+                                "create index if not exists idx_ItemValues on ItemValues(ItemId)",
 
                                 "create table if not exists People (ItemId GUID, Name TEXT NOT NULL, Role TEXT, PersonType TEXT, SortOrder int, ListOrder int)",
                                 "create index if not exists idxPeopleItemId on People(ItemId)",
@@ -232,6 +238,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "PrimaryVersionId", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "DateLastMediaAdded", "DATETIME");
             _connection.AddColumn(Logger, "TypedBaseItems", "Album", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "IsVirtualItem", "BIT");
 
             _connection.AddColumn(Logger, "UserDataKeys", "Priority", "INT");
 
@@ -353,7 +360,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "DateLastMediaAdded",
             "Album",
             "CriticRating",
-            "CriticRatingSummary"
+            "CriticRatingSummary",
+            "IsVirtualItem"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -468,7 +476,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "OriginalTitle",
                 "PrimaryVersionId",
                 "DateLastMediaAdded",
-                "Album"
+                "Album",
+                "IsVirtualItem"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -564,6 +573,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _saveUserDataKeysCommand.Parameters.Add(_saveUserDataKeysCommand, "@ItemId");
             _saveUserDataKeysCommand.Parameters.Add(_saveUserDataKeysCommand, "@UserDataKey");
             _saveUserDataKeysCommand.Parameters.Add(_saveUserDataKeysCommand, "@Priority");
+
+            // item values
+            _deleteItemValuesCommand = _connection.CreateCommand();
+            _deleteItemValuesCommand.CommandText = "delete from ItemValues where ItemId=@Id";
+            _deleteItemValuesCommand.Parameters.Add(_deleteItemValuesCommand, "@Id");
+
+            _saveItemValuesCommand = _connection.CreateCommand();
+            _saveItemValuesCommand.CommandText = "insert into ItemValues (ItemId, Type, Value) values (@ItemId, @Type, @Value)";
+            _saveItemValuesCommand.Parameters.Add(_saveItemValuesCommand, "@ItemId");
+            _saveItemValuesCommand.Parameters.Add(_saveItemValuesCommand, "@Type");
+            _saveItemValuesCommand.Parameters.Add(_saveItemValuesCommand, "@Value");
 
         }
 
@@ -722,7 +742,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         _saveItemCommand.GetParameter(index++).Value = item.DateLastRefreshed;
                     }
 
-                    _saveItemCommand.GetParameter(index++).Value = item.DateLastSaved;
+                    if (item.DateLastSaved == default(DateTime))
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = item.DateLastSaved;
+                    }
+
                     _saveItemCommand.GetParameter(index++).Value = item.IsInMixedFolder;
                     _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.LockedFields.Select(i => i.ToString()).ToArray());
                     _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.Studios.ToArray());
@@ -841,6 +869,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                     _saveItemCommand.GetParameter(index++).Value = item.Album;
 
+                    var season = item as Season;
+                    if (season != null && season.IsVirtualItem.HasValue)
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = season.IsVirtualItem.Value;
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
+
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();
@@ -851,6 +889,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     }
 
                     UpdateUserDataKeys(item.Id, item.GetUserDataKeys().Distinct(StringComparer.OrdinalIgnoreCase).ToList(), transaction);
+                    UpdateItemValues(item.Id, GetItemValues(item), transaction);
                 }
 
                 transaction.Commit();
@@ -1253,6 +1292,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!reader.IsDBNull(57))
             {
                 item.CriticRatingSummary = reader.GetString(57);
+            }
+
+            var season = item as Season;
+            if (season != null && !reader.IsDBNull(58))
+            {
+                season.IsVirtualItem = reader.GetBoolean(58);
             }
 
             return item;
@@ -1661,7 +1706,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var elapsed = (DateTime.UtcNow - startDate).TotalMilliseconds;
 
-            if (elapsed >= 500)
+            if (elapsed >= 400)
             {
                 Logger.Debug("{2} query time (slow): {0}ms. Query: {1}",
                     Convert.ToInt32(elapsed),
@@ -1795,7 +1840,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }).ToArray());
         }
 
-        private Tuple<string,bool> MapOrderByField(string name)
+        private Tuple<string, bool> MapOrderByField(string name)
         {
             if (string.Equals(name, ItemSortBy.AirTime, StringComparison.OrdinalIgnoreCase))
             {
@@ -1837,6 +1882,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (string.Equals(name, ItemSortBy.DateLastContentAdded, StringComparison.OrdinalIgnoreCase))
             {
                 return new Tuple<string, bool>("DateLastMediaAdded", false);
+            }
+            if (string.Equals(name, ItemSortBy.Artist, StringComparison.OrdinalIgnoreCase))
+            {
+                return new Tuple<string, bool>("(select value from itemvalues where ItemId=Guid and Type=0 LIMIT 1)", false);
+            }
+            if (string.Equals(name, ItemSortBy.AlbumArtist, StringComparison.OrdinalIgnoreCase))
+            {
+                return new Tuple<string, bool>("(select value from itemvalues where ItemId=Guid and Type=1 LIMIT 1)", false);
             }
 
             return new Tuple<string, bool>(name, false);
@@ -2405,17 +2458,20 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 cmd.Parameters.Add(cmd, "@IsFavorite", DbType.Boolean).Value = query.IsFavorite.Value;
             }
 
-            if (query.IsPlayed.HasValue)
+            if (EnableJoinUserData(query))
             {
-                if (query.IsPlayed.Value)
+                if (query.IsPlayed.HasValue)
                 {
-                    whereClauses.Add("(played=@IsPlayed)");
+                    if (query.IsPlayed.Value)
+                    {
+                        whereClauses.Add("(played=@IsPlayed)");
+                    }
+                    else
+                    {
+                        whereClauses.Add("(played is null or played=@IsPlayed)");
+                    }
+                    cmd.Parameters.Add(cmd, "@IsPlayed", DbType.Boolean).Value = query.IsPlayed.Value;
                 }
-                else
-                {
-                    whereClauses.Add("(played is null or played=@IsPlayed)");
-                }
-                cmd.Parameters.Add(cmd, "@IsPlayed", DbType.Boolean).Value = query.IsPlayed.Value;
             }
 
             if (query.IsResumable.HasValue)
@@ -2428,6 +2484,20 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     whereClauses.Add("(playbackPositionTicks is null or playbackPositionTicks = 0)");
                 }
+            }
+
+            if (query.ArtistNames.Length > 0)
+            {
+                var clauses = new List<string>();
+                var index = 0;
+                foreach (var artist in query.ArtistNames)
+                {
+                    clauses.Add("@ArtistName" + index + " in (select value from itemvalues where ItemId=Guid and Type <= 1)");
+                    cmd.Parameters.Add(cmd, "@ArtistName" + index, DbType.String).Value = artist;
+                    index++;
+                }
+                var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
+                whereClauses.Add(clause);
             }
 
             if (query.Genres.Length > 0)
@@ -2967,6 +3037,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _deleteUserDataKeysCommand.Transaction = transaction;
                 _deleteUserDataKeysCommand.ExecuteNonQuery();
 
+                // Delete item values
+                _deleteItemValuesCommand.GetParameter(0).Value = id;
+                _deleteItemValuesCommand.Transaction = transaction;
+                _deleteItemValuesCommand.ExecuteNonQuery();
+
                 // Delete the item
                 _deleteItemCommand.GetParameter(0).Value = id;
                 _deleteItemCommand.Transaction = transaction;
@@ -3156,6 +3231,56 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _saveAncestorCommand.Transaction = transaction;
 
                 _saveAncestorCommand.ExecuteNonQuery();
+            }
+        }
+
+        private List<Tuple<int, string>> GetItemValues(BaseItem item)
+        {
+            var list = new List<Tuple<int, string>>();
+
+            var hasArtist = item as IHasArtist;
+            if (hasArtist != null)
+            {
+                list.AddRange(hasArtist.Artists.Select(i => new Tuple<int, string>(0, i)));
+            }
+
+            var hasAlbumArtist = item as IHasAlbumArtist;
+            if (hasAlbumArtist != null)
+            {
+                list.AddRange(hasAlbumArtist.AlbumArtists.Select(i => new Tuple<int, string>(1, i)));
+            }
+
+            return list;
+        }
+
+        private void UpdateItemValues(Guid itemId, List<Tuple<int, string>> values, IDbTransaction transaction)
+        {
+            if (itemId == Guid.Empty)
+            {
+                throw new ArgumentNullException("itemId");
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException("keys");
+            }
+
+            CheckDisposed();
+
+            // First delete 
+            _deleteItemValuesCommand.GetParameter(0).Value = itemId;
+            _deleteItemValuesCommand.Transaction = transaction;
+
+            _deleteItemValuesCommand.ExecuteNonQuery();
+
+            foreach (var pair in values)
+            {
+                _saveItemValuesCommand.GetParameter(0).Value = itemId;
+                _saveItemValuesCommand.GetParameter(1).Value = pair.Item1;
+                _saveItemValuesCommand.GetParameter(2).Value = pair.Item2;
+                _saveItemValuesCommand.Transaction = transaction;
+
+                _saveItemValuesCommand.ExecuteNonQuery();
             }
         }
 
