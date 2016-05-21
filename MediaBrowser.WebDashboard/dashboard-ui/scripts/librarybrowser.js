@@ -32,6 +32,10 @@
 
         var elem = button.querySelector('.pageTabButtonSelectionBar');
 
+        if (!elem) {
+            return;
+        }
+
         var keyframes = [
           { transform: 'translate3d(-100%, 0, 0)', offset: 0 },
           { transform: 'none', offset: 1 }];
@@ -209,14 +213,11 @@
 
                 if (selected == null) {
 
-                    var elem = tabs.querySelector('.pageTabButton.is-active');
-                    if (elem) {
-                        return parseInt(elem.getAttribute('data-index'));
-                    }
-                    return 0;
+                    return tabs.selectedTabIndex || 0;
                 }
 
                 var current = LibraryBrowser.selectedTab(tabs);
+                tabs.selectedTabIndex = selected;
                 if (current == selected) {
                     tabs.dispatchEvent(new CustomEvent("tabchange", {
                         detail: {
@@ -264,13 +265,13 @@
                     LibraryBrowser.configureSwipeTabs(ownerpage, tabs);
                 }
 
-                var buttons = tabs.querySelectorAll('.pageTabButton');
-                for (var i = 0, length = buttons.length; i < length; i++) {
-                    //buttons[i].classList.add('mdl-button');
-                    //buttons[i].classList.add('mdl-js-button');
-                    var div = document.createElement('div');
-                    div.classList.add('pageTabButtonSelectionBar');
-                    buttons[i].appendChild(div);
+                if (!browserInfo.safari || !AppInfo.isNativeApp) {
+                    var buttons = tabs.querySelectorAll('.pageTabButton');
+                    for (var i = 0, length = buttons.length; i < length; i++) {
+                        var div = document.createElement('div');
+                        div.classList.add('pageTabButtonSelectionBar');
+                        buttons[i].appendChild(div);
+                    }
                 }
 
                 tabs.classList.add('hiddenScrollX');
@@ -1065,7 +1066,8 @@
                     }
 
                     if (item.CollectionType == 'games') {
-                        return 'gamesrecommended.html?topParentId=' + item.Id;
+                        return id ? "itemlist.html?parentId=" + id : "#";
+                        //return 'gamesrecommended.html?topParentId=' + item.Id;
                     }
                     if (item.CollectionType == 'playlists') {
                         return 'playlists.html?topParentId=' + item.Id;
@@ -1783,20 +1785,20 @@
                 var isSquareAspectRatio = primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1) < .33 ||
                     primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.3333334) < .01;
 
-                if (options.shape == 'auto' || options.shape == 'autohome') {
+                if (options.shape == 'auto' || options.shape == 'autohome' || options.shape == 'autooverflow') {
 
                     if (isThumbAspectRatio) {
-                        options.shape = options.shape == 'auto' ? 'backdrop' : 'backdrop';
+                        options.shape = options.shape == 'autooverflow' ? 'overflowBackdrop' : 'backdrop';
                     } else if (isSquareAspectRatio) {
                         options.coverImage = true;
-                        options.shape = 'square';
+                        options.shape = options.shape == 'autooverflow' ? 'overflowSquare' : 'square';
                     } else if (primaryImageAspectRatio && primaryImageAspectRatio > 1.9) {
                         options.shape = 'banner';
                         options.coverImage = true;
                     } else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 0.6666667) < .2) {
-                        options.shape = options.shape == 'auto' ? 'portrait' : 'portrait';
+                        options.shape = options.shape == 'autooverflow' ? 'overflowPortrait' : 'portrait';
                     } else {
-                        options.shape = options.defaultShape || (options.shape == 'auto' ? 'square' : 'square');
+                        options.shape = options.defaultShape || (options.shape == 'autooverflow' ? 'overflowSquare' : 'square');
                     }
                 }
 

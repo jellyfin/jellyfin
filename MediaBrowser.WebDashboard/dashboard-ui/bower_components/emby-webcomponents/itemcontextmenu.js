@@ -11,7 +11,14 @@ define(['apphost', 'globalize', 'connectionManager'], function (appHost, globali
 
             var commands = [];
 
-            if (item.CanDownload && user.Policy.EnableContentDownloading && appHost.supports('filedownload')) {
+            if (item.CanDelete) {
+                commands.push({
+                    name: globalize.translate('sharedcomponents#Delete'),
+                    id: 'delete'
+                });
+            }
+
+            if (item.CanDownload && appHost.supports('filedownload')) {
                 commands.push({
                     name: globalize.translate('sharedcomponents#Download'),
                     id: 'download'
@@ -69,6 +76,14 @@ define(['apphost', 'globalize', 'connectionManager'], function (appHost, globali
                 case 'refresh':
                     {
                         refresh(apiClient, itemId);
+                        reject();
+                        break;
+                    }
+                case 'delete':
+                    {
+                        deleteItem(apiClient, itemId).then(function () {
+                            resolve(true);
+                        });
                         break;
                     }
                 case 'share':
@@ -83,8 +98,30 @@ define(['apphost', 'globalize', 'connectionManager'], function (appHost, globali
                         break;
                     }
                 default:
+                    reject();
                     break;
             }
+        });
+    }
+
+    function deleteItem(apiClient, itemId) {
+
+        return new Promise(function (resolve, reject) {
+
+            var msg = globalize.translate('sharedcomponents#ConfirmDeleteItem');
+            var title = globalize.translate('sharedcomponents#HeaderDeleteItem');
+
+            require(['confirm'], function (confirm) {
+
+                confirm(msg, title).then(function () {
+
+                    apiClient.deleteItem(itemId).then(function () {
+                        resolve(true);
+                    });
+
+                }, reject);
+
+            });
         });
     }
 
@@ -97,7 +134,6 @@ define(['apphost', 'globalize', 'connectionManager'], function (appHost, globali
             MetadataRefreshMode: 'FullRefresh',
             ReplaceAllImages: false,
             ReplaceAllMetadata: true
-
         });
 
         require(['toast'], function (toast) {

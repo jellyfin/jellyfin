@@ -36,10 +36,6 @@
         return enableScrollX() ? 'overflowPortrait' : 'portrait';
     }
 
-    function getSquareShape() {
-        return enableScrollX() ? 'overflowSquare' : 'square';
-    }
-
     function getLibraryButtonsHtml(items) {
 
         var html = "";
@@ -166,7 +162,7 @@
         var frequency = 86400000;
 
         if (AppInfo.isNativeApp) {
-            frequency = 259200000;
+            frequency = 172800000;
         }
 
         var cacheKey = 'lastappinfopresent5';
@@ -495,7 +491,7 @@
             ExcludeLocationTypes: "Virtual",
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
-            EnableTotalRecordCount: 0
+            EnableTotalRecordCount: false
         };
 
         return ApiClient.getItems(userId, options).then(function (result) {
@@ -679,6 +675,7 @@
 
             userId: userId,
             limit: 5,
+            Fields: "PrimaryImageAspectRatio,SyncInfo",
             IsInProgress: false
 
         }).then(function (result) {
@@ -702,7 +699,7 @@
             }
             html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                shape: getSquareShape(),
+                shape: enableScrollX() ? 'autooverflow' : 'auto',
                 showTitle: true,
                 showParentTitle: true,
                 coverImage: true,

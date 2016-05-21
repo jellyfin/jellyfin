@@ -1,4 +1,4 @@
-define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events'], function (visibleinviewport, imageFetcher, layoutManager, events) {
+define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser'], function (visibleinviewport, imageFetcher, layoutManager, events, browser) {
 
     var thresholdX;
     var thresholdY;
@@ -88,16 +88,69 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events'], functio
         target.addEventListener(type, handler, optionsOrCapture);
     }
 
+    function unveilWithIntersection(images) {
+
+        var filledCount = 0;
+
+        var observer = new IntersectionObserver(function (entries) {
+            for (var j = 0, length2 = entries.length; j < length2; j++) {
+                var entry = entries[j];
+                var intersectionRatio = entry.intersectionRatio;
+                if (intersectionRatio) {
+
+                    var target = entry.target;
+                    observer.unobserve(target);
+                    fillImage(target);
+                    filledCount++;
+                }
+            }
+
+            if (filledCount >= images.length) {
+                //observer.disconnect();
+            }
+        },
+        {
+            /* Using default options. Details below */
+        }
+        );
+        // Start observing an element
+        for (var i = 0, length = images.length; i < length; i++) {
+            observer.observe(images[i]);
+        }
+    }
+
+    var supportsIntersectionObserver = function () {
+
+        if (window.IntersectionObserver) {
+
+            // The api exists in chrome 50 but doesn't work
+            if (browser.chrome) {
+
+                var version = parseInt(browser.version.split('.')[0]);
+                return version >= 51;
+            }
+            return true;
+        }
+
+        return false;
+    }();
+
     function unveilElements(images) {
 
         if (!images.length) {
             return;
         }
 
+        if (supportsIntersectionObserver) {
+            unveilWithIntersection(images);
+            return;
+        }
+
+        var filledImages = [];
         var cancellationTokens = [];
+
         function unveilInternal(tokenIndex) {
 
-            var remaining = [];
             var anyFound = false;
             var out = false;
 
@@ -108,24 +161,21 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events'], functio
                 if (cancellationTokens[tokenIndex]) {
                     return;
                 }
+                if (filledImages[i]) {
+                    continue;
+                }
                 var img = images[i];
                 if (!out && isVisible(img)) {
                     anyFound = true;
+                    filledImages[i] = true;
                     fillImage(img);
                 } else {
 
                     if (anyFound) {
                         out = true;
                     }
-                    remaining.push(img);
-                }
-
-                if (out) {
-                    return;
                 }
             }
-
-            images = remaining;
 
             if (!images.length) {
                 document.removeEventListener('focus', unveil, true);

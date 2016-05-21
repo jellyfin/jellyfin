@@ -22,7 +22,7 @@
         html += '<button is="paper-icon-button-light" class="btnCast headerButton headerButtonRight hide"><iron-icon icon="cast"></iron-icon></button>';
 
         if (AppInfo.enableSearchInTopMenu) {
-            html += '<button is="paper-icon-button-light" class=headerButton headerButtonRight headerSearchButton hide" onclick="Search.showSearchPanel();"><iron-icon icon="search"></iron-icon></button>';
+            html += '<button type="button" is="paper-icon-button-light" class=headerButton headerButtonRight headerSearchButton hide" onclick="Search.showSearchPanel();"><iron-icon icon="search"></iron-icon></button>';
             html += '<div class="viewMenuSearch hide">';
             html += '<form class="viewMenuSearchForm">';
             html += '<input type="text" data-role="none" data-type="search" class="headerSearchInput" autocomplete="off" spellcheck="off" />';
@@ -743,7 +743,7 @@
                     var helpUrl = page.getAttribute('data-helpurl');
 
                     if (helpUrl) {
-                        html += '<a href="' + helpUrl + '" target="_blank" class="clearLink" style="margin-left:2em;" title="' + Globalize.translate('ButtonHelp') + '"><paper-button class="accent" style="margin:0;font-weight:normal;font-size:13px;padding:.25em;display:flex;align-items:center;"><iron-icon icon="info"></iron-icon><span>Help</span></paper-button></a>';
+                        html += '<a href="' + helpUrl + '" target="_blank" class="clearLink" style="margin-left:2em;" title="' + Globalize.translate('ButtonHelp') + '"><paper-button class="accent" style="margin:0;font-weight:normal;font-size:13px;padding:.25em;display:flex;align-items:center;"><iron-icon icon="info"></iron-icon><span>' + Globalize.translate('ButtonHelp') + '</span></paper-button></a>';
                     }
                 }
             }
@@ -973,7 +973,7 @@
 
         if (!e.detail.isRestored) {
             // Scroll back up so in case vertical scroll was messed with
-            //window.scrollTo(0, 0);
+            window.scrollTo(0, 0);
         }
 
         updateTitle(page);

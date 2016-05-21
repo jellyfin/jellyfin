@@ -22,7 +22,9 @@
     flex-direction: column;
     display: flex;
     justify-content: center;
-    height: 100%;
+    flex-grow: 1;
+    align-items: center;
+    text-align: center;
 }
 
 .actionSheetMenuItem {
@@ -40,8 +42,8 @@
 }
 
 .layout-tv .actionSheetMenuItem {
-    padding-top: .2em;
-    padding-bottom: .2em;
+    padding-top: .16em;
+    padding-bottom: .16em;
 }
 
 .actionSheetItemIcon {
@@ -49,27 +51,24 @@
 }
 
 .actionSheetScroller {
-    max-height: 60%;
-    overflow-x: hidden;
-    overflow-y: auto;
     /* Override default style being applied by polymer */
     margin-bottom: 0 !important;
-    scroll-behavior: smooth;
 }
 
-    .actionSheetScroller::-webkit-scrollbar, .actionSheetScroller::-webkit-scrollbar {
-        width: 0 !important;
-        display: none;
-    }
+.layout-tv .actionSheetScroller {
+    max-height: 60%;
+}
 
 h1.actionSheetTitle {
     margin: .5em 0 1em !important;
     padding: 0 1em;
+    flex-grow: 0;
 }
 
 h2.actionSheetTitle {
     margin: .25em 0 .55em !important;
     padding: 0 1em;
+    flex-grow: 0;
 }
 
 .actionSheet.extraSpacing {

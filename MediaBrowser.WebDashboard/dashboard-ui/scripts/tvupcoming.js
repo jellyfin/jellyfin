@@ -11,7 +11,7 @@
             UserId: Dashboard.getCurrentUserId(),
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
-            EnableTotalRecordCount: 0
+            EnableTotalRecordCount: false
         };
 
         query.ParentId = params.topParentId;

@@ -109,7 +109,7 @@
                 ParentId: parentId,
                 ImageTypeLimit: 1,
                 EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
-                EnableTotalRecordCount: 0
+                EnableTotalRecordCount: false
             };
 
             ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {

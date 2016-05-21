@@ -221,14 +221,6 @@
         width: 30px;
     }
 
-.criticRating {
-    display: inline-block;
-    margin-left: 1px;
-    position: relative;
-    top: -1px;
-    vertical-align: middle;
-}
-
 .criticRatingScore {
     margin-bottom: .5em;
 }
@@ -844,14 +836,14 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         min-height: 60px;
     }
 
-    .itemMiscInfo {
+    .mobileDetails .itemMiscInfo {
         text-align: center;
         justify-content: center;
     }
 
-        .itemMiscInfo .endsAt {
-            display: none;
-        }
+    .itemMiscInfo .endsAt {
+        display: none;
+    }
 }
 
 @media all and (min-width: 750px) {

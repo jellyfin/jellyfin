@@ -217,7 +217,16 @@
 
         var keyframes = [
           { transform: 'scale(0)', offset: 0 },
-          { transform: 'scale(1,1)', offset: 1 }];
+          { transform: 'none', offset: 1 }];
+        var timing = elem.animationConfig.entry.timing;
+        return elem.animate(keyframes, timing).onfinish = onFinish;
+    }
+
+    function slideUp(elem, onFinish) {
+
+        var keyframes = [
+          { transform: 'translate3d(0,30%,0)', opacity: 0, offset: 0 },
+          { transform: 'none', opacity: 1, offset: 1 }];
         var timing = elem.animationConfig.entry.timing;
         return elem.animate(keyframes, timing).onfinish = onFinish;
     }
@@ -237,6 +246,15 @@
           { opacity: '1', offset: 0 },
           { opacity: '0', offset: 1 }];
         var timing = elem.animationConfig.exit.timing;
+        return elem.animate(keyframes, timing);
+    }
+
+    function slideDown(elem, onFinish) {
+
+        var keyframes = [
+          { transform: 'none', opacity: 1, offset: 0 },
+          { transform: 'translate3d(0,30%,0)', opacity: 0, offset: 1 }];
+        var timing = elem.animationConfig.entry.timing;
         return elem.animate(keyframes, timing);
     }
 
@@ -260,7 +278,18 @@
                 return;
             }
 
-            fadeOut(dlg).onfinish = onAnimationFinish;
+            var animation;
+
+            if (dlg.animationConfig.exit.name == 'fadeout') {
+                animation = fadeOut(dlg);
+            } else if (dlg.animationConfig.exit.name == 'slidedown') {
+                animation = slideDown(dlg);
+            } else {
+                onAnimationFinish();
+                return;
+            }
+
+            animation.onfinish = onAnimationFinish;
         }
     }
 
@@ -276,10 +305,12 @@
             onAnimationFinish();
             return;
         }
-        if (dlg.animationConfig.entry.name == 'fade-in-animation') {
+        if (dlg.animationConfig.entry.name == 'fadein') {
             fadeIn(dlg, onAnimationFinish);
-        } else if (dlg.animationConfig.entry.name == 'scale-up-animation') {
+        } else if (dlg.animationConfig.entry.name == 'scaleup') {
             scaleUp(dlg, onAnimationFinish);
+        } else if (dlg.animationConfig.entry.name == 'slideup') {
+            slideUp(dlg, onAnimationFinish);
         }
     }
 
@@ -355,12 +386,12 @@
             dlg.setAttribute('data-autofocus', 'true');
         }
 
-        var defaultEntryAnimation = browser.animate ? 'scale-up-animation' : 'fade-in-animation';
+        var defaultEntryAnimation = browser.animate ? 'scaleup' : 'fadein';
         dlg.entryAnimation = options.entryAnimation || defaultEntryAnimation;
-        dlg.exitAnimation = 'fade-out-animation';
+        dlg.exitAnimation = 'fadeout';
 
         // If it's not fullscreen then lower the default animation speed to make it open really fast
-        var entryAnimationDuration = options.entryAnimationDuration || (options.size ? 240 : 300);
+        var entryAnimationDuration = options.entryAnimationDuration || (options.size ? 200 : 300);
 
         dlg.animationConfig = {
             // scale up

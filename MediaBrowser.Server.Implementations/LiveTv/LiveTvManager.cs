@@ -527,6 +527,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private async Task<LiveTvChannel> GetChannel(ChannelInfo channelInfo, string serviceName, Guid parentFolderId, CancellationToken cancellationToken)
         {
             var isNew = false;
+            var forceUpdate = false;
 
             var id = _tvDtoService.GetInternalChannelId(serviceName, channelInfo.Id);
 
@@ -576,10 +577,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 if (!string.IsNullOrWhiteSpace(channelInfo.ImagePath))
                 {
                     item.SetImagePath(ImageType.Primary, channelInfo.ImagePath);
+                    forceUpdate = true;
                 }
                 else if (!string.IsNullOrWhiteSpace(channelInfo.ImageUrl))
                 {
                     item.SetImagePath(ImageType.Primary, channelInfo.ImageUrl);
+                    forceUpdate = true;
                 }
             }
 
@@ -588,9 +591,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 item.Name = channelInfo.Name;
             }
 
+            if (isNew)
+            {
+                await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
+            }
+            else if (forceUpdate)
+            {
+                await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+            }
+
             await item.RefreshMetadata(new MetadataRefreshOptions(_fileSystem)
             {
-                ForceSave = isNew
+                ForceSave = isNew || forceUpdate
 
             }, cancellationToken);
 
@@ -1398,16 +1410,22 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 .Where(i => i.IsVisibleStandalone(user))
                 .ToList();
 
-            var items = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
+            if (folders.Count == 0)
+            {
+                return new QueryResult<BaseItem>();
+            }
+
+            return _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
                 MediaTypes = new[] { MediaType.Video },
                 Recursive = true,
                 AncestorIds = folders.Select(i => i.Id.ToString("N")).ToArray(),
+                IsFolder = false,
                 ExcludeLocationTypes = new[] { LocationType.Virtual },
-                Limit = Math.Min(10, query.Limit ?? int.MaxValue)
+                Limit = Math.Min(200, query.Limit ?? int.MaxValue),
+                SortBy = new[] { ItemSortBy.DateCreated },
+                SortOrder = SortOrder.Descending
             });
-
-            return items;
         }
 
         public async Task<QueryResult<BaseItem>> GetInternalRecordings(RecordingQuery query, CancellationToken cancellationToken)

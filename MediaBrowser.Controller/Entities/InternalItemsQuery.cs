@@ -19,8 +19,6 @@ namespace MediaBrowser.Controller.Entities
 
         public User User { get; set; }
 
-        public Func<BaseItem, bool> Filter { get; set; }
-
         public bool? IsFolder { get; set; }
         public bool? IsFavorite { get; set; }
         public bool? IsFavoriteOrLiked { get; set; }
@@ -138,6 +136,7 @@ namespace MediaBrowser.Controller.Entities
 
         public bool GroupByPresentationUniqueKey { get; set; }
         public bool EnableTotalRecordCount { get; set; }
+        public bool ForceDirect { get; set; }
 
         public InternalItemsQuery()
         {

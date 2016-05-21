@@ -1,5 +1,21 @@
 ﻿define(['datetime'], function (datetime) {
 
+    function renderNoHealthAlertsMessage(page) {
+
+        var html = '<p style="padding:0 .5em;display:flex;align-items:center;">';
+
+        html += '<iron-icon icon="check" style="margin-right:.5em;background-color: #52B54B;border-radius:1em;color: #fff;"></iron-icon>';
+
+        html += Globalize.translate('HealthMonitorNoAlerts') + '</p>';
+
+        page.querySelector('.healthMonitor').innerHTML = html;
+    }
+
+    function refreshHealthMonitor(page) {
+
+        renderNoHealthAlertsMessage(page);
+    }
+
     window.DashboardPage = {
 
         newsStartIndex: 0,
@@ -44,6 +60,8 @@
             $('.swaggerLink', page).attr('href', apiClient.getUrl('swagger-ui/index.html', {
                 api_key: ApiClient.accessToken()
             }));
+
+            refreshHealthMonitor(page);
         },
 
         onPageHide: function () {

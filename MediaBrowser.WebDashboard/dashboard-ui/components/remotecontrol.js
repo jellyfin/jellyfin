@@ -413,24 +413,17 @@
             //    $(".playlist", page).html(html).lazyChildren();
             //});
 
-            var playlistOpen = isPlaylistOpen(context);
+            html += libraryBrowser.getListViewHtml({
+                items: MediaController.playlist(),
+                smallIcon: true
+            });
 
-            if (playlistOpen) {
-
-                html += libraryBrowser.getListViewHtml({
-                    items: MediaController.playlist(),
-                    smallIcon: true
-                });
-
-                playlistNeedsRefresh = false;
-            }
+            playlistNeedsRefresh = false;
 
             var deps = [];
 
-            if (playlistOpen) {
-                deps.push('paper-icon-item');
-                deps.push('paper-item-body');
-            }
+            deps.push('paper-icon-item');
+            deps.push('paper-item-body');
 
             require(deps, function () {
 
@@ -438,28 +431,21 @@
 
                 itemsContainer.innerHTML = html;
 
-                if (playlistOpen) {
+                var index = MediaController.currentPlaylistIndex();
 
-                    var index = MediaController.currentPlaylistIndex();
+                if (index != -1) {
 
-                    if (index != -1) {
+                    var item = itemsContainer.querySelectorAll('.listItem')[index];
+                    if (item) {
+                        var img = item.querySelector('.listviewImage');
 
-                        var item = itemsContainer.querySelectorAll('.listItem')[index];
-                        if (item) {
-                            var img = item.querySelector('.listviewImage');
-
-                            img.classList.remove('lazy');
-                            img.classList.add('playlistIndexIndicatorImage');
-                        }
+                        img.classList.remove('lazy');
+                        img.classList.add('playlistIndexIndicatorImage');
                     }
                 }
 
                 ImageLoader.lazyChildren(itemsContainer);
             });
-        }
-
-        function isPlaylistOpen(context) {
-            return libraryBrowser.selectedTab(context.querySelector('.libraryViewNav')) == 2;
         }
 
         function onStateChanged(e, state) {
@@ -485,11 +471,7 @@
 
             onStateChanged.call(player, e, state);
 
-            if (isPlaylistOpen(dlg)) {
-                loadPlaylist(dlg);
-            } else {
-                playlistNeedsRefresh = true;
-            }
+            loadPlaylist(dlg);
         }
 
         function onPlaybackStopped(e, state) {
@@ -500,11 +482,7 @@
 
             onStateChanged.call(player, e, {});
 
-            if (isPlaylistOpen(dlg)) {
-                loadPlaylist(dlg);
-            } else {
-                playlistNeedsRefresh = true;
-            }
+            loadPlaylist(dlg);
         }
 
         function releaseCurrentPlayer() {
@@ -824,6 +802,7 @@
             libraryBrowser.configurePaperLibraryTabs(ownerView, mdlTabs, ownerView.querySelectorAll('.pageTabContent'));
 
             mdlTabs.addEventListener('tabchange', function (e) {
+
                 if (e.detail.selectedTabIndex == 2 && playlistNeedsRefresh) {
                     loadPlaylist(context);
                 }

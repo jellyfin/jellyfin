@@ -7,7 +7,6 @@
 
         $('#selectGuideDays', page).val(config.GuideDays || '');
 
-        $('#chkMovies', page).checked(config.EnableMovieProviders);
         $('#chkOrganize', page).checked(config.EnableAutoOrganize);
         $('#chkConvertRecordings', page).checked(config.EnableRecordingEncoding);
         $('#chkPreserveAudio', page).checked(config.EnableOriginalAudioWithEncodedRecordings || false);
@@ -33,23 +32,50 @@
         ApiClient.getNamedConfiguration("livetv").then(function (config) {
 
             config.GuideDays = $('#selectGuideDays', form).val() || null;
-            config.EnableMovieProviders = $('#chkMovies', form).checked();
             config.EnableAutoOrganize = $('#chkOrganize', form).checked();
             config.EnableRecordingEncoding = $('#chkConvertRecordings', form).checked();
             config.EnableOriginalAudioWithEncodedRecordings = $('#chkPreserveAudio', form).checked();
-            config.RecordingPath = form.querySelector('#txtRecordingPath').value || null;
-            config.MovieRecordingPath = form.querySelector('#txtMovieRecordingPath').value || null;
-            config.SeriesRecordingPath = form.querySelector('#txtSeriesRecordingPath').value || null;
+
+            var recordingPath = form.querySelector('#txtRecordingPath').value || null;
+            var movieRecordingPath = form.querySelector('#txtMovieRecordingPath').value || null;
+            var seriesRecordingPath = form.querySelector('#txtSeriesRecordingPath').value || null;
+
+            var recordingPathChanged = recordingPath != config.RecordingPath ||
+                movieRecordingPath != config.MovieRecordingPath ||
+                seriesRecordingPath != config.SeriesRecordingPath;
+
+            config.RecordingPath = recordingPath;
+            config.MovieRecordingPath = movieRecordingPath;
+            config.SeriesRecordingPath = seriesRecordingPath;
 
             config.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
             config.PostPaddingSeconds = $('#txtPostPaddingMinutes', form).val() * 60;
             config.EnableRecordingSubfolders = form.querySelector('#chkEnableRecordingSubfolders').checked;
 
-            ApiClient.updateNamedConfiguration("livetv", config).then(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateNamedConfiguration("livetv", config).then(function () {
+                Dashboard.processServerConfigurationUpdateResult();
+
+                showSaveMessage(recordingPathChanged);
+            });
         });
 
         // Disable default form submission
         return false;
+    }
+
+    function showSaveMessage(recordingPathChanged) {
+
+        var msg = '';
+
+        if (recordingPathChanged) {
+            msg += Globalize.translate('RecordingPathChangeMessage');
+        }
+
+        if (msg) {
+            require(['alert'], function (alert) {
+                alert(msg);
+            });
+        }
     }
 
     function getTabs() {

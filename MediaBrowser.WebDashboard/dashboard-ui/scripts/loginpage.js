@@ -1,135 +1,104 @@
-﻿var LoginPage = {
+﻿define(['jQuery'], function ($) {
 
-    getApiClient: function () {
+    var LoginPage = {
 
-        var serverId = getParameterByName('serverid');
+        showVisualForm: function (page) {
+            $('.visualLoginForm', page).show();
+            $('.manualLoginForm', page).hide();
+        },
 
-        return new Promise(function (resolve, reject) {
+        getLastSeenText: function (lastActivityDate) {
 
-            if (serverId) {
-                resolve(ConnectionManager.getOrCreateApiClient(serverId));
-
-            } else {
-                resolve(ApiClient);
+            if (!lastActivityDate) {
+                return "";
             }
-        });
-    },
 
-    onPageShow: function () {
+            return "Last seen " + humane_date(lastActivityDate);
+        },
 
-        Dashboard.showLoadingMsg();
+        authenticateUserByName: function (page, apiClient, username, password) {
 
-        var page = this;
+            Dashboard.showLoadingMsg();
 
-        LoginPage.getApiClient().then(function (apiClient) {
+            apiClient.authenticateUserByName(username, password).then(function (result) {
 
-            apiClient.getPublicUsers().then(function (users) {
+                var user = result.User;
 
-                var showManualForm = !users.length;
+                var serverId = getParameterByName('serverid');
 
-                if (showManualForm) {
+                var newUrl;
 
-                    LoginPage.showManualForm(page, false, false);
-
+                if (user.Policy.IsAdministrator && !serverId) {
+                    newUrl = "dashboard.html";
                 } else {
-
-                    LoginPage.showVisualForm(page);
-                    LoginPage.loadUserList(page, apiClient, users);
+                    newUrl = "home.html";
                 }
 
                 Dashboard.hideLoadingMsg();
+
+                Dashboard.onServerChanged(user.Id, result.AccessToken, apiClient);
+                Dashboard.navigate(newUrl);
+
+            }, function () {
+
+                $('#pw', page).val('');
+                $('#txtManualName', page).val('');
+                $('#txtManualPassword', page).val('');
+
+                Dashboard.hideLoadingMsg();
+
+                setTimeout(function () {
+                    require(['toast'], function (toast) {
+                        toast(Globalize.translate('MessageInvalidUser'));
+                    });
+                }, 300);
             });
 
-            apiClient.getJSON(apiClient.getUrl('Branding/Configuration')).then(function (options) {
+        }
 
-                $('.disclaimer', page).html(options.LoginDisclaimer || '');
-            });
+    };
+
+    function getApiClient() {
+
+        var serverId = getParameterByName('serverid');
+
+        if (serverId) {
+            return Promise.resolve(ConnectionManager.getOrCreateApiClient(serverId));
+
+        } else {
+            return Promise.resolve(ApiClient);
+        }
+    }
+
+    function onManualSubmit() {
+        var page = $(this).parents('.page');
+
+        getApiClient().then(function (apiClient) {
+            LoginPage.authenticateUserByName(page, apiClient, $('#txtManualName', page).val(), $('#txtManualPassword', page).val());
         });
 
-        if (Dashboard.isConnectMode()) {
-            $('.connectButtons', page).show();
-        } else {
-            $('.connectButtons', page).hide();
-        }
-    },
+        // Disable default form submission
+        return false;
+    }
 
-    cancelLogin: function () {
-
-        LoginPage.showVisualForm($.mobile.activePage);
-    },
-
-    showManualForm: function (page, showCancel, focusPassword) {
-        $('.visualLoginForm', page).hide();
-        $('.manualLoginForm', page).show();
+    function showManualForm(context, showCancel, focusPassword) {
+        $('.visualLoginForm', context).hide();
+        $('.manualLoginForm', context).show();
 
         if (focusPassword) {
-            $('#txtManualPassword input', page).focus();
+            $('#txtManualPassword input', context).focus();
         } else {
-            $('#txtManualName input', page).focus();
+            $('#txtManualName input', context).focus();
         }
 
         if (showCancel) {
-            $('.btnCancel', page).show();
+            $('.btnCancel', context).show();
         } else {
-            $('.btnCancel', page).hide();
+            $('.btnCancel', context).hide();
         }
-    },
+    }
 
-    showVisualForm: function (page) {
-        $('.visualLoginForm', page).show();
-        $('.manualLoginForm', page).hide();
-    },
-
-    getLastSeenText: function (lastActivityDate) {
-
-        if (!lastActivityDate) {
-            return "";
-        }
-
-        return "Last seen " + humane_date(lastActivityDate);
-    },
-
-    authenticateUserByName: function (page, apiClient, username, password) {
-
-        Dashboard.showLoadingMsg();
-
-        apiClient.authenticateUserByName(username, password).then(function (result) {
-
-            var user = result.User;
-
-            var serverId = getParameterByName('serverid');
-
-            var newUrl;
-
-            if (user.Policy.IsAdministrator && !serverId) {
-                newUrl = "dashboard.html";
-            } else {
-                newUrl = "home.html";
-            }
-
-            Dashboard.hideLoadingMsg();
-
-            Dashboard.onServerChanged(user.Id, result.AccessToken, apiClient);
-            Dashboard.navigate(newUrl);
-
-        }, function () {
-
-            $('#pw', page).val('');
-            $('#txtManualName', page).val('');
-            $('#txtManualPassword', page).val('');
-
-            Dashboard.hideLoadingMsg();
-
-            setTimeout(function () {
-                require(['toast'], function (toast) {
-                    toast(Globalize.translate('MessageInvalidUser'));
-                });
-            }, 300);
-        });
-
-    },
-
-    loadUserList: function (page, apiClient, users) {
+    function loadUserList(context, apiClient, users) {
         var html = "";
 
         for (var i = 0, length = users.length; i < length; i++) {
@@ -184,7 +153,7 @@
             html += '</div>';
         }
 
-        var elem = $('#divUsers', page).html(html);
+        var elem = $('#divUsers', context).html(html);
 
         $('a', elem).on('click', function () {
 
@@ -193,39 +162,69 @@
             var haspw = this.getAttribute('data-haspw');
 
             if (id == 'manual') {
-                LoginPage.showManualForm(page, true);
+                showManualForm(context, true);
             }
             else if (haspw == 'false') {
-                LoginPage.authenticateUserByName(page, apiClient, name, '');
+                LoginPage.authenticateUserByName(context, apiClient, name, '');
             } else {
-                $('#txtManualName', page).val(name);
-                $('#txtManualPassword', page).val('');
-                LoginPage.showManualForm(page, true, true);
+                $('#txtManualName', context).val(name);
+                $('#txtManualPassword', context).val('');
+                showManualForm(context, true, true);
             }
         });
-    },
+    }
 
-    onManualSubmit: function () {
+    return function (view, params) {
 
-    	var page = $(this).parents('.page');
+        var self = this;
 
-        LoginPage.getApiClient().then(function (apiClient) {
-            LoginPage.authenticateUserByName(page, apiClient, $('#txtManualName', page).val(), $('#txtManualPassword', page).val());
+        $('.manualLoginForm', view).on('submit', onManualSubmit);
+
+        view.querySelector('.btnForgotPassword').addEventListener('click', function () {
+            Dashboard.navigate('forgotpassword.html');
         });
 
-        // Disable default form submission
-        return false;
-    }
-};
+        view.querySelector('.btnCancel').addEventListener('click', function () {
+            LoginPage.showVisualForm(view);
+        });
 
-$(document).on('pageinit', "#loginPage", function () {
+        view.querySelector('.btnManual').addEventListener('click', function () {
+            showManualForm(view, true);
+        });
 
-    var page = this;
+        view.addEventListener('viewshow', function (e) {
+            Dashboard.showLoadingMsg();
 
-    $('.manualLoginForm', page).off('submit', LoginPage.onManualSubmit).on('submit', LoginPage.onManualSubmit);
+            getApiClient().then(function (apiClient) {
 
-    $('.btnForgotPassword', page).on('click', function () {
-        Dashboard.navigate('forgotpassword.html');
-    });
+                apiClient.getPublicUsers().then(function (users) {
 
-}).on('pageshow', "#loginPage", LoginPage.onPageShow);
+                    var showManualForm = !users.length;
+
+                    if (showManualForm) {
+
+                        showManualForm(view, false, false);
+
+                    } else {
+
+                        LoginPage.showVisualForm(view);
+                        loadUserList(view, apiClient, users);
+                    }
+
+                    Dashboard.hideLoadingMsg();
+                });
+
+                apiClient.getJSON(apiClient.getUrl('Branding/Configuration')).then(function (options) {
+
+                    $('.disclaimer', view).html(options.LoginDisclaimer || '');
+                });
+            });
+
+            if (Dashboard.isConnectMode()) {
+                $('.connectButtons', view).show();
+            } else {
+                $('.connectButtons', view).hide();
+            }
+        });
+    };
+});

@@ -1,34 +1,34 @@
-﻿define(['layoutManager', 'datetime', 'jQuery', 'mediaInfo', 'scrollStyles'], function (layoutManager, datetime, $, mediaInfo) {
+﻿define(['layoutManager', 'datetime', 'jQuery', 'mediaInfo', 'backdrop', 'scrollStyles'], function (layoutManager, datetime, $, mediaInfo, backdrop) {
 
     var currentItem;
 
-    function getPromise() {
+    function getPromise(params) {
 
-        var id = getParameterByName('id');
+        var id = params.id;
 
         if (id) {
             return ApiClient.getItem(Dashboard.getCurrentUserId(), id);
         }
 
-        var name = getParameterByName('genre');
+        var name = params.genre;
 
         if (name) {
             return ApiClient.getGenre(name, Dashboard.getCurrentUserId());
         }
 
-        name = getParameterByName('musicgenre');
+        name = params.musicgenre;
 
         if (name) {
             return ApiClient.getMusicGenre(name, Dashboard.getCurrentUserId());
         }
 
-        name = getParameterByName('gamegenre');
+        name = params.gamegenre;
 
         if (name) {
             return ApiClient.getGameGenre(name, Dashboard.getCurrentUserId());
         }
 
-        name = getParameterByName('musicartist');
+        name = params.musicartist;
 
         if (name) {
             return ApiClient.getArtist(name, Dashboard.getCurrentUserId());
@@ -38,21 +38,21 @@
         }
     }
 
-    function reload(page) {
+    function reload(page, params) {
 
         Dashboard.showLoadingMsg();
 
-        getPromise().then(function (item) {
+        getPromise(params).then(function (item) {
 
-            reloadFromItem(page, item);
+            reloadFromItem(page, params, item);
         });
     }
 
-    function reloadFromItem(page, item) {
+    function reloadFromItem(page, params, item) {
 
         currentItem = item;
 
-        var context = getContext(item);
+        var context = params.context;
 
         LibraryMenu.setBackButtonVisible(true);
         LibraryMenu.setMenuButtonVisible(false);
@@ -75,14 +75,13 @@
             // For these types, make the backdrop a little smaller so that the items are more quickly accessible
             if (item.Type == 'MusicArtist' || item.Type == "MusicAlbum" || item.Type == "Playlist" || item.Type == "BoxSet" || item.MediaType == "Audio" || !layoutManager.mobile) {
                 $('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
-                require(['backdrop'], function (backdrop) {
-                    backdrop.setBackdrops([item]);
-                });
+                backdrop.setBackdrops([item]);
             }
             else {
                 //$('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
                 //Backdrops.setBackdrops(page, [item]);
                 hasBackdrop = LibraryBrowser.renderDetailPageBackdrop(page, item);
+                backdrop.clear();
             }
 
             var transparentHeader = hasBackdrop && page.classList.contains('noSecondaryNavPage');
@@ -301,11 +300,6 @@
 
     }
 
-    function getContext(item) {
-
-        return getParameterByName('context');
-    }
-
     function renderNextUp(page, item, user) {
 
         var section = page.querySelector('.nextUpSection');
@@ -475,7 +469,7 @@
             });
         });
 
-        $('.itemGenres', page).each(function() {
+        $('.itemGenres', page).each(function () {
             LibraryBrowser.renderGenres(this, item, null, isStatic);
         });
         LibraryBrowser.renderStudios($('.itemStudios', page), item, isStatic);
@@ -1098,10 +1092,13 @@
 
         html += '<div class="detailSection">';
 
+        html += '<div style="display:flex;align-items:center;">';
         html += '<h1>';
         html += '<span>' + type.name + '</span>';
 
         html += '</h1>';
+        html += '<button class="btnAddToCollection" type="button" is="paper-icon-button-light" style="margin-left:1em;"><iron-icon icon="add"></iron-icon></button>';
+        html += '</div>';
 
         html += '<div class="detailSectionContent itemsContainer">';
 
@@ -1130,6 +1127,15 @@
         $(collectionItems).off('removefromcollection').on('removefromcollection', function (e, itemId) {
 
             removeFromCollection(page, parentItem, [itemId], user, context);
+        });
+
+        collectionItems.querySelector('.btnAddToCollection').addEventListener('click', function () {
+            require(['alert'], function (alert) {
+                alert({
+                    text: Globalize.translate('AddItemToCollectionHelp'),
+                    html: Globalize.translate('AddItemToCollectionHelp') + '<br/><br/><a target="_blank" href="https://github.com/MediaBrowser/Wiki/wiki/Collections">' + Globalize.translate('ButtonLearnMore') + '</a>'
+                });
+            });
         });
     }
 
@@ -1924,9 +1930,7 @@
         });
     }
 
-    function splitVersions(page) {
-
-        var id = getParameterByName('id');
+    function splitVersions(page, params) {
 
         require(['confirm'], function (confirm) {
 
@@ -1936,13 +1940,13 @@
 
                 ApiClient.ajax({
                     type: "DELETE",
-                    url: ApiClient.getUrl("Videos/" + id + "/AlternateSources")
+                    url: ApiClient.getUrl("Videos/" + params.id + "/AlternateSources")
 
                 }).then(function () {
 
                     Dashboard.hideLoadingMsg();
 
-                    reload(page);
+                    reload(page, params);
                 });
             });
         });
@@ -1991,7 +1995,7 @@
         LibraryBrowser.showPlayMenu(button, currentItem.Id, currentItem.Type, currentItem.IsFolder, mediaType, userdata.PlaybackPositionTicks);
     }
 
-    function deleteTimer(page, id) {
+    function deleteTimer(page, params, id) {
 
         require(['confirm'], function (confirm) {
 
@@ -2005,128 +2009,11 @@
                         toast(Globalize.translate('MessageRecordingCancelled'));
                     });
 
-                    reload(page);
+                    reload(page, params);
                 });
             });
         });
     }
-
-    pageIdOn('pageinit', "itemDetailPage", function () {
-
-        var page = this;
-
-        $('.btnPlay', page).on('click', function () {
-            playCurrentItem(this);
-        });
-
-        $('.btnPlayTrailer', page).on('click', function () {
-            playTrailer(page);
-        });
-
-        $('.btnSplitVersions', page).on('click', function () {
-
-            splitVersions(page);
-        });
-
-        $('.btnSync', page).on('click', function () {
-
-            require(['syncDialog'], function (syncDialog) {
-                syncDialog.showMenu({
-                    items: [currentItem]
-                });
-            });
-        });
-
-        $('.btnRecord,.btnFloatingRecord', page).on('click', function () {
-
-            var id = getParameterByName('id');
-            Dashboard.showLoadingMsg();
-
-            require(['recordingCreator'], function (recordingCreator) {
-                recordingCreator.show(id, currentItem.ServerId).then(function () {
-                    reload(page);
-                });
-            });
-
-        });
-
-        $('.btnCancelRecording', page).on('click', function () {
-
-            deleteTimer(page, currentItem.TimerId);
-        });
-
-        $('.btnMoreCommands', page).on('click', function () {
-
-            var button = this;
-
-            Dashboard.getCurrentUser().then(function (user) {
-
-                LibraryBrowser.showMoreCommands(button, currentItem.Id, currentItem.Type, LibraryBrowser.getMoreCommands(currentItem, user));
-            });
-        });
-
-        $('.childrenItemsContainer', page).on('playallfromhere', function (e, index) {
-
-            LibraryBrowser.playAllFromHere(_childrenItemsFunction, index);
-
-        }).on('queueallfromhere', function (e, index) {
-
-            LibraryBrowser.queueAllFromHere(_childrenItemsFunction, index);
-
-        });
-
-        $(page).on("click", ".moreScenes", function () {
-
-            Dashboard.getCurrentUser().then(function (user) {
-                renderScenes(page, currentItem, user);
-            });
-
-        }).on("click", ".morePeople", function () {
-
-            renderCast(page, currentItem, getContext(currentItem));
-
-        }).on("click", ".moreSpecials", function () {
-
-            Dashboard.getCurrentUser().then(function (user) {
-                renderSpecials(page, currentItem, user);
-            });
-
-        }).on("click", ".moreCriticReviews", function () {
-
-            renderCriticReviews(page, currentItem);
-        });
-
-        //var btnMore = page.querySelectorAll('.btnMoreCommands iron-icon');
-        //for (var i = 0, length = btnMore.length; i < length; i++) {
-        //    btnMore[i].icon = AppInfo.moreIcon;
-        //}
-
-    });
-
-    pageIdOn('pagebeforeshow', "itemDetailPage", function () {
-
-        var page = this;
-
-        reload(page);
-
-        Events.on(ApiClient, 'websocketmessage', onWebSocketMessage);
-
-        Events.on(LibraryBrowser, 'itemdeleting', onItemDeleted);
-
-    });
-
-
-    pageIdOn('pagebeforehide', "itemDetailPage", function () {
-
-        Events.off(LibraryBrowser, 'itemdeleting', onItemDeleted);
-
-        currentItem = null;
-
-        var page = this;
-
-        Events.off(ApiClient, 'websocketmessage', onWebSocketMessage);
-        LibraryMenu.setTransparentMenu(false);
-    });
 
     function itemDetailPage() {
 
@@ -2143,4 +2030,111 @@
 
     window.ItemDetailPage = new itemDetailPage();
 
+    return function (view, params) {
+
+        $('.btnPlay', view).on('click', function () {
+            playCurrentItem(this);
+        });
+
+        $('.btnPlayTrailer', view).on('click', function () {
+            playTrailer(view);
+        });
+
+        $('.btnSplitVersions', view).on('click', function () {
+
+            splitVersions(view, params);
+        });
+
+        $('.btnSync', view).on('click', function () {
+
+            require(['syncDialog'], function (syncDialog) {
+                syncDialog.showMenu({
+                    items: [currentItem]
+                });
+            });
+        });
+
+        $('.btnRecord,.btnFloatingRecord', view).on('click', function () {
+
+            var id = params.id;
+            Dashboard.showLoadingMsg();
+
+            require(['recordingCreator'], function (recordingCreator) {
+                recordingCreator.show(id, currentItem.ServerId).then(function () {
+                    reload(view, params);
+                });
+            });
+
+        });
+
+        $('.btnCancelRecording', view).on('click', function () {
+
+            deleteTimer(view, params, currentItem.TimerId);
+        });
+
+        $('.btnMoreCommands', view).on('click', function () {
+
+            var button = this;
+
+            Dashboard.getCurrentUser().then(function (user) {
+
+                LibraryBrowser.showMoreCommands(button, currentItem.Id, currentItem.Type, LibraryBrowser.getMoreCommands(currentItem, user));
+            });
+        });
+
+        $('.childrenItemsContainer', view).on('playallfromhere', function (e, index) {
+
+            LibraryBrowser.playAllFromHere(_childrenItemsFunction, index);
+
+        }).on('queueallfromhere', function (e, index) {
+
+            LibraryBrowser.queueAllFromHere(_childrenItemsFunction, index);
+
+        });
+
+        $(view).on("click", ".moreScenes", function () {
+
+            Dashboard.getCurrentUser().then(function (user) {
+                renderScenes(view, currentItem, user);
+            });
+
+        }).on("click", ".morePeople", function () {
+
+            renderCast(view, currentItem, params.context);
+
+        }).on("click", ".moreSpecials", function () {
+
+            Dashboard.getCurrentUser().then(function (user) {
+                renderSpecials(view, currentItem, user);
+            });
+
+        }).on("click", ".moreCriticReviews", function () {
+
+            renderCriticReviews(view, currentItem);
+        });
+
+        //var btnMore = page.querySelectorAll('.btnMoreCommands iron-icon');
+        //for (var i = 0, length = btnMore.length; i < length; i++) {
+        //    btnMore[i].icon = AppInfo.moreIcon;
+        //}
+
+        view.addEventListener('viewbeforeshow', function () {
+            var page = this;
+
+            reload(page, params);
+
+            Events.on(ApiClient, 'websocketmessage', onWebSocketMessage);
+
+            Events.on(LibraryBrowser, 'itemdeleting', onItemDeleted);
+        });
+
+        view.addEventListener('viewbeforehide', function () {
+            Events.off(LibraryBrowser, 'itemdeleting', onItemDeleted);
+
+            currentItem = null;
+
+            Events.off(ApiClient, 'websocketmessage', onWebSocketMessage);
+            LibraryMenu.setTransparentMenu(false);
+        });
+    };
 });

@@ -57,13 +57,13 @@ body:not(.dashboardDocument) .mainDrawerButton {
         text-transform: none;
     }
 
-        .libraryViewNav .pageTabButton.is-active:after {
-            display: none !important;
-        }
+.pageTabButton.is-active .pageTabButtonSelectionBar {
+    display: none !important;
+}
 
-        .libraryViewNav .pageTabButton.is-active {
-            color: #52B54B !important;
-        }
+.libraryViewNav .pageTabButton.is-active {
+    color: #52B54B !important;
+}
 
 .ui-body-b .paperList:not(.criticReviewPaperList) {
     background-color: transparent;
