@@ -149,13 +149,18 @@ namespace MediaBrowser.Controller.Entities.TV
         [IgnoreDataMember]
         public bool IsMissingSeason
         {
-            get { return (IsVirtualItem ?? false) && !IsUnaired; }
+            get { return (IsVirtualItem ?? DetectIsVirtualItem()) && !IsUnaired; }
         }
 
         [IgnoreDataMember]
         public bool IsVirtualUnaired
         {
-            get { return (IsVirtualItem ?? false) && IsUnaired; }
+            get { return (IsVirtualItem ?? DetectIsVirtualItem()) && IsUnaired; }
+        }
+
+        private bool DetectIsVirtualItem()
+        {
+            return LocationType == LocationType.Virtual && GetEpisodes().All(i => i.LocationType == LocationType.Virtual);
         }
 
         [IgnoreDataMember]

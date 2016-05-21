@@ -145,11 +145,15 @@ namespace MediaBrowser.Providers.Manager
 
             bool hasRefreshedMetadata = true;
             bool hasRefreshedImages = true;
+            var requiresRefresh = false;
 
             // Next run metadata providers
             if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
             {
-                var providers = GetProviders(item, refreshResult, refreshOptions)
+                // TODO: If this returns true, should we instead just change metadata refresh mode to Full?
+                requiresRefresh = item.RequiresRefresh();
+
+                var providers = GetProviders(item, refreshResult, refreshOptions, requiresRefresh)
                     .ToList();
 
                 var dateLastRefresh = EnableDateLastRefreshed(item)
@@ -217,11 +221,11 @@ namespace MediaBrowser.Providers.Manager
 
             var isFirstRefresh = GetLastRefreshDate(item) == default(DateTime);
 
-            var beforeSaveResult = await BeforeSave(itemOfType, isFirstRefresh || refreshOptions.ReplaceAllMetadata || refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh, updateType).ConfigureAwait(false);
+            var beforeSaveResult = await BeforeSave(itemOfType, isFirstRefresh || refreshOptions.ReplaceAllMetadata || refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || requiresRefresh, updateType).ConfigureAwait(false);
             updateType = updateType | beforeSaveResult;
 
             // Save if changes were made, or it's never been saved before
-            if (refreshOptions.ForceSave || updateType > ItemUpdateType.None || isFirstRefresh || refreshOptions.ReplaceAllMetadata)
+            if (refreshOptions.ForceSave || updateType > ItemUpdateType.None || isFirstRefresh || refreshOptions.ReplaceAllMetadata || requiresRefresh)
             {
                 // If any of these properties are set then make sure the updateType is not None, just to force everything to save
                 if (refreshOptions.ForceSave || refreshOptions.ReplaceAllMetadata)
@@ -461,11 +465,8 @@ namespace MediaBrowser.Providers.Manager
         /// <summary>
         /// Gets the providers.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="status">The status.</param>
-        /// <param name="options">The options.</param>
         /// <returns>IEnumerable{`0}.</returns>
-        protected IEnumerable<IMetadataProvider> GetProviders(IHasMetadata item, MetadataStatus status, MetadataRefreshOptions options)
+        protected IEnumerable<IMetadataProvider> GetProviders(IHasMetadata item, MetadataStatus status, MetadataRefreshOptions options, bool requiresRefresh)
         {
             // Get providers to refresh
             var providers = ((ProviderManager)ProviderManager).GetMetadataProviders<TItemType>(item).ToList();
@@ -475,7 +476,7 @@ namespace MediaBrowser.Providers.Manager
                 : status.DateLastMetadataRefresh ?? default(DateTime);
 
             // Run all if either of these flags are true
-            var runAllProviders = options.ReplaceAllMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || dateLastRefresh == default(DateTime) || item.RequiresRefresh();
+            var runAllProviders = options.ReplaceAllMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || dateLastRefresh == default(DateTime) || requiresRefresh;
 
             if (!runAllProviders)
             {
@@ -668,12 +669,6 @@ namespace MediaBrowser.Providers.Manager
 
                     // If a local provider fails, consider that a failure
                     refreshResult.ErrorMessage = ex.Message;
-
-                    if (options.MetadataRefreshMode != MetadataRefreshMode.FullRefresh)
-                    {
-                        // If the local provider fails don't continue with remote providers because the user's saved metadata could be lost
-                        //return refreshResult;
-                    }
                 }
             }
 
