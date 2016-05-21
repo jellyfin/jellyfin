@@ -184,7 +184,7 @@
 
         if (images.length) {
             $('#screenshotsContainer', page).show();
-            renderImages(page, item, images, imageProviders, $('#screenshots', page));
+            renderImages(page, item, images, imageProviders, page.querySelector('#screenshots'));
         } else {
             $('#screenshotsContainer', page).hide();
         }
