@@ -190,7 +190,6 @@ namespace MediaBrowser.Server.Startup.Common
         internal IItemRepository ItemRepository { get; set; }
         private INotificationsRepository NotificationsRepository { get; set; }
         private IFileOrganizationRepository FileOrganizationRepository { get; set; }
-        private IProviderRepository ProviderRepository { get; set; }
 
         private INotificationManager NotificationManager { get; set; }
         private ISubtitleManager SubtitleManager { get; set; }
@@ -418,10 +417,6 @@ namespace MediaBrowser.Server.Startup.Common
             ItemRepository = itemRepo;
             RegisterSingleInstance(ItemRepository);
 
-            var providerRepo = new SqliteProviderInfoRepository(LogManager, ApplicationPaths);
-            ProviderRepository = providerRepo;
-            RegisterSingleInstance(ProviderRepository);
-
             FileOrganizationRepository = await GetFileOrganizationRepository().ConfigureAwait(false);
             RegisterSingleInstance(FileOrganizationRepository);
 
@@ -564,7 +559,6 @@ namespace MediaBrowser.Server.Startup.Common
             await displayPreferencesRepo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
             await ConfigureUserDataRepositories().ConfigureAwait(false);
             await itemRepo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
-            await providerRepo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
             ((LibraryManager)LibraryManager).ItemRepository = ItemRepository;
             await ConfigureNotificationsRepository().ConfigureAwait(false);
             progress.Report(100);
