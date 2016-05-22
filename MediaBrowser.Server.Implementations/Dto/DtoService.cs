@@ -1412,6 +1412,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (episode != null)
             {
                 dto.IndexNumberEnd = episode.IndexNumberEnd;
+                dto.SeriesName = episode.SeriesName;
 
                 if (fields.Contains(ItemFields.AlternateEpisodeNumbers))
                 {
@@ -1427,23 +1428,50 @@ namespace MediaBrowser.Server.Implementations.Dto
                     dto.AirsBeforeSeasonNumber = episode.AirsBeforeSeasonNumber;
                 }
 
+                var seasonId = episode.SeasonId;
+                if (seasonId.HasValue)
+                {
+                    dto.SeasonId = seasonId.Value.ToString("N");
+                }
+
                 var episodeSeason = episode.Season;
                 if (episodeSeason != null)
                 {
-                    dto.SeasonId = episodeSeason.Id.ToString("N");
-
                     if (fields.Contains(ItemFields.SeasonName))
                     {
                         dto.SeasonName = episodeSeason.Name;
                     }
                 }
 
-                if (fields.Contains(ItemFields.SeriesGenres))
+                var episodeSeries = episode.Series;
+
+                if (episodeSeries != null)
                 {
-                    var episodeseries = episode.Series;
-                    if (episodeseries != null)
+                    if (fields.Contains(ItemFields.SeriesGenres))
                     {
-                        dto.SeriesGenres = episodeseries.Genres.ToList();
+                        dto.SeriesGenres = episodeSeries.Genres.ToList();
+                    }
+
+                    dto.SeriesId = GetDtoId(episodeSeries);
+
+                    if (fields.Contains(ItemFields.AirTime))
+                    {
+                        dto.AirTime = episodeSeries.AirTime;
+                    }
+
+                    if (options.GetImageLimit(ImageType.Thumb) > 0)
+                    {
+                        dto.SeriesThumbImageTag = GetImageCacheTag(episodeSeries, ImageType.Thumb);
+                    }
+
+                    if (options.GetImageLimit(ImageType.Primary) > 0)
+                    {
+                        dto.SeriesPrimaryImageTag = GetImageCacheTag(episodeSeries, ImageType.Primary);
+                    }
+
+                    if (fields.Contains(ItemFields.SeriesStudio))
+                    {
+                        dto.SeriesStudio = episodeSeries.Studios.FirstOrDefault();
                     }
                 }
             }
@@ -1462,37 +1490,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
 
                 dto.AnimeSeriesIndex = series.AnimeSeriesIndex;
-            }
-
-            if (episode != null)
-            {
-                series = episode.Series;
-
-                if (series != null)
-                {
-                    dto.SeriesId = GetDtoId(series);
-                    dto.SeriesName = series.Name;
-
-                    if (fields.Contains(ItemFields.AirTime))
-                    {
-                        dto.AirTime = series.AirTime;
-                    }
-
-                    if (options.GetImageLimit(ImageType.Thumb) > 0)
-                    {
-                        dto.SeriesThumbImageTag = GetImageCacheTag(series, ImageType.Thumb);
-                    }
-
-                    if (options.GetImageLimit(ImageType.Primary) > 0)
-                    {
-                        dto.SeriesPrimaryImageTag = GetImageCacheTag(series, ImageType.Primary);
-                    }
-
-                    if (fields.Contains(ItemFields.SeriesStudio))
-                    {
-                        dto.SeriesStudio = series.Studios.FirstOrDefault();
-                    }
-                }
             }
 
             // Add SeasonInfo
