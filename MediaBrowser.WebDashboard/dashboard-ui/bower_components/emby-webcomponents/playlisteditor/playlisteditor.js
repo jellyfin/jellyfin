@@ -142,7 +142,7 @@
         html += '<form style="margin:auto;">';
 
         html += '<div class="fldSelectPlaylist">';
-        html += '<select is="emby-select" id="selectPlaylistToAddTo" label="' + globalize.translate('sharedcomponents#LabelPlaylist') + '"></select>';
+        html += '<select is="emby-select" id="selectPlaylistToAddTo" label="' + globalize.translate('sharedcomponents#LabelPlaylist') + '" autofocus></select>';
         html += '</div>';
 
         html += '<div class="newPlaylistInfo">';

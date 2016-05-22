@@ -193,32 +193,30 @@
 
         // Seeing an issue in some non-chrome browsers where this is requiring a double click
         //var eventName = browser.firefox ? 'mousedown' : 'click';
-        var eventName = 'click';
+        var selectedId;
+
+        dlg.addEventListener('click', function (e) {
+
+            var actionSheetMenuItem = parentWithClass(e.target, 'actionSheetMenuItem');
+
+            if (actionSheetMenuItem) {
+                selectedId = actionSheetMenuItem.getAttribute('data-id');
+                dialogHelper.close(dlg);
+            }
+
+        });
 
         return new Promise(function (resolve, reject) {
 
-            dlg.addEventListener(eventName, function (e) {
+            dlg.addEventListener('close', function () {
 
-                var actionSheetMenuItem = parentWithClass(e.target, 'actionSheetMenuItem');
+                if (selectedId) {
+                    if (options.callback) {
+                        options.callback(selectedId);
+                    }
 
-                if (actionSheetMenuItem) {
-
-                    var selectedId = actionSheetMenuItem.getAttribute('data-id');
-
-                    dialogHelper.close(dlg);
-
-                    // Add a delay here to allow the click animation to finish, for nice effect
-                    setTimeout(function () {
-
-                        if (options.callback) {
-                            options.callback(selectedId);
-                        }
-
-                        resolve(selectedId);
-
-                    }, 100);
+                    resolve(selectedId);
                 }
-
             });
 
             dialogHelper.open(dlg);
