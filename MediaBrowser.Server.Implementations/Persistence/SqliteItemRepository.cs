@@ -1504,11 +1504,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private bool EnableJoinUserData(InternalItemsQuery query)
         {
-            if (_config.Configuration.SchemaVersion < 76)
-            {
-                return false;
-            }
-
             if (query.User == null)
             {
                 return false;
@@ -1623,7 +1618,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 cmd.CommandText += whereText;
 
-                if (EnableGroupByPresentationUniqueKey(query) && _config.Configuration.SchemaVersion >= 66)
+                if (EnableGroupByPresentationUniqueKey(query))
                 {
                     cmd.CommandText += " Group by PresentationUniqueKey";
                 }
@@ -1711,7 +1706,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 cmd.CommandText += whereText;
 
-                if (EnableGroupByPresentationUniqueKey(query) && _config.Configuration.SchemaVersion >= 66)
+                if (EnableGroupByPresentationUniqueKey(query))
                 {
                     cmd.CommandText += " Group by PresentationUniqueKey";
                 }
@@ -1730,7 +1725,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     }
                 }
 
-                if (EnableGroupByPresentationUniqueKey(query) && _config.Configuration.SchemaVersion >= 66)
+                if (EnableGroupByPresentationUniqueKey(query))
                 {
                     cmd.CommandText += "; select count (distinct PresentationUniqueKey) from TypedBaseItems";
                 }
@@ -1880,7 +1875,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 cmd.CommandText += whereText;
 
-                if (EnableGroupByPresentationUniqueKey(query) && _config.Configuration.SchemaVersion >= 66)
+                if (EnableGroupByPresentationUniqueKey(query))
                 {
                     cmd.CommandText += " Group by PresentationUniqueKey";
                 }
@@ -1940,7 +1935,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 cmd.CommandText += whereText;
 
-                if (EnableGroupByPresentationUniqueKey(query) && _config.Configuration.SchemaVersion >= 66)
+                if (EnableGroupByPresentationUniqueKey(query))
                 {
                     cmd.CommandText += " Group by PresentationUniqueKey";
                 }
@@ -2023,7 +2018,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 cmd.CommandText += whereText;
 
-                if (EnableGroupByPresentationUniqueKey(query) && _config.Configuration.SchemaVersion >= 66)
+                if (EnableGroupByPresentationUniqueKey(query))
                 {
                     cmd.CommandText += " Group by PresentationUniqueKey";
                 }
@@ -2042,7 +2037,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     }
                 }
 
-                if (EnableGroupByPresentationUniqueKey(query) && _config.Configuration.SchemaVersion >= 66)
+                if (EnableGroupByPresentationUniqueKey(query))
                 {
                     cmd.CommandText += "; select count (distinct PresentationUniqueKey) from TypedBaseItems";
                 }
@@ -2319,41 +2314,19 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (!string.IsNullOrWhiteSpace(query.SlugName))
             {
-                if (_config.Configuration.SchemaVersion >= 70)
-                {
-                    whereClauses.Add("SlugName=@SlugName");
-                }
-                else
-                {
-                    whereClauses.Add("Name=@SlugName");
-                }
+                whereClauses.Add("SlugName=@SlugName");
                 cmd.Parameters.Add(cmd, "@SlugName", DbType.String).Value = query.SlugName;
             }
 
             if (!string.IsNullOrWhiteSpace(query.Name))
             {
-                if (_config.Configuration.SchemaVersion >= 66)
-                {
-                    whereClauses.Add("CleanName=@Name");
-                    cmd.Parameters.Add(cmd, "@Name", DbType.String).Value = query.Name.RemoveDiacritics();
-                }
-                else
-                {
-                    whereClauses.Add("Name=@Name");
-                    cmd.Parameters.Add(cmd, "@Name", DbType.String).Value = query.Name;
-                }
+                whereClauses.Add("CleanName=@Name");
+                cmd.Parameters.Add(cmd, "@Name", DbType.String).Value = query.Name.RemoveDiacritics();
             }
 
             if (!string.IsNullOrWhiteSpace(query.NameContains))
             {
-                if (_config.Configuration.SchemaVersion >= 66)
-                {
-                    whereClauses.Add("CleanName like @NameContains");
-                }
-                else
-                {
-                    whereClauses.Add("Name like @NameContains");
-                }
+                whereClauses.Add("CleanName like @NameContains");
                 cmd.Parameters.Add(cmd, "@NameContains", DbType.String).Value = "%" + query.NameContains.RemoveDiacritics() + "%";
             }
             if (!string.IsNullOrWhiteSpace(query.NameStartsWith))

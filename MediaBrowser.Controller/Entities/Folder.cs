@@ -773,53 +773,8 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            var supportsUserDataQueries = ConfigurationManager.Configuration.SchemaVersion >= 76;
-
             if (query.SortBy != null && query.SortBy.Length > 0)
             {
-                if (!supportsUserDataQueries)
-                {
-                    if (query.SortBy.Contains(ItemSortBy.DatePlayed, StringComparer.OrdinalIgnoreCase))
-                    {
-                        Logger.Debug("Query requires post-filtering due to ItemSortBy.IsFavoriteOrLiked");
-                        return true;
-                    }
-                    if (query.SortBy.Contains(ItemSortBy.PlayCount, StringComparer.OrdinalIgnoreCase))
-                    {
-                        Logger.Debug("Query requires post-filtering due to ItemSortBy.PlayCount");
-                        return true;
-                    }
-                    if (query.SortBy.Contains(ItemSortBy.IsFavoriteOrLiked, StringComparer.OrdinalIgnoreCase))
-                    {
-                        Logger.Debug("Query requires post-filtering due to ItemSortBy.IsFavoriteOrLiked");
-                        return true;
-                    }
-                    if (query.SortBy.Contains(ItemSortBy.IsPlayed, StringComparer.OrdinalIgnoreCase))
-                    {
-                        Logger.Debug("Query requires post-filtering due to ItemSortBy.IsPlayed");
-                        return true;
-                    }
-                    if (query.SortBy.Contains(ItemSortBy.IsUnplayed, StringComparer.OrdinalIgnoreCase))
-                    {
-                        Logger.Debug("Query requires post-filtering due to ItemSortBy.IsUnplayed");
-                        return true;
-                    }
-                }
-
-                if (ConfigurationManager.Configuration.SchemaVersion < 79)
-                {
-                    if (query.SortBy.Contains(ItemSortBy.AlbumArtist, StringComparer.OrdinalIgnoreCase))
-                    {
-                        Logger.Debug("Query requires post-filtering due to ItemSortBy.AlbumArtist");
-                        return true;
-                    }
-                    if (query.SortBy.Contains(ItemSortBy.Artist, StringComparer.OrdinalIgnoreCase))
-                    {
-                        Logger.Debug("Query requires post-filtering due to ItemSortBy.Artist");
-                        return true;
-                    }
-                }
-
                 if (query.SortBy.Contains(ItemSortBy.AiredEpisodeOrder, StringComparer.OrdinalIgnoreCase))
                 {
                     Logger.Debug("Query requires post-filtering due to ItemSortBy.AiredEpisodeOrder");
@@ -882,39 +837,6 @@ namespace MediaBrowser.Controller.Entities
             {
                 Logger.Debug("Query requires post-filtering due to PersonIds");
                 return true;
-            }
-
-            if (!supportsUserDataQueries)
-            {
-                if (query.IsLiked.HasValue)
-                {
-                    Logger.Debug("Query requires post-filtering due to IsLiked");
-                    return true;
-                }
-
-                if (query.IsFavoriteOrLiked.HasValue)
-                {
-                    Logger.Debug("Query requires post-filtering due to IsFavoriteOrLiked");
-                    return true;
-                }
-
-                if (query.IsFavorite.HasValue)
-                {
-                    Logger.Debug("Query requires post-filtering due to IsFavorite");
-                    return true;
-                }
-
-                if (query.IsResumable.HasValue)
-                {
-                    Logger.Debug("Query requires post-filtering due to IsResumable");
-                    return true;
-                }
-
-                if (query.IsPlayed.HasValue)
-                {
-                    Logger.Debug("Query requires post-filtering due to IsPlayed");
-                    return true;
-                }
             }
 
             if (query.IsInBoxSet.HasValue)
@@ -1100,15 +1022,6 @@ namespace MediaBrowser.Controller.Entities
             {
                 Logger.Debug("Query requires post-filtering due to AlbumArtistStartsWithOrGreater");
                 return true;
-            }
-
-            if (ConfigurationManager.Configuration.SchemaVersion < 79)
-            {
-                if (query.ArtistNames.Length > 0)
-                {
-                    Logger.Debug("Query requires post-filtering due to ArtistNames");
-                    return true;
-                }
             }
 
             return false;
