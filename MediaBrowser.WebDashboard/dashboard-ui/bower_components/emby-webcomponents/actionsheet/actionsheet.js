@@ -132,17 +132,20 @@
 
         html += '<div class="actionSheetScroller hiddenScrollY">';
 
-        options.items.forEach(function (o) {
-            o.ironIcon = o.selected ? 'nav:check' : null;
-        });
+        var i, length, option;
+        var renderIcon = false;
+        for (i = 0, length = options.items.length; i < length; i++) {
 
-        var itemsWithIcons = options.items.filter(function (o) {
-            return o.ironIcon;
-        });
+            option = options.items[i];
+            option.ironIcon = option.selected ? 'nav:check' : null;
+
+            if (option.ironIcon) {
+                renderIcon = true;
+            }
+        }
 
         // If any items have an icon, give them all an icon just to make sure they're all lined up evenly
-        var renderIcon = itemsWithIcons.length;
-        var center = options.title && (!itemsWithIcons.length /*|| itemsWithIcons.length != options.items.length*/);
+        var center = options.title && (!renderIcon /*|| itemsWithIcons.length != options.items.length*/);
 
         if (center) {
             dlg.classList.add('centered');
@@ -150,12 +153,12 @@
 
         var itemTagName = 'paper-button';
 
-        for (var i = 0, length = options.items.length; i < length; i++) {
+        for (i = 0, length = options.items.length; i < length; i++) {
 
-            var option = options.items[i];
+            option = options.items[i];
 
             var autoFocus = option.selected ? ' autoFocus' : '';
-            html += '<' + itemTagName + autoFocus + ' class="actionSheetMenuItem" data-id="' + option.id + '">';
+            html += '<' + itemTagName + autoFocus + ' class="actionSheetMenuItem" data-id="' + (option.id || option.value) + '">';
 
             if (option.ironIcon) {
                 html += '<iron-icon class="actionSheetItemIcon" icon="' + option.ironIcon + '"></iron-icon>';
@@ -163,7 +166,7 @@
             else if (renderIcon && !center) {
                 html += '<iron-icon class="actionSheetItemIcon"></iron-icon>';
             }
-            html += '<div class="actionSheetItemText">' + option.name + '</div>';
+            html += '<div class="actionSheetItemText">' + (option.name || option.textContent || option.innerText) + '</div>';
             html += '</' + itemTagName + '>';
         }
 
