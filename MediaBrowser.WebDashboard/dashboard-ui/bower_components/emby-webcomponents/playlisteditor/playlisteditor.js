@@ -1,5 +1,6 @@
 ﻿define(['shell', 'dialogHelper', 'loading', 'layoutManager', 'connectionManager', 'scrollHelper', 'embyRouter', 'globalize', 'paper-checkbox', 'paper-input', 'paper-icon-button-light', 'emby-select', 'html!./../icons/nav.html', 'css!./../formdialog'], function (shell, dialogHelper, loading, layoutManager, connectionManager, scrollHelper, embyRouter, globalize) {
 
+    var lastPlaylistId = '';
     var currentServerId;
 
     function parentWithClass(elem, className) {
@@ -16,33 +17,32 @@
     }
 
     function onSubmit(e) {
+
         loading.show();
 
         var panel = parentWithClass(this, 'dialog');
 
-        var collectionId = panel.querySelector('#selectCollectionToAddTo').value;
-
+        var playlistId = panel.querySelector('#selectPlaylistToAddTo').value;
         var apiClient = connectionManager.getApiClient(currentServerId);
 
-        if (collectionId) {
-            addToCollection(apiClient, panel, collectionId);
+        if (playlistId) {
+            lastPlaylistId = playlistId;
+            addToPlaylist(apiClient, panel, playlistId);
         } else {
-            createCollection(apiClient, panel);
+            createPlaylist(apiClient, panel);
         }
 
         e.preventDefault();
         return false;
     }
 
-    function createCollection(apiClient, dlg) {
+    function createPlaylist(apiClient, dlg) {
 
-        var url = apiClient.getUrl("Collections", {
+        var url = apiClient.getUrl("Playlists", {
 
-            Name: dlg.querySelector('#txtNewCollectionName').value,
-            IsLocked: !dlg.querySelector('#chkEnableInternetMetadata').checked,
-            Ids: dlg.querySelector('.fldSelectedItemIds').value || ''
-
-            //ParentId: getParameterByName('parentId') || LibraryMenu.getTopParentId()
+            Name: dlg.querySelector('#txtNewPlaylistName').value,
+            Ids: dlg.querySelector('.fldSelectedItemIds').value || '',
+            userId: apiClient.getCurrentUserId()
 
         });
 
@@ -58,12 +58,11 @@
             var id = result.Id;
 
             dialogHelper.close(dlg);
-            redirectToCollection(apiClient, id);
-
+            redirectToPlaylist(apiClient, id);
         });
     }
 
-    function redirectToCollection(apiClient, id) {
+    function redirectToPlaylist(apiClient, id) {
 
         apiClient.getItem(apiClient.getCurrentUserId(), id).then(function (item) {
 
@@ -71,11 +70,12 @@
         });
     }
 
-    function addToCollection(apiClient, dlg, id) {
+    function addToPlaylist(apiClient, dlg, id) {
 
-        var url = apiClient.getUrl("Collections/" + id + "/Items", {
+        var url = apiClient.getUrl("Playlists/" + id + "/Items", {
 
-            Ids: dlg.querySelector('.fldSelectedItemIds').value || ''
+            Ids: dlg.querySelector('.fldSelectedItemIds').value || '',
+            userId: apiClient.getCurrentUserId()
         });
 
         apiClient.ajax({
@@ -98,19 +98,19 @@
         select.dispatchEvent(new CustomEvent('change', {}));
     }
 
-    function populateCollections(panel) {
+    function populatePlaylists(panel) {
 
-        loading.show();
+        var select = panel.querySelector('#selectPlaylistToAddTo');
 
-        var select = panel.querySelector('#selectCollectionToAddTo');
+        loading.hide();
 
-        panel.querySelector('.newCollectionInfo').classList.add('hide');
+        panel.querySelector('.newPlaylistInfo').classList.add('hide');
 
         var options = {
 
             Recursive: true,
-            IncludeItemTypes: "BoxSet",
-            SortBy: "SortName"
+            IncludeItemTypes: "Playlist",
+            SortBy: 'SortName'
         };
 
         var apiClient = connectionManager.getApiClient(currentServerId);
@@ -126,7 +126,7 @@
             });
 
             select.innerHTML = html;
-            select.value = '';
+            select.value = lastPlaylistId || '';
             triggerChange(select);
 
             loading.hide();
@@ -139,35 +139,23 @@
 
         html += '<div class="dialogContent smoothScrollY">';
         html += '<div class="dialogContentInner centeredContent">';
-        html += '<form class="newCollectionForm" style="margin:auto;">';
+        html += '<form style="margin:auto;">';
 
-        html += '<div>';
-        html += globalize.translate('sharedcomponents#NewCollectionHelp');
+        html += '<div class="fldSelectPlaylist">';
+        html += '<select is="emby-select" id="selectPlaylistToAddTo" label="' + globalize.translate('sharedcomponents#LabelPlaylist') + '"></select>';
         html += '</div>';
 
-        html += '<div class="fldSelectCollection">';
-        html += '<br/>';
-        html += '<br/>';
-        html += '<select is="emby-select" label="' + globalize.translate('sharedcomponents#LabelCollection') + '" id="selectCollectionToAddTo" autofocus></select>';
-        html += '</div>';
-
-        html += '<div class="newCollectionInfo">';
+        html += '<div class="newPlaylistInfo">';
 
         html += '<div>';
-        html += '<paper-input type="text" id="txtNewCollectionName" required="required" label="' + globalize.translate('sharedcomponents#LabelName') + '"></paper-input>';
-        html += '<div class="fieldDescription">' + globalize.translate('sharedcomponents#NewCollectionNameExample') + '</div>';
+        html += '<paper-input type="text" id="txtNewPlaylistName" required="required" label="' + globalize.translate('sharedcomponents#LabelName') + '"></paper-input>';
         html += '</div>';
 
         html += '<br />';
 
-        html += '<div>';
-        html += '<paper-checkbox id="chkEnableInternetMetadata">' + globalize.translate('sharedcomponents#SearchForCollectionInternetMetadata') + '</paper-checkbox>';
+        // newPlaylistInfo
         html += '</div>';
 
-        // newCollectionInfo
-        html += '</div>';
-
-        html += '<br />';
         html += '<br />';
         html += '<div>';
         html += '<paper-button raised class="btnSubmit block">' + globalize.translate('sharedcomponents#ButtonOk') + '</paper-button>';
@@ -182,24 +170,19 @@
         return html;
     }
 
-    function onHelpClick(e) {
-
-        shell.openUrl(this.href);
-        e.preventDefault();
-        return false;
-    }
-
     function initEditor(content, items) {
 
-        content.querySelector('#selectCollectionToAddTo').addEventListener('change', function () {
+        content.querySelector('#selectPlaylistToAddTo').addEventListener('change', function () {
             if (this.value) {
-                content.querySelector('.newCollectionInfo').classList.add('hide');
-                content.querySelector('#txtNewCollectionName').removeAttribute('required');
+                content.querySelector('.newPlaylistInfo').classList.add('hide');
+                content.querySelector('#txtNewPlaylistName').removeAttribute('required');
             } else {
-                content.querySelector('.newCollectionInfo').classList.remove('hide');
-                content.querySelector('#txtNewCollectionName').setAttribute('required', 'required');
+                content.querySelector('.newPlaylistInfo').classList.remove('hide');
+                content.querySelector('#txtNewPlaylistName').setAttribute('required', 'required');
             }
         });
+
+        populatePlaylists(content);
 
         content.querySelector('.btnSubmit').addEventListener('click', function () {
             // Do a fake form submit this the button isn't a real submit button
@@ -221,19 +204,19 @@
         content.querySelector('.fldSelectedItemIds', content).value = items.join(',');
 
         if (items.length) {
-            content.querySelector('.fldSelectCollection').classList.remove('hide');
-            populateCollections(content);
+            content.querySelector('.fldSelectPlaylist').classList.remove('hide');
+            populatePlaylists(content);
         } else {
-            content.querySelector('.fldSelectCollection').classList.add('hide');
+            content.querySelector('.fldSelectPlaylist').classList.add('hide');
 
-            var selectCollectionToAddTo = content.querySelector('#selectCollectionToAddTo');
-            selectCollectionToAddTo.innerHTML = '';
-            selectCollectionToAddTo.value = '';
-            triggerChange(selectCollectionToAddTo);
+            var selectPlaylistToAddTo = content.querySelector('#selectPlaylistToAddTo');
+            selectPlaylistToAddTo.innerHTML = '';
+            selectPlaylistToAddTo.value = '';
+            triggerChange(selectPlaylistToAddTo);
         }
     }
 
-    function collectioneditor() {
+    function playlisteditor() {
 
         var self = this;
 
@@ -258,15 +241,13 @@
             dlg.classList.add('formDialog');
 
             var html = '';
-            var title = items.length ? globalize.translate('sharedcomponents#AddToCollection') : globalize.translate('sharedcomponents#NewCollection');
+            var title = globalize.translate('sharedcomponents#AddToPlaylist');
 
             html += '<div class="dialogHeader" style="margin:0 0 2em;">';
             html += '<button is="paper-icon-button-light" class="btnCancel" tabindex="-1"><iron-icon icon="nav:arrow-back"></iron-icon></button>';
             html += '<div class="dialogHeaderTitle">';
             html += title;
             html += '</div>';
-
-            html += '<a class="btnHelp" href="https://github.com/MediaBrowser/Wiki/wiki/Collections" target="_blank" style="margin-left:auto;margin-right:.5em;display:inline-block;padding:.25em;display:flex;align-items:center;" title="' + globalize.translate('sharedcomponents#Help') + '"><iron-icon icon="nav:info"></iron-icon><span style="margin-left:.25em;">' + globalize.translate('sharedcomponents#Help') + '</span></a>';
 
             html += '</div>';
 
@@ -294,5 +275,5 @@
         };
     }
 
-    return collectioneditor;
+    return playlisteditor;
 });

@@ -3,15 +3,12 @@
     var globalOnOpenCallback;
 
     function enableAnimation() {
+
         if (browser.animate) {
             return true;
         }
 
-        if (browser.mobile || browser.tv) {
-            return false;
-        }
-
-        return true;
+        return false;
     }
 
     function dialogHashHandler(dlg, hash, resolve) {

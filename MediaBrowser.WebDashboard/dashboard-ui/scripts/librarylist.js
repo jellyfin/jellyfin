@@ -503,9 +503,11 @@
                                 });
                                 break;
                             case 'playlist':
-                                require(['playlistManager'], function (playlistManager) {
-
-                                    playlistManager.showPanel([itemId]);
+                                require(['playlistEditor'], function (playlistEditor) {
+                                    new playlistEditor().show({
+                                        items: [itemId],
+                                        serverId: serverId
+                                    });
                                 });
                                 break;
                             case 'delete':
@@ -1244,11 +1246,13 @@
                                 hideSelections();
                                 break;
                             case 'playlist':
-                                require(['playlistManager'], function (playlistManager) {
-
-                                    playlistManager.showPanel(items);
-                                    hideSelections();
+                                require(['playlistEditor'], function (playlistEditor) {
+                                    new playlistEditor().show({
+                                        items: items,
+                                        serverId: serverId
+                                    });
                                 });
+                                hideSelections();
                                 break;
                             case 'delete':
                                 LibraryBrowser.deleteItems(items).then(function () {

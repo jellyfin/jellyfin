@@ -1,4 +1,4 @@
-﻿define(['playlistManager', 'scrollHelper', 'appSettings', 'appStorage', 'apphost', 'datetime', 'jQuery', 'itemHelper', 'mediaInfo', 'scrollStyles'], function (playlistManager, scrollHelper, appSettings, appStorage, appHost, datetime, $, itemHelper, mediaInfo) {
+﻿define(['scrollHelper', 'appSettings', 'appStorage', 'apphost', 'datetime', 'jQuery', 'itemHelper', 'mediaInfo', 'scrollStyles'], function (scrollHelper, appSettings, appStorage, appHost, datetime, $, itemHelper, mediaInfo) {
 
     function parentWithClass(elem, className) {
 
@@ -670,11 +670,11 @@
 
                 var commands = [];
 
-                if (LibraryBrowser.supportsAddingToCollection(item)) {
+                if (itemHelper.supportsAddingToCollection(item)) {
                     commands.push('addtocollection');
                 }
 
-                if (playlistManager.supportsPlaylists(item)) {
+                if (itemHelper.supportsAddingToPlaylist(item)) {
                     commands.push('playlist');
                 }
 
@@ -938,9 +938,11 @@
                                     });
                                     break;
                                 case 'playlist':
-                                    require(['playlistManager'], function (playlistManager) {
-
-                                        playlistManager.showPanel([itemId]);
+                                    require(['playlistEditor'], function (playlistEditor) {
+                                        new playlistEditor().show({
+                                            items: items,
+                                            serverId: serverId
+                                        });
                                     });
                                     break;
                                 case 'delete':
@@ -1561,13 +1563,6 @@
                 return html;
             },
 
-            supportsAddingToCollection: function (item) {
-
-                var invalidTypes = ['Person', 'Genre', 'MusicGenre', 'Studio', 'GameGenre', 'BoxSet', 'Playlist', 'UserView', 'CollectionFolder', 'Audio', 'Episode', 'TvChannel', 'Program', 'MusicAlbum', 'Timer'];
-
-                return !item.CollectionType && invalidTypes.indexOf(item.Type) == -1 && item.MediaType != 'Photo';
-            },
-
             enableSync: function (item, user) {
                 if (AppInfo.isNativeApp && !Dashboard.capabilities().SupportsSync) {
                     return false;
@@ -1604,7 +1599,7 @@
                     itemCommands.push('shuffle');
                 }
 
-                if (playlistManager.supportsPlaylists(item)) {
+                if (itemHelper.supportsAddingToPlaylist(item)) {
 
                     if (options.showRemoveFromPlaylist) {
                         itemCommands.push('removefromplaylist');
@@ -1614,7 +1609,7 @@
                 }
 
                 if (options.showAddToCollection !== false) {
-                    if (LibraryBrowser.supportsAddingToCollection(item)) {
+                    if (itemHelper.supportsAddingToCollection(item)) {
                         itemCommands.push('addtocollection');
                     }
                 }
