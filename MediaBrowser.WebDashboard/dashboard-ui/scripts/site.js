@@ -1709,7 +1709,6 @@ var AppInfo = {};
             ironCardList: 'components/ironcardlist/ironcardlist',
             scrollThreshold: 'components/scrollthreshold',
             directorybrowser: 'components/directorybrowser/directorybrowser',
-            collectioneditor: 'components/collectioneditor/collectioneditor',
             playlisteditor: 'components/playlisteditor/playlisteditor',
             medialibrarycreator: 'components/medialibrarycreator/medialibrarycreator',
             medialibraryeditor: 'components/medialibraryeditor/medialibraryeditor',
@@ -1768,11 +1767,13 @@ var AppInfo = {};
 
         define("libjass", [bowerPath + "/libjass/libjass", "css!" + bowerPath + "/libjass/libjass"], returnFirstDependency);
 
+        define("collectionEditor", [embyWebComponentsBowerPath + "/collectioneditor/collectioneditor"], returnFirstDependency);
         define("recordingCreator", [embyWebComponentsBowerPath + "/recordingcreator/recordingcreator"], returnFirstDependency);
         define("recordingEditor", [embyWebComponentsBowerPath + "/recordingcreator/recordingeditor"], returnFirstDependency);
         define("mediaInfo", [embyWebComponentsBowerPath + "/mediainfo/mediainfo"], returnFirstDependency);
         define("backdrop", [embyWebComponentsBowerPath + "/backdrop/backdrop"], returnFirstDependency);
         define("fetchHelper", [embyWebComponentsBowerPath + "/fetchhelper"], returnFirstDependency);
+        define("emby-select", [embyWebComponentsBowerPath + "/emby-select/emby-select"], returnFirstDependency);
 
         define("tvguide", [embyWebComponentsBowerPath + "/guide/guide", 'embyRouter'], returnFirstDependency);
 

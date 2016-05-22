@@ -494,9 +494,12 @@
                         switch (id) {
 
                             case 'addtocollection':
-                                require(['collectioneditor'], function (collectioneditor) {
+                                require(['collectionEditor'], function (collectionEditor) {
 
-                                    new collectioneditor().show([itemId]);
+                                    new collectionEditor().show({
+                                        items: [itemId],
+                                        serverId: serverId
+                                    });
                                 });
                                 break;
                             case 'playlist':
@@ -1232,9 +1235,11 @@
                         switch (id) {
 
                             case 'addtocollection':
-                                require(['collectioneditor'], function (collectioneditor) {
+                                require(['collectionEditor'], function (collectionEditor) {
 
-                                    new collectioneditor().show(items);
+                                    new collectionEditor().show({
+                                        items: items
+                                    });
                                 });
                                 hideSelections();
                                 break;
