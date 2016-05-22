@@ -1126,6 +1126,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private async Task RefreshChannelsInternal(IProgress<double> progress, CancellationToken cancellationToken)
         {
+            EmbyTV.EmbyTV.Current.CreateRecordingFolders();
+
             var numComplete = 0;
             double progressPerService = _services.Count == 0
                 ? 0
