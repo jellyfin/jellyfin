@@ -11,6 +11,11 @@ define(['apphost', 'globalize', 'connectionManager'], function (appHost, globali
 
             var commands = [];
 
+            commands.push({
+                name: globalize.translate('sharedcomponents#AddToCollection'),
+                id: 'addtocollection'
+            });
+
             if (item.CanDelete) {
                 commands.push({
                     name: globalize.translate('sharedcomponents#Delete'),
@@ -54,6 +59,18 @@ define(['apphost', 'globalize', 'connectionManager'], function (appHost, globali
 
             switch (id) {
 
+                case 'addtocollection':
+                    {
+                        require(['collectionEditor'], function (collectionEditor) {
+
+                            new collectionEditor().show({
+                                items: [itemId],
+                                serverId: serverId
+
+                            }).then(reject, reject);
+                        });
+                        break;
+                    }
                 case 'download':
                     {
                         require(['fileDownloader'], function (fileDownloader) {

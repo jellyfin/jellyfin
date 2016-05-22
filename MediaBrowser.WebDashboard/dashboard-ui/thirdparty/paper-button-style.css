@@ -436,7 +436,7 @@ paper-input label, paper-textarea label {
     color: #ccc;
 }
 
-.ui-body-b .selectLabel:not(.selectLabelFocus) {
+.ui-body-b .selectLabelUnfocused {
     color: #ccc;
 }
 
@@ -586,5 +586,5 @@ paper-progress.mini #progressContainer {
 }
 
 .formDialog.background-theme-b {
-    background-color: #202020;
+    background-color: #181818;
 }

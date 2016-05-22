@@ -16,14 +16,25 @@
         return true;
     }
 
+    function triggerChange(select) {
+        var evt = document.createEvent("HTMLEvents");
+        evt.initEvent("change", false, true);
+        select.dispatchEvent(evt);
+    }
+
     function showActionSheeet(select) {
+
+        var labelElem = getLabel(select);
+        var title = labelElem ? (labelElem.textContent || labelElem.innerText) : null;
 
         actionsheet.show({
             items: select.options,
-            positionTo: select
+            positionTo: select,
+            title: title
 
         }).then(function (value) {
             select.value = value;
+            triggerChange(select);
         });
     }
 
@@ -38,20 +49,23 @@
     function onFocus(e) {
         var label = getLabel(this);
         if (label) {
-            label.classList.add('selectLabelFocus');
+            label.classList.add('selectLabelFocused');
+            label.classList.remove('selectLabelUnfocused');
         }
     }
 
     function onBlur(e) {
         var label = getLabel(this);
         if (label) {
-            label.classList.remove('selectLabelFocus');
+            label.classList.add('selectLabelUnfocused');
+            label.classList.remove('selectLabelFocused');
         }
     }
 
     function onMouseDown(e) {
 
-        if (!enableNativeMenu()) {
+        // e.button=0 for primary (left) mouse button click
+        if (!e.button && !enableNativeMenu()) {
             e.preventDefault();
             showActionSheeet(this);
         }
