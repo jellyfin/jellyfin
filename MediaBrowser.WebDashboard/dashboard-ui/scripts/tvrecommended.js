@@ -20,13 +20,79 @@
 
             loadResume();
             loadNextUp();
+            loadLatest();
+        }
+
+        function loadLatest() {
+
+            Dashboard.showLoadingMsg();
+
+            var userId = Dashboard.getCurrentUserId();
+
+            var parentId = params.topParentId;
+
+            var options = {
+
+                IncludeItemTypes: "Episode",
+                Limit: 30,
+                Fields: "PrimaryImageAspectRatio,SyncInfo",
+                ParentId: parentId,
+                ImageTypeLimit: 1,
+                EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+            };
+
+            ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).then(function (items) {
+
+                var viewStyle = getView();
+                var html = '';
+
+                if (viewStyle == 'ThumbCard') {
+
+                    html += LibraryBrowser.getPosterViewHtml({
+                        items: items,
+                        shape: getThumbShape(),
+                        preferThumb: true,
+                        inheritThumb: false,
+                        showUnplayedIndicator: false,
+                        showChildCountIndicator: true,
+                        overlayText: false,
+                        showParentTitle: true,
+                        lazy: true,
+                        showTitle: true,
+                        cardLayout: true
+                    });
+
+                } else if (viewStyle == 'Thumb') {
+
+                    html += LibraryBrowser.getPosterViewHtml({
+                        items: items,
+                        shape: getThumbShape(),
+                        preferThumb: true,
+                        inheritThumb: false,
+                        showParentTitle: false,
+                        showUnplayedIndicator: false,
+                        showChildCountIndicator: true,
+                        overlayText: false,
+                        centerText: true,
+                        lazy: true,
+                        showTitle: false,
+                        overlayPlayButton: AppInfo.enableAppLayouts
+                    });
+                }
+
+                var elem = view.querySelector('#latestEpisodes');
+                elem.innerHTML = html;
+                ImageLoader.lazyChildren(elem);
+
+                Dashboard.hideLoadingMsg();
+            });
         }
 
         function loadNextUp() {
 
             var query = {
 
-                Limit: 24,
+                Limit: enableScrollX() ? 24 : 15,
                 Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
                 UserId: Dashboard.getCurrentUserId(),
                 ImageTypeLimit: 1,
@@ -50,7 +116,7 @@
 
                     html += libraryBrowser.getPosterViewHtml({
                         items: result.Items,
-                        shape: "backdrop",
+                        shape: getThumbShape(),
                         showTitle: true,
                         preferThumb: true,
                         showParentTitle: true,
@@ -63,7 +129,7 @@
 
                     html += libraryBrowser.getPosterViewHtml({
                         items: result.Items,
-                        shape: "backdrop",
+                        shape: getThumbShape(),
                         showTitle: true,
                         showParentTitle: true,
                         overlayText: false,
@@ -94,7 +160,7 @@
 
             var parentId = LibraryMenu.getTopParentId();
 
-            var limit = 6;
+            var screenWidth = window.innerWidth;
 
             var options = {
 
@@ -102,7 +168,7 @@
                 SortOrder: "Descending",
                 IncludeItemTypes: "Episode",
                 Filters: "IsResumable",
-                Limit: limit,
+                Limit: screenWidth >= 1920 ? 5 : (screenWidth >= 1600 ? 4 : 3),
                 Recursive: true,
                 Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData,SyncInfo",
                 ExcludeLocationTypes: "Virtual",
@@ -160,12 +226,23 @@
         self.initTab = function () {
 
             var tabContent = self.tabContent;
+
+            var resumableItems = tabContent.querySelector('#resumableItems');
+            var nextUpItems = tabContent.querySelector('#nextUpItems');
+            var latestEpisodes = tabContent.querySelector('#latestEpisodes');
+
             if (enableScrollX()) {
-                tabContent.querySelector('#resumableItems').classList.add('hiddenScrollX');
+                resumableItems.classList.add('hiddenScrollX');
+                nextUpItems.classList.add('hiddenScrollX');
+                latestEpisodes.classList.add('hiddenScrollX');
             } else {
-                tabContent.querySelector('#resumableItems').classList.remove('hiddenScrollX');
+                resumableItems.classList.remove('hiddenScrollX');
+                nextUpItems.classList.remove('hiddenScrollX');
+                latestEpisodes.classList.remove('hiddenScrollX');
             }
-            libraryBrowser.createCardMenus(tabContent.querySelector('#resumableItems'));
+            libraryBrowser.createCardMenus(resumableItems);
+            libraryBrowser.createCardMenus(nextUpItems);
+            libraryBrowser.createCardMenus(latestEpisodes);
         };
 
         self.renderTab = function () {
@@ -185,21 +262,18 @@
                 case 0:
                     break;
                 case 1:
-                    depends.push('scripts/tvlatest');
-                    break;
-                case 2:
                     depends.push('scripts/tvupcoming');
                     break;
-                case 3:
+                case 2:
                     depends.push('scripts/tvshows');
                     break;
-                case 4:
+                case 3:
                     depends.push('scripts/episodes');
                     break;
-                case 5:
+                case 4:
                     depends.push('scripts/tvgenres');
                     break;
-                case 6:
+                case 5:
                     depends.push('scripts/tvstudios');
                     break;
                 default:
@@ -248,11 +322,6 @@
             baseUrl += '?topParentId=' + topParentId;
         }
 
-        if (enableScrollX()) {
-            view.querySelector('#resumableItems').classList.add('hiddenScrollX');
-        } else {
-            view.querySelector('#resumableItems').classList.remove('hiddenScrollX');
-        }
         libraryBrowser.createCardMenus(view.querySelector('#resumableItems'));
         libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'), [0, 1, 2, 4, 5, 6]);
 

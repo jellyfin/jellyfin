@@ -2,12 +2,11 @@
 
     <div class="libraryViewNav">
         <button class="pageTabButton is-active" data-index="0">${TabSuggestions}</button>
-        <button class="pageTabButton" data-index="1">${TabLatest}</button>
-        <button class="pageTabButton" data-index="2">${TabUpcoming}</button>
-        <button class="pageTabButton" data-index="3">${TabShows}</button>
-        <button class="pageTabButton tvEpisodesTab" data-index="4">${TabEpisodes}</button>
-        <button class="pageTabButton" data-index="5">${TabGenres}</button>
-        <button class="pageTabButton" data-index="6">${TabNetworks}</button>
+        <button class="pageTabButton" data-index="1">${TabUpcoming}</button>
+        <button class="pageTabButton" data-index="2">${TabShows}</button>
+        <button class="pageTabButton tvEpisodesTab" data-index="3">${TabEpisodes}</button>
+        <button class="pageTabButton" data-index="4">${TabGenres}</button>
+        <button class="pageTabButton" data-index="5">${TabNetworks}</button>
     </div>
     <div class="is-active pageTabContent ehsContent" id="suggestionsTab" data-index="0">
         <div id="resumableSection" class="homePageSection">
@@ -25,22 +24,20 @@
                 <h1 class="listHeader nextUpHeader" style="display: inline-block; vertical-align: middle;">${HeaderNextUp}</h1>
                 <paper-button raised class="submit mini categorySyncButton" data-category="NextUp"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
             </div>
-            <div id="nextUpItems" class="itemsContainer">
+            <div id="nextUpItems" class="itemsContainer noautoinit">
             </div>
         </div>
         <p class="noNextUpItems" style="display: none;">${NoNextUpItemsMessage}</p>
-    </div>
-    <div class="pageTabContent ehsContent" id="latestTab" data-index="1">
         <div class="homePageSection">
             <div>
                 <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderLatestEpisodes}</h1>
                 <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
             </div>
-            <div id="latestEpisodes" class="itemsContainer">
+            <div id="latestEpisodes" class="itemsContainer noautoinit">
             </div>
         </div>
     </div>
-    <div class="pageTabContent ehsContent" id="upcomingTab" data-index="2">
+    <div class="pageTabContent ehsContent" id="upcomingTab" data-index="1">
         <div id="upcomingItems">
         </div>
         <div class="noItemsMessage" style="display: none;">
@@ -50,7 +47,7 @@
             </p>
         </div>
     </div>
-    <div class="pageTabContent ehsContent" id="seriesTab" data-index="3">
+    <div class="pageTabContent ehsContent" id="seriesTab" data-index="2">
         <div style="text-align: center;padding:.7em 0;">
             <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
                 <div class="paging"></div>
@@ -69,7 +66,7 @@
             <div class="paging"></div>
         </div>
     </div>
-    <div class="pageTabContent ehsContent" id="episodesTab" data-index="4">
+    <div class="pageTabContent ehsContent" id="episodesTab" data-index="3">
         <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
             <div class="paging"></div>
             <button is="paper-icon-button-light" class="btnSelectView" title="${ButtonSelectView}"><iron-icon icon="view-comfy"></iron-icon></button>
@@ -82,13 +79,13 @@
             <div class="paging"></div>
         </div>
     </div>
-    <div class="pageTabContent ehsContent" id="genresTab" data-index="5">
+    <div class="pageTabContent ehsContent" id="genresTab" data-index="4">
         <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
             <button is="paper-icon-button-light" class="btnSelectView" title="${ButtonSelectView}"><iron-icon icon="view-comfy"></iron-icon></button>
         </div>
         <div id="items" class="itemsContainer paddedItemsContainer"></div>
     </div>
-    <div class="pageTabContent ehsContent" id="studiosTab" data-index="6">
+    <div class="pageTabContent ehsContent" id="studiosTab" data-index="5">
         <div class="viewSettings">
             <div class="listTopPaging">
             </div>
