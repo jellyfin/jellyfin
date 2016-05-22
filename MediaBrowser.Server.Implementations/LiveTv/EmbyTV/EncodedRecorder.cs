@@ -145,7 +145,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 videoArgs = "-codec:v:0 copy";
             }
 
-            var commandLineArgs = "-fflags +genpts -async 1 -vsync -1 -i \"{0}\" -t {4} -sn {2} -map_metadata -1 -threads 0 {3} -y \"{1}\"";
+            var commandLineArgs = "-probesize 1G -analyzeduration 200M -fflags +genpts -async 1 -vsync -1 -i \"{0}\" -t {4} -sn {2} -map_metadata -1 -threads 0 {3} -y \"{1}\"";
 
             if (mediaSource.ReadAtNativeFramerate)
             {
