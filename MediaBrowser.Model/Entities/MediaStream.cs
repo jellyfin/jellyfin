@@ -89,7 +89,7 @@ namespace MediaBrowser.Model.Entities
 
                     if (!string.IsNullOrEmpty(Language))
                     {
-                        attributes.Add(Language);
+                        attributes.Add(StringHelper.FirstToUpper(Language));
                     }
                     if (!string.IsNullOrEmpty(Codec))
                     {
