@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using MediaBrowser.Controller.Power;
+using MediaBrowser.Server.Implementations.Persistence;
 using MediaBrowser.Server.Startup.Common.FFMpeg;
 using System.Diagnostics;
 
@@ -14,6 +15,13 @@ namespace MediaBrowser.Server.Mac
 {
     public abstract class BaseMonoApp : INativeApp
     {
+        protected ILogger Logger { get; private set; }
+
+        protected BaseMonoApp(ILogger logger)
+        {
+            Logger = logger;
+        }
+
         /// <summary>
         /// Shutdowns this instance.
         /// </summary>
@@ -39,6 +47,21 @@ namespace MediaBrowser.Server.Mac
             }
         }
 
+        public void PreventSystemStandby()
+        {
+
+        }
+
+        public void AllowSystemStandby()
+        {
+
+        }
+        
+        public IDbConnector GetDbConnector()
+        {
+            return new DbConnector(Logger);
+        }
+
 		public virtual bool SupportsLibraryMonitor
 		{
 			get
@@ -62,11 +85,6 @@ namespace MediaBrowser.Server.Mac
         public bool SupportsAutoRunAtStartup
         {
             get { return false; }
-        }
-
-        public void PreventSystemStandby()
-        {
-
         }
 
         public List<Assembly> GetAssembliesWithParts()
