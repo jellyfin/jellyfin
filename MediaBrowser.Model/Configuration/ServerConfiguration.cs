@@ -199,6 +199,7 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableAnonymousUsageReporting { get; set; }
         public bool EnableStandaloneMusicKeys { get; set; }
+        public bool EnableLocalizedGuids { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
@@ -208,6 +209,7 @@ namespace MediaBrowser.Model.Configuration
             Migrations = new string[] { };
 
             EnableCustomPathSubFolders = true;
+            EnableLocalizedGuids = true;
 
             ImageSavingConvention = ImageSavingConvention.Compatible;
             PublicPort = 8096;
