@@ -199,9 +199,7 @@
 
                 apiClient.getPublicUsers().then(function (users) {
 
-                    var showManualForm = !users.length;
-
-                    if (showManualForm) {
+                    if (!users.length) {
 
                         showManualForm(view, false, false);
 
