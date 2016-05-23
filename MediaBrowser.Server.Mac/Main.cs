@@ -94,7 +94,7 @@ namespace MediaBrowser.Server.Mac
 			var fileSystem = new ManagedFileSystem(new PatternsLogger(logManager.GetLogger("FileSystem")), false, true);
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
-			var nativeApp = new NativeApp();
+			var nativeApp = new NativeApp(logManager.GetLogger("App"));
 
 			AppHost = new ApplicationHost(appPaths, logManager, options, fileSystem, "Emby.Server.Mac.pkg", nativeApp);
 
