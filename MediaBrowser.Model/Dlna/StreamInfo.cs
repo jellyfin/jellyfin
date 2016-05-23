@@ -335,7 +335,8 @@ namespace MediaBrowser.Model.Dlna
                 Name = stream.Language ?? "Unknown",
                 Format = subtitleProfile.Format,
                 Index = stream.Index,
-                DeliveryMethod = subtitleProfile.Method
+                DeliveryMethod = subtitleProfile.Method,
+                DisplayTitle = stream.DisplayTitle
             };
 
             if (info.DeliveryMethod == SubtitleDeliveryMethod.External)

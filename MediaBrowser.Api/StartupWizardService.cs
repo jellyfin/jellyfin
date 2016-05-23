@@ -109,11 +109,10 @@ namespace MediaBrowser.Api
 
         private void SetWizardFinishValues(ServerConfiguration config)
         {
-            config.EnableLocalizedGuids = true;
             config.EnableCustomPathSubFolders = true;
-            config.EnableDateLastRefresh = true;
             config.EnableStandaloneMusicKeys = true;
             config.EnableCaseSensitiveItemIds = true;
+            config.SchemaVersion = 79;
         }
 
         public void Post(UpdateStartupConfiguration request)

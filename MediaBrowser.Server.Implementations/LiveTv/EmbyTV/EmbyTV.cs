@@ -102,7 +102,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _timerProvider.RestartTimers();
 
             SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
-
             CreateRecordingFolders();
         }
 
@@ -111,7 +110,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             CreateRecordingFolders();
         }
 
-        private void CreateRecordingFolders()
+        internal void CreateRecordingFolders()
+        {
+            try
+            {
+                CreateRecordingFoldersInternal();
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error creating recording folders", ex);
+            }
+        }
+
+        internal void CreateRecordingFoldersInternal()
         {
             var recordingFolders = GetRecordingFolders();
 
