@@ -88,8 +88,6 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             _fileSystem = fileSystem;
 
             ScheduledTasks = new IScheduledTaskWorker[] { };
-
-            BindToSystemEvent();
         }
 
         private void BindToSystemEvent()
@@ -259,6 +257,8 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             myTasks.AddRange(list.Select(t => new ScheduledTaskWorker(t, ApplicationPaths, this, JsonSerializer, Logger, _fileSystem)));
 
             ScheduledTasks = myTasks.ToArray();
+
+            BindToSystemEvent();
         }
 
         /// <summary>
