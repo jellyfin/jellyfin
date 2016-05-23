@@ -14,7 +14,7 @@
         <dependencies>
             <dependency id="MediaBrowser.Common" version="3.0.648" />
             <dependency id="NLog" version="4.3.4" />
-            <dependency id="SimpleInjector" version="3.1.4" />
+            <dependency id="SimpleInjector" version="3.1.5" />
         </dependencies>
     </metadata>
     <files>
