@@ -87,11 +87,6 @@ namespace MediaBrowser.Server.Mac
             get { return false; }
         }
 
-        public void PreventSystemStandby()
-        {
-
-        }
-
         public List<Assembly> GetAssembliesWithParts()
         {
             var list = new List<Assembly>();
