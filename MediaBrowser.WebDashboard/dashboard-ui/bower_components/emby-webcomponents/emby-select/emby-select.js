@@ -22,6 +22,11 @@
         select.dispatchEvent(evt);
     }
 
+    function setValue(select, value) {
+
+        select.value = value;
+    }
+
     function showActionSheeet(select) {
 
         var labelElem = getLabel(select);
@@ -33,7 +38,7 @@
             title: title
 
         }).then(function (value) {
-            select.value = value;
+            setValue(select, value);
             triggerChange(select);
         });
     }

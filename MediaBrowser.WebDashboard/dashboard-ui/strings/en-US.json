@@ -2356,5 +2356,6 @@
   "AddItemToCollectionHelp": "Add items to collections by searching for them and using their right-click or tap menus to add them to a collection.",
   "HeaderHealthMonitor": "Health Monitor",
   "HealthMonitorNoAlerts": "There are no active alerts.",
-  "RecordingPathChangeMessage": "Changing your recording folder will not migrate existing recordings from the old location to the new. You'll need to move them manually if desired."
+  "RecordingPathChangeMessage": "Changing your recording folder will not migrate existing recordings from the old location to the new. You'll need to move them manually if desired.",
+  "VisualLoginFormHelp": "Select a user or sign in manually"
 }

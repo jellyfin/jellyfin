@@ -39,7 +39,7 @@
         color: #52B54B;
     }
 
-    paper-button[raised].submit, paper-button[raised] {
+    paper-button[raised].submit, paper-button[raised]:not(.subdued):not(.cancel) {
         background: #52B54B;
         color: #fff;
     }
