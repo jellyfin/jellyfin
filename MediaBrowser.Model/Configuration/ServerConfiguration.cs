@@ -223,7 +223,6 @@ namespace MediaBrowser.Model.Configuration
             DenyIFrameEmbedding = true;
 
             EnableUPnP = true;
-            SchemaVersion = 79;
             SharingExpirationDays = 30;
             MinResumePct = 5;
             MaxResumePct = 90;
