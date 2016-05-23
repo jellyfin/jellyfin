@@ -28,7 +28,12 @@
                         <div class="fieldDescription">${LabelNumberOfGuideDaysHelp}</div>
                     </li>
                 </ul>
+                <div class="paperCheckboxList">
+                    <label>${LabelEnableInternetMetadataForTvPrograms}</label>
+                    <paper-checkbox id="chkMovies">${OptionTVMovies}</paper-checkbox>
+                </div>
                 <div>
+                    <br />
                     <paper-input id="txtRecordingPath" label="${LabelRecordingPath}" style="width:84%;display:inline-block;"></paper-input>
                     <button type="button" is="paper-icon-button-light" id="btnSelectRecordingPath" title="${ButtonSelectDirectory}"><iron-icon icon="search"></iron-icon></button>
                     <div class="fieldDescription">${LabelRecordingPathHelp}</div>
