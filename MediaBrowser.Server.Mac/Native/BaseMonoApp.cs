@@ -14,6 +14,13 @@ namespace MediaBrowser.Server.Mac
 {
     public abstract class BaseMonoApp : INativeApp
     {
+        protected ILogger Logger { get; private set; }
+
+        protected BaseMonoApp(ILogger logger)
+        {
+            Logger = logger;
+        }
+
         /// <summary>
         /// Shutdowns this instance.
         /// </summary>
@@ -37,6 +44,11 @@ namespace MediaBrowser.Server.Mac
             {
                 return false;
             }
+        }
+        
+        public IDbConnector GetDbConnector()
+        {
+            return new DbConnector(Logger);
         }
 
 		public virtual bool SupportsLibraryMonitor
