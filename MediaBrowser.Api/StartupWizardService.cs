@@ -112,6 +112,7 @@ namespace MediaBrowser.Api
             config.EnableCustomPathSubFolders = true;
             config.EnableStandaloneMusicKeys = true;
             config.EnableCaseSensitiveItemIds = true;
+            config.SchemaVersion = 79;
         }
 
         public void Post(UpdateStartupConfiguration request)
