@@ -2,6 +2,15 @@
 
     var globalOnOpenCallback;
 
+    function enableAnimation() {
+
+        if (browser.animate) {
+            return true;
+        }
+
+        return false;
+    }
+
     function dialogHashHandler(dlg, hash, resolve) {
 
         var self = this;
@@ -150,7 +159,7 @@
         // Without this, seeing some script errors in Firefox
         // Also for some reason it won't auto-focus without a delay here, still investigating that
 
-        var delay = browser.animate ? 0 : 300;
+        var delay = enableAnimation() ? 300 : 0;
 
         setTimeout(function () {
             focusManager.autoFocus(dlg);
@@ -409,7 +418,7 @@
         };
 
         // too buggy in IE, not even worth it
-        if (!browser.animate) {
+        if (!enableAnimation()) {
             dlg.animationConfig = null;
             dlg.entryAnimation = null;
             dlg.exitAnimation = null;

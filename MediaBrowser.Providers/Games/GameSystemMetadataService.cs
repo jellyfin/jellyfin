@@ -12,10 +12,6 @@ namespace MediaBrowser.Providers.Games
 {
     public class GameSystemMetadataService : MetadataService<GameSystem, GameSystemInfo>
     {
-        public GameSystemMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager, libraryManager)
-        {
-        }
-
         protected override void MergeData(MetadataResult<GameSystem> source, MetadataResult<GameSystem> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
@@ -27,6 +23,10 @@ namespace MediaBrowser.Providers.Games
             {
                 targetItem.GameSystemName = sourceItem.GameSystemName;
             }
+        }
+
+        public GameSystemMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
+        {
         }
     }
 }

@@ -62,13 +62,6 @@ namespace MediaBrowser.Controller.Entities.Audio
                 query.ArtistNames = new[] { Name };
             }
 
-            // Need this for now since the artist filter isn't yet supported by the db
-            if (ConfigurationManager.Configuration.SchemaVersion < 79)
-            {
-                var filter = GetItemFilter();
-                return LibraryManager.GetItemList(query).Where(filter);
-            }
-
             return LibraryManager.GetItemList(query);
         }
 

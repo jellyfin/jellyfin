@@ -18,7 +18,7 @@ namespace MediaBrowser.Providers.TV
     {
         private readonly ILocalizationManager _localization;
 
-        public SeriesMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager, ILocalizationManager localization) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager, libraryManager)
+        public SeriesMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager, ILocalizationManager localization) : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
         {
             _localization = localization;
         }

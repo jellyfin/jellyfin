@@ -34,7 +34,6 @@ namespace MediaBrowser.Model.Configuration
 
         public SubtitlePlaybackMode SubtitleMode { get; set; }
         public bool DisplayCollectionsView { get; set; }
-        public bool DisplayFoldersView { get; set; }
 
         public bool EnableLocalPassword { get; set; }
 

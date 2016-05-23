@@ -75,7 +75,7 @@
 
     function loadResume(page, userId, parentId) {
 
-        var screenWidth = $(window).width();
+        var screenWidth = window.innerWidth;
 
         var options = {
 
@@ -83,7 +83,7 @@
             SortOrder: "Descending",
             IncludeItemTypes: "Movie",
             Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 6 : (screenWidth >= 1600 ? 4 : 3),
+            Limit: screenWidth >= 1920 ? 5 : (screenWidth >= 1600 ? 4 : 3),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
             CollapseBoxSetItems: false,

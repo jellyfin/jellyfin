@@ -39,7 +39,7 @@
         color: #52B54B;
     }
 
-    paper-button[raised].submit {
+    paper-button[raised].submit, paper-button[raised] {
         background: #52B54B;
         color: #fff;
     }
@@ -432,7 +432,11 @@ paper-input label, paper-textarea label {
     margin-bottom: .5em;
 }
 
-.ui-body-b .paper-input-container-0 .input-content.paper-input-container label, .ui-body-b .paper-input-container-0 .input-content.paper-input-container .paper-input-label, .ui-body-b paper-textarea label, .ui-body-b .selectLabel, .ui-body-b .paperListLabel, .ui-body-b .fieldDescription {
+.ui-body-b .paper-input-container-0 .input-content.paper-input-container label, .ui-body-b .paper-input-container-0 .input-content.paper-input-container .paper-input-label, .ui-body-b paper-textarea label, .ui-body-b .paperListLabel, .ui-body-b .fieldDescription {
+    color: #ccc;
+}
+
+.ui-body-b .selectLabelUnfocused {
     color: #ccc;
 }
 
@@ -582,5 +586,5 @@ paper-progress.mini #progressContainer {
 }
 
 .formDialog.background-theme-b {
-    background-color: #202020;
+    background-color: #181818;
 }

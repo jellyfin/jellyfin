@@ -57,6 +57,10 @@ namespace MediaBrowser.Model.ApiClient
                 {
                     existing.RemoteAddress = server.RemoteAddress;
                 }
+                if (!string.IsNullOrEmpty(server.ConnectServerId))
+                {
+                    existing.ConnectServerId = server.ConnectServerId;
+                }
                 if (!string.IsNullOrEmpty(server.LocalAddress))
                 {
                     existing.LocalAddress = server.LocalAddress;
