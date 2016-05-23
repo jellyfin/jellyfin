@@ -105,12 +105,6 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
             }
 
-            if (user.Configuration.DisplayFoldersView)
-            {
-                var name = _localizationManager.GetLocalizedString("ViewType" + CollectionType.Folders);
-                list.Add(await _libraryManager.GetNamedView(name, CollectionType.Folders, string.Empty, cancellationToken).ConfigureAwait(false));
-            }
-
             if (query.IncludeExternalContent)
             {
                 var channelResult = await _channelManager.GetChannelsInternal(new ChannelQuery
