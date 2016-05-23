@@ -25,6 +25,8 @@ namespace MediaBrowser.Providers.Music
         private readonly IApplicationHost _appHost;
         private readonly ILogger _logger;
 
+        public static string MusicBrainzBaseUrl = "http://musicbrainz.fercasas.com:5000";
+
         public MusicBrainzAlbumProvider(IHttpClient httpClient, IApplicationHost appHost, ILogger logger)
         {
             _httpClient = httpClient;
@@ -42,7 +44,7 @@ namespace MediaBrowser.Providers.Music
 
             if (!string.IsNullOrEmpty(releaseId))
             {
-                url = string.Format("https://www.musicbrainz.org/ws/2/release/?query=reid:{0}", releaseId);
+                url = string.Format(MusicBrainzBaseUrl + "/ws/2/release/?query=reid:{0}", releaseId);
             }
             else
             {
@@ -50,7 +52,7 @@ namespace MediaBrowser.Providers.Music
 
                 if (!string.IsNullOrWhiteSpace(artistMusicBrainzId))
                 {
-                    url = string.Format("https://www.musicbrainz.org/ws/2/release/?query=\"{0}\" AND arid:{1}",
+                    url = string.Format(MusicBrainzBaseUrl + "/ws/2/release/?query=\"{0}\" AND arid:{1}",
                         WebUtility.UrlEncode(searchInfo.Name),
                         artistMusicBrainzId);
                 }
@@ -58,7 +60,7 @@ namespace MediaBrowser.Providers.Music
                 {
                     isNameSearch = true;
 
-                    url = string.Format("https://www.musicbrainz.org/ws/2/release/?query=\"{0}\" AND artist:\"{1}\"",
+                    url = string.Format(MusicBrainzBaseUrl + "/ws/2/release/?query=\"{0}\" AND artist:\"{1}\"",
                        WebUtility.UrlEncode(searchInfo.Name),
                        WebUtility.UrlEncode(searchInfo.GetAlbumArtist()));
                 }
@@ -77,7 +79,7 @@ namespace MediaBrowser.Providers.Music
         private IEnumerable<RemoteSearchResult> GetResultsFromResponse(XmlDocument doc)
         {
             var ns = new XmlNamespaceManager(doc.NameTable);
-            ns.AddNamespace("mb", "https://musicbrainz.org/ns/mmd-2.0#");
+            ns.AddNamespace("mb", MusicBrainzBaseUrl + "/ns/mmd-2.0#");
 
             var list = new List<RemoteSearchResult>();
 
@@ -197,7 +199,7 @@ namespace MediaBrowser.Providers.Music
 
         private async Task<ReleaseResult> GetReleaseResult(string albumName, string artistId, CancellationToken cancellationToken)
         {
-            var url = string.Format("https://www.musicbrainz.org/ws/2/release/?query=\"{0}\" AND arid:{1}",
+            var url = string.Format(MusicBrainzBaseUrl + "/ws/2/release/?query=\"{0}\" AND arid:{1}",
                 WebUtility.UrlEncode(albumName),
                 artistId);
 
@@ -208,7 +210,7 @@ namespace MediaBrowser.Providers.Music
 
         private async Task<ReleaseResult> GetReleaseResultByArtistName(string albumName, string artistName, CancellationToken cancellationToken)
         {
-            var url = string.Format("https://www.musicbrainz.org/ws/2/release/?query=\"{0}\" AND artist:\"{1}\"",
+            var url = string.Format(MusicBrainzBaseUrl + "/ws/2/release/?query=\"{0}\" AND artist:\"{1}\"",
                 WebUtility.UrlEncode(albumName),
                 WebUtility.UrlEncode(artistName));
 
@@ -220,7 +222,7 @@ namespace MediaBrowser.Providers.Music
         private ReleaseResult GetReleaseResult(XmlDocument doc)
         {
             var ns = new XmlNamespaceManager(doc.NameTable);
-            ns.AddNamespace("mb", "https://musicbrainz.org/ns/mmd-2.0#");
+            ns.AddNamespace("mb", MusicBrainzBaseUrl + "/ns/mmd-2.0#");
 
             var result = new ReleaseResult
             {
@@ -258,12 +260,12 @@ namespace MediaBrowser.Providers.Music
         /// <returns>Task{System.String}.</returns>
         private async Task<string> GetReleaseGroupId(string releaseEntryId, CancellationToken cancellationToken)
         {
-            var url = string.Format("https://www.musicbrainz.org/ws/2/release-group/?query=reid:{0}", releaseEntryId);
+            var url = string.Format(MusicBrainzBaseUrl + "/ws/2/release-group/?query=reid:{0}", releaseEntryId);
 
             var doc = await GetMusicBrainzResponse(url, false, cancellationToken).ConfigureAwait(false);
 
             var ns = new XmlNamespaceManager(doc.NameTable);
-            ns.AddNamespace("mb", "https://musicbrainz.org/ns/mmd-2.0#");
+            ns.AddNamespace("mb", MusicBrainzBaseUrl + "/ns/mmd-2.0#");
             var node = doc.SelectSingleNode("//mb:release-group-list/mb:release-group/@id", ns);
 
             return node != null ? node.Value : null;
