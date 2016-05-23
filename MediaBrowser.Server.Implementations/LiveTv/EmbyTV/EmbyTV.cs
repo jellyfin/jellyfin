@@ -102,6 +102,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _timerProvider.RestartTimers();
 
             SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
+            CreateRecordingFolders();
         }
 
         private void OnRecordingFoldersChanged()
