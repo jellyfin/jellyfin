@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using MediaBrowser.Controller.Power;
+using MediaBrowser.Server.Implementations.Persistence;
 using MediaBrowser.Server.Startup.Common.FFMpeg;
 using System.Diagnostics;
 
