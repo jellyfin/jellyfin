@@ -23,7 +23,7 @@ namespace MediaBrowser.Providers.Music
 
             if (!string.IsNullOrWhiteSpace(musicBrainzId))
             {
-                var url = string.Format("https://www.musicbrainz.org/ws/2/artist/?query=arid:{0}", musicBrainzId);
+                var url = string.Format(MusicBrainzAlbumProvider.MusicBrainzBaseUrl + "/ws/2/artist/?query=arid:{0}", musicBrainzId);
 
                 var doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, false, cancellationToken)
                             .ConfigureAwait(false);
@@ -35,7 +35,7 @@ namespace MediaBrowser.Providers.Music
                 // They seem to throw bad request failures on any term with a slash
                 var nameToSearch = searchInfo.Name.Replace('/', ' ');
 
-                var url = String.Format("https://www.musicbrainz.org/ws/2/artist/?query=artist:\"{0}\"", UrlEncode(nameToSearch));
+                var url = String.Format(MusicBrainzAlbumProvider.MusicBrainzBaseUrl + "/ws/2/artist/?query=artist:\"{0}\"", UrlEncode(nameToSearch));
 
                 var doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false);
 
@@ -49,7 +49,7 @@ namespace MediaBrowser.Providers.Music
                 if (HasDiacritics(searchInfo.Name))
                 {
                     // Try again using the search with accent characters url
-                    url = String.Format("https://www.musicbrainz.org/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
+                    url = String.Format(MusicBrainzAlbumProvider.MusicBrainzBaseUrl + "/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
 
                     doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false);
 
