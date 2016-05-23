@@ -46,6 +46,16 @@ namespace MediaBrowser.Server.Mac
                 return false;
             }
         }
+
+        public void PreventSystemStandby()
+        {
+
+        }
+
+        public void AllowSystemStandby()
+        {
+
+        }
         
         public IDbConnector GetDbConnector()
         {
