@@ -87,7 +87,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        public const int LatestSchemaVersion = 79;
+        public const int LatestSchemaVersion = 80;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -239,6 +239,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "DateLastMediaAdded", "DATETIME");
             _connection.AddColumn(Logger, "TypedBaseItems", "Album", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "IsVirtualItem", "BIT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "SeriesName", "Text");
 
             _connection.AddColumn(Logger, "UserDataKeys", "Priority", "INT");
 
@@ -433,7 +434,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "PrimaryVersionId",
                 "DateLastMediaAdded",
                 "Album",
-                "IsVirtualItem"
+                "IsVirtualItem",
+                "SeriesName"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -829,6 +831,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     if (season != null && season.IsVirtualItem.HasValue)
                     {
                         _saveItemCommand.GetParameter(index++).Value = season.IsVirtualItem.Value;
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
+
+                    var hasSeries = item as IHasSeries;
+                    if (hasSeries != null)
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = hasSeries.SeriesName;
                     }
                     else
                     {
