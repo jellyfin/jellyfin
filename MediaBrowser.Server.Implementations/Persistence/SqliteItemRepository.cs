@@ -1827,7 +1827,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             return " ORDER BY " + string.Join(",", query.SortBy.Select(i =>
             {
-                var columnMap = MapOrderByField(i);
+                var columnMap = MapOrderByField(i, EnableJoinUserData(query));
                 var columnAscending = isAscending;
                 if (columnMap.Item2)
                 {
@@ -1840,7 +1840,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }).ToArray());
         }
 
-        private Tuple<string, bool> MapOrderByField(string name)
+        private Tuple<string, bool> MapOrderByField(string name, bool enableUserData)
         {
             if (string.Equals(name, ItemSortBy.AirTime, StringComparison.OrdinalIgnoreCase))
             {
@@ -1855,30 +1855,58 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 return new Tuple<string, bool>("RANDOM()", false);
             }
-            if (string.Equals(name, ItemSortBy.DatePlayed, StringComparison.OrdinalIgnoreCase))
-            {
-                return new Tuple<string, bool>("LastPlayedDate", false);
-            }
-            if (string.Equals(name, ItemSortBy.PlayCount, StringComparison.OrdinalIgnoreCase))
-            {
-                return new Tuple<string, bool>("PlayCount", false);
-            }
-            if (string.Equals(name, ItemSortBy.IsFavoriteOrLiked, StringComparison.OrdinalIgnoreCase))
-            {
-                return new Tuple<string, bool>("IsFavorite", true);
-            }
             if (string.Equals(name, ItemSortBy.IsFolder, StringComparison.OrdinalIgnoreCase))
             {
                 return new Tuple<string, bool>("IsFolder", true);
             }
-            if (string.Equals(name, ItemSortBy.IsPlayed, StringComparison.OrdinalIgnoreCase))
+
+            if (enableUserData)
             {
-                return new Tuple<string, bool>("played", true);
+                if (string.Equals(name, ItemSortBy.DatePlayed, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new Tuple<string, bool>("LastPlayedDate", false);
+                }
+                if (string.Equals(name, ItemSortBy.PlayCount, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new Tuple<string, bool>("PlayCount", false);
+                }
+                if (string.Equals(name, ItemSortBy.IsFavoriteOrLiked, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new Tuple<string, bool>("IsFavorite", true);
+                }
+                if (string.Equals(name, ItemSortBy.IsPlayed, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new Tuple<string, bool>("played", true);
+                }
+                if (string.Equals(name, ItemSortBy.IsUnplayed, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new Tuple<string, bool>("played", false);
+                }
             }
-            if (string.Equals(name, ItemSortBy.IsUnplayed, StringComparison.OrdinalIgnoreCase))
+            else
             {
-                return new Tuple<string, bool>("played", false);
+                if (string.Equals(name, ItemSortBy.DatePlayed, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new Tuple<string, bool>("DateCreated", false);
+                }
+                if (string.Equals(name, ItemSortBy.PlayCount, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new Tuple<string, bool>("DateCreated", false);
+                }
+                if (string.Equals(name, ItemSortBy.IsFavoriteOrLiked, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new Tuple<string, bool>("DateCreated", true);
+                }
+                if (string.Equals(name, ItemSortBy.IsPlayed, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new Tuple<string, bool>("DateCreated", true);
+                }
+                if (string.Equals(name, ItemSortBy.IsUnplayed, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new Tuple<string, bool>("DateCreated", false);
+                }
             }
+
             if (string.Equals(name, ItemSortBy.DateLastContentAdded, StringComparison.OrdinalIgnoreCase))
             {
                 return new Tuple<string, bool>("DateLastMediaAdded", false);
@@ -2418,48 +2446,48 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 cmd.Parameters.Add(cmd, "@NameLessThan", DbType.String).Value = query.NameLessThan.ToLower();
             }
 
-            if (query.IsLiked.HasValue)
-            {
-                if (query.IsLiked.Value)
-                {
-                    whereClauses.Add("rating>=@UserRating");
-                    cmd.Parameters.Add(cmd, "@UserRating", DbType.Double).Value = UserItemData.MinLikeValue;
-                }
-                else
-                {
-                    whereClauses.Add("(rating is null or rating<@UserRating)");
-                    cmd.Parameters.Add(cmd, "@UserRating", DbType.Double).Value = UserItemData.MinLikeValue;
-                }
-            }
-
-            if (query.IsFavoriteOrLiked.HasValue)
-            {
-                if (query.IsFavoriteOrLiked.Value)
-                {
-                    whereClauses.Add("IsFavorite=@IsFavoriteOrLiked");
-                }
-                else
-                {
-                    whereClauses.Add("(IsFavorite is null or IsFavorite=@IsFavoriteOrLiked)");
-                }
-                cmd.Parameters.Add(cmd, "@IsFavoriteOrLiked", DbType.Boolean).Value = query.IsFavoriteOrLiked.Value;
-            }
-
-            if (query.IsFavorite.HasValue)
-            {
-                if (query.IsFavorite.Value)
-                {
-                    whereClauses.Add("IsFavorite=@IsFavorite");
-                }
-                else
-                {
-                    whereClauses.Add("(IsFavorite is null or IsFavorite=@IsFavorite)");
-                }
-                cmd.Parameters.Add(cmd, "@IsFavorite", DbType.Boolean).Value = query.IsFavorite.Value;
-            }
-
             if (EnableJoinUserData(query))
             {
+                if (query.IsLiked.HasValue)
+                {
+                    if (query.IsLiked.Value)
+                    {
+                        whereClauses.Add("rating>=@UserRating");
+                        cmd.Parameters.Add(cmd, "@UserRating", DbType.Double).Value = UserItemData.MinLikeValue;
+                    }
+                    else
+                    {
+                        whereClauses.Add("(rating is null or rating<@UserRating)");
+                        cmd.Parameters.Add(cmd, "@UserRating", DbType.Double).Value = UserItemData.MinLikeValue;
+                    }
+                }
+
+                if (query.IsFavoriteOrLiked.HasValue)
+                {
+                    if (query.IsFavoriteOrLiked.Value)
+                    {
+                        whereClauses.Add("IsFavorite=@IsFavoriteOrLiked");
+                    }
+                    else
+                    {
+                        whereClauses.Add("(IsFavorite is null or IsFavorite=@IsFavoriteOrLiked)");
+                    }
+                    cmd.Parameters.Add(cmd, "@IsFavoriteOrLiked", DbType.Boolean).Value = query.IsFavoriteOrLiked.Value;
+                }
+
+                if (query.IsFavorite.HasValue)
+                {
+                    if (query.IsFavorite.Value)
+                    {
+                        whereClauses.Add("IsFavorite=@IsFavorite");
+                    }
+                    else
+                    {
+                        whereClauses.Add("(IsFavorite is null or IsFavorite=@IsFavorite)");
+                    }
+                    cmd.Parameters.Add(cmd, "@IsFavorite", DbType.Boolean).Value = query.IsFavorite.Value;
+                }
+
                 if (query.IsPlayed.HasValue)
                 {
                     if (query.IsPlayed.Value)
@@ -2472,17 +2500,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     }
                     cmd.Parameters.Add(cmd, "@IsPlayed", DbType.Boolean).Value = query.IsPlayed.Value;
                 }
-            }
 
-            if (query.IsResumable.HasValue)
-            {
-                if (query.IsResumable.Value)
+                if (query.IsResumable.HasValue)
                 {
-                    whereClauses.Add("playbackPositionTicks > 0");
-                }
-                else
-                {
-                    whereClauses.Add("(playbackPositionTicks is null or playbackPositionTicks = 0)");
+                    if (query.IsResumable.Value)
+                    {
+                        whereClauses.Add("playbackPositionTicks > 0");
+                    }
+                    else
+                    {
+                        whereClauses.Add("(playbackPositionTicks is null or playbackPositionTicks = 0)");
+                    }
                 }
             }
 
