@@ -54,9 +54,18 @@ namespace MediaBrowser.ServerApplication.Native
             _logger = logger;
         }
 
-        public Task<IDbConnection> Connect(string dbPath)
+        public async Task<IDbConnection> Connect(string dbPath)
         {
-            return SqliteExtensions.ConnectToDb(dbPath, _logger);
+            try
+            {
+                return await SqliteExtensions.ConnectToDb(dbPath, _logger).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error opening database {0}", ex, dbPath);
+
+                throw;
+            }
         }
     }
 }
