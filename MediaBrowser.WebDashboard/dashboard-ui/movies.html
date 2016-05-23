@@ -9,7 +9,7 @@
         <button class="pageTabButton movieStudiosTab" data-index="5">${TabStudios}</button>
     </div>
     <div class="is-active pageTabContent ehsContent" id="suggestionsTab" data-index="0">
-        <div id="resumableSection" style="display: none;" class="homePageSection">
+        <div id="resumableSection" class="homePageSection hide">
             <div>
                 <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderResume}</h1>
                 <paper-button raised class="submit mini categorySyncButton" data-category="Resume"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
@@ -31,7 +31,7 @@
 
         <div class="recommendations homePageSection">
         </div>
-        <div class="noItemsMessage" style="display: none;">
+        <div class="noItemsMessage hide">
             <br />
             <p>${MessageNoMovieSuggestionsAvailable}</p>
         </div>

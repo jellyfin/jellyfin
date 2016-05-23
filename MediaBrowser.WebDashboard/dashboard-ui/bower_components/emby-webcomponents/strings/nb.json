@@ -1,7 +1,4 @@
 {
-    "Delete": "Slett",
-    "HeaderDeleteItem": "Slett element",
-    "ConfirmDeleteItem": "Ved \u00e5 slette dette element vil du b\u00e5de slette det fra statement og mediebiblioteket. Er du sikker p\u00e5 at du vil forsette?",
     "ValueSpecialEpisodeName": "Spesial - {0}",
     "Share": "Del",
     "ServerUpdateNeeded": "Denne Emby serveren trenger en oppdatering. For \u00e5 laste ned nyeste versjon, vennligst bes\u00f8k: {0}",
@@ -53,6 +50,21 @@
     "Edit": "Endre",
     "Download": "Last ned",
     "Advanced": "Avansert",
+    "Delete": "Slett",
+    "HeaderDeleteItem": "Slett element",
+    "ConfirmDeleteItem": "Ved \u00e5 slette dette element vil du b\u00e5de slette det fra statement og mediebiblioteket. Er du sikker p\u00e5 at du vil forsette?",
     "Refresh": "Oppdater",
-    "RefreshQueued": "Oppdatering k\u00f8"
+    "RefreshQueued": "Oppdatering k\u00f8",
+    "AddToCollection": "Add to Collection",
+    "NewCollection": "New Collection",
+    "LabelCollection": "Collection:",
+    "Help": "Help",
+    "NewCollectionHelp": "Collections allow you to create personalized groupings of movies and other library content.",
+    "SearchForCollectionInternetMetadata": "Search the internet for artwork and metadata",
+    "LabelName": "Name:",
+    "NewCollectionNameExample": "Example: Star Wars Collection",
+    "MessageItemsAdded": "Items added.",
+    "OptionNew": "New...",
+    "LabelPlaylist": "Playlist:",
+    "AddToPlaylist": "Add to Playlist"
 }

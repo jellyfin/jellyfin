@@ -210,7 +210,7 @@
 
             dlg.addEventListener('close', function () {
 
-                if (selectedId) {
+                if (selectedId != null) {
                     if (options.callback) {
                         options.callback(selectedId);
                     }
