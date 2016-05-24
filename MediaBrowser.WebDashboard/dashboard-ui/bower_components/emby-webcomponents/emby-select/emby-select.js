@@ -101,13 +101,20 @@
 
     EmbySelectPrototype.createdCallback = function () {
 
+        var parent = this.parentNode;
+        if (!parent.classList.contains('selectContainer')) {
+            var div = this.ownerDocument.createElement('div');
+            div.classList.add('selectContainer');
+            parent.replaceChild(div, this);
+            div.appendChild(this);
+        }
         if (!this.id) {
             this.id = 'select' + new Date().getTime();
         }
         this.addEventListener('mousedown', onMouseDown);
         this.addEventListener('keydown', onKeyDown);
         this.addEventListener('focus', onFocus);
-        this.addEventListener('keydown', onBlur);
+        this.addEventListener('blur', onBlur);
     };
 
     EmbySelectPrototype.attachedCallback = function () {

@@ -1,8 +1,9 @@
 define(['browser'], function (browser) {
 
-    var allPages = document.querySelectorAll('.mainAnimatedPage');
+    var mainAnimatedPages = document.querySelector('.mainAnimatedPages');
+    var allPages = [];
     var currentUrls = [];
-    var pageContainerCount = allPages.length;
+    var pageContainerCount = 3;
     var selectedPageIndex = -1;
 
     function enableAnimation() {
@@ -26,7 +27,7 @@ define(['browser'], function (browser) {
 
         cancelActiveAnimations();
 
-        var selected = getSelectedIndex(allPages);
+        var selected = selectedPageIndex;
         var previousAnimatable = selected == -1 ? null : allPages[selected];
         var pageIndex = selected + 1;
 
@@ -60,34 +61,47 @@ define(['browser'], function (browser) {
 
             require(dependencies, function () {
 
-                var animatable = allPages[pageIndex];
-
-                var currentPage = animatable.querySelector('.page-view');
+                var currentPage = allPages[pageIndex];
 
                 if (currentPage) {
                     triggerDestroy(currentPage);
                 }
 
-                var view;
+                var view = newView;
 
-                if (typeof (newView) == 'string') {
-                    animatable.innerHTML = newView;
-                    view = animatable.querySelector('.page-view');
+                if (typeof (view) == 'string') {
+                    view = document.createElement('div');
+                    view.innerHTML = newView;
+                }
+
+                if (currentPage) {
+                    if (newViewInfo.hasScript) {
+                        // TODO: figure this out without jQuery
+                        view = $(view).appendTo(mainAnimatedPages)[0];
+                        mainAnimatedPages.removeChild(currentPage);
+                    } else {
+                        mainAnimatedPages.replaceChild(view, currentPage);
+                    }
                 } else {
                     if (newViewInfo.hasScript) {
                         // TODO: figure this out without jQuery
-                        animatable.innerHTML = '';
-                        $(newView).appendTo(animatable);
+                        view = $(view).appendTo(mainAnimatedPages)[0];
                     } else {
-                        if (currentPage) {
-                            animatable.replaceChild(newView, currentPage);
-                        } else {
-                            animatable.appendChild(newView);
-                        }
+                        mainAnimatedPages.appendChild(view);
                     }
-                    enhanceNewView(dependencies, newView);
-                    view = newView;
                 }
+
+                if (typeof (newView) != 'string') {
+                    enhanceNewView(dependencies, view);
+                }
+
+                if (options.type) {
+                    view.setAttribute('data-type', options.type);
+                }
+
+                var animatable = view;
+                view.classList.add('mainAnimatedPage');
+                allPages[pageIndex] = view;
 
                 if (onBeforeChange) {
                     onBeforeChange(view, false, options);
@@ -155,20 +169,13 @@ define(['browser'], function (browser) {
     function normalizeNewView(options) {
 
         if (options.view.indexOf('data-role="page"') == -1) {
-            var html = '<div class="page-view" data-type="' + (options.type || '') + '">';
-            html += options.view;
-            html += '</div>';
-            return html;
+            return options.view;
         }
 
         var hasScript = options.view.indexOf('<script') != -1;
 
-        var elem = parseHtml(options.view, hasScript);
-        elem.classList.add('page-view');
-        elem.setAttribute('data-type', options.type || '');
-
         return {
-            elem: elem,
+            elem: parseHtml(options.view, hasScript),
             hasScript: hasScript
         };
     }
@@ -203,12 +210,6 @@ define(['browser'], function (browser) {
             }
         }
 
-        return nullAnimation(newAnimatedPage, oldAnimatedPage, transition, isBack);
-    }
-
-    function nullAnimation(newAnimatedPage, oldAnimatedPage, transition, isBack) {
-
-        newAnimatedPage.classList.remove('hide');
         return Promise.resolve();
     }
 
@@ -235,8 +236,6 @@ define(['browser'], function (browser) {
 
                 ], timings));
             }
-
-            newAnimatedPage.classList.remove('hide');
 
             var start = isBack ? '-100%' : '100%';
 
@@ -275,8 +274,6 @@ define(['browser'], function (browser) {
                 ], timings));
             }
 
-            newAnimatedPage.classList.remove('hide');
-
             animations.push(newAnimatedPage.animate([
 
                   { opacity: 0, offset: 0 },
@@ -313,19 +310,15 @@ define(['browser'], function (browser) {
         onBeforeChange = fn;
     }
 
-    function getSelectedIndex(allPages) {
-
-        return selectedPageIndex;
-    }
-
     function tryRestoreView(options) {
 
         var url = options.url;
         var index = currentUrls.indexOf(url);
 
         if (index != -1) {
-            var page = allPages[index];
-            var view = page.querySelector(".page-view");
+
+            var animatable = allPages[index];
+            var view = animatable;
 
             if (view) {
 
@@ -335,8 +328,7 @@ define(['browser'], function (browser) {
 
                 cancelActiveAnimations();
 
-                var animatable = allPages[index];
-                var selected = getSelectedIndex(allPages);
+                var selected = selectedPageIndex;
                 var previousAnimatable = selected == -1 ? null : allPages[selected];
 
                 if (onBeforeChange) {
@@ -344,6 +336,8 @@ define(['browser'], function (browser) {
                 }
 
                 beforeAnimate(allPages, index, selected);
+
+                animatable.classList.remove('hide');
 
                 return animate(animatable, previousAnimatable, options.transition, options.isBack).then(function () {
 
@@ -361,7 +355,6 @@ define(['browser'], function (browser) {
                         $.mobile = $.mobile || {};
                         $.mobile.activePage = view;
                     }
-
                     return view;
                 });
             }
@@ -376,12 +369,18 @@ define(['browser'], function (browser) {
 
     function reset() {
 
+        allPages = [];
         currentUrls = [];
+        mainAnimatedPages.innerHTML = '';
+        selectedPageIndex = -1;
     }
 
     if (enableAnimation() && !document.documentElement.animate) {
         require(['webAnimations']);
     }
+
+    reset();
+    mainAnimatedPages.classList.remove('hide');
 
     return {
         loadView: loadView,

@@ -116,7 +116,8 @@ define(['browser'], function (browser) {
             var timings = {
                 duration: 450,
                 iterations: 1,
-                easing: 'ease-out'
+                easing: 'ease-out',
+                fill: 'both'
             }
 
             var animations = [];
@@ -155,7 +156,8 @@ define(['browser'], function (browser) {
             var timings = {
                 duration: 200,
                 iterations: 1,
-                easing: 'ease-out'
+                easing: 'ease-out',
+                fill: 'both'
             }
 
             var animations = [];
