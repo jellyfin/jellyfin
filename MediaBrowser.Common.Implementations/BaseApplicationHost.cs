@@ -252,15 +252,7 @@ namespace MediaBrowser.Common.Implementations
             var innerProgress = new ActionableProgress<double>();
             innerProgress.RegisterAction(p => progress.Report(.8 * p + 15));
 
-            try
-            {
-                await RegisterResources(innerProgress).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error in RegisterResource", ex);
-                throw;
-            }
+            await RegisterResources(innerProgress).ConfigureAwait(false);
 
             FindParts();
             progress.Report(95);
