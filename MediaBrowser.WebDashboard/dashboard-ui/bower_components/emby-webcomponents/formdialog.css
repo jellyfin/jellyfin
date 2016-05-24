@@ -46,13 +46,6 @@
     }
 }
 
-@media all and (max-height: 1400px) {
-
-    .itemOverview {
-        display: none;
-    }
-}
-
 .layout-tv .formDialog .dialogHeader {
     padding-top: 1.5em;
     padding-bottom: 1.5em;

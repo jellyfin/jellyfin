@@ -4,6 +4,10 @@
 
     function enableNativeMenu() {
 
+        if (browser.xboxOne) {
+            return false;
+        }
+
         // Take advantage of the native input methods
         if (browser.tv) {
             return true;
@@ -122,6 +126,7 @@
         var label = this.ownerDocument.createElement('label');
         label.innerHTML = this.getAttribute('label') || '';
         label.classList.add('selectLabel');
+        label.classList.add('selectLabelUnfocused');
         label.htmlFor = this.id;
         this.parentNode.insertBefore(label, this);
 

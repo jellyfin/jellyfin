@@ -120,8 +120,8 @@ define(['viewcontainer', 'focusManager', 'queryString', 'connectionManager', 'ev
 
     document.addEventListener('skinunload', resetCachedViews);
 
-    events.on(connectionManager, 'localusersignedin', resetCachedViews);
-    events.on(connectionManager, 'localusersignedout', resetCachedViews);
+    //events.on(connectionManager, 'localusersignedin', resetCachedViews);
+    //events.on(connectionManager, 'localusersignedout', resetCachedViews);
 
     function tryRestoreInternal(viewcontainer, options, resolve, reject) {
 
