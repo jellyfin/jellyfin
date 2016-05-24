@@ -939,8 +939,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 IsMovie = query.IsMovie,
                 IsSports = query.IsSports,
                 IsKids = query.IsKids,
-                EnableTotalRecordCount = query.EnableTotalRecordCount
+                EnableTotalRecordCount = query.EnableTotalRecordCount,
+                SortBy = new[] { ItemSortBy.StartDate }
             };
+
+            if (query.Limit.HasValue)
+            {
+                internalQuery.Limit = Math.Max(query.Limit.Value * 5, 300);
+            }
 
             if (query.HasAired.HasValue)
             {
@@ -958,15 +964,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var programList = programs.ToList();
 
-            var genres = programList.SelectMany(i => i.Genres)
-                .Where(i => !string.IsNullOrWhiteSpace(i))
-                .DistinctNames()
-                .Select(i => _libraryManager.GetGenre(i))
-                .DistinctBy(i => i.Id)
-                .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
+            var factorChannelWatchCount = (query.IsAiring ?? false) || (query.IsKids ?? false) || (query.IsSports ?? false) || (query.IsMovie ?? false);
 
             programs = programList.OrderBy(i => i.HasImage(ImageType.Primary) ? 0 : 1)
-                .ThenByDescending(i => GetRecommendationScore(i, user.Id, genres))
+                .ThenByDescending(i => GetRecommendationScore(i, user.Id, factorChannelWatchCount))
                 .ThenBy(i => i.StartDate);
 
             if (query.Limit.HasValue)
@@ -1004,7 +1005,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return result;
         }
 
-        private int GetRecommendationScore(LiveTvProgram program, Guid userId, Dictionary<string, Genre> genres)
+        private int GetRecommendationScore(LiveTvProgram program, Guid userId, bool factorChannelWatchCount)
         {
             var score = 0;
 
@@ -1036,41 +1037,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 score += 3;
             }
 
-            score += GetGenreScore(program.Genres, userId, genres);
+            if (factorChannelWatchCount)
+            {
+                score += channelUserdata.PlayCount;
+            }
 
             return score;
-        }
-
-        private int GetGenreScore(IEnumerable<string> programGenres, Guid userId, Dictionary<string, Genre> genres)
-        {
-            return programGenres.Select(i =>
-            {
-                var score = 0;
-
-                Genre genre;
-
-                if (genres.TryGetValue(i, out genre))
-                {
-                    var genreUserdata = _userDataManager.GetUserData(userId, genre);
-
-                    if (genreUserdata.Likes ?? false)
-                    {
-                        score++;
-                    }
-                    else if (!(genreUserdata.Likes ?? true))
-                    {
-                        score--;
-                    }
-
-                    if (genreUserdata.IsFavorite)
-                    {
-                        score += 2;
-                    }
-                }
-
-                return score;
-
-            }).Sum();
         }
 
         private async Task AddRecordingInfo(IEnumerable<Tuple<BaseItemDto, string, string>> programs, CancellationToken cancellationToken)
