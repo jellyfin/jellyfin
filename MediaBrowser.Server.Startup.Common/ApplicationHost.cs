@@ -359,12 +359,18 @@ namespace MediaBrowser.Server.Startup.Common
         {
             var migrations = new List<IVersionMigration>
             {
-                new RenameXmlOptions(ServerConfigurationManager)
             };
 
             foreach (var task in migrations)
             {
-                task.Run();
+                try
+                {
+                    task.Run();
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error running migration", ex);
+                }
             }
         }
 
@@ -379,7 +385,14 @@ namespace MediaBrowser.Server.Startup.Common
 
             foreach (var task in migrations)
             {
-                task.Run();
+                try
+                {
+                    task.Run();
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error running migration", ex);
+                }
             }
         }
 
