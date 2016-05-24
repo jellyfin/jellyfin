@@ -205,7 +205,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             if (IndexNumber.HasValue && series != null)
             {
-                return series.GetEpisodes(user, IndexNumber.Value, includeMissingEpisodes, includeVirtualUnairedEpisodes);
+                return series.GetEpisodes(user, this, includeMissingEpisodes, includeVirtualUnairedEpisodes);
             }
 
             var episodes = GetRecursiveChildren(user)
