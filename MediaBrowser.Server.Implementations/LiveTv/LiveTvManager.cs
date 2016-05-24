@@ -945,7 +945,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (query.Limit.HasValue)
             {
-                internalQuery.Limit = Math.Max(query.Limit.Value * 5, 500);
+                internalQuery.Limit = Math.Max(query.Limit.Value * 5, 300);
             }
 
             if (query.HasAired.HasValue)
