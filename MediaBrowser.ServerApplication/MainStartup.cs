@@ -244,7 +244,9 @@ namespace MediaBrowser.ServerApplication
 
 
             var task = _appHost.Init(initProgress);
-            task = task.ContinueWith(new Action<Task>(a => _appHost.RunStartupTasks()));
+            Task.WaitAll(task);
+
+            task = task.ContinueWith(new Action<Task>(a => _appHost.RunStartupTasks()), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
 
             if (runService)
             {
