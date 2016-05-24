@@ -4,6 +4,10 @@
 
     function enableNativeMenu() {
 
+        if (browser.xboxOne) {
+            return false;
+        }
+
         // Take advantage of the native input methods
         if (browser.tv) {
             return true;
@@ -101,13 +105,20 @@
 
     EmbySelectPrototype.createdCallback = function () {
 
+        var parent = this.parentNode;
+        if (!parent.classList.contains('selectContainer')) {
+            var div = this.ownerDocument.createElement('div');
+            div.classList.add('selectContainer');
+            parent.replaceChild(div, this);
+            div.appendChild(this);
+        }
         if (!this.id) {
             this.id = 'select' + new Date().getTime();
         }
         this.addEventListener('mousedown', onMouseDown);
         this.addEventListener('keydown', onKeyDown);
         this.addEventListener('focus', onFocus);
-        this.addEventListener('keydown', onBlur);
+        this.addEventListener('blur', onBlur);
     };
 
     EmbySelectPrototype.attachedCallback = function () {
@@ -115,6 +126,7 @@
         var label = this.ownerDocument.createElement('label');
         label.innerHTML = this.getAttribute('label') || '';
         label.classList.add('selectLabel');
+        label.classList.add('selectLabelUnfocused');
         label.htmlFor = this.id;
         this.parentNode.insertBefore(label, this);
 

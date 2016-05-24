@@ -254,7 +254,7 @@ namespace MediaBrowser.ServerApplication
             {
                 Task.WaitAll(task);
 
-                task = InstallVcredistIfNeeded(_appHost, _logger);
+                task = InstallVcredist2013IfNeeded(_appHost, _logger);
                 Task.WaitAll(task);
 
                 task = InstallFrameworkV46IfNeeded(_logger);
@@ -679,7 +679,7 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
-        private static async Task InstallVcredistIfNeeded(ApplicationHost appHost, ILogger logger)
+        private static async Task InstallVcredist2013IfNeeded(ApplicationHost appHost, ILogger logger)
         {
             try
             {
@@ -693,7 +693,7 @@ namespace MediaBrowser.ServerApplication
 
             try
             {
-                await InstallVcredist().ConfigureAwait(false);
+                await InstallVcredist2013().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -701,13 +701,13 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
-        private async static Task InstallVcredist()
+        private async static Task InstallVcredist2013()
         {
             var httpClient = _appHost.HttpClient;
 
             var tmp = await httpClient.GetTempFile(new HttpRequestOptions
             {
-                Url = GetVcredistUrl(),
+                Url = GetVcredist2013Url(),
                 Progress = new Progress<double>()
 
             }).ConfigureAwait(false);
@@ -733,7 +733,7 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
-        private static string GetVcredistUrl()
+        private static string GetVcredist2013Url()
         {
             if (Environment.Is64BitProcess)
             {

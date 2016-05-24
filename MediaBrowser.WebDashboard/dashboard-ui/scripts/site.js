@@ -1281,6 +1281,18 @@ var Dashboard = {
                     });
 
                     profile.CodecProfiles.push({
+                        Type: 'Video',
+                        Container: 'avi',
+                        Conditions: [
+                            {
+                                Condition: 'NotEqual',
+                                Property: 'CodecTag',
+                                Value: 'xvid'
+                            }
+                        ]
+                    });
+
+                    profile.CodecProfiles.push({
                         Type: 'VideoAudio',
                         Codec: 'aac,mp3',
                         Conditions: [

@@ -2980,6 +2980,19 @@
             return self.getJSON(url);
         };
 
+        self.getGameSystems = function () {
+
+            var options = {};
+
+            if (userId) {
+                options.userId = userId;
+            }
+
+            var url = self.getUrl("Games/SystemSummaries", options);
+
+            return self.getJSON(url);
+        };
+
         self.getAdditionalVideoParts = function (userId, itemId) {
 
             if (!itemId) {
