@@ -224,6 +224,10 @@ define(['browser'], function (browser) {
                 easing: 'ease-out'
             }
 
+            if (!browser.chrome) {
+                timings.fill = 'both';
+            }
+
             var animations = [];
 
             if (oldAnimatedPage) {
@@ -261,6 +265,10 @@ define(['browser'], function (browser) {
                 duration: 140,
                 iterations: 1,
                 easing: 'ease-out'
+            }
+
+            if (!browser.chrome) {
+                timings.fill = 'both';
             }
 
             var animations = [];
