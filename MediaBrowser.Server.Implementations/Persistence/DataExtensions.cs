@@ -122,7 +122,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             using (var cmd = db.CreateCommand())
             {
-                cmd.CommandText = string.Format("attach '{0}' as {1};", path, alias);
+                cmd.CommandText = string.Format("attach @dbPath as {0};", alias);
+                cmd.Parameters.Add(cmd, "@dbPath", DbType.String);
+                cmd.GetParameter(0).Value = path;
+
                 cmd.ExecuteNonQuery();
             }
         }
