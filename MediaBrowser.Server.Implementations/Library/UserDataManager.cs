@@ -170,22 +170,18 @@ namespace MediaBrowser.Server.Implementations.Library
                         return value;
                     }
                 }
-
-                if (keys.Count > 0)
-                {
-                    var key = keys[0];
-                    var cacheKey = GetCacheKey(userId, key);
-                    var userdata = new UserItemData
-                    {
-                        UserId = userId,
-                        Key = key
-                    };
-                    _userData[cacheKey] = userdata;
-                    return userdata;
-                }
-
-                return null;
             }
+
+            if (keys.Count > 0)
+            {
+                return new UserItemData
+                {
+                    UserId = userId,
+                    Key = keys[0]
+                };
+            }
+
+            return null;
         }
 
         /// <summary>
