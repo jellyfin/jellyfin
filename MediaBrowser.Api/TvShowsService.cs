@@ -456,7 +456,16 @@ namespace MediaBrowser.Api
                     throw new ResourceNotFoundException("No series exists with Id " + request.Id);
                 }
 
-                episodes = series.GetEpisodes(user, request.Season.Value);
+                var season = series.GetSeasons(user).FirstOrDefault(i => i.IndexNumber == request.Season.Value);
+
+                if (season == null)
+                {
+                    episodes = new List<Episode>();
+                }
+                else
+                {
+                    episodes = series.GetEpisodes(user, season);
+                }
             }
             else
             {
