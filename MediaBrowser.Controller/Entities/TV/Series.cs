@@ -338,11 +338,11 @@ namespace MediaBrowser.Controller.Entities.TV
             progress.Report(100);
         }
 
-        public IEnumerable<Episode> GetEpisodes(User user, int seasonNumber)
+        public IEnumerable<Episode> GetEpisodes(User user, Season season)
         {
             var config = user.Configuration;
 
-            return GetEpisodes(user, seasonNumber, config.DisplayMissingEpisodes, config.DisplayUnairedEpisodes);
+            return GetEpisodes(user, season, config.DisplayMissingEpisodes, config.DisplayUnairedEpisodes);
         }
 
         private bool EnablePooling()
@@ -350,7 +350,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return false;
         }
 
-        public IEnumerable<Episode> GetEpisodes(User user, int seasonNumber, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes)
+        public IEnumerable<Episode> GetEpisodes(User user, Season parentSeason, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes)
         {
             IEnumerable<Episode> episodes;
 
@@ -388,7 +388,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 }).Cast<Episode>();
             }
 
-            episodes = FilterEpisodesBySeason(episodes, seasonNumber, DisplaySpecialsWithSeasons);
+            episodes = FilterEpisodesBySeason(episodes, parentSeason, DisplaySpecialsWithSeasons);
 
             if (!includeMissingEpisodes)
             {
@@ -399,7 +399,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 episodes = episodes.Where(i => !i.IsVirtualUnaired);
             }
 
-            var sortBy = seasonNumber == 0 ? ItemSortBy.SortName : ItemSortBy.AiredEpisodeOrder;
+            var sortBy = (parentSeason.IndexNumber ?? -1) == 0 ? ItemSortBy.SortName : ItemSortBy.AiredEpisodeOrder;
 
             return LibraryManager.Sort(episodes, user, new[] { sortBy }, SortOrder.Ascending)
                 .Cast<Episode>();
@@ -408,10 +408,6 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <summary>
         /// Filters the episodes by season.
         /// </summary>
-        /// <param name="episodes">The episodes.</param>
-        /// <param name="seasonNumber">The season number.</param>
-        /// <param name="includeSpecials">if set to <c>true</c> [include specials].</param>
-        /// <returns>IEnumerable{Episode}.</returns>
         public static IEnumerable<Episode> FilterEpisodesBySeason(IEnumerable<Episode> episodes, int seasonNumber, bool includeSpecials)
         {
             if (!includeSpecials || seasonNumber < 1)
@@ -432,6 +428,46 @@ namespace MediaBrowser.Controller.Entities.TV
 
                 return false;
             });
+        }
+
+        /// <summary>
+        /// Filters the episodes by season.
+        /// </summary>
+        public static IEnumerable<Episode> FilterEpisodesBySeason(IEnumerable<Episode> episodes, Season parentSeason, bool includeSpecials)
+        {
+            var seasonNumber = parentSeason.IndexNumber;
+            if (!includeSpecials || (seasonNumber.HasValue && seasonNumber.Value == 0))
+            {
+                var seasonPresentationKey = parentSeason.PresentationUniqueKey;
+
+                return episodes.Where(i =>
+                {
+                    if ((i.ParentIndexNumber ?? -1) == seasonNumber)
+                    {
+                        return true;
+                    }
+
+                    var season = i.Season;
+                    return season != null && string.Equals(season.PresentationUniqueKey, seasonPresentationKey, StringComparison.OrdinalIgnoreCase);
+                });
+            }
+            else
+            {
+                var seasonPresentationKey = parentSeason.PresentationUniqueKey;
+
+                return episodes.Where(episode =>
+                {
+                    var currentSeasonNumber = episode.AiredSeasonNumber;
+
+                    if (currentSeasonNumber.HasValue && seasonNumber.HasValue && currentSeasonNumber.Value == seasonNumber.Value)
+                    {
+                        return true;
+                    }
+
+                    var season = episode.Season;
+                    return season != null && string.Equals(season.PresentationUniqueKey, seasonPresentationKey, StringComparison.OrdinalIgnoreCase);
+                });
+            }
         }
 
         protected override bool GetBlockUnratedValue(UserPolicy config)
