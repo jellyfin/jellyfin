@@ -1707,7 +1707,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var elapsed = (DateTime.UtcNow - startDate).TotalMilliseconds;
 
-            if (elapsed >= 400)
+            var slowThreshold = 1000;
+
+#if DEBUG
+            slowThreshold = 200;
+#endif
+
+            if (elapsed >= slowThreshold)
             {
                 Logger.Debug("{2} query time (slow): {0}ms. Query: {1}",
                     Convert.ToInt32(elapsed),
