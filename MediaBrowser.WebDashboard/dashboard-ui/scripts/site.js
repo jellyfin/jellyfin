@@ -1223,7 +1223,7 @@ var Dashboard = {
                     profile.DirectPlayProfiles.push({
                         Container: "m4v,3gp,ts,mpegts,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,m2v,avi,mpg,mpeg,mp4,webm",
                         Type: 'Video',
-                        AudioCodec: 'aac,aac_latm,mp3,ac3,wma,dca,pcm,PCM_S16LE,PCM_S24LE,opus,flac'
+                        AudioCodec: 'aac,aac_latm,mp2,mp3,ac3,wma,dca,pcm,PCM_S16LE,PCM_S24LE,opus,flac'
                     });
 
                     profile.CodecProfiles = profile.CodecProfiles.filter(function (i) {
@@ -2096,17 +2096,27 @@ var AppInfo = {};
 
         var embyWebComponentsBowerPath = bowerPath + '/emby-webcomponents';
 
-        if (browser.mobile) {
-            define("prompt", [embyWebComponentsBowerPath + "/prompt/nativeprompt"], returnFirstDependency);
-            define("confirm", [embyWebComponentsBowerPath + "/confirm/nativeconfirm"], returnFirstDependency);
+        var preferNativeAlerts = browser.mobile || browser.tv || browser.xboxOne;
+        // use native alerts if preferred and supported (not supported in opera tv)
+        if (preferNativeAlerts && globalScope.alert) {
             define("alert", [embyWebComponentsBowerPath + "/alert/nativealert"], returnFirstDependency);
         } else {
-            define("prompt", [embyWebComponentsBowerPath + "/prompt/prompt"], returnFirstDependency);
-            define("confirm", [embyWebComponentsBowerPath + "/confirm/confirm"], returnFirstDependency);
             define("alert", [embyWebComponentsBowerPath + "/alert/alert"], returnFirstDependency);
         }
 
-        if (browser.tv) {
+        if (preferNativeAlerts && globalScope.confirm) {
+            define("confirm", [embyWebComponentsBowerPath + "/confirm/nativeconfirm"], returnFirstDependency);
+        } else {
+            define("confirm", [embyWebComponentsBowerPath + "/confirm/confirm"], returnFirstDependency);
+        }
+
+        if (preferNativeAlerts && globalScope.prompt) {
+            define("prompt", [embyWebComponentsBowerPath + "/prompt/nativeprompt"], returnFirstDependency);
+        } else {
+            define("prompt", [embyWebComponentsBowerPath + "/prompt/prompt"], returnFirstDependency);
+        }
+
+        if (browser.tv && !browser.animate) {
             define("loading", [embyWebComponentsBowerPath + "/loading/loading-smarttv"], returnFirstDependency);
         } else {
             define("loading", [embyWebComponentsBowerPath + "/loading/loading-lite"], returnFirstDependency);
