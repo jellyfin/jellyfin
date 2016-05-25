@@ -283,18 +283,6 @@
 
         var mdlTabs = view.querySelector('.libraryViewNav');
 
-        function onPlaybackStop(e, state) {
-
-            if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
-
-                mdlTabs.dispatchEvent(new CustomEvent("tabchange", {
-                    detail: {
-                        selectedTabIndex: libraryBrowser.selectedTab(mdlTabs)
-                    }
-                }));
-            }
-        }
-
         var baseUrl = 'movies.html';
         var topParentId = params.topParentId;
         if (topParentId) {
@@ -380,6 +368,19 @@
                 }
             }
         });
+
+        function onPlaybackStop(e, state) {
+
+            if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
+
+                renderedTabs = [];
+                mdlTabs.dispatchEvent(new CustomEvent("tabchange", {
+                    detail: {
+                        selectedTabIndex: libraryBrowser.selectedTab(mdlTabs)
+                    }
+                }));
+            }
+        }
 
         view.addEventListener('viewshow', function (e) {
             Events.on(MediaController, 'playbackstop', onPlaybackStop);
