@@ -2098,19 +2098,19 @@ var AppInfo = {};
 
         var preferNativeAlerts = browser.mobile || browser.tv || browser.xboxOne;
         // use native alerts if preferred and supported (not supported in opera tv)
-        if (preferNativeAlerts && globalScope.alert) {
+        if (preferNativeAlerts && window.alert) {
             define("alert", [embyWebComponentsBowerPath + "/alert/nativealert"], returnFirstDependency);
         } else {
             define("alert", [embyWebComponentsBowerPath + "/alert/alert"], returnFirstDependency);
         }
 
-        if (preferNativeAlerts && globalScope.confirm) {
+        if (preferNativeAlerts && window.confirm) {
             define("confirm", [embyWebComponentsBowerPath + "/confirm/nativeconfirm"], returnFirstDependency);
         } else {
             define("confirm", [embyWebComponentsBowerPath + "/confirm/confirm"], returnFirstDependency);
         }
 
-        if (preferNativeAlerts && globalScope.prompt) {
+        if (preferNativeAlerts && window.prompt) {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/nativeprompt"], returnFirstDependency);
         } else {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/prompt"], returnFirstDependency);
