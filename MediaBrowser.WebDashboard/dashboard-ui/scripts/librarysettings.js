@@ -35,19 +35,8 @@
         $('#selectDateAdded', page).val((config.UseFileCreationTimeForDateAdded ? '1' : '0'));
     }
 
-    function loadTmdbConfig(page, config) {
-
-        $('#chkEnableTmdbUpdates', page).checked(config.EnableAutomaticUpdates);
-    }
-
-    function loadTvdbConfig(page, config) {
-
-        $('#chkEnableTvdbUpdates', page).checked(config.EnableAutomaticUpdates);
-    }
-
     function loadFanartConfig(page, config) {
 
-        $('#chkEnableFanartUpdates', page).checked(config.EnableAutomaticUpdates);
         $('#txtFanartApiKey', page).val(config.UserApiKey || '');
     }
 
@@ -66,30 +55,9 @@
 
         ApiClient.getNamedConfiguration("fanart").then(function (config) {
 
-            config.EnableAutomaticUpdates = $('#chkEnableFanartUpdates', form).checked();
             config.UserApiKey = $('#txtFanartApiKey', form).val();
 
             ApiClient.updateNamedConfiguration("fanart", config);
-        });
-    }
-
-    function saveTvdb(form) {
-
-        ApiClient.getNamedConfiguration("tvdb").then(function (config) {
-
-            config.EnableAutomaticUpdates = $('#chkEnableTvdbUpdates', form).checked();
-
-            ApiClient.updateNamedConfiguration("tvdb", config);
-        });
-    }
-
-    function saveTmdb(form) {
-
-        ApiClient.getNamedConfiguration("themoviedb").then(function (config) {
-
-            config.EnableAutomaticUpdates = $('#chkEnableTmdbUpdates', form).checked();
-
-            ApiClient.updateNamedConfiguration("themoviedb", config);
         });
     }
 
@@ -152,8 +120,6 @@
 
         saveChapters(form);
         saveMetadata(form);
-        saveTmdb(form);
-        saveTvdb(form);
         saveFanart(form);
 
         // Disable default form submission
@@ -196,16 +162,6 @@
         ApiClient.getNamedConfiguration("fanart").then(function (metadata) {
 
             loadFanartConfig(page, metadata);
-        });
-
-        ApiClient.getNamedConfiguration("themoviedb").then(function (metadata) {
-
-            loadTmdbConfig(page, metadata);
-        });
-
-        ApiClient.getNamedConfiguration("tvdb").then(function (metadata) {
-
-            loadTvdbConfig(page, metadata);
         });
 
         var promise1 = ApiClient.getNamedConfiguration("chapters");

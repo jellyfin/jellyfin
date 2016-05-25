@@ -414,28 +414,6 @@ namespace MediaBrowser.Providers.TV
             return Path.Combine(path, filename);
         }
 
-        public bool HasChanged(IHasMetadata item)
-        {
-            if (!MovieDbProvider.Current.GetTheMovieDbOptions().EnableAutomaticUpdates)
-            {
-                return false;
-            }
-
-            var tmdbId = item.GetProviderId(MetadataProviders.Tmdb);
-
-            if (!String.IsNullOrEmpty(tmdbId))
-            {
-                // Process images
-                var dataFilePath = GetDataFilePath(tmdbId, item.GetPreferredMetadataLanguage());
-
-                var fileInfo = _fileSystem.GetFileInfo(dataFilePath);
-
-                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > item.DateLastRefreshed;
-            }
-
-            return false;
-        }
-
         private async Task<RemoteSearchResult> FindByExternalId(string id, string externalSource, CancellationToken cancellationToken)
         {
             var url = string.Format("https://api.themoviedb.org/3/tv/find/{0}?api_key={1}&external_source={2}",

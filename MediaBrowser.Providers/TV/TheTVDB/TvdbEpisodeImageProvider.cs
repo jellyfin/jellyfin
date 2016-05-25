@@ -17,7 +17,7 @@ using CommonIO;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class TvdbEpisodeImageProvider : IRemoteImageProvider, IHasItemChangeMonitor
+    public class TvdbEpisodeImageProvider : IRemoteImageProvider
     {
         private readonly IServerConfigurationManager _config;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
@@ -172,32 +172,6 @@ namespace MediaBrowser.Providers.TV
                 Url = url,
                 ResourcePool = TvdbSeriesProvider.Current.TvDbResourcePool
             });
-        }
-
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
-        {
-            // For non-unaired items, only enable if configured
-            if (!TvdbSeriesProvider.Current.GetTvDbOptions().EnableAutomaticUpdates)
-            {
-                return false;
-            }
-
-            if (!item.HasImage(ImageType.Primary))
-            {
-                var episode = (Episode)item;
-
-                var series = episode.Series;
-
-                if (series != null && TvdbSeriesProvider.IsValidSeries(series.ProviderIds))
-                {
-                    // Process images
-					var seriesXmlPath = TvdbSeriesProvider.Current.GetSeriesXmlPath(series.ProviderIds, series.GetPreferredMetadataLanguage());
-
-					return _fileSystem.GetLastWriteTimeUtc(seriesXmlPath) > item.DateLastRefreshed;
-                }
-            }
-
-            return false;
         }
     }
 }
