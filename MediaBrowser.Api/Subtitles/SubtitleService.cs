@@ -159,6 +159,7 @@ namespace MediaBrowser.Api.Subtitles
             builder.AppendLine("#EXT-X-TARGETDURATION:" + request.SegmentLength.ToString(CultureInfo.InvariantCulture));
             builder.AppendLine("#EXT-X-VERSION:3");
             builder.AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
+            builder.AppendLine("#EXT-X-PLAYLIST-TYPE:VOD");
 
             long positionTicks = 0;
             var segmentLengthTicks = TimeSpan.FromSeconds(request.SegmentLength).Ticks;
@@ -170,7 +171,7 @@ namespace MediaBrowser.Api.Subtitles
                 var remaining = runtime - positionTicks;
                 var lengthTicks = Math.Min(remaining, segmentLengthTicks);
 
-                builder.AppendLine("#EXTINF:" + TimeSpan.FromTicks(lengthTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture));
+                builder.AppendLine("#EXTINF:" + TimeSpan.FromTicks(lengthTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture) + ",");
 
                 var endPositionTicks = Math.Min(runtime, positionTicks + segmentLengthTicks);
 
