@@ -381,7 +381,8 @@ define([], function () {
                 distX: distX,
                 distY: distY,
                 distT: distT,
-                distT2: distT2
+                distT2: distT2,
+                index: i
             });
         }
 
@@ -406,13 +407,23 @@ define([], function () {
     }
 
     function sortNodesT(a, b) {
-        var result = a.distT - b.distT;
 
-        if (result == 0) {
-            return a.distT2 - b.distT2;
+        var result = a.distT - b.distT;
+        if (result != 0) {
+            return result;
         }
 
-        return result;
+        //result = a.distT2 - b.distT2;
+        //if (result != 0) {
+        //    return result;
+        //}
+
+        result = a.index - b.index;
+        if (result != 0) {
+            return result;
+        }
+
+        return 0;
     }
 
     function sortNodesY(a, b) {

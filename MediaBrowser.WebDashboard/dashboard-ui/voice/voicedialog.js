@@ -324,31 +324,6 @@ define(['dialogHelper', 'jQuery', 'paper-button'], function (dialogHelper, $) {
         }
     }
 
-    /// <summary> Speaks the given text. </summary>
-    /// <param name="text"> The text. </param>
-    /// <returns> . </returns>
-    function speak(text) {
-
-        if (!SpeechSynthesisUtterance) {
-            console.log('API not supported');
-        }
-
-        var utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = lang;
-        utterance.rate = 0.9;
-        utterance.pitch = 1;
-        utterance.addEventListener('end', function () {
-            console.log('Synthesizing completed');
-        });
-
-        utterance.addEventListener('error', function (event) {
-            console.log('Synthesizing error');
-        });
-
-        console.log('Synthesizing the text: ' + text);
-        speechSynthesis.speak(utterance);
-    }
-
     /// <summary> An enum constant representing the window. voice input manager option. </summary>
     return {
         startListening: startListening

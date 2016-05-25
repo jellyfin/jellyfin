@@ -900,7 +900,7 @@
             return null;
         }
 
-        self.connect = function () {
+        self.connect = function (options) {
 
             console.log('Begin connect');
 
@@ -908,7 +908,7 @@
 
                 self.getAvailableServers().then(function (servers) {
 
-                    self.connectToServers(servers).then(function (result) {
+                    self.connectToServers(servers, options).then(function (result) {
 
                         resolve(result);
                     });
@@ -921,7 +921,7 @@
             // TODO: Implement
         };
 
-        self.connectToServers = function (servers) {
+        self.connectToServers = function (servers, options) {
 
             console.log('Begin connectToServers, with ' + servers.length + ' servers');
 
@@ -929,7 +929,7 @@
 
                 if (servers.length == 1) {
 
-                    self.connectToServer(servers[0]).then(function (result) {
+                    self.connectToServer(servers[0], options).then(function (result) {
 
                         if (result.State == ConnectionState.Unavailable) {
 
@@ -948,7 +948,7 @@
                     var firstServer = servers.length ? servers[0] : null;
                     // See if we have any saved credentials and can auto sign in
                     if (firstServer) {
-                        self.connectToServer(firstServer).then(function (result) {
+                        self.connectToServer(firstServer, options).then(function (result) {
 
                             if (result.State == ConnectionState.SignedIn) {
 
@@ -1112,7 +1112,8 @@
         function onSuccessfulConnection(server, systemInfo, connectionMode, options, resolve) {
 
             var credentials = credentialProvider.credentials();
-            if (credentials.ConnectAccessToken) {
+            options = options || {};
+            if (credentials.ConnectAccessToken && options.enableAutoLogin !== false) {
 
                 ensureConnectUser(credentials).then(function () {
 
@@ -1139,7 +1140,14 @@
 
         function afterConnectValidated(server, credentials, systemInfo, connectionMode, verifyLocalAuthentication, options, resolve) {
 
-            if (verifyLocalAuthentication && server.AccessToken) {
+            options = options || {};
+
+            if (options.enableAutoLogin === false) {
+
+                server.UserId = null;
+                server.AccessToken = null;
+
+            } else if (verifyLocalAuthentication && server.AccessToken && options.enableAutoLogin !== false) {
 
                 validateAuthentication(server, connectionMode).then(function () {
 
@@ -1164,7 +1172,7 @@
             };
 
             result.ApiClient = getOrAddApiClient(server, connectionMode);
-            result.State = server.AccessToken ?
+            result.State = server.AccessToken && options.enableAutoLogin !== false ?
                 ConnectionState.SignedIn :
                 ConnectionState.ServerSignIn;
 
@@ -1196,7 +1204,7 @@
             return address;
         }
 
-        self.connectToAddress = function (address) {
+        self.connectToAddress = function (address, options) {
 
             return new Promise(function (resolve, reject) {
 
@@ -1222,7 +1230,7 @@
                     };
                     updateServerInfo(server, publicInfo);
 
-                    self.connectToServer(server).then(resolve, onFail);
+                    self.connectToServer(server, options).then(resolve, onFail);
 
                 }, onFail);
 
