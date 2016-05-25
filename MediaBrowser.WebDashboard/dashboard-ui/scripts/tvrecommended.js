@@ -234,6 +234,7 @@
 
             if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
 
+                renderedTabs = [];
                 mdlTabs.dispatchEvent(new CustomEvent("tabchange", {
                     detail: {
                         selectedTabIndex: libraryBrowser.selectedTab(mdlTabs)
