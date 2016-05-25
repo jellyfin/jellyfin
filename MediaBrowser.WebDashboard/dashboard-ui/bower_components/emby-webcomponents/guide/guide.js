@@ -201,7 +201,7 @@
                 return curr.ChannelId == channel.Id;
             });
 
-            html += '<div class="channelPrograms">';
+            html += '<div class="channelPrograms" data-channelid="' + channel.Id + '">';
 
             for (var i = 0, length = programs.length; i < length; i++) {
 
@@ -360,6 +360,19 @@
             imageLoader.lazyChildren(channelList);
         }
 
+        function parentWithClass(elem, className) {
+
+            while (!elem.classList || !elem.classList.contains(className)) {
+                elem = elem.parentNode;
+
+                if (!elem) {
+                    return null;
+                }
+            }
+
+            return elem;
+        }
+
         function renderGuide(context, date, channels, programs, apiClient) {
 
             //var list = [];
@@ -400,6 +413,15 @@
             //    list.push(i);
             //});
             //channels = list;
+            var activeElement = document.activeElement;
+            var itemId = activeElement && activeElement.getAttribute ? activeElement.getAttribute('data-id') : null;
+            var channelRowId = null;
+
+            if (activeElement) {
+                channelRowId = parentWithClass(activeElement, 'channelPrograms');
+                channelRowId = channelRowId && channelRowId.getAttribute ? channelRowId.getAttribute('data-channelid') : null;
+            }
+
             renderChannelHeaders(context, channels, apiClient);
 
             var startDate = date;
@@ -409,7 +431,27 @@
             renderPrograms(context, date, channels, programs);
 
             if (layoutManager.tv) {
-                focusManager.autoFocus(context.querySelector('.programGrid'), true);
+
+                var focusElem;
+                if (itemId) {
+                    focusElem = context.querySelector('[data-id="' + itemId + '"]')
+                }
+
+                if (focusElem) {
+                    focusManager.focus(focusElem);
+                } else {
+
+                    var autoFocusParent;
+
+                    if (channelRowId) {
+                        autoFocusParent = context.querySelector('[data-channelid="' + channelRowId + '"]')
+                    }
+
+                    if (!autoFocusParent) {
+                        autoFocusParent = context.querySelector('.programGrid');
+                    }
+                    focusManager.autoFocus(autoFocusParent, true);
+                }
             }
         }
 

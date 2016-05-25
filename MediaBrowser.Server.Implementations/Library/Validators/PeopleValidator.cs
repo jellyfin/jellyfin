@@ -125,7 +125,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                     validIds.Add(item.Id);
 
                     var hasMetdata = !string.IsNullOrWhiteSpace(item.Overview);
-                    var performFullRefresh = !hasMetdata && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= 14;
+                    var performFullRefresh = !hasMetdata && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= 30;
 
                     var defaultMetadataRefreshMode = performFullRefresh
                         ? MetadataRefreshMode.FullRefresh

@@ -13,6 +13,15 @@ define(['appStorage', 'events'], function (appStorage, events) {
 
         var self = this;
 
+        self.enableAutoLogin = function (val) {
+
+            if (val != null) {
+                self.set('enableAutoLogin', val.toString());
+            }
+
+            return self.get('enableAutoLogin') != 'false';
+        };
+
         self.enableAutomaticBitrateDetection = function (val) {
 
             if (val != null) {

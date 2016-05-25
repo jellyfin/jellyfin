@@ -2,7 +2,6 @@
 // <summary>voicecommands class</summary>
 define([], function () {
 
-
     /// <summary> Process the command. </summary>
     /// <param name="commandPath"> Full pathname of the command file. </param>
     /// <param name="result"> The result. </param>
