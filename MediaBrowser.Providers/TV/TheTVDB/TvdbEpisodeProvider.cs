@@ -24,7 +24,7 @@ namespace MediaBrowser.Providers.TV
     /// <summary>
     /// Class RemoteEpisodeProvider
     /// </summary>
-    class TvdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IItemIdentityProvider<EpisodeInfo>, IHasItemChangeMonitor
+    class TvdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IItemIdentityProvider<EpisodeInfo>
     {
         private static readonly string FullIdKey = MetadataProviders.Tvdb + "-Full";
 
@@ -142,27 +142,6 @@ namespace MediaBrowser.Providers.TV
             }
 
             return result;
-        }
-
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
-        {
-            if (!TvdbSeriesProvider.Current.GetTvDbOptions().EnableAutomaticUpdates)
-            {
-                return false;
-            }
-
-            var episode = (Episode)item;
-            var series = episode.Series;
-
-            if (series != null && TvdbSeriesProvider.IsValidSeries(series.ProviderIds))
-            {
-                // Process images
-				var seriesXmlPath = TvdbSeriesProvider.Current.GetSeriesXmlPath(series.ProviderIds, series.GetPreferredMetadataLanguage());
-
-				return _fileSystem.GetLastWriteTimeUtc(seriesXmlPath) > item.DateLastRefreshed;
-            }
-
-            return false;
         }
 
         /// <summary>
