@@ -446,9 +446,13 @@ namespace MediaBrowser.Controller.Entities.TV
                     {
                         return true;
                     }
+                    if (!i.ParentIndexNumber.HasValue)
+                    {
+                        var season = i.Season;
+                        return season != null && string.Equals(season.PresentationUniqueKey, seasonPresentationKey, StringComparison.OrdinalIgnoreCase);
+                    }
 
-                    var season = i.Season;
-                    return season != null && string.Equals(season.PresentationUniqueKey, seasonPresentationKey, StringComparison.OrdinalIgnoreCase);
+                    return false;
                 });
             }
             else
@@ -464,8 +468,13 @@ namespace MediaBrowser.Controller.Entities.TV
                         return true;
                     }
 
-                    var season = episode.Season;
-                    return season != null && string.Equals(season.PresentationUniqueKey, seasonPresentationKey, StringComparison.OrdinalIgnoreCase);
+                    if (!episode.ParentIndexNumber.HasValue)
+                    {
+                        var season = episode.Season;
+                        return season != null && string.Equals(season.PresentationUniqueKey, seasonPresentationKey, StringComparison.OrdinalIgnoreCase);
+                    }
+
+                    return false;
                 });
             }
         }

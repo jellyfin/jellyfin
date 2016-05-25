@@ -409,33 +409,6 @@ namespace MediaBrowser.Providers.Movies
             return await _httpClient.Get(options).ConfigureAwait(false);
         }
 
-        public TheMovieDbOptions GetTheMovieDbOptions()
-        {
-            return _configurationManager.GetConfiguration<TheMovieDbOptions>("themoviedb");
-        }
-
-        public bool HasChanged(IHasMetadata item)
-        {
-            if (!GetTheMovieDbOptions().EnableAutomaticUpdates)
-            {
-                return false;
-            }
-
-            var tmdbId = item.GetProviderId(MetadataProviders.Tmdb);
-
-            if (!String.IsNullOrEmpty(tmdbId))
-            {
-                // Process images
-                var dataFilePath = GetDataFilePath(tmdbId, item.GetPreferredMetadataLanguage());
-
-                var fileInfo = _fileSystem.GetFileInfo(dataFilePath);
-
-                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > item.DateLastRefreshed;
-            }
-
-            return false;
-        }
-
         public void Dispose()
         {
             Dispose(true);
@@ -657,21 +630,6 @@ namespace MediaBrowser.Providers.Movies
                 Url = url,
                 ResourcePool = MovieDbResourcePool
             });
-        }
-    }
-
-    public class TmdbConfigStore : IConfigurationFactory
-    {
-        public IEnumerable<ConfigurationStore> GetConfigurations()
-        {
-            return new List<ConfigurationStore>
-            {
-                new ConfigurationStore
-                {
-                     Key = "themoviedb",
-                     ConfigurationType = typeof(TheMovieDbOptions)
-                }
-            };
         }
     }
 }

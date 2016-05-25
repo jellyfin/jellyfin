@@ -36,19 +36,6 @@
                     </li>
                 </ul>
 
-                <emby-collapsible title="${HeaderAutomaticUpdates}" class="hide">
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <paper-checkbox id="chkEnableTmdbUpdates">${LabelAutomaticUpdatesTmdb}</paper-checkbox>
-                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelAutomaticUpdatesTmdbHelp}</div>
-                        </li>
-                        <li>
-                            <paper-checkbox id="chkEnableTvdbUpdates">${LabelAutomaticUpdatesTvdb}</paper-checkbox>
-                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelAutomaticUpdatesTvdbHelp}</div>
-                        </li>
-                    </ul>
-                </emby-collapsible>
-
                 <emby-collapsible title="${HeaderAudio}">
                     <br />
                     <div>
@@ -130,11 +117,6 @@
                             <paper-input type="text" id="txtFanartApiKey" label="${LabelFanartApiKey}"></paper-input>
                             <div class="fieldDescription">${LabelFanartApiKeyHelp}</div>
                             <div class="fieldDescription"><a href="https://fanart.tv/2015/01/personal-api-keys" target="_blank">${ButtonLearnMore}</a></div>
-                        </li>
-                        <li style="display:none;">
-                            <input type="checkbox" id="chkEnableFanartUpdates" data-mini="true" />
-                            <label for="chkEnableFanartUpdates">${LabelAutomaticUpdates}</label>
-                            <div class="fieldDescription">${LabelAutomaticUpdatesFanartHelp}</div>
                         </li>
                     </ul>
                 </emby-collapsible>

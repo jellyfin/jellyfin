@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Movies
 {
-    class MovieDbImageProvider : IRemoteImageProvider, IHasOrder, IHasItemChangeMonitor
+    class MovieDbImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
@@ -220,11 +220,6 @@ namespace MediaBrowser.Providers.Movies
                 Url = url,
                 ResourcePool = MovieDbProvider.Current.MovieDbResourcePool
             });
-        }
-
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
-        {
-            return MovieDbProvider.Current.HasChanged(item);
         }
     }
 }
