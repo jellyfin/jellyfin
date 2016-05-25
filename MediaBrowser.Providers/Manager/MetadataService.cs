@@ -422,12 +422,6 @@ namespace MediaBrowser.Providers.Manager
                 providers = providers
                     .Where(i =>
                     {
-                        var hasChangeMonitor = i as IHasChangeMonitor;
-                        if (hasChangeMonitor != null)
-                        {
-                            return HasChanged(item, hasChangeMonitor, dateLastImageRefresh, options.DirectoryService);
-                        }
-
                         var hasFileChangeMonitor = i as IHasItemChangeMonitor;
                         if (hasFileChangeMonitor != null)
                         {

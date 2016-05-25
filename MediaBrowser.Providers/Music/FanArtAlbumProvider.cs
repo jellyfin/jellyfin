@@ -19,7 +19,7 @@ using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class FanartAlbumProvider : IRemoteImageProvider, IHasItemChangeMonitor, IHasOrder
+    public class FanartAlbumProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IServerConfigurationManager _config;
@@ -211,35 +211,6 @@ namespace MediaBrowser.Providers.Music
                 Url = url,
                 ResourcePool = FanartArtistProvider.Current.FanArtResourcePool
             });
-        }
-
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
-        {
-            var options = FanartSeriesProvider.Current.GetFanartOptions();
-            if (!options.EnableAutomaticUpdates)
-            {
-                return false;
-            }
-
-            var album = (MusicAlbum)item;
-            var artist = album.MusicArtist;
-
-            if (artist != null)
-            {
-                var artistMusicBrainzId = artist.GetProviderId(MetadataProviders.MusicBrainzArtist);
-
-                if (!String.IsNullOrEmpty(artistMusicBrainzId))
-                {
-                    // Process images
-                    var artistJsonPath = FanartArtistProvider.GetArtistJsonPath(_config.CommonApplicationPaths, artistMusicBrainzId);
-
-                    var fileInfo = _fileSystem.GetFileInfo(artistJsonPath);
-
-                    return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > item.DateLastRefreshed;
-                }
-            }
-
-            return false;
         }
     }
 }
