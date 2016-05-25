@@ -1031,9 +1031,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 : options;
 
-            var result = await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
-
-            return result;
+            return await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
         }
 
         [IgnoreDataMember]

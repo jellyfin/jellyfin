@@ -28,6 +28,7 @@ namespace MediaBrowser.Server.Implementations.Devices
             return base.IsVisible(user) && HasChildren();
         }
 
+        [IgnoreDataMember]
         public override string CollectionType
         {
             get { return Model.Entities.CollectionType.Photos; }

@@ -461,17 +461,15 @@ namespace MediaBrowser.Controller.Entities
 
                     foreach (var item in itemsRemoved)
                     {
-                        if (item.LocationType == LocationType.Virtual ||
-                            item.LocationType == LocationType.Remote)
+                        var itemLocationType = item.LocationType;
+                        if (itemLocationType == LocationType.Virtual ||
+                            itemLocationType == LocationType.Remote)
                         {
-                            // Don't remove these because there's no way to accurately validate them.
-                            validChildren.Add(item);
                         }
 
                         else if (!string.IsNullOrEmpty(item.Path) && IsPathOffline(item.Path))
                         {
                             await UpdateIsOffline(item, true).ConfigureAwait(false);
-                            validChildren.Add(item);
                         }
                         else
                         {
