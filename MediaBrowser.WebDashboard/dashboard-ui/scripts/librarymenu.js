@@ -748,7 +748,10 @@
                 }
             }
 
-            document.querySelector('.libraryMenuButtonText').innerHTML = html;
+            var libraryMenuButtonText = document.querySelector('.libraryMenuButtonText');
+            if (libraryMenuButtonText) {
+                libraryMenuButtonText.innerHTML = html;
+            }
         },
 
         setBackButtonVisible: function (visible) {

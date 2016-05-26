@@ -315,7 +315,8 @@ iron-icon {
     left: 0;
     right: 0;
     bottom: 0;
-    will-change: transform;
+    /* Can't use will-change because it causes the alpha picker to move when the page scrolls*/
+    /*will-change: transform;*/
 }
 
 /* Without this, no content will be displayed in mobile safari */
