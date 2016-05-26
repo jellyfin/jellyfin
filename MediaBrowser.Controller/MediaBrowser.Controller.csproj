@@ -290,8 +290,6 @@
     <Compile Include="Providers\IImageFileSaver.cs" />
     <Compile Include="Providers\IImageProvider.cs" />
     <Compile Include="Providers\IImageSaver.cs" />
-    <Compile Include="Providers\IItemIdentityConverter.cs" />
-    <Compile Include="Providers\IItemIdentityProvider.cs" />
     <Compile Include="Providers\ILocalImageFileProvider.cs" />
     <Compile Include="Providers\ILocalMetadataProvider.cs" />
     <Compile Include="Providers\ImageRefreshMode.cs" />
@@ -329,8 +327,6 @@
     <Compile Include="Sorting\SortHelper.cs" />
     <Compile Include="Subtitles\ISubtitleManager.cs" />
     <Compile Include="Subtitles\ISubtitleProvider.cs" />
-    <Compile Include="Providers\ItemIdentifier.cs" />
-    <Compile Include="Providers\ItemIdentities.cs" />
     <Compile Include="Providers\ItemLookupInfo.cs" />
     <Compile Include="Providers\MetadataRefreshOptions.cs" />
     <Compile Include="Providers\ISeriesOrderManager.cs" />
