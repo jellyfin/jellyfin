@@ -70,21 +70,6 @@ namespace MediaBrowser.Providers.TV
                 var seriesProviderIds = series.ProviderIds;
                 var seasonNumber = season.IndexNumber.Value;
 
-                var identity = TvdbSeasonIdentityProvider.ParseIdentity(season.GetProviderId(TvdbSeasonIdentityProvider.FullIdKey));
-                if (identity == null)
-                {
-                    identity = new TvdbSeasonIdentity(series.GetProviderId(MetadataProviders.Tvdb), seasonNumber);
-                }
-
-                if (identity != null)
-                {
-                    var id = identity.Value;
-                    seasonNumber = AdjustForSeriesOffset(series, id.Index);
-
-                    seriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                    seriesProviderIds[MetadataProviders.Tvdb.ToString()] = id.SeriesId;
-                }
-
                 var seriesDataPath = await TvdbSeriesProvider.Current.EnsureSeriesInfo(seriesProviderIds, series.GetPreferredMetadataLanguage(), cancellationToken).ConfigureAwait(false);
 
                 if (!string.IsNullOrWhiteSpace(seriesDataPath))
