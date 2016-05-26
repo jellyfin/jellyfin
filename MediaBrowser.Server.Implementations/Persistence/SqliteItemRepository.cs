@@ -247,7 +247,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                 "create index if not exists idx_PresentationUniqueKey on TypedBaseItems(PresentationUniqueKey)",
                 "create index if not exists idx_Type on TypedBaseItems(Type)",
-                "create index if not exists idx_TopParentId on TypedBaseItems(TopParentId)"
+                "create index if not exists idx_TopParentId on TypedBaseItems(TopParentId)",
+                "create index if not exists idx_TypeTopParentId on TypedBaseItems(Type,TopParentId)"
             };
 
             _connection.RunQueries(postQueries, Logger);
@@ -1673,7 +1674,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var slowThreshold = 1000;
 
 #if DEBUG
-            slowThreshold = 200;
+            slowThreshold = 100;
 #endif
 
             if (elapsed >= slowThreshold)
