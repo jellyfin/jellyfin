@@ -179,18 +179,6 @@ namespace MediaBrowser.Providers.Manager
             lookupInfo.Year = result.ProductionYear;
         }
 
-        private async Task FindIdentities(TIdType id, CancellationToken cancellationToken)
-        {
-            try
-            {
-                await ItemIdentifier<TIdType>.FindIdentities(id, ProviderManager, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error in FindIdentities", ex);
-            }
-        }
-
         private DateTime GetLastRefreshDate(IHasMetadata item)
         {
             return item.DateLastRefreshed;
