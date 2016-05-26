@@ -115,6 +115,12 @@
         if (!this.id) {
             this.id = 'select' + new Date().getTime();
         }
+
+        this.removeEventListener('mousedown', onMouseDown);
+        this.removeEventListener('keydown', onKeyDown);
+        this.removeEventListener('focus', onFocus);
+        this.removeEventListener('blur', onBlur);
+
         this.addEventListener('mousedown', onMouseDown);
         this.addEventListener('keydown', onKeyDown);
         this.addEventListener('focus', onFocus);
@@ -123,17 +129,21 @@
 
     EmbySelectPrototype.attachedCallback = function () {
 
-        var label = this.ownerDocument.createElement('label');
-        label.innerHTML = this.getAttribute('label') || '';
-        label.classList.add('selectLabel');
-        label.classList.add('selectLabelUnfocused');
-        label.htmlFor = this.id;
-        this.parentNode.insertBefore(label, this);
+        if (this.getAttribute('data-embyselect') != 'true') {
+            this.setAttribute('data-embyselect', 'true');
 
-        var div = document.createElement('div');
-        div.classList.add('emby-select-selectionbar');
-        div.innerHTML = '<div class="emby-select-selectionbarInner"></div>';
-        this.parentNode.insertBefore(div, this.nextSibling);
+            var label = this.ownerDocument.createElement('label');
+            label.innerHTML = this.getAttribute('label') || '';
+            label.classList.add('selectLabel');
+            label.classList.add('selectLabelUnfocused');
+            label.htmlFor = this.id;
+            this.parentNode.insertBefore(label, this);
+
+            var div = document.createElement('div');
+            div.classList.add('emby-select-selectionbar');
+            div.innerHTML = '<div class="emby-select-selectionbarInner"></div>';
+            this.parentNode.insertBefore(div, this.nextSibling);
+        }
     };
 
     document.registerElement('emby-select', {

@@ -804,8 +804,6 @@ namespace MediaBrowser.Server.Startup.Common
 
             ProviderManager.AddParts(GetExports<IImageProvider>(),
                                      GetExports<IMetadataService>(),
-                                     GetExports<IItemIdentityProvider>(),
-                                     GetExports<IItemIdentityConverter>(),
                                      GetExports<IMetadataProvider>(),
                                      GetExports<IMetadataSaver>(),
                                      GetExports<IImageSaver>(),
