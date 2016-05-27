@@ -2842,15 +2842,15 @@
                         positionTo: button,
                         callback: function (id) {
 
-                            if (dispatchEvent) {
-                                button.dispatchEvent(new CustomEvent('layoutchange', {
-                                    detail: {
-                                        viewStyle: id
-                                    },
-                                    bubbles: true,
-                                    cancelable: false
-                                }));
-                            } else {
+                            button.dispatchEvent(new CustomEvent('layoutchange', {
+                                detail: {
+                                    viewStyle: id
+                                },
+                                bubbles: true,
+                                cancelable: false
+                            }));
+
+                            if (!dispatchEvent) {
                                 // TODO: remove jQuery
                                 require(['jQuery'], function ($) {
                                     $(button).trigger('layoutchange', [id]);
