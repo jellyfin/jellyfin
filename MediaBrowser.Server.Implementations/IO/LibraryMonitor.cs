@@ -488,7 +488,7 @@ namespace MediaBrowser.Server.Implementations.IO
                         return;
                     }
 
-                    // Siblings
+                    // They are siblings. Rebase the refresher to the parent folder.
                     if (string.Equals(parentPath, Path.GetDirectoryName(refresher.Path), StringComparison.Ordinal))
                     {
                         refresher.ResetPath(parentPath, path);
