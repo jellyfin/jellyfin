@@ -550,9 +550,7 @@ namespace MediaBrowser.Api.LiveTv
 
             var response = await _httpClient.Get(new HttpRequestOptions
             {
-                Url = "https://json.schedulesdirect.org/20141201/available/countries",
-                CacheLength = TimeSpan.FromDays(1),
-                CacheMode = CacheMode.Unconditional
+                Url = "https://json.schedulesdirect.org/20141201/available/countries"
 
             }).ConfigureAwait(false);
 
