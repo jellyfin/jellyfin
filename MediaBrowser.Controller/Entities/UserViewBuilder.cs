@@ -332,13 +332,14 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetMusicAlbumArtists(Folder parent, User user, InternalItemsQuery query)
         {
-            var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
+            var items = parent.QueryRecursive(new InternalItemsQuery(user)
             {
                 Recursive = true,
                 ParentId = parent.Id,
-                IncludeItemTypes = new[] { typeof(Audio.Audio).Name }
+                IncludeItemTypes = new[] { typeof(Audio.Audio).Name },
+                EnableTotalRecordCount = false
 
-            }).Cast<IHasAlbumArtist>();
+            }).Items.Cast<IHasAlbumArtist>();
 
             var artists = _libraryManager.GetAlbumArtists(items);
 
@@ -347,13 +348,14 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetMusicArtists(Folder parent, User user, InternalItemsQuery query)
         {
-            var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
+            var items = parent.QueryRecursive(new InternalItemsQuery(user)
             {
                 Recursive = true,
                 ParentId = parent.Id,
-                IncludeItemTypes = new[] { typeof(Audio.Audio).Name, typeof(MusicVideo).Name }
+                IncludeItemTypes = new[] { typeof(Audio.Audio).Name, typeof(MusicVideo).Name },
+                EnableTotalRecordCount = false
 
-            }).Cast<IHasArtist>();
+            }).Items.Cast<IHasArtist>();
 
             var artists = _libraryManager.GetArtists(items);
 
@@ -362,13 +364,14 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetFavoriteArtists(Folder parent, User user, InternalItemsQuery query)
         {
-            var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
+            var items = parent.QueryRecursive(new InternalItemsQuery(user)
             {
                 Recursive = true,
                 ParentId = parent.Id,
-                IncludeItemTypes = new[] { typeof(Audio.Audio).Name }
+                IncludeItemTypes = new[] { typeof(Audio.Audio).Name },
+                EnableTotalRecordCount = false
 
-            }).Cast<IHasAlbumArtist>();
+            }).Items.Cast<IHasAlbumArtist>();
 
             var artists = _libraryManager.GetAlbumArtists(items).Where(i => _userDataManager.GetUserData(user, i).IsFavorite);
 
