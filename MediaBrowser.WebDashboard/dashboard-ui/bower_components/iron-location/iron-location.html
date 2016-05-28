@@ -243,10 +243,6 @@ milliseconds.
      * is clicking on, if we can and should override the resulting full
      * page navigation. Returns null otherwise.
      *
-     * This method is separated away from _globalOnClick for testability,
-     * as we can't test that a clicked link should have resulted in navigating
-     * away from the test page.
-     *
      * @param {MouseEvent} event .
      * @return {string?} .
      */
@@ -261,18 +257,32 @@ milliseconds.
         return null;
       }
       var eventPath = Polymer.dom(event).path;
-      var href = null;
+      var anchor = null;
       for (var i = 0; i < eventPath.length; i++) {
         var element = eventPath[i];
         if (element.tagName === 'A' && element.href) {
-          href = element.href;
+          anchor = element;
           break;
         }
       }
+
       // If there's no link there's nothing to do.
-      if (!href) {
-        return null;
+      if (!anchor) {
+        return;
       }
+
+      // Target blank is a new tab, don't intercept.
+      if (anchor.target === '_blank') {
+        return;
+      }
+      // If the link is for an existing parent frame, don't intercept.
+      if ((anchor.target === '_top' ||
+           anchor.target === '_parent') &&
+          window.top !== window) {
+        return;
+      }
+
+      var href = anchor.href;
 
       // It only makes sense for us to intercept same-origin navigations.
       // pushState/replaceState don't work with cross-origin links.

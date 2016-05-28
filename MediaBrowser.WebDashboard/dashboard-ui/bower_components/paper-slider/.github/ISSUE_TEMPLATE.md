@@ -1,4 +1,4 @@
-<!-- Instructions: https://github.com/PolymerElements/iron-location/CONTRIBUTING.md#filing-issues -->
+<!-- Instructions: https://github.com/PolymerElements/paper-slider/CONTRIBUTING.md#filing-issues -->
 ### Description
 <!-- Example: The `paper-foo` element causes the page to turn pink when clicked. -->
 
@@ -11,7 +11,7 @@
 <!-- Example: The page turns pink. -->
 
 ### Live Demo
-<!-- Example: https://jsbin.com/lebawa/edit?html,output -->
+<!-- Example: https://jsbin.com/cagaye/edit?html,output -->
 
 ### Steps to reproduce
 
