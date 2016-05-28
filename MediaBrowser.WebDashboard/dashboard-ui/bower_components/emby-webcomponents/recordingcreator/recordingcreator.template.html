@@ -55,10 +55,14 @@
                     </div>
                     <br />
                 </div>
+                <br/>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}" />
+                </div>
                 <br />
-                <input is="emby-input" type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}" />
-                <br />
-                <input is="emby-input" type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}" />
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}" />
+                </div>
             </emby-collapsible>
             <br />
         </div>

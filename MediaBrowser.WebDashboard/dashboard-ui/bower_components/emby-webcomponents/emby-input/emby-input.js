@@ -28,13 +28,6 @@
 
     EmbyInputPrototype.createdCallback = function () {
 
-        var parent = this.parentNode;
-        if (!parent.classList.contains('inputContainer')) {
-            var div = this.ownerDocument.createElement('div');
-            div.classList.add('inputContainer');
-            parent.replaceChild(div, this);
-            div.appendChild(this);
-        }
         if (!this.id) {
             this.id = 'input' + new Date().getTime();
         }
@@ -51,16 +44,17 @@
         if (this.getAttribute('data-embyinput') != 'true') {
             this.setAttribute('data-embyinput', 'true');
 
+            var parentNode = this.parentNode;
             var label = this.ownerDocument.createElement('label');
             label.innerHTML = this.getAttribute('label') || '';
             label.classList.add('inputLabel');
             label.classList.add('inputLabelUnfocused');
             label.htmlFor = this.id;
-            this.parentNode.insertBefore(label, this);
+            parentNode.insertBefore(label, this);
 
             var div = document.createElement('div');
             div.classList.add('emby-input-selectionbar');
-            this.parentNode.insertBefore(div, this.nextSibling);
+            parentNode.insertBefore(div, this.nextSibling);
         }
     };
 
