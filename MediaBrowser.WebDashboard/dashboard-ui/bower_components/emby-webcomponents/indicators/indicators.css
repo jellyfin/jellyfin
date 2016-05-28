@@ -1,0 +1,15 @@
+.itemProgressBar {
+    background: rgba(0,0,0,.5);
+    position: relative;
+}
+
+.itemProgressBarForeground {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+}
+
+.timerIndicator {
+    color: #CB272A;
+}

@@ -141,7 +141,6 @@
 
             var div = document.createElement('div');
             div.classList.add('emby-select-selectionbar');
-            div.innerHTML = '<div class="emby-select-selectionbarInner"></div>';
             this.parentNode.insertBefore(div, this.nextSibling);
         }
     };

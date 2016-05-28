@@ -107,6 +107,8 @@
         var elem = getBackdropContainer();
         elem.innerHTML = '';
 
+        getSkinContainer().removeAttribute('data-backdroptype');
+
         if (clearAll) {
             hasExternalBackdrop = false;
         }
@@ -114,16 +116,18 @@
     }
 
     var skinContainer;
-    function setSkinContainerBackgroundEnabled() {
-
+    function getSkinContainer() {
         if (!skinContainer) {
             skinContainer = document.querySelector('.skinContainer');
         }
+        return skinContainer;
+    }
+    function setSkinContainerBackgroundEnabled() {
 
         if (hasInternalBackdrop || hasExternalBackdrop) {
-            skinContainer.classList.add('withBackdrop');
+            getSkinContainer().classList.add('withBackdrop');
         } else {
-            skinContainer.classList.remove('withBackdrop');
+            getSkinContainer().classList.remove('withBackdrop');
         }
     }
 
@@ -166,7 +170,7 @@
         currentLoadingBackdrop = instance;
     }
 
-    function setBackdrops(items) {
+    function setBackdrops(items, type) {
 
         var images = items.map(function (i) {
 
@@ -207,7 +211,7 @@
                     quality: 100
                 });
 
-                setBackdrop(imgUrl);
+                setBackdrop(imgUrl, type);
             });
 
         } else {
@@ -215,10 +219,16 @@
         }
     }
 
-    function setBackdrop(url) {
+    function setBackdrop(url, type) {
 
         if (url) {
             setBackdropImage(url);
+
+            if (type) {
+                getSkinContainer().setAttribute('data-backdroptype', type);
+            } else {
+                getSkinContainer().removeAttribute('data-backdroptype');
+            }
 
         } else {
             clearBackdrop();

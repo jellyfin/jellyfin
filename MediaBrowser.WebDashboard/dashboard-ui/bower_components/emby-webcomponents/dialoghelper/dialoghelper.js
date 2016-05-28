@@ -249,6 +249,15 @@
         return elem.animate(keyframes, timing).onfinish = onFinish;
     }
 
+    function scaleDown(elem) {
+
+        var keyframes = [
+          { transform: 'none', opacity: 1, offset: 0 },
+          { transform: 'scale(0)', opacity: 0, offset: 1 }];
+        var timing = elem.animationConfig.exit.timing;
+        return elem.animate(keyframes, timing);
+    }
+
     function fadeOut(elem) {
 
         var keyframes = [
@@ -291,6 +300,8 @@
 
             if (dlg.animationConfig.exit.name == 'fadeout') {
                 animation = fadeOut(dlg);
+            } else if (dlg.animationConfig.exit.name == 'scaledown') {
+                animation = scaleDown(dlg);
             } else if (dlg.animationConfig.exit.name == 'slidedown') {
                 animation = slideDown(dlg);
             } else {
@@ -396,32 +407,32 @@
         }
 
         var defaultEntryAnimation = browser.animate ? 'scaleup' : 'fadein';
-        dlg.entryAnimation = options.entryAnimation || defaultEntryAnimation;
-        dlg.exitAnimation = 'fadeout';
+        var entryAnimation = options.entryAnimation || defaultEntryAnimation;
+        var defaultExitAnimation = browser.animate ? 'scaledown' : 'fadeout';
+        var exitAnimation = options.exitAnimation || defaultExitAnimation;
 
         // If it's not fullscreen then lower the default animation speed to make it open really fast
         var entryAnimationDuration = options.entryAnimationDuration || (options.size ? 200 : 300);
+        var exitAnimationDuration = options.exitAnimationDuration || (options.size ? 200 : 300);
 
         dlg.animationConfig = {
             // scale up
             'entry': {
-                name: dlg.entryAnimation,
+                name: entryAnimation,
                 node: dlg,
                 timing: { duration: entryAnimationDuration, easing: 'ease-out' }
             },
             // fade out
             'exit': {
-                name: dlg.exitAnimation,
+                name: exitAnimation,
                 node: dlg,
-                timing: { duration: options.exitAnimationDuration || 300, easing: 'ease-in' }
+                timing: { duration: exitAnimationDuration, easing: 'ease-out' }
             }
         };
 
         // too buggy in IE, not even worth it
         if (!enableAnimation()) {
             dlg.animationConfig = null;
-            dlg.entryAnimation = null;
-            dlg.exitAnimation = null;
         }
 
         dlg.classList.add('dialog');
