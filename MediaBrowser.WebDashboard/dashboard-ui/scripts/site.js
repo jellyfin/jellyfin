@@ -2667,7 +2667,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/login.html',
-            dependencies: ['paper-button', 'humanedate', 'paper-input'],
+            dependencies: ['paper-button', 'humanedate', 'emby-input'],
             autoFocus: false,
             anonymous: true,
             controller: 'scripts/loginpage'

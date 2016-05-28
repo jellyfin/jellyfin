@@ -1,20 +1,18 @@
-﻿<div id="connectLoginPage" data-role="page" class="page standalonePage connectLoginPage" data-theme="b" data-require="scripts/connectlogin,paper-input,paper-button">
+﻿<div id="connectLoginPage" data-role="page" class="page standalonePage connectLoginPage" data-theme="b" data-require="scripts/connectlogin,emby-input,paper-button">
 
     <div data-role="content">
 
         <form class="connectLoginForm" style="margin: 0 auto;display:none;">
 
-            <div style="display: none;">
-                <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete" autocomplete="address-level4" />
-            </div>
+            <div style="height:0; overflow: hidden;"><input type="text" name="fakeusernameremembered" tabindex="-1" /><input type="password" name="fakepasswordremembered" tabindex="-1" /></div>
 
             <h1 style="text-align: left;">${HeaderSignInWithConnect}</h1>
-            <div>
-                <paper-input type="text" id="txtManualName" required="required" label="${LabelUser}" autocomplete="off"></paper-input>
+            <div class="inputContainer">
+                <input is="emby-input" type="text" id="txtManualName" required="required" label="${LabelUser}" autocomplete="off"/>
                 <div class="fieldDescription" style="text-align:left;">${LabelEnterConnectUserNameHelp}</div>
             </div>
-            <div>
-                <paper-input type="password" id="txtManualPassword" required="required" label="${LabelPassword}" autocomplete="off"></paper-input>
+            <div class="inputContainer">
+                <input is="emby-input" type="password" id="txtManualPassword" required="required" label="${LabelPassword}" autocomplete="off"/>
             </div>
             <br />
             <button type="submit" data-role="none" class="clearButton">
@@ -47,13 +45,13 @@
             </div>
 
             <h1 style="text-align: left;">${HeaderConnectToServer}</h1>
-            <div>
-                <paper-input type="text" id="txtServerHost" required="required" label="${LabelServerHost}"></paper-input>
+            <div class="inputContainer">
+                <input is="emby-input" type="text" id="txtServerHost" required="required" label="${LabelServerHost}"/>
                 <div class="fieldDescription" style="text-align:left;">${LabelServerHostHelp}</div>
             </div>
             <br />
-            <div>
-                <paper-input type="number" id="txtServerPort" step="1" min="0" value="8096" label="${LabelServerPort}"></paper-input>
+            <div class="inputContainer">
+                <input is="emby-input" type="number" id="txtServerPort" step="1" min="0" value="8096" label="${LabelServerPort}"/>
             </div>
             <br />
 
@@ -71,17 +69,17 @@
 
             <h1 style="text-align: left;">${HeaderSignUp}</h1>
             <br />
-            <div>
-                <paper-input type="text" id="txtSignupEmail" required="required" label="${LabelEmail}"></paper-input>
+            <div class="inputContainer">
+                <input is="emby-input" type="text" id="txtSignupEmail" required="required" label="${LabelEmail}"/>
             </div>
-            <div>
-                <paper-input type="text" id="txtSignupUsername" required="required" label="${LabelUsername}"></paper-input>
+            <div class="inputContainer">
+                <input is="emby-input" type="text" id="txtSignupUsername" required="required" label="${LabelUsername}"/>
             </div>
-            <div>
-                <paper-input type="password" id="txtSignupPassword" required="required" label="${LabelPassword}" autocomplete="off"></paper-input>
+            <div class="inputContainer">
+                <input is="emby-input" type="password" id="txtSignupPassword" required="required" label="${LabelPassword}" autocomplete="off"/>
             </div>
-            <div>
-                <paper-input type="password" id="txtSignupPasswordConfirm" required="required" label="${LabelPasswordConfirm}" autocomplete="off"></paper-input>
+            <div class="inputContainer">
+                <input is="emby-input" type="password" id="txtSignupPasswordConfirm" required="required" label="${LabelPasswordConfirm}" autocomplete="off"/>
             </div>
 
             <div class="g-recaptcha" id="recaptchaWidget" data-sitekey="6Le2LAgTAAAAAK06Wvttt_yUnbISTy6q3Azqp9po" data-theme="dark"></div>

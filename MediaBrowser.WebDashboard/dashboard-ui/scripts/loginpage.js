@@ -86,9 +86,9 @@
         $('.manualLoginForm', context).show();
 
         if (focusPassword) {
-            $('#txtManualPassword input', context).focus();
+            $('#txtManualPassword', context).focus();
         } else {
-            $('#txtManualName input', context).focus();
+            $('#txtManualName', context).focus();
         }
 
         if (showCancel) {
