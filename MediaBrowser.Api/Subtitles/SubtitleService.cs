@@ -98,6 +98,9 @@ namespace MediaBrowser.Api.Subtitles
 
         [ApiMember(Name = "EndPositionTicks", Description = "EndPositionTicks", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public long? EndPositionTicks { get; set; }
+
+        [ApiMember(Name = "CopyTimestamps", Description = "CopyTimestamps", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool CopyTimestamps { get; set; }
     }
 
     [Route("/Videos/{Id}/{MediaSourceId}/Subtitles/{Index}/subtitles.m3u8", "GET", Summary = "Gets an HLS subtitle playlist.")]
@@ -175,7 +178,7 @@ namespace MediaBrowser.Api.Subtitles
 
                 var endPositionTicks = Math.Min(runtime, positionTicks + segmentLengthTicks);
 
-                var url = string.Format("stream.vtt?StartPositionTicks={0}&EndPositionTicks={1}&api_key={2}",
+                var url = string.Format("stream.vtt?CopyTimestamps=true,StartPositionTicks={0}&EndPositionTicks={1}&api_key={2}",
                     positionTicks.ToString(CultureInfo.InvariantCulture),
                     endPositionTicks.ToString(CultureInfo.InvariantCulture),
                     accessToken);
@@ -222,6 +225,7 @@ namespace MediaBrowser.Api.Subtitles
                 request.Format,
                 request.StartPositionTicks,
                 request.EndPositionTicks,
+                request.CopyTimestamps,
                 CancellationToken.None).ConfigureAwait(false);
         }
 

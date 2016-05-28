@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -24,9 +25,14 @@ namespace MediaBrowser.Server.Implementations.IO
         private readonly List<string> _affectedPaths = new List<string>();
         private Timer _timer;
         private readonly object _timerLock = new object();
+        public string Path { get; private set; }
+
+        public event EventHandler<EventArgs> Completed;
 
         public FileRefresher(string path, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ITaskManager taskManager, ILogger logger)
         {
+            logger.Debug("New file refresher created for {0}", path);
+            Path = path;
             _affectedPaths.Add(path);
 
             _fileSystem = fileSystem;
@@ -36,7 +42,24 @@ namespace MediaBrowser.Server.Implementations.IO
             Logger = logger;
         }
 
-        private void RestartTimer()
+        private void AddAffectedPath(string path)
+        {
+            if (!_affectedPaths.Contains(path, StringComparer.Ordinal))
+            {
+                _affectedPaths.Add(path);
+            }
+        }
+
+        public void AddPath(string path)
+        {
+            lock (_timerLock)
+            {
+                AddAffectedPath(path);
+            }
+            RestartTimer();
+        }
+
+        public void RestartTimer()
         {
             lock (_timerLock)
             {
@@ -49,6 +72,23 @@ namespace MediaBrowser.Server.Implementations.IO
                     _timer.Change(TimeSpan.FromSeconds(ConfigurationManager.Configuration.LibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
                 }
             }
+        }
+
+        public void ResetPath(string path, string affectedFile)
+        {
+            lock (_timerLock)
+            {
+                Logger.Debug("Resetting file refresher from {0} to {1}", Path, path);
+
+                Path = path;
+                AddAffectedPath(path);
+
+                if (!string.IsNullOrWhiteSpace(affectedFile))
+                {
+                    AddAffectedPath(affectedFile);
+                }
+            }
+            RestartTimer();
         }
 
         private async void OnTimerCallback(object state)
@@ -64,10 +104,11 @@ namespace MediaBrowser.Server.Implementations.IO
             Logger.Debug("Timer stopped.");
 
             DisposeTimer();
+            EventHelper.FireEventIfNotNull(Completed, this, EventArgs.Empty, Logger);
 
             try
             {
-                await ProcessPathChanges(_affectedPaths).ConfigureAwait(false);
+                await ProcessPathChanges(_affectedPaths.ToList()).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -130,7 +171,7 @@ namespace MediaBrowser.Server.Implementations.IO
             {
                 item = LibraryManager.FindByPath(path, null);
 
-                path = Path.GetDirectoryName(path);
+                path = System.IO.Path.GetDirectoryName(path);
             }
 
             if (item != null)
@@ -222,7 +263,7 @@ namespace MediaBrowser.Server.Implementations.IO
             }
         }
 
-        public void DisposeTimer()
+        private void DisposeTimer()
         {
             lock (_timerLock)
             {

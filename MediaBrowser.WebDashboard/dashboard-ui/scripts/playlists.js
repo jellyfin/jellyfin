@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define([], function () {
 
     var data = {};
     function getPageData() {
@@ -63,7 +63,7 @@
             var html = '';
             var view = getPageData().view;
 
-            $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
+            page.querySelector('.listTopPaging').innerHTML = LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
@@ -71,9 +71,10 @@
                 showLimit: false,
                 updatePageSizeSetting: false,
                 addLayoutButton: true,
+                layouts: 'List,Poster,PosterCard,Thumb,ThumbCard',
                 currentLayout: view
 
-            }));
+            });
 
             if (result.TotalRecordCount) {
 
@@ -93,18 +94,6 @@
                         coverImage: true,
                         showItemCounts: true,
                         cardLayout: true
-                    });
-                }
-                else if (view == "Poster") {
-                    html = LibraryBrowser.getPosterViewHtml({
-                        items: result.Items,
-                        shape: "square",
-                        showTitle: true,
-                        lazy: true,
-                        coverImage: true,
-                        showItemCounts: true,
-                        centerText: true,
-                        overlayPlayButton: true
                     });
                 }
                 else if (view == "Thumb") {
@@ -128,33 +117,56 @@
                         showItemCounts: true
                     });
                 }
+                else {
+                    // Poster
+                    html = LibraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "square",
+                        showTitle: true,
+                        lazy: true,
+                        coverImage: true,
+                        showItemCounts: true,
+                        centerText: true,
+                        overlayPlayButton: true
+                    });
+                }
 
-                $('.noItemsMessage', page).hide();
+                page.querySelector('.noItemsMessage').classList.add('hide');
 
             } else {
 
-                $('.noItemsMessage', page).show();
+                page.querySelector('.noItemsMessage').classList.remove('hide');
             }
 
             var elem = page.querySelector('.itemsContainer');
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
 
-            $('.btnNextPage', page).on('click', function () {
-                query.StartIndex += query.Limit;
-                reloadItems(page);
-            });
+            var btnNextPage = page.querySelector('.btnNextPage');
+            if (btnNextPage) {
+                btnNextPage.addEventListener('click', function () {
+                    query.StartIndex += query.Limit;
+                    reloadItems(page);
+                });
+            }
 
-            $('.btnPreviousPage', page).on('click', function () {
-                query.StartIndex -= query.Limit;
-                reloadItems(page);
-            });
+            var btnPreviousPage = page.querySelector('.btnPreviousPage');
+            if (btnPreviousPage) {
+                btnPreviousPage.addEventListener('click', function () {
+                    query.StartIndex -= query.Limit;
+                    reloadItems(page);
+                });
+            }
 
-            $('.btnChangeLayout', page).on('layoutchange', function (e, layout) {
-                getPageData().view = layout;
-                LibraryBrowser.saveViewSetting(getSavedQueryKey(), layout);
-                reloadItems(page);
-            });
+            var btnChangeLayout = page.querySelector('.btnChangeLayout');
+            if (btnChangeLayout) {
+                btnChangeLayout.addEventListener('layoutchange', function (e) {
+                    var layout = e.detail.viewStyle;
+                    getPageData().view = layout;
+                    LibraryBrowser.saveViewSetting(getSavedQueryKey(), layout);
+                    reloadItems(page);
+                });
+            }
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 

@@ -534,6 +534,11 @@
             self.openWebSocket();
         };
 
+        function replaceAll(originalString, strReplace, strWith) {
+            var reg = new RegExp(strReplace, 'ig');
+            return originalString.replace(reg, strWith);
+        }
+
         self.openWebSocket = function () {
 
             var accessToken = self.accessToken();
@@ -542,7 +547,10 @@
                 throw new Error("Cannot open web socket without access token.");
             }
 
-            var url = self.getUrl("socket").replace("emby/socket", "embywebsocket").replace('http', 'ws');
+            var url = self.getUrl("socket");
+
+            url = replaceAll(url, 'emby/socket', 'embywebsocket');
+            url = replaceAll(url, 'http', 'ws');
 
             url += "?api_key=" + accessToken;
             url += "&deviceId=" + deviceId;

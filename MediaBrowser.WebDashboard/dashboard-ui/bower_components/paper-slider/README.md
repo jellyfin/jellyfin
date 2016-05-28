@@ -46,6 +46,7 @@ The following custom properties and mixins are available for styling:
 
 | Custom property | Description | Default |
 | --- | --- | --- |
+| `--paper-slider-container-color` | The background color of the bar | `--paper-grey-400` |
 | `--paper-slider-bar-color` | The background color of the slider | `transparent` |
 | `--paper-slider-active-color` | The progress bar color | `--google-blue-700` |
 | `--paper-slider-secondary-color` | The secondary progress bar color | `--google-blue-300` |

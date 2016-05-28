@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'scrollStyles', 'paper-checkbox', 'emby-collapsible', 'paper-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'html!./../icons/mediainfo.html', 'html!./../icons/nav.html'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper) {
+﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'scrollStyles', 'paper-checkbox', 'emby-collapsible', 'emby-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'html!./../icons/mediainfo.html', 'html!./../icons/nav.html'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper) {
 
     var currentProgramId;
     var currentServerId;
@@ -38,7 +38,9 @@
     }
 
     function hideSeriesRecordingFields(context) {
-        slideUpToHide(context.querySelector('#seriesFields'));
+
+        slideUpToHide(context.querySelector('.seriesFields'));
+        slideUpToHide(context.querySelector('.seriesDays'));
         context.querySelector('.btnSubmit').classList.remove('hide');
         context.querySelector('.supporterContainer').classList.add('hide');
     }
@@ -123,8 +125,19 @@
         });
     }
 
+    function showSeriesDays(context) {
+        
+        if (context.querySelector('#chkAnyTime').checked) {
+            slideUpToHide(context.querySelector('.seriesDays'));
+        } else {
+            slideDownToShow(context.querySelector('.seriesDays'));
+        }
+    }
+
     function showSeriesRecordingFields(context, apiClient) {
-        slideDownToShow(context.querySelector('#seriesFields'));
+
+        slideDownToShow(context.querySelector('.seriesFields'));
+        showSeriesDays(context);
         context.querySelector('.btnSubmit').classList.remove('hide');
 
         getRegistration(currentProgramId, apiClient).then(function (regInfo) {
@@ -238,6 +251,11 @@
         context.querySelector('.btnCancel').addEventListener('click', function () {
 
             closeDialog(false);
+        });
+
+        context.querySelector('#chkAnyTime').addEventListener('change', function () {
+
+            showSeriesDays(context);
         });
 
         context.querySelector('form', context).addEventListener('submit', onSubmit);

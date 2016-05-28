@@ -6,7 +6,9 @@
         var items = {};
 
         self.refresh = function () {
-            reloadPage(options.element);
+
+            var date = new Date();
+            changeDate(options.element, date);
         };
 
         self.destroy = function () {
@@ -249,7 +251,14 @@
                     addAccent = false;
                 }
 
-                html += '<button data-action="link" data-isfolder="' + program.IsFolder + '" data-id="' + program.Id + '" data-serverid="' + program.ServerId + '" data-type="' + program.Type + '" class="' + cssClass + '" style="left:' + startPercent + '%;width:' + endPercent + '%;">';
+                var timerAttributes = '';
+                if (program.TimerId) {
+                    timerAttributes += ' data-timerid="' + program.TimerId + '"';
+                }
+                if (program.SeriesTimerId) {
+                    timerAttributes += ' data-seriestimerid="' + program.SeriesTimerId + '"';
+                }
+                html += '<button data-action="link"' + timerAttributes + ' data-isfolder="' + program.IsFolder + '" data-id="' + program.Id + '" data-serverid="' + program.ServerId + '" data-type="' + program.Type + '" class="' + cssClass + '" style="left:' + startPercent + '%;width:' + endPercent + '%;">';
 
                 var guideProgramNameClass = "guideProgramName";
 

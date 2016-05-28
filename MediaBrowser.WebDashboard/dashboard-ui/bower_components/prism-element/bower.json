@@ -1,7 +1,7 @@
 {
   "name": "prism-element",
   "description": "Prism.js import and syntax highlighting",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "authors": [
     "The Polymer Project Authors (https://polymer.github.io/AUTHORS.txt)"
   ],
@@ -30,6 +30,7 @@
   "devDependencies": {
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
-    "paper-styles": "PolymerElements/paper-styles#^1.0.0"
+    "paper-styles": "PolymerElements/paper-styles#^1.0.0",
+    "web-component-tester": "^4.0.0"
   }
 }

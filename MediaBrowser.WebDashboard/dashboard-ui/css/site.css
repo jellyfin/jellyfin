@@ -419,7 +419,7 @@ fieldset {
     border: none;
 }
 
-input:not(.paper-input):not(.likePaperText):not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']) {
+input:not(.paper-input):not(.likePaperText):not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']):not([is='emby-input']) {
     -webkit-appearance: none;
     -webkit-font-smoothing: antialiased;
     -webkit-rtl-ordering: logical;
@@ -490,7 +490,7 @@ select {
         color: #000;
     }
 
-.ui-body-b select {
+.ui-body-b select, .ui-body-b [is="emby-input"] {
     background: none;
     border-color: #454545;
 }

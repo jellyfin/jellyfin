@@ -24,12 +24,13 @@
         </p>
 
         <form>
-            <div>
-                <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
+            <br />
+            <div class="inputContainer">
+                <input is="emby-input" type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}" />
             </div>
             <br />
-            <div>
-                <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
+            <div class="inputContainer">
+                <input is="emby-input" type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}" />
             </div>
             <br />
             <paper-button raised class="btnSubmit block" autofocus><iron-icon icon="mediainfo:fiber-manual-record"></iron-icon><span>${Save}</span></paper-button>

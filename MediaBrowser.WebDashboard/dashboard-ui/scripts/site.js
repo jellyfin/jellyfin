@@ -1779,6 +1779,7 @@ var AppInfo = {};
 
         define("libjass", [bowerPath + "/libjass/libjass", "css!" + bowerPath + "/libjass/libjass"], returnFirstDependency);
 
+        define("emby-input", [embyWebComponentsBowerPath + "/emby-input/emby-input"], returnFirstDependency);
         define("emby-select", [embyWebComponentsBowerPath + "/emby-select/emby-select"], returnFirstDependency);
         define("collectionEditor", [embyWebComponentsBowerPath + "/collectioneditor/collectioneditor"], returnFirstDependency);
         define("playlistEditor", [embyWebComponentsBowerPath + "/playlisteditor/playlisteditor"], returnFirstDependency);
@@ -1962,9 +1963,6 @@ var AppInfo = {};
         define('queryString', [bowerPath + '/query-string/index'], function () {
             return queryString;
         });
-
-        define("material-design-lite", [bowerPath + "/material-design-lite/material.min", "css!" + bowerPath + "/material-design-lite/material"]);
-        define("MaterialSpinner", ["material-design-lite"]);
 
         define("jQuery", [bowerPath + '/jquery/dist/jquery.slim.min'], function () {
 
@@ -2666,7 +2664,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/login.html',
-            dependencies: ['paper-button', 'humanedate', 'paper-input'],
+            dependencies: ['paper-button', 'humanedate', 'emby-input'],
             autoFocus: false,
             anonymous: true,
             controller: 'scripts/loginpage'

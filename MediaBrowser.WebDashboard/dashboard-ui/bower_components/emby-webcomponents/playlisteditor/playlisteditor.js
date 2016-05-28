@@ -1,4 +1,4 @@
-﻿define(['shell', 'dialogHelper', 'loading', 'layoutManager', 'connectionManager', 'scrollHelper', 'embyRouter', 'globalize', 'paper-checkbox', 'paper-input', 'paper-icon-button-light', 'emby-select', 'html!./../icons/nav.html', 'css!./../formdialog'], function (shell, dialogHelper, loading, layoutManager, connectionManager, scrollHelper, embyRouter, globalize) {
+﻿define(['shell', 'dialogHelper', 'loading', 'layoutManager', 'connectionManager', 'scrollHelper', 'embyRouter', 'globalize', 'paper-checkbox', 'emby-input', 'paper-icon-button-light', 'emby-select', 'html!./../icons/nav.html', 'css!./../formdialog'], function (shell, dialogHelper, loading, layoutManager, connectionManager, scrollHelper, embyRouter, globalize) {
 
     var lastPlaylistId = '';
     var currentServerId;
@@ -147,8 +147,8 @@
 
         html += '<div class="newPlaylistInfo">';
 
-        html += '<div>';
-        html += '<paper-input type="text" id="txtNewPlaylistName" required="required" label="' + globalize.translate('sharedcomponents#LabelName') + '"></paper-input>';
+        html += '<div class="inputContainer">';
+        html += '<input is="emby-input" type="text" id="txtNewPlaylistName" required="required" label="' + globalize.translate('sharedcomponents#LabelName') + '" />';
         html += '</div>';
 
         html += '<br />';

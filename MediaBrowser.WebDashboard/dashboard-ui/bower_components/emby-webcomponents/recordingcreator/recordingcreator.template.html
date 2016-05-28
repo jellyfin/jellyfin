@@ -18,19 +18,7 @@
                 <paper-checkbox id="chkRecordSeries">${RecordSeries}</paper-checkbox>
             </div>
 
-            <div id="seriesFields" class="hide">
-                <div>
-                    <h1>${Days}</h1>
-                </div>
-                <div class="paperCheckboxList">
-                    <paper-checkbox id="chkSunday">${Sunday}</paper-checkbox>
-                    <paper-checkbox id="chkMonday">${Monday}</paper-checkbox>
-                    <paper-checkbox id="chkTuesday">${Tuesday}</paper-checkbox>
-                    <paper-checkbox id="chkWednesday">${Wednesday}</paper-checkbox>
-                    <paper-checkbox id="chkThursday">${Thursday}</paper-checkbox>
-                    <paper-checkbox id="chkFriday">${Friday}</paper-checkbox>
-                    <paper-checkbox id="chkSaturday">${Saturday}</paper-checkbox>
-                </div>
+            <div class="seriesFields hide">
                 <br />
                 <div class="paperCheckboxList">
                     <paper-checkbox id="chkNewOnly">${RecordOnlyNewEpisodes}</paper-checkbox>
@@ -38,6 +26,7 @@
                     <paper-checkbox id="chkAllChannels">${RecordOnAllChannels}</paper-checkbox>
                 </div>
             </div>
+            <br />
         </div>
         <div class="convertRecordingsContainer hide">
             <br />
@@ -51,12 +40,28 @@
             <br />
             <br />
             <emby-collapsible title="${Advanced}">
-                <div>
-                    <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
+                <div class="seriesDays hide">
+                    <div>
+                        <h1>${Days}</h1>
+                    </div>
+                    <div class="paperCheckboxList">
+                        <paper-checkbox id="chkSunday">${Sunday}</paper-checkbox>
+                        <paper-checkbox id="chkMonday">${Monday}</paper-checkbox>
+                        <paper-checkbox id="chkTuesday">${Tuesday}</paper-checkbox>
+                        <paper-checkbox id="chkWednesday">${Wednesday}</paper-checkbox>
+                        <paper-checkbox id="chkThursday">${Thursday}</paper-checkbox>
+                        <paper-checkbox id="chkFriday">${Friday}</paper-checkbox>
+                        <paper-checkbox id="chkSaturday">${Saturday}</paper-checkbox>
+                    </div>
+                    <br />
+                </div>
+                <br/>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}" />
                 </div>
                 <br />
-                <div>
-                    <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}" />
                 </div>
             </emby-collapsible>
             <br />

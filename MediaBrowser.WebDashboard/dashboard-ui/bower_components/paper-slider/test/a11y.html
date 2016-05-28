@@ -24,7 +24,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <test-fixture id="trivialSlider">
     <template>
-      <paper-slider min="0" max="100" value="50"></paper-slider>
+      <paper-slider value="50"></paper-slider>
     </template>
   </test-fixture>
 
@@ -36,11 +36,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         slider = fixture('trivialSlider');
       });
 
-      test('has aria role "slider"', function() {
-        assert.equal(slider.getAttribute('role'), 'slider');
-        assert.equal(slider.getAttribute('aria-valuemin'), slider.min);
-        assert.equal(slider.getAttribute('aria-valuemax'), slider.max);
-        assert.equal(slider.getAttribute('aria-valuenow'), slider.value);
+      test('has aria role "slider"', function(done) {
+        flush(function() {
+          assert.equal(slider.getAttribute('role'), 'slider');
+          assert.equal(slider.getAttribute('aria-valuemin'), slider.min);
+          assert.equal(slider.getAttribute('aria-valuemax'), slider.max);
+          assert.equal(slider.getAttribute('aria-valuenow'), slider.value);
+          done();
+        });
       });
 
       test('ripple is added after keyboard event on knob', function() {

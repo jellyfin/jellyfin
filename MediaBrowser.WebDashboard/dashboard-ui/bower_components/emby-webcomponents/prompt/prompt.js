@@ -1,4 +1,4 @@
-define(['dialogHelper', 'layoutManager', 'globalize', 'html!./../icons/nav.html', 'css!./style.css', 'paper-button', 'paper-icon-button-light', 'paper-input'], function (dialogHelper, layoutManager, globalize) {
+define(['dialogHelper', 'layoutManager', 'globalize', 'html!./../icons/nav.html', 'css!./style.css', 'paper-button', 'paper-icon-button-light', 'emby-input'], function (dialogHelper, layoutManager, globalize) {
 
     function getIcon(icon, cssClass, canFocus, autoFocus) {
 
@@ -54,13 +54,15 @@ define(['dialogHelper', 'layoutManager', 'globalize', 'html!./../icons/nav.html'
 
         html += '<form>';
 
-        html += '<paper-input autoFocus class="txtPromptValue" value="' + (options.value || '') + '" label="' + (options.label || '') + '"></paper-input>';
+        html += '<div class="inputContainer">';
+        html += '<input is="emby-input" type="text" autoFocus class="txtPromptValue" value="' + (options.value || '') + '" label="' + (options.label || '') + '"/>';
 
         if (options.description) {
             html += '<div class="fieldDescription">';
             html += options.description;
             html += '</div>';
         }
+        html += '</div>';
 
         html += '<br/>';
         if (raisedButtons) {

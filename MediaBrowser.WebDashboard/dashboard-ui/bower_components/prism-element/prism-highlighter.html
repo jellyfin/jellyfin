@@ -77,15 +77,18 @@ This flow is supported by [`<marked-element>`](https://github.com/PolymerElement
         return code.match(/^\s*</) ? Prism.languages.markup : Prism.languages.javascript;
       }
 
-      if (lang === 'js' || lang.substr(0, 2) === 'es') {
-        return Prism.languages.javascript;
-      } else if (lang === 'css') {
-        return Prism.languages.css;
-      } else if (lang === 'c') {
-        return Prism.languages.clike;
-      } else {
-        // The assumption is that you're mostly documenting HTML when in HTML.
-        return Prism.languages.markup;
+      if (Prism.languages[lang]) {
+        return Prism.languages[lang];
+      }
+      switch (lang.substr(0, 2)) {
+        case 'js':
+        case 'es':
+          return Prism.languages.javascript;
+        case 'c':
+          return Prism.languages.clike;
+        default:
+          // The assumption is that you're mostly documenting HTML when in HTML.
+          return Prism.languages.markup;
       }
     },
 

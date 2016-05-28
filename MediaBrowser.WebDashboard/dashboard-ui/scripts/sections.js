@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'jQuery', 'appSettings', 'scrollStyles', 'paper-button', 'paper-icon-button-light'], function (LibraryBrowser, $, appSettings) {
+﻿define(['libraryBrowser', 'appSettings', 'scrollStyles', 'paper-button', 'paper-icon-button-light'], function (LibraryBrowser, appSettings) {
 
     function getUserViews(userId) {
 
@@ -143,8 +143,6 @@
             return getAppInfo().then(function (infoHtml) {
 
                 elem.innerHTML = html + infoHtml;
-
-                handleLibraryLinkNavigations(elem);
             });
         });
     }
@@ -378,7 +376,7 @@
 
     function loadLatestChannelMedia(elem, userId) {
 
-        var screenWidth = $(window).width();
+        var screenWidth = window.innerWidth;
 
         var options = {
 
@@ -428,7 +426,7 @@
 
             if (items.length) {
 
-                var screenWidth = $(window).width();
+                var screenWidth = window.innerWidth;
 
                 html += '<div>';
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyMedia') + '</h1>';
@@ -468,15 +466,13 @@
                 ImageLoader.lazyChildren(elem);
 
                 LibraryBrowser.createCardMenus(elem, { showDetailsMenu: false });
-
-                handleLibraryLinkNavigations(elem);
             });
         });
     }
 
     function loadResume(elem, userId) {
 
-        var screenWidth = $(window).width();
+        var screenWidth = window.innerWidth;
 
         var options = {
 
@@ -572,26 +568,9 @@
         });
     }
 
-    function handleLibraryLinkNavigations(elem) {
-
-        $('a', elem).on('click', function () {
-
-            var card = this;
-
-            if (!this.classList.contains('card')) {
-                card = $(this).parents('.card')[0];
-            }
-
-            var textElem = $('.cardText', card);
-            var text = textElem.text();
-
-            LibraryMenu.setTitle(text);
-        });
-    }
-
     function loadLatestChannelItems(elem, userId, options) {
 
-        options = $.extend(options || {}, {
+        options = Object.assign(options || {}, {
 
             UserId: userId,
             SupportsLatestItems: true
@@ -621,7 +600,7 @@
 
     function loadLatestChannelItemsFromChannel(page, channel, index) {
 
-        var screenWidth = $(window).width();
+        var screenWidth = window.innerWidth;
 
         var options = {
 

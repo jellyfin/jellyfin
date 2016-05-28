@@ -6,13 +6,15 @@
 
             <h1 style="text-align: left;">${HeaderPleaseSignIn}</h1>
 
-            <div style="display: none;">
-                <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete" autocomplete="address-level4" />
+            <div style="height:0; overflow: hidden;"><input type="text" name="fakeusernameremembered" tabindex="-1" /><input type="password" name="fakepasswordremembered" tabindex="-1" /></div>
+
+            <div class="inputContainer">
+                <input is="emby-input" type="text" id="txtManualName" required="required" label="${LabelUser}" autocomplete="off"/>
             </div>
 
-            <paper-input type="text" id="txtManualName" required="required" label="${LabelUser}" autocomplete="off"></paper-input>
-
-            <paper-input id="txtManualPassword" type="password" label="${LabelPassword}" autocomplete="off"></paper-input>
+            <div class="inputContainer">
+                <input is="emby-input" id="txtManualPassword" type="password" label="${LabelPassword}" autocomplete="off"/>
+            </div>
 
             <br />
             <button type="submit" data-role="none" class="clearButton">

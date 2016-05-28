@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'jQuery'], function (libraryBrowser) {
+﻿define(['libraryBrowser'], function (libraryBrowser) {
 
     var defaultFirstSection = 'smalllibrarytiles';
 
