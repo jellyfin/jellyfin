@@ -1959,10 +1959,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var defaults = await GetNewTimerDefaultsInternal(cancellationToken, program).ConfigureAwait(false);
             var info = _tvDtoService.GetSeriesTimerInfoDto(defaults.Item1, defaults.Item2, null);
 
-            info.Days = new List<DayOfWeek>
-            {
-                program.StartDate.ToLocalTime().DayOfWeek
-            };
+            info.Days = defaults.Item1.Days;
 
             info.DayPattern = _tvDtoService.GetDayPattern(info.Days);
 

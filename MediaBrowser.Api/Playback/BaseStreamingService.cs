@@ -1519,6 +1519,13 @@ namespace MediaBrowser.Api.Playback
                 }
                 else if (i == 25)
                 {
+                    if (videoRequest != null)
+                    {
+                        videoRequest.ForceLiveStream = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
+                    }
+                }
+                else if (i == 26)
+                {
                     if (!string.IsNullOrWhiteSpace(val) && videoRequest != null)
                     {
                         SubtitleDeliveryMethod method;
@@ -1528,7 +1535,7 @@ namespace MediaBrowser.Api.Playback
                         }
                     }
                 }
-                else if (i == 26)
+                else if (i == 27)
                 {
                     request.TranscodingMaxAudioChannels = int.Parse(val, UsCulture);
                 }
