@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define([], function () {
 
     // The base query options
     var data = {};

@@ -2,7 +2,7 @@
 
     function itemsPerRow() {
 
-        var screenWidth = $(window).width();
+        var screenWidth = window.innerWidth;
 
         return screenWidth >= 1920 ? 9 : (screenWidth >= 1200 ? 12 : (screenWidth >= 1000 ? 10 : 8));
     }

@@ -1964,9 +1964,6 @@ var AppInfo = {};
             return queryString;
         });
 
-        define("material-design-lite", [bowerPath + "/material-design-lite/material.min", "css!" + bowerPath + "/material-design-lite/material"]);
-        define("MaterialSpinner", ["material-design-lite"]);
-
         define("jQuery", [bowerPath + '/jquery/dist/jquery.slim.min'], function () {
 
             require(['legacy/fnchecked']);

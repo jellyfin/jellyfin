@@ -356,9 +356,6 @@ namespace MediaBrowser.WebDashboard.Api
             DeleteFoldersByName(Path.Combine(bowerPath, "Sortable"), "meteor");
             DeleteFoldersByName(Path.Combine(bowerPath, "Sortable"), "st");
             DeleteFoldersByName(Path.Combine(bowerPath, "Swiper"), "src");
-            DeleteFoldersByName(Path.Combine(bowerPath, "material-design-lite"), "src");
-            DeleteFoldersByName(Path.Combine(bowerPath, "material-design-lite"), "utils");
-            _fileSystem.DeleteFile(Path.Combine(bowerPath, "material-design-lite", "gulpfile.babel.js"));
 
             _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "marked"), true);
             _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "marked-element"), true);

@@ -8,6 +8,10 @@
             return true;
         }
 
+        if (browser.edge && !browser.mobile) {
+            return true;
+        }
+
         return false;
     }
 
@@ -406,9 +410,9 @@
             dlg.setAttribute('data-autofocus', 'true');
         }
 
-        var defaultEntryAnimation = browser.animate ? 'scaleup' : 'fadein';
+        var defaultEntryAnimation = 'scaleup';
         var entryAnimation = options.entryAnimation || defaultEntryAnimation;
-        var defaultExitAnimation = browser.animate ? 'scaledown' : 'fadeout';
+        var defaultExitAnimation = 'scaledown';
         var exitAnimation = options.exitAnimation || defaultExitAnimation;
 
         // If it's not fullscreen then lower the default animation speed to make it open really fast

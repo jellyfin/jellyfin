@@ -582,12 +582,12 @@
                             "X-MediaBrowser-Token": server.AccessToken
                         }
 
-                    }).then(function(user) {
+                    }).then(function (user) {
 
                         onLocalUserSignIn(server, connectionMode, user);
                         return Promise.resolve();
 
-                    }, function() {
+                    }, function () {
 
                         server.UserId = null;
                         server.AccessToken = null;
@@ -1188,6 +1188,11 @@
             Events.trigger(self, 'connected', [result]);
         }
 
+        function replaceAll(originalString, strReplace, strWith) {
+            var reg = new RegExp(strReplace, 'ig');
+            return originalString.replace(reg, strWith);
+        }
+
         function normalizeAddress(address) {
 
             // attempt to correct bad input
@@ -1198,8 +1203,8 @@
             }
 
             // Seeing failures in iOS when protocol isn't lowercase
-            address = address.replace('Http:', 'http:');
-            address = address.replace('Https:', 'https:');
+            address = replaceAll(address, 'Http:', 'http:');
+            address = replaceAll(address, 'Https:', 'https:');
 
             return address;
         }
