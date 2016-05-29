@@ -830,7 +830,7 @@ namespace MediaBrowser.Providers.Manager
             });
         }
 
-        public IEnumerable<ExternalUrl> GetExternalUrls(IHasProviderIds item)
+        public IEnumerable<ExternalUrl> GetExternalUrls(BaseItem item)
         {
             return GetExternalIds(item)
                 .Select(i =>
@@ -853,7 +853,7 @@ namespace MediaBrowser.Providers.Manager
                     Url = string.Format(i.UrlFormatString, value)
                 };
 
-            }).Where(i => i != null);
+            }).Where(i => i != null).Concat(item.GetRelatedUrls());
         }
 
         public IEnumerable<ExternalIdInfo> GetExternalIdInfos(IHasProviderIds item)
