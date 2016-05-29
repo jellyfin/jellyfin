@@ -283,9 +283,6 @@ namespace MediaBrowser.Controller.Entities.TV
             var totalItems = seasons.Count + otherItems.Count;
             var numComplete = 0;
 
-            refreshOptions = new MetadataRefreshOptions(refreshOptions);
-            refreshOptions.IsPostRecursiveRefresh = true;
-
             // Refresh current item
             await RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
 
@@ -315,7 +312,7 @@ namespace MediaBrowser.Controller.Entities.TV
                     && refreshOptions.MetadataRefreshMode != MetadataRefreshMode.FullRefresh
                     && !refreshOptions.ReplaceAllMetadata
                     && episode.IsMissingEpisode
-                    && episode.LocationType == Model.Entities.LocationType.Virtual
+                    && episode.LocationType == LocationType.Virtual
                     && episode.PremiereDate.HasValue
                     && (DateTime.UtcNow - episode.PremiereDate.Value).TotalDays > 30)
                 {
@@ -333,6 +330,8 @@ namespace MediaBrowser.Controller.Entities.TV
                 progress.Report(percent * 100);
             }
 
+            refreshOptions = new MetadataRefreshOptions(refreshOptions);
+            refreshOptions.IsPostRecursiveRefresh = true;
             await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
 
             progress.Report(100);

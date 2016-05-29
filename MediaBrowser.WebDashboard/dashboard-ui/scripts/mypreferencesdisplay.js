@@ -99,9 +99,9 @@
         $('.fldEnableBackdrops', page).show();
 
         if (AppInfo.supportsUserDisplayLanguageSetting) {
-            $('.languageSection', page).show();
+            page.querySelector('.languageSection').classList.remove('hide');
         } else {
-            $('.languageSection', page).hide();
+            page.querySelector('.languageSection').classList.add('hide');
         }
 
     });
