@@ -22,7 +22,6 @@
         label.innerHTML = this.getAttribute('label') || '';
         label.classList.add('inputLabel');
 
-        label.classList.add('inputLabelUnfocused');
         label.htmlFor = this.id;
         parentNode.insertBefore(label, this);
 
@@ -41,10 +40,8 @@
         this.addEventListener('focus', function () {
             onChange.call(this);
             label.classList.add('inputLabelFocused');
-            label.classList.remove('inputLabelUnfocused');
         });
         this.addEventListener('blur', function () {
-            label.classList.add('inputLabelUnfocused');
             label.classList.remove('inputLabelFocused');
         });
 
