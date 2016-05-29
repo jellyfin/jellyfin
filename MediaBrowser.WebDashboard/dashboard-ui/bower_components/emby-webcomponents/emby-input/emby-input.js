@@ -53,6 +53,32 @@
         this.addEventListener('keyup', onChange);
 
         onChange.call(this);
+
+        if (window.IntersectionObserver) {
+            var observer = new IntersectionObserver(function (entries) {
+                for (var j = 0, length2 = entries.length; j < length2; j++) {
+                    var entry = entries[j];
+                    var intersectionRatio = entry.intersectionRatio;
+                    if (intersectionRatio) {
+
+                        var target = entry.target;
+                        onChange.call(target);
+                    }
+                }
+            }, {});
+
+            observer.observe(this);
+            this.observer = observer;
+        }
+    };
+
+    EmbyInputPrototype.detachedCallback = function () {
+
+        var observer = this.observer;
+        if (observer) {
+            observer.disconnect();
+            this.observer = null;
+        }
     };
 
     document.registerElement('emby-input', {
