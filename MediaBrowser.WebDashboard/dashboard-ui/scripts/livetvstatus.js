@@ -316,7 +316,7 @@
 
                 html += '</a>';
                 html += '</paper-item-body>';
-                html += '<button type="button" is="paper-icon-button-light" class="btnDeleteDevice" data-id="' + provider.Id + '" title="' + Globalize.translate('ButtonDelete') + '"><iron-icon icon="delete"></iron-icon></button>';
+                html += '<button type="button" is="paper-icon-button-light" class="btnDelete" data-id="' + provider.Id + '" title="' + Globalize.translate('ButtonDelete') + '"><iron-icon icon="delete"></iron-icon></button>';
                 html += '</paper-icon-item>';
             }
 

@@ -483,6 +483,11 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private async Task ProcessJobItem(SyncJobItem jobItem, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
         {
+            if (jobItem == null)
+            {
+                throw new ArgumentNullException("jobItem");
+            }
+
             var item = _libraryManager.GetItemById(jobItem.ItemId);
             if (item == null)
             {

@@ -29,10 +29,16 @@
 }
 
 .inputLabel {
-    display: block;
+    display: inline-block;
+    transition: all .25s ease-out;
 }
 
-.inputLabelFocused {
+    .inputLabel.blank {
+        transform-origin: left top;
+        transform: scale(1.4,1.4) translateY(80%);
+    }
+
+.inputLabelFocused:not(.blank) {
     color: #52B54B;
 }
 

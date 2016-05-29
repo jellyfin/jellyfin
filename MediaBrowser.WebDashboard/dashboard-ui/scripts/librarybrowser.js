@@ -1,4 +1,4 @@
-﻿define(['scrollHelper', 'appSettings', 'appStorage', 'apphost', 'datetime', 'jQuery', 'itemHelper', 'mediaInfo', 'scrollStyles'], function (scrollHelper, appSettings, appStorage, appHost, datetime, $, itemHelper, mediaInfo) {
+﻿define(['scrollHelper', 'appSettings', 'appStorage', 'apphost', 'datetime', 'itemHelper', 'mediaInfo', 'scrollStyles'], function (scrollHelper, appSettings, appStorage, appHost, datetime, itemHelper, mediaInfo) {
 
     function parentWithClass(elem, className) {
 
@@ -381,7 +381,9 @@
 
                 if (window.location.href.toLowerCase().indexOf(url.toLowerCase()) != -1) {
 
-                    afterNavigate.call($.mobile.activePage);
+                    if (window.$) {
+                        afterNavigate.call($.mobile.activePage);
+                    }
                 } else {
 
                     pageClassOn('pagebeforeshow', 'page', afterNavigate);
@@ -1689,8 +1691,12 @@
                         default:
                             break;
                     }
-                    var div = $('<div class="card ' + shape + 'Card"><div class="cardBox"><div class="cardImage"></div></div></div>').appendTo(document.body);
-                    var innerWidth = $('.cardImage', div).innerWidth();
+                    var div = document.createElement('div');
+                    div.classList.add('card');
+                    div.classList.add(shape + 'Card');
+                    div.innerHTML = '<div class="cardBox"><div class="cardImage"></div></div>';
+                    document.body.appendChild(div);
+                    var innerWidth = div.querySelector('.cardImage').clientWidth;
 
                     if (!innerWidth || isNaN(innerWidth)) {
                         cache = false;
@@ -2851,10 +2857,9 @@
                             }));
 
                             if (!dispatchEvent) {
-                                // TODO: remove jQuery
-                                require(['jQuery'], function ($) {
+                                if (window.$) {
                                     $(button).trigger('layoutchange', [id]);
-                                });
+                                }
                             }
                         }
                     });
@@ -3105,22 +3110,17 @@
 
             markFavorite: function (link) {
 
-                // TODO: remove jQuery
-                require(['jQuery'], function ($) {
-                    var id = link.getAttribute('data-itemid');
+                var id = link.getAttribute('data-itemid');
 
-                    var $link = $(link);
+                var markAsFavorite = !link.classList.contains('btnUserItemRatingOn');
 
-                    var markAsFavorite = !$link.hasClass('btnUserItemRatingOn');
+                ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
 
-                    ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
-
-                    if (markAsFavorite) {
-                        $link.addClass('btnUserItemRatingOn');
-                    } else {
-                        $link.removeClass('btnUserItemRatingOn');
-                    }
-                });
+                if (markAsFavorite) {
+                    link.classList.add('btnUserItemRatingOn');
+                } else {
+                    link.classList.remove('btnUserItemRatingOn');
+                }
             },
 
             renderDetailImage: function (elem, item, editable, preferThumb) {

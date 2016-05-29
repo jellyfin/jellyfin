@@ -39,8 +39,6 @@ namespace MediaBrowser.Model.Configuration
 
         public string[] OrderedViews { get; set; }
 
-        public bool IncludeTrailersInSuggestions { get; set; }
-
         public string[] LatestItemsExcludes { get; set; }
         public string[] PlainFolderViews { get; set; }
 
@@ -67,8 +65,6 @@ namespace MediaBrowser.Model.Configuration
             OrderedViews = new string[] { };
 
             PlainFolderViews = new string[] { };
-
-            IncludeTrailersInSuggestions = true;
 
             GroupedFolders = new string[] { };
         }

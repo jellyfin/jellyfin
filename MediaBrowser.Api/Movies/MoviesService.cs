@@ -135,12 +135,9 @@ namespace MediaBrowser.Api.Movies
                 IncludeItemTypes = new[] { typeof(Movie).Name }
             };
 
-            if (user.Configuration.IncludeTrailersInSuggestions)
-            {
-                var includeList = query.IncludeItemTypes.ToList();
-                includeList.Add(typeof(Trailer).Name);
-                query.IncludeItemTypes = includeList.ToArray();
-            }
+            var includeList = query.IncludeItemTypes.ToList();
+            includeList.Add(typeof(Trailer).Name);
+            query.IncludeItemTypes = includeList.ToArray();
 
             var parentIds = string.IsNullOrWhiteSpace(request.ParentId) ? new string[] { } : new[] { request.ParentId };
             var movies = _libraryManager.GetItemList(query, parentIds)
@@ -188,12 +185,9 @@ namespace MediaBrowser.Api.Movies
                 IncludeItemTypes = new[] { typeof(Movie).Name }
             };
 
-            if (user == null || user.Configuration.IncludeTrailersInSuggestions)
-            {
-                var includeList = query.IncludeItemTypes.ToList();
-                includeList.Add(typeof(Trailer).Name);
-                query.IncludeItemTypes = includeList.ToArray();
-            }
+            var includeList = query.IncludeItemTypes.ToList();
+            includeList.Add(typeof(Trailer).Name);
+            query.IncludeItemTypes = includeList.ToArray();
 
             var list = _libraryManager.GetItemList(query)
                 .OrderBy(i => (int)i.SourceType)

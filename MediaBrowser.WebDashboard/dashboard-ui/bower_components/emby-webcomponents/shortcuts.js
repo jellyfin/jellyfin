@@ -121,18 +121,57 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
         var apiClient = connectionManager.getApiClient(serverId);
 
-        if (seriesTimerId) {
-            // cancel all
+        if (seriesTimerId && timerId) {
+
+            // cancel 
+            cancelTimer(apiClient, timerId, true);
 
         } else if (timerId) {
 
             // change to series recording, if possible
             // otherwise cancel individual recording
+            changeRecordingToSeries(apiClient, timerId, id);
 
         } else if (type == 'Program') {
             // schedule recording
             createRecording(apiClient, id);
         }
+    }
+
+    function changeRecordingToSeries(apiClient, timerId, programId) {
+
+        loading.show();
+
+        apiClient.getItem(apiClient.getCurrentUserId(), programId).then(function (item) {
+
+            if (item.IsSeries) {
+                // cancel, then create series
+                cancelTimer(apiClient, timerId, false).then(function () {
+                    apiClient.getNewLiveTvTimerDefaults({ programId: programId }).then(function (timerDefaults) {
+
+                        apiClient.createLiveTvSeriesTimer(timerDefaults).then(function () {
+
+                            loading.hide();
+                            sendToast(globalize.translate('sharedcomponents#SeriesRecordingScheduled'));
+                        });
+                    });
+                });
+            } else {
+                // cancel 
+                cancelTimer(apiClient, timerId, true);
+            }
+        });
+    }
+
+    function cancelTimer(apiClient, timerId, hideLoading) {
+        loading.show();
+        return apiClient.cancelLiveTvTimer(timerId).then(function () {
+
+            if (hideLoading) {
+                loading.hide();
+                sendToast(globalize.translate('sharedcomponents#RecordingCancelled'));
+            }
+        });
     }
 
     function createRecording(apiClient, programId) {

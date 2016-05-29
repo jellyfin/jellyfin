@@ -133,7 +133,7 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>IEnumerable{ExternalUrl}.</returns>
-        IEnumerable<ExternalUrl> GetExternalUrls(IHasProviderIds item);
+        IEnumerable<ExternalUrl> GetExternalUrls(BaseItem item);
 
         /// <summary>
         /// Gets the external identifier infos.

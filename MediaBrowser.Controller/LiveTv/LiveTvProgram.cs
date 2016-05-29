@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -234,6 +235,26 @@ namespace MediaBrowser.Controller.LiveTv
             {
                 return false;
             }
+        }
+
+        public override List<ExternalUrl> GetRelatedUrls()
+        {
+            var list = base.GetRelatedUrls();
+
+            var imdbId = this.GetProviderId(MetadataProviders.Imdb);
+            if (!string.IsNullOrWhiteSpace(imdbId))
+            {
+                if (IsMovie)
+                {
+                    list.Add(new ExternalUrl
+                    {
+                        Name = "Trakt",
+                        Url = string.Format("https://trakt.tv/movies/{0}", imdbId)
+                    });
+                }
+            }
+
+            return list;
         }
     }
 }
