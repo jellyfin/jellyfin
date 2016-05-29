@@ -2254,7 +2254,7 @@ var AppInfo = {};
 
         var baseUrl = 'bower_components/emby-webcomponents/strings/';
 
-        var languages = ['da', 'en-US', 'es-MX', 'kk', 'nb', 'nl', 'ru'];
+        var languages = ['da', 'de', 'en-US', 'es-MX', 'kk', 'nb', 'nl', 'ru'];
 
         var translations = languages.map(function (i) {
             return {

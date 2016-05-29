@@ -436,7 +436,7 @@ paper-input label, paper-textarea label {
     color: #ccc;
 }
 
-.ui-body-b .selectLabelUnfocused {
+.ui-body-b .selectLabelUnfocused, .ui-body-b .inputLabelUnfocused {
     color: #ccc;
 }
 
