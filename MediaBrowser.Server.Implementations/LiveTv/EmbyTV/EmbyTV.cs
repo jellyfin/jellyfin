@@ -548,9 +548,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 PostPaddingSeconds = Math.Max(config.PostPaddingSeconds, 0),
                 PrePaddingSeconds = Math.Max(config.PrePaddingSeconds, 0),
-                RecordAnyChannel = false,
-                RecordAnyTime = false,
-                RecordNewOnly = false
+                RecordAnyChannel = true,
+                RecordAnyTime = true,
+                RecordNewOnly = false,
+
+                Days = new List<DayOfWeek>
+                {
+                    DayOfWeek.Sunday,
+                    DayOfWeek.Monday,
+                    DayOfWeek.Tuesday,
+                    DayOfWeek.Wednesday,
+                    DayOfWeek.Thursday,
+                    DayOfWeek.Friday,
+                    DayOfWeek.Saturday
+                }
             };
 
             if (program != null)
@@ -1215,6 +1226,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             if (!seriesTimer.RecordAnyTime)
             {
                 allPrograms = allPrograms.Where(epg => Math.Abs(seriesTimer.StartDate.TimeOfDay.Ticks - epg.StartDate.TimeOfDay.Ticks) < TimeSpan.FromMinutes(5).Ticks);
+
+                allPrograms = allPrograms.Where(i => seriesTimer.Days.Contains(i.StartDate.ToLocalTime().DayOfWeek));
             }
 
             if (seriesTimer.RecordNewOnly)
@@ -1226,8 +1239,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 allPrograms = allPrograms.Where(epg => string.Equals(epg.ChannelId, seriesTimer.ChannelId, StringComparison.OrdinalIgnoreCase));
             }
-
-            allPrograms = allPrograms.Where(i => seriesTimer.Days.Contains(i.StartDate.ToLocalTime().DayOfWeek));
 
             if (string.IsNullOrWhiteSpace(seriesTimer.SeriesId))
             {
