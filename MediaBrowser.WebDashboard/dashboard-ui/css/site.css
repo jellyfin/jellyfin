@@ -309,16 +309,6 @@ iron-icon {
     min-height: 24px;
 }
 
-.mainAnimatedPage {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    /* Can't use will-change because it causes the alpha picker to move when the page scrolls*/
-    /*will-change: transform;*/
-}
-
 /* Without this, no content will be displayed in mobile safari */
 .pageContainer {
     overflow-x: visible !important;
