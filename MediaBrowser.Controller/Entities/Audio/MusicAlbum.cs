@@ -179,17 +179,13 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             var items = GetRecursiveChildren().ToList();
 
-            var songs = items.OfType<Audio>().ToList();
-
-            var others = items.Except(songs).ToList();
-
-            var totalItems = songs.Count + others.Count;
+            var totalItems = items.Count;
             var numComplete = 0;
 
             var childUpdateType = ItemUpdateType.None;
 
             // Refresh songs
-            foreach (var item in songs)
+            foreach (var item in items)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -199,7 +195,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                 numComplete++;
                 double percent = numComplete;
                 percent /= totalItems;
-                progress.Report(percent * 100);
+                progress.Report(percent * 95);
             }
 
             var parentRefreshOptions = refreshOptions;
@@ -211,19 +207,6 @@ namespace MediaBrowser.Controller.Entities.Audio
 
             // Refresh current item
             await RefreshMetadata(parentRefreshOptions, cancellationToken).ConfigureAwait(false);
-
-            // Refresh all non-songs
-            foreach (var item in others)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var updateType = await item.RefreshMetadata(parentRefreshOptions, cancellationToken).ConfigureAwait(false);
-
-                numComplete++;
-                double percent = numComplete;
-                percent /= totalItems;
-                progress.Report(percent * 100);
-            }
 
             progress.Report(100);
         }
