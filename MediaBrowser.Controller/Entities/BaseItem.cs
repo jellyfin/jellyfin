@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -2211,6 +2212,11 @@ namespace MediaBrowser.Controller.Entities
             {
                 DeleteFileLocation = false
             });
+        }
+
+        public virtual List<ExternalUrl> GetRelatedUrls()
+        {
+            return new List<ExternalUrl>();
         }
     }
 }
