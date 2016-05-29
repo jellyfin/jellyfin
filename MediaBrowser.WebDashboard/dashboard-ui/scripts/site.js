@@ -1166,7 +1166,11 @@ var Dashboard = {
             // The native app can handle a little bit more than safari
             if (AppInfo.isNativeApp) {
 
-                quality -= 10;
+                if (isBackdrop) {
+                    quality -= 5;
+                } else {
+                    quality -= 10;
+                }
 
             } else {
 

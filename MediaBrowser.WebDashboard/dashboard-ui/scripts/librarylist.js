@@ -618,7 +618,7 @@
                                 LibraryBrowser.playInExternalPlayer(itemId);
                                 break;
                             case 'canceltimer':
-                                deleteTimer(itemId, $(card).parents('.itemsContainer')[0]);
+                                deleteTimer(itemId, parentWithClass(card, 'itemsContainer'));
                                 break;
                             case 'share':
                                 require(['sharingmanager'], function (sharingManager) {
@@ -629,10 +629,16 @@
                                 });
                                 break;
                             case 'removefromplaylist':
-                                $(card).parents('.itemsContainer').trigger('removefromplaylist', [playlistItemId]);
+                                var itemsContainer = parentWithClass(card, 'itemsContainer');
+                                if (itemsContainer) {
+                                    $(itemsContainer).trigger('removefromplaylist', [playlistItemId]);
+                                }
                                 break;
                             case 'removefromcollection':
-                                $(card).parents('.collectionItems').trigger('removefromcollection', [itemId]);
+                                var itemsContainer = parentWithClass(card, 'itemsContainer');
+                                if (itemsContainer) {
+                                    $(card).parents('.collectionItems').trigger('removefromcollection', [itemId]);
+                                }
                                 break;
                             default:
                                 break;
@@ -732,9 +738,11 @@
 
         var userId = Dashboard.getCurrentUserId();
 
+        var playedIndicator = card.querySelector('.playedIndicator');
+        var playedIndicatorHtml = playedIndicator ? playedIndicator.innerHTML : null;
         var options = {
 
-            Limit: parseInt($('.playedIndicator', card).html() || '10'),
+            Limit: parseInt(playedIndicatorHtml || '10'),
             Fields: "PrimaryImageAspectRatio,DateCreated",
             ParentId: itemId,
             GroupItems: false
@@ -823,12 +831,19 @@
 
                 innerElem.innerHTML = getOverlayHtml(item, user, card, commands);
 
-                $('.btnPlayItem', innerElem).on('click', onPlayItemButtonClick);
-                $('.btnPlayTrailer', innerElem).on('click', onTrailerButtonClick);
-                $('.btnMoreCommands', innerElem).on('click', onMoreButtonClick);
+                var btnPlayItem = innerElem.querySelector('.btnPlayItem');
+                if (btnPlayItem) {
+                    btnPlayItem.addEventListener('click', onPlayItemButtonClick);
+                }
+                var btnPlayTrailer = innerElem.querySelector('.btnPlayTrailer');
+                if (btnPlayTrailer) {
+                    btnPlayTrailer.addEventListener('click', onTrailerButtonClick);
+                }
+                var btnMoreCommands = innerElem.querySelector('.btnMoreCommands');
+                if (btnMoreCommands) {
+                    btnMoreCommands.addEventListener('click', onMoreButtonClick);
+                }
             });
-
-            $(innerElem).show();
 
             slideUpToShow(innerElem);
         }
@@ -1530,21 +1545,28 @@
         }
 
         var progressHtml = LibraryBrowser.getItemProgressBarHtml(userData);
+        var cardProgress;
 
         if (progressHtml) {
-            var cardProgress = card.querySelector('.cardProgress');
+            cardProgress = card.querySelector('.cardProgress');
 
             if (!cardProgress) {
                 cardProgress = document.createElement('div');
                 cardProgress.classList.add('cardProgress');
 
-                $('.cardFooter', card).append(cardProgress);
+                var cardFooter = card.querySelector('.cardFooter');
+                if (cardFooter) {
+                    cardFooter.appendChild(cardProgress);
+                }
             }
 
             cardProgress.innerHTML = progressHtml;
         }
         else {
-            $('.cardProgress', card).remove();
+            cardProgress = card.querySelector('.cardFooter');
+            if (cardProgress) {
+                cardProgress.parentNode.removeChild(cardProgress);
+            }
         }
     }
 
@@ -1585,10 +1607,6 @@
         Events.on(apiClient, "websocketmessage", onWebSocketMessage);
     }
 
-    function clearRefreshTimes() {
-        $('.hasrefreshtime').removeClass('hasrefreshtime').removeAttr('data-lastrefresh');
-    }
-
     if (window.ApiClient) {
         initializeApiClient(window.ApiClient);
     }
@@ -1596,8 +1614,5 @@
     Events.on(ConnectionManager, 'apiclientcreated', function (e, apiClient) {
         initializeApiClient(apiClient);
     });
-
-    Events.on(ConnectionManager, 'localusersignedin', clearRefreshTimes);
-    Events.on(ConnectionManager, 'localusersignedout', clearRefreshTimes);
 
 });
