@@ -184,8 +184,6 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableVideoArchiveFiles { get; set; }
         public int RemoteClientBitrateLimit { get; set; }
 
-        public bool DenyIFrameEmbedding { get; set; }
-
         public AutoOnOff EnableLibraryMonitor { get; set; }
 
         public int SharingExpirationDays { get; set; }
@@ -222,7 +220,6 @@ namespace MediaBrowser.Model.Configuration
             EnableAnonymousUsageReporting = true;
 
             EnableAutomaticRestart = true;
-            DenyIFrameEmbedding = true;
 
             EnableUPnP = true;
             SharingExpirationDays = 30;
