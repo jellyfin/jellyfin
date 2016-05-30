@@ -2132,7 +2132,41 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             if (query.IsMovie.HasValue)
             {
-                whereClauses.Add("IsMovie=@IsMovie");
+                var alternateTypes = new List<string>();
+                if (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(typeof(Movie).Name))
+                {
+                    alternateTypes.Add(typeof(Movie).FullName);
+                }
+                if (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(typeof(Trailer).Name))
+                {
+                    alternateTypes.Add(typeof(Trailer).FullName);
+                }
+
+                if (alternateTypes.Count == 0)
+                {
+                    whereClauses.Add("IsMovie=@IsMovie");
+                }
+                else
+                {
+                    if (query.IsMovie.Value)
+                    {
+                        var typeClauses = new List<string>();
+                        var typeIndex = 0;
+                        foreach (var type in alternateTypes)
+                        {
+                            var paramName = "@AlternateType" + typeIndex.ToString(CultureInfo.InvariantCulture);
+                            typeClauses.Add("Type=" + paramName);
+                            cmd.Parameters.Add(cmd, paramName, DbType.String).Value = type;
+                            typeIndex++;
+                        }
+
+                        whereClauses.Add("(IsMovie=@IsMovie OR " + string.Join(" OR ", typeClauses.ToArray()) + ")");
+                    }
+                    else
+                    {
+                        whereClauses.Add("(IsMovie is null OR IsMovie=@IsMovie)");
+                    }
+                }
                 cmd.Parameters.Add(cmd, "@IsMovie", DbType.Boolean).Value = query.IsMovie;
             }
             if (query.IsKids.HasValue)

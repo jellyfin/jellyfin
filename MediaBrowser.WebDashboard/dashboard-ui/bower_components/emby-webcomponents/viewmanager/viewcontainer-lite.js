@@ -1,4 +1,4 @@
-define(['browser'], function (browser) {
+define(['browser', 'css!./viewcontainer-lite'], function (browser) {
 
     var mainAnimatedPages = document.querySelector('.mainAnimatedPages');
     var allPages = [];

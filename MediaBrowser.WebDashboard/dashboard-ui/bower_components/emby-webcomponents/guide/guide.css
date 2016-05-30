@@ -148,6 +148,7 @@
     text-decoration: none;
     /* Needed in firefox */
     text-align: left;
+    contain: strict;
 }
 
 @media all and (min-width: 500px) {
@@ -300,6 +301,7 @@
     align-items: center;
     /* Needed for Firefox */
     text-align: left;
+    contain: strict;
 }
 
 .timeslotCellInner {

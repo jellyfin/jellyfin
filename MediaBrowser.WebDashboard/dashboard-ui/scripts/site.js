@@ -3125,7 +3125,6 @@ var AppInfo = {};
 
             console.log('Loaded dependencies in onAppReady');
 
-            imageLoader.enableFade = browserInfo.animate && !browserInfo.mobile;
             window.ImageLoader = imageLoader;
 
             layoutManager.init();

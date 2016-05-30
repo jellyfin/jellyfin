@@ -39,10 +39,10 @@
 
         this.addEventListener('focus', function () {
             onChange.call(this);
-            label.classList.add('inputLabelFocused');
+            label.classList.add('focused');
         });
         this.addEventListener('blur', function () {
-            label.classList.remove('inputLabelFocused');
+            label.classList.remove('focused');
         });
 
         this.addEventListener('change', onChange);

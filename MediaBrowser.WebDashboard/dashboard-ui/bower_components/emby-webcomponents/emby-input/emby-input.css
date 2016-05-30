@@ -38,7 +38,7 @@
         transform: scale(1.4,1.4) translateY(80%);
     }
 
-.inputLabelFocused:not(.blank) {
+.inputLabel.focused:not(.blank) {
     color: #52B54B;
 }
 
