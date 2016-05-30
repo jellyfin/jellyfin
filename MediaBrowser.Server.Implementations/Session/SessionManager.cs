@@ -404,6 +404,10 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <returns>SessionInfo.</returns>
         private async Task<SessionInfo> GetSessionInfo(string appName, string appVersion, string deviceId, string deviceName, string remoteEndPoint, User user)
         {
+            if (string.IsNullOrWhiteSpace(deviceId))
+            {
+                throw new ArgumentNullException("deviceId");
+            }
             var key = GetSessionKey(appName, deviceId);
 
             await _sessionLock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
@@ -1748,6 +1752,11 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public void ReportNowViewingItem(string sessionId, string itemId)
         {
+            if (string.IsNullOrWhiteSpace(itemId))
+            {
+                throw new ArgumentNullException("itemId");
+            }
+
             var item = _libraryManager.GetItemById(new Guid(itemId));
 
             var info = GetItemInfo(item, null, null);

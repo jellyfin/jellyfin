@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.LiveTv;
 
 namespace MediaBrowser.Api.Movies
 {
@@ -132,12 +133,14 @@ namespace MediaBrowser.Api.Movies
 
             var query = new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { typeof(Movie).Name }
+                IncludeItemTypes = new[]
+                {
+                    typeof(Movie).Name,
+                    typeof(Trailer).Name,
+                    //typeof(LiveTvProgram).Name
+                },
+               // IsMovie = true
             };
-
-            var includeList = query.IncludeItemTypes.ToList();
-            includeList.Add(typeof(Trailer).Name);
-            query.IncludeItemTypes = includeList.ToArray();
 
             var parentIds = string.IsNullOrWhiteSpace(request.ParentId) ? new string[] { } : new[] { request.ParentId };
             var movies = _libraryManager.GetItemList(query, parentIds)
@@ -179,15 +182,17 @@ namespace MediaBrowser.Api.Movies
             var item = string.IsNullOrEmpty(request.Id) ?
                 (!string.IsNullOrWhiteSpace(request.UserId) ? user.RootFolder :
                 _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
-            
+
             var query = new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { typeof(Movie).Name }
+                IncludeItemTypes = new[]
+                {
+                    typeof(Movie).Name,
+                    typeof(Trailer).Name,
+                    //typeof(LiveTvProgram).Name
+                },
+                //IsMovie = true
             };
-
-            var includeList = query.IncludeItemTypes.ToList();
-            includeList.Add(typeof(Trailer).Name);
-            query.IncludeItemTypes = includeList.ToArray();
 
             var list = _libraryManager.GetItemList(query)
                 .OrderBy(i => (int)i.SourceType)

@@ -51,6 +51,11 @@ namespace MediaBrowser.Server.Implementations.Devices
 
         public async Task<DeviceInfo> RegisterDevice(string reportedId, string name, string appName, string appVersion, string usedByUserId)
         {
+            if (string.IsNullOrWhiteSpace(reportedId))
+            {
+                throw new ArgumentNullException("reportedId");
+            }
+
             var device = GetDevice(reportedId) ?? new DeviceInfo
             {
                 Id = reportedId

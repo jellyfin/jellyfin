@@ -230,7 +230,12 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 var vals = message.Data.Split('|');
 
-                _sessionManager.ReportNowViewingItem(session.Id, vals[1]);
+                var itemId = vals[1];
+
+                if (!string.IsNullOrWhiteSpace(itemId))
+                {
+                    _sessionManager.ReportNowViewingItem(session.Id, itemId);
+                }
             }
         }
 
