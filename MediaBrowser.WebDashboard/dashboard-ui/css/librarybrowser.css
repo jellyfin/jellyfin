@@ -62,6 +62,10 @@
     padding-bottom: 0;
 }
 
+.pageTabContent {
+    contain: style;
+}
+
 .pageWithAbsoluteTabs .pageTabContent, .libraryPage > .ui-content {
     padding-top: 10px;
 }
@@ -1163,13 +1167,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
     .absolutePageTabContent .itemsContainerWithAlphaPicker {
         margin-right: 30px;
-    }
-}
-
-@media all and (min-height: 480px) and (max-width: 800px) {
-
-    .absolutePageTabContent .itemsContainerWithAlphaPicker iron-list {
-        width: 99.5% !important;
     }
 }
 

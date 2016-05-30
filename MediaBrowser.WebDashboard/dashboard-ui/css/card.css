@@ -2,11 +2,22 @@
     display: inline-block;
     text-align: left;
     position: relative;
+    contain: style;
 }
 
-iron-list .card {
-    display: block;
+/*.itemsContainer .card {
+    contain: layout style;
 }
+
+.itemsContainer {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+    .itemsContainer.smoothScrollX, .itemsContainer.hiddenScrollX {
+        display: block;
+    }*/
 
 .card, .card a {
     text-decoration: none;
