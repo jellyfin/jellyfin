@@ -1748,6 +1748,11 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public void ReportNowViewingItem(string sessionId, string itemId)
         {
+            if (string.IsNullOrWhiteSpace(itemId))
+            {
+                throw new ArgumentNullException("itemId");
+            }
+
             var item = _libraryManager.GetItemById(new Guid(itemId));
 
             var info = GetItemInfo(item, null, null);
