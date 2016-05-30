@@ -1,0 +1,52 @@
+.listItem {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    padding: .1em .55em !important;
+    outline: none !important;
+}
+
+    .listItem.largeImage {
+        padding: 1em 0 1em 1em;
+    }
+
+.listItemBody {
+    flex-grow: 1;
+    padding: .35em .55em;
+}
+
+.listItemImage {
+    width: 7.4vh;
+    height: 7.4vh;
+    background-repeat: no-repeat;
+    background-size: contain;
+    flex-shrink: 0;
+}
+
+.listItem.largeImage .listItemImage {
+    width: 45vh;
+    height: 30vh;
+    background-position: center center;
+    position: relative;
+    margin-right: 2%;
+    margin-left: 1%;
+}
+
+.listItemImage .itemProgressBar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.listItem:focus .secondary {
+    color: inherit !important;
+}
+
+.listItem {
+    transition: transform .2s ease-out;
+}
+
+.listItem:focus {
+    transform: scale(1.025, 1.025);
+}
