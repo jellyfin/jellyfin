@@ -1789,6 +1789,7 @@ var AppInfo = {};
         define("playlistEditor", [embyWebComponentsBowerPath + "/playlisteditor/playlisteditor"], returnFirstDependency);
         define("recordingCreator", [embyWebComponentsBowerPath + "/recordingcreator/recordingcreator"], returnFirstDependency);
         define("recordingEditor", [embyWebComponentsBowerPath + "/recordingcreator/recordingeditor"], returnFirstDependency);
+        define("subtitleEditor", [embyWebComponentsBowerPath + "/subtitleeditor/subtitleeditor"], returnFirstDependency);
         define("mediaInfo", [embyWebComponentsBowerPath + "/mediainfo/mediainfo"], returnFirstDependency);
         define("backdrop", [embyWebComponentsBowerPath + "/backdrop/backdrop"], returnFirstDependency);
         define("fetchHelper", [embyWebComponentsBowerPath + "/fetchhelper"], returnFirstDependency);
@@ -1927,6 +1928,8 @@ var AppInfo = {};
         define('native-promise-only', [bowerPath + '/native-promise-only/lib/npo.src']);
         define("fingerprintjs2", [bowerPath + '/fingerprintjs2/fingerprint2'], returnFirstDependency);
         define("clearButtonStyle", ['css!' + embyWebComponentsBowerPath + '/clearbutton']);
+        define("listView", [embyWebComponentsBowerPath + "/listview/listview"], returnFirstDependency);
+        define("listViewStyle", ['css!' + embyWebComponentsBowerPath + "/listview/listview"], returnFirstDependency);
 
         if (Dashboard.isRunningInCordova()) {
             define('registrationservices', ['cordova/registrationservices'], returnFirstDependency);
