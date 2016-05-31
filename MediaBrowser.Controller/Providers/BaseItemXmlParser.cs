@@ -816,11 +816,7 @@ namespace MediaBrowser.Controller.Providers
                     {
                         using (var subtree = reader.ReadSubtree())
                         {
-                            var hasTags = item as IHasKeywords;
-                            if (hasTags != null)
-                            {
-                                FetchFromKeywordsNode(subtree, hasTags);
-                            }
+                            FetchFromKeywordsNode(subtree, item);
                         }
                         break;
                     }
@@ -1099,7 +1095,7 @@ namespace MediaBrowser.Controller.Providers
             }
         }
 
-        private void FetchFromKeywordsNode(XmlReader reader, IHasKeywords item)
+        private void FetchFromKeywordsNode(XmlReader reader, BaseItem item)
         {
             reader.MoveToContent();
 

@@ -752,13 +752,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 }
             }
 
-            var hasKeywords = item as IHasKeywords;
-            if (hasKeywords != null)
+            foreach (var tag in item.Keywords)
             {
-                foreach (var tag in hasKeywords.Keywords)
-                {
-                    writer.WriteElementString("plotkeyword", tag);
-                }
+                writer.WriteElementString("plotkeyword", tag);
             }
 
             var hasAwards = item as IHasAwards;

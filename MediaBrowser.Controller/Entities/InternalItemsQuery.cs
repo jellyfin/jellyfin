@@ -33,6 +33,7 @@ namespace MediaBrowser.Controller.Entities
         public string[] ExcludeTags { get; set; }
         public string[] ExcludeInheritedTags { get; set; }
         public string[] Genres { get; set; }
+        public string[] Keywords { get; set; }
 
         public bool? IsMissing { get; set; }
         public bool? IsUnaired { get; set; }
@@ -151,6 +152,7 @@ namespace MediaBrowser.Controller.Entities
             OfficialRatings = new string[] { };
             SortBy = new string[] { };
             MediaTypes = new string[] { };
+            Keywords = new string[] { };
             IncludeItemTypes = new string[] { };
             ExcludeItemTypes = new string[] { };
             Genres = new string[] { };

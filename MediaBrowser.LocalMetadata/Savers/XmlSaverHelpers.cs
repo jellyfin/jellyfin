@@ -609,20 +609,16 @@ namespace MediaBrowser.LocalMetadata.Savers
                 }
             }
 
-            var hasKeywords = item as IHasKeywords;
-            if (hasKeywords != null)
+            if (item.Keywords.Count > 0)
             {
-                if (hasKeywords.Keywords.Count > 0)
+                builder.Append("<PlotKeywords>");
+
+                foreach (var tag in item.Keywords)
                 {
-                    builder.Append("<PlotKeywords>");
-
-                    foreach (var tag in hasKeywords.Keywords)
-                    {
-                        builder.Append("<PlotKeyword>" + SecurityElement.Escape(tag) + "</PlotKeyword>");
-                    }
-
-                    builder.Append("</PlotKeywords>");
+                    builder.Append("<PlotKeyword>" + SecurityElement.Escape(tag) + "</PlotKeyword>");
                 }
+
+                builder.Append("</PlotKeywords>");
             }
 
             var people = libraryManager.GetPeople(item);
