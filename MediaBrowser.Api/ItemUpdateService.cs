@@ -298,11 +298,7 @@ namespace MediaBrowser.Api
                 hasShortOverview.ShortOverview = request.ShortOverview;
             }
 
-            var hasKeywords = item as IHasKeywords;
-            if (hasKeywords != null)
-            {
-                hasKeywords.Keywords = request.Keywords;
-            }
+            item.Keywords = request.Keywords;
 
             if (request.Studios != null)
             {

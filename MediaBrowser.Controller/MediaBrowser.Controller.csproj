@@ -142,7 +142,7 @@
     <Compile Include="Entities\IHasDisplayOrder.cs" />
     <Compile Include="Entities\IHasId.cs" />
     <Compile Include="Entities\IHasImages.cs" />
-    <Compile Include="Entities\IHasKeywords.cs" />
+    <Compile Include="Entities\KeywordExtensions.cs" />
     <Compile Include="Entities\IHasMediaSources.cs" />
     <Compile Include="Entities\IHasMetascore.cs" />
     <Compile Include="Entities\IHasOriginalTitle.cs" />
