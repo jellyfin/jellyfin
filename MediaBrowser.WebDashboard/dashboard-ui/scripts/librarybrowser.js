@@ -2968,6 +2968,7 @@
 
                     dlg.classList.add('ui-body-a');
                     dlg.classList.add('background-theme-a');
+                    dlg.classList.add('formDialog');
 
                     var html = '';
 
