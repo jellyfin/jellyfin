@@ -53,6 +53,7 @@ namespace MediaBrowser.Controller.Entities
         public string Person { get; set; }
         public string[] PersonIds { get; set; }
         public string[] ItemIds { get; set; }
+        public string[] ExcludeItemIds { get; set; }
         public string AdjacentTo { get; set; }
         public string[] PersonTypes { get; set; }
 
@@ -166,6 +167,7 @@ namespace MediaBrowser.Controller.Entities
             PersonIds = new string[] { };
             ChannelIds = new string[] { };
             ItemIds = new string[] { };
+            ExcludeItemIds = new string[] { };
             AncestorIds = new string[] { };
             TopParentIds = new string[] { };
             ExcludeTags = new string[] { };
