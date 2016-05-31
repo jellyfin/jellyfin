@@ -32,7 +32,7 @@ namespace MediaBrowser.Server.Mono.Native
             {
                 PageSize = 4096,
                 CacheSize = 2000,
-                SyncMode = SynchronizationModes.Full,
+                SyncMode = SynchronizationModes.Normal,
                 DataSource = dbPath,
                 JournalMode = SQLiteJournalModeEnum.Wal
             };

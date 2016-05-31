@@ -37,6 +37,7 @@ namespace MediaBrowser.Controller.Entities
     {
         protected BaseItem()
         {
+            Keywords = new List<string>();
             Tags = new List<string>();
             Genres = new List<string>();
             Studios = new List<string>();
@@ -810,6 +811,8 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The tags.</value>
         [IgnoreDataMember]
         public List<string> Tags { get; set; }
+
+        public List<string> Keywords { get; set; }
 
         /// <summary>
         /// Gets or sets the home page URL.

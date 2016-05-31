@@ -31,6 +31,7 @@
         top: 50%;
         left: 50%;
         max-width: 70%;
+        max-height: 80%;
     }
 
 @media all and (min-width: 1280px) and (min-height: 720px) {

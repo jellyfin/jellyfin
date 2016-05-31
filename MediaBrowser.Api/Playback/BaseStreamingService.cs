@@ -980,11 +980,6 @@ namespace MediaBrowser.Api.Playback
             var transcodingId = Guid.NewGuid().ToString("N");
             var commandLineArgs = GetCommandLineArguments(outputPath, state, true);
 
-            if (ApiEntryPoint.Instance.GetEncodingOptions().EnableDebugLogging)
-            {
-                commandLineArgs = "-loglevel debug " + commandLineArgs;
-            }
-
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo

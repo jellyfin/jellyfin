@@ -983,16 +983,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (fields.Contains(ItemFields.Keywords))
             {
-                var hasTags = item as IHasKeywords;
-                if (hasTags != null)
-                {
-                    dto.Keywords = hasTags.Keywords;
-                }
-
-                if (dto.Keywords == null)
-                {
-                    dto.Keywords = new List<string>();
-                }
+                dto.Keywords = item.Keywords;
             }
 
             if (fields.Contains(ItemFields.ProductionLocations))

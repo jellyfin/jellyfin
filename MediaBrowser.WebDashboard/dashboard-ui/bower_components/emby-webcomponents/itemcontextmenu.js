@@ -32,6 +32,15 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper'], function (ap
                 });
             }
 
+            if (user.Policy.IsAdministrator) {
+                if (item.MediaType == 'Video' && item.Type != 'TvChannel' && item.Type != 'Program' && item.LocationType != 'Virtual') {
+                    commands.push({
+                        name: globalize.translate('sharedcomponents#EditSubtitles'),
+                        id: 'editsubtitles'
+                    });
+                }
+            }
+
             if (item.CanDownload && appHost.supports('filedownload')) {
                 commands.push({
                     name: globalize.translate('sharedcomponents#Download'),
@@ -109,6 +118,15 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper'], function (ap
                             reject();
                         });
 
+                        break;
+                    }
+                case 'editsubtitles':
+                    {
+                        require(['subtitleEditor'], function (subtitleEditor) {
+
+                            var serverId = apiClient.serverInfo().Id;
+                            subtitleEditor.show(itemId, serverId).then(resolve, reject);
+                        });
                         break;
                     }
                 case 'refresh':

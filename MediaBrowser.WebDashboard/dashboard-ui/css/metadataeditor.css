@@ -126,11 +126,6 @@
     color: #ccc;
 }
 
-/* Fixes button running outside of list */
-.btnRemoveFromEditorList .ui-btn-inner {
-    padding-right: 0 !important;
-}
-
 .chkAirDay {
     padding: 0 2em 1em 0;
 }

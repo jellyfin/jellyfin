@@ -804,9 +804,10 @@
 
             editSubtitles: function (itemId) {
 
-                require(['components/subtitleeditor/subtitleeditor'], function (SubtitleEditor) {
+                require(['subtitleEditor'], function (subtitleEditor) {
 
-                    SubtitleEditor.show(itemId);
+                    var serverId = ApiClient.serverInfo().Id;
+                    subtitleEditor.show(itemId, serverId);
                 });
             },
 
@@ -2967,6 +2968,7 @@
 
                     dlg.classList.add('ui-body-a');
                     dlg.classList.add('background-theme-a');
+                    dlg.classList.add('formDialog');
 
                     var html = '';
 

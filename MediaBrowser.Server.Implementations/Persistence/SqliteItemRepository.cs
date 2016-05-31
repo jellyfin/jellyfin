@@ -87,7 +87,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        public const int LatestSchemaVersion = 80;
+        public const int LatestSchemaVersion = 82;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -2489,8 +2489,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var index = 0;
                 foreach (var item in query.Genres)
                 {
-                    clauses.Add("Genres like @Genres" + index);
-                    cmd.Parameters.Add(cmd, "@Genres" + index, DbType.String).Value = "%" + item + "%";
+                    clauses.Add("@Genre" + index + " in (select value from itemvalues where ItemId=Guid and Type=2)");
+                    cmd.Parameters.Add(cmd, "@Genre" + index, DbType.String).Value = item;
                     index++;
                 }
                 var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
@@ -2503,8 +2503,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var index = 0;
                 foreach (var item in query.Tags)
                 {
-                    clauses.Add("Tags like @Tags" + index);
-                    cmd.Parameters.Add(cmd, "@Tags" + index, DbType.String).Value = "%" + item + "%";
+                    clauses.Add("@Tag" + index + " in (select value from itemvalues where ItemId=Guid and Type=4)");
+                    cmd.Parameters.Add(cmd, "@Tag" + index, DbType.String).Value = item;
                     index++;
                 }
                 var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
@@ -2517,8 +2517,22 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var index = 0;
                 foreach (var item in query.Studios)
                 {
-                    clauses.Add("Studios like @Studios" + index);
-                    cmd.Parameters.Add(cmd, "@Studios" + index, DbType.String).Value = "%" + item + "%";
+                    clauses.Add("@Studio" + index + " in (select value from itemvalues where ItemId=Guid and Type=3)");
+                    cmd.Parameters.Add(cmd, "@Studio" + index, DbType.String).Value = item;
+                    index++;
+                }
+                var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
+                whereClauses.Add(clause);
+            }
+
+            if (query.Keywords.Length > 0)
+            {
+                var clauses = new List<string>();
+                var index = 0;
+                foreach (var item in query.Keywords)
+                {
+                    clauses.Add("@Keyword" + index + " in (select value from itemvalues where ItemId=Guid and Type=5)");
+                    cmd.Parameters.Add(cmd, "@Keyword" + index, DbType.String).Value = item;
                     index++;
                 }
                 var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
@@ -2613,6 +2627,20 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var val = string.Join(",", query.MediaTypes.Select(i => "'" + i + "'").ToArray());
 
                 whereClauses.Add("MediaType in (" + val + ")");
+            }
+            if (query.ExcludeItemIds.Length > 0)
+            {
+                var excludeIds = new List<string>();
+
+                var index = 0;
+                foreach (var id in query.ExcludeItemIds)
+                {
+                    excludeIds.Add("Guid <> @ExcludeId" + index);
+                    cmd.Parameters.Add(cmd, "@ExcludeId" + index, DbType.Guid).Value = new Guid(id);
+                    index++;
+                }
+
+                whereClauses.Add(string.Join(" AND ", excludeIds.ToArray()));
             }
 
             if (query.AlbumNames.Length > 0)
@@ -3232,6 +3260,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 list.AddRange(hasAlbumArtist.AlbumArtists.Select(i => new Tuple<int, string>(1, i)));
             }
+
+            list.AddRange(item.Genres.Select(i => new Tuple<int, string>(2, i)));
+            list.AddRange(item.Studios.Select(i => new Tuple<int, string>(3, i)));
+            list.AddRange(item.Tags.Select(i => new Tuple<int, string>(4, i)));
+            list.AddRange(item.Keywords.Select(i => new Tuple<int, string>(5, i)));
 
             return list;
         }

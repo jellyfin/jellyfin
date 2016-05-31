@@ -1,18 +1,52 @@
+button.listItem {
+    background: transparent;
+    border: 0 !important;
+    cursor: pointer;
+    outline: none !important;
+    color: inherit;
+    width: 100%;
+    vertical-align: middle;
+    font-family: inherit;
+    font-size: inherit;
+}
+
 .listItem {
     display: flex;
     align-items: center;
     text-align: left;
-    padding: .1em .55em !important;
-    outline: none !important;
+    padding: .25em 1.25em !important;
 }
 
     .listItem.largeImage {
         padding: 1em 0 1em 1em;
     }
 
+    .listItem > *:not(.listItemBody) {
+        flex-shrink: 0;
+    }
+
 .listItemBody {
     flex-grow: 1;
-    padding: .35em .55em;
+    padding: .35em 1.25em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+    .listItemBody h3 {
+        margin: 0;
+        font-weight: normal;
+        padding: .25em 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+.layout-tv .listItemBody h3 {
+    padding: 0;
+}
+
+.listItemBodyText {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .listItemImage {
@@ -21,6 +55,11 @@
     background-repeat: no-repeat;
     background-size: contain;
     flex-shrink: 0;
+}
+
+.listItemIcon {
+    width: 3vh;
+    height: 3vh;
 }
 
 .listItem.largeImage .listItemImage {
@@ -47,6 +86,17 @@
     transition: transform .2s ease-out;
 }
 
-.listItem:focus {
-    transform: scale(1.025, 1.025);
+    .listItem:focus {
+        transform: scale(1.025, 1.025);
+    }
+
+.paperList {
+    padding: .5em 0;
+    margin: 1em auto;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
 }
+
+    .paperList.clear {
+        box-shadow: none !important;
+        background-color: transparent !important;
+    }
