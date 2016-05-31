@@ -1,4 +1,4 @@
-define(['itemHelper', 'mediaInfo', 'indicators', 'clearButtonStyle', 'css!./listview'], function (itemHelper, mediaInfo, indicators) {
+define(['itemHelper', 'mediaInfo', 'indicators', 'css!./listview'], function (itemHelper, mediaInfo, indicators) {
 
     function getListViewHtml(items, options) {
 
@@ -15,7 +15,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'clearButtonStyle', 'css!./list
 
             var html = '';
 
-            var cssClass = "itemAction clearButton listItem";
+            var cssClass = "itemAction listItem";
 
             var downloadWidth = 80;
 

@@ -1,175 +1,4 @@
-﻿/* Swatches */
-
-/* A
------------------------------------------------------------------------------------------------------------*/
-
-/* Bar: Toolbars, dividers, slider track */
-.ui-bar-a,
-.ui-page-theme-a .ui-bar-inherit,
-html .ui-bar-a .ui-bar-inherit,
-html .ui-body-a .ui-bar-inherit,
-html body .ui-group-theme-a .ui-bar-inherit {
-    background-color: #e9e9e9 /*{a-bar-background-color}*/;
-    border-color: #ddd /*{a-bar-border}*/;
-    color: #333 /*{a-bar-color}*/;
-    font-weight: bold;
-}
-
-.ui-bar-a {
-    border-width: 1px;
-    border-style: solid;
-}
-
-/* Page and overlay */
-.ui-page-theme-a .ui-panel-wrapper {
-    background-color: #f9f9f9 /*{a-page-background-color}*/;
-    border-color: #bbb /*{a-page-border}*/;
-    color: #333 /*{a-page-color}*/;
-}
-
-/* Body: Read-only lists, text inputs, collapsible content */
-.ui-page-theme-a .ui-body-inherit,
-html .ui-bar-a .ui-body-inherit,
-html .ui-body-a .ui-body-inherit,
-html body .ui-group-theme-a .ui-body-inherit,
-html .ui-panel-page-container-a {
-    background-color: #fff /*{a-body-background-color}*/;
-    border-color: #ddd /*{a-body-border}*/;
-    color: #333 /*{a-body-color}*/;
-}
-
-/* Links */
-.ui-page-theme-a a,
-html .ui-bar-a a,
-html .ui-body-a a,
-html body .ui-group-theme-a a {
-    color: #388E3C /*{a-link-color}*/;
-    font-weight: bold;
-}
-
-    .ui-page-theme-a a:visited,
-    html .ui-bar-a a:visited,
-    html .ui-body-a a:visited,
-    html body .ui-group-theme-a a:visited {
-        color: #388E3C /*{a-link-visited}*/;
-    }
-
-    .ui-page-theme-a a:hover,
-    html .ui-bar-a a:hover,
-    html .ui-body-a a:hover,
-    html body .ui-group-theme-a a:hover {
-        color: #1B5E20 /*{a-link-hover}*/;
-    }
-
-    .ui-page-theme-a a:active,
-    html .ui-bar-a a:active,
-    html .ui-body-a a:active,
-    html body .ui-group-theme-a a:active {
-        color: #1B5E20 /*{a-link-active}*/;
-    }
-
-/* Button up */
-.ui-page-theme-a .ui-btn,
-html .ui-bar-a .ui-btn,
-html .ui-body-a .ui-btn,
-html body .ui-group-theme-a .ui-btn,
-html head + body .ui-btn.ui-btn-a,
-/* Button visited */
-.ui-page-theme-a .ui-btn:visited,
-html .ui-bar-a .ui-btn:visited,
-html .ui-body-a .ui-btn:visited,
-html body .ui-group-theme-a .ui-btn:visited,
-html head + body .ui-btn.ui-btn-a:visited,
-ul[data-role="listview"] a + a {
-    background-color: #f6f6f6 /*{a-bup-background-color}*/;
-    border-color: #ddd /*{a-bup-border}*/;
-    color: #333 /*{a-bup-color}*/;
-}
-    /* Button hover */
-    .ui-page-theme-a .ui-btn:hover,
-    html .ui-bar-a .ui-btn:hover,
-    html .ui-body-a .ui-btn:hover,
-    html body .ui-group-theme-a .ui-btn:hover,
-    html head + body .ui-btn.ui-btn-a:hover {
-        background-color: #ededed /*{a-bhover-background-color}*/;
-        border-color: #ddd /*{a-bhover-border}*/;
-        color: #333 /*{a-bhover-color}*/;
-    }
-    /* Button down */
-    .ui-page-theme-a .ui-btn:active,
-    html .ui-bar-a .ui-btn:active,
-    html .ui-body-a .ui-btn:active,
-    html body .ui-group-theme-a .ui-btn:active,
-    html head + body .ui-btn.ui-btn-a:active {
-        background-color: #e8e8e8 /*{a-bdown-background-color}*/;
-        border-color: #ddd /*{a-bdown-border}*/;
-        color: #333 /*{a-bdown-color}*/;
-    }
-
-    /* Active button */
-    .ui-page-theme-a .ui-btn.ui-btn-active,
-    html .ui-bar-a .ui-btn.ui-btn-active,
-    html .ui-body-a .ui-btn.ui-btn-active,
-    html body .ui-group-theme-a .ui-btn.ui-btn-active,
-    html head + body .ui-btn.ui-btn-a.ui-btn-active,
-    /* Active checkbox icon */
-    .ui-page-theme-a .ui-checkbox-on:after,
-    html .ui-bar-a .ui-checkbox-on:after,
-    html .ui-body-a .ui-checkbox-on:after,
-    html body .ui-group-theme-a .ui-checkbox-on:after,
-    .ui-btn.ui-checkbox-on.ui-btn-a:after {
-        background-color: #3388cc /*{a-active-background-color}*/;
-        border-color: #3388cc /*{a-active-border}*/;
-        color: #fff /*{a-active-color}*/;
-    }
-/* Active radio button icon */
-.ui-page-theme-a .ui-radio-on:after,
-html .ui-bar-a .ui-radio-on:after,
-html .ui-body-a .ui-radio-on:after,
-html body .ui-group-theme-a .ui-radio-on:after,
-.ui-btn.ui-radio-on.ui-btn-a:after {
-    border-color: #3388cc /*{a-active-background-color}*/;
-}
-
-/* B
------------------------------------------------------------------------------------------------------------*/
-
-/* Bar: Toolbars, dividers, slider track */
-.ui-bar-b,
-.ui-page-theme-b .ui-bar-inherit,
-html .ui-bar-b .ui-bar-inherit,
-html .ui-body-b .ui-bar-inherit,
-html body .ui-group-theme-b .ui-bar-inherit {
-    background-color: #1d1d1d /*{b-bar-background-color}*/;
-    border-color: #1b1b1b /*{b-bar-border}*/;
-    color: #fff /*{b-bar-color}*/;
-    font-weight: bold;
-}
-
-.ui-bar-b {
-    border-width: 1px;
-    border-style: solid;
-}
-
-/* Page and overlay */
-.ui-page-theme-b .ui-panel-wrapper {
-    background-color: #252525 /*{b-page-background-color}*/;
-    border-color: #454545 /*{b-page-border}*/;
-    color: #fff /*{b-page-color}*/;
-}
-
-/* Body: Read-only lists, text inputs, collapsible content */
-.ui-page-theme-b .ui-body-inherit,
-html .ui-bar-b .ui-body-inherit,
-html .ui-body-b .ui-body-inherit,
-html body .ui-group-theme-b .ui-body-inherit,
-html .ui-panel-page-container-b {
-    background-color: #2a2a2a /*{b-body-background-color}*/;
-    border-color: #1d1d1d /*{b-body-border}*/;
-    color: #fff /*{b-body-color}*/;
-}
-
-/* Links */
+﻿/* Links */
 .ui-body-b a {
     color: #52B54B /*{b-link-color}*/;
     font-weight: bold;
@@ -187,68 +16,6 @@ html .ui-panel-page-container-b {
         color: #2E7D32 /*{b-link-active}*/;
     }
 
-/* Button up */
-.ui-page-theme-b .ui-btn,
-html .ui-bar-b .ui-btn,
-html .ui-body-b .ui-btn,
-html body .ui-group-theme-b .ui-btn,
-html head + body .ui-btn.ui-btn-b,
-/* Button visited */
-.ui-page-theme-b .ui-btn:visited,
-html .ui-bar-b .ui-btn:visited,
-html .ui-body-b .ui-btn:visited,
-html body .ui-group-theme-b .ui-btn:visited,
-html head + body .ui-btn.ui-btn-b:visited {
-    background-color: #333 /*{b-bup-background-color}*/;
-    border-color: #1f1f1f /*{b-bup-border}*/;
-    color: #fff /*{b-bup-color}*/;
-}
-    /* Button hover */
-    .ui-page-theme-b .ui-btn:hover,
-    html .ui-bar-b .ui-btn:hover,
-    html .ui-body-b .ui-btn:hover,
-    html body .ui-group-theme-b .ui-btn:hover,
-    html head + body .ui-btn.ui-btn-b:hover {
-        background-color: #373737 /*{b-bhover-background-color}*/;
-        border-color: #1f1f1f /*{b-bhover-border}*/;
-        color: #fff /*{b-bhover-color}*/;
-    }
-    /* Button down */
-    .ui-page-theme-b .ui-btn:active,
-    html .ui-bar-b .ui-btn:active,
-    html .ui-body-b .ui-btn:active,
-    html body .ui-group-theme-b .ui-btn:active,
-    html head + body .ui-btn.ui-btn-b:active {
-        background-color: #404040 /*{b-bdown-background-color}*/;
-        border-color: #1f1f1f /*{b-bdown-border}*/;
-        color: #fff /*{b-bdown-color}*/;
-    }
-
-    /* Active button */
-    .ui-page-theme-b .ui-btn.ui-btn-active,
-    html .ui-bar-b .ui-btn.ui-btn-active,
-    html .ui-body-b .ui-btn.ui-btn-active,
-    html body .ui-group-theme-b .ui-btn.ui-btn-active,
-    html head + body .ui-btn.ui-btn-b.ui-btn-active,
-    /* Active checkbox icon */
-    .ui-page-theme-b .ui-checkbox-on:after,
-    html .ui-bar-b .ui-checkbox-on:after,
-    html .ui-body-b .ui-checkbox-on:after,
-    html body .ui-group-theme-b .ui-checkbox-on:after,
-    .ui-btn.ui-checkbox-on.ui-btn-b:after {
-        background-color: #22aadd /*{b-active-background-color}*/;
-        border-color: #22aadd /*{b-active-border}*/;
-        color: #fff /*{b-active-color}*/;
-    }
-/* Active radio button icon */
-.ui-page-theme-b .ui-radio-on:after,
-html .ui-bar-b .ui-radio-on:after,
-html .ui-body-b .ui-radio-on:after,
-html body .ui-group-theme-b .ui-radio-on:after,
-.ui-btn.ui-radio-on.ui-btn-b:after {
-    border-color: #22aadd /*{b-active-background-color}*/;
-}
-
 /* latin */
 @font-face {
     font-family: 'Montserrat';
@@ -261,11 +28,6 @@ html body .ui-group-theme-b .ui-radio-on:after,
 /* For some reason jquery mobile 1.4.5 wants to horitontally pad mini form fields. */
 .ui-mini {
     margin-left: 0;
-}
-
-/* jQuery mobile adds a text shadow that seems unnecessary. */
-* {
-    -webkit-font-smoothing: antialiased;
 }
 
 /* Remove IE mobile 300ms tap delay */
@@ -298,6 +60,7 @@ body {
     margin: 0;
     padding: 0;
     height: 100%;
+    -webkit-font-smoothing: antialiased;
 }
 
     body.autoScrollY {
@@ -325,24 +88,18 @@ iron-icon {
     overflow-y: hidden !important;
 }
 
-.jqmButtonNoText {
-    padding: 3px 4px !important;
-    border-radius: 4px !important;
-    vertical-align: top;
-}
-
 .textlink {
     text-decoration: none;
 }
 
-h1, h1 a {
-    font-weight: 300 !important;
-    font-size: 24px;
+h1, h2, h3 {
+    margin-top: 1em;
 }
 
-.ui-loader {
-    display: none !important;
-}
+    h1, h1 a {
+        font-weight: 300 !important;
+        font-size: 24px;
+    }
 
 h2 {
     font-weight: 400;
@@ -367,42 +124,6 @@ h1 a:hover {
 
 .ui-body-b a.accent {
     color: #52B54B !important;
-}
-
-.ui-listview li h3 {
-    font-weight: 400;
-}
-
-.ui-listview > .ui-li-divider {
-    line-height: 1.5;
-    line-height: initial;
-}
-/* 
-    Make all panels vertically scrollable 
-    If this causes any problems then perhaps require a css class to activate
-*/
-.ui-panel.ui-panel-open {
-    position: fixed;
-}
-
-/* Show over now playing bar */
-.ui-panel-display-overlay {
-    z-index: 1098;
-}
-
-.ui-panel-inner {
-    position: absolute;
-    top: 1px;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    overflow: hidden;
-}
-
-.ui-slider-track.ui-mini .ui-slider-handle {
-    height: 18px;
-    width: 18px;
-    margin: -10px 0 0 -10px;
 }
 
 fieldset {

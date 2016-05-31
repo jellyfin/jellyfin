@@ -621,7 +621,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .libraryPanelHeader {
     margin: 5px 0 15px 0;
     font-size: 15px;
-    font-family: Montserrat;
 }
 
     .libraryPanelHeader a {
@@ -983,12 +982,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     font-size: 19px;
     margin-right: 15px;
     font-weight: bold;
-}
-
-@media all and (min-width: 650px) {
-    .libraryTabs .ui-btn-inner {
-        padding: .5em 15px !important;
-    }
 }
 
 /* All HTML5 progress enabled browsers */

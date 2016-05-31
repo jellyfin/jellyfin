@@ -1,6 +1,7 @@
-﻿define(['dialogHelper', 'require', 'layoutManager', 'globalize', 'appStorage', 'connectionManager', 'loading', 'paper-fab', 'listViewStyle', 'paper-icon-button-light', 'css!./../formdialog'], function (dialogHelper, require, layoutManager, globalize, appStorage, connectionManager, loading) {
+﻿define(['dialogHelper', 'require', 'layoutManager', 'globalize', 'scrollHelper', 'appStorage', 'connectionManager', 'loading', 'focusManager', 'emby-select', 'listViewStyle', 'paper-icon-button-light', 'css!./../formdialog', 'html!./../icons/mediainfo.html', 'html!./../icons/nav.html', 'css!./subtitleeditor'], function (dialogHelper, require, layoutManager, globalize, scrollHelper, appStorage, connectionManager, loading, focusManager) {
 
     var currentItem;
+    var hasChanges;
 
     function showLocalSubtitles(context, index) {
 
@@ -51,19 +52,23 @@
 
         }).then(function () {
 
+            hasChanges = true;
+
             require(['toast'], function (toast) {
-                toast(globalize.translate('MessageDownloadQueued'));
+                toast(globalize.translate('sharedcomponents#MessageDownloadQueued'));
             });
+
+            focusManager.autoFocus(context);
         });
     }
 
     function deleteLocalSubtitle(context, index) {
 
-        var msg = globalize.translate('MessageAreYouSureDeleteSubtitles');
+        var msg = globalize.translate('sharedcomponents#MessageAreYouSureDeleteSubtitles');
 
         require(['confirm'], function (confirm) {
 
-            confirm(msg, globalize.translate('HeaderConfirmDeletion')).then(function () {
+            confirm(msg, globalize.translate('sharedcomponents#ConfirmDeletion')).then(function () {
 
                 loading.show();
 
@@ -79,6 +84,7 @@
 
                 }).then(function () {
 
+                    hasChanges = true;
                     reload(context, apiClient, itemId);
                 });
             });
@@ -98,10 +104,10 @@
 
         if (subs.length) {
 
-            html += '<h1 style="margin-top:1.5em;">' + globalize.translate('HeaderCurrentSubtitles') + '</h1>';
+            html += '<h1>' + globalize.translate('sharedcomponents#MySubtitles') + '</h1>';
 
             if (layoutManager.tv) {
-                html += '<div>';
+                html += '<div class="paperList clear">';
             } else {
                 html += '<div class="paperList">';
             }
@@ -110,29 +116,18 @@
 
                 var itemHtml = '';
 
-                itemHtml += '<div class="listItem">';
+                var tagName = layoutManager.tv ? 'button' : 'div';
+                var className = layoutManager.tv && s.Path ? 'listItem btnDelete' : 'listItem';
 
-                itemHtml += '<paper-fab mini class="blue" icon="closed-caption" item-icon></paper-fab>';
+                itemHtml += '<' + tagName + ' class="' + className + '" data-index="' + s.Index + '">';
 
-                var atts = [];
-
-                atts.push(s.Codec);
-                if (s.IsDefault) {
-
-                    atts.push('Default');
-                }
-                if (s.IsForced) {
-
-                    atts.push('Forced');
-                }
+                itemHtml += '<iron-icon class="listItemIcon" icon="mediainfo:closed-caption"></iron-icon>';
 
                 itemHtml += '<div class="listItemBody">';
 
                 itemHtml += '<h3 class="listItemBodyText">';
-                itemHtml += (s.Language || globalize.translate('LabelUnknownLanaguage'));
+                itemHtml += s.DisplayTitle || '';
                 itemHtml += '</h3>';
-
-                itemHtml += '<div class="secondary listItemBodyText">' + atts.join(' - ') + '</div>';
 
                 if (s.Path) {
                     itemHtml += '<div class="secondary listItemBodyText">' + (s.Path) + '</div>';
@@ -141,11 +136,13 @@
                 itemHtml += '</a>';
                 itemHtml += '</div>';
 
-                if (s.Path) {
-                    itemHtml += '<button is="paper-icon-button-light" data-index="' + s.Index + '" title="' + globalize.translate('Delete') + '" class="btnDelete"><iron-icon icon="delete"></iron-icon></button>';
+                if (!layoutManager.tv) {
+                    if (s.Path) {
+                        itemHtml += '<button is="paper-icon-button-light" data-index="' + s.Index + '" title="' + globalize.translate('sharedcomponents#Delete') + '" class="btnDelete"><iron-icon icon="nav:delete"></iron-icon></button>';
+                    }
                 }
 
-                itemHtml += '</div>';
+                itemHtml += '</' + tagName + '>';
 
                 return itemHtml;
 
@@ -226,16 +223,19 @@
                 }
                 html += '<h1>' + provider + '</h1>';
                 if (layoutManager.tv) {
-                    html += '<div>';
+                    html += '<div class="paperList clear">';
                 } else {
                     html += '<div class="paperList">';
                 }
                 lastProvider = provider;
             }
 
-            html += '<div class="listItem">';
+            var tagName = layoutManager.tv ? 'button' : 'div';
+            var className = layoutManager.tv ? 'listItem btnOptions' : 'listItem';
 
-            html += '<paper-fab mini class="blue" icon="closed-caption" item-icon></paper-fab>';
+            html += '<' + tagName + ' class="' + className + '" data-subid="' + result.Id + '">';
+
+            html += '<iron-icon class="listItemIcon" icon="mediainfo:closed-caption"></iron-icon>';
 
             html += '<div class="listItemBody">';
 
@@ -254,9 +254,11 @@
 
             html += '<div class="secondary">' + /*(result.CommunityRating || 0) + ' / ' +*/ (result.DownloadCount || 0) + '</div>';
 
-            html += '<button type="button" is="paper-icon-button-light" data-subid="' + result.Id + '" title="' + globalize.translate('ButtonDownload') + '" class="btnDownload"><iron-icon icon="cloud-download"></iron-icon></button>';
+            if (!layoutManager.tv) {
+                html += '<button type="button" is="paper-icon-button-light" data-subid="' + result.Id + '" class="btnOptions"><iron-icon icon="nav:more-vert"></iron-icon></button>';
+            }
 
-            html += '</div>';
+            html += '</' + tagName + '>';
         }
 
         if (results.length) {
@@ -295,6 +297,7 @@
         context.querySelector('.noSearchResults').classList.add('hide');
 
         function onGetItem(item) {
+
             currentItem = item;
 
             fillSubtitleList(context, item);
@@ -359,66 +362,145 @@
 
     function onSubtitleResultsClick(e) {
 
-        var btnDownload = parentWithClass(e.target, 'btnDownload');
-        if (btnDownload) {
-            var id = btnDownload.getAttribute('data-subid');
-            var context = parentWithClass(btnDownload, 'subtitleEditorDialog');
-            downloadRemoteSubtitles(context, id);
+        var btnOptions = parentWithClass(e.target, 'btnOptions');
+        if (btnOptions) {
+            var subtitleId = btnOptions.getAttribute('data-subid');
+            var context = parentWithClass(btnOptions, 'subtitleEditorDialog');
+            showDownloadOptions(btnOptions, context, subtitleId);
         }
+    }
+
+    function showDownloadOptions(button, context, subtitleId) {
+
+        var items = [];
+
+        items.push({
+            name: Globalize.translate('sharedcomponents#Download'),
+            id: 'download'
+        });
+
+        require(['actionsheet'], function (actionsheet) {
+
+            actionsheet.show({
+                items: items,
+                positionTo: button
+
+            }).then(function (id) {
+
+                switch (id) {
+
+                    case 'download':
+                        downloadRemoteSubtitles(context, subtitleId);
+                        break;
+                    default:
+                        break;
+                }
+            });
+
+        });
+    }
+
+    function onSubmitButtonClick(e) {
+
+        // Do a fake form submit this the button isn't a real submit button
+        var fakeSubmit = document.createElement('input');
+        fakeSubmit.setAttribute('type', 'submit');
+        fakeSubmit.style.display = 'none';
+        var form = parentWithClass(this, 'subtitleSearchForm');
+        form.appendChild(fakeSubmit);
+        fakeSubmit.click();
+
+        // Seeing issues in smart tv browsers where the form does not get submitted if the button is removed prior to the submission actually happening
+        setTimeout(function () {
+            form.removeChild(fakeSubmit);
+        }, 500);
+    }
+
+    function showEditorInternal(itemId, serverId, template) {
+
+        hasChanges = false;
+
+        var apiClient = connectionManager.getApiClient(serverId);
+        return apiClient.getItem(apiClient.getCurrentUserId(), itemId).then(function (item) {
+
+            var dialogOptions = {
+                removeOnClose: true
+            };
+
+            if (layoutManager.tv) {
+                dialogOptions.size = 'fullscreen';
+            } else {
+                dialogOptions.size = 'small';
+            }
+
+            var dlg = dialogHelper.createDialog(dialogOptions);
+
+            dlg.classList.add('formDialog');
+            dlg.classList.add('subtitleEditorDialog');
+
+            dlg.innerHTML = globalize.translateDocument(template, 'sharedcomponents');
+            document.body.appendChild(dlg);
+
+            dlg.querySelector('.originalFileLabel').innerHTML = globalize.translate('sharedcomponents#File');
+
+            dlg.querySelector('.subtitleSearchForm').addEventListener('submit', onSearchSubmit);
+
+            var btnSubmit = dlg.querySelector('.btnSubmit');
+
+            if (layoutManager.tv) {
+                scrollHelper.centerFocus.on(dlg.querySelector('.dialogContent'), false);
+                dlg.querySelector('.btnSearchSubtitles').classList.add('hide');
+            } else {
+                btnSubmit.classList.add('hide');
+            }
+
+            var editorContent = dlg.querySelector('.dialogContent');
+
+            dlg.querySelector('.subtitleList').addEventListener('click', onSubtitleListClick);
+            dlg.querySelector('.subtitleResults').addEventListener('click', onSubtitleResultsClick);
+
+            apiClient.getCultures().then(function (languages) {
+
+                fillLanguages(editorContent, apiClient, languages);
+            });
+
+            dlg.querySelector('.btnCancel').addEventListener('click', function () {
+
+                dialogHelper.close(dlg);
+            });
+
+            btnSubmit.addEventListener('click', onSubmitButtonClick);
+
+            return new Promise(function (resolve, reject) {
+
+                dlg.addEventListener('close', function () {
+
+                    if (hasChanges) {
+                        resolve();
+                    } else {
+                        reject();
+                    }
+                });
+
+                dialogHelper.open(dlg);
+
+                reload(editorContent, apiClient, item);
+            });
+        });
     }
 
     function showEditor(itemId, serverId) {
 
         loading.show();
 
-        require(['text!./subtitleeditor.template.html'], function (template) {
+        return new Promise(function (resolve, reject) {
 
-            var apiClient = connectionManager.getApiClient(serverId);
+            require(['text!./subtitleeditor.template.html'], function (template) {
 
-            apiClient.getItem(apiClient.getCurrentUserId(), itemId).then(function (item) {
-
-                var dialogOptions = {
-                    removeOnClose: true
-                };
-
-                if (layoutManager.tv) {
-                    dialogOptions.size = 'fullscreen';
-                } else {
-                    dialogOptions.size = 'small';
-                }
-
-                var dlg = dialogHelper.createDialog(dialogOptions);
-
-                dlg.classList.add('formDialog');
-                dlg.classList.add('subtitleEditorDialog');
-
-                dlg.innerHTML = globalize.translateDocument(template);
-                document.body.appendChild(dlg);
-
-                dlg.querySelector('.pathLabel').innerHTML = globalize.translate('MediaInfoFile');
-
-                dlg.querySelector('.subtitleSearchForm').addEventListener('submit', onSearchSubmit);
-
-                dialogHelper.open(dlg);
-
-                var editorContent = dlg.querySelector('.dialogContent');
-
-                dlg.querySelector('.subtitleList').addEventListener('click', onSubtitleListClick);
-                dlg.querySelector('.subtitleResults').addEventListener('click', onSubtitleResultsClick);
-
-                reload(editorContent, apiClient, item);
-
-                apiClient.getCultures().then(function (languages) {
-
-                    fillLanguages(editorContent, apiClient, languages);
-                });
-
-                dlg.querySelector('.btnCancel').addEventListener('click', function () {
-
-                    dialogHelper.close(dlg);
-                });
+                showEditorInternal(itemId, serverId, template).then(resolve, reject);
             });
         });
+
     }
 
     return {
