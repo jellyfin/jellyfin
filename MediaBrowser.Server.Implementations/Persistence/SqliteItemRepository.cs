@@ -2628,6 +2628,20 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 whereClauses.Add("MediaType in (" + val + ")");
             }
+            if (query.ExcludeItemIds.Length > 0)
+            {
+                var excludeIds = new List<string>();
+
+                var index = 0;
+                foreach (var id in query.ExcludeItemIds)
+                {
+                    excludeIds.Add("Guid <> @ExcludeId" + index);
+                    cmd.Parameters.Add(cmd, "@ExcludeId" + index, DbType.Guid).Value = new Guid(id);
+                    index++;
+                }
+
+                whereClauses.Add(string.Join(" AND ", excludeIds.ToArray()));
+            }
 
             if (query.AlbumNames.Length > 0)
             {
