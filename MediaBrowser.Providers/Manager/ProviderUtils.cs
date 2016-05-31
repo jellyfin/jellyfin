@@ -165,15 +165,9 @@ namespace MediaBrowser.Providers.Manager
 
             if (!lockedFields.Contains(MetadataFields.Keywords))
             {
-                var sourceHasKeywords = source as IHasKeywords;
-                var targetHasKeywords = target as IHasKeywords;
-
-                if (sourceHasKeywords != null && targetHasKeywords != null)
+                if (replaceData || target.Keywords.Count == 0)
                 {
-                    if (replaceData || targetHasKeywords.Keywords.Count == 0)
-                    {
-                        targetHasKeywords.Keywords = sourceHasKeywords.Keywords;
-                    }
+                    target.Keywords = source.Keywords;
                 }
             }
 

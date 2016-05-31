@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Providers;
 using MoreLinq;
 
 namespace MediaBrowser.Controller.Entities.TV
@@ -515,6 +516,23 @@ namespace MediaBrowser.Controller.Entities.TV
             }
 
             return hasChanges;
+        }
+
+        public override List<ExternalUrl> GetRelatedUrls()
+        {
+            var list = base.GetRelatedUrls();
+
+            var imdbId = this.GetProviderId(MetadataProviders.Imdb);
+            if (!string.IsNullOrWhiteSpace(imdbId))
+            {
+                list.Add(new ExternalUrl
+                {
+                    Name = "Trakt",
+                    Url = string.Format("https://trakt.tv/shows/{0}", imdbId)
+                });
+            }
+
+            return list;
         }
     }
 }

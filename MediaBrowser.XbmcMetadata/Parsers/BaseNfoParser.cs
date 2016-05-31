@@ -932,13 +932,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        var hasKeywords = item as IHasKeywords;
-                        if (hasKeywords != null)
+                        if (!string.IsNullOrWhiteSpace(val))
                         {
-                            if (!string.IsNullOrWhiteSpace(val))
-                            {
-                                hasKeywords.AddKeyword(val);
-                            }
+                            item.AddKeyword(val);
                         }
                         break;
                     }

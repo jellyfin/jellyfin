@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Trailer
     /// </summary>
-    public class Trailer : Video, IHasCriticRating, IHasProductionLocations, IHasBudget, IHasKeywords, IHasTaglines, IHasMetascore, IHasOriginalTitle, IHasLookupInfo<TrailerInfo>
+    public class Trailer : Video, IHasCriticRating, IHasProductionLocations, IHasBudget, IHasTaglines, IHasMetascore, IHasOriginalTitle, IHasLookupInfo<TrailerInfo>
     {
         public List<string> ProductionLocations { get; set; }
 
@@ -30,8 +30,6 @@ namespace MediaBrowser.Controller.Entities
         public float? Metascore { get; set; }
 
         public List<MediaUrl> RemoteTrailers { get; set; }
-
-        public List<string> Keywords { get; set; }
 
         [IgnoreDataMember]
         public bool IsLocalTrailer

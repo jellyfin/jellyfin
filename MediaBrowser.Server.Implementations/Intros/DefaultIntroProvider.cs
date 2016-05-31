@@ -433,13 +433,7 @@ namespace MediaBrowser.Server.Implementations.Intros
 
         private static IEnumerable<string> GetKeywords(BaseItem item)
         {
-            var hasTags = item as IHasKeywords;
-            if (hasTags != null)
-            {
-                return hasTags.Keywords;
-            }
-
-            return new List<string>();
+            return item.Keywords;
         }
 
         public IEnumerable<string> GetAllIntroFiles()

@@ -33,6 +33,7 @@ namespace MediaBrowser.Controller.Entities
         public string[] ExcludeTags { get; set; }
         public string[] ExcludeInheritedTags { get; set; }
         public string[] Genres { get; set; }
+        public string[] Keywords { get; set; }
 
         public bool? IsMissing { get; set; }
         public bool? IsUnaired { get; set; }
@@ -52,6 +53,7 @@ namespace MediaBrowser.Controller.Entities
         public string Person { get; set; }
         public string[] PersonIds { get; set; }
         public string[] ItemIds { get; set; }
+        public string[] ExcludeItemIds { get; set; }
         public string AdjacentTo { get; set; }
         public string[] PersonTypes { get; set; }
 
@@ -151,6 +153,7 @@ namespace MediaBrowser.Controller.Entities
             OfficialRatings = new string[] { };
             SortBy = new string[] { };
             MediaTypes = new string[] { };
+            Keywords = new string[] { };
             IncludeItemTypes = new string[] { };
             ExcludeItemTypes = new string[] { };
             Genres = new string[] { };
@@ -164,6 +167,7 @@ namespace MediaBrowser.Controller.Entities
             PersonIds = new string[] { };
             ChannelIds = new string[] { };
             ItemIds = new string[] { };
+            ExcludeItemIds = new string[] { };
             AncestorIds = new string[] { };
             TopParentIds = new string[] { };
             ExcludeTags = new string[] { };

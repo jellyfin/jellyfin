@@ -15,7 +15,7 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class Movie
     /// </summary>
-    public class Movie : Video, IHasCriticRating, IHasSpecialFeatures, IHasProductionLocations, IHasBudget, IHasKeywords, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping, IHasOriginalTitle
+    public class Movie : Video, IHasCriticRating, IHasSpecialFeatures, IHasProductionLocations, IHasBudget, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping, IHasOriginalTitle
     {
         public List<Guid> SpecialFeatureIds { get; set; }
 
@@ -32,7 +32,6 @@ namespace MediaBrowser.Controller.Entities.Movies
             ThemeSongIds = new List<Guid>();
             ThemeVideoIds = new List<Guid>();
             Taglines = new List<string>();
-            Keywords = new List<string>();
             ProductionLocations = new List<string>();
         }
 
@@ -42,7 +41,6 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public List<Guid> LocalTrailerIds { get; set; }
         public List<Guid> RemoteTrailerIds { get; set; }
-        public List<string> Keywords { get; set; }
 
         public List<MediaUrl> RemoteTrailers { get; set; }
 
