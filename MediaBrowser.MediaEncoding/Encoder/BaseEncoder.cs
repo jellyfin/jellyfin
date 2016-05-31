@@ -73,11 +73,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var commandLineArgs = GetCommandLineArguments(encodingJob);
 
-            if (GetEncodingOptions().EnableDebugLogging)
-            {
-                commandLineArgs = "-loglevel debug " + commandLineArgs;
-            }
-
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo
