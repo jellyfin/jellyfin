@@ -1705,7 +1705,7 @@
                     }
 
                     var width = screenWidth / innerWidth;
-                    div.remove();
+                    div.parentNode.removeChild(div);
                     return Math.floor(width);
                 }
 

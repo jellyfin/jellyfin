@@ -206,35 +206,6 @@ div[data-role='page'] {
     outline: none;
 }
 
-div[data-role="controlgroup"] a[data-role='button'] {
-    display: inline-block !important;
-    margin: 0 !important;
-    -webkit-box-shadow: none !important;
-    -moz-box-shadow: none !important;
-    box-shadow: none !important;
-    border-radius: 0;
-}
-
-    div[data-role="controlgroup"] a[data-role='button']:first-child {
-        border-bottom-left-radius: .3125em;
-        border-top-left-radius: .3125em;
-    }
-
-    div[data-role="controlgroup"] a[data-role='button']:last-child {
-        border-bottom-right-radius: .3125em;
-        border-top-right-radius: .3125em;
-    }
-
-    div[data-role="controlgroup"] a[data-role='button'] + a[data-role='button'] {
-        border-left-width: 0 !important;
-        margin: 0 0 0 -3px !important;
-    }
-
-div[data-role="controlgroup"] a.ui-btn-active {
-    background: #38c !important;
-    color: #fff !important;
-}
-
 /**
  * Note: I have omitted any vendor-prefixes for clarity.
  * Adding them is left as an exercise for the reader.
@@ -705,166 +676,6 @@ progress {
         text-decoration: underline;
     }
 
-.activeSession {
-    width: 50%;
-}
-
-    .activeSession .cardPadder {
-        padding-bottom: 56.25%;
-    }
-
-
-.sessionNowPlayingContent {
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center center;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-}
-
-.sessionNowPlayingInnerContent {
-    background-color: rgba(0, 0, 0, .6);
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    color: #fff;
-    font-weight: 400;
-}
-
-.sessionAppInfo {
-    padding: .5em;
-    overflow: hidden;
-}
-
-.sessionAppName {
-    vertical-align: top;
-    max-width: 200px;
-}
-
-.sessionNowPlayingInfo {
-    position: absolute;
-    left: 0;
-    bottom: 11px;
-    padding: .5em;
-    max-width: 150px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.sessionAppInfo img {
-    max-width: 32px;
-    max-height: 32px;
-    margin-right: 5px;
-}
-
-.activeSession .playbackProgress {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    height: 7px;
-    width: 100%;
-    opacity: .95;
-    z-index: 999;
-}
-
-.activeDevicesCollapsible .ui-collapsible-content {
-    padding: .25em !important;
-}
-
-.activeSession:not(.playingSession) .sessionNowPlayingContent {
-    display: none;
-}
-
-.activeSession:not(.playingSession) .sessionNowPlayingInnerContent {
-    background-color: #fff;
-    color: #000;
-}
-
-.activeSession:not(.playingSession) .sessionNowPlayingInfo {
-    bottom: 0;
-}
-
-.sessionNowPlayingTime {
-    color: #fff;
-    position: absolute;
-    right: 10px;
-    bottom: 39px;
-}
-
-.sessionTranscodingFramerate {
-    position: absolute;
-    left: 10px;
-    bottom: 19px;
-    color: #fff;
-}
-
-.sessionNowPlayingStreamInfo {
-    color: #fff;
-    position: absolute;
-    right: 10px;
-    bottom: 19px;
-}
-
-.activeSession .transcodingProgress {
-    right: 0;
-    bottom: 0;
-    left: 0;
-    height: 5px;
-    width: 100%;
-    opacity: .9;
-    z-index: 999;
-    position: absolute;
-}
-
-.transcodingSession .playbackProgress {
-    bottom: 5px;
-}
-
-/* Firefox */
-.transcodingProgress::-moz-progress-bar {
-    border-radius: 5px;
-    background-image: -moz-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
-}
-
-/* Chrome */
-.transcodingProgress::-webkit-progress-value {
-    border-radius: 5px;
-    background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0, rgb(221, 73, 25)), color-stop(1, rgb(221, 73, 25)) ) !important;
-    background-image: -webkit-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
-}
-
-/* Polyfill */
-.transcodingProgress[aria-valuenow]:before {
-    border-radius: 5px;
-    background-image: -moz-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
-    background-image: -ms-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
-    background-image: -o-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
-}
-
-@media all and (max-width: 550px) {
-
-    .sessionAppName {
-        max-width: 160px;
-    }
-}
-
-@media all and (max-width: 500px) {
-
-    .sessionAppName {
-        max-width: 150px;
-    }
-
-    .activeSession {
-        width: 100%;
-    }
-}
-
 .dashboardFooter {
     margin-top: 50px;
     text-align: center;
@@ -900,26 +711,6 @@ progress {
     .inlineSupporterPromotion {
         display: inline-block;
     }
-}
-
-.disabledUser {
-    -webkit-filter: grayscale(100%);
-    filter: grayscale(100%);
-}
-
-.disabledUserBanner {
-    margin: 0 0 2em;
-}
-
-.modalLoading {
-    position: fixed;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, .3);
-    /* One less than jqm loading spinner, so we can combine them */
-    z-index: 9999998;
 }
 
 .nativeApp *:not(input):not(select):not(textarea) {
@@ -960,36 +751,6 @@ progress {
         min-width: 400px;
     }
 }
-
-.scheduledTaskPaperIconItem {
-    outline: none !important;
-}
-
-    .scheduledTaskPaperIconItem[data-status='Idle'] paper-fab {
-        background-color: #999;
-    }
-
-    .scheduledTaskPaperIconItem[data-status="Cancelling"] paper-fab {
-        background-color: #cc3333;
-    }
-
-    .scheduledTaskPaperIconItem[data-status="Running"] paper-fab {
-        background-color: #52B54B;
-    }
-
-    .scheduledTaskPaperIconItem #progressContainer {
-        height: 8px !important;
-        border-radius: 5px;
-    }
-
-    .scheduledTaskPaperIconItem #primaryProgress {
-        border-bottom-left-radius: 5px;
-        border-top-left-radius: 5px;
-    }
-
-    .scheduledTaskPaperIconItem paper-progress {
-        display: inline-block;
-    }
 
 .imageDropZone {
     border: 2px dashed #bbb;

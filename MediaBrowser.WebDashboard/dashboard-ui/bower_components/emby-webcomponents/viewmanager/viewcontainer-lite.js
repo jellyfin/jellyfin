@@ -12,6 +12,10 @@ define(['browser', 'css!./viewcontainer-lite'], function (browser) {
             return false;
         }
 
+        if (browser.operaTv) {
+            return false;
+        }
+
         return true;
     }
 

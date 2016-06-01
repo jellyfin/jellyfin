@@ -945,6 +945,15 @@
             <remarks>
             Defaults to string ";"
             </remarks></member>
+        <member name="P:IniParser.Model.Configuration.IniParserConfiguration.NewLineStr">
+            <summary>
+            Gets or sets the string to use as new line string when formating an IniData structure using a
+            IIniDataFormatter. Parsing an ini-file accepts any new line character (Unix/windows)
+            </summary>
+            <remarks>
+            This allows to write a file with unix new line characters on windows (and vice versa)
+            </remarks>
+            <value>Defaults to value Environment.NewLine</value></member>
         <member name="P:IniParser.Model.Configuration.IniParserConfiguration.KeyValueAssigmentChar">
             <summary>
             Sets the char that defines a value assigned to a key
