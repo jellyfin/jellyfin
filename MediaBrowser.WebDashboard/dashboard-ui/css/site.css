@@ -121,7 +121,7 @@ h1 a:hover {
     color: #52B54B !important;
 }
 
-input:not(.paper-input):not(.likePaperText):not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']):not([is='emby-input']) {
+input:not(.paper-input):not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']):not([is='emby-input']) {
     -webkit-appearance: none;
     -webkit-font-smoothing: antialiased;
     -webkit-rtl-ordering: logical;
@@ -429,10 +429,6 @@ paper-input + .fieldDescription {
     font-weight: 500;
 }
 
-.invalidEntry {
-    background-color: lightpink !important;
-}
-
 /* Tabs (e.g. advanced metadata page) */
 .localnav {
     margin-bottom: 30px !important;
@@ -448,22 +444,6 @@ paper-input + .fieldDescription {
 .page > .ui-content, .pageWithAbsoluteTabs .pageTabContent, .absolutePageTabContent .itemsContainer {
     /* Need this so that the audio player doesn't cover content, but also for unveil lazy loading. */
     padding-bottom: 160px;
-}
-
-.appLinks a {
-    text-decoration: none !important;
-}
-
-    .appLinks a + a {
-        margin-left: 5px;
-    }
-
-.appLinks img {
-    height: 36px;
-}
-
-.activeDevicesCollapsible .ui-collapsible-content {
-    padding: .5em .5em !important;
 }
 
 @media all and (min-width: 450px) {
@@ -500,30 +480,6 @@ paper-input + .fieldDescription {
         padding-top: 0;
     }
 }
-
-/*
-    Media Library Page
-    */
-.mediaFolderButtons {
-    margin-top: 10px;
-}
-
-.mediaFolderLocations {
-    margin: 1em .25em !important;
-}
-
-.mediaLocationsHeader {
-    padding-top: .75em !important;
-    padding-bottom: .75em !important;
-}
-
-    .mediaLocationsHeader .ui-btn {
-        position: absolute;
-        right: -3px;
-        margin-top: 0 !important;
-        margin-bottom: 0 !important;
-        top: 4px;
-    }
 
 #ulDirectoryPickerList a {
     padding-top: .4em;
@@ -663,19 +619,6 @@ progress {
         opacity: .5;
     }
 
-.userProfileIcon {
-    width: 36px;
-}
-
-.btnShowStatusMessage {
-    font-weight: normal !important;
-    text-decoration: none;
-}
-
-    .btnShowStatusMessage:hover {
-        text-decoration: underline;
-    }
-
 .dashboardFooter {
     margin-top: 50px;
     text-align: center;
@@ -727,10 +670,6 @@ progress {
     -moz-user-drag: none;
     -ms-user-drag: none;
     user-drag: none;
-}
-
-.supporterMembershipDisabled .tabSupporterMembership {
-    display: none;
 }
 
 .syncActivityForTarget {

@@ -115,10 +115,6 @@ h1, h1 a {
     justify-content: center;
 }
 
-.libraryPanelHeader span {
-    font-weight: 400;
-}
-
 .noSecondaryNavPage .itemBackdrop {
     margin-top: 0;
 }

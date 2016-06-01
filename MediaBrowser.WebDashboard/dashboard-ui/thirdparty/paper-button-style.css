@@ -184,43 +184,12 @@ paper-button.notext {
         margin-right: 0;
     }
 
-.bottomFab {
-    bottom: 90px;
-}
-
-paper-dialog {
-    border-radius: 4px;
-    z-index: 999999 !important;
-    font-family: inherit !important;
-}
-
-    paper-dialog h2 {
-        font-family: inherit !important;
-    }
-
-iron-overlay-backdrop {
-    z-index: 999998 !important;
-}
-
-/* These values default to 24px and create huge white padding around the dialog content. */
-.scrollable.paper-dialog-scrollable {
-    padding: 0 12px;
-}
-
 paper-icon-button paper-ripple {
     color: inherit !important;
 }
 
 .ui-body-b paper-icon-button[disabled] {
     color: #444 !important;
-}
-
-paper-dialog + iron-overlay-backdrop {
-    background-color: transparent !important;
-}
-
-paper-dialog[role="alertdialog"] + iron-overlay-backdrop {
-    background-color: #000 !important;
 }
 
 paper-tabs {
@@ -491,36 +460,6 @@ paper-dropdown-menu {
 
 paper-radio-group > * {
     padding: .5em;
-}
-
-.likePaperText {
-    -webkit-appearance: none;
-    -webkit-font-smoothing: antialiased;
-    -webkit-rtl-ordering: logical;
-    -webkit-user-select: text;
-    background: none !important;
-    background-color: transparent !important;
-    border: 1px solid gray !important;
-    border-width: 0 0 1px 0 !important;
-    color: #fff !important;
-    box-shadow: none;
-    outline: none !important;
-    padding: 0 !important;
-    position: relative;
-    text-indent: 0px !important;
-    width: 100%;
-    -webkit-writing-mode: horizontal-tb;
-    margin: 0 0 1em 0 !important;
-}
-
-    .likePaperText:focus {
-        border-color: #52B54B !important;
-    }
-
-.likePaperLabel {
-    margin: 1em 0 .5em !important;
-    color: #858585 !important;
-    display: block;
 }
 
 div.dialogHeader {

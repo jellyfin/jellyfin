@@ -1650,14 +1650,6 @@ var AppInfo = {};
             elem.classList.add('touch');
         }
 
-        if (!AppInfo.enableStudioTabs) {
-            elem.classList.add('studioTabDisabled');
-        }
-
-        if (!AppInfo.enableTvEpisodesTab) {
-            elem.classList.add('tvEpisodesTabDisabled');
-        }
-
         if (!AppInfo.enableSupporterMembership) {
             elem.classList.add('supporterMembershipDisabled');
         }
@@ -2057,7 +2049,7 @@ var AppInfo = {};
                 Dashboard.navigate('mypreferencesmenu.html?userId=' + ApiClient.getCurrentUserId());
             };
 
-            embyRouter.showItem = function (item) {
+            function showItem(item) {
                 if (typeof (item) === 'string') {
                     require(['connectionManager'], function (connectionManager) {
                         var apiClient = connectionManager.currentApiClient();
@@ -2066,7 +2058,9 @@ var AppInfo = {};
                 } else {
                     Dashboard.navigate(LibraryBrowser.getHref(item));
                 }
-            };
+            }
+
+            embyRouter.showItem = showItem;
 
             return embyRouter;
         });
