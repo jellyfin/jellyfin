@@ -15,6 +15,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
@@ -258,6 +259,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             new MediaStreamColumns(_connection, Logger).AddColumns();
 
             DataExtensions.Attach(_connection, Path.Combine(_config.ApplicationPaths.DataPath, "userdata_v2.db"), "UserDataDb");
+
+            dbConnector.BindSimilarityScoreFunction(_connection);
         }
 
         private readonly string[] _retriveItemColumns =
@@ -1523,6 +1526,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 return false;
             }
 
+            if (query.SimilarTo != null)
+            {
+                return true;
+            }
+
             if (query.SortBy != null && query.SortBy.Length > 0)
             {
                 if (query.SortBy.Contains(ItemSortBy.IsFavoriteOrLiked, StringComparer.OrdinalIgnoreCase))
@@ -1575,7 +1583,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             return false;
         }
 
-        private string[] GetFinalColumnsToSelect(InternalItemsQuery query, string[] startColumns)
+        private string[] GetFinalColumnsToSelect(InternalItemsQuery query, string[] startColumns, IDbCommand cmd)
         {
             var list = startColumns.ToList();
 
@@ -1588,6 +1596,45 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 list.Add("UserDataDb.UserData.isFavorite");
                 list.Add("UserDataDb.UserData.played");
                 list.Add("UserDataDb.UserData.rating");
+            }
+
+            if (query.SimilarTo != null)
+            {
+                var item = query.SimilarTo;
+
+                var builder = new StringBuilder();
+                builder.Append("GetSimilarityScore(");
+
+                builder.Append("@ItemOfficialRating,");
+                builder.Append("OfficialRating,");
+
+                builder.Append("@ItemProductionYear,");
+                builder.Append("ProductionYear,");
+
+                builder.Append("@ItemGenres,");
+                builder.Append("Genres,");
+
+                builder.Append("@ItemTags,");
+                builder.Append("Tags,");
+
+                builder.Append("@ItemKeywords,");
+                builder.Append("(select group_concat((Select Value from ItemValues where ItemId=Guid and Type=5), '|')),");
+
+                builder.Append("@ItemStudios,");
+                builder.Append("Studios");
+                builder.Append(") as SimilarityScore");
+
+                list.Add(builder.ToString());
+                cmd.Parameters.Add(cmd, "@ItemOfficialRating", DbType.String).Value = item.OfficialRating;
+                cmd.Parameters.Add(cmd, "@ItemProductionYear", DbType.Int32).Value = item.ProductionYear ?? -1;
+                cmd.Parameters.Add(cmd, "@ItemGenres", DbType.String).Value = string.Join("|", item.Genres.ToArray());
+                cmd.Parameters.Add(cmd, "@ItemTags", DbType.String).Value = string.Join("|", item.Tags.ToArray());
+                cmd.Parameters.Add(cmd, "@ItemKeywords", DbType.String).Value = string.Join("|", item.Keywords.ToArray());
+                cmd.Parameters.Add(cmd, "@ItemStudios", DbType.String).Value = string.Join("|", item.Studios.ToArray());
+
+                var excludeIds = query.ExcludeItemIds.ToList();
+                excludeIds.Add(item.Id.ToString("N"));
+                query.ExcludeItemIds = excludeIds.ToArray();
             }
 
             return list.ToArray();
@@ -1616,7 +1663,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, _retriveItemColumns)) + " from TypedBaseItems";
+                cmd.CommandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, _retriveItemColumns, cmd)) + " from TypedBaseItems";
                 cmd.CommandText += GetJoinUserDataText(query);
 
                 if (EnableJoinUserData(query))
@@ -1706,7 +1753,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, _retriveItemColumns)) + " from TypedBaseItems";
+                cmd.CommandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, _retriveItemColumns, cmd)) + " from TypedBaseItems";
                 cmd.CommandText += GetJoinUserDataText(query);
 
                 if (EnableJoinUserData(query))
@@ -1789,6 +1836,22 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private string GetOrderByText(InternalItemsQuery query)
         {
+            if (query.SimilarTo != null)
+            {
+                if (query.SortBy == null || query.SortBy.Length == 0)
+                {
+                    if (query.User != null)
+                    {
+                        query.SortBy = new[] { "SimilarityScore", "IsUnplayed", "Random" };
+                    }
+                    else
+                    {
+                        query.SortBy = new[] { "SimilarityScore", "Random" };
+                    }
+                    query.SortOrder = SortOrder.Descending;
+                }
+            }
+
             if (query.SortBy == null || query.SortBy.Length == 0)
             {
                 return string.Empty;
@@ -1862,6 +1925,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 return new Tuple<string, bool>("(select value from itemvalues where ItemId=Guid and Type=1 LIMIT 1)", false);
             }
+            if (string.Equals(name, ItemSortBy.OfficialRating, StringComparison.OrdinalIgnoreCase))
+            {
+                return new Tuple<string, bool>("ParentalRatingValue", false);
+            }
+            if (string.Equals(name, ItemSortBy.Studio, StringComparison.OrdinalIgnoreCase))
+            {
+                return new Tuple<string, bool>("(select value from itemvalues where ItemId=Guid and Type=3 LIMIT 1)", false);
+            }
 
             return new Tuple<string, bool>(name, false);
         }
@@ -1879,7 +1950,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, new[] { "guid" })) + " from TypedBaseItems";
+                cmd.CommandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, new[] { "guid" }, cmd)) + " from TypedBaseItems";
                 cmd.CommandText += GetJoinUserDataText(query);
 
                 if (EnableJoinUserData(query))
@@ -2022,7 +2093,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, new[] { "guid" })) + " from TypedBaseItems";
+                cmd.CommandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, new[] { "guid" }, cmd)) + " from TypedBaseItems";
 
                 var whereClauses = GetWhereClauses(query, cmd);
                 cmd.CommandText += GetJoinUserDataText(query);
@@ -2148,24 +2219,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
                 else
                 {
-                    if (query.IsMovie.Value)
-                    {
-                        var typeClauses = new List<string>();
-                        var typeIndex = 0;
-                        foreach (var type in alternateTypes)
-                        {
-                            var paramName = "@AlternateType" + typeIndex.ToString(CultureInfo.InvariantCulture);
-                            typeClauses.Add("Type=" + paramName);
-                            cmd.Parameters.Add(cmd, paramName, DbType.String).Value = type;
-                            typeIndex++;
-                        }
-
-                        whereClauses.Add("(IsMovie=@IsMovie OR " + string.Join(" OR ", typeClauses.ToArray()) + ")");
-                    }
-                    else
-                    {
-                        whereClauses.Add("(IsMovie is null OR IsMovie=@IsMovie)");
-                    }
+                    whereClauses.Add("(IsMovie is null OR IsMovie=@IsMovie)");
                 }
                 cmd.Parameters.Add(cmd, "@IsMovie", DbType.Boolean).Value = query.IsMovie;
             }
@@ -2533,6 +2587,20 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     clauses.Add("@Keyword" + index + " in (select value from itemvalues where ItemId=Guid and Type=5)");
                     cmd.Parameters.Add(cmd, "@Keyword" + index, DbType.String).Value = item;
+                    index++;
+                }
+                var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
+                whereClauses.Add(clause);
+            }
+
+            if (query.OfficialRatings.Length > 0)
+            {
+                var clauses = new List<string>();
+                var index = 0;
+                foreach (var item in query.OfficialRatings)
+                {
+                    clauses.Add("OfficialRating=@OfficialRating" + index);
+                    cmd.Parameters.Add(cmd, "@OfficialRating" + index, DbType.String).Value = item;
                     index++;
                 }
                 var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
