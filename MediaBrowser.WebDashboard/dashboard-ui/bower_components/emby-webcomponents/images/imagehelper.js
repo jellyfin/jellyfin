@@ -56,7 +56,7 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
     var wheelEvent = (document.implementation.hasFeature('Event.wheel', '3.0') ? 'wheel' : 'mousewheel');
     var self = {};
 
-    var enableFade = browser.animate && !browser.mobile;
+    var enableFade = browser.animate && !browser.mobile && !browser.operaTv;
     function fillImage(elem, source, enableEffects) {
 
         if (!source) {

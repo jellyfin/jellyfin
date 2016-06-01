@@ -68,5 +68,16 @@
     "MessageItemsAdded": "Elementer lagt til.",
     "OptionNew": "Ny",
     "LabelPlaylist": "Spilleliste:",
-    "AddToPlaylist": "Legg til i Spilleliste"
+    "AddToPlaylist": "Legg til i Spilleliste",
+    "Subtitles": "Subtitles",
+    "DownloadSubtitles": "Download Subtitles",
+    "LabelLanguage": "Language:",
+    "Search": "Search",
+    "NoSubtitleSearchResultsFound": "No results found.",
+    "File": "File",
+    "MessageAreYouSureDeleteSubtitles": "Are you sure you wish to delete this subtitle file?",
+    "ConfirmDeletion": "Confirm Deletion",
+    "MySubtitles": "My Subtitles",
+    "MessageDownloadQueued": "Download queued.",
+    "EditSubtitles": "Edit Subtitles"
 }
