@@ -2,13 +2,13 @@
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.LiveTv;
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Emby.XmlTv.Classes;
-using System.IO;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 {
@@ -16,6 +16,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
     {
         private string _filePath = "C:\\Temp\\";
         private string _language = null;
+        private Dictionary<string, List<string>> _categoryMappings = new Dictionary<string, List<string>>(){
+            { "Movie", new List<String>() { "Movie", "Film" } },
+            { "Sports", new List<String>() { "Sports", "Football", "Rugby", "Soccer" } },
+            { "Kids", new List<String>() { "Childrens", "Children", "Kids", "Disney" } },
+            { "News", new List<String>() { "News", "Journalism", "Documentary", "Current Affairs" } },
+        };
 
         public string Name
         {
@@ -51,6 +57,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 IsSeries = p.IsSeries,
                 IsRepeat = p.IsRepeat,
                 IsPremiere = !p.PreviouslyShown.HasValue,
+                IsKids = p.Categories.Any(_categoryMappings["Kids"].Contains),
+                IsMovie = p.Categories.Any(_categoryMappings["Movie"].Contains),
+                IsNews = p.Categories.Any(_categoryMappings["News"].Contains),
+                IsSports = p.Categories.Any(_categoryMappings["Sports"].Contains),
+                ImageUrl = p.Icon != null && !String.IsNullOrEmpty(p.Icon.Source) ? p.Icon.Source : null,
+                HasImage = p.Icon != null && !String.IsNullOrEmpty(p.Icon.Source),
             }));
         }
 
@@ -64,10 +76,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 	        {
                 channels.ForEach(c => {
                     var match = results.FirstOrDefault(r => r.Id == c.Id);
-                    if (match != null)
+                    if (match != null && match.Icon != null && !String.IsNullOrEmpty(match.Icon.Source))
                     {
-                        // c.ImageUrl = match.Url;
-                        // TODO: Add support for the channel logo to the XMLTv Component
+                        c.ImageUrl = match.Icon.Source;
                     }
                 });
 	        }
