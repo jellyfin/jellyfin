@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Api
 {
@@ -187,18 +188,40 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetSimilarGames request)
         {
-            var dtoOptions = GetDtoOptions(request);
-
-            var result = SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
-                _itemRepo,
-                _libraryManager,
-                _userDataRepository,
-                _dtoService,
-                Logger,
-                request, new[] { typeof(Game) },
-                SimilarItemsHelper.GetSimiliarityScore);
+            var result = GetSimilarItemsResult(request);
 
             return ToOptimizedSerializedResultUsingCache(result);
+        }
+
+        private QueryResult<BaseItemDto> GetSimilarItemsResult(BaseGetSimilarItemsFromItem request)
+        {
+            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
+
+            var item = string.IsNullOrEmpty(request.Id) ?
+                (!string.IsNullOrWhiteSpace(request.UserId) ? user.RootFolder :
+                _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
+
+            var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
+            {
+                Limit = request.Limit,
+                IncludeItemTypes = new[]
+                {
+                        typeof(Game).Name
+                },
+                SimilarTo = item
+
+            }).ToList();
+
+            var dtoOptions = GetDtoOptions(request);
+
+            var result = new QueryResult<BaseItemDto>
+            {
+                Items = _dtoService.GetBaseItemDtos(itemsResult, dtoOptions, user).ToArray(),
+
+                TotalRecordCount = itemsResult.Count
+            };
+
+            return result;
         }
     }
 }
