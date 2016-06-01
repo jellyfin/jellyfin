@@ -111,18 +111,16 @@ namespace MediaBrowser.Api.Movies
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public async Task<object> Get(GetSimilarMovies request)
+        public object Get(GetSimilarMovies request)
         {
-            var result = await GetSimilarItemsResult(
-                request, SimilarItemsHelper.GetSimiliarityScore).ConfigureAwait(false);
+            var result = GetSimilarItemsResult(request);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
-        public async Task<object> Get(GetSimilarTrailers request)
+        public object Get(GetSimilarTrailers request)
         {
-            var result = await GetSimilarItemsResult(
-                request, SimilarItemsHelper.GetSimiliarityScore).ConfigureAwait(false);
+            var result = GetSimilarItemsResult(request);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
@@ -131,42 +129,16 @@ namespace MediaBrowser.Api.Movies
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var query = new InternalItemsQuery(user)
-            {
-                IncludeItemTypes = new[]
-                {
-                    typeof(Movie).Name,
-                    typeof(Trailer).Name,
-                    //typeof(LiveTvProgram).Name
-                },
-                // IsMovie = true
-            };
-
-            var parentIds = string.IsNullOrWhiteSpace(request.ParentId) ? new string[] { } : new[] { request.ParentId };
-            var movies = _libraryManager.GetItemList(query, parentIds)
-                .OrderBy(i => (int)i.SourceType);
-
-            var listEligibleForSuggestion = new List<BaseItem>();
-
-            var list = movies.ToList();
-
-            listEligibleForSuggestion.AddRange(list);
-
-            listEligibleForSuggestion = listEligibleForSuggestion
-                .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
-                .DistinctBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString(), StringComparer.OrdinalIgnoreCase)
-                .ToList();
-
             var dtoOptions = GetDtoOptions(request);
 
             dtoOptions.Fields = request.GetItemFields().ToList();
 
-            var result = GetRecommendationCategories(user, request.ParentId, listEligibleForSuggestion, request.CategoryLimit, request.ItemLimit, dtoOptions);
+            var result = GetRecommendationCategories(user, request.ParentId, request.CategoryLimit, request.ItemLimit, dtoOptions);
 
             return ToOptimizedResult(result);
         }
 
-        private async Task<ItemsResult> GetSimilarItemsResult(BaseGetSimilarItemsFromItem request, Func<BaseItem, List<PersonInfo>, List<PersonInfo>, BaseItem, int> getSimilarityScore)
+        private QueryResult<BaseItemDto> GetSimilarItemsResult(BaseGetSimilarItemsFromItem request)
         {
             var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
 
@@ -174,57 +146,32 @@ namespace MediaBrowser.Api.Movies
                 (!string.IsNullOrWhiteSpace(request.UserId) ? user.RootFolder :
                 _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
 
-            var query = new InternalItemsQuery(user)
+            var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
+                Limit = request.Limit,
                 IncludeItemTypes = new[]
                 {
-                    typeof(Movie).Name,
-                    typeof(Trailer).Name,
-                    //typeof(LiveTvProgram).Name
+                        typeof(Movie).Name,
+                        typeof(Trailer).Name,
+                        typeof(LiveTvProgram).Name
                 },
-                //IsMovie = true
-            };
-
-            var list = _libraryManager.GetItemList(query)
-                .OrderBy(i => (int)i.SourceType)
-                .DistinctBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N"))
-                .ToList();
-
-            if (item is Video)
-            {
-                var imdbId = item.GetProviderId(MetadataProviders.Imdb);
-
-                // Use imdb id to try to filter duplicates of the same item
-                if (!string.IsNullOrWhiteSpace(imdbId))
-                {
-                    list = list
-                        .Where(i => !string.Equals(imdbId, i.GetProviderId(MetadataProviders.Imdb), StringComparison.OrdinalIgnoreCase))
-                        .ToList();
-                }
-            }
-
-            var items = SimilarItemsHelper.GetSimilaritems(item, _libraryManager, list, getSimilarityScore).ToList();
-
-            IEnumerable<BaseItem> returnItems = items;
-
-            if (request.Limit.HasValue)
-            {
-                returnItems = returnItems.Take(request.Limit.Value);
-            }
+                IsMovie = true,
+                SimilarTo = item
+            }).ToList();
 
             var dtoOptions = GetDtoOptions(request);
 
-            var result = new ItemsResult
+            var result = new QueryResult<BaseItemDto>
             {
-                Items = _dtoService.GetBaseItemDtos(returnItems, dtoOptions, user).ToArray(),
+                Items = _dtoService.GetBaseItemDtos(itemsResult, dtoOptions, user).ToArray(),
 
-                TotalRecordCount = items.Count
+                TotalRecordCount = itemsResult.Count
             };
 
             return result;
         }
 
-        private IEnumerable<RecommendationDto> GetRecommendationCategories(User user, string parentId, List<BaseItem> allMovies, int categoryLimit, int itemLimit, DtoOptions dtoOptions)
+        private IEnumerable<RecommendationDto> GetRecommendationCategories(User user, string parentId, int categoryLimit, int itemLimit, DtoOptions dtoOptions)
         {
             var categories = new List<RecommendationDto>();
 
@@ -260,7 +207,7 @@ namespace MediaBrowser.Api.Movies
                 IsFavoriteOrLiked = true,
                 ExcludeItemIds = recentlyPlayedMovies.Select(i => i.Id.ToString("N")).ToArray()
 
-            }, parentIds);
+            }, parentIds).ToList();
 
             var mostRecentMovies = recentlyPlayedMovies.Take(6).ToList();
             // Get recently played directors
@@ -273,8 +220,8 @@ namespace MediaBrowser.Api.Movies
                 .OrderBy(i => Guid.NewGuid())
                 .ToList();
 
-            var similarToRecentlyPlayed = GetSimilarTo(user, allMovies, recentlyPlayedMovies.Take(7).OrderBy(i => Guid.NewGuid()), itemLimit, dtoOptions, RecommendationType.SimilarToRecentlyPlayed).GetEnumerator();
-            var similarToLiked = GetSimilarTo(user, allMovies, likedMovies, itemLimit, dtoOptions, RecommendationType.SimilarToLikedItem).GetEnumerator();
+            var similarToRecentlyPlayed = GetSimilarTo(user, recentlyPlayedMovies, itemLimit, dtoOptions, RecommendationType.SimilarToRecentlyPlayed).GetEnumerator();
+            var similarToLiked = GetSimilarTo(user, likedMovies, itemLimit, dtoOptions, RecommendationType.SimilarToLikedItem).GetEnumerator();
 
             var hasDirectorFromRecentlyPlayed = GetWithDirector(user, recentDirectors, itemLimit, dtoOptions, RecommendationType.HasDirectorFromRecentlyPlayed).GetEnumerator();
             var hasActorFromRecentlyPlayed = GetWithActor(user, recentActors, itemLimit, dtoOptions, RecommendationType.HasActorFromRecentlyPlayed).GetEnumerator();
@@ -389,14 +336,23 @@ namespace MediaBrowser.Api.Movies
             }
         }
 
-        private IEnumerable<RecommendationDto> GetSimilarTo(User user, List<BaseItem> allMovies, IEnumerable<BaseItem> baselineItems, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
+        private IEnumerable<RecommendationDto> GetSimilarTo(User user, List<BaseItem> baselineItems, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
         {
             foreach (var item in baselineItems)
             {
-                var similar = SimilarItemsHelper
-                    .GetSimilaritems(item, _libraryManager, allMovies, SimilarItemsHelper.GetSimiliarityScore)
-                    .Take(itemLimit)
-                    .ToList();
+                var similar = _libraryManager.GetItemList(new InternalItemsQuery(user)
+                {
+                    Limit = itemLimit,
+                    IncludeItemTypes = new[]
+                    {
+                        typeof(Movie).Name,
+                        typeof(Trailer).Name,
+                        typeof(LiveTvProgram).Name
+                    },
+                    IsMovie = true,
+                    SimilarTo = item
+
+                }).ToList();
 
                 if (similar.Count > 0)
                 {

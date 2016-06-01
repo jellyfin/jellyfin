@@ -19,6 +19,8 @@ namespace MediaBrowser.Controller.Entities
 
         public User User { get; set; }
 
+        public BaseItem SimilarTo { get; set; }
+
         public bool? IsFolder { get; set; }
         public bool? IsFavorite { get; set; }
         public bool? IsFavoriteOrLiked { get; set; }
