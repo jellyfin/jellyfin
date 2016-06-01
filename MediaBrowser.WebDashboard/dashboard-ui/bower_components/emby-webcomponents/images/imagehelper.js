@@ -74,7 +74,7 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
 
     function fadeIn(elem) {
 
-        var duration = layoutManager.tv ? 200 : 300;
+        var duration = layoutManager.tv ? 160 : 300;
 
         var keyframes = [
           { opacity: '0', offset: 0 },
@@ -114,9 +114,7 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
 
         var options = {};
 
-        if (!layoutManager.desktop) {
-            options.rootMargin = "125%";
-        }
+        options.rootMargin = "150%";
 
         var observer = new IntersectionObserver(function (entries) {
             for (var j = 0, length2 = entries.length; j < length2; j++) {
