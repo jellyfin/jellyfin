@@ -1526,6 +1526,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 return false;
             }
 
+            if (query.SimilarTo != null)
+            {
+                return true;
+            }
+
             if (query.SortBy != null && query.SortBy.Length > 0)
             {
                 if (query.SortBy.Contains(ItemSortBy.IsFavoriteOrLiked, StringComparer.OrdinalIgnoreCase))
@@ -1835,7 +1840,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 if (query.SortBy == null || query.SortBy.Length == 0)
                 {
-                    query.SortBy = new[] { "SimilarityScore", "Random" };
+                    if (query.User != null)
+                    {
+                        query.SortBy = new[] { "SimilarityScore", "IsUnplayed", "Random" };
+                    }
+                    else
+                    {
+                        query.SortBy = new[] { "SimilarityScore", "Random" };
+                    }
                     query.SortOrder = SortOrder.Descending;
                 }
             }
