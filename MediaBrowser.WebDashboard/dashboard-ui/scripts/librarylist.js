@@ -168,7 +168,7 @@
         return html;
     }
 
-    function onTrailerButtonClick() {
+    function onTrailerButtonClick(e) {
 
         var id = this.getAttribute('data-itemid');
 
@@ -176,10 +176,12 @@
             MediaController.play({ items: trailers });
         });
 
+        e.preventDefault();
+        e.stopPropagation();
         return false;
     }
 
-    function onPlayItemButtonClick() {
+    function onPlayItemButtonClick(e) {
 
         var target = this;
 
@@ -191,10 +193,12 @@
 
         LibraryBrowser.showPlayMenu(this, id, type, isFolder, mediaType, resumePosition);
 
+        e.preventDefault();
+        e.stopPropagation();
         return false;
     }
 
-    function onMoreButtonClick() {
+    function onMoreButtonClick(e) {
 
         var card = parentWithClass(this, 'card');
 
@@ -202,6 +206,8 @@
             showPlayOptions: false
         });
 
+        e.preventDefault();
+        e.stopPropagation();
         return false;
     }
 
@@ -705,7 +711,7 @@
 
         if (listviewMenuButton) {
             showContextMenu(listviewMenuButton, {});
-
+            e.stopPropagation();
             e.preventDefault();
             return false;
         }

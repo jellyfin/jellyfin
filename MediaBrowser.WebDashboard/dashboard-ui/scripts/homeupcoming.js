@@ -119,6 +119,7 @@
         }
 
         elem.innerHTML = html;
+        LibraryBrowser.createCardMenus(elem);
         ImageLoader.lazyChildren(elem);
     }
     return function (view, params, tabContent) {

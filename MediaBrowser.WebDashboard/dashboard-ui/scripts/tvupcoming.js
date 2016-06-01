@@ -111,7 +111,8 @@
                 preferThumb: true,
                 lazy: true,
                 showDetailsMenu: true,
-                centerText: true
+                centerText: true,
+                overlayMoreButton: true
 
             });
             html += '</div>';
@@ -120,6 +121,7 @@
         }
 
         elem.innerHTML = html;
+        LibraryBrowser.createCardMenus(elem);
         ImageLoader.lazyChildren(elem);
     }
     return function (view, params, tabContent) {

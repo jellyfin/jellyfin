@@ -474,6 +474,33 @@ whether or not to enable CEA-708 captions
 
 parameter should be a boolean
 
+#### ```abrEwmaFast```
+(default : 0.0)
+
+Fast bitrate Exponential moving average half-life , used to compute average bitrate 
+Half of the estimate is based on the last abrEwmaFast seconds of sample history.
+parameter should be a float greater than 0
+
+#### ```abrEwmaSlow```
+(default : 0.0)
+
+Slow bitrate Exponential moving average half-life , used to compute average bitrate 
+Half of the estimate is based on the last abrEwmaFast seconds of sample history.
+parameter should be a float greater than abrEwmaFast
+
+
+#### ```abrBandWidthFactor```
+(default : 0.8)
+
+scale factor to be applied against measured bandwidth average, to determine whether we can stay on current or lower quality level
+If ``` abrBandWidthFactor * bandwidth average < level.bitrate ``` then ABR can switch to that level providing that it is equal or less than current level
+
+#### ```abrBandWidthUpFactor```
+(default : 0.7)
+
+scale factor to be applied against measured bandwidth average, to determine whether  we can switch up to a higher quality level
+If ``` abrBandWidthUpFactor * bandwidth average < level.bitrate ``` then ABR can switch up to that quality level
+
 ## Video Binding/Unbinding API
 
 #### ```hls.attachMedia(videoElement)```
