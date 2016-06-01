@@ -1913,6 +1913,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 return new Tuple<string, bool>("(select value from itemvalues where ItemId=Guid and Type=1 LIMIT 1)", false);
             }
+            if (string.Equals(name, ItemSortBy.OfficialRating, StringComparison.OrdinalIgnoreCase))
+            {
+                return new Tuple<string, bool>("ParentalRatingValue", false);
+            }
+            if (string.Equals(name, ItemSortBy.Studio, StringComparison.OrdinalIgnoreCase))
+            {
+                return new Tuple<string, bool>("(select value from itemvalues where ItemId=Guid and Type=3 LIMIT 1)", false);
+            }
 
             return new Tuple<string, bool>(name, false);
         }
@@ -2567,6 +2575,20 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     clauses.Add("@Keyword" + index + " in (select value from itemvalues where ItemId=Guid and Type=5)");
                     cmd.Parameters.Add(cmd, "@Keyword" + index, DbType.String).Value = item;
+                    index++;
+                }
+                var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
+                whereClauses.Add(clause);
+            }
+
+            if (query.OfficialRatings.Length > 0)
+            {
+                var clauses = new List<string>();
+                var index = 0;
+                foreach (var item in query.OfficialRatings)
+                {
+                    clauses.Add("OfficialRating=@OfficialRating" + index);
+                    cmd.Parameters.Add(cmd, "@OfficialRating" + index, DbType.String).Value = item;
                     index++;
                 }
                 var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
