@@ -91,7 +91,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        public const int LatestSchemaVersion = 83;
+        public const int LatestSchemaVersion = 84;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -132,7 +132,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             string[] queries = {
 
                                 "create table if not exists TypedBaseItems (guid GUID primary key, type TEXT, data BLOB, ParentId GUID, Path TEXT)",
-                                "create index if not exists idx_TypedBaseItems on TypedBaseItems(guid)",
                                 "create index if not exists idx_PathTypedBaseItems on TypedBaseItems(Path)",
                                 "create index if not exists idx_ParentIdTypedBaseItems on TypedBaseItems(ParentId)",
 
@@ -146,7 +145,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create table if not exists ItemValues (ItemId GUID, Type INT, Value TEXT)",
                                 "create index if not exists idx_ItemValues on ItemValues(ItemId)",
 
-                                "create table if not exists ProviderIds (ItemId GUID, Name TEXT, Value TEXT)",
+                                "create table if not exists ProviderIds (ItemId GUID, Name TEXT, Value TEXT, PRIMARY KEY (ItemId, Name))",
                                 "create index if not exists Idx_ProviderIds on ProviderIds(ItemId)",
 
                                 "create table if not exists People (ItemId GUID, Name TEXT NOT NULL, Role TEXT, PersonType TEXT, SortOrder int, ListOrder int)",

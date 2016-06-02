@@ -234,8 +234,6 @@
 
     function hideChapterMenu(page) {
 
-        //$('.chapterMenuOverlay', page).hide();
-        //$('.chapterMenu', page).hide();
     }
 
     return function () {

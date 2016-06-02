@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'loading', 'jQuery', 'paper-fab', 'paper-input', 'paper-checkbox', 'paper-icon-button-light'], function (dialogHelper, loading, $) {
+﻿define(['dialogHelper', 'loading', 'jQuery', 'paper-fab', 'emby-input', 'paper-checkbox', 'paper-icon-button-light'], function (dialogHelper, loading, $) {
 
     var currentItem;
     var currentItemType;
@@ -243,13 +243,13 @@
 
                 var id = "txtLookup" + idInfo.Key;
 
-                html += '<div>';
+                html += '<div class="inputContainer">';
 
                 var idLabel = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
 
                 var value = providerIds[idInfo.Key] || '';
 
-                html += '<paper-input class="txtLookupId" data-providerkey="' + idInfo.Key + '" id="' + id + '" label="' + idLabel + '"></paper-input>';
+                html += '<input is="emby-input" class="txtLookupId" data-providerkey="' + idInfo.Key + '" id="' + id + '" label="' + idLabel + '"/>';
 
                 html += '</div>';
             }
