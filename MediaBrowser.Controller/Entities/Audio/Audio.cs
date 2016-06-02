@@ -20,7 +20,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         IHasArtist,
         IHasMusicGenres,
         IHasLookupInfo<SongInfo>,
-        IHasTags,
         IHasMediaSources,
         IThemeMedia,
         IArchivable

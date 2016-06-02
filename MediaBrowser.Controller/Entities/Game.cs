@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class Game : BaseItem, IHasTrailers, IHasThemeMedia, IHasTags, IHasScreenshots, ISupportsPlaceHolders, IHasLookupInfo<GameInfo>
+    public class Game : BaseItem, IHasTrailers, IHasThemeMedia, IHasScreenshots, ISupportsPlaceHolders, IHasLookupInfo<GameInfo>
     {
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }

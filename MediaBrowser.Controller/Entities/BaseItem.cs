@@ -1397,15 +1397,10 @@ namespace MediaBrowser.Controller.Entities
 
         private bool IsVisibleViaTags(User user)
         {
-            var hasTags = this as IHasTags;
-
-            if (hasTags != null)
+            var policy = user.Policy;
+            if (policy.BlockedTags.Any(i => Tags.Contains(i, StringComparer.OrdinalIgnoreCase)))
             {
-                var policy = user.Policy;
-                if (policy.BlockedTags.Any(i => hasTags.Tags.Contains(i, StringComparer.OrdinalIgnoreCase)))
-                {
-                    return false;
-                }
+                return false;
             }
 
             return true;
