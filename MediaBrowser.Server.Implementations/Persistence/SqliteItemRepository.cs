@@ -2739,7 +2739,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 foreach (var pair in query.ExcludeProviderIds)
                 {
                     var paramName = "@ExcludeProviderId" + index;
-                    excludeIds.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = 'Imdb'), '') <> "+ paramName + ")");
+                    excludeIds.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = 'Imdb'), '') <> " + paramName + ")");
                     cmd.Parameters.Add(cmd, paramName, DbType.String).Value = pair.Value;
                     index++;
                 }
@@ -2749,17 +2749,20 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (query.HasImdbId.HasValue)
             {
-                whereClauses.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = 'Imdb'), '') <> '')");
+                var fn = query.HasImdbId.Value ? "<>" : "=";
+                whereClauses.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = 'Imdb'), '') " + fn + " '')");
             }
 
             if (query.HasTmdbId.HasValue)
             {
-                whereClauses.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = 'Tmdb'), '') <> '')");
+                var fn = query.HasTmdbId.Value ? "<>" : "=";
+                whereClauses.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = 'Tmdb'), '') " + fn + " '')");
             }
 
             if (query.HasTvdbId.HasValue)
             {
-                whereClauses.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = 'Tvdb'), '') <> '')");
+                var fn = query.HasTvdbId.Value ? "<>" : "=";
+                whereClauses.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = 'Tvdb'), '') " + fn + " '')");
             }
 
             if (query.AlbumNames.Length > 0)
@@ -3393,7 +3396,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             return list;
         }
 
-        private void UpdateProviderIds(Guid itemId, Dictionary<string,string> values, IDbTransaction transaction)
+        private void UpdateProviderIds(Guid itemId, Dictionary<string, string> values, IDbTransaction transaction)
         {
             if (itemId == Guid.Empty)
             {
