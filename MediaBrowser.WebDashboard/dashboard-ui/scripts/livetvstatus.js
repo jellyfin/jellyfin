@@ -386,6 +386,8 @@
 
             case 'schedulesdirect':
                 return 'Schedules Direct';
+            case 'xmltv':
+                return 'Xml TV';
             case 'emby':
                 return 'Emby Guide';
             default:
@@ -399,6 +401,8 @@
 
         switch (providerId) {
 
+            case 'xmltv':
+                return 'livetvguideprovider.html?type=xmltv';
             case 'schedulesdirect':
                 return 'livetvguideprovider.html?type=schedulesdirect';
             case 'emby':
@@ -421,6 +425,11 @@
         //    name: 'Emby Guide',
         //    id: 'emby'
         //});
+
+        menuItems.push({
+            name: 'Xml TV',
+            id: 'xmltv'
+        });
 
         menuItems.push({
             name: Globalize.translate('ButtonOther'),

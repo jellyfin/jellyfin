@@ -400,6 +400,14 @@ paper-input label, paper-textarea label {
     color: #ccc;
 }
 
+.ui-body-a .inputLabel {
+    color: #656565;
+}
+
+.ui-body-a .inputLabel.focused:not(.blank) {
+    color: green;
+}
+
 .ui-body-b .selectLabelUnfocused, .ui-body-b .inputLabel {
     color: #ccc;
 }
