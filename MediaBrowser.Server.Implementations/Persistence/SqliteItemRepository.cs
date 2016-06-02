@@ -85,10 +85,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _deleteItemValuesCommand;
         private IDbCommand _saveItemValuesCommand;
 
+        private IDbCommand _deleteProviderIdsCommand;
+        private IDbCommand _saveProviderIdsCommand;
+
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        public const int LatestSchemaVersion = 82;
+        public const int LatestSchemaVersion = 83;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -142,6 +145,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                                 "create table if not exists ItemValues (ItemId GUID, Type INT, Value TEXT)",
                                 "create index if not exists idx_ItemValues on ItemValues(ItemId)",
+
+                                "create table if not exists ProviderIds (ItemId GUID, Name TEXT, Value TEXT)",
+                                "create index if not exists Idx_ProviderIds on ProviderIds(ItemId)",
 
                                 "create table if not exists People (ItemId GUID, Name TEXT NOT NULL, Role TEXT, PersonType TEXT, SortOrder int, ListOrder int)",
                                 "create index if not exists idxPeopleItemId on People(ItemId)",
@@ -548,6 +554,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _saveItemValuesCommand.Parameters.Add(_saveItemValuesCommand, "@Type");
             _saveItemValuesCommand.Parameters.Add(_saveItemValuesCommand, "@Value");
 
+            // provider ids
+            _deleteProviderIdsCommand = _connection.CreateCommand();
+            _deleteProviderIdsCommand.CommandText = "delete from ProviderIds where ItemId=@Id";
+            _deleteProviderIdsCommand.Parameters.Add(_deleteProviderIdsCommand, "@Id");
+
+            _saveProviderIdsCommand = _connection.CreateCommand();
+            _saveProviderIdsCommand.CommandText = "insert into ProviderIds (ItemId, Name, Value) values (@ItemId, @Name, @Value)";
+            _saveProviderIdsCommand.Parameters.Add(_saveProviderIdsCommand, "@ItemId");
+            _saveProviderIdsCommand.Parameters.Add(_saveProviderIdsCommand, "@Name");
+            _saveProviderIdsCommand.Parameters.Add(_saveProviderIdsCommand, "@Value");
+
         }
 
         /// <summary>
@@ -862,6 +879,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     }
 
                     UpdateUserDataKeys(item.Id, item.GetUserDataKeys().Distinct(StringComparer.OrdinalIgnoreCase).ToList(), transaction);
+                    UpdateProviderIds(item.Id, item.ProviderIds, transaction);
                     UpdateItemValues(item.Id, GetItemValues(item), transaction);
                 }
 
@@ -1635,6 +1653,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var excludeIds = query.ExcludeItemIds.ToList();
                 excludeIds.Add(item.Id.ToString("N"));
                 query.ExcludeItemIds = excludeIds.ToArray();
+
+                query.ExcludeProviderIds = item.ProviderIds;
             }
 
             return list.ToArray();
@@ -2711,6 +2731,37 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 whereClauses.Add(string.Join(" AND ", excludeIds.ToArray()));
             }
 
+            if (query.ExcludeProviderIds.Count > 0)
+            {
+                var excludeIds = new List<string>();
+
+                var index = 0;
+                foreach (var pair in query.ExcludeProviderIds)
+                {
+                    var paramName = "@ExcludeProviderId" + index;
+                    excludeIds.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = 'Imdb'), '') <> "+ paramName + ")");
+                    cmd.Parameters.Add(cmd, paramName, DbType.String).Value = pair.Value;
+                    index++;
+                }
+
+                whereClauses.Add(string.Join(" AND ", excludeIds.ToArray()));
+            }
+
+            if (query.HasImdbId.HasValue)
+            {
+                whereClauses.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = 'Imdb'), '') <> '')");
+            }
+
+            if (query.HasTmdbId.HasValue)
+            {
+                whereClauses.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = 'Tmdb'), '') <> '')");
+            }
+
+            if (query.HasTvdbId.HasValue)
+            {
+                whereClauses.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = 'Tvdb'), '') <> '')");
+            }
+
             if (query.AlbumNames.Length > 0)
             {
                 var clause = "(";
@@ -3121,6 +3172,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _deleteItemValuesCommand.Transaction = transaction;
                 _deleteItemValuesCommand.ExecuteNonQuery();
 
+                // Delete provider ids
+                _deleteProviderIdsCommand.GetParameter(0).Value = id;
+                _deleteProviderIdsCommand.Transaction = transaction;
+                _deleteProviderIdsCommand.ExecuteNonQuery();
+
                 // Delete the item
                 _deleteItemCommand.GetParameter(0).Value = id;
                 _deleteItemCommand.Transaction = transaction;
@@ -3335,6 +3391,37 @@ namespace MediaBrowser.Server.Implementations.Persistence
             list.AddRange(item.Keywords.Select(i => new Tuple<int, string>(5, i)));
 
             return list;
+        }
+
+        private void UpdateProviderIds(Guid itemId, Dictionary<string,string> values, IDbTransaction transaction)
+        {
+            if (itemId == Guid.Empty)
+            {
+                throw new ArgumentNullException("itemId");
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException("keys");
+            }
+
+            CheckDisposed();
+
+            // First delete 
+            _deleteProviderIdsCommand.GetParameter(0).Value = itemId;
+            _deleteProviderIdsCommand.Transaction = transaction;
+
+            _deleteProviderIdsCommand.ExecuteNonQuery();
+
+            foreach (var pair in values)
+            {
+                _saveProviderIdsCommand.GetParameter(0).Value = itemId;
+                _saveProviderIdsCommand.GetParameter(1).Value = pair.Key;
+                _saveProviderIdsCommand.GetParameter(2).Value = pair.Value;
+                _saveProviderIdsCommand.Transaction = transaction;
+
+                _saveProviderIdsCommand.ExecuteNonQuery();
+            }
         }
 
         private void UpdateItemValues(Guid itemId, List<Tuple<int, string>> values, IDbTransaction transaction)

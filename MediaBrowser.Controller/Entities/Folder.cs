@@ -840,30 +840,6 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (query.HasImdbId.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to HasImdbId");
-                return true;
-            }
-
-            if (query.HasTmdbId.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to HasTmdbId");
-                return true;
-            }
-
-            if (query.HasTvdbId.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to HasTvdbId");
-                return true;
-            }
-
-            if (query.IsYearMismatched.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to IsYearMismatched");
-                return true;
-            }
-
             if (query.HasOfficialRating.HasValue)
             {
                 Logger.Debug("Query requires post-filtering due to HasOfficialRating");
