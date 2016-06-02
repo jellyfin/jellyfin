@@ -116,13 +116,7 @@ namespace MediaBrowser.Api
 
         private static IEnumerable<string> GetTags(BaseItem item)
         {
-            var hasTags = item as IHasTags;
-            if (hasTags != null)
-            {
-                return hasTags.Tags;
-            }
-
-            return new List<string>();
+            return item.Tags;
         }
 
         private static IEnumerable<string> GetKeywords(BaseItem item)

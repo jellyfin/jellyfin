@@ -803,11 +803,7 @@ namespace MediaBrowser.Controller.Providers
                     {
                         using (var subtree = reader.ReadSubtree())
                         {
-                            var hasTags = item as IHasTags;
-                            if (hasTags != null)
-                            {
-                                FetchFromTagsNode(subtree, hasTags);
-                            }
+                            FetchFromTagsNode(subtree, item);
                         }
                         break;
                     }
@@ -1066,7 +1062,7 @@ namespace MediaBrowser.Controller.Providers
             }
         }
 
-        private void FetchFromTagsNode(XmlReader reader, IHasTags item)
+        private void FetchFromTagsNode(XmlReader reader, BaseItem item)
         {
             reader.MoveToContent();
 

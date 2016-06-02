@@ -20,7 +20,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Folder
     /// </summary>
-    public class Folder : BaseItem, IHasThemeMedia, IHasTags
+    public class Folder : BaseItem, IHasThemeMedia
     {
         public static IUserManager UserManager { get; set; }
         public static IUserViewManager UserViewManager { get; set; }
