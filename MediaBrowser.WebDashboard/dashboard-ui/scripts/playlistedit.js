@@ -100,16 +100,7 @@
             }
 
             ImageLoader.lazyChildren(elem);
-            $(elem).createCardMenus();
-
-            $(elem).off('needsrefresh').on('needsrefresh', function () {
-
-                reloadItems(page, item);
-
-            }).off('removefromplaylist').on('removefromplaylist', function (e, playlistItemId) {
-
-                removeFromPlaylist(page, item, [playlistItemId]);
-            });
+            LibraryBrowser.createCardMenus(elem);
 
             $('.btnNextPage', elem).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -189,8 +180,29 @@
         });
     }
 
+    function init(page, item) {
+
+        var elem = page.querySelector('#childrenContent .itemsContainer');
+
+        elem.addEventListener('removefromplaylist', function (e) {
+
+            var playlistItemId = e.detail.playlistItemId;
+            removeFromPlaylist(page, item, [playlistItemId]);
+        });
+
+        elem.addEventListener('needsrefresh', function () {
+
+            reloadItems(page, item);
+        });
+    }
+
     window.PlaylistViewer = {
         render: function (page, item) {
+
+            if (!page.playlistInit) {
+                page.playlistInit = true;
+                init(page, item);
+            }
 
             reloadItems(page, item);
             showDragAndDropHelp();

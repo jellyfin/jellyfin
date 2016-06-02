@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'appStorage', 'libraryBrowser', 'apphost', 'jQuery', 'itemHelper', 'mediaInfo'], function (appSettings, appStorage, LibraryBrowser, appHost, $, itemHelper, mediaInfo) {
+﻿define(['appSettings', 'appStorage', 'libraryBrowser', 'apphost', 'itemHelper', 'mediaInfo'], function (appSettings, appStorage, LibraryBrowser, appHost, itemHelper, mediaInfo) {
 
     var showOverlayTimeout;
 
@@ -242,9 +242,7 @@
                     });
 
                     Dashboard.hideLoadingMsg();
-                    itemsContainer.dispatchEvent(new CustomEvent('timercancelled', {
-                        bubbles: true
-                    }));
+                    itemsContainer.dispatchEvent(new CustomEvent('timercancelled', {}));
                 });
             });
         });
@@ -255,7 +253,7 @@
         var displayContextItem = card;
 
         if (!card.classList.contains('card') && !card.classList.contains('listItem')) {
-            card = $(card).parents('.listItem,.card')[0];
+            card = parentWithAnyClass(card, ['listItem', 'card']);
         }
 
         var itemId = card.getAttribute('data-itemid');
@@ -637,13 +635,23 @@
                             case 'removefromplaylist':
                                 var itemsContainer = parentWithClass(card, 'itemsContainer');
                                 if (itemsContainer) {
-                                    $(itemsContainer).trigger('removefromplaylist', [playlistItemId]);
+                                    itemsContainer.dispatchEvent(new CustomEvent('removefromplaylist', {
+                                        detail: {
+                                            playlistItemId: playlistItemId
+                                        },
+                                        cancelable: false
+                                    }));
                                 }
                                 break;
                             case 'removefromcollection':
-                                var itemsContainer = parentWithClass(card, 'itemsContainer');
+                                var itemsContainer = parentWithClass(card, 'collectionItems');
                                 if (itemsContainer) {
-                                    $(card).parents('.collectionItems').trigger('removefromcollection', [itemId]);
+                                    itemsContainer.dispatchEvent(new CustomEvent('removefromcollection', {
+                                        detail: {
+                                            itemId: itemId
+                                        },
+                                        cancelable: false
+                                    }));
                                 }
                                 break;
                             default:
@@ -661,7 +669,7 @@
         var card = e.target;
 
         if (!card.classList.contains('card') && !card.classList.contains('listItem')) {
-            card = $(card).parents('.listItem,.card')[0];
+            card = parentWithAnyClass(card, ['listItem', 'card']);
         }
 
         var id = card.getAttribute('data-itemid');
@@ -777,6 +785,25 @@
         e.stopPropagation();
         e.preventDefault();
         return false;
+    }
+
+    function hasAnyClass(elem, classNames) {
+        return classNames.filter(function (c) {
+            return elem.classList.contains(c);
+        }).length > 0;
+    }
+
+    function parentWithAnyClass(elem, classNames) {
+
+        while (!elem.classList || !hasAnyClass(elem, classNames)) {
+            elem = elem.parentNode;
+
+            if (!elem) {
+                return null;
+            }
+        }
+
+        return elem;
     }
 
     function parentWithClass(elem, className) {
@@ -909,17 +936,6 @@
         }
 
         initTapHoldMenus(curr);
-    };
-
-    $.fn.createCardMenus = function (options) {
-
-        for (var i = 0, length = this.length; i < length; i++) {
-
-            var curr = this[i];
-            LibraryBrowser.createCardMenus(curr, options);
-        }
-
-        return this;
     };
 
     function initTapHoldMenus(elem) {
@@ -1367,7 +1383,7 @@
 
                     Dashboard.hideLoadingMsg();
                     hideSelections();
-                    $('.itemsContainer', page).trigger('needsrefresh');
+                    page.querySelector('.itemsContainer').dispatchEvent(new CustomEvent('needsrefresh', {}));
                 });
             });
         });
@@ -1427,16 +1443,18 @@
 
     function playAllFromHere(index, itemsContainer, method) {
 
-        var ids = $('.mediaItem', itemsContainer).get().map(function (i) {
+        var ids = [];
 
-            var node = i;
+        var mediaItems = itemsContainer.querySelectorAll('.mediaItem');
+        for (var i = 0, length = mediaItems.length; i < length; i++) {
+            var node = mediaItems[i];
             var id = node.getAttribute('data-itemid');
             while (!id) {
                 node = node.parentNode;
                 id = node.getAttribute('data-itemid');
             }
-            return id;
-        });
+            ids.push(id);
+        }
 
         ids = ids.slice(index);
 
@@ -1468,16 +1486,20 @@
                 SupportsSync: true
             };
 
-            if (LibraryBrowser.enableSync(item, user)) {
-                $('.categorySyncButton', page).removeClass('hide');
-            } else {
-                $('.categorySyncButton', page).addClass('hide');
+            var categorySyncButtons = page.querySelectorAll('.categorySyncButton');
+            for (var i = 0, length = categorySyncButtons.length; i < length; i++) {
+                if (LibraryBrowser.enableSync(item, user)) {
+                    categorySyncButtons[i].classList.remove('hide');
+                } else {
+                    categorySyncButtons[i].classList.add('hide');
+                }
             }
         });
     }
 
-    function onCategorySyncButtonClick(page, button) {
+    function onCategorySyncButtonClick(e) {
 
+        var button = this;
         var category = button.getAttribute('data-category');
         var parentId = LibraryMenu.getTopParentId();
 
@@ -1496,15 +1518,15 @@
         page.addEventListener('click', onItemWithActionClick);
 
         var itemsContainers = page.querySelectorAll('.itemsContainer:not(.noautoinit)');
-        for (var i = 0, length = itemsContainers.length; i < length; i++) {
+        var i, length;
+        for (i = 0, length = itemsContainers.length; i < length; i++) {
             LibraryBrowser.createCardMenus(itemsContainers[i]);
         }
 
-        $('.categorySyncButton', page).on('click', function () {
-
-            onCategorySyncButtonClick(page, this);
-        });
-
+        var categorySyncButtons = page.querySelectorAll('.categorySyncButton');
+        for (i = 0, length = categorySyncButtons.length; i < length; i++) {
+            categorySyncButtons[i].addEventListener('click', onCategorySyncButtonClick);
+        }
     });
 
     pageClassOn('pageshow', "libraryPage", function () {
@@ -1578,18 +1600,21 @@
 
     function onUserDataChanged(userData) {
 
-        $(document.querySelectorAll("*[data-itemid='" + userData.ItemId + "']")).each(function () {
+        var elems = document.querySelectorAll("*[data-itemid='" + userData.ItemId + "']");
 
-            var mediaType = this.getAttribute('data-mediatype');
+        for (var i = 0, length = elems.length; i < length; i++) {
+
+            var elem = elems[i];
+            var mediaType = elem.getAttribute('data-mediatype');
 
             if (mediaType == 'Video') {
-                this.setAttribute('data-positionticks', (userData.PlaybackPositionTicks || 0));
+                elem.setAttribute('data-positionticks', (userData.PlaybackPositionTicks || 0));
 
-                if (this.classList.contains('card')) {
-                    renderUserDataChanges(this, userData);
+                if (elem.classList.contains('card')) {
+                    renderUserDataChanges(elem, userData);
                 }
             }
-        });
+        }
     }
 
     function onWebSocketMessage(e, data) {

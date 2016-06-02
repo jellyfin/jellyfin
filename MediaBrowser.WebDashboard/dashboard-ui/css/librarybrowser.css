@@ -2,15 +2,6 @@
     visibility: hidden;
 }
 
-/* Fixes the issue of jqm panels altering the page background. */
-.ui-panel-content-wrap {
-    background: none !important;
-}
-
-.ui-panel fieldset + fieldset {
-    margin-top: 2em;
-}
-
 .headerArrowImage {
     height: 20px;
     margin-left: .5em;
@@ -167,7 +158,7 @@
     }
 }
 
-.detailPageContent, .detailPageContent > table {
+.detailPageContent {
     margin: 0 auto;
     padding: 0;
     border-spacing: 0;
@@ -184,29 +175,8 @@
     margin: .5em 0 .5em;
 }
 
-    .listPaging paper-fab {
-        width: 40px;
-        height: 40px;
-        vertical-align: middle;
-    }
-
 .viewControls + .listTopPaging {
     margin-left: .5em !important;
-}
-
-.labelPageSize {
-    margin-left: 1em !important;
-    display: inline !important;
-}
-
-.pageSizeContainer {
-    display: inline-block;
-}
-
-@media all and (max-width: 650px) {
-    .pageSizeContainer {
-        display: none !important;
-    }
 }
 
 .criticReview {
@@ -618,27 +588,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     max-width: 100%;
 }
 
-.libraryPanelHeader {
-    margin: 5px 0 15px 0;
-    font-size: 15px;
-}
-
-    .libraryPanelHeader a {
-        text-decoration: none;
-    }
-
-    .libraryPanelHeader img {
-        height: 24px;
-        vertical-align: middle;
-        margin-right: 6px;
-    }
-
-    .libraryPanelHeader span {
-        color: #fff;
-        vertical-align: middle;
-        font-weight: 400;
-    }
-
 .detailImageProgressContainer {
     position: absolute;
     bottom: 2px;
@@ -661,10 +610,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .inlineDetailSection:not(.hide) {
         display: inline-block;
         margin-bottom: 2em;
-    }
-
-    .editMetadataForm .ui-field-contain {
-        margin: .25em 0;
     }
 }
 
@@ -1223,107 +1168,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-.viewCollageImage {
-    display: inline-block;
-    margin: 0 1px 0 0;
-    width: 32.62%;
-    height: 49%;
-    background-repeat: no-repeat;
-    background-position: center 15%;
-    background-size: cover;
-}
-
-@media all and (min-width: 650px) {
-
-    .viewCollageImage {
-        width: 32.9%;
-        height: 49.1%;
-    }
-}
-
-@media all and (min-width: 1440px) {
-
-    .viewCollageImage {
-        width: 32.95%;
-    }
-}
-
-.spotlight {
-    position: absolute;
-    left: 0;
-    right: 0;
-    background-size: cover;
-    background-position: center 25%;
-    background-repeat: no-repeat;
-}
-
-.spotlight, .spotlightPlaceHolder {
-    height: 340px;
-}
-
-.spotlightContainer {
-    min-height: 340px;
-    margin-top: 3em;
-}
-
-.spotlightPlaceHolder {
-    margin-bottom: 3em;
-}
-
-.spotlightTitle {
-    margin: 1em 0 .2em;
-}
-
-.spotlightContent {
-    position: absolute;
-    top: 60px;
-    bottom: 55px;
-    left: 210px;
-    width: 600px;
-    background: rgba(0,0,0,.8);
-    border-radius: 5px;
-}
-
-.rightSpotlightContent {
-    left: initial;
-    width: 400px;
-    right: 100px;
-}
-
-.spotlightPoster {
-    height: 100%;
-    background-size: 150px 100%;
-    background-position: left center;
-    background-repeat: no-repeat;
-    overflow: hidden;
-}
-
-.rightSpotlightContent .spotlightPoster {
-    background-size: 100% 180px;
-    background-position: center top;
-}
-
-.spotlightContentInner {
-    padding: 1em 1em 1em 170px;
-}
-
-    .spotlightContentInner p {
-        max-height: 130px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-.rightSpotlightContent .spotlightContentInner {
-    padding: 195px 1em 1em 1em;
-}
-
-@media all and (max-height: 1079px) and (max-width: 1400px) {
-
-    .spotlightContainer {
-        display: none;
-    }
-}
-
 .channelHeader {
     padding: 1em;
     text-align: center;
@@ -1442,14 +1286,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .smallDetailImageContainer {
         padding-left: 1em;
     }
-}
-
-.studioTabDisabled .tvStudiosTab, .studioTabDisabled .movieStudiosTab {
-    display: none !important;
-}
-
-.tvEpisodesTabDisabled .tvEpisodesTab {
-    display: none !important;
 }
 
 .homeFavoritesDisabled .homeFavoritesTab {

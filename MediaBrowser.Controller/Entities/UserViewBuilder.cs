@@ -995,11 +995,6 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.IsYearMismatched.HasValue)
-            {
-                return false;
-            }
-
             if (!string.IsNullOrWhiteSpace(request.Person))
             {
                 return false;
@@ -1413,16 +1408,6 @@ namespace MediaBrowser.Controller.Entities
                 var hasValue = !string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Tvdb));
 
                 if (hasValue != filterValue)
-                {
-                    return false;
-                }
-            }
-
-            if (query.IsYearMismatched.HasValue)
-            {
-                var filterValue = query.IsYearMismatched.Value;
-
-                if (IsYearMismatched(item, libraryManager) != filterValue)
                 {
                     return false;
                 }
@@ -1977,34 +1962,6 @@ namespace MediaBrowser.Controller.Entities
         private Task<UserView> GetUserView(string type, string sortName, BaseItem parent)
         {
             return _userViewManager.GetUserSubView(parent.Id.ToString("N"), type, sortName, CancellationToken.None);
-        }
-
-        public static bool IsYearMismatched(BaseItem item, ILibraryManager libraryManager)
-        {
-            if (item.ProductionYear.HasValue)
-            {
-                var path = item.Path;
-
-                if (!string.IsNullOrEmpty(path))
-                {
-                    var info = libraryManager.ParseName(Path.GetFileName(path));
-                    var yearInName = info.Year;
-
-                    // Go up a level if we didn't get a year
-                    if (!yearInName.HasValue)
-                    {
-                        info = libraryManager.ParseName(Path.GetFileName(Path.GetDirectoryName(path)));
-                        yearInName = info.Year;
-                    }
-
-                    if (yearInName.HasValue)
-                    {
-                        return yearInName.Value != item.ProductionYear.Value;
-                    }
-                }
-            }
-
-            return false;
         }
 
         public static IEnumerable<BaseItem> FilterForAdjacency(IEnumerable<BaseItem> items, string adjacentToId)

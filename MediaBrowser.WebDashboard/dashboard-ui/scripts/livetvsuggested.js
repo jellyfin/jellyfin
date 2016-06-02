@@ -124,10 +124,16 @@
         self.initTab = function () {
 
             var tabContent = view.querySelector('.pageTabContent[data-index=\'' + 0 + '\']');
-            if (enableScrollX()) {
-                $('.itemsContainer', tabContent).addClass('hiddenScrollX').createCardMenus();
-            } else {
-                $('.itemsContainer', tabContent).removeClass('hiddenScrollX').createCardMenus();
+
+            var containers = tabContent.querySelectorAll('.itemsContainer');
+
+            for (var i = 0, length = containers.length; i < length; i++) {
+                if (enableScrollX()) {
+                    containers[i].classList.add('hiddenScrollX');
+                } else {
+                    containers[i].classList.remove('hiddenScrollX');
+                }
+                LibraryBrowser.createCardMenus(containers[i]);
             }
         };
 
