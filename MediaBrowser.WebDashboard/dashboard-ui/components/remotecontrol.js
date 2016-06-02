@@ -234,8 +234,6 @@
 
     function hideChapterMenu(page) {
 
-        //$('.chapterMenuOverlay', page).hide();
-        //$('.chapterMenu', page).hide();
     }
 
     return function () {
@@ -810,7 +808,7 @@
 
             Events.on(MediaController, 'playerchange', onPlayerChange);
 
-            $(context.querySelector('.itemsContainer')).createCardMenus();
+            libraryBrowser.createCardMenus(context.querySelector('.itemsContainer'));
 
         }
 

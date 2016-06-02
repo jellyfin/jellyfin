@@ -1,0 +1,26 @@
+﻿<h1>Xml TV</h1>
+
+<form>
+    <div>
+        <div>
+            <paper-input class="txtPath" label="${LabelPath}" required="required" autocomplete="off"></paper-input>
+        </div>
+        <div>
+            <br />
+            <paper-checkbox class="chkAllTuners">${OptionEnableForAllTuners}</paper-checkbox>
+            <div class="selectTunersSection hide">
+                <br /><br />
+                <div class="paperListLabel">${HeaderTuners}</div>
+                <div class="paperCheckboxList paperList tunerList">
+                </div>
+            </div>
+        </div>
+        <br /><br />
+        <div>
+            <button type="submit" data-role="none" class="clearButton btnSubmitListingsContainer">
+                <paper-button raised class="submit block btnSubmitListings hide"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+            </button>
+            <paper-button raised class="cancel block btnCancel hide" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+        </div>
+    </div>
+</form>

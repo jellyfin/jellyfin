@@ -55,6 +55,7 @@ define(['browser'], function (browser) {
         if (isPluginpage || (newView.classList && newView.classList.contains('type-interior'))) {
             dependencies.push('jqmlistview');
             dependencies.push('scripts/notifications');
+            dependencies.push('dashboardcss');
         }
 
         return new Promise(function (resolve, reject) {

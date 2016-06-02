@@ -975,7 +975,7 @@
   "LabelProtocolInfo": "Protocol info:",
   "LabelProtocolInfoHelp": "The value that will be used when responding to GetProtocolInfo requests from the device.",
   "TabNfoSettings": "Nfo Settings",
-  "HeaderKodiMetadataHelp": "Emby includes native support for Nfo metadata files. To enable or disable Nfo metadata, use the Advanced tab to configure options for your media types.",
+  "HeaderKodiMetadataHelp": "Emby includes native support for Nfo metadata files. To enable or disable Nfo metadata, use the Services tab to configure options for your media types.",
   "LabelKodiMetadataUser": "Sync user watch data to nfo's for:",
   "LabelKodiMetadataUserHelp": "Enable this to keep watch data in sync between Emby Server and Nfo files.",
   "LabelKodiMetadataDateFormat": "Release date format:",

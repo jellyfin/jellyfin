@@ -549,7 +549,7 @@ a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearB
 }
 
 .activeDevicesCollapsible .ui-collapsible-content {
-    padding: .25em !important;
+    padding: .5em .5em !important;
 }
 
 .activeSession:not(.playingSession) .sessionNowPlayingContent {
@@ -647,4 +647,53 @@ a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearB
 
 .disabledUserBanner {
     margin: 0 0 2em;
+}
+
+.appLinks a {
+    text-decoration: none !important;
+}
+
+    .appLinks a + a {
+        margin-left: 5px;
+    }
+
+.appLinks img {
+    height: 36px;
+}
+
+/*
+    Media Library Page
+    */
+.mediaFolderButtons {
+    margin-top: 10px;
+}
+
+.mediaFolderLocations {
+    margin: 1em .25em !important;
+}
+
+.mediaLocationsHeader {
+    padding-top: .75em !important;
+    padding-bottom: .75em !important;
+}
+
+    .mediaLocationsHeader .ui-btn {
+        position: absolute;
+        right: -3px;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        top: 4px;
+    }
+
+.btnShowStatusMessage {
+    font-weight: normal !important;
+    text-decoration: none;
+}
+
+    .btnShowStatusMessage:hover {
+        text-decoration: underline;
+    }
+
+.supporterMembershipDisabled .tabSupporterMembership {
+    display: none;
 }

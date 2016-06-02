@@ -291,7 +291,7 @@
                 reloadItems(context);
             });
 
-            $('.itemsContainer', context).on('needsrefresh', function () {
+            context.querySelector('.itemsContainer').addEventListener('needsrefresh', function () {
 
                 reloadItems(context);
             });

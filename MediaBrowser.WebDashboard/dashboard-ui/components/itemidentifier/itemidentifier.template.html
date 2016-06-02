@@ -7,11 +7,11 @@
 <form class="popupIdentifyForm" style="margin:auto;">
 
     <p>${HeaderIdentifyItemHelp}</p>
-    <div>
-        <paper-input type="text" id="txtLookupName" class="identifyField" data-lookup="Name" label="${LabelName}"></paper-input>
+    <div class="inputContainer">
+        <input is="emby-input" type="text" id="txtLookupName" class="identifyField" data-lookup="Name" label="${LabelName}" />
     </div>
-    <div class="fldLookupYear">
-        <paper-input type="number" id="txtLookupYear" class="identifyField" data-lookup="Year" pattern="[0-9]*" min="1800" label="${LabelYear}"></paper-input>
+    <div class="fldLookupYear inputContainer">
+        <input is="emby-input" type="number" id="txtLookupYear" class="identifyField" data-lookup="Year" pattern="[0-9]*" min="1800" label="${LabelYear}"/>
     </div>
 
     <div class="identifyProviderIds">

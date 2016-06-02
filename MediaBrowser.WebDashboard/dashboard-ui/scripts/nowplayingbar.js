@@ -1,4 +1,4 @@
-﻿define(['datetime', 'jQuery', 'paper-icon-button-light'], function (datetime, $) {
+﻿define(['datetime', 'paper-icon-button-light'], function (datetime) {
 
     var currentPlayer;
 
@@ -9,8 +9,8 @@
     var unmuteButton;
     var muteButton;
     var volumeSlider;
-    var unpauseButton;
-    var pauseButton;
+    var unpauseButtons;
+    var pauseButtons;
     var positionSlider;
     var toggleRepeatButton;
     var toggleRepeatButtonIcon;
@@ -127,6 +127,18 @@
         });
     }
 
+    function onPauseClick() {
+        if (currentPlayer) {
+            currentPlayer.pause();
+        }
+    }
+
+    function onUnpauseClick() {
+        if (currentPlayer) {
+            currentPlayer.unpause();
+        }
+    }
+
     function bindEvents(elem) {
 
         currentTimeElement = elem.querySelector('.nowPlayingBarCurrentTime');
@@ -134,49 +146,49 @@
         nowPlayingTextElement = elem.querySelector('.nowPlayingBarText');
         nowPlayingUserData = elem.querySelector('.nowPlayingBarUserDataButtons');
 
-        unmuteButton = $('.unmuteButton', elem).on('click', function () {
+        unmuteButton = elem.querySelector('.unmuteButton');
+        unmuteButton.addEventListener('click', function () {
 
             if (currentPlayer) {
                 currentPlayer.unMute();
             }
+
         });
 
-        muteButton = $('.muteButton', elem).on('click', function () {
+        muteButton = elem.querySelector('.muteButton');
+        muteButton.addEventListener('click', function () {
 
             if (currentPlayer) {
                 currentPlayer.mute();
             }
+
         });
 
-        $('.stopButton', elem).on('click', function () {
+        elem.querySelector('.stopButton').addEventListener('click', function () {
 
             if (currentPlayer) {
                 currentPlayer.stop();
             }
         });
 
-        pauseButton = $('.pauseButton', elem).on('click', function () {
+        var i, length;
+        pauseButtons = elem.querySelectorAll('.pauseButton');
+        for (i = 0, length = pauseButtons.length; i < length; i++) {
+            pauseButtons[i].addEventListener('click', onPauseClick);
+        }
+        unpauseButtons = elem.querySelectorAll('.unpauseButton');
+        for (i = 0, length = unpauseButtons.length; i < length; i++) {
+            unpauseButtons[i].addEventListener('click', onUnpauseClick);
+        }
 
-            if (currentPlayer) {
-                currentPlayer.pause();
-            }
-        });
-
-        unpauseButton = $('.unpauseButton', elem).on('click', function () {
-
-            if (currentPlayer) {
-                currentPlayer.unpause();
-            }
-        });
-
-        $('.nextTrackButton', elem).on('click', function () {
+        elem.querySelector('.nextTrackButton').addEventListener('click', function () {
 
             if (currentPlayer) {
                 currentPlayer.nextTrack();
             }
         });
 
-        $('.previousTrackButton', elem).on('click', function () {
+        elem.querySelector('.previousTrackButton').addEventListener('click', function () {
 
             if (currentPlayer) {
                 currentPlayer.previousTrack();
@@ -193,7 +205,8 @@
             showRemoteControl(2);
         });
 
-        toggleRepeatButton = $('.toggleRepeatButton', elem).on('click', function () {
+        toggleRepeatButton = elem.querySelector('.toggleRepeatButton');
+        toggleRepeatButton.addEventListener('click', function () {
 
             if (currentPlayer) {
                 var state = lastPlayerState || {};
@@ -210,21 +223,24 @@
                         break;
                 }
             }
-        })[0];
+        });
 
         toggleRepeatButtonIcon = toggleRepeatButton.querySelector('iron-icon');
 
         // Unfortunately this is necessary because the polymer elements might not be ready immediately and there doesn't seem to be an event-driven way to find out when
         setTimeout(function () {
-            volumeSlider = $('.nowPlayingBarVolumeSlider', elem).on('change', function () {
+
+            volumeSlider = elem.querySelector('.nowPlayingBarVolumeSlider');
+            volumeSlider.addEventListener('change', function () {
 
                 if (currentPlayer) {
                     currentPlayer.setVolume(this.value);
                 }
 
-            })[0];
+            });
 
-            positionSlider = $('.nowPlayingBarPositionSlider', elem).on('change', function () {
+            positionSlider = elem.querySelector('.nowPlayingBarPositionSlider');
+            positionSlider.addEventListener('change', function () {
 
                 if (currentPlayer && lastPlayerState) {
 
@@ -234,7 +250,7 @@
                     currentPlayer.seek(Math.floor(newPositionTicks));
                 }
 
-            })[0];
+            });
 
             positionSlider._setPinValue = function (value) {
 
@@ -273,7 +289,7 @@
                 return;
             }
 
-            require(['jQuery', 'css!css/nowplayingbar.css', 'paper-slider'], function ($) {
+            require(['css!css/nowplayingbar.css', 'paper-slider'], function () {
 
                 nowPlayingBarElement = document.querySelector('.nowPlayingBar');
 
@@ -282,7 +298,8 @@
                     return;
                 }
 
-                nowPlayingBarElement = $(getNowPlayingBarHtml()).appendTo(document.body)[0];
+                document.body.insertAdjacentHTML('beforeend', getNowPlayingBarHtml());
+                nowPlayingBarElement = document.querySelector('.nowPlayingBar');
 
                 if ((browserInfo.safari || !AppInfo.isNativeApp) && browserInfo.mobile) {
                     // Not handled well here. The wrong elements receive events, bar doesn't update quickly enough, etc.
@@ -296,11 +313,11 @@
     }
 
     function showButton(button) {
-        button.removeClass('hide');
+        button.classList.remove('hide');
     }
 
     function hideButton(button) {
-        button.addClass('hide');
+        button.classList.add('hide');
     }
 
     var lastUpdateTime = 0;
@@ -341,16 +358,25 @@
         var playerInfo = MediaController.getPlayerInfo();
 
         var playState = state.PlayState || {};
+        var i, length;
 
         if (playState.IsPaused) {
 
-            hideButton(pauseButton);
-            showButton(unpauseButton);
+            for (i = 0, length = pauseButtons.length; i < length; i++) {
+                hideButton(pauseButtons[i]);
+            }
+            for (i = 0, length = unpauseButtons.length; i < length; i++) {
+                showButton(unpauseButtons[i]);
+            }
 
         } else {
 
-            showButton(pauseButton);
-            hideButton(unpauseButton);
+            for (i = 0, length = pauseButtons.length; i < length; i++) {
+                showButton(pauseButtons[i]);
+            }
+            for (i = 0, length = unpauseButtons.length; i < length; i++) {
+                hideButton(unpauseButtons[i]);
+            }
         }
 
         updatePlayerVolumeState(state, playerInfo);
