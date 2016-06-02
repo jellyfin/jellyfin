@@ -176,6 +176,10 @@ define(['viewcontainer', 'focusManager', 'queryString', 'connectionManager', 'ev
             });
         };
 
+        self.currentView = function () {
+            return currentView;
+        };
+
         self.dispatchPageEvents = function (value) {
             dispatchPageEvents = value;
         };

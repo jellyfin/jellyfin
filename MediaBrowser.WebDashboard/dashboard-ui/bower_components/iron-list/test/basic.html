@@ -81,55 +81,44 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       });
     });
 
-    test('first visible index', function(done) {
+    test('first visible index', function() {
       container.data = buildDataSet(100);
+      Polymer.dom.flush();
+      assert.equal(list.firstVisibleIndex, 0);
+      list.scroll(0, container.itemHeight * 10);
+      list.fire('scroll');
+      assert.equal(list.firstVisibleIndex, 10);
+      list.scroll(0, container.itemHeight * 50);
+      list.fire('scroll');
+      assert.equal(list.firstVisibleIndex, 50);
+      list.scrollToIndex(60);
+      Polymer.dom.flush();
+      assert.equal(list.firstVisibleIndex, 60);
+      list.scrollToIndex(0);
+      Polymer.dom.flush();
+      assert.equal(list.firstVisibleIndex, 0);
+    });
 
-      flush(function() {
-        var setSize = list.items.length;
-        var rowHeight = container.itemHeight;
-        var viewportHeight = list.offsetHeight;
-        var scrollToItem;
-
-        function checkFirstVisible() {
-          assert.equal(list.firstVisibleIndex, scrollToItem);
-          assert.equal(getFirstItemFromList(list).textContent, scrollToItem);
-        }
-
-        function checkLastVisible() {
-          var visibleItemsCount = Math.floor(viewportHeight / rowHeight);
-          assert.equal(list.lastVisibleIndex, scrollToItem + visibleItemsCount - 1);
-          assert.equal(getLastItemFromList(list).textContent, scrollToItem + visibleItemsCount - 1);
-        }
-
-        function doneScrollDown() {
-          checkFirstVisible();
-          checkLastVisible();
-          scrollToItem = 1;
-          flush(function() {
-            simulateScroll({
-              list: list,
-              contribution: rowHeight,
-              target: scrollToItem*rowHeight,
-              onScrollEnd: doneScrollUp
-            });
-          });
-        }
-
-        function doneScrollUp() {
-          checkFirstVisible();
-          checkLastVisible();
-          done();
-        }
-        scrollToItem = 50;
-
-        simulateScroll({
-          list: list,
-          contribution: 50,
-          target: scrollToItem*rowHeight,
-          onScrollEnd: doneScrollDown
-        });
-
-      });
+    test('last visible index', function() {
+      container.data = buildDataSet(1);
+      container.itemHeight = 1000;
+      Polymer.dom.flush();
+      assert.equal(list.lastVisibleIndex, 0);
+      container.data = buildDataSet(2);
+      container.itemHeight = 50;
+      Polymer.dom.flush();
+      assert.equal(list.lastVisibleIndex, 1);
+      container.data = buildDataSet(10);
+      Polymer.dom.flush();
+      list.scrollToIndex(8);
+      Polymer.dom.flush();
+      assert.equal(list.lastVisibleIndex, 9);
+      container.itemHeight = 50;
+      container.data = buildDataSet(100);
+      Polymer.dom.flush();
+      list.scroll(0, 100);
+      list.fire('scroll');
+      assert.equal(list.lastVisibleIndex, ((list._scrollTop + container.listHeight) / container.itemHeight) - 1);
     });
 
     test('scroll to index', function(done) {
@@ -158,6 +147,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           assert.equal(list.firstVisibleIndex, 99);
           done();
         }, 100);
+      }, 100);
+    });
+
+    test('scroll to top', function(done) {
+      list.items = buildDataSet(100);
+      Polymer.dom.flush();
+      list.scrollToIndex(99);
+      Polymer.dom.flush();
+      list.scroll(0, 0);
+      setTimeout(function() {
+        assert.equal(list._scrollTop, 0, 'scrollTop = 0');
+        done();
+      }, 100);
+    });
+
+    test('scroll to a given scrollTop', function(done) {
+      list.items = buildDataSet(100);
+      Polymer.dom.flush();
+      list.scrollToIndex(99);
+      Polymer.dom.flush();
+      list.scroll(0, 500);
+      setTimeout(function() {
+        assert.equal(list._scrollTop, 500, 'scrollTop = 500');
+        done();
       }, 100);
     });
 

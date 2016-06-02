@@ -1,4 +1,4 @@
-﻿define(['datetime'], function (datetime) {
+﻿define(['datetime', 'jQuery'], function (datetime, $) {
 
     function renderNoHealthAlertsMessage(page) {
 
