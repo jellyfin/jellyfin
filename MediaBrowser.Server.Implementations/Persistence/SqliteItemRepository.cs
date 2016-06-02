@@ -1638,7 +1638,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 builder.Append("(select group_concat((Select Value from ItemValues where ItemId=Guid and Type=5), '|')),");
 
                 builder.Append("@ItemStudios,");
-                builder.Append("Studios");
+                builder.Append("Studios,");
+
+                builder.Append("(select group_concat((Select Name from People where ItemId=Guid and Name in (Select Name from People where ItemId=@SimilarItemId)), '|'))");
+
                 builder.Append(") as SimilarityScore");
 
                 list.Add(builder.ToString());
@@ -1648,6 +1651,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 cmd.Parameters.Add(cmd, "@ItemTags", DbType.String).Value = string.Join("|", item.Tags.ToArray());
                 cmd.Parameters.Add(cmd, "@ItemKeywords", DbType.String).Value = string.Join("|", item.Keywords.ToArray());
                 cmd.Parameters.Add(cmd, "@ItemStudios", DbType.String).Value = string.Join("|", item.Studios.ToArray());
+                cmd.Parameters.Add(cmd, "@SimilarItemId", DbType.Guid).Value = item.Id;
 
                 var excludeIds = query.ExcludeItemIds.ToList();
                 excludeIds.Add(item.Id.ToString("N"));

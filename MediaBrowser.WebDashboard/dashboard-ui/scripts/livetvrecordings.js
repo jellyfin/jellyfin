@@ -132,7 +132,7 @@
             elem.querySelector('.recordingItems').innerHTML = html;
 
             ImageLoader.lazyChildren(elem);
-            $(elem).createCardMenus();
+            LibraryBrowser.createCardMenus(elem);
         });
     }
 
