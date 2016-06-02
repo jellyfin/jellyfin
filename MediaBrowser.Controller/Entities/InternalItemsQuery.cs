@@ -64,7 +64,6 @@ namespace MediaBrowser.Controller.Entities
         public bool? IsInBoxSet { get; set; }
         public bool? IsLocked { get; set; }
         public bool? IsPlaceHolder { get; set; }
-        public bool? IsYearMismatched { get; set; }
 
         public bool? HasImdbId { get; set; }
         public bool? HasOverview { get; set; }
@@ -141,6 +140,7 @@ namespace MediaBrowser.Controller.Entities
         public bool GroupByPresentationUniqueKey { get; set; }
         public bool EnableTotalRecordCount { get; set; }
         public bool ForceDirect { get; set; }
+        public Dictionary<string,string> ExcludeProviderIds { get; set; }
 
         public InternalItemsQuery()
         {
@@ -149,7 +149,8 @@ namespace MediaBrowser.Controller.Entities
 
             AlbumNames = new string[] { };
             ArtistNames = new string[] { };
-            
+            ExcludeProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
             BlockUnratedItems = new UnratedItem[] { };
             Tags = new string[] { };
             OfficialRatings = new string[] { };

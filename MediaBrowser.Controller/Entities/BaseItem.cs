@@ -75,6 +75,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the album.
         /// </summary>
         /// <value>The album.</value>
+        [IgnoreDataMember]
         public string Album { get; set; }
 
         /// <summary>
