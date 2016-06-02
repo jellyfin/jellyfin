@@ -258,7 +258,9 @@
                 $(containers).removeClass('hiddenScrollX');
             }
 
-            $(containers).createCardMenus();
+            for (var i = 0, length = containers.length; i < length; i++) {
+                LibraryBrowser.createCardMenus(containers[i]);
+            }
         };
 
         self.renderTab = function () {

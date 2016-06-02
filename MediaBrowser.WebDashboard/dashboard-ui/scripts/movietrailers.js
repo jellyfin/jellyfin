@@ -180,7 +180,7 @@
             reloadItems(tabContent);
         });
 
-        $('.itemsContainer', tabContent).on('needsrefresh', function () {
+        tabContent.querySelector('.itemsContainer').addEventListener('needsrefresh', function () {
 
             reloadItems(tabContent);
 

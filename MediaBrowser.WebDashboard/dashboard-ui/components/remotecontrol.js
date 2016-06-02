@@ -810,7 +810,7 @@
 
             Events.on(MediaController, 'playerchange', onPlayerChange);
 
-            $(context.querySelector('.itemsContainer')).createCardMenus();
+            libraryBrowser.createCardMenus(context.querySelector('.itemsContainer'));
 
         }
 
