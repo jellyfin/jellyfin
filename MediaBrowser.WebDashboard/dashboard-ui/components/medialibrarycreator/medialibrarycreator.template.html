@@ -6,16 +6,14 @@
 </div>
 
 <form style="margin:auto;">
-    <div id="fldCollectionType">
-        <label for="selectCollectionType">${LabelContentType}</label>
-        <select id="selectCollectionType" data-mini="true" required="required"></select>
+    <div id="fldCollectionType" class="selectContainer">
+        <select is="emby-select" id="selectCollectionType" data-mini="true" required="required" label="${LabelContentType}"></select>
         <div class="collectionTypeFieldDescription fieldDescription">
         </div>
     </div>
-    <div>
-        <paper-input type="text" id="txtValue" required="required" label="${LabelDisplayName}"></paper-input>
+    <div class="inputContainer">
+        <input is="emby-input" type="text" id="txtValue" required="required" label="${LabelDisplayName}" />
     </div>
-    <br />
     <div>
         <h1 style="display:inline-block;vertical-align:middle;">${HeadersFolders}</h1>
         <paper-button raised class="btnAddFolder submit mini" style="margin-left:1em;" title="${ButtonAdd}">

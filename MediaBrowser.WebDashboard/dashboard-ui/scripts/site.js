@@ -3045,7 +3045,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/wizarduser.html',
-            dependencies: ['dashboardcss'],
+            dependencies: ['dashboardcss', 'emby-input'],
             autoFocus: false,
             anonymous: true
         });

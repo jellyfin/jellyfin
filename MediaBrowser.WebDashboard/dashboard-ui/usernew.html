@@ -1,15 +1,13 @@
-﻿<div id="newUserPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/usernew,paper-input,paper-checkbox,paper-button">
+﻿<div id="newUserPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/usernew,emby-input,paper-checkbox,paper-button">
 
     <div data-role="content">
         <div class="content-primary">
 
             <form class="newUserProfileForm">
-                <ul data-role="listview" class="ulForm">
-                    <li id="fldUserName">
-                        <paper-input id="txtUserName" required type="text" label="${LabelName}"></paper-input>
-                        <div class="fieldDescription labelNewUserNameHelp">${LabelNewUserNameHelp}</div>
-                    </li>
-                </ul>
+                <div class="inputContainer">
+                    <input is="emby-input" id="txtUserName" required type="text" label="${LabelName}" />
+                    <div class="fieldDescription labelNewUserNameHelp">${LabelNewUserNameHelp}</div>
+                </div>
 
                 <div class="folderAccessContainer">
                     <h1>${HeaderLibraryAccess}</h1>
