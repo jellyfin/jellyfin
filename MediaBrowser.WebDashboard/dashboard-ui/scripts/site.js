@@ -1891,7 +1891,9 @@ var AppInfo = {};
 
         define("jstree", [bowerPath + "/jstree/dist/jstree", "css!thirdparty/jstree/themes/default/style.min.css"]);
 
-        define("jqmbase", ['css!css/dashboard', 'css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.css']);
+        define("dashboardcss", ['css!css/dashboard']);
+
+        define("jqmbase", ['dashboardcss', 'css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.css']);
         define("jqmicons", ['jqmbase', 'css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css']);
         define("jqmtable", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.table", 'css!thirdparty/jquerymobile-1.4.5/jqm.table.css']);
 
@@ -2986,14 +2988,14 @@ var AppInfo = {};
 
         defineRoute({
             path: '/wizardagreement.html',
-            dependencies: [],
+            dependencies: ['dashboardcss'],
             autoFocus: false,
             anonymous: true
         });
 
         defineRoute({
             path: '/wizardfinish.html',
-            dependencies: ['paper-button'],
+            dependencies: ['paper-button', 'dashboardcss'],
             autoFocus: false,
             anonymous: true,
             controller: 'scripts/wizardfinishpage'
@@ -3001,49 +3003,49 @@ var AppInfo = {};
 
         defineRoute({
             path: '/wizardlibrary.html',
-            dependencies: [],
+            dependencies: ['dashboardcss'],
             autoFocus: false,
             anonymous: true
         });
 
         defineRoute({
             path: '/wizardlivetvguide.html',
-            dependencies: [],
+            dependencies: ['dashboardcss'],
             autoFocus: false,
             anonymous: true
         });
 
         defineRoute({
             path: '/wizardlivetvtuner.html',
-            dependencies: [],
+            dependencies: ['dashboardcss'],
             autoFocus: false,
             anonymous: true
         });
 
         defineRoute({
             path: '/wizardservice.html',
-            dependencies: [],
+            dependencies: ['dashboardcss'],
             autoFocus: false,
             anonymous: true
         });
 
         defineRoute({
             path: '/wizardsettings.html',
-            dependencies: [],
+            dependencies: ['dashboardcss'],
             autoFocus: false,
             anonymous: true
         });
 
         defineRoute({
             path: '/wizardstart.html',
-            dependencies: [],
+            dependencies: ['dashboardcss'],
             autoFocus: false,
             anonymous: true
         });
 
         defineRoute({
             path: '/wizarduser.html',
-            dependencies: [],
+            dependencies: ['dashboardcss'],
             autoFocus: false,
             anonymous: true
         });
