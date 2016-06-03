@@ -207,8 +207,7 @@
                 var imgUrl = apiClient.getScaledImageUrl(item.id, {
                     type: "Backdrop",
                     tag: item.tag,
-                    //maxWidth: window.innerWidth,
-                    quality: 100
+                    maxWidth: Math.min(screen.availWidth || window.innerWidth, 1920)
                 });
 
                 setBackdrop(imgUrl, type);
