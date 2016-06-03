@@ -5,6 +5,8 @@ using System.Data.SQLite;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Server.Implementations.Persistence
@@ -48,7 +50,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         public static void BindGetSimilarityScore(IDbConnection connection, ILogger logger)
         {
-            var sqlConnection = (SQLiteConnection) connection;
+            var sqlConnection = (SQLiteConnection)connection;
             SimiliarToFunction.Logger = logger;
             sqlConnection.BindFunction(new SimiliarToFunction());
         }
@@ -64,28 +66,38 @@ namespace MediaBrowser.Server.Implementations.Persistence
         }
     }
 
-    [SQLiteFunction(Name = "GetSimilarityScore", Arguments = 12, FuncType = FunctionType.Scalar)]
+    [SQLiteFunction(Name = "GetSimilarityScore", Arguments = 6, FuncType = FunctionType.Scalar)]
     public class SimiliarToFunction : SQLiteFunction
     {
         internal static ILogger Logger;
+
+        private readonly Dictionary<string, int> _personTypeScores = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            { PersonType.Actor, 3},
+            { PersonType.Director, 5},
+            { PersonType.Composer, 2},
+            { PersonType.GuestStar, 3},
+            { PersonType.Writer, 2},
+            { PersonType.Conductor, 2},
+            { PersonType.Producer, 2},
+            { PersonType.Lyricist, 2}
+        };
 
         public override object Invoke(object[] args)
         {
             var score = 0;
 
-            var inputOfficialRating = args[0] as string;
-            var rowOfficialRating = args[1] as string;
-            if (!string.IsNullOrWhiteSpace(inputOfficialRating) && string.Equals(inputOfficialRating, rowOfficialRating))
+            // Official rating equals
+            if ((long)args[0] == 1)
             {
                 score += 10;
             }
 
-            long? inputYear = args[2] == null ? (long?)null : (long)args[2];
-            long? rowYear = args[3] == null ? (long?)null : (long)args[3];
-
-            if (inputYear.HasValue && rowYear.HasValue)
+            // Year difference
+            long? yearDifference = args[1] == null ? (long?)null : (long)args[1];
+            if (yearDifference.HasValue)
             {
-                var diff = Math.Abs(inputYear.Value - rowYear.Value);
+                var diff = Math.Abs(yearDifference.Value);
 
                 // Add if they came out within the same decade
                 if (diff < 10)
@@ -101,52 +113,28 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
 
             // genres
-            score += GetListScore(args, 4, 5);
+            score += Convert.ToInt32((long)args[2]) * 10;
 
             // tags
-            score += GetListScore(args, 6, 7);
+            score += Convert.ToInt32((long)args[3]) * 10;
 
-            // keywords
-            score += GetListScore(args, 8, 9);
+            // # of common keywords
+            score += Convert.ToInt32((long)args[4]) *10;
+
+            // # of common studios
+            score += Convert.ToInt32((long)args[5]) * 3;
 
             // studios
-            score += GetListScore(args, 10, 11, 3);
+            //score += GetListScore(args, 7, 8, 3);
 
+            //var rowPeopleNamesText = (args[12] as string) ?? string.Empty;
+            //var rowPeopleNames = rowPeopleNamesText.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
 
-            // TODO: People
-    //        var item2PeopleNames = allPeople.Where(i => i.ItemId == item2.Id)
-    //.Select(i => i.Name)
-    //.Where(i => !string.IsNullOrWhiteSpace(i))
-    //.DistinctNames()
-    //.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
-
-    //        points += item1People.Where(i => item2PeopleNames.ContainsKey(i.Name)).Sum(i =>
-    //        {
-    //            if (string.Equals(i.Type, PersonType.Director, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Role, PersonType.Director, StringComparison.OrdinalIgnoreCase))
-    //            {
-    //                return 5;
-    //            }
-    //            if (string.Equals(i.Type, PersonType.Actor, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Role, PersonType.Actor, StringComparison.OrdinalIgnoreCase))
-    //            {
-    //                return 3;
-    //            }
-    //            if (string.Equals(i.Type, PersonType.Composer, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Role, PersonType.Composer, StringComparison.OrdinalIgnoreCase))
-    //            {
-    //                return 3;
-    //            }
-    //            if (string.Equals(i.Type, PersonType.GuestStar, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Role, PersonType.GuestStar, StringComparison.OrdinalIgnoreCase))
-    //            {
-    //                return 3;
-    //            }
-    //            if (string.Equals(i.Type, PersonType.Writer, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Role, PersonType.Writer, StringComparison.OrdinalIgnoreCase))
-    //            {
-    //                return 2;
-    //            }
-
-    //            return 1;
-    //        });
-
-    //        return points;
+            //foreach (var name in rowPeopleNames)
+            //{
+            //    // TODO: Send along person types
+            //    score += 3;
+            //}
 
             //Logger.Debug("Returning score {0}", score);
             return score;

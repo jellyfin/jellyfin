@@ -333,12 +333,7 @@ namespace MediaBrowser.Api.UserLibrary
                 var tags = request.GetTags();
                 if (tags.Length > 0)
                 {
-                    var hasTags = i as IHasTags;
-                    if (hasTags == null)
-                    {
-                        return false;
-                    }
-                    if (!tags.Any(v => hasTags.Tags.Contains(v, StringComparer.OrdinalIgnoreCase)))
+                    if (!tags.Any(v => i.Tags.Contains(v, StringComparer.OrdinalIgnoreCase)))
                     {
                         return false;
                     }
