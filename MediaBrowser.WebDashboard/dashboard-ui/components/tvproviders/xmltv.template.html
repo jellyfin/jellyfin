@@ -2,25 +2,39 @@
 
 <form>
     <div>
-        <div>
-            <paper-input class="txtPath" label="${LabelPath}" required="required" autocomplete="off"></paper-input>
+        <div class="inputContainer">
+            <input is="emby-input" class="txtPath" label="${LabelPath}" required="required" autocomplete="off" />
         </div>
-        <div>
-            <br />
-            <paper-checkbox class="chkAllTuners">${OptionEnableForAllTuners}</paper-checkbox>
-            <div class="selectTunersSection hide">
-                <br /><br />
-                <div class="paperListLabel">${HeaderTuners}</div>
-                <div class="paperCheckboxList paperList tunerList">
-                </div>
+        <div class="inputContainer">
+            <input is="emby-input" class="txtKids" label="${LabelKidsGenres}" autocomplete="off" />
+            <div class="fieldDescription">${XmlTvKidsGenresHelp}</div>
+        </div>
+        <div class="inputContainer">
+            <input is="emby-input" class="txtNews" label="${LabelNewsGenres}" autocomplete="off" />
+            <div class="fieldDescription"></div>
+            <div class="fieldDescription">${XmlTvNewsGenresHelp}</div>
+        </div>
+        <div class="inputContainer">
+            <input is="emby-input" class="txtSports" label="${LabelSportsGenres}" autocomplete="off" />
+            <div class="fieldDescription">${XmlTvSportsGenresHelp}</div>
+        </div>
+    </div>
+    <div>
+        <br />
+        <paper-checkbox class="chkAllTuners">${OptionEnableForAllTuners}</paper-checkbox>
+        <div class="selectTunersSection hide">
+            <br /><br />
+            <div class="paperListLabel">${HeaderTuners}</div>
+            <div class="paperCheckboxList paperList tunerList">
             </div>
         </div>
-        <br /><br />
-        <div>
-            <button type="submit" data-role="none" class="clearButton btnSubmitListingsContainer">
-                <paper-button raised class="submit block btnSubmitListings hide"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-            </button>
-            <paper-button raised class="cancel block btnCancel hide" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
-        </div>
+    </div>
+    <br /><br />
+    <div>
+        <button type="submit" data-role="none" class="clearButton btnSubmitListingsContainer">
+            <paper-button raised class="submit block btnSubmitListings hide"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+        </button>
+        <paper-button raised class="cancel block btnCancel hide" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+    </div>
     </div>
 </form>

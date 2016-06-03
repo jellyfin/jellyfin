@@ -439,6 +439,12 @@ namespace MediaBrowser.Api.LiveTv
         public string Id { get; set; }
     }
 
+    [Route("/LiveTv/ListingProviders/Default", "GET")]
+    [Authenticated(AllowBeforeStartupWizard = true)]
+    public class GetDefaultListingProvider : ListingsProviderInfo, IReturn<ListingsProviderInfo>
+    {
+    }
+
     [Route("/LiveTv/ListingProviders", "POST", Summary = "Adds a listing provider")]
     [Authenticated(AllowBeforeStartupWizard = true)]
     public class AddListingProvider : ListingsProviderInfo, IReturn<ListingsProviderInfo>
@@ -523,6 +529,11 @@ namespace MediaBrowser.Api.LiveTv
             _httpClient = httpClient;
             _libraryManager = libraryManager;
             _dtoService = dtoService;
+        }
+
+        public object Get(GetDefaultListingProvider request)
+        {
+            return ToOptimizedResult(new ListingsProviderInfo());
         }
 
         public async Task<object> Get(GetSatChannnelScanResult request)

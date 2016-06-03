@@ -103,6 +103,8 @@
         }
     }
 
+    var inputId = 0;
+
     EmbySelectPrototype.createdCallback = function () {
 
         var parent = this.parentNode;
@@ -112,8 +114,10 @@
             parent.replaceChild(div, this);
             div.appendChild(this);
         }
+
         if (!this.id) {
-            this.id = 'select' + new Date().getTime();
+            this.id = 'embyselect' + inputId;
+            inputId++;
         }
 
         this.removeEventListener('mousedown', onMouseDown);

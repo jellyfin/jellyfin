@@ -2,10 +2,13 @@
 
     var EmbyInputPrototype = Object.create(HTMLInputElement.prototype);
 
+    var inputId = 0;
+
     EmbyInputPrototype.createdCallback = function () {
 
         if (!this.id) {
-            this.id = 'input' + new Date().getTime();
+            this.id = 'embyinput' + inputId;
+            inputId++;
         }
     };
 

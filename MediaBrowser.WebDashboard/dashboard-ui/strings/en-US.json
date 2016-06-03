@@ -2357,5 +2357,11 @@
   "HeaderHealthMonitor": "Health Monitor",
   "HealthMonitorNoAlerts": "There are no active alerts.",
   "RecordingPathChangeMessage": "Changing your recording folder will not migrate existing recordings from the old location to the new. You'll need to move them manually if desired.",
-  "VisualLoginFormHelp": "Select a user or sign in manually"
+  "VisualLoginFormHelp": "Select a user or sign in manually",
+  "LabelSportsGenres": "Sports genres:",
+  "XmlTvSportsGenresHelp": "Programs with these genres will be categorized as sports programs. Separate multiple with '|'.",
+  "LabelNewsGenres": "News genres:",
+  "XmlTvNewsGenresHelp": "Programs with these genres will be categorized as news programs. Separate multiple with '|'.",
+  "LabelKidsGenres": "Children's genres:",
+  "XmlTvKidsGenresHelp": "Programs with these genres will be categorized as programs for children. Separate multiple with '|'."
 }
