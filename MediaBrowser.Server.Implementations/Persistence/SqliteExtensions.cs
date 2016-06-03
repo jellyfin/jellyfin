@@ -66,7 +66,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         }
     }
 
-    [SQLiteFunction(Name = "GetSimilarityScore", Arguments = 13, FuncType = FunctionType.Scalar)]
+    [SQLiteFunction(Name = "GetSimilarityScore", Arguments = 6, FuncType = FunctionType.Scalar)]
     public class SimiliarToFunction : SQLiteFunction
     {
         internal static ILogger Logger;
@@ -87,19 +87,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var score = 0;
 
-            var inputOfficialRating = args[0] as string;
-            var rowOfficialRating = args[1] as string;
-            if (!string.IsNullOrWhiteSpace(inputOfficialRating) && string.Equals(inputOfficialRating, rowOfficialRating))
+            // Official rating equals
+            if ((long)args[0] == 1)
             {
                 score += 10;
             }
 
-            long? inputYear = args[2] == null ? (long?)null : (long)args[2];
-            long? rowYear = args[3] == null ? (long?)null : (long)args[3];
-
-            if (inputYear.HasValue && rowYear.HasValue)
+            // Year difference
+            long? yearDifference = args[1] == null ? (long?)null : (long)args[1];
+            if (yearDifference.HasValue)
             {
-                var diff = Math.Abs(inputYear.Value - rowYear.Value);
+                var diff = Math.Abs(yearDifference.Value);
 
                 // Add if they came out within the same decade
                 if (diff < 10)
@@ -115,25 +113,28 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
 
             // genres
-            score += GetListScore(args, 4, 5);
+            score += Convert.ToInt32((long)args[2]) * 10;
 
             // tags
-            score += GetListScore(args, 6, 7);
+            score += Convert.ToInt32((long)args[3]) * 10;
 
-            // keywords
-            score += GetListScore(args, 8, 9);
+            // # of common keywords
+            score += Convert.ToInt32((long)args[4]) *10;
+
+            // # of common studios
+            score += Convert.ToInt32((long)args[5]) * 3;
 
             // studios
-            score += GetListScore(args, 10, 11, 3);
+            //score += GetListScore(args, 7, 8, 3);
 
-            var rowPeopleNamesText = (args[12] as string) ?? string.Empty;
-            var rowPeopleNames = rowPeopleNamesText.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+            //var rowPeopleNamesText = (args[12] as string) ?? string.Empty;
+            //var rowPeopleNames = rowPeopleNamesText.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
 
-            foreach (var name in rowPeopleNames)
-            {
-                // TODO: Send along person types
-                score += 3;
-            }
+            //foreach (var name in rowPeopleNames)
+            //{
+            //    // TODO: Send along person types
+            //    score += 3;
+            //}
 
             //Logger.Debug("Returning score {0}", score);
             return score;
