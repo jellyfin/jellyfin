@@ -56,7 +56,7 @@ namespace MediaBrowser.Providers.Omdb
                     resultString = reader.ReadToEnd();
                 }
 
-                resultString = resultString.Replace("\"N/A\"", string.Empty);
+                resultString = resultString.Replace("\"N/A\"", "\"\"");
 
                 var result = _jsonSerializer.DeserializeFromString<RootObject>(resultString);
 
