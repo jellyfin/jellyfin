@@ -1,78 +1,18 @@
 ﻿define(['jQuery'], function ($) {
 
-    function load(page, devices, config) {
-
-        if (devices.length) {
-            $('.noDevices', page).hide();
-            $('.devicesUploadForm', page).show();
-        } else {
-            $('.noDevices', page).show();
-            $('.devicesUploadForm', page).hide();
-        }
+    function load(page, config) {
 
         $('#txtUploadPath', page).val(config.CameraUploadPath || '');
 
         $('#chkSubfolder', page).checked(config.EnableCameraUploadSubfolders);
-
-        loadDeviceList(page, devices, config);
-    }
-
-    function loadDeviceList(page, devices, config) {
-
-        var html = '';
-
-        html += '<div class="paperListLabel">';
-        html += Globalize.translate('LabelEnableCameraUploadFor');
-        html += '</div>';
-
-        html += '<div class="paperCheckboxList paperList">';
-
-        var index = 0;
-        html += devices.map(function (d) {
-
-            var deviceHtml = '';
-
-            var isChecked = config.EnabledCameraUploadDevices.indexOf(d.Id) != -1;
-            var checkedHtml = isChecked ? ' checked="checked"' : '';
-
-            var label = d.Name;
-
-            if (d.AppName) {
-                label += ' - ' + d.AppName;
-            }
-
-            deviceHtml += '<paper-checkbox class="chkDevice" data-id="' + d.Id + '"' + checkedHtml + '>' + label + '</paper-checkbox>';
-
-            index++;
-
-            return deviceHtml;
-
-        }).join('');
-
-        html += '</div>';
-
-        html += '<div class="fieldDescription">';
-        html += Globalize.translate('LabelEnableCameraUploadForHelp');
-        html += '</div>';
-
-        $('.devicesList', page).html(html).trigger('create');
     }
 
     function loadData(page) {
 
         Dashboard.showLoadingMsg();
 
-        var promise1 = ApiClient.getNamedConfiguration("devices");
-        var promise2 = ApiClient.getJSON(ApiClient.getUrl('Devices', {
-
-            SupportsContentUploading: true
-
-        }));
-
-        Promise.all([promise1, promise2]).then(function (responses) {
-
-
-            load(page, responses[1].Items, responses[0]);
+        ApiClient.getNamedConfiguration("devices").then(function (config) {
+            load(page, config);
 
             Dashboard.hideLoadingMsg();
         });
@@ -83,16 +23,6 @@
         ApiClient.getNamedConfiguration("devices").then(function (config) {
 
             config.CameraUploadPath = $('#txtUploadPath', page).val();
-
-            config.EnabledCameraUploadDevices = $('.chkDevice', page).get().filter(function (c) {
-
-                return c.checked;
-
-            }).map(function (c) {
-
-                return c.getAttribute('data-id');
-
-            });
 
             config.EnableCameraUploadSubfolders = $('#chkSubfolder', page).checked();
 

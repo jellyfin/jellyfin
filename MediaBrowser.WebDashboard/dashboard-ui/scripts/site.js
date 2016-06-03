@@ -1588,7 +1588,7 @@ var AppInfo = {};
     }
 
     //localStorage.clear();
-    function createConnectionManager(credentialProviderFactory, capabilities) {
+    function createConnectionManager() {
 
         return getSyncProfile().then(function (deviceProfile) {
 

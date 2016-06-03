@@ -309,6 +309,7 @@
             existingServer.DateLastAccessed = new Date().getTime();
             existingServer.LastConnectionMode = ConnectionMode.Manual;
             existingServer.ManualAddress = apiClient.serverAddress();
+            existingServer.PreferredConnectionMode = ConnectionMode.Manual;
             apiClient.serverInfo(existingServer);
 
             apiClient.onAuthenticated = function (instance, result) {
@@ -996,6 +997,9 @@
 
                 if (server.LastConnectionMode != null) {
                     //tests.push(server.LastConnectionMode);
+                }
+                if (server.PreferredConnectionMode != null) {
+                    tests.push(server.PreferredConnectionMode);
                 }
                 if (tests.indexOf(ConnectionMode.Manual) == -1) { tests.push(ConnectionMode.Manual); }
                 if (tests.indexOf(ConnectionMode.Local) == -1) { tests.push(ConnectionMode.Local); }

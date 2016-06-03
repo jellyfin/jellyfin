@@ -889,12 +889,6 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (query.ImageTypes.Length > 0)
-            {
-                Logger.Debug("Query requires post-filtering due to ImageTypes");
-                return true;
-            }
-
             // Apply studio filter
             if (query.StudioIds.Length > 0)
             {
