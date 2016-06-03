@@ -747,3 +747,7 @@ emby-collapsible > .style-scope {
     border-width: 0 1px 1px 1px;
     padding: 1em 1.25em;
 }
+
+#editItemMetadataPage #txtOverview .paper-input-input {  
+    max-height: 90px;  
+}
