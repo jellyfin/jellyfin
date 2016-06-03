@@ -161,6 +161,7 @@
 
                 picker.show({
 
+                    includeFiles: true,
                     callback: function (path) {
 
                         if (path) {
