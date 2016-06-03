@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'paper-checkbox', 'paper-button', 'emby-input', 'paper-item-body', 'paper-icon-item'], function ($) {
+﻿define(['jQuery', 'paper-checkbox', 'paper-button', 'emby-input', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light'], function ($) {
 
     return function (page, providerId, options) {
 
@@ -153,6 +153,27 @@
             page.querySelector('.btnSubmitListingsContainer').click();
         };
 
+        function onSelectPathClick(e) {
+            var page = $(e.target).parents('.xmltvForm')[0];
+            require(['directorybrowser'], function (directoryBrowser) {
+
+                var picker = new directoryBrowser();
+
+                picker.show({
+
+                    callback: function (path) {
+
+                        if (path) {
+                            var txtPath = page.querySelector('.txtPath');
+                            txtPath.value = path;
+                            txtPath.focus();
+                        }
+                        picker.close();
+                    }
+                });
+            });
+        }
+
         self.init = function () {
 
             options = options || {};
@@ -173,6 +194,8 @@
                 submitListingsForm();
                 return false;
             });
+
+            page.querySelector('#btnSelectPath').addEventListener("click", onSelectPathClick);
 
             page.querySelector('.chkAllTuners').addEventListener('change', function (e) {
                 if (e.target.checked) {
