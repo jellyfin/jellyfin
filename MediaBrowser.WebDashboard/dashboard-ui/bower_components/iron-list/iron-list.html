@@ -620,7 +620,6 @@ will only render 20.
             if (physicalOffset > this._scrollPosition) {
               return this.grid ? vidx - (vidx % this._itemsPerRow) : vidx;
             }
-
             // Handle a partially rendered final row in grid mode
             if (this.grid && this._virtualCount - 1 === vidx) {
               return vidx - (vidx % this._itemsPerRow);
@@ -639,21 +638,17 @@ will only render 20.
       if (this._lastVisibleIndexVal === null) {
         if (this.grid) {
           var lastIndex = this.firstVisibleIndex + this._estRowsInView * this._itemsPerRow - 1;
-          this._lastVisibleIndexVal = lastIndex > this._virtualCount ? this._virtualCount : lastIndex;
+          this._lastVisibleIndexVal = Math.min(this._virtualCount, lastIndex);
         } else {
           var physicalOffset = this._physicalTop;
-
           this._iterateItems(function(pidx, vidx) {
-            physicalOffset += this._getPhysicalSizeIncrement(pidx);
-
-            if(physicalOffset <= this._scrollBottom) {
-              if (this.grid) {
-                var lastIndex = vidx - vidx % this._itemsPerRow + this._itemsPerRow - 1;
-                this._lastVisibleIndexVal = lastIndex > this._virtualCount ? this._virtualCount : lastIndex;
-              } else {
-                this._lastVisibleIndexVal = vidx;
-              }
+            if (physicalOffset < this._scrollBottom) {
+              this._lastVisibleIndexVal = vidx;
+            } else {
+              // Break _iterateItems
+              return true;
             }
+            physicalOffset += this._getPhysicalSizeIncrement(pidx);
           });
         }
       }
@@ -1067,10 +1062,11 @@ will only render 20.
         this._virtualCount = this.items ? this.items.length : 0;
         this._collection = this.items ? Polymer.Collection.get(this.items) : null;
         this._physicalIndexForKey = {};
+        this._firstVisibleIndexVal = null;
+        this._lastVisibleIndexVal = null;
 
         this._resetScrollPosition(0);
         this._removeFocusedItem();
-
         // create the initial physical items
         if (!this._physicalItems) {
           this._physicalCount = Math.max(1, Math.min(DEFAULT_PHYSICAL_COUNT, this._virtualCount));
@@ -1081,6 +1077,7 @@ will only render 20.
         this._physicalStart = 0;
 
       } else if (change.path === 'items.splices') {
+
         this._adjustVirtualIndex(change.value.indexSplices);
         this._virtualCount = this.items ? this.items.length : 0;
 
@@ -1313,7 +1310,7 @@ will only render 20.
       if (deltaHeight) {
         this._physicalTop = this._physicalTop - deltaHeight;
         // juking scroll position during interial scrolling on iOS is no bueno
-        if (!IOS_TOUCH_SCROLLING) {
+        if (!IOS_TOUCH_SCROLLING && this._physicalTop !== 0) {
           this._resetScrollPosition(this._scrollTop - deltaHeight);
         }
       }

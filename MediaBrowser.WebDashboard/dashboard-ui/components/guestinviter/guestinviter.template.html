@@ -7,10 +7,12 @@
 
 <form class="addUserForm" style="max-width: none;margin:0;">
 
-    <paper-input type="text" id="txtConnectUsername" value="" placeholder="${PlaceholderUsername}" label="${LabelConnectGuestUserName}" required></paper-input>
-    <div class="fieldDescription">
-        <div>${LabelConnectGuestUserNameHelp}</div>
-        <div style="margin-top: .25em;"><a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a></div>
+    <div class="inputContainer">
+        <input is="emby-input" type="text" id="txtConnectUsername" value="" label="${LabelConnectGuestUserName}" required />
+        <div class="fieldDescription">
+            <div>${LabelConnectGuestUserNameHelp}</div>
+            <div style="margin-top: .25em;"><a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a></div>
+        </div>
     </div>
 
     <br />

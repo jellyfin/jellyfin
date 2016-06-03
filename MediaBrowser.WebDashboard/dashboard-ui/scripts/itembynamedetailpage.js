@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define([], function () {
 
     function renderItems(page, item) {
 
@@ -256,7 +256,7 @@
             var itemsContainer = element.querySelector('.itemsContainer');
             itemsContainer.innerHTML = html;
 
-            $(itemsContainer).createCardMenus();
+            LibraryBrowser.createCardMenus(itemsContainer);
             ImageLoader.lazyChildren(itemsContainer);
         });
     }
@@ -302,7 +302,7 @@
             CollapseBoxSetItems: false
         };
 
-        query = $.extend(query, options || {});
+        query = Object.assign(query, options || {});
 
         if (query.IncludeItemTypes == "Audio") {
             query.SortBy = "AlbumArtist,Album,SortName";

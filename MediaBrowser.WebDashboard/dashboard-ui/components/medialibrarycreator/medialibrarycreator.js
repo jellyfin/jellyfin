@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'paper-input', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'emby-input', 'emby-select', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light'], function (dialogHelper, $) {
 
     var currentDeferred;
     var hasChanges;

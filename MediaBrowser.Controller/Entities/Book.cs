@@ -6,7 +6,7 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class Book : BaseItem, IHasTags, IHasLookupInfo<BookInfo>, IHasSeries
+    public class Book : BaseItem, IHasLookupInfo<BookInfo>, IHasSeries
     {
         [IgnoreDataMember]
         public override string MediaType

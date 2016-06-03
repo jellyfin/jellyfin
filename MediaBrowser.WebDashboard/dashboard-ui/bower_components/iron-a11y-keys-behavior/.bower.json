@@ -30,14 +30,14 @@
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
   "ignore": [],
-  "homepage": "https://github.com/PolymerElements/iron-a11y-keys-behavior",
+  "homepage": "https://github.com/polymerelements/iron-a11y-keys-behavior",
   "_release": "1.1.2",
   "_resolution": {
     "type": "version",
     "tag": "v1.1.2",
     "commit": "0c2330c229a6fd3d200e2b84147ec6f94f17c22d"
   },
-  "_source": "git://github.com/PolymerElements/iron-a11y-keys-behavior.git",
+  "_source": "git://github.com/polymerelements/iron-a11y-keys-behavior.git",
   "_target": "^1.0.0",
-  "_originalSource": "PolymerElements/iron-a11y-keys-behavior"
+  "_originalSource": "polymerelements/iron-a11y-keys-behavior"
 }

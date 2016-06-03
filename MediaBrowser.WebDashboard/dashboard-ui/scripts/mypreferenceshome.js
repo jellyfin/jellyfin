@@ -27,37 +27,6 @@
         $('.folderGroupList', page).html(folderHtml);
     }
 
-    function renderViewStyles(page, user, result) {
-
-        var folderHtml = '';
-
-        folderHtml += '<div class="paperCheckboxList">';
-        folderHtml += result.map(function (i) {
-
-            var currentHtml = '';
-
-            var id = 'chkPlainFolder' + i.Id;
-
-            var isChecked = user.Configuration.PlainFolderViews.indexOf(i.Id) == -1;
-            var checkedHtml = isChecked ? ' checked="checked"' : '';
-
-            currentHtml += '<paper-checkbox class="chkPlainFolder" data-folderid="' + i.Id + '" id="' + id + '"' + checkedHtml + '>' + i.Name + '</paper-checkbox>';
-
-            return currentHtml;
-
-        }).join('');
-
-        folderHtml += '</div>';
-
-        $('.viewStylesList', page).html(folderHtml);
-
-        if (result.length) {
-            $('.viewStylesSection', page).show();
-        } else {
-            $('.viewStylesSection', page).hide();
-        }
-    }
-
     function renderLatestItems(page, user, result) {
 
         var folderHtml = '';
@@ -140,15 +109,13 @@
             sortBy: "SortName"
         });
         var promise2 = ApiClient.getUserViews({}, user.Id);
-        var promise3 = ApiClient.getJSON(ApiClient.getUrl("Users/" + user.Id + "/SpecialViewOptions"));
-        var promise4 = ApiClient.getJSON(ApiClient.getUrl("Users/" + user.Id + "/GroupingOptions"));
+        var promise3 = ApiClient.getJSON(ApiClient.getUrl("Users/" + user.Id + "/GroupingOptions"));
 
-        Promise.all([promise1, promise2, promise3, promise4]).then(function (responses) {
+        Promise.all([promise1, promise2, promise3]).then(function (responses) {
 
-            renderViews(page, user, responses[3]);
+            renderViews(page, user, responses[2]);
             renderLatestItems(page, user, responses[0]);
             renderViewOrder(page, user, responses[1]);
-            renderViewStyles(page, user, responses[2]);
 
             Dashboard.hideLoadingMsg();
         });
@@ -182,15 +149,6 @@
         user.Configuration.GroupedFolders = $(".chkGroupFolder", page).get().filter(function (i) {
 
             return i.checked;
-
-        }).map(function (i) {
-
-            return i.getAttribute('data-folderid');
-        });
-
-        user.Configuration.PlainFolderViews = $(".chkPlainFolder", page).get().filter(function (i) {
-
-            return !i.checked;
 
         }).map(function (i) {
 

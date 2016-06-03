@@ -20,7 +20,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Folder
     /// </summary>
-    public class Folder : BaseItem, IHasThemeMedia, IHasTags
+    public class Folder : BaseItem, IHasThemeMedia
     {
         public static IUserManager UserManager { get; set; }
         public static IUserViewManager UserViewManager { get; set; }
@@ -886,12 +886,6 @@ namespace MediaBrowser.Controller.Entities
             if (query.VideoTypes.Length > 0)
             {
                 Logger.Debug("Query requires post-filtering due to VideoTypes");
-                return true;
-            }
-
-            if (query.ImageTypes.Length > 0)
-            {
-                Logger.Debug("Query requires post-filtering due to ImageTypes");
                 return true;
             }
 
