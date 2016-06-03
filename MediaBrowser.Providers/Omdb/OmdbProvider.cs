@@ -4,8 +4,10 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -47,7 +49,16 @@ namespace MediaBrowser.Providers.Omdb
 
             }).ConfigureAwait(false))
             {
-                var result = _jsonSerializer.DeserializeFromStream<RootObject>(stream);
+                string resultString;
+
+                using (var reader = new StreamReader(stream, new UTF8Encoding(false)))
+                {
+                    resultString = reader.ReadToEnd();
+                }
+
+                resultString = resultString.Replace("\"N/A\"", string.Empty);
+
+                var result = _jsonSerializer.DeserializeFromString<RootObject>(resultString);
 
                 // Only take the name and rating if the user's language is set to english, since Omdb has no localization
                 if (string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
@@ -84,7 +95,6 @@ namespace MediaBrowser.Providers.Omdb
                     }
 
                     if (!string.IsNullOrEmpty(result.tomatoConsensus)
-                        && !string.Equals(result.tomatoConsensus, "n/a", StringComparison.OrdinalIgnoreCase)
                         && !string.Equals(result.tomatoConsensus, "No consensus yet.", StringComparison.OrdinalIgnoreCase))
                     {
                         hasCriticRating.CriticRatingSummary = WebUtility.HtmlDecode(result.tomatoConsensus);
@@ -109,14 +119,12 @@ namespace MediaBrowser.Providers.Omdb
                     item.CommunityRating = imdbRating;
                 }
 
-                if (!string.IsNullOrEmpty(result.Website)
-                        && !string.Equals(result.Website, "n/a", StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(result.Website))
                 {
                     item.HomePageUrl = result.Website;
                 }
 
-                if (!string.IsNullOrWhiteSpace(result.imdbID)
-                        && !string.Equals(result.imdbID, "n/a", StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrWhiteSpace(result.imdbID))
                 {
                     item.SetProviderId(MetadataProviders.Imdb, result.imdbID);
                 }
@@ -130,8 +138,7 @@ namespace MediaBrowser.Providers.Omdb
             // Grab series genres because imdb data is better than tvdb. Leave movies alone
             // But only do it if english is the preferred language because this data will not be localized
             if (ShouldFetchGenres(item) &&
-                !string.IsNullOrWhiteSpace(result.Genre) &&
-                !string.Equals(result.Genre, "n/a", StringComparison.OrdinalIgnoreCase))
+                !string.IsNullOrWhiteSpace(result.Genre))
             {
                 item.Genres.Clear();
 
@@ -156,8 +163,7 @@ namespace MediaBrowser.Providers.Omdb
             }
 
             var hasAwards = item as IHasAwards;
-            if (hasAwards != null && !string.IsNullOrEmpty(result.Awards) &&
-                !string.Equals(result.Awards, "n/a", StringComparison.OrdinalIgnoreCase))
+            if (hasAwards != null && !string.IsNullOrEmpty(result.Awards))
             {
                 hasAwards.AwardSummary = WebUtility.HtmlDecode(result.Awards);
             }
