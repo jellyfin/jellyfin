@@ -57,13 +57,14 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
     var self = {};
 
     var enableFade = browser.animate && !browser.mobile && !browser.operaTv;
+
     function fillImage(elem, source, enableEffects) {
 
         if (!source) {
             source = elem.getAttribute('data-src');
         }
         if (source) {
-            if (enableFade && enableEffects !== false) {
+            if (enableFade && !layoutManager.tv && enableEffects !== false) {
                 imageFetcher.loadImage(elem, source).then(fadeIn);
             } else {
                 imageFetcher.loadImage(elem, source);

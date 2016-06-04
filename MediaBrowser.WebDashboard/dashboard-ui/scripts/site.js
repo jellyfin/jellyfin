@@ -2591,9 +2591,10 @@ var AppInfo = {};
 
         defineRoute({
             path: '/librarysettings.html',
-            dependencies: [],
+            dependencies: ['emby-collapsible', 'paper-input', 'paper-checkbox', 'paper-button'],
             autoFocus: false,
-            roles: 'admin'
+            roles: 'admin',
+            controller: 'scripts/librarysettings'
         });
 
         defineRoute({

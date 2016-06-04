@@ -24,7 +24,10 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
             {
                 if (_config.Configuration.IsStartupWizardCompleted)
                 {
-                    _config.Configuration.EnableFolderView = _userManager.Users.Any(i => i.Configuration.DisplayFoldersView);
+                    if (_userManager.Users.Any(i => i.Configuration.DisplayFoldersView))
+                    {
+                        _config.Configuration.EnableFolderView = true;
+                    }
                 }
 
                 migrationKeyList.Add(migrationKey);
