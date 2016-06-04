@@ -7,6 +7,8 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,22 +31,27 @@ namespace MediaBrowser.Providers.Omdb
             };
         }
 
-        public Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, CancellationToken cancellationToken)
         {
             var imdbId = item.GetProviderId(MetadataProviders.Imdb);
 
             var list = new List<RemoteImageInfo>();
 
-            if (!string.IsNullOrWhiteSpace(imdbId))
+            if (!string.IsNullOrWhiteSpace(imdbId) && OmdbProvider.Current != null)
             {
-                list.Add(new RemoteImageInfo
+                OmdbProvider.RootObject rootObject = await OmdbProvider.Current.GetRootObject(imdbId, cancellationToken);
+
+                if (!string.IsNullOrEmpty(rootObject.Poster))
                 {
-                    ProviderName = Name,
-                    Url = string.Format("https://img.omdbapi.com/?i={0}&apikey=82e83907", imdbId)
-                });
+                    list.Add(new RemoteImageInfo
+                    {
+                        ProviderName = Name,
+                        Url = string.Format("https://img.omdbapi.com/?i={0}&apikey=82e83907", imdbId)
+                    });
+                }
             }
 
-            return Task.FromResult<IEnumerable<RemoteImageInfo>>(list);
+            return list;
         }
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
@@ -65,18 +72,6 @@ namespace MediaBrowser.Providers.Omdb
 
         public bool Supports(IHasImages item)
         {
-            // We'll hammer Omdb if we enable this
-            if (item is Person)
-            {
-                return false;
-            }
-
-            // Save the http requests since we know it's not currently supported
-            if (item is Season || item is Episode)
-            {
-                return false;
-            }
-
             // Supports images for tv movies
             var tvProgram = item as LiveTvProgram;
             if (tvProgram != null && tvProgram.IsMovie)
@@ -84,7 +79,7 @@ namespace MediaBrowser.Providers.Omdb
                 return true;
             }
 
-            return item is Movie || item is Trailer;
+            return item is Movie || item is Trailer || item is Episode;
         }
 
         public int Order

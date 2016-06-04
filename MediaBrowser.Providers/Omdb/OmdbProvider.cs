@@ -44,20 +44,7 @@ namespace MediaBrowser.Providers.Omdb
                 throw new ArgumentNullException("imdbId");
             }
 
-            var path = await EnsureItemInfo(imdbId, cancellationToken);
-
-            string resultString;
-
-            using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131072))
-            {
-                using (var reader = new StreamReader(stream, new UTF8Encoding(false)))
-                {
-                    resultString = reader.ReadToEnd();
-                    resultString = resultString.Replace("\"N/A\"", "\"\"");
-                }
-            }
-
-                var result = _jsonSerializer.DeserializeFromString<RootObject>(resultString);
+            var result = await GetRootObject(imdbId, cancellationToken);
 
                 // Only take the name and rating if the user's language is set to english, since Omdb has no localization
                 if (string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
@@ -131,7 +118,26 @@ namespace MediaBrowser.Providers.Omdb
                 ParseAdditionalMetadata(item, result);
         }
 
-        internal async Task<string> EnsureItemInfo(string imdbId, CancellationToken cancellationToken)
+        internal async Task<RootObject> GetRootObject(string imdbId, CancellationToken cancellationToken)
+        {
+            var path = await EnsureItemInfo(imdbId, cancellationToken);
+
+            string resultString;
+
+            using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131072))
+            {
+                using (var reader = new StreamReader(stream, new UTF8Encoding(false)))
+                {
+                    resultString = reader.ReadToEnd();
+                    resultString = resultString.Replace("\"N/A\"", "\"\"");
+                }
+            }
+
+            var result = _jsonSerializer.DeserializeFromString<RootObject>(resultString);
+            return result;
+        }
+
+        private async Task<string> EnsureItemInfo(string imdbId, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(imdbId))
             {
@@ -236,7 +242,7 @@ namespace MediaBrowser.Providers.Omdb
             return string.Equals(lang, "en", StringComparison.OrdinalIgnoreCase);
         }
 
-        private class RootObject
+        internal class RootObject
         {
             public string Title { get; set; }
             public string Year { get; set; }
