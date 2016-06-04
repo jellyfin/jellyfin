@@ -1136,7 +1136,8 @@
     "OptionOthers": "Overigen",
     "HeaderDownloadPeopleMetadataForHelp": "Het inschakelen van extra opties zal meer informatie op het scherm bieden, maar resulteert in tragere bibliotheek scan.",
     "ViewTypeFolders": "Mappen",
-    "LabelDisplayFoldersView": "Toon een mappenweergave als u gewoon Mediamappen wilt weergeven",
+    "OptionDisplayFolderView": "Display a folder view to show plain media folders",
+    "OptionDisplayFolderViewHelp": "If enabled, Emby apps wil display a Folders category alongside your media library. This is useful if you'd like to have plain folder views.",
     "ViewTypeLiveTvRecordingGroups": "Opnamen",
     "ViewTypeLiveTvChannels": "Kanalen",
     "LabelEasyPinCode": "Eenvoudige pincode:",
@@ -2357,5 +2358,12 @@
     "HeaderHealthMonitor": "Gezondheid",
     "HealthMonitorNoAlerts": "Er zijn geen actieve waarschuwingen.",
     "RecordingPathChangeMessage": "Bij het wijzigen van uw opnamemap zullen bestaande opnamen niet migreren van de oude locatie naar de nieuwe. U moet deze desgewenst handmatig verplaatsen.",
-    "VisualLoginFormHelp": "Select a user or sign in manually"
+    "VisualLoginFormHelp": "Select a user or sign in manually",
+    "LabelSportsCategories": "Sports categories:",
+    "XmlTvSportsCategoriesHelp": "Programs with these categories will be displayed as sports programs. Separate multiple with '|'.",
+    "LabelNewsCategories": "News categories:",
+    "XmlTvNewsCategoriesHelp": "Programs with these categories will be displayed as news programs. Separate multiple with '|'.",
+    "LabelKidsCategories": "Children's categories:",
+    "XmlTvKidsCategoriesHelp": "Programs with these categories will be displayed as programs for children. Separate multiple with '|'.",
+    "XmlTvPathHelp": "A path to an xml tv file. Emby will read this file and periodically check it for updates. You are responsible for creating and updating the file."
 }
