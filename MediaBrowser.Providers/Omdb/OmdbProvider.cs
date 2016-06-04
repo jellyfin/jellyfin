@@ -53,10 +53,9 @@ namespace MediaBrowser.Providers.Omdb
                 using (var reader = new StreamReader(stream, new UTF8Encoding(false)))
                 {
                     resultString = reader.ReadToEnd();
+                    resultString = resultString.Replace("\"N/A\"", "\"\"");
                 }
             }
-
-                resultString = resultString.Replace("\"N/A\"", "\"\"");
 
                 var result = _jsonSerializer.DeserializeFromString<RootObject>(resultString);
 
