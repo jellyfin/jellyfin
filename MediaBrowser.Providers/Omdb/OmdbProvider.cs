@@ -1,4 +1,7 @@
-﻿using MediaBrowser.Common.Net;
+﻿using CommonIO;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
@@ -17,15 +20,19 @@ namespace MediaBrowser.Providers.Omdb
     {
         internal static readonly SemaphoreSlim ResourcePool = new SemaphoreSlim(1, 1);
         private readonly IJsonSerializer _jsonSerializer;
+        private readonly IFileSystem _fileSystem;
+        private readonly IServerConfigurationManager _configurationManager;
         private readonly IHttpClient _httpClient;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         public static OmdbProvider Current;
 
-        public OmdbProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient)
+        public OmdbProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
         {
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
+            _fileSystem = fileSystem;
+            _configurationManager = configurationManager;
 
             Current = this;
         }
@@ -37,24 +44,17 @@ namespace MediaBrowser.Providers.Omdb
                 throw new ArgumentNullException("imdbId");
             }
 
-            var imdbParam = imdbId.StartsWith("tt", StringComparison.OrdinalIgnoreCase) ? imdbId : "tt" + imdbId;
+            var path = await EnsureItemInfo(imdbId, cancellationToken);
 
-            var url = string.Format("https://www.omdbapi.com/?i={0}&tomatoes=true", imdbParam);
+            string resultString;
 
-            using (var stream = await _httpClient.Get(new HttpRequestOptions
+            using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131072))
             {
-                Url = url,
-                ResourcePool = ResourcePool,
-                CancellationToken = cancellationToken
-
-            }).ConfigureAwait(false))
-            {
-                string resultString;
-
                 using (var reader = new StreamReader(stream, new UTF8Encoding(false)))
                 {
                     resultString = reader.ReadToEnd();
                 }
+            }
 
                 resultString = resultString.Replace("\"N/A\"", "\"\"");
 
@@ -130,7 +130,60 @@ namespace MediaBrowser.Providers.Omdb
                 }
 
                 ParseAdditionalMetadata(item, result);
+        }
+
+        internal async Task<string> EnsureItemInfo(string imdbId, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(imdbId))
+            {
+                throw new ArgumentNullException("imdbId");
             }
+
+            var imdbParam = imdbId.StartsWith("tt", StringComparison.OrdinalIgnoreCase) ? imdbId : "tt" + imdbId;
+
+            var path = GetDataFilePath(imdbParam);
+
+            var fileInfo = _fileSystem.GetFileSystemInfo(path);
+
+            if (fileInfo.Exists)
+            {
+                // If it's recent or automatic updates are enabled, don't re-download
+                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 3)
+                {
+                    return path;
+                }
+            }
+
+            var url = string.Format("https://www.omdbapi.com/?i={0}&tomatoes=true", imdbParam);
+
+            using (var stream = await _httpClient.Get(new HttpRequestOptions
+            {
+                Url = url,
+                ResourcePool = ResourcePool,
+                CancellationToken = cancellationToken
+
+            }).ConfigureAwait(false))
+            {
+                var rootObject = _jsonSerializer.DeserializeFromStream<RootObject>(stream);
+                _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+                _jsonSerializer.SerializeToFile(rootObject, path);
+            }
+
+            return path;
+        }
+
+        internal string GetDataFilePath(string imdbId)
+        {
+            if (string.IsNullOrEmpty(imdbId))
+            {
+                throw new ArgumentNullException("imdbId");
+            }
+
+            var dataPath = Path.Combine(_configurationManager.ApplicationPaths.CachePath, "omdb");
+
+            var filename = string.Format("{0}.json", imdbId);
+
+            return Path.Combine(dataPath, filename);
         }
 
         private void ParseAdditionalMetadata(BaseItem item, RootObject result)
