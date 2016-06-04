@@ -307,6 +307,7 @@
             // but since mobile browsers are often underpowered, 
             // it can help performance to get them out of the markup
             var showIndicators = window.innerWidth >= 800;
+            showIndicators = false;
 
             var options = {
                 showHdIcon: showIndicators,

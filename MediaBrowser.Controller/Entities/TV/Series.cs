@@ -183,24 +183,20 @@ namespace MediaBrowser.Controller.Entities.TV
 
         protected override Task<QueryResult<BaseItem>> GetItemsInternal(InternalItemsQuery query)
         {
+            if (query.User == null)
+            {
+                return base.GetItemsInternal(query);
+            }
+
             var user = query.User;
 
             Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
 
             IEnumerable<BaseItem> items;
 
-            if (query.User == null)
-            {
-                items = query.Recursive
-                   ? GetRecursiveChildren(filter)
-                   : Children.Where(filter);
-            }
-            else
-            {
-                items = query.Recursive
-                   ? GetSeasons(user).Cast<BaseItem>().Concat(GetEpisodes(user)).Where(filter)
-                   : GetSeasons(user).Where(filter);
-            }
+            items = query.Recursive
+               ? GetSeasons(user).Cast<BaseItem>().Concat(GetEpisodes(user)).Where(filter)
+               : GetSeasons(user).Where(filter);
 
             var result = PostFilterAndSort(items, query);
 
@@ -260,8 +256,10 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public IEnumerable<Episode> GetEpisodes(User user, bool includeMissing, bool includeVirtualUnaired)
         {
+            var allSeriesEpisodes = GetAllEpisodes(user).ToList();
+
             var allEpisodes = GetSeasons(user, true, true)
-                .SelectMany(i => i.GetEpisodes(user, includeMissing, includeVirtualUnaired))
+                .SelectMany(i => i.GetEpisodes(this, user, includeMissing, includeVirtualUnaired, allSeriesEpisodes))
                 .Reverse()
                 .ToList();
 
@@ -350,7 +348,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return false;
         }
 
-        public IEnumerable<Episode> GetEpisodes(User user, Season parentSeason, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes)
+        private IEnumerable<Episode> GetAllEpisodes(User user)
         {
             IEnumerable<Episode> episodes;
 
@@ -388,7 +386,24 @@ namespace MediaBrowser.Controller.Entities.TV
                 }).Cast<Episode>();
             }
 
-            episodes = FilterEpisodesBySeason(episodes, parentSeason, DisplaySpecialsWithSeasons);
+            return episodes;
+        }
+
+        public IEnumerable<Episode> GetEpisodes(User user, Season parentSeason, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes)
+        {
+            IEnumerable<Episode> episodes = GetAllEpisodes(user);
+
+            return GetEpisodes(user, parentSeason, includeMissingEpisodes, includeVirtualUnairedEpisodes, episodes);
+        }
+
+        public IEnumerable<Episode> GetEpisodes(User user, Season parentSeason, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes, IEnumerable<Episode> allSeriesEpisodes)
+        {
+            if (allSeriesEpisodes == null)
+            {
+                return GetEpisodes(user, parentSeason, includeMissingEpisodes, includeVirtualUnairedEpisodes);
+            }
+
+            var episodes = FilterEpisodesBySeason(allSeriesEpisodes, parentSeason, DisplaySpecialsWithSeasons);
 
             if (!includeMissingEpisodes)
             {

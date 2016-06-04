@@ -108,7 +108,13 @@ namespace MediaBrowser.Controller.Entities.TV
             var series = Series;
             if (series != null && ParentIndexNumber.HasValue && IndexNumber.HasValue)
             {
-                list.InsertRange(0, series.GetUserDataKeys().Select(i => i + ParentIndexNumber.Value.ToString("000") + IndexNumber.Value.ToString("000")));
+                var seriesUserDataKeys = series.GetUserDataKeys();
+                var take = seriesUserDataKeys.Count;
+                if (seriesUserDataKeys.Count > 1)
+                {
+                    take--;
+                }
+                list.InsertRange(0, seriesUserDataKeys.Take(take).Select(i => i + ParentIndexNumber.Value.ToString("000") + IndexNumber.Value.ToString("000")));
             }
 
             return list;

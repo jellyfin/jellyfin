@@ -196,52 +196,17 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             var config = user.Configuration;
 
-            return GetEpisodes(user, config.DisplayMissingEpisodes, config.DisplayUnairedEpisodes);
+            return GetEpisodes(Series, user, config.DisplayMissingEpisodes, config.DisplayUnairedEpisodes);
         }
 
-        public IEnumerable<Episode> GetEpisodes(User user, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes)
+        public IEnumerable<Episode> GetEpisodes(Series series, User user, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes)
         {
-            var series = Series;
+            return GetEpisodes(series, user, includeMissingEpisodes, includeVirtualUnairedEpisodes, null);
+        }
 
-            if (IndexNumber.HasValue && series != null)
-            {
-                return series.GetEpisodes(user, this, includeMissingEpisodes, includeVirtualUnairedEpisodes);
-            }
-
-            var episodes = GetRecursiveChildren(user)
-                .OfType<Episode>();
-
-            if (series != null && series.ContainsEpisodesWithoutSeasonFolders)
-            {
-                var seasonNumber = IndexNumber;
-                var list = episodes.ToList();
-
-                if (seasonNumber.HasValue)
-                {
-                    list.AddRange(series.GetRecursiveChildren(user).OfType<Episode>()
-                        .Where(i => i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == seasonNumber.Value));
-                }
-                else
-                {
-                    list.AddRange(series.GetRecursiveChildren(user).OfType<Episode>()
-                        .Where(i => !i.ParentIndexNumber.HasValue));
-                }
-
-                episodes = list.DistinctBy(i => i.Id);
-            }
-
-            if (!includeMissingEpisodes)
-            {
-                episodes = episodes.Where(i => !i.IsMissingEpisode);
-            }
-            if (!includeVirtualUnairedEpisodes)
-            {
-                episodes = episodes.Where(i => !i.IsVirtualUnaired);
-            }
-
-            return LibraryManager
-                .Sort(episodes, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending)
-                .Cast<Episode>();
+        public IEnumerable<Episode> GetEpisodes(Series series, User user, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes, IEnumerable<Episode> allSeriesEpisodes)
+        {
+            return series.GetEpisodes(user, this, includeMissingEpisodes, includeVirtualUnairedEpisodes, allSeriesEpisodes);
         }
 
         public IEnumerable<Episode> GetEpisodes()

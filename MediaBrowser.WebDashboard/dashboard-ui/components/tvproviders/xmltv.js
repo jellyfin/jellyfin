@@ -1,8 +1,19 @@
-﻿define(['jQuery', 'paper-checkbox', 'paper-button', 'paper-input', 'paper-item-body', 'paper-icon-item'], function ($) {
+﻿define(['jQuery', 'paper-checkbox', 'paper-button', 'emby-input', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light'], function ($) {
 
     return function (page, providerId, options) {
 
         var self = this;
+
+        function getListingProvider(config, id) {
+
+            if (config && id) {
+                return config.ListingProviders.filter(function (i) {
+                    return i.Id == id;
+                })[0] || getListingProvider();
+            }
+
+            return ApiClient.getJSON(ApiClient.getUrl('LiveTv/ListingProviders/Default'));
+        }
 
         function reload() {
 
@@ -10,23 +21,31 @@
 
             ApiClient.getNamedConfiguration("livetv").then(function (config) {
 
-                var info = config.ListingProviders.filter(function (i) {
-                    return i.Id == providerId;
-                })[0] || {};
+                getListingProvider(config, providerId).then(function (info) {
+                    page.querySelector('.txtPath').value = info.Path || '';
+                    page.querySelector('.txtKids').value = (info.KidsGenres || []).join('|');
+                    page.querySelector('.txtNews').value = (info.NewsGenres || []).join('|');
+                    page.querySelector('.txtSports').value = (info.SportsGenres || []).join('|');
 
-                page.querySelector('.txtPath').value = info.Path || '';
+                    page.querySelector('.chkAllTuners').checked = info.EnableAllTuners;
 
-                page.querySelector('.chkAllTuners').checked = info.EnableAllTuners;
+                    if (page.querySelector('.chkAllTuners').checked) {
+                        page.querySelector('.selectTunersSection').classList.add('hide');
+                    } else {
+                        page.querySelector('.selectTunersSection').classList.remove('hide');
+                    }
 
-                if (page.querySelector('.chkAllTuners').checked) {
-                    page.querySelector('.selectTunersSection').classList.add('hide');
-                } else {
-                    page.querySelector('.selectTunersSection').classList.remove('hide');
-                }
-
-                refreshTunerDevices(page, info, config.TunerHosts);
-                Dashboard.hideLoadingMsg();
+                    refreshTunerDevices(page, info, config.TunerHosts);
+                    Dashboard.hideLoadingMsg();
+                });
             });
+        }
+
+        function getGenres(txtInput) {
+
+            var value = txtInput.value;
+
+            return value ? value.split('|') : [];
         }
 
         function submitListingsForm() {
@@ -42,7 +61,13 @@
                 })[0] || {};
 
                 info.Type = 'xmltv';
+
                 info.Path = page.querySelector('.txtPath').value;
+
+                info.KidsGenres = getGenres(page.querySelector('.txtKids'));
+                info.NewsGenres = getGenres(page.querySelector('.txtNews'));
+                info.SportsGenres = getGenres(page.querySelector('.txtSports'));
+
                 info.EnableAllTuners = page.querySelector('.chkAllTuners').checked;
                 info.EnabledTuners = info.EnableAllTuners ? [] : $('.chkTuner', page).get().filter(function (i) {
                     return i.checked;
@@ -128,6 +153,28 @@
             page.querySelector('.btnSubmitListingsContainer').click();
         };
 
+        function onSelectPathClick(e) {
+            var page = $(e.target).parents('.xmltvForm')[0];
+            require(['directorybrowser'], function (directoryBrowser) {
+
+                var picker = new directoryBrowser();
+
+                picker.show({
+
+                    includeFiles: true,
+                    callback: function (path) {
+
+                        if (path) {
+                            var txtPath = page.querySelector('.txtPath');
+                            txtPath.value = path;
+                            txtPath.focus();
+                        }
+                        picker.close();
+                    }
+                });
+            });
+        }
+
         self.init = function () {
 
             options = options || {};
@@ -148,6 +195,8 @@
                 submitListingsForm();
                 return false;
             });
+
+            page.querySelector('#btnSelectPath').addEventListener("click", onSelectPathClick);
 
             page.querySelector('.chkAllTuners').addEventListener('change', function (e) {
                 if (e.target.checked) {
