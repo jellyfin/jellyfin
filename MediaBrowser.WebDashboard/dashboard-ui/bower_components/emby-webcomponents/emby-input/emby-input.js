@@ -49,27 +49,9 @@
         });
 
         this.addEventListener('change', onChange);
-        this.addEventListener('keypress', onChange);
-        this.addEventListener('keyup', onChange);
+        this.addEventListener('input', onChange);
 
         onChange.call(this);
-
-        if (window.IntersectionObserver) {
-            var observer = new IntersectionObserver(function (entries) {
-                for (var j = 0, length2 = entries.length; j < length2; j++) {
-                    var entry = entries[j];
-                    var intersectionRatio = entry.intersectionRatio;
-                    if (intersectionRatio) {
-
-                        var target = entry.target;
-                        onChange.call(target);
-                    }
-                }
-            }, {});
-
-            observer.observe(this);
-            this.observer = observer;
-        }
     };
 
     EmbyInputPrototype.detachedCallback = function () {
