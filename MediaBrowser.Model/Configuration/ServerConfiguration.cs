@@ -198,6 +198,7 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableAnonymousUsageReporting { get; set; }
         public bool EnableStandaloneMusicKeys { get; set; }
         public bool EnableLocalizedGuids { get; set; }
+        public bool EnableFolderView { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.

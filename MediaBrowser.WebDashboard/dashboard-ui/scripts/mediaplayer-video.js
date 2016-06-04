@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'datetime', 'jQuery', 'mediaInfo', 'scrollStyles', 'paper-icon-button-light'], function (appSettings, datetime, $, mediaInfo) {
+﻿define(['appSettings', 'datetime', 'mediaInfo', 'jQuery', 'scrollStyles', 'paper-icon-button-light'], function (appSettings, datetime, mediaInfo, $) {
 
     function createVideoPlayer(self) {
 
@@ -42,8 +42,12 @@
                 self.exitFullScreen();
             }
 
-            fadeOut(document.querySelector('#videoPlayer'));
-            $('#videoPlayer').removeClass('fullscreenVideo').removeClass('idlePlayer');
+            var videoPlayerElement = document.querySelector('#videoPlayer');
+
+            fadeOut(videoPlayerElement);
+            videoPlayerElement.classList.remove('fullscreenVideo');
+            videoPlayerElement.classList.remove('idlePlayer');
+
             $('.hiddenOnIdle').removeClass("inactive");
             $("video").remove();
 
@@ -64,7 +68,7 @@
                 document.msExitFullscreen();
             }
 
-            $('#videoPlayer').removeClass('fullscreenVideo');
+            document.querySelector('#videoPlayer').classList.remove('fullscreenVideo');
         };
 
         self.isFullScreen = function () {
@@ -127,7 +131,7 @@
                     items: menuItems,
                     // history.back() will cause the video player to stop
                     enableHistory: false,
-                    positionTo: $('.videoSubtitleButton')[0],
+                    positionTo: document.querySelector('.videoSubtitleButton'),
                     callback: function (id) {
 
                         var index = parseInt(id);
@@ -180,7 +184,7 @@
                     items: menuItems,
                     // history.back() will cause the video player to stop
                     enableHistory: false,
-                    positionTo: $('.videoQualityButton')[0],
+                    positionTo: document.querySelector('.videoQualityButton'),
                     callback: function (id) {
 
                         var bitrate = parseInt(id);
@@ -246,7 +250,7 @@
                     items: menuItems,
                     // history.back() will cause the video player to stop
                     enableHistory: false,
-                    positionTo: $('.videoAudioButton')[0],
+                    positionTo: document.querySelector('.videoAudioButton'),
                     callback: function (id) {
 
                         var index = parseInt(id);
@@ -853,6 +857,7 @@
 
         function onPopState() {
             // Stop playback on browser back button nav
+            window.removeEventListener("popstate", onPopState);
             self.stop();
             return;
         }
@@ -904,15 +909,15 @@
                 }
             }
 
-            $(document).on('webkitfullscreenchange', onFullScreenChange);
-            $(document).on('mozfullscreenchange', onFullScreenChange);
-            $(document).on('msfullscreenchange', onFullScreenChange);
-            $(document).on('fullscreenchange', onFullScreenChange);
+            document.addEventListener('webkitfullscreenchange', onFullScreenChange);
+            document.addEventListener('mozfullscreenchange', onFullScreenChange);
+            document.addEventListener('msfullscreenchange', onFullScreenChange);
+            document.addEventListener('fullscreenchange', onFullScreenChange);
 
-            $(window).one("popstate", onPopState);
+            window.addEventListener("popstate", onPopState);
 
             if (hideElementsOnIdle) {
-                $(document.body).on("mousemove", onMouseMove);
+                document.body.addEventListener("mousemove", onMouseMove);
             }
         }
 
@@ -928,15 +933,15 @@
             Events.off(mediaRenderer, 'click', onClick);
             Events.off(mediaRenderer, 'dblclick', onDoubleClick);
 
-            $(document).off('webkitfullscreenchange', onFullScreenChange);
-            $(document).off('mozfullscreenchange', onFullScreenChange);
-            $(document).off('msfullscreenchange', onFullScreenChange);
-            $(document).off('fullscreenchange', onFullScreenChange);
+            document.removeEventListener('webkitfullscreenchange', onFullScreenChange);
+            document.removeEventListener('mozfullscreenchange', onFullScreenChange);
+            document.removeEventListener('msfullscreenchange', onFullScreenChange);
+            document.removeEventListener('fullscreenchange', onFullScreenChange);
 
             // Stop playback on browser back button nav
-            $(window).off("popstate", onPopState);
+            window.removeEventListener("popstate", onPopState);
 
-            $(document.body).off("mousemove", onMouseMove);
+            document.body.removeEventListener("mousemove", onMouseMove);
 
             var itemVideo = document.querySelector('.itemVideo');
             if (itemVideo) {
@@ -1065,8 +1070,6 @@
             $('#video-playButton', videoControls).hide();
             $('#video-pauseButton', videoControls).show();
             $('.videoTrackControl').addClass('hide');
-
-            var videoElement = $('#videoElement', mediaPlayerContainer);
 
             $('.videoQualityButton', videoControls).show();
 

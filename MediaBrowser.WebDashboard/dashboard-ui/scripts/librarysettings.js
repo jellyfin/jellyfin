@@ -133,6 +133,10 @@
             name: Globalize.translate('TabFolders')
         },
          {
+             href: 'librarydisplay.html',
+             name: Globalize.translate('TabDisplay')
+         },
+         {
              href: 'librarypathmapping.html',
              name: Globalize.translate('TabPathSubstitution')
          },
@@ -144,7 +148,7 @@
 
     $(document).on('pageshow', "#librarySettingsPage", function () {
 
-        LibraryMenu.setTabs('librarysetup', 2, getTabs);
+        LibraryMenu.setTabs('librarysetup', 3, getTabs);
         Dashboard.showLoadingMsg();
 
         var page = this;

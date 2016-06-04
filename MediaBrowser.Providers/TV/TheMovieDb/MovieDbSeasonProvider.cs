@@ -58,7 +58,7 @@ namespace MediaBrowser.Providers.TV
 
                     result.HasMetadata = true;
                     result.Item = new Season();
-                    result.Item.Name = info.Name;
+                    result.Item.Name = seasonInfo.name;
                     result.Item.IndexNumber = seasonNumber;
 
                     result.Item.Overview = seasonInfo.overview;
