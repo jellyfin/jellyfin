@@ -16,11 +16,6 @@ namespace MediaBrowser.ServerApplication.Native
             _logger = logger;
         }
 
-        public void BindSimilarityScoreFunction(IDbConnection connection)
-        {
-            SqliteExtensions.BindGetSimilarityScore(connection, _logger);
-        }
-
         public async Task<IDbConnection> Connect(string dbPath)
         {
             try
