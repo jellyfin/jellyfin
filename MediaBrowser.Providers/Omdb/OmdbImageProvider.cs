@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Common.Net;
+﻿using CommonIO;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -6,6 +8,7 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Model.Serialization;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -17,10 +20,16 @@ namespace MediaBrowser.Providers.Omdb
     public class OmdbImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IHttpClient _httpClient;
+        private readonly IJsonSerializer _jsonSerializer;
+        private readonly IFileSystem _fileSystem;
+        private readonly IServerConfigurationManager _configurationManager;
 
-        public OmdbImageProvider(IHttpClient httpClient)
+        public OmdbImageProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
         {
+            _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
+            _fileSystem = fileSystem;
+            _configurationManager = configurationManager;
         }
 
         public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
@@ -37,9 +46,11 @@ namespace MediaBrowser.Providers.Omdb
 
             var list = new List<RemoteImageInfo>();
 
-            if (!string.IsNullOrWhiteSpace(imdbId) && OmdbProvider.Current != null)
+            var provider = new OmdbProvider(_jsonSerializer, _httpClient, _fileSystem, _configurationManager);
+
+            if (!string.IsNullOrWhiteSpace(imdbId))
             {
-                OmdbProvider.RootObject rootObject = await OmdbProvider.Current.GetRootObject(imdbId, cancellationToken);
+                OmdbProvider.RootObject rootObject = await provider.GetRootObject(imdbId, cancellationToken).ConfigureAwait(false);
 
                 if (!string.IsNullOrEmpty(rootObject.Poster))
                 {

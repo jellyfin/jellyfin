@@ -25,16 +25,12 @@ namespace MediaBrowser.Providers.Omdb
         private readonly IHttpClient _httpClient;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public static OmdbProvider Current;
-
         public OmdbProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
         {
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
-
-            Current = this;
         }
 
         public async Task Fetch(BaseItem item, string imdbId, string language, string country, CancellationToken cancellationToken)
