@@ -5,7 +5,9 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -286,6 +288,52 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 cmd.CommandText = "select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where key = @key and userId=@userId";
 
                 cmd.Parameters.Add(cmd, "@key", DbType.String).Value = key;
+                cmd.Parameters.Add(cmd, "@userId", DbType.Guid).Value = userId;
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
+                {
+                    if (reader.Read())
+                    {
+                        return ReadRow(reader);
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        public UserItemData GetUserData(Guid userId, List<string> keys)
+        {
+            if (userId == Guid.Empty)
+            {
+                throw new ArgumentNullException("userId");
+            }
+            if (keys == null)
+            {
+                throw new ArgumentNullException("keys");
+            }
+
+            using (var cmd = _connection.CreateCommand())
+            {
+                var index = 0;
+                var excludeIds = new List<string>();
+                var builder = new StringBuilder();
+                foreach (var key in keys)
+                {
+                    var paramName = "@Key" + index;
+                    excludeIds.Add("Key =" + paramName);
+                    cmd.Parameters.Add(cmd, paramName, DbType.String).Value = key;
+                    builder.Append(" WHEN Key=" + paramName + " THEN " + index);
+                    index++;
+                }
+
+                var keyText = string.Join(" OR ", excludeIds.ToArray());
+
+                cmd.CommandText = "select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where userId=@userId AND (" + keyText + ") ";
+
+                cmd.CommandText += " ORDER BY (Case " + builder + " Else " + keys.Count.ToString(CultureInfo.InvariantCulture) + " End )";
+                cmd.CommandText += " LIMIT 1";
+
                 cmd.Parameters.Add(cmd, "@userId", DbType.Guid).Value = userId;
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
