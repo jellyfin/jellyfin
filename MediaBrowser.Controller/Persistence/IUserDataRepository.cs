@@ -29,6 +29,8 @@ namespace MediaBrowser.Controller.Persistence
         /// <returns>Task{UserItemData}.</returns>
         UserItemData GetUserData(Guid userId, string key);
 
+        UserItemData GetUserData(Guid userId, List<string> keys);
+
         /// <summary>
         /// Return all user data associated with the given user
         /// </summary>
