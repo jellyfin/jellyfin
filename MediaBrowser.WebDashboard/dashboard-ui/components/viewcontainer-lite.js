@@ -75,6 +75,8 @@ define(['browser'], function (browser) {
                     view.innerHTML = newView;
                 }
 
+                view.classList.add('mainAnimatedPage');
+
                 if (currentPage) {
                     if (newViewInfo.hasScript && window.$) {
                         // TODO: figure this out without jQuery
@@ -101,7 +103,6 @@ define(['browser'], function (browser) {
                 }
 
                 var animatable = view;
-                view.classList.add('mainAnimatedPage');
                 allPages[pageIndex] = view;
 
                 if (onBeforeChange) {
@@ -145,7 +146,7 @@ define(['browser'], function (browser) {
             }
         }
 
-        if (hasJqm) {
+        if (hasJqm && window.$) {
             $(newView).trigger('create');
         }
     }
@@ -174,9 +175,14 @@ define(['browser'], function (browser) {
         }
 
         var hasScript = options.view.indexOf('<script') != -1;
+        var elem = parseHtml(options.view, hasScript);
+
+        if (hasScript) {
+            hasScript = elem.querySelector('script') != null;
+        }
 
         return {
-            elem: parseHtml(options.view, hasScript),
+            elem: elem,
             hasScript: hasScript
         };
     }

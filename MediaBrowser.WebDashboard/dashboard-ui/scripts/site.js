@@ -1958,7 +1958,7 @@ var AppInfo = {};
         define("montserratFont", ['css!' + embyWebComponentsBowerPath + '/fonts/montserrat/style']);
         define("scrollStyles", ['css!' + embyWebComponentsBowerPath + '/scrollstyles']);
 
-        define("viewcontainer", ['components/viewcontainer-lite'], returnFirstDependency);
+        define("viewcontainer", ['components/viewcontainer-lite', embyWebComponentsBowerPath + '/viewmanager/viewcontainer-lite'], returnFirstDependency);
         define('queryString', [bowerPath + '/query-string/index'], function () {
             return queryString;
         });
@@ -2572,6 +2572,14 @@ var AppInfo = {};
             dependencies: [],
             autoFocus: false,
             roles: 'admin'
+        });
+
+        defineRoute({
+            path: '/librarydisplay.html',
+            dependencies: ['paper-button', 'paper-checkbox'],
+            autoFocus: false,
+            roles: 'admin',
+            controller: 'scripts/librarydisplay'
         });
 
         defineRoute({
