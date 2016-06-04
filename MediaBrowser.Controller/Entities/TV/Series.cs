@@ -238,9 +238,16 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public IEnumerable<Episode> GetEpisodes(User user, bool includeMissing, bool includeVirtualUnaired)
         {
-            var allSeriesEpisodes = GetAllEpisodes(user).ToList();
+            var allItems = LibraryManager.GetItemList(new InternalItemsQuery(user)
+            {
+                AncestorWithPresentationUniqueKey = PresentationUniqueKey,
+                IncludeItemTypes = new[] { typeof(Episode).Name, typeof(Season).Name },
+                SortBy = new[] { ItemSortBy.SortName }
+            }).ToList();
 
-            var allEpisodes = GetSeasons(user, true, true)
+            var allSeriesEpisodes = allItems.OfType<Episode>().ToList();
+
+            var allEpisodes = allItems.OfType<Season>()
                 .SelectMany(i => i.GetEpisodes(this, user, includeMissing, includeVirtualUnaired, allSeriesEpisodes))
                 .Reverse()
                 .ToList();
