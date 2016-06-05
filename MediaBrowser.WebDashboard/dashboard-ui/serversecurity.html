@@ -1,14 +1,14 @@
-﻿<div id="serverSecurityPage" data-role="page" class="page type-interior advancedConfigurationPage withTabs" data-require="jqmtable,scripts/serversecurity,detailtablecss,paper-button">
+﻿<div id="serverSecurityPage" data-role="page" class="page type-interior advancedConfigurationPage withTabs" data-require="jqmtable,scripts/serversecurity,detailtablecss,emby-button">
     <div data-role="content">
         <div class="content-primary">
             <div class="detailSectionHeader">
                 <h3 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                     ${HeaderApiKeys}
                 </h3>
-                <paper-button raised class="btnNewKey submit mini" style="margin-left:1em;" title="${ButtonNew}">
+                <button is="emby-button" type="button" class="raised btnNewKey submit mini" style="margin-left:1em;" title="${ButtonNew}">
                     <iron-icon icon="add"></iron-icon>
                     <span>${ButtonAdd}</span>
-                </paper-button>
+                </button>
             </div>
             <p>${HeaderApiKeysHelp}</p>
             <br />

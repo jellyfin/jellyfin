@@ -186,7 +186,7 @@
 
 .channelHeaderCell {
     border-bottom: .65vh solid #121212 !important;
-    background-size: auto 65.7%;
+    background-size: auto 70%;
     background-position: 90% center;
     background-repeat: no-repeat;
 }
@@ -234,7 +234,7 @@
     }
 
     .layout-tv .channelPrograms, .layout-tv .channelHeaderCell {
-        height: 7.6vh;
+        height: 9vh;
     }
 }
 
@@ -365,13 +365,12 @@
     height: auto !important;
 }
 
-.programCell:focus, .channelHeaderCell:focus, .btnSelectDate:focus {
-    background-color: #52B54B;
+.programCell, .channelHeaderCell, .btnSelectDate {
     outline: none !important;
 }
 
-    .programCell:focus .programAccent {
-        background-color: transparent !important;
+    .programCell:focus, .channelHeaderCell:focus, .btnSelectDate:focus {
+        background-color: #555;
     }
 
 .timerIcon, .seriesTimerIcon {

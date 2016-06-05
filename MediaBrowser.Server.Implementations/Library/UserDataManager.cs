@@ -23,7 +23,8 @@ namespace MediaBrowser.Server.Implementations.Library
     {
         public event EventHandler<UserDataSaveEventArgs> UserDataSaved;
 
-        private readonly Dictionary<string, UserItemData> _userData = new Dictionary<string, UserItemData>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, UserItemData> _userData =
+            new ConcurrentDictionary<string, UserItemData>(StringComparer.OrdinalIgnoreCase);
 
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
@@ -64,13 +65,6 @@ namespace MediaBrowser.Server.Implementations.Library
                 try
                 {
                     await Repository.SaveUserData(userId, key, userData, cancellationToken).ConfigureAwait(false);
-
-                    var newValue = userData;
-
-                    lock (_userData)
-                    {
-                        _userData[GetCacheKey(userId, key)] = newValue;
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -79,6 +73,9 @@ namespace MediaBrowser.Server.Implementations.Library
                     throw;
                 }
             }
+
+            var cacheKey = GetCacheKey(userId, item.Id);
+            _userData.AddOrUpdate(cacheKey, userData, (k, v) => userData);
 
             EventHelper.FireEventIfNotNull(UserDataSaved, this, new UserDataSaveEventArgs
             {
@@ -122,7 +119,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 throw;
             }
-            
+
         }
 
         /// <summary>
@@ -140,7 +137,7 @@ namespace MediaBrowser.Server.Implementations.Library
             return Repository.GetAllUserData(userId);
         }
 
-        public UserItemData GetUserData(Guid userId, List<string> keys)
+        public UserItemData GetUserData(Guid userId, Guid itemId, List<string> keys)
         {
             if (userId == Guid.Empty)
             {
@@ -150,26 +147,23 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 throw new ArgumentNullException("keys");
             }
-
-            lock (_userData)
+            if (keys.Count == 0)
             {
-                foreach (var key in keys)
-                {
-                    var cacheKey = GetCacheKey(userId, key);
-                    UserItemData value;
-                    if (_userData.TryGetValue(cacheKey, out value))
-                    {
-                        return value;
-                    }
+                throw new ArgumentException("UserData keys cannot be empty.");
+            }
 
-                    value = Repository.GetUserData(userId, key);
+            var cacheKey = GetCacheKey(userId, itemId);
 
-                    if (value != null)
-                    {
-                        _userData[cacheKey] = value;
-                        return value;
-                    }
-                }
+            return _userData.GetOrAdd(cacheKey, k => GetUserDataInternal(userId, keys));
+        }
+
+        private UserItemData GetUserDataInternal(Guid userId, List<string> keys)
+        {
+            var userData = Repository.GetUserData(userId, keys);
+
+            if (userData != null)
+            {
+                return userData;
             }
 
             if (keys.Count > 0)
@@ -185,56 +179,12 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Gets the user data.
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="key">The key.</param>
-        /// <returns>Task{UserItemData}.</returns>
-        public UserItemData GetUserData(Guid userId, string key)
-        {
-            if (userId == Guid.Empty)
-            {
-                throw new ArgumentNullException("userId");
-            }
-            if (string.IsNullOrEmpty(key))
-            {
-                throw new ArgumentNullException("key");
-            }
-
-            lock (_userData)
-            {
-                var cacheKey = GetCacheKey(userId, key);
-                UserItemData value;
-                if (_userData.TryGetValue(cacheKey, out value))
-                {
-                    return value;
-                }
-
-                value = Repository.GetUserData(userId, key);
-
-                if (value == null)
-                {
-                    value = new UserItemData
-                    {
-                        UserId = userId,
-                        Key = key
-                    };
-                }
-
-                _userData[cacheKey] = value;
-                return value;
-            }
-        }
-
-        /// <summary>
         /// Gets the internal key.
         /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="key">The key.</param>
         /// <returns>System.String.</returns>
-        private string GetCacheKey(Guid userId, string key)
+        private string GetCacheKey(Guid userId, Guid itemId)
         {
-            return userId + key;
+            return userId.ToString("N") + itemId.ToString("N");
         }
 
         public UserItemData GetUserData(IHasUserData user, IHasUserData item)
@@ -249,7 +199,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public UserItemData GetUserData(Guid userId, IHasUserData item)
         {
-            return GetUserData(userId, item.GetUserDataKeys());
+            return GetUserData(userId, item.Id, item.GetUserDataKeys());
         }
 
         public UserItemDataDto GetUserDataDto(IHasUserData item, User user)

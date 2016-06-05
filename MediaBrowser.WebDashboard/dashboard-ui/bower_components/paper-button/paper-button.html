@@ -9,10 +9,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-material/paper-material.html">
-<link rel="import" href="../paper-ripple/paper-ripple.html">
-<link rel="import" href="../paper-behaviors/paper-button-behavior.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../paper-behaviors/paper-button-behavior.html">
+<link rel="import" href="../paper-material/paper-material.html">
 
 <!--
 Material design: [Buttons](https://www.google.com/design/spec/components/buttons.html)
@@ -39,6 +38,14 @@ create a button with an icon and some text:
       <iron-icon icon="favorite"></iron-icon>
       custom button content
     </paper-button>
+
+To use `paper-button` as a link, wrap it in an anchor tag. Since `paper-button` will already
+receive focus, you may want to prevent the anchor tag from receiving focus as well by setting
+its tabindex to -1.
+
+    <a href="https://www.polymer-project.org/" tabindex="-1">
+      <paper-button raised>Polymer Project</paper-button>
+    </a>
 
 ### Styling
 
@@ -76,16 +83,17 @@ Custom property | Description | Default
 
 <dom-module id="paper-button">
   <template strip-whitespace>
-
     <style include="paper-material">
       :host {
-        display: inline-block;
+        @apply(--layout-inline);
+        @apply(--layout-center-center);
         position: relative;
         box-sizing: border-box;
         min-width: 5.14em;
         margin: 0 0.29em;
         background: transparent;
-        text-align: center;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        -webkit-tap-highlight-color: transparent;
         font: inherit;
         text-transform: uppercase;
         outline-width: 0;
@@ -98,6 +106,7 @@ Custom property | Description | Default
         z-index: 0;
         padding: 0.7em 0.57em;
 
+        @apply(--paper-font-common-base);
         @apply(--paper-button);
       }
 
@@ -123,50 +132,47 @@ Custom property | Description | Default
       paper-ripple {
         color: var(--paper-button-ink-color);
       }
-
-      :host > ::content * {
-        text-transform: inherit;
-      }
     </style>
+
     <content></content>
   </template>
-</dom-module>
 
-<script>
-  Polymer({
-    is: 'paper-button',
+  <script>
+    Polymer({
+      is: 'paper-button',
 
-    behaviors: [
-      Polymer.PaperButtonBehavior
-    ],
+      behaviors: [
+        Polymer.PaperButtonBehavior
+      ],
 
-    properties: {
+      properties: {
+        /**
+         * If true, the button should be styled with a shadow.
+         */
+        raised: {
+          type: Boolean,
+          reflectToAttribute: true,
+          value: false,
+          observer: '_calculateElevation'
+        }
+      },
+
+      _calculateElevation: function() {
+        if (!this.raised) {
+          this._setElevation(0);
+        } else {
+          Polymer.PaperButtonBehaviorImpl._calculateElevation.apply(this);
+        }
+      }
+
       /**
-       * If true, the button should be styled with a shadow.
-       */
-      raised: {
-        type: Boolean,
-        reflectToAttribute: true,
-        value: false,
-        observer: '_calculateElevation'
-      }
-    },
+      Fired when the animation finishes.
+      This is useful if you want to wait until
+      the ripple animation finishes to perform some action.
 
-    _calculateElevation: function() {
-      if (!this.raised) {
-        this._setElevation(0);
-      } else {
-        Polymer.PaperButtonBehaviorImpl._calculateElevation.apply(this);
-      }
-    }
-    /**
-
-    Fired when the animation finishes.
-    This is useful if you want to wait until
-    the ripple animation finishes to perform some action.
-
-    @event transitionend
-    @param {{node: Object}} detail Contains the animated node.
-    */
-  });
-</script>
+      @event transitionend
+      Event param: {{node: Object}} detail Contains the animated node.
+      */
+    });
+  </script>
+</dom-module>

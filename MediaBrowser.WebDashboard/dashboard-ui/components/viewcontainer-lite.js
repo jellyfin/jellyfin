@@ -75,8 +75,10 @@ define(['browser'], function (browser) {
                     view.innerHTML = newView;
                 }
 
+                view.classList.add('mainAnimatedPage');
+
                 if (currentPage) {
-                    if (newViewInfo.hasScript) {
+                    if (newViewInfo.hasScript && window.$) {
                         // TODO: figure this out without jQuery
                         view = $(view).appendTo(mainAnimatedPages)[0];
                         mainAnimatedPages.removeChild(currentPage);
@@ -84,7 +86,7 @@ define(['browser'], function (browser) {
                         mainAnimatedPages.replaceChild(view, currentPage);
                     }
                 } else {
-                    if (newViewInfo.hasScript) {
+                    if (newViewInfo.hasScript && window.$) {
                         // TODO: figure this out without jQuery
                         view = $(view).appendTo(mainAnimatedPages)[0];
                     } else {
@@ -101,7 +103,6 @@ define(['browser'], function (browser) {
                 }
 
                 var animatable = view;
-                view.classList.add('mainAnimatedPage');
                 allPages[pageIndex] = view;
 
                 if (onBeforeChange) {
@@ -145,7 +146,7 @@ define(['browser'], function (browser) {
             }
         }
 
-        if (hasJqm) {
+        if (hasJqm && window.$) {
             $(newView).trigger('create');
         }
     }
@@ -174,9 +175,14 @@ define(['browser'], function (browser) {
         }
 
         var hasScript = options.view.indexOf('<script') != -1;
+        var elem = parseHtml(options.view, hasScript);
+
+        if (hasScript) {
+            hasScript = elem.querySelector('script') != null;
+        }
 
         return {
-            elem: parseHtml(options.view, hasScript),
+            elem: elem,
             hasScript: hasScript
         };
     }
@@ -202,6 +208,8 @@ define(['browser'], function (browser) {
     }
 
     function animate(newAnimatedPage, oldAnimatedPage, transition, isBack) {
+
+        transition = transition || 'fade';
 
         if (enableAnimation() && oldAnimatedPage && newAnimatedPage.animate) {
             if (transition == 'slide') {

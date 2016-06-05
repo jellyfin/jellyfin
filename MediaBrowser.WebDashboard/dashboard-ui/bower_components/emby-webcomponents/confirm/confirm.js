@@ -74,9 +74,9 @@ define(['layoutManager', 'globalize'], function (layoutManager, globalize) {
 
         html += '<div class="buttons">';
 
-        html += '<paper-button class="btnConfirm" autofocus>' + globalize.translate('sharedcomponents#ButtonOk') + '</paper-button>';
+        html += '<button is="emby-button" type="button" class="btnConfirm" autofocus>' + globalize.translate('sharedcomponents#ButtonOk') + '</button>';
 
-        html += '<paper-button class="btnCancel">' + globalize.translate('sharedcomponents#ButtonCancel') + '</paper-button>';
+        html += '<button is="emby-button" type="button" class="btnCancel">' + globalize.translate('sharedcomponents#ButtonCancel') + '</button>';
 
         html += '</div>';
 
@@ -106,7 +106,7 @@ define(['layoutManager', 'globalize'], function (layoutManager, globalize) {
     function showConfirm(options) {
         return new Promise(function (resolve, reject) {
 
-            require(['dialogHelper', 'paper-button'], function (dialogHelper) {
+            require(['dialogHelper', 'emby-button'], function (dialogHelper) {
                 showConfirmInternal(options, dialogHelper, resolve, reject);
             });
         });

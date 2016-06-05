@@ -37,8 +37,8 @@
             </p>
 
             <div class="wizardNavigation">
-                <button type="button" data-role="none" class="clearButton" style="width:auto;" onclick="history.back();"><paper-button raised class="subdued"><iron-icon icon="arrow-back"></iron-icon><span>${LabelPrevious}</span></paper-button></button>
-                <button class="btnWizardNext clearButton" type="button" data-role="none" style="width:auto;"><paper-button raised class="accent"><iron-icon icon="check"></iron-icon><span>${LabelFinish}</span></paper-button></button>
+                <button is="emby-button" type="button" class="raised subdued" onclick="history.back();"><iron-icon icon="arrow-back"></iron-icon><span>${LabelPrevious}</span></button>
+                <button is="emby-button" type="button" class="raised btnWizardNext accent"><iron-icon icon="check"></iron-icon><span>${LabelFinish}</span></button>
             </div>
         </div>
 

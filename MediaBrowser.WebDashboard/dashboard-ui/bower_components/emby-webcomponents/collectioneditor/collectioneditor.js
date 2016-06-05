@@ -1,4 +1,4 @@
-﻿define(['shell', 'dialogHelper', 'loading', 'layoutManager', 'connectionManager', 'scrollHelper', 'embyRouter', 'globalize', 'paper-checkbox', 'emby-input', 'paper-icon-button-light', 'emby-select', 'html!./../icons/nav.html', 'css!./../formdialog'], function (shell, dialogHelper, loading, layoutManager, connectionManager, scrollHelper, embyRouter, globalize) {
+﻿define(['shell', 'dialogHelper', 'loading', 'layoutManager', 'connectionManager', 'scrollHelper', 'embyRouter', 'globalize', 'paper-checkbox', 'emby-input', 'paper-icon-button-light', 'emby-select', 'html!./../icons/nav.html', 'css!./../formdialog', 'emby-button'], function (shell, dialogHelper, loading, layoutManager, connectionManager, scrollHelper, embyRouter, globalize) {
 
     var currentServerId;
 
@@ -170,7 +170,7 @@
         html += '<br />';
         html += '<br />';
         html += '<div>';
-        html += '<paper-button raised class="btnSubmit block">' + globalize.translate('sharedcomponents#ButtonOk') + '</paper-button>';
+        html += '<button is="emby-button" type="submit" class="raised btnSubmit block">' + globalize.translate('sharedcomponents#ButtonOk') + '</button>';
         html += '</div>';
 
         html += '<input type="hidden" class="fldSelectedItemIds" />';
@@ -199,21 +199,6 @@
                 content.querySelector('.newCollectionInfo').classList.remove('hide');
                 content.querySelector('#txtNewCollectionName').setAttribute('required', 'required');
             }
-        });
-
-        content.querySelector('.btnSubmit').addEventListener('click', function () {
-            // Do a fake form submit this the button isn't a real submit button
-            var fakeSubmit = document.createElement('input');
-            fakeSubmit.setAttribute('type', 'submit');
-            fakeSubmit.style.display = 'none';
-            var form = content.querySelector('form');
-            form.appendChild(fakeSubmit);
-            fakeSubmit.click();
-
-            // Seeing issues in smart tv browsers where the form does not get submitted if the button is removed prior to the submission actually happening
-            setTimeout(function () {
-                form.removeChild(fakeSubmit);
-            }, 500);
         });
 
         content.querySelector('form').addEventListener('submit', onSubmit);

@@ -51,15 +51,6 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
         options = options || {};
         options.type = options.type || "Backdrop";
 
-        options.width = null;
-        delete options.width;
-        options.maxWidth = null;
-        delete options.maxWidth;
-        options.maxHeight = null;
-        delete options.maxHeight;
-        options.height = null;
-        delete options.height;
-
         // If not resizing, get the original image
         if (!options.maxWidth && !options.width && !options.maxHeight && !options.height) {
             options.quality = 100;

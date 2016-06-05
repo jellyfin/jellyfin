@@ -424,13 +424,20 @@
             'entry': {
                 name: entryAnimation,
                 node: dlg,
-                timing: { duration: entryAnimationDuration, easing: 'ease-out' }
+                timing: {
+                    duration: entryAnimationDuration,
+                    easing: 'ease-out'
+                }
             },
             // fade out
             'exit': {
                 name: exitAnimation,
                 node: dlg,
-                timing: { duration: exitAnimationDuration, easing: 'ease-out' }
+                timing: {
+                    duration: exitAnimationDuration,
+                    easing: 'ease-out',
+                    fill: 'both'
+                }
             }
         };
 

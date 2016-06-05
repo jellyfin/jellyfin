@@ -1,4 +1,4 @@
-﻿<div id="userImagePage" data-role="page" class="page libraryPage userPreferencesPage userPasswordPage noSecondaryNavPage" data-title="${HeaderProfile}" data-require="emby-collapsible,scripts/myprofile,paper-checkbox,paper-input,paper-button" data-backbutton="true" data-menubutton="false">
+﻿<div id="userImagePage" data-role="page" class="page libraryPage userPreferencesPage userPasswordPage noSecondaryNavPage" data-title="${HeaderProfile}" data-require="emby-collapsible,scripts/myprofile,paper-checkbox,paper-input,emby-button" data-backbutton="true" data-menubutton="false">
 
     <div data-role="content">
         <br />
@@ -8,7 +8,7 @@
             <div style="vertical-align:top;margin: .5em 0 0 1em;display:inline-block;">
                 <h2 class="username" style="margin: 0;"></h2>
                 <br />
-                <paper-button raised class="cancel hide" id="btnDeleteImage"><iron-icon icon="delete"></iron-icon><span>${ButtonDeleteImage}</span></paper-button>
+                <button is="emby-button" type="button" class="raised cancel hide" id="btnDeleteImage"><iron-icon icon="delete"></iron-icon><span>${ButtonDeleteImage}</span></button>
             </div>
         </div>
 
@@ -59,11 +59,9 @@
                     </div>
                     <br />
                     <div>
-                        <button type="submit" data-role="none" class="clearButton">
-                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                        </button>
+                        <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
                         <div id="btnResetPassword" style="display: none;">
-                            <paper-button raised class="cancel block" onclick="UpdatePasswordPage.resetPassword();"><iron-icon icon="lock"></iron-icon><span>${ButtonResetPassword}</span></paper-button>
+                            <button is="emby-button" type="button" class="raised cancel block" onclick="UpdatePasswordPage.resetPassword();"><iron-icon icon="lock"></iron-icon><span>${ButtonResetPassword}</span></button>
                         </div>
                     </div>
                 </div>
@@ -88,10 +86,8 @@
                     </div>
                     <br /><br />
                     <div>
-                        <button type="submit" data-role="none" class="clearButton">
-                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                        </button>
-                        <paper-button id="btnResetEasyPassword" raised class="cancel block hide" onclick="UpdatePasswordPage.resetEasyPassword();"><iron-icon icon="lock"></iron-icon><span>${ButtonResetEasyPassword}</span></paper-button>
+                        <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
+                        <button is="emby-button" type="button" id="btnResetEasyPassword" class="raised cancel block hide" onclick="UpdatePasswordPage.resetEasyPassword();"><iron-icon icon="lock"></iron-icon><span>${ButtonResetEasyPassword}</span></button>
                     </div>
                 </div>
             </div>

@@ -159,11 +159,11 @@
 
         // On small layouts papepr dialog doesn't respond very well. this button isn't that important here anyway.
         if (screen.availWidth >= 600) {
-            html += '<paper-button class="btnRemoteControl">' + Globalize.translate('ButtonRemoteControl') + '</paper-button>';
+            html += '<button is="emby-button" type="button" class="btnRemoteControl">' + Globalize.translate('ButtonRemoteControl') + '</button>';
         }
 
-        html += '<paper-button class="btnDisconnect">' + Globalize.translate('ButtonDisconnect') + '</paper-button>';
-        html += '<paper-button class="btnCancel">' + Globalize.translate('ButtonCancel') + '</paper-button>';
+        html += '<button is="emby-button" type="button" class="btnDisconnect">' + Globalize.translate('ButtonDisconnect') + '</button>';
+        html += '<button is="emby-button" type="button" class="btnCancel">' + Globalize.translate('ButtonCancel') + '</button>';
         html += '</div>';
 
         dlg.innerHTML = html;

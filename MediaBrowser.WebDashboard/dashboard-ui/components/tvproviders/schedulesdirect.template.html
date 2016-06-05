@@ -20,9 +20,7 @@
             <paper-input class="txtPass" label="${LabelPassword}" required="required" autocomplete="off" type="password"></paper-input>
         </div>
         <div>
-            <button type="submit" data-role="none" class="clearButton">
-                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-            </button>
+            <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
 
         </div>
     </div>
@@ -66,10 +64,8 @@
             </div>
             <br /><br />
             <div>
-                <button type="submit" data-role="none" class="clearButton btnSubmitListingsContainer">
-                    <paper-button raised class="submit block btnSubmitListings hide"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                </button>
-                <paper-button raised class="cancel block btnCancel hide" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+                <button is="emby-button" type="submit" class="raised submit block btnSubmitListingsContainer btnSubmitListings hide"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
+                <button is="emby-button" type="button" class="raised cancel block btnCancel hide" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></button>
             </div>
         </div>
     </form>

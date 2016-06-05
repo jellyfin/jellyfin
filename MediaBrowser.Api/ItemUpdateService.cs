@@ -280,11 +280,7 @@ namespace MediaBrowser.Api
                 episode.AbsoluteEpisodeNumber = request.AbsoluteEpisodeNumber;
             }
 
-            var hasTags = item as IHasTags;
-            if (hasTags != null)
-            {
-                hasTags.Tags = request.Tags;
-            }
+            item.Tags = request.Tags;
 
             var hasTaglines = item as IHasTaglines;
             if (hasTaglines != null)

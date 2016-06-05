@@ -1,4 +1,4 @@
-﻿<div id="dashboardPage" data-role="page" class="page type-interior dashboardHomePage" data-require="scripts/dashboardpage,humanedate,buttonenabled,paper-icon-item,paper-item-body,paper-fab,emby-collapsible,paper-button">
+﻿<div id="dashboardPage" data-role="page" class="page type-interior dashboardHomePage" data-require="scripts/dashboardpage,humanedate,buttonenabled,paper-icon-item,paper-item-body,paper-fab,emby-collapsible,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -41,8 +41,8 @@
                             <p class="externalUrl"></p>
 
                             <div style="margin-top: 1em;">
-                                <paper-button raised class="subdued btnRestartContainer hide" onclick="DashboardPage.restart();"><iron-icon icon="refresh"></iron-icon><span>${ButtonRestart}</span></paper-button>
-                                <paper-button id="btnShutdown" raised class="subdued" onclick="DashboardPage.shutdown();"><iron-icon icon="close"></iron-icon><span>${ButtonShutdown}</span></paper-button>
+                                <button is="emby-button" type="button" class="raised subdued btnRestartContainer hide" onclick="DashboardPage.restart();"><iron-icon icon="refresh"></iron-icon><span>${ButtonRestart}</span></button>
+                                <button is="emby-button" type="button" id="btnShutdown" class="raised subdued" onclick="DashboardPage.shutdown();"><iron-icon icon="close"></iron-icon><span>${ButtonShutdown}</span></button>
                             </div>
                         </div>
                     </div>
@@ -57,7 +57,7 @@
                             </div>
                             <p>${MessagePleaseRestartServerToFinishUpdating}</p>
                             <div class="btnRestartContainer hide">
-                                <paper-button raised class="submit" onclick="DashboardPage.restart();"><iron-icon icon="refresh"></iron-icon><span>${ButtonRestartNow}</span></paper-button>
+                                <button is="emby-button" type="button" class="raised submit" onclick="DashboardPage.restart();"><iron-icon icon="refresh"></iron-icon><span>${ButtonRestartNow}</span></button>
                             </div>
                         </emby-collapsible>
                     </div>

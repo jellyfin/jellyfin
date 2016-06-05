@@ -1,4 +1,4 @@
-﻿<div id="wizardGuidePage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizardlivetvguide,paper-button">
+﻿<div id="wizardGuidePage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizardlivetvguide,emby-button">
 
     <div data-role="content">
 
@@ -8,7 +8,7 @@
                 <h1 style="display:inline-block;">
                     ${HeaderSetupTVGuide}
                 </h1>
-                <a href="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" target="_blank" class="clearLink" style="margin-top:-10px;display:inline-block;vertical-align:middle;margin-left:2em;"><paper-button raised class="secondary mini"><iron-icon icon="info"></iron-icon><span>${ButtonHelp}</span></paper-button></a>
+                <a href="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" target="_blank" class="clearLink" style="margin-top:-10px;display:inline-block;vertical-align:middle;margin-left:2em;"><button is="emby-button" type="button" class="raised secondary mini"><iron-icon icon="info"></iron-icon><span>${ButtonHelp}</span></button></a>
             </div>
 
             <br />
@@ -26,9 +26,9 @@
             <br />
             <br />
             <div class="wizardNavigation">
-                <button type="button" data-role="none" class="clearButton" style="width:auto;" onclick="history.back();"><paper-button raised class="subdued"><iron-icon icon="arrow-back"></iron-icon><span>${LabelPrevious}</span></paper-button></button>
-                <button type="button" data-role="none" class="clearButton btnNext" style="width:auto;"><paper-button raised class="accent"><iron-icon icon="arrow-forward"></iron-icon><span>${LabelNext}</span></paper-button></button>
-                <button type="button" data-role="none" class="clearButton btnSkip" style="width:auto;"><paper-button raised style="background:#888;color:#fff;"><iron-icon icon="arrow-forward"></iron-icon><span>${ButtonSkip}</span></paper-button></button>
+                <button is="emby-button" type="button" class="raised subdued" onclick="history.back();"><iron-icon icon="arrow-back"></iron-icon><span>${LabelPrevious}</span></button>
+                <button is="emby-button" type="button" class="raised btnNext accent"><iron-icon icon="arrow-forward"></iron-icon><span>${LabelNext}</span></button>
+                <button is="emby-button" type="button" class="raised btnSkip" style="background: #888; color: #fff;"><iron-icon icon="arrow-forward"></iron-icon><span>${ButtonSkip}</span></button>
             </div>
         </div>
 

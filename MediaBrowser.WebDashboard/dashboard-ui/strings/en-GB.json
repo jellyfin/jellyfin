@@ -1136,7 +1136,8 @@
     "OptionOthers": "Others",
     "HeaderDownloadPeopleMetadataForHelp": "Enabling additional options will provide more on-screen information but will result in slower library scans.",
     "ViewTypeFolders": "Folders",
-    "LabelDisplayFoldersView": "Display a folders view to show plain media folders",
+    "OptionDisplayFolderView": "Display a folder view to show plain media folders",
+    "OptionDisplayFolderViewHelp": "If enabled, Emby apps wil display a Folders category alongside your media library. This is useful if you'd like to have plain folder views.",
     "ViewTypeLiveTvRecordingGroups": "Recordings",
     "ViewTypeLiveTvChannels": "Channels",
     "LabelEasyPinCode": "Easy pin code:",
@@ -2357,5 +2358,12 @@
     "HeaderHealthMonitor": "Health Monitor",
     "HealthMonitorNoAlerts": "There are no active alerts.",
     "RecordingPathChangeMessage": "Changing your recording folder will not migrate existing recordings from the old location to the new. You'll need to move them manually if desired.",
-    "VisualLoginFormHelp": "Select a user or sign in manually"
+    "VisualLoginFormHelp": "Select a user or sign in manually",
+    "LabelSportsCategories": "Sports categories:",
+    "XmlTvSportsCategoriesHelp": "Programs with these categories will be displayed as sports programs. Separate multiple with '|'.",
+    "LabelNewsCategories": "News categories:",
+    "XmlTvNewsCategoriesHelp": "Programs with these categories will be displayed as news programs. Separate multiple with '|'.",
+    "LabelKidsCategories": "Children's categories:",
+    "XmlTvKidsCategoriesHelp": "Programs with these categories will be displayed as programs for children. Separate multiple with '|'.",
+    "XmlTvPathHelp": "A path to an xml tv file. Emby will read this file and periodically check it for updates. You are responsible for creating and updating the file."
 }

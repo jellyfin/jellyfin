@@ -460,6 +460,10 @@
             name: Globalize.translate('TabFolders')
         },
          {
+             href: 'librarydisplay.html',
+             name: Globalize.translate('TabDisplay')
+         },
+         {
              href: 'librarypathmapping.html',
              name: Globalize.translate('TabPathSubstitution')
          },

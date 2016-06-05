@@ -4,7 +4,6 @@
 
         page.querySelector('.chkDisplayMissingEpisodes').checked = user.Configuration.DisplayMissingEpisodes || false;
         page.querySelector('.chkDisplayUnairedEpisodes').checked = user.Configuration.DisplayUnairedEpisodes || false;
-        page.querySelector('.chkGroupMoviesIntoCollections').checked = user.Configuration.GroupMoviesIntoBoxSets || false;
 
         $('#selectThemeSong', page).val(appStorage.getItem('enableThemeSongs-' + user.Id) || '');
         $('#selectBackdrop', page).val(appStorage.getItem('enableBackdrops-' + user.Id) || '');
@@ -18,7 +17,6 @@
 
         user.Configuration.DisplayMissingEpisodes = page.querySelector('.chkDisplayMissingEpisodes').checked;
         user.Configuration.DisplayUnairedEpisodes = page.querySelector('.chkDisplayUnairedEpisodes').checked;
-        user.Configuration.GroupMoviesIntoBoxSets = page.querySelector('.chkGroupMoviesIntoCollections').checked;
 
         userSettings.language(page.querySelector('#selectLanguage').value);
 

@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'layoutManager', 'globalize', 'paper-button', 'css!./actionsheet', 'html!./../icons/nav.html', 'scrollStyles'], function (dialogHelper, layoutManager, globalize) {
+﻿define(['dialogHelper', 'layoutManager', 'globalize', 'emby-button', 'css!./actionsheet', 'html!./../icons/nav.html', 'scrollStyles'], function (dialogHelper, layoutManager, globalize) {
 
     function parentWithClass(elem, className) {
 
@@ -151,14 +151,14 @@
             dlg.classList.add('centered');
         }
 
-        var itemTagName = 'paper-button';
+        var itemTagName = 'button';
 
         for (i = 0, length = options.items.length; i < length; i++) {
 
             option = options.items[i];
 
             var autoFocus = option.selected ? ' autoFocus' : '';
-            html += '<' + itemTagName + autoFocus + ' class="actionSheetMenuItem" data-id="' + (option.id || option.value) + '">';
+            html += '<' + itemTagName + autoFocus + ' is="emby-button" type="button" class="actionSheetMenuItem" data-id="' + (option.id || option.value) + '">';
 
             if (option.ironIcon) {
                 html += '<iron-icon class="actionSheetItemIcon" icon="' + option.ironIcon + '"></iron-icon>';
@@ -172,7 +172,7 @@
 
         if (options.showCancel) {
             html += '<div class="buttons">';
-            html += '<paper-button class="btnCancel">' + globalize.translate('sharedcomponents#ButtonCancel') + '</paper-button>';
+            html += '<button is="emby-button" type="button" class="btnCancel">' + globalize.translate('sharedcomponents#ButtonCancel') + '</button>';
             html += '</div>';
         }
         html += '</div>';

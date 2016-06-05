@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'css!css/metadataeditor.css', 'paper-fab', 'paper-icon-button-light'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'css!css/metadataeditor.css', 'emby-button', 'paper-fab', 'paper-icon-button-light'], function (dialogHelper, $) {
 
     var currentItem;
     var currentDeferred;
@@ -257,7 +257,7 @@
 
                 var html = '';
                 html += '<h2 class="dialogHeader">';
-                html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog" tabindex="-1"></paper-fab>';
+                html += '<button type="button" is="emby-button" icon="arrow-back" class="fab mini btnCloseDialog" tabindex="-1"><iron-icon icon="arrow-back"></iron-icon></button>';
                 html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + item.Name + '</div>';
                 html += '</h2>';
 

@@ -96,7 +96,7 @@
     }
 }
 
-.listHeader + paper-button {
+.listHeader + button {
     margin-left: 2em;
 }
 
@@ -402,22 +402,17 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     font-size: 90%;
 }
 
-.detailFloatingButton {
-    width: 56px;
-    height: 56px;
+[is="emby-button"].detailFloatingButton {
+    width: 56px !important;
+    height: 56px !important;
     top: -28px;
     position: absolute;
     right: 25%;
     background-color: #52B54B !important;
 }
 
-.btnFloatingRecord {
+[is="emby-button"].btnFloatingRecord {
     background-color: #cc3333 !important;
-}
-
-.detailFloatingButton iron-icon {
-    width: 40px;
-    height: 40px;
 }
 
 @media all and (max-width: 1000px) {
@@ -572,7 +567,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     font-size: 20px;
 }
 
-    .detailSectionHeader paper-button {
+    .detailSectionHeader button {
         font-size: 13px;
     }
 

@@ -2,10 +2,31 @@
 
     var EmbyInputPrototype = Object.create(HTMLInputElement.prototype);
 
+    var inputId = 0;
+
+    if (Object.getOwnPropertyDescriptor && Object.defineProperty) {
+
+        var descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+
+        if (descriptor.configurable) {
+            var baseSetMethod = descriptor.set;
+            descriptor.set = function (value) {
+                baseSetMethod.call(this, value);
+                this.dispatchEvent(new CustomEvent('valueset', {
+                    bubbles: false,
+                    cancelable: false
+                }));
+            }
+
+            Object.defineProperty(HTMLInputElement.prototype, 'value', descriptor);
+        }
+    }
+
     EmbyInputPrototype.createdCallback = function () {
 
         if (!this.id) {
-            this.id = 'input' + new Date().getTime();
+            this.id = 'embyinput' + inputId;
+            inputId++;
         }
     };
 
@@ -42,31 +63,15 @@
             label.classList.add('focused');
         });
         this.addEventListener('blur', function () {
+            onChange.call(this);
             label.classList.remove('focused');
         });
 
         this.addEventListener('change', onChange);
-        this.addEventListener('keypress', onChange);
-        this.addEventListener('keyup', onChange);
+        this.addEventListener('input', onChange);
+        this.addEventListener('valueset', onChange);
 
         onChange.call(this);
-
-        if (window.IntersectionObserver) {
-            var observer = new IntersectionObserver(function (entries) {
-                for (var j = 0, length2 = entries.length; j < length2; j++) {
-                    var entry = entries[j];
-                    var intersectionRatio = entry.intersectionRatio;
-                    if (intersectionRatio) {
-
-                        var target = entry.target;
-                        onChange.call(target);
-                    }
-                }
-            }, {});
-
-            observer.observe(this);
-            this.observer = observer;
-        }
     };
 
     EmbyInputPrototype.detachedCallback = function () {

@@ -919,11 +919,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         var val = reader.ReadElementContentAsString();
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            var hasTags = item as IHasTags;
-                            if (hasTags != null)
-                            {
-                                hasTags.AddTag(val);
-                            }
+                            item.AddTag(val);
                         }
                         break;
                     }

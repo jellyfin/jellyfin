@@ -60,7 +60,6 @@ namespace MediaBrowser.Server.Implementations.Connect
         {
             return new ConnectUserPreferences
             {
-                GroupMoviesIntoBoxSets = config.GroupMoviesIntoBoxSets,
                 PlayDefaultAudioTrack = config.PlayDefaultAudioTrack,
                 SubtitleMode = config.SubtitleMode,
                 PreferredAudioLanguages = string.IsNullOrWhiteSpace(config.AudioLanguagePreference) ? new string[] { } : new[] { config.AudioLanguagePreference },

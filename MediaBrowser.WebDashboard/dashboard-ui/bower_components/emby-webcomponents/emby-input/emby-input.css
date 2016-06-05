@@ -30,7 +30,7 @@
 
 .inputLabel {
     display: inline-block;
-    transition: all .25s ease-out;
+    transition: all .2s ease-out;
 }
 
     .inputLabel.blank {

@@ -1,4 +1,4 @@
-﻿<div id="wizardServicePage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizardservice,paper-button">
+﻿<div id="wizardServicePage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizardservice,emby-button">
 
     <div data-role="content">
 
@@ -14,8 +14,8 @@
             <p>${WindowsServiceIntro2}</p>
 
             <div class="wizardNavigation">
-                <button type="button" data-role="none" class="clearButton" style="width:auto;" onclick="history.back();"><paper-button raised class="subdued"><iron-icon icon="arrow-back"></iron-icon><span>${LabelPrevious}</span></paper-button></button>
-                <button id="btnNextPage" type="button" data-role="none" class="clearButton" style="width:auto;"><paper-button raised class="accent"><iron-icon icon="arrow-forward"></iron-icon><span>${LabelNext}</span></paper-button></button>
+                <button is="emby-button" type="button" class="raised subdued" onclick="history.back();"><iron-icon icon="arrow-back"></iron-icon><span>${LabelPrevious}</span></button>
+                <button is="emby-button" type="button" id="btnNextPage" class="raised accent"><iron-icon icon="arrow-forward"></iron-icon><span>${LabelNext}</span></button>
             </div>
         </div>
 

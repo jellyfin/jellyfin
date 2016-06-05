@@ -25,7 +25,7 @@ namespace MediaBrowser.Providers.Music
         private readonly IApplicationHost _appHost;
         private readonly ILogger _logger;
 
-        public static string MusicBrainzBaseUrl = "http://musicbrainz.fercasas.com:5000";
+        public static string MusicBrainzBaseUrl = "https://www.musicbrainz.org";
 
         public MusicBrainzAlbumProvider(IHttpClient httpClient, IApplicationHost appHost, ILogger logger)
         {

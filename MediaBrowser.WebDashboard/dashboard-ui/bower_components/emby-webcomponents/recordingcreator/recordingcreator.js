@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'paper-checkbox', 'emby-collapsible', 'emby-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'html!./../icons/mediainfo.html', 'html!./../icons/nav.html'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper) {
+﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'paper-checkbox', 'emby-button', 'emby-collapsible', 'emby-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'html!./../icons/mediainfo.html', 'html!./../icons/nav.html'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper) {
 
     var currentProgramId;
     var currentServerId;
@@ -208,20 +208,9 @@
         });
     }
 
-    function onPremiereLinkClicked(e) {
-
-        require(['shell'], function (shell) {
-            shell.openUrl('https://emby.media/premiere');
-        });
-        e.preventDefault();
-        return false;
-    }
-
     function init(context) {
 
         var apiClient = connectionManager.getApiClient(currentServerId);
-
-        context.querySelector('.lnkPremiere').addEventListener('click', onPremiereLinkClicked);
 
         context.querySelector('#chkRecordSeries').addEventListener('change', function () {
 
@@ -230,22 +219,6 @@
             } else {
                 hideSeriesRecordingFields(context);
             }
-        });
-
-        context.querySelector('.btnSubmit').addEventListener('click', function () {
-
-            // Do a fake form submit this the button isn't a real submit button
-            var fakeSubmit = document.createElement('input');
-            fakeSubmit.setAttribute('type', 'submit');
-            fakeSubmit.style.display = 'none';
-            var form = context.querySelector('form');
-            form.appendChild(fakeSubmit);
-            fakeSubmit.click();
-
-            // Seeing issues in smart tv browsers where the form does not get submitted if the button is removed prior to the submission actually happening
-            setTimeout(function () {
-                form.removeChild(fakeSubmit);
-            }, 500);
         });
 
         context.querySelector('.btnCancel').addEventListener('click', function () {
@@ -267,12 +240,6 @@
             } else {
                 supporterButtons[i].classList.add('hide');
             }
-        }
-
-        if (appHost.supports('externalpremium')) {
-            context.querySelector('.btnSupporterForConverting a').href = 'https://emby.media/premiere';
-        } else {
-            context.querySelector('.btnSupporterForConverting a').href = '#';
         }
 
         apiClient.getNamedConfiguration("livetv").then(function (config) {
@@ -348,6 +315,15 @@
         });
     }
 
+    function onSupporterButtonClick() {
+        if (appHost.supports('externalpremium')) {
+            require(['shell'], function (shell) {
+                shell.openUrl('https://emby.media/premiere');
+            });
+        } else {
+        }
+    }
+
     function reload(context, programId) {
 
         loading.show();
@@ -417,6 +393,8 @@
                 if (layoutManager.tv) {
                     scrollHelper.centerFocus.on(dlg.querySelector('.dialogContent'), false);
                 }
+
+                dlg.querySelector('.btnSupporterForConverting').addEventListener('click', onSupporterButtonClick);
 
                 hideSeriesRecordingFields(dlg);
                 init(dlg);
