@@ -327,7 +327,7 @@ var Dashboard = {
         var onclick = removeOnHide ? "jQuery(\"#" + options.id + "\").trigger(\"notification.remove\").remove();" : "jQuery(\"#" + options.id + "\").trigger(\"notification.hide\").hide();";
 
         if (options.allowHide !== false) {
-            options.html += "<span style='margin-left: 1em;'><paper-button class='submit' onclick='" + onclick + "'>" + Globalize.translate('ButtonHide') + "</paper-button></span>";
+            options.html += '<span style="margin-left: 1em;"><paper-button class="submit" onclick="' + onclick + '">' + Globalize.translate('ButtonHide') + "</paper-button></span>";
         }
 
         if (options.forceShow) {
