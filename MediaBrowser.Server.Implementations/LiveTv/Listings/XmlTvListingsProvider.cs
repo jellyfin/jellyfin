@@ -9,12 +9,13 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Emby.XmlTv.Classes;
+using MediaBrowser.Controller.Configuration;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 {
     public class XmlTvListingsProvider : IListingsProvider
     {
-        private string _language = null;
+        private readonly IServerConfigurationManager _config;
 
         private Dictionary<string, string> _channelMappings = new Dictionary<string, string>(){
             { "1", "UK_RT_2667" },
@@ -23,6 +24,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             { "4", "UK_RT_2056" },
             { "5", "UK_RT_134" }
         };
+
+        public XmlTvListingsProvider(IServerConfigurationManager config)
+        {
+            _config = config;
+        }
 
         public string Name
         {
@@ -34,10 +40,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             get { return "xmltv"; }
         }
 
+        private string GetLanguage()
+        {
+            return _config.Configuration.PreferredMetadataLanguage;
+        }
+
         // TODO: Should this method be async?
         public Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelNumber, string channelName, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
-            var reader = new XmlTvReader(info.Path, _language, null);
+            var reader = new XmlTvReader(info.Path, GetLanguage(), null);
             string mappedChannel = channelNumber;
 
             if (_channelMappings.ContainsKey(channelNumber))
@@ -77,7 +88,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
         public async Task AddMetadata(ListingsProviderInfo info, List<ChannelInfo> channels, CancellationToken cancellationToken)
         {
             // Add the channel image url
-            var reader = new XmlTvReader(info.Path, _language, null);
+            var reader = new XmlTvReader(info.Path, GetLanguage(), null);
             var results = reader.GetChannels().ToList();
 
             if (channels != null && channels.Count > 0)
@@ -104,7 +115,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
         public Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string country, string location)
         {
             // In theory this should never be called because there is always only one lineup
-            var reader = new XmlTvReader(info.Path, _language, null);
+            var reader = new XmlTvReader(info.Path, GetLanguage(), null);
             var results = reader.GetChannels();
 
             // Should this method be async?
