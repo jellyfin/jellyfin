@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'datetime', 'paper-progress', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light', 'paper-button'], function ($, datetime) {
+﻿define(['jQuery', 'datetime', 'paper-progress', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light', 'emby-button'], function ($, datetime) {
 
     function renderJob(page, job, dialogOptions) {
 
@@ -12,9 +12,7 @@
 
         html += '<br/>';
         html += '<br/>';
-        html += '<button type="submit" data-role="none" class="clearButton">';
-        html += '<paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonSave') + '</span></paper-button>';
-        html += '</button>';
+        html += '<button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonSave') + '</span></button>';
 
         $('.syncJobForm', page).html(html);
 

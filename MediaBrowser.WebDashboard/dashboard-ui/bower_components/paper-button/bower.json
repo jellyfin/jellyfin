@@ -1,6 +1,6 @@
 {
   "name": "paper-button",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Material design button",
   "authors": [
     "The Polymer Authors"
@@ -16,27 +16,26 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git://github.com/PolymerElements/paper-button"
+    "url": "git://github.com/PolymerElements/paper-button.git"
   },
   "license": "http://polymer.github.io/LICENSE.txt",
   "homepage": "https://github.com/PolymerElements/paper-button",
   "dependencies": {
     "polymer": "Polymer/polymer#^1.1.0",
-    "paper-ripple": "polymerelements/paper-ripple#^1.0.0",
-    "paper-material": "polymerelements/paper-material#^1.0.0",
-    "paper-behaviors": "polymerelements/paper-behaviors#^1.0.0",
-    "iron-flex-layout": "polymerelements/iron-flex-layout#^1.0.0"
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",
+    "paper-behaviors": "PolymerElements/paper-behaviors#^1.0.0",
+    "paper-material": "PolymerElements/paper-material#^1.0.0"
   },
   "devDependencies": {
-    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
-    "web-component-tester": "polymer/web-component-tester#^3.4.0",
-    "test-fixture": "polymerelements/test-fixture#^1.0.0",
-    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
     "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^1.0.0",
-    "iron-icon": "polymerelements/iron-icon#^1.0.0",
-    "iron-icons": "polymerelements/iron-icons#^1.0.0",
-    "iron-test-helpers": "polymerelements/iron-test-helpers#^1.0.0",
-    "paper-styles": "polymerelements/paper-styles#^1.0.0"
+    "iron-icon": "PolymerElements/iron-icon#^1.0.0",
+    "iron-icons": "PolymerElements/iron-icons#^1.0.0",
+    "iron-test-helpers": "PolymerElements/iron-test-helpers#^1.0.0",
+    "paper-styles": "PolymerElements/paper-styles#^1.0.0",
+    "test-fixture": "PolymerElements/test-fixture#^1.0.0",
+    "web-component-tester": "^4.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
   "ignore": []
 }

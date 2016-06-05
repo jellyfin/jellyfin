@@ -1,4 +1,4 @@
-define(['dialogHelper', 'layoutManager', 'globalize', 'html!./../icons/nav.html', 'css!./style.css', 'paper-button', 'paper-icon-button-light', 'emby-input'], function (dialogHelper, layoutManager, globalize) {
+define(['dialogHelper', 'layoutManager', 'globalize', 'html!./../icons/nav.html', 'css!./style.css', 'emby-button', 'paper-icon-button-light', 'emby-input'], function (dialogHelper, layoutManager, globalize) {
 
     function getIcon(icon, cssClass, canFocus, autoFocus) {
 
@@ -66,11 +66,11 @@ define(['dialogHelper', 'layoutManager', 'globalize', 'html!./../icons/nav.html'
 
         html += '<br/>';
         if (raisedButtons) {
-            html += '<paper-button raised class="btnSubmit"><iron-icon icon="nav:check"></iron-icon><span>' + globalize.translate('sharedcomponents#ButtonOk') + '</span></paper-button>';
+            html += '<button is="emby-button" type="submit" class="raised btnSubmit"><iron-icon icon="nav:check"></iron-icon><span>' + globalize.translate('sharedcomponents#ButtonOk') + '</span></button>';
         } else {
             html += '<div class="buttons">';
-            html += '<paper-button class="btnSubmit">' + globalize.translate('sharedcomponents#ButtonOk') + '</paper-button>';
-            html += '<paper-button class="btnPromptExit">' + globalize.translate('sharedcomponents#ButtonCancel') + '</paper-button>';
+            html += '<button is="emby-button" type="submit" class="btnSubmit">' + globalize.translate('sharedcomponents#ButtonOk') + '</button>';
+            html += '<button is="emby-button" type="button" class="btnPromptExit">' + globalize.translate('sharedcomponents#ButtonCancel') + '</button>';
             html += '</div>';
         }
         html += '</form>';
@@ -93,18 +93,6 @@ define(['dialogHelper', 'layoutManager', 'globalize', 'html!./../icons/nav.html'
             }, 300);
 
             return false;
-        });
-
-        dlg.querySelector('.btnSubmit').addEventListener('click', function (e) {
-
-            // Do a fake form submit this the button isn't a real submit button
-            var fakeSubmit = document.createElement('input');
-            fakeSubmit.setAttribute('type', 'submit');
-            fakeSubmit.style.display = 'none';
-            var form = dlg.querySelector('form');
-            form.appendChild(fakeSubmit);
-            fakeSubmit.click();
-            form.removeChild(fakeSubmit);
         });
 
         dlg.querySelector('.btnPromptExit').addEventListener('click', function (e) {

@@ -272,8 +272,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             new MediaStreamColumns(_connection, Logger).AddColumns();
 
             DataExtensions.Attach(_connection, Path.Combine(_config.ApplicationPaths.DataPath, "userdata_v2.db"), "UserDataDb");
-
-            dbConnector.BindSimilarityScoreFunction(_connection);
         }
 
         private readonly string[] _retriveItemColumns =
@@ -977,7 +975,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (type == null)
             {
-                Logger.Debug("Unknown type {0}", typeString);
+                //Logger.Debug("Unknown type {0}", typeString);
 
                 return null;
             }

@@ -20,11 +20,6 @@ define([], function () {
 
     function focus(element) {
 
-        var tagName = element.tagName;
-        if (tagName == 'PAPER-INPUT' || tagName == 'EMBY-DROPDOWN-MENU') {
-            element = element.querySelector('input') || element;
-        }
-
         try {
             element.focus();
         } catch (err) {
@@ -32,7 +27,7 @@ define([], function () {
         }
     }
 
-    var focusableTagNames = ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A', 'PAPER-BUTTON', 'PAPER-INPUT', 'PAPER-CHECKBOX', 'EMBY-DROPDOWN-MENU'];
+    var focusableTagNames = ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A', 'PAPER-CHECKBOX'];
     var focusableContainerTagNames = ['BODY', 'DIALOG'];
     var focusableQuery = focusableTagNames.join(',') + ',.focusable';
 

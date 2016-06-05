@@ -103,7 +103,7 @@
 
             tvOptions.CopyOriginalFile = $('#copyOrMoveFile', form).val();
 
-            ApiClient.updateNamedConfiguration('autoorganize', config).then(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateNamedConfiguration('autoorganize', config).then(Dashboard.processServerConfigurationUpdateResult, Dashboard.processErrorResponse);
         });
 
         return false;

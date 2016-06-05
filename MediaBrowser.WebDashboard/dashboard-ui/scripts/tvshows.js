@@ -140,7 +140,11 @@
                     });
                 }
 
-                $('.paging', tabContent).html(pagingHtml);
+                var i, length;
+                var pagingElems = tabContent.querySelectorAll('.paging');
+                for (i = 0, length = pagingElems.length; i < length; i++) {
+                    pagingElems[i].innerHTML = pagingHtml;
+                }
 
                 $('.btnNextPage', tabContent).on('click', function () {
                     query.StartIndex += query.Limit;

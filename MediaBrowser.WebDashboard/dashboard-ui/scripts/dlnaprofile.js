@@ -869,7 +869,7 @@
                 require(['toast'], function (toast) {
                     toast('Settings saved.');
                 });
-            });
+            }, Dashboard.processErrorResponse);
 
         } else {
 
@@ -882,7 +882,7 @@
 
                 Dashboard.navigate('dlnaprofiles.html');
 
-            });
+            }, Dashboard.processErrorResponse);
 
         }
 

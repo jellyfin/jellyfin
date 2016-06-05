@@ -1,4 +1,4 @@
-﻿define(['appStorage', 'jQuery', 'paper-button'], function (appStorage, $) {
+﻿define(['appStorage', 'jQuery', 'emby-button'], function (appStorage, $) {
 
     $.fn.taskButton = function (options) {
 
@@ -94,7 +94,7 @@
                 var msg = Globalize.translate('ConfirmMessageScheduledTaskButton');
                 msg += '<br/>';
                 msg += '<div style="margin-top:1em;">';
-                msg += '<a class="clearLink" href="scheduledtasks.html"><paper-button style="color:#3f51b5!important;margin:0;">' + Globalize.translate('ButtonScheduledTasks') + '</paper-button></a>';
+                msg += '<a class="clearLink" href="scheduledtasks.html"><button is="emby-button" type="button" style="color:#3f51b5!important;margin:0;">' + Globalize.translate('ButtonScheduledTasks') + '</button></a>';
                 msg += '</div>';
 
                 require(['confirm'], function (confirm) {

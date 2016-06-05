@@ -1,6 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../neon-animation/neon-animation-runner-behavior.html">
 <link rel="import" href="../neon-animation/animations/transform-animation.html">
 <link rel="import" href="../iron-collapse/iron-collapse.html">
@@ -37,11 +36,11 @@
             }
         </style>
         <div>
-            <paper-button on-tap="toggleExpand" id="expandButton" class="emby-collapsible-button">
+            <button is="emby-button" type="button" on-click="toggleExpand" id="expandButton" class="emby-collapsible-button block">
                 <iron-icon id="titleIcon" icon="[[icon]]" style="[[iconstyle]]"></iron-icon>
                 <h3 class="emby-collapsible-title" title="[[title]]">[[title]]</h3>
                 <iron-icon id="expandIcon" style="margin-left: auto; margin-right: .5em;"></iron-icon>
-            </paper-button>
+            </button>
             <iron-collapse id="contentCollapse" class="emby-collapsible-content" opened="{{expanded}}">
                 <content></content>
             </iron-collapse>

@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'require', 'layoutManager', 'globalize', 'scrollHelper', 'appStorage', 'connectionManager', 'loading', 'focusManager', 'emby-select', 'listViewStyle', 'paper-icon-button-light', 'css!./../formdialog', 'html!./../icons/mediainfo.html', 'html!./../icons/nav.html', 'css!./subtitleeditor'], function (dialogHelper, require, layoutManager, globalize, scrollHelper, appStorage, connectionManager, loading, focusManager) {
+﻿define(['dialogHelper', 'require', 'layoutManager', 'globalize', 'scrollHelper', 'appStorage', 'connectionManager', 'loading', 'focusManager', 'emby-select', 'listViewStyle', 'paper-icon-button-light', 'css!./../formdialog', 'html!./../icons/mediainfo.html', 'html!./../icons/nav.html', 'css!./subtitleeditor', 'emby-button'], function (dialogHelper, require, layoutManager, globalize, scrollHelper, appStorage, connectionManager, loading, focusManager) {
 
     var currentItem;
     var hasChanges;
@@ -400,22 +400,6 @@
         });
     }
 
-    function onSubmitButtonClick(e) {
-
-        // Do a fake form submit this the button isn't a real submit button
-        var fakeSubmit = document.createElement('input');
-        fakeSubmit.setAttribute('type', 'submit');
-        fakeSubmit.style.display = 'none';
-        var form = parentWithClass(this, 'subtitleSearchForm');
-        form.appendChild(fakeSubmit);
-        fakeSubmit.click();
-
-        // Seeing issues in smart tv browsers where the form does not get submitted if the button is removed prior to the submission actually happening
-        setTimeout(function () {
-            form.removeChild(fakeSubmit);
-        }, 500);
-    }
-
     function showEditorInternal(itemId, serverId, template) {
 
         hasChanges = false;
@@ -468,8 +452,6 @@
 
                 dialogHelper.close(dlg);
             });
-
-            btnSubmit.addEventListener('click', onSubmitButtonClick);
 
             return new Promise(function (resolve, reject) {
 

@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'paper-fab'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'emby-button'], function (dialogHelper, $) {
 
     var currentItemId;
     var currentFile;
@@ -149,7 +149,7 @@
 
             var html = '';
             html += '<h2 class="dialogHeader">';
-            html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog" tabindex="-1"></paper-fab>';
+            html += '<button type="button" is="emby-button" icon="arrow-back" class="fab mini btnCloseDialog" tabindex="-1"><iron-icon icon="arrow-back"></iron-icon></button>';
             html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + Globalize.translate('HeaderUploadImage') + '</div>';
             html += '</h2>';
 

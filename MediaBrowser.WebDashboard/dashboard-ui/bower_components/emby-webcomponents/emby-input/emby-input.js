@@ -4,6 +4,24 @@
 
     var inputId = 0;
 
+    if (Object.getOwnPropertyDescriptor && Object.defineProperty) {
+
+        var descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+
+        if (descriptor.configurable) {
+            var baseSetMethod = descriptor.set;
+            descriptor.set = function (value) {
+                baseSetMethod.call(this, value);
+                this.dispatchEvent(new CustomEvent('valueset', {
+                    bubbles: false,
+                    cancelable: false
+                }));
+            }
+
+            Object.defineProperty(HTMLInputElement.prototype, 'value', descriptor);
+        }
+    }
+
     EmbyInputPrototype.createdCallback = function () {
 
         if (!this.id) {
@@ -45,11 +63,13 @@
             label.classList.add('focused');
         });
         this.addEventListener('blur', function () {
+            onChange.call(this);
             label.classList.remove('focused');
         });
 
         this.addEventListener('change', onChange);
         this.addEventListener('input', onChange);
+        this.addEventListener('valueset', onChange);
 
         onChange.call(this);
     };

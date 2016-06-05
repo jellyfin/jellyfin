@@ -90,7 +90,7 @@
 
     function showPlaybackOverlay(resolve, reject) {
 
-        require(['dialogHelper', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'paper-button'], function (dialogHelper) {
+        require(['dialogHelper', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'emby-button'], function (dialogHelper) {
 
             var dlg = dialogHelper.createDialog({
                 size: 'fullscreen-border'
@@ -122,8 +122,8 @@
 
             html += '<br/>';
 
-            html += '<a class="clearLink" href="http://emby.media/premiere" target="_blank"><paper-button raised class="submit block" autoFocus><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonBecomeSupporter') + '</span></paper-button></a>';
-            html += '<paper-button raised class="subdued block btnCancelSupporterInfo" style="background:#444;"><iron-icon icon="close"></iron-icon><span>' + Globalize.translate('ButtonClosePlayVideo') + '</span></paper-button>';
+            html += '<a class="clearLink" href="http://emby.media/premiere" target="_blank"><button is="emby-button" type="button" class="raised submit block" autoFocus><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonBecomeSupporter') + '</span></button></a>';
+            html += '<button is="emby-button" type="button" class="raised subdued block btnCancelSupporterInfo" style="background:#444;"><iron-icon icon="close"></iron-icon><span>' + Globalize.translate('ButtonClosePlayVideo') + '</span></button>';
 
             html += '</div>';
 

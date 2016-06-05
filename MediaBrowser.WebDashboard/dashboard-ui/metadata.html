@@ -1,4 +1,4 @@
-﻿<div id="metadataConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage withTabs" data-require="scripts/metadataconfigurationpage,paper-checkbox,paper-button">
+﻿<div id="metadataConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage withTabs" data-require="scripts/metadataconfigurationpage,paper-checkbox,emby-button">
 
     <div data-role="content">
 
@@ -29,9 +29,7 @@
                         <select name="selectCountry" id="selectCountry" data-mini="true" required="required"></select>
                     </li>
                     <li>
-                        <button type="submit" data-role="none" class="clearButton">
-                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                        </button>
+                        <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
                     </li>
                 </ul>
             </form>

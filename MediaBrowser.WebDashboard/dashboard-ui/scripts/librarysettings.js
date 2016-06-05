@@ -146,41 +146,11 @@
          }];
     }
 
-    $(document).on('pageshow', "#librarySettingsPage", function () {
+    return function (view, params) {
 
-        LibraryMenu.setTabs('librarysetup', 3, getTabs);
-        Dashboard.showLoadingMsg();
+        var self = this;
 
-        var page = this;
-
-        ApiClient.getServerConfiguration().then(function (config) {
-
-            loadPage(page, config);
-        });
-
-        ApiClient.getNamedConfiguration("metadata").then(function (metadata) {
-
-            loadMetadataConfig(page, metadata);
-        });
-
-        ApiClient.getNamedConfiguration("fanart").then(function (metadata) {
-
-            loadFanartConfig(page, metadata);
-        });
-
-        var promise1 = ApiClient.getNamedConfiguration("chapters");
-        var promise2 = ApiClient.getJSON(ApiClient.getUrl("Providers/Chapters"));
-
-        Promise.all([promise1, promise2]).then(function (responses) {
-
-            loadChapters(page, responses[0], responses[1]);
-        });
-
-    }).on('pageinit', "#librarySettingsPage", function () {
-
-        var page = this;
-
-        $('#btnSelectMetadataPath', page).on("click.selectDirectory", function () {
+        $('#btnSelectMetadataPath', view).on("click.selectDirectory", function () {
 
             require(['directorybrowser'], function (directoryBrowser) {
 
@@ -190,7 +160,7 @@
 
                     callback: function (path) {
                         if (path) {
-                            $('#txtMetadataPath', page).val(path);
+                            $('#txtMetadataPath', view).val(path);
                         }
                         picker.close();
                     },
@@ -208,11 +178,41 @@
         ApiClient.getSystemInfo().then(function (systemInfo) {
 
             if (systemInfo.SupportsLibraryMonitor) {
-                page.querySelector('.fldLibraryMonitor').classList.remove('hide');
+                view.querySelector('.fldLibraryMonitor').classList.remove('hide');
             } else {
-                page.querySelector('.fldLibraryMonitor').classList.add('hide');
+                view.querySelector('.fldLibraryMonitor').classList.add('hide');
             }
         });
-    });
+
+        view.addEventListener('viewshow', function () {
+            LibraryMenu.setTabs('librarysetup', 3, getTabs);
+            Dashboard.showLoadingMsg();
+
+            var page = this;
+
+            ApiClient.getServerConfiguration().then(function (config) {
+
+                loadPage(page, config);
+            });
+
+            ApiClient.getNamedConfiguration("metadata").then(function (metadata) {
+
+                loadMetadataConfig(page, metadata);
+            });
+
+            ApiClient.getNamedConfiguration("fanart").then(function (metadata) {
+
+                loadFanartConfig(page, metadata);
+            });
+
+            var promise1 = ApiClient.getNamedConfiguration("chapters");
+            var promise2 = ApiClient.getJSON(ApiClient.getUrl("Providers/Chapters"));
+
+            Promise.all([promise1, promise2]).then(function (responses) {
+
+                loadChapters(page, responses[0], responses[1]);
+            });
+        });
+    };
 
 });

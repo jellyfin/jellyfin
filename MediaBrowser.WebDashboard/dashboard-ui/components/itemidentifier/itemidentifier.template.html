@@ -11,16 +11,14 @@
         <input is="emby-input" type="text" id="txtLookupName" class="identifyField" data-lookup="Name" label="${LabelName}" />
     </div>
     <div class="fldLookupYear inputContainer">
-        <input is="emby-input" type="number" id="txtLookupYear" class="identifyField" data-lookup="Year" pattern="[0-9]*" min="1800" label="${LabelYear}"/>
+        <input is="emby-input" type="number" id="txtLookupYear" class="identifyField" data-lookup="Year" pattern="[0-9]*" min="1800" label="${LabelYear}" />
     </div>
 
     <div class="identifyProviderIds">
     </div>
 
     <p>
-        <button type="submit" data-role="none" class="clearButton">
-            <paper-button raised class="submit block"><iron-icon icon="search"></iron-icon><span>${ButtonSearch}</span></paper-button>
-        </button>
+        <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="search"></iron-icon><span>${ButtonSearch}</span></button>
     </p>
 </form>
 <div class="identificationSearchResults" style="display:none; text-align: center;">
@@ -36,7 +34,5 @@
         <paper-checkbox id="chkIdentifyReplaceImages" checked>${OptionReplaceExistingImages}</paper-checkbox>
     </div>
     <br />
-    <button type="submit" data-role="none" class="clearButton">
-        <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSubmit}</span></paper-button>
-    </button>
+    <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSubmit}</span></button>
 </form>

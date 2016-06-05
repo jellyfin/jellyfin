@@ -1,4 +1,4 @@
-﻿<div id="tvRecommendedPage" data-dom-cache="true" data-role="page" class="page libraryPage backdropPage" data-backdroptype="series">
+﻿<div id="tvRecommendedPage" data-dom-cache="true" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs" data-backdroptype="series">
 
     <div class="libraryViewNav">
         <button class="pageTabButton is-active" data-index="0">${TabSuggestions}</button>
@@ -13,7 +13,7 @@
         <div id="resumableSection" class="homePageSection">
             <div>
                 <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderResume}</h1>
-                <paper-button raised class="submit mini categorySyncButton" data-category="Resume"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
+                <button is="emby-button" type="button" class="raised submit mini categorySyncButton" data-category="Resume"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></button>
             </div>
 
             <div id="resumableItems" class="itemsContainer noautoinit">
@@ -23,7 +23,7 @@
         <div class="homePageSection">
             <div>
                 <h1 class="listHeader nextUpHeader" style="display: inline-block; vertical-align: middle;">${HeaderNextUp}</h1>
-                <paper-button raised class="submit mini categorySyncButton" data-category="NextUp"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
+                <button is="emby-button" type="button" class="raised submit mini categorySyncButton" data-category="NextUp"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></button>
             </div>
             <div id="nextUpItems" class="itemsContainer">
             </div>
@@ -34,7 +34,7 @@
         <div class="homePageSection">
             <div>
                 <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderLatestEpisodes}</h1>
-                <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
+                <button is="emby-button" type="button" class="raised submit mini categorySyncButton" data-category="Latest"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></button>
             </div>
             <div id="latestEpisodes" class="itemsContainer">
             </div>

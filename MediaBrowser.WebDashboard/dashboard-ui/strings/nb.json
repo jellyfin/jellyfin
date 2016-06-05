@@ -1136,7 +1136,8 @@
     "OptionOthers": "Andre",
     "HeaderDownloadPeopleMetadataForHelp": "Aktivering av flere opsjoner vil gi mer info p\u00e5 skjermen, men resultere i d\u00e5rligere ytelse ved bibliotek skanninger.",
     "ViewTypeFolders": "Mapper",
-    "LabelDisplayFoldersView": "Vis alle mapper som rene lagringsmapper",
+    "OptionDisplayFolderView": "Display a folder view to show plain media folders",
+    "OptionDisplayFolderViewHelp": "If enabled, Emby apps wil display a Folders category alongside your media library. This is useful if you'd like to have plain folder views.",
     "ViewTypeLiveTvRecordingGroups": "Opptak",
     "ViewTypeLiveTvChannels": "Kanaler",
     "LabelEasyPinCode": "Enkel PIN-kode:",
@@ -2357,5 +2358,12 @@
     "HeaderHealthMonitor": "Helse Overv\u00e5ker",
     "HealthMonitorNoAlerts": "Det finnes ingen aktive varslinger",
     "RecordingPathChangeMessage": "Endre opptaksmappe vil ikke migrere eksisterende opptak fra den gamle plasseringen til den nye. Du m\u00e5 flytte dem manuelt hvis \u00f8nskelig.",
-    "VisualLoginFormHelp": "Select a user or sign in manually"
+    "VisualLoginFormHelp": "Select a user or sign in manually",
+    "LabelSportsCategories": "Sports categories:",
+    "XmlTvSportsCategoriesHelp": "Programs with these categories will be displayed as sports programs. Separate multiple with '|'.",
+    "LabelNewsCategories": "News categories:",
+    "XmlTvNewsCategoriesHelp": "Programs with these categories will be displayed as news programs. Separate multiple with '|'.",
+    "LabelKidsCategories": "Children's categories:",
+    "XmlTvKidsCategoriesHelp": "Programs with these categories will be displayed as programs for children. Separate multiple with '|'.",
+    "XmlTvPathHelp": "A path to an xml tv file. Emby will read this file and periodically check it for updates. You are responsible for creating and updating the file."
 }

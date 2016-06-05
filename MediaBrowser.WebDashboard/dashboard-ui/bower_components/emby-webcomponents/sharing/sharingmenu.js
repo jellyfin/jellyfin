@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'layoutManager', 'globalize', './social-share-kit-1.0.4/dist/js/social-share-kit.min', 'css!./social-share-kit-1.0.4/dist/css/social-share-kit.css'], function (dialogHelper, layoutManager, globalize) {
+﻿define(['dialogHelper', 'layoutManager', 'globalize', './social-share-kit-1.0.4/dist/js/social-share-kit.min', 'css!./social-share-kit-1.0.4/dist/css/social-share-kit.css', 'emby-button'], function (dialogHelper, layoutManager, globalize) {
 
     function showMenu(options) {
 
@@ -22,7 +22,7 @@
         html += '</div>';
 
         html += '<div class="buttons">';
-        html += '<paper-button class="btnCancel">' + globalize.translate('sharedcomponents#ButtonCancel') + '</paper-button>';
+        html += '<button is="emby-button" type="button" class="btnCancel">' + globalize.translate('sharedcomponents#ButtonCancel') + '</button>';
         html += '</div>';
 
         dlg.innerHTML = html;
