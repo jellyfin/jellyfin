@@ -76,8 +76,8 @@
 }
 
 .cardOverlayMoreButton, .cardOverlayPlayButton {
-    color: #333;
-    background-color: rgba(210,210,210,.9);
+    color: #333!important;
+    background-color: rgba(210,210,210,.9)!important;
     border-radius: 500px;
     padding: 5px;
     width: 36px;

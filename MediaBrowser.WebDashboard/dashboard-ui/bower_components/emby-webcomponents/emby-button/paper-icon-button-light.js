@@ -1,4 +1,4 @@
-﻿define(['browser', 'css!./emby-button'], function (browser) {
+﻿define(['css!./emby-button'], function () {
 
     var EmbyButtonPrototype = Object.create(HTMLButtonElement.prototype);
 
@@ -38,13 +38,6 @@
         }
     }
 
-    function onMouseDown(e) {
-
-        if (e.button == 0) {
-            animateButton.call(this, e);
-        }
-    }
-
     EmbyButtonPrototype.attachedCallback = function () {
 
         if (this.getAttribute('data-embybutton') == 'true') {
@@ -54,15 +47,10 @@
         this.setAttribute('data-embybutton', 'true');
 
         this.addEventListener('keydown', onKeyDown);
-        if (browser.safari) {
-            this.addEventListener('click', animateButton);
-        } else {
-            this.addEventListener('mousedown', onMouseDown);
-            //this.addEventListener('touchstart', animateButton);
-        }
+        this.addEventListener('click', animateButton);
     };
 
-    document.registerElement('emby-button', {
+    document.registerElement('paper-icon-button-light', {
         prototype: EmbyButtonPrototype,
         extends: 'button'
     });
