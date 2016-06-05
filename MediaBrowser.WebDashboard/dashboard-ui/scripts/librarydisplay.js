@@ -33,6 +33,7 @@
             ApiClient.getServerConfiguration().then(function (config) {
 
                 config.EnableFolderView = form.querySelector('.chkFolderView').checked;
+                config.EnableGroupingIntoCollections = form.querySelector('.chkGroupMoviesIntoCollections').checked;
                 ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
             });
 
@@ -43,6 +44,7 @@
         function loadData() {
             ApiClient.getServerConfiguration().then(function (config) {
                 view.querySelector('.chkFolderView').checked = config.EnableFolderView;
+                view.querySelector('.chkGroupMoviesIntoCollections').checked = config.EnableGroupingIntoCollections;
             });
         }
 
