@@ -1451,7 +1451,7 @@ namespace MediaBrowser.Server.Implementations.Session
             }
         }
 
-        public async Task RevokeUserTokens(string userId)
+        public async Task RevokeUserTokens(string userId, string currentAccessToken)
         {
             var existing = _authRepo.Get(new AuthenticationInfoQuery
             {
@@ -1461,7 +1461,10 @@ namespace MediaBrowser.Server.Implementations.Session
 
             foreach (var info in existing.Items)
             {
-                await Logout(info.AccessToken).ConfigureAwait(false);
+                if (!string.Equals(currentAccessToken, info.AccessToken, StringComparison.OrdinalIgnoreCase))
+                {
+                    await Logout(info.AccessToken).ConfigureAwait(false);
+                }
             }
         }
 
