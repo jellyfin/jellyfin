@@ -18,14 +18,21 @@
 
         this.appendChild(div);
 
-        setTimeout(function () {
+        div.addEventListener("animationend", function() {
             div.parentNode.removeChild(div);
-        }, 2000);
+        }, false);
     }
 
     function onKeyDown(e) {
 
         if (e.keyCode == 13) {
+            animateButton.call(this, e);
+        }
+    }
+
+    function onMouseDown(e) {
+
+        if (e.button == 0) {
             animateButton.call(this, e);
         }
     }
@@ -39,7 +46,8 @@
         this.setAttribute('data-embybutton', 'true');
 
         this.addEventListener('keydown', onKeyDown);
-        this.addEventListener('mousedown', animateButton);
+        this.addEventListener('mousedown', onMouseDown);
+        this.addEventListener('touchstart', animateButton);
         //this.addEventListener('click', animateButton);
     };
 

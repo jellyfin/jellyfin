@@ -1,135 +1,4 @@
-﻿paper-button, .paper-button-0 {
-    font-weight: 500;
-    vertical-align: middle;
-    margin-top: 5px;
-    margin-bottom: 5px;
-}
-
-    paper-button.block {
-        display: block;
-        margin: .25em 0;
-    }
-
-    paper-button.blue {
-        color: #03a9f4;
-    }
-
-        paper-button.blue:hover {
-            background: #e1f5f3;
-        }
-
-    paper-button.menuButton {
-        color: #212121;
-        text-align: left;
-    }
-
-        paper-button.menuButton:hover {
-            background: #e1f5f3;
-        }
-
-    paper-button.ripple::shadow paper-ripple {
-        color: #ff3bee;
-    }
-
-    paper-button.ripple paper-ripple {
-        color: #ff3bee;
-    }
-
-    paper-button.submit {
-        color: #52B54B;
-    }
-
-    paper-button[raised].submit, paper-button[raised]:not(.subdued):not(.cancel) {
-        background: #52B54B;
-        color: #fff;
-    }
-
-    paper-button.more {
-        color: #EC407A;
-    }
-
-    paper-button[raised].more {
-        background: #EC407A;
-        color: #fff;
-    }
-
-    paper-button.secondary {
-        color: #4285f4;
-    }
-
-    paper-button[raised].secondary {
-        background: #4285f4;
-        color: #fff;
-    }
-
-    paper-button.accent {
-        color: #52B54B;
-    }
-
-    paper-button[raised].accent {
-        background: #52B54B;
-        color: #fff;
-    }
-
-    paper-button.alt {
-        color: #F57F17;
-    }
-
-    paper-button[raised].alt {
-        background: #F57F17;
-        color: #fff;
-    }
-
-.ui-body-b paper-button.cancel {
-    color: #444;
-}
-
-.ui-body-b paper-button[raised].cancel {
-    background: #444;
-    color: #fff;
-}
-
-paper-button.cancelDark {
-    color: #444;
-}
-
-paper-button[raised].cancelDark {
-    background: #444;
-    color: #fff;
-}
-
-.ui-body-b paper-button.subdued:not([disabled]) {
-    color: #404040;
-}
-
-.ui-body-b paper-button[raised].subdued:not([disabled]) {
-    background: #404040;
-    color: #fff;
-}
-
-.ui-body-b paper-button[raised][disabled].subduedd {
-    background: #111;
-}
-
-paper-button.hover:hover {
-    background: #eee;
-}
-
-paper-button span {
-    vertical-align: middle;
-}
-
-paper-button:not(.iconRight) > iron-icon {
-    margin-right: .5em;
-}
-
-paper-button.iconRight iron-icon {
-    position: absolute;
-    right: 5px;
-    top: 5px;
-}
-
-button[is="emby-button"].blue {
+﻿button[is="emby-button"].blue {
     color: #03a9f4;
 }
 
@@ -227,10 +96,6 @@ button[is="emby-button"] span {
     vertical-align: middle;
 }
 
-button[is="emby-button"]:not(.iconRight) > iron-icon {
-    margin-right: .5em;
-}
-
 button[is="emby-button"].iconRight iron-icon {
     position: absolute;
     right: 5px;
@@ -274,39 +139,9 @@ button[is="emby-button"].mini {
         width: 20px;
     }
 
-paper-button.mini {
-    min-width: initial;
-}
-
-paper-button.mini {
-    padding: 0.4em 0.7em;
-}
-
-    paper-button.mini.noIcon {
-        padding: 0.4em 0.7em;
-    }
-
-    paper-button.mini iron-icon {
-        height: 20px;
-        width: 20px;
-    }
-
 paper-toast {
     z-index: 9999999;
 }
-
-paper-button.notext {
-    min-width: 2.8em;
-}
-
-    paper-button.notext .content {
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-    }
-
-    paper-button.notext iron-icon {
-        margin-right: 0;
-    }
 
 button[is="emby-button"].notext {
     min-width: 2.8em;
@@ -635,7 +470,7 @@ div.dialogHeader {
     margin-top: .7em;
 }
 
-.dialogHeader paper-button, .dialogHeader button {
+.dialogHeader button {
     margin-top: 0;
     margin-bottom: 0;
 }

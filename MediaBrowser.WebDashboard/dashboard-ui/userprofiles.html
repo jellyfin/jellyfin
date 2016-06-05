@@ -1,4 +1,4 @@
-﻿<div id="userProfilesPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/userprofilespage,paper-button">
+﻿<div id="userProfilesPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/userprofilespage,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -6,10 +6,10 @@
                 <h3 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                     <span style="vertical-align:middle;">${HeaderUsers}</span>
                 </h3>
-                <paper-button raised class="btnAddUser submit mini" style="margin-left:1em;" title="${ButtonAddUser}">
+                <button is="emby-button" type="button" class="raised btnAddUser submit mini" style="margin-left:1em;" title="${ButtonAddUser}">
                     <iron-icon icon="add"></iron-icon>
                     <span>${ButtonAdd}</span>
-                </paper-button>
+                </button>
             </div>
             <div class="localUsers" style="text-align:left;margin-top:.5em;"></div>
 
@@ -17,10 +17,10 @@
                 <h3 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                     ${HeaderGuests}
                 </h3>
-                <paper-button raised class="btnInvite submit mini" style="margin-left:1em;" title="${ButtonInviteUser}">
+                <button is="emby-button" type="button" class="raised btnInvite submit mini" style="margin-left:1em;" title="${ButtonInviteUser}">
                     <iron-icon icon="add"></iron-icon>
                     <span>${ButtonAdd}</span>
-                </paper-button>
+                </button>
             </div>
             <div class="connectUsers" style="text-align:left;margin-top:.5em;"></div>
 

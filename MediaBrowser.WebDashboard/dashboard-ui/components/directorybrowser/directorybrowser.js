@@ -143,7 +143,7 @@
         html += '<div class="results paperList" style="height: 180px; overflow-y: auto;"></div>';
 
         html += '<div>';
-        html += '<button type="submit" class="clearButton" data-role="none"><paper-button raised class="submit block">' + Globalize.translate('ButtonOk') + '</paper-button></button>';
+        html += '<button is="emby-button" type="submit" class="raised submit block">' + Globalize.translate('ButtonOk') + '</button>';
         html += '</div>';
 
         html += '</form>';

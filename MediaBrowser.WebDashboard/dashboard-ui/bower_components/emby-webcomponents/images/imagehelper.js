@@ -109,29 +109,25 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
         target.addEventListener(type, handler, optionsOrCapture);
     }
 
-    function unveilWithIntersection(images) {
+    function unveilWithIntersection(images, root) {
 
         var filledCount = 0;
 
         var options = {};
 
-        options.rootMargin = "150%";
+        //options.rootMargin = "300%";
 
         var observer = new IntersectionObserver(function (entries) {
             for (var j = 0, length2 = entries.length; j < length2; j++) {
                 var entry = entries[j];
-                var intersectionRatio = entry.intersectionRatio;
-                if (intersectionRatio) {
-
-                    var target = entry.target;
-                    observer.unobserve(target);
-                    fillImage(target);
-                    filledCount++;
-                }
+                var target = entry.target;
+                observer.unobserve(target);
+                fillImage(target);
+                filledCount++;
             }
 
             if (filledCount >= images.length) {
-                //observer.disconnect();
+                observer.disconnect();
             }
         },
         options
@@ -142,14 +138,14 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
         }
     }
 
-    function unveilElements(images) {
+    function unveilElements(images, root) {
 
         if (!images.length) {
             return;
         }
 
         if (supportsIntersectionObserver) {
-            unveilWithIntersection(images);
+            unveilWithIntersection(images, root);
             return;
         }
 
@@ -223,7 +219,7 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
 
     function lazyChildren(elem) {
 
-        unveilElements(elem.getElementsByClassName('lazy'));
+        unveilElements(elem.getElementsByClassName('lazy'), elem);
     }
 
     function getPrimaryImageAspectRatio(items) {

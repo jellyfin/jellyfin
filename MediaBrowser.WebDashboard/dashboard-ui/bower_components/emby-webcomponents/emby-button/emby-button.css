@@ -6,7 +6,8 @@
     margin: 0 .29em;
     background: transparent;
     text-align: center;
-    font: inherit;
+    font-size: inherit;
+    font-family: inherit;
     color: inherit;
     outline-width: 0;
     -moz-user-select: none;
@@ -25,6 +26,8 @@
     outline: none !important;
     position: relative;
     overflow: hidden;
+    font-weight: 500;
+    text-transform: uppercase;
 }
 
     [is="emby-button"].raised {
@@ -35,7 +38,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: .25em .29em;
+        margin: .25em 0;
         width: 100%;
     }
 
@@ -55,19 +58,21 @@
     height: 50px;
     top: 50%;
     left: 50%;
-    background: white;
-    animation: ripple-animation 2s;
-    opacity: 0.4;
+    background: currentcolor;
+    animation: ripple-animation .8s;
+    opacity: 0.25;
+    -webkit-transform: translate(0, 0);
+    transform: translate3d(0, 0, 0);
 }
 
 @keyframes ripple-animation {
     from {
         transform: none;
-        opacity: 0.4;
+        opacity: 0.5;
     }
 
     to {
-        transform: scale(100);
+        transform: scale(20);
         opacity: 0;
     }
 }

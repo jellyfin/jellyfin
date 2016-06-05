@@ -76,7 +76,7 @@
                 if (result.TotalRecordCount > result.Items.length) {
                     var href = "secondaryitems.html?type=" + section.types + "&filters=IsFavorite&titlekey=" + section.name;
 
-                    html += '<a class="clearLink" href="' + href + '" style="margin-left:2em;"><paper-button raised class="more mini">' + Globalize.translate('ButtonMore') + '</paper-button></a>';
+                    html += '<a class="clearLink" href="' + href + '" style="margin-left:2em;"><button is="emby-button" type="button" class="raised more mini">' + Globalize.translate('ButtonMore') + '</button></a>';
                 }
 
                 html += '</div>';

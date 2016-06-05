@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'datetime', 'jQuery', 'paper-slider', 'paper-button'], function (appSettings, datetime, $) {
+﻿define(['appSettings', 'datetime', 'jQuery', 'paper-slider', 'emby-button'], function (appSettings, datetime, $) {
 
     function getDeviceProfile(serverAddress, deviceId, item, startPositionTicks, maxBitrate, mediaSourceId, audioStreamIndex, subtitleStreamIndex) {
 
@@ -267,7 +267,7 @@
                 html += '<br/>';
             }
 
-            html += '<paper-button class="block submit btnDone" raised>' + Globalize.translate('ButtonImDone') + '</paper-button>';
+            html += '<button is="emby-button" type="button" class="block submit btnDone" raised>' + Globalize.translate('ButtonImDone') + '</button>';
 
             html += '</div>';
 

@@ -4,10 +4,10 @@
         ${ButtonEdit}
     </div>
     <div style="margin-left:auto; display: flex; align-items: center; justify-content: center;">
-        <paper-button class="btnHeaderSave accent" tabindex="-1">
+        <button is="emby-button" type="button" class="btnHeaderSave accent" tabindex="-1">
             <iron-icon icon="check"></iron-icon>
             <span>${ButtonSave}</span>
-        </paper-button>
+        </button>
         <button is="paper-icon-button-light" class="btnMore" tabindex="-1"><iron-icon icon="more-vert"></iron-icon></button>
     </div>
 </div>
@@ -35,7 +35,7 @@
             <div id="fldDateAdded" style="display: none;">
                 <paper-input id="txtDateAdded" type="date" label="${LabelDateAdded}"></paper-input>
                 <div class="fieldDescription">${ConfigureDateAdded}</div>
-                <br/>
+                <br />
             </div>
             <div id="fldStatus" style="display: none;margin:1em 0;">
                 <label for="selectStatus" class="selectLabel">${LabelStatus}</label>
@@ -223,30 +223,30 @@
             <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                 ${HeaderCountries}
             </h1>
-            <paper-button raised class="btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+            <button is="emby-button" type="button" class="raised btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
                 <iron-icon icon="add"></iron-icon>
                 <span>${ButtonAdd}</span>
-            </paper-button>
+            </button>
             <div class="paperList" id="listCountries"></div>
         </div>
         <div id="genresCollapsible" class="editableListviewContainer" style="display: none; margin-top: 3em;">
             <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                 ${HeaderGenres}
             </h1>
-            <paper-button raised class="btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+            <button is="emby-button" type="button" class="raised btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
                 <iron-icon icon="add"></iron-icon>
                 <span>${ButtonAdd}</span>
-            </paper-button>
+            </button>
             <div class="paperList" id="listGenres"></div>
         </div>
         <div data-mini="true" data-role="collapsible" id="peopleCollapsible" style="display: none; margin-top: 3em;">
             <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                 ${HeaderPeople}
             </h1>
-            <paper-button raised id="btnAddPerson" class="btnAddPerson submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+            <button is="emby-button" type="button" raised id="btnAddPerson" class="btnAddPerson submit mini" style="margin-left:1em;" title="${ButtonAdd}">
                 <iron-icon icon="add"></iron-icon>
                 <span>${ButtonAdd}</span>
-            </paper-button>
+            </button>
             <div id="peopleList" class="paperList">
             </div>
         </div>
@@ -254,30 +254,30 @@
             <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                 ${HeaderPlotKeywords}
             </h1>
-            <paper-button raised class="btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+            <button is="emby-button" type="button" class="raised btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
                 <iron-icon icon="add"></iron-icon>
                 <span>${ButtonAdd}</span>
-            </paper-button>
+            </button>
             <div class="paperList" id="listKeywords"></div>
         </div>
         <div id="studiosCollapsible" class="editableListviewContainer" style="display: none; margin-top: 3em;">
             <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                 ${HeaderStudios}
             </h1>
-            <paper-button raised class="btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+            <button is="emby-button" type="button" class="raised btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
                 <iron-icon icon="add"></iron-icon>
                 <span>${ButtonAdd}</span>
-            </paper-button>
+            </button>
             <div class="paperList" id="listStudios"></div>
         </div>
         <div id="tagsCollapsible" class="editableListviewContainer" style="display: none; margin-top: 3em;">
             <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                 ${HeaderTags}
             </h1>
-            <paper-button raised class="btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+            <button is="emby-button" type="button" class="raised btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
                 <iron-icon icon="add"></iron-icon>
                 <span>${ButtonAdd}</span>
-            </paper-button>
+            </button>
             <div class="paperList" id="listTags"></div>
         </div>
         <div id="metadataSettingsCollapsible" style="display: none; margin-top: 3em;">
@@ -305,9 +305,7 @@
             </div>
         </div>
         <br />
-        <button type="submit" data-role="none" class="clearButton btnSave">
-            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-        </button>
+        <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
     </div>
     <br />
     <br />

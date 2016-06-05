@@ -96,7 +96,7 @@
     }
 }
 
-.listHeader + paper-button {
+.listHeader + button {
     margin-left: 2em;
 }
 
@@ -572,7 +572,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     font-size: 20px;
 }
 
-    .detailSectionHeader paper-button {
+    .detailSectionHeader button {
         font-size: 13px;
     }
 

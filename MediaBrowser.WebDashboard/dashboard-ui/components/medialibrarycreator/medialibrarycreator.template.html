@@ -16,20 +16,18 @@
     </div>
     <div>
         <h1 style="display:inline-block;vertical-align:middle;">${HeadersFolders}</h1>
-        <paper-button raised class="btnAddFolder submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+        <button is="emby-button" type="button" class="raised btnAddFolder submit mini" style="margin-left:1em;" title="${ButtonAdd}">
             <iron-icon icon="add"></iron-icon>
             <span>${ButtonAdd}</span>
-        </paper-button>
+        </button>
     </div>
     <div class="paperList folderList hide" style="padding: .7em 0;"></div>
 
     <br />
     <div>
-        <button type="submit" class="clearButton" data-role="none">
-            <paper-button raised class="submit block">
-                <iron-icon icon="check"></iron-icon>
-                <span>${ButtonOk}</span>
-            </paper-button>
+        <button is="emby-button" type="submit" class="raised submit block">
+            <iron-icon icon="check"></iron-icon>
+            <span>${ButtonOk}</span>
         </button>
     </div>
 </form>

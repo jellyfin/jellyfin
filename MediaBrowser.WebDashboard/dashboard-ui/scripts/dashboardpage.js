@@ -1326,7 +1326,7 @@
 
                     if (!pluginSecurityInfo.IsMBSupporter && AppInfo.enableSupporterMembership) {
 
-                        var html = '<div class="supporterPromotion"><a class="clearLink" href="http://emby.media/premiere" target="_blank"><paper-button raised class="block" style="text-transform:none;background-color:#52B54B;color:#fff;"><div>' + Globalize.translate('HeaderSupportTheTeam') + '</div><div style="font-weight:normal;margin-top:5px;">' + Globalize.translate('TextEnjoyBonusFeatures') + '</div></paper-button></a></div>';
+                        var html = '<div class="supporterPromotion"><a class="clearLink" href="http://emby.media/premiere" target="_blank"><button is="emby-button" type="button" class="raised block" style="text-transform:none;background-color:#52B54B;color:#fff;"><div>' + Globalize.translate('HeaderSupportTheTeam') + '</div><div style="font-weight:normal;margin-top:5px;">' + Globalize.translate('TextEnjoyBonusFeatures') + '</div></button></a></div>';
 
                         $('.content-primary', page).append(html);
                     }

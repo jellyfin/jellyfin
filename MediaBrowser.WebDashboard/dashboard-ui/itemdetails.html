@@ -3,8 +3,8 @@
     <div id="itemBackdrop" class="itemBackdrop noBackdrop">
         <div class="itemBackdropContent">
         </div>
-        <a href="#" id="lnkPreviousItem" class="lnkPreviousItem lnkSibling hide clearLink"><paper-button raised class="subdued notext"><iron-icon icon="arrow-back"></iron-icon></paper-button></a>
-        <a href="#" id="lnkNextItem" class="lnkNextItem lnkSibling hide clearLink"><paper-button raised class="subdued notext"><iron-icon icon="arrow-forward"></iron-icon></paper-button></a>
+        <a href="#" id="lnkPreviousItem" class="lnkPreviousItem lnkSibling hide clearLink"><button is="emby-button" type="button" class="raised subdued notext"><iron-icon icon="arrow-back"></iron-icon></button></a>
+        <a href="#" id="lnkNextItem" class="lnkNextItem lnkSibling hide clearLink"><button is="emby-button" type="button" class="raised subdued notext"><iron-icon icon="arrow-forward"></iron-icon></button></a>
     </div>
 
     <div class="detailPageContent" style="position:relative;">
@@ -27,12 +27,12 @@
                 <p class="artist"></p>
                 <p class="itemGenres"></p>
                 <div class="detailButtonsContainer">
-                    <paper-button raised class="subdued btnPlayTrailer hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonTrailer}</span></paper-button>
-                    <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><paper-button raised class="subdued"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonTrailer}</span></paper-button></a>
-                    <paper-button raised class="subdued btnRecord hide"><iron-icon icon="videocam"></iron-icon><span>${ButtonRecord}</span></paper-button>
-                    <paper-button raised class="subdued hide btnCancelRecording"><iron-icon icon="delete"></iron-icon><span>${ButtonCancelRecording}</span></paper-button>
-                    <paper-button raised class="subdued btnSync hide"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
-                    <paper-button raised class="subdued btnMoreCommands hide notext"><iron-icon icon="more-vert"></iron-icon></paper-button>
+                    <button is="emby-button" type="button" class="raised subdued btnPlayTrailer hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonTrailer}</span></button>
+                    <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><button is="emby-button" type="button" class="raised subdued"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonTrailer}</span></button></a>
+                    <button is="emby-button" type="button" class="raised subdued btnRecord hide"><iron-icon icon="videocam"></iron-icon><span>${ButtonRecord}</span></button>
+                    <button is="emby-button" type="button" class="raised subdued hide btnCancelRecording"><iron-icon icon="delete"></iron-icon><span>${ButtonCancelRecording}</span></button>
+                    <button is="emby-button" type="button" class="raised subdued btnSync hide"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></button>
+                    <button is="emby-button" type="button" class="raised subdued btnMoreCommands hide notext"><iron-icon icon="more-vert"></iron-icon></button>
                     <div class="detailUserDataIcons userDataIcons"></div>
                 </div>
             </div>
@@ -45,12 +45,12 @@
         </div>
         <div class="detailButtonsContainer">
             <br />
-            <paper-button raised class="subdued btnPlayTrailer hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonTrailer}</span></paper-button>
-            <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><paper-button raised class="subdued"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonTrailer}</span></paper-button></a>
-            <paper-button raised class="subdued btnRecord hide"><iron-icon icon="videocam"></iron-icon><span>${ButtonRecord}</span></paper-button>
-            <paper-button raised class="subdued hide btnCancelRecording"><iron-icon icon="delete"></iron-icon><span>${ButtonCancelRecording}</span></paper-button>
-            <paper-button raised class="subdued btnSync hide"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
-            <paper-button raised class="subdued btnMoreCommands hide notext"><iron-icon icon="more-vert"></iron-icon></paper-button>
+            <button is="emby-button" type="button" class="raised subdued btnPlayTrailer hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonTrailer}</span></button>
+            <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><button is="emby-button" type="button" class="raised subdued"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonTrailer}</span></button></a>
+            <button is="emby-button" type="button" class="raised subdued btnRecord hide"><iron-icon icon="videocam"></iron-icon><span>${ButtonRecord}</span></button>
+            <button is="emby-button" type="button" class="raised subdued hide btnCancelRecording"><iron-icon icon="delete"></iron-icon><span>${ButtonCancelRecording}</span></button>
+            <button is="emby-button" type="button" class="raised subdued btnSync hide"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></button>
+            <button is="emby-button" type="button" class="raised subdued btnMoreCommands hide notext"><iron-icon icon="more-vert"></iron-icon></button>
             <div class="detailUserDataIcons userDataIcons"></div>
         </div>
     </div>
@@ -183,7 +183,7 @@
                 <h1>${HeaderMediaInfo}</h1>
                 <div>
                     <div class="splitVersionContainer" style="border-bottom: 1px solid #444;padding:1em 0;">
-                        <paper-button raised class="btnSplitVersions subdued">${ButtonSplitVersionsApart}</paper-button>
+                        <button is="emby-button" type="button" class="raised btnSplitVersions subdued">${ButtonSplitVersionsApart}</button>
                     </div>
                     <div id="mediaInfoContent" class="mediaInfoContent"></div>
                 </div>
