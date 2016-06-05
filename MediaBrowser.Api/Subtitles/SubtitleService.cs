@@ -101,6 +101,7 @@ namespace MediaBrowser.Api.Subtitles
 
         [ApiMember(Name = "CopyTimestamps", Description = "CopyTimestamps", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool CopyTimestamps { get; set; }
+        public bool AddVttTimeMap { get; set; }
     }
 
     [Route("/Videos/{Id}/{MediaSourceId}/Subtitles/{Index}/subtitles.m3u8", "GET", Summary = "Gets an HLS subtitle playlist.")]
@@ -193,7 +194,7 @@ namespace MediaBrowser.Api.Subtitles
             return ResultFactory.GetResult(builder.ToString(), MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
         }
 
-        public object Get(GetSubtitle request)
+        public async Task<object> Get(GetSubtitle request)
         {
             if (string.Equals(request.Format, "js", StringComparison.OrdinalIgnoreCase))
             {
@@ -212,21 +213,32 @@ namespace MediaBrowser.Api.Subtitles
                 return ToStaticFileResult(subtitleStream.Path);
             }
 
-            var stream = GetSubtitles(request).Result;
+            using (var stream = await GetSubtitles(request).ConfigureAwait(false))
+            {
+                using (var reader = new StreamReader(stream))
+                {
+                    var text = reader.ReadToEnd();
 
-            return ResultFactory.GetResult(stream, MimeTypes.GetMimeType("file." + request.Format));
+                    if (string.Equals(request.Format, "vtt", StringComparison.OrdinalIgnoreCase))
+                    {
+                        text = text.Replace("WEBVTT", "WEBVTT\nX-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000");
+                    }
+
+                    return ResultFactory.GetResult(text, MimeTypes.GetMimeType("file." + request.Format));
+                }
+            }
         }
 
-        private async Task<Stream> GetSubtitles(GetSubtitle request)
+        private  Task<Stream> GetSubtitles(GetSubtitle request)
         {
-            return await _subtitleEncoder.GetSubtitles(request.Id,
+            return  _subtitleEncoder.GetSubtitles(request.Id,
                 request.MediaSourceId,
                 request.Index,
                 request.Format,
                 request.StartPositionTicks,
                 request.EndPositionTicks,
                 request.CopyTimestamps,
-                CancellationToken.None).ConfigureAwait(false);
+                CancellationToken.None);
         }
 
         public object Get(SearchRemoteSubtitles request)
