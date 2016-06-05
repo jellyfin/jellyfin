@@ -179,7 +179,7 @@ namespace MediaBrowser.Api.Subtitles
 
                 var endPositionTicks = Math.Min(runtime, positionTicks + segmentLengthTicks);
 
-                var url = string.Format("stream.vtt?CopyTimestamps=true,StartPositionTicks={0}&EndPositionTicks={1}&api_key={2}",
+                var url = string.Format("stream.vtt?CopyTimestamps=true&AddVttTimeMap=true&StartPositionTicks={0}&EndPositionTicks={1}&api_key={2}",
                     positionTicks.ToString(CultureInfo.InvariantCulture),
                     endPositionTicks.ToString(CultureInfo.InvariantCulture),
                     accessToken);
@@ -219,7 +219,7 @@ namespace MediaBrowser.Api.Subtitles
                 {
                     var text = reader.ReadToEnd();
 
-                    if (string.Equals(request.Format, "vtt", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(request.Format, "vtt", StringComparison.OrdinalIgnoreCase) && request.AddVttTimeMap)
                     {
                         text = text.Replace("WEBVTT", "WEBVTT\nX-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000");
                     }
