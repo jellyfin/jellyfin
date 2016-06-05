@@ -9,8 +9,8 @@
 
     <div class="detailPageContent" style="position:relative;">
 
-        <paper-fab class="btnPlay detailFloatingButton hide" icon="play-arrow" title="${ButtonPlay}"></paper-fab>
-        <paper-fab class="btnFloatingRecord detailFloatingButton hide" icon="videocam" title="${ButtonRecord}"></paper-fab>
+        <button is="emby-button" type="button" class="btnPlay detailFloatingButton hide fab" title="${ButtonPlay}"><iron-icon icon="play-arrow"></iron-icon></button>
+        <button is="emby-button" type="button" class="btnFloatingRecord detailFloatingButton hide fab" title="${ButtonRecord}"><iron-icon icon="videocam"></iron-icon></button>
 
         <div class="detailImageContainer">
         </div>
@@ -130,7 +130,7 @@
                     <p id="awardSummary"></p>
                     <div class="paperList" id="criticRatingSummary">
                         <paper-icon-item>
-                            <paper-fab mini style="background-color: transparent; background-repeat: no-repeat; background-position: center center; background-size: cover; background-image: url(css/images/fresh.png);" item-icon></paper-fab>
+                            <button is="emby-button" type="button" class="mini fab" style="background-color: transparent; background-repeat: no-repeat; background-position: center center; background-size: cover; background-image: url(css/images/fresh.png);" item-icon></button>
                             <paper-item-body three-line>
                                 <div>TOMATOMETER®</div>
                                 <div class="criticRatingScore"></div>

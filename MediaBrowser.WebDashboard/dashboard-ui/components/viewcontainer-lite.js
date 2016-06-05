@@ -209,6 +209,8 @@ define(['browser'], function (browser) {
 
     function animate(newAnimatedPage, oldAnimatedPage, transition, isBack) {
 
+        transition = transition || 'fade';
+
         if (enableAnimation() && oldAnimatedPage && newAnimatedPage.animate) {
             if (transition == 'slide') {
                 return slide(newAnimatedPage, oldAnimatedPage, transition, isBack);

@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'paper-item', 'paper-input', 'paper-fab', 'paper-item-body', 'paper-icon-button-light'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'paper-item', 'paper-input', 'emby-button', 'paper-item-body', 'paper-icon-button-light'], function (dialogHelper, $) {
 
     var systemInfo;
     function getSystemInfo() {
@@ -219,7 +219,7 @@
 
                 var html = '';
                 html += '<h2 class="dialogHeader">';
-                html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
+                html += '<button type="button" is="emby-button" icon="arrow-back" class="fab mini btnCloseDialog" tabindex="-1"><iron-icon icon="arrow-back"></iron-icon></button>';
                 html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + (options.header || Globalize.translate('HeaderSelectPath')) + '</div>';
                 html += '</h2>';
 

@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'loading', 'jQuery', 'paper-fab', 'emby-input', 'paper-checkbox', 'paper-icon-button-light'], function (dialogHelper, loading, $) {
+﻿define(['dialogHelper', 'loading', 'jQuery', 'emby-input', 'paper-checkbox', 'paper-icon-button-light'], function (dialogHelper, loading, $) {
 
     var currentItem;
     var currentItemType;

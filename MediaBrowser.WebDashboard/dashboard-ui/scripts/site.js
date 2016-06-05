@@ -2564,7 +2564,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/itemdetails.html',
-            dependencies: ['emby-button', 'tileitemcss', 'scripts/livetvcomponents', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light'],
+            dependencies: ['emby-button', 'tileitemcss', 'scripts/livetvcomponents', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light'],
             controller: 'scripts/itemdetailpage',
             autoFocus: false,
             transition: 'fade'

@@ -1,6 +1,6 @@
 [is="emby-button"] {
     position: relative;
-    display: inline-flex;
+    display: inline-block;
     align-items: center;
     box-sizing: border-box;
     margin: 0 .29em;
@@ -30,12 +30,42 @@
     text-transform: uppercase;
 }
 
-    [is="emby-button"].raised {
+    [is="emby-button"].raised, [is="emby-button"].fab {
         box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
     }
 
+    [is="emby-button"].fab {
+        border-radius: 50%;
+        min-width: 56px;
+        min-height: 56px;
+        height: 5.2vh;
+        width: 5.2vh;
+        background-color: #444;
+        padding: .6em;
+        box-sizing: border-box;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: #fff !important;
+        margin: 0;
+    }
+
+        [is="emby-button"].fab.mini {
+            min-width: 40px !important;
+            min-height: 40px !important;
+            height: 3.3vh !important;
+            width: 3.3vh !important;
+        }
+
+        [is="emby-button"].fab iron-icon {
+            width: 100%;
+            height: 100%;
+            vertical-align: middle;
+        }
+
     [is="emby-button"].block {
-        display: flex;
+        display: block;
         align-items: center;
         justify-content: center;
         margin: .25em 0;
