@@ -101,5 +101,7 @@
     browser.tv = isTv();
     browser.operaTv = browser.tv && userAgent.toLowerCase().indexOf('opr/') != -1;
 
+    browser.noFlex = browser.tv && !browser.chrome && !browser.operaTv;
+
     return browser;
 });

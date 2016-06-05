@@ -1,0 +1,73 @@
+[is="emby-button"] {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    margin: 0 .29em;
+    background: transparent;
+    text-align: center;
+    font: inherit;
+    color: inherit;
+    outline-width: 0;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: pointer;
+    z-index: 0;
+    padding: 0.7em 0.57em;
+    font-weight: normal;
+    vertical-align: middle;
+    border: 0;
+    vertical-align: middle;
+    border-radius: 3px;
+    /* These are getting an outline in opera tv browsers, which run chrome 30 */
+    outline: none !important;
+    position: relative;
+    overflow: hidden;
+}
+
+    [is="emby-button"].raised {
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+    }
+
+    [is="emby-button"].block {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: .25em .29em;
+        width: 100%;
+    }
+
+    [is="emby-button"].raised:focus {
+        box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.4);
+        transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    [is="emby-button"] iron-icon + span {
+        margin-left: .5em;
+    }
+
+.ripple-effect {
+    position: absolute;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    top: 50%;
+    left: 50%;
+    background: white;
+    animation: ripple-animation 2s;
+    opacity: 0.4;
+}
+
+@keyframes ripple-animation {
+    from {
+        transform: none;
+        opacity: 0.4;
+    }
+
+    to {
+        transform: scale(100);
+        opacity: 0;
+    }
+}

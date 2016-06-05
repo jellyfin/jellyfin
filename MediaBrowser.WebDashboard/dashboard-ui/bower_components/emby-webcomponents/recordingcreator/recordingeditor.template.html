@@ -4,10 +4,10 @@
         ${Edit}
     </div>
     <div style="margin-left:auto; display: flex; align-items: center; justify-content: center;">
-        <paper-button class="btnHeaderSave accent" tabindex="-1">
+        <button is="emby-button" type="button" class="btnHeaderSave accent" tabindex="-1">
             <iron-icon icon="check"></iron-icon>
             <span>${Save}</span>
-        </paper-button>
+        </button>
     </div>
 </div>
 
@@ -33,7 +33,7 @@
                 <input is="emby-input" type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}" />
             </div>
             <br />
-            <paper-button raised class="btnSubmit block" autofocus><iron-icon icon="mediainfo:fiber-manual-record"></iron-icon><span>${Save}</span></paper-button>
+            <button is="emby-button" type="submit" class="raised btnSubmit block" autofocus><iron-icon icon="mediainfo:fiber-manual-record"></iron-icon><span>${Save}</span></button>
         </form>
     </div>
 </div>

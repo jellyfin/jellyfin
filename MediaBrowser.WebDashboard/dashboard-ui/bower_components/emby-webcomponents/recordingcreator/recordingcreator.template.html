@@ -55,7 +55,7 @@
                     </div>
                     <br />
                 </div>
-                <br/>
+                <br />
                 <div class="inputContainer">
                     <input is="emby-input" type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}" />
                 </div>
@@ -71,9 +71,9 @@
             <div class="supporterContainer hide">
                 <p>${MessageActiveSubscriptionRequiredSeriesRecordings}</p>
                 <p class="supporterTrial hide">${HeaderEnjoyDayTrial}</p>
-                <a class="clearLink btnSupporter hide" href="http://emby.media/premiere" target="_blank"><paper-button raised class="accent block"><iron-icon icon="nav:check"></iron-icon><span>${HeaderBecomeProjectSupporter}</span></paper-button></a>
+                <button is="emby-button" type="button" raised class="btnSupporter hide raised accent block"><iron-icon icon="nav:check"></iron-icon><span>${HeaderBecomeProjectSupporter}</span></button>
             </div>
-            <paper-button raised class="btnSubmit block" autofocus><iron-icon icon="mediainfo:fiber-manual-record"></iron-icon><span>${Record}</span></paper-button>
+            <button is="emby-button" type="submit" class="raised btnSubmit block" autofocus><iron-icon icon="mediainfo:fiber-manual-record"></iron-icon><span>${Record}</span></button>
         </div>
     </form>
 </div>

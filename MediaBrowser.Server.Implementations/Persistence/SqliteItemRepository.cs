@@ -975,7 +975,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (type == null)
             {
-                Logger.Debug("Unknown type {0}", typeString);
+                //Logger.Debug("Unknown type {0}", typeString);
 
                 return null;
             }

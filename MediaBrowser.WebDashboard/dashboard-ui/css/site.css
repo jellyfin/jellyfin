@@ -67,6 +67,11 @@ body {
         overflow-y: auto !important;
     }
 
+.mainAnimatedPage {
+    /* Have to override because it breaks scrolling when dependant on window scroll */
+    contain: style !important;
+}
+
 iron-icon {
     min-width: 24px;
     min-height: 24px;
@@ -748,6 +753,6 @@ emby-collapsible > .style-scope {
     padding: 1em 1.25em;
 }
 
-#editItemMetadataPage #txtOverview .paper-input-input {  
-    max-height: 90px;  
+#editItemMetadataPage #txtOverview .paper-input-input {
+    max-height: 90px;
 }

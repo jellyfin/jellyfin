@@ -1479,6 +1479,7 @@ var AppInfo = {};
         }
 
         AppInfo.supportsExternalPlayers = true;
+        AppInfo.enableAppLayouts = true;
 
         if (isCordova) {
             AppInfo.enableAppLayouts = true;
@@ -1775,6 +1776,7 @@ var AppInfo = {};
 
         define("libjass", [bowerPath + "/libjass/libjass", "css!" + bowerPath + "/libjass/libjass"], returnFirstDependency);
 
+        define("emby-button", [embyWebComponentsBowerPath + "/emby-button/emby-button"], returnFirstDependency);
         define("emby-input", [embyWebComponentsBowerPath + "/emby-input/emby-input"], returnFirstDependency);
         define("emby-select", [embyWebComponentsBowerPath + "/emby-select/emby-select"], returnFirstDependency);
         define("collectionEditor", [embyWebComponentsBowerPath + "/collectioneditor/collectioneditor"], returnFirstDependency);
