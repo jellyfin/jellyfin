@@ -8,7 +8,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Studio
     /// </summary>
-    public class Studio : BaseItem, IItemByName, IHasTags
+    public class Studio : BaseItem, IItemByName
     {
         public override List<string> GetUserDataKeys()
         {

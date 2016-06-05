@@ -9,50 +9,50 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The primary
         /// </summary>
-        Primary,
+        Primary = 0,
         /// <summary>
         /// The art
         /// </summary>
-        Art,
+        Art = 1,
         /// <summary>
         /// The backdrop
         /// </summary>
-        Backdrop,
+        Backdrop = 2,
         /// <summary>
         /// The banner
         /// </summary>
-        Banner,
+        Banner = 3,
         /// <summary>
         /// The logo
         /// </summary>
-        Logo,
+        Logo = 4,
         /// <summary>
         /// The thumb
         /// </summary>
-        Thumb,
+        Thumb = 5,
         /// <summary>
         /// The disc
         /// </summary>
-        Disc,
+        Disc = 6,
         /// <summary>
         /// The box
         /// </summary>
-        Box,
+        Box = 7,
         /// <summary>
         /// The screenshot
         /// </summary>
-        Screenshot,
+        Screenshot = 8,
         /// <summary>
         /// The menu
         /// </summary>
-        Menu,
+        Menu = 9,
         /// <summary>
         /// The chapter image
         /// </summary>
-        Chapter,
+        Chapter = 10,
         /// <summary>
         /// The box rear
         /// </summary>
-        BoxRear
+        BoxRear = 11
     }
 }

@@ -6,6 +6,5 @@ namespace MediaBrowser.Server.Implementations.Persistence
     public interface IDbConnector
     {
         Task<IDbConnection> Connect(string dbPath);
-        void BindSimilarityScoreFunction(IDbConnection connection);
     }
 }

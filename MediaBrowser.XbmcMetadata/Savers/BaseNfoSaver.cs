@@ -736,19 +736,15 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("studio", studio);
             }
 
-            var hasTags = item as IHasTags;
-            if (hasTags != null)
+            foreach (var tag in item.Tags)
             {
-                foreach (var tag in hasTags.Tags)
+                if (item is MusicAlbum || item is MusicArtist)
                 {
-                    if (item is MusicAlbum || item is MusicArtist)
-                    {
-                        writer.WriteElementString("style", tag);
-                    }
-                    else
-                    {
-                        writer.WriteElementString("tag", tag);
-                    }
+                    writer.WriteElementString("style", tag);
+                }
+                else
+                {
+                    writer.WriteElementString("tag", tag);
                 }
             }
 

@@ -593,20 +593,16 @@ namespace MediaBrowser.LocalMetadata.Savers
                 builder.Append("</Studios>");
             }
 
-            var hasTags = item as IHasTags;
-            if (hasTags != null)
+            if (item.Tags.Count > 0)
             {
-                if (hasTags.Tags.Count > 0)
+                builder.Append("<Tags>");
+
+                foreach (var tag in item.Tags)
                 {
-                    builder.Append("<Tags>");
-
-                    foreach (var tag in hasTags.Tags)
-                    {
-                        builder.Append("<Tag>" + SecurityElement.Escape(tag) + "</Tag>");
-                    }
-
-                    builder.Append("</Tags>");
+                    builder.Append("<Tag>" + SecurityElement.Escape(tag) + "</Tag>");
                 }
+
+                builder.Append("</Tags>");
             }
 
             if (item.Keywords.Count > 0)

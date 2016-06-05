@@ -111,24 +111,6 @@ namespace MediaBrowser.Server.Implementations.TV
                 .Select(i => GetNextUp(i, currentUser))
                 // Include if an episode was found, and either the series is not unwatched or the specific series was requested
                 .Where(i => i.Item1 != null && (!i.Item3 || !string.IsNullOrWhiteSpace(request.SeriesId)))
-                //.OrderByDescending(i =>
-                //{
-                //    var episode = i.Item1;
-
-                //    var seriesUserData = _userDataManager.GetUserData(user, episode.Series);
-
-                //    if (seriesUserData.IsFavorite)
-                //    {
-                //        return 2;
-                //    }
-
-                //    if (seriesUserData.Likes.HasValue)
-                //    {
-                //        return seriesUserData.Likes.Value ? 1 : -1;
-                //    }
-
-                //    return 0;
-                //})
                 .OrderByDescending(i => i.Item2)
                 .ThenByDescending(i => i.Item1.PremiereDate ?? DateTime.MinValue)
                 .Select(i => i.Item1);
@@ -143,9 +125,8 @@ namespace MediaBrowser.Server.Implementations.TV
         private Tuple<Episode, DateTime, bool> GetNextUp(Series series, User user)
         {
             // Get them in display order, then reverse
-            var allEpisodes = series.GetSeasons(user, true, true)
-                .Where(i => !i.IndexNumber.HasValue || i.IndexNumber.Value != 0)
-                .SelectMany(i => i.GetEpisodes(user))
+            var allEpisodes = series.GetEpisodes(user, false, false)
+                .Where(i => !i.ParentIndexNumber.HasValue || i.ParentIndexNumber.Value != 0)
                 .Reverse()
                 .ToList();
 
@@ -153,7 +134,7 @@ namespace MediaBrowser.Server.Implementations.TV
             var lastWatchedDate = DateTime.MinValue;
             Episode nextUp = null;
 
-            var includeMissing = user.Configuration.DisplayMissingEpisodes;
+            var unplayedEpisodes = new List<Episode>();
 
             // Go back starting with the most recent episodes
             foreach (var episode in allEpisodes)
@@ -172,10 +153,9 @@ namespace MediaBrowser.Server.Implementations.TV
                 }
                 else
                 {
-                    if (!episode.IsVirtualUnaired && (includeMissing || !episode.IsMissingEpisode))
-                    {
-                        nextUp = episode;
-                    }
+                    unplayedEpisodes.Add(episode);
+
+                    nextUp = episode;
                 }
             }
 
@@ -184,7 +164,15 @@ namespace MediaBrowser.Server.Implementations.TV
                 return new Tuple<Episode, DateTime, bool>(nextUp, lastWatchedDate, false);
             }
 
-            var firstEpisode = allEpisodes.LastOrDefault(i => !i.IsVirtualUnaired && (includeMissing || !i.IsMissingEpisode) && !i.IsPlayed(user));
+            Episode firstEpisode = null;
+            // Find the first unplayed episode. Start from the back of the list since they're in reverse order
+            for (var i = unplayedEpisodes.Count - 1; i >= 0; i--)
+            {
+                var unplayedEpisode = unplayedEpisodes[i];
+
+                firstEpisode = unplayedEpisode;
+                break;
+            }
 
             // Return the first episode
             return new Tuple<Episode, DateTime, bool>(firstEpisode, DateTime.MinValue, true);

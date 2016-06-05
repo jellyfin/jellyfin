@@ -380,7 +380,8 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 new OmdbEpisodeProviderMigration(ServerConfigurationManager),
                 new MovieDbEpisodeProviderMigration(ServerConfigurationManager),
-                new DbMigration(ServerConfigurationManager, TaskManager)
+                new DbMigration(ServerConfigurationManager, TaskManager),
+                new FolderViewSettingMigration(ServerConfigurationManager, UserManager)
             };
 
             foreach (var task in migrations)
@@ -568,7 +569,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             SubtitleEncoder = new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager);
             RegisterSingleInstance(SubtitleEncoder);
-            
+
             await displayPreferencesRepo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
             await ConfigureUserDataRepositories().ConfigureAwait(false);
             await itemRepo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
