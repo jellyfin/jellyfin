@@ -80,9 +80,9 @@ namespace MediaBrowser.Model.LiveTv
 
         public ListingsProviderInfo()
         {
-            NewsCategories = new string[] { "news" };
+            NewsCategories = new string[] { "news", "journalism", "documentary", "current affairs" };
             SportsCategories = new string[] { "sports", "basketball", "baseball", "football" };
-            KidsCategories = new string[] { "kids", "family", "children" };
+            KidsCategories = new string[] { "kids", "family", "children", "childrens", "disney" };
             MovieCategories = new string[] { "movie" };
             EnabledTuners = new string[] { };
             EnableAllTuners = true;
