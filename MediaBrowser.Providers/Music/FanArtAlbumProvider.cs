@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
@@ -151,6 +152,7 @@ namespace MediaBrowser.Providers.Music
             }
         }
 
+        private Regex _regex_http = new Regex("^http://");
         private void PopulateImages(List<RemoteImageInfo> list,
             List<FanartArtistProvider.FanartArtistImage> images,
             ImageType type,
@@ -178,7 +180,7 @@ namespace MediaBrowser.Providers.Music
                         Width = width,
                         Height = height,
                         ProviderName = Name,
-                        Url = url,
+                        Url = _regex_http.Replace(url, "https://", 1),
                         Language = i.lang
                     };
 
