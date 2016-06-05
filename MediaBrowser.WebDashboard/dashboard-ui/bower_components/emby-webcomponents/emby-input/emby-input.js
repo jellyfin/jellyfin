@@ -8,16 +8,18 @@
 
         var descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
 
-        var baseSetMethod = descriptor.set;
-        descriptor.set = function (value) {
-            baseSetMethod.call(this, value);
-            this.dispatchEvent(new CustomEvent('valueset', {
-                bubbles: false,
-                cancelable: false
-            }));
-        }
+        if (descriptor.configurable) {
+            var baseSetMethod = descriptor.set;
+            descriptor.set = function (value) {
+                baseSetMethod.call(this, value);
+                this.dispatchEvent(new CustomEvent('valueset', {
+                    bubbles: false,
+                    cancelable: false
+                }));
+            }
 
-        Object.defineProperty(HTMLInputElement.prototype, 'value', descriptor);
+            Object.defineProperty(HTMLInputElement.prototype, 'value', descriptor);
+        }
     }
 
     EmbyInputPrototype.createdCallback = function () {
