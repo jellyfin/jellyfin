@@ -15,12 +15,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
     public class XmlTvListingsProvider : IListingsProvider
     {
         private string _language = null;
-        private Dictionary<string, List<string>> _categoryMappings = new Dictionary<string, List<string>>(){
-            { "Movie", new List<String>() { "Movie", "Film" } },
-            //{ "Sports", new List<String>() { "Sports", "Football", "Rugby", "Soccer" } },
-            //{ "Kids", new List<String>() { "Childrens", "Children", "Kids", "Disney" } },
-            //{ "News", new List<String>() { "News", "Journalism", "Documentary", "Current Affairs" } },
-        };
 
         private Dictionary<string, string> _channelMappings = new Dictionary<string, string>(){
             { "1", "UK_RT_2667" },
