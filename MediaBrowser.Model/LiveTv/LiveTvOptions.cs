@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -77,6 +78,7 @@ namespace MediaBrowser.Model.LiveTv
         public string[] SportsCategories { get; set; }
         public string[] KidsCategories { get; set; }
         public string[] MovieCategories { get; set; }
+        public NameValuePair[] ChannelMappings { get; set; }
 
         public ListingsProviderInfo()
         {
@@ -86,6 +88,7 @@ namespace MediaBrowser.Model.LiveTv
             MovieCategories = new string[] { "movie" };
             EnabledTuners = new string[] { };
             EnableAllTuners = true;
+            ChannelMappings = new NameValuePair[] {};
         }
     }
 }
