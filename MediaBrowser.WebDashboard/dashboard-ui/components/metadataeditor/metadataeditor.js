@@ -133,7 +133,6 @@
                 CriticRating: $('#txtCriticRating', form).val(),
                 CriticRatingSummary: $('#txtCriticRatingSummary', form).val(),
                 IndexNumber: $('#txtIndexNumber', form).val() || null,
-                DisplaySpecialsWithSeasons: form.querySelector('#chkDisplaySpecialsInline').checked,
                 AbsoluteEpisodeNumber: $('#txtAbsoluteEpisodeNumber', form).val(),
                 DvdEpisodeNumber: $('#txtDvdEpisodeNumber', form).val(),
                 DvdSeasonNumber: $('#txtDvdSeasonNumber', form).val(),
@@ -739,12 +738,6 @@
             $('#fldParentIndexNumber', context).hide();
         }
 
-        if (item.Type == "Series") {
-            $('#fldDisplaySpecialsInline', context).show();
-        } else {
-            $('#fldDisplaySpecialsInline', context).hide();
-        }
-
         if (item.Type == "BoxSet") {
             $('#fldDisplayOrder', context).show();
 
@@ -811,8 +804,6 @@
             $('.providerSettingsContainer', context).show();
         }
         populateInternetProviderSettings(context, item, item.LockedFields);
-
-        context.querySelector('#chkDisplaySpecialsInline').checked = item.DisplaySpecialsWithSeasons || false;
 
         $('#txtPath', context).val(item.Path || '');
         $('#txtName', context).val(item.Name || "");

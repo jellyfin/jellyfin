@@ -7,9 +7,16 @@
         function getListingProvider(config, id) {
 
             if (config && id) {
-                return config.ListingProviders.filter(function (i) {
+
+                var result = config.ListingProviders.filter(function(i) {
                     return i.Id == id;
-                })[0] || getListingProvider();
+                })[0];
+                
+                if (result) {
+                    return Promise.resolve(result);
+                }
+
+                return getListingProvider();
             }
 
             return ApiClient.getJSON(ApiClient.getUrl('LiveTv/ListingProviders/Default'));

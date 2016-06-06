@@ -600,7 +600,7 @@ progress {
 
 .btnUserItemRating {
     vertical-align: middle;
-    color: #aaa;
+    color: #aaa !important;
     display: inline-block !important;
 }
 

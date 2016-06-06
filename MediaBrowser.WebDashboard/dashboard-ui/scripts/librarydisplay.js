@@ -33,7 +33,9 @@
             ApiClient.getServerConfiguration().then(function (config) {
 
                 config.EnableFolderView = form.querySelector('.chkFolderView').checked;
-                config.EnableGroupingIntoCollections = form.querySelector('.chkGroupMoviesIntoCollections').checked;
+                config.EnableGroupingIntoCollections = form.querySelector('.chkDisplaySpecialsWithinSeasons').checked;
+                config.DisplaySpecialsWithinSeasons = form.querySelector('.chkGroupMoviesIntoCollections').checked;
+
                 ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
             });
 
@@ -45,6 +47,7 @@
             ApiClient.getServerConfiguration().then(function (config) {
                 view.querySelector('.chkFolderView').checked = config.EnableFolderView;
                 view.querySelector('.chkGroupMoviesIntoCollections').checked = config.EnableGroupingIntoCollections;
+                view.querySelector('.chkDisplaySpecialsWithinSeasons').checked = config.DisplaySpecialsWithinSeasons;
             });
         }
 
