@@ -31,7 +31,6 @@ namespace MediaBrowser.Controller.Entities.TV
             RemoteTrailers = new List<MediaUrl>();
             LocalTrailerIds = new List<Guid>();
             RemoteTrailerIds = new List<Guid>();
-            DisplaySpecialsWithSeasons = true;
         }
 
         [IgnoreDataMember]
@@ -57,8 +56,6 @@ namespace MediaBrowser.Controller.Entities.TV
                 return true;
             }
         }
-
-        public bool DisplaySpecialsWithSeasons { get; set; }
 
         public List<Guid> LocalTrailerIds { get; set; }
         public List<Guid> RemoteTrailerIds { get; set; }
@@ -357,7 +354,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 return GetEpisodes(user, parentSeason, includeMissingEpisodes, includeVirtualUnairedEpisodes);
             }
 
-            var episodes = FilterEpisodesBySeason(allSeriesEpisodes, parentSeason, DisplaySpecialsWithSeasons);
+            var episodes = FilterEpisodesBySeason(allSeriesEpisodes, parentSeason, ConfigurationManager.Configuration.DisplaySpecialsWithinSeasons);
 
             if (!includeMissingEpisodes)
             {

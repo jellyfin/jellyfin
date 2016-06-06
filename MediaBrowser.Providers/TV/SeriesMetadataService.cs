@@ -76,11 +76,6 @@ namespace MediaBrowser.Providers.TV
             {
                 targetItem.AirDays = sourceItem.AirDays;
             }
-
-            if (mergeMetadataSettings)
-            {
-                targetItem.DisplaySpecialsWithSeasons = sourceItem.DisplaySpecialsWithSeasons;
-            }
         }
     }
 }
