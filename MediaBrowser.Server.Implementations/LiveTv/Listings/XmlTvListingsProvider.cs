@@ -17,14 +17,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
     {
         private readonly IServerConfigurationManager _config;
 
-        private Dictionary<string, string> _channelMappings = new Dictionary<string, string>(){
-            { "1", "UK_RT_2667" },
-            { "2", "UK_RT_116" },
-            { "3", "UK_RT_2118" },
-            { "4", "UK_RT_2056" },
-            { "5", "UK_RT_134" }
-        };
-
         public XmlTvListingsProvider(IServerConfigurationManager config)
         {
             _config = config;
@@ -50,11 +42,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
         {
             var reader = new XmlTvReader(info.Path, GetLanguage(), null);
             string mappedChannel = channelNumber;
-
-            if (_channelMappings.ContainsKey(channelNumber))
-	        {
-		        mappedChannel = _channelMappings[channelNumber];
-	        }
 
             var results = reader.GetProgrammes(mappedChannel, startDateUtc, endDateUtc, cancellationToken);
             return Task.FromResult(results.Select(p => new ProgramInfo()

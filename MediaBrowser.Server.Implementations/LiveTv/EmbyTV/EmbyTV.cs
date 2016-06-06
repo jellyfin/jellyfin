@@ -625,7 +625,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                 _logger.Debug("Getting programs for channel {0}-{1} from {2}-{3}", channel.Number, channel.Name, provider.Item1.Name, provider.Item2.ListingsId ?? string.Empty);
 
-                var programs = await provider.Item1.GetProgramsAsync(provider.Item2, channel.Number, channel.Name, startDateUtc, endDateUtc, cancellationToken)
+                var channelMappings = GetChannelMappings(provider.Item2);
+                var channelNumber = channel.Number;
+                string mappedChannelNumber;
+                if (channelMappings.TryGetValue(channelNumber, out mappedChannelNumber))
+                {
+                    _logger.Debug("Found mapped channel on provider {0}. Tuner channel number: {1}, Mapped channel number: {2}", provider.Item1.Name, channelNumber, mappedChannelNumber);
+                    channelNumber = mappedChannelNumber;
+                }
+
+                var programs = await provider.Item1.GetProgramsAsync(provider.Item2, channelNumber, channel.Name, startDateUtc, endDateUtc, cancellationToken)
                         .ConfigureAwait(false);
 
                 var list = programs.ToList();
@@ -645,6 +654,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
 
             return new List<ProgramInfo>();
+        }
+
+        private Dictionary<string, string> GetChannelMappings(ListingsProviderInfo info)
+        {
+            var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var mapping in info.ChannelMappings)
+            {
+                dict[mapping.Name] = mapping.Value;
+            }
+
+            return dict;
         }
 
         private List<Tuple<IListingsProvider, ListingsProviderInfo>> GetListingProviders()
