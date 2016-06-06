@@ -11,6 +11,7 @@
         };
 
         self.destroy = function () {
+            clearCurrentTimeUpdateInterval();
             itemShortcuts.off(options.element);
             items = {};
         };
@@ -21,6 +22,7 @@
         var cellCurationMinutes = 30;
         var cellDurationMs = cellCurationMinutes * 60 * 1000;
         var msPerDay = 86400000;
+        var totalRendererdMs = msPerDay;
 
         var currentDate;
 
@@ -54,6 +56,46 @@
 
         function hideLoading() {
             loading.hide();
+        }
+
+        var currentTimeUpdateInterval;
+        var currentTimeIndicatorElement;
+        function startCurrentTimeUpdateInterval() {
+            clearCurrentTimeUpdateInterval();
+
+            //currentTimeUpdateInterval = setInterval(updateCurrentTimeIndicator, 1000);
+            currentTimeUpdateInterval = setInterval(updateCurrentTimeIndicator, 60000);
+            updateCurrentTimeIndicator();
+        }
+
+        function clearCurrentTimeUpdateInterval() {
+            var interval = currentTimeUpdateInterval;
+            if (interval) {
+                clearInterval(interval);
+            }
+            currentTimeUpdateInterval = null;
+            currentTimeIndicatorElement = null;
+        }
+
+        function updateCurrentTimeIndicator() {
+
+            if (!currentTimeIndicatorElement) {
+                currentTimeIndicatorElement = options.element.querySelector('.currentTimeIndicator');
+            }
+
+            var dateDifference = new Date().getTime() - currentDate.getTime();
+            var pct = dateDifference > 0 ? (dateDifference / totalRendererdMs) : 0;
+            pct = Math.min(pct, 1);
+
+            if (pct <= 0 || pct >= 1) {
+                currentTimeIndicatorElement.classList.add('hide');
+            } else {
+                currentTimeIndicatorElement.classList.remove('hide');
+
+                //pct *= 100;
+                //pct = 100 - pct;
+                currentTimeIndicatorElement.style.width = (pct * 100) + '%';
+            }
         }
 
         function getChannelLimit(context) {
@@ -159,6 +201,13 @@
                 // Add 30 mins
                 startDate.setTime(startDate.getTime() + cellDurationMs);
             }
+
+            html += '<div class="currentTimeIndicator hide">';
+            html += '<div class="currentTimeIndicatorBar">';
+            html += '</div>';
+            html += '<iron-icon icon="nav:arrow-drop-down"></iron-icon>';
+            html += '</div>';
+
             html += '</div>';
 
             return html;
@@ -436,6 +485,7 @@
             var startDate = date;
             var endDate = new Date(startDate.getTime() + msPerDay);
             context.querySelector('.timeslotHeaders').innerHTML = getTimeslotHeadersHtml(startDate, endDate);
+            startCurrentTimeUpdateInterval();
             items = {};
             renderPrograms(context, date, channels, programs);
 
@@ -521,6 +571,8 @@
         }
 
         function changeDate(page, date) {
+
+            clearCurrentTimeUpdateInterval();
 
             var newStartDate = normalizeDateToTimeslot(date);
             currentDate = newStartDate;
