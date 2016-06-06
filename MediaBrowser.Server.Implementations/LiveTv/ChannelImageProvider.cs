@@ -41,7 +41,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var service = _liveTvManager.Services.FirstOrDefault(i => string.Equals(i.Name, liveTvItem.ServiceName, StringComparison.OrdinalIgnoreCase));
 
-            if (service != null)
+            if (service != null && !item.HasImage(ImageType.Primary))
             {
                 try
                 {

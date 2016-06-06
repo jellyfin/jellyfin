@@ -99,7 +99,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (videoRequest != null)
             {
                 state.OutputVideoCodec = state.Options.VideoCodec;
-                state.OutputVideoBitrate = GetVideoBitrateParamValue(state.Options, state.VideoStream);
+                state.OutputVideoBitrate = GetVideoBitrateParamValue(state.Options, state.VideoStream, state.OutputVideoCodec);
 
                 if (state.OutputVideoBitrate.HasValue)
                 {
@@ -396,7 +396,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return request.AudioChannels;
         }
 
-        private int? GetVideoBitrateParamValue(EncodingJobOptions request, MediaStream videoStream)
+        private int? GetVideoBitrateParamValue(EncodingJobOptions request, MediaStream videoStream, string outputVideoCodec)
         {
             var bitrate = request.VideoBitRate;
 
@@ -419,6 +419,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         bitrate = Math.Min(bitrate.Value, videoStream.BitRate.Value);
                     }
                 }
+            }
+
+            if (bitrate.HasValue)
+            {
+                var inputVideoCodec = videoStream == null ? null : videoStream.Codec;
+                bitrate = ResolutionNormalizer.ScaleBitrate(bitrate.Value, inputVideoCodec, outputVideoCodec);
             }
 
             return bitrate;

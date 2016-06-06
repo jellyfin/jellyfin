@@ -315,9 +315,8 @@ namespace MediaBrowser.Controller.Session
         /// <summary>
         /// Revokes the user tokens.
         /// </summary>
-        /// <param name="userId">The user identifier.</param>
         /// <returns>Task.</returns>
-        Task RevokeUserTokens(string userId);
+        Task RevokeUserTokens(string userId, string currentAccessToken);
 
         /// <summary>
         /// Revokes the token.

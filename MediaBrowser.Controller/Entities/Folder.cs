@@ -875,7 +875,7 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (UserViewBuilder.CollapseBoxSetItems(query, this, query.User))
+            if (UserViewBuilder.CollapseBoxSetItems(query, this, query.User, ConfigurationManager))
             {
                 Logger.Debug("Query requires post-filtering due to CollapseBoxSetItems");
                 return true;
@@ -983,7 +983,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items, InternalItemsQuery query)
         {
-            return UserViewBuilder.PostFilterAndSort(items, this, null, query, LibraryManager);
+            return UserViewBuilder.PostFilterAndSort(items, this, null, query, LibraryManager, ConfigurationManager);
         }
 
         public virtual IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
