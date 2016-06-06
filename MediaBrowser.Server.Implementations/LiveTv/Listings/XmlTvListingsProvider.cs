@@ -41,9 +41,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
         public Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelNumber, string channelName, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
             var reader = new XmlTvReader(info.Path, GetLanguage(), null);
-            string mappedChannel = channelNumber;
 
-            var results = reader.GetProgrammes(mappedChannel, startDateUtc, endDateUtc, cancellationToken);
+            var results = reader.GetProgrammes(channelNumber, startDateUtc, endDateUtc, cancellationToken);
             return Task.FromResult(results.Select(p => new ProgramInfo()
             {
                 ChannelId = p.ChannelId,
@@ -61,10 +60,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 IsSeries = p.IsSeries,
                 IsRepeat = p.IsRepeat,
                 // IsPremiere = !p.PreviouslyShown.HasValue,
-                IsKids = p.Categories.Any(info.KidsCategories.Contains),
-                IsMovie = p.Categories.Any(info.MovieCategories.Contains),
-                IsNews = p.Categories.Any(info.NewsCategories.Contains),
-                IsSports = p.Categories.Any(info.SportsCategories.Contains),
+                IsKids = p.Categories.Any(c => info.KidsCategories.Contains(c, StringComparer.InvariantCultureIgnoreCase)),
+                IsMovie = p.Categories.Any(c => info.MovieCategories.Contains(c, StringComparer.InvariantCultureIgnoreCase)),
+                IsNews = p.Categories.Any(c => info.NewsCategories.Contains(c, StringComparer.InvariantCultureIgnoreCase)),
+                IsSports = p.Categories.Any(c => info.SportsCategories.Contains(c, StringComparer.InvariantCultureIgnoreCase)),
                 ImageUrl = p.Icon != null && !String.IsNullOrEmpty(p.Icon.Source) ? p.Icon.Source : null,
                 HasImage = p.Icon != null && !String.IsNullOrEmpty(p.Icon.Source),
                 OfficialRating = p.Rating != null && !String.IsNullOrEmpty(p.Rating.Value) ? p.Rating.Value : null,
