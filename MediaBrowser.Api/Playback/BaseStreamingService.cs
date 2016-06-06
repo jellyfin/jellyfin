@@ -1207,7 +1207,7 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        private int? GetVideoBitrateParamValue(VideoStreamRequest request, MediaStream videoStream)
+        private int? GetVideoBitrateParamValue(VideoStreamRequest request, MediaStream videoStream, string outputVideoCodec)
         {
             var bitrate = request.VideoBitRate;
 
@@ -1230,6 +1230,12 @@ namespace MediaBrowser.Api.Playback
                         bitrate = Math.Min(bitrate.Value, videoStream.BitRate.Value);
                     }
                 }
+            }
+
+            if (bitrate.HasValue)
+            {
+                var inputVideoCodec = videoStream == null ? null : videoStream.Codec;
+                bitrate = ResolutionNormalizer.ScaleBitrate(bitrate.Value, inputVideoCodec, outputVideoCodec);
             }
 
             return bitrate;
@@ -1692,7 +1698,7 @@ namespace MediaBrowser.Api.Playback
             if (videoRequest != null)
             {
                 state.OutputVideoCodec = state.VideoRequest.VideoCodec;
-                state.OutputVideoBitrate = GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream);
+                state.OutputVideoBitrate = GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
 
                 if (state.OutputVideoBitrate.HasValue)
                 {

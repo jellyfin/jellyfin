@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -73,17 +74,21 @@ namespace MediaBrowser.Model.LiveTv
 
         public string[] EnabledTuners { get; set; }
         public bool EnableAllTuners { get; set; }
-        public string[] NewsGenres { get; set; }
-        public string[] SportsGenres { get; set; }
-        public string[] KidsGenres { get; set; }
+        public string[] NewsCategories { get; set; }
+        public string[] SportsCategories { get; set; }
+        public string[] KidsCategories { get; set; }
+        public string[] MovieCategories { get; set; }
+        public NameValuePair[] ChannelMappings { get; set; }
 
         public ListingsProviderInfo()
         {
-            NewsGenres = new string[] { "news" };
-            SportsGenres = new string[] { "sports", "basketball", "baseball", "football" };
-            KidsGenres = new string[] { "kids", "family", "children" };
+            NewsCategories = new string[] { "news", "journalism", "documentary", "current affairs" };
+            SportsCategories = new string[] { "sports", "basketball", "baseball", "football" };
+            KidsCategories = new string[] { "kids", "family", "children", "childrens", "disney" };
+            MovieCategories = new string[] { "movie" };
             EnabledTuners = new string[] { };
             EnableAllTuners = true;
+            ChannelMappings = new NameValuePair[] {};
         }
     }
 }

@@ -18,6 +18,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -30,10 +32,10 @@ namespace MediaBrowser.Controller.Entities
         private readonly ILogger _logger;
         private readonly IUserDataManager _userDataManager;
         private readonly ITVSeriesManager _tvSeriesManager;
-        private readonly ICollectionManager _collectionManager;
+        private readonly IServerConfigurationManager _config;
         private readonly IPlaylistManager _playlistManager;
 
-        public UserViewBuilder(IUserViewManager userViewManager, ILiveTvManager liveTvManager, IChannelManager channelManager, ILibraryManager libraryManager, ILogger logger, IUserDataManager userDataManager, ITVSeriesManager tvSeriesManager, ICollectionManager collectionManager, IPlaylistManager playlistManager)
+        public UserViewBuilder(IUserViewManager userViewManager, ILiveTvManager liveTvManager, IChannelManager channelManager, ILibraryManager libraryManager, ILogger logger, IUserDataManager userDataManager, ITVSeriesManager tvSeriesManager, IServerConfigurationManager config, IPlaylistManager playlistManager)
         {
             _userViewManager = userViewManager;
             _liveTvManager = liveTvManager;
@@ -42,7 +44,7 @@ namespace MediaBrowser.Controller.Entities
             _logger = logger;
             _userDataManager = userDataManager;
             _tvSeriesManager = tvSeriesManager;
-            _collectionManager = collectionManager;
+            _config = config;
             _playlistManager = playlistManager;
         }
 
@@ -159,7 +161,7 @@ namespace MediaBrowser.Controller.Entities
                     return await GetTvGenres(queryParent, user, query).ConfigureAwait(false);
 
                 case SpecialFolder.TvGenre:
-                    return await GetTvGenreItems(queryParent, displayParent, user, query).ConfigureAwait(false);
+                    return GetTvGenreItems(queryParent, displayParent, user, query);
 
                 case SpecialFolder.TvResume:
                     return GetTvResume(queryParent, user, query);
@@ -740,7 +742,7 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(genres, parent, query);
         }
 
-        private async Task<QueryResult<BaseItem>> GetTvGenreItems(Folder queryParent, Folder displayParent, User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetTvGenreItems(Folder queryParent, Folder displayParent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             query.ParentId = queryParent.Id;
@@ -769,7 +771,7 @@ namespace MediaBrowser.Controller.Entities
         {
             items = items.Where(i => Filter(i, query.User, query, _userDataManager, _libraryManager));
 
-            return PostFilterAndSort(items, queryParent, null, query, _libraryManager);
+            return PostFilterAndSort(items, queryParent, null, query, _libraryManager, _config);
         }
 
         public static bool FilterItem(BaseItem item, InternalItemsQuery query)
@@ -782,14 +784,15 @@ namespace MediaBrowser.Controller.Entities
             int? totalRecordLimit,
             InternalItemsQuery query)
         {
-            return PostFilterAndSort(items, queryParent, totalRecordLimit, query, _libraryManager);
+            return PostFilterAndSort(items, queryParent, totalRecordLimit, query, _libraryManager, _config);
         }
 
         public static QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items,
             BaseItem queryParent,
             int? totalRecordLimit,
             InternalItemsQuery query,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            IServerConfigurationManager configurationManager)
         {
             var user = query.User;
 
@@ -798,7 +801,7 @@ namespace MediaBrowser.Controller.Entities
                 query.IsVirtualUnaired,
                 query.IsUnaired);
 
-            items = CollapseBoxSetItemsIfNeeded(items, query, queryParent, user);
+            items = CollapseBoxSetItemsIfNeeded(items, query, queryParent, user, configurationManager);
 
             // This must be the last filter
             if (!string.IsNullOrEmpty(query.AdjacentTo))
@@ -812,14 +815,15 @@ namespace MediaBrowser.Controller.Entities
         public static IEnumerable<BaseItem> CollapseBoxSetItemsIfNeeded(IEnumerable<BaseItem> items,
             InternalItemsQuery query,
             BaseItem queryParent,
-            User user)
+            User user,
+            IServerConfigurationManager configurationManager)
         {
             if (items == null)
             {
                 throw new ArgumentNullException("items");
             }
 
-            if (CollapseBoxSetItems(query, queryParent, user))
+            if (CollapseBoxSetItems(query, queryParent, user, configurationManager))
             {
                 items = BaseItem.CollectionManager.CollapseItemsWithinBoxSets(items, user);
             }
@@ -852,7 +856,8 @@ namespace MediaBrowser.Controller.Entities
 
         public static bool CollapseBoxSetItems(InternalItemsQuery query,
             BaseItem queryParent,
-            User user)
+            User user,
+            IServerConfigurationManager configurationManager)
         {
             // Could end up stuck in a loop like this
             if (queryParent is BoxSet)
@@ -864,7 +869,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (!param.HasValue)
             {
-                if (user != null && !user.Configuration.GroupMoviesIntoBoxSets)
+                if (user != null && !configurationManager.Configuration.EnableGroupingIntoCollections)
                 {
                     return false;
                 }

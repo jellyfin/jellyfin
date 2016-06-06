@@ -1270,6 +1270,7 @@
                     callback: function (id) {
 
                         var items = selectedItems.slice(0);
+                        var serverId = ApiClient.serverInfo().Id;
 
                         switch (id) {
 
@@ -1277,7 +1278,8 @@
                                 require(['collectionEditor'], function (collectionEditor) {
 
                                     new collectionEditor().show({
-                                        items: items
+                                        items: items,
+                                        serverId: serverId
                                     });
                                 });
                                 hideSelections();

@@ -86,4 +86,6 @@ Prism.languages.insertBefore('coffeescript', 'keyword', {
 	'property': /(?!\d)\w+(?=\s*:(?!:))/
 });
 
+delete Prism.languages.coffeescript['template-string'];
+
 }(Prism));

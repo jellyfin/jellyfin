@@ -23,9 +23,10 @@
 
                 getListingProvider(config, providerId).then(function (info) {
                     page.querySelector('.txtPath').value = info.Path || '';
-                    page.querySelector('.txtKids').value = (info.KidsGenres || []).join('|');
-                    page.querySelector('.txtNews').value = (info.NewsGenres || []).join('|');
-                    page.querySelector('.txtSports').value = (info.SportsGenres || []).join('|');
+                    page.querySelector('.txtKids').value = (info.KidsCategories || []).join('|');
+                    page.querySelector('.txtNews').value = (info.NewsCategories || []).join('|');
+                    page.querySelector('.txtSports').value = (info.SportsCategories || []).join('|');
+                    page.querySelector('.txtMovies').value = (info.MovieCategories || []).join('|');
 
                     page.querySelector('.chkAllTuners').checked = info.EnableAllTuners;
 
@@ -41,7 +42,7 @@
             });
         }
 
-        function getGenres(txtInput) {
+        function getCategories(txtInput) {
 
             var value = txtInput.value;
 
@@ -64,9 +65,10 @@
 
                 info.Path = page.querySelector('.txtPath').value;
 
-                info.KidsGenres = getGenres(page.querySelector('.txtKids'));
-                info.NewsGenres = getGenres(page.querySelector('.txtNews'));
-                info.SportsGenres = getGenres(page.querySelector('.txtSports'));
+                info.MovieCategories = getCategories(page.querySelector('.txtMovies'));
+                info.KidsCategories = getCategories(page.querySelector('.txtKids'));
+                info.NewsCategories = getCategories(page.querySelector('.txtNews'));
+                info.SportsCategories = getCategories(page.querySelector('.txtSports'));
 
                 info.EnableAllTuners = page.querySelector('.chkAllTuners').checked;
                 info.EnabledTuners = info.EnableAllTuners ? [] : $('.chkTuner', page).get().filter(function (i) {

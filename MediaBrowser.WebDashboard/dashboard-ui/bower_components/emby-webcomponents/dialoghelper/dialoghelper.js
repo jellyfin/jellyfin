@@ -8,7 +8,7 @@
             return true;
         }
 
-        if (browser.edge && !browser.mobile) {
+        if (browser.edge) {
             return true;
         }
 

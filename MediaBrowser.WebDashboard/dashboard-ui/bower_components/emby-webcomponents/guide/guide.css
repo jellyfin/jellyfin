@@ -105,6 +105,46 @@
     position: relative;
 }
 
+.timeslotHeadersInner {
+    position: relative;
+}
+
+.currentTimeIndicatorBar {
+    position: absolute;
+    bottom: .05em;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    display: flex;
+    margin-left: .65vh;
+    background-color: #52B54B;
+    height: 2px;
+    transform-origin: left;
+    transition: transform 500ms ease-out;
+}
+
+.currentTimeIndicatorArrowContainer {
+    position: absolute;
+    bottom: -1.35vh;
+    width: 100%;
+    color: #52B54B;
+    margin-left: .65vh;
+    transform-origin: left;
+    transition: transform 500ms ease-out;
+}
+
+.layout-tv .currentTimeIndicatorBar, .layout-tv .currentTimeIndicatorArrowContainer {
+    /* Need to account for the scrollbar not being there */
+    left: 4px;
+}
+
+.currentTimeIndicatorArrow {
+    width: 4vh;
+    height: 4vh;
+    color: #52B54B;
+    margin-left: -2vh;
+}
+
 .channelPrograms, .timeslotHeadersInner {
     width: 1800vw;
 }
