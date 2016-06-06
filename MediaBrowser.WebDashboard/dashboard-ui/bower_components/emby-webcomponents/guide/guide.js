@@ -59,7 +59,8 @@
         }
 
         var currentTimeUpdateInterval;
-        var currentTimeIndicatorElement;
+        var currentTimeIndicatorBar;
+        var currentTimeIndicatorArrow;
         function startCurrentTimeUpdateInterval() {
             clearCurrentTimeUpdateInterval();
 
@@ -74,13 +75,17 @@
                 clearInterval(interval);
             }
             currentTimeUpdateInterval = null;
-            currentTimeIndicatorElement = null;
+            currentTimeIndicatorBar = null;
+            currentTimeIndicatorArrow = null;
         }
 
         function updateCurrentTimeIndicator() {
 
-            if (!currentTimeIndicatorElement) {
-                currentTimeIndicatorElement = options.element.querySelector('.currentTimeIndicator');
+            if (!currentTimeIndicatorBar) {
+                currentTimeIndicatorBar = options.element.querySelector('.currentTimeIndicatorBar');
+            }
+            if (!currentTimeIndicatorArrow) {
+                currentTimeIndicatorArrow = options.element.querySelector('.currentTimeIndicatorArrowContainer');
             }
 
             var dateDifference = new Date().getTime() - currentDate.getTime();
@@ -88,13 +93,17 @@
             pct = Math.min(pct, 1);
 
             if (pct <= 0 || pct >= 1) {
-                currentTimeIndicatorElement.classList.add('hide');
+                currentTimeIndicatorBar.classList.add('hide');
+                currentTimeIndicatorArrow.classList.add('hide');
             } else {
-                currentTimeIndicatorElement.classList.remove('hide');
+                currentTimeIndicatorBar.classList.remove('hide');
+                currentTimeIndicatorArrow.classList.remove('hide');
 
                 //pct *= 100;
                 //pct = 100 - pct;
-                currentTimeIndicatorElement.style.width = (pct * 100) + '%';
+                //currentTimeIndicatorElement.style.width = (pct * 100) + '%';
+                currentTimeIndicatorBar.style.transform = 'scaleX(' + pct + ')';
+                currentTimeIndicatorArrow.style.transform = 'translateX(' + (pct * 100) + '%)';
             }
         }
 
@@ -202,12 +211,10 @@
                 startDate.setTime(startDate.getTime() + cellDurationMs);
             }
 
-            html += '<div class="currentTimeIndicator hide">';
-            html += '<div class="currentTimeIndicatorBar">';
+            html += '<div class="currentTimeIndicatorBar hide">';
             html += '</div>';
-            html += '<iron-icon icon="nav:arrow-drop-down"></iron-icon>';
-            html += '</div>';
-
+            html += '<div class="currentTimeIndicatorArrowContainer hide">';
+            html += '<iron-icon class="currentTimeIndicatorArrow" icon="nav:arrow-drop-down"></iron-icon>';
             html += '</div>';
 
             return html;
