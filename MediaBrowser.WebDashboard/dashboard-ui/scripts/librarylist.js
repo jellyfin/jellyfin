@@ -1593,7 +1593,7 @@
             cardProgress.innerHTML = progressHtml;
         }
         else {
-            cardProgress = card.querySelector('.cardFooter');
+            cardProgress = card.querySelector('.cardProgress');
             if (cardProgress) {
                 cardProgress.parentNode.removeChild(cardProgress);
             }

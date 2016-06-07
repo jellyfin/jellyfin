@@ -1088,11 +1088,14 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     padding-top: 1px;
 }
 
-@media all and (min-height: 480px) {
+@media all and (max-height: 480px) {
 
     .alphabetPicker {
-        display: block;
+        display: none;
     }
+}
+
+@media all and (min-height: 480px) {
 
     .itemsContainerWithAlphaPicker {
         margin-right: 20px;
@@ -1114,38 +1117,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
     .itemsContainerWithAlphaPicker, .absolutePageTabContent .itemsContainerWithAlphaPicker {
         margin-right: 0;
-    }
-}
-
-@media all and (min-height: 600px) {
-
-    .alphabetPicker a {
-        padding-top: 2px;
-        padding-bottom: 2px;
-    }
-}
-
-@media all and (min-height: 650px) {
-
-    .alphabetPicker a {
-        padding-top: 3px;
-        padding-bottom: 3px;
-    }
-}
-
-@media all and (min-height: 700px) {
-
-    .alphabetPicker a {
-        padding-top: 4px;
-        padding-bottom: 4px;
-    }
-}
-
-@media all and (min-height: 750px) {
-
-    .alphabetPicker a {
-        padding-top: 5px;
-        padding-bottom: 5px;
     }
 }
 

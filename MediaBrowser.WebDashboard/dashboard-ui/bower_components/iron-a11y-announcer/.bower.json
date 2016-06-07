@@ -30,14 +30,14 @@
     "web-component-tester": "polymer/web-component-tester#^3.4.0"
   },
   "ignore": [],
-  "homepage": "https://github.com/PolymerElements/iron-a11y-announcer",
+  "homepage": "https://github.com/polymerelements/iron-a11y-announcer",
   "_release": "1.0.4",
   "_resolution": {
     "type": "version",
     "tag": "v1.0.4",
     "commit": "5ce3eb8c4282bb53cd72e348858dc6be6b4c50b9"
   },
-  "_source": "git://github.com/PolymerElements/iron-a11y-announcer.git",
+  "_source": "git://github.com/polymerelements/iron-a11y-announcer.git",
   "_target": "^1.0.0",
-  "_originalSource": "PolymerElements/iron-a11y-announcer"
+  "_originalSource": "polymerelements/iron-a11y-announcer"
 }

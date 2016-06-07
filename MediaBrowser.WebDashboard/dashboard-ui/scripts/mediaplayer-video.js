@@ -432,11 +432,27 @@
                 nowPlayingTabButtons[i].addEventListener('click', onTabButtonClick);
             }
 
-            elem.querySelector('.chapterCard').addEventListener('click', function () {
+            elem.addEventListener('click', function (e) {
 
-                self.seek(parseInt(this.getAttribute('data-position')));
+                var chapterCard = parentWithClass(e.target, 'chapterCard');
+                if (chapterCard) {
+                    self.seek(parseInt(chapterCard.getAttribute('data-position')));
+                }
             });
         };
+
+        function parentWithClass(elem, className) {
+
+            while (!elem.classList || !elem.classList.contains(className)) {
+                elem = elem.parentNode;
+
+                if (!elem) {
+                    return null;
+                }
+            }
+
+            return elem;
+        }
 
         function getNowPlayingTabsHtml(item) {
 
