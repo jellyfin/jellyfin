@@ -460,7 +460,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 @media all and (max-width: 600px) {
 
     .detailFloatingButton {
-        right: 15px!important;
+        right: 15px !important;
     }
 }
 
@@ -1015,7 +1015,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .alphabetPicker {
     position: fixed;
-    right: 5px;
+    right: 0;
     bottom: 0;
     z-index: 999;
     text-align: center;
@@ -1117,6 +1117,30 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
     .itemsContainerWithAlphaPicker, .absolutePageTabContent .itemsContainerWithAlphaPicker {
         margin-right: 0;
+    }
+}
+
+@media all and (max-height: 650px) {
+
+    .vertical.alphabetPicker .alphaPickerButton {
+        padding-top: 2px!important;
+        padding-bottom: 2px!important;
+    }
+}
+
+@media all and (max-height: 600px) {
+
+    .vertical.alphabetPicker .alphaPickerButton {
+        padding-top: 1px !important;
+        padding-bottom: 1px !important;
+    }
+}
+
+@media all and (max-height: 550px) {
+
+    .vertical.alphabetPicker .alphaPickerButton {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
     }
 }
 
