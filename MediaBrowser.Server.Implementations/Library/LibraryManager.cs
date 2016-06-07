@@ -362,6 +362,10 @@ namespace MediaBrowser.Server.Implementations.Library
                     return;
                 }
             }
+            if (item is Photo)
+            {
+                return;
+            }
             //if (!(item is Folder))
             //{
             //    return;

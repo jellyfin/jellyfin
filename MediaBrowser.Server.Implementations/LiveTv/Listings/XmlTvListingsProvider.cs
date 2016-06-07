@@ -71,31 +71,36 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             }));
         }
 
-        public async Task AddMetadata(ListingsProviderInfo info, List<ChannelInfo> channels, CancellationToken cancellationToken)
+        public Task AddMetadata(ListingsProviderInfo info, List<ChannelInfo> channels, CancellationToken cancellationToken)
         {
             // Add the channel image url
             var reader = new XmlTvReader(info.Path, GetLanguage(), null);
             var results = reader.GetChannels().ToList();
 
             if (channels != null && channels.Count > 0)
-	        {
-                channels.ForEach(c => {
+            {
+                channels.ForEach(c =>
+                {
                     var match = results.FirstOrDefault(r => r.Id == c.Id);
                     if (match != null && match.Icon != null && !String.IsNullOrEmpty(match.Icon.Source))
                     {
                         c.ImageUrl = match.Icon.Source;
                     }
                 });
-	        }
+            }
+
+            return Task.FromResult(true);
         }
 
-        public async Task Validate(ListingsProviderInfo info, bool validateLogin, bool validateListings)
+        public Task Validate(ListingsProviderInfo info, bool validateLogin, bool validateListings)
         {
-            // Check that the path or url is valid. If not, throw a file not found exception
-            if (!File.Exists(info.Path))
+            // Assume all urls are valid. check files for existence
+            if (!info.Path.StartsWith("http", StringComparison.OrdinalIgnoreCase) && !File.Exists(info.Path))
             {
                 throw new FileNotFoundException("Could not find the XmlTv file specified:", info.Path);
             }
+
+            return Task.FromResult(true);
         }
 
         public Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string country, string location)
