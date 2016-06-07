@@ -88,7 +88,7 @@
 
 [is=paper-icon-button-light] {
     position: relative;
-    display: inline-block;
+    display: inline-flex;
     align-items: center;
     box-sizing: border-box;
     margin: 0 .29em;
@@ -104,8 +104,8 @@
     user-select: none;
     cursor: pointer;
     z-index: 0;
-    min-width: 40px;
-    min-height: 40px;
+    min-width: 24px;
+    min-height: 24px;
     width: 40px;
     height: 40px;
     padding: 8px;
@@ -126,6 +126,8 @@
 .layout-tv [is=paper-icon-button-light] {
     width: 4vh;
     height: 4vh;
+    min-width: 40px;
+    min-height: 40px;
 }
 
 [is=paper-icon-button-light] iron-icon {

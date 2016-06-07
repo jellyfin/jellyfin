@@ -1,4 +1,4 @@
-﻿define(['datetime', 'jQuery', 'paper-icon-button-light'], function (datetime, $) {
+﻿define(['datetime', 'paper-icon-button-light'], function (datetime) {
 
     var query = {
 
@@ -88,15 +88,31 @@
             html += '</div>';
         }
 
-        var elem = $('#items', context).html(html);
+        var elem = context.querySelector('#items');
+        elem.innerHTML = html;
 
-        $('.btnCancelSeries', elem).on('click', function () {
+        elem.querySelector('.paperList').addEventListener('click', function (e) {
 
-            deleteSeriesTimer(context, this.getAttribute('data-seriestimerid'));
-
+            var btnCancelSeries = parentWithClass(e.target, 'btnCancelSeries');
+            if (btnCancelSeries) {
+                deleteSeriesTimer(context, btnCancelSeries.getAttribute('data-seriestimerid'));
+            }
         });
 
         Dashboard.hideLoadingMsg();
+    }
+
+    function parentWithClass(elem, className) {
+
+        while (!elem.classList || !elem.classList.contains(className)) {
+            elem = elem.parentNode;
+
+            if (!elem) {
+                return null;
+            }
+        }
+
+        return elem;
     }
 
     function reload(context) {
