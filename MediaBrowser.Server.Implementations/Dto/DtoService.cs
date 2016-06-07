@@ -1466,11 +1466,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.AirTime = series.AirTime;
                 dto.SeriesStatus = series.Status;
 
-                if (fields.Contains(ItemFields.Settings))
-                {
-                    dto.DisplaySpecialsWithSeasons = series.DisplaySpecialsWithSeasons;
-                }
-
                 dto.AnimeSeriesIndex = series.AnimeSeriesIndex;
             }
 
