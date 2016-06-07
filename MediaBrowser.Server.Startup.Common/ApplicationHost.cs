@@ -833,17 +833,40 @@ namespace MediaBrowser.Server.Startup.Common
 
         private IEnumerable<string> GetUrlPrefixes()
         {
-            var prefixes = new List<string>
-                {
-                    "http://+:" + ServerConfigurationManager.Configuration.HttpServerPortNumber + "/"
-                };
+            var hosts = ServerConfigurationManager.Configuration.LocalNetworkAddresses.ToList();
 
-            if (!string.IsNullOrWhiteSpace(CertificatePath))
+            if (hosts.Count == 0)
             {
-                prefixes.Add("https://+:" + ServerConfigurationManager.Configuration.HttpsPortNumber + "/");
+                hosts.Add("+");
             }
 
-            return prefixes;
+            if (!hosts.Contains("+", StringComparer.OrdinalIgnoreCase))
+            {
+                if (!hosts.Contains("localhost", StringComparer.OrdinalIgnoreCase))
+                {
+                    hosts.Add("localhost");
+                }
+
+                if (!hosts.Contains("127.0.0.1", StringComparer.OrdinalIgnoreCase))
+                {
+                    hosts.Add("127.0.0.1");
+                }
+            }
+
+            return hosts.SelectMany(i =>
+            {
+                var prefixes = new List<string>
+                {
+                    "http://"+i+":" + ServerConfigurationManager.Configuration.HttpServerPortNumber + "/"
+                };
+
+                if (!string.IsNullOrWhiteSpace(CertificatePath))
+                {
+                    prefixes.Add("https://" + i + ":" + ServerConfigurationManager.Configuration.HttpsPortNumber + "/");
+                }
+
+                return prefixes;
+            });
         }
 
         /// <summary>
