@@ -3,12 +3,14 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.LiveTv;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Emby.XmlTv.Classes;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.Listings
@@ -16,10 +18,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
     public class XmlTvListingsProvider : IListingsProvider
     {
         private readonly IServerConfigurationManager _config;
+        private readonly IHttpClient _httpClient;
 
-        public XmlTvListingsProvider(IServerConfigurationManager config)
+        public XmlTvListingsProvider(IServerConfigurationManager config, IHttpClient httpClient)
         {
             _config = config;
+            _httpClient = httpClient;
         }
 
         public string Name
@@ -37,13 +41,39 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             return _config.Configuration.PreferredMetadataLanguage;
         }
 
-        // TODO: Should this method be async?
-        public Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelNumber, string channelName, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
+        private async Task<string> GetXml(string path, CancellationToken cancellationToken)
         {
-            var reader = new XmlTvReader(info.Path, GetLanguage(), null);
+            if (!path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                return path;
+            }
+
+            var cacheFilename = DateTime.UtcNow.DayOfYear.ToString(CultureInfo.InvariantCulture) + "_" + DateTime.UtcNow.Hour.ToString(CultureInfo.InvariantCulture) + ".xml";
+            var cacheFile = Path.Combine(_config.ApplicationPaths.CachePath, "xmltv", cacheFilename);
+            if (File.Exists(cacheFile))
+            {
+                return cacheFile;
+            }
+
+            var tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
+            {
+                CancellationToken = cancellationToken,
+                Url = path
+
+            }).ConfigureAwait(false);
+            File.Copy(tempFile, cacheFile, true);
+
+            return cacheFile;
+        }
+
+        // TODO: Should this method be async?
+        public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelNumber, string channelName, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
+        {
+            var path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
+            var reader = new XmlTvReader(path, GetLanguage(), null);
 
             var results = reader.GetProgrammes(channelNumber, startDateUtc, endDateUtc, cancellationToken);
-            return Task.FromResult(results.Select(p => new ProgramInfo()
+            return results.Select(p => new ProgramInfo()
             {
                 ChannelId = p.ChannelId,
                 EndDate = p.EndDate,
@@ -68,7 +98,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 HasImage = p.Icon != null && !String.IsNullOrEmpty(p.Icon.Source),
                 OfficialRating = p.Rating != null && !String.IsNullOrEmpty(p.Rating.Value) ? p.Rating.Value : null,
                 CommunityRating = p.StarRating.HasValue ? p.StarRating.Value : (float?)null
-            }));
+            });
         }
 
         public Task AddMetadata(ListingsProviderInfo info, List<ChannelInfo> channels, CancellationToken cancellationToken)
