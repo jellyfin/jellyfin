@@ -460,7 +460,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 @media all and (max-width: 600px) {
 
     .detailFloatingButton {
-        right: 15px!important;
+        right: 15px !important;
     }
 }
 
@@ -1015,7 +1015,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .alphabetPicker {
     position: fixed;
-    right: 5px;
+    right: 0;
     bottom: 0;
     z-index: 999;
     text-align: center;
@@ -1088,11 +1088,14 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     padding-top: 1px;
 }
 
-@media all and (min-height: 480px) {
+@media all and (max-height: 480px) {
 
     .alphabetPicker {
-        display: block;
+        display: none;
     }
+}
+
+@media all and (min-height: 480px) {
 
     .itemsContainerWithAlphaPicker {
         margin-right: 20px;
@@ -1117,35 +1120,27 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-@media all and (min-height: 600px) {
+@media all and (max-height: 650px) {
 
-    .alphabetPicker a {
-        padding-top: 2px;
-        padding-bottom: 2px;
+    .vertical.alphabetPicker .alphaPickerButton {
+        padding-top: 2px!important;
+        padding-bottom: 2px!important;
     }
 }
 
-@media all and (min-height: 650px) {
+@media all and (max-height: 600px) {
 
-    .alphabetPicker a {
-        padding-top: 3px;
-        padding-bottom: 3px;
+    .vertical.alphabetPicker .alphaPickerButton {
+        padding-top: 1px !important;
+        padding-bottom: 1px !important;
     }
 }
 
-@media all and (min-height: 700px) {
+@media all and (max-height: 550px) {
 
-    .alphabetPicker a {
-        padding-top: 4px;
-        padding-bottom: 4px;
-    }
-}
-
-@media all and (min-height: 750px) {
-
-    .alphabetPicker a {
-        padding-top: 5px;
-        padding-bottom: 5px;
+    .vertical.alphabetPicker .alphaPickerButton {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
     }
 }
 
