@@ -123,6 +123,10 @@
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 
+    [is=paper-icon-button-light][disabled] {
+        opacity: .3;
+    }
+
 .layout-tv [is=paper-icon-button-light] {
     width: 4vh;
     height: 4vh;

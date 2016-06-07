@@ -84,6 +84,7 @@
 
     .mediaButton.remoteControlButton, .mediaButton.muteButton, .mediaButton.unmuteButton {
         height: 26px;
+        width: 26px;
     }
 
 .nowPlayingDoubleText {
@@ -127,6 +128,7 @@
 
 .toggleRepeatButton {
     height: 32px;
+    width: 32px;
 }
 
 .repeatActive {

@@ -846,7 +846,7 @@ namespace MediaBrowser.Api.Playback
                             if (MediaEncoder.SupportsDecoder("h264_qsv"))
                             {
                                 // Seeing stalls and failures with decoding. Not worth it compared to encoding.
-                                //return "-c:v h264_qsv ";
+                                return "-c:v h264_qsv ";
                             }
                             break;
                         case "mpeg2video":

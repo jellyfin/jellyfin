@@ -2365,5 +2365,7 @@
     "XmlTvNewsCategoriesHelp": "Programs with these categories will be displayed as news programs. Separate multiple with '|'.",
     "LabelKidsCategories": "Children's categories:",
     "XmlTvKidsCategoriesHelp": "Programs with these categories will be displayed as programs for children. Separate multiple with '|'.",
+    "LabelMovieCategories": "Movie categories:",
+    "XmlTvMovieCategoriesHelp": "Programs with these categories will be displayed as movies. Separate multiple with '|'.",
     "XmlTvPathHelp": "A path to an xml tv file. Emby will read this file and periodically check it for updates. You are responsible for creating and updating the file."
 }

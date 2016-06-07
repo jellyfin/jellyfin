@@ -651,7 +651,7 @@ progress {
 
     .supporterPromotion:not(.inlineSupporterPromotion) {
         position: absolute;
-        top: 70px;
+        top: 110px;
         right: 20px;
         margin: 0;
     }

@@ -2440,7 +2440,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/dashboardhosting.html',
-            dependencies: ['paper-checkbox', 'paper-input', 'emby-button'],
+            dependencies: ['paper-checkbox', 'emby-input', 'emby-button'],
             autoFocus: false,
             roles: 'admin',
             controller: 'scripts/dashboardhosting'
@@ -2838,7 +2838,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/nowplaying.html',
-            dependencies: ['paper-icon-button-light', 'paper-slider', 'emby-button'],
+            dependencies: ['paper-icon-button-light', 'paper-slider', 'emby-button', 'emby-input'],
             controller: 'scripts/nowplayingpage',
             autoFocus: false,
             transition: 'fade'

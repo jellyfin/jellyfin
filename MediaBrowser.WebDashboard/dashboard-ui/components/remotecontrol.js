@@ -1,4 +1,4 @@
-﻿define(['browser', 'datetime', 'jQuery', 'libraryBrowser', 'paper-fab', 'paper-slider'], function (browser, datetime, $, libraryBrowser) {
+﻿define(['browser', 'datetime', 'jQuery', 'libraryBrowser'], function (browser, datetime, $, libraryBrowser) {
 
     function showSlideshowMenu(context) {
         require(['scripts/slideshow'], function () {

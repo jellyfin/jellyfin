@@ -1732,7 +1732,7 @@
     "StatusSuccess": "Success",
     "MessageFileWillBeDeleted": "The following file will be deleted:",
     "MessageSureYouWishToProceed": "Are you sure you wish to proceed?",
-    "MessageDuplicatesWillBeDeleted": "In addition the following duplicates will be deleted:",
+    "MessageDuplicatesWillBeDeleted": "In addition the following dupliates will be deleted:",
     "MessageFollowingFileWillBeMovedFrom": "The following file will be moved from:",
     "MessageDestinationTo": "to:",
     "HeaderSelectWatchFolder": "Select Watch Folder",
@@ -2365,5 +2365,7 @@
     "XmlTvNewsCategoriesHelp": "Programs with these categories will be displayed as news programs. Separate multiple with '|'.",
     "LabelKidsCategories": "Children's categories:",
     "XmlTvKidsCategoriesHelp": "Programs with these categories will be displayed as programs for children. Separate multiple with '|'.",
+    "LabelMovieCategories": "Movie categories:",
+    "XmlTvMovieCategoriesHelp": "Programs with these categories will be displayed as movies. Separate multiple with '|'.",
     "XmlTvPathHelp": "A path to an xml tv file. Emby will read this file and periodically check it for updates. You are responsible for creating and updating the file."
 }
