@@ -831,9 +831,24 @@ namespace MediaBrowser.Server.Startup.Common
 
         private string CertificatePath { get; set; }
 
+        private string NormalizeConfiguredLocalAddress(string address)
+        {
+            var index = address.Trim('/').IndexOf('/');
+
+            if (index != -1)
+            {
+                address = address.Substring(index + 1);
+            }
+
+            return address.Trim('/');
+        }
         private IEnumerable<string> GetUrlPrefixes()
         {
-            var hosts = ServerConfigurationManager.Configuration.LocalNetworkAddresses.ToList();
+            var hosts = ServerConfigurationManager
+                .Configuration
+                .LocalNetworkAddresses
+                .Select(NormalizeConfiguredLocalAddress)
+                .ToList();
 
             if (hosts.Count == 0)
             {
