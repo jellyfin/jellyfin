@@ -67,7 +67,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value><c>true</c> if [enable case sensitive item ids]; otherwise, <c>false</c>.</value>
         public bool EnableCaseSensitiveItemIds { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the metadata path.
         /// </summary>
@@ -155,7 +155,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The dashboard source path.</value>
         public string DashboardSourcePath { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the image saving convention.
         /// </summary>
@@ -201,12 +201,14 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableFolderView { get; set; }
         public bool EnableGroupingIntoCollections { get; set; }
         public bool DisplaySpecialsWithinSeasons { get; set; }
+        public string[] LocalNetworkAddresses { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
         public ServerConfiguration()
         {
+            LocalNetworkAddresses = new string[] { };
             Migrations = new string[] { };
 
             EnableCustomPathSubFolders = true;
