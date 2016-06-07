@@ -171,15 +171,6 @@ suite('Polymer.IronA11yKeysBehavior', function() {
       MockInteractions.pressSpace(keys);
 
       expect(keys.keyCount).to.be.equal(1);
-
-      MockInteractions.pressAndReleaseKeyOn(keys, 27, [], 'Esc');
-      expect(keys.keyCount).to.be.equal(2);
-
-      MockInteractions.pressAndReleaseKeyOn(keys, 27, [], 'Escape');
-      expect(keys.keyCount).to.be.equal(3);
-
-      MockInteractions.pressAndReleaseKeyOn(keys, 27, []);
-      expect(keys.keyCount).to.be.equal(4);
     });
 
     test('trigger the handler when the specified key is pressed together with a modifier', function() {
@@ -191,10 +182,20 @@ suite('Polymer.IronA11yKeysBehavior', function() {
     });
 
     test('handles special character @', function() {
-      var event = new CustomEvent('keydown');
-      event.key = '@';
-      keys.dispatchEvent(event);
+      MockInteractions.pressAndReleaseKeyOn(keys, undefined, [], '@');
+
       expect(keys.keyCount).to.be.equal(1);
+    });
+
+    test('handles variations of Esc key', function() {
+      MockInteractions.pressAndReleaseKeyOn(keys, undefined, [], 'Esc');
+      expect(keys.keyCount).to.be.equal(1);
+
+      MockInteractions.pressAndReleaseKeyOn(keys, undefined, [], 'Escape');
+      expect(keys.keyCount).to.be.equal(2);
+
+      MockInteractions.pressAndReleaseKeyOn(keys, 27, [], '');
+      expect(keys.keyCount).to.be.equal(3);
     });
 
     test('do not trigger the handler for non-specified keys', function() {

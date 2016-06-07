@@ -4,6 +4,25 @@
     align-items: initial;
 }
 
+    .tvguide ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    .tvguide ::-webkit-scrollbar-button:start:decrement,
+    .tvguide ::-webkit-scrollbar-button:end:increment {
+        display: none;
+    }
+
+    .tvguide ::-webkit-scrollbar-track-piece {
+        background-color: #3b3b3b;
+    }
+
+    .tvguide ::-webkit-scrollbar-thumb:vertical, .tvguide ::-webkit-scrollbar-thumb:horizontal {
+        -webkit-border-radius: 2px;
+        background: #888 no-repeat center;
+    }
+
 .tvGuideHeader {
     white-space: nowrap;
     width: 100%;

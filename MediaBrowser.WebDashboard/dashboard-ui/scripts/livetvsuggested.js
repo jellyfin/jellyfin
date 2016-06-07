@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'libraryBrowser', 'scrollStyles'], function ($, libraryBrowser) {
+﻿define(['libraryBrowser', 'scrollStyles'], function (libraryBrowser) {
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;

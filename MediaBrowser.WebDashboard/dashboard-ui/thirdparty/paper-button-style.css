@@ -122,19 +122,11 @@ button[is="emby-button"].iconRight iron-icon {
     color: inherit !important;
 }
 
-button[is="emby-button"].mini {
-    min-width: initial;
-}
-
-button[is="emby-button"].mini {
+button[is="emby-button"].mini:not(.fab) {
     padding: 0.4em 0.7em;
 }
 
-    button[is="emby-button"].mini.noIcon {
-        padding: 0.4em 0.7em;
-    }
-
-    button[is="emby-button"].mini iron-icon {
+    button[is="emby-button"].mini:not(.fab) iron-icon {
         height: 20px;
         width: 20px;
     }
@@ -145,12 +137,9 @@ paper-toast {
 
 button[is="emby-button"].notext {
     min-width: 2.8em;
+    padding-left: .25em !important;
+    padding-right: .25em !important;
 }
-
-    button[is="emby-button"].notext .content {
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-    }
 
     button[is="emby-button"].notext iron-icon {
         margin-right: 0;
@@ -373,7 +362,7 @@ paper-input label, paper-textarea label {
 }
 
 .ui-body-a .inputLabel {
-    color: #656565;
+    color: #555;
 }
 
     .ui-body-a .inputLabel.focused:not(.blank) {
@@ -385,7 +374,7 @@ paper-input label, paper-textarea label {
 }
 
 .ui-body-a .paper-input-container-0 .input-content.paper-input-container label, .ui-body-a .paper-input-container-0 .input-content.paper-input-container .paper-input-label, .ui-body-a paper-textarea label, .ui-body-a .selectLabel, .ui-body-a .paperListLabel, .ui-body-a .fieldDescription {
-    color: #656565;
+    color: #555;
 }
 
 .ui-body-a .paper-input-container-0 .input-content.label-is-highlighted.paper-input-container label, .ui-body-a .paper-input-container-0 .input-content.label-is-highlighted.paper-input-container .paper-input-label {

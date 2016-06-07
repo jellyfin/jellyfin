@@ -200,6 +200,7 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableLocalizedGuids { get; set; }
         public bool EnableFolderView { get; set; }
         public bool EnableGroupingIntoCollections { get; set; }
+        public bool DisplaySpecialsWithinSeasons { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
@@ -210,6 +211,7 @@ namespace MediaBrowser.Model.Configuration
 
             EnableCustomPathSubFolders = true;
             EnableLocalizedGuids = true;
+            DisplaySpecialsWithinSeasons = true;
 
             ImageSavingConvention = ImageSavingConvention.Compatible;
             PublicPort = 8096;

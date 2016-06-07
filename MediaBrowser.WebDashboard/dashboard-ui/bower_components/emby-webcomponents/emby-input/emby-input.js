@@ -3,6 +3,7 @@
     var EmbyInputPrototype = Object.create(HTMLInputElement.prototype);
 
     var inputId = 0;
+    var supportsFloatingLabel = false;
 
     if (Object.getOwnPropertyDescriptor && Object.defineProperty) {
 
@@ -19,6 +20,7 @@
             }
 
             Object.defineProperty(HTMLInputElement.prototype, 'value', descriptor);
+            supportsFloatingLabel = true;
         }
     }
 
@@ -42,6 +44,10 @@
         var label = this.ownerDocument.createElement('label');
         label.innerHTML = this.getAttribute('label') || '';
         label.classList.add('inputLabel');
+
+        if (!supportsFloatingLabel) {
+            label.classList.add('nofloat');
+        }
 
         label.htmlFor = this.id;
         parentNode.insertBefore(label, this);
@@ -72,15 +78,6 @@
         this.addEventListener('valueset', onChange);
 
         onChange.call(this);
-    };
-
-    EmbyInputPrototype.detachedCallback = function () {
-
-        var observer = this.observer;
-        if (observer) {
-            observer.disconnect();
-            this.observer = null;
-        }
     };
 
     document.registerElement('emby-input', {

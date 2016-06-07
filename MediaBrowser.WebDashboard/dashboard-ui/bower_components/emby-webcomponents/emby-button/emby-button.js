@@ -53,6 +53,10 @@
 
         this.setAttribute('data-embybutton', 'true');
 
+        if (browser.safari) {
+            this.classList.add('noflex');
+        }
+
         this.addEventListener('keydown', onKeyDown);
         if (browser.safari) {
             this.addEventListener('click', animateButton);

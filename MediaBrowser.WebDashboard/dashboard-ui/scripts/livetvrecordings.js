@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'scripts/livetvcomponents'], function ($) {
+﻿define(['scripts/livetvcomponents'], function () {
 
     function getRecordingGroupHtml(group) {
 
@@ -33,9 +33,9 @@
     function renderRecordingGroups(context, groups) {
 
         if (groups.length) {
-            $('#recordingGroups', context).show();
+            context.querySelector('#recordingGroups').classList.remove('hide');
         } else {
-            $('#recordingGroups', context).hide();
+            context.querySelector('#recordingGroups').classList.add('hide');
         }
 
         var html = '';
@@ -73,7 +73,7 @@
         } else {
             recordingItems.classList.remove('hiddenScrollX');
         }
-         
+
         recordingItems.innerHTML = LibraryBrowser.getPosterViewHtml({
             items: recordings,
             shape: (enableScrollX() ? 'autooverflow' : 'auto'),

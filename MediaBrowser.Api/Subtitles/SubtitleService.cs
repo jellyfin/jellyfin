@@ -221,7 +221,7 @@ namespace MediaBrowser.Api.Subtitles
 
                     if (string.Equals(request.Format, "vtt", StringComparison.OrdinalIgnoreCase) && request.AddVttTimeMap)
                     {
-                        //text = text.Replace("WEBVTT", "WEBVTT\nX-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000");
+                        text = text.Replace("WEBVTT", "WEBVTT\nX-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000");
                     }
 
                     return ResultFactory.GetResult(text, MimeTypes.GetMimeType("file." + request.Format));

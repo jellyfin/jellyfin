@@ -25,7 +25,7 @@
 }
 
 .inputContainer {
-    margin-bottom: 1.5em;
+    margin-bottom: 2em;
 }
 
 .inputLabel {
@@ -33,7 +33,7 @@
     transition: all .2s ease-out;
 }
 
-    .inputLabel.blank {
+    .inputLabel.blank:not(.nofloat) {
         transform-origin: left top;
         transform: scale(1.4,1.4) translateY(80%);
     }

@@ -36,6 +36,9 @@ namespace MediaBrowser.Model.Entities
         /// <value>The comment.</value>
         public string Comment { get; set; }
 
+        public string TimeBase { get; set; }
+        public string CodecTimeBase { get; set; }
+
         public string Title { get; set; }
 
         public string DisplayTitle
