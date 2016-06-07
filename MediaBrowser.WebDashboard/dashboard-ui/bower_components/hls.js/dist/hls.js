@@ -4917,7 +4917,7 @@ var TSDemuxer = function () {
       pes.data = null;
       var debugString = '';
 
-      var pushAccesUnit = function pushAccesUnit() {
+      var pushAccesUnit = function () {
         if (units2.length) {
           // only push AVC sample if keyframe already found in this fragment OR
           //    keyframe found in last fragment (track.sps) AND
@@ -4931,7 +4931,7 @@ var TSDemuxer = function () {
           units2 = [];
           length = 0;
         }
-      };
+      }.bind(this);
 
       units.forEach(function (unit) {
         switch (unit.type) {

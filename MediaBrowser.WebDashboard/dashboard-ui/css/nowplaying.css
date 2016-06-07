@@ -2,13 +2,13 @@
     padding-top: 0 !important;
 }
 
-.nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
-    margin: 2px 1px;
-}
-
-    .nowPlayingPage .btnCommand:not(.hide), .nowPlayingPage .btnPlayStateCommand:not(.hide) {
-        display: inline-block !important;
+    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
+        margin: 2px 1px;
     }
+
+        .nowPlayingPage .btnCommand:not(.hide), .nowPlayingPage .btnPlayStateCommand:not(.hide) {
+            display: inline-block !important;
+        }
 
 .nowPlayingPageImage {
     height: 360px;
@@ -90,6 +90,13 @@
         width: 160px;
     }
 }
+
+.nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
+    width: 60px;
+    height: 60px;
+    background: #222;
+}
+
 
 @media all and (max-width: 600px) and (orientation: portrait) {
 

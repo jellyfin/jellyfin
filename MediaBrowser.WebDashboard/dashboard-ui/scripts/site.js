@@ -2838,7 +2838,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/nowplaying.html',
-            dependencies: ['paper-icon-button-light', 'paper-slider', 'emby-button'],
+            dependencies: ['paper-icon-button-light', 'paper-slider', 'emby-button', 'emby-input'],
             controller: 'scripts/nowplayingpage',
             autoFocus: false,
             transition: 'fade'

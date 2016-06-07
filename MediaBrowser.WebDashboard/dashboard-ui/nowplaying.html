@@ -35,24 +35,61 @@
 
                     <div>
 
-                        <paper-fab icon="skip-previous" class="btnPreviousTrack btnPlayStateCommand subdued" title="${ButtonPreviousTrack}"></paper-fab>
-                        <paper-fab icon="pause" class="btnPause btnPlayStateCommand subdued" title="${ButtonPause}"></paper-fab>
-                        <paper-fab icon="play-arrow" class="btnPlay btnPlayStateCommand subdued" title="${ButtonPlay}"></paper-fab>
-                        <paper-fab icon="stop" class="btnPlayStateCommand btnStop subdued" title="${ButtonStop}"></paper-fab>
-                        <paper-fab icon="skip-next" class="btnPlayStateCommand btnNextTrack subdued" title="${ButtonNextTrack}"></paper-fab>
+                        <button is="paper-icon-button-light" class="btnPreviousTrack btnPlayStateCommand" title="${ButtonPreviousTrack}">
+                            <iron-icon icon="skip-previous"></iron-icon>
+                        </button>
+
+                        <button is="paper-icon-button-light" class="btnPause btnPlayStateCommand" title="${ButtonPause}">
+                            <iron-icon icon="pause"></iron-icon>
+                        </button>
+
+                        <button is="paper-icon-button-light" class="btnPlay btnPlayStateCommand" title="${ButtonPlay}">
+                            <iron-icon icon="play-arrow"></iron-icon>
+                        </button>
+
+                        <button is="paper-icon-button-light" class="btnPlayStateCommand btnStop" title="${ButtonStop}">
+                            <iron-icon icon="stop"></iron-icon>
+                        </button>
+
+                        <button is="paper-icon-button-light" class="btnPlayStateCommand btnNextTrack" title="${ButtonNextTrack}">
+                            <iron-icon icon="skip-next"></iron-icon>
+                        </button>
                     </div>
                     <div class="buttonsRow2">
 
-                        <paper-fab icon="audiotrack" class="btnAudioTracks videoButton btnPlayStateCommand subdued" title="${ButtonAudioTracks}" data-command="GoToSearch"></paper-fab>
-                        <paper-fab icon="closed-caption" class="btnSubtitles videoButton btnPlayStateCommand subdued" title="${ButtonSubtitles}" data-command="GoToSearch"></paper-fab>
-                        <paper-fab icon="movie" class="btnChapters videoButton btnPlayStateCommand subdued" title="${ButtonScenes}" data-command="GoToSearch"></paper-fab>
-                        <paper-fab icon="fullscreen" class="btnToggleFullscreen videoButton btnPlayStateCommand subdued" title="${ButtonFullscreen}" data-command="ToggleFullscreen"></paper-fab>
+                        <button is="paper-icon-button-light" class="btnAudioTracks videoButton btnPlayStateCommand" title="${ButtonAudioTracks}" data-command="GoToSearch">
+                            <iron-icon icon="audiotrack"></iron-icon>
+                        </button>
+
+                        <button is="paper-icon-button-light" class="btnSubtitles videoButton btnPlayStateCommand" title="${ButtonSubtitles}" data-command="GoToSearch">
+                            <iron-icon icon="closed-caption"></iron-icon>
+                        </button>
+
+                        <button is="paper-icon-button-light" class="btnChapters videoButton btnPlayStateCommand" title="${ButtonScenes}" data-command="GoToSearch">
+                            <iron-icon icon="movie"></iron-icon>
+                        </button>
+
+                        <button is="paper-icon-button-light" class="btnToggleFullscreen videoButton btnPlayStateCommand" title="${ButtonFullscreen}" data-command="ToggleFullscreen">
+                            <iron-icon icon="fullscreen"></iron-icon>
+                        </button>
                     </div>
                     <div>
-                        <paper-fab icon="repeat" class="btnCommand subdued repeatToggleButton" title="${ButtonRepeat}" data-command="SetRepeatMode"></paper-fab>
-                        <paper-fab icon="volume-off" class="btnCommand subdued volumeButton" title="${ButtonMute}" data-command="ToggleMute"></paper-fab>
-                        <paper-fab icon="volume-down" class="btnCommand subdued volumeButton" title="${ButtonVolumeDown}" data-command="VolumeDown"></paper-fab>
-                        <paper-fab icon="volume-up" class="btnCommand subdued volumeButton" title="${ButtonVolumeUp}" data-command="VolumeUp"></paper-fab>
+
+                        <button is="paper-icon-button-light" class="btnCommand repeatToggleButton" title="${ButtonRepeat}" data-command="SetRepeatMode">
+                            <iron-icon icon="repeat"></iron-icon>
+                        </button>
+
+                        <button is="paper-icon-button-light" class="btnCommand volumeButton" title="${ButtonMute}" data-command="ToggleMute">
+                            <iron-icon icon="volume-off"></iron-icon>
+                        </button>
+
+                        <button is="paper-icon-button-light" class="btnCommand volumeButton" title="${ButtonVolumeDown}" data-command="VolumeDown">
+                            <iron-icon icon="volume-down"></iron-icon>
+                        </button>
+
+                        <button is="paper-icon-button-light" class="btnCommand volumeButton" title="${ButtonVolumeUp}" data-command="VolumeUp">
+                            <iron-icon icon="volume-up"></iron-icon>
+                        </button>
                     </div>
                     <div class="nowPlayingPageUserDataButtons" style="margin-top:1em;">
                     </div>
@@ -62,28 +99,55 @@
         <div class="pageTabContent ehsContent" id="controlsTab" data-index="1">
             <div style="text-align:center;">
                 <div>
-                    <paper-fab icon="keyboard-arrow-up" class="btnArrowUp btnCommand subdued" title="${ButtonArrowUp}" data-command="MoveUp"></paper-fab>
+                    <button is="paper-icon-button-light" class="btnArrowUp btnCommand" title="${ButtonArrowUp}" data-command="MoveUp">
+                        <iron-icon icon="keyboard-arrow-up"></iron-icon>
+                    </button>
                 </div>
                 <div>
-                    <paper-fab icon="keyboard-arrow-left" class="btnArrowLeft btnCommand subdued" title="${ButtonArrowLeft}" data-command="MoveLeft"></paper-fab>
-                    <paper-fab icon="check" class="btnOk btnCommand subdued" title="${ButtonOk}" data-command="Select"></paper-fab>
-                    <paper-fab icon="keyboard-arrow-right" class="btnArrowRight btnCommand subdued" title="${ButtonArrowRight}" data-command="MoveRight"></paper-fab>
+                    <button is="paper-icon-button-light" class="btnArrowLeft btnCommand" title="${ButtonArrowLeft}" data-command="MoveLeft">
+                        <iron-icon icon="keyboard-arrow-left"></iron-icon>
+                    </button>
+
+                    <button is="paper-icon-button-light" class="btnOk btnCommand" title="${ButtonOk}" data-command="Select">
+                        <iron-icon icon="check"></iron-icon>
+                    </button>
+
+                    <button is="paper-icon-button-light" class="btnArrowRight btnCommand" title="${ButtonArrowRight}" data-command="MoveRight">
+                        <iron-icon icon="keyboard-arrow-right"></iron-icon>
+                    </button>
                 </div>
                 <div>
-                    <paper-fab icon="keyboard-arrow-down" class="btnArrowDown btnCommand subdued" title="${ButtonArrowDown}" data-command="MoveDown"></paper-fab>
+                    <button is="paper-icon-button-light" class="btnArrowDown btnCommand" title="${ButtonArrowDown}" data-command="MoveDown">
+                        <iron-icon icon="keyboard-arrow-down"></iron-icon>
+                    </button>
                 </div>
                 <div>
-                    <paper-fab icon="arrow-back" class="btnBack btnCommand subdued" title="${ButtonBack}" data-command="Back"></paper-fab>
-                    <paper-fab icon="info" class="btnInfo btnCommand subdued" title="${ButtonInfo}" data-command="ToggleContextMenu"></paper-fab>
+                    <button is="paper-icon-button-light" class="btnBack btnCommand" title="${ButtonBack}" data-command="Back">
+                        <iron-icon icon="arrow-back"></iron-icon>
+                    </button>
+
+                    <button is="paper-icon-button-light" class="btnInfo btnCommand" title="${ButtonInfo}" data-command="ToggleContextMenu">
+                        <iron-icon icon="info"></iron-icon>
+                    </button>
                 </div>
                 <br />
                 <div>
-                    <paper-fab icon="home" class="btnGoHome btnCommand subdued" title="${ButtonHome}" data-command="GoHome"></paper-fab>
-                    <paper-fab icon="search" class="btnShowSearch btnCommand subdued" title="${ButtonSearch}" data-command="GoToSearch"></paper-fab>
+                    <button is="paper-icon-button-light" class="btnGoHome btnCommand" title="${ButtonHome}" data-command="GoHome">
+                        <iron-icon icon="home"></iron-icon>
+                    </button>
+
+                    <button is="paper-icon-button-light" class="btnShowSearch btnCommand" title="${ButtonSearch}" data-command="GoToSearch">
+                        <iron-icon icon="search"></iron-icon>
+                    </button>
                 </div>
                 <div>
-                    <paper-fab icon="settings" class="bthShowSettings btnCommand subdued" title="${ButtonSettings}" data-command="GoToSettings"></paper-fab>
-                    <paper-fab icon="videocam" class="btnScreenshot btnCommand subdued" title="${ButtonTakeScreenshot}" data-command="TakeScreenshot"></paper-fab>
+                    <button is="paper-icon-button-light" class="bthShowSettings btnCommand" title="${ButtonSettings}" data-command="GoToSettings">
+                        <iron-icon icon="settings"></iron-icon>
+                    </button>
+
+                    <button is="paper-icon-button-light" class="btnScreenshot btnCommand" title="${ButtonTakeScreenshot}" data-command="TakeScreenshot">
+                        <iron-icon icon="videocam"></iron-icon>
+                    </button>
                 </div>
             </div>
             <div class="readOnlyContent" style="margin: 2em auto 0; padding: 0 1em 100px;">
@@ -91,15 +155,15 @@
                     <br /><h1>${HeaderSendMessage}</h1>
                     <div style="text-align: left;">
                         <form class="sendMessageForm">
-                            <div>
-                                <paper-input class="sendMessageElement" type="text" id="txtMessageTitle" label="${LabelMessageTitle}" required></paper-input>
+                            <div class="inputContainer">
+                                <input is="emby-input" class="sendMessageElement" type="text" id="txtMessageTitle" label="${LabelMessageTitle}" required />
                             </div>
                             <br />
-                            <div>
-                                <paper-input class="sendMessageElement" type="text" id="txtMessageText" label="${LabelMessageText}" required></paper-input>
+                            <div class="inputContainer">
+                                <input is="emby-input" class="sendMessageElement" type="text" id="txtMessageText" label="${LabelMessageText}" required />
                             </div>
                             <p>
-                                <button is="emby-button" class="sendMessageElement accent" type="submit" raised style="display: block;">${ButtonSend}</button>
+                                <button is="emby-button" class="sendMessageElement accent block raised" type="submit" raised>${ButtonSend}</button>
                             </p>
                         </form>
                     </div>
@@ -108,11 +172,11 @@
                     <br /><h1>${HeaderTypeText}</h1>
                     <div style="text-align: left;">
                         <form class="typeTextForm">
-                            <div>
-                                <paper-input class="typeTextElement" type="text" id="txtTypeText" label="${LabelTypeText}" required></paper-input>
+                            <div class="inputContainer">
+                                <input is="emby-input" class="typeTextElement" type="text" id="txtTypeText" label="${LabelTypeText}" required />
                             </div>
                             <p>
-                                <button is="emby-button" class="typeTextElement accent" type="submit" raised style="display: block;">${ButtonSend}</button>
+                                <button is="emby-button" class="typeTextElement accent block raised" type="submit" raised>${ButtonSend}</button>
                             </p>
                         </form>
                     </div>
