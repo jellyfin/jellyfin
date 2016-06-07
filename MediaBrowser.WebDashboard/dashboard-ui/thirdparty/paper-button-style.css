@@ -362,7 +362,7 @@ paper-input label, paper-textarea label {
 }
 
 .ui-body-a .inputLabel {
-    color: #656565;
+    color: #555;
 }
 
     .ui-body-a .inputLabel.focused:not(.blank) {
@@ -374,7 +374,7 @@ paper-input label, paper-textarea label {
 }
 
 .ui-body-a .paper-input-container-0 .input-content.paper-input-container label, .ui-body-a .paper-input-container-0 .input-content.paper-input-container .paper-input-label, .ui-body-a paper-textarea label, .ui-body-a .selectLabel, .ui-body-a .paperListLabel, .ui-body-a .fieldDescription {
-    color: #656565;
+    color: #555;
 }
 
 .ui-body-a .paper-input-container-0 .input-content.label-is-highlighted.paper-input-container label, .ui-body-a .paper-input-container-0 .input-content.label-is-highlighted.paper-input-container .paper-input-label {

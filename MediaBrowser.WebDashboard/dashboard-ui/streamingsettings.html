@@ -1,27 +1,23 @@
-﻿<div id="streamingSettingsPage" data-role="page" class="page type-interior playbackConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Streaming" data-require="scripts/streamingsettings,paper-input,emby-button">
+﻿<div id="streamingSettingsPage" data-role="page" class="page type-interior playbackConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Streaming" data-require="scripts/streamingsettings,emby-input,emby-button,emby-select">
 
     <div data-role="content">
         <div class="content-primary">
 
             <form class="streamingSettingsForm">
 
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <paper-input type="number" id="txtRemoteClientBitrateLimit" pattern="[0-9]*" min="0" step=".25" label="${LabelRemoteClientBitrateLimit}"></paper-input>
-                        <div class="fieldDescription">${LabelRemoteClientBitrateLimitHelp}</div>
-                    </li>
-                    <li>
-                        <br />
-                        <label for="selectChannelResolution" class="selectLabel">${LabelChannelStreamQuality}</label>
-                        <select id="selectChannelResolution" data-mini="true">
-                            <option value="">${OptionBestAvailableStreamQuality}</option>
-                            <option value="1920">1080p</option>
-                            <option value="1280">720p</option>
-                            <option value="720">480p</option>
-                        </select>
-                        <div class="fieldDescription">${LabelChannelStreamQualityHelp}</div>
-                    </li>
-                </ul>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="txtRemoteClientBitrateLimit" pattern="[0-9]*" min="0" step=".25" label="${LabelRemoteClientBitrateLimit}"/>
+                    <div class="fieldDescription">${LabelRemoteClientBitrateLimitHelp}</div>
+                </div>
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectChannelResolution" label="${LabelChannelStreamQuality}">
+                        <option value="">${OptionBestAvailableStreamQuality}</option>
+                        <option value="1920">1080p</option>
+                        <option value="1280">720p</option>
+                        <option value="720">480p</option>
+                    </select>
+                    <div class="fieldDescription">${LabelChannelStreamQualityHelp}</div>
+                </div>
                 <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
             </form>
         </div>
