@@ -123,6 +123,7 @@
 .headerButtonRight {
     border-width: 0 !important;
     display: inline-block;
+    flex-shrink: 0;
 }
 
     .headerButtonRight:first-child {

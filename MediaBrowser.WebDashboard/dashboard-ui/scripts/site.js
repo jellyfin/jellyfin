@@ -2440,7 +2440,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/dashboardhosting.html',
-            dependencies: ['paper-checkbox', 'paper-input', 'emby-button'],
+            dependencies: ['paper-checkbox', 'emby-input', 'emby-button'],
             autoFocus: false,
             roles: 'admin',
             controller: 'scripts/dashboardhosting'
