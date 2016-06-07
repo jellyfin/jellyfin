@@ -1,13 +1,13 @@
 ﻿define(['jQuery'], function ($) {
 
     function onSubmit() {
-        Dashboard.showLoadingMsg();
-
         var form = this;
         var localAddress = form.querySelector('#txtLocalAddress').value;
         var enableUpnp = $('#chkEnableUpnp', form).checked();
 
         confirmSelections(localAddress, enableUpnp, function () {
+
+            Dashboard.showLoadingMsg();
 
             ApiClient.getServerConfiguration().then(function (config) {
 
@@ -32,7 +32,7 @@
 
     function confirmSelections(localAddress, enableUpnp, callback) {
 
-        if (localAddress) {
+        if (localAddress || !enableUpnp) {
 
             require(['alert'], function (alert) {
                 alert({
