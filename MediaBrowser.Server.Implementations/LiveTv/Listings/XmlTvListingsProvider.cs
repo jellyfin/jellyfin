@@ -66,7 +66,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             return cacheFile;
         }
 
-        // TODO: Should this method be async?
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelNumber, string channelName, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
             var path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
@@ -89,7 +88,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 SeasonNumber = p.Episode == null ? null : p.Episode.Series,
                 IsSeries = p.IsSeries,
                 IsRepeat = p.IsRepeat,
-                // IsPremiere = !p.PreviouslyShown.HasValue,
+                IsPremiere = p.Premiere != null,
                 IsKids = p.Categories.Any(c => info.KidsCategories.Contains(c, StringComparer.InvariantCultureIgnoreCase)),
                 IsMovie = p.Categories.Any(c => info.MovieCategories.Contains(c, StringComparer.InvariantCultureIgnoreCase)),
                 IsNews = p.Categories.Any(c => info.NewsCategories.Contains(c, StringComparer.InvariantCultureIgnoreCase)),
@@ -147,7 +146,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
         public async Task<List<ChannelInfo>> GetChannels(ListingsProviderInfo info, CancellationToken cancellationToken)
         {
-            return new List<ChannelInfo>();
+            // In theory this should never be called because there is always only one lineup
+            var reader = new XmlTvReader(info.Path, GetLanguage(), null);
+            var results = reader.GetChannels();
+
+            // Should this method be async?
+            return results.Select(c => new ChannelInfo()
+            {
+                Id = c.Id,
+                Name = c.DisplayName,
+                ImageUrl = c.Icon != null && !String.IsNullOrEmpty(c.Icon.Source) ? c.Icon.Source : null
+            }).ToList();
         }
     }
 }
