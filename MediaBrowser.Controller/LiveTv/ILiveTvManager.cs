@@ -385,5 +385,7 @@ namespace MediaBrowser.Controller.LiveTv
         List<NameValuePair> GetSatIniMappings();
 
         Task<List<ChannelInfo>> GetSatChannelScanResult(TunerHostInfo info, CancellationToken cancellationToken);
+
+        Task<List<ChannelInfo>> GetChannelsFromListingsProvider(string id, CancellationToken cancellationToken);
     }
 }

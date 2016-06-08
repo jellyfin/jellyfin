@@ -25,9 +25,9 @@
 
             if (options.panel) {
                 if (task) {
-                    $(options.panel).show();
+                    options.panel.classList.remove('hide');
                 } else {
-                    $(options.panel).hide();
+                    options.panel.classList.add('hide');
                 }
             }
 
@@ -157,7 +157,7 @@
         }
 
         if (options.panel) {
-            $(options.panel).hide();
+            options.panel.classList.add('hide');
         }
 
         if (options.mode == 'off') {

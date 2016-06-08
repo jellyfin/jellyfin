@@ -45,7 +45,7 @@ button.alphaPickerButton {
     opacity: 1;
 }
 
-.alphaPickerButton:focus {
+.layout-tv .alphaPickerButton:focus {
     background-color: #52B54B;
     opacity: 1;
     color: #fff;

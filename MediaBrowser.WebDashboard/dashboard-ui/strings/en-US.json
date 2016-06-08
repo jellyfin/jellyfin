@@ -2371,5 +2371,6 @@
   "LabelBindToLocalNetworkAddress": "Bind to local network address:",
   "LabelBindToLocalNetworkAddressHelp": "Optional. Override the local IP address to bind the http server to. If left empty, the server will bind to all availabile addresses. Changing this value requires restarting Emby Server.",
   "TitleHostingSettings": "Hosting Settings",
-  "SettingsWarning": "Changing these values may cause instability or connectivity failures. If you experience any problems, we recommend changing them back to default."
+  "SettingsWarning": "Changing these values may cause instability or connectivity failures. If you experience any problems, we recommend changing them back to default.",
+  "MapChannels": "Map Channels"
 }

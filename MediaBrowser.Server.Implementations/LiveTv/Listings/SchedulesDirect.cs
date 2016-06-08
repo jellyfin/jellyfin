@@ -869,6 +869,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             return GetHeadends(info, country, location, CancellationToken.None);
         }
 
+        public async Task<List<ChannelInfo>> GetChannels(ListingsProviderInfo info, CancellationToken cancellationToken)
+        {
+            return new List<ChannelInfo>();
+        }
+
         public class ScheduleDirect
         {
             public class Token

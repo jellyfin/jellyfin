@@ -1028,18 +1028,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     right: 20px;
 }
 
-.alphabetPicker a {
-    display: block;
-    text-decoration: none;
-    padding: 1px 2px 1px 5px;
-    font-weight: 500;
-}
-
-    .alphabetPicker a:not(.selectedCharacter) {
-        color: #bbb !important;
-    }
-
-
 .selectedCharacter {
     color: #52B54B !important;
 }
@@ -1091,7 +1079,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 @media all and (max-height: 480px) {
 
     .alphabetPicker {
-        display: none;
+        display: none !important;
     }
 }
 
@@ -1123,8 +1111,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 @media all and (max-height: 650px) {
 
     .vertical.alphabetPicker .alphaPickerButton {
-        padding-top: 2px!important;
-        padding-bottom: 2px!important;
+        padding-top: 2px !important;
+        padding-bottom: 2px !important;
     }
 }
 

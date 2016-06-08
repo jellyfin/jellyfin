@@ -3,11 +3,6 @@
     <div data-role="content">
         <div class="content-primary">
 
-            <div style="text-align:right;margin-top:-10px;">
-                <button is="emby-button" type="button" class="raised btnSync"><iron-icon icon="sync"></iron-icon><span>${ButtonConvertMedia}</span></button>
-                <progress max="100" min="0" style="width:100px;display:none;" class="syncProgress"></progress>
-            </div>
-            <br />
             <div class="supporterPromotionContainer" style="display:none;">
                 <div class="customSupporterPromotion supporterPromotion">
                     <a class="clearLink" href="http://emby.media/premiere" target="_blank">
@@ -21,6 +16,11 @@
                     </a>
                 </div>
             </div>
+            <div style="text-align:right;">
+                <button is="emby-button" type="button" class="raised btnSync subdued"><iron-icon icon="sync"></iron-icon><span>${ButtonConvertMedia}</span></button>
+                <progress max="100" min="0" style="width:100px;display:none;" class="syncProgress"></progress>
+            </div>
+            <br />
             <div class="syncActivity">
 
             </div>

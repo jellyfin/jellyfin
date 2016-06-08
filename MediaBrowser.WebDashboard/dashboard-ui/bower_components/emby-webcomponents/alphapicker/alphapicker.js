@@ -1,4 +1,4 @@
-define(['focusManager', 'layoutManager', 'css!./style.css', 'clearButtonStyle', 'paper-icon-button-light'], function (focusManager, layoutManager) {
+define(['focusManager', 'css!./style.css', 'clearButtonStyle', 'paper-icon-button-light'], function (focusManager) {
 
     function focus() {
         var selected = this.querySelector('.selected');
@@ -52,10 +52,6 @@ define(['focusManager', 'layoutManager', 'css!./style.css', 'clearButtonStyle', 
 
         element.innerHTML = html;
 
-        if (options.mode != 'keyboard') {
-            element.querySelector('.alphaPickerButton').classList.add('selected');
-        }
-
         element.classList.add('focusable');
         element.focus = focus;
     }
@@ -85,7 +81,6 @@ define(['focusManager', 'layoutManager', 'css!./style.css', 'clearButtonStyle', 
 
             if (document.activeElement == alphaFocusedElement) {
                 var value = alphaFocusedElement.getAttribute('data-value');
-
                 self.value(value, true);
             }
         }
@@ -103,7 +98,7 @@ define(['focusManager', 'layoutManager', 'css!./style.css', 'clearButtonStyle', 
             return elem;
         }
 
-        function onAlphaPickerClick(e) {
+        function onAlphaPickerInKeyboardModeClick(e) {
 
             var alphaPickerButton = parentWithClass(e.target, 'alphaPickerButton');
 
@@ -115,6 +110,21 @@ define(['focusManager', 'layoutManager', 'css!./style.css', 'clearButtonStyle', 
                         value: value
                     }
                 }));
+            }
+        }
+
+        function onAlphaPickerClick(e) {
+
+            var alphaPickerButton = parentWithClass(e.target, 'alphaPickerButton');
+
+            if (alphaPickerButton) {
+                var value = alphaPickerButton.getAttribute('data-value');
+
+                if (currentValue == value.toUpperCase()) {
+                    self.value(null, true);
+                } else {
+                    self.value(value, true);
+                }
             }
         }
 
@@ -159,13 +169,13 @@ define(['focusManager', 'layoutManager', 'css!./style.css', 'clearButtonStyle', 
                 }
 
                 if (options.mode == 'keyboard') {
-                    element.addEventListener('click', onAlphaPickerClick);
+                    element.addEventListener('click', onAlphaPickerInKeyboardModeClick);
                 }
 
-                if (layoutManager.tv) {
+                if (options.valueChangeEvent !== 'click') {
                     element.addEventListener('focus', onAlphaPickerFocusIn, true);
                 } else {
-                    element.addEventListener('click', onAlphaPickerFocusIn);
+                    element.addEventListener('click', onAlphaPickerClick);
                 }
 
             } else {
@@ -174,9 +184,9 @@ define(['focusManager', 'layoutManager', 'css!./style.css', 'clearButtonStyle', 
                     itemsContainer.removeEventListener('focus', onItemsFocusIn, true);
                 }
 
-                element.removeEventListener('click', onAlphaPickerClick);
+                element.removeEventListener('click', onAlphaPickerInKeyboardModeClick);
                 element.removeEventListener('focus', onAlphaPickerFocusIn, true);
-                element.removeEventListener('click', onAlphaPickerFocusIn);
+                element.removeEventListener('click', onAlphaPickerClick);
             }
         };
 
@@ -202,30 +212,41 @@ define(['focusManager', 'layoutManager', 'css!./style.css', 'clearButtonStyle', 
         var currentValue;
         self.value = function (value, applyValue) {
 
-            if (value != null) {
+            var btn, selected;
 
-                value = value.toUpperCase();
-                currentValue = value;
+            if (value !== undefined) {
+                if (value != null) {
 
-                if (options.mode != 'keyboard') {
-                    var selected = element.querySelector('.selected');
-                    var btn = element.querySelector('.alphaPickerButton[data-value=\'' + value + '\']');
+                    value = value.toUpperCase();
+                    currentValue = value;
 
-                    if (btn && btn != selected) {
-                        btn.classList.add('selected');
+                    if (options.mode != 'keyboard') {
+                        selected = element.querySelector('.selected');
+                        btn = element.querySelector('.alphaPickerButton[data-value=\'' + value + '\']');
+
+                        if (btn && btn != selected) {
+                            btn.classList.add('selected');
+                        }
+                        if (selected && selected != btn) {
+                            selected.classList.remove('selected');
+                        }
                     }
-                    if (selected && selected != btn) {
+                } else {
+                    currentValue = value;
+
+                    selected = element.querySelector('.selected');
+                    if (selected) {
                         selected.classList.remove('selected');
                     }
                 }
+            }
 
-                if (applyValue) {
-                    element.dispatchEvent(new CustomEvent("alphavaluechanged", {
-                        detail: {
-                            value: value
-                        }
-                    }));
-                }
+            if (applyValue) {
+                element.dispatchEvent(new CustomEvent("alphavaluechanged", {
+                    detail: {
+                        value: value
+                    }
+                }));
             }
 
             return currentValue;

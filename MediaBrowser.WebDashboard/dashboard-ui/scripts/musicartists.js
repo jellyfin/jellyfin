@@ -169,7 +169,8 @@
         });
 
         self.alphaPicker = new alphaPicker({
-            element: alphaPickerElement
+            element: alphaPickerElement,
+            valueChangeEvent: 'click'
         });
 
         self.renderTab = function () {

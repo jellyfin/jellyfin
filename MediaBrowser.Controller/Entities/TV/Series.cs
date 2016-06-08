@@ -402,47 +402,31 @@ namespace MediaBrowser.Controller.Entities.TV
         public static IEnumerable<Episode> FilterEpisodesBySeason(IEnumerable<Episode> episodes, Season parentSeason, bool includeSpecials)
         {
             var seasonNumber = parentSeason.IndexNumber;
-            if (!includeSpecials || (seasonNumber.HasValue && seasonNumber.Value == 0))
+            var seasonPresentationKey = parentSeason.PresentationUniqueKey;
+
+            var supportSpecialsInSeason = includeSpecials && seasonNumber.HasValue && seasonNumber.Value != 0;
+
+            return episodes.Where(episode =>
             {
-                var seasonPresentationKey = parentSeason.PresentationUniqueKey;
-
-                return episodes.Where(i =>
+                var currentSeasonNumber = supportSpecialsInSeason ? episode.AiredSeasonNumber : episode.ParentIndexNumber;
+                if (currentSeasonNumber.HasValue && seasonNumber.HasValue && currentSeasonNumber.Value == seasonNumber.Value)
                 {
-                    if ((i.ParentIndexNumber ?? -1) == seasonNumber)
-                    {
-                        return true;
-                    }
-                    if (!i.ParentIndexNumber.HasValue)
-                    {
-                        var season = i.Season;
-                        return season != null && string.Equals(season.PresentationUniqueKey, seasonPresentationKey, StringComparison.OrdinalIgnoreCase);
-                    }
+                    return true;
+                }
 
-                    return false;
-                });
-            }
-            else
-            {
-                var seasonPresentationKey = parentSeason.PresentationUniqueKey;
-
-                return episodes.Where(episode =>
+                if (!currentSeasonNumber.HasValue && !seasonNumber.HasValue && parentSeason.LocationType == LocationType.Virtual)
                 {
-                    var currentSeasonNumber = episode.AiredSeasonNumber;
+                    return true;
+                }
 
-                    if (currentSeasonNumber.HasValue && seasonNumber.HasValue && currentSeasonNumber.Value == seasonNumber.Value)
-                    {
-                        return true;
-                    }
+                if (!episode.ParentIndexNumber.HasValue)
+                {
+                    var season = episode.Season;
+                    return season != null && string.Equals(season.PresentationUniqueKey, seasonPresentationKey, StringComparison.OrdinalIgnoreCase);
+                }
 
-                    if (!episode.ParentIndexNumber.HasValue)
-                    {
-                        var season = episode.Season;
-                        return season != null && string.Equals(season.PresentationUniqueKey, seasonPresentationKey, StringComparison.OrdinalIgnoreCase);
-                    }
-
-                    return false;
-                });
-            }
+                return false;
+            });
         }
 
         protected override bool GetBlockUnratedValue(UserPolicy config)

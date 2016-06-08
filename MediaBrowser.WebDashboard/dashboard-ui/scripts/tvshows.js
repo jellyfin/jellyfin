@@ -202,7 +202,8 @@
             });
 
             self.alphaPicker = new alphaPicker({
-                element: alphaPickerElement
+                element: alphaPickerElement,
+                valueChangeEvent: 'click'
             });
 
             tabContent.querySelector('.btnFilter').addEventListener('click', function () {

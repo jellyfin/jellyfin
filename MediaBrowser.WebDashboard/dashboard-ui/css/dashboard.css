@@ -289,7 +289,7 @@ a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearB
 }
 
 .mainDrawerPanel:not([narrow]) .content-primary {
-    padding-top: 110px;
+    padding-top: 90px;
     padding-bottom: 3em;
 }
 
@@ -305,12 +305,12 @@ a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearB
 
     .mainDrawerPanel:not([narrow]) .content-primary {
         padding-right: 1.5em;
-        padding-left: 3em;
+        padding-left: 2em;
     }
 }
 
 .mainDrawerPanel:not([narrow]) .withTabs .content-primary {
-    padding-top: 135px !important;
+    padding-top: 125px !important;
 }
 
 .mainDrawerPanel:not([narrow]) .content-primary ul:first-child {
