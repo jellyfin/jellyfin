@@ -1,4 +1,4 @@
-﻿define(['require', 'browser', 'globalize', 'connectionManager', 'loading', 'scrollHelper', 'datetime', 'focusManager', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationservices', 'clearButtonStyle', 'css!./guide.css', 'html!./../icons/mediainfo.html', 'html!./../icons/nav.html', 'scrollStyles', 'emby-button'], function (require, browser, globalize, connectionManager, loading, scrollHelper, datetime, focusManager, imageLoader, events, layoutManager, itemShortcuts, registrationServices) {
+﻿define(['require', 'browser', 'globalize', 'connectionManager', 'serverNotifications', 'loading', 'scrollHelper', 'datetime', 'focusManager', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationservices', 'clearButtonStyle', 'css!./guide.css', 'html!./../icons/mediainfo.html', 'html!./../icons/nav.html', 'scrollStyles', 'emby-button'], function (require, browser, globalize, connectionManager, serverNotifications, loading, scrollHelper, datetime, focusManager, imageLoader, events, layoutManager, itemShortcuts, registrationServices) {
 
     function Guide(options) {
 
@@ -11,6 +11,12 @@
         };
 
         self.destroy = function () {
+
+            events.off(serverNotifications, 'TimerCreated', onTimerCreated);
+            events.off(serverNotifications, 'SeriesTimerCreated', onSeriesTimerCreated);
+            events.off(serverNotifications, 'TimerCancelled', onTimerCancelled);
+            events.off(serverNotifications, 'SeriesTimerCancelled', onSeriesTimerCancelled);
+
             clearCurrentTimeUpdateInterval();
             itemShortcuts.off(options.element);
             items = {};
@@ -736,6 +742,59 @@
             target.addEventListener(type, handler, optionsOrCapture);
         }
 
+        function onTimerCreated(e, apiClient, data) {
+
+            var programId = data.ProgramId;
+            // This could be null, not supported by all tv providers
+            var newTimerId = data.Id;
+
+            // find guide cells by program id, ensure timer icon
+            var cells = options.element.querySelectorAll('.programCell[data-id="' + programId + '"]');
+            for (var i = 0, length = cells.length; i < length; i++) {
+                var cell = cells[i];
+
+                var icon = cell.querySelector('.timerIcon');
+                if (!icon) {
+                    cell.insertAdjacentHTML('beforeend', '<iron-icon class="timerIcon" icon="mediainfo:fiber-manual-record"></iron-icon>');
+                }
+
+                if (newTimerId) {
+                    cell.setAttribute('data-timerid', newTimerId);
+                }
+            }
+        }
+
+        function onSeriesTimerCreated(e, apiClient, data) {
+        }
+
+        function onTimerCancelled(e, apiClient, data) {
+            var id = data.Id;
+            // find guide cells by timer id, remove timer icon
+            var cells = options.element.querySelectorAll('.programCell[data-timerid="' + id + '"]');
+            for (var i = 0, length = cells.length; i < length; i++) {
+                var cells = cells[i];
+                var icon = cell.querySelector('.timerIcon');
+                if (icon) {
+                    icon.parentNode.removeChild(icon);
+                }
+                cell.removeAttribute('data-timerid');
+            }
+        }
+
+        function onSeriesTimerCancelled(e, apiClient, data) {
+            var id = data.Id;
+            // find guide cells by timer id, remove timer icon
+            var cells = options.element.querySelectorAll('.programCell[data-seriestimerid="' + id + '"]');
+            for (var i = 0, length = cells.length; i < length; i++) {
+                var cells = cells[i];
+                var icon = cell.querySelector('.seriesTimerIcon');
+                if (icon) {
+                    icon.parentNode.removeChild(icon);
+                }
+                cell.removeAttribute('data-seriestimerid');
+            }
+        }
+
         require(['text!./tvguide.template.html'], function (template) {
             var context = options.element;
             context.innerHTML = globalize.translateDocument(template, 'core');
@@ -771,6 +830,11 @@
             itemShortcuts.on(context);
 
             events.trigger(self, 'load');
+
+            events.on(serverNotifications, 'TimerCreated', onTimerCreated);
+            events.on(serverNotifications, 'SeriesTimerCreated', onSeriesTimerCreated);
+            events.on(serverNotifications, 'TimerCancelled', onTimerCancelled);
+            events.on(serverNotifications, 'SeriesTimerCancelled', onSeriesTimerCancelled);
 
             self.refresh();
         });

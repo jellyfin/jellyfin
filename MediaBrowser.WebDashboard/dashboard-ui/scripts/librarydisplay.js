@@ -33,8 +33,8 @@
             ApiClient.getServerConfiguration().then(function (config) {
 
                 config.EnableFolderView = form.querySelector('.chkFolderView').checked;
-                config.EnableGroupingIntoCollections = form.querySelector('.chkDisplaySpecialsWithinSeasons').checked;
-                config.DisplaySpecialsWithinSeasons = form.querySelector('.chkGroupMoviesIntoCollections').checked;
+                config.EnableGroupingIntoCollections = form.querySelector('.chkGroupMoviesIntoCollections').checked;
+                config.DisplaySpecialsWithinSeasons = form.querySelector('.chkDisplaySpecialsWithinSeasons').checked;
 
                 ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
             });

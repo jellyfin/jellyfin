@@ -215,7 +215,7 @@
             return connectUser;
         };
 
-        var minServerVersion = '3.0.5870';
+        var minServerVersion = '3.0.5882';
         self.minServerVersion = function (val) {
 
             if (val) {
@@ -309,7 +309,6 @@
             existingServer.DateLastAccessed = new Date().getTime();
             existingServer.LastConnectionMode = ConnectionMode.Manual;
             existingServer.ManualAddress = apiClient.serverAddress();
-            existingServer.PreferredConnectionMode = ConnectionMode.Manual;
             apiClient.serverInfo(existingServer);
 
             apiClient.onAuthenticated = function (instance, result) {
@@ -998,9 +997,6 @@
                 if (server.LastConnectionMode != null) {
                     //tests.push(server.LastConnectionMode);
                 }
-                if (server.PreferredConnectionMode != null) {
-                    tests.push(server.PreferredConnectionMode);
-                }
                 if (tests.indexOf(ConnectionMode.Manual) == -1) { tests.push(ConnectionMode.Manual); }
                 if (tests.indexOf(ConnectionMode.Local) == -1) { tests.push(ConnectionMode.Local); }
                 if (tests.indexOf(ConnectionMode.Remote) == -1) { tests.push(ConnectionMode.Remote); }
@@ -1062,13 +1058,17 @@
 
                 enableRetry = true;
                 timeout = 8000;
+
+                if (stringEqualsIgnoreCase(address, server.ManualAddress)) {
+                    skipTest = true;
+                }
             }
 
             else if (mode == ConnectionMode.Manual) {
 
-                if (stringEqualsIgnoreCase(address, server.LocalAddress) ||
-                        stringEqualsIgnoreCase(address, server.RemoteAddress)) {
-                    skipTest = true;
+                if (stringEqualsIgnoreCase(address, server.LocalAddress)) {
+                    enableRetry = true;
+                    timeout = 8000;
                 }
             }
 
