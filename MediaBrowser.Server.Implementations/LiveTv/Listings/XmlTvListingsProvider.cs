@@ -144,5 +144,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             // Should this method be async?
             return Task.FromResult(results.Select(c => new NameIdPair() { Id = c.Id, Name = c.DisplayName }).ToList());
         }
+
+        public async Task<List<ChannelInfo>> GetChannels(ListingsProviderInfo info, CancellationToken cancellationToken)
+        {
+            return new List<ChannelInfo>();
+        }
     }
 }
