@@ -171,3 +171,7 @@ h1, h1 a {
 .videoSubtitles {
     font-size: 200% !important;
 }
+
+.alphabetPicker {
+    right: 5px !important;
+}

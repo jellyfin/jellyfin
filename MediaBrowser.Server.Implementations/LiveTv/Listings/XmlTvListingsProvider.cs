@@ -107,11 +107,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             var reader = new XmlTvReader(info.Path, GetLanguage(), null);
             var results = reader.GetChannels().ToList();
 
-            if (channels != null && channels.Count > 0)
+            if (channels != null)
             {
                 channels.ForEach(c =>
                 {
-                    var match = results.FirstOrDefault(r => r.Id == c.Id);
+                    var channelNumber = info.GetMappedChannel(c.Number);
+                    var match = results.FirstOrDefault(r => string.Equals(r.Id, channelNumber, StringComparison.OrdinalIgnoreCase));
+
                     if (match != null && match.Icon != null && !String.IsNullOrEmpty(match.Icon.Source))
                     {
                         c.ImageUrl = match.Icon.Source;
@@ -141,6 +143,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
             // Should this method be async?
             return Task.FromResult(results.Select(c => new NameIdPair() { Id = c.Id, Name = c.DisplayName }).ToList());
+        }
+
+        public async Task<List<ChannelInfo>> GetChannels(ListingsProviderInfo info, CancellationToken cancellationToken)
+        {
+            return new List<ChannelInfo>();
         }
     }
 }

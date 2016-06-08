@@ -30,6 +30,8 @@ using System.Threading.Tasks;
 using CommonIO;
 using IniParser;
 using IniParser.Model;
+using MediaBrowser.Common.Events;
+using MediaBrowser.Model.Events;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
 {
@@ -63,6 +65,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private readonly List<ITunerHost> _tunerHosts = new List<ITunerHost>();
         private readonly List<IListingsProvider> _listingProviders = new List<IListingsProvider>();
         private readonly IFileSystem _fileSystem;
+
+        public event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCancelled;
+        public event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCancelled;
+        public event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCreated;
+        public event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCreated;
 
         public LiveTvManager(IApplicationHost appHost, IServerConfigurationManager config, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager, ILocalizationManager localization, IJsonSerializer jsonSerializer, IProviderManager providerManager, IFileSystem fileSystem)
         {
@@ -1759,6 +1766,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             await service.CancelTimerAsync(timer.ExternalId, CancellationToken.None).ConfigureAwait(false);
             _lastRecordingRefreshTime = DateTime.MinValue;
+
+            EventHelper.QueueEventIfNotNull(TimerCancelled, this, new GenericEventArgs<TimerEventInfo>
+            {
+                Argument = new TimerEventInfo
+                {
+                    Id = id
+                }
+            }, _logger);
         }
 
         public async Task CancelSeriesTimer(string id)
@@ -1774,6 +1789,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             await service.CancelSeriesTimerAsync(timer.ExternalId, CancellationToken.None).ConfigureAwait(false);
             _lastRecordingRefreshTime = DateTime.MinValue;
+
+            EventHelper.QueueEventIfNotNull(SeriesTimerCancelled, this, new GenericEventArgs<TimerEventInfo>
+            {
+                Argument = new TimerEventInfo
+                {
+                    Id = id
+                }
+            }, _logger);
         }
 
         public async Task<BaseItemDto> GetRecording(string id, DtoOptions options, CancellationToken cancellationToken, User user = null)
@@ -1993,6 +2016,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             await service.CreateTimerAsync(info, cancellationToken).ConfigureAwait(false);
             _lastRecordingRefreshTime = DateTime.MinValue;
             _logger.Info("New recording scheduled");
+
+            EventHelper.QueueEventIfNotNull(TimerCreated, this, new GenericEventArgs<TimerEventInfo>
+            {
+                Argument = new TimerEventInfo
+                {
+                    ProgramId = info.ProgramId
+                }
+            }, _logger);
         }
 
         public async Task CreateSeriesTimer(SeriesTimerInfoDto timer, CancellationToken cancellationToken)
@@ -2007,6 +2038,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             await service.CreateSeriesTimerAsync(info, cancellationToken).ConfigureAwait(false);
             _lastRecordingRefreshTime = DateTime.MinValue;
+
+            EventHelper.QueueEventIfNotNull(SeriesTimerCreated, this, new GenericEventArgs<TimerEventInfo>
+            {
+                Argument = new TimerEventInfo
+                {
+                    ProgramId = info.ProgramId
+                }
+            }, _logger);
         }
 
         public async Task UpdateTimer(TimerInfoDto timer, CancellationToken cancellationToken)
@@ -2520,6 +2559,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         public Task<List<ChannelInfo>> GetSatChannelScanResult(TunerHostInfo info, CancellationToken cancellationToken)
         {
             return new TunerHosts.SatIp.ChannelScan(_logger).Scan(info, cancellationToken);
+        }
+
+        public Task<List<ChannelInfo>> GetChannelsFromListingsProvider(string id, CancellationToken cancellationToken)
+        {
+            var info = GetConfiguration().ListingProviders.First(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
+            var provider = _listingProviders.First(i => string.Equals(i.Type, info.Type, StringComparison.OrdinalIgnoreCase));
+            return provider.GetChannels(info, cancellationToken);
         }
     }
 }

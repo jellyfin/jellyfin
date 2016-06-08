@@ -643,22 +643,26 @@ progress {
         height: 16px;
     }
 
-.supporterPromotion {
-    margin: 1em 0;
+.supporterPromotionContainer {
+    margin: 0 0 2em;
 }
 
 @media all and (min-width: 800px) {
 
-    .supporterPromotion:not(.inlineSupporterPromotion) {
-        position: absolute;
-        top: 110px;
-        right: 20px;
-        margin: 0;
+    .supporterPromotionContainer {
+        display: flex;
+        flex-direction: row-reverse;
     }
 
-    .inlineSupporterPromotion {
-        display: inline-block;
+    .supporterPromotion {
+        text-align: center;
+        padding: 0 2em;
     }
+
+        .supporterPromotion button {
+            padding-left: 2em;
+            padding-right: 2em;
+        }
 }
 
 .nativeApp *:not(input):not(select):not(textarea) {

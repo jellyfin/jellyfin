@@ -257,9 +257,9 @@
         });
 
         if (result.TotalRecordCount) {
-            $('.btnClearLog', page).show();
+            page.querySelector('.btnClearLog').classList.remove('hide');
         } else {
-            $('.btnClearLog', page).hide();
+            page.querySelector('.btnClearLog').classList.add('hide');
         }
     }
 
@@ -312,7 +312,7 @@
         $('.btnOrganize', page).taskButton({
             mode: 'on',
             progressElem: page.querySelector('.organizeProgress'),
-            panel: $('.organizeTaskPanel', page),
+            panel: page.querySelector('.organizeTaskPanel'),
             taskKey: 'AutoOrganize'
         });
 

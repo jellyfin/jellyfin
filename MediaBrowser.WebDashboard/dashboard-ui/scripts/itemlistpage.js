@@ -260,7 +260,8 @@
         });
 
         self.alphaPicker = new alphaPicker({
-            element: alphaPickerElement
+            element: alphaPickerElement,
+            valueChangeEvent: 'click'
         });
 
         $(view).on('click', '.mediaItem', onListItemClick);

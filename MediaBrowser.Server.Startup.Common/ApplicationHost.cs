@@ -381,7 +381,8 @@ namespace MediaBrowser.Server.Startup.Common
                 new OmdbEpisodeProviderMigration(ServerConfigurationManager),
                 new MovieDbEpisodeProviderMigration(ServerConfigurationManager),
                 new DbMigration(ServerConfigurationManager, TaskManager),
-                new FolderViewSettingMigration(ServerConfigurationManager, UserManager)
+                new FolderViewSettingMigration(ServerConfigurationManager, UserManager),
+                new CollectionGroupingMigration(ServerConfigurationManager, UserManager)
             };
 
             foreach (var task in migrations)

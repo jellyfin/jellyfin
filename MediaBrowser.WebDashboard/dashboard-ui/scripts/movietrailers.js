@@ -174,7 +174,8 @@
         });
 
         self.alphaPicker = new alphaPicker({
-            element: alphaPickerElement
+            element: alphaPickerElement,
+            valueChangeEvent: 'click'
         });
 
         tabContent.querySelector('.itemsContainer').addEventListener('needsrefresh', function () {

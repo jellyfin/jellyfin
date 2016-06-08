@@ -5,7 +5,7 @@
     contain: style;
 }
 
-/*.itemsContainer .card {
+    /*.itemsContainer .card {
     contain: layout style;
 }
 
@@ -19,10 +19,10 @@
         display: block;
     }*/
 
-.card, .card a {
-    text-decoration: none;
-    font-weight: 400 !important;
-}
+    .card, .card a {
+        text-decoration: none;
+        font-weight: 400 !important;
+    }
 
 .cardOverlayTarget {
     position: absolute;
@@ -76,8 +76,8 @@
 }
 
 .cardOverlayMoreButton, .cardOverlayPlayButton {
-    color: #333!important;
-    background-color: rgba(210,210,210,.9)!important;
+    color: #333 !important;
+    background-color: rgba(210,210,210,.9) !important;
     border-radius: 500px;
     padding: 5px;
     width: 36px;

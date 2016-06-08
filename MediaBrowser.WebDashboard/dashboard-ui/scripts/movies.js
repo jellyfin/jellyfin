@@ -285,7 +285,8 @@
             });
 
             self.alphaPicker = new alphaPicker({
-                element: alphaPickerElement
+                element: alphaPickerElement,
+                valueChangeEvent: 'click'
             });
 
             context.querySelector('.itemsContainer').addEventListener('needsrefresh', function () {
