@@ -35,7 +35,7 @@ using Microsoft.Win32;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 {
-    public class EmbyTV : ILiveTvService, IHasRegistrationInfo, IDisposable
+    public class EmbyTV : ILiveTvService, ISupportsNewTimerIds, IHasRegistrationInfo, IDisposable
     {
         private readonly IApplicationHost _appHpst;
         private readonly ILogger _logger;
@@ -435,12 +435,22 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public Task CreateTimerAsync(TimerInfo info, CancellationToken cancellationToken)
         {
-            info.Id = Guid.NewGuid().ToString("N");
-            _timerProvider.Add(info);
-            return Task.FromResult(0);
+            return CreateTimer(info, cancellationToken);
         }
 
-        public async Task CreateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
+        public  Task CreateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
+        {
+            return CreateSeriesTimer(info, cancellationToken);
+        }
+
+        public Task<string> CreateTimer(TimerInfo info, CancellationToken cancellationToken)
+        {
+            info.Id = Guid.NewGuid().ToString("N");
+            _timerProvider.Add(info);
+            return Task.FromResult(info.Id);
+        }
+
+        public async Task<string> CreateSeriesTimer(SeriesTimerInfo info, CancellationToken cancellationToken)
         {
             info.Id = Guid.NewGuid().ToString("N");
 
@@ -470,6 +480,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             _seriesTimerProvider.Add(info);
             await UpdateTimersForSeriesTimer(epgData, info, false).ConfigureAwait(false);
+
+            return info.Id;
         }
 
         public async Task UpdateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)

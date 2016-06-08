@@ -226,4 +226,23 @@ namespace MediaBrowser.Controller.LiveTv
         /// <returns>Task.</returns>
         Task ResetTuner(string id, CancellationToken cancellationToken);
     }
+
+    public interface ISupportsNewTimerIds
+    {
+        /// <summary>
+        /// Creates the timer asynchronous.
+        /// </summary>
+        /// <param name="info">The information.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task<string> CreateTimer(TimerInfo info, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Creates the series timer asynchronous.
+        /// </summary>
+        /// <param name="info">The information.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task<string> CreateSeriesTimer(SeriesTimerInfo info, CancellationToken cancellationToken);
+    }
 }

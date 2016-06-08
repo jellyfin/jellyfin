@@ -2013,7 +2013,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var defaultValues = await service.GetNewTimerDefaultsAsync(cancellationToken).ConfigureAwait(false);
             info.Priority = defaultValues.Priority;
 
-            await service.CreateTimerAsync(info, cancellationToken).ConfigureAwait(false);
+            string newTimerId = null;
+            var supportsNewTimerIds = service as ISupportsNewTimerIds;
+            if (supportsNewTimerIds != null)
+            {
+                newTimerId = await supportsNewTimerIds.CreateTimer(info, cancellationToken).ConfigureAwait(false);
+                newTimerId = _tvDtoService.GetInternalTimerId(timer.ServiceName, newTimerId).ToString("N");
+            }
+            else
+            {
+                await service.CreateTimerAsync(info, cancellationToken).ConfigureAwait(false);
+            }
 
             _lastRecordingRefreshTime = DateTime.MinValue;
             _logger.Info("New recording scheduled");
@@ -2022,7 +2032,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 Argument = new TimerEventInfo
                 {
-                    ProgramId = _tvDtoService.GetInternalProgramId(timer.ServiceName, info.ProgramId).ToString("N")
+                    ProgramId = _tvDtoService.GetInternalProgramId(timer.ServiceName, info.ProgramId).ToString("N"),
+                    Id = newTimerId
                 }
             }, _logger);
         }
@@ -2037,14 +2048,26 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var defaultValues = await service.GetNewTimerDefaultsAsync(cancellationToken).ConfigureAwait(false);
             info.Priority = defaultValues.Priority;
 
-            await service.CreateSeriesTimerAsync(info, cancellationToken).ConfigureAwait(false);
+            string newTimerId = null;
+            var supportsNewTimerIds = service as ISupportsNewTimerIds;
+            if (supportsNewTimerIds != null)
+            {
+                newTimerId = await supportsNewTimerIds.CreateSeriesTimer(info, cancellationToken).ConfigureAwait(false);
+                newTimerId = _tvDtoService.GetInternalSeriesTimerId(timer.ServiceName, newTimerId).ToString("N");
+            }
+            else
+            {
+                await service.CreateSeriesTimerAsync(info, cancellationToken).ConfigureAwait(false);
+            }
+
             _lastRecordingRefreshTime = DateTime.MinValue;
 
             EventHelper.QueueEventIfNotNull(SeriesTimerCreated, this, new GenericEventArgs<TimerEventInfo>
             {
                 Argument = new TimerEventInfo
                 {
-                    ProgramId = _tvDtoService.GetInternalProgramId(timer.ServiceName, info.ProgramId).ToString("N")
+                    ProgramId = _tvDtoService.GetInternalProgramId(timer.ServiceName, info.ProgramId).ToString("N"),
+                    Id = newTimerId
                 }
             }, _logger);
         }
