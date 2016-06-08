@@ -361,13 +361,23 @@
                         deleteProvider(page, id);
                         break;
                     case 'map':
-                        alert('coming soon');
+                        mapChannels(page, id);
                         break;
                     default:
                         break;
                 }
             });
 
+        });
+    }
+
+    function mapChannels(page, providerId) {
+
+        require(['components/channelmapper/channelmapper'], function (channelmapper) {
+            new channelmapper().show({
+                serverId: ApiClient.serverInfo().Id,
+                providerId: providerId
+            });
         });
     }
 

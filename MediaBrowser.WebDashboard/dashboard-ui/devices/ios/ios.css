@@ -175,3 +175,8 @@ h1, h1 a {
 .alphabetPicker {
     right: 5px !important;
 }
+
+.alphaPickerButton.selected {
+    background-color: transparent !important;
+    color: #52B54B !important;
+}
