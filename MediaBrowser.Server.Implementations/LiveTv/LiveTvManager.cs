@@ -2014,6 +2014,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             info.Priority = defaultValues.Priority;
 
             await service.CreateTimerAsync(info, cancellationToken).ConfigureAwait(false);
+
             _lastRecordingRefreshTime = DateTime.MinValue;
             _logger.Info("New recording scheduled");
 
@@ -2021,7 +2022,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 Argument = new TimerEventInfo
                 {
-                    ProgramId = info.ProgramId
+                    ProgramId = _tvDtoService.GetInternalProgramId(timer.ServiceName, info.ProgramId).ToString("N")
                 }
             }, _logger);
         }
@@ -2043,7 +2044,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 Argument = new TimerEventInfo
                 {
-                    ProgramId = info.ProgramId
+                    ProgramId = _tvDtoService.GetInternalProgramId(timer.ServiceName, info.ProgramId).ToString("N")
                 }
             }, _logger);
         }
