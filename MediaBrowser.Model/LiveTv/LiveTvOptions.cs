@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -89,6 +90,18 @@ namespace MediaBrowser.Model.LiveTv
             EnabledTuners = new string[] { };
             EnableAllTuners = true;
             ChannelMappings = new NameValuePair[] {};
+        }
+
+        public string GetMappedChannel(string channelNumber)
+        {
+            foreach (NameValuePair mapping in ChannelMappings)
+            {
+                if (StringHelper.EqualsIgnoreCase(mapping.Name, channelNumber))
+                {
+                    return mapping.Value;
+                }
+            }
+            return channelNumber;
         }
     }
 }
