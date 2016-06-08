@@ -37,22 +37,22 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         private void _liveTvManager_SeriesTimerCreated(object sender, Model.Events.GenericEventArgs<TimerEventInfo> e)
         {
-            SendMessage("seriestimercreated", e.Argument);
+            SendMessage("SeriesTimerCreated", e.Argument);
         }
 
         private void _liveTvManager_TimerCreated(object sender, Model.Events.GenericEventArgs<TimerEventInfo> e)
         {
-            SendMessage("timercreated", e.Argument);
+            SendMessage("TimerCreated", e.Argument);
         }
 
         private void _liveTvManager_SeriesTimerCancelled(object sender, Model.Events.GenericEventArgs<TimerEventInfo> e)
         {
-            SendMessage("seriestimercancelled", e.Argument);
+            SendMessage("SeriesTimerCancelled", e.Argument);
         }
 
         private void _liveTvManager_TimerCancelled(object sender, Model.Events.GenericEventArgs<TimerEventInfo> e)
         {
-            SendMessage("timercancelled", e.Argument);
+            SendMessage("TimerCancelled", e.Argument);
         }
 
         private async void SendMessage(string name, TimerEventInfo info)
