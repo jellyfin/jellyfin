@@ -1000,7 +1000,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                         result.Item3.Release();
                     }
 
-                    _libraryMonitor.ReportFileSystemChangeComplete(recordPath, false);
+                    _libraryMonitor.ReportFileSystemChangeComplete(recordPath, true);
                 }
             }
             catch (OperationCanceledException)
