@@ -1,7 +1,42 @@
-﻿define(['dialogHelper', 'loading', 'connectionManager', 'globalize', 'paper-checkbox', 'emby-input', 'paper-icon-button-light', 'emby-select', 'emby-button'],
+﻿define(['dialogHelper', 'loading', 'connectionManager', 'globalize', 'paper-checkbox', 'emby-input', 'paper-icon-button-light', 'emby-select', 'emby-button', 'listViewStyle'],
 function (dialogHelper, loading, connectionManager, globalize) {
 
     var currentServerId;
+
+    function getChannelMappingOptions(serverId, providerId) {
+
+        return connectionManager.getApiClient(serverId).getJSON(ApiClient.getUrl('LiveTv/ChannelMappingOptions', {
+            providerId: providerId
+        }));
+    }
+
+    function getTunerChannelHtml(channel, providerName) {
+
+        var html = '';
+
+        html += '<div class="listItem">';
+
+        html += '<button is="emby-button" type="button" class="fab listItemIcon mini" style="background:#52B54B;"><iron-icon icon="dvr"></iron-icon></button>';
+
+        html += '<div class="listItemBody">';
+        html += '<h3>';
+        html += channel.Name;
+        html += '</h3>';
+
+        if (channel.ProviderChannelNumber || channel.ProviderChannelName) {
+            html += '<div class="secondary">';
+            html += (channel.ProviderChannelNumber || '') + ' ' + (channel.ProviderChannelName || '') + ' - ' + providerName;
+            html += '</div>';
+        }
+
+        html += '</div>';
+
+        html += '<button is="paper-icon-button-light" type="button" onclick="alert(\'coming soon.\');"><iron-icon icon="mode-edit"></iron-icon></button>';
+
+        html += '</div>';
+
+        return html;
+    }
 
     function getEditorHtml() {
 
@@ -9,15 +44,28 @@ function (dialogHelper, loading, connectionManager, globalize) {
 
         html += '<div class="dialogContent">';
         html += '<div class="dialogContentInner centeredContent">';
-        html += 'coming soon';
+        html += '<form style="margin:auto;">';
+
+        html += '<h1>' + globalize.translate('HeaderChannels') + '</h1>';
+
+        html += '<div class="channels paperList">';
+        html += '</div>';
+
+        html += '</form>';
         html += '</div>';
         html += '</div>';
 
         return html;
     }
 
-    function initEditor(content, items) {
+    function initEditor(dlg, options) {
 
+        getChannelMappingOptions(options.serverId, options.providerId).then(function (result) {
+
+            dlg.querySelector('.channels').innerHTML = result.TunerChannels.map(function (channel) {
+                return getTunerChannelHtml(channel, result.ProviderName);
+            }).join('');
+        });
     }
 
     return function () {
@@ -26,7 +74,6 @@ function (dialogHelper, loading, connectionManager, globalize) {
 
         self.show = function (options) {
 
-            var items = options.items || {};
             currentServerId = options.serverId;
 
             var dialogOptions = {
@@ -57,7 +104,7 @@ function (dialogHelper, loading, connectionManager, globalize) {
             dlg.innerHTML = html;
             document.body.appendChild(dlg);
 
-            initEditor(dlg, items);
+            initEditor(dlg, options);
 
             dlg.querySelector('.btnCancel').addEventListener('click', function () {
 

@@ -382,6 +382,29 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             return list;
         }
 
+        public async Task<List<ChannelInfo>> GetChannelsForListingsProvider(ListingsProviderInfo listingsProvider, CancellationToken cancellationToken)
+        {
+            var list = new List<ChannelInfo>();
+
+            foreach (var hostInstance in _liveTvManager.TunerHosts)
+            {
+                try
+                {
+                    var channels = await hostInstance.GetChannels(cancellationToken).ConfigureAwait(false);
+
+                    list.AddRange(channels);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error getting channels", ex);
+                }
+            }
+
+            return list
+                .Where(i => IsListingProviderEnabledForTuner(listingsProvider, i.TunerHostId))
+                .ToList();
+        }
+
         public Task<IEnumerable<ChannelInfo>> GetChannelsAsync(CancellationToken cancellationToken)
         {
             return GetChannelsAsync(false, cancellationToken);

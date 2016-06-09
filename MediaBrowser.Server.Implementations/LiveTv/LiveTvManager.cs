@@ -2585,7 +2585,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return new TunerHosts.SatIp.ChannelScan(_logger).Scan(info, cancellationToken);
         }
 
-        public Task<List<ChannelInfo>> GetChannelsFromListingsProvider(string id, CancellationToken cancellationToken)
+        public Task<List<ChannelInfo>> GetChannelsForListingsProvider(string id, CancellationToken cancellationToken)
+        {
+            var info = GetConfiguration().ListingProviders.First(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
+            return EmbyTV.EmbyTV.Current.GetChannelsForListingsProvider(info, cancellationToken);
+        }
+
+        public Task<List<ChannelInfo>> GetChannelsFromListingsProviderData(string id, CancellationToken cancellationToken)
         {
             var info = GetConfiguration().ListingProviders.First(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
             var provider = _listingProviders.First(i => string.Equals(i.Type, info.Type, StringComparison.OrdinalIgnoreCase));

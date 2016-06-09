@@ -5,23 +5,6 @@
         var self = this;
         var items = {};
 
-        self.refresh = function () {
-
-            reloadPage(options.element);
-        };
-
-        self.destroy = function () {
-
-            events.off(serverNotifications, 'TimerCreated', onTimerCreated);
-            events.off(serverNotifications, 'SeriesTimerCreated', onSeriesTimerCreated);
-            events.off(serverNotifications, 'TimerCancelled', onTimerCancelled);
-            events.off(serverNotifications, 'SeriesTimerCancelled', onSeriesTimerCancelled);
-
-            clearCurrentTimeUpdateInterval();
-            itemShortcuts.off(options.element);
-            items = {};
-        };
-
         self.options = options;
 
         // 30 mins
@@ -39,6 +22,24 @@
         };
 
         var channelsPromise;
+
+        self.refresh = function () {
+
+            currentDate = null;
+            reloadPage(options.element);
+        };
+
+        self.destroy = function () {
+
+            events.off(serverNotifications, 'TimerCreated', onTimerCreated);
+            events.off(serverNotifications, 'SeriesTimerCreated', onSeriesTimerCreated);
+            events.off(serverNotifications, 'TimerCancelled', onTimerCancelled);
+            events.off(serverNotifications, 'SeriesTimerCancelled', onSeriesTimerCancelled);
+
+            clearCurrentTimeUpdateInterval();
+            itemShortcuts.off(options.element);
+            items = {};
+        };
 
         function normalizeDateToTimeslot(date) {
 
@@ -128,7 +129,7 @@
                 var limit = 5;
 
                 context.querySelector('.guideRequiresUnlock').classList.remove('hide');
-                context.querySelector('.unlockText').innerHTML = globalize.translate('LiveTvGuideRequiresUnlock', limit);
+                context.querySelector('.unlockText').innerHTML = globalize.translate('sharedcomponents#LiveTvGuideRequiresUnlock', limit);
 
                 return limit;
             });
@@ -797,7 +798,7 @@
 
         require(['text!./tvguide.template.html'], function (template) {
             var context = options.element;
-            context.innerHTML = globalize.translateDocument(template, 'core');
+            context.innerHTML = globalize.translateDocument(template, 'sharedcomponents');
 
             var programGrid = context.querySelector('.programGrid');
             var timeslotHeaders = context.querySelector('.timeslotHeaders');

@@ -27,7 +27,7 @@ button.listItem {
 
 .listItemBody {
     flex-grow: 1;
-    padding: .35em 1.25em;
+    padding: .85em 1.25em;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -76,6 +76,10 @@ button.listItem {
     bottom: 0;
     left: 0;
     right: 0;
+}
+
+.listItem .secondary {
+    color: #737373;
 }
 
 .listItem:focus .secondary {

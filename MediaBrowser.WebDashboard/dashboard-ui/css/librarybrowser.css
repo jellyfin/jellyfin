@@ -1108,15 +1108,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-@media all and (max-height: 650px) {
-
-    .vertical.alphabetPicker .alphaPickerButton {
-        padding-top: 2px !important;
-        padding-bottom: 2px !important;
-    }
-}
-
-@media all and (max-height: 600px) {
+@media all and (max-height: 700px) {
 
     .vertical.alphabetPicker .alphaPickerButton {
         padding-top: 1px !important;
@@ -1124,7 +1116,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-@media all and (max-height: 550px) {
+@media all and (max-height: 600px) {
 
     .vertical.alphabetPicker .alphaPickerButton {
         padding-top: 0 !important;

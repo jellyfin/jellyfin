@@ -333,7 +333,7 @@
         });
     }
 
-    function showProviderOptions(page, id, button) {
+    function showProviderOptions(page, providerId, button) {
 
         var items = [];
 
@@ -358,10 +358,10 @@
                 switch (id) {
 
                     case 'delete':
-                        deleteProvider(page, id);
+                        deleteProvider(page, providerId);
                         break;
                     case 'map':
-                        mapChannels(page, id);
+                        mapChannels(page, providerId);
                         break;
                     default:
                         break;
