@@ -425,6 +425,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 var inputVideoCodec = videoStream == null ? null : videoStream.Codec;
                 bitrate = ResolutionNormalizer.ScaleBitrate(bitrate.Value, inputVideoCodec, outputVideoCodec);
+
+                // If a max bitrate was requested, don't let the scaled bitrate exceed it
+                if (request.VideoBitRate.HasValue)
+                {
+                    bitrate = Math.Min(bitrate.Value, request.VideoBitRate.Value);
+                }
             }
 
             return bitrate;
