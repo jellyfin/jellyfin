@@ -1137,7 +1137,7 @@
   "HeaderDownloadPeopleMetadataForHelp": "Enabling additional options will provide more on-screen information but will result in slower library scans.",
   "ViewTypeFolders": "Folders",
   "OptionDisplayFolderView": "Display a folder view to show plain media folders",
-  "OptionDisplayFolderViewHelp": "If enabled, Emby apps wil display a Folders category alongside your media library. This is useful if you'd like to have plain folder views.",
+  "OptionDisplayFolderViewHelp": "If enabled, Emby apps will display a Folders category alongside your media library. This is useful if you'd like to have plain folder views.",
   "ViewTypeLiveTvRecordingGroups": "Recordings",
   "ViewTypeLiveTvChannels": "Channels",
   "LabelEasyPinCode": "Easy pin code:",

@@ -1137,7 +1137,7 @@
     "HeaderDownloadPeopleMetadataForHelp": "Abilitando il provider scaricher\u00e0 pi\u00f9 informazioni ( la scansione sar\u00e0 pi\u00f9 lenta)",
     "ViewTypeFolders": "Cartelle",
     "OptionDisplayFolderView": "Display a folder view to show plain media folders",
-    "OptionDisplayFolderViewHelp": "If enabled, Emby apps wil display a Folders category alongside your media library. This is useful if you'd like to have plain folder views.",
+    "OptionDisplayFolderViewHelp": "If enabled, Emby apps will display a Folders category alongside your media library. This is useful if you'd like to have plain folder views.",
     "ViewTypeLiveTvRecordingGroups": "Registrazioni",
     "ViewTypeLiveTvChannels": "canali",
     "LabelEasyPinCode": "Codice Pin",

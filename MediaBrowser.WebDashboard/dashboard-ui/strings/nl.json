@@ -1137,7 +1137,7 @@
     "HeaderDownloadPeopleMetadataForHelp": "Het inschakelen van extra opties zal meer informatie op het scherm bieden, maar resulteert in tragere bibliotheek scan.",
     "ViewTypeFolders": "Mappen",
     "OptionDisplayFolderView": "Display a folder view to show plain media folders",
-    "OptionDisplayFolderViewHelp": "If enabled, Emby apps wil display a Folders category alongside your media library. This is useful if you'd like to have plain folder views.",
+    "OptionDisplayFolderViewHelp": "If enabled, Emby apps will display a Folders category alongside your media library. This is useful if you'd like to have plain folder views.",
     "ViewTypeLiveTvRecordingGroups": "Opnamen",
     "ViewTypeLiveTvChannels": "Kanalen",
     "LabelEasyPinCode": "Eenvoudige pincode:",
