@@ -387,7 +387,8 @@ namespace MediaBrowser.Controller.LiveTv
 
         Task<List<ChannelInfo>> GetSatChannelScanResult(TunerHostInfo info, CancellationToken cancellationToken);
 
-        Task<List<ChannelInfo>> GetChannelsFromListingsProvider(string id, CancellationToken cancellationToken);
+        Task<List<ChannelInfo>> GetChannelsForListingsProvider(string id, CancellationToken cancellationToken);
+        Task<List<ChannelInfo>> GetChannelsFromListingsProviderData(string id, CancellationToken cancellationToken);
 
         event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCancelled;
         event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCancelled;
