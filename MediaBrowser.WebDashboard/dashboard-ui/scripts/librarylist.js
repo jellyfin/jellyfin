@@ -242,7 +242,9 @@
                     });
 
                     Dashboard.hideLoadingMsg();
-                    itemsContainer.dispatchEvent(new CustomEvent('timercancelled', {}));
+                    itemsContainer.dispatchEvent(new CustomEvent('timercancelled', {
+                        bubbles: true
+                    }));
                 });
             });
         });

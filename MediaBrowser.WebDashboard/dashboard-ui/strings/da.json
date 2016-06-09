@@ -1137,7 +1137,7 @@
     "HeaderDownloadPeopleMetadataForHelp": "Ved at aktivere yderligere muligheder s\u00e5r du mere informatin p\u00e5 sk\u00e6rmen, men biblioteksskanninger bliver langsommere.",
     "ViewTypeFolders": "Mapper",
     "OptionDisplayFolderView": "Display a folder view to show plain media folders",
-    "OptionDisplayFolderViewHelp": "If enabled, Emby apps wil display a Folders category alongside your media library. This is useful if you'd like to have plain folder views.",
+    "OptionDisplayFolderViewHelp": "If enabled, Emby apps will display a Folders category alongside your media library. This is useful if you'd like to have plain folder views.",
     "ViewTypeLiveTvRecordingGroups": "Optagelser",
     "ViewTypeLiveTvChannels": "Kanaler",
     "LabelEasyPinCode": "Pinkode:",

@@ -26,6 +26,10 @@ define(['connectionManager', 'events'], function (connectionManager, events) {
                 }
             }
         }
+        else if (msg.MessageType === "TimerCreated" || msg.MessageType === "SeriesTimerCreated" || msg.MessageType === "TimerCancelled" || msg.MessageType === "SeriesTimerCancelled") {
+
+            events.trigger(serverNotifications, msg.MessageType, [apiClient, msg.Data]);
+        }
     }
 
     function bindEvents(apiClient) {

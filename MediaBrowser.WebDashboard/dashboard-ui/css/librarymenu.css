@@ -446,7 +446,7 @@
     display: none !important;
 }
 
-.dashboardDocument .btnCast {
+.dashboardDocument .btnCast, .dashboardDocument .headerSelectedPlayer {
     display: none !important;
 }
 

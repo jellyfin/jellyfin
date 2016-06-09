@@ -24,6 +24,9 @@ containing the source to highlight. The event detail can optionally contain a
 `lang` property, containing a string like `"html"`, `"js"`, etc.
 
 This flow is supported by [`<marked-element>`](https://github.com/PolymerElements/marked-element).
+
+@element prism-highlighter
+@demo demo/index.html
 -->
 <script>
 (function() {
@@ -55,9 +58,11 @@ This flow is supported by [`<marked-element>`](https://github.com/PolymerElement
      */
     _highlight: function(event) {
       if (!event.detail || !event.detail.code) {
-        console.warn('Malformed', HIGHLIGHT_EVENT, 'event:', event.detail);
+        Polymer.Base._warn('Malformed', HIGHLIGHT_EVENT, 'event:', event.detail);
         return;
       }
+
+      event.stopPropagation();
 
       var detail = event.detail;
       detail.code = Prism.highlight(detail.code, this._detectLang(detail.code, detail.lang));

@@ -333,7 +333,7 @@
         });
     }
 
-    function showProviderOptions(page, id, button) {
+    function showProviderOptions(page, providerId, button) {
 
         var items = [];
 
@@ -358,16 +358,26 @@
                 switch (id) {
 
                     case 'delete':
-                        deleteProvider(page, id);
+                        deleteProvider(page, providerId);
                         break;
                     case 'map':
-                        alert('coming soon');
+                        mapChannels(page, providerId);
                         break;
                     default:
                         break;
                 }
             });
 
+        });
+    }
+
+    function mapChannels(page, providerId) {
+
+        require(['components/channelmapper/channelmapper'], function (channelmapper) {
+            new channelmapper().show({
+                serverId: ApiClient.serverInfo().Id,
+                providerId: providerId
+            });
         });
     }
 
