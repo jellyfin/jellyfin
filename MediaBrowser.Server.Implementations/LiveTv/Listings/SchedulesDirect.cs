@@ -879,14 +879,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 throw new Exception("ListingsId required");
             }
 
+            await AddMetadata(info, new List<ChannelInfo>(), cancellationToken).ConfigureAwait(false);
+
             var token = await GetToken(info, cancellationToken);
 
             if (string.IsNullOrWhiteSpace(token))
             {
                 throw new Exception("token required");
             }
-
-            ClearPairCache(listingsId);
 
             var httpOptions = new HttpRequestOptions()
             {
@@ -921,10 +921,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                     }
                     channelNumber = channelNumber.TrimStart('0');
 
+                    var name = channelNumber;
+                    var station = GetStation(listingsId, channelNumber, null);
+
+                    if (station != null)
+                    {
+                        name = station.name;
+                    }
+
                     list.Add(new ChannelInfo
                     {
                         Number = channelNumber,
-                        Name = map.channel
+                        Name = name
                     });
                 }
             }

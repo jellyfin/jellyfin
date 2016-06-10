@@ -1999,6 +1999,13 @@ var AppInfo = {};
             return dialoghelper;
         });
 
+        if (!('registerElement' in document)) {
+            //define("registerElement", ['bower_components/webcomponentsjs/CustomElements.min']);
+            define("registerElement", [{}]);
+        } else {
+            define("registerElement", [{}]);
+        }
+
         // alias
         define("historyManager", [], function () {
             return Emby.Page;

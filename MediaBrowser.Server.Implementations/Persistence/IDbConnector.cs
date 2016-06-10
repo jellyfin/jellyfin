@@ -5,6 +5,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
 {
     public interface IDbConnector
     {
-        Task<IDbConnection> Connect(string dbPath);
+        Task<IDbConnection> Connect(string dbPath, int? cacheSize = null);
     }
 }

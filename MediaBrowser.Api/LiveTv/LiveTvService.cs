@@ -578,7 +578,9 @@ namespace MediaBrowser.Api.LiveTv
         {
             var config = GetConfiguration();
 
-            var listingProvider = config.ListingProviders.First(i => string.Equals(request.ProviderId, i.Id, StringComparison.OrdinalIgnoreCase));
+            var listingsProviderInfo = config.ListingProviders.First(i => string.Equals(request.ProviderId, i.Id, StringComparison.OrdinalIgnoreCase));
+
+            var listingsProviderName = _liveTvManager.ListingProviders.First(i => string.Equals(i.Type, listingsProviderInfo.Type, StringComparison.OrdinalIgnoreCase)).Name;
 
             var tunerChannels = await _liveTvManager.GetChannelsForListingsProvider(request.ProviderId, CancellationToken.None)
                         .ConfigureAwait(false);
@@ -586,7 +588,7 @@ namespace MediaBrowser.Api.LiveTv
             var providerChannels = await _liveTvManager.GetChannelsFromListingsProviderData(request.ProviderId, CancellationToken.None)
                      .ConfigureAwait(false);
 
-            var mappings = listingProvider.ChannelMappings.ToList();
+            var mappings = listingsProviderInfo.ChannelMappings.ToList();
 
             var result = new ChannelMappingOptions
             {
@@ -601,7 +603,7 @@ namespace MediaBrowser.Api.LiveTv
 
                 Mappings = mappings,
 
-                ProviderName = "Schedules Direct"
+                ProviderName = listingsProviderName
             };
 
             return ToOptimizedResult(result);
