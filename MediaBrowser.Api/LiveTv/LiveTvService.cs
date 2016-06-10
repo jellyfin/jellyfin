@@ -492,6 +492,16 @@ namespace MediaBrowser.Api.LiveTv
         public string ProviderId { get; set; }
     }
 
+    [Route("/LiveTv/ChannelMappings")]
+    [Authenticated(AllowBeforeStartupWizard = true)]
+    public class SetChannelMapping
+    {
+        [ApiMember(Name = "Id", Description = "Provider id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ProviderId { get; set; }
+        public string TunerChannelNumber { get; set; }
+        public string ProviderChannelNumber { get; set; }
+    }
+
     public class ChannelMappingOptions
     {
         public List<TunerChannelMapping> TunerChannels { get; set; }
@@ -572,6 +582,40 @@ namespace MediaBrowser.Api.LiveTv
             var result = await _liveTvManager.GetRegistrationInfo(request.ChannelId, request.ProgramId, request.Feature).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
+        }
+
+        public async Task<object> Post(SetChannelMapping request)
+        {
+            var config = GetConfiguration();
+
+            var listingsProviderInfo = config.ListingProviders.First(i => string.Equals(request.ProviderId, i.Id, StringComparison.OrdinalIgnoreCase));
+            listingsProviderInfo.ChannelMappings = listingsProviderInfo.ChannelMappings.Where(i => !string.Equals(i.Name, request.TunerChannelNumber, StringComparison.OrdinalIgnoreCase)).ToArray();
+
+            if (!string.Equals(request.TunerChannelNumber, request.ProviderChannelNumber, StringComparison.OrdinalIgnoreCase))
+            {
+                var list = listingsProviderInfo.ChannelMappings.ToList();
+                list.Add(new NameValuePair
+                {
+                    Name = request.TunerChannelNumber,
+                    Value = request.ProviderChannelNumber
+                });
+                listingsProviderInfo.ChannelMappings = list.ToArray();
+            }
+
+            UpdateConfiguration(config);
+
+            var tunerChannels = await _liveTvManager.GetChannelsForListingsProvider(request.ProviderId, CancellationToken.None)
+                        .ConfigureAwait(false);
+
+            var providerChannels = await _liveTvManager.GetChannelsFromListingsProviderData(request.ProviderId, CancellationToken.None)
+                     .ConfigureAwait(false);
+
+            var mappings = listingsProviderInfo.ChannelMappings.ToList();
+
+            var tunerChannelMappings =
+                tunerChannels.Select(i => GetTunerChannelMapping(i, mappings, providerChannels)).ToList();
+
+            return tunerChannelMappings.First(i => string.Equals(i.Number, request.TunerChannelNumber, StringComparison.OrdinalIgnoreCase));
         }
 
         public async Task<object> Get(GetChannelMappingOptions request)
@@ -702,6 +746,11 @@ namespace MediaBrowser.Api.LiveTv
         private LiveTvOptions GetConfiguration()
         {
             return _config.GetConfiguration<LiveTvOptions>("livetv");
+        }
+
+        private void UpdateConfiguration(LiveTvOptions options)
+        {
+            _config.SaveConfiguration("livetv", options);
         }
 
         public async Task<object> Get(GetLineups request)

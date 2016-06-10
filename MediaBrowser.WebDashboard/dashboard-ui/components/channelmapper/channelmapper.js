@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'loading', 'connectionManager', 'globalize', 'actionsheet', 'paper-checkbox', 'emby-input', 'paper-icon-button-light', 'emby-select', 'emby-button', 'listViewStyle', 'material-icons'],
+﻿define(['dialogHelper', 'loading', 'connectionManager', 'globalize', 'actionsheet', 'paper-checkbox', 'emby-input', 'paper-icon-button-light', 'emby-button', 'listViewStyle', 'material-icons'],
 function (dialogHelper, loading, connectionManager, globalize, actionsheet) {
 
     return function (options) {
@@ -20,9 +20,31 @@ function (dialogHelper, loading, connectionManager, globalize, actionsheet) {
             return elem;
         }
 
-        function mapChannel(tunerChannelNumber, providerChannelNumber) {
+        function mapChannel(button, tunerChannelNumber, providerChannelNumber) {
 
-            alert('coming soon.');
+            loading.show();
+
+            var providerId = options.providerId;
+            var apiClient = connectionManager.getApiClient(options.serverId);
+
+            apiClient.ajax({
+                type: 'POST',
+                url: ApiClient.getUrl('LiveTv/ChannelMappings'),
+                data: {
+                    providerId: providerId,
+                    tunerChannelNumber: tunerChannelNumber,
+                    providerChannelNumber: providerChannelNumber
+                },
+                dataType: 'json'
+
+            }).then(function (mapping) {
+
+                var listItem = parentWithClass(button, 'listItem');
+
+                button.setAttribute('data-providernumber', mapping.ProviderChannelNumber);
+                listItem.querySelector('.secondary').innerHTML = getMappingSecondaryName(mapping, currentMappingOptions.ProviderName);
+                loading.hide();
+            });
         }
 
         function onChannelsElementClick(e) {
@@ -33,14 +55,15 @@ function (dialogHelper, loading, connectionManager, globalize, actionsheet) {
                 return;
             }
 
-            var channelNumber = btnMap.getAttribute('data-number');
+            var tunerChannelNumber = btnMap.getAttribute('data-number');
+            var providerChannelNumber = btnMap.getAttribute('data-providernumber');
 
             var menuItems = currentMappingOptions.ProviderChannels.map(function (m) {
 
                 return {
                     name: m.Name,
                     id: m.Id,
-                    selected: m.Id == channelNumber
+                    selected: m.Id.toLowerCase() == providerChannelNumber.toLowerCase()
                 };
             });
 
@@ -49,15 +72,21 @@ function (dialogHelper, loading, connectionManager, globalize, actionsheet) {
                 items: menuItems
 
             }).then(function (newChannelNumber) {
-                mapChannel(channelNumber, newChannelNumber);
+                mapChannel(btnMap, tunerChannelNumber, newChannelNumber);
             });
         }
 
         function getChannelMappingOptions(serverId, providerId) {
 
-            return connectionManager.getApiClient(serverId).getJSON(ApiClient.getUrl('LiveTv/ChannelMappingOptions', {
+            var apiClient = connectionManager.getApiClient(serverId);
+            return apiClient.getJSON(apiClient.getUrl('LiveTv/ChannelMappingOptions', {
                 providerId: providerId
             }));
+        }
+
+        function getMappingSecondaryName(mapping, providerName) {
+
+            return (mapping.ProviderChannelNumber || '') + ' ' + (mapping.ProviderChannelName || '') + ' - ' + providerName;
         }
 
         function getTunerChannelHtml(channel, providerName) {
@@ -66,7 +95,7 @@ function (dialogHelper, loading, connectionManager, globalize, actionsheet) {
 
             html += '<div class="listItem">';
 
-            html += '<button is="emby-button" type="button" class="fab listItemIcon mini" style="background:#52B54B;"><iron-icon icon="dvr"></iron-icon></button>';
+            html += '<button is="emby-button" type="button" class="fab autoSize mini" style="background:#52B54B;"><i class="md-icon listItemIcon">dvr</i></button>';
 
             html += '<div class="listItemBody">';
             html += '<h3>';
@@ -75,13 +104,13 @@ function (dialogHelper, loading, connectionManager, globalize, actionsheet) {
 
             if (channel.ProviderChannelNumber || channel.ProviderChannelName) {
                 html += '<div class="secondary">';
-                html += (channel.ProviderChannelNumber || '') + ' ' + (channel.ProviderChannelName || '') + ' - ' + providerName;
+                html += getMappingSecondaryName(channel, providerName);
                 html += '</div>';
             }
 
             html += '</div>';
 
-            html += '<button class="btnMap" is="paper-icon-button-light" type="button" data-number="' + channel.Number + '"><iron-icon icon="mode-edit"></iron-icon></button>';
+            html += '<button class="btnMap" is="paper-icon-button-light" type="button" data-number="' + channel.Number + '" data-providernumber="' + channel.ProviderChannelNumber + '"><iron-icon icon="mode-edit"></iron-icon></button>';
 
             html += '</div>';
 
