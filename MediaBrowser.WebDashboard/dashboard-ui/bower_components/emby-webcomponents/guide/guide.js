@@ -1,4 +1,4 @@
-﻿define(['require', 'browser', 'globalize', 'connectionManager', 'serverNotifications', 'loading', 'scrollHelper', 'datetime', 'focusManager', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationservices', 'clearButtonStyle', 'css!./guide.css', 'html!./../icons/mediainfo.html', 'html!./../icons/nav.html', 'scrollStyles', 'emby-button'], function (require, browser, globalize, connectionManager, serverNotifications, loading, scrollHelper, datetime, focusManager, imageLoader, events, layoutManager, itemShortcuts, registrationServices) {
+﻿define(['require', 'browser', 'globalize', 'connectionManager', 'serverNotifications', 'loading', 'scrollHelper', 'datetime', 'focusManager', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationservices', 'clearButtonStyle', 'css!./guide.css', 'material-icons', 'scrollStyles', 'emby-button'], function (require, browser, globalize, connectionManager, serverNotifications, loading, scrollHelper, datetime, focusManager, imageLoader, events, layoutManager, itemShortcuts, registrationServices) {
 
     function Guide(options) {
 
@@ -221,7 +221,7 @@
             html += '<div class="currentTimeIndicatorBar hide">';
             html += '</div>';
             html += '<div class="currentTimeIndicatorArrowContainer hide">';
-            html += '<iron-icon class="currentTimeIndicatorArrow" icon="nav:arrow-drop-down"></iron-icon>';
+            html += '<i class="currentTimeIndicatorArrow md-icon">arrow_drop_down</i>';
             html += '</div>';
 
             return html;
@@ -340,14 +340,14 @@
                 html += '</div>';
 
                 if (program.IsHD && options.showHdIcon) {
-                    html += '<iron-icon class="guideHdIcon" icon="mediainfo:hd"></iron-icon>';
+                    html += '<i class="guideHdIcon md-icon">hd</i>';
                 }
 
                 if (program.SeriesTimerId) {
-                    html += '<iron-icon class="seriesTimerIcon" icon="mediainfo:fiber-smart-record"></iron-icon>';
+                    html += '<i class="seriesTimerIcon md-icon">fiber_smart_record</i>';
                 }
                 else if (program.TimerId) {
-                    html += '<iron-icon class="timerIcon" icon="mediainfo:fiber-manual-record"></iron-icon>';
+                    html += '<i class="timerIcon md-icon">fiber_manual_record</i>';
                 }
 
                 if (addAccent) {
@@ -756,7 +756,7 @@
 
                 var icon = cell.querySelector('.timerIcon');
                 if (!icon) {
-                    cell.insertAdjacentHTML('beforeend', '<iron-icon class="timerIcon" icon="mediainfo:fiber-manual-record"></iron-icon>');
+                    cell.insertAdjacentHTML('beforeend', '<i class="timerIcon md-icon">fiber_manual_record</i>');
                 }
 
                 if (newTimerId) {

@@ -40,6 +40,9 @@ button.actionSheetMenuItem {
 
 .actionSheetItemText {
     padding: .8em 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .layout-tv button.actionSheetMenuItem {
@@ -56,6 +59,7 @@ button.actionSheetMenuItem {
     margin-bottom: 0 !important;
     display: flex;
     flex-direction: column;
+    width: 100%;
 }
 
 .layout-tv .actionSheetScroller {

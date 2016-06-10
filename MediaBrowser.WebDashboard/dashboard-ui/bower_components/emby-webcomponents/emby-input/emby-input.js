@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'browser', 'css!./emby-input'], function (layoutManager, browser) {
+﻿define(['layoutManager', 'browser', 'css!./emby-input', 'registerElement'], function (layoutManager, browser) {
 
     var EmbyInputPrototype = Object.create(HTMLInputElement.prototype);
 

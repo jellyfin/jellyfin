@@ -1973,6 +1973,7 @@ var AppInfo = {};
         define("appSettings", [embyWebComponentsBowerPath + "/appsettings"], updateAppSettings);
         define("userSettings", [embyWebComponentsBowerPath + "/usersettings"], returnFirstDependency);
 
+        define("material-icons", ['css!' + embyWebComponentsBowerPath + '/fonts/material-icons/style']);
         define("robotoFont", ['css!' + embyWebComponentsBowerPath + '/fonts/roboto/style']);
         define("opensansFont", ['css!' + embyWebComponentsBowerPath + '/fonts/opensans/style']);
         define("montserratFont", ['css!' + embyWebComponentsBowerPath + '/fonts/montserrat/style']);
@@ -1997,6 +1998,13 @@ var AppInfo = {};
             dialoghelper.setOnOpen(onDialogOpen);
             return dialoghelper;
         });
+
+        if (!('registerElement' in document)) {
+            //define("registerElement", ['bower_components/webcomponentsjs/CustomElements.min']);
+            define("registerElement", [{}]);
+        } else {
+            define("registerElement", [{}]);
+        }
 
         // alias
         define("historyManager", [], function () {

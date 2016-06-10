@@ -1,5 +1,5 @@
 ﻿<div class="dialogHeader">
-    <button is="paper-icon-button-light" class="btnCancel" tabindex="-1"><iron-icon icon="nav:arrow-back"></iron-icon></button>
+    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">arrow_back</i></button>
     <div class="dialogHeaderTitle">${Subtitles}</div>
 </div>
 <div class="dialogContent smoothScrollY">
@@ -15,7 +15,7 @@
                 <div class="selectContainer" style="flex-grow: 1; margin-bottom: 0;">
                     <select is="emby-select" id="selectLanguage" required="required" label="${LabelLanguage}"></select>
                 </div>
-                <button type="submit" is="paper-icon-button-light" title="${Search}" class="btnSearchSubtitles" style="flex-shrink: 0;"><iron-icon icon="search"></iron-icon></button>
+                <button type="submit" is="paper-icon-button-light" title="${Search}" class="btnSearchSubtitles" style="flex-shrink: 0;"><i class="md-icon">search</i></button>
             </div>
             <button is="emby-button" type="submit" class="raised btnSubmit block">${Search}</button>
         </form>

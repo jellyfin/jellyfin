@@ -95,7 +95,7 @@
     left: 0 !important;
     right: 0 !important;
     margin: 0 !important;
-    z-index: 999998 !important;
+    z-index: 999999 !important;
     transition: opacity ease-out 0.2s;
 }
 

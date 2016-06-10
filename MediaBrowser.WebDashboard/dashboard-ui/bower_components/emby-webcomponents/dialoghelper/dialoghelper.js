@@ -142,8 +142,8 @@
 
         dlg.addEventListener('click', function (event) {
             var rect = dlg.getBoundingClientRect();
-            var isInDialog = (rect.top <= event.clientY && event.clientY <= rect.top + rect.height
-              && rect.left <= event.clientX && event.clientX <= rect.left + rect.width);
+            var isInDialog = (rect.top <= event.clientY && event.clientY <= (rect.top + rect.height)
+              && rect.left <= event.clientX && event.clientX <= (rect.left + rect.width));
 
             if (!isInDialog) {
                 if (parentWithTag(event.target, 'SELECT')) {
@@ -180,7 +180,7 @@
 
         var backdrop = document.createElement('div');
         backdrop.classList.add('dialogBackdrop');
-        dlg.parentNode.insertBefore(backdrop, dlg.nextSibling);
+        dlg.parentNode.insertBefore(backdrop, dlg);
         dlg.backdrop = backdrop;
 
         // Doing this immediately causes the opacity to jump immediately without animating

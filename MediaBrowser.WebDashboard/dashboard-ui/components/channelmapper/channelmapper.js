@@ -1,80 +1,159 @@
-﻿define(['dialogHelper', 'loading', 'connectionManager', 'globalize', 'paper-checkbox', 'emby-input', 'paper-icon-button-light', 'emby-select', 'emby-button', 'listViewStyle'],
-function (dialogHelper, loading, connectionManager, globalize) {
+﻿define(['dialogHelper', 'loading', 'connectionManager', 'globalize', 'actionsheet', 'paper-checkbox', 'emby-input', 'paper-icon-button-light', 'emby-button', 'listViewStyle', 'material-icons'],
+function (dialogHelper, loading, connectionManager, globalize, actionsheet) {
 
-    var currentServerId;
-
-    function getChannelMappingOptions(serverId, providerId) {
-
-        return connectionManager.getApiClient(serverId).getJSON(ApiClient.getUrl('LiveTv/ChannelMappingOptions', {
-            providerId: providerId
-        }));
-    }
-
-    function getTunerChannelHtml(channel, providerName) {
-
-        var html = '';
-
-        html += '<div class="listItem">';
-
-        html += '<button is="emby-button" type="button" class="fab listItemIcon mini" style="background:#52B54B;"><iron-icon icon="dvr"></iron-icon></button>';
-
-        html += '<div class="listItemBody">';
-        html += '<h3>';
-        html += channel.Name;
-        html += '</h3>';
-
-        if (channel.ProviderChannelNumber || channel.ProviderChannelName) {
-            html += '<div class="secondary">';
-            html += (channel.ProviderChannelNumber || '') + ' ' + (channel.ProviderChannelName || '') + ' - ' + providerName;
-            html += '</div>';
-        }
-
-        html += '</div>';
-
-        html += '<button is="paper-icon-button-light" type="button" onclick="alert(\'coming soon.\');"><iron-icon icon="mode-edit"></iron-icon></button>';
-
-        html += '</div>';
-
-        return html;
-    }
-
-    function getEditorHtml() {
-
-        var html = '';
-
-        html += '<div class="dialogContent">';
-        html += '<div class="dialogContentInner centeredContent">';
-        html += '<form style="margin:auto;">';
-
-        html += '<h1>' + globalize.translate('HeaderChannels') + '</h1>';
-
-        html += '<div class="channels paperList">';
-        html += '</div>';
-
-        html += '</form>';
-        html += '</div>';
-        html += '</div>';
-
-        return html;
-    }
-
-    function initEditor(dlg, options) {
-
-        getChannelMappingOptions(options.serverId, options.providerId).then(function (result) {
-
-            dlg.querySelector('.channels').innerHTML = result.TunerChannels.map(function (channel) {
-                return getTunerChannelHtml(channel, result.ProviderName);
-            }).join('');
-        });
-    }
-
-    return function () {
+    return function (options) {
 
         var self = this;
 
-        self.show = function (options) {
+        var currentMappingOptions;
 
-            currentServerId = options.serverId;
+        function parentWithClass(elem, className) {
+
+            while (!elem.classList || !elem.classList.contains(className)) {
+                elem = elem.parentNode;
+
+                if (!elem) {
+                    return null;
+                }
+            }
+
+            return elem;
+        }
+
+        function mapChannel(button, tunerChannelNumber, providerChannelNumber) {
+
+            loading.show();
+
+            var providerId = options.providerId;
+            var apiClient = connectionManager.getApiClient(options.serverId);
+
+            apiClient.ajax({
+                type: 'POST',
+                url: ApiClient.getUrl('LiveTv/ChannelMappings'),
+                data: {
+                    providerId: providerId,
+                    tunerChannelNumber: tunerChannelNumber,
+                    providerChannelNumber: providerChannelNumber
+                },
+                dataType: 'json'
+
+            }).then(function (mapping) {
+
+                var listItem = parentWithClass(button, 'listItem');
+
+                button.setAttribute('data-providernumber', mapping.ProviderChannelNumber);
+                listItem.querySelector('.secondary').innerHTML = getMappingSecondaryName(mapping, currentMappingOptions.ProviderName);
+                loading.hide();
+            });
+        }
+
+        function onChannelsElementClick(e) {
+
+            var btnMap = parentWithClass(e.target, 'btnMap');
+
+            if (!btnMap) {
+                return;
+            }
+
+            var tunerChannelNumber = btnMap.getAttribute('data-number');
+            var providerChannelNumber = btnMap.getAttribute('data-providernumber');
+
+            var menuItems = currentMappingOptions.ProviderChannels.map(function (m) {
+
+                return {
+                    name: m.Name,
+                    id: m.Id,
+                    selected: m.Id.toLowerCase() == providerChannelNumber.toLowerCase()
+                };
+            });
+
+            actionsheet.show({
+                positionTo: btnMap,
+                items: menuItems
+
+            }).then(function (newChannelNumber) {
+                mapChannel(btnMap, tunerChannelNumber, newChannelNumber);
+            });
+        }
+
+        function getChannelMappingOptions(serverId, providerId) {
+
+            var apiClient = connectionManager.getApiClient(serverId);
+            return apiClient.getJSON(apiClient.getUrl('LiveTv/ChannelMappingOptions', {
+                providerId: providerId
+            }));
+        }
+
+        function getMappingSecondaryName(mapping, providerName) {
+
+            return (mapping.ProviderChannelNumber || '') + ' ' + (mapping.ProviderChannelName || '') + ' - ' + providerName;
+        }
+
+        function getTunerChannelHtml(channel, providerName) {
+
+            var html = '';
+
+            html += '<div class="listItem">';
+
+            html += '<button is="emby-button" type="button" class="fab autoSize mini" style="background:#52B54B;"><i class="md-icon listItemIcon">dvr</i></button>';
+
+            html += '<div class="listItemBody">';
+            html += '<h3>';
+            html += channel.Name;
+            html += '</h3>';
+
+            if (channel.ProviderChannelNumber || channel.ProviderChannelName) {
+                html += '<div class="secondary">';
+                html += getMappingSecondaryName(channel, providerName);
+                html += '</div>';
+            }
+
+            html += '</div>';
+
+            html += '<button class="btnMap" is="paper-icon-button-light" type="button" data-number="' + channel.Number + '" data-providernumber="' + channel.ProviderChannelNumber + '"><iron-icon icon="mode-edit"></iron-icon></button>';
+
+            html += '</div>';
+
+            return html;
+        }
+
+        function getEditorHtml() {
+
+            var html = '';
+
+            html += '<div class="dialogContent">';
+            html += '<div class="dialogContentInner centeredContent">';
+            html += '<form style="margin:auto;">';
+
+            html += '<h1>' + globalize.translate('HeaderChannels') + '</h1>';
+
+            html += '<div class="channels paperList">';
+            html += '</div>';
+
+            html += '</form>';
+            html += '</div>';
+            html += '</div>';
+
+            return html;
+        }
+
+        function initEditor(dlg, options) {
+
+            getChannelMappingOptions(options.serverId, options.providerId).then(function (result) {
+
+                currentMappingOptions = result;
+
+                var channelsElement = dlg.querySelector('.channels');
+
+                channelsElement.innerHTML = result.TunerChannels.map(function (channel) {
+                    return getTunerChannelHtml(channel, result.ProviderName);
+                }).join('');
+
+                channelsElement.addEventListener('click', onChannelsElementClick);
+            });
+        }
+
+        self.show = function () {
 
             var dialogOptions = {
                 removeOnClose: true
@@ -92,7 +171,7 @@ function (dialogHelper, loading, connectionManager, globalize) {
             var title = globalize.translate('MapChannels');
 
             html += '<div class="dialogHeader" style="margin:0 0 2em;">';
-            html += '<button is="paper-icon-button-light" class="btnCancel" tabindex="-1"><iron-icon icon="nav:arrow-back"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">arrow_back</i></button>';
             html += '<div class="dialogHeaderTitle">';
             html += title;
             html += '</div>';

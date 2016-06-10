@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'layoutManager', 'globalize', 'emby-button', 'css!./actionsheet', 'html!./../icons/nav.html', 'scrollStyles'], function (dialogHelper, layoutManager, globalize) {
+﻿define(['dialogHelper', 'layoutManager', 'globalize', 'emby-button', 'css!./actionsheet', 'material-icons', 'scrollStyles'], function (dialogHelper, layoutManager, globalize) {
 
     function parentWithClass(elem, className) {
 
@@ -48,6 +48,7 @@
     function getPosition(options, dlg) {
 
         var windowHeight = window.innerHeight;
+        var windowWidth = window.innerWidth;
 
         if (windowHeight < 540) {
             return null;
@@ -58,13 +59,23 @@
         pos.top += options.positionTo.offsetHeight / 2;
         pos.left += options.positionTo.offsetWidth / 2;
 
+        var height = dlg.offsetHeight || 300;
+        var width = dlg.offsetWidth || 160;
+
         // Account for popup size 
-        pos.top -= ((dlg.offsetHeight || 300) / 2);
-        pos.left -= ((dlg.offsetWidth || 160) / 2);
+        pos.top -= height / 2;
+        pos.left -= width / 2;
 
         // Avoid showing too close to the bottom
-        pos.top = Math.min(pos.top, windowHeight - 300);
-        pos.left = Math.min(pos.left, window.innerWidth - 300);
+        var overflowX = pos.left + width - windowWidth;
+        var overflowY = pos.top + height - windowHeight;
+
+        if (overflowX > 0) {
+            pos.left -= (overflowX + 20);
+        }
+        if (overflowY > 0) {
+            pos.top -= (overflowY + 20);
+        }
 
         // Do some boundary checking
         pos.top = Math.max(pos.top, 10);
@@ -130,16 +141,18 @@
             }
         }
 
-        html += '<div class="actionSheetScroller hiddenScrollY">';
+        var scrollType = layoutManager.desktop ? 'smoothScrollY' : 'hiddenScrollY';
+
+        html += '<div class="actionSheetScroller ' + scrollType + '">';
 
         var i, length, option;
         var renderIcon = false;
         for (i = 0, length = options.items.length; i < length; i++) {
 
             option = options.items[i];
-            option.ironIcon = option.selected ? 'nav:check' : null;
+            option.icon = option.selected ? 'check' : null;
 
-            if (option.ironIcon) {
+            if (option.icon) {
                 renderIcon = true;
             }
         }
@@ -160,11 +173,11 @@
             var autoFocus = option.selected ? ' autoFocus' : '';
             html += '<' + itemTagName + autoFocus + ' is="emby-button" type="button" class="actionSheetMenuItem" data-id="' + (option.id || option.value) + '">';
 
-            if (option.ironIcon) {
-                html += '<iron-icon class="actionSheetItemIcon" icon="' + option.ironIcon + '"></iron-icon>';
+            if (option.icon) {
+                html += '<i class="actionSheetItemIcon md-icon">' + option.icon + '</i>';
             }
             else if (renderIcon && !center) {
-                html += '<iron-icon class="actionSheetItemIcon"></iron-icon>';
+                html += '<i class="actionSheetItemIcon md-icon" style="visibility:hidden;">check</i>';
             }
             html += '<div class="actionSheetItemText">' + (option.name || option.textContent || option.innerText) + '</div>';
             html += '</' + itemTagName + '>';

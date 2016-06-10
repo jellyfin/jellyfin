@@ -33,10 +33,10 @@ button.alphaPickerButton {
     opacity: .7;
 }
 
-[is=paper-icon-button-light].alphaPickerButton {
-    opacity: .25;
-    width: 4.4vh;
-    height: 4.4vh;
+[is=paper-icon-button-light].alphaPickerButton i {
+    width: 3.3vh;
+    height: 3.3vh;
+    font-size: 3.3vh;
 }
 
 .alphaPickerButton.selected {

@@ -1,0 +1,26 @@
+.toast {
+    position: fixed;
+    min-width: 288px;
+    box-sizing: border-box;
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+    border-radius: 2px;
+    font-size: 14px;
+    cursor: default;
+    -webkit-transition: -webkit-transform .3s ease-out;
+    transition: transform .3s ease-out;
+    background: #303030;
+    color: #fff;
+    min-height: initial;
+    padding: 1em 1.5em;
+    bottom: 1em;
+    left: 1em;
+    font-size: 110%;
+    z-index: 9999999;
+    -webkit-transform: translateY(200px);
+    transform: translateY(200px);
+}
+
+    .toast.visible {
+        -webkit-transform: none;
+        transform: none;
+    }

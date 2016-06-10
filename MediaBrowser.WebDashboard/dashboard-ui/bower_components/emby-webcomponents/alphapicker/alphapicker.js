@@ -1,4 +1,4 @@
-define(['focusManager', 'css!./style.css', 'clearButtonStyle', 'paper-icon-button-light'], function (focusManager) {
+define(['focusManager', 'css!./style.css', 'clearButtonStyle', 'paper-icon-button-light', 'material-icons'], function (focusManager) {
 
     function focus() {
         var selected = this.querySelector('.selected');
@@ -24,8 +24,8 @@ define(['focusManager', 'css!./style.css', 'clearButtonStyle', 'paper-icon-butto
 
         html += '<div class="alphaPickerRow">';
         if (options.mode == 'keyboard') {
-            html += '<button data-value=" " is="paper-icon-button-light" class="alphaPickerButton">\
-                <iron-icon icon="space-bar"></iron-icon>\
+            html += '<button data-value=" " is="paper-icon-button-light" class="alphaPickerButton autoSize">\
+                <i class="md-icon">space_bar</i>\
             </button>';
         } else {
             letters = ['#'];
@@ -36,8 +36,8 @@ define(['focusManager', 'css!./style.css', 'clearButtonStyle', 'paper-icon-butto
         html += letters.map(getLetterButton).join('');
 
         if (options.mode == 'keyboard') {
-            html += '<button data-value="backspace" is="paper-icon-button-light" class="alphaPickerButton">\
-                <iron-icon icon="backspace"></iron-icon>\
+            html += '<button data-value="backspace" is="paper-icon-button-light" class="alphaPickerButton autoSize">\
+                <i class="md-icon">backspace</i>\
             </button>';
             html += '</div>';
 
