@@ -23,7 +23,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <param name="logger">The logger.</param>
         /// <returns>Task{IDbConnection}.</returns>
         /// <exception cref="System.ArgumentNullException">dbPath</exception>
-        public static async Task<IDbConnection> ConnectToDb(string dbPath, ILogger logger)
+        public static async Task<IDbConnection> ConnectToDb(string dbPath, int? cacheSize, ILogger logger)
         {
             if (string.IsNullOrEmpty(dbPath))
             {
@@ -35,7 +35,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var connectionstr = new SQLiteConnectionStringBuilder
             {
                 PageSize = 4096,
-                CacheSize = 2000,
+                CacheSize = cacheSize ?? 2000,
                 SyncMode = SynchronizationModes.Normal,
                 DataSource = dbPath,
                 JournalMode = SQLiteJournalModeEnum.Wal

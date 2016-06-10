@@ -16,11 +16,11 @@ namespace MediaBrowser.ServerApplication.Native
             _logger = logger;
         }
 
-        public async Task<IDbConnection> Connect(string dbPath)
+        public async Task<IDbConnection> Connect(string dbPath, int? cacheSize = null)
         {
             try
             {
-                return await SqliteExtensions.ConnectToDb(dbPath, _logger).ConfigureAwait(false);
+                return await SqliteExtensions.ConnectToDb(dbPath, cacheSize, _logger).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
