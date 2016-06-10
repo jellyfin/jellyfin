@@ -1,4 +1,4 @@
-﻿define(['browser', 'css!./emby-button'], function (browser) {
+﻿define(['browser', 'css!./emby-button', 'registerElement'], function (browser) {
 
     var EmbyButtonPrototype = Object.create(HTMLButtonElement.prototype);
 

@@ -1,6 +1,21 @@
-define(['paper-toast'], function () {
+define(['css!./toast'], function () {
 
-    var toastId = 0;
+    function remove(elem) {
+
+        setTimeout(function () {
+            elem.parentNode.removeChild(elem);
+        }, 300);
+    }
+
+    function animateRemove(elem) {
+
+        setTimeout(function () {
+
+            elem.classList.remove('visible');
+            remove(elem);
+
+        }, 3300);
+    }
 
     return function (options) {
 
@@ -10,16 +25,17 @@ define(['paper-toast'], function () {
             };
         }
 
-        var elem = document.createElement("paper-toast");
-        elem.setAttribute('text', options.text);
-        elem.id = 'toast' + (toastId++);
+        var elem = document.createElement("div");
+        elem.classList.add('toast');
+        elem.innerHTML = options.text;
 
         document.body.appendChild(elem);
 
-        // This timeout is obviously messy but it's unclear how to determine when the webcomponent is ready for use
-        // element onload never fires
         setTimeout(function () {
-            elem.show();
+            elem.classList.add('visible');
+
+            animateRemove(elem);
+
         }, 300);
     };
 });

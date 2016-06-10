@@ -374,10 +374,10 @@
     function mapChannels(page, providerId) {
 
         require(['components/channelmapper/channelmapper'], function (channelmapper) {
-            new channelmapper().show({
+            new channelmapper({
                 serverId: ApiClient.serverInfo().Id,
                 providerId: providerId
-            });
+            }).show();
         });
     }
 

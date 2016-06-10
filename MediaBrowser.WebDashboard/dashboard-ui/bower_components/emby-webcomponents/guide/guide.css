@@ -141,6 +141,7 @@
 .currentTimeIndicatorArrow {
     width: 4vh;
     height: 4vh;
+    font-size: 4vh;
     color: #52B54B;
     margin-left: -2vh;
 }
@@ -366,16 +367,17 @@
     color: #bbb;
 }
 
-.programCell iron-icon {
+.programCell i {
     margin-left: auto;
     margin-right: .5em;
     height: 3.5vh;
     width: 3.5vh;
+    font-size: 3.5vh;
     color: #ddd;
     flex-shrink: 0;
 }
 
-    .programCell iron-icon + iron-icon {
+    .programCell i + i {
         margin-left: .25em;
     }
 
@@ -389,14 +391,21 @@
 .guideChannelName {
     margin-left: auto;
     margin-right: 1em;
-    max-width: 40%;
     text-overflow: ellipsis;
     overflow: hidden;
+    max-width: 70%;
+}
+
+@media all and (min-width: 1000px) {
+
+    .guideChannelName {
+        max-width: 40%;
+    }
 }
 
 @media all and (max-width: 1000px) {
 
-    .guideChannelName {
+    .guideChannelNumber {
         display: none;
     }
 }

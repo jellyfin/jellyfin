@@ -1,10 +1,10 @@
-define(['dialogHelper', 'layoutManager', 'globalize', 'html!./../icons/nav.html', 'css!./style.css', 'emby-button', 'paper-icon-button-light', 'emby-input'], function (dialogHelper, layoutManager, globalize) {
+define(['dialogHelper', 'layoutManager', 'globalize', 'material-icons', 'css!./style.css', 'emby-button', 'paper-icon-button-light', 'emby-input'], function (dialogHelper, layoutManager, globalize) {
 
     function getIcon(icon, cssClass, canFocus, autoFocus) {
 
         var tabIndex = canFocus ? '' : ' tabindex="-1"';
         autoFocus = autoFocus ? ' autofocus' : '';
-        return '<button is="paper-icon-button-light" class="' + cssClass + '"' + tabIndex + autoFocus + '><iron-icon icon="' + icon + '"></iron-icon></button>';
+        return '<button is="paper-icon-button-light" class="autoSize ' + cssClass + '"' + tabIndex + autoFocus + '><i class="md-icon">' + icon + '</i></button>';
     }
 
     return function (options) {
@@ -43,7 +43,7 @@ define(['dialogHelper', 'layoutManager', 'globalize', 'html!./../icons/nav.html'
 
         html += '<div class="promptDialogContent">';
         if (backButton) {
-            html += getIcon('dialog:arrow-back', 'btnPromptExit', false);
+            html += getIcon('arrow_back', 'btnPromptExit', false);
         }
 
         if (options.title) {
@@ -66,7 +66,7 @@ define(['dialogHelper', 'layoutManager', 'globalize', 'html!./../icons/nav.html'
 
         html += '<br/>';
         if (raisedButtons) {
-            html += '<button is="emby-button" type="submit" class="raised btnSubmit"><iron-icon icon="nav:check"></iron-icon><span>' + globalize.translate('sharedcomponents#ButtonOk') + '</span></button>';
+            html += '<button is="emby-button" type="submit" class="raised btnSubmit"><i class="md-icon">check</i><span>' + globalize.translate('sharedcomponents#ButtonOk') + '</span></button>';
         } else {
             html += '<div class="buttons">';
             html += '<button is="emby-button" type="submit" class="btnSubmit">' + globalize.translate('sharedcomponents#ButtonOk') + '</button>';

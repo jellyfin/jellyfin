@@ -1,4 +1,4 @@
-define(['css!./indicators.css', 'html!./../icons/mediainfo.html', 'html!./../icons/nav.html'], function () {
+define(['css!./indicators.css', 'material-icons'], function () {
 
     function enableProgressIndicator(item) {
 
@@ -61,7 +61,7 @@ define(['css!./indicators.css', 'html!./../icons/mediainfo.html', 'html!./../ico
             }
 
             if (userData.PlayedPercentage && userData.PlayedPercentage >= 100 || (userData.Played)) {
-                return '<div class="playedIndicator indicator"><iron-icon icon="nav:check"></iron-icon></div>';
+                return '<div class="playedIndicator indicator"><i class="md-icon">check</i></div>';
             }
         }
 
@@ -91,10 +91,10 @@ define(['css!./indicators.css', 'html!./../icons/mediainfo.html', 'html!./../ico
     function getTimerIndicator(item) {
         
         if (item.SeriesTimerId) {
-            return '<iron-icon class="timerIndicator indicator" icon="mediainfo:fiber-smart-record"></iron-icon>';
+            return '<i class="md-icon timerIndicator indicator">fiber_smart_record</i>';
         }
         if (item.TimerId) {
-            return '<iron-icon class="timerIndicator indicator" icon="mediainfo:fiber-manual-record"></iron-icon>';
+            return '<i class="md-icon timerIndicator indicator">fiber_manual_record</i>';
         }
 
         return '';

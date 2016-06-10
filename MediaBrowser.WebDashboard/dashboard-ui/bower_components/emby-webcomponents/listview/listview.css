@@ -60,6 +60,7 @@ button.listItem {
 .listItemIcon {
     width: 3vh;
     height: 3vh;
+    font-size: 3vh;
 }
 
 .listItem.largeImage .listItemImage {
