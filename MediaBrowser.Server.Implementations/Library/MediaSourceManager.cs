@@ -73,6 +73,10 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     return false;
                 }
+                if (string.Equals(stream.Codec, "ssa", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
                 return true;
             }
 

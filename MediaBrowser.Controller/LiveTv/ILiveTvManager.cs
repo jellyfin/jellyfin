@@ -390,6 +390,8 @@ namespace MediaBrowser.Controller.LiveTv
         Task<List<ChannelInfo>> GetChannelsForListingsProvider(string id, CancellationToken cancellationToken);
         Task<List<ChannelInfo>> GetChannelsFromListingsProviderData(string id, CancellationToken cancellationToken);
 
+        List<IListingsProvider> ListingProviders { get;}
+
         event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCancelled;
         event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCancelled;
         event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCreated;
