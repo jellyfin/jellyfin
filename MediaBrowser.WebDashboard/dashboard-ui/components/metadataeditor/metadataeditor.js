@@ -510,14 +510,18 @@
             var labelText = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
 
             html += '<div class="inputContainer">';
+            html += '<div style="display: flex; align-items: center;">';
 
             var value = providerIds[idInfo.Key] || '';
 
+            html += '<div style="flex-grow:1;">';
             html += '<input is="emby-input" class="txtExternalId" value="' + value + '" data-providerkey="' + idInfo.Key + '" data-formatstring="' + formatString + '" data-buttonclass="' + buttonId + '" id="' + id + '" label="' + labelText + '"/>';
+            html += '</div>';
 
             if (formatString) {
                 html += '<a class="clearLink ' + buttonId + '" href="#" target="_blank" data-role="none" style="float: none; width: 1.75em"><button type="button" is="paper-icon-button-light"><iron-icon icon="open-in-browser"></iron-icon></button></a>';
             }
+            html += '</div>';
 
             html += '</div>';
         }
