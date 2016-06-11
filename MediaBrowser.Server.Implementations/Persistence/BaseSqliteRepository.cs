@@ -20,9 +20,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
             Logger = logManager.GetLogger(GetType().Name);
         }
 
-        protected Task<IDbConnection> CreateConnection(bool isReadOnly = false)
+        protected virtual async Task<IDbConnection> CreateConnection(bool isReadOnly = false)
         {
-            return DbConnector.Connect(DbFilePath, false, true);
+            var connection = await DbConnector.Connect(DbFilePath, false, true).ConfigureAwait(false);
+
+            connection.RunQueries(new []
+            {
+                "pragma temp_store = memory"
+
+            }, Logger);
+
+            return connection;
         }
 
         private bool _disposed;

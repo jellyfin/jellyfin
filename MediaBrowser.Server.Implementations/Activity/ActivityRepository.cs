@@ -30,12 +30,7 @@ namespace MediaBrowser.Server.Implementations.Activity
                 string[] queries = {
 
                                 "create table if not exists ActivityLogEntries (Id GUID PRIMARY KEY, Name TEXT, Overview TEXT, ShortOverview TEXT, Type TEXT, ItemId TEXT, UserId TEXT, DateCreated DATETIME, LogSeverity TEXT)",
-                                "create index if not exists idx_ActivityLogEntries on ActivityLogEntries(Id)",
-
-                                //pragmas
-                                "pragma temp_store = memory",
-
-                                "pragma shrink_memory"
+                                "create index if not exists idx_ActivityLogEntries on ActivityLogEntries(Id)"
                                };
 
                 connection.RunQueries(queries, Logger);

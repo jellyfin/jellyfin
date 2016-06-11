@@ -43,9 +43,6 @@ namespace MediaBrowser.Server.Implementations.Sync
                                 "create index if not exists idx_SyncJobItems1 on SyncJobItems(Id)",
                                 "create index if not exists idx_SyncJobItems2 on SyncJobItems(TargetId)",
 
-                                //pragmas
-                                "pragma temp_store = memory",
-
                                 "pragma shrink_memory"
                                };
 

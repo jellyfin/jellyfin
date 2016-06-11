@@ -32,12 +32,7 @@ namespace MediaBrowser.Server.Implementations.Security
                 string[] queries = {
 
                                 "create table if not exists AccessTokens (Id GUID PRIMARY KEY, AccessToken TEXT NOT NULL, DeviceId TEXT, AppName TEXT, AppVersion TEXT, DeviceName TEXT, UserId TEXT, IsActive BIT, DateCreated DATETIME NOT NULL, DateRevoked DATETIME)",
-                                "create index if not exists idx_AccessTokens on AccessTokens(Id)",
-
-                                //pragmas
-                                "pragma temp_store = memory",
-
-                                "pragma shrink_memory"
+                                "create index if not exists idx_AccessTokens on AccessTokens(Id)"
                                };
 
                 connection.RunQueries(queries, Logger);

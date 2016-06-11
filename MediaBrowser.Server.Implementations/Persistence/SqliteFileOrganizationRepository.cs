@@ -44,12 +44,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             string[] queries = {
 
                                 "create table if not exists FileOrganizerResults (ResultId GUID PRIMARY KEY, OriginalPath TEXT, TargetPath TEXT, FileLength INT, OrganizationDate datetime, Status TEXT, OrganizationType TEXT, StatusMessage TEXT, ExtractedName TEXT, ExtractedYear int null, ExtractedSeasonNumber int null, ExtractedEpisodeNumber int null, ExtractedEndingEpisodeNumber, DuplicatePaths TEXT int null)",
-                                "create index if not exists idx_FileOrganizerResults on FileOrganizerResults(ResultId)",
-
-                                //pragmas
-                                "pragma temp_store = memory",
-
-                                "pragma shrink_memory"
+                                "create index if not exists idx_FileOrganizerResults on FileOrganizerResults(ResultId)"
                                };
 
             _connection.RunQueries(queries, Logger);

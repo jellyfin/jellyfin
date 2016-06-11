@@ -26,8 +26,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("dbPath");
             }
 
-            logger.Info("Sqlite {0} opening {1}", SQLiteConnection.SQLiteVersion, dbPath);
-
             var connectionstr = new SQLiteConnectionStringBuilder
             {
                 PageSize = 4096,
@@ -39,7 +37,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 ReadOnly = isReadOnly
             };
 
-            var connection = new SQLiteConnection(connectionstr.ConnectionString);
+            var connectionString = connectionstr.ConnectionString;
+
+            if (enablePooling)
+            {
+                connectionString += ";Max Pool Size=100";
+            }
+
+            //logger.Info("Sqlite {0} opening {1}", SQLiteConnection.SQLiteVersion, connectionString);
+
+            var connection = new SQLiteConnection(connectionString);
 
             await connection.OpenAsync().ConfigureAwait(false);
 

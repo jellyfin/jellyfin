@@ -81,7 +81,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="chapters">The chapters.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveChapters(Guid id, IEnumerable<ChapterInfo> chapters, CancellationToken cancellationToken);
+        Task SaveChapters(Guid id, List<ChapterInfo> chapters, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the media streams.
@@ -97,7 +97,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="streams">The streams.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveMediaStreams(Guid id, IEnumerable<MediaStream> streams, CancellationToken cancellationToken);
+        Task SaveMediaStreams(Guid id, List<MediaStream> streams, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the item ids.
