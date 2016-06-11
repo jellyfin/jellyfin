@@ -45,8 +45,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             CheckDisposed();
 
-            await WriteLock.WaitAsync().ConfigureAwait(false);
-
             try
             {
                 using (var cmd = connection.CreateCommand())
@@ -60,10 +58,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 Logger.ErrorException("Failed to vacuum:", e);
 
                 throw;
-            }
-            finally
-            {
-                WriteLock.Release();
             }
         }
 
