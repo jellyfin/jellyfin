@@ -349,7 +349,8 @@
 
         self.onSubmit = function () {
 
-            var page = $($.mobile.activePage)[0];
+            var form = this;
+            var page = $(form).parents('.page')[0];
 
             if ($('#txtNewPassword', page).val() != $('#txtNewPasswordConfirm', page).val()) {
 
@@ -370,7 +371,8 @@
 
         self.onLocalAccessSubmit = function () {
 
-            var page = $($.mobile.activePage)[0];
+            var form = this;
+            var page = $(form).parents('.page')[0];
 
             Dashboard.showLoadingMsg();
 

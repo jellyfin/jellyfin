@@ -7,14 +7,12 @@
 
 <form class="popupEditPersonForm" style="max-width: none;margin:0;">
 
-    <div>
-        <paper-input type="text" class="txtPersonName" required="required" label="${LabelName}"></paper-input>
+    <div class="inputContainer">
+        <input type="text" is="emby-input" class="txtPersonName" required="required" label="${LabelName}"/>
     </div>
 
-    <br />
-    <div>
-        <label for="selectPersonType" class="selectLabel">${LabelType}</label>
-        <select id="selectPersonType" class="selectPersonType" data-mini="true">
+    <div class="selectContainer">
+        <select is="emby-select" id="selectPersonType" class="selectPersonType" label="${LabelType}">
             <option value=""></option>
             <option value="Actor">${OptionActor}</option>
             <option value="Composer">${OptionComposer}</option>
@@ -24,10 +22,9 @@
             <option value="Writer">${OptionWriter}</option>
         </select>
     </div>
-    <div>
-        <paper-input type="text" class="txtPersonRole" label="${LabelPersonRole}"></paper-input>
+    <div class="inputContainer">
+        <input is="emby-input" type="text" class="txtPersonRole" label="${LabelPersonRole}"/>
         <div class="fieldDescription">${LabelPersonRoleHelp}</div>
     </div>
-    <br />
     <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonOk}</span></button>
 </form>

@@ -244,7 +244,7 @@ div[data-role='page'] {
     white-space: nowrap;
 }
 
-    .checkboxContainer input {
+    .checkboxContainer input:not([is=emby-checkbox]) {
         width: 20px;
         height: 20px;
         vertical-align: middle;
@@ -253,7 +253,7 @@ div[data-role='page'] {
         padding: 0;
     }
 
-    .checkboxContainer label {
+    .checkboxContainer label:not(.mdl-checkbox) {
         vertical-align: middle;
         display: inline-block;
         padding: .7em .5em;

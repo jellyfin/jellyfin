@@ -73,14 +73,34 @@
     </emby-collapsible>
 
     <emby-collapsible title="${HeaderVideoTypes}" class="videoTypeFilters hide">
-        <div class="paperCheckboxList">
-            <paper-checkbox class="chkVideoTypeFilter chkBluray" data-filter="Bluray">${OptionBluray}</paper-checkbox>
-            <paper-checkbox class="chkVideoTypeFilter chkDvd" data-filter="Dvd">${OptionDvd}</paper-checkbox>
-            <paper-checkbox class="chkVideoTypeFilter chkIso" data-filter="Iso">${OptionIso}</paper-checkbox>
+        <div class="checkboxList">
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkVideoTypeFilter chkBluray" data-filter="Bluray" />
+                <span>${OptionBluray}</span>
+            </label>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkVideoTypeFilter chkDvd" data-filter="Dvd" />
+                <span>${OptionDvd}</span>
+            </label>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkVideoTypeFilter chkIso" data-filter="Iso" />
+                <span>${OptionIso}</span>
+            </label>
 
-            <paper-checkbox class="chkHDFilter IsHD">${OptionIsHD}</paper-checkbox>
-            <paper-checkbox class="chkSDFilter IsHD">${OptionIsSD}</paper-checkbox>
-            <paper-checkbox class="chk3DFilter chk3D">${Option3D}</paper-checkbox>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkHDFilter IsHD" />
+                <span>${OptionIsHD}</span>
+            </label>
+
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkSDFilter IsHD" />
+                <span>${OptionIsSD}</span>
+            </label>
+
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chk3DFilter chk3D" />
+                <span>${Option3D}</span>
+            </label>
         </div>
     </emby-collapsible>
 

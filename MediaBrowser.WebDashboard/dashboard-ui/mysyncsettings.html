@@ -1,4 +1,4 @@
-﻿<div id="syncPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${ButtonSyncSettings}" data-require="scripts/mysyncsettings,paper-checkbox,paper-input,emby-button,paper-icon-button-light" data-backbutton="true" data-menubutton="false">
+﻿<div id="syncPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${ButtonSyncSettings}" data-require="scripts/mysyncsettings,paper-checkbox,emby-input,emby-button,paper-icon-button-light" data-backbutton="true" data-menubutton="false">
 
     <div data-role="content">
         <form class="userProfileSettingsForm" style="margin: 0 auto;">
@@ -6,30 +6,30 @@
             <h1>
                 ${HeaderSync}
             </h1>
-            <div class="detailSectionContent">
 
-                <div class="fldSyncPath hide">
-                    <paper-input type="text" id="txtSyncPath" label="${LabelSyncPath}" style="display:inline-block;width:80%;"></paper-input>
-                    <button type="button" is="paper-icon-button-light" class="btnSelectSyncPath"><iron-icon icon="search"></iron-icon></button>
+            <br />
+            <div class="inputContainer fldSyncPath hide">
+                <div style="display: flex; align-items: center;">
+                    <div style="flex-grow:1;">
+                        <input is="emby-input" id="txtSyncPath" class="txtSyncPath" label="${LabelSyncPath}" autocomplete="off" />
+                    </div>
+                    <button type="button" is="paper-icon-button-light" id="btnSelectSyncPath"><iron-icon icon="search"></iron-icon></button>
                 </div>
+            </div>
 
-                <br />
-                <div>
-                    <paper-checkbox id="chkWifi">${OptionSyncOnlyOnWifi}</paper-checkbox>
-                </div>
+            <div>
+                <paper-checkbox id="chkWifi">${OptionSyncOnlyOnWifi}</paper-checkbox>
             </div>
 
             <br />
             <h1>
                 ${HeaderCameraUpload}
             </h1>
-            <div class="detailSectionContent">
 
-                <p>${SelectCameraUploadServers}</p>
+            <p>${SelectCameraUploadServers}</p>
 
-                <br />
-                <div class="paperCheckboxList uploadServerList">
-                </div>
+            <br />
+            <div class="paperCheckboxList uploadServerList">
             </div>
 
             <br />

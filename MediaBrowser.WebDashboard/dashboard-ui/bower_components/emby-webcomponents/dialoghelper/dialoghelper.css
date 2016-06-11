@@ -24,7 +24,6 @@
         max-height: none !important;
         max-width: none !important;
         width: auto;
-        contain: strict;
     }
 
     .dialog.centeredDialog {

@@ -424,11 +424,11 @@ namespace MediaBrowser.Server.Startup.Common
             UserRepository = await GetUserRepository().ConfigureAwait(false);
             RegisterSingleInstance(UserRepository);
 
-            var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LogManager, JsonSerializer, ApplicationPaths);
+            var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LogManager, JsonSerializer, ApplicationPaths, NativeApp.GetDbConnector());
             DisplayPreferencesRepository = displayPreferencesRepo;
             RegisterSingleInstance(DisplayPreferencesRepository);
 
-            var itemRepo = new SqliteItemRepository(ServerConfigurationManager, JsonSerializer, LogManager);
+            var itemRepo = new SqliteItemRepository(ServerConfigurationManager, JsonSerializer, LogManager, NativeApp.GetDbConnector());
             ItemRepository = itemRepo;
             RegisterSingleInstance(ItemRepository);
 
@@ -553,8 +553,8 @@ namespace MediaBrowser.Server.Startup.Common
 
             RegisterSingleInstance(NativeApp.GetPowerManagement());
 
-            var sharingRepo = new SharingRepository(LogManager, ApplicationPaths);
-            await sharingRepo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
+            var sharingRepo = new SharingRepository(LogManager, ApplicationPaths, NativeApp.GetDbConnector());
+            await sharingRepo.Initialize().ConfigureAwait(false);
             RegisterSingleInstance<ISharingManager>(new SharingManager(sharingRepo, ServerConfigurationManager, LibraryManager, this));
 
             RegisterSingleInstance<ISsdpHandler>(new SsdpHandler(LogManager.GetLogger("SsdpHandler"), ServerConfigurationManager, this));
@@ -571,7 +571,7 @@ namespace MediaBrowser.Server.Startup.Common
             SubtitleEncoder = new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager);
             RegisterSingleInstance(SubtitleEncoder);
 
-            await displayPreferencesRepo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
+            await displayPreferencesRepo.Initialize().ConfigureAwait(false);
             await ConfigureUserDataRepositories().ConfigureAwait(false);
             await itemRepo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
             ((LibraryManager)LibraryManager).ItemRepository = ItemRepository;
@@ -670,9 +670,9 @@ namespace MediaBrowser.Server.Startup.Common
         {
             try
             {
-                var repo = new SqliteUserRepository(LogManager, ApplicationPaths, JsonSerializer);
+                var repo = new SqliteUserRepository(LogManager, ApplicationPaths, JsonSerializer, NativeApp.GetDbConnector());
 
-                await repo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
+                await repo.Initialize().ConfigureAwait(false);
 
                 return repo;
             }
@@ -689,7 +689,7 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task{IUserRepository}.</returns>
         private async Task<IFileOrganizationRepository> GetFileOrganizationRepository()
         {
-            var repo = new SqliteFileOrganizationRepository(LogManager, ServerConfigurationManager.ApplicationPaths);
+            var repo = new SqliteFileOrganizationRepository(LogManager, ServerConfigurationManager.ApplicationPaths, NativeApp.GetDbConnector());
 
             await repo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
 
@@ -698,27 +698,27 @@ namespace MediaBrowser.Server.Startup.Common
 
         private async Task<IAuthenticationRepository> GetAuthenticationRepository()
         {
-            var repo = new AuthenticationRepository(LogManager, ServerConfigurationManager.ApplicationPaths);
+            var repo = new AuthenticationRepository(LogManager, ServerConfigurationManager.ApplicationPaths, NativeApp.GetDbConnector());
 
-            await repo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
+            await repo.Initialize().ConfigureAwait(false);
 
             return repo;
         }
 
         private async Task<IActivityRepository> GetActivityLogRepository()
         {
-            var repo = new ActivityRepository(LogManager, ServerConfigurationManager.ApplicationPaths);
+            var repo = new ActivityRepository(LogManager, ServerConfigurationManager.ApplicationPaths, NativeApp.GetDbConnector());
 
-            await repo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
+            await repo.Initialize().ConfigureAwait(false);
 
             return repo;
         }
 
         private async Task<ISyncRepository> GetSyncRepository()
         {
-            var repo = new SyncRepository(LogManager, JsonSerializer, ServerConfigurationManager.ApplicationPaths);
+            var repo = new SyncRepository(LogManager, JsonSerializer, ServerConfigurationManager.ApplicationPaths, NativeApp.GetDbConnector());
 
-            await repo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
+            await repo.Initialize().ConfigureAwait(false);
 
             return repo;
         }
@@ -729,9 +729,9 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task.</returns>
         private async Task ConfigureNotificationsRepository()
         {
-            var repo = new SqliteNotificationsRepository(LogManager, ApplicationPaths);
+            var repo = new SqliteNotificationsRepository(LogManager, ApplicationPaths, NativeApp.GetDbConnector());
 
-            await repo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
+            await repo.Initialize().ConfigureAwait(false);
 
             NotificationsRepository = repo;
 
@@ -744,7 +744,7 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task.</returns>
         private async Task ConfigureUserDataRepositories()
         {
-            var repo = new SqliteUserDataRepository(LogManager, ApplicationPaths);
+            var repo = new SqliteUserDataRepository(LogManager, ApplicationPaths, NativeApp.GetDbConnector());
 
             await repo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
 

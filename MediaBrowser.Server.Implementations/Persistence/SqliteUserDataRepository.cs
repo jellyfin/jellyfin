@@ -18,7 +18,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbConnection _connection;
         private readonly IApplicationPaths _appPaths;
 
-        public SqliteUserDataRepository(ILogManager logManager, IApplicationPaths appPaths) : base(logManager)
+        public SqliteUserDataRepository(ILogManager logManager, IApplicationPaths appPaths, IDbConnector connector) : base(logManager, connector)
         {
             _appPaths = appPaths;
         }
@@ -43,7 +43,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var dbFile = Path.Combine(_appPaths.DataPath, "userdata_v2.db");
 
-            _connection = await dbConnector.Connect(dbFile).ConfigureAwait(false);
+            _connection = await dbConnector.Connect(dbFile, false).ConfigureAwait(false);
 
             string[] queries = {
 

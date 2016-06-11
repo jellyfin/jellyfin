@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'events', 'browser', 'jQuery', 'paper-checkbox', 'emby-collapsible', 'css!components/filterdialog/style', 'paper-radio-button', 'paper-radio-group'], function (dialogHelper, events, browser, $) {
+﻿define(['dialogHelper', 'events', 'browser', 'jQuery', 'paper-checkbox', 'emby-checkbox', 'emby-collapsible', 'css!components/filterdialog/style', 'paper-radio-button', 'paper-radio-group'], function (dialogHelper, events, browser, $) {
 
     function renderOptions(context, selector, cssClass, items, isCheckedFn) {
 
@@ -15,14 +15,17 @@
         var html = '';
 
         //  style="margin: -.2em -.8em;"
-        html += '<div class="paperCheckboxList">';
+        html += '<div class="checkboxList">';
 
         html += items.map(function (filter) {
 
             var itemHtml = '';
 
             var checkedHtml = isCheckedFn(filter) ? ' checked' : '';
-            itemHtml += '<paper-checkbox' + checkedHtml + ' data-filter="' + filter + '" class="' + cssClass + '">' + filter + '</paper-checkbox>';
+            itemHtml += '<label>';
+            itemHtml += '<input is="emby-checkbox" type="checkbox"' + checkedHtml + ' data-filter="' + filter + '" class="' + cssClass + '"/>';
+            itemHtml += '<span>' + filter + '</span>';
+            itemHtml += '</label>';
 
             return itemHtml;
 
