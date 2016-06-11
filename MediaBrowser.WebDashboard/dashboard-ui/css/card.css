@@ -64,10 +64,6 @@
     }
 }
 
-.cardImage {
-    border-radius: 3px;
-}
-
 .cardOverlayButtonContainer {
     position: absolute;
     bottom: 0;

@@ -1124,6 +1124,13 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
+@media all and (max-height: 530px) {
+
+    .alphabetPicker {
+        font-size: 84%;
+    }
+}
+
 @media all and (min-height: 900px) {
 
     .alphabetPicker {

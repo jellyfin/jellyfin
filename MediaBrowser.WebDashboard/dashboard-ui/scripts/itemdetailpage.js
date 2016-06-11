@@ -260,36 +260,6 @@
         LibraryBrowser.refreshDetailImageUserData(page.querySelector('.detailImageContainer'), item);
     }
 
-    function onWebSocketMessage(e, data) {
-
-        var msg = data;
-        var page = $($.mobile.activePage)[0];
-
-        if (msg.MessageType === "UserDataChanged") {
-
-            if (currentItem && msg.Data.UserId == Dashboard.getCurrentUserId()) {
-
-                var key = currentItem.UserData.Key;
-
-                var userData = msg.Data.UserDataList.filter(function (u) {
-
-                    return u.Key == key;
-                })[0];
-
-                if (userData) {
-
-                    currentItem.UserData = userData;
-
-                    Dashboard.getCurrentUser().then(function (user) {
-
-                        refreshImage(page, currentItem, user);
-                    });
-                }
-            }
-        }
-
-    }
-
     function setPeopleHeader(page, item) {
 
         if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.MediaType == "Book" || item.MediaType == "Photo") {
@@ -2126,6 +2096,35 @@
         //for (var i = 0, length = btnMore.length; i < length; i++) {
         //    btnMore[i].icon = AppInfo.moreIcon;
         //}
+
+        function onWebSocketMessage(e, data) {
+
+            var msg = data;
+
+            if (msg.MessageType === "UserDataChanged") {
+
+                if (currentItem && msg.Data.UserId == Dashboard.getCurrentUserId()) {
+
+                    var key = currentItem.UserData.Key;
+
+                    var userData = msg.Data.UserDataList.filter(function (u) {
+
+                        return u.Key == key;
+                    })[0];
+
+                    if (userData) {
+
+                        currentItem.UserData = userData;
+
+                        Dashboard.getCurrentUser().then(function (user) {
+
+                            refreshImage(view, currentItem, user);
+                        });
+                    }
+                }
+            }
+
+        }
 
         view.addEventListener('viewbeforeshow', function () {
             var page = this;

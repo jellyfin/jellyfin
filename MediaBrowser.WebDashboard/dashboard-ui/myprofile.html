@@ -1,4 +1,4 @@
-﻿<div id="userImagePage" data-role="page" class="page libraryPage userPreferencesPage userPasswordPage noSecondaryNavPage" data-title="${HeaderProfile}" data-require="emby-collapsible,scripts/myprofile,paper-checkbox,paper-input,emby-button" data-backbutton="true" data-menubutton="false">
+﻿<div id="userImagePage" data-role="page" class="page libraryPage userPreferencesPage userPasswordPage noSecondaryNavPage" data-title="${HeaderProfile}" data-require="emby-collapsible,scripts/myprofile,emby-checkbox,emby-input,emby-button" data-backbutton="true" data-menubutton="false">
 
     <div data-role="content">
         <br />
@@ -45,24 +45,20 @@
                 <h1>
                     ${HeaderPassword}
                 </h1>
-                <div class="detailSectionContent">
-                    <div id="fldCurrentPassword" style="display: none;">
-                        <paper-input type="password" id="txtCurrentPassword" label="${LabelCurrentPassword}" autocomplete="off"></paper-input>
-                    </div>
-                    <br />
-                    <div>
-                        <paper-input type="password" id="txtNewPassword" label="${LabelNewPassword}" autocomplete="off"></paper-input>
-                    </div>
-                    <br />
-                    <div>
-                        <paper-input type="password" id="txtNewPasswordConfirm" label="${LabelNewPasswordConfirm}" autocomplete="off"></paper-input>
-                    </div>
-                    <br />
-                    <div>
-                        <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
-                        <div id="btnResetPassword" style="display: none;">
-                            <button is="emby-button" type="button" class="raised cancel block" onclick="UpdatePasswordPage.resetPassword();"><iron-icon icon="lock"></iron-icon><span>${ButtonResetPassword}</span></button>
-                        </div>
+                <br />
+                <div id="fldCurrentPassword" style="display: none;" class="inputContainer">
+                    <input is="emby-input" type="password" id="txtCurrentPassword" label="${LabelCurrentPassword}" autocomplete="off" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="password" id="txtNewPassword" label="${LabelNewPassword}" autocomplete="off" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="password" id="txtNewPasswordConfirm" label="${LabelNewPasswordConfirm}" autocomplete="off" />
+                </div>
+                <div>
+                    <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
+                    <div id="btnResetPassword" style="display: none;">
+                        <button is="emby-button" type="button" class="raised cancel block" onclick="UpdatePasswordPage.resetPassword();"><iron-icon icon="lock"></iron-icon><span>${ButtonResetPassword}</span></button>
                     </div>
                 </div>
             </div>
@@ -72,23 +68,22 @@
                 <h1>
                     ${HeaderEasyPinCode}
                 </h1>
-                <div class="detailSectionContent">
-                    <br />
-                    <div>${EasyPasswordHelp}</div>
-                    <br />
-                    <div>
-                        <paper-input type="number" id="txtEasyPassword" label="${LabelEasyPinCode}" autocomplete="off" pattern="[0-9]*" step="1" maxlength="5"></paper-input>
-                    </div>
-                    <br />
-                    <div>
-                        <paper-checkbox class="chkEnableLocalEasyPassword">${LabelInNetworkSignInWithEasyPassword}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelInNetworkSignInWithEasyPasswordHelp}</div>
-                    </div>
-                    <br /><br />
-                    <div>
-                        <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
-                        <button is="emby-button" type="button" id="btnResetEasyPassword" class="raised cancel block hide" onclick="UpdatePasswordPage.resetEasyPassword();"><iron-icon icon="lock"></iron-icon><span>${ButtonResetEasyPassword}</span></button>
-                    </div>
+                <br />
+                <div>${EasyPasswordHelp}</div>
+                <br />
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="txtEasyPassword" label="${LabelEasyPinCode}" autocomplete="off" pattern="[0-9]*" step="1" maxlength="5" />
+                </div>
+                <div class="checkboxContainer">
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkEnableLocalEasyPassword" />
+                        <span>${LabelInNetworkSignInWithEasyPassword}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">${LabelInNetworkSignInWithEasyPasswordHelp}</div>
+                </div>
+                <div>
+                    <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
+                    <button is="emby-button" type="button" id="btnResetEasyPassword" class="raised cancel block hide" onclick="UpdatePasswordPage.resetEasyPassword();"><iron-icon icon="lock"></iron-icon><span>${ButtonResetEasyPassword}</span></button>
                 </div>
             </div>
         </form>

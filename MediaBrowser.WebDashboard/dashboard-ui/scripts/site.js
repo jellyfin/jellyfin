@@ -1798,6 +1798,7 @@ var AppInfo = {};
 
         define("emby-input", [embyWebComponentsBowerPath + "/emby-input/emby-input"], returnFirstDependency);
         define("emby-select", [embyWebComponentsBowerPath + "/emby-select/emby-select"], returnFirstDependency);
+        define("emby-checkbox", [embyWebComponentsBowerPath + "/emby-checkbox/emby-checkbox"], returnFirstDependency);
         define("collectionEditor", [embyWebComponentsBowerPath + "/collectioneditor/collectioneditor"], returnFirstDependency);
         define("playlistEditor", [embyWebComponentsBowerPath + "/playlisteditor/playlisteditor"], returnFirstDependency);
         define("recordingCreator", [embyWebComponentsBowerPath + "/recordingcreator/recordingcreator"], returnFirstDependency);
@@ -2592,7 +2593,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/itemlist.html',
-            dependencies: ['paper-checkbox'],
+            dependencies: [],
             autoFocus: false,
             controller: 'scripts/itemlistpage',
             transition: 'fade'
@@ -2754,7 +2755,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/movies.html',
-            dependencies: ['paper-checkbox', 'emby-button'],
+            dependencies: ['emby-button'],
             autoFocus: false,
             controller: 'scripts/moviesrecommended',
             transition: 'fade'
@@ -2983,7 +2984,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/tv.html',
-            dependencies: ['paper-checkbox', 'paper-icon-button-light', 'emby-button'],
+            dependencies: ['paper-icon-button-light', 'emby-button'],
             autoFocus: false,
             controller: 'scripts/tvrecommended',
             transition: 'fade'
