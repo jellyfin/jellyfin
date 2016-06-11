@@ -16,9 +16,9 @@ namespace MediaBrowser.Server.Mono.Native
             _logger = logger;
         }
 
-        public Task<IDbConnection> Connect(string dbPath, int? cacheSize = null)
+        public Task<IDbConnection> Connect(string dbPath, bool isReadOnly, bool enablePooling = false, int? cacheSize = null)
         {
-            return SqliteExtensions.ConnectToDb(dbPath, cacheSize, _logger);
+            return SqliteExtensions.ConnectToDb(dbPath, isReadOnly, enablePooling, cacheSize, _logger);
         }
     }
 }
