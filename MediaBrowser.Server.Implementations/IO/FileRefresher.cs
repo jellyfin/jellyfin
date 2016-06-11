@@ -93,8 +93,15 @@ namespace MediaBrowser.Server.Implementations.IO
 
         private async void OnTimerCallback(object state)
         {
+            List<string> paths;
+
+            lock (_timerLock)
+            {
+                paths = _affectedPaths.ToList();
+            }
+
             // Extend the timer as long as any of the paths are still being written to.
-            if (_affectedPaths.Any(IsFileLocked))
+            if (paths.Any(IsFileLocked))
             {
                 Logger.Info("Timer extended.");
                 RestartTimer();
@@ -108,7 +115,7 @@ namespace MediaBrowser.Server.Implementations.IO
 
             try
             {
-                await ProcessPathChanges(_affectedPaths.ToList()).ConfigureAwait(false);
+                await ProcessPathChanges(paths.ToList()).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
