@@ -9,11 +9,20 @@ namespace MediaBrowser.Server.Implementations.Persistence
     public abstract class BaseSqliteRepository : IDisposable
     {
         protected readonly SemaphoreSlim WriteLock = new SemaphoreSlim(1, 1);
+        protected readonly IDbConnector DbConnector;
         protected ILogger Logger;
 
-        protected BaseSqliteRepository(ILogManager logManager)
+        protected string DbFilePath { get; set; }
+
+        protected BaseSqliteRepository(ILogManager logManager, IDbConnector dbConnector)
         {
+            DbConnector = dbConnector;
             Logger = logManager.GetLogger(GetType().Name);
+        }
+
+        protected Task<IDbConnection> CreateConnection(bool isReadOnly = false)
+        {
+            return DbConnector.Connect(DbFilePath, false, true);
         }
 
         private bool _disposed;
@@ -84,6 +93,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
 
-        protected abstract void CloseConnection();
+        protected virtual void CloseConnection()
+        {
+            
+        }
     }
 }

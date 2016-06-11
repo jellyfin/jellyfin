@@ -26,7 +26,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _deleteResultCommand;
         private IDbCommand _deleteAllCommand;
 
-        public SqliteFileOrganizationRepository(ILogManager logManager, IServerApplicationPaths appPaths) : base(logManager)
+        public SqliteFileOrganizationRepository(ILogManager logManager, IServerApplicationPaths appPaths, IDbConnector connector) : base(logManager, connector)
         {
             _appPaths = appPaths;
         }
@@ -39,7 +39,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var dbFile = Path.Combine(_appPaths.DataPath, "fileorganization.db");
 
-            _connection = await dbConnector.Connect(dbFile).ConfigureAwait(false);
+            _connection = await dbConnector.Connect(dbFile, false).ConfigureAwait(false);
 
             string[] queries = {
 
