@@ -1,4 +1,4 @@
-﻿define(['scrollHelper', 'appSettings', 'appStorage', 'apphost', 'datetime', 'itemHelper', 'mediaInfo', 'scrollStyles'], function (scrollHelper, appSettings, appStorage, appHost, datetime, itemHelper, mediaInfo) {
+﻿define(['scrollHelper', 'viewManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'itemHelper', 'mediaInfo', 'scrollStyles'], function (scrollHelper, viewManager, appSettings, appStorage, appHost, datetime, itemHelper, mediaInfo) {
 
     function parentWithClass(elem, className) {
 
@@ -381,9 +381,7 @@
 
                 if (window.location.href.toLowerCase().indexOf(url.toLowerCase()) != -1) {
 
-                    if (window.$) {
-                        afterNavigate.call($.mobile.activePage);
-                    }
+                    afterNavigate.call(viewManager.currentView());
                 } else {
 
                     pageClassOn('pagebeforeshow', 'page', afterNavigate);

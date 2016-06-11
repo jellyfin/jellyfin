@@ -665,6 +665,7 @@ namespace MediaBrowser.Controller.Entities
             query.SetUser(user);
             query.Limit = GetSpecialItemsLimit();
             query.IncludeItemTypes = new[] { typeof(Episode).Name };
+            query.ExcludeLocationTypes = new[] { LocationType.Virtual };
 
             return _libraryManager.GetItemsResult(query);
         }

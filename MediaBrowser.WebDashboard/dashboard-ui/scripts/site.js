@@ -52,7 +52,7 @@ var Dashboard = {
             // Bounce to the login screen, but not if a password entry fails, obviously
             if (url.indexOf('/password') == -1 &&
                 url.indexOf('/authenticate') == -1 &&
-                !$($.mobile.activePage).is('.standalonePage')) {
+                !ViewManager.currentView().classList.contains('.standalonePage')) {
 
                 if (data.errorCode == "ParentalControl") {
 
@@ -1221,7 +1221,9 @@ var Dashboard = {
     },
 
     exitOnBack: function () {
-        return $($.mobile.activePage).is('#indexPage');
+
+        var currentView = ViewManager.currentView();
+        return !currentView || currentView.id == 'indexPage';
     },
 
     exit: function () {
@@ -1811,6 +1813,7 @@ var AppInfo = {};
         define("tvguide", [embyWebComponentsBowerPath + "/guide/guide", 'embyRouter'], returnFirstDependency);
 
         define("viewManager", [embyWebComponentsBowerPath + "/viewmanager/viewmanager"], function (viewManager) {
+            window.ViewManager = viewManager;
             viewManager.dispatchPageEvents(true);
             return viewManager;
         });
@@ -2813,9 +2816,10 @@ var AppInfo = {};
 
         defineRoute({
             path: '/mysyncjob.html',
-            dependencies: [],
+            dependencies: ['paper-fab', 'paper-item-body', 'paper-icon-item'],
             autoFocus: false,
-            transition: 'fade'
+            transition: 'fade',
+            controller: 'scripts/syncjob'
         });
 
         defineRoute({
@@ -2972,8 +2976,10 @@ var AppInfo = {};
 
         defineRoute({
             path: '/syncjob.html',
-            dependencies: [],
-            autoFocus: false
+            dependencies: ['paper-fab', 'paper-item-body', 'paper-icon-item'],
+            autoFocus: false,
+            transition: 'fade',
+            controller: 'scripts/syncjob'
         });
 
         defineRoute({
