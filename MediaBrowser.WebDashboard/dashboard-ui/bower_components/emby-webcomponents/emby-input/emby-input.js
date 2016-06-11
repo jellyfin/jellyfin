@@ -45,7 +45,7 @@
         label.innerHTML = this.getAttribute('label') || '';
         label.classList.add('inputLabel');
 
-        if (!supportsFloatingLabel) {
+        if (!supportsFloatingLabel || this.type == 'date') {
             label.classList.add('nofloat');
         }
 
@@ -78,6 +78,10 @@
         this.addEventListener('valueset', onChange);
 
         onChange.call(this);
+
+        this.label = function (text) {
+            label.innerHTML = text;
+        };
     };
 
     document.registerElement('emby-input', {

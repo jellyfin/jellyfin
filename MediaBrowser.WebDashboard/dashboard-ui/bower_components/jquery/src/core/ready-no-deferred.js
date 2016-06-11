@@ -1,18 +1,26 @@
 define( [
 	"../core",
-	"../var/document",
-	"../deferred"
+	"../var/document"
 ], function( jQuery, document ) {
 
 "use strict";
 
-// The deferred used on DOM ready
-var readyList = jQuery.Deferred();
+var readyCallbacks = [],
+	readyFiring = false,
+	whenReady = function( fn ) {
+		readyCallbacks.push( fn );
+	},
+	executeReady = function( fn ) {
+
+		// Prevent errors from freezing future callback execution (gh-1823)
+		// Not backwards-compatible as this does not execute sync
+		window.setTimeout( function() {
+			fn.call( document, jQuery );
+		} );
+	};
 
 jQuery.fn.ready = function( fn ) {
-
-	readyList.then( fn );
-
+	whenReady( fn );
 	return this;
 };
 
@@ -34,7 +42,6 @@ jQuery.extend( {
 		}
 	},
 
-	// Handle when the DOM is ready
 	ready: function( wait ) {
 
 		// Abort if there are pending holds or we're already ready
@@ -50,14 +57,32 @@ jQuery.extend( {
 			return;
 		}
 
-		// If there are functions bound, to execute
-		readyList.resolveWith( document, [ jQuery ] );
+		whenReady = function( fn ) {
+			readyCallbacks.push( fn );
+
+			if ( !readyFiring ) {
+				readyFiring = true;
+
+				while ( readyCallbacks.length ) {
+					fn = readyCallbacks.shift();
+					if ( jQuery.isFunction( fn ) ) {
+						executeReady( fn );
+					}
+				}
+				readyFiring = false;
+			}
+		};
+
+		whenReady();
 	}
 } );
 
-jQuery.ready.then = readyList.then;
+// Make jQuery.ready Promise consumable (gh-1778)
+jQuery.ready.then = jQuery.fn.ready;
 
-// The ready event handler and self cleanup method
+/**
+ * The ready event handler and self cleanup method
+ */
 function completed() {
 	document.removeEventListener( "DOMContentLoaded", completed );
 	window.removeEventListener( "load", completed );
@@ -66,7 +91,7 @@ function completed() {
 
 // Catch cases where $(document).ready() is called
 // after the browser event has already occurred.
-// Support: IE <=9 - 10 only
+// Support: IE9-10 only
 // Older IE sometimes signals "interactive" too soon
 if ( document.readyState === "complete" ||
 	( document.readyState !== "loading" && !document.documentElement.doScroll ) ) {

@@ -54,7 +54,6 @@
         [is="emby-button"].fab i {
             height: 4.4vh;
             width: 4.4vh;
-            font-size: 4.4vh;
             vertical-align: middle;
         }
 
@@ -63,22 +62,25 @@
     }
 
     [is="emby-button"].fab.mini {
-        padding: .4em;
         min-width: 40px !important;
         min-height: 40px !important;
         height: 3.3vh !important;
         width: 3.3vh !important;
+        padding: .4em;
     }
 
         [is="emby-button"].fab.mini i {
             height: 2.6vh !important;
             width: 2.6vh !important;
-            font-size: 2.6vh !important;
         }
 
     [is="emby-button"].fab iron-icon {
         width: 100%;
         height: 100%;
+        vertical-align: middle;
+    }
+
+    [is="emby-button"].fab i {
         vertical-align: middle;
     }
 
@@ -103,7 +105,7 @@
         margin-left: .5em;
     }
 
-[is=emby-button].autoSize, [is=emby-button].autoSize.fab {
+[is=emby-button].autoSize {
     width: auto !important;
     height: auto !important;
 }

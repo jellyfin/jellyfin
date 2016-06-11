@@ -14,25 +14,36 @@
 
         <div id="eligibleForSeriesFields" class="hide">
             <br />
-            <div>
-                <paper-checkbox id="chkRecordSeries">${RecordSeries}</paper-checkbox>
-            </div>
+            <label class="checkboxContainer">
+                <input type="checkbox" is="emby-checkbox" id="chkRecordSeries"/>
+                <span>${RecordSeries}</span>
+            </label>
 
             <div class="seriesFields hide">
-                <br />
-                <div class="paperCheckboxList">
-                    <paper-checkbox id="chkNewOnly">${RecordOnlyNewEpisodes}</paper-checkbox>
-                    <paper-checkbox id="chkAnyTime">${RecordAnytime}</paper-checkbox>
-                    <paper-checkbox id="chkAllChannels">${RecordOnAllChannels}</paper-checkbox>
+                <div class="checkboxList">
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" id="chkNewOnly" />
+                        <span>${RecordOnlyNewEpisodes}</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" id="chkAnyTime" />
+                        <span>${RecordAnytime}</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" id="chkAllChannels" />
+                        <span>${RecordOnAllChannels}</span>
+                    </label>
                 </div>
             </div>
             <br />
         </div>
-        <div class="convertRecordingsContainer hide">
-            <br />
-            <paper-checkbox id="chkConvertRecordings">${OptionConvertRecordingsToStreamingFormat}</paper-checkbox>
-            <div class="fieldDescription paperCheckboxFieldDescription">${OptionConvertRecordingsToStreamingFormatHelp}</div>
-            <div class="fieldDescription paperCheckboxFieldDescription btnSupporterForConverting hide">
+        <div class="convertRecordingsContainer hide checkboxContainer">
+            <label>
+                <input type="checkbox" is="emby-checkbox" id="chkConvertRecordings" />
+                <span>${OptionConvertRecordingsToStreamingFormat}</span>
+            </label>
+            <div class="fieldDescription checkboxFieldDescription">${OptionConvertRecordingsToStreamingFormatHelp}</div>
+            <div class="fieldDescription checkboxFieldDescription btnSupporterForConverting hide">
                 <a href="#" class="accent lnkPremiere">${FeatureRequiresEmbyPremiere}</a>
             </div>
         </div>
@@ -44,14 +55,35 @@
                     <div>
                         <h1>${Days}</h1>
                     </div>
-                    <div class="paperCheckboxList">
-                        <paper-checkbox id="chkSunday">${Sunday}</paper-checkbox>
-                        <paper-checkbox id="chkMonday">${Monday}</paper-checkbox>
-                        <paper-checkbox id="chkTuesday">${Tuesday}</paper-checkbox>
-                        <paper-checkbox id="chkWednesday">${Wednesday}</paper-checkbox>
-                        <paper-checkbox id="chkThursday">${Thursday}</paper-checkbox>
-                        <paper-checkbox id="chkFriday">${Friday}</paper-checkbox>
-                        <paper-checkbox id="chkSaturday">${Saturday}</paper-checkbox>
+                    <div class="checkboxList">
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" id="chkSunday" />
+                            <span>${Sunday}</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" id="chkMonday" />
+                            <span>${Monday}</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" id="chkTuesday" />
+                            <span>${Tuesday}</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" id="chkWednesday" />
+                            <span>${Wednesday}</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" id="chkThursday" />
+                            <span>${Thursday}</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" id="chkFriday" />
+                            <span>${Friday}</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" id="chkSaturday" />
+                            <span>${Saturday}</span>
+                        </label>
                     </div>
                     <br />
                 </div>
