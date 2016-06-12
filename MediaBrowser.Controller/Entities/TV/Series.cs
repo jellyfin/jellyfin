@@ -92,10 +92,7 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             get
             {
-                return GetRecursiveChildren(i => i is Episode)
-                        .Select(i => i.DateCreated)
-                        .OrderByDescending(i => i)
-                        .FirstOrDefault();
+                return DateLastMediaAdded ?? DateTime.MinValue;
             }
         }
 
@@ -240,6 +237,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 AncestorWithPresentationUniqueKey = PresentationUniqueKey,
                 IncludeItemTypes = new[] { typeof(Episode).Name, typeof(Season).Name },
                 SortBy = new[] { ItemSortBy.SortName }
+
             }).ToList();
 
             var allSeriesEpisodes = allItems.OfType<Episode>().ToList();

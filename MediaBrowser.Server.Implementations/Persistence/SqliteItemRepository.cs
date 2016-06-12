@@ -58,7 +58,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private readonly string _criticReviewsPath;
 
-        public const int LatestSchemaVersion = 89;
+        public const int LatestSchemaVersion = 91;
+
+        private IDbConnection _connection;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -88,9 +90,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             //AttachUserDataDb(connection);
 
-            //connection.RunQueries(new []
+            //connection.RunQueries(new[]
             //{
-            //    "pragma locking_mode=EXCLUSIVE"
+            //    "pragma locking_mode=NORMAL"
 
             //}, Logger);
 
@@ -105,6 +107,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <returns>Task.</returns>
         public async Task Initialize(IDbConnector dbConnector)
         {
+            //_connection = await CreateConnection().ConfigureAwait(false);
+
             using (var connection = await CreateConnection().ConfigureAwait(false))
             {
                 var createMediaStreamsTableCommand
@@ -115,7 +119,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create table if not exists TypedBaseItems (guid GUID primary key, type TEXT, data BLOB, ParentId GUID, Path TEXT)",
                                 "create index if not exists idx_PathTypedBaseItems on TypedBaseItems(Path)",
                                 "create index if not exists idx_ParentIdTypedBaseItems on TypedBaseItems(ParentId)",
-                                "create index if not exists idx_TypedBaseItems2 on TypedBaseItems(Type,Guid)",
 
                                 "create table if not exists AncestorIds (ItemId GUID, AncestorId GUID, AncestorIdText TEXT, PRIMARY KEY (ItemId, AncestorId))",
                                 "create index if not exists idx_AncestorIds1 on AncestorIds(AncestorId)",
@@ -234,9 +237,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 string[] postQueries =
                     {
                 "create index if not exists idx_PresentationUniqueKey on TypedBaseItems(PresentationUniqueKey)",
+                "create index if not exists idx_GuidType on TypedBaseItems(Guid,Type)",
                 "create index if not exists idx_Type on TypedBaseItems(Type)",
                 "create index if not exists idx_TopParentId on TypedBaseItems(TopParentId)",
-                "create index if not exists idx_TypeTopParentId on TypedBaseItems(Type,TopParentId)"
+                "create index if not exists idx_TypeTopParentId on TypedBaseItems(Type,TopParentId)",
+                "create index if not exists idx_TypeTopParentId2 on TypedBaseItems(TopParentId,MediaType,IsVirtualItem)",
+                "create index if not exists idx_TypeTopParentId3 on TypedBaseItems(TopParentId,IsFolder,IsVirtualItem)",
+                "create index if not exists idx_TypeTopParentId4 on TypedBaseItems(TopParentId,Type,IsVirtualItem)",
+                "create index if not exists idx_TypeTopParentId5 on TypedBaseItems(TopParentId,IsVirtualItem)"
                 };
 
                 connection.RunQueries(postQueries, Logger);
@@ -727,15 +735,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                             saveItemCommand.GetParameter(index++).Value = item.Album;
 
-                            var season = item as Season;
-                            if (season != null && season.IsVirtualItem.HasValue)
-                            {
-                                saveItemCommand.GetParameter(index++).Value = season.IsVirtualItem.Value;
-                            }
-                            else
-                            {
-                                saveItemCommand.GetParameter(index++).Value = null;
-                            }
+                            saveItemCommand.GetParameter(index++).Value = item.IsVirtualItem || (!item.IsFolder && item.LocationType == LocationType.Virtual);
 
                             var hasSeries = item as IHasSeries;
                             if (hasSeries != null)
@@ -1167,10 +1167,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 item.CriticRatingSummary = reader.GetString(57);
             }
 
-            var season = item as Season;
-            if (season != null && !reader.IsDBNull(58))
+            if (!reader.IsDBNull(58))
             {
-                season.IsVirtualItem = reader.GetBoolean(58);
+                item.IsVirtualItem = reader.GetBoolean(58);
             }
 
             return item;
@@ -1651,7 +1650,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var slowThreshold = 1000;
 
 #if DEBUG
-            slowThreshold = 100;
+            slowThreshold = 30;
 #endif
 
             if (elapsed >= slowThreshold)
@@ -2196,18 +2195,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 cmd.Parameters.Add(cmd, "@IsFolder", DbType.Boolean).Value = query.IsFolder;
             }
 
-            var includeTypes = query.IncludeItemTypes.SelectMany(MapIncludeItemTypes).ToArray();
-            if (includeTypes.Length == 1)
-            {
-                whereClauses.Add("type=@type");
-                cmd.Parameters.Add(cmd, "@type", DbType.String).Value = includeTypes[0];
-            }
-            else if (includeTypes.Length > 1)
-            {
-                var inClause = string.Join(",", includeTypes.Select(i => "'" + i + "'").ToArray());
-                whereClauses.Add(string.Format("type in ({0})", inClause));
-            }
-
             var excludeTypes = query.ExcludeItemTypes.SelectMany(MapIncludeItemTypes).ToArray();
             if (excludeTypes.Length == 1)
             {
@@ -2218,6 +2205,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 var inClause = string.Join(",", excludeTypes.Select(i => "'" + i + "'").ToArray());
                 whereClauses.Add(string.Format("type not in ({0})", inClause));
+            }
+
+            var includeTypes = query.IncludeItemTypes.SelectMany(MapIncludeItemTypes).ToArray();
+            if (includeTypes.Length == 1)
+            {
+                whereClauses.Add("type=@type");
+                cmd.Parameters.Add(cmd, "@type", DbType.String).Value = includeTypes[0];
+            }
+            else if (includeTypes.Length > 1)
+            {
+                var inClause = string.Join(",", includeTypes.Select(i => "'" + i + "'").ToArray());
+                whereClauses.Add(string.Format("type in ({0})", inClause));
             }
 
             if (query.ChannelIds.Length == 1)
@@ -2635,8 +2634,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (query.LocationTypes.Length == 1)
             {
-                whereClauses.Add("LocationType=@LocationType");
-                cmd.Parameters.Add(cmd, "@LocationType", DbType.String).Value = query.LocationTypes[0].ToString();
+                if (query.LocationTypes[0] == LocationType.Virtual && _config.Configuration.SchemaVersion >= 90)
+                {
+                    query.IsVirtualItem = true;
+                }
+                else
+                {
+                    whereClauses.Add("LocationType=@LocationType");
+                    cmd.Parameters.Add(cmd, "@LocationType", DbType.String).Value = query.LocationTypes[0].ToString();
+                }
             }
             else if (query.LocationTypes.Length > 1)
             {
@@ -2646,14 +2652,26 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             if (query.ExcludeLocationTypes.Length == 1)
             {
-                whereClauses.Add("LocationType<>@ExcludeLocationTypes");
-                cmd.Parameters.Add(cmd, "@ExcludeLocationTypes", DbType.String).Value = query.ExcludeLocationTypes[0].ToString();
+                if (query.ExcludeLocationTypes[0] == LocationType.Virtual && _config.Configuration.SchemaVersion >= 90)
+                {
+                    query.IsVirtualItem = false;
+                }
+                else
+                {
+                    whereClauses.Add("LocationType<>@ExcludeLocationTypes");
+                    cmd.Parameters.Add(cmd, "@ExcludeLocationTypes", DbType.String).Value = query.ExcludeLocationTypes[0].ToString();
+                }
             }
             else if (query.ExcludeLocationTypes.Length > 1)
             {
                 var val = string.Join(",", query.ExcludeLocationTypes.Select(i => "'" + i + "'").ToArray());
 
                 whereClauses.Add("LocationType not in (" + val + ")");
+            }
+            if (query.IsVirtualItem.HasValue)
+            {
+                whereClauses.Add("IsVirtualItem=@IsVirtualItem");
+                cmd.Parameters.Add(cmd, "@IsVirtualItem", DbType.Boolean).Value = query.IsVirtualItem.Value;
             }
             if (query.MediaTypes.Length == 1)
             {
