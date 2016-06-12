@@ -40,7 +40,8 @@
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SyncInfo",
             CollapseBoxSetItems: false,
-            ExcludeLocationTypes: "Virtual"
+            ExcludeLocationTypes: "Virtual",
+            EnableTotalRecordCount: false
         };
 
         if (topParentId) {

@@ -20,9 +20,22 @@ namespace MediaBrowser.Server.Implementations.Persistence
             Logger = logManager.GetLogger(GetType().Name);
         }
 
-        protected Task<IDbConnection> CreateConnection(bool isReadOnly = false)
+        protected virtual bool EnableConnectionPooling
         {
-            return DbConnector.Connect(DbFilePath, false, true);
+            get { return true; }
+        }
+
+        protected virtual async Task<IDbConnection> CreateConnection(bool isReadOnly = false)
+        {
+            var connection = await DbConnector.Connect(DbFilePath, false, true).ConfigureAwait(false);
+
+            connection.RunQueries(new[]
+            {
+                "pragma temp_store = memory"
+
+            }, Logger);
+
+            return connection;
         }
 
         private bool _disposed;
@@ -95,7 +108,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         protected virtual void CloseConnection()
         {
-            
+
         }
     }
 }

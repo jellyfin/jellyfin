@@ -1246,10 +1246,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     max-width: 700px;
 }
 
-    .userProfileSettingsForm .detailSectionContent {
-        padding: 0 .5em;
-    }
-
 @media all and (max-width: 700px) {
 
     .userProfileSettingsForm .detailSection {

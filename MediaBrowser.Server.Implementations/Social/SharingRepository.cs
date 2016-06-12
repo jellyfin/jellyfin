@@ -31,9 +31,6 @@ namespace MediaBrowser.Server.Implementations.Social
                                 "create table if not exists Shares (Id GUID, ItemId TEXT, UserId TEXT, ExpirationDate DateTime, PRIMARY KEY (Id))",
                                 "create index if not exists idx_Shares on Shares(Id)",
 
-                                //pragmas
-                                "pragma temp_store = memory",
-
                                 "pragma shrink_memory"
                                };
 

@@ -1309,7 +1309,15 @@ namespace MediaBrowser.Server.Implementations.Library
                 AddUserToQuery(query, query.User);
             }
 
-            return ItemRepository.GetItems(query);
+            if (query.EnableTotalRecordCount)
+            {
+                return ItemRepository.GetItems(query);
+            }
+
+            return new QueryResult<BaseItem>
+            {
+                Items = ItemRepository.GetItemList(query).ToArray()
+            };
         }
 
         public List<Guid> GetItemIds(InternalItemsQuery query)
