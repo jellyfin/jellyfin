@@ -53,6 +53,8 @@ namespace MediaBrowser.Controller.Channels
 
         public bool IsInfiniteStream { get; set; }
 
+        public string HomePageUrl { get; set; }
+
         public ChannelItemInfo()
         {
             MediaSources = new List<ChannelMediaInfo>();

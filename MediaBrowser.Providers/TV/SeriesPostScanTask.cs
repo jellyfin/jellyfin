@@ -195,28 +195,35 @@ namespace MediaBrowser.Providers.TV
 
         private async void LibraryUpdateTimerCallback(object state)
         {
-            if (MissingEpisodeProvider.IsRunning)
+            try
             {
-                return;
+                if (MissingEpisodeProvider.IsRunning)
+                {
+                    return;
+                }
+
+                if (_libraryManager.IsScanRunning)
+                {
+                    return;
+                }
+
+                var seriesList = _libraryManager.GetItemList(new InternalItemsQuery()
+                {
+                    IncludeItemTypes = new[] { typeof(Series).Name },
+                    Recursive = true,
+                    GroupByPresentationUniqueKey = false
+
+                }).Cast<Series>().ToList();
+
+                var seriesGroups = SeriesPostScanTask.FindSeriesGroups(seriesList).Where(g => !string.IsNullOrEmpty(g.Key)).ToList();
+
+                await new MissingEpisodeProvider(_logger, _config, _libraryManager, _localization, _fileSystem)
+                    .Run(seriesGroups, false, CancellationToken.None).ConfigureAwait(false);
             }
-
-            if (_libraryManager.IsScanRunning)
+            catch (Exception ex)
             {
-                return ;
+                _logger.ErrorException("Error in SeriesPostScanTask", ex);
             }
-
-            var seriesList = _libraryManager.GetItemList(new InternalItemsQuery()
-            {
-                IncludeItemTypes = new[] { typeof(Series).Name },
-                Recursive = true,
-                GroupByPresentationUniqueKey = false
-
-            }).Cast<Series>().ToList();
-
-            var seriesGroups = SeriesPostScanTask.FindSeriesGroups(seriesList).Where(g => !string.IsNullOrEmpty(g.Key)).ToList();
-
-            await new MissingEpisodeProvider(_logger, _config, _libraryManager, _localization, _fileSystem)
-                .Run(seriesGroups, false, CancellationToken.None).ConfigureAwait(false);
         }
 
         private bool FilterItem(BaseItem item)

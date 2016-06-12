@@ -115,19 +115,31 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _jsonSerializer = jsonSerializer;
 
             _criticReviewsPath = Path.Combine(_config.ApplicationPaths.DataPath, "critic-reviews");
+            DbFilePath = Path.Combine(_config.ApplicationPaths.DataPath, "library.db");
         }
 
         private const string ChaptersTableName = "Chapters2";
+
+        protected override async Task<IDbConnection> CreateConnection(bool isReadOnly = false)
+        {
+            var connection = await DbConnector.Connect(DbFilePath, false, false, 6000).ConfigureAwait(false);
+
+            connection.RunQueries(new[]
+            {
+                "pragma temp_store = memory"
+
+            }, Logger);
+
+            return connection;
+        }
 
         /// <summary>
         /// Opens the connection to the database
         /// </summary>
         /// <returns>Task.</returns>
-        public async Task Initialize(IDbConnector dbConnector)
+        public async Task Initialize()
         {
-            var dbFile = Path.Combine(_config.ApplicationPaths.DataPath, "library.db");
-
-            _connection = await dbConnector.Connect(dbFile, false, false, 6000).ConfigureAwait(false);
+            _connection = await CreateConnection(false).ConfigureAwait(false);
 
             var createMediaStreamsTableCommand
                = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, Title TEXT NULL, TimeBase TEXT NULL, CodecTimeBase TEXT NULL, PRIMARY KEY (ItemId, StreamIndex))";
@@ -137,7 +149,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create table if not exists TypedBaseItems (guid GUID primary key, type TEXT, data BLOB, ParentId GUID, Path TEXT)",
                                 "create index if not exists idx_PathTypedBaseItems on TypedBaseItems(Path)",
                                 "create index if not exists idx_ParentIdTypedBaseItems on TypedBaseItems(ParentId)",
-                                "create index if not exists idx_TypedBaseItems2 on TypedBaseItems(Type,Guid)",
 
                                 "create table if not exists AncestorIds (ItemId GUID, AncestorId GUID, AncestorIdText TEXT, PRIMARY KEY (ItemId, AncestorId))",
                                 "create index if not exists idx_AncestorIds1 on AncestorIds(AncestorId)",
@@ -166,10 +177,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 createMediaStreamsTableCommand,
                                 "create index if not exists idx_mediastreams1 on mediastreams(ItemId)",
 
-                                //pragmas
-                                "pragma temp_store = memory",
-
-                                "pragma shrink_memory"
                                };
 
             _connection.RunQueries(queries, Logger);
@@ -258,12 +265,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "UserDataKeys", "Priority", "INT");
 
             string[] postQueries =
-                {
+                                {
                 "create index if not exists idx_PresentationUniqueKey on TypedBaseItems(PresentationUniqueKey)",
+                "create index if not exists idx_GuidType on TypedBaseItems(Guid,Type)",
                 "create index if not exists idx_Type on TypedBaseItems(Type)",
                 "create index if not exists idx_TopParentId on TypedBaseItems(TopParentId)",
-                "create index if not exists idx_TypeTopParentId on TypedBaseItems(Type,TopParentId)"
-            };
+                "create index if not exists idx_TypeTopParentId on TypedBaseItems(Type,TopParentId)",
+                "create index if not exists idx_TypeTopParentId2 on TypedBaseItems(TopParentId,MediaType,IsVirtualItem)",
+                "create index if not exists idx_TypeTopParentId3 on TypedBaseItems(TopParentId,IsFolder,IsVirtualItem)",
+                "create index if not exists idx_TypeTopParentId4 on TypedBaseItems(TopParentId,Type,IsVirtualItem)",
+                "create index if not exists idx_TypeTopParentId5 on TypedBaseItems(TopParentId,IsVirtualItem)"
+                };
 
             _connection.RunQueries(postQueries, Logger);
 
@@ -869,15 +881,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                     _saveItemCommand.GetParameter(index++).Value = item.Album;
 
-                    var season = item as Season;
-                    if (season != null && season.IsVirtualItem.HasValue)
-                    {
-                        _saveItemCommand.GetParameter(index++).Value = season.IsVirtualItem.Value;
-                    }
-                    else
-                    {
-                        _saveItemCommand.GetParameter(index++).Value = null;
-                    }
+                    _saveItemCommand.GetParameter(index++).Value = item.IsVirtualItem || (!item.IsFolder && item.LocationType == LocationType.Virtual);
 
                     var hasSeries = item as IHasSeries;
                     if (hasSeries != null)
@@ -1306,10 +1310,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 item.CriticRatingSummary = reader.GetString(57);
             }
 
-            var season = item as Season;
-            if (season != null && !reader.IsDBNull(58))
+            if (!reader.IsDBNull(58))
             {
-                season.IsVirtualItem = reader.GetBoolean(58);
+                item.IsVirtualItem = reader.GetBoolean(58);
             }
 
             return item;
@@ -1461,7 +1464,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// or
         /// cancellationToken
         /// </exception>
-        public async Task SaveChapters(Guid id, IEnumerable<ChapterInfo> chapters, CancellationToken cancellationToken)
+        public async Task SaveChapters(Guid id, List<ChapterInfo> chapters, CancellationToken cancellationToken)
         {
             CheckDisposed();
 
@@ -2719,8 +2722,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (query.LocationTypes.Length == 1)
             {
-                whereClauses.Add("LocationType=@LocationType");
-                cmd.Parameters.Add(cmd, "@LocationType", DbType.String).Value = query.LocationTypes[0].ToString();
+                if (query.LocationTypes[0] == LocationType.Virtual && _config.Configuration.SchemaVersion >= 90)
+                {
+                    query.IsVirtualItem = true;
+                }
+                else
+                {
+                    whereClauses.Add("LocationType=@LocationType");
+                    cmd.Parameters.Add(cmd, "@LocationType", DbType.String).Value = query.LocationTypes[0].ToString();
+                }
             }
             else if (query.LocationTypes.Length > 1)
             {
@@ -2730,14 +2740,26 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             if (query.ExcludeLocationTypes.Length == 1)
             {
-                whereClauses.Add("LocationType<>@ExcludeLocationTypes");
-                cmd.Parameters.Add(cmd, "@ExcludeLocationTypes", DbType.String).Value = query.ExcludeLocationTypes[0].ToString();
+                if (query.ExcludeLocationTypes[0] == LocationType.Virtual && _config.Configuration.SchemaVersion >= 90)
+                {
+                    query.IsVirtualItem = false;
+                }
+                else
+                {
+                    whereClauses.Add("LocationType<>@ExcludeLocationTypes");
+                    cmd.Parameters.Add(cmd, "@ExcludeLocationTypes", DbType.String).Value = query.ExcludeLocationTypes[0].ToString();
+                }
             }
             else if (query.ExcludeLocationTypes.Length > 1)
             {
                 var val = string.Join(",", query.ExcludeLocationTypes.Select(i => "'" + i + "'").ToArray());
 
                 whereClauses.Add("LocationType not in (" + val + ")");
+            }
+            if (query.IsVirtualItem.HasValue)
+            {
+                whereClauses.Add("IsVirtualItem=@IsVirtualItem");
+                cmd.Parameters.Add(cmd, "@IsVirtualItem", DbType.Boolean).Value = query.IsVirtualItem.Value;
             }
             if (query.MediaTypes.Length == 1)
             {
@@ -3734,7 +3756,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             return list;
         }
 
-        public async Task SaveMediaStreams(Guid id, IEnumerable<MediaStream> streams, CancellationToken cancellationToken)
+        public async Task SaveMediaStreams(Guid id, List<MediaStream> streams, CancellationToken cancellationToken)
         {
             CheckDisposed();
 

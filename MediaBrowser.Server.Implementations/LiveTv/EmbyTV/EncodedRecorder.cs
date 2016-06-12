@@ -50,7 +50,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 var streams = mediaSource.MediaStreams ?? new List<MediaStream>();
                 if (streams.Any(i => i.Type == MediaStreamType.Audio && (i.Codec ?? string.Empty).IndexOf("aac", StringComparison.OrdinalIgnoreCase) != -1))
                 {
-                    return Path.ChangeExtension(targetFile, ".mkv");
+                    return Path.ChangeExtension(targetFile, ".ts");
                 }
             }
 

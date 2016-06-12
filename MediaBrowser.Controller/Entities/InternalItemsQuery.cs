@@ -117,6 +117,7 @@ namespace MediaBrowser.Controller.Entities
         public bool? IsCurrentSchema { get; set; }
         public bool? HasDeadParentId { get; set; }
         public bool? IsOffline { get; set; }
+        public bool? IsVirtualItem { get; set; }
 
         public Guid? ParentId { get; set; }
         public string[] AncestorIds { get; set; }

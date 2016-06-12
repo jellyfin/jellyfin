@@ -16,11 +16,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
     public class SqliteUserDataRepository : BaseSqliteRepository, IUserDataRepository
     {
         private IDbConnection _connection;
-        private readonly IApplicationPaths _appPaths;
 
         public SqliteUserDataRepository(ILogManager logManager, IApplicationPaths appPaths, IDbConnector connector) : base(logManager, connector)
         {
-            _appPaths = appPaths;
+            DbFilePath = Path.Combine(appPaths.DataPath, "userdata_v2.db");
+        }
+
+        protected override bool EnableConnectionPooling
+        {
+            get { return false; }
         }
 
         /// <summary>
@@ -39,11 +43,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// Opens the connection to the database
         /// </summary>
         /// <returns>Task.</returns>
-        public async Task Initialize(IDbConnector dbConnector)
+        public async Task Initialize()
         {
-            var dbFile = Path.Combine(_appPaths.DataPath, "userdata_v2.db");
-
-            _connection = await dbConnector.Connect(dbFile, false).ConfigureAwait(false);
+            _connection = await CreateConnection(false).ConfigureAwait(false);
 
             string[] queries = {
 

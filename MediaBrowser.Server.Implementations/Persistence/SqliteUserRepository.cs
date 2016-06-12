@@ -52,9 +52,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create index if not exists idx_users on users(guid)",
                                 "create table if not exists schema_version (table_name primary key, version)",
 
-                                //pragmas
-                                "pragma temp_store = memory",
-
                                 "pragma shrink_memory"
                                };
 
