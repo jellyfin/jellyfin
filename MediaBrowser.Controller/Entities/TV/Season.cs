@@ -128,39 +128,16 @@ namespace MediaBrowser.Controller.Entities.TV
             return IndexNumber != null ? IndexNumber.Value.ToString("0000") : Name;
         }
 
-        public override bool RequiresRefresh()
-        {
-            var result = base.RequiresRefresh();
-
-            if (!result)
-            {
-                if (!IsVirtualItem.HasValue)
-                {
-                    return true;
-                }
-            }
-
-            return result;
-        }
-
-        [IgnoreDataMember]
-        public bool? IsVirtualItem { get; set; }
-
         [IgnoreDataMember]
         public bool IsMissingSeason
         {
-            get { return (IsVirtualItem ?? DetectIsVirtualItem()) && !IsUnaired; }
+            get { return (IsVirtualItem) && !IsUnaired; }
         }
 
         [IgnoreDataMember]
         public bool IsVirtualUnaired
         {
-            get { return (IsVirtualItem ?? DetectIsVirtualItem()) && IsUnaired; }
-        }
-
-        private bool DetectIsVirtualItem()
-        {
-            return LocationType == LocationType.Virtual && GetEpisodes().All(i => i.LocationType == LocationType.Virtual);
+            get { return (IsVirtualItem) && IsUnaired; }
         }
 
         [IgnoreDataMember]

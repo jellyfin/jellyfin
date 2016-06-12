@@ -1307,6 +1307,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.OfficialRating = info.OfficialRating;
                 item.DateCreated = info.DateCreated ?? DateTime.UtcNow;
                 item.Tags = info.Tags;
+                item.HomePageUrl = info.HomePageUrl;
             }
 
             var trailer = item as Trailer;

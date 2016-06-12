@@ -71,6 +71,9 @@ namespace MediaBrowser.Controller.Entities
 
         public List<ItemImageInfo> ImageInfos { get; set; }
 
+        [IgnoreDataMember]
+        public bool IsVirtualItem { get; set; }
+
         /// <summary>
         /// Gets or sets the album.
         /// </summary>
