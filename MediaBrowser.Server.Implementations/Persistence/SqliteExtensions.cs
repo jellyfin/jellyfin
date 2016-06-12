@@ -39,12 +39,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             var connectionString = connectionstr.ConnectionString;
 
-            if (enablePooling)
-            {
-                connectionString += ";Max Pool Size=100";
-            }
-
             //logger.Info("Sqlite {0} opening {1}", SQLiteConnection.SQLiteVersion, connectionString);
+            SQLiteConnection.SetMemoryStatus(false);
 
             var connection = new SQLiteConnection(connectionString);
 

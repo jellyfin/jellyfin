@@ -573,7 +573,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             await displayPreferencesRepo.Initialize().ConfigureAwait(false);
             await ConfigureUserDataRepositories().ConfigureAwait(false);
-            await itemRepo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
+            await itemRepo.Initialize().ConfigureAwait(false);
             ((LibraryManager)LibraryManager).ItemRepository = ItemRepository;
             await ConfigureNotificationsRepository().ConfigureAwait(false);
             progress.Report(100);
@@ -746,7 +746,7 @@ namespace MediaBrowser.Server.Startup.Common
         {
             var repo = new SqliteUserDataRepository(LogManager, ApplicationPaths, NativeApp.GetDbConnector());
 
-            await repo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
+            await repo.Initialize().ConfigureAwait(false);
 
             ((UserDataManager)UserDataManager).Repository = repo;
         }
