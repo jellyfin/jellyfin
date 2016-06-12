@@ -691,7 +691,7 @@ namespace MediaBrowser.Server.Startup.Common
         {
             var repo = new SqliteFileOrganizationRepository(LogManager, ServerConfigurationManager.ApplicationPaths, NativeApp.GetDbConnector());
 
-            await repo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
+            await repo.Initialize().ConfigureAwait(false);
 
             return repo;
         }
