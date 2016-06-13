@@ -201,6 +201,7 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableFolderView { get; set; }
         public bool EnableGroupingIntoCollections { get; set; }
         public bool DisplaySpecialsWithinSeasons { get; set; }
+        public bool DisplayCollectionsView { get; set; }
         public string[] LocalNetworkAddresses { get; set; }
 
         /// <summary>
