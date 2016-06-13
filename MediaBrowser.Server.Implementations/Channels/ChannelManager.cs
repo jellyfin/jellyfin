@@ -1172,8 +1172,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             items = ApplyFilters(items, query.Filters, user);
 
-            var sortBy = query.SortBy.Length == 0 ? new[] { ItemSortBy.SortName } : query.SortBy;
-            items = _libraryManager.Sort(items, user, sortBy, query.SortOrder ?? SortOrder.Ascending);
+            items = _libraryManager.Sort(items, user, query.SortBy, query.SortOrder ?? SortOrder.Ascending);
 
             var all = items.ToList();
             var totalCount = totalCountFromProvider ?? all.Count;
