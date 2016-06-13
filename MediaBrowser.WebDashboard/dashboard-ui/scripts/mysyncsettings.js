@@ -73,11 +73,14 @@
 
         $('form', page).off('submit', onSubmit).on('submit', onSubmit);
 
-        $('.btnSelectSyncPath', page).on('click', function () {
+        $('#btnSelectSyncPath', page).on('click', function () {
 
             require(['nativedirectorychooser'], function () {
                 NativeDirectoryChooser.chooseDirectory().then(function (path) {
-                    $('#txtSyncPath', page).val(path);
+
+                    if (path) {
+                        $('#txtSyncPath', page).val(path);
+                    }
                 });
             });
         });

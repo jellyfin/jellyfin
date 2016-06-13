@@ -757,14 +757,18 @@
             html += '<button is="paper-icon-button-light" id="video-pauseButton" class="mediaButton pauseButton" onclick="MediaPlayer.pause();"><iron-icon icon="pause"></iron-icon></button>';
             html += '<button is="paper-icon-button-light" class="nextTrackButton mediaButton videoTrackControl hide" onclick="MediaPlayer.nextTrack();"><iron-icon icon="skip-next"></iron-icon></button>';
 
-            html += '<paper-slider pin step=".1" min="0" max="100" value="0" class="videoPositionSlider" style="display:inline-block;margin-right:2em;"></paper-slider>';
+            html += '<div class="sliderContainer videoPositionSliderContainer" style="display:inline-flex;margin-right:2em;">';
+            html += '<input type="range" is="emby-slider" pin step=".1" min="0" max="100" value="0" class="videoPositionSlider" />';
+            html += '</div>'; // guide
 
             html += '<div class="currentTime">--:--</div>';
 
             html += '<button is="paper-icon-button-light" class="muteButton mediaButton" onclick="MediaPlayer.mute();"><iron-icon icon="volume-up"></iron-icon></button>';
             html += '<button is="paper-icon-button-light" class="unmuteButton mediaButton" onclick="MediaPlayer.unMute();"><iron-icon icon="volume-off"></iron-icon></button>';
 
-            html += '<paper-slider pin step="1" min="0" max="100" value="0" class="videoVolumeSlider" style="width:100px;vertical-align:middle;margin-left:-1em;margin-right:2em;display:inline-block;"></paper-slider>';
+            html += '<div class="sliderContainer" style="width:100px;vertical-align:middle;;margin-right:2em;display:inline-flex;">';
+            html += '<input type="range" is="emby-slider" pin step="1" min="0" max="100" value="0" class="videoVolumeSlider"/>';
+            html += '</div>'; // guide
 
             html += '<button is="paper-icon-button-light" class="mediaButton castButton" onclick="MediaController.showPlayerSelection(this, false);" style="height:32px;width:32px;"><iron-icon icon="cast"></iron-icon></button>';
             html += '<button is="paper-icon-button-light" class="mediaButton fullscreenButton" onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton"><iron-icon icon="fullscreen"></iron-icon></button>';
@@ -991,7 +995,7 @@
         self.playVideo = function (item, mediaSource, startPosition, callback) {
 
             // TODO: remove dependency on nowplayingbar
-            requirejs(['videorenderer', 'css!css/nowplayingbar.css', 'css!css/mediaplayer-video.css', 'paper-slider'], function () {
+            requirejs(['videorenderer', 'css!css/nowplayingbar.css', 'css!css/mediaplayer-video.css', 'emby-slider'], function () {
 
                 initVideoElements();
 

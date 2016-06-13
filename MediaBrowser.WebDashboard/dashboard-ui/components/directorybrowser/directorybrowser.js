@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'paper-item', 'paper-input', 'emby-button', 'paper-item-body', 'paper-icon-button-light'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'paper-item', 'emby-input', 'emby-button', 'paper-item-body', 'paper-icon-button-light'], function (dialogHelper, $) {
 
     var systemInfo;
     function getSystemInfo() {
@@ -134,9 +134,11 @@
         html += '</p>';
 
         html += '<form style="max-width:100%;">';
-        html += '<div>';
-        html += '<paper-input id="txtDirectoryPickerPath" type="text" required="required" style="width:82%;display:inline-block;" label="' + Globalize.translate('LabelCurrentPath') + '"></paper-input>';
 
+        html += '<div class="inputContainer" style="display: flex; align-items: center;">';
+        html += '<div style="flex-grow:1;">';
+        html += '<input is="emby-input" id="txtDirectoryPickerPath" type="text" required="required" label="' + Globalize.translate('LabelCurrentPath') + '"/>';
+        html += '</div>';
         html += '<button type="button" is="paper-icon-button-light" class="btnRefreshDirectories" title="' + Globalize.translate('ButtonRefresh') + '"><iron-icon icon="refresh"></iron-icon></button>';
         html += '</div>';
 

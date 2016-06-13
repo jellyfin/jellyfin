@@ -23,8 +23,8 @@
 
         html += '<div class="nowPlayingBar hide">';
 
-        html += '<div class="nowPlayingBarPositionContainer">';
-        html += '<paper-slider pin step=".1" min="0" max="100" value="0" class="nowPlayingBarPositionSlider"></paper-slider>';
+        html += '<div class="nowPlayingBarPositionContainer sliderContainer">';
+        html += '<input type="range" is="emby-slider" pin step=".1" min="0" max="100" value="0" class="nowPlayingBarPositionSlider"/>';
         html += '</div>';
 
         html += '<div class="nowPlayingBarInfoContainer">';
@@ -51,7 +51,9 @@
         html += '<button is="paper-icon-button-light" class="muteButton mediaButton"><iron-icon icon="volume-up"></iron-icon></button>';
         html += '<button is="paper-icon-button-light" class="unmuteButton mediaButton"><iron-icon icon="volume-off"></iron-icon></button>';
 
-        html += '<paper-slider pin step="1" min="0" max="100" value="0" class="nowPlayingBarVolumeSlider" style="width:100px;vertical-align:middle;display:inline-block;"></paper-slider>';
+        html += '<div class="sliderContainer nowPlayingBarVolumeSliderContainer" style="width:100px;vertical-align:middle;display:inline-flex;">';
+        html += '<input type="range" is="emby-slider" pin step="1" min="0" max="100" value="0" class="nowPlayingBarVolumeSlider"/>';
+        html += '</div>';
 
         html += '<button is="paper-icon-button-light" class="toggleRepeatButton mediaButton"><iron-icon icon="repeat"></iron-icon></button>';
 
@@ -289,7 +291,7 @@
                 return;
             }
 
-            require(['css!css/nowplayingbar.css', 'paper-slider'], function () {
+            require(['css!css/nowplayingbar.css', 'emby-slider'], function () {
 
                 nowPlayingBarElement = document.querySelector('.nowPlayingBar');
 

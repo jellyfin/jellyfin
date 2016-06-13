@@ -9,10 +9,12 @@
 
         var descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
 
-        if (descriptor.configurable) {
+        // descriptor returning null in webos
+        if (descriptor && descriptor.configurable) {
             var baseSetMethod = descriptor.set;
             descriptor.set = function (value) {
                 baseSetMethod.call(this, value);
+
                 this.dispatchEvent(new CustomEvent('valueset', {
                     bubbles: false,
                     cancelable: false
