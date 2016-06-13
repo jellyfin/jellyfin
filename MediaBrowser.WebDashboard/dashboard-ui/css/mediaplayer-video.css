@@ -108,32 +108,31 @@
     font-size: 14px;
 }
 
-.videoPositionSlider {
+.videoPositionSliderContainer {
     width: 300px;
     vertical-align: middle;
-    margin-left: -1em;
 }
 
 @media all and (max-width: 440px) {
-    .videoPositionSlider {
+    .videoPositionSliderContainer {
         width: 240px;
     }
 }
 
 @media all and (max-width: 400px) {
-    .videoPositionSlider {
+    .videoPositionSliderContainer {
         width: 200px;
     }
 }
 
 @media all and (max-width: 350px) {
-    .videoPositionSlider {
+    .videoPositionSliderContainer {
         width: 180px;
     }
 }
 
 @media all and (max-width: 320px) {
-    .videoPositionSlider {
+    .videoPositionSliderContainer {
         width: 120px;
     }
 }

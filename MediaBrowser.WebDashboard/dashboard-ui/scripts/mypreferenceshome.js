@@ -96,7 +96,6 @@
 
     function loadForm(page, user, displayPreferences) {
 
-        page.querySelector('.chkDisplayCollectionView').checked = user.Configuration.DisplayCollectionsView || false;
         page.querySelector('.chkHidePlayedFromLatest').checked = user.Configuration.HidePlayedInLatest || false;
         page.querySelector('.chkDisplayChannelsInline').checked = !(user.Configuration.EnableChannelView || false);
 
@@ -130,7 +129,6 @@
     }
     function saveUser(page, user, displayPreferences) {
 
-        user.Configuration.DisplayCollectionsView = page.querySelector('.chkDisplayCollectionView').checked;
         user.Configuration.HidePlayedInLatest = page.querySelector('.chkHidePlayedFromLatest').checked;
 
         user.Configuration.EnableChannelView = !page.querySelector('.chkDisplayChannelsInline').checked;

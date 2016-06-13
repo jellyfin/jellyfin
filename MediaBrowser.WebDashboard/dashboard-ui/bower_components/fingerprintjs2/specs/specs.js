@@ -71,6 +71,15 @@ describe("Fingerprint2", function () {
         });
       });
 
+      it("does not use pixelRatio when excluded", function (done) {
+        var fp2 = new Fingerprint2({excludePixelRatio: true});
+        spyOn(fp2, "getPixelRatio");
+        fp2.get(function(result) {
+          expect(fp2.getPixelRatio).not.toHaveBeenCalled();
+          done();
+        });
+      });
+
       it("does not use screen resolution when excluded", function (done) {
         var fp2 = new Fingerprint2({excludeScreenResolution: true});
         spyOn(fp2, "getScreenResolution");

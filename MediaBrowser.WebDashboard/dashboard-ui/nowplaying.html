@@ -21,14 +21,12 @@
                 </div>
                 <div class="nowPlayingInfoMetadata">
                     <div class="nowPlayingPageImage" style="margin: 1em auto;"></div>
-                    <div class="nowPlayingPageTimeContainer">
-                        <div>
-                            <paper-slider pin step="1" min="0" max="100" value="0" class="nowPlayingPositionSlider" style="width: 100%;"></paper-slider>
+                    <div class="nowPlayingPageTimeContainer" style="display:flex; align-items: center;">
+                        <div class="positionTime"></div>
+                        <div class="sliderContainer nowPlayingPositionSliderContainer" style="flex-grow:1;margin: 0 1em;">
+                            <input type="range" is="emby-slider" pin step="1" min="0" max="100" value="0" class="nowPlayingPositionSlider" />
                         </div>
-                        <div style="text-align:left;">
-                            <div class="positionTime" style="float:left;"></div>
-                            <div class="runtime" style="float: right;"></div>
-                        </div>
+                        <div class="runtime"></div>
                     </div>
                 </div>
                 <div class="nowPlayingInfoButtons">

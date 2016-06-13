@@ -187,10 +187,6 @@
 
                 function allowSwipeOn(elem) {
 
-                    if (elem.tagName == 'PAPER-SLIDER') {
-                        return false;
-                    }
-
                     if (elem.classList) {
                         return !elem.classList.contains('hiddenScrollX') && !elem.classList.contains('smoothScrollX') && !elem.classList.contains('libraryViewNav');
                     }
@@ -1253,7 +1249,7 @@
 
             getListViewHtml: function (options) {
 
-                require(['paper-icon-item', 'paper-item-body']);
+                require(['paper-icon-item', 'paper-item-body', 'material-icons']);
 
                 var outerHtml = "";
 
@@ -1445,7 +1441,7 @@
                     html += '</a>';
                     html += '</paper-item-body>';
 
-                    html += '<button is="paper-icon-button-light" class="listviewMenuButton"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
+                    html += '<button is="paper-icon-button-light" class="listviewMenuButton autoSize"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button>';
                     html += '<span class="listViewUserDataButtons">';
                     html += LibraryBrowser.getUserDataIconsHtml(item);
                     html += '</span>';

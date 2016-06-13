@@ -21,7 +21,7 @@
 .nowPlayingPageTimeContainer {
     min-width: 200px;
     max-width: 280px;
-    margin: 0 auto 1em;
+    margin: 1.5em auto 1em;
 }
 
 .nowPlayingNavButtonContainer {
@@ -94,7 +94,6 @@
 .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
     width: 60px;
     height: 60px;
-    background: #222;
 }
 
 
