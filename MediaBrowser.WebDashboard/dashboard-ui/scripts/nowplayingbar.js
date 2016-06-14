@@ -254,20 +254,19 @@
 
             });
 
-            positionSlider._setPinValue = function (value) {
+            positionSlider.getBubbleText = function (value) {
 
                 var state = lastPlayerState;
 
                 if (!state || !state.NowPlayingItem || !state.NowPlayingItem.RunTimeTicks) {
-                    this.pinValue = '--:--';
-                    return;
+                    return '--:--';
                 }
 
                 var ticks = state.NowPlayingItem.RunTimeTicks;
                 ticks /= 100;
                 ticks *= value;
 
-                this.pinValue = datetime.getDisplayRunningTime(ticks);
+                return datetime.getDisplayRunningTime(ticks);
             };
         }, 300);
     }

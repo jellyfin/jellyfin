@@ -8,10 +8,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Emby.XmlTv.Classes;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 {
@@ -19,11 +19,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
     {
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClient _httpClient;
+        private readonly ILogger _logger;
 
-        public XmlTvListingsProvider(IServerConfigurationManager config, IHttpClient httpClient)
+        public XmlTvListingsProvider(IServerConfigurationManager config, IHttpClient httpClient, ILogger logger)
         {
             _config = config;
             _httpClient = httpClient;
+            _logger = logger;
         }
 
         public string Name
@@ -55,10 +57,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 return cacheFile;
             }
 
+            _logger.Info("Downloading xmltv listings from {0}", path);
+
             var tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = path
+                Url = path,
+                Progress = new Progress<Double>()
 
             }).ConfigureAwait(false);
             File.Copy(tempFile, cacheFile, true);
@@ -100,10 +105,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             });
         }
 
-        public Task AddMetadata(ListingsProviderInfo info, List<ChannelInfo> channels, CancellationToken cancellationToken)
+        public async Task AddMetadata(ListingsProviderInfo info, List<ChannelInfo> channels, CancellationToken cancellationToken)
         {
             // Add the channel image url
-            var reader = new XmlTvReader(info.Path, GetLanguage(), null);
+            var path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
+            var reader = new XmlTvReader(path, GetLanguage(), null);
             var results = reader.GetChannels().ToList();
 
             if (channels != null)
@@ -119,8 +125,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                     }
                 });
             }
-
-            return Task.FromResult(true);
         }
 
         public Task Validate(ListingsProviderInfo info, bool validateLogin, bool validateListings)
@@ -134,20 +138,22 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             return Task.FromResult(true);
         }
 
-        public Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string country, string location)
+        public async Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string country, string location)
         {
             // In theory this should never be called because there is always only one lineup
-            var reader = new XmlTvReader(info.Path, GetLanguage(), null);
+            var path = await GetXml(info.Path, CancellationToken.None).ConfigureAwait(false);
+            var reader = new XmlTvReader(path, GetLanguage(), null);
             var results = reader.GetChannels();
 
             // Should this method be async?
-            return Task.FromResult(results.Select(c => new NameIdPair() { Id = c.Id, Name = c.DisplayName }).ToList());
+            return results.Select(c => new NameIdPair() { Id = c.Id, Name = c.DisplayName }).ToList();
         }
 
         public async Task<List<ChannelInfo>> GetChannels(ListingsProviderInfo info, CancellationToken cancellationToken)
         {
             // In theory this should never be called because there is always only one lineup
-            var reader = new XmlTvReader(info.Path, GetLanguage(), null);
+            var path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
+            var reader = new XmlTvReader(path, GetLanguage(), null);
             var results = reader.GetChannels();
 
             // Should this method be async?

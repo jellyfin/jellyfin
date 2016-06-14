@@ -88,7 +88,7 @@
                 return {
                     name: name,
                     id: t.id,
-                    ironIcon: playerInfo.id == t.id ? 'check' : null
+                    selected: playerInfo.id == t.id
                 };
 
             });
@@ -119,7 +119,7 @@
 
     function showActivePlayerMenu(playerInfo) {
 
-        require(['dialogHelper', 'paper-checkbox', ], function (dialogHelper) {
+        require(['dialogHelper', 'emby-checkbox', 'emby-button'], function (dialogHelper) {
             showActivePlayerMenuInternal(dialogHelper, playerInfo);
         });
     }
@@ -147,10 +147,11 @@
 
         if (playerInfo.supportedCommands.indexOf('DisplayContent') != -1) {
 
-            html += '<div>';
+            html += '<label class="checkboxContainer" style="margin-bottom:0;">';
             var checkedHtml = MediaController.enableDisplayMirroring() ? ' checked' : '';
-            html += '<paper-checkbox class="chkMirror"' + checkedHtml + '>' + Globalize.translate('OptionEnableDisplayMirroring') + '</paper-checkbox>';
-            html += '</div>';
+            html += '<input type="checkbox" is="emby-checkbox" class="chkMirror"' + checkedHtml + '/>';
+            html += '<span>' + Globalize.translate('OptionEnableDisplayMirroring') + '</span>';
+            html += '</label>';
         }
 
         html += '</div>';

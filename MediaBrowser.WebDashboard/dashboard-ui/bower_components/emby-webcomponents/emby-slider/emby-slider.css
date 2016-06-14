@@ -26,6 +26,7 @@ _:-ms-input-placeholder, :root .mdl-slider.mdl-slider {
     align-self: center;
     z-index: 1;
     cursor: pointer;
+    margin: 0;
     /**************************** Tracks ****************************/
     /**************************** Thumbs ****************************/
     /**************************** 0-value ****************************/
@@ -320,4 +321,15 @@ _:-ms-input-placeholder, :root .mdl-slider.mdl-slider {
     border: 0;
     padding: 0;
     transition: left 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sliderBubble {
+    position: absolute;
+    top: -3.7em;
+    left: 0;
+    padding: .75em;
+    background: #3367d6;
+    color: #fff;
+    border-radius: 1000px;
+    font-size: 90%;
 }

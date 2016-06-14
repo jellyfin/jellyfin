@@ -22,6 +22,10 @@
     width: 100%;
 }
 
+[is="emby-select"] option {
+    color: initial;
+}
+
 .selectContainer {
     margin-bottom: 2em;
 }

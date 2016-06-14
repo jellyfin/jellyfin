@@ -1083,8 +1083,8 @@
                 cssClass += ' checkedInitial';
             }
             var checkedAttribute = isChecked ? ' checked' : '';
-            itemSelectionPanel.innerHTML = '<paper-checkbox class="' + cssClass + '"' + checkedAttribute + '></paper-checkbox>';
-            var chkItemSelect = itemSelectionPanel.querySelector('paper-checkbox');
+            itemSelectionPanel.innerHTML = '<label class="checkboxContainer"><input type="checkbox" is="emby-checkbox" class="' + cssClass + '"' + checkedAttribute + '/><span></span></label>>';
+            var chkItemSelect = itemSelectionPanel.querySelector('.chkItemSelect');
             chkItemSelect.addEventListener('change', onSelectionChange);
         }
     }
@@ -1145,7 +1145,7 @@
 
     function showSelections(initialCard) {
 
-        require(['paper-checkbox'], function () {
+        require(['emby-checkbox'], function () {
             var cards = document.querySelectorAll('.card');
             for (var i = 0, length = cards.length; i < length; i++) {
                 showSelection(cards[i], initialCard == cards[i]);
