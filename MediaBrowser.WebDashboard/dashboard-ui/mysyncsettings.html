@@ -1,4 +1,4 @@
-﻿<div id="syncPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${ButtonSyncSettings}" data-require="scripts/mysyncsettings,paper-checkbox,emby-input,emby-button,paper-icon-button-light" data-backbutton="true" data-menubutton="false">
+﻿<div id="syncPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${ButtonSyncSettings}" data-require="scripts/mysyncsettings,emby-checkbox,emby-input,emby-button,paper-icon-button-light" data-backbutton="true" data-menubutton="false">
 
     <div data-role="content">
         <form class="userProfileSettingsForm" style="margin: 0 auto;">
@@ -17,11 +17,11 @@
                 </div>
             </div>
 
-            <div>
-                <paper-checkbox id="chkWifi">${OptionSyncOnlyOnWifi}</paper-checkbox>
-            </div>
+            <label class="checkboxContainer">
+                <input type="checkbox" is="emby-checkbox" id="chkWifi"/>
+                <span>${OptionSyncOnlyOnWifi}</span>
+            </label>
 
-            <br />
             <h1>
                 ${HeaderCameraUpload}
             </h1>
@@ -29,7 +29,7 @@
             <p>${SelectCameraUploadServers}</p>
 
             <br />
-            <div class="paperCheckboxList uploadServerList">
+            <div class="checkboxList uploadServerList">
             </div>
 
             <br />

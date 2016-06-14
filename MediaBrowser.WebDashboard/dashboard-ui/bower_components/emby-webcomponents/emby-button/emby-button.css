@@ -55,23 +55,28 @@
             height: 4.4vh;
             width: 4.4vh;
             vertical-align: middle;
+            font-size: 4.4vh;
         }
 
     [is="emby-button"].noflex {
         display: inline-block;
     }
 
-    [is="emby-button"].fab.mini {
+    [is="emby-button"].fab.mini:not(.autoSize) {
         min-width: 40px !important;
         min-height: 40px !important;
         height: 3.3vh !important;
         width: 3.3vh !important;
+    }
+
+    [is="emby-button"].fab.mini {
         padding: .4em;
     }
 
         [is="emby-button"].fab.mini i {
-            height: 2.6vh !important;
-            width: 2.6vh !important;
+            height: 2.4vh !important;
+            width: 2.4vh !important;
+            font-size: 2.4vh !important;
         }
 
     [is="emby-button"].fab iron-icon {
@@ -108,6 +113,8 @@
 [is=emby-button].autoSize {
     width: auto !important;
     height: auto !important;
+    min-height: initial !important;
+    min-width: initial !important;
 }
 
 [is=paper-icon-button-light] {

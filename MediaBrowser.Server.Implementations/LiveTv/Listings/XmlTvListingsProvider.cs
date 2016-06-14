@@ -58,7 +58,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             var tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = path
+                Url = path,
+                Progress = new Progress<Double>()
 
             }).ConfigureAwait(false);
             File.Copy(tempFile, cacheFile, true);
