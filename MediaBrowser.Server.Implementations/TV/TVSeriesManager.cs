@@ -136,6 +136,7 @@ namespace MediaBrowser.Server.Implementations.TV
 
             }).Cast<Episode>().FirstOrDefault();
 
+            // series is fully played
             if (firstUnwatchedEpisode == null)
             {
                 return new Tuple<Episode, DateTime, bool>(null, DateTime.MinValue, true);

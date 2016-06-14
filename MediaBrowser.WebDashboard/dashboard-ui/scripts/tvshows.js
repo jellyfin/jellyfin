@@ -1,4 +1,4 @@
-﻿define(['events', 'libraryBrowser', 'imageLoader', 'jQuery', 'alphaPicker'], function (events, libraryBrowser, imageLoader, $, alphaPicker) {
+﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker'], function (events, libraryBrowser, imageLoader, alphaPicker) {
 
     return function (view, params, tabContent) {
 
@@ -141,20 +141,30 @@
                 }
 
                 var i, length;
-                var pagingElems = tabContent.querySelectorAll('.paging');
-                for (i = 0, length = pagingElems.length; i < length; i++) {
-                    pagingElems[i].innerHTML = pagingHtml;
+                var elems = tabContent.querySelectorAll('.paging');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].innerHTML = pagingHtml;
                 }
 
-                $('.btnNextPage', tabContent).on('click', function () {
+                function onNextPageClick() {
                     query.StartIndex += query.Limit;
                     reloadItems(tabContent);
-                });
+                }
 
-                $('.btnPreviousPage', tabContent).on('click', function () {
+                function onPreviousPageClick() {
                     query.StartIndex -= query.Limit;
                     reloadItems(tabContent);
-                });
+                }
+
+                elems = tabContent.querySelectorAll('.btnNextPage');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onNextPageClick);
+                }
+
+                elems = tabContent.querySelectorAll('.btnPreviousPage');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onPreviousPageClick);
+                }
 
                 var itemsContainer = tabContent.querySelector('.itemsContainer');
                 itemsContainer.innerHTML = html;
