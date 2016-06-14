@@ -4,7 +4,7 @@
 
         var folderHtml = '';
 
-        folderHtml += '<div class="paperCheckboxList">';
+        folderHtml += '<div class="checkboxList">';
         folderHtml += result.map(function (i) {
 
             var currentHtml = '';
@@ -16,7 +16,10 @@
 
             var checkedHtml = isChecked ? ' checked="checked"' : '';
 
-            currentHtml += '<paper-checkbox class="chkGroupFolder" data-folderid="' + i.Id + '" id="' + id + '"' + checkedHtml + '>' + i.Name + '</paper-checkbox>';
+            currentHtml += '<label>';
+            currentHtml += '<input type="checkbox" is="emby-checkbox" class="chkGroupFolder" data-folderid="' + i.Id + '" id="' + id + '"' + checkedHtml + '/>';
+            currentHtml += '<span>' + i.Name + '</span>';
+            currentHtml += '</label>';
 
             return currentHtml;
 
@@ -31,7 +34,7 @@
 
         var folderHtml = '';
 
-        folderHtml += '<div class="paperCheckboxList">';
+        folderHtml += '<div class="checkboxList">';
         folderHtml += result.Items.map(function (i) {
 
             var currentHtml = '';
@@ -41,7 +44,10 @@
             var isChecked = user.Configuration.LatestItemsExcludes.indexOf(i.Id) == -1;
             var checkedHtml = isChecked ? ' checked="checked"' : '';
 
-            currentHtml += '<paper-checkbox class="chkIncludeInLatest" data-folderid="' + i.Id + '" id="' + id + '"' + checkedHtml + '>' + i.Name + '</paper-checkbox>';
+            currentHtml += '<label>';
+            currentHtml += '<input type="checkbox" is="emby-checkbox" class="chkIncludeInLatest" data-folderid="' + i.Id + '" id="' + id + '"' + checkedHtml + '/>';
+            currentHtml += '<span>' + i.Name + '</span>';
+            currentHtml += '</label>';
 
             return currentHtml;
 
