@@ -124,58 +124,77 @@ namespace MediaBrowser.Server.Implementations.TV
         /// <returns>Task{Episode}.</returns>
         private Tuple<Episode, DateTime, bool> GetNextUp(Series series, User user)
         {
-            // Get them in display order, then reverse
-            var allEpisodes = series.GetEpisodes(user, false, false)
-                .Where(i => !i.ParentIndexNumber.HasValue || i.ParentIndexNumber.Value != 0)
-                .Reverse()
-                .ToList();
-
-            Episode lastWatched = null;
-            var lastWatchedDate = DateTime.MinValue;
-            Episode nextUp = null;
-
-            var unplayedEpisodes = new List<Episode>();
-
-            // Go back starting with the most recent episodes
-            foreach (var episode in allEpisodes)
+            var firstUnwatchedEpisode = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
-                var userData = _userDataManager.GetUserData(user, episode);
+                AncestorWithPresentationUniqueKey = series.PresentationUniqueKey,
+                IncludeItemTypes = new[] { typeof(Episode).Name },
+                SortBy = new[] { ItemSortBy.SortName },
+                SortOrder = SortOrder.Ascending,
+                Limit = 1,
+                IsPlayed = false,
+                IsVirtualItem = false
 
-                if (userData.Played)
-                {
-                    if (lastWatched != null || nextUp == null)
-                    {
-                        break;
-                    }
+            }).Cast<Episode>().FirstOrDefault();
 
-                    lastWatched = episode;
-                    lastWatchedDate = userData.LastPlayedDate ?? DateTime.MinValue;
-                }
-                else
-                {
-                    unplayedEpisodes.Add(episode);
-
-                    nextUp = episode;
-                }
+            if (firstUnwatchedEpisode == null)
+            {
+                return new Tuple<Episode, DateTime, bool>(null, DateTime.MinValue, true);
             }
 
-            if (lastWatched != null)
+            var lastWatchedEpisode = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
-                return new Tuple<Episode, DateTime, bool>(nextUp, lastWatchedDate, false);
-            }
+                AncestorWithPresentationUniqueKey = series.PresentationUniqueKey,
+                IncludeItemTypes = new[] { typeof(Episode).Name },
+                SortBy = new[] { ItemSortBy.DatePlayed },
+                SortOrder = SortOrder.Descending,
+                Limit = 1,
+                IsVirtualItem = false
 
-            Episode firstEpisode = null;
-            // Find the first unplayed episode. Start from the back of the list since they're in reverse order
-            for (var i = unplayedEpisodes.Count - 1; i >= 0; i--)
+            }).FirstOrDefault();
+
+            //// Get them in display order, then reverse
+            //var allEpisodes = series.GetEpisodes(user, false, false)
+            //    .Where(i => !i.ParentIndexNumber.HasValue || i.ParentIndexNumber.Value != 0)
+            //    .Reverse()
+            //    .ToList();
+
+            //Episode lastWatched = null;
+            //var lastWatchedDate = DateTime.MinValue;
+            //Episode nextUp = null;
+
+            //// Go back starting with the most recent episodes
+            //foreach (var episode in allEpisodes)
+            //{
+            //    var userData = _userDataManager.GetUserData(user, episode);
+
+            //    if (userData.Played)
+            //    {
+            //        if (lastWatched != null || nextUp == null)
+            //        {
+            //            break;
+            //        }
+
+            //        lastWatched = episode;
+            //        lastWatchedDate = userData.LastPlayedDate ?? DateTime.MinValue;
+            //    }
+            //    else
+            //    {
+            //        nextUp = episode;
+            //    }
+            //}
+
+            if (lastWatchedEpisode != null)
             {
-                var unplayedEpisode = unplayedEpisodes[i];
+                var userData = _userDataManager.GetUserData(user, lastWatchedEpisode);
 
-                firstEpisode = unplayedEpisode;
-                break;
+                if (userData.LastPlayedDate.HasValue)
+                {
+                    return new Tuple<Episode, DateTime, bool>(firstUnwatchedEpisode, userData.LastPlayedDate.Value, false);
+                }
             }
 
             // Return the first episode
-            return new Tuple<Episode, DateTime, bool>(firstEpisode, DateTime.MinValue, true);
+            return new Tuple<Episode, DateTime, bool>(firstUnwatchedEpisode, DateTime.MinValue, true);
         }
 
         private QueryResult<BaseItem> GetResult(IEnumerable<BaseItem> items, int? totalRecordLimit, NextUpQuery query)
