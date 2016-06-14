@@ -91,13 +91,15 @@
         var elem = context.querySelector('#items');
         elem.innerHTML = html;
 
-        elem.querySelector('.paperList').addEventListener('click', function (e) {
+        if (timers.length) {
+            elem.querySelector('.paperList').addEventListener('click', function (e) {
 
-            var btnCancelSeries = parentWithClass(e.target, 'btnCancelSeries');
-            if (btnCancelSeries) {
-                deleteSeriesTimer(context, btnCancelSeries.getAttribute('data-seriestimerid'));
-            }
-        });
+                var btnCancelSeries = parentWithClass(e.target, 'btnCancelSeries');
+                if (btnCancelSeries) {
+                    deleteSeriesTimer(context, btnCancelSeries.getAttribute('data-seriestimerid'));
+                }
+            });
+        }
 
         Dashboard.hideLoadingMsg();
     }
