@@ -33,7 +33,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 SyncMode = SynchronizationModes.Normal,
                 DataSource = dbPath,
                 JournalMode = SQLiteJournalModeEnum.Wal,
-                Pooling = enablePooling,
+
+                // This is causing crashing under linux
+                Pooling = Environment.OSVersion.Platform == PlatformID.Win32NT,
                 ReadOnly = isReadOnly
             };
 
