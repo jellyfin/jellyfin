@@ -39,7 +39,7 @@
                 Dashboard.onServerChanged(user.Id, result.AccessToken, apiClient);
                 Dashboard.navigate(newUrl);
 
-            }, function () {
+            }, function (response) {
 
                 $('#pw', page).val('');
                 $('#txtManualName', page).val('');
@@ -47,16 +47,26 @@
 
                 Dashboard.hideLoadingMsg();
 
-                setTimeout(function () {
+                if (response.status == 401) {
                     require(['toast'], function (toast) {
                         toast(Globalize.translate('MessageInvalidUser'));
                     });
-                }, 300);
+                } else {
+                    showServerConnectionFailure();
+                }
             });
 
         }
 
     };
+
+    function showServerConnectionFailure() {
+
+        Dashboard.alert({
+            message: Globalize.translate("MessageUnableToConnectToServer"),
+            title: Globalize.translate("HeaderConnectionFailure")
+        });
+    }
 
     function getApiClient() {
 

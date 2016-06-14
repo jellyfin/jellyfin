@@ -35,7 +35,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 JournalMode = SQLiteJournalModeEnum.Wal,
 
                 // This is causing crashing under linux
-                Pooling = Environment.OSVersion.Platform == PlatformID.Win32NT,
+                Pooling = enablePooling && Environment.OSVersion.Platform == PlatformID.Win32NT,
                 ReadOnly = isReadOnly
             };
 
