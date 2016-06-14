@@ -32,6 +32,17 @@
         }
     }
 
+    function updateBubble(range, bubble) {
+        
+        var value = range.value;
+        bubble.style.left = (value - 1) + '%';
+
+        if (range.getBubbleText) {
+            value = range.getBubbleText(value);
+        }
+        bubble.innerHTML = value;
+    }
+
     EmbySliderPrototype.attachedCallback = function () {
 
         if (this.getAttribute('data-embycheckbox') == 'true') {
@@ -46,19 +57,30 @@
         var containerElement = this.parentNode;
         containerElement.classList.add('mdl-slider__container');
 
+        var htmlToInsert = '';
+
         if (!supportsNativeProgressStyle) {
-            containerElement.insertAdjacentHTML('beforeend', '<div class="mdl-slider__background-flex"><div class="mdl-slider__background-lower"></div><div class="mdl-slider__background-upper"></div></div>');
+            htmlToInsert += '<div class="mdl-slider__background-flex"><div class="mdl-slider__background-lower"></div><div class="mdl-slider__background-upper"></div></div>';
         }
+
+        htmlToInsert += '<div class="sliderBubble hide"></div>';
+
+        containerElement.insertAdjacentHTML('beforeend', htmlToInsert);
 
         var backgroundLower = containerElement.querySelector('.mdl-slider__background-lower');
         var backgroundUpper = containerElement.querySelector('.mdl-slider__background-upper');
+        var sliderBubble = containerElement.querySelector('.sliderBubble');
 
-        this.addEventListener('input', function () {
+        this.addEventListener('input', function (e) {
             this.dragging = true;
+            updateBubble(this, sliderBubble);
+            sliderBubble.classList.remove('hide');
         });
         this.addEventListener('change', function () {
             this.dragging = false;
             updateValues(this, backgroundLower, backgroundUpper);
+            updateBubble(this, sliderBubble);
+            sliderBubble.classList.add('hide');
         });
 
         if (!supportsNativeProgressStyle) {

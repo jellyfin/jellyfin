@@ -88,7 +88,7 @@
                 return {
                     name: name,
                     id: t.id,
-                    ironIcon: playerInfo.id == t.id ? 'check' : null
+                    selected: playerInfo.id == t.id
                 };
 
             });

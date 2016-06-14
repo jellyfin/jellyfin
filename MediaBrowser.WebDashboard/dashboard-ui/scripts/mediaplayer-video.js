@@ -805,19 +805,18 @@
             positionSlider = parent.querySelector(".videoPositionSlider", parent);
             positionSlider.addEventListener('change', onPositionSliderChange);
 
-            positionSlider._setPinValue = function (value) {
+            positionSlider.getBubbleText = function (value) {
 
                 var seekableDuration = getSeekableDuration();
                 if (!self.currentMediaSource || !seekableDuration) {
-                    this.pinValue = '--:--';
-                    return;
+                    return '--:--';
                 }
 
                 var ticks = seekableDuration;
                 ticks /= 100;
                 ticks *= value;
 
-                this.pinValue = datetime.getDisplayRunningTime(ticks);
+                return datetime.getDisplayRunningTime(ticks);
             };
 
             volumeSlider = parent.querySelector('.videoVolumeSlider');

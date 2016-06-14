@@ -2284,10 +2284,10 @@
                 html += '</a>';
 
                 if (options.overlayPlayButton && !item.IsPlaceHolder && (item.LocationType != 'Virtual' || !item.MediaType || item.Type == 'Program') && item.Type != 'Person') {
-                    html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayPlayButton" onclick="return false;"><iron-icon icon="play-arrow"></iron-icon></button></div>';
+                    html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayPlayButton autoSize" onclick="return false;"><i class="md-icon">play_arrow</i></button></div>';
                 }
                 if (options.overlayMoreButton) {
-                    html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayMoreButton" onclick="return false;"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button></div>';
+                    html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayMoreButton autoSize" onclick="return false;"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button></div>';
                 }
 
                 // cardScalable
@@ -2312,7 +2312,7 @@
 
                 if (options.cardLayout) {
                     html += '<div class="cardButtonContainer">';
-                    html += '<button is="paper-icon-button-light" class="listviewMenuButton btnCardOptions"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
+                    html += '<button is="paper-icon-button-light" class="listviewMenuButton btnCardOptions autoSize"><i class="md-icon">' + AppInfo.moreIcon.replace('-','_') + '</i></button>';
                     html += "</div>";
                 }
 
