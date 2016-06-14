@@ -45,6 +45,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
         private async Task<string> GetXml(string path, CancellationToken cancellationToken)
         {
+            _logger.Info("xmltv path: {0}", path);
+
             if (!path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
                 return path;
@@ -161,7 +163,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             {
                 Id = c.Id,
                 Name = c.DisplayName,
-                ImageUrl = c.Icon != null && !String.IsNullOrEmpty(c.Icon.Source) ? c.Icon.Source : null
+                ImageUrl = c.Icon != null && !String.IsNullOrEmpty(c.Icon.Source) ? c.Icon.Source : null,
+                Number = c.Id
+
             }).ToList();
         }
     }
