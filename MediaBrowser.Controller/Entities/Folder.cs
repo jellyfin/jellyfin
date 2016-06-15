@@ -1413,59 +1413,33 @@ namespace MediaBrowser.Controller.Entities
                 return;
             }
 
-            var recursiveItemCount = 0;
-            var unplayed = 0;
-
-            double totalPercentPlayed = 0;
-
-            var itemsResult = GetItems(new InternalItemsQuery(user)
+            var playedQueryResult = GetItems(new InternalItemsQuery(user)
             {
                 Recursive = true,
                 IsFolder = false,
-                ExcludeLocationTypes = new[] { LocationType.Virtual },
-                EnableTotalRecordCount = false
+                IsVirtualItem = false,
+                EnableTotalRecordCount = true,
+                Limit = 0,
+                IsPlayed = true
 
             }).Result;
 
-            var children = itemsResult.Items;
-
-            // Loop through each recursive child
-            foreach (var child in children)
+            var allItemsQueryResult = GetItems(new InternalItemsQuery(user)
             {
-                recursiveItemCount++;
+                Recursive = true,
+                IsFolder = false,
+                IsVirtualItem = false,
+                EnableTotalRecordCount = true,
+                Limit = 0
 
-                var isUnplayed = true;
+            }).Result;
 
-                var itemUserData = UserDataManager.GetUserData(user, child);
-
-                // Incrememt totalPercentPlayed
-                if (itemUserData != null)
-                {
-                    if (itemUserData.Played)
-                    {
-                        totalPercentPlayed += 100;
-
-                        isUnplayed = false;
-                    }
-                    else if (itemUserData.PlaybackPositionTicks > 0 && child.RunTimeTicks.HasValue && child.RunTimeTicks.Value > 0)
-                    {
-                        double itemPercent = itemUserData.PlaybackPositionTicks;
-                        itemPercent /= child.RunTimeTicks.Value;
-                        totalPercentPlayed += itemPercent;
-                    }
-                }
-
-                if (isUnplayed)
-                {
-                    unplayed++;
-                }
-            }
-
-            dto.UnplayedItemCount = unplayed;
+            double recursiveItemCount = allItemsQueryResult.TotalRecordCount;
+            double playedCount = playedQueryResult.TotalRecordCount;
 
             if (recursiveItemCount > 0)
             {
-                dto.PlayedPercentage = totalPercentPlayed / recursiveItemCount;
+                dto.PlayedPercentage = (playedCount / recursiveItemCount) * 100;
                 dto.Played = dto.PlayedPercentage.Value >= 100;
             }
         }
