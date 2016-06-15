@@ -208,7 +208,6 @@ namespace MediaBrowser.Server.Implementations.Library
             var dto = GetUserItemDataDto(userData);
 
             item.FillUserDataDtoValues(dto, userData, user);
-
             return dto;
         }
 

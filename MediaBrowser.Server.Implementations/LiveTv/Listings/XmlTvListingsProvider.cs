@@ -66,7 +66,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             {
                 CancellationToken = cancellationToken,
                 Url = path,
-                Progress = new Progress<Double>()
+                Progress = new Progress<Double>(),
+                EnableHttpCompression = false
 
             }).ConfigureAwait(false);
 

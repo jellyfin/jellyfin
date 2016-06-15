@@ -53,7 +53,7 @@
 
         this.setAttribute('data-embybutton', 'true');
 
-        if (browser.safari) {
+        if (browser.safari || browser.firefox || browser.noFlex) {
             this.classList.add('noflex');
         }
 

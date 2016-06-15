@@ -3,6 +3,8 @@
     text-align: left;
     position: relative;
     contain: style;
+
+    /*box-shadow: 0 1px 4px 0 rgba(0,0,0,0.37);*/
 }
 
     /*.itemsContainer .card {
@@ -54,7 +56,7 @@
 }
 
 .cardBox {
-    margin: 5px;
+    margin: 6px;
 }
 
 @media all and (max-width: 500px) {
@@ -68,17 +70,19 @@
     position: absolute;
     bottom: 0;
     right: 0;
-    padding: 1em .5em .5em 1em;
+    padding: 1em .25em .5em 1em;
 }
 
 .cardOverlayMoreButton, .cardOverlayPlayButton {
-    color: #333 !important;
-    background-color: rgba(210,210,210,.9) !important;
+    color: #fff !important;
+    background-color: rgba(0,0,0,.7) !important;
     border-radius: 500px;
-    padding: 5px;
-    width: 36px;
-    height: 36px;
 }
+
+    .cardOverlayMoreButton:hover, .cardOverlayPlayButton:hover {
+        background-color: rgba(0,0,0,.9) !important;
+        transition: background-color .5s ease-out;
+    }
 
 .grayscale {
     -webkit-filter: grayscale(100%);
@@ -270,6 +274,7 @@
     background-position: center bottom;
     width: 100%;
     height: 100%;
+    border-radius: 2px;
 }
 
     .cardImage canvas {

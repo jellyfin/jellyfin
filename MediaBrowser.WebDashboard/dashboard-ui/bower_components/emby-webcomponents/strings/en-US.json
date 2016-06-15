@@ -80,5 +80,11 @@
   "MySubtitles": "My Subtitles",
   "MessageDownloadQueued": "Download queued.",
   "EditSubtitles": "Edit Subtitles",
-  "UnlockGuide": "Unlock Guide"
+  "UnlockGuide": "Unlock Guide",
+  "RefreshMetadata": "Refresh Metadata",
+  "ReplaceExistingImages": "Replace existing images",
+  "ReplaceAllMetadata": "Replace all metadata",
+  "SearchForMissingMetadata": "Search for missing metadata",
+  "LabelRefreshMode": "Refresh mode:",
+  "RefreshDialogHelp": "Metadata is refreshed based on settings and internet services that are enabled in the Emby Server dashboard."
 }

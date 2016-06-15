@@ -544,17 +544,11 @@
                                 }
                                 break;
                             case 'refresh':
-                                ApiClient.refreshItem(itemId, {
-
-                                    Recursive: true,
-                                    ImageRefreshMode: 'FullRefresh',
-                                    MetadataRefreshMode: 'FullRefresh',
-                                    ReplaceAllImages: false,
-                                    ReplaceAllMetadata: true
-                                });
-
-                                require(['toast'], function (toast) {
-                                    toast(Globalize.translate('MessageRefreshQueued'));
+                                require(['refreshDialog'], function (refreshDialog) {
+                                    new refreshDialog({
+                                        itemIds: [itemId],
+                                        serverId: serverId
+                                    }).show();
                                 });
                                 break;
                             case 'instantmix':
@@ -1317,22 +1311,11 @@
                                 hideSelections();
                                 break;
                             case 'refresh':
-                                items.map(function (itemId) {
-
-                                    // TODO: Create an endpoint to do this in bulk
-                                    ApiClient.refreshItem(itemId, {
-
-                                        Recursive: true,
-                                        ImageRefreshMode: 'FullRefresh',
-                                        MetadataRefreshMode: 'FullRefresh',
-                                        ReplaceAllImages: false,
-                                        ReplaceAllMetadata: true
-                                    });
-
-                                });
-
-                                require(['toast'], function (toast) {
-                                    toast(Globalize.translate('MessageRefreshQueued'));
+                                require(['refreshDialog'], function (refreshDialog) {
+                                    new refreshDialog({
+                                        itemIds: items,
+                                        serverId: serverId
+                                    }).show();
                                 });
                                 hideSelections();
                                 break;

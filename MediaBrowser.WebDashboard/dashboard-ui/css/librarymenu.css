@@ -186,6 +186,7 @@
     text-transform: uppercase;
     white-space: nowrap;
     padding: 0 0 0;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
 }
 
     .libraryViewNav.bottom {

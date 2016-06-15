@@ -183,17 +183,11 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper'], function (ap
 
     function refresh(apiClient, itemId) {
 
-        apiClient.refreshItem(itemId, {
-
-            Recursive: true,
-            ImageRefreshMode: 'FullRefresh',
-            MetadataRefreshMode: 'FullRefresh',
-            ReplaceAllImages: false,
-            ReplaceAllMetadata: true
-        });
-
-        require(['toast'], function (toast) {
-            toast(globalize.translate('sharedcomponents#RefreshQueued'));
+        require(['refreshDialog'], function (refreshDialog) {
+            new refreshDialog({
+                itemIds: [itemId],
+                serverId: apiClient.serverInfo().Id
+            }).show();
         });
     }
 

@@ -269,16 +269,11 @@
 
     function showRefreshMenu(context, button) {
 
-        ApiClient.refreshItem(currentItem.Id, {
-            Recursive: true,
-            ImageRefreshMode: 'FullRefresh',
-            MetadataRefreshMode: 'FullRefresh',
-            ReplaceAllImages: false,
-            ReplaceAllMetadata: true
-        });
-
-        require(['toast'], function (toast) {
-            toast(Globalize.translate('MessageRefreshQueued'));
+        require(['refreshDialog'], function (refreshDialog) {
+            new refreshDialog({
+                itemIds: [currentItem.Id],
+                serverId: ApiClient.serverInfo().Id
+            }).show();
         });
     }
 

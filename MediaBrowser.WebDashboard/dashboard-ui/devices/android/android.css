@@ -6,10 +6,6 @@
         font-weight: bold !important;
     }
 
-.libraryViewNav {
-    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
-}
-
 @media all and (min-width: 300px) {
 
     .libraryViewNav {

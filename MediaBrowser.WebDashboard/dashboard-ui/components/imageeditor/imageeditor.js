@@ -166,10 +166,10 @@
         });
 
         if (images.length) {
-            $('#backdropsContainer', page).show();
+            page.querySelector('#backdropsContainer', page).classList.remove('hide');
             renderImages(page, item, images, imageProviders, page.querySelector('#backdrops'));
         } else {
-            $('#backdropsContainer', page).hide();
+            page.querySelector('#backdropsContainer', page).classList.add('hide');
         }
     }
 
@@ -183,10 +183,10 @@
         });
 
         if (images.length) {
-            $('#screenshotsContainer', page).show();
+            page.querySelector('#screenshotsContainer', page).classList.remove('hide');
             renderImages(page, item, images, imageProviders, page.querySelector('#screenshots'));
         } else {
-            $('#screenshotsContainer', page).hide();
+            page.querySelector('#screenshotsContainer', page).classList.add('hide');
         }
     }
 
@@ -246,7 +246,8 @@
             ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).then(function (item) {
 
                 var dlg = dialogHelper.createDialog({
-                    size: 'fullscreen-border'
+                    size: 'fullscreen-border',
+                    removeOnClose: true
                 });
 
                 var theme = options.theme || 'b';
@@ -271,14 +272,14 @@
                 initEditor(dlg, options);
 
                 // Has to be assigned a z-index after the call to .open() 
-                $(dlg).on('close', onDialogClosed);
+                dlg.addEventListener('close', onDialogClosed);
 
                 dialogHelper.open(dlg);
 
                 var editorContent = dlg.querySelector('.editorContent');
                 reload(editorContent, item);
 
-                $('.btnCloseDialog', dlg).on('click', function () {
+                dlg.querySelector('.btnCloseDialog').addEventListener('click', function () {
 
                     dialogHelper.close(dlg);
                 });
@@ -290,7 +291,6 @@
 
     function onDialogClosed() {
 
-        $(this).remove();
         Dashboard.hideLoadingMsg();
         currentDeferred.resolveWith(null, [hasChanges]);
     }
