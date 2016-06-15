@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'alphaPicker'], function ($, alphaPicker) {
+﻿define(['alphaPicker'], function (alphaPicker) {
 
     return function (view, params, tabContent) {
 
@@ -155,18 +155,29 @@
                 elem.innerHTML = html + pagingHtml;
                 ImageLoader.lazyChildren(elem);
 
-                $('.btnNextPage', context).on('click', function () {
+                function onNextPageClick() {
                     query.StartIndex += query.Limit;
-                    reloadItems(context);
-                });
+                    reloadItems(tabContent);
+                }
 
-                $('.btnPreviousPage', context).on('click', function () {
+                function onPreviousPageClick() {
                     query.StartIndex -= query.Limit;
-                    reloadItems(context);
-                });
+                    reloadItems(tabContent);
+                }
 
-                $('.btnChangeLayout', context).on('layoutchange', function (e, layout) {
+                var elems, i, length;
+                elems = tabContent.querySelectorAll('.btnNextPage');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onNextPageClick);
+                }
 
+                elems = tabContent.querySelectorAll('.btnPreviousPage');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onPreviousPageClick);
+                }
+
+                function onChangeLayout(e) {
+                    var layout = e.detail.viewStyle;
                     if (layout == 'Timeline') {
                         getQuery(context).SortBy = 'ProductionYear,PremiereDate,SortName';
                         getQuery(context).SortOrder = 'Descending';
@@ -175,14 +186,23 @@
                     getPageData(context).view = layout;
                     LibraryBrowser.saveViewSetting(getSavedQueryKey(context), layout);
                     reloadItems(context);
-                });
+                }
 
-                $('.btnFilter', context).on('click', function () {
+                elems = tabContent.querySelectorAll('.btnChangeLayout');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('layoutchange', onChangeLayout);
+                }
+
+                function onFilterClick() {
                     showFilterMenu(context);
-                });
+                }
 
-                // On callback make sure to set StartIndex = 0
-                $('.btnSort', context).on('click', function () {
+                elems = tabContent.querySelectorAll('.btnFilter');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onFilterClick);
+                }
+
+                function onSortClick() {
                     LibraryBrowser.showSortMenu({
                         items: [{
                             name: Globalize.translate('OptionNameSort'),
@@ -241,7 +261,12 @@
                         },
                         query: query
                     });
-                });
+                }
+
+                elems = tabContent.querySelectorAll('.btnSort');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onSortClick);
+                }
 
                 LibraryBrowser.saveQueryValues(getSavedQueryKey(context), query);
 

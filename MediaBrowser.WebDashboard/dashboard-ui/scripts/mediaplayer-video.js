@@ -728,14 +728,14 @@
             html += '<div class="videoTopControlsLogo"></div>';
             html += '<div class="videoAdvancedControls">';
 
-            html += '<button is="paper-icon-button-light" class="previousTrackButton mediaButton videoTrackControl hide" onclick="MediaPlayer.previousTrack();"><iron-icon icon="skip-previous"></iron-icon></button>';
-            html += '<button is="paper-icon-button-light" class="nextTrackButton mediaButton videoTrackControl hide" onclick="MediaPlayer.nextTrack();"><iron-icon icon="skip-next"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" class="previousTrackButton mediaButton videoTrackControl hide autoSize" onclick="MediaPlayer.previousTrack();"><i class="md-icon">skip_previous</i></button>';
+            html += '<button is="paper-icon-button-light" class="nextTrackButton mediaButton videoTrackControl hide autoSize" onclick="MediaPlayer.nextTrack();"><i class="md-icon">skip_next</i></button>';
 
             // Embedding onclicks due to issues not firing in cordova safari
-            html += '<button is="paper-icon-button-light" class="mediaButton videoAudioButton" onclick="MediaPlayer.showAudioTracksFlyout();"><iron-icon icon="audiotrack"></iron-icon></button>';
-            html += '<button is="paper-icon-button-light" class="mediaButton videoSubtitleButton" onclick="MediaPlayer.showSubtitleMenu();"><iron-icon icon="closed-caption"></iron-icon></button>';
-            html += '<button is="paper-icon-button-light" class="mediaButton videoQualityButton" onclick="MediaPlayer.showQualityFlyout();"><iron-icon icon="settings"></iron-icon></button>';
-            html += '<button is="paper-icon-button-light" class="mediaButton" onclick="MediaPlayer.stop();"><iron-icon icon="close"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" class="mediaButton videoAudioButton autoSize" onclick="MediaPlayer.showAudioTracksFlyout();"><i class="md-icon">audiotrack</i></button>';
+            html += '<button is="paper-icon-button-light" class="mediaButton videoSubtitleButton autoSize" onclick="MediaPlayer.showSubtitleMenu();"><i class="md-icon">closed_caption</i></button>';
+            html += '<button is="paper-icon-button-light" class="mediaButton videoQualityButton autoSize" onclick="MediaPlayer.showQualityFlyout();"><i class="md-icon">settings</i></button>';
+            html += '<button is="paper-icon-button-light" class="mediaButton autoSize" onclick="MediaPlayer.stop();"><i class="md-icon">close</i></button>';
 
             html += '</div>'; // videoAdvancedControls
             html += '</div>'; // videoTopControls
@@ -752,10 +752,10 @@
             html += '</div>'; // guide
 
             html += '<div class="videoControlButtons">';
-            html += '<button is="paper-icon-button-light" class="previousTrackButton mediaButton videoTrackControl hide" onclick="MediaPlayer.previousTrack();"></iron-icon></button>';
-            html += '<button is="paper-icon-button-light" id="video-playButton" class="mediaButton unpauseButton" onclick="MediaPlayer.unpause();"><iron-icon icon="play-arrow"></iron-icon></button>';
-            html += '<button is="paper-icon-button-light" id="video-pauseButton" class="mediaButton pauseButton" onclick="MediaPlayer.pause();"><iron-icon icon="pause"></iron-icon></button>';
-            html += '<button is="paper-icon-button-light" class="nextTrackButton mediaButton videoTrackControl hide" onclick="MediaPlayer.nextTrack();"><iron-icon icon="skip-next"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" class="previousTrackButton mediaButton videoTrackControl hide autoSize" onclick="MediaPlayer.previousTrack();"><i class="md-icon">skip_previous</i></button>';
+            html += '<button is="paper-icon-button-light" id="video-playButton" class="mediaButton unpauseButton autoSize" onclick="MediaPlayer.unpause();"><i class="md-icon">play_arrow</i></button>';
+            html += '<button is="paper-icon-button-light" id="video-pauseButton" class="mediaButton pauseButton autoSize" onclick="MediaPlayer.pause();"><i class="md-icon">pause</i></button>';
+            html += '<button is="paper-icon-button-light" class="nextTrackButton mediaButton videoTrackControl hide autoSize" onclick="MediaPlayer.nextTrack();"><i class="md-icon">skip_next</i></button>';
 
             html += '<div class="sliderContainer videoPositionSliderContainer" style="display:inline-flex;margin-right:2em;">';
             html += '<input type="range" is="emby-slider" pin step=".1" min="0" max="100" value="0" class="videoPositionSlider" />';
@@ -763,16 +763,16 @@
 
             html += '<div class="currentTime">--:--</div>';
 
-            html += '<button is="paper-icon-button-light" class="muteButton mediaButton" onclick="MediaPlayer.mute();"><iron-icon icon="volume-up"></iron-icon></button>';
-            html += '<button is="paper-icon-button-light" class="unmuteButton mediaButton" onclick="MediaPlayer.unMute();"><iron-icon icon="volume-off"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" class="muteButton mediaButton autoSize" onclick="MediaPlayer.mute();"><i class="md-icon">volume_up</i></button>';
+            html += '<button is="paper-icon-button-light" class="unmuteButton mediaButton autoSize" onclick="MediaPlayer.unMute();"><i class="md-icon">volume_off</i></button>';
 
             html += '<div class="sliderContainer" style="width:100px;vertical-align:middle;;margin-right:2em;display:inline-flex;">';
             html += '<input type="range" is="emby-slider" pin step="1" min="0" max="100" value="0" class="videoVolumeSlider"/>';
             html += '</div>'; // guide
 
-            html += '<button is="paper-icon-button-light" class="mediaButton castButton" onclick="MediaController.showPlayerSelection(this, false);" style="height:32px;width:32px;"><iron-icon icon="cast"></iron-icon></button>';
-            html += '<button is="paper-icon-button-light" class="mediaButton fullscreenButton" onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton"><iron-icon icon="fullscreen"></iron-icon></button>';
-            html += '<button is="paper-icon-button-light" class="mediaButton infoButton" onclick="MediaPlayer.toggleInfo();"><iron-icon icon="info"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" class="mediaButton castButton autoSize" onclick="MediaController.showPlayerSelection(this, false);" style="height:32px;width:32px;"><i class="md-icon">cast</i></button>';
+            html += '<button is="paper-icon-button-light" class="mediaButton fullscreenButton autoSize" onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton"><i class="md-icon">fullscreen</i></button>';
+            html += '<button is="paper-icon-button-light" class="mediaButton infoButton autoSize" onclick="MediaPlayer.toggleInfo();"><i class="md-icon">info</i></button>';
 
             html += '</div>';
 

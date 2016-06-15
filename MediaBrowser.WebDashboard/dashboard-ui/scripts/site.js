@@ -3242,7 +3242,18 @@ var AppInfo = {};
             }
 
             require(postInitDependencies);
+            upgradeLayouts();
         });
+    }
+
+    function upgradeLayouts() {
+        if (!AppInfo.enableAppLayouts && browserInfo.mobile) {
+            Dashboard.getPluginSecurityInfo().then(function (info) {
+                if (info.IsMBSupporter) {
+                    AppInfo.enableAppLayouts = true;
+                }
+            });
+        }
     }
 
     initRequire();
