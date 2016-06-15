@@ -56,18 +56,18 @@ div.checkboxContainer {
 }
 
 .mdl-checkbox__input:checked + span + span + .checkboxOutline {
-    border: 2px solid #52B54B;
+    border-color: #52B54B;
 }
 
 .mdl-checkbox__input[disabled] + span + span + .checkboxOutline {
-    border: 2px solid rgba(0, 0, 0, 0.26);
+    border-color: rgba(0, 0, 0, 0.26);
     cursor: auto;
 }
 
 .mdl-checkbox__focus-helper {
     position: absolute;
     top: -12px;
-    left:-12px;
+    left: -12px;
     width: 48px;
     height: 48px;
     display: inline-block;

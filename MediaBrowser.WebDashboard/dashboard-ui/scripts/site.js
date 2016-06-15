@@ -2121,9 +2121,9 @@ var AppInfo = {};
 
     function onDialogOpen(dlg) {
         if (dlg.classList.contains('formDialog')) {
-            if (!dlg.classList.contains('background-theme-a')) {
-                dlg.classList.add('background-theme-b');
-                dlg.classList.add('ui-body-b');
+            if (!dlg.classList.contains('background-theme-b')) {
+                dlg.classList.add('background-theme-a');
+                dlg.classList.add('ui-body-a');
             }
         }
     }

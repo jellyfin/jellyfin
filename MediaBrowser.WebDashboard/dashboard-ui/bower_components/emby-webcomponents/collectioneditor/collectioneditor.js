@@ -158,8 +158,6 @@
         html += '<div class="fieldDescription">' + globalize.translate('sharedcomponents#NewCollectionNameExample') + '</div>';
         html += '</div>';
 
-        html += '<br />';
-
         html += '<label class="checkboxContainer">';
         html += '<input is="emby-checkbox" type="checkbox" id="chkEnableInternetMetadata" />';
         html += '<span>' + globalize.translate('sharedcomponents#SearchForCollectionInternetMetadata') + '</span>';

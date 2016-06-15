@@ -1413,14 +1413,14 @@ namespace MediaBrowser.Controller.Entities
                 return;
             }
 
-            var playedQueryResult = GetItems(new InternalItemsQuery(user)
+            var unplayedQueryResult = GetItems(new InternalItemsQuery(user)
             {
                 Recursive = true,
                 IsFolder = false,
                 IsVirtualItem = false,
                 EnableTotalRecordCount = true,
                 Limit = 0,
-                IsPlayed = true
+                IsPlayed = false
 
             }).Result;
 
@@ -1435,12 +1435,14 @@ namespace MediaBrowser.Controller.Entities
             }).Result;
 
             double recursiveItemCount = allItemsQueryResult.TotalRecordCount;
-            double playedCount = playedQueryResult.TotalRecordCount;
+            double unplayedCount = unplayedQueryResult.TotalRecordCount;
 
             if (recursiveItemCount > 0)
             {
-                dto.PlayedPercentage = (playedCount / recursiveItemCount) * 100;
+                var unplayedPercentage = (unplayedCount / recursiveItemCount) * 100;
+                dto.PlayedPercentage = 100 - unplayedPercentage;
                 dto.Played = dto.PlayedPercentage.Value >= 100;
+                dto.UnplayedItemCount = unplayedQueryResult.TotalRecordCount;
             }
         }
     }

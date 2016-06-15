@@ -151,12 +151,9 @@
         html += '<input is="emby-input" type="text" id="txtNewPlaylistName" required="required" label="' + globalize.translate('sharedcomponents#LabelName') + '" />';
         html += '</div>';
 
-        html += '<br />';
-
         // newPlaylistInfo
         html += '</div>';
 
-        html += '<br />';
         html += '<div>';
         html += '<button is="emby-button" type="submit" class="raised btnSubmit block">' + globalize.translate('sharedcomponents#ButtonOk') + '</button>';
         html += '</div>';

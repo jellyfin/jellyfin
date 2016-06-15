@@ -18,6 +18,7 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
 
         public void Run()
         {
+            // If a forced migration is required, do that now
             if (_config.Configuration.MigrationVersion < CleanDatabaseScheduledTask.MigrationVersion)
             {
                 if (!_config.Configuration.IsStartupWizardCompleted)
@@ -30,6 +31,25 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
                 _taskManager.SuspendTriggers = true;
                 CleanDatabaseScheduledTask.EnableUnavailableMessage = true;
                 
+                Task.Run(async () =>
+                {
+                    await Task.Delay(1000).ConfigureAwait(false);
+
+                    _taskManager.Execute<CleanDatabaseScheduledTask>();
+                });
+
+                return;
+            }
+            
+            if (_config.Configuration.SchemaVersion < SqliteItemRepository.LatestSchemaVersion)
+            {
+                if (!_config.Configuration.IsStartupWizardCompleted)
+                {
+                    _config.Configuration.SchemaVersion = SqliteItemRepository.LatestSchemaVersion;
+                    _config.SaveConfiguration();
+                    return;
+                }
+
                 Task.Run(async () =>
                 {
                     await Task.Delay(1000).ConfigureAwait(false);

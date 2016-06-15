@@ -39,6 +39,19 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
 
+        protected override async Task<IDbConnection> CreateConnection(bool isReadOnly = false)
+        {
+            var connection = await DbConnector.Connect(DbFilePath, false, false, 10000).ConfigureAwait(false);
+
+            connection.RunQueries(new[]
+            {
+                "pragma temp_store = memory"
+
+            }, Logger);
+
+            return connection;
+        }
+
         /// <summary>
         /// Opens the connection to the database
         /// </summary>
