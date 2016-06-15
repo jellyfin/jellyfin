@@ -1698,10 +1698,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var groups = new List<string>();
 
-            if (!string.IsNullOrWhiteSpace(query.GroupByAncestorOfType))
-            {
-                groups.Add("(Select PresentationUniqueKey from TypedBaseItems B where B.Type = 'MediaBrowser.Controller.Entities.TV.Series' And B.Guid in (Select AncestorId from AncestorIds where ItemId=A.Guid))");
-            }
+            //if (!string.IsNullOrWhiteSpace(query.GroupByAncestorOfType))
+            //{
+            //    groups.Add("(Select PresentationUniqueKey from TypedBaseItems B where B.Type = 'MediaBrowser.Controller.Entities.TV.Series' And B.Guid in (Select AncestorId from AncestorIds where ItemId=A.Guid))");
+            //}
 
             if (EnableGroupByPresentationUniqueKey(query))
             {

@@ -110,6 +110,7 @@ namespace MediaBrowser.Controller.Entities
 
         internal List<Guid> ItemIdsFromPersonFilters { get; set; }
         public int? ParentIndexNumber { get; set; }
+        public int? ParentIndexNumberNotEquals { get; set; }
         public int? IndexNumber { get; set; }
         public int? MinParentalRating { get; set; }
         public int? MaxParentalRating { get; set; }
@@ -141,7 +142,7 @@ namespace MediaBrowser.Controller.Entities
         public bool GroupByPresentationUniqueKey { get; set; }
         public bool EnableTotalRecordCount { get; set; }
         public bool ForceDirect { get; set; }
-        public Dictionary<string,string> ExcludeProviderIds { get; set; }
+        public Dictionary<string, string> ExcludeProviderIds { get; set; }
 
         public InternalItemsQuery()
         {
