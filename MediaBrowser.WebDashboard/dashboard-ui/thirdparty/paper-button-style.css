@@ -251,31 +251,6 @@ paper-fab.red {
     background-color: #e57373;
 }
 
-paper-slider {
-    width: 100%;
-}
-
-.paper-slider-0 #sliderKnobInner.paper-slider {
-    background-color: #52B54B;
-    border-color: #52B54B;
-}
-
-.paper-slider-0 paper-ripple.paper-slider {
-    color: #52B54B;
-}
-
-.paper-slider-0 #sliderKnobInner.paper-slider::before {
-    background-color: #388E3C !important;
-}
-
-.paper-progress-0 #primaryProgress.paper-progress {
-    background-color: #52B54B;
-}
-
-.paper-progress-0 #secondaryProgress.paper-progress {
-    background-color: #92B54B;
-}
-
 paper-menu-item {
     padding: .35em .5em;
     cursor: pointer;
@@ -478,14 +453,6 @@ paper-toggle-button #toggleButton, paper-toggle-button[checked] #toggleBar {
 
 paper-toggle-button paper-ripple {
     color: #52B54B;
-}
-
-.ui-body-b paper-progress #progressContainer {
-    background-color: #222 !important;
-}
-
-paper-progress.mini #progressContainer {
-    height: 3px !important;
 }
 
 .formDialog.background-theme-b {

@@ -100,7 +100,6 @@
     display: inline-block;
     width: 70%;
     font-weight: normal;
-    font-size: 14px;
 }
 
 .videoPositionSliderContainer {
@@ -129,12 +128,6 @@
 @media all and (max-width: 320px) {
     .videoPositionSliderContainer {
         width: 120px;
-    }
-}
-
-@media all and (max-width: 1200px) {
-    #videoPlayer .nowPlayingTabs {
-        font-size: 13px;
     }
 }
 

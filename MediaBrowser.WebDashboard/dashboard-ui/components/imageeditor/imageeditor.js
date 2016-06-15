@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'css!css/metadataeditor.css', 'emby-button', 'paper-fab', 'paper-icon-button-light'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'css!css/metadataeditor.css', 'emby-button', 'paper-fab', 'paper-icon-button-light'], function (dialogHelper) {
 
     var currentItem;
     var currentDeferred;
@@ -27,17 +27,30 @@
         }
     }
 
+    function addListeners(elems, eventName, fn) {
+
+        for (var i = 0, length = elems.length; i < length; i++) {
+
+            elems[i].addEventListener(eventName, fn);
+        }
+    }
+
     function reloadItem(page, item) {
 
         currentItem = item;
 
         ApiClient.getRemoteImageProviders(getBaseRemoteOptions()).then(function (providers) {
 
-            if (providers.length) {
-                $('.btnBrowseAllImages', page).removeClass('hide');
-            } else {
-                $('.btnBrowseAllImages', page).addClass('hide');
+            var btnBrowseAllImages = page.querySelectorAll('.btnBrowseAllImages');
+            for (var i = 0, length = btnBrowseAllImages.length; i < length; i++) {
+
+                if (providers.length) {
+                    btnBrowseAllImages[i].classList.remove('hide');
+                } else {
+                    btnBrowseAllImages[i].classList.add('hide');
+                }
             }
+
 
             ApiClient.getItemImageInfos(currentItem.Id).then(function (imageInfos) {
 
@@ -110,12 +123,11 @@
         elem.innerHTML = html;
         ImageLoader.lazyChildren(elem);
 
-        $('.btnSearchImages', elem).on('click', function () {
+        addListeners(elem.querySelectorAll('.btnSearchImages'), 'click', function () {
             showImageDownloader(page, this.getAttribute('data-imagetype'));
         });
 
-        $('.btnDeleteImage', elem).on('click', function () {
-
+        addListeners(elem.querySelectorAll('.btnDeleteImage'), 'click', function () {
             var type = this.getAttribute('data-imagetype');
             var index = this.getAttribute('data-index');
             index = index == "null" ? null : parseInt(index);
@@ -134,7 +146,7 @@
             });
         });
 
-        $('.btnMoveImage', elem).on('click', function () {
+        addListeners(elem.querySelectorAll('.btnMoveImage'), 'click', function () {
             var type = this.getAttribute('data-imagetype');
             var index = parseInt(this.getAttribute('data-index'));
             var newIndex = parseInt(this.getAttribute('data-newindex'));
@@ -205,8 +217,7 @@
 
     function initEditor(page, options) {
 
-        $('.btnOpenUploadMenu', page).on('click', function () {
-
+        addListeners(page.querySelectorAll('.btnOpenUploadMenu'), 'click', function () {
             var imageType = this.getAttribute('data-imagetype');
 
             require(['components/imageuploader/imageuploader'], function (imageUploader) {
@@ -226,7 +237,7 @@
             });
         });
 
-        $('.btnBrowseAllImages', page).on('click', function () {
+        addListeners(page.querySelectorAll('.btnBrowseAllImages'), 'click', function () {
             showImageDownloader(page, this.getAttribute('data-imagetype') || 'Primary');
         });
     }

@@ -469,22 +469,31 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             if (item.IsFolder)
             {
-                var userData = _userDataRepository.GetUserData(user, item);
-
-                // Skip the user data manager because we've already looped through the recursive tree and don't want to do it twice
-                // TODO: Improve in future
-                dto.UserData = GetUserItemDataDto(userData);
-
                 var folder = (Folder)item;
+
+                if (fields.Contains(ItemFields.SyncInfo))
+                {
+                    var userData = _userDataRepository.GetUserData(user, item);
+
+                    // Skip the user data manager because we've already looped through the recursive tree and don't want to do it twice
+                    // TODO: Improve in future
+                    dto.UserData = GetUserItemDataDto(userData);
+
+                    if (item.SourceType == SourceType.Library && folder.SupportsUserDataFromChildren)
+                    {
+                        SetSpecialCounts(folder, user, dto, fields, syncProgress);
+                    }
+
+                    dto.UserData.Played = dto.UserData.PlayedPercentage.HasValue && dto.UserData.PlayedPercentage.Value >= 100;
+                }
+                else
+                {
+                    dto.UserData = _userDataRepository.GetUserDataDto(item, user);
+                }
 
                 if (item.SourceType == SourceType.Library)
                 {
                     dto.ChildCount = GetChildCount(folder, user);
-
-                    if (folder.SupportsUserDataFromChildren)
-                    {
-                        SetSpecialCounts(folder, user, dto, fields, syncProgress);
-                    }
                 }
 
                 if (fields.Contains(ItemFields.CumulativeRunTimeTicks))
@@ -496,8 +505,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     dto.DateLastMediaAdded = folder.DateLastMediaAdded;
                 }
-
-                dto.UserData.Played = dto.UserData.PlayedPercentage.HasValue && dto.UserData.PlayedPercentage.Value >= 100;
             }
 
             else
@@ -1586,12 +1593,18 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <returns>Task.</returns>
         private void SetSpecialCounts(Folder folder, User user, BaseItemDto dto, List<ItemFields> fields, Dictionary<string, SyncedItemProgress> syncProgress)
         {
+            var addSyncInfo = fields.Contains(ItemFields.SyncInfo);
+
+            if (!addSyncInfo)
+            {
+                return;
+            }
+
             var recursiveItemCount = 0;
             var unplayed = 0;
 
             double totalPercentPlayed = 0;
             double totalSyncPercent = 0;
-            var addSyncInfo = fields.Contains(ItemFields.SyncInfo);
 
             var children = folder.GetItems(new InternalItemsQuery
             {

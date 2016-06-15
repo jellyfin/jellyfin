@@ -186,16 +186,25 @@ namespace MediaBrowser.Controller.Entities.TV
 
             var user = query.User;
 
+            if (query.Recursive)
+            {
+                query.AncestorWithPresentationUniqueKey = PresentationUniqueKey;
+                if (query.SortBy.Length == 0)
+                {
+                    query.SortBy = new[] { ItemSortBy.SortName };
+                }
+                if (query.IncludeItemTypes.Length == 0)
+                {
+                    query.IncludeItemTypes = new[] { typeof(Episode).Name, typeof(Season).Name };
+                }
+                query.IsVirtualItem = false;
+                return Task.FromResult(LibraryManager.GetItemsResult(query));
+            }
+
             Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
 
-            IEnumerable<BaseItem> items;
-
-            items = query.Recursive
-               ? GetSeasons(user).Cast<BaseItem>().Concat(GetEpisodes(user)).Where(filter)
-               : GetSeasons(user).Where(filter);
-
+            var items = GetSeasons(user).Where(filter);
             var result = PostFilterAndSort(items, query);
-
             return Task.FromResult(result);
         }
 
