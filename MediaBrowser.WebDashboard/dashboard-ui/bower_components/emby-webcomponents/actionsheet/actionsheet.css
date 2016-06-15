@@ -43,6 +43,11 @@ button.actionSheetMenuItem {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+.noflex .actionSheetItemText {
+    display: inline-block;
 }
 
 .layout-tv button.actionSheetMenuItem {

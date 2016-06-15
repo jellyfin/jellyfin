@@ -44,10 +44,6 @@ html {
     font-size: 14px;
 }
 
-    html.smallerDefault {
-        font-size: 13px;
-    }
-
 body {
     overflow-y: scroll !important;
     /* This is needed to prevent a horizontal scrollbar while neon-animated-pages are animating. */

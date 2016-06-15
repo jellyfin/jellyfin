@@ -743,23 +743,6 @@
                 return false;
             },
 
-            refreshItem: function (itemId) {
-
-                ApiClient.refreshItem(itemId, {
-
-                    Recursive: true,
-                    ImageRefreshMode: 'FullRefresh',
-                    MetadataRefreshMode: 'FullRefresh',
-                    ReplaceAllImages: false,
-                    ReplaceAllMetadata: true
-
-                });
-
-                require(['toast'], function (toast) {
-                    toast(Globalize.translate('MessageRefreshQueued'));
-                });
-            },
-
             deleteItems: function (itemIds) {
 
                 return new Promise(function (resolve, reject) {
@@ -980,17 +963,11 @@
                                     LibraryBrowser.identifyItem(itemId);
                                     break;
                                 case 'refresh':
-                                    ApiClient.refreshItem(itemId, {
-
-                                        Recursive: true,
-                                        ImageRefreshMode: 'FullRefresh',
-                                        MetadataRefreshMode: 'FullRefresh',
-                                        ReplaceAllImages: false,
-                                        ReplaceAllMetadata: true
-                                    });
-
-                                    require(['toast'], function (toast) {
-                                        toast(Globalize.translate('MessageRefreshQueued'));
+                                    require(['refreshDialog'], function (refreshDialog) {
+                                        new refreshDialog({
+                                            itemIds: [itemId],
+                                            serverId: serverId
+                                        }).show();
                                     });
                                     break;
                                 default:

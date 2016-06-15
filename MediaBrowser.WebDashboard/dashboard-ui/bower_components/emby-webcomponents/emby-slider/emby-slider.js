@@ -79,7 +79,6 @@
         this.addEventListener('change', function () {
             this.dragging = false;
             updateValues(this, backgroundLower, backgroundUpper);
-            updateBubble(this, sliderBubble);
             sliderBubble.classList.add('hide');
         });
 

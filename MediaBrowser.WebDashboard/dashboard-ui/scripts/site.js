@@ -1660,10 +1660,6 @@ var AppInfo = {};
 
         var elem = document.documentElement;
 
-        if (!browser.android && !browser.mobile) {
-            elem.classList.add('smallerDefault');
-        }
-
         if (AppInfo.isTouchPreferred) {
             elem.classList.add('touch');
         }
@@ -1808,6 +1804,7 @@ var AppInfo = {};
         define("recordingEditor", [embyWebComponentsBowerPath + "/recordingcreator/recordingeditor"], returnFirstDependency);
         define("subtitleEditor", [embyWebComponentsBowerPath + "/subtitleeditor/subtitleeditor"], returnFirstDependency);
         define("mediaInfo", [embyWebComponentsBowerPath + "/mediainfo/mediainfo"], returnFirstDependency);
+        define("refreshDialog", [embyWebComponentsBowerPath + "/refreshdialog/refreshdialog"], returnFirstDependency);
         define("backdrop", [embyWebComponentsBowerPath + "/backdrop/backdrop"], returnFirstDependency);
         define("fetchHelper", [embyWebComponentsBowerPath + "/fetchhelper"], returnFirstDependency);
 
