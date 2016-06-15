@@ -132,10 +132,12 @@ namespace MediaBrowser.Server.Implementations.TV
                 SortOrder = SortOrder.Ascending,
                 Limit = 1,
                 IsPlayed = false,
-                IsVirtualItem = false
+                IsVirtualItem = false,
+                ParentIndexNumberNotEquals = 0
 
             }).Cast<Episode>().FirstOrDefault();
 
+            // series is fully played
             if (firstUnwatchedEpisode == null)
             {
                 return new Tuple<Episode, DateTime, bool>(null, DateTime.MinValue, true);
@@ -148,7 +150,8 @@ namespace MediaBrowser.Server.Implementations.TV
                 SortBy = new[] { ItemSortBy.DatePlayed },
                 SortOrder = SortOrder.Descending,
                 Limit = 1,
-                IsVirtualItem = false
+                IsVirtualItem = false,
+                ParentIndexNumberNotEquals = 0
 
             }).FirstOrDefault();
 

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.XmlTv.Classes;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Logging;
@@ -68,6 +69,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 Progress = new Progress<Double>()
 
             }).ConfigureAwait(false);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(cacheFile));
             File.Copy(tempFile, cacheFile, true);
 
             return cacheFile;
@@ -103,7 +106,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 ImageUrl = p.Icon != null && !String.IsNullOrEmpty(p.Icon.Source) ? p.Icon.Source : null,
                 HasImage = p.Icon != null && !String.IsNullOrEmpty(p.Icon.Source),
                 OfficialRating = p.Rating != null && !String.IsNullOrEmpty(p.Rating.Value) ? p.Rating.Value : null,
-                CommunityRating = p.StarRating.HasValue ? p.StarRating.Value : (float?)null
+                CommunityRating = p.StarRating.HasValue ? p.StarRating.Value : (float?)null,
+                SeriesId = p.IsSeries ? p.Title.GetMD5().ToString("N") : null
             });
         }
 
