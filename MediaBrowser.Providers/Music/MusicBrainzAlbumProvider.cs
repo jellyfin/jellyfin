@@ -293,11 +293,33 @@ namespace MediaBrowser.Providers.Music
 
             var doc = await GetMusicBrainzResponse(url, false, cancellationToken).ConfigureAwait(false);
 
-            var ns = new XmlNamespaceManager(doc.NameTable);
-            ns.AddNamespace("mb", MusicBrainzBaseUrl + "/ns/mmd-2.0#");
-            var node = doc.SelectSingleNode("//mb:release-group-list/mb:release-group/@id", ns);
+            var docElem = doc.DocumentElement;
 
-            return node != null ? node.Value : null;
+            if (docElem == null)
+            {
+                return null;
+            }
+
+            var releaseList = docElem.FirstChild;
+            if (releaseList == null)
+            {
+                return null;
+            }
+
+            var nodes = releaseList.ChildNodes;
+            string releaseGroupId = null;
+
+            if (nodes != null)
+            {
+                foreach (var node in nodes.Cast<XmlNode>())
+                {
+                    if (string.Equals(node.Name, "release-group", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return node.Attributes["id"].Value;
+                    }
+                }
+            }
+            return null;
         }
 
         /// <summary>

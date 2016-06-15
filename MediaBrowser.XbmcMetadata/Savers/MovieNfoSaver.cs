@@ -44,6 +44,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
             else
             {
+                //if (item is Movie)
+                //{
+                //    list.Add(Path.Combine(item.ContainingFolderPath, "movie.nfo"));
+                //}
+
                 list.Add(Path.ChangeExtension(item.Path, ".nfo"));
             }
 
