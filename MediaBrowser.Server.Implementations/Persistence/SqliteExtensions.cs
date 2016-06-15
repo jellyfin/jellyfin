@@ -26,6 +26,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("dbPath");
             }
 
+            SQLiteConnection.SetMemoryStatus(false);
+
             var connectionstr = new SQLiteConnectionStringBuilder
             {
                 PageSize = 4096,
@@ -41,8 +43,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             var connectionString = connectionstr.ConnectionString;
 
-            //logger.Info("Sqlite {0} opening {1}", SQLiteConnection.SQLiteVersion, connectionString);
-            SQLiteConnection.SetMemoryStatus(false);
+            if (!enablePooling)
+            {
+                logger.Info("Sqlite {0} opening {1}", SQLiteConnection.SQLiteVersion, connectionString);
+            }
 
             var connection = new SQLiteConnection(connectionString);
 

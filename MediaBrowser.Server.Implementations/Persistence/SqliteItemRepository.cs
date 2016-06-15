@@ -94,7 +94,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        public const int LatestSchemaVersion = 89;
+        public const int LatestSchemaVersion = 92;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -122,7 +122,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         protected override async Task<IDbConnection> CreateConnection(bool isReadOnly = false)
         {
-            var connection = await DbConnector.Connect(DbFilePath, false, false, 6000).ConfigureAwait(false);
+            var connection = await DbConnector.Connect(DbFilePath, false, false, 20000).ConfigureAwait(false);
 
             connection.RunQueries(new[]
             {
@@ -1789,7 +1789,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var slowThreshold = 1000;
 
 #if DEBUG
-            slowThreshold = 100;
+            slowThreshold = 80;
 #endif
 
             if (elapsed >= slowThreshold)
@@ -1857,13 +1857,22 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     }
                 }
 
+                cmd.CommandText += ";";
+
+                var isReturningZeroItems = query.Limit.HasValue && query.Limit <= 0;
+
+                if (isReturningZeroItems)
+                {
+                    cmd.CommandText = "";
+                }
+
                 if (EnableGroupByPresentationUniqueKey(query))
                 {
-                    cmd.CommandText += "; select count (distinct PresentationUniqueKey)" + GetFromText();
+                    cmd.CommandText += " select count (distinct PresentationUniqueKey)" + GetFromText();
                 }
                 else
                 {
-                    cmd.CommandText += "; select count (guid)" + GetFromText();
+                    cmd.CommandText += " select count (guid)" + GetFromText();
                 }
 
                 cmd.CommandText += GetJoinUserDataText(query);
@@ -1876,18 +1885,28 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     LogQueryTime("GetItems", cmd, now);
 
-                    while (reader.Read())
+                    if (isReturningZeroItems)
                     {
-                        var item = GetItem(reader);
-                        if (item != null)
+                        if (reader.Read())
                         {
-                            list.Add(item);
+                            count = reader.GetInt32(0);
                         }
                     }
-
-                    if (reader.NextResult() && reader.Read())
+                    else
                     {
-                        count = reader.GetInt32(0);
+                        while (reader.Read())
+                        {
+                            var item = GetItem(reader);
+                            if (item != null)
+                            {
+                                list.Add(item);
+                            }
+                        }
+
+                        if (reader.NextResult() && reader.Read())
+                        {
+                            count = reader.GetInt32(0);
+                        }
                     }
                 }
 
@@ -2388,8 +2407,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             if (query.ParentIndexNumberNotEquals.HasValue)
             {
-                whereClauses.Add("(ParentIndexNumber<>@ParentIndexNumber or ParentIndexNumber is null)");
-                cmd.Parameters.Add(cmd, "@ParentIndexNumber", DbType.Int32).Value = query.ParentIndexNumberNotEquals.Value;
+                whereClauses.Add("(ParentIndexNumber<>@ParentIndexNumberNotEquals or ParentIndexNumber is null)");
+                cmd.Parameters.Add(cmd, "@ParentIndexNumberNotEquals", DbType.Int32).Value = query.ParentIndexNumberNotEquals.Value;
             }
             if (query.MinEndDate.HasValue)
             {
