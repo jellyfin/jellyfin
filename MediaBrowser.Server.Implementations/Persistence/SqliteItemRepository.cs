@@ -1698,10 +1698,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var groups = new List<string>();
 
-            //if (!string.IsNullOrWhiteSpace(query.GroupByAncestorOfType))
-            //{
-            //    groups.Add("(Select PresentationUniqueKey from TypedBaseItems B where B.Type = 'MediaBrowser.Controller.Entities.TV.Series' And B.Guid in (Select AncestorId from AncestorIds where ItemId=A.Guid))");
-            //}
+            if (!string.IsNullOrWhiteSpace(query.GroupByAncestorOfType))
+            {
+                groups.Add("(Select PresentationUniqueKey from TypedBaseItems B where B.Type = 'MediaBrowser.Controller.Entities.TV.Series' And B.Guid in (Select AncestorId from AncestorIds where ItemId=A.Guid))");
+            }
 
             if (EnableGroupByPresentationUniqueKey(query))
             {
@@ -1926,7 +1926,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             return " ORDER BY " + string.Join(",", query.SortBy.Select(i =>
             {
-                var columnMap = MapOrderByField(i);
+                var columnMap = MapOrderByField(i, query);
                 var columnAscending = isAscending;
                 if (columnMap.Item2)
                 {
@@ -1939,7 +1939,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }).ToArray());
         }
 
-        private Tuple<string, bool> MapOrderByField(string name)
+        private Tuple<string, bool> MapOrderByField(string name, InternalItemsQuery query)
         {
             if (string.Equals(name, ItemSortBy.AirTime, StringComparison.OrdinalIgnoreCase))
             {
@@ -1997,6 +1997,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (string.Equals(name, ItemSortBy.Studio, StringComparison.OrdinalIgnoreCase))
             {
                 return new Tuple<string, bool>("(select value from itemvalues where ItemId=Guid and Type=3 LIMIT 1)", false);
+            }
+            if (string.Equals(name, ItemSortBy.SeriesDatePlayed, StringComparison.OrdinalIgnoreCase))
+            {
+                return new Tuple<string, bool>("(Select MAX(LastPlayedDate) from TypedBaseItems B"+ GetJoinUserDataText(query) + " where B.Guid in (Select ItemId from AncestorIds where AncestorId in (select guid from typedbaseitems c where C.Type = 'MediaBrowser.Controller.Entities.TV.Series' And C.Guid in (Select AncestorId from AncestorIds where ItemId=A.Guid))))", false);
             }
 
             return new Tuple<string, bool>(name, false);

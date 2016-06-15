@@ -332,4 +332,7 @@ _:-ms-input-placeholder, :root .mdl-slider.mdl-slider {
     color: #fff;
     border-radius: 1000px;
     font-size: 90%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

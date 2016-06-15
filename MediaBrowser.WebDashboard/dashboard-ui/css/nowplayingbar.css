@@ -77,20 +77,20 @@
     text-align: center;
 }
 
-.mediaButton {
-    box-sizing: content-box !important;
-}
+    .mediaButton i {
+        height: 40px;
+        width: 40px;
+        font-size: 40px;
+    }
 
-    .mediaButton.remoteControlButton, .mediaButton.muteButton, .mediaButton.unmuteButton {
-        height: 26px;
-        width: 26px;
+    .mediaButton.remoteControlButton i, .mediaButton.muteButton i, .mediaButton.unmuteButton i, .mediaButton.castButton i, .mediaButton.infoButton i {
+        height: 28px;
+        width: 28px;
+        font-size: 28px;
     }
 
 .nowPlayingDoubleText {
     top: -3px;
-}
-
-.nowPlayingBarInfoContainer {
 }
 
 .nowPlayingImage {
@@ -123,11 +123,6 @@
     vertical-align: middle;
     text-align: left;
     max-width: 130px;
-}
-
-.toggleRepeatButton {
-    height: 32px;
-    width: 32px;
 }
 
 .repeatActive {
@@ -194,6 +189,8 @@
     margin: 0 1em 0 auto;
     /* Need this to make sure it's on top of nowPlayingBarPositionContainer so that buttons are fully clickable */
     z-index: 2;
+    display: flex;
+    align-items: center;
 }
 
 .nowPlayingBarCurrentTime {

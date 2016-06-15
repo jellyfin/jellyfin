@@ -2897,7 +2897,7 @@
 
                 if (showControls || options.viewButton || options.filterButton || options.sortButton || options.addLayoutButton) {
 
-                    html += '<div style="display:inline-block;margin-left:10px;">';
+                    html += '<div style="display:inline-block;">';
 
                     if (showControls) {
 

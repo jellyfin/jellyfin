@@ -64,11 +64,6 @@
     padding-top: .5em;
 }
 
-    .videoAdvancedControls paper-icon-button {
-        width: 30px;
-        height: 30px;
-    }
-
 .nowPlayingInfo {
     text-align: center;
     padding: 1.5em 1em 2em 1em;
