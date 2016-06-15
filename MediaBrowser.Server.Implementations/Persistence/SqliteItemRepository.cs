@@ -1694,6 +1694,33 @@ namespace MediaBrowser.Server.Implementations.Persistence
             return " left join UserDataDb.UserData on (select UserDataKey from UserDataKeys where ItemId=Guid order by Priority LIMIT 1)=UserDataDb.UserData.Key";
         }
 
+        private string GetGroupBy(InternalItemsQuery query)
+        {
+            var groups = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(query.GroupByAncestorOfType))
+            {
+                groups.Add("(Select PresentationUniqueKey from TypedBaseItems B where B.Type = 'MediaBrowser.Controller.Entities.TV.Series' And B.Guid in (Select AncestorId from AncestorIds where ItemId=A.Guid))");
+            }
+
+            if (EnableGroupByPresentationUniqueKey(query))
+            {
+                groups.Add("PresentationUniqueKey");
+            }
+
+            if (groups.Count > 0)
+            {
+                return " Group by " + string.Join(",", groups.ToArray());
+            }
+
+            return string.Empty;
+        }
+
+        private string GetFromText()
+        {
+            return " from TypedBaseItems A";
+        }
+
         public IEnumerable<BaseItem> GetItemList(InternalItemsQuery query)
         {
             if (query == null)
@@ -1707,7 +1734,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, _retriveItemColumns, cmd)) + " from TypedBaseItems";
+                cmd.CommandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, _retriveItemColumns, cmd)) + GetFromText();
                 cmd.CommandText += GetJoinUserDataText(query);
 
                 if (EnableJoinUserData(query))
@@ -1723,10 +1750,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 cmd.CommandText += whereText;
 
-                if (EnableGroupByPresentationUniqueKey(query))
-                {
-                    cmd.CommandText += " Group by PresentationUniqueKey";
-                }
+                cmd.CommandText += GetGroupBy(query);
 
                 cmd.CommandText += GetOrderByText(query);
 
@@ -1797,7 +1821,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, _retriveItemColumns, cmd)) + " from TypedBaseItems";
+                cmd.CommandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, _retriveItemColumns, cmd)) + GetFromText();
                 cmd.CommandText += GetJoinUserDataText(query);
 
                 if (EnableJoinUserData(query))
@@ -1817,10 +1841,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 cmd.CommandText += whereText;
 
-                if (EnableGroupByPresentationUniqueKey(query))
-                {
-                    cmd.CommandText += " Group by PresentationUniqueKey";
-                }
+                cmd.CommandText += GetGroupBy(query);
 
                 cmd.CommandText += GetOrderByText(query);
 
@@ -1838,11 +1859,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 if (EnableGroupByPresentationUniqueKey(query))
                 {
-                    cmd.CommandText += "; select count (distinct PresentationUniqueKey) from TypedBaseItems";
+                    cmd.CommandText += "; select count (distinct PresentationUniqueKey)" + GetFromText();
                 }
                 else
                 {
-                    cmd.CommandText += "; select count (guid) from TypedBaseItems";
+                    cmd.CommandText += "; select count (guid)" + GetFromText();
                 }
 
                 cmd.CommandText += GetJoinUserDataText(query);
@@ -1994,7 +2015,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, new[] { "guid" }, cmd)) + " from TypedBaseItems";
+                cmd.CommandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, new[] { "guid" }, cmd)) + GetFromText();
                 cmd.CommandText += GetJoinUserDataText(query);
 
                 if (EnableJoinUserData(query))
@@ -2010,10 +2031,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 cmd.CommandText += whereText;
 
-                if (EnableGroupByPresentationUniqueKey(query))
-                {
-                    cmd.CommandText += " Group by PresentationUniqueKey";
-                }
+                cmd.CommandText += GetGroupBy(query);
 
                 cmd.CommandText += GetOrderByText(query);
 
@@ -2070,10 +2088,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 cmd.CommandText += whereText;
 
-                if (EnableGroupByPresentationUniqueKey(query))
-                {
-                    cmd.CommandText += " Group by PresentationUniqueKey";
-                }
+                cmd.CommandText += GetGroupBy(query);
 
                 cmd.CommandText += GetOrderByText(query);
 
@@ -2137,7 +2152,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, new[] { "guid" }, cmd)) + " from TypedBaseItems";
+                cmd.CommandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, new[] { "guid" }, cmd)) + GetFromText();
 
                 var whereClauses = GetWhereClauses(query, cmd);
                 cmd.CommandText += GetJoinUserDataText(query);
@@ -2153,10 +2168,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 cmd.CommandText += whereText;
 
-                if (EnableGroupByPresentationUniqueKey(query))
-                {
-                    cmd.CommandText += " Group by PresentationUniqueKey";
-                }
+                cmd.CommandText += GetGroupBy(query);
 
                 cmd.CommandText += GetOrderByText(query);
 
@@ -2174,11 +2186,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 if (EnableGroupByPresentationUniqueKey(query))
                 {
-                    cmd.CommandText += "; select count (distinct PresentationUniqueKey) from TypedBaseItems";
+                    cmd.CommandText += "; select count (distinct PresentationUniqueKey)" + GetFromText();
                 }
                 else
                 {
-                    cmd.CommandText += "; select count (guid) from TypedBaseItems";
+                    cmd.CommandText += "; select count (guid)" + GetFromText();
                 }
 
                 cmd.CommandText += GetJoinUserDataText(query);
@@ -2369,6 +2381,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 whereClauses.Add("ParentIndexNumber=@ParentIndexNumber");
                 cmd.Parameters.Add(cmd, "@ParentIndexNumber", DbType.Int32).Value = query.ParentIndexNumber.Value;
+            }
+            if (query.ParentIndexNumberNotEquals.HasValue)
+            {
+                whereClauses.Add("(ParentIndexNumber<>@ParentIndexNumber or ParentIndexNumber is null)");
+                cmd.Parameters.Add(cmd, "@ParentIndexNumber", DbType.Int32).Value = query.ParentIndexNumberNotEquals.Value;
             }
             if (query.MinEndDate.HasValue)
             {
