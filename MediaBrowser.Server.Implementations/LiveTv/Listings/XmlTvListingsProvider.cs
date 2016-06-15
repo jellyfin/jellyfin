@@ -96,7 +96,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 ShortOverview = p.Description,
                 ProductionYear = !p.CopyrightDate.HasValue ? (int?)null : p.CopyrightDate.Value.Year,
                 SeasonNumber = p.Episode == null ? null : p.Episode.Series,
-                IsSeries = p.IsSeries,
+                IsSeries = p.Episode != null,
                 IsRepeat = p.IsRepeat,
                 IsPremiere = p.Premiere != null,
                 IsKids = p.Categories.Any(c => info.KidsCategories.Contains(c, StringComparer.InvariantCultureIgnoreCase)),
@@ -107,7 +107,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 HasImage = p.Icon != null && !String.IsNullOrEmpty(p.Icon.Source),
                 OfficialRating = p.Rating != null && !String.IsNullOrEmpty(p.Rating.Value) ? p.Rating.Value : null,
                 CommunityRating = p.StarRating.HasValue ? p.StarRating.Value : (float?)null,
-                SeriesId = p.IsSeries ? p.Title.GetMD5().ToString("N") : null
+                SeriesId = p.Episode != null ? p.Title.GetMD5().ToString("N") : null
             });
         }
 
