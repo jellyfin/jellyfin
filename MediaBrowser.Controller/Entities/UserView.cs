@@ -45,6 +45,11 @@ namespace MediaBrowser.Controller.Entities
             return list;
         }
 
+        public override int GetChildCount(User user)
+        {
+            return GetChildren(user, true).Count();
+        }
+
         protected override Task<QueryResult<BaseItem>> GetItemsInternal(InternalItemsQuery query)
         {
             var parent = this as Folder;
