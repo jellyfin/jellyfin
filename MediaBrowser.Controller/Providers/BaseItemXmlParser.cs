@@ -803,11 +803,7 @@ namespace MediaBrowser.Controller.Providers
                     {
                         using (var subtree = reader.ReadSubtree())
                         {
-                            var hasTags = item as IHasTags;
-                            if (hasTags != null)
-                            {
-                                FetchFromTagsNode(subtree, hasTags);
-                            }
+                            FetchFromTagsNode(subtree, item);
                         }
                         break;
                     }
@@ -816,11 +812,7 @@ namespace MediaBrowser.Controller.Providers
                     {
                         using (var subtree = reader.ReadSubtree())
                         {
-                            var hasTags = item as IHasKeywords;
-                            if (hasTags != null)
-                            {
-                                FetchFromKeywordsNode(subtree, hasTags);
-                            }
+                            FetchFromKeywordsNode(subtree, item);
                         }
                         break;
                     }
@@ -1070,7 +1062,7 @@ namespace MediaBrowser.Controller.Providers
             }
         }
 
-        private void FetchFromTagsNode(XmlReader reader, IHasTags item)
+        private void FetchFromTagsNode(XmlReader reader, BaseItem item)
         {
             reader.MoveToContent();
 
@@ -1099,7 +1091,7 @@ namespace MediaBrowser.Controller.Providers
             }
         }
 
-        private void FetchFromKeywordsNode(XmlReader reader, IHasKeywords item)
+        private void FetchFromKeywordsNode(XmlReader reader, BaseItem item)
         {
             reader.MoveToContent();
 

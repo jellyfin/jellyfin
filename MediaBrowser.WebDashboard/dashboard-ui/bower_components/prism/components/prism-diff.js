@@ -9,8 +9,8 @@ Prism.languages.diff = {
 	],
 
 	// Match inserted and deleted lines. Support both +/- and >/< styles.
-	'deleted': /^[-<].+$/m,
-	'inserted': /^[+>].+$/m,
+	'deleted': /^[-<].*$/m,
+	'inserted': /^[+>].*$/m,
 
 	// Match "different" lines (prefixed with "!") in context diff.
 	'diff': {

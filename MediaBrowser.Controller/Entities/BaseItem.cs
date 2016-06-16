@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -36,6 +37,7 @@ namespace MediaBrowser.Controller.Entities
     {
         protected BaseItem()
         {
+            Keywords = new List<string>();
             Tags = new List<string>();
             Genres = new List<string>();
             Studios = new List<string>();
@@ -69,10 +71,14 @@ namespace MediaBrowser.Controller.Entities
 
         public List<ItemImageInfo> ImageInfos { get; set; }
 
+        [IgnoreDataMember]
+        public bool IsVirtualItem { get; set; }
+
         /// <summary>
         /// Gets or sets the album.
         /// </summary>
         /// <value>The album.</value>
+        [IgnoreDataMember]
         public string Album { get; set; }
 
         /// <summary>
@@ -810,6 +816,8 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public List<string> Tags { get; set; }
 
+        public List<string> Keywords { get; set; }
+
         /// <summary>
         /// Gets or sets the home page URL.
         /// </summary>
@@ -1031,9 +1039,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 : options;
 
-            var result = await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
-
-            return result;
+            return await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
         }
 
         [IgnoreDataMember]
@@ -1394,15 +1400,10 @@ namespace MediaBrowser.Controller.Entities
 
         private bool IsVisibleViaTags(User user)
         {
-            var hasTags = this as IHasTags;
-
-            if (hasTags != null)
+            var policy = user.Policy;
+            if (policy.BlockedTags.Any(i => Tags.Contains(i, StringComparer.OrdinalIgnoreCase)))
             {
-                var policy = user.Policy;
-                if (policy.BlockedTags.Any(i => hasTags.Tags.Contains(i, StringComparer.OrdinalIgnoreCase)))
-                {
-                    return false;
-                }
+                return false;
             }
 
             return true;
@@ -2213,6 +2214,11 @@ namespace MediaBrowser.Controller.Entities
             {
                 DeleteFileLocation = false
             });
+        }
+
+        public virtual List<ExternalUrl> GetRelatedUrls()
+        {
+            return new List<ExternalUrl>();
         }
     }
 }

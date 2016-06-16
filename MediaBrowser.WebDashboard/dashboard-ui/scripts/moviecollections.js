@@ -189,9 +189,13 @@
         // The button is created dynamically
         $('.btnNewCollection', tabContent).on('click', function () {
 
-            require(['collectioneditor'], function (collectioneditor) {
+            require(['collectionEditor'], function (collectionEditor) {
 
-                new collectioneditor().show();
+                var serverId = ApiClient.serverInfo().Id;
+                new collectionEditor().show({
+                    items: [],
+                    serverId: serverId
+                });
 
             });
         });

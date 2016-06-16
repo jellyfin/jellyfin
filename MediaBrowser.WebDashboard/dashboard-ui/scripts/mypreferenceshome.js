@@ -4,7 +4,7 @@
 
         var folderHtml = '';
 
-        folderHtml += '<div class="paperCheckboxList">';
+        folderHtml += '<div class="checkboxList">';
         folderHtml += result.map(function (i) {
 
             var currentHtml = '';
@@ -16,7 +16,10 @@
 
             var checkedHtml = isChecked ? ' checked="checked"' : '';
 
-            currentHtml += '<paper-checkbox class="chkGroupFolder" data-folderid="' + i.Id + '" id="' + id + '"' + checkedHtml + '>' + i.Name + '</paper-checkbox>';
+            currentHtml += '<label>';
+            currentHtml += '<input type="checkbox" is="emby-checkbox" class="chkGroupFolder" data-folderid="' + i.Id + '" id="' + id + '"' + checkedHtml + '/>';
+            currentHtml += '<span>' + i.Name + '</span>';
+            currentHtml += '</label>';
 
             return currentHtml;
 
@@ -27,42 +30,11 @@
         $('.folderGroupList', page).html(folderHtml);
     }
 
-    function renderViewStyles(page, user, result) {
-
-        var folderHtml = '';
-
-        folderHtml += '<div class="paperCheckboxList">';
-        folderHtml += result.map(function (i) {
-
-            var currentHtml = '';
-
-            var id = 'chkPlainFolder' + i.Id;
-
-            var isChecked = user.Configuration.PlainFolderViews.indexOf(i.Id) == -1;
-            var checkedHtml = isChecked ? ' checked="checked"' : '';
-
-            currentHtml += '<paper-checkbox class="chkPlainFolder" data-folderid="' + i.Id + '" id="' + id + '"' + checkedHtml + '>' + i.Name + '</paper-checkbox>';
-
-            return currentHtml;
-
-        }).join('');
-
-        folderHtml += '</div>';
-
-        $('.viewStylesList', page).html(folderHtml);
-
-        if (result.length) {
-            $('.viewStylesSection', page).show();
-        } else {
-            $('.viewStylesSection', page).hide();
-        }
-    }
-
     function renderLatestItems(page, user, result) {
 
         var folderHtml = '';
 
-        folderHtml += '<div class="paperCheckboxList">';
+        folderHtml += '<div class="checkboxList">';
         folderHtml += result.Items.map(function (i) {
 
             var currentHtml = '';
@@ -72,7 +44,10 @@
             var isChecked = user.Configuration.LatestItemsExcludes.indexOf(i.Id) == -1;
             var checkedHtml = isChecked ? ' checked="checked"' : '';
 
-            currentHtml += '<paper-checkbox class="chkIncludeInLatest" data-folderid="' + i.Id + '" id="' + id + '"' + checkedHtml + '>' + i.Name + '</paper-checkbox>';
+            currentHtml += '<label>';
+            currentHtml += '<input type="checkbox" is="emby-checkbox" class="chkIncludeInLatest" data-folderid="' + i.Id + '" id="' + id + '"' + checkedHtml + '/>';
+            currentHtml += '<span>' + i.Name + '</span>';
+            currentHtml += '</label>';
 
             return currentHtml;
 
@@ -127,7 +102,6 @@
 
     function loadForm(page, user, displayPreferences) {
 
-        page.querySelector('.chkDisplayCollectionView').checked = user.Configuration.DisplayCollectionsView || false;
         page.querySelector('.chkHidePlayedFromLatest').checked = user.Configuration.HidePlayedInLatest || false;
         page.querySelector('.chkDisplayChannelsInline').checked = !(user.Configuration.EnableChannelView || false);
 
@@ -140,15 +114,13 @@
             sortBy: "SortName"
         });
         var promise2 = ApiClient.getUserViews({}, user.Id);
-        var promise3 = ApiClient.getJSON(ApiClient.getUrl("Users/" + user.Id + "/SpecialViewOptions"));
-        var promise4 = ApiClient.getJSON(ApiClient.getUrl("Users/" + user.Id + "/GroupingOptions"));
+        var promise3 = ApiClient.getJSON(ApiClient.getUrl("Users/" + user.Id + "/GroupingOptions"));
 
-        Promise.all([promise1, promise2, promise3, promise4]).then(function (responses) {
+        Promise.all([promise1, promise2, promise3]).then(function (responses) {
 
-            renderViews(page, user, responses[3]);
+            renderViews(page, user, responses[2]);
             renderLatestItems(page, user, responses[0]);
             renderViewOrder(page, user, responses[1]);
-            renderViewStyles(page, user, responses[2]);
 
             Dashboard.hideLoadingMsg();
         });
@@ -163,7 +135,6 @@
     }
     function saveUser(page, user, displayPreferences) {
 
-        user.Configuration.DisplayCollectionsView = page.querySelector('.chkDisplayCollectionView').checked;
         user.Configuration.HidePlayedInLatest = page.querySelector('.chkHidePlayedFromLatest').checked;
 
         user.Configuration.EnableChannelView = !page.querySelector('.chkDisplayChannelsInline').checked;
@@ -182,15 +153,6 @@
         user.Configuration.GroupedFolders = $(".chkGroupFolder", page).get().filter(function (i) {
 
             return i.checked;
-
-        }).map(function (i) {
-
-            return i.getAttribute('data-folderid');
-        });
-
-        user.Configuration.PlainFolderViews = $(".chkPlainFolder", page).get().filter(function (i) {
-
-            return !i.checked;
 
         }).map(function (i) {
 

@@ -11,8 +11,7 @@
   "homepage": "https://github.com/MediaBrowser/emby-webcomponents",
   "dependencies": {
     "requirejs": "requirejs#^2.1.22",
-    "isMobile": "isMobile#^0.3.9",
-    "material-design-lite": "material-design-lite#^1.1.2"
+    "isMobile": "isMobile#^0.3.9"
   },
   "devDependencies": {
     

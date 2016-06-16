@@ -342,7 +342,9 @@ namespace MediaBrowser.WebDashboard.Api
 
             if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
             {
-                DeleteFoldersByName(Path.Combine(bowerPath, "emby-webcomponents"), "fonts");
+                DeleteFoldersByName(Path.Combine(bowerPath, "emby-webcomponents", "fonts"), "montserrat");
+                DeleteFoldersByName(Path.Combine(bowerPath, "emby-webcomponents", "fonts"), "opensans");
+                DeleteFoldersByName(Path.Combine(bowerPath, "emby-webcomponents", "fonts"), "roboto");
             }
 
             _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "jquery", "src"), true);
@@ -356,9 +358,6 @@ namespace MediaBrowser.WebDashboard.Api
             DeleteFoldersByName(Path.Combine(bowerPath, "Sortable"), "meteor");
             DeleteFoldersByName(Path.Combine(bowerPath, "Sortable"), "st");
             DeleteFoldersByName(Path.Combine(bowerPath, "Swiper"), "src");
-            DeleteFoldersByName(Path.Combine(bowerPath, "material-design-lite"), "src");
-            DeleteFoldersByName(Path.Combine(bowerPath, "material-design-lite"), "utils");
-            _fileSystem.DeleteFile(Path.Combine(bowerPath, "material-design-lite", "gulpfile.babel.js"));
 
             _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "marked"), true);
             _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "marked-element"), true);

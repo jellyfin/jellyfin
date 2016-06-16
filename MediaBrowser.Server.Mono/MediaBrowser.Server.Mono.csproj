@@ -82,11 +82,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\MediaBrowser.Server.Implementations\Persistence\SqliteExtensions.cs">
+      <Link>Native\SqliteExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="Native\BaseMonoApp.cs" />
-    <Compile Include="Native\SqliteExtensions.cs" />
+    <Compile Include="Native\DbConnector.cs" />
     <Compile Include="Networking\CertificateGenerator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

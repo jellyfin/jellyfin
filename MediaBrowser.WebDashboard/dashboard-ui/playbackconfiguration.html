@@ -1,37 +1,33 @@
-﻿<div id="playbackConfigurationPage" data-role="page" class="page type-interior playbackConfigurationPage withTabs" data-require="scripts/playbackconfiguration,paper-input,paper-button">
+﻿<div id="playbackConfigurationPage" data-role="page" class="page type-interior playbackConfigurationPage withTabs" data-require="scripts/playbackconfiguration,emby-input,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
 
             <form class="playbackConfigurationForm">
-                <div>
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <paper-input type="number" id="txtMinResumePct" name="txtMinResumePct" pattern="[0-9]*" required min="0" max="100" label="${LabelMinResumePercentage}"></paper-input>
-                            <div class="fieldDescription">
-                                ${LabelMinResumePercentageHelp}
-                            </div>
-                        </li>
-                        <li>
-                            <paper-input type="number" id="txtMaxResumePct" name="txtMaxResumePct" pattern="[0-9]*" required min="1" max="100" label="${LabelMaxResumePercentage}"></paper-input>
-                            <div class="fieldDescription">
-                                ${LabelMaxResumePercentageHelp}
-                            </div>
-                        </li>
-                        <li>
-                            <paper-input type="number" id="txtMinResumeDuration" name="txtMinResumeDuration" pattern="[0-9]*" required min="0" label="${LabelMinResumeDuration}"></paper-input>
-                            <div class="fieldDescription">
-                                ${LabelMinResumeDurationHelp}
-                            </div>
-                        </li>
-                    </ul>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="txtMinResumePct" name="txtMinResumePct" pattern="[0-9]*" required min="0" max="100" label="${LabelMinResumePercentage}"></input>
+                    <div class="fieldDescription">
+                        ${LabelMinResumePercentageHelp}
+                    </div>
                 </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="txtMaxResumePct" name="txtMaxResumePct" pattern="[0-9]*" required min="1" max="100" label="${LabelMaxResumePercentage}"></input>
+                    <div class="fieldDescription">
+                        ${LabelMaxResumePercentageHelp}
+                    </div>
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="txtMinResumeDuration" name="txtMinResumeDuration" pattern="[0-9]*" required min="0" label="${LabelMinResumeDuration}"></input>
+                    <div class="fieldDescription">
+                        ${LabelMinResumeDurationHelp}
+                    </div>
+                </div>
+
+
                 <br />
                 <ul data-role="listview" class="ulForm">
                     <li>
-                        <button type="submit" data-role="none" class="clearButton">
-                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                        </button>
+                        <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
                     </li>
 
                 </ul>

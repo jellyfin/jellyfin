@@ -15,5 +15,6 @@ namespace MediaBrowser.Controller.LiveTv
         Task AddMetadata(ListingsProviderInfo info, List<ChannelInfo> channels, CancellationToken cancellationToken);
         Task Validate(ListingsProviderInfo info, bool validateLogin, bool validateListings);
         Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string country, string location);
+        Task<List<ChannelInfo>> GetChannels(ListingsProviderInfo info, CancellationToken cancellationToken);
     }
 }

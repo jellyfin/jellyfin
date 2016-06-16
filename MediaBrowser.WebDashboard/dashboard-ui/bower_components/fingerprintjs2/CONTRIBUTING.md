@@ -13,7 +13,7 @@ Include in the issue:
 * Include library call code (I need all options you used when calling the library function)
 
 ## Want to add a feature / contribute?
-
+* Make sure the issue/suggestion does not exist by searching existing issues
 * Fork the project and make the required changes in it (don't forget to add specs)
 * PRs w/out specs will not be accepted
 * Run `gulp` to catch stylistic errors and produce the minified version.

@@ -1,4 +1,4 @@
-﻿define(['datetime', 'jQuery', 'paper-icon-button-light'], function (datetime, $) {
+﻿define(['datetime', 'paper-icon-button-light'], function (datetime) {
 
     var currentPlayer;
 
@@ -9,8 +9,8 @@
     var unmuteButton;
     var muteButton;
     var volumeSlider;
-    var unpauseButton;
-    var pauseButton;
+    var unpauseButtons;
+    var pauseButtons;
     var positionSlider;
     var toggleRepeatButton;
     var toggleRepeatButtonIcon;
@@ -23,8 +23,8 @@
 
         html += '<div class="nowPlayingBar hide">';
 
-        html += '<div class="nowPlayingBarPositionContainer">';
-        html += '<paper-slider pin step=".1" min="0" max="100" value="0" class="nowPlayingBarPositionSlider"></paper-slider>';
+        html += '<div class="nowPlayingBarPositionContainer sliderContainer">';
+        html += '<input type="range" is="emby-slider" pin step=".1" min="0" max="100" value="0" class="nowPlayingBarPositionSlider"/>';
         html += '</div>';
 
         html += '<div class="nowPlayingBarInfoContainer">';
@@ -35,33 +35,35 @@
         // The onclicks are needed due to the return false above
         html += '<div class="nowPlayingBarCenter">';
 
-        html += '<button is="paper-icon-button-light" class="previousTrackButton mediaButton"><iron-icon icon="skip-previous"></iron-icon></button>';
+        html += '<button is="paper-icon-button-light" class="previousTrackButton mediaButton autoSize"><i class="md-icon">skip_previous</i></button>';
 
-        html += '<button is="paper-icon-button-light" class="unpauseButton mediaButton"><iron-icon icon="play-arrow"></iron-icon></button>';
-        html += '<button is="paper-icon-button-light" class="pauseButton mediaButton"><iron-icon icon="pause"></iron-icon></button>';
+        html += '<button is="paper-icon-button-light" class="unpauseButton mediaButton autoSize"><i class="md-icon">play_arrow</i></button>';
+        html += '<button is="paper-icon-button-light" class="pauseButton mediaButton autoSize"><i class="md-icon">pause</i></button>';
 
-        html += '<button is="paper-icon-button-light" class="stopButton mediaButton"><iron-icon icon="stop"></iron-icon></button>';
-        html += '<button is="paper-icon-button-light" class="nextTrackButton mediaButton"><iron-icon icon="skip-next"></iron-icon></button>';
+        html += '<button is="paper-icon-button-light" class="stopButton mediaButton autoSize"><i class="md-icon">stop</i></button>';
+        html += '<button is="paper-icon-button-light" class="nextTrackButton mediaButton autoSize"><i class="md-icon">skip_next</i></button>';
 
         html += '<div class="nowPlayingBarCurrentTime"></div>';
         html += '</div>';
 
         html += '<div class="nowPlayingBarRight">';
 
-        html += '<button is="paper-icon-button-light" class="muteButton mediaButton"><iron-icon icon="volume-up"></iron-icon></button>';
-        html += '<button is="paper-icon-button-light" class="unmuteButton mediaButton"><iron-icon icon="volume-off"></iron-icon></button>';
+        html += '<button is="paper-icon-button-light" class="muteButton mediaButton autoSize"><i class="md-icon">volume_up</i></button>';
+        html += '<button is="paper-icon-button-light" class="unmuteButton mediaButton autoSize"><i class="md-icon">volume_off</i></button>';
 
-        html += '<paper-slider pin step="1" min="0" max="100" value="0" class="nowPlayingBarVolumeSlider" style="width:100px;vertical-align:middle;display:inline-block;"></paper-slider>';
+        html += '<div class="sliderContainer nowPlayingBarVolumeSliderContainer" style="width:100px;vertical-align:middle;display:inline-flex;">';
+        html += '<input type="range" is="emby-slider" pin step="1" min="0" max="100" value="0" class="nowPlayingBarVolumeSlider"/>';
+        html += '</div>';
 
-        html += '<button is="paper-icon-button-light" class="toggleRepeatButton mediaButton"><iron-icon icon="repeat"></iron-icon></button>';
+        html += '<button is="paper-icon-button-light" class="toggleRepeatButton mediaButton autoSize"><i class="md-icon">repeat</i></button>';
 
         html += '<div class="nowPlayingBarUserDataButtons">';
         html += '</div>';
 
-        html += '<button is="paper-icon-button-light" class="unpauseButton mediaButton"><iron-icon icon="play-arrow"></iron-icon></button>';
-        html += '<button is="paper-icon-button-light" class="pauseButton mediaButton"><iron-icon icon="pause"></iron-icon></button>';
-        html += '<button is="paper-icon-button-light" class="remoteControlButton mediaButton"><iron-icon icon="tablet-android"></iron-icon></button>';
-        html += '<button is="paper-icon-button-light" class="playlistButton mediaButton"><iron-icon icon="queue-music"></iron-icon></button>';
+        html += '<button is="paper-icon-button-light" class="unpauseButton mediaButton autoSize"><i class="md-icon">play_arrow</i></button>';
+        html += '<button is="paper-icon-button-light" class="pauseButton mediaButton autoSize"><i class="md-icon">pause</i></button>';
+        html += '<button is="paper-icon-button-light" class="remoteControlButton mediaButton autoSize"><i class="md-icon">tablet_android</i></button>';
+        html += '<button is="paper-icon-button-light" class="playlistButton mediaButton autoSize"><i class="md-icon">queue_music</i></button>';
 
         html += '</div>';
 
@@ -127,6 +129,18 @@
         });
     }
 
+    function onPauseClick() {
+        if (currentPlayer) {
+            currentPlayer.pause();
+        }
+    }
+
+    function onUnpauseClick() {
+        if (currentPlayer) {
+            currentPlayer.unpause();
+        }
+    }
+
     function bindEvents(elem) {
 
         currentTimeElement = elem.querySelector('.nowPlayingBarCurrentTime');
@@ -134,49 +148,49 @@
         nowPlayingTextElement = elem.querySelector('.nowPlayingBarText');
         nowPlayingUserData = elem.querySelector('.nowPlayingBarUserDataButtons');
 
-        unmuteButton = $('.unmuteButton', elem).on('click', function () {
+        unmuteButton = elem.querySelector('.unmuteButton');
+        unmuteButton.addEventListener('click', function () {
 
             if (currentPlayer) {
                 currentPlayer.unMute();
             }
+
         });
 
-        muteButton = $('.muteButton', elem).on('click', function () {
+        muteButton = elem.querySelector('.muteButton');
+        muteButton.addEventListener('click', function () {
 
             if (currentPlayer) {
                 currentPlayer.mute();
             }
+
         });
 
-        $('.stopButton', elem).on('click', function () {
+        elem.querySelector('.stopButton').addEventListener('click', function () {
 
             if (currentPlayer) {
                 currentPlayer.stop();
             }
         });
 
-        pauseButton = $('.pauseButton', elem).on('click', function () {
+        var i, length;
+        pauseButtons = elem.querySelectorAll('.pauseButton');
+        for (i = 0, length = pauseButtons.length; i < length; i++) {
+            pauseButtons[i].addEventListener('click', onPauseClick);
+        }
+        unpauseButtons = elem.querySelectorAll('.unpauseButton');
+        for (i = 0, length = unpauseButtons.length; i < length; i++) {
+            unpauseButtons[i].addEventListener('click', onUnpauseClick);
+        }
 
-            if (currentPlayer) {
-                currentPlayer.pause();
-            }
-        });
-
-        unpauseButton = $('.unpauseButton', elem).on('click', function () {
-
-            if (currentPlayer) {
-                currentPlayer.unpause();
-            }
-        });
-
-        $('.nextTrackButton', elem).on('click', function () {
+        elem.querySelector('.nextTrackButton').addEventListener('click', function () {
 
             if (currentPlayer) {
                 currentPlayer.nextTrack();
             }
         });
 
-        $('.previousTrackButton', elem).on('click', function () {
+        elem.querySelector('.previousTrackButton').addEventListener('click', function () {
 
             if (currentPlayer) {
                 currentPlayer.previousTrack();
@@ -193,7 +207,8 @@
             showRemoteControl(2);
         });
 
-        toggleRepeatButton = $('.toggleRepeatButton', elem).on('click', function () {
+        toggleRepeatButton = elem.querySelector('.toggleRepeatButton');
+        toggleRepeatButton.addEventListener('click', function () {
 
             if (currentPlayer) {
                 var state = lastPlayerState || {};
@@ -210,21 +225,24 @@
                         break;
                 }
             }
-        })[0];
+        });
 
-        toggleRepeatButtonIcon = toggleRepeatButton.querySelector('iron-icon');
+        toggleRepeatButtonIcon = toggleRepeatButton.querySelector('i');
 
         // Unfortunately this is necessary because the polymer elements might not be ready immediately and there doesn't seem to be an event-driven way to find out when
         setTimeout(function () {
-            volumeSlider = $('.nowPlayingBarVolumeSlider', elem).on('change', function () {
+
+            volumeSlider = elem.querySelector('.nowPlayingBarVolumeSlider');
+            volumeSlider.addEventListener('change', function () {
 
                 if (currentPlayer) {
                     currentPlayer.setVolume(this.value);
                 }
 
-            })[0];
+            });
 
-            positionSlider = $('.nowPlayingBarPositionSlider', elem).on('change', function () {
+            positionSlider = elem.querySelector('.nowPlayingBarPositionSlider');
+            positionSlider.addEventListener('change', function () {
 
                 if (currentPlayer && lastPlayerState) {
 
@@ -234,22 +252,21 @@
                     currentPlayer.seek(Math.floor(newPositionTicks));
                 }
 
-            })[0];
+            });
 
-            positionSlider._setPinValue = function (value) {
+            positionSlider.getBubbleText = function (value) {
 
                 var state = lastPlayerState;
 
                 if (!state || !state.NowPlayingItem || !state.NowPlayingItem.RunTimeTicks) {
-                    this.pinValue = '--:--';
-                    return;
+                    return '--:--';
                 }
 
                 var ticks = state.NowPlayingItem.RunTimeTicks;
                 ticks /= 100;
                 ticks *= value;
 
-                this.pinValue = datetime.getDisplayRunningTime(ticks);
+                return datetime.getDisplayRunningTime(ticks);
             };
         }, 300);
     }
@@ -273,7 +290,7 @@
                 return;
             }
 
-            require(['jQuery', 'css!css/nowplayingbar.css', 'paper-slider'], function ($) {
+            require(['css!css/nowplayingbar.css', 'emby-slider'], function () {
 
                 nowPlayingBarElement = document.querySelector('.nowPlayingBar');
 
@@ -282,9 +299,10 @@
                     return;
                 }
 
-                nowPlayingBarElement = $(getNowPlayingBarHtml()).appendTo(document.body)[0];
+                document.body.insertAdjacentHTML('beforeend', getNowPlayingBarHtml());
+                nowPlayingBarElement = document.querySelector('.nowPlayingBar');
 
-                if ((browserInfo.safari || !AppInfo.isNativeApp) && browserInfo.mobile) {
+                if (browserInfo.safari && browserInfo.mobile) {
                     // Not handled well here. The wrong elements receive events, bar doesn't update quickly enough, etc.
                     nowPlayingBarElement.classList.add('noMediaProgress');
                 }
@@ -296,11 +314,11 @@
     }
 
     function showButton(button) {
-        button.removeClass('hide');
+        button.classList.remove('hide');
     }
 
     function hideButton(button) {
-        button.addClass('hide');
+        button.classList.add('hide');
     }
 
     var lastUpdateTime = 0;
@@ -341,16 +359,25 @@
         var playerInfo = MediaController.getPlayerInfo();
 
         var playState = state.PlayState || {};
+        var i, length;
 
         if (playState.IsPaused) {
 
-            hideButton(pauseButton);
-            showButton(unpauseButton);
+            for (i = 0, length = pauseButtons.length; i < length; i++) {
+                hideButton(pauseButtons[i]);
+            }
+            for (i = 0, length = unpauseButtons.length; i < length; i++) {
+                showButton(unpauseButtons[i]);
+            }
 
         } else {
 
-            showButton(pauseButton);
-            hideButton(unpauseButton);
+            for (i = 0, length = pauseButtons.length; i < length; i++) {
+                showButton(pauseButtons[i]);
+            }
+            for (i = 0, length = unpauseButtons.length; i < length; i++) {
+                hideButton(unpauseButtons[i]);
+            }
         }
 
         updatePlayerVolumeState(state, playerInfo);
@@ -424,14 +451,14 @@
         }
 
         if (playState.RepeatMode == 'RepeatAll') {
-            toggleRepeatButtonIcon.icon = "repeat";
+            toggleRepeatButtonIcon.innerHTML = "repeat";
             toggleRepeatButton.classList.add('repeatActive');
         }
         else if (playState.RepeatMode == 'RepeatOne') {
-            toggleRepeatButtonIcon.icon = "repeat-one";
+            toggleRepeatButtonIcon.innerHTML = "repeat_one";
             toggleRepeatButton.classList.add('repeatActive');
         } else {
-            toggleRepeatButtonIcon.icon = "repeat";
+            toggleRepeatButtonIcon.innerHTML = "repeat";
             toggleRepeatButton.classList.remove('repeatActive');
         }
 

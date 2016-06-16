@@ -42,6 +42,7 @@ The following custom properties and mixins are available for styling:
 
 Custom property | Description | Default
 ----------------|-------------|----------
+`--paper-slider-container-color` | The background color of the bar | `--paper-grey-400`
 `--paper-slider-bar-color` | The background color of the slider | `transparent`
 `--paper-slider-active-color` | The progress bar color | `--google-blue-700`
 `--paper-slider-secondary-color` | The secondary progress bar color | `--google-blue-300`
@@ -131,7 +132,7 @@ Custom property | Description | Default
         padding: 15px 0;
         width: 100%;
         background-color: var(--paper-slider-bar-color, transparent);
-        --paper-progress-container-color: var(--paper-grey-400);
+        --paper-progress-container-color: var(--paper-slider-container-color, --paper-grey-400);
         --paper-progress-height: var(--paper-slider-height, 2px);
       }
 
@@ -301,7 +302,6 @@ Custom property | Description | Default
 
     <div id="sliderContainer"
       class$="[[_getClassNames(disabled, pin, snaps, immediateValue, min, expand, dragging, transiting, editable)]]">
-
       <div class="bar-container">
         <paper-progress
           disabled$="[[disabled]]"
@@ -420,8 +420,7 @@ Custom property | Description | Default
         maxMarkers: {
           type: Number,
           value: 0,
-          notify: true,
-          observer: '_maxMarkersChanged'
+          notify: true
         },
 
         /**
@@ -458,7 +457,8 @@ Custom property | Description | Default
       observers: [
         '_updateKnob(value, min, max, snaps, step)',
         '_valueChanged(value)',
-        '_immediateValueChanged(immediateValue)'
+        '_immediateValueChanged(immediateValue)',
+        '_updateMarkers(maxMarkers, min, max, snaps)'
       ],
 
       hostAttributes: {
@@ -469,13 +469,6 @@ Custom property | Description | Default
       keyBindings: {
         'left down pagedown home': '_decrementKey',
         'right up pageup end': '_incrementKey'
-      },
-
-      ready: function() {
-        // issue polymer/polymer#1305
-        this.async(function() {
-          this._updateKnob(this.value);
-        }, 1);
       },
 
       /**
@@ -585,6 +578,9 @@ Custom property | Description | Default
         this.translate3d(translateX + 'px', 0, 0, this.$.sliderKnob);
         this._setPinValue(this.immediateValue);
       },
+      _setPinValue: function (value) {
+          this.pinValue = value;
+      },
 
       _trackEnd: function() {
         var s = this.$.sliderKnob.style;
@@ -597,9 +593,6 @@ Custom property | Description | Default
         s.transform = s.webkitTransform = '';
 
         this.fire('change');
-      },
-      _setPinValue: function (value) {
-          this.pinValue = value;
       },
 
       _knobdown: function(event) {
@@ -649,11 +642,11 @@ Custom property | Description | Default
         }
       },
 
-      _maxMarkersChanged: function(maxMarkers) {
-        if (!this.snaps) {
+      _updateMarkers: function(maxMarkers, min, max, snaps) {
+        if (!snaps) {
           this._setMarkers([]);
         }
-        var steps = Math.round((this.max - this.min) / this.step);
+        var steps = Math.round((max - min) / this.step);
         if (steps > maxMarkers) {
           steps = maxMarkers;
         }
@@ -743,7 +736,12 @@ Custom property | Description | Default
      */
 
     /**
-     * Fired when the slider's immediateValue changes.
+     * Fired when the slider's immediateValue changes. Only occurs while the
+     * user is dragging.
+     *
+     * To detect changes to immediateValue that happen for any input (i.e.                                                          
+     * dragging, tapping, clicking, etc.) listen for immediate-value-changed
+     * instead.
      *
      * @event immediate-value-change
      */

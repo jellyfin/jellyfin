@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'alphaPicker'], function ($, alphaPicker) {
 
     var data = {};
 
@@ -159,28 +159,26 @@
 
         var query = getQuery(tabContent);
 
-        $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWithOrGreater);
+        self.alphaPicker.value(query.NameStartsWithOrGreater);
     }
 
     function initPage(page, tabContent) {
 
-        $('.alphabetPicker', tabContent).on('alphaselect', function (e, character) {
-
-            var query = getQuery(page);
-            query.NameStartsWithOrGreater = character;
+        var alphaPickerElement = tabContent.querySelector('.alphaPicker');
+        alphaPickerElement.addEventListener('alphavaluechanged', function (e) {
+            var newValue = e.detail.value;
+            var query = getQuery(tabContent);
+            query.NameStartsWithOrGreater = newValue;
             query.StartIndex = 0;
-
-            reloadItems(tabContent);
-
-        }).on('alphaclear', function (e) {
-
-            var query = getQuery(page);
-            query.NameStartsWithOrGreater = '';
-
             reloadItems(tabContent);
         });
 
-        $('.itemsContainer', tabContent).on('needsrefresh', function () {
+        self.alphaPicker = new alphaPicker({
+            element: alphaPickerElement,
+            valueChangeEvent: 'click'
+        });
+
+        tabContent.querySelector('.itemsContainer').addEventListener('needsrefresh', function () {
 
             reloadItems(tabContent);
 

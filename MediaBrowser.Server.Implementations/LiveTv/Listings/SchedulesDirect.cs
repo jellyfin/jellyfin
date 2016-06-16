@@ -506,8 +506,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
         }
 
         private async Task<List<ScheduleDirect.ShowImages>> GetImageForPrograms(
-			ListingsProviderInfo info,
-			List<string> programIds,
+            ListingsProviderInfo info,
+            List<string> programIds,
            CancellationToken cancellationToken)
         {
             var imageIdString = "[";
@@ -564,7 +564,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
             try
             {
-				using (Stream responce = await Get(options, false, info).ConfigureAwait(false))
+                using (Stream responce = await Get(options, false, info).ConfigureAwait(false))
                 {
                     var root = _jsonSerializer.DeserializeFromStream<List<ScheduleDirect.Headends>>(responce);
 
@@ -666,58 +666,60 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             }
         }
 
-		private async Task<HttpResponseInfo> Post(HttpRequestOptions options, 
-			bool enableRetry,
-			ListingsProviderInfo providerInfo)
+        private async Task<HttpResponseInfo> Post(HttpRequestOptions options,
+            bool enableRetry,
+            ListingsProviderInfo providerInfo)
         {
             try
             {
                 return await _httpClient.Post(options).ConfigureAwait(false);
-			}
-			catch (HttpException ex)
-			{
-				_tokens.Clear();
+            }
+            catch (HttpException ex)
+            {
+                _tokens.Clear();
 
-				if (!ex.StatusCode.HasValue || (int)ex.StatusCode.Value >= 500) 
-				{
-					enableRetry = false;
-				}
+                if (!ex.StatusCode.HasValue || (int)ex.StatusCode.Value >= 500)
+                {
+                    enableRetry = false;
+                }
 
-				if (!enableRetry) {
-					throw;
-				}
-			}
+                if (!enableRetry)
+                {
+                    throw;
+                }
+            }
 
-			var newToken = await GetToken (providerInfo, options.CancellationToken).ConfigureAwait (false);
-			options.RequestHeaders ["token"] = newToken;
-			return await Post (options, false, providerInfo).ConfigureAwait (false);
+            var newToken = await GetToken(providerInfo, options.CancellationToken).ConfigureAwait(false);
+            options.RequestHeaders["token"] = newToken;
+            return await Post(options, false, providerInfo).ConfigureAwait(false);
         }
 
-		private async Task<Stream> Get(HttpRequestOptions options, 
-			bool enableRetry,
-			ListingsProviderInfo providerInfo)
+        private async Task<Stream> Get(HttpRequestOptions options,
+            bool enableRetry,
+            ListingsProviderInfo providerInfo)
         {
             try
             {
                 return await _httpClient.Get(options).ConfigureAwait(false);
-			}
-			catch (HttpException ex)
-			{
-				_tokens.Clear();
+            }
+            catch (HttpException ex)
+            {
+                _tokens.Clear();
 
-				if (!ex.StatusCode.HasValue || (int)ex.StatusCode.Value >= 500) 
-				{
-					enableRetry = false;
-				}
+                if (!ex.StatusCode.HasValue || (int)ex.StatusCode.Value >= 500)
+                {
+                    enableRetry = false;
+                }
 
-				if (!enableRetry) {
-					throw;
-				}
-			}
+                if (!enableRetry)
+                {
+                    throw;
+                }
+            }
 
-			var newToken = await GetToken (providerInfo, options.CancellationToken).ConfigureAwait (false);
-			options.RequestHeaders ["token"] = newToken;
-			return await Get (options, false, providerInfo).ConfigureAwait (false);
+            var newToken = await GetToken(providerInfo, options.CancellationToken).ConfigureAwait(false);
+            options.RequestHeaders["token"] = newToken;
+            return await Get(options, false, providerInfo).ConfigureAwait(false);
         }
 
         private async Task<string> GetTokenInternal(string username, string password,
@@ -734,7 +736,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             //_logger.Info("Obtaining token from Schedules Direct from addres: " + httpOptions.Url + " with body " +
             // httpOptions.RequestContent);
 
-			using (var responce = await Post(httpOptions, false, null).ConfigureAwait(false))
+            using (var responce = await Post(httpOptions, false, null).ConfigureAwait(false))
             {
                 var root = _jsonSerializer.DeserializeFromStream<ScheduleDirect.Token>(responce.Content);
                 if (root.message == "OK")
@@ -816,7 +818,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
             try
             {
-				using (var response = await Get(options, false, null).ConfigureAwait(false))
+                using (var response = await Get(options, false, null).ConfigureAwait(false))
                 {
                     var root = _jsonSerializer.DeserializeFromStream<ScheduleDirect.Lineups>(response);
 
@@ -867,6 +869,75 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
         public Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string country, string location)
         {
             return GetHeadends(info, country, location, CancellationToken.None);
+        }
+
+        public async Task<List<ChannelInfo>> GetChannels(ListingsProviderInfo info, CancellationToken cancellationToken)
+        {
+            var listingsId = info.ListingsId;
+            if (string.IsNullOrWhiteSpace(listingsId))
+            {
+                throw new Exception("ListingsId required");
+            }
+
+            await AddMetadata(info, new List<ChannelInfo>(), cancellationToken).ConfigureAwait(false);
+
+            var token = await GetToken(info, cancellationToken);
+
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                throw new Exception("token required");
+            }
+
+            var httpOptions = new HttpRequestOptions()
+            {
+                Url = ApiUrl + "/lineups/" + listingsId,
+                UserAgent = UserAgent,
+                CancellationToken = cancellationToken,
+                LogErrorResponseBody = true,
+                // The data can be large so give it some extra time
+                TimeoutMs = 60000
+            };
+
+            httpOptions.RequestHeaders["token"] = token;
+
+            var list = new List<ChannelInfo>();
+
+            using (var response = await Get(httpOptions, true, info).ConfigureAwait(false))
+            {
+                var root = _jsonSerializer.DeserializeFromStream<ScheduleDirect.Channel>(response);
+                _logger.Info("Found " + root.map.Count + " channels on the lineup on ScheduleDirect");
+                _logger.Info("Mapping Stations to Channel");
+                foreach (ScheduleDirect.Map map in root.map)
+                {
+                    var channelNumber = map.logicalChannelNumber;
+
+                    if (string.IsNullOrWhiteSpace(channelNumber))
+                    {
+                        channelNumber = map.channel;
+                    }
+                    if (string.IsNullOrWhiteSpace(channelNumber))
+                    {
+                        channelNumber = map.atscMajor + "." + map.atscMinor;
+                    }
+                    channelNumber = channelNumber.TrimStart('0');
+
+                    var name = channelNumber;
+                    var station = GetStation(listingsId, channelNumber, null);
+
+                    if (station != null)
+                    {
+                        name = station.name;
+                    }
+
+                    list.Add(new ChannelInfo
+                    {
+                        Number = channelNumber,
+                        Name = name
+                    });
+                }
+            }
+
+            return list;
         }
 
         public class ScheduleDirect

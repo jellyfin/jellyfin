@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define([], function () {
 
     function renderItems(page, item) {
 
@@ -79,7 +79,7 @@
             html += '<h1 class="listHeader" style="display:inline-block;vertical-align:middle;">';
             html += section.name;
             html += '</h1>';
-            html += '<a href="#" class="clearLink hide" style="margin-left:1em;vertical-align:middle;"><paper-button raised class="more mini noIcon">' + Globalize.translate('ButtonMore') + '</paper-button></a>';
+            html += '<a href="#" class="clearLink hide" style="margin-left:1em;vertical-align:middle;"><button is="emby-button" type="button" class="raised more mini noIcon">' + Globalize.translate('ButtonMore') + '</button></a>';
             html += '</div>';
 
             html += '<div class="itemsContainer">';
@@ -256,7 +256,7 @@
             var itemsContainer = element.querySelector('.itemsContainer');
             itemsContainer.innerHTML = html;
 
-            $(itemsContainer).createCardMenus();
+            LibraryBrowser.createCardMenus(itemsContainer);
             ImageLoader.lazyChildren(itemsContainer);
         });
     }
@@ -302,7 +302,7 @@
             CollapseBoxSetItems: false
         };
 
-        query = $.extend(query, options || {});
+        query = Object.assign(query, options || {});
 
         if (query.IncludeItemTypes == "Audio") {
             query.SortBy = "AlbumArtist,Album,SortName";

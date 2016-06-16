@@ -1,4 +1,4 @@
-﻿define(['datetime'], function (datetime) {
+﻿define(['datetime', 'jQuery'], function (datetime, $) {
 
     function renderNoHealthAlertsMessage(page) {
 
@@ -1313,29 +1313,24 @@
 
     })(jQuery, document, window);
 
-    (function () {
+    pageClassOn('pageshow', "type-interior", function () {
 
-        $(document).on('pageshow', ".type-interior", function () {
+        var page = this;
 
-            var page = this;
+        Dashboard.getPluginSecurityInfo().then(function (pluginSecurityInfo) {
 
-            Dashboard.getPluginSecurityInfo().then(function (pluginSecurityInfo) {
+            if (!page.querySelector('.customSupporterPromotion')) {
 
-                if (!$('.customSupporterPromotion', page).length) {
-                    $('.supporterPromotion', page).remove();
+                $('.supporterPromotion', page).remove();
 
-                    if (!pluginSecurityInfo.IsMBSupporter && AppInfo.enableSupporterMembership) {
+                if (!pluginSecurityInfo.IsMBSupporter && AppInfo.enableSupporterMembership) {
 
-                        var html = '<div class="supporterPromotion"><a class="clearLink" href="http://emby.media/premiere" target="_blank"><paper-button raised class="block" style="text-transform:none;background-color:#52B54B;color:#fff;"><div>' + Globalize.translate('HeaderSupportTheTeam') + '</div><div style="font-weight:normal;margin-top:5px;">' + Globalize.translate('TextEnjoyBonusFeatures') + '</div></paper-button></a></div>';
+                    var html = '<div class="supporterPromotionContainer"><div class="supporterPromotion"><a class="clearLink" href="http://emby.media/premiere" target="_blank"><button is="emby-button" type="button" class="raised block" style="text-transform:none;background-color:#52B54B;color:#fff;"><div>' + Globalize.translate('HeaderSupportTheTeam') + '</div><div style="font-weight:normal;margin-top:5px;">' + Globalize.translate('TextEnjoyBonusFeatures') + '</div></button></a></div></div>';
 
-                        $('.content-primary', page).append(html);
-                    }
+                    page.querySelector('.content-primary').insertAdjacentHTML('afterbegin', html);
                 }
-
-            });
-
+            }
         });
 
-    })();
-
+    });
 });

@@ -13,7 +13,7 @@
         <div id="resumableSection" class="homePageSection">
             <div>
                 <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderResume}</h1>
-                <paper-button raised class="submit mini categorySyncButton" data-category="Resume"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
+                <button is="emby-button" type="button" class="raised submit mini categorySyncButton" data-category="Resume"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></button>
             </div>
 
             <div id="resumableItems" class="itemsContainer noautoinit">
@@ -23,7 +23,7 @@
         <div class="homePageSection">
             <div>
                 <h1 class="listHeader nextUpHeader" style="display: inline-block; vertical-align: middle;">${HeaderNextUp}</h1>
-                <paper-button raised class="submit mini categorySyncButton" data-category="NextUp"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
+                <button is="emby-button" type="button" class="raised submit mini categorySyncButton" data-category="NextUp"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></button>
             </div>
             <div id="nextUpItems" class="itemsContainer">
             </div>
@@ -34,7 +34,7 @@
         <div class="homePageSection">
             <div>
                 <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderLatestEpisodes}</h1>
-                <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
+                <button is="emby-button" type="button" class="raised submit mini categorySyncButton" data-category="Latest"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></button>
             </div>
             <div id="latestEpisodes" class="itemsContainer">
             </div>
@@ -51,26 +51,24 @@
         </div>
     </div>
     <div class="pageTabContent ehsContent" id="seriesTab" data-index="3">
-        <div style="text-align: center;padding:.7em 0;">
-            <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
-                <div class="paging"></div>
-                <button is="paper-icon-button-light" class="btnSelectView" title="${ButtonSelectView}"><iron-icon icon="view-comfy"></iron-icon></button>
-                <button is="paper-icon-button-light" class="btnSort" title="${ButtonSort}"><iron-icon icon="sort-by-alpha"></iron-icon></button>
-                <button is="paper-icon-button-light" class="btnFilter" title="${ButtonFilter}"><iron-icon icon="filter-list"></iron-icon></button>
-            </div>
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+            <button is="paper-icon-button-light" class="btnSelectView" title="${ButtonSelectView}"><iron-icon icon="view-comfy"></iron-icon></button>
+            <button is="paper-icon-button-light" class="btnSort" title="${ButtonSort}"><iron-icon icon="sort-by-alpha"></iron-icon></button>
+            <button is="paper-icon-button-light" class="btnFilter" title="${ButtonFilter}"><iron-icon icon="filter-list"></iron-icon></button>
         </div>
 
-        <div class="alphabetPicker">
+        <div class="alphaPicker alphabetPicker vertical">
         </div>
 
-        <div class="itemsContainer">
+        <div class="itemsContainer itemsContainerWithAlphaPicker">
         </div>
-        <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
             <div class="paging"></div>
         </div>
     </div>
     <div class="pageTabContent ehsContent" id="episodesTab" data-index="4">
-        <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
             <div class="paging"></div>
             <button is="paper-icon-button-light" class="btnSelectView" title="${ButtonSelectView}"><iron-icon icon="view-comfy"></iron-icon></button>
             <button is="paper-icon-button-light" class="btnSort" title="${ButtonSort}"><iron-icon icon="sort-by-alpha"></iron-icon></button>
@@ -78,7 +76,7 @@
         </div>
         <div class="itemsContainer">
         </div>
-        <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
             <div class="paging"></div>
         </div>
     </div>

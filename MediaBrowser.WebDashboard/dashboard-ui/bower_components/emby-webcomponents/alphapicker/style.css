@@ -1,0 +1,52 @@
+.alphaPicker {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.alphaPickerRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+}
+
+.alphaPicker.vertical .alphaPickerRow {
+    flex-direction: column;
+}
+
+button.alphaPickerButton {
+    min-width: initial;
+    margin: 0;
+    padding: .1em .4em !important;
+    width: auto;
+    border-radius: .1em;
+    font-weight: normal;
+    opacity: .25;
+}
+
+.vertical .alphaPickerButton {
+    padding: .25em .4em !important;
+}
+
+.layout-desktop .alphaPickerButton {
+    opacity: .7;
+}
+
+[is=paper-icon-button-light].alphaPickerButton i {
+    width: 3.3vh;
+    height: 3.3vh;
+    font-size: 3.3vh;
+}
+
+.alphaPickerButton.selected {
+    color: #000;
+    background-color: #bbb;
+    opacity: 1;
+}
+
+.layout-tv .alphaPickerButton:focus {
+    background-color: #52B54B;
+    opacity: 1;
+    color: #fff;
+}

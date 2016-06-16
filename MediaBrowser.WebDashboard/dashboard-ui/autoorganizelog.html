@@ -2,18 +2,15 @@
     <div data-role="content">
         <div class="content-primary">
 
-            <div style="margin: -25px 0 1em; text-align: right;">
-                <div class="listTopPaging" style="float: left; position: relative; top: 15px;">
-                </div>
+            <div>
 
-                <div style="float: right; position: relative; top: 15px;margin-top: -5px;display:none;" class="organizeTaskPanel">
-                    <paper-button type="button" class="btnClearLog" raised style="display: inline-block;"><iron-icon icon="clear-all"></iron-icon><span>${ButtonClear}</span></paper-button>
-                    <paper-button type="button" class="btnOrganize" raised><iron-icon icon="check"></iron-icon><span>${ButtonOrganize}</span></paper-button>
-                    <progress max="100" min="0" style="width:100px;display:none;" class="organizeProgress"></progress>
+                <div style="text-align:right;" class="organizeTaskPanel hide">
+                    <button is="emby-button" type="button" class="btnClearLog raised subdued"><iron-icon icon="clear-all"></iron-icon><span>${ButtonClear}</span></button>
+                    <button is="emby-button" type="button" class="btnOrganize raised subdued"><iron-icon icon="check"></iron-icon><span>${ButtonOrganize}</span></button>
+                    <progress max="100" min="0" style="width:100px;" class="organizeProgress"></progress>
                 </div>
-                <br />
-
-                <div style="clear: both;"></div>
+                <div class="listTopPaging">
+                </div>
             </div>
             <table data-role="table" data-mode="reflow" class="tblOrganizationResults stripedTable ui-responsive table-stroke">
                 <thead>

@@ -1,17 +1,18 @@
-define(['browser'], function (browser) {
+define(['browser', 'css!./viewcontainer-lite'], function (browser) {
 
-    var allPages = document.querySelectorAll('.mainAnimatedPage');
+    var mainAnimatedPages = document.querySelector('.mainAnimatedPages');
+    var allPages = [];
     var currentUrls = [];
-    var pageContainerCount = allPages.length;
-    var allowAnimation = true;
+    var pageContainerCount = 3;
     var selectedPageIndex = -1;
 
     function enableAnimation() {
 
-        if (!allowAnimation) {
+        if (browser.tv) {
             return false;
         }
-        if (browser.tv) {
+
+        if (browser.operaTv) {
             return false;
         }
 
@@ -26,7 +27,7 @@ define(['browser'], function (browser) {
 
         cancelActiveAnimations();
 
-        var selected = getSelectedIndex(allPages);
+        var selected = selectedPageIndex;
         var previousAnimatable = selected == -1 ? null : allPages[selected];
         var pageIndex = selected + 1;
 
@@ -35,22 +36,25 @@ define(['browser'], function (browser) {
         }
 
         var view = document.createElement('div');
-        view.classList.add('page-view');
+
         if (options.type) {
             view.setAttribute('data-type', options.type);
         }
         view.innerHTML = options.view;
 
-        var animatable = allPages[pageIndex];
+        var currentPage = allPages[pageIndex];
+        var animatable = view;
 
-        var currentPage = animatable.querySelector('.page-view');
+        view.classList.add('mainAnimatedPage');
 
         if (currentPage) {
             triggerDestroy(currentPage);
-            animatable.replaceChild(view, currentPage);
+            mainAnimatedPages.replaceChild(view, currentPage);
         } else {
-            animatable.appendChild(view);
+            mainAnimatedPages.appendChild(view);
         }
+
+        allPages[pageIndex] = view;
 
         if (onBeforeChange) {
             onBeforeChange(view, false, options);
@@ -101,12 +105,6 @@ define(['browser'], function (browser) {
             }
         }
 
-        return nullAnimation(newAnimatedPage, oldAnimatedPage, transition, isBack);
-    }
-
-    function nullAnimation(newAnimatedPage, oldAnimatedPage, transition, isBack) {
-
-        newAnimatedPage.classList.remove('hide');
         return Promise.resolve();
     }
 
@@ -116,7 +114,8 @@ define(['browser'], function (browser) {
             var timings = {
                 duration: 450,
                 iterations: 1,
-                easing: 'ease-out'
+                easing: 'ease-out',
+                fill: 'both'
             }
 
             var animations = [];
@@ -131,8 +130,6 @@ define(['browser'], function (browser) {
 
                 ], timings));
             }
-
-            newAnimatedPage.classList.remove('hide');
 
             var start = isBack ? '-100%' : '100%';
 
@@ -155,7 +152,8 @@ define(['browser'], function (browser) {
             var timings = {
                 duration: 200,
                 iterations: 1,
-                easing: 'ease-out'
+                easing: 'ease-out',
+                fill: 'both'
             }
 
             var animations = [];
@@ -168,8 +166,6 @@ define(['browser'], function (browser) {
 
                 ], timings));
             }
-
-            newAnimatedPage.classList.remove('hide');
 
             animations.push(newAnimatedPage.animate([
 
@@ -207,19 +203,15 @@ define(['browser'], function (browser) {
         onBeforeChange = fn;
     }
 
-    function getSelectedIndex(allPages) {
-
-        return selectedPageIndex;
-    }
-
     function tryRestoreView(options) {
 
         var url = options.url;
         var index = currentUrls.indexOf(url);
 
         if (index != -1) {
-            var page = allPages[index];
-            var view = page.querySelector(".page-view");
+
+            var animatable = allPages[index];
+            var view = animatable;
 
             if (view) {
 
@@ -229,8 +221,7 @@ define(['browser'], function (browser) {
 
                 cancelActiveAnimations();
 
-                var animatable = allPages[index];
-                var selected = getSelectedIndex(allPages);
+                var selected = selectedPageIndex;
                 var previousAnimatable = selected == -1 ? null : allPages[selected];
 
                 if (onBeforeChange) {
@@ -238,6 +229,8 @@ define(['browser'], function (browser) {
                 }
 
                 beforeAnimate(allPages, index, selected);
+
+                animatable.classList.remove('hide');
 
                 return animate(animatable, previousAnimatable, options.transition, options.isBack).then(function () {
 
@@ -259,7 +252,10 @@ define(['browser'], function (browser) {
 
     function reset() {
 
+        allPages = [];
         currentUrls = [];
+        mainAnimatedPages.innerHTML = '';
+        selectedPageIndex = -1;
     }
 
     if (enableAnimation() && !document.documentElement.animate) {

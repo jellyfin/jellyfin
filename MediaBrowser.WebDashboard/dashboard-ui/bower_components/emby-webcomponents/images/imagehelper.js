@@ -4,6 +4,29 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
     var thresholdY;
     var windowSize;
 
+    var supportsIntersectionObserver = function () {
+
+        if (window.IntersectionObserver) {
+
+            // The api exists in chrome 50 but doesn't work
+            if (browser.chrome) {
+
+                var version = parseInt(browser.version.split('.')[0]);
+                return version >= 51;
+            }
+            return true;
+        }
+
+        return false;
+    }();
+
+    function resetWindowSize() {
+        windowSize = {
+            innerHeight: window.innerHeight,
+            innerWidth: window.innerWidth
+        };
+    }
+
     function resetThresholds() {
 
         var x = screen.availWidth;
@@ -19,25 +42,21 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
         resetWindowSize();
     }
 
-    window.addEventListener("orientationchange", resetThresholds);
-    window.addEventListener('resize', resetThresholds);
-    events.on(layoutManager, 'modechange', resetThresholds);
-
-    var wheelEvent = (document.implementation.hasFeature('Event.wheel', '3.0') ? 'wheel' : 'mousewheel');
-
-    function resetWindowSize() {
-        windowSize = {
-            innerHeight: window.innerHeight,
-            innerWidth: window.innerWidth
-        };
+    if (!supportsIntersectionObserver) {
+        window.addEventListener("orientationchange", resetThresholds);
+        window.addEventListener('resize', resetThresholds);
+        events.on(layoutManager, 'modechange', resetThresholds);
+        resetThresholds();
     }
-    resetThresholds();
 
     function isVisible(elem) {
         return visibleinviewport(elem, true, thresholdX, thresholdY, windowSize);
     }
 
+    var wheelEvent = (document.implementation.hasFeature('Event.wheel', '3.0') ? 'wheel' : 'mousewheel');
     var self = {};
+
+    var enableFade = browser.animate && !browser.mobile && !browser.operaTv;
 
     function fillImage(elem, source, enableEffects) {
 
@@ -45,7 +64,7 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
             source = elem.getAttribute('data-src');
         }
         if (source) {
-            if (self.enableFade && enableEffects !== false) {
+            if (enableFade && !layoutManager.tv && enableEffects !== false) {
                 imageFetcher.loadImage(elem, source).then(fadeIn);
             } else {
                 imageFetcher.loadImage(elem, source);
@@ -56,10 +75,12 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
 
     function fadeIn(elem) {
 
+        var duration = layoutManager.tv ? 160 : 300;
+
         var keyframes = [
           { opacity: '0', offset: 0 },
           { opacity: '1', offset: 1 }];
-        var timing = { duration: 300, iterations: 1 };
+        var timing = { duration: duration, iterations: 1 };
         elem.animate(keyframes, timing);
     }
 
@@ -88,30 +109,28 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
         target.addEventListener(type, handler, optionsOrCapture);
     }
 
-    function unveilWithIntersection(images) {
+    function unveilWithIntersection(images, root) {
 
         var filledCount = 0;
+
+        var options = {};
+
+        //options.rootMargin = "300%";
 
         var observer = new IntersectionObserver(function (entries) {
             for (var j = 0, length2 = entries.length; j < length2; j++) {
                 var entry = entries[j];
-                var intersectionRatio = entry.intersectionRatio;
-                if (intersectionRatio) {
-
-                    var target = entry.target;
-                    observer.unobserve(target);
-                    fillImage(target);
-                    filledCount++;
-                }
+                var target = entry.target;
+                observer.unobserve(target);
+                fillImage(target);
+                filledCount++;
             }
 
             if (filledCount >= images.length) {
-                //observer.disconnect();
+                observer.disconnect();
             }
         },
-        {
-            /* Using default options. Details below */
-        }
+        options
         );
         // Start observing an element
         for (var i = 0, length = images.length; i < length; i++) {
@@ -119,30 +138,14 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
         }
     }
 
-    var supportsIntersectionObserver = function () {
-
-        if (window.IntersectionObserver) {
-
-            // The api exists in chrome 50 but doesn't work
-            if (browser.chrome) {
-
-                var version = parseInt(browser.version.split('.')[0]);
-                return version >= 51;
-            }
-            return true;
-        }
-
-        return false;
-    }();
-
-    function unveilElements(images) {
+    function unveilElements(images, root) {
 
         if (!images.length) {
             return;
         }
 
         if (supportsIntersectionObserver) {
-            unveilWithIntersection(images);
+            unveilWithIntersection(images, root);
             return;
         }
 
@@ -216,7 +219,7 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
 
     function lazyChildren(elem) {
 
-        unveilElements(elem.getElementsByClassName('lazy'));
+        unveilElements(elem.getElementsByClassName('lazy'), elem);
     }
 
     function getPrimaryImageAspectRatio(items) {

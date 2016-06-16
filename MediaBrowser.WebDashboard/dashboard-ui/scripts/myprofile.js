@@ -65,15 +65,6 @@
 
     }
 
-    function processImageChangeResult() {
-
-        Dashboard.hideLoadingMsg();
-
-        var page = $($.mobile.activePage)[0];
-
-        reloadUser(page);
-    }
-
     function onFileReaderError(evt) {
 
         Dashboard.hideLoadingMsg();
@@ -101,11 +92,6 @@
         };
     }
 
-    function onFileReaderOnloadStart(evt) {
-
-        $('#fldUpload', $.mobile.activePage).hide();
-    }
-
     function onFileReaderAbort(evt) {
 
         Dashboard.hideLoadingMsg();
@@ -130,7 +116,9 @@
         var reader = new FileReader();
 
         reader.onerror = onFileReaderError;
-        reader.onloadstart = onFileReaderOnloadStart;
+        reader.onloadstart = function() {
+            $('#fldUpload', page).hide();
+        };
         reader.onabort = onFileReaderAbort;
 
         // Closure to capture the file information.
@@ -147,15 +135,6 @@
         reader.readAsDataURL(file);
     }
 
-    function onImageDrop(e) {
-
-        e.preventDefault();
-
-        setFiles($.mobile.activePage, e.originalEvent.dataTransfer.files);
-
-        return false;
-    }
-
     function onImageDragOver(e) {
 
         e.preventDefault();
@@ -165,41 +144,20 @@
         return false;
     }
 
-    function myProfilePage() {
-
-        var self = this;
-
-        self.onImageSubmit = function () {
-
-            var file = currentFile;
-
-            if (!file) {
-                return false;
-            }
-
-            if (file.type != "image/png" && file.type != "image/jpeg" && file.type != "image/jpeg") {
-                return false;
-            }
-
-            Dashboard.showLoadingMsg();
-
-            var userId = getParameterByName("userId");
-
-            ApiClient.uploadUserImage(userId, 'Primary', file).then(processImageChangeResult);
-
-            return false;
-        };
-    }
-
-    window.MyProfilePage = new myProfilePage();
-
     $(document).on('pageinit', "#userImagePage", function () {
 
         var page = this;
 
         reloadUser(page);
 
-        $("#userImageDropZone", page).on('dragover', onImageDragOver).on('drop', onImageDrop);
+        $("#userImageDropZone", page).on('dragover', onImageDragOver).on('drop', function(e) {
+            
+            e.preventDefault();
+
+            setFiles(page, e.originalEvent.dataTransfer.files);
+
+            return false;
+        });
 
         $('#btnDeleteImage', page).on('click', function () {
 
@@ -211,12 +169,46 @@
 
                     var userId = getParameterByName("userId");
 
-                    ApiClient.deleteUserImage(userId, "primary").then(processImageChangeResult);
+                    ApiClient.deleteUserImage(userId, "primary").then(function () {
+
+                        Dashboard.hideLoadingMsg();
+
+                        reloadUser(page);
+                    });
                 });
             });
         });
 
-        $('.newImageForm').off('submit', MyProfilePage.onImageSubmit).on('submit', MyProfilePage.onImageSubmit);
+        $('.newImageForm').on('submit', function () {
+
+            var self = this;
+
+            self.onImageSubmit = function () {
+
+                var file = currentFile;
+
+                if (!file) {
+                    return false;
+                }
+
+                if (file.type != "image/png" && file.type != "image/jpeg" && file.type != "image/jpeg") {
+                    return false;
+                }
+
+                Dashboard.showLoadingMsg();
+
+                var userId = getParameterByName("userId");
+
+                ApiClient.uploadUserImage(userId, 'Primary', file).then(function () {
+
+                    Dashboard.hideLoadingMsg();
+
+                    reloadUser(page);
+                });
+
+                return false;
+            };
+        });
 
         page.querySelector('#uploadUserImage').addEventListener('change', function (e) {
             setFiles(page, e.target.files);
@@ -349,7 +341,8 @@
 
         self.onSubmit = function () {
 
-            var page = $($.mobile.activePage)[0];
+            var form = this;
+            var page = $(form).parents('.page')[0];
 
             if ($('#txtNewPassword', page).val() != $('#txtNewPasswordConfirm', page).val()) {
 
@@ -370,7 +363,8 @@
 
         self.onLocalAccessSubmit = function () {
 
-            var page = $($.mobile.activePage)[0];
+            var form = this;
+            var page = $(form).parents('.page')[0];
 
             Dashboard.showLoadingMsg();
 

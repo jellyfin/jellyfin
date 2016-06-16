@@ -1,4 +1,4 @@
-﻿<div id="scheduledTaskPage" data-role="page" class="page type-interior scheduledTasksConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Scheduled%20tasks" data-require="jqmpopup,scripts/scheduledtaskpage,paper-input,paper-button">
+﻿<div id="scheduledTaskPage" data-role="page" class="page type-interior scheduledTasksConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Scheduled%20tasks" data-require="jqmpopup,scripts/scheduledtaskpage,paper-input,emby-button">
     <div data-role="content">
         <div class="content-primary">
 
@@ -10,10 +10,10 @@
                     <h1 style="margin: .6em 0; vertical-align: middle; display: inline-block;">
                         ${HeaderTaskTriggers}
                     </h1>
-                    <paper-button raised class="btnInvite submit mini" style="margin-left: 1em;" title="${ButtonAddScheduledTaskTrigger}" onclick="ScheduledTaskPage.showAddTriggerPopup();">
+                    <button is="emby-button" type="button" class="raised btnInvite submit mini" style="margin-left: 1em;" title="${ButtonAddScheduledTaskTrigger}" onclick="ScheduledTaskPage.showAddTriggerPopup();">
                         <iron-icon icon="add"></iron-icon>
                         <span>${ButtonAdd}</span>
-                    </paper-button>
+                    </button>
                 </div>
                 <div class="taskTriggers"></div>
             </div>

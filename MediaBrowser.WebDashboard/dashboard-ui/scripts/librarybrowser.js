@@ -1,4 +1,4 @@
-﻿define(['playlistManager', 'scrollHelper', 'appSettings', 'appStorage', 'apphost', 'datetime', 'jQuery', 'itemHelper', 'mediaInfo', 'scrollStyles'], function (playlistManager, scrollHelper, appSettings, appStorage, appHost, datetime, $, itemHelper, mediaInfo) {
+﻿define(['scrollHelper', 'viewManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'itemHelper', 'mediaInfo', 'scrollStyles'], function (scrollHelper, viewManager, appSettings, appStorage, appHost, datetime, itemHelper, mediaInfo) {
 
     function parentWithClass(elem, className) {
 
@@ -15,7 +15,7 @@
 
     function fadeInRight(elem) {
 
-        var pct = browserInfo.mobile ? '2%' : '0.5%';
+        var pct = browserInfo.mobile ? '2.5%' : '0.5%';
 
         var keyframes = [
           { opacity: '0', transform: 'translate3d(' + pct + ', 0, 0)', offset: 0 },
@@ -186,10 +186,6 @@
             allowSwipe: function (target) {
 
                 function allowSwipeOn(elem) {
-
-                    if (elem.tagName == 'PAPER-SLIDER') {
-                        return false;
-                    }
 
                     if (elem.classList) {
                         return !elem.classList.contains('hiddenScrollX') && !elem.classList.contains('smoothScrollX') && !elem.classList.contains('libraryViewNav');
@@ -381,7 +377,7 @@
 
                 if (window.location.href.toLowerCase().indexOf(url.toLowerCase()) != -1) {
 
-                    afterNavigate.call($.mobile.activePage);
+                    afterNavigate.call(viewManager.currentView());
                 } else {
 
                     pageClassOn('pagebeforeshow', 'page', afterNavigate);
@@ -670,11 +666,11 @@
 
                 var commands = [];
 
-                if (LibraryBrowser.supportsAddingToCollection(item)) {
+                if (itemHelper.supportsAddingToCollection(item)) {
                     commands.push('addtocollection');
                 }
 
-                if (playlistManager.supportsPlaylists(item)) {
+                if (itemHelper.supportsAddingToPlaylist(item)) {
                     commands.push('playlist');
                 }
 
@@ -747,23 +743,6 @@
                 return false;
             },
 
-            refreshItem: function (itemId) {
-
-                ApiClient.refreshItem(itemId, {
-
-                    Recursive: true,
-                    ImageRefreshMode: 'FullRefresh',
-                    MetadataRefreshMode: 'FullRefresh',
-                    ReplaceAllImages: false,
-                    ReplaceAllMetadata: true
-
-                });
-
-                require(['toast'], function (toast) {
-                    toast(Globalize.translate('MessageRefreshQueued'));
-                });
-            },
-
             deleteItems: function (itemIds) {
 
                 return new Promise(function (resolve, reject) {
@@ -802,9 +781,10 @@
 
             editSubtitles: function (itemId) {
 
-                require(['components/subtitleeditor/subtitleeditor'], function (SubtitleEditor) {
+                require(['subtitleEditor'], function (subtitleEditor) {
 
-                    SubtitleEditor.show(itemId);
+                    var serverId = ApiClient.serverInfo().Id;
+                    subtitleEditor.show(itemId, serverId);
                 });
             },
 
@@ -929,15 +909,20 @@
                                     });
                                     break;
                                 case 'addtocollection':
-                                    require(['collectioneditor'], function (collectioneditor) {
+                                    require(['collectionEditor'], function (collectionEditor) {
 
-                                        new collectioneditor().show([itemId]);
+                                        new collectionEditor().show({
+                                            items: [itemId],
+                                            serverId: serverId
+                                        });
                                     });
                                     break;
                                 case 'playlist':
-                                    require(['playlistManager'], function (playlistManager) {
-
-                                        playlistManager.showPanel([itemId]);
+                                    require(['playlistEditor'], function (playlistEditor) {
+                                        new playlistEditor().show({
+                                            items: [itemId],
+                                            serverId: serverId
+                                        });
                                     });
                                     break;
                                 case 'delete':
@@ -978,17 +963,11 @@
                                     LibraryBrowser.identifyItem(itemId);
                                     break;
                                 case 'refresh':
-                                    ApiClient.refreshItem(itemId, {
-
-                                        Recursive: true,
-                                        ImageRefreshMode: 'FullRefresh',
-                                        MetadataRefreshMode: 'FullRefresh',
-                                        ReplaceAllImages: false,
-                                        ReplaceAllMetadata: true
-                                    });
-
-                                    require(['toast'], function (toast) {
-                                        toast(Globalize.translate('MessageRefreshQueued'));
+                                    require(['refreshDialog'], function (refreshDialog) {
+                                        new refreshDialog({
+                                            itemIds: [itemId],
+                                            serverId: serverId
+                                        }).show();
                                     });
                                     break;
                                 default:
@@ -1247,7 +1226,7 @@
 
             getListViewHtml: function (options) {
 
-                require(['paper-icon-item', 'paper-item-body']);
+                require(['paper-icon-item', 'paper-item-body', 'material-icons']);
 
                 var outerHtml = "";
 
@@ -1439,7 +1418,7 @@
                     html += '</a>';
                     html += '</paper-item-body>';
 
-                    html += '<button is="paper-icon-button-light" class="listviewMenuButton"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
+                    html += '<button is="paper-icon-button-light" class="listviewMenuButton autoSize"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button>';
                     html += '<span class="listViewUserDataButtons">';
                     html += LibraryBrowser.getUserDataIconsHtml(item);
                     html += '</span>';
@@ -1558,13 +1537,6 @@
                 return html;
             },
 
-            supportsAddingToCollection: function (item) {
-
-                var invalidTypes = ['Person', 'Genre', 'MusicGenre', 'Studio', 'GameGenre', 'BoxSet', 'Playlist', 'UserView', 'CollectionFolder', 'Audio', 'Episode', 'TvChannel', 'Program', 'MusicAlbum', 'Timer'];
-
-                return !item.CollectionType && invalidTypes.indexOf(item.Type) == -1 && item.MediaType != 'Photo';
-            },
-
             enableSync: function (item, user) {
                 if (AppInfo.isNativeApp && !Dashboard.capabilities().SupportsSync) {
                     return false;
@@ -1601,7 +1573,7 @@
                     itemCommands.push('shuffle');
                 }
 
-                if (playlistManager.supportsPlaylists(item)) {
+                if (itemHelper.supportsAddingToPlaylist(item)) {
 
                     if (options.showRemoveFromPlaylist) {
                         itemCommands.push('removefromplaylist');
@@ -1611,7 +1583,7 @@
                 }
 
                 if (options.showAddToCollection !== false) {
-                    if (LibraryBrowser.supportsAddingToCollection(item)) {
+                    if (itemHelper.supportsAddingToCollection(item)) {
                         itemCommands.push('addtocollection');
                     }
                 }
@@ -1691,8 +1663,12 @@
                         default:
                             break;
                     }
-                    var div = $('<div class="card ' + shape + 'Card"><div class="cardBox"><div class="cardImage"></div></div></div>').appendTo(document.body);
-                    var innerWidth = $('.cardImage', div).innerWidth();
+                    var div = document.createElement('div');
+                    div.classList.add('card');
+                    div.classList.add(shape + 'Card');
+                    div.innerHTML = '<div class="cardBox"><div class="cardImage"></div></div>';
+                    document.body.appendChild(div);
+                    var innerWidth = div.querySelector('.cardImage').clientWidth;
 
                     if (!innerWidth || isNaN(innerWidth)) {
                         cache = false;
@@ -1700,7 +1676,7 @@
                     }
 
                     var width = screenWidth / innerWidth;
-                    div.remove();
+                    div.parentNode.removeChild(div);
                     return Math.floor(width);
                 }
 
@@ -2285,10 +2261,10 @@
                 html += '</a>';
 
                 if (options.overlayPlayButton && !item.IsPlaceHolder && (item.LocationType != 'Virtual' || !item.MediaType || item.Type == 'Program') && item.Type != 'Person') {
-                    html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayPlayButton" onclick="return false;"><iron-icon icon="play-arrow"></iron-icon></button></div>';
+                    html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayPlayButton autoSize" onclick="return false;"><i class="md-icon">play_arrow</i></button></div>';
                 }
                 if (options.overlayMoreButton) {
-                    html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayMoreButton" onclick="return false;"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button></div>';
+                    html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayMoreButton autoSize" onclick="return false;"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button></div>';
                 }
 
                 // cardScalable
@@ -2313,7 +2289,7 @@
 
                 if (options.cardLayout) {
                     html += '<div class="cardButtonContainer">';
-                    html += '<button is="paper-icon-button-light" class="listviewMenuButton btnCardOptions"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
+                    html += '<button is="paper-icon-button-light" class="listviewMenuButton btnCardOptions autoSize"><i class="md-icon">' + AppInfo.moreIcon.replace('-','_') + '</i></button>';
                     html += "</div>";
                 }
 
@@ -2844,19 +2820,18 @@
                         positionTo: button,
                         callback: function (id) {
 
-                            if (dispatchEvent) {
-                                button.dispatchEvent(new CustomEvent('layoutchange', {
-                                    detail: {
-                                        viewStyle: id
-                                    },
-                                    bubbles: true,
-                                    cancelable: false
-                                }));
-                            } else {
-                                // TODO: remove jQuery
-                                require(['jQuery'], function ($) {
+                            button.dispatchEvent(new CustomEvent('layoutchange', {
+                                detail: {
+                                    viewStyle: id
+                                },
+                                bubbles: true,
+                                cancelable: false
+                            }));
+
+                            if (!dispatchEvent) {
+                                if (window.$) {
                                     $(button).trigger('layoutchange', [id]);
-                                });
+                                }
                             }
                         }
                     });
@@ -2899,27 +2874,27 @@
 
                 if (showControls || options.viewButton || options.filterButton || options.sortButton || options.addLayoutButton) {
 
-                    html += '<div style="display:inline-block;margin-left:10px;">';
+                    html += '<div style="display:inline-block;">';
 
                     if (showControls) {
 
-                        html += '<button is="paper-icon-button-light" class="btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '><iron-icon icon="arrow-back"></iron-icon></button>';
-                        html += '<button is="paper-icon-button-light" class="btnNextPage" ' + (startIndex + limit >= totalRecordCount ? 'disabled' : '') + '><iron-icon icon="arrow-forward"></iron-icon></button>';
+                        html += '<button is="paper-icon-button-light" class="btnPreviousPage autoSize" ' + (startIndex ? '' : 'disabled') + '><i class="md-icon">arrow_back</i></button>';
+                        html += '<button is="paper-icon-button-light" class="btnNextPage autoSize" ' + (startIndex + limit >= totalRecordCount ? 'disabled' : '') + '><i class="md-icon">arrow_forward</i></button>';
                     }
 
                     if (options.addLayoutButton) {
 
-                        html += '<button is="paper-icon-button-light" title="' + Globalize.translate('ButtonSelectView') + '" class="btnChangeLayout" data-layouts="' + (options.layouts || '') + '" onclick="LibraryBrowser.showLayoutMenu(this, \'' + (options.currentLayout || '') + '\');"><iron-icon icon="view-comfy"></iron-icon></button>';
+                        html += '<button is="paper-icon-button-light" title="' + Globalize.translate('ButtonSelectView') + '" class="btnChangeLayout autoSize" data-layouts="' + (options.layouts || '') + '" onclick="LibraryBrowser.showLayoutMenu(this, \'' + (options.currentLayout || '') + '\');"><i class="md-icon">view_comfy</i></button>';
                     }
 
                     if (options.sortButton) {
 
-                        html += '<button is="paper-icon-button-light" class="btnSort" title="' + Globalize.translate('ButtonSort') + '"><iron-icon icon="sort-by-alpha"></iron-icon></button>';
+                        html += '<button is="paper-icon-button-light" class="btnSort autoSize" title="' + Globalize.translate('ButtonSort') + '"><i class="md-icon">sort_by_alpha</i></button>';
                     }
 
                     if (options.filterButton) {
 
-                        html += '<button is="paper-icon-button-light" class="btnFilter" title="' + Globalize.translate('ButtonFilter') + '"><iron-icon icon="filter-list"></iron-icon></button>';
+                        html += '<button is="paper-icon-button-light" class="btnFilter autoSize" title="' + Globalize.translate('ButtonFilter') + '"><i class="md-icon">filter_list</i></button>';
                     }
 
                     html += '</div>';
@@ -2964,6 +2939,7 @@
 
                     dlg.classList.add('ui-body-a');
                     dlg.classList.add('background-theme-a');
+                    dlg.classList.add('formDialog');
 
                     var html = '';
 
@@ -3107,22 +3083,17 @@
 
             markFavorite: function (link) {
 
-                // TODO: remove jQuery
-                require(['jQuery'], function ($) {
-                    var id = link.getAttribute('data-itemid');
+                var id = link.getAttribute('data-itemid');
 
-                    var $link = $(link);
+                var markAsFavorite = !link.classList.contains('btnUserItemRatingOn');
 
-                    var markAsFavorite = !$link.hasClass('btnUserItemRatingOn');
+                ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
 
-                    ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
-
-                    if (markAsFavorite) {
-                        $link.addClass('btnUserItemRatingOn');
-                    } else {
-                        $link.removeClass('btnUserItemRatingOn');
-                    }
-                });
+                if (markAsFavorite) {
+                    link.classList.add('btnUserItemRatingOn');
+                } else {
+                    link.classList.remove('btnUserItemRatingOn');
+                }
             },
 
             renderDetailImage: function (elem, item, editable, preferThumb) {

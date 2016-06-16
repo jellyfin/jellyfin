@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'jQuery'], function (libraryBrowser, $) {
+﻿define(['libraryBrowser', 'jQuery', 'alphaPicker'], function (libraryBrowser, $, alphaPicker) {
 
     return function (view, params) {
 
@@ -237,13 +237,6 @@
             });
         }
 
-        function updateFilterControls() {
-
-            var query = getQuery();
-
-            $('.alphabetPicker', view).alphaValue(query.NameStartsWithOrGreater);
-        }
-
         function onListItemClick(e) {
 
             var query = getQuery();
@@ -257,28 +250,39 @@
             }
         }
 
-        $('.alphabetPicker', view).on('alphaselect', function (e, character) {
-
+        var alphaPickerElement = view.querySelector('.alphaPicker');
+        alphaPickerElement.addEventListener('alphavaluechanged', function (e) {
+            var newValue = e.detail.value;
             var query = getQuery();
-            query.NameStartsWithOrGreater = character;
+            query.NameStartsWithOrGreater = newValue;
             query.StartIndex = 0;
-
-            reloadItems(view);
-
-        }).on('alphaclear', function (e) {
-
-            var query = getQuery();
-            query.NameStartsWithOrGreater = '';
-
             reloadItems(view);
         });
 
+        self.alphaPicker = new alphaPicker({
+            element: alphaPickerElement,
+            valueChangeEvent: 'click'
+        });
+
         $(view).on('click', '.mediaItem', onListItemClick);
+
+        function updateFilterControls() {
+
+            var query = getQuery();
+
+            self.alphaPicker.value(query.NameStartsWithOrGreater);
+        }
 
         view.addEventListener('viewbeforeshow', function (e) {
             reloadItems(view);
             updateFilterControls();
             LibraryMenu.setBackButtonVisible(params.context);
+        });
+
+        view.addEventListener('viewdestroy', function (e) {
+            if (self.alphaPicker) {
+                self.alphaPicker.destroy();
+            }
         });
     };
 });

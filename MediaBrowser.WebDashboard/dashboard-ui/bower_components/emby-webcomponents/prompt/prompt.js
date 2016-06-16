@@ -1,10 +1,10 @@
-define(['dialogHelper', 'layoutManager', 'globalize', 'html!./../icons/nav.html', 'css!./style.css', 'paper-button', 'paper-icon-button-light', 'paper-input'], function (dialogHelper, layoutManager, globalize) {
+define(['dialogHelper', 'layoutManager', 'globalize', 'material-icons', 'css!./style.css', 'emby-button', 'paper-icon-button-light', 'emby-input'], function (dialogHelper, layoutManager, globalize) {
 
     function getIcon(icon, cssClass, canFocus, autoFocus) {
 
         var tabIndex = canFocus ? '' : ' tabindex="-1"';
         autoFocus = autoFocus ? ' autofocus' : '';
-        return '<button is="paper-icon-button-light" class="' + cssClass + '"' + tabIndex + autoFocus + '><iron-icon icon="' + icon + '"></iron-icon></button>';
+        return '<button is="paper-icon-button-light" class="autoSize ' + cssClass + '"' + tabIndex + autoFocus + '><i class="md-icon">' + icon + '</i></button>';
     }
 
     return function (options) {
@@ -43,7 +43,7 @@ define(['dialogHelper', 'layoutManager', 'globalize', 'html!./../icons/nav.html'
 
         html += '<div class="promptDialogContent">';
         if (backButton) {
-            html += getIcon('dialog:arrow-back', 'btnPromptExit', false);
+            html += getIcon('arrow_back', 'btnPromptExit', false);
         }
 
         if (options.title) {
@@ -54,21 +54,23 @@ define(['dialogHelper', 'layoutManager', 'globalize', 'html!./../icons/nav.html'
 
         html += '<form>';
 
-        html += '<paper-input autoFocus class="txtPromptValue" value="' + (options.value || '') + '" label="' + (options.label || '') + '"></paper-input>';
+        html += '<div class="inputContainer">';
+        html += '<input is="emby-input" type="text" autoFocus class="txtPromptValue" value="' + (options.value || '') + '" label="' + (options.label || '') + '"/>';
 
         if (options.description) {
             html += '<div class="fieldDescription">';
             html += options.description;
             html += '</div>';
         }
+        html += '</div>';
 
         html += '<br/>';
         if (raisedButtons) {
-            html += '<paper-button raised class="btnSubmit"><iron-icon icon="nav:check"></iron-icon><span>' + globalize.translate('sharedcomponents#ButtonOk') + '</span></paper-button>';
+            html += '<button is="emby-button" type="submit" class="raised btnSubmit"><i class="md-icon">check</i><span>' + globalize.translate('sharedcomponents#ButtonOk') + '</span></button>';
         } else {
             html += '<div class="buttons">';
-            html += '<paper-button class="btnSubmit">' + globalize.translate('sharedcomponents#ButtonOk') + '</paper-button>';
-            html += '<paper-button class="btnPromptExit">' + globalize.translate('sharedcomponents#ButtonCancel') + '</paper-button>';
+            html += '<button is="emby-button" type="submit" class="btnSubmit">' + globalize.translate('sharedcomponents#ButtonOk') + '</button>';
+            html += '<button is="emby-button" type="button" class="btnPromptExit">' + globalize.translate('sharedcomponents#ButtonCancel') + '</button>';
             html += '</div>';
         }
         html += '</form>';
@@ -91,18 +93,6 @@ define(['dialogHelper', 'layoutManager', 'globalize', 'html!./../icons/nav.html'
             }, 300);
 
             return false;
-        });
-
-        dlg.querySelector('.btnSubmit').addEventListener('click', function (e) {
-
-            // Do a fake form submit this the button isn't a real submit button
-            var fakeSubmit = document.createElement('input');
-            fakeSubmit.setAttribute('type', 'submit');
-            fakeSubmit.style.display = 'none';
-            var form = dlg.querySelector('form');
-            form.appendChild(fakeSubmit);
-            fakeSubmit.click();
-            form.removeChild(fakeSubmit);
         });
 
         dlg.querySelector('.btnPromptExit').addEventListener('click', function (e) {

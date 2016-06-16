@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'libraryBrowser', 'scrollStyles'], function ($, libraryBrowser) {
+﻿define(['libraryBrowser', 'scrollStyles'], function (libraryBrowser) {
 
     function getView() {
 
@@ -75,7 +75,7 @@
 
     function loadResume(page, userId, parentId) {
 
-        var screenWidth = $(window).width();
+        var screenWidth = window.innerWidth;
 
         var options = {
 
@@ -83,7 +83,7 @@
             SortOrder: "Descending",
             IncludeItemTypes: "Movie",
             Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 6 : (screenWidth >= 1600 ? 4 : 3),
+            Limit: screenWidth >= 1920 ? 5 : (screenWidth >= 1600 ? 4 : 3),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
             CollapseBoxSetItems: false,
@@ -96,9 +96,9 @@
         ApiClient.getItems(userId, options).then(function (result) {
 
             if (result.Items.length) {
-                $('#resumableSection', page).show();
+                page.querySelector('#resumableSection').classList.remove('hide');
             } else {
-                $('#resumableSection', page).hide();
+                page.querySelector('#resumableSection').classList.add('hide');
             }
 
             var view = getResumeView();
@@ -207,7 +207,7 @@
 
     function loadSuggestions(page, userId, parentId) {
 
-        var screenWidth = $(window).width();
+        var screenWidth = window.innerWidth;
 
         var url = ApiClient.getUrl("Movies/Recommendations", {
 
@@ -223,14 +223,14 @@
 
             if (!recommendations.length) {
 
-                $('.noItemsMessage', page).show();
+                page.querySelector('.noItemsMessage').classList.remove('hide');
                 page.querySelector('.recommendations').innerHTML = '';
                 return;
             }
 
             var html = recommendations.map(getRecommendationHtml).join('');
 
-            $('.noItemsMessage', page).hide();
+            page.querySelector('.noItemsMessage').classList.add('hide');
 
             var recs = page.querySelector('.recommendations');
             recs.innerHTML = html;
@@ -241,13 +241,15 @@
     function initSuggestedTab(page, tabContent) {
 
         var containers = tabContent.querySelectorAll('.itemsContainer');
-        if (enableScrollX()) {
-            $(containers).addClass('hiddenScrollX');
-        } else {
-            $(containers).removeClass('hiddenScrollX');
-        }
+        for (var i = 0, length = containers.length; i < length; i++) {
+            if (enableScrollX()) {
+                containers[i].classList.add('hiddenScrollX');
+            } else {
+                containers[i].classList.remove('hiddenScrollX');
+            }
 
-        $(containers).createCardMenus();
+            libraryBrowser.createCardMenus(containers[i]);
+        }
     }
 
     function loadSuggestionsTab(view, params, tabContent) {
@@ -279,7 +281,7 @@
             loadSuggestionsTab(view, params, tabContent);
         };
 
-        $('.recommendations', view).createCardMenus();
+        libraryBrowser.createCardMenus(view.querySelector('.recommendations'));
 
         var mdlTabs = view.querySelector('.libraryViewNav');
 

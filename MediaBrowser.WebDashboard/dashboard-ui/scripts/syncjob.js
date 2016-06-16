@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'datetime', 'paper-progress', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light', 'paper-button'], function ($, datetime) {
+﻿define(['jQuery', 'datetime', 'paper-progress', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light', 'emby-button'], function ($, datetime) {
 
     function renderJob(page, job, dialogOptions) {
 
@@ -12,9 +12,7 @@
 
         html += '<br/>';
         html += '<br/>';
-        html += '<button type="submit" data-role="none" class="clearButton">';
-        html += '<paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonSave') + '</span></paper-button>';
-        html += '</button>';
+        html += '<button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonSave') + '</span></button>';
 
         $('.syncJobForm', page).html(html);
 
@@ -35,10 +33,7 @@
 
         return function (targetId) {
 
-            var deferred = $.Deferred();
-
-            deferred.resolveWith(null, [dialogOptions]);
-            return deferred.promise();
+            return Promise.resolve(dialogOptions);
         };
     }
 
@@ -369,63 +364,54 @@
 
     }
 
-    function onWebSocketMessage(e, msg) {
+    return function (view, params) {
 
-        var page = $.mobile.activePage;
+        view.querySelector('.syncJobForm').addEventListener('submit', function (e) {
 
-        if (msg.MessageType == "SyncJob") {
-            loadJobInfo(page, msg.Data.Job, msg.Data.JobItems);
-        }
-    }
+            saveJob(view);
+            e.preventDefault();
+            return false;
+        });
 
-    function startListening(page) {
+        function onWebSocketMessage(e, msg) {
 
-        var startParams = "0,1500";
-
-        startParams += "," + getParameterByName('id');
-
-        if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("SyncJobStart", startParams);
+            if (msg.MessageType == "SyncJob") {
+                loadJobInfo(view, msg.Data.Job, msg.Data.JobItems);
+            }
         }
 
-    }
+        function startListening(page) {
 
-    function stopListening() {
+            var startParams = "0,1500";
 
-        if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("SyncJobStop", "");
+            startParams += "," + getParameterByName('id');
+
+            if (ApiClient.isWebSocketOpen()) {
+                ApiClient.sendWebSocketMessage("SyncJobStart", startParams);
+            }
         }
 
-    }
+        function stopListening() {
 
-    function onSubmit() {
-        var form = this;
+            if (ApiClient.isWebSocketOpen()) {
+                ApiClient.sendWebSocketMessage("SyncJobStop", "");
+            }
 
-        var page = $(form).parents('.page');
+        }
 
-        saveJob(page);
+        view.addEventListener('viewshow', function () {
+            var page = this;
+            loadJob(page);
 
-        return false;
-    }
+            startListening(page);
+            Events.on(ApiClient, "websocketmessage", onWebSocketMessage);
+        });
 
-    $(document).on('pageinit', ".syncJobPage", function () {
+        view.addEventListener('viewbeforehide', function () {
 
-        $('.syncJobForm').off('submit', onSubmit).on('submit', onSubmit);
-
-    }).on('pageshow', ".syncJobPage", function () {
-
-        var page = this;
-        loadJob(page);
-
-        startListening(page);
-        Events.on(ApiClient, "websocketmessage", onWebSocketMessage);
-
-    }).on('pagebeforehide', ".syncJobPage", function () {
-
-        var page = this;
-
-        stopListening();
-        Events.off(ApiClient, "websocketmessage", onWebSocketMessage);
-    });
+            stopListening();
+            Events.off(ApiClient, "websocketmessage", onWebSocketMessage);
+        });
+    };
 
 });

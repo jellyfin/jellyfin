@@ -1,4 +1,4 @@
-﻿<div id="userParentalControlPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="jqmpopup,jqmcollapsible,scripts/userparentalcontrol,paper-checkbox,paper-button">
+﻿<div id="userParentalControlPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="jqmpopup,scripts/userparentalcontrol,paper-checkbox,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -27,10 +27,10 @@
                 <div>
                     <div>
                         <h1 style="display:inline-block;vertical-align:middle;">${LabelBlockContentWithTags}</h1>
-                        <paper-button raised class="btnAddBlockedTag submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+                        <button is="emby-button" type="button" class="raised btnAddBlockedTag submit mini" style="margin-left:1em;" title="${ButtonAdd}">
                             <iron-icon icon="add"></iron-icon>
                             <span>${ButtonAdd}</span>
-                        </paper-button>
+                        </button>
                     </div>
                     <div class="blockedTags" style="margin-top:.5em;">
 
@@ -55,9 +55,7 @@
                 </div>
                 <ul data-role="listview" class="ulForm">
                     <li>
-                        <button type="submit" data-role="none" class="clearButton">
-                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                        </button>
+                        <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
                     </li>
                 </ul>
 

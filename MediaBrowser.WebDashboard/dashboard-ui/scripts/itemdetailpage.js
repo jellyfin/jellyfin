@@ -260,36 +260,6 @@
         LibraryBrowser.refreshDetailImageUserData(page.querySelector('.detailImageContainer'), item);
     }
 
-    function onWebSocketMessage(e, data) {
-
-        var msg = data;
-        var page = $($.mobile.activePage)[0];
-
-        if (msg.MessageType === "UserDataChanged") {
-
-            if (currentItem && msg.Data.UserId == Dashboard.getCurrentUserId()) {
-
-                var key = currentItem.UserData.Key;
-
-                var userData = msg.Data.UserDataList.filter(function (u) {
-
-                    return u.Key == key;
-                })[0];
-
-                if (userData) {
-
-                    currentItem.UserData = userData;
-
-                    Dashboard.getCurrentUser().then(function (user) {
-
-                        refreshImage(page, currentItem, user);
-                    });
-                }
-            }
-        }
-
-    }
-
     function setPeopleHeader(page, item) {
 
         if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.MediaType == "Book" || item.MediaType == "Photo") {
@@ -338,7 +308,7 @@
 
             itemsContainer.innerHTML = html;
             ImageLoader.lazyChildren(itemsContainer);
-            $(itemsContainer).createCardMenus();
+            LibraryBrowser.createCardMenus(itemsContainer);
         });
     }
 
@@ -368,7 +338,7 @@
             } else {
                 $('#childrenCollapsible', page).removeClass('hide');
             }
-            renderChildren(page, item, user, context);
+            renderChildren(page, item);
         }
         else {
             $('#childrenCollapsible', page).addClass('hide');
@@ -757,7 +727,10 @@
             });
             html += '</div>';
 
-            $('#similarContent', page).html(html).lazyChildren().createCardMenus();
+            var similarContent = page.querySelector('#similarContent');
+            similarContent.innerHTML = html;
+            ImageLoader.lazyChildren(similarContent);
+            LibraryBrowser.createCardMenus(similarContent);
         });
     }
 
@@ -859,7 +832,7 @@
     }
 
     var _childrenItemsFunction = null;
-    function renderChildren(page, item, user, context) {
+    function renderChildren(page, item) {
 
         _childrenItemsFunction = null;
 
@@ -875,13 +848,14 @@
             query.SortBy = "SortName";
         }
 
+        var userId = Dashboard.getCurrentUserId();
         var promise;
 
         if (item.Type == "Series") {
 
             promise = ApiClient.getSeasons(item.Id, {
 
-                userId: user.Id,
+                userId: userId,
                 Fields: fields
             });
         }
@@ -891,14 +865,14 @@
             promise = ApiClient.getEpisodes(item.SeriesId, {
 
                 seasonId: item.Id,
-                userId: user.Id,
+                userId: userId,
                 Fields: fields
             });
 
             _childrenItemsFunction = getEpisodesFunction(item.SeriesId, {
 
                 seasonId: item.Id,
-                userId: user.Id,
+                userId: userId,
                 Fields: fields
             });
         }
@@ -977,7 +951,7 @@
                 elem.classList.remove('hiddenScrollX');
             }
 
-            $(elem).createCardMenus();
+            LibraryBrowser.createCardMenus(elem);
 
             if (item.Type == "BoxSet") {
 
@@ -989,7 +963,7 @@
                     { name: Globalize.translate('HeaderBooks'), type: 'Book' }
                 ];
 
-                renderCollectionItems(page, item, collectionItemTypes, result.Items, user, context);
+                renderCollectionItems(page, item, collectionItemTypes, result.Items);
             }
         });
 
@@ -1043,12 +1017,13 @@
         });
     }
 
-    function renderCollectionItems(page, parentItem, types, items, user) {
+    function renderCollectionItems(page, parentItem, types, items) {
 
         // First empty out existing content
         page.querySelector('.collectionItems').innerHTML = '';
+        var i, length;
 
-        for (var i = 0, length = types.length; i < length; i++) {
+        for (i = 0, length = types.length; i < length; i++) {
 
             var type = types[i];
 
@@ -1059,7 +1034,7 @@
             });
 
             if (typeItems.length) {
-                renderCollectionItemType(page, parentItem, type, typeItems, user);
+                renderCollectionItemType(page, parentItem, type, typeItems);
             }
         }
 
@@ -1076,17 +1051,20 @@
         });
 
         if (otherTypeItems.length) {
-            renderCollectionItemType(page, parentItem, otherType, otherTypeItems, user);
+            renderCollectionItemType(page, parentItem, otherType, otherTypeItems);
         }
 
         if (!items.length) {
-            renderCollectionItemType(page, parentItem, { name: Globalize.translate('HeaderItems') }, items, user);
+            renderCollectionItemType(page, parentItem, { name: Globalize.translate('HeaderItems') }, items);
         }
 
-        $('.collectionItems .itemsContainer', page).createCardMenus();
+        var containers = page.querySelectorAll('.collectionItems .itemsContainer');
+        for (i = 0, length = containers.length; i < length; i++) {
+            LibraryBrowser.createCardMenus(containers[i]);
+        }
     }
 
-    function renderCollectionItemType(page, parentItem, type, items, user, context) {
+    function renderCollectionItemType(page, parentItem, type, items) {
 
         var html = '';
 
@@ -1109,7 +1087,6 @@
             shape: shape,
             showTitle: true,
             centerText: true,
-            context: context,
             lazy: true,
             showDetailsMenu: true,
             overlayMoreButton: true,
@@ -1121,13 +1098,8 @@
         html += '</div>';
 
         var collectionItems = page.querySelector('.collectionItems');
-        $(collectionItems).append(html);
+        collectionItems.insertAdjacentHTML('beforeend', html);
         ImageLoader.lazyChildren(collectionItems);
-
-        $(collectionItems).off('removefromcollection').on('removefromcollection', function (e, itemId) {
-
-            removeFromCollection(page, parentItem, [itemId], user, context);
-        });
 
         collectionItems.querySelector('.btnAddToCollection').addEventListener('click', function () {
             require(['alert'], function (alert) {
@@ -1139,7 +1111,7 @@
         });
     }
 
-    function removeFromCollection(page, parentItem, itemIds, user, context) {
+    function removeFromCollection(page, parentItem, itemIds) {
 
         Dashboard.showLoadingMsg();
 
@@ -1154,7 +1126,7 @@
 
         }).then(function () {
 
-            renderChildren(page, parentItem, user, context);
+            renderChildren(page, parentItem);
             Dashboard.hideLoadingMsg();
         });
     }
@@ -1252,7 +1224,7 @@
         }
 
         if (limit && result.TotalRecordCount > limit) {
-            html += '<p style="margin: 0;"><paper-button raised class="more moreCriticReviews">' + Globalize.translate('ButtonMore') + '</paper-button></p>';
+            html += '<p style="margin: 0;"><button is="emby-button" type="button" class="raised more moreCriticReviews">' + Globalize.translate('ButtonMore') + '</button></p>';
         }
 
         var criticReviewsContent = page.querySelector('#criticReviewsContent');
@@ -1432,7 +1404,7 @@
         html += '</div>';
 
         if (limit && chapters.length > limit) {
-            html += '<p style="margin: 0;"><paper-button raised class="more moreScenes">' + Globalize.translate('ButtonMore') + '</paper-button></p>';
+            html += '<p style="margin: 0;"><button is="emby-button" type="button" class="raised more moreScenes">' + Globalize.translate('ButtonMore') + '</button></p>';
         }
 
         var scenesContent = page.querySelector('#scenesContent');
@@ -1675,7 +1647,7 @@
         }
 
         if (limit && items.length > limit) {
-            html += '<p style="margin: 0;padding-left:5px;"><paper-button raised class="more ' + moreButtonClass + '">' + Globalize.translate('ButtonMore') + '</paper-button></p>';
+            html += '<p style="margin: 0;padding-left:5px;"><button is="emby-button" type="button" class="raised more ' + moreButtonClass + '">' + Globalize.translate('ButtonMore') + '</button></p>';
         }
 
         return html;
@@ -1763,7 +1735,7 @@
         }
 
         if (limit && casts.length > limit) {
-            html += '<p style="margin: 0;padding-left:5px;"><paper-button raised class="more morePeople">' + Globalize.translate('ButtonMore') + '</paper-button></p>';
+            html += '<p style="margin: 0;padding-left:5px;"><button is="emby-button" type="button" class="raised more morePeople">' + Globalize.translate('ButtonMore') + '</button></p>';
         }
 
         var castContent = page.querySelector('#castContent');
@@ -2113,10 +2085,46 @@
             renderCriticReviews(view, currentItem);
         });
 
+        view.querySelector('.collectionItems').addEventListener('removefromcollection', function (e) {
+
+            var itemId = e.detail.itemId;
+            removeFromCollection(view, currentItem, [itemId]);
+        });
+
+
         //var btnMore = page.querySelectorAll('.btnMoreCommands iron-icon');
         //for (var i = 0, length = btnMore.length; i < length; i++) {
         //    btnMore[i].icon = AppInfo.moreIcon;
         //}
+
+        function onWebSocketMessage(e, data) {
+
+            var msg = data;
+
+            if (msg.MessageType === "UserDataChanged") {
+
+                if (currentItem && msg.Data.UserId == Dashboard.getCurrentUserId()) {
+
+                    var key = currentItem.UserData.Key;
+
+                    var userData = msg.Data.UserDataList.filter(function (u) {
+
+                        return u.Key == key;
+                    })[0];
+
+                    if (userData) {
+
+                        currentItem.UserData = userData;
+
+                        Dashboard.getCurrentUser().then(function (user) {
+
+                            refreshImage(view, currentItem, user);
+                        });
+                    }
+                }
+            }
+
+        }
 
         view.addEventListener('viewbeforeshow', function () {
             var page = this;

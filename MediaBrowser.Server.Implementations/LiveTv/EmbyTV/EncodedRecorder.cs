@@ -44,16 +44,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public string GetOutputPath(MediaSourceInfo mediaSource, string targetFile)
         {
-            if (_liveTvOptions.EnableOriginalAudioWithEncodedRecordings)
-            {
-                // if the audio is aac_latm, stream copying to mp4 will fail
-                var streams = mediaSource.MediaStreams ?? new List<MediaStream>();
-                if (streams.Any(i => i.Type == MediaStreamType.Audio && (i.Codec ?? string.Empty).IndexOf("aac", StringComparison.OrdinalIgnoreCase) != -1))
-                {
-                    return Path.ChangeExtension(targetFile, ".mkv");
-                }
-            }
-
             return Path.ChangeExtension(targetFile, ".mp4");
         }
 
@@ -145,7 +135,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 videoArgs = "-codec:v:0 copy";
             }
 
-            var commandLineArgs = "-fflags +genpts -async 1 -vsync -1 -i \"{0}\" -t {4} -sn {2} -map_metadata -1 -threads 0 {3} -y \"{1}\"";
+            var commandLineArgs = "-fflags +genpts -async 1 -vsync -1 -re -i \"{0}\" -t {4} -sn {2} -map_metadata -1 -threads 0 {3} -y \"{1}\"";
 
             if (mediaSource.ReadAtNativeFramerate)
             {
@@ -159,9 +149,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private string GetAudioArgs(MediaSourceInfo mediaSource)
         {
-            var copyAudio = new[] { "aac", "mp3" };
+            // do not copy aac because many players have difficulty with aac_latm
+            var copyAudio = new[] { "mp3" };
             var mediaStreams = mediaSource.MediaStreams ?? new List<MediaStream>();
-            if (_liveTvOptions.EnableOriginalAudioWithEncodedRecordings || mediaStreams.Any(i => i.Type == MediaStreamType.Audio && copyAudio.Contains(i.Codec, StringComparer.OrdinalIgnoreCase)))
+            var inputAudioCodec = mediaStreams.Where(i => i.Type == MediaStreamType.Audio).Select(i => i.Codec).FirstOrDefault() ?? string.Empty;
+
+            if (copyAudio.Contains(inputAudioCodec, StringComparer.OrdinalIgnoreCase))
+            {
+                return "-codec:a:0 copy";
+            }
+            if (_liveTvOptions.EnableOriginalAudioWithEncodedRecordings && !string.Equals(inputAudioCodec, "aac", StringComparison.OrdinalIgnoreCase))
             {
                 return "-codec:a:0 copy";
             }

@@ -122,7 +122,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 AddIfMissing(excludeItemTypes, typeof(MusicGenre).Name);
             }
 
-            if (query.IncludePeople && (includeItemTypes.Count == 0 || includeItemTypes.Contains("People", StringComparer.OrdinalIgnoreCase)))
+            if (query.IncludePeople && (includeItemTypes.Count == 0 || includeItemTypes.Contains("People", StringComparer.OrdinalIgnoreCase) || includeItemTypes.Contains("Person", StringComparer.OrdinalIgnoreCase)))
             {
                 if (!query.IncludeMedia)
                 {

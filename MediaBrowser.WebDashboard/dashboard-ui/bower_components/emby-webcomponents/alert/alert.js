@@ -1,10 +1,10 @@
-define(['dialogHelper', 'layoutManager', 'globalize', 'html!./../icons/nav.html', 'css!./../prompt/style.css', 'paper-button', 'paper-icon-button-light', 'paper-input'], function (dialogHelper, layoutManager, globalize) {
+define(['dialogHelper', 'layoutManager', 'globalize', 'material-icons', 'css!./../prompt/style.css', 'emby-button', 'paper-icon-button-light'], function (dialogHelper, layoutManager, globalize) {
 
     function getIcon(icon, cssClass, canFocus, autoFocus) {
 
         var tabIndex = canFocus ? '' : ' tabindex="-1"';
         autoFocus = autoFocus ? ' autofocus' : '';
-        return '<button is="paper-icon-button-light" class="' + cssClass + '"' + tabIndex + autoFocus + '><iron-icon icon="' + icon + '"></iron-icon></button>';
+        return '<button is="paper-icon-button-light" class="autoSize ' + cssClass + '"' + tabIndex + autoFocus + '><i class="md-icon">' + icon + '</i></button>';
     }
 
     return function (options) {
@@ -44,7 +44,7 @@ define(['dialogHelper', 'layoutManager', 'globalize', 'html!./../icons/nav.html'
 
         html += '<div class="promptDialogContent">';
         if (backButton) {
-            html += getIcon('dialog:arrow-back', 'btnPromptExit', false);
+            html += getIcon('arrow_back', 'btnPromptExit', false);
         }
 
         if (options.title) {
@@ -72,10 +72,10 @@ define(['dialogHelper', 'layoutManager', 'globalize', 'html!./../icons/nav.html'
 
         var buttonText = options.type == 'error' ? 'sharedcomponents#ButtonOk' : 'sharedcomponents#ButtonGotIt';
         if (raisedButtons) {
-            html += '<paper-button raised class="btnSubmit"><iron-icon icon="nav:check"></iron-icon><span>' + globalize.translate(buttonText) + '</span></paper-button>';
+            html += '<button is="emby-button" type="button" class="raised btnSubmit"><i class="md-icon">check</i><span>' + globalize.translate(buttonText) + '</span></button>';
         } else {
             html += '<div class="buttons" style="text-align:right;">';
-            html += '<paper-button class="btnSubmit">' + globalize.translate(buttonText) + '</paper-button>';
+            html += '<button is="emby-button" type="button" class="btnSubmit">' + globalize.translate(buttonText) + '</button>';
             html += '</div>';
         }
 

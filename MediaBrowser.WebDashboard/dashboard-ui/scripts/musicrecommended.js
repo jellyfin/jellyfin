@@ -2,7 +2,7 @@
 
     function itemsPerRow() {
 
-        var screenWidth = $(window).width();
+        var screenWidth = window.innerWidth;
 
         return screenWidth >= 1920 ? 9 : (screenWidth >= 1200 ? 12 : (screenWidth >= 1000 ? 10 : 8));
     }
@@ -258,7 +258,9 @@
                 $(containers).removeClass('hiddenScrollX');
             }
 
-            $(containers).createCardMenus();
+            for (var i = 0, length = containers.length; i < length; i++) {
+                LibraryBrowser.createCardMenus(containers[i]);
+            }
         };
 
         self.renderTab = function () {

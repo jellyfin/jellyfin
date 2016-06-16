@@ -215,7 +215,7 @@
             return connectUser;
         };
 
-        var minServerVersion = '3.0.5818';
+        var minServerVersion = '3.0.5882';
         self.minServerVersion = function (val) {
 
             if (val) {
@@ -582,12 +582,12 @@
                             "X-MediaBrowser-Token": server.AccessToken
                         }
 
-                    }).then(function(user) {
+                    }).then(function (user) {
 
                         onLocalUserSignIn(server, connectionMode, user);
                         return Promise.resolve();
 
-                    }, function() {
+                    }, function () {
 
                         server.UserId = null;
                         server.AccessToken = null;
@@ -900,7 +900,7 @@
             return null;
         }
 
-        self.connect = function () {
+        self.connect = function (options) {
 
             console.log('Begin connect');
 
@@ -908,7 +908,7 @@
 
                 self.getAvailableServers().then(function (servers) {
 
-                    self.connectToServers(servers).then(function (result) {
+                    self.connectToServers(servers, options).then(function (result) {
 
                         resolve(result);
                     });
@@ -921,7 +921,7 @@
             // TODO: Implement
         };
 
-        self.connectToServers = function (servers) {
+        self.connectToServers = function (servers, options) {
 
             console.log('Begin connectToServers, with ' + servers.length + ' servers');
 
@@ -929,7 +929,7 @@
 
                 if (servers.length == 1) {
 
-                    self.connectToServer(servers[0]).then(function (result) {
+                    self.connectToServer(servers[0], options).then(function (result) {
 
                         if (result.State == ConnectionState.Unavailable) {
 
@@ -948,7 +948,7 @@
                     var firstServer = servers.length ? servers[0] : null;
                     // See if we have any saved credentials and can auto sign in
                     if (firstServer) {
-                        self.connectToServer(firstServer).then(function (result) {
+                        self.connectToServer(firstServer, options).then(function (result) {
 
                             if (result.State == ConnectionState.SignedIn) {
 
@@ -1058,13 +1058,17 @@
 
                 enableRetry = true;
                 timeout = 8000;
+
+                if (stringEqualsIgnoreCase(address, server.ManualAddress)) {
+                    skipTest = true;
+                }
             }
 
             else if (mode == ConnectionMode.Manual) {
 
-                if (stringEqualsIgnoreCase(address, server.LocalAddress) ||
-                        stringEqualsIgnoreCase(address, server.RemoteAddress)) {
-                    skipTest = true;
+                if (stringEqualsIgnoreCase(address, server.LocalAddress)) {
+                    enableRetry = true;
+                    timeout = 8000;
                 }
             }
 
@@ -1112,7 +1116,8 @@
         function onSuccessfulConnection(server, systemInfo, connectionMode, options, resolve) {
 
             var credentials = credentialProvider.credentials();
-            if (credentials.ConnectAccessToken) {
+            options = options || {};
+            if (credentials.ConnectAccessToken && options.enableAutoLogin !== false) {
 
                 ensureConnectUser(credentials).then(function () {
 
@@ -1139,7 +1144,14 @@
 
         function afterConnectValidated(server, credentials, systemInfo, connectionMode, verifyLocalAuthentication, options, resolve) {
 
-            if (verifyLocalAuthentication && server.AccessToken) {
+            options = options || {};
+
+            if (options.enableAutoLogin === false) {
+
+                server.UserId = null;
+                server.AccessToken = null;
+
+            } else if (verifyLocalAuthentication && server.AccessToken && options.enableAutoLogin !== false) {
 
                 validateAuthentication(server, connectionMode).then(function () {
 
@@ -1164,7 +1176,7 @@
             };
 
             result.ApiClient = getOrAddApiClient(server, connectionMode);
-            result.State = server.AccessToken ?
+            result.State = server.AccessToken && options.enableAutoLogin !== false ?
                 ConnectionState.SignedIn :
                 ConnectionState.ServerSignIn;
 
@@ -1180,6 +1192,11 @@
             Events.trigger(self, 'connected', [result]);
         }
 
+        function replaceAll(originalString, strReplace, strWith) {
+            var reg = new RegExp(strReplace, 'ig');
+            return originalString.replace(reg, strWith);
+        }
+
         function normalizeAddress(address) {
 
             // attempt to correct bad input
@@ -1190,13 +1207,13 @@
             }
 
             // Seeing failures in iOS when protocol isn't lowercase
-            address = address.replace('Http:', 'http:');
-            address = address.replace('Https:', 'https:');
+            address = replaceAll(address, 'Http:', 'http:');
+            address = replaceAll(address, 'Https:', 'https:');
 
             return address;
         }
 
-        self.connectToAddress = function (address) {
+        self.connectToAddress = function (address, options) {
 
             return new Promise(function (resolve, reject) {
 
@@ -1222,7 +1239,7 @@
                     };
                     updateServerInfo(server, publicInfo);
 
-                    self.connectToServer(server).then(resolve, onFail);
+                    self.connectToServer(server, options).then(resolve, onFail);
 
                 }, onFail);
 

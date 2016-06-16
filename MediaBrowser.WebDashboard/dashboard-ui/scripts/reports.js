@@ -502,7 +502,6 @@
         //Management
         $('#chkMissingRating', page).checked(query.HasOfficialRating == false).checkboxradio('refresh');
         $('#chkMissingOverview', page).checked(query.HasOverview == false).checkboxradio('refresh');
-        $('#chkYearMismatch', page).checked(query.IsYearMismatched == true).checkboxradio('refresh');
         $('#chkIsLocked', page).checked(query.IsLocked == true).checkboxradio('refresh');
         $('#chkMissingImdbId', page).checked(query.HasImdbId == false).checkboxradio('refresh');
         $('#chkMissingTmdbId', page).checked(query.HasTmdbId == false).checkboxradio('refresh');
@@ -809,14 +808,6 @@
 
             query.StartIndex = 0;
             query.HasTvdbId = this.checked ? false : null;
-
-            reloadItems(page);
-        });
-
-        $('#chkYearMismatch', page).on('change', function () {
-
-            query.StartIndex = 0;
-            query.IsYearMismatched = this.checked ? true : null;
 
             reloadItems(page);
         });

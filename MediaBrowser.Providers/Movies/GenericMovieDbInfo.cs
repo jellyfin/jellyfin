@@ -314,11 +314,7 @@ namespace MediaBrowser.Providers.Movies
 
             if (movieData.keywords != null && movieData.keywords.keywords != null)
             {
-                var hasTags = movie as IHasKeywords;
-                if (hasTags != null)
-                {
-                    hasTags.Keywords = movieData.keywords.keywords.Select(i => i.name).ToList();
-                }
+                movie.Keywords = movieData.keywords.keywords.Select(i => i.name).ToList();
             }
 
             if (movieData.trailers != null && movieData.trailers.youtube != null &&

@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'datetime', 'jQuery', 'paper-slider', 'paper-button'], function (appSettings, datetime, $) {
+﻿define(['appSettings', 'datetime', 'jQuery', 'emby-slider', 'emby-button'], function (appSettings, datetime, $) {
 
     function getDeviceProfile(serverAddress, deviceId, item, startPositionTicks, maxBitrate, mediaSourceId, audioStreamIndex, subtitleStreamIndex) {
 
@@ -260,14 +260,16 @@
                 html += '<div class="fldResumePoint hide">';
                 html += '<p style="margin-top: 0;">' + Globalize.translate('LabelResumePoint') + '</p>';
 
-                html += '<paper-slider pin step=".001" min="0" max="100" value="0" class="playstateSlider" style="display:block;margin-left:-12px;width:98%;"></paper-slider>';
+                html += '<div class="sliderContainer">';
+                html += '<input type="range" is="emby-slider" pin step=".001" min="0" max="100" value="0" class="playstateSlider"/>';
+                html += '</div>';
                 html += '<div class="sliderValue" style="text-align:center;margin:2px 0 4px;">0:00:00</div>';
                 html += '</div>';
 
                 html += '<br/>';
             }
 
-            html += '<paper-button class="block submit btnDone" raised>' + Globalize.translate('ButtonImDone') + '</paper-button>';
+            html += '<button is="emby-button" type="button" class="block submit btnDone" raised>' + Globalize.translate('ButtonImDone') + '</button>';
 
             html += '</div>';
 

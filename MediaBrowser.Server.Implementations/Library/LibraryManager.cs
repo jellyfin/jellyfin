@@ -362,6 +362,10 @@ namespace MediaBrowser.Server.Implementations.Library
                     return;
                 }
             }
+            if (item is Photo)
+            {
+                return;
+            }
             //if (!(item is Folder))
             //{
             //    return;
@@ -1272,18 +1276,9 @@ namespace MediaBrowser.Server.Implementations.Library
             return item;
         }
 
-        public BaseItem GetMemoryItemById(Guid id)
+        private bool EnableCaching
         {
-            if (id == Guid.Empty)
-            {
-                throw new ArgumentNullException("id");
-            }
-
-            BaseItem item;
-
-            LibraryItemsCache.TryGetValue(id, out item);
-
-            return item;
+            get { return true; }
         }
 
         public IEnumerable<BaseItem> GetItemList(InternalItemsQuery query)
@@ -1291,6 +1286,11 @@ namespace MediaBrowser.Server.Implementations.Library
             if (query.User != null)
             {
                 AddUserToQuery(query, query.User);
+            }
+
+            if (!EnableCaching)
+            {
+                return ItemRepository.GetItemList(query);
             }
 
             var result = ItemRepository.GetItemIdsList(query);
@@ -1305,7 +1305,15 @@ namespace MediaBrowser.Server.Implementations.Library
                 AddUserToQuery(query, query.User);
             }
 
-            return ItemRepository.GetItems(query);
+            if (query.EnableTotalRecordCount)
+            {
+                return ItemRepository.GetItems(query);
+            }
+
+            return new QueryResult<BaseItem>
+            {
+                Items = ItemRepository.GetItemList(query).ToArray()
+            };
         }
 
         public List<Guid> GetItemIds(InternalItemsQuery query)
@@ -1323,6 +1331,11 @@ namespace MediaBrowser.Server.Implementations.Library
             var parents = parentIds.Select(i => GetItemById(new Guid(i))).Where(i => i != null).ToList();
 
             SetTopParentIdsOrAncestors(query, parents);
+
+            if (!EnableCaching)
+            {
+                return ItemRepository.GetItemList(query);
+            }
 
             return GetItemIds(query).Select(GetItemById).Where(i => i != null);
         }
@@ -1346,12 +1359,25 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (query.EnableTotalRecordCount)
             {
+                if (!EnableCaching)
+                {
+                    return ItemRepository.GetItems(query);
+                }
+
                 var initialResult = ItemRepository.GetItemIds(query);
 
                 return new QueryResult<BaseItem>
                 {
                     TotalRecordCount = initialResult.TotalRecordCount,
                     Items = initialResult.Items.Select(GetItemById).Where(i => i != null).ToArray()
+                };
+            }
+
+            if (!EnableCaching)
+            {
+                return new QueryResult<BaseItem>
+                {
+                    Items = ItemRepository.GetItemList(query).ToArray()
                 };
             }
 
@@ -2309,7 +2335,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public IEnumerable<Video> FindTrailers(BaseItem owner, List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
-            var files = fileSystemChildren.Where(i => i.IsDirectory)
+            var files = owner.IsInMixedFolder ? new List<FileSystemMetadata>() : fileSystemChildren.Where(i => i.IsDirectory)
                 .Where(i => string.Equals(i.Name, BaseItem.TrailerFolderName, StringComparison.OrdinalIgnoreCase))
                 .SelectMany(i => _fileSystem.GetFiles(i.FullName, false))
                 .ToList();

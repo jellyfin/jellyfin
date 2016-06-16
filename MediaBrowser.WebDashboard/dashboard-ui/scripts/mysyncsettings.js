@@ -2,7 +2,7 @@
 
     function loadForm(page, user) {
 
-        page.querySelector('#txtSyncPath').value = appSettings.syncPath();
+        page.querySelector('#txtSyncPath').value = appSettings.syncPath() || '';
         page.querySelector('#chkWifi').checked = appSettings.syncOnlyOnWifi();
 
         var uploadServers = appSettings.cameraUploadServers();
@@ -10,7 +10,7 @@
         page.querySelector('.uploadServerList').innerHTML = ConnectionManager.getSavedServers().map(function (s) {
 
             var checkedHtml = uploadServers.indexOf(s.Id) == -1 ? '' : ' checked';
-            var html = '<paper-checkbox' + checkedHtml + ' class="chkUploadServer" data-id="' + s.Id + '">' + s.Name + '</paper-checkbox>';
+            var html = '<label><input type="checkbox" is="emby-checkbox"' + checkedHtml + ' class="chkUploadServer" data-id="' + s.Id + '"/><span>' + s.Name + '</span></label>';
 
             return html;
 
@@ -73,11 +73,14 @@
 
         $('form', page).off('submit', onSubmit).on('submit', onSubmit);
 
-        $('.btnSelectSyncPath', page).on('click', function () {
+        $('#btnSelectSyncPath', page).on('click', function () {
 
             require(['nativedirectorychooser'], function () {
                 NativeDirectoryChooser.chooseDirectory().then(function (path) {
-                    $('#txtSyncPath', page).val(path);
+
+                    if (path) {
+                        $('#txtSyncPath', page).val(path);
+                    }
                 });
             });
         });

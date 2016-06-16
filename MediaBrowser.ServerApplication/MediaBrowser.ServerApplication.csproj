@@ -97,6 +97,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\MediaBrowser.Server.Implementations\Persistence\SqliteExtensions.cs">
+      <Link>Native\SqliteExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
@@ -114,7 +117,7 @@
     </Compile>
     <Compile Include="MainStartup.cs" />
     <Compile Include="Native\LnkShortcutHandler.cs" />
-    <Compile Include="Native\SqliteExtensions.cs" />
+    <Compile Include="Native\DbConnector.cs" />
     <Compile Include="Native\Standby.cs" />
     <Compile Include="Native\ServerAuthorization.cs" />
     <Compile Include="Native\WindowsApp.cs" />

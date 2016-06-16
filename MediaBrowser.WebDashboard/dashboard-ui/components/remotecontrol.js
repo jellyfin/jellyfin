@@ -1,4 +1,4 @@
-﻿define(['browser', 'datetime', 'jQuery', 'libraryBrowser', 'paper-fab', 'paper-slider'], function (browser, datetime, $, libraryBrowser) {
+﻿define(['browser', 'datetime', 'jQuery', 'libraryBrowser'], function (browser, datetime, $, libraryBrowser) {
 
     function showSlideshowMenu(context) {
         require(['scripts/slideshow'], function () {
@@ -234,8 +234,6 @@
 
     function hideChapterMenu(page) {
 
-        //$('.chapterMenuOverlay', page).hide();
-        //$('.chapterMenu', page).hide();
     }
 
     return function () {
@@ -698,20 +696,19 @@
                 }
             });
 
-            context.querySelector('.nowPlayingPositionSlider', context)._setPinValue = function (value) {
+            context.querySelector('.nowPlayingPositionSlider', context).getBubbleText = function (value) {
 
                 var state = lastPlayerState;
 
                 if (!state || !state.NowPlayingItem || !state.NowPlayingItem.RunTimeTicks) {
-                    this.pinValue = '--:--';
-                    return;
+                    return '--:--';
                 }
 
                 var ticks = state.NowPlayingItem.RunTimeTicks;
                 ticks /= 100;
                 ticks *= value;
 
-                this.pinValue = datetime.getDisplayRunningTime(ticks);
+                return datetime.getDisplayRunningTime(ticks);
             };
 
             context.addEventListener('click', onContextClick);
@@ -810,7 +807,7 @@
 
             Events.on(MediaController, 'playerchange', onPlayerChange);
 
-            $(context.querySelector('.itemsContainer')).createCardMenus();
+            libraryBrowser.createCardMenus(context.querySelector('.itemsContainer'));
 
         }
 

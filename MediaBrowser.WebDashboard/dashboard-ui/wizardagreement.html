@@ -1,4 +1,4 @@
-﻿<div id="wizardAgreementPage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizardagreement,paper-checkbox,paper-button">
+﻿<div id="wizardAgreementPage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizardagreement,paper-checkbox,emby-button">
 
     <div data-role="content">
 
@@ -18,8 +18,8 @@
                 </div>
 
                 <div class="wizardNavigation">
-                    <button type="button" data-role="none" class="clearButton" style="width:auto;" onclick="history.back();"><paper-button raised class="subdued"><iron-icon icon="arrow-back"></iron-icon><span>${LabelPrevious}</span></paper-button></button>
-                    <button type="submit" data-role="none" class="clearButton" style="width:auto;"><paper-button raised class="accent"><iron-icon icon="arrow-forward"></iron-icon><span>${LabelNext}</span></paper-button></button>
+                    <button is="emby-button" type="button" onclick="history.back();" class="raised subdued"><iron-icon icon="arrow-back"></iron-icon><span>${LabelPrevious}</span></button>
+                    <button is="emby-button" type="submit" class="raised raised accent"><iron-icon icon="arrow-forward"></iron-icon><span>${LabelNext}</span></button>
                 </div>
             </form>
         </div>

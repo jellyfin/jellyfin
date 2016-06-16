@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define([], function () {
 
     var supportsTextTracks;
     var hlsPlayer;
@@ -51,7 +51,7 @@
 
             var elem = e.target;
             elem.removeEventListener('playing', onOneAudioPlaying);
-            $('.mediaPlayerAudioContainer').hide();
+            document.querySelector('.mediaPlayerAudioContainer').classList.add('hide');
         }
 
         function onPlaying() {
@@ -113,7 +113,7 @@
             var requiresNativeControls = !self.enableCustomVideoControls();
 
             if (requiresNativeControls) {
-                $(element).attr('controls', 'controls');
+                element.setAttribute('controls', 'controls');
             }
 
             if (requiresSettingStartTimeOnStart) {
@@ -137,9 +137,9 @@
 
         function createAudioElement() {
 
-            var elem = $('.mediaPlayerAudio');
+            var elem = document.querySelector('.mediaPlayerAudio');
 
-            if (!elem.length) {
+            if (!elem) {
                 var html = '';
 
                 var requiresControls = !MediaPlayer.canAutoPlayAudio();
@@ -147,18 +147,16 @@
                 if (requiresControls) {
                     html += '<div class="mediaPlayerAudioContainer" style="position: fixed;top: 40%;text-align: center;left: 0;right: 0;z-index:999999;"><div class="mediaPlayerAudioContainerInner">';;
                 } else {
-                    html += '<div class="mediaPlayerAudioContainer" style="display:none;padding: 1em;background: #222;"><div class="mediaPlayerAudioContainerInner">';;
+                    html += '<div class="mediaPlayerAudioContainer hide" style="padding: 1em;background: #222;"><div class="mediaPlayerAudioContainerInner">';;
                 }
 
                 html += '<audio class="mediaPlayerAudio" controls>';
                 html += '</audio></div></div>';
 
-                $(document.body).append(html);
+                document.body.insertAdjacentHTML('beforeend', html);
 
-                elem = $('.mediaPlayerAudio');
+                elem = document.querySelector('.mediaPlayerAudio');
             }
-
-            elem = elem[0];
 
             elem.addEventListener('playing', onOneAudioPlaying);
             elem.addEventListener('timeupdate', onTimeUpdate);
@@ -212,9 +210,10 @@
 
             html += '</video>';
 
-            var elem = $('#videoElement', '#videoPlayer').prepend(html);
+            var elem = document.querySelector('#videoPlayer #videoElement');
+            elem.insertAdjacentHTML('afterbegin', html);
 
-            var itemVideo = $('.itemVideo', elem)[0];
+            var itemVideo = elem.querySelector('.itemVideo');
 
             itemVideo.addEventListener('loadedmetadata', onLoadedMetadata);
 
@@ -485,7 +484,9 @@
                 }
 
                 if (elem.tagName.toLowerCase() != 'audio') {
-                    $(elem).remove();
+                    if (elem.parentNode) {
+                        elem.parentNode.removeChild(elem);
+                    }
                 }
             }
         };
@@ -750,7 +751,7 @@
                 setTrackForCustomDisplay(mediaElement, null);
             } else {
                 setTrackForCustomDisplay(mediaElement, track);
-                
+
                 // null these out to disable the player's native display (handled below)
                 streamIndex = -1;
                 track = null;
@@ -816,8 +817,8 @@
             }
 
             var allTracks = mediaElement.textTracks; // get list of tracks
-
-            for (var i = 0; i < allTracks.length; i++) {
+            var i;
+            for (i = 0; i < allTracks.length; i++) {
 
                 var track = allTracks[i];
 
@@ -832,11 +833,13 @@
                 }
             }
 
-            $('track', mediaElement).each(function () {
+            var trackElements = mediaElement.querySelectorAll('track');
+            for (i = 0; i < trackElements.length; i++) {
 
-                this.src = replaceQueryString(this.src, 'startPositionTicks', startPositionTicks);
+                var trackElement = trackElements[i];
 
-            });
+                trackElement.src = replaceQueryString(trackElement.src, 'startPositionTicks', startPositionTicks);
+            }
         };
 
         self.enableCustomVideoControls = function () {

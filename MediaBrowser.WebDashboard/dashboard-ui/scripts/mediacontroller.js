@@ -88,7 +88,7 @@
                 return {
                     name: name,
                     id: t.id,
-                    ironIcon: playerInfo.id == t.id ? 'check' : null
+                    selected: playerInfo.id == t.id
                 };
 
             });
@@ -119,7 +119,7 @@
 
     function showActivePlayerMenu(playerInfo) {
 
-        require(['dialogHelper', 'paper-checkbox', ], function (dialogHelper) {
+        require(['dialogHelper', 'emby-checkbox', 'emby-button'], function (dialogHelper) {
             showActivePlayerMenuInternal(dialogHelper, playerInfo);
         });
     }
@@ -147,10 +147,11 @@
 
         if (playerInfo.supportedCommands.indexOf('DisplayContent') != -1) {
 
-            html += '<div>';
+            html += '<label class="checkboxContainer" style="margin-bottom:0;">';
             var checkedHtml = MediaController.enableDisplayMirroring() ? ' checked' : '';
-            html += '<paper-checkbox class="chkMirror"' + checkedHtml + '>' + Globalize.translate('OptionEnableDisplayMirroring') + '</paper-checkbox>';
-            html += '</div>';
+            html += '<input type="checkbox" is="emby-checkbox" class="chkMirror"' + checkedHtml + '/>';
+            html += '<span>' + Globalize.translate('OptionEnableDisplayMirroring') + '</span>';
+            html += '</label>';
         }
 
         html += '</div>';
@@ -159,11 +160,11 @@
 
         // On small layouts papepr dialog doesn't respond very well. this button isn't that important here anyway.
         if (screen.availWidth >= 600) {
-            html += '<paper-button class="btnRemoteControl">' + Globalize.translate('ButtonRemoteControl') + '</paper-button>';
+            html += '<button is="emby-button" type="button" class="btnRemoteControl">' + Globalize.translate('ButtonRemoteControl') + '</button>';
         }
 
-        html += '<paper-button class="btnDisconnect">' + Globalize.translate('ButtonDisconnect') + '</paper-button>';
-        html += '<paper-button class="btnCancel">' + Globalize.translate('ButtonCancel') + '</paper-button>';
+        html += '<button is="emby-button" type="button" class="btnDisconnect">' + Globalize.translate('ButtonDisconnect') + '</button>';
+        html += '<button is="emby-button" type="button" class="btnCancel">' + Globalize.translate('ButtonCancel') + '</button>';
         html += '</div>';
 
         dlg.innerHTML = html;

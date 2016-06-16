@@ -35,19 +35,8 @@
         $('#selectDateAdded', page).val((config.UseFileCreationTimeForDateAdded ? '1' : '0'));
     }
 
-    function loadTmdbConfig(page, config) {
-
-        $('#chkEnableTmdbUpdates', page).checked(config.EnableAutomaticUpdates);
-    }
-
-    function loadTvdbConfig(page, config) {
-
-        $('#chkEnableTvdbUpdates', page).checked(config.EnableAutomaticUpdates);
-    }
-
     function loadFanartConfig(page, config) {
 
-        $('#chkEnableFanartUpdates', page).checked(config.EnableAutomaticUpdates);
         $('#txtFanartApiKey', page).val(config.UserApiKey || '');
     }
 
@@ -66,30 +55,9 @@
 
         ApiClient.getNamedConfiguration("fanart").then(function (config) {
 
-            config.EnableAutomaticUpdates = $('#chkEnableFanartUpdates', form).checked();
             config.UserApiKey = $('#txtFanartApiKey', form).val();
 
             ApiClient.updateNamedConfiguration("fanart", config);
-        });
-    }
-
-    function saveTvdb(form) {
-
-        ApiClient.getNamedConfiguration("tvdb").then(function (config) {
-
-            config.EnableAutomaticUpdates = $('#chkEnableTvdbUpdates', form).checked();
-
-            ApiClient.updateNamedConfiguration("tvdb", config);
-        });
-    }
-
-    function saveTmdb(form) {
-
-        ApiClient.getNamedConfiguration("themoviedb").then(function (config) {
-
-            config.EnableAutomaticUpdates = $('#chkEnableTmdbUpdates', form).checked();
-
-            ApiClient.updateNamedConfiguration("themoviedb", config);
         });
     }
 
@@ -152,8 +120,6 @@
 
         saveChapters(form);
         saveMetadata(form);
-        saveTmdb(form);
-        saveTvdb(form);
         saveFanart(form);
 
         // Disable default form submission
@@ -167,6 +133,10 @@
             name: Globalize.translate('TabFolders')
         },
          {
+             href: 'librarydisplay.html',
+             name: Globalize.translate('TabDisplay')
+         },
+         {
              href: 'librarypathmapping.html',
              name: Globalize.translate('TabPathSubstitution')
          },
@@ -176,51 +146,11 @@
          }];
     }
 
-    $(document).on('pageshow', "#librarySettingsPage", function () {
+    return function (view, params) {
 
-        LibraryMenu.setTabs('librarysetup', 2, getTabs);
-        Dashboard.showLoadingMsg();
+        var self = this;
 
-        var page = this;
-
-        ApiClient.getServerConfiguration().then(function (config) {
-
-            loadPage(page, config);
-        });
-
-        ApiClient.getNamedConfiguration("metadata").then(function (metadata) {
-
-            loadMetadataConfig(page, metadata);
-        });
-
-        ApiClient.getNamedConfiguration("fanart").then(function (metadata) {
-
-            loadFanartConfig(page, metadata);
-        });
-
-        ApiClient.getNamedConfiguration("themoviedb").then(function (metadata) {
-
-            loadTmdbConfig(page, metadata);
-        });
-
-        ApiClient.getNamedConfiguration("tvdb").then(function (metadata) {
-
-            loadTvdbConfig(page, metadata);
-        });
-
-        var promise1 = ApiClient.getNamedConfiguration("chapters");
-        var promise2 = ApiClient.getJSON(ApiClient.getUrl("Providers/Chapters"));
-
-        Promise.all([promise1, promise2]).then(function (responses) {
-
-            loadChapters(page, responses[0], responses[1]);
-        });
-
-    }).on('pageinit', "#librarySettingsPage", function () {
-
-        var page = this;
-
-        $('#btnSelectMetadataPath', page).on("click.selectDirectory", function () {
+        $('#btnSelectMetadataPath', view).on("click.selectDirectory", function () {
 
             require(['directorybrowser'], function (directoryBrowser) {
 
@@ -230,7 +160,7 @@
 
                     callback: function (path) {
                         if (path) {
-                            $('#txtMetadataPath', page).val(path);
+                            $('#txtMetadataPath', view).val(path);
                         }
                         picker.close();
                     },
@@ -248,11 +178,41 @@
         ApiClient.getSystemInfo().then(function (systemInfo) {
 
             if (systemInfo.SupportsLibraryMonitor) {
-                page.querySelector('.fldLibraryMonitor').classList.remove('hide');
+                view.querySelector('.fldLibraryMonitor').classList.remove('hide');
             } else {
-                page.querySelector('.fldLibraryMonitor').classList.add('hide');
+                view.querySelector('.fldLibraryMonitor').classList.add('hide');
             }
         });
-    });
+
+        view.addEventListener('viewshow', function () {
+            LibraryMenu.setTabs('librarysetup', 3, getTabs);
+            Dashboard.showLoadingMsg();
+
+            var page = this;
+
+            ApiClient.getServerConfiguration().then(function (config) {
+
+                loadPage(page, config);
+            });
+
+            ApiClient.getNamedConfiguration("metadata").then(function (metadata) {
+
+                loadMetadataConfig(page, metadata);
+            });
+
+            ApiClient.getNamedConfiguration("fanart").then(function (metadata) {
+
+                loadFanartConfig(page, metadata);
+            });
+
+            var promise1 = ApiClient.getNamedConfiguration("chapters");
+            var promise2 = ApiClient.getJSON(ApiClient.getUrl("Providers/Chapters"));
+
+            Promise.all([promise1, promise2]).then(function (responses) {
+
+                loadChapters(page, responses[0], responses[1]);
+            });
+        });
+    };
 
 });

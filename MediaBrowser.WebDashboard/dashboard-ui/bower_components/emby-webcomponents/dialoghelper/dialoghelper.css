@@ -10,6 +10,7 @@
     border: 0;
     padding: 0;
     will-change: transform;
+    contain: style;
 }
 
     .dialog.fixedSize {
@@ -29,6 +30,7 @@
         top: 50%;
         left: 50%;
         max-width: 70%;
+        max-height: 84%;
     }
 
 @media all and (min-width: 1280px) and (min-height: 720px) {
@@ -92,7 +94,7 @@
     left: 0 !important;
     right: 0 !important;
     margin: 0 !important;
-    z-index: 999998 !important;
+    z-index: 999999 !important;
     transition: opacity ease-out 0.2s;
 }
 

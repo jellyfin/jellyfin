@@ -151,6 +151,11 @@ define(['browser'], function (browser) {
 
     function getMaxBitrate() {
 
+        // 10mbps
+        if (browser.xboxOne) {
+            return 10000000;
+        }
+
         var userAgent = navigator.userAgent.toLowerCase();
 
         if (browser.tizen) {

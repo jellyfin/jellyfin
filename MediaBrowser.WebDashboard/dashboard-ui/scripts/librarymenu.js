@@ -1,4 +1,4 @@
-﻿define(['imageLoader', 'layoutManager', 'jQuery'], function (imageLoader, layoutManager, $) {
+﻿define(['imageLoader', 'layoutManager', 'viewManager'], function (imageLoader, layoutManager, viewManager) {
 
     var mainDrawerPanel = document.querySelector('.mainDrawerPanel');
 
@@ -33,7 +33,7 @@
 
         html += '<button is="paper-icon-button-light" class="headerButton headerButtonRight headerVoiceButton hide"><iron-icon icon="mic"></iron-icon></button>';
 
-        html += '<button is="paper-icon-button-light" class="headerButton headerButtonRight btnNotifications clearButton"><div class="btnNotificationsInner">0</div></button>';
+        html += '<button is="paper-icon-button-light" class="headerButton headerButtonRight btnNotifications"><div class="btnNotificationsInner">0</div></button>';
 
         html += '<button is="paper-icon-button-light" class="headerButton headerButtonRight headerUserButton"><iron-icon icon="person"></iron-icon></button>';
 
@@ -420,7 +420,7 @@
 
             var pageIds = link.getAttribute('data-pageids');
             if (pageIds) {
-                selected = pageIds.split(',').indexOf($.mobile.activePage.id) != -1
+                selected = pageIds.split(',').indexOf(viewManager.currentView().id) != -1
             }
 
             if (selected) {
@@ -737,18 +737,19 @@
 
             var html = title;
 
-            if (window.$ && $.mobile) {
-                var page = $.mobile.activePage;
-                if (page) {
-                    var helpUrl = page.getAttribute('data-helpurl');
+            var page = viewManager.currentView();
+            if (page) {
+                var helpUrl = page.getAttribute('data-helpurl');
 
-                    if (helpUrl) {
-                        html += '<a href="' + helpUrl + '" target="_blank" class="clearLink" style="margin-left:2em;" title="' + Globalize.translate('ButtonHelp') + '"><paper-button class="accent" style="margin:0;font-weight:normal;font-size:13px;padding:.25em;display:flex;align-items:center;"><iron-icon icon="info"></iron-icon><span>' + Globalize.translate('ButtonHelp') + '</span></paper-button></a>';
-                    }
+                if (helpUrl) {
+                    html += '<a href="' + helpUrl + '" target="_blank" class="clearLink" style="margin-left:2em;" title="' + Globalize.translate('ButtonHelp') + '"><button is="emby-button" type="button" class="accent" style="margin:0;font-weight:normal;font-size:13px;padding:.25em;display:block;align-items:center;"><iron-icon icon="info"></iron-icon><span>' + Globalize.translate('ButtonHelp') + '</span></button></a>';
                 }
             }
 
-            document.querySelector('.libraryMenuButtonText').innerHTML = html;
+            var libraryMenuButtonText = document.querySelector('.libraryMenuButtonText');
+            if (libraryMenuButtonText) {
+                libraryMenuButtonText.innerHTML = html;
+            }
         },
 
         setBackButtonVisible: function (visible) {
@@ -1075,9 +1076,7 @@
         var admin = false;
 
         if (!page) {
-            if (window.$ && window.$.mobile) {
-                page = $.mobile.activePage;
-            }
+            page = viewManager.currentView();
         }
 
         if (page && page.classList.contains('type-interior')) {

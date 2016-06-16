@@ -1,4 +1,4 @@
-﻿<div id="supporterKeyPage" data-role="page" class="page type-interior withTabs" data-require="jqmcollapsible,scripts/supporterkeypage,paper-input,paper-button">
+﻿<div id="supporterKeyPage" data-role="page" class="page type-interior withTabs" data-require="jqmcollapsible,scripts/supporterkeypage,emby-input,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -13,7 +13,7 @@
                     <div class="supporterContainer hide">
                         <br />
                         <a class="clearLink" href="http://emby.media/premiere" target="_blank">
-                            <paper-button raised class="block accent"><iron-icon icon="check"></iron-icon><span>${HeaderBecomeProjectSupporter}</span></paper-button>
+                            <button is="emby-button" type="button" class="raised block accent"><iron-icon icon="check"></iron-icon><span>${HeaderBecomeProjectSupporter}</span></button>
                         </a>
                     </div>
                 </div>
@@ -26,8 +26,8 @@
                     <div style="margin: 3em 0 1em;">
 
                         <h1>${TabSupporterKey}</h1>
-                        <div>
-                            <paper-input type="password" id="txtSupporterKey" label="${LabelSupporterKey}" autocomplete="off"></paper-input>
+                        <div class="inputContainer">
+                            <input is="emby-input" type="password" id="txtSupporterKey" label="${LabelSupporterKey}" autocomplete="off" />
                             <div class="fieldDescription">
                                 ${LabelSupporterKeyHelp}
                             </div>
@@ -44,9 +44,7 @@
 
                     </div>
                     <p>
-                        <button type="submit" id="mbLegacyKeyBtn" class="clearButton">
-                            <paper-button raised class="block submit"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                        </button>
+                        <button is="emby-button" type="submit" id="mbLegacyKeyBtn" class="raised block submit"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
                     </p>
                 </form>
                 <br />
@@ -54,14 +52,12 @@
                     <h3>${HeaderForgotKey}</h3>
                     <div>
                         <form id="lostKeyForm">
-                            <div style="margin: 1em 0;">
-                                <paper-input type="email" required id="txtEmail" label="${LabelEmailAddress}"></paper-input>
+                            <div style="margin: 1em 0;" class="inputContainer">
+                                <input is="emby-input" type="email" required id="txtEmail" label="${LabelEmailAddress}" />
                                 <div class="fieldDescription">${LabelSupporterEmailAddress}</div>
                             </div>
                             <p>
-                                <button type="submit" id="mbRetrieveKeyBtn" class="clearButton">
-                                    <paper-button raised class="block submit"><iron-icon icon="check"></iron-icon><span>${ButtonRetrieveKey}</span></paper-button>
-                                </button>
+                                <button is="emby-button" type="submit" id="mbRetrieveKeyBtn" class="raised block submit"><iron-icon icon="check"></iron-icon><span>${ButtonRetrieveKey}</span></button>
                             </p>
                         </form>
                     </div>
@@ -75,22 +71,20 @@
                             <p>
                                 ${MultipleKeyLinkingHelp}
                             </p>
-                            <div style="margin: 1em 0;">
-                                <paper-input type="email" required id="txtNewEmail" label="${LabelCurrentEmailAddress}"></paper-input>
+                            <div style="margin: 1em 0;" class="inputContainer">
+                                <input is="emby-input" type="email" required id="txtNewEmail" label="${LabelCurrentEmailAddress}" />
                                 <div class="fieldDescription">
                                     ${LabelCurrentEmailAddressHelp}
                                 </div>
                             </div>
-                            <div>
-                                <paper-input type="password" required id="txtNewKey" label="${LabelNewSupporterKey}"></paper-input>
+                            <div class="inputContainer">
+                                <input is="emby-input" type="password" required id="txtNewKey" label="${LabelNewSupporterKey}" />
                             </div>
-                            <div>
-                                <paper-input type="password" required id="txtOldKey" label="${LabelOldSupporterKey}"></paper-input>
+                            <div class="inputContainer">
+                                <input is="emby-input" type="password" required id="txtOldKey" label="${LabelOldSupporterKey}" />
                             </div>
                             <p>
-                                <button type="submit" id="mbLinkKeysBtn" class="clearButton">
-                                    <paper-button raised class="block submit"><iron-icon icon="check"></iron-icon><span>${ButtonLinkKeys}</span></paper-button>
-                                </button>
+                                <button is="emby-button" type="submit" id="mbLinkKeysBtn" class="raised block submit"><iron-icon icon="check"></iron-icon><span>${ButtonLinkKeys}</span></button>
                             </p>
                         </form>
                     </div>

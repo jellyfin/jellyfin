@@ -25,6 +25,7 @@
 
     .formDialog .dialogContentInner {
         padding-bottom: 10vh;
+        padding-top: .5em;
     }
 
 .layout-tv .formDialog .dialogContentInner {
@@ -32,7 +33,7 @@
 }
 
 .formDialog .centeredContent {
-    max-width: 700px;
+    max-width: 740px;
 }
 
 .formDialog .dialogContentTitle {
@@ -43,13 +44,6 @@
 
     .layout-tv .formDialog .centeredContent {
         max-width: 70vw;
-    }
-}
-
-@media all and (max-height: 1400px) {
-
-    .itemOverview {
-        display: none;
     }
 }
 

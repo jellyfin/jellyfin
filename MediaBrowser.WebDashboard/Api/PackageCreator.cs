@@ -274,7 +274,7 @@ namespace MediaBrowser.WebDashboard.Api
                         }
                         var mainFile = File.ReadAllText(GetDashboardResourcePath("index.html"));
 
-                        html = ReplaceFirst(mainFile, "<div class=\"mainAnimatedPage hide\"></div>", "<div class=\"mainAnimatedPage hide\">" + html + "</div>");
+                        html = ReplaceFirst(mainFile, "<div class=\"mainAnimatedPages skinBody\"></div>", "<div class=\"mainAnimatedPages skinBody hide\">" + html + "</div>");
                     }
 
                     if (!string.IsNullOrWhiteSpace(localizationCulture))

@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'alphaPicker'], function ($, alphaPicker) {
 
     return function (view, params, tabContent) {
 
@@ -209,33 +209,21 @@
 
             var query = getQuery(page);
 
-            $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
+            self.alphaPicker.value(query.NameStartsWithOrGreater);
         }
 
-        $('.alphabetPicker', tabContent).on('alphaselect', function (e, character) {
-
+        var alphaPickerElement = tabContent.querySelector('.alphaPicker');
+        alphaPickerElement.addEventListener('alphavaluechanged', function (e) {
+            var newValue = e.detail.value;
             var query = getQuery(tabContent);
-
-            if (query.SortBy.indexOf('AlbumArtist') == -1) {
-                query.NameStartsWithOrGreater = character;
-                query.AlbumArtistStartsWithOrGreater = '';
-            } else {
-                query.AlbumArtistStartsWithOrGreater = character;
-                query.NameStartsWithOrGreater = '';
-            }
-
+            query.NameStartsWithOrGreater = newValue;
             query.StartIndex = 0;
-
             reloadItems(tabContent);
+        });
 
-        }).on('alphaclear', function (e) {
-
-            var query = getQuery(tabContent);
-
-            query.NameStartsWithOrGreater = '';
-            query.AlbumArtistStartsWithOrGreater = '';
-
-            reloadItems(tabContent);
+        self.alphaPicker = new alphaPicker({
+            element: alphaPickerElement,
+            valueChangeEvent: 'click'
         });
 
         self.renderTab = function () {

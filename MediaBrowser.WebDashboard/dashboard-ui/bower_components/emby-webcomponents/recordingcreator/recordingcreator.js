@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'scrollStyles', 'paper-checkbox', 'emby-collapsible', 'paper-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'html!./../icons/mediainfo.html', 'html!./../icons/nav.html'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper) {
+﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'emby-checkbox', 'emby-button', 'emby-collapsible', 'emby-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'material-icons'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper) {
 
     var currentProgramId;
     var currentServerId;
@@ -38,7 +38,9 @@
     }
 
     function hideSeriesRecordingFields(context) {
-        slideUpToHide(context.querySelector('#seriesFields'));
+
+        slideUpToHide(context.querySelector('.seriesFields'));
+        slideUpToHide(context.querySelector('.seriesDays'));
         context.querySelector('.btnSubmit').classList.remove('hide');
         context.querySelector('.supporterContainer').classList.add('hide');
     }
@@ -123,8 +125,19 @@
         });
     }
 
+    function showSeriesDays(context) {
+        
+        if (context.querySelector('#chkAnyTime').checked) {
+            slideUpToHide(context.querySelector('.seriesDays'));
+        } else {
+            slideDownToShow(context.querySelector('.seriesDays'));
+        }
+    }
+
     function showSeriesRecordingFields(context, apiClient) {
-        slideDownToShow(context.querySelector('#seriesFields'));
+
+        slideDownToShow(context.querySelector('.seriesFields'));
+        showSeriesDays(context);
         context.querySelector('.btnSubmit').classList.remove('hide');
 
         getRegistration(currentProgramId, apiClient).then(function (regInfo) {
@@ -195,20 +208,9 @@
         });
     }
 
-    function onPremiereLinkClicked(e) {
-
-        require(['shell'], function (shell) {
-            shell.openUrl('https://emby.media/premiere');
-        });
-        e.preventDefault();
-        return false;
-    }
-
     function init(context) {
 
         var apiClient = connectionManager.getApiClient(currentServerId);
-
-        context.querySelector('.lnkPremiere').addEventListener('click', onPremiereLinkClicked);
 
         context.querySelector('#chkRecordSeries').addEventListener('change', function () {
 
@@ -219,25 +221,14 @@
             }
         });
 
-        context.querySelector('.btnSubmit').addEventListener('click', function () {
-
-            // Do a fake form submit this the button isn't a real submit button
-            var fakeSubmit = document.createElement('input');
-            fakeSubmit.setAttribute('type', 'submit');
-            fakeSubmit.style.display = 'none';
-            var form = context.querySelector('form');
-            form.appendChild(fakeSubmit);
-            fakeSubmit.click();
-
-            // Seeing issues in smart tv browsers where the form does not get submitted if the button is removed prior to the submission actually happening
-            setTimeout(function () {
-                form.removeChild(fakeSubmit);
-            }, 500);
-        });
-
         context.querySelector('.btnCancel').addEventListener('click', function () {
 
             closeDialog(false);
+        });
+
+        context.querySelector('#chkAnyTime').addEventListener('change', function () {
+
+            showSeriesDays(context);
         });
 
         context.querySelector('form', context).addEventListener('submit', onSubmit);
@@ -249,12 +240,6 @@
             } else {
                 supporterButtons[i].classList.add('hide');
             }
-        }
-
-        if (appHost.supports('externalpremium')) {
-            context.querySelector('.btnSupporterForConverting a').href = 'https://emby.media/premiere';
-        } else {
-            context.querySelector('.btnSupporterForConverting a').href = '#';
         }
 
         apiClient.getNamedConfiguration("livetv").then(function (config) {
@@ -330,6 +315,15 @@
         });
     }
 
+    function onSupporterButtonClick() {
+        if (appHost.supports('externalpremium')) {
+            require(['shell'], function (shell) {
+                shell.openUrl('https://emby.media/premiere');
+            });
+        } else {
+        }
+    }
+
     function reload(context, programId) {
 
         loading.show();
@@ -399,6 +393,8 @@
                 if (layoutManager.tv) {
                     scrollHelper.centerFocus.on(dlg.querySelector('.dialogContent'), false);
                 }
+
+                dlg.querySelector('.btnSupporterForConverting').addEventListener('click', onSupporterButtonClick);
 
                 hideSeriesRecordingFields(dlg);
                 init(dlg);

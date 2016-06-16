@@ -1,4 +1,4 @@
-define(['dialogHelper', 'jQuery', 'paper-button'], function (dialogHelper, $) {
+define(['dialogHelper', 'jQuery', 'emby-button'], function (dialogHelper, $) {
 
     var currentRecognition;
     var lang = 'en-US';
@@ -161,12 +161,12 @@ define(['dialogHelper', 'jQuery', 'paper-button'], function (dialogHelper, $) {
         html += '<p>' + Globalize.translate('MessageWeDidntRecognizeCommand') + '</p>';
 
         html += '<br/>';
-        html += '<paper-button raised class="submit block btnRetry"><iron-icon icon="mic"></iron-icon><span>' + Globalize.translate('ButtonTryAgain') + '</span></paper-button>';
+        html += '<button is="emby-button" type="button" class="raised submit block btnRetry"><iron-icon icon="mic"></iron-icon><span>' + Globalize.translate('ButtonTryAgain') + '</span></button>';
         html += '<p class="blockedMessage" style="display:none;">' + Globalize.translate('MessageIfYouBlockedVoice') + '<br/><br/></p>';
 
         html += '</div>';
 
-        html += '<paper-button raised class="block btnCancelVoiceInput" style="background-color:#444;"><iron-icon icon="close"></iron-icon><span>' + Globalize.translate('ButtonCancel') + '</span></paper-button>';
+        html += '<button is="emby-button" type="button" class="raised block btnCancelVoiceInput" style="background-color:#444;"><iron-icon icon="close"></iron-icon><span>' + Globalize.translate('ButtonCancel') + '</span></button>';
 
         // voiceHelpContent
         html += '</div>';
@@ -322,31 +322,6 @@ define(['dialogHelper', 'jQuery', 'paper-button'], function (dialogHelper, $) {
                     showVoiceHelp();
             });
         }
-    }
-
-    /// <summary> Speaks the given text. </summary>
-    /// <param name="text"> The text. </param>
-    /// <returns> . </returns>
-    function speak(text) {
-
-        if (!SpeechSynthesisUtterance) {
-            console.log('API not supported');
-        }
-
-        var utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = lang;
-        utterance.rate = 0.9;
-        utterance.pitch = 1;
-        utterance.addEventListener('end', function () {
-            console.log('Synthesizing completed');
-        });
-
-        utterance.addEventListener('error', function (event) {
-            console.log('Synthesizing error');
-        });
-
-        console.log('Synthesizing the text: ' + text);
-        speechSynthesis.speak(utterance);
     }
 
     /// <summary> An enum constant representing the window. voice input manager option. </summary>

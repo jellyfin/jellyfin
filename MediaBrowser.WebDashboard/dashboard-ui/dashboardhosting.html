@@ -5,50 +5,56 @@
 
             <form class="dashboardHostingForm">
 
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <paper-input type="number" id="txtPortNumber" label="${LabelLocalHttpServerPortNumber}" pattern="[0-9]*" required="required" min="1"></paper-input>
-                        <div class="fieldDescription">${LabelLocalHttpServerPortNumberHelp}</div>
-                    </li>
-                    <li>
-                        <paper-input type="number" label="${LabelPublicHttpPort}" id="txtPublicPort" pattern="[0-9]*" required="required" min="1"></paper-input>
-                        <div class="fieldDescription">${LabelPublicHttpPortHelp}</div>
-                    </li>
-                    <li>
-                        <paper-input type="number" id="txtHttpsPort" pattern="[0-9]*" required="required" min="1" label="${LabelHttpsPort}"></paper-input>
-                        <div class="fieldDescription">${LabelHttpsPortHelp}</div>
-                    </li>
-                    <li>
-                        <paper-input type="number" id="txtPublicHttpsPort" pattern="[0-9]*" required="required" min="1" label="${LabelPublicHttpsPort}"></paper-input>
-                        <div class="fieldDescription">${LabelPublicHttpsPortHelp}</div>
-                    </li>
-                    <li>
-                        <paper-input type="text" id="txtCertificatePath" label="${LabelCustomCertificatePath}" style="display: inline-block; width: 80%;"></paper-input>
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="txtLocalAddress" label="${LabelBindToLocalNetworkAddress}" pattern="((^|\.)((25[0-5])|(2[0-4]\d)|(1\d\d)|([1-9]?\d))){4}$*" />
+                    <div class="fieldDescription">${LabelBindToLocalNetworkAddressHelp}</div>
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="txtPortNumber" label="${LabelLocalHttpServerPortNumber}" pattern="[0-9]*" required="required" min="1" />
+                    <div class="fieldDescription">${LabelLocalHttpServerPortNumberHelp}</div>
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="txtHttpsPort" pattern="[0-9]*" required="required" min="1" label="${LabelHttpsPort}" />
+                    <div class="fieldDescription">${LabelHttpsPortHelp}</div>
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" label="${LabelPublicHttpPort}" id="txtPublicPort" pattern="[0-9]*" required="required" min="1" />
+                    <div class="fieldDescription">${LabelPublicHttpPortHelp}</div>
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="txtPublicHttpsPort" pattern="[0-9]*" required="required" min="1" label="${LabelPublicHttpsPort}" />
+                    <div class="fieldDescription">${LabelPublicHttpsPortHelp}</div>
+                </div>
+
+                <div class="inputContainer">
+                    <div style="display: flex; align-items: center;">
+                        <div style="flex-grow:1;">
+                            <input is="emby-input" type="text" id="txtCertificatePath" label="${LabelCustomCertificatePath}" />
+                        </div>
                         <button type="button" is="paper-icon-button-light" id="btnSelectCertPath" title="${ButtonSelectDirectory}"><iron-icon icon="search"></iron-icon></button>
-                        <div class="fieldDescription">${LabelCustomCertificatePathHelp}</div>
-                    </li>
-                    <li>
-                        <paper-input id="txtDdns" type="text" label="${LabelExternalDDNS}"></paper-input>
-                        <div class="fieldDescription">${LabelExternalDDNSHelp}</div>
-                    </li>
-                    <li>
-                        <paper-checkbox id="chkEnableHttps">${LabelEnableHttps}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableHttpsHelp}</div>
-                    </li>
-                    <li>
-                        <paper-checkbox id="chkEnableUpnp">${LabelEnableAutomaticPortMap}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableAutomaticPortMapHelp}</div>
-                    </li>
-                </ul>
+                    </div>
+                    <div class="fieldDescription">${LabelCustomCertificatePathHelp}</div>
+                </div>
 
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <button type="submit" data-role="none" class="clearButton">
-                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                        </button>
-                    </li>
+                <div class="inputContainer">
+                    <input is="emby-input" id="txtDdns" type="text" label="${LabelExternalDDNS}" />
+                    <div class="fieldDescription">${LabelExternalDDNSHelp}</div>
+                </div>
 
-                </ul>
+                <div>
+                    <paper-checkbox id="chkEnableHttps">${LabelEnableHttps}</paper-checkbox>
+                    <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableHttpsHelp}</div>
+                </div>
+                <div>
+                    <br />
+                    <paper-checkbox id="chkEnableUpnp">${LabelEnableAutomaticPortMap}</paper-checkbox>
+                    <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableAutomaticPortMapHelp}</div>
+                </div>
+                <br />
+                <br />
+                <div>
+                    <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
+                </div>
             </form>
 
         </div>
