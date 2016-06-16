@@ -190,7 +190,6 @@ namespace MediaBrowser.Server.Startup.Common
         internal IItemRepository ItemRepository { get; set; }
         private INotificationsRepository NotificationsRepository { get; set; }
         private IFileOrganizationRepository FileOrganizationRepository { get; set; }
-        private IProviderRepository ProviderRepository { get; set; }
 
         private INotificationManager NotificationManager { get; set; }
         private ISubtitleManager SubtitleManager { get; set; }
@@ -339,7 +338,7 @@ namespace MediaBrowser.Server.Startup.Common
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error in {0}", ex, entryPoint.GetType().Name);
+                    Logger.ErrorException("Error in {0}", ex, entryPoint.GetType().FullName);
                 }
             });
 
@@ -360,12 +359,18 @@ namespace MediaBrowser.Server.Startup.Common
         {
             var migrations = new List<IVersionMigration>
             {
-                new RenameXmlOptions(ServerConfigurationManager)
             };
 
             foreach (var task in migrations)
             {
-                task.Run();
+                try
+                {
+                    task.Run();
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error running migration", ex);
+                }
             }
         }
 
@@ -375,12 +380,22 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 new OmdbEpisodeProviderMigration(ServerConfigurationManager),
                 new MovieDbEpisodeProviderMigration(ServerConfigurationManager),
-                new DbMigration(ServerConfigurationManager, TaskManager)
+                new DbMigration(ServerConfigurationManager, TaskManager),
+                new FolderViewSettingMigration(ServerConfigurationManager, UserManager),
+                new CollectionGroupingMigration(ServerConfigurationManager, UserManager),
+                new CollectionsViewMigration(ServerConfigurationManager, UserManager)
             };
 
             foreach (var task in migrations)
             {
-                task.Run();
+                try
+                {
+                    task.Run();
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error running migration", ex);
+                }
             }
         }
 
@@ -410,17 +425,13 @@ namespace MediaBrowser.Server.Startup.Common
             UserRepository = await GetUserRepository().ConfigureAwait(false);
             RegisterSingleInstance(UserRepository);
 
-            var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LogManager, JsonSerializer, ApplicationPaths);
+            var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LogManager, JsonSerializer, ApplicationPaths, NativeApp.GetDbConnector());
             DisplayPreferencesRepository = displayPreferencesRepo;
             RegisterSingleInstance(DisplayPreferencesRepository);
 
-            var itemRepo = new SqliteItemRepository(ServerConfigurationManager, JsonSerializer, LogManager);
+            var itemRepo = new SqliteItemRepository(ServerConfigurationManager, JsonSerializer, LogManager, NativeApp.GetDbConnector());
             ItemRepository = itemRepo;
             RegisterSingleInstance(ItemRepository);
-
-            var providerRepo = new SqliteProviderInfoRepository(LogManager, ApplicationPaths);
-            ProviderRepository = providerRepo;
-            RegisterSingleInstance(ProviderRepository);
 
             FileOrganizationRepository = await GetFileOrganizationRepository().ConfigureAwait(false);
             RegisterSingleInstance(FileOrganizationRepository);
@@ -543,8 +554,8 @@ namespace MediaBrowser.Server.Startup.Common
 
             RegisterSingleInstance(NativeApp.GetPowerManagement());
 
-            var sharingRepo = new SharingRepository(LogManager, ApplicationPaths);
-            await sharingRepo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
+            var sharingRepo = new SharingRepository(LogManager, ApplicationPaths, NativeApp.GetDbConnector());
+            await sharingRepo.Initialize().ConfigureAwait(false);
             RegisterSingleInstance<ISharingManager>(new SharingManager(sharingRepo, ServerConfigurationManager, LibraryManager, this));
 
             RegisterSingleInstance<ISsdpHandler>(new SsdpHandler(LogManager.GetLogger("SsdpHandler"), ServerConfigurationManager, this));
@@ -560,11 +571,10 @@ namespace MediaBrowser.Server.Startup.Common
 
             SubtitleEncoder = new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager);
             RegisterSingleInstance(SubtitleEncoder);
-            
-            await displayPreferencesRepo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
+
+            await displayPreferencesRepo.Initialize().ConfigureAwait(false);
             await ConfigureUserDataRepositories().ConfigureAwait(false);
-            await itemRepo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
-            await providerRepo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
+            await itemRepo.Initialize().ConfigureAwait(false);
             ((LibraryManager)LibraryManager).ItemRepository = ItemRepository;
             await ConfigureNotificationsRepository().ConfigureAwait(false);
             progress.Report(100);
@@ -661,9 +671,9 @@ namespace MediaBrowser.Server.Startup.Common
         {
             try
             {
-                var repo = new SqliteUserRepository(LogManager, ApplicationPaths, JsonSerializer);
+                var repo = new SqliteUserRepository(LogManager, ApplicationPaths, JsonSerializer, NativeApp.GetDbConnector());
 
-                await repo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
+                await repo.Initialize().ConfigureAwait(false);
 
                 return repo;
             }
@@ -680,36 +690,36 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task{IUserRepository}.</returns>
         private async Task<IFileOrganizationRepository> GetFileOrganizationRepository()
         {
-            var repo = new SqliteFileOrganizationRepository(LogManager, ServerConfigurationManager.ApplicationPaths);
+            var repo = new SqliteFileOrganizationRepository(LogManager, ServerConfigurationManager.ApplicationPaths, NativeApp.GetDbConnector());
 
-            await repo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
+            await repo.Initialize().ConfigureAwait(false);
 
             return repo;
         }
 
         private async Task<IAuthenticationRepository> GetAuthenticationRepository()
         {
-            var repo = new AuthenticationRepository(LogManager, ServerConfigurationManager.ApplicationPaths);
+            var repo = new AuthenticationRepository(LogManager, ServerConfigurationManager.ApplicationPaths, NativeApp.GetDbConnector());
 
-            await repo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
+            await repo.Initialize().ConfigureAwait(false);
 
             return repo;
         }
 
         private async Task<IActivityRepository> GetActivityLogRepository()
         {
-            var repo = new ActivityRepository(LogManager, ServerConfigurationManager.ApplicationPaths);
+            var repo = new ActivityRepository(LogManager, ServerConfigurationManager.ApplicationPaths, NativeApp.GetDbConnector());
 
-            await repo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
+            await repo.Initialize().ConfigureAwait(false);
 
             return repo;
         }
 
         private async Task<ISyncRepository> GetSyncRepository()
         {
-            var repo = new SyncRepository(LogManager, JsonSerializer, ServerConfigurationManager.ApplicationPaths);
+            var repo = new SyncRepository(LogManager, JsonSerializer, ServerConfigurationManager.ApplicationPaths, NativeApp.GetDbConnector());
 
-            await repo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
+            await repo.Initialize().ConfigureAwait(false);
 
             return repo;
         }
@@ -720,9 +730,9 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task.</returns>
         private async Task ConfigureNotificationsRepository()
         {
-            var repo = new SqliteNotificationsRepository(LogManager, ApplicationPaths);
+            var repo = new SqliteNotificationsRepository(LogManager, ApplicationPaths, NativeApp.GetDbConnector());
 
-            await repo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
+            await repo.Initialize().ConfigureAwait(false);
 
             NotificationsRepository = repo;
 
@@ -735,9 +745,9 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task.</returns>
         private async Task ConfigureUserDataRepositories()
         {
-            var repo = new SqliteUserDataRepository(LogManager, ApplicationPaths);
+            var repo = new SqliteUserDataRepository(LogManager, ApplicationPaths, NativeApp.GetDbConnector());
 
-            await repo.Initialize(NativeApp.GetDbConnector()).ConfigureAwait(false);
+            await repo.Initialize().ConfigureAwait(false);
 
             ((UserDataManager)UserDataManager).Repository = repo;
         }
@@ -797,8 +807,6 @@ namespace MediaBrowser.Server.Startup.Common
 
             ProviderManager.AddParts(GetExports<IImageProvider>(),
                                      GetExports<IMetadataService>(),
-                                     GetExports<IItemIdentityProvider>(),
-                                     GetExports<IItemIdentityConverter>(),
                                      GetExports<IMetadataProvider>(),
                                      GetExports<IMetadataSaver>(),
                                      GetExports<IImageSaver>(),
@@ -825,19 +833,57 @@ namespace MediaBrowser.Server.Startup.Common
 
         private string CertificatePath { get; set; }
 
-        private IEnumerable<string> GetUrlPrefixes()
+        private string NormalizeConfiguredLocalAddress(string address)
         {
-            var prefixes = new List<string>
-                {
-                    "http://+:" + ServerConfigurationManager.Configuration.HttpServerPortNumber + "/"
-                };
+            var index = address.Trim('/').IndexOf('/');
 
-            if (!string.IsNullOrWhiteSpace(CertificatePath))
+            if (index != -1)
             {
-                prefixes.Add("https://+:" + ServerConfigurationManager.Configuration.HttpsPortNumber + "/");
+                address = address.Substring(index + 1);
             }
 
-            return prefixes;
+            return address.Trim('/');
+        }
+        private IEnumerable<string> GetUrlPrefixes()
+        {
+            var hosts = ServerConfigurationManager
+                .Configuration
+                .LocalNetworkAddresses
+                .Select(NormalizeConfiguredLocalAddress)
+                .ToList();
+
+            if (hosts.Count == 0)
+            {
+                hosts.Add("+");
+            }
+
+            if (!hosts.Contains("+", StringComparer.OrdinalIgnoreCase))
+            {
+                if (!hosts.Contains("localhost", StringComparer.OrdinalIgnoreCase))
+                {
+                    hosts.Add("localhost");
+                }
+
+                if (!hosts.Contains("127.0.0.1", StringComparer.OrdinalIgnoreCase))
+                {
+                    hosts.Add("127.0.0.1");
+                }
+            }
+
+            return hosts.SelectMany(i =>
+            {
+                var prefixes = new List<string>
+                {
+                    "http://"+i+":" + ServerConfigurationManager.Configuration.HttpServerPortNumber + "/"
+                };
+
+                if (!string.IsNullOrWhiteSpace(CertificatePath))
+                {
+                    prefixes.Add("https://" + i + ":" + ServerConfigurationManager.Configuration.HttpsPortNumber + "/");
+                }
+
+                return prefixes;
+            });
         }
 
         /// <summary>

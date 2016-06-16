@@ -483,6 +483,11 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private async Task ProcessJobItem(SyncJobItem jobItem, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
         {
+            if (jobItem == null)
+            {
+                throw new ArgumentNullException("jobItem");
+            }
+
             var item = _libraryManager.GetItemById(jobItem.ItemId);
             if (item == null)
             {
@@ -748,7 +753,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
-            using (var stream = await _subtitleEncoder.GetSubtitles(streamInfo.ItemId, streamInfo.MediaSourceId, subtitleStreamIndex, subtitleStreamInfo.Format, 0, null, cancellationToken).ConfigureAwait(false))
+            using (var stream = await _subtitleEncoder.GetSubtitles(streamInfo.ItemId, streamInfo.MediaSourceId, subtitleStreamIndex, subtitleStreamInfo.Format, 0, null, false, cancellationToken).ConfigureAwait(false))
             {
                 using (var fs = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                 {

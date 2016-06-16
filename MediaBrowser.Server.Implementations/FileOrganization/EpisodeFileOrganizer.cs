@@ -562,9 +562,10 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                     series = _libraryManager.GetItemList(new Controller.Entities.InternalItemsQuery
                     {
                         IncludeItemTypes = new[] { typeof(Series).Name },
-                        Recursive = true
-                    }).Cast<Series>()
-                    .FirstOrDefault(i => string.Equals(i.Name, info.ItemName, StringComparison.OrdinalIgnoreCase));
+                        Recursive = true,
+                        Name = info.ItemName
+
+                    }).Cast<Series>().FirstOrDefault();
                 }
             }
 

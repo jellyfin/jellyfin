@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 
 namespace MediaBrowser.Common.Net
@@ -15,6 +16,8 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <value>The URL.</value>
         public string Url { get; set; }
+
+        public DecompressionMethods? DecompressionMethod { get; set; }
 
         /// <summary>
         /// Gets or sets the accept header.

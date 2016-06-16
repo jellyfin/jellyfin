@@ -55,8 +55,6 @@ namespace MediaBrowser.Providers.Manager
         private readonly IFileSystem _fileSystem;
 
         private IMetadataService[] _metadataServices = { };
-        private IItemIdentityProvider[] _identityProviders = { };
-        private IItemIdentityConverter[] _identityConverters = { };
         private IMetadataProvider[] _metadataProviders = { };
         private IEnumerable<IMetadataSaver> _savers;
         private IImageSaver[] _imageSavers;
@@ -92,22 +90,17 @@ namespace MediaBrowser.Providers.Manager
         /// </summary>
         /// <param name="imageProviders">The image providers.</param>
         /// <param name="metadataServices">The metadata services.</param>
-        /// <param name="identityProviders">The identity providers.</param>
-        /// <param name="identityConverters">The identity converters.</param>
         /// <param name="metadataProviders">The metadata providers.</param>
         /// <param name="metadataSavers">The metadata savers.</param>
         /// <param name="imageSavers">The image savers.</param>
         /// <param name="externalIds">The external ids.</param>
         public void AddParts(IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices,
-                             IEnumerable<IItemIdentityProvider> identityProviders, IEnumerable<IItemIdentityConverter> identityConverters,
                              IEnumerable<IMetadataProvider> metadataProviders, IEnumerable<IMetadataSaver> metadataSavers,
                              IEnumerable<IImageSaver> imageSavers, IEnumerable<IExternalId> externalIds)
         {
             ImageProviders = imageProviders.ToArray();
 
             _metadataServices = metadataServices.OrderBy(i => i.Order).ToArray();
-            _identityProviders = identityProviders.ToArray();
-            _identityConverters = identityConverters.ToArray();
             _metadataProviders = metadataProviders.ToArray();
             _imageSavers = imageSavers.ToArray();
             _externalIds = externalIds.OrderBy(i => i.Name).ToArray();
@@ -299,18 +292,6 @@ namespace MediaBrowser.Providers.Manager
                 .Where(i => CanRefresh(i, item, currentOptions, includeDisabled, checkIsOwnedItem))
                 .OrderBy(i => GetConfiguredOrder(i, options))
                 .ThenBy(GetDefaultOrder);
-        }
-
-        public IEnumerable<IItemIdentityProvider<TLookupInfo>> GetItemIdentityProviders<TLookupInfo>()
-            where TLookupInfo : ItemLookupInfo
-        {
-            return _identityProviders.OfType<IItemIdentityProvider<TLookupInfo>>();
-        }
-
-        public IEnumerable<IItemIdentityConverter<TLookupInfo>> GetItemIdentityConverters<TLookupInfo>()
-            where TLookupInfo : ItemLookupInfo
-        {
-            return _identityConverters.OfType<IItemIdentityConverter<TLookupInfo>>();
         }
 
         private IEnumerable<IRemoteImageProvider> GetRemoteImageProviders(IHasImages item, bool includeDisabled)
@@ -849,7 +830,7 @@ namespace MediaBrowser.Providers.Manager
             });
         }
 
-        public IEnumerable<ExternalUrl> GetExternalUrls(IHasProviderIds item)
+        public IEnumerable<ExternalUrl> GetExternalUrls(BaseItem item)
         {
             return GetExternalIds(item)
                 .Select(i =>
@@ -872,7 +853,7 @@ namespace MediaBrowser.Providers.Manager
                     Url = string.Format(i.UrlFormatString, value)
                 };
 
-            }).Where(i => i != null);
+            }).Where(i => i != null).Concat(item.GetRelatedUrls());
         }
 
         public IEnumerable<ExternalIdInfo> GetExternalIdInfos(IHasProviderIds item)

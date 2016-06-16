@@ -8,6 +8,7 @@ using MediaBrowser.Model.Querying;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Events;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -385,5 +386,15 @@ namespace MediaBrowser.Controller.LiveTv
         List<NameValuePair> GetSatIniMappings();
 
         Task<List<ChannelInfo>> GetSatChannelScanResult(TunerHostInfo info, CancellationToken cancellationToken);
+
+        Task<List<ChannelInfo>> GetChannelsForListingsProvider(string id, CancellationToken cancellationToken);
+        Task<List<ChannelInfo>> GetChannelsFromListingsProviderData(string id, CancellationToken cancellationToken);
+
+        List<IListingsProvider> ListingProviders { get;}
+
+        event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCancelled;
+        event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCancelled;
+        event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCreated;
+        event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCreated;
     }
 }

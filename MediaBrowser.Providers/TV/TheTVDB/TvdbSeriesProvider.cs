@@ -25,7 +25,7 @@ using CommonIO;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class TvdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IItemIdentityProvider<SeriesInfo>, IHasOrder
+    public class TvdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
     {
         private const string TvdbSeriesOffset = "TvdbSeriesOffset";
         private const string TvdbSeriesOffsetFormat = "{0}-{1}";
@@ -311,11 +311,6 @@ namespace MediaBrowser.Providers.TV
             return null;
         }
 
-        public TvdbOptions GetTvDbOptions()
-        {
-            return _config.GetConfiguration<TvdbOptions>("tvdb");
-        }
-
         internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)
         {
             string id;
@@ -392,27 +387,25 @@ namespace MediaBrowser.Providers.TV
 
                 var seriesXmlFilename = preferredMetadataLanguage + ".xml";
 
-                var automaticUpdatesEnabled = GetTvDbOptions().EnableAutomaticUpdates;
-
                 const int cacheDays = 1;
 
                 var seriesFile = files.FirstOrDefault(i => string.Equals(seriesXmlFilename, i.Name, StringComparison.OrdinalIgnoreCase));
                 // No need to check age if automatic updates are enabled
-                if (seriesFile == null || !seriesFile.Exists || (!automaticUpdatesEnabled && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(seriesFile)).TotalDays > cacheDays))
+                if (seriesFile == null || !seriesFile.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(seriesFile)).TotalDays > cacheDays)
                 {
                     return false;
                 }
 
                 var actorsXml = files.FirstOrDefault(i => string.Equals("actors.xml", i.Name, StringComparison.OrdinalIgnoreCase));
                 // No need to check age if automatic updates are enabled
-                if (actorsXml == null || !actorsXml.Exists || (!automaticUpdatesEnabled && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(actorsXml)).TotalDays > cacheDays))
+                if (actorsXml == null || !actorsXml.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(actorsXml)).TotalDays > cacheDays)
                 {
                     return false;
                 }
 
                 var bannersXml = files.FirstOrDefault(i => string.Equals("banners.xml", i.Name, StringComparison.OrdinalIgnoreCase));
                 // No need to check age if automatic updates are enabled
-                if (bannersXml == null || !bannersXml.Exists || (!automaticUpdatesEnabled && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(bannersXml)).TotalDays > cacheDays))
+                if (bannersXml == null || !bannersXml.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(bannersXml)).TotalDays > cacheDays)
                 {
                     return false;
                 }
@@ -1448,21 +1441,6 @@ namespace MediaBrowser.Providers.TV
                 Url = url,
                 ResourcePool = TvDbResourcePool
             });
-        }
-    }
-
-    public class TvdbConfigStore : IConfigurationFactory
-    {
-        public IEnumerable<ConfigurationStore> GetConfigurations()
-        {
-            return new List<ConfigurationStore>
-            {
-                new ConfigurationStore
-                {
-                     Key = "tvdb",
-                     ConfigurationType = typeof(TvdbOptions)
-                }
-            };
         }
     }
 }

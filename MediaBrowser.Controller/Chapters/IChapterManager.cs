@@ -33,7 +33,7 @@ namespace MediaBrowser.Controller.Chapters
         /// <param name="chapters">The chapters.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveChapters(string itemId, IEnumerable<ChapterInfo> chapters, CancellationToken cancellationToken);
+        Task SaveChapters(string itemId, List<ChapterInfo> chapters, CancellationToken cancellationToken);
 
         /// <summary>
         /// Searches the specified video.

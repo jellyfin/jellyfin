@@ -111,24 +111,6 @@ namespace MediaBrowser.Server.Implementations.TV
                 .Select(i => GetNextUp(i, currentUser))
                 // Include if an episode was found, and either the series is not unwatched or the specific series was requested
                 .Where(i => i.Item1 != null && (!i.Item3 || !string.IsNullOrWhiteSpace(request.SeriesId)))
-                //.OrderByDescending(i =>
-                //{
-                //    var episode = i.Item1;
-
-                //    var seriesUserData = _userDataManager.GetUserData(user, episode.Series);
-
-                //    if (seriesUserData.IsFavorite)
-                //    {
-                //        return 2;
-                //    }
-
-                //    if (seriesUserData.Likes.HasValue)
-                //    {
-                //        return seriesUserData.Likes.Value ? 1 : -1;
-                //    }
-
-                //    return 0;
-                //})
                 .OrderByDescending(i => i.Item2)
                 .ThenByDescending(i => i.Item1.PremiereDate ?? DateTime.MinValue)
                 .Select(i => i.Item1);
@@ -142,52 +124,80 @@ namespace MediaBrowser.Server.Implementations.TV
         /// <returns>Task{Episode}.</returns>
         private Tuple<Episode, DateTime, bool> GetNextUp(Series series, User user)
         {
-            // Get them in display order, then reverse
-            var allEpisodes = series.GetSeasons(user, true, true)
-                .Where(i => !i.IndexNumber.HasValue || i.IndexNumber.Value != 0)
-                .SelectMany(i => i.GetEpisodes(user))
-                .Reverse()
-                .ToList();
-
-            Episode lastWatched = null;
-            var lastWatchedDate = DateTime.MinValue;
-            Episode nextUp = null;
-
-            var includeMissing = user.Configuration.DisplayMissingEpisodes;
-
-            // Go back starting with the most recent episodes
-            foreach (var episode in allEpisodes)
+            var firstUnwatchedEpisode = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
-                var userData = _userDataManager.GetUserData(user, episode);
+                AncestorWithPresentationUniqueKey = series.PresentationUniqueKey,
+                IncludeItemTypes = new[] { typeof(Episode).Name },
+                SortBy = new[] { ItemSortBy.SortName },
+                SortOrder = SortOrder.Ascending,
+                Limit = 1,
+                IsPlayed = false,
+                IsVirtualItem = false,
+                ParentIndexNumberNotEquals = 0
 
-                if (userData.Played)
-                {
-                    if (lastWatched != null || nextUp == null)
-                    {
-                        break;
-                    }
+            }).Cast<Episode>().FirstOrDefault();
 
-                    lastWatched = episode;
-                    lastWatchedDate = userData.LastPlayedDate ?? DateTime.MinValue;
-                }
-                else
-                {
-                    if (!episode.IsVirtualUnaired && (includeMissing || !episode.IsMissingEpisode))
-                    {
-                        nextUp = episode;
-                    }
-                }
+            // series is fully played
+            if (firstUnwatchedEpisode == null)
+            {
+                return new Tuple<Episode, DateTime, bool>(null, DateTime.MinValue, true);
             }
 
-            if (lastWatched != null)
+            var lastWatchedEpisode = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
-                return new Tuple<Episode, DateTime, bool>(nextUp, lastWatchedDate, false);
-            }
+                AncestorWithPresentationUniqueKey = series.PresentationUniqueKey,
+                IncludeItemTypes = new[] { typeof(Episode).Name },
+                SortBy = new[] { ItemSortBy.DatePlayed },
+                SortOrder = SortOrder.Descending,
+                Limit = 1,
+                IsVirtualItem = false,
+                ParentIndexNumberNotEquals = 0
 
-            var firstEpisode = allEpisodes.LastOrDefault(i => !i.IsVirtualUnaired && (includeMissing || !i.IsMissingEpisode) && !i.IsPlayed(user));
+            }).FirstOrDefault();
+
+            //// Get them in display order, then reverse
+            //var allEpisodes = series.GetEpisodes(user, false, false)
+            //    .Where(i => !i.ParentIndexNumber.HasValue || i.ParentIndexNumber.Value != 0)
+            //    .Reverse()
+            //    .ToList();
+
+            //Episode lastWatched = null;
+            //var lastWatchedDate = DateTime.MinValue;
+            //Episode nextUp = null;
+
+            //// Go back starting with the most recent episodes
+            //foreach (var episode in allEpisodes)
+            //{
+            //    var userData = _userDataManager.GetUserData(user, episode);
+
+            //    if (userData.Played)
+            //    {
+            //        if (lastWatched != null || nextUp == null)
+            //        {
+            //            break;
+            //        }
+
+            //        lastWatched = episode;
+            //        lastWatchedDate = userData.LastPlayedDate ?? DateTime.MinValue;
+            //    }
+            //    else
+            //    {
+            //        nextUp = episode;
+            //    }
+            //}
+
+            if (lastWatchedEpisode != null)
+            {
+                var userData = _userDataManager.GetUserData(user, lastWatchedEpisode);
+
+                if (userData.LastPlayedDate.HasValue)
+                {
+                    return new Tuple<Episode, DateTime, bool>(firstUnwatchedEpisode, userData.LastPlayedDate.Value, false);
+                }
+            }
 
             // Return the first episode
-            return new Tuple<Episode, DateTime, bool>(firstEpisode, DateTime.MinValue, true);
+            return new Tuple<Episode, DateTime, bool>(firstUnwatchedEpisode, DateTime.MinValue, true);
         }
 
         private QueryResult<BaseItem> GetResult(IEnumerable<BaseItem> items, int? totalRecordLimit, NextUpQuery query)

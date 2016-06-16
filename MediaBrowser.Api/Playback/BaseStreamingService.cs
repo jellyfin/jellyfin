@@ -846,7 +846,7 @@ namespace MediaBrowser.Api.Playback
                             if (MediaEncoder.SupportsDecoder("h264_qsv"))
                             {
                                 // Seeing stalls and failures with decoding. Not worth it compared to encoding.
-                                //return "-c:v h264_qsv ";
+                                return "-c:v h264_qsv ";
                             }
                             break;
                         case "mpeg2video":
@@ -979,11 +979,6 @@ namespace MediaBrowser.Api.Playback
 
             var transcodingId = Guid.NewGuid().ToString("N");
             var commandLineArgs = GetCommandLineArguments(outputPath, state, true);
-
-            if (ApiEntryPoint.Instance.GetEncodingOptions().EnableDebugLogging)
-            {
-                commandLineArgs = "-loglevel debug " + commandLineArgs;
-            }
 
             var process = new Process
             {
@@ -1212,7 +1207,7 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        private int? GetVideoBitrateParamValue(VideoStreamRequest request, MediaStream videoStream)
+        private int? GetVideoBitrateParamValue(VideoStreamRequest request, MediaStream videoStream, string outputVideoCodec)
         {
             var bitrate = request.VideoBitRate;
 
@@ -1234,6 +1229,18 @@ namespace MediaBrowser.Api.Playback
                     {
                         bitrate = Math.Min(bitrate.Value, videoStream.BitRate.Value);
                     }
+                }
+            }
+
+            if (bitrate.HasValue)
+            {
+                var inputVideoCodec = videoStream == null ? null : videoStream.Codec;
+                bitrate = ResolutionNormalizer.ScaleBitrate(bitrate.Value, inputVideoCodec, outputVideoCodec);
+
+                // If a max bitrate was requested, don't let the scaled bitrate exceed it
+                if (request.VideoBitRate.HasValue)
+                {
+                    bitrate = Math.Min(bitrate.Value, request.VideoBitRate.Value);
                 }
             }
 
@@ -1519,6 +1526,13 @@ namespace MediaBrowser.Api.Playback
                 }
                 else if (i == 25)
                 {
+                    if (videoRequest != null)
+                    {
+                        videoRequest.ForceLiveStream = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
+                    }
+                }
+                else if (i == 26)
+                {
                     if (!string.IsNullOrWhiteSpace(val) && videoRequest != null)
                     {
                         SubtitleDeliveryMethod method;
@@ -1528,7 +1542,7 @@ namespace MediaBrowser.Api.Playback
                         }
                     }
                 }
-                else if (i == 26)
+                else if (i == 27)
                 {
                     request.TranscodingMaxAudioChannels = int.Parse(val, UsCulture);
                 }
@@ -1690,7 +1704,7 @@ namespace MediaBrowser.Api.Playback
             if (videoRequest != null)
             {
                 state.OutputVideoCodec = state.VideoRequest.VideoCodec;
-                state.OutputVideoBitrate = GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream);
+                state.OutputVideoBitrate = GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
 
                 if (state.OutputVideoBitrate.HasValue)
                 {

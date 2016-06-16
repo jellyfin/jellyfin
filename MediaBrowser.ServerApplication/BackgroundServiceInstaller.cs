@@ -25,7 +25,7 @@ namespace MediaBrowser.ServerApplication
                 Description = "The windows background service for Emby Server.",
 
                 // Will ensure the network is available
-                ServicesDependedOn = new[] { "LanmanServer", "Tcpip" }
+                ServicesDependedOn = new[] { "LanmanServer", "EventLog", "Tcpip", "http" }
             };
 
             // Microsoft didn't add the ability to add a

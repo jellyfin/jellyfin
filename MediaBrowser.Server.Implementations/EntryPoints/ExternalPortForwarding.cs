@@ -93,7 +93,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             NatUtility.UnhandledException += NatUtility_UnhandledException;
             NatUtility.StartDiscovery();
 
-            _timer = new PeriodicTimer(s => _createdRules = new List<string>(), null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
+            _timer = new PeriodicTimer(ClearCreatedRules, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
 
             _ssdp.MessageReceived += _ssdp_MessageReceived;
 
@@ -102,12 +102,43 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             _isStarted = true;
         }
 
+        private void ClearCreatedRules(object state)
+        {
+            _createdRules = new List<string>();
+            _usnsHandled = new List<string>();
+        }
+
         void _ssdp_MessageReceived(object sender, SsdpMessageEventArgs e)
         {
             var endpoint = e.EndPoint as IPEndPoint;
 
-            if (endpoint != null && e.LocalEndPoint != null)
+            if (endpoint == null || e.LocalEndPoint == null)
             {
+                return;
+            }
+
+            string usn;
+            if (!e.Headers.TryGetValue("USN", out usn)) usn = string.Empty;
+
+            string nt;
+            if (!e.Headers.TryGetValue("NT", out nt)) nt = string.Empty;
+
+            // Filter device type
+            if (usn.IndexOf("WANIPConnection:", StringComparison.OrdinalIgnoreCase) == -1 &&
+                     nt.IndexOf("WANIPConnection:", StringComparison.OrdinalIgnoreCase) == -1 &&
+                     usn.IndexOf("WANPPPConnection:", StringComparison.OrdinalIgnoreCase) == -1 &&
+                     nt.IndexOf("WANPPPConnection:", StringComparison.OrdinalIgnoreCase) == -1)
+            {
+                return;
+            }
+
+            var identifier = string.IsNullOrWhiteSpace(usn) ? nt : usn;
+
+            if (!_usnsHandled.Contains(identifier))
+            {
+                _usnsHandled.Add(identifier);
+
+                _logger.Debug("Calling Nat.Handle on " + identifier);
                 NatUtility.Handle(e.LocalEndPoint.Address, e.Message, endpoint, NatProtocol.Upnp);
             }
         }
@@ -151,6 +182,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         }
 
         private List<string> _createdRules = new List<string>();
+        private List<string> _usnsHandled = new List<string>();
         private void CreateRules(INatDevice device)
         {
             // On some systems the device discovered event seems to fire repeatedly

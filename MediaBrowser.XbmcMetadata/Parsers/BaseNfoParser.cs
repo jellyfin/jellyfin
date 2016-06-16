@@ -919,11 +919,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         var val = reader.ReadElementContentAsString();
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            var hasTags = item as IHasTags;
-                            if (hasTags != null)
-                            {
-                                hasTags.AddTag(val);
-                            }
+                            item.AddTag(val);
                         }
                         break;
                     }
@@ -932,13 +928,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        var hasKeywords = item as IHasKeywords;
-                        if (hasKeywords != null)
+                        if (!string.IsNullOrWhiteSpace(val))
                         {
-                            if (!string.IsNullOrWhiteSpace(val))
-                            {
-                                hasKeywords.AddKeyword(val);
-                            }
+                            item.AddKeyword(val);
                         }
                         break;
                     }
