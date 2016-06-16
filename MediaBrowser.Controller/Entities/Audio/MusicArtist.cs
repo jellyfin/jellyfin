@@ -79,6 +79,15 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
+        public override int GetChildCount(User user)
+        {
+            if (IsAccessedByName)
+            {
+                return 0;
+            }
+            return base.GetChildCount(user);
+        }
+
         public override bool IsSaveLocalMetadataEnabled()
         {
             if (IsAccessedByName)
