@@ -160,7 +160,6 @@ namespace MediaBrowser.ServerApplication.Native
             info.FFProbeFilename = "ffprobe.exe";
             info.Version = "20160410";
             info.ArchiveType = "7z";
-            info.IsEmbedded = false;
             info.DownloadUrls = GetDownloadUrls();
 
             return info;
