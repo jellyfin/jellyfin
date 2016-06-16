@@ -190,7 +190,7 @@
                 infos.push(getTheaterInfo);
             }
 
-            if (!AppInfo.enableAppLayouts && browserInfo.mobile) {
+            if (!AppInfo.enableAppLayouts) {
                 infos.push(getUpgradeMobileLayoutsInfo);
             }
 
