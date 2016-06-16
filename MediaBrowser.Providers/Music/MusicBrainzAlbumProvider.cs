@@ -307,7 +307,6 @@ namespace MediaBrowser.Providers.Music
             }
 
             var nodes = releaseList.ChildNodes;
-            string releaseGroupId = null;
 
             if (nodes != null)
             {
