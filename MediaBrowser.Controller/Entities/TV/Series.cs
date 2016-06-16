@@ -111,6 +111,20 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        public override int GetChildCount(User user)
+        {
+            var result = LibraryManager.GetItemsResult(new InternalItemsQuery(user)
+            {
+                AncestorWithPresentationUniqueKey = PresentationUniqueKey,
+                IncludeItemTypes = new[] { typeof(Season).Name },
+                SortBy = new[] { ItemSortBy.SortName },
+                IsVirtualItem = false,
+                Limit = 0
+            });
+
+            return result.TotalRecordCount;
+        }
+
         /// <summary>
         /// Gets the user data key.
         /// </summary>
