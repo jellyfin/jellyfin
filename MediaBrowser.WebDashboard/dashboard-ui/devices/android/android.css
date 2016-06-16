@@ -1,12 +1,4 @@
-﻿.libraryViewNav .pageTabButton {
-    font-weight: bold !important;
-}
-
-    .libraryViewNav .pageTabButton:focus {
-        font-weight: bold !important;
-    }
-
-@media all and (min-width: 300px) {
+﻿@media all and (min-width: 300px) {
 
     .libraryViewNav {
         display: flex;

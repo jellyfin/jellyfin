@@ -666,6 +666,27 @@ namespace MediaBrowser.Controller.Entities
             });
         }
 
+        public virtual int GetChildCount(User user)
+        {
+            if (LinkedChildren.Count > 0)
+            {
+                if (!(this is ICollectionFolder))
+                {
+                    return GetChildren(user, true).Count();
+                }
+            }
+
+            var result = GetItems(new InternalItemsQuery(user)
+            {
+                Recursive = false,
+                Limit = 0,
+                ParentId = Id
+
+            }).Result;
+
+            return result.TotalRecordCount;
+        }
+
         public QueryResult<BaseItem> QueryRecursive(InternalItemsQuery query)
         {
             var user = query.User;

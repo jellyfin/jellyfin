@@ -2992,6 +2992,7 @@
 
             var options = {};
 
+            var userId = self.getCurrentUserId();
             if (userId) {
                 options.userId = userId;
             }

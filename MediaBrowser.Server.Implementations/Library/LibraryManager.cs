@@ -1276,18 +1276,9 @@ namespace MediaBrowser.Server.Implementations.Library
             return item;
         }
 
-        public BaseItem GetMemoryItemById(Guid id)
+        private bool EnableCaching
         {
-            if (id == Guid.Empty)
-            {
-                throw new ArgumentNullException("id");
-            }
-
-            BaseItem item;
-
-            LibraryItemsCache.TryGetValue(id, out item);
-
-            return item;
+            get { return true; }
         }
 
         public IEnumerable<BaseItem> GetItemList(InternalItemsQuery query)
@@ -1295,6 +1286,11 @@ namespace MediaBrowser.Server.Implementations.Library
             if (query.User != null)
             {
                 AddUserToQuery(query, query.User);
+            }
+
+            if (!EnableCaching)
+            {
+                return ItemRepository.GetItemList(query);
             }
 
             var result = ItemRepository.GetItemIdsList(query);
@@ -1336,6 +1332,11 @@ namespace MediaBrowser.Server.Implementations.Library
 
             SetTopParentIdsOrAncestors(query, parents);
 
+            if (!EnableCaching)
+            {
+                return ItemRepository.GetItemList(query);
+            }
+
             return GetItemIds(query).Select(GetItemById).Where(i => i != null);
         }
 
@@ -1358,12 +1359,25 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (query.EnableTotalRecordCount)
             {
+                if (!EnableCaching)
+                {
+                    return ItemRepository.GetItems(query);
+                }
+
                 var initialResult = ItemRepository.GetItemIds(query);
 
                 return new QueryResult<BaseItem>
                 {
                     TotalRecordCount = initialResult.TotalRecordCount,
                     Items = initialResult.Items.Select(GetItemById).Where(i => i != null).ToArray()
+                };
+            }
+
+            if (!EnableCaching)
+            {
+                return new QueryResult<BaseItem>
+                {
+                    Items = ItemRepository.GetItemList(query).ToArray()
                 };
             }
 

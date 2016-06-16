@@ -302,7 +302,7 @@
                 document.body.insertAdjacentHTML('beforeend', getNowPlayingBarHtml());
                 nowPlayingBarElement = document.querySelector('.nowPlayingBar');
 
-                if ((browserInfo.safari || !AppInfo.isNativeApp) && browserInfo.mobile) {
+                if (browserInfo.safari && browserInfo.mobile) {
                     // Not handled well here. The wrong elements receive events, bar doesn't update quickly enough, etc.
                     nowPlayingBarElement.classList.add('noMediaProgress');
                 }

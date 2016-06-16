@@ -2351,7 +2351,7 @@
   "LabelTitle": "Title:",
   "LabelOriginalTitle": "Original title:",
   "LabelSortTitle": "Sort title:",
-  "OptionConvertRecordingPreserveAudio": "Preserve original audio when converting recordings",
+  "OptionConvertRecordingPreserveAudio": "Preserve original audio when converting recordings (when possible)",
   "OptionConvertRecordingPreserveAudioHelp": "This will provide better audio but may require transcoding during playback on some devices.",
   "CreateCollectionHelp": "Collections allow you to create personalized groupings of movies and other library content.",
   "AddItemToCollectionHelp": "Add items to collections by searching for them and using their right-click or tap menus to add them to a collection.",

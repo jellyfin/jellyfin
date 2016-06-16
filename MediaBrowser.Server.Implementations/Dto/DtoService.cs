@@ -549,8 +549,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
         private int GetChildCount(Folder folder, User user)
         {
-            return folder.GetChildren(user, true)
-                .Count();
+            return folder.GetChildCount(user);
         }
 
         /// <summary>
