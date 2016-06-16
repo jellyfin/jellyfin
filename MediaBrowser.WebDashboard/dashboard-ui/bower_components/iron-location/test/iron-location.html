@@ -141,6 +141,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             '?greeting=hello&target=world&another=key');
       });
     });
+    suite('does not spam the user\'s history', function() {
+      var replaceStateCalls, pushStateCalls;
+      var nativeReplaceState, nativePushState;
+      setup(function() {
+        replaceStateCalls = pushStateCalls = 0;
+        nativeReplaceState = window.history.replaceState;
+        nativePushState = window.history.pushState;
+        window.history.replaceState = function() {
+          replaceStateCalls++;
+        };
+        window.history.pushState = function() {
+          pushStateCalls++;
+        };
+      });
+      teardown(function() {
+        window.history.replaceState = nativeReplaceState;
+        window.history.pushState = nativePushState;
+      });
+      test('when a change happens immediately after ' +
+           'the iron-location is attached', function() {
+        var ironLocation = fixture('Solo');
+        expect(pushStateCalls).to.be.equal(0);
+        expect(replaceStateCalls).to.be.equal(0);
+        ironLocation.path = '/foo';
+        expect(replaceStateCalls).to.be.equal(1);
+        expect(pushStateCalls).to.be.equal(0);
+      });
+    });
     suite('when used with other iron-location elements', function() {
       var otherUrlElem;
       var urlElem;
@@ -236,6 +264,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         anchor.target = '_blank';
 
         expect(isClickCaptured(anchor)).to.be.eq(false);
+      });
+
+      test('a link with an href to the ' +
+           'current page shouldn\'t add to history.', function() {
+        var anchor = document.createElement('a');
+        anchor.href = window.location.href;
+
+        expect(isClickCaptured(anchor)).to.be.equal(false);
+      });
+
+      test('a click that has already been defaultPrevented ' +
+           'shouldn\'t result in a navigation', function() {
+         fixture('Solo');
+         var anchor = document.createElement('a');
+         anchor.href = makeAbsoluteUrl('/');
+         anchor.addEventListener('click', function(event) {
+           event.preventDefault();
+         });
+         document.body.appendChild(anchor);
+
+         var originalPushState = window.history.pushState;
+         var count = 0;
+         window.history.pushState = function() {
+           count++;
+         }
+         anchor.click();
+         window.history.pushState = originalPushState;
+
+         expect(count).to.be.equal(0);
       })
     });
 

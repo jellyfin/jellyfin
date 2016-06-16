@@ -1,4 +1,4 @@
-define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'focusManager', 'apphost', 'css!./style', 'material-icons', 'paper-icon-button-light', 'paper-spinner'], function (dialogHelper, inputmanager, connectionManager, layoutManager, focusManager, appHost) {
+define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'focusManager', 'apphost', 'loading', 'css!./style', 'material-icons', 'paper-icon-button-light'], function (dialogHelper, inputmanager, connectionManager, layoutManager, focusManager, appHost, loading) {
 
     function getImageUrl(item, options, apiClient) {
 
@@ -254,20 +254,12 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
 
         function onSlideChangeStart(swiper, slide, image) {
 
-            var spinner = slide.querySelector('paper-spinner');
-            if (spinner) {
-                spinner.active = true;
-            }
+            //loading.show();
         }
 
         function onSlideChangeEnd(swiper, slide, image) {
 
-            var spinner = slide.querySelector('paper-spinner');
-            if (spinner) {
-                spinner.active = false;
-                // Remove it because in IE it might just keep in spinning forever
-                spinner.parentNode.removeChild(spinner);
-            }
+            //loading.hide();
         }
 
         function getSwiperSlideHtmlFromSlide(item) {
@@ -275,7 +267,6 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
             var html = '';
             html += '<div class="swiper-slide" data-original="' + item.originalImage + '" data-itemid="' + item.Id + '" data-serverid="' + item.ServerId + '">';
             html += '<img data-src="' + item.imageUrl + '" class="swiper-lazy">';
-            html += '<paper-spinner></paper-spinner>';
             if (item.title || item.subtitle) {
                 html += '<div class="slideText">';
                 html += '<div class="slideTextInner">';
