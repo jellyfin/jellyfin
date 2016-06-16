@@ -75,6 +75,11 @@ namespace MediaBrowser.Controller.Entities.TV
             return list;
         }
 
+        public override int GetChildCount(User user)
+        {
+            return GetChildren(user, true).Count();
+        }
+
         /// <summary>
         /// This Episode's Series Instance
         /// </summary>

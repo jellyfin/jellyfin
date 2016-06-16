@@ -151,13 +151,6 @@ namespace MediaBrowser.Controller.Library
         BaseItem GetItemById(Guid id);
 
         /// <summary>
-        /// Gets the memory item by identifier.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <returns>BaseItem.</returns>
-        BaseItem GetMemoryItemById(Guid id);
-
-        /// <summary>
         /// Gets the intros.
         /// </summary>
         /// <param name="item">The item.</param>
