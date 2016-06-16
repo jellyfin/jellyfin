@@ -122,7 +122,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         protected override async Task<IDbConnection> CreateConnection(bool isReadOnly = false)
         {
-            var connection = await DbConnector.Connect(DbFilePath, false, false, 20000).ConfigureAwait(false);
+            var connection = await DbConnector.Connect(DbFilePath, false, false, 5000).ConfigureAwait(false);
 
             connection.RunQueries(new[]
             {
