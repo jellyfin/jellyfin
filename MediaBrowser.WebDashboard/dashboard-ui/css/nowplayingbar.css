@@ -59,11 +59,12 @@
     /* Above everything, except for the video player and popup overlays */
     z-index: 1097;
     color: #fff;
-    background-color: rgba(26,26,26,.94);
+    background-color: #282828;
     text-align: center;
     display: flex;
     flex-direction: row;
     align-items: center;
+    box-shadow: 0 -2px 2px 0 rgba(0,0,0,.14),-1px 5px 1px rgba(0,0,0,.12);
 }
 
 .hiddenNowPlayingBar .nowPlayingBar {
