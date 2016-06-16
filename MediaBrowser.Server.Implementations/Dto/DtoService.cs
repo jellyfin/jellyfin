@@ -486,9 +486,14 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                     dto.UserData.Played = dto.UserData.PlayedPercentage.HasValue && dto.UserData.PlayedPercentage.Value >= 100;
                 }
-                else
+                else if (item.SourceType == SourceType.Library)
                 {
                     dto.UserData = _userDataRepository.GetUserDataDto(item, user);
+                }
+                else
+                {
+                    var userData = _userDataRepository.GetUserData(user, item);
+                    dto.UserData = GetUserItemDataDto(userData);
                 }
 
                 if (item.SourceType == SourceType.Library)

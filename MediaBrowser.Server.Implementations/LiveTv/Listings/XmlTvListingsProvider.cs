@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.XmlTv.Classes;
@@ -53,7 +55,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 return path;
             }
 
-            var cacheFilename = DateTime.UtcNow.DayOfYear.ToString(CultureInfo.InvariantCulture) + "_" + DateTime.UtcNow.Hour.ToString(CultureInfo.InvariantCulture) + ".xml";
+            var cacheFilename = DateTime.UtcNow.DayOfYear.ToString(CultureInfo.InvariantCulture) + "-" + DateTime.UtcNow.Hour.ToString(CultureInfo.InvariantCulture) + ".xml";
             var cacheFile = Path.Combine(_config.ApplicationPaths.CachePath, "xmltv", cacheFilename);
             if (File.Exists(cacheFile))
             {
@@ -67,13 +69,34 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 CancellationToken = cancellationToken,
                 Url = path,
                 Progress = new Progress<Double>(),
-                EnableHttpCompression = false
+                DecompressionMethod = DecompressionMethods.GZip,
+
+                // It's going to come back gzipped regardless of this value
+                // So we need to make sure the decompression method is set to gzip
+                EnableHttpCompression = true
 
             }).ConfigureAwait(false);
 
             Directory.CreateDirectory(Path.GetDirectoryName(cacheFile));
-            File.Copy(tempFile, cacheFile, true);
 
+            using (var stream = File.OpenRead(tempFile))
+            {
+                using (var reader = new StreamReader(stream, Encoding.UTF8))
+                {
+                    using (var fileStream = File.OpenWrite(cacheFile))
+                    {
+                        using (var writer = new StreamWriter(fileStream))
+                        {
+                            while (!reader.EndOfStream)
+                            {
+                                writer.WriteLine(reader.ReadLine());
+                            }
+                        }
+                    }
+                }
+            }
+
+            _logger.Debug("Returning xmltv path {0}", cacheFile);
             return cacheFile;
         }
 
