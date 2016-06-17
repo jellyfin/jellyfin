@@ -283,12 +283,13 @@
                 });
             });
 
-            tabContent.querySelector('.btnSelectView').addEventListener('click', function (e) {
+            var btnSelectView = tabContent.querySelector('.btnSelectView');
+            btnSelectView.addEventListener('click', function (e) {
 
                 libraryBrowser.showLayoutMenu(e.target, self.getCurrentViewStyle(), 'Banner,List,Poster,PosterCard,Thumb,ThumbCard'.split(','));
             });
 
-            tabContent.querySelector('.btnSelectView').addEventListener('layoutchange', function (e) {
+            btnSelectView.addEventListener('layoutchange', function (e) {
 
                 var viewStyle = e.detail.viewStyle;
 

@@ -127,12 +127,13 @@
             reloadItems(tabContent);
         };
 
-        tabContent.querySelector('.btnSelectView').addEventListener('click', function (e) {
+        var btnSelectView = tabContent.querySelector('.btnSelectView');
+        btnSelectView.addEventListener('click', function (e) {
 
             LibraryBrowser.showLayoutMenu(e.target, self.getCurrentViewStyle(), self.getViewStyles());
         });
 
-        tabContent.querySelector('.btnSelectView').addEventListener('layoutchange', function (e) {
+        btnSelectView.addEventListener('layoutchange', function (e) {
 
             self.setCurrentViewStyle(e.detail.viewStyle);
         });

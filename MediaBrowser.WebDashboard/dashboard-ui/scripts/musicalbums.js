@@ -224,12 +224,13 @@
                 });
             });
 
-            tabContent.querySelector('.btnSelectView').addEventListener('click', function (e) {
+            var btnSelectView = tabContent.querySelector('.btnSelectView');
+            btnSelectView.addEventListener('click', function (e) {
 
                 libraryBrowser.showLayoutMenu(e.target, self.getCurrentViewStyle(), 'List,Poster,PosterCard'.split(','));
             });
 
-            tabContent.querySelector('.btnSelectView').addEventListener('layoutchange', function (e) {
+            btnSelectView.addEventListener('layoutchange', function (e) {
 
                 var viewStyle = e.detail.viewStyle;
 
