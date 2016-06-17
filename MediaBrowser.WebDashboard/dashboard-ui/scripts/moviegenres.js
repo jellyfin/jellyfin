@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define([], function () {
 
     return function (view, params, tabContent) {
 
@@ -17,8 +17,7 @@
                         IncludeItemTypes: "Movie",
                         Recursive: true,
                         Fields: "DateCreated,SyncInfo,ItemCounts",
-                        StartIndex: 0,
-                        Limit: LibraryBrowser.getDefaultPageSize()
+                        StartIndex: 0
                     },
                     view: LibraryBrowser.getSavedView(key) || LibraryBrowser.getDefaultItemsView('Thumb', 'Thumb')
                 };
@@ -46,34 +45,20 @@
 
             ApiClient.getGenres(Dashboard.getCurrentUserId(), query).then(function (result) {
 
-                // Scroll back up so they can see the results from the beginning
-                window.scrollTo(0, 0);
-
                 var html = '';
 
-                var viewStyle = getPageData().view;
-
-                $('.listTopPaging', context).html(LibraryBrowser.getQueryPagingHtml({
-                    startIndex: query.StartIndex,
-                    limit: query.Limit,
-                    totalRecordCount: result.TotalRecordCount,
-                    viewButton: false,
-                    showLimit: false,
-                    updatePageSizeSetting: false,
-                    addLayoutButton: true,
-                    currentLayout: viewStyle
-                }));
+                var viewStyle = self.getCurrentViewStyle();
 
                 if (viewStyle == "Thumb") {
                     html = LibraryBrowser.getPosterViewHtml({
                         items: result.Items,
                         shape: "backdrop",
                         preferThumb: true,
+                        context: 'movies',
                         showItemCounts: true,
                         centerText: true,
                         lazy: true,
-                        overlayPlayButton: true,
-                        context: 'movies'
+                        overlayPlayButton: true
                     });
                 }
                 else if (viewStyle == "ThumbCard") {
@@ -82,64 +67,74 @@
                         items: result.Items,
                         shape: "backdrop",
                         preferThumb: true,
+                        context: 'movies',
                         showItemCounts: true,
                         cardLayout: true,
                         showTitle: true,
-                        lazy: true,
-                        context: 'movies'
+                        lazy: true
                     });
                 }
                 else if (viewStyle == "PosterCard") {
                     html = LibraryBrowser.getPosterViewHtml({
                         items: result.Items,
                         shape: "portrait",
+                        context: 'movies',
                         showItemCounts: true,
                         lazy: true,
                         cardLayout: true,
-                        showTitle: true,
-                        context: 'movies'
+                        showTitle: true
                     });
                 }
                 else if (viewStyle == "Poster") {
                     html = LibraryBrowser.getPosterViewHtml({
                         items: result.Items,
                         shape: "portrait",
+                        context: 'movies',
                         centerText: true,
                         showItemCounts: true,
                         lazy: true,
-                        overlayPlayButton: true,
-                        context: 'movies'
+                        overlayPlayButton: true
                     });
                 }
 
-                var elem = context.querySelector('.itemsContainer');
+                var elem = context.querySelector('#items');
                 elem.innerHTML = html;
                 ImageLoader.lazyChildren(elem);
-
-                $('.btnNextPage', context).on('click', function () {
-                    query.StartIndex += query.Limit;
-                    reloadItems(context);
-                });
-
-                $('.btnPreviousPage', context).on('click', function () {
-                    query.StartIndex -= query.Limit;
-                    reloadItems(context);
-                });
-
-                $('.btnChangeLayout', context).on('layoutchange', function (e, layout) {
-                    getPageData().view = layout;
-                    LibraryBrowser.saveViewSetting(getSavedQueryKey(), layout);
-                    reloadItems(context);
-                });
 
                 LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
                 Dashboard.hideLoadingMsg();
             });
         }
-        self.renderTab = function () {
+        self.getViewStyles = function () {
+            return 'Poster,PosterCard,Thumb,ThumbCard'.split(',');
+        };
+
+        self.getCurrentViewStyle = function () {
+            return getPageData(tabContent).view;
+        };
+
+        self.setCurrentViewStyle = function (viewStyle) {
+            getPageData(tabContent).view = viewStyle;
+            LibraryBrowser.saveViewSetting(getSavedQueryKey(tabContent), viewStyle);
+            reloadItems(tabContent);
+        };
+
+        self.enableViewSelection = true;
+
+        self.renderTab = function () {
 
             reloadItems(tabContent);
         };
+
+        tabContent.querySelector('.btnSelectView').addEventListener('click', function (e) {
+
+            LibraryBrowser.showLayoutMenu(e.target, self.getCurrentViewStyle(), self.getViewStyles());
+        });
+
+        tabContent.querySelector('.btnSelectView').addEventListener('layoutchange', function (e) {
+
+            self.setCurrentViewStyle(e.detail.viewStyle);
+        });
     };
 });
