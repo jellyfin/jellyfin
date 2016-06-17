@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Dto;
+﻿using System;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -8,6 +9,8 @@ using MediaBrowser.Model.Dto;
 using ServiceStack;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -100,7 +103,12 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetArtists request)
         {
-            var result = GetResult(request);
+            if (string.IsNullOrWhiteSpace(request.IncludeItemTypes))
+            {
+                //request.IncludeItemTypes = "Audio,MusicVideo";
+            }
+
+            var result = GetResultSlim(request);
 
             return ToOptimizedResult(result);
         }
@@ -112,9 +120,24 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetAlbumArtists request)
         {
-            var result = GetResult(request);
+            if (string.IsNullOrWhiteSpace(request.IncludeItemTypes))
+            {
+                //request.IncludeItemTypes = "Audio,MusicVideo";
+            }
+
+            var result = GetResultSlim(request);
 
             return ToOptimizedResult(result);
+        }
+
+        protected override QueryResult<Tuple<BaseItem, ItemCounts>> GetItems(GetItemsByName request, InternalItemsQuery query)
+        {
+            if (request is GetAlbumArtists)
+            {
+                return LibraryManager.GetAlbumArtists(query);
+            }
+
+            return LibraryManager.GetArtists(query);
         }
 
         /// <summary>
@@ -125,16 +148,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
         protected override IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
-            if (request is GetAlbumArtists)
-            {
-                return LibraryManager.GetAlbumArtists(items
-                   .Where(i => !i.IsFolder)
-                   .OfType<IHasAlbumArtist>());
-            }
-
-            return LibraryManager.GetArtists(items
-                .Where(i => !i.IsFolder)
-                .OfType<IHasArtist>());
+            throw new NotImplementedException();
         }
     }
 }

@@ -418,7 +418,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             var dto = GetBaseItemDtoInternal(item, options, GetSyncedItemProgressDictionary(syncProgress), user);
 
-            if (options.Fields.Contains(ItemFields.ItemCounts))
+            if (taggedItems != null && options.Fields.Contains(ItemFields.ItemCounts))
             {
                 SetItemByNameInfo(item, dto, taggedItems, user);
             }

@@ -8,7 +8,6 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
         public string FFProbeFilename { get; set; }
         public string ArchiveType { get; set; }
         public string[] DownloadUrls { get; set; }
-        public bool IsEmbedded { get; set; }
 
         public FFMpegInstallInfo()
         {

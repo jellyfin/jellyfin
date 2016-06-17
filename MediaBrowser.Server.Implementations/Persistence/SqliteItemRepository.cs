@@ -22,6 +22,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Playlists;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Server.Implementations.Persistence
@@ -94,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        public const int LatestSchemaVersion = 92;
+        public const int LatestSchemaVersion = 95;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -157,7 +158,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create table if not exists UserDataKeys (ItemId GUID, UserDataKey TEXT, PRIMARY KEY (ItemId, UserDataKey))",
                                 "create index if not exists idx_UserDataKeys1 on UserDataKeys(ItemId)",
 
-                                "create table if not exists ItemValues (ItemId GUID, Type INT, Value TEXT)",
+                                "create table if not exists ItemValues (ItemId GUID, Type INT, Value TEXT, CleanValue TEXT)",
                                 "create index if not exists idx_ItemValues on ItemValues(ItemId)",
                                 "create index if not exists idx_ItemValues2 on ItemValues(ItemId,Type)",
 
@@ -263,6 +264,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "SeriesName", "Text");
 
             _connection.AddColumn(Logger, "UserDataKeys", "Priority", "INT");
+            _connection.AddColumn(Logger, "ItemValues", "CleanValue", "Text");
 
             string[] postQueries =
                                 {
@@ -568,10 +570,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _deleteItemValuesCommand.Parameters.Add(_deleteItemValuesCommand, "@Id");
 
             _saveItemValuesCommand = _connection.CreateCommand();
-            _saveItemValuesCommand.CommandText = "insert into ItemValues (ItemId, Type, Value) values (@ItemId, @Type, @Value)";
+            _saveItemValuesCommand.CommandText = "insert into ItemValues (ItemId, Type, Value, CleanValue) values (@ItemId, @Type, @Value, @CleanValue)";
             _saveItemValuesCommand.Parameters.Add(_saveItemValuesCommand, "@ItemId");
             _saveItemValuesCommand.Parameters.Add(_saveItemValuesCommand, "@Type");
             _saveItemValuesCommand.Parameters.Add(_saveItemValuesCommand, "@Value");
+            _saveItemValuesCommand.Parameters.Add(_saveItemValuesCommand, "@CleanValue");
 
             // provider ids
             _deleteProviderIdsCommand = _connection.CreateCommand();
@@ -905,7 +908,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     UpdateUserDataKeys(item.Id, item.GetUserDataKeys().Distinct(StringComparer.OrdinalIgnoreCase).ToList(), transaction);
                     UpdateImages(item.Id, item.ImageInfos, transaction);
                     UpdateProviderIds(item.Id, item.ProviderIds, transaction);
-                    UpdateItemValues(item.Id, GetItemValues(item), transaction);
+                    UpdateItemValues(item.Id, GetItemValuesToSave(item), transaction);
                 }
 
                 transaction.Commit();
@@ -2019,7 +2022,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             if (string.Equals(name, ItemSortBy.SeriesDatePlayed, StringComparison.OrdinalIgnoreCase))
             {
-                return new Tuple<string, bool>("(Select MAX(LastPlayedDate) from TypedBaseItems B"+ GetJoinUserDataText(query) + " where B.Guid in (Select ItemId from AncestorIds where AncestorId in (select guid from typedbaseitems c where C.Type = 'MediaBrowser.Controller.Entities.TV.Series' And C.Guid in (Select AncestorId from AncestorIds where ItemId=A.Guid))))", false);
+                return new Tuple<string, bool>("(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where B.Guid in (Select ItemId from AncestorIds where AncestorId in (select guid from typedbaseitems c where C.Type = 'MediaBrowser.Controller.Entities.TV.Series' And C.Guid in (Select AncestorId from AncestorIds where ItemId=A.Guid))))", false);
             }
 
             return new Tuple<string, bool>(name, false);
@@ -2245,7 +2248,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
 
-        private List<string> GetWhereClauses(InternalItemsQuery query, IDbCommand cmd)
+        private List<string> GetWhereClauses(InternalItemsQuery query, IDbCommand cmd, string paramSuffix = "")
         {
             var whereClauses = new List<string>();
 
@@ -2321,8 +2324,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var includeTypes = query.IncludeItemTypes.SelectMany(MapIncludeItemTypes).ToArray();
             if (includeTypes.Length == 1)
             {
-                whereClauses.Add("type=@type");
-                cmd.Parameters.Add(cmd, "@type", DbType.String).Value = includeTypes[0];
+                whereClauses.Add("type=@type" + paramSuffix);
+                cmd.Parameters.Add(cmd, "@type" + paramSuffix, DbType.String).Value = includeTypes[0];
             }
             else if (includeTypes.Length > 1)
             {
@@ -2626,8 +2629,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var index = 0;
                 foreach (var artist in query.ArtistNames)
                 {
-                    clauses.Add("@ArtistName" + index + " in (select value from itemvalues where ItemId=Guid and Type <= 1)");
-                    cmd.Parameters.Add(cmd, "@ArtistName" + index, DbType.String).Value = artist;
+                    clauses.Add("@ArtistName" + index + " in (select CleanValue from itemvalues where ItemId=Guid and Type <= 1)");
+                    cmd.Parameters.Add(cmd, "@ArtistName" + index, DbType.String).Value = artist.RemoveDiacritics();
                     index++;
                 }
                 var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
@@ -2640,8 +2643,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var index = 0;
                 foreach (var item in query.Genres)
                 {
-                    clauses.Add("@Genre" + index + " in (select value from itemvalues where ItemId=Guid and Type=2)");
-                    cmd.Parameters.Add(cmd, "@Genre" + index, DbType.String).Value = item;
+                    clauses.Add("@Genre" + index + " in (select CleanValue from itemvalues where ItemId=Guid and Type=2)");
+                    cmd.Parameters.Add(cmd, "@Genre" + index, DbType.String).Value = item.RemoveDiacritics();
                     index++;
                 }
                 var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
@@ -2654,8 +2657,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var index = 0;
                 foreach (var item in query.Tags)
                 {
-                    clauses.Add("@Tag" + index + " in (select value from itemvalues where ItemId=Guid and Type=4)");
-                    cmd.Parameters.Add(cmd, "@Tag" + index, DbType.String).Value = item;
+                    clauses.Add("@Tag" + index + " in (select CleanValue from itemvalues where ItemId=Guid and Type=4)");
+                    cmd.Parameters.Add(cmd, "@Tag" + index, DbType.String).Value = item.RemoveDiacritics();
                     index++;
                 }
                 var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
@@ -2668,8 +2671,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var index = 0;
                 foreach (var item in query.Studios)
                 {
-                    clauses.Add("@Studio" + index + " in (select value from itemvalues where ItemId=Guid and Type=3)");
-                    cmd.Parameters.Add(cmd, "@Studio" + index, DbType.String).Value = item;
+                    clauses.Add("@Studio" + index + " in (select CleanValue from itemvalues where ItemId=Guid and Type=3)");
+                    cmd.Parameters.Add(cmd, "@Studio" + index, DbType.String).Value = item.RemoveDiacritics();
                     index++;
                 }
                 var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
@@ -2682,8 +2685,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var index = 0;
                 foreach (var item in query.Keywords)
                 {
-                    clauses.Add("@Keyword" + index + " in (select value from itemvalues where ItemId=Guid and Type=5)");
-                    cmd.Parameters.Add(cmd, "@Keyword" + index, DbType.String).Value = item;
+                    clauses.Add("@Keyword" + index + " in (select CleanValue from itemvalues where ItemId=Guid and Type=5)");
+                    cmd.Parameters.Add(cmd, "@Keyword" + index, DbType.String).Value = item.RemoveDiacritics();
                     index++;
                 }
                 var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
@@ -2811,6 +2814,20 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var val = string.Join(",", query.MediaTypes.Select(i => "'" + i + "'").ToArray());
 
                 whereClauses.Add("MediaType in (" + val + ")");
+            }
+            if (query.ItemIds.Length > 0)
+            {
+                var excludeIds = new List<string>();
+
+                var index = 0;
+                foreach (var id in query.ItemIds)
+                {
+                    excludeIds.Add("Guid = @IncludeId" + index);
+                    cmd.Parameters.Add(cmd, "@IncludeId" + index, DbType.Guid).Value = new Guid(id);
+                    index++;
+                }
+
+                whereClauses.Add(string.Join(" OR ", excludeIds.ToArray()));
             }
             if (query.ExcludeItemIds.Length > 0)
             {
@@ -3478,7 +3495,292 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
 
-        private List<Tuple<int, string>> GetItemValues(BaseItem item)
+        public QueryResult<Tuple<BaseItem, ItemCounts>> GetArtists(InternalItemsQuery query)
+        {
+            return GetItemValues(query, 0, typeof(MusicArtist).FullName);
+        }
+
+        public QueryResult<Tuple<BaseItem, ItemCounts>> GetAlbumArtists(InternalItemsQuery query)
+        {
+            return GetItemValues(query, 1, typeof(MusicArtist).FullName);
+        }
+
+        public QueryResult<Tuple<BaseItem, ItemCounts>> GetStudios(InternalItemsQuery query)
+        {
+            return GetItemValues(query, 3, typeof(Studio).FullName);
+        }
+
+        public QueryResult<Tuple<BaseItem, ItemCounts>> GetGenres(InternalItemsQuery query)
+        {
+            return GetItemValues(query, 2, typeof(Genre).FullName);
+        }
+
+        public QueryResult<Tuple<BaseItem, ItemCounts>> GetGameGenres(InternalItemsQuery query)
+        {
+            return GetItemValues(query, 2, typeof(GameGenre).FullName);
+        }
+
+        public QueryResult<Tuple<BaseItem, ItemCounts>> GetMusicGenres(InternalItemsQuery query)
+        {
+            return GetItemValues(query, 2, typeof(MusicGenre).FullName);
+        }
+
+        private QueryResult<Tuple<BaseItem, ItemCounts>> GetItemValues(InternalItemsQuery query, int itemValueType, string returnType)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            if (!query.Limit.HasValue)
+            {
+                query.EnableTotalRecordCount = false;
+            }
+
+            CheckDisposed();
+
+            var now = DateTime.UtcNow;
+
+            using (var cmd = _connection.CreateCommand())
+            {
+                var itemCountColumns = new List<Tuple<string, string>>();
+
+                var typesToCount = query.IncludeItemTypes.ToList();
+
+                if (typesToCount.Count == 0)
+                {
+                    //typesToCount.Add("Item");
+                }
+
+                foreach (var type in typesToCount)
+                {
+                    var itemCountColumnQuery = "Select Count(Value) from ItemValues where ItemValues.CleanValue=CleanName AND Type=@ItemValueType AND ItemId in (";
+                    itemCountColumnQuery += "select guid" + GetFromText();
+
+                    var typeSubQuery = new InternalItemsQuery(query.User)
+                    {
+                        ExcludeItemTypes = query.ExcludeItemTypes,
+                        MediaTypes = query.MediaTypes,
+                        AncestorIds = query.AncestorIds,
+                        ExcludeItemIds = query.ExcludeItemIds,
+                        ItemIds = query.ItemIds,
+                        TopParentIds = query.TopParentIds,
+                        ParentId = query.ParentId,
+                        IsPlayed = query.IsPlayed
+                    };
+                    if (string.Equals(type, "Item", StringComparison.OrdinalIgnoreCase))
+                    {
+                        typeSubQuery.IncludeItemTypes = query.IncludeItemTypes;
+                    }
+                    else
+                    {
+                        typeSubQuery.IncludeItemTypes = new[] { type };
+                    }
+                    var whereClauses = GetWhereClauses(typeSubQuery, cmd, type);
+
+                    var typeWhereText = whereClauses.Count == 0 ?
+                        string.Empty :
+                        " where " + string.Join(" AND ", whereClauses.ToArray());
+
+                    itemCountColumnQuery += typeWhereText;
+
+                    itemCountColumnQuery += ")";
+
+                    var columnName = type + "Count";
+
+                    itemCountColumns.Add(new Tuple<string, string>(columnName, "(" + itemCountColumnQuery + ") as " + columnName));
+                }
+
+                var columns = _retriveItemColumns.ToList();
+                columns.AddRange(itemCountColumns.Select(i => i.Item2).ToArray());
+
+                cmd.CommandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, columns.ToArray(), cmd)) + GetFromText();
+                cmd.CommandText += GetJoinUserDataText(query);
+
+                var innerQuery = new InternalItemsQuery(query.User)
+                {
+                    ExcludeItemTypes = query.ExcludeItemTypes,
+                    IncludeItemTypes = query.IncludeItemTypes,
+                    MediaTypes = query.MediaTypes,
+                    AncestorIds = query.AncestorIds,
+                    ExcludeItemIds = query.ExcludeItemIds,
+                    ItemIds = query.ItemIds,
+                    TopParentIds = query.TopParentIds,
+                    ParentId = query.ParentId,
+                    IsPlayed = query.IsPlayed
+                };
+
+                var innerWhereClauses = GetWhereClauses(innerQuery, cmd);
+
+                var innerWhereText = innerWhereClauses.Count == 0 ?
+                    string.Empty :
+                    " where " + string.Join(" AND ", innerWhereClauses.ToArray());
+
+                var whereText = " where Type=@SelectType";
+                whereText += " And CleanName In (Select CleanValue from ItemValues where Type=@ItemValueType AND ItemId in (select guid from TypedBaseItems" + innerWhereText + "))";
+                cmd.CommandText += whereText;
+
+                var outerQuery = new InternalItemsQuery(query.User)
+                {
+                    IsFavorite = query.IsFavorite,
+                    IsFavoriteOrLiked = query.IsFavoriteOrLiked,
+                    IsLiked = query.IsLiked,
+                    IsLocked = query.IsLocked,
+                    NameLessThan = query.NameLessThan,
+                    NameStartsWith = query.NameStartsWith,
+                    NameStartsWithOrGreater = query.NameStartsWithOrGreater,
+                    AlbumArtistStartsWithOrGreater = query.AlbumArtistStartsWithOrGreater,
+                    Tags = query.Tags,
+                    OfficialRatings = query.OfficialRatings,
+                    Genres = query.GenreIds,
+                    Years = query.Years
+                };
+
+                var outerWhereClauses = GetWhereClauses(outerQuery, cmd);
+
+                var outerWhereText = outerWhereClauses.Count == 0 ?
+                    string.Empty :
+                    " AND " + string.Join(" AND ", outerWhereClauses.ToArray());
+                cmd.CommandText += outerWhereText;
+
+                cmd.Parameters.Add(cmd, "@SelectType", DbType.String).Value = returnType;
+                cmd.Parameters.Add(cmd, "@ItemValueType", DbType.Int32).Value = itemValueType;
+
+                if (EnableJoinUserData(query))
+                {
+                    cmd.Parameters.Add(cmd, "@UserId", DbType.Guid).Value = query.User.Id;
+                }
+
+                //cmd.CommandText += GetGroupBy(query);
+                cmd.CommandText += " group by PresentationUniqueKey";
+
+                cmd.CommandText += " order by SortName";
+
+                if (query.Limit.HasValue || query.StartIndex.HasValue)
+                {
+                    var limit = query.Limit ?? int.MaxValue;
+
+                    cmd.CommandText += " LIMIT " + limit.ToString(CultureInfo.InvariantCulture);
+
+                    if (query.StartIndex.HasValue)
+                    {
+                        cmd.CommandText += " OFFSET " + query.StartIndex.Value.ToString(CultureInfo.InvariantCulture);
+                    }
+                }
+
+                cmd.CommandText += ";";
+
+                var isReturningZeroItems = query.Limit.HasValue && query.Limit <= 0;
+
+                if (isReturningZeroItems)
+                {
+                    cmd.CommandText = "";
+                }
+
+                if (query.EnableTotalRecordCount)
+                {
+                    cmd.CommandText += "select count (guid)" + GetFromText();
+
+                    cmd.CommandText += GetJoinUserDataText(query);
+                    cmd.CommandText += whereText;
+                }
+                else
+                {
+                    cmd.CommandText = cmd.CommandText.TrimEnd(';');
+                }
+
+                var list = new List<Tuple<BaseItem, ItemCounts>>();
+                var count = 0;
+
+                var commandBehavior = isReturningZeroItems || !query.EnableTotalRecordCount
+                    ? (CommandBehavior.SequentialAccess | CommandBehavior.SingleResult)
+                    : CommandBehavior.SequentialAccess;
+
+                using (var reader = cmd.ExecuteReader(commandBehavior))
+                {
+                    LogQueryTime("GetItemValues", cmd, now);
+
+                    if (isReturningZeroItems)
+                    {
+                        if (reader.Read())
+                        {
+                            count = reader.GetInt32(0);
+                        }
+                    }
+                    else
+                    {
+                        while (reader.Read())
+                        {
+                            var item = GetItem(reader);
+                            if (item != null)
+                            {
+                                var countStartColumn = columns.Count - typesToCount.Count;
+
+                                list.Add(new Tuple<BaseItem, ItemCounts>(item, GetItemCounts(reader, countStartColumn, typesToCount)));
+                            }
+                        }
+
+                        if (reader.NextResult() && reader.Read())
+                        {
+                            count = reader.GetInt32(0);
+                        }
+                    }
+                }
+
+                if (count == 0)
+                {
+                    count = list.Count;
+                }
+
+                return new QueryResult<Tuple<BaseItem, ItemCounts>>
+                {
+                    Items = list.ToArray(),
+                    TotalRecordCount = count
+                };
+
+            }
+        }
+
+        private ItemCounts GetItemCounts(IDataReader reader, int countStartColumn, List<string> typesToCount)
+        {
+            var counts = new ItemCounts();
+
+            for (var i = 0; i < typesToCount.Count; i++)
+            {
+                var value = reader.GetInt32(countStartColumn + i);
+
+                var type = typesToCount[i];
+                if (string.Equals(type, "Series", StringComparison.OrdinalIgnoreCase))
+                {
+                    counts.SeriesCount = value;
+                }
+                else if (string.Equals(type, "Episode", StringComparison.OrdinalIgnoreCase))
+                {
+                    counts.EpisodeCount = value;
+                }
+                else if (string.Equals(type, "Movie", StringComparison.OrdinalIgnoreCase))
+                {
+                    counts.MovieCount = value;
+                }
+                else if (string.Equals(type, "MusicAlbum", StringComparison.OrdinalIgnoreCase))
+                {
+                    counts.AlbumCount = value;
+                }
+                else if (string.Equals(type, "Audio", StringComparison.OrdinalIgnoreCase))
+                {
+                    counts.SongCount = value;
+                }
+                else if (string.Equals(type, "Game", StringComparison.OrdinalIgnoreCase))
+                {
+                    counts.GameCount = value;
+                }
+                counts.ItemCount += value;
+            }
+
+            return counts;
+        }
+
+        private List<Tuple<int, string>> GetItemValuesToSave(BaseItem item)
         {
             var list = new List<Tuple<int, string>>();
 
@@ -3604,6 +3906,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _saveItemValuesCommand.GetParameter(0).Value = itemId;
                 _saveItemValuesCommand.GetParameter(1).Value = pair.Item1;
                 _saveItemValuesCommand.GetParameter(2).Value = pair.Item2;
+                if (pair.Item2 == null)
+                {
+                    _saveItemValuesCommand.GetParameter(3).Value = null;
+                }
+                else
+                {
+                    _saveItemValuesCommand.GetParameter(3).Value = pair.Item2.RemoveDiacritics();
+                }
                 _saveItemValuesCommand.Transaction = transaction;
 
                 _saveItemValuesCommand.ExecuteNonQuery();

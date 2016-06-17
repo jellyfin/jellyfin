@@ -197,22 +197,6 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
 
         private async Task DownloadFFMpeg(FFMpegInstallInfo downloadinfo, string directory, IProgress<double> progress)
         {
-            if (downloadinfo.IsEmbedded)
-            {
-                var tempFile = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString());
-                _fileSystem.CreateDirectory(Path.GetDirectoryName(tempFile));
-
-                using (var stream = _ownerAssembly.GetManifestResourceStream(downloadinfo.DownloadUrls[0]))
-                {
-                    using (var fs = _fileSystem.GetFileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read, true))
-                    {
-                        await stream.CopyToAsync(fs).ConfigureAwait(false);
-                    }
-                }
-                ExtractFFMpeg(downloadinfo, tempFile, directory);
-                return;
-            }
-
             foreach (var url in downloadinfo.DownloadUrls)
             {
                 progress.Report(0);
