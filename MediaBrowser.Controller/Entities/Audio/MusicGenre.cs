@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using MediaBrowser.Common.Extensions;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -14,8 +15,16 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             var list = base.GetUserDataKeys();
 
-            list.Insert(0, "MusicGenre-" + Name);
+            list.Insert(0, GetType().Name + "-" + (Name ?? string.Empty).RemoveDiacritics());
             return list;
+        }
+
+        public override string PresentationUniqueKey
+        {
+            get
+            {
+                return GetUserDataKeys()[0];
+            }
         }
 
         [IgnoreDataMember]

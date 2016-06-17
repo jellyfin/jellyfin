@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -165,10 +166,17 @@ namespace MediaBrowser.Controller.Entities.Audio
                 list.Add("Artist-Musicbrainz-" + id);
             }
 
-            list.Add("Artist-" + item.Name);
+            list.Add("Artist-" + (item.Name ?? string.Empty).RemoveDiacritics());
             return list;
         }
 
+        public override string PresentationUniqueKey
+        {
+            get
+            {
+                return "Artist-" + (Name ?? string.Empty).RemoveDiacritics();
+            }
+        }
         protected override bool GetBlockUnratedValue(UserPolicy config)
         {
             return config.BlockUnratedItems.Contains(UnratedItem.Music);

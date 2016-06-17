@@ -69,6 +69,10 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public string PreferredMetadataLanguage { get; set; }
 
+        public long? Size { get; set; }
+        public string Container { get; set; }
+        public string ShortOverview { get; set; }
+
         public List<ItemImageInfo> ImageInfos { get; set; }
 
         [IgnoreDataMember]

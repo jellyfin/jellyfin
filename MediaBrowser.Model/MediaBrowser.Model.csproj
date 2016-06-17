@@ -227,7 +227,6 @@
     <Compile Include="Entities\ProviderIdsExtensions.cs" />
     <Compile Include="Entities\ScrollDirection.cs" />
     <Compile Include="Entities\SortOrder.cs" />
-    <Compile Include="Entities\VideoSize.cs" />
     <Compile Include="Events\GenericEventArgs.cs" />
     <Compile Include="Extensions\DoubleHelper.cs" />
     <Compile Include="Extensions\IHasPropertyChangedEvent.cs" />
