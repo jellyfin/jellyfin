@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Dto;
+﻿using System;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -8,6 +9,8 @@ using MediaBrowser.Model.Dto;
 using ServiceStack;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -86,9 +89,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetMusicGenres request)
         {
-            var result = GetResult(request);
+            var result = GetResultSlim(request);
 
             return ToOptimizedSerializedResultUsingCache(result);
+        }
+
+        protected override QueryResult<Tuple<BaseItem, ItemCounts>> GetItems(GetItemsByName request, InternalItemsQuery query)
+        {
+            return LibraryManager.GetMusicGenres(query);
         }
 
         /// <summary>
@@ -99,10 +107,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
         protected override IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
-            return items
-                .SelectMany(i => i.Genres)
-                .DistinctNames()
-                .Select(name => LibraryManager.GetMusicGenre(name));
+            throw new NotImplementedException();
         }
     }
 }

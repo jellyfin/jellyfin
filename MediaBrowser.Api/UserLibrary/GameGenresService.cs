@@ -9,6 +9,7 @@ using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -87,9 +88,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetGameGenres request)
         {
-            var result = GetResult(request);
+            var result = GetResultSlim(request);
 
             return ToOptimizedSerializedResultUsingCache(result);
+        }
+
+        protected override QueryResult<Tuple<BaseItem, ItemCounts>> GetItems(GetItemsByName request, InternalItemsQuery query)
+        {
+            return LibraryManager.GetGameGenres(query);
         }
 
         /// <summary>
@@ -100,22 +106,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
         protected override IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
-            return items
-                .SelectMany(i => i.Genres)
-                .DistinctNames()
-                .Select(name =>
-                {
-                    try
-                    {
-                        return LibraryManager.GetGameGenre(name);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.ErrorException("Error getting genre {0}", ex, name);
-                        return null;
-                    }
-                })
-                .Where(i => i != null);
+            throw new NotImplementedException();
         }
     }
 }

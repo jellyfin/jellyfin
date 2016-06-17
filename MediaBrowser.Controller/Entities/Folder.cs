@@ -216,7 +216,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                return LoadChildren().Select(LibraryManager.GetItemById).Where(i => i != null);
+                return LoadChildren();
             }
         }
 
@@ -270,7 +270,7 @@ namespace MediaBrowser.Controller.Entities
         /// Loads our children.  Validation will occur externally.
         /// We want this sychronous.
         /// </summary>
-        protected virtual IEnumerable<Guid> LoadChildren()
+        protected virtual IEnumerable<BaseItem> LoadChildren()
         {
             //just load our children from the repo - the library will be validated and maintained in other processes
             return GetCachedChildren();
@@ -657,9 +657,9 @@ namespace MediaBrowser.Controller.Entities
         /// Get our children from the repo - stubbed for now
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        protected IEnumerable<Guid> GetCachedChildren()
+        protected IEnumerable<BaseItem> GetCachedChildren()
         {
-            return ItemRepository.GetItemIdsList(new InternalItemsQuery
+            return ItemRepository.GetItemList(new InternalItemsQuery
             {
                 ParentId = Id,
                 GroupByPresentationUniqueKey = false

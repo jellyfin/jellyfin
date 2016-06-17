@@ -33,6 +33,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Net;
@@ -1278,7 +1279,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private bool EnableCaching
         {
-            get { return true; }
+            get { return false; }
         }
 
         public IEnumerable<BaseItem> GetItemList(InternalItemsQuery query)
@@ -1324,6 +1325,99 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             return ItemRepository.GetItemIdsList(query);
+        }
+
+        public QueryResult<Tuple<BaseItem, ItemCounts>> GetStudios(InternalItemsQuery query)
+        {
+            if (query.User != null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            SetTopParentOrAncestorIds(query);
+            return ItemRepository.GetStudios(query);
+        }
+
+        public QueryResult<Tuple<BaseItem, ItemCounts>> GetGenres(InternalItemsQuery query)
+        {
+            if (query.User != null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            SetTopParentOrAncestorIds(query);
+            return ItemRepository.GetGenres(query);
+        }
+
+        public QueryResult<Tuple<BaseItem, ItemCounts>> GetGameGenres(InternalItemsQuery query)
+        {
+            if (query.User != null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            SetTopParentOrAncestorIds(query);
+            return ItemRepository.GetGameGenres(query);
+        }
+
+        public QueryResult<Tuple<BaseItem, ItemCounts>> GetMusicGenres(InternalItemsQuery query)
+        {
+            if (query.User != null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            SetTopParentOrAncestorIds(query);
+            return ItemRepository.GetMusicGenres(query);
+        }
+
+        public QueryResult<Tuple<BaseItem, ItemCounts>> GetArtists(InternalItemsQuery query)
+        {
+            if (query.User != null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            SetTopParentOrAncestorIds(query);
+            return ItemRepository.GetArtists(query);
+        }
+
+        private void SetTopParentOrAncestorIds(InternalItemsQuery query)
+        {
+            if (query.AncestorIds.Length == 0)
+            {
+                return;
+            }
+
+            var parents = query.AncestorIds.Select(i => GetItemById(new Guid(i))).ToList();
+
+            if (parents.All(i =>
+            {
+                if (i is ICollectionFolder || i is UserView)
+                {
+                    return true;
+                }
+
+                _logger.Debug("Query requires ancestor query due to type: " + i.GetType().Name);
+                return false;
+
+            }))
+            {
+                // Optimize by querying against top level views
+                query.TopParentIds = parents.SelectMany(i => GetTopParentsForQuery(i, query.User)).Select(i => i.Id.ToString("N")).ToArray();
+                query.AncestorIds = new string[] { };
+            }
+        }
+
+        public QueryResult<Tuple<BaseItem, ItemCounts>> GetAlbumArtists(InternalItemsQuery query)
+        {
+            if (query.User != null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            SetTopParentOrAncestorIds(query);
+            return ItemRepository.GetAlbumArtists(query);
         }
 
         public IEnumerable<BaseItem> GetItemList(InternalItemsQuery query, IEnumerable<string> parentIds)

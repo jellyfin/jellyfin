@@ -599,9 +599,6 @@
     <Compile Include="..\MediaBrowser.Model\Entities\Video3DFormat.cs">
       <Link>Entities\Video3DFormat.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Entities\VideoSize.cs">
-      <Link>Entities\VideoSize.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Entities\VideoType.cs">
       <Link>Entities\VideoType.cs</Link>
     </Compile>
