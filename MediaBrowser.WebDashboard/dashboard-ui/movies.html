@@ -70,17 +70,20 @@
         </div>
     </div>
     <div class="pageTabContent ehsContent" id="collectionsTab" data-index="3">
-        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .25em;">
-
-            <div class="listTopPaging">
-                &nbsp;
-            </div>
-
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+            <button is="paper-icon-button-light" class="btnSelectView" title="${ButtonSelectView}"><iron-icon icon="view-comfy"></iron-icon></button>
+            <button is="paper-icon-button-light" class="btnSort" title="${ButtonSort}"><iron-icon icon="sort-by-alpha"></iron-icon></button>
             <button type="button" is="paper-icon-button-light" class="btnNewCollection autoSize"><i class="md-icon">add</i></button>
         </div>
-        <div class="itemsContainer" style="text-align:center;"></div>
-        <div class="noItemsMessage" style="display: none; text-align: center;">
-            <p>${MessageNoCollectionsAvailable}</p>
+
+        <div class="alphaPicker alphabetPicker vertical">
+        </div>
+
+        <div class="itemsContainer itemsContainerWithAlphaPicker" style="text-align:center;">
+        </div>
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
         </div>
     </div>
     <div class="pageTabContent ehsContent" id="genresTab" data-index="4">
