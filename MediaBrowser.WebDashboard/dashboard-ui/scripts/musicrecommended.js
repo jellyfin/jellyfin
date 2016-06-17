@@ -283,7 +283,7 @@
                     depends.push('scripts/musicalbums');
                     break;
                 case 2:
-                    depends.push('scripts/musicalbumartists');
+                    depends.push('scripts/musicartists');
                     break;
                 case 3:
                     depends.push('scripts/musicartists');
@@ -311,6 +311,13 @@
                 var controller = tabControllers[index];
                 if (!controller) {
                     controller = index ? new controllerFactory(view, params, tabContent) : self;
+
+                    if (index == 2) {
+                        controller.mode = 'albumartists';
+                    } else if (index == 3) {
+                        controller.mode = 'artists';
+                    }
+
                     tabControllers[index] = controller;
 
                     if (controller.initTab) {

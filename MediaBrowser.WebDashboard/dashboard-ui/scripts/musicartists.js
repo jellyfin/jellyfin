@@ -38,7 +38,7 @@
         function getSavedQueryKey(context) {
 
             if (!context.savedQueryKey) {
-                context.savedQueryKey = LibraryBrowser.getSavedQueryKey('artists');
+                context.savedQueryKey = LibraryBrowser.getSavedQueryKey(self.mode);
             }
             return context.savedQueryKey;
         }
@@ -49,7 +49,11 @@
 
             var query = getQuery(page);
 
-            ApiClient.getArtists(Dashboard.getCurrentUserId(), query).then(function (result) {
+            var promise = self.mode == 'albumartists' ?
+                ApiClient.getAlbumArtists(Dashboard.getCurrentUserId(), query) :
+                ApiClient.getArtists(Dashboard.getCurrentUserId(), query);
+
+            promise.then(function (result) {
 
                 // Scroll back up so they can see the results from the beginning
                 window.scrollTo(0, 0);
@@ -141,7 +145,7 @@
 
                 var filterDialog = new filterDialogFactory({
                     query: getQuery(page),
-                    mode: 'artists'
+                    mode: self.mode
                 });
 
                 Events.on(filterDialog, 'filterchange', function () {
