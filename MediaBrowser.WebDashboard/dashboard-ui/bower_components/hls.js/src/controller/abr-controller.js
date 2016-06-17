@@ -34,7 +34,9 @@ class AbrController extends EventHandler {
     if (!this.timer) {
       this.timer = setInterval(this.onCheck, 100);
     }
-    this.fragCurrent = data.frag;
+    let frag = data.frag;
+    frag.trequest = performance.now();
+    this.fragCurrent = frag;
   }
 
   abandonRulesCheck() {
@@ -57,12 +59,13 @@ class AbrController extends EventHandler {
       let requestDelay = performance.now() - frag.trequest;
       // monitor fragment load progress after half of expected fragment duration,to stabilize bitrate
       if (requestDelay > (500 * frag.duration)) {
-        let loadRate = Math.max(1,frag.loaded * 1000 / requestDelay); // byte/s; at least 1 byte/s to avoid division by zero
-        if (frag.expectedLen < frag.loaded) {
-          frag.expectedLen = frag.loaded;
-        }
+        let levels = hls.levels,
+            loadRate = Math.max(1,frag.loaded * 1000 / requestDelay), // byte/s; at least 1 byte/s to avoid division by zero
+            // compute expected fragment length using frag duration and level bitrate. also ensure that expected len is gte than already loaded size
+            expectedLen = Math.max(frag.loaded, Math.round(frag.duration * levels[frag.level].bitrate / 8));
+
         let pos = v.currentTime;
-        let fragLoadedDelay = (frag.expectedLen - frag.loaded) / loadRate;
+        let fragLoadedDelay = (expectedLen - frag.loaded) / loadRate;
         let bufferStarvationDelay = BufferHelper.bufferInfo(v,pos,hls.config.maxBufferHole).end - pos;
         // consider emergency switch down only if we have less than 2 frag buffered AND
         // time to finish loading current fragment is bigger than buffer starvation delay
@@ -75,7 +78,7 @@ class AbrController extends EventHandler {
             // compute time to load next fragment at lower level
             // 0.8 : consider only 80% of current bw to be conservative
             // 8 = bits per byte (bps/Bps)
-            fragLevelNextLoadedDelay = frag.duration * hls.levels[nextLoadLevel].bitrate / (8 * 0.8 * loadRate);
+            fragLevelNextLoadedDelay = frag.duration * levels[nextLoadLevel].bitrate / (8 * 0.8 * loadRate);
             logger.log(`fragLoadedDelay/bufferStarvationDelay/fragLevelNextLoadedDelay[${nextLoadLevel}] :${fragLoadedDelay.toFixed(1)}/${bufferStarvationDelay.toFixed(1)}/${fragLevelNextLoadedDelay.toFixed(1)}`);
             if (fragLevelNextLoadedDelay < bufferStarvationDelay) {
               // we found a lower level that be rebuffering free with current estimated bw !

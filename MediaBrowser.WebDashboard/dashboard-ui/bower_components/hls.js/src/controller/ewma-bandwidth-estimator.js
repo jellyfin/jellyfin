@@ -38,7 +38,7 @@ class EwmaBandWidthEstimator {
 
 
   getEstimate() {
-    if (this.fast_.getTotalWeight() < this.minWeight_) {
+    if (!this.fast_ || this.fast_.getTotalWeight() < this.minWeight_) {
       return this.defaultEstimate_;
     }
     //console.log('slow estimate:'+ Math.round(this.slow_.getEstimate()));
