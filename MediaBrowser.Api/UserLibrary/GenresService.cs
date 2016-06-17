@@ -9,6 +9,7 @@ using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -92,9 +93,26 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetGenres request)
         {
-            var result = GetResult(request);
+            var result = GetResultSlim(request);
 
             return ToOptimizedSerializedResultUsingCache(result);
+        }
+
+        protected override QueryResult<Tuple<BaseItem, ItemCounts>> GetItems(GetItemsByName request, InternalItemsQuery query)
+        {
+            var viewType = GetParentItemViewType(request);
+
+            if (string.Equals(viewType, CollectionType.Music) || string.Equals(viewType, CollectionType.MusicVideos))
+            {
+                return LibraryManager.GetMusicGenres(query);
+            }
+
+            if (string.Equals(viewType, CollectionType.Games))
+            {
+                return LibraryManager.GetGameGenres(query);
+            }
+
+            return LibraryManager.GetGenres(query);
         }
 
         /// <summary>
@@ -105,52 +123,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
         protected override IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
-            var viewType = GetParentItemViewType(request);
-
-            if (string.Equals(viewType, CollectionType.Music) || string.Equals(viewType, CollectionType.MusicVideos))
-            {
-                return items
-                    .SelectMany(i => i.Genres)
-                    .DistinctNames()
-                    .Select(name => LibraryManager.GetMusicGenre(name));
-            }
-
-            if (string.Equals(viewType, CollectionType.Games))
-            {
-                return items
-                    .SelectMany(i => i.Genres)
-                    .DistinctNames()
-                    .Select(name =>
-                    {
-                        try
-                        {
-                            return LibraryManager.GetGameGenre(name);
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.ErrorException("Error getting genre {0}", ex, name);
-                            return null;
-                        }
-                    })
-                    .Where(i => i != null);
-            }
-
-            return items
-                .SelectMany(i => i.Genres)
-                .DistinctNames()
-                .Select(name =>
-                {
-                    try
-                    {
-                        return LibraryManager.GetGenre(name);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.ErrorException("Error getting genre {0}", ex, name);
-                        return null;
-                    }
-                })
-                .Where(i => i != null);
+            throw new NotImplementedException();
         }
     }
 }

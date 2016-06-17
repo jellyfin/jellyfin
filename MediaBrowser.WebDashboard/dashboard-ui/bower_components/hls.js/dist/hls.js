@@ -435,7 +435,9 @@ var AbrController = function (_EventHandler) {
       if (!this.timer) {
         this.timer = setInterval(this.onCheck, 100);
       }
-      this.fragCurrent = data.frag;
+      var frag = data.frag;
+      frag.trequest = performance.now();
+      this.fragCurrent = frag;
     }
   }, {
     key: 'abandonRulesCheck',
@@ -461,12 +463,14 @@ var AbrController = function (_EventHandler) {
         var requestDelay = performance.now() - frag.trequest;
         // monitor fragment load progress after half of expected fragment duration,to stabilize bitrate
         if (requestDelay > 500 * frag.duration) {
-          var loadRate = Math.max(1, frag.loaded * 1000 / requestDelay); // byte/s; at least 1 byte/s to avoid division by zero
-          if (frag.expectedLen < frag.loaded) {
-            frag.expectedLen = frag.loaded;
-          }
+          var levels = hls.levels,
+              loadRate = Math.max(1, frag.loaded * 1000 / requestDelay),
+              // byte/s; at least 1 byte/s to avoid division by zero
+          // compute expected fragment length using frag duration and level bitrate. also ensure that expected len is gte than already loaded size
+          expectedLen = Math.max(frag.loaded, Math.round(frag.duration * levels[frag.level].bitrate / 8));
+
           var pos = v.currentTime;
-          var fragLoadedDelay = (frag.expectedLen - frag.loaded) / loadRate;
+          var fragLoadedDelay = (expectedLen - frag.loaded) / loadRate;
           var bufferStarvationDelay = _bufferHelper2.default.bufferInfo(v, pos, hls.config.maxBufferHole).end - pos;
           // consider emergency switch down only if we have less than 2 frag buffered AND
           // time to finish loading current fragment is bigger than buffer starvation delay
@@ -480,7 +484,7 @@ var AbrController = function (_EventHandler) {
               // compute time to load next fragment at lower level
               // 0.8 : consider only 80% of current bw to be conservative
               // 8 = bits per byte (bps/Bps)
-              fragLevelNextLoadedDelay = frag.duration * hls.levels[nextLoadLevel].bitrate / (8 * 0.8 * loadRate);
+              fragLevelNextLoadedDelay = frag.duration * levels[nextLoadLevel].bitrate / (8 * 0.8 * loadRate);
               _logger.logger.log('fragLoadedDelay/bufferStarvationDelay/fragLevelNextLoadedDelay[' + nextLoadLevel + '] :' + fragLoadedDelay.toFixed(1) + '/' + bufferStarvationDelay.toFixed(1) + '/' + fragLevelNextLoadedDelay.toFixed(1));
               if (fragLevelNextLoadedDelay < bufferStarvationDelay) {
                 // we found a lower level that be rebuffering free with current estimated bw !
@@ -1257,7 +1261,7 @@ var EwmaBandWidthEstimator = function () {
   }, {
     key: 'getEstimate',
     value: function getEstimate() {
-      if (this.fast_.getTotalWeight() < this.minWeight_) {
+      if (!this.fast_ || this.fast_.getTotalWeight() < this.minWeight_) {
         return this.defaultEstimate_;
       }
       //console.log('slow estimate:'+ Math.round(this.slow_.getEstimate()));
@@ -1868,9 +1872,12 @@ var StreamController = function (_EventHandler) {
 
               if (bufferEnd < Math.max(start, end - maxLatency)) {
                 var targetLatency = config.liveSyncDuration !== undefined ? config.liveSyncDuration : config.liveSyncDurationCount * levelDetails.targetduration;
-                this.seekAfterBuffered = start + Math.max(0, levelDetails.totalduration - targetLatency);
-                _logger.logger.log('buffer end: ' + bufferEnd + ' is located too far from the end of live sliding playlist, media position will be reseted to: ' + this.seekAfterBuffered.toFixed(3));
-                bufferEnd = this.seekAfterBuffered;
+                var liveSyncPosition = start + Math.max(0, levelDetails.totalduration - targetLatency);
+                _logger.logger.log('buffer end: ' + bufferEnd + ' is located too far from the end of live sliding playlist, reset currentTime to : ' + liveSyncPosition.toFixed(3));
+                bufferEnd = liveSyncPosition;
+                if (media && media.readyState && media.duration > liveSyncPosition) {
+                  media.currentTime = liveSyncPosition;
+                }
               }
 
               // if end of buffer greater than live edge, don't load any fragment
@@ -1976,11 +1983,6 @@ var StreamController = function (_EventHandler) {
                 hls.trigger(_events2.default.KEY_LOADING, { frag: frag });
               } else {
                 _logger.logger.log('Loading ' + frag.sn + ' of [' + levelDetails.startSN + ' ,' + levelDetails.endSN + '],level ' + level + ', currentTime:' + pos + ',bufferEnd:' + bufferEnd.toFixed(3));
-                frag.autoLevel = hls.autoLevelEnabled;
-                if (this.levels.length > 1) {
-                  frag.expectedLen = Math.round(frag.duration * this.levels[level].bitrate / 8);
-                  frag.trequest = performance.now();
-                }
                 // ensure that we are not reloading the same fragments in loop ...
                 if (this.fragLoadIdx !== undefined) {
                   this.fragLoadIdx++;
@@ -2001,6 +2003,7 @@ var StreamController = function (_EventHandler) {
                 frag.loadIdx = this.fragLoadIdx;
                 this.fragCurrent = frag;
                 this.startFragRequested = true;
+                frag.autoLevel = hls.autoLevelEnabled;
                 hls.trigger(_events2.default.FRAG_LOADING, { frag: frag });
                 this.state = State.FRAG_LOADING;
               }
@@ -2665,36 +2668,32 @@ var StreamController = function (_EventHandler) {
     key: '_checkBuffer',
     value: function _checkBuffer() {
       var media = this.media;
-      if (media) {
-        // compare readyState
-        var readyState = media.readyState;
-        // if ready state different from HAVE_NOTHING (numeric value 0), we are allowed to seek
-        if (readyState) {
-          var targetSeekPosition, currentTime;
-          // if seek after buffered defined, let's seek if within acceptable range
-          var seekAfterBuffered = this.seekAfterBuffered;
-          if (seekAfterBuffered) {
-            if (media.duration >= seekAfterBuffered) {
-              targetSeekPosition = seekAfterBuffered;
-              this.seekAfterBuffered = undefined;
-            }
-          } else {
-            currentTime = media.currentTime;
-            var loadedmetadata = this.loadedmetadata;
-
-            // adjust currentTime to start position on loaded metadata
-            if (!loadedmetadata && media.buffered.length) {
-              this.loadedmetadata = true;
-              // only adjust currentTime if not equal to 0
-              if (!currentTime && currentTime !== this.startPosition) {
-                targetSeekPosition = this.startPosition;
+      // if ready state different from HAVE_NOTHING (numeric value 0), we are allowed to seek
+      if (media && media.readyState) {
+        var currentTime = media.currentTime,
+            buffered = media.buffered;
+        // adjust currentTime to start position on loaded metadata
+        if (!this.loadedmetadata && buffered.length) {
+          this.loadedmetadata = true;
+          // only adjust currentTime if startPosition not equal to 0
+          var startPosition = this.startPosition;
+          // if currentTime === 0 AND not matching with expected startPosition
+          if (!currentTime && currentTime !== startPosition) {
+            if (startPosition) {
+              _logger.logger.log('target start position:' + startPosition);
+              // at that stage, there should be only one buffered range, as we reach that code after first fragment has been
+              var bufferStart = buffered.start(0),
+                  bufferEnd = buffered.end(0);
+              // if startPosition not buffered, let's seek to buffered.start(0)
+              if (startPosition < bufferStart || startPosition > bufferEnd) {
+                startPosition = bufferStart;
+                _logger.logger.log('target start position not buffered, seek to buffered.start(0) ' + bufferStart);
               }
+              _logger.logger.log('adjust currentTime from ' + currentTime + ' to ' + startPosition);
+              media.currentTime = startPosition;
             }
           }
-          if (targetSeekPosition) {
-            currentTime = targetSeekPosition;
-            _logger.logger.log('target seek position:' + targetSeekPosition);
-          }
+        } else {
           var bufferInfo = _bufferHelper2.default.bufferInfo(media, currentTime, 0),
               expectedPlaying = !(media.paused || // not playing when media is paused
           media.ended || // not playing when media is ended
@@ -2709,8 +2708,7 @@ var StreamController = function (_EventHandler) {
             _logger.logger.log('playback not stuck anymore @' + currentTime);
           }
           // check buffer upfront
-          // if less than jumpThreshold second is buffered, and media is expected to play but playhead is not moving,
-          // and we have a new buffer range available upfront, let's seek to that one
+          // if less than jumpThreshold second is buffered, let's check in more details
           if (expectedPlaying && bufferInfo.len <= jumpThreshold) {
             if (playheadMoving) {
               // playhead moving
@@ -2727,7 +2725,7 @@ var StreamController = function (_EventHandler) {
                 this.seekHoleNudgeDuration += this.config.seekHoleNudgeDuration;
               }
             }
-            // if we are below threshold, try to jump if next buffer range is close
+            // if we are below threshold, try to jump to start of next buffer range if close
             if (bufferInfo.len <= jumpThreshold) {
               // no buffer available @ currentTime, check if next buffer is close (within a config.maxSeekHole second range)
               var nextBufferStart = bufferInfo.nextStart,
@@ -2740,19 +2738,6 @@ var StreamController = function (_EventHandler) {
                 media.currentTime = nextBufferStart + this.seekHoleNudgeDuration;
                 this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.MEDIA_ERROR, details: _errors.ErrorDetails.BUFFER_SEEK_OVER_HOLE, fatal: false, hole: hole });
               }
-            }
-          } else {
-            var _currentTime = media.currentTime;
-            if (targetSeekPosition && _currentTime !== targetSeekPosition) {
-              if (bufferInfo.len === 0) {
-                var nextStart = bufferInfo.nextStart;
-                if (nextStart !== undefined && nextStart - targetSeekPosition < this.config.maxSeekHole) {
-                  targetSeekPosition = nextStart;
-                  _logger.logger.log('target seek position not buffered, seek to next buffered ' + targetSeekPosition);
-                }
-              }
-              _logger.logger.log('adjust currentTime from ' + _currentTime + ' to ' + targetSeekPosition);
-              media.currentTime = targetSeekPosition;
             }
           }
         }
@@ -5918,7 +5903,7 @@ var Hls = function () {
   _createClass(Hls, null, [{
     key: 'isSupported',
     value: function isSupported() {
-      return window.MediaSource && window.MediaSource.isTypeSupported('video/mp4; codecs="avc1.42E01E,mp4a.40.2"');
+      return window.MediaSource && typeof window.MediaSource.isTypeSupported === 'function' && window.MediaSource.isTypeSupported('video/mp4; codecs="avc1.42E01E,mp4a.40.2"');
     }
   }, {
     key: 'Events',
@@ -8841,8 +8826,9 @@ var XhrLoader = function () {
         xhr.setRequestHeader('Range', 'bytes=' + this.byteRange);
       }
       xhr.responseType = this.responseType;
-      this.stats.tfirst = null;
-      this.stats.loaded = 0;
+      var stats = this.stats;
+      stats.tfirst = 0;
+      stats.loaded = 0;
       if (this.xhrSetup) {
         this.xhrSetup(xhr, this.url);
       }
@@ -8860,7 +8846,7 @@ var XhrLoader = function () {
         // http status between 200 to 299 are all successful
         if (status >= 200 && status < 300) {
           window.clearTimeout(this.timeoutHandle);
-          stats.tload = performance.now();
+          stats.tload = Math.max(stats.tfirst, performance.now());
           this.onSuccess(event, stats);
         } else {
           // error ...
@@ -8889,8 +8875,8 @@ var XhrLoader = function () {
     key: 'loadprogress',
     value: function loadprogress(event) {
       var stats = this.stats;
-      if (stats.tfirst === null) {
-        stats.tfirst = performance.now();
+      if (stats.tfirst === 0) {
+        stats.tfirst = Math.max(performance.now(), stats.trequest);
       }
       stats.loaded = event.loaded;
       if (this.onProgress) {

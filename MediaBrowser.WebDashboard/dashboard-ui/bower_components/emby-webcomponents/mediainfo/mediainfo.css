@@ -52,8 +52,16 @@ i.mediaInfoItem {
 }
 
 .mediaInfoProgramAttribute {
-    color: yellow;
+    color: #fff;
     text-transform: uppercase;
+    background: #EF6C00;
+    padding: .25em .5em;
+    border-radius: .25em;
+}
+
+.layout-tv .mediaInfoProgramAttribute {
+    font-size: 90%;
+    padding: .1em .5em;
 }
 
 .layout-tv i.mediaInfoItem {
