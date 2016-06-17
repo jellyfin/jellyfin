@@ -1,4 +1,4 @@
-﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker'], function (events, libraryBrowser, imageLoader, alphaPicker) {
+﻿define(['events', 'libraryBrowser', 'imageLoader'], function (events, libraryBrowser, imageLoader) {
 
     return function (view, params, tabContent) {
 
@@ -131,25 +131,9 @@
 
         function updateFilterControls(tabContent) {
 
-            var query = getQuery(tabContent);
-            self.alphaPicker.value(query.NameStartsWithOrGreater);
         }
 
         function initPage(tabContent) {
-
-            var alphaPickerElement = tabContent.querySelector('.alphaPicker');
-            alphaPickerElement.addEventListener('alphavaluechanged', function (e) {
-                var newValue = e.detail.value;
-                var query = getQuery(tabContent);
-                query.NameStartsWithOrGreater = newValue;
-                query.StartIndex = 0;
-                reloadItems(tabContent);
-            });
-
-            self.alphaPicker = new alphaPicker({
-                element: alphaPickerElement,
-                valueChangeEvent: 'click'
-            });
 
             tabContent.querySelector('.btnFilter').addEventListener('click', function () {
                 self.showFilterMenu();

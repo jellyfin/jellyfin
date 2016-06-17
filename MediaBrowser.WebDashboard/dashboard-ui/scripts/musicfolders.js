@@ -1,4 +1,4 @@
-﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker'], function (events, libraryBrowser, imageLoader, alphaPicker) {
+﻿define(['events', 'libraryBrowser', 'imageLoader'], function (events, libraryBrowser, imageLoader) {
 
     return function (view, params, tabContent) {
 
