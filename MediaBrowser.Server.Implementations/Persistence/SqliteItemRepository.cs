@@ -1735,6 +1735,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             var now = DateTime.UtcNow;
 
+            var list = new List<BaseItem>();
+
             using (var cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, _retriveItemColumns, cmd)) + GetFromText();
@@ -1778,11 +1780,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         var item = GetItem(reader);
                         if (item != null)
                         {
-                            yield return item;
+                            list.Add(item);
                         }
                     }
                 }
             }
+
+            return list;
         }
 
         private void LogQueryTime(string methodName, IDbCommand cmd, DateTime startDate)
