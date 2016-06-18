@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define([], function () {
 
     return function (view, params, tabContent) {
 
@@ -17,13 +17,12 @@
                         IncludeItemTypes: "Audio,MusicVideo",
                         Recursive: true,
                         Fields: "DateCreated,SyncInfo,ItemCounts",
-                        StartIndex: 0,
-                        Limit: LibraryBrowser.getDefaultPageSize()
+                        StartIndex: 0
                     },
                     view: LibraryBrowser.getSavedView(key) || LibraryBrowser.getDefaultItemsView('Thumb', 'Thumb')
                 };
 
-                pageData.query.ParentId = LibraryMenu.getTopParentId();
+                pageData.query.ParentId = params.topParentId;
                 LibraryBrowser.loadSavedQueryValues(key, pageData.query);
             }
             return pageData;
@@ -42,42 +41,27 @@
         function reloadItems(context) {
 
             Dashboard.showLoadingMsg();
-
             var query = getQuery();
 
             ApiClient.getMusicGenres(Dashboard.getCurrentUserId(), query).then(function (result) {
 
-                // Scroll back up so they can see the results from the beginning
-                window.scrollTo(0, 0);
-
                 var html = '';
 
-                var view = getPageData().view;
+                var viewStyle = self.getCurrentViewStyle();
 
-                $('.listTopPaging', context).html(LibraryBrowser.getQueryPagingHtml({
-                    startIndex: query.StartIndex,
-                    limit: query.Limit,
-                    totalRecordCount: result.TotalRecordCount,
-                    showLimit: false,
-                    updatePageSizeSetting: false,
-                    addLayoutButton: true,
-                    currentLayout: view
-
-                }));
-
-                if (view == "Thumb") {
+                if (viewStyle == "Thumb") {
                     html = LibraryBrowser.getPosterViewHtml({
                         items: result.Items,
                         shape: "backdrop",
                         preferThumb: true,
-                        showItemCounts: true,
                         context: 'music',
-                        lazy: true,
+                        showItemCounts: true,
                         centerText: true,
+                        lazy: true,
                         overlayPlayButton: true
                     });
                 }
-                else if (view == "ThumbCard") {
+                else if (viewStyle == "ThumbCard") {
 
                     html = LibraryBrowser.getPosterViewHtml({
                         items: result.Items,
@@ -86,18 +70,30 @@
                         context: 'music',
                         showItemCounts: true,
                         cardLayout: true,
+                        showTitle: true,
+                        lazy: true
+                    });
+                }
+                else if (viewStyle == "PosterCard") {
+                    html = LibraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "portrait",
+                        context: 'music',
+                        showItemCounts: true,
                         lazy: true,
+                        cardLayout: true,
                         showTitle: true
                     });
                 }
-                else if (view == "Poster") {
+                else if (viewStyle == "Poster") {
                     html = LibraryBrowser.getPosterViewHtml({
                         items: result.Items,
                         shape: "portrait",
                         context: 'music',
                         centerText: true,
                         showItemCounts: true,
-                        lazy: true
+                        lazy: true,
+                        overlayPlayButton: true
                     });
                 }
 
@@ -105,32 +101,41 @@
                 elem.innerHTML = html;
                 ImageLoader.lazyChildren(elem);
 
-                $('.btnNextPage', context).on('click', function () {
-                    query.StartIndex += query.Limit;
-                    reloadItems(context);
-                });
-
-                $('.btnPreviousPage', context).on('click', function () {
-                    query.StartIndex -= query.Limit;
-                    reloadItems(context);
-                });
-
-                $('.btnChangeLayout', context).on('layoutchange', function (e, layout) {
-                    getPageData().view = layout;
-                    LibraryBrowser.saveViewSetting(getSavedQueryKey(), layout);
-                    reloadItems(context);
-                });
-
                 LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
                 Dashboard.hideLoadingMsg();
             });
         }
+        self.getViewStyles = function () {
+            return 'Poster,PosterCard,Thumb,ThumbCard'.split(',');
+        };
+
+        self.getCurrentViewStyle = function () {
+            return getPageData(tabContent).view;
+        };
+
+        self.setCurrentViewStyle = function (viewStyle) {
+            getPageData(tabContent).view = viewStyle;
+            LibraryBrowser.saveViewSetting(getSavedQueryKey(tabContent), viewStyle);
+            reloadItems(tabContent);
+        };
+
+        self.enableViewSelection = true;
 
         self.renderTab = function () {
 
             reloadItems(tabContent);
         };
-    };
 
+        var btnSelectView = tabContent.querySelector('.btnSelectView');
+        btnSelectView.addEventListener('click', function (e) {
+
+            LibraryBrowser.showLayoutMenu(e.target, self.getCurrentViewStyle(), self.getViewStyles());
+        });
+
+        btnSelectView.addEventListener('layoutchange', function (e) {
+
+            self.setCurrentViewStyle(e.detail.viewStyle);
+        });
+    };
 });

@@ -1,13 +1,11 @@
-﻿define(['jQuery'], function ($) {
-
+﻿define(['events', 'libraryBrowser', 'imageLoader'], function (events, libraryBrowser, imageLoader) {
 
     return function (view, params, tabContent) {
 
         var self = this;
 
-        var defaultSortBy = "Album,SortName";
-
         var data = {};
+
         function getPageData(context) {
             var key = getSavedQueryKey(context);
             var pageData = data[key];
@@ -15,7 +13,7 @@
             if (!pageData) {
                 pageData = data[key] = {
                     query: {
-                        SortBy: defaultSortBy,
+                        SortBy: "Album,SortName",
                         SortOrder: "Ascending",
                         IncludeItemTypes: "Audio",
                         Recursive: true,
@@ -27,8 +25,8 @@
                     }
                 };
 
-                pageData.query.ParentId = LibraryMenu.getTopParentId();
-                LibraryBrowser.loadSavedQueryValues(key, pageData.query);
+                pageData.query.ParentId = params.topParentId;
+                libraryBrowser.loadSavedQueryValues(key, pageData.query);
             }
             return pageData;
         }
@@ -41,66 +39,112 @@
         function getSavedQueryKey(context) {
 
             if (!context.savedQueryKey) {
-                context.savedQueryKey = LibraryBrowser.getSavedQueryKey('songs');
+                context.savedQueryKey = libraryBrowser.getSavedQueryKey('songs');
             }
             return context.savedQueryKey;
         }
 
-        function reloadItems(context) {
+        function reloadItems(page) {
 
             Dashboard.showLoadingMsg();
 
-            var query = getQuery(context);
+            var query = getQuery(page);
+
             ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (result) {
 
                 // Scroll back up so they can see the results from the beginning
                 window.scrollTo(0, 0);
 
-                var html = '';
+                updateFilterControls(page);
+
                 var pagingHtml = LibraryBrowser.getQueryPagingHtml({
                     startIndex: query.StartIndex,
                     limit: query.Limit,
                     totalRecordCount: result.TotalRecordCount,
                     showLimit: false,
-                    sortButton: true,
                     updatePageSizeSetting: false,
-                    filterButton: true
+                    addLayoutButton: false,
+                    sortButton: false,
+                    filterButton: false
                 });
 
-                context.querySelector('.listTopPaging').innerHTML = pagingHtml;
-
-                html += LibraryBrowser.getListViewHtml({
+                var html = LibraryBrowser.getListViewHtml({
                     items: result.Items,
                     showIndex: true,
                     defaultAction: 'play',
                     smallIcon: true
                 });
 
-                var elem = context.querySelector('#items');
-                elem.innerHTML = html + pagingHtml;
-                ImageLoader.lazyChildren(elem);
+                var i, length;
+                var elems = tabContent.querySelectorAll('.paging');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].innerHTML = pagingHtml;
+                }
 
-                $('.btnNextPage', context).on('click', function () {
+                function onNextPageClick() {
                     query.StartIndex += query.Limit;
-                    reloadItems(context);
-                });
+                    reloadItems(tabContent);
+                }
 
-                $('.btnPreviousPage', context).on('click', function () {
+                function onPreviousPageClick() {
                     query.StartIndex -= query.Limit;
-                    reloadItems(context);
+                    reloadItems(tabContent);
+                }
+
+                elems = tabContent.querySelectorAll('.btnNextPage');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onNextPageClick);
+                }
+
+                elems = tabContent.querySelectorAll('.btnPreviousPage');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onPreviousPageClick);
+                }
+
+                var itemsContainer = tabContent.querySelector('.itemsContainer');
+                itemsContainer.innerHTML = html;
+                imageLoader.lazyChildren(itemsContainer);
+
+                libraryBrowser.saveQueryValues(getSavedQueryKey(page), query);
+
+                Dashboard.hideLoadingMsg();
+            });
+        }
+
+        self.showFilterMenu = function () {
+
+            require(['components/filterdialog/filterdialog'], function (filterDialogFactory) {
+
+                var filterDialog = new filterDialogFactory({
+                    query: getQuery(tabContent),
+                    mode: 'songs'
                 });
 
-                $('.btnFilter', context).on('click', function () {
-                    showFilterMenu(context);
+                Events.on(filterDialog, 'filterchange', function () {
+                    getQuery(tabContent).StartIndex = 0;
+                    reloadItems(tabContent);
                 });
 
-                // On callback make sure to set StartIndex = 0
-                $('.btnSort', context).on('click', function () {
-                    LibraryBrowser.showSortMenu({
-                        items: [{
-                            name: Globalize.translate('OptionTrackName'),
-                            id: 'Name'
-                        },
+                filterDialog.show();
+            });
+        }
+
+        function updateFilterControls(tabContent) {
+
+        }
+
+        function initPage(tabContent) {
+
+            tabContent.querySelector('.btnFilter').addEventListener('click', function () {
+                self.showFilterMenu();
+            });
+
+            tabContent.querySelector('.btnSort').addEventListener('click', function (e) {
+                libraryBrowser.showSortMenu({
+                    items: [{
+                        name: Globalize.translate('OptionTrackName'),
+                        id: 'Name'
+                    },
                         {
                             name: Globalize.translate('OptionAlbum'),
                             id: 'Album,SortName'
@@ -133,39 +177,29 @@
                             name: Globalize.translate('OptionRuntime'),
                             id: 'Runtime,AlbumArtist,Album,SortName'
                         }],
-                        callback: function () {
-                            reloadItems(context);
-                        },
-                        query: query
-                    });
+                    callback: function () {
+                        getQuery(tabContent).StartIndex = 0;
+                        reloadItems(tabContent);
+                    },
+                    query: getQuery(tabContent),
+                    button: e.target
                 });
-
-                LibraryBrowser.saveQueryValues(getSavedQueryKey(context), query);
-
-                Dashboard.hideLoadingMsg();
             });
         }
 
-        function showFilterMenu(context) {
+        self.getCurrentViewStyle = function () {
+            return getPageData(tabContent).view;
+        };
 
-            require(['components/filterdialog/filterdialog'], function (filterDialogFactory) {
+        initPage(tabContent);
 
-                var filterDialog = new filterDialogFactory({
-                    query: getQuery(context),
-                    mode: 'songs'
-                });
-
-                Events.on(filterDialog, 'filterchange', function () {
-                    reloadItems(context);
-                });
-
-                filterDialog.show();
-            });
-        }
-        self.renderTab = function () {
+        self.renderTab = function () {
 
             reloadItems(tabContent);
+            updateFilterControls(tabContent);
+        };
+
+        self.destroy = function () {
         };
     };
-
 });

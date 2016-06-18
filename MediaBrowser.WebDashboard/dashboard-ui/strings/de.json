@@ -2367,5 +2367,10 @@
     "XmlTvKidsCategoriesHelp": "Programme mit diesen Kategorien werden als Kinderprogramme angezeigt. Separiere mehrere mit '|'.",
     "LabelMovieCategories": "Filmkategorien:",
     "XmlTvMovieCategoriesHelp": "Programme mit diesen Kategorien werden als Filme angezeigt. Separiere mehrere mit '|'.",
-    "XmlTvPathHelp": "Ein Pfad zu einer xml tv Datei. Emby wird diese Datei periodisch auf updates pr\u00fcfen und lesen. Du bist f\u00fcr das Erstellen und Updaten verantwortlich."
+    "XmlTvPathHelp": "Ein Pfad zu einer xml tv Datei. Emby wird diese Datei periodisch auf updates pr\u00fcfen und lesen. Du bist f\u00fcr das Erstellen und Updaten verantwortlich.",
+    "LabelBindToLocalNetworkAddress": "Binde an lokale Netzwerkadresse:",
+    "LabelBindToLocalNetworkAddressHelp": "Optional. \u00dcberschreibt die lokale IP Adresse des HTTP Servers. Wenn leer, wird der Server an alle verf\u00fcgbaren Adressen gebunden. \u00c4nderungen ben\u00f6tigen einen Neustart des Emby Servers.",
+    "TitleHostingSettings": "Hosting Einstellungen",
+    "SettingsWarning": "Das Ver\u00e4ndern dieser Werte kann Instabilit\u00e4t und Verbindungsprobleme hervorrufen. Wenn Probleme auftreten sollten empfehlen wir diese Einstellungen auf die Standardwerte zur\u00fcck zu stellen.",
+    "MapChannels": "Kan\u00e4le zuweisen"
 }

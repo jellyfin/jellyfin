@@ -3618,7 +3618,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 var whereText = " where Type=@SelectType";
                 whereText += " And CleanName In (Select CleanValue from ItemValues where Type=@ItemValueType AND ItemId in (select guid from TypedBaseItems" + innerWhereText + "))";
-                cmd.CommandText += whereText;
 
                 var outerQuery = new InternalItemsQuery(query.User)
                 {
@@ -3638,10 +3637,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 var outerWhereClauses = GetWhereClauses(outerQuery, cmd);
 
-                var outerWhereText = outerWhereClauses.Count == 0 ?
+                whereText += outerWhereClauses.Count == 0 ?
                     string.Empty :
                     " AND " + string.Join(" AND ", outerWhereClauses.ToArray());
-                cmd.CommandText += outerWhereText;
+                //cmd.CommandText += GetGroupBy(query);
+
+                cmd.CommandText += whereText;
+                cmd.CommandText += " group by PresentationUniqueKey";
 
                 cmd.Parameters.Add(cmd, "@SelectType", DbType.String).Value = returnType;
                 cmd.Parameters.Add(cmd, "@ItemValueType", DbType.Int32).Value = itemValueType;
@@ -3650,9 +3652,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     cmd.Parameters.Add(cmd, "@UserId", DbType.Guid).Value = query.User.Id;
                 }
-
-                //cmd.CommandText += GetGroupBy(query);
-                cmd.CommandText += " group by PresentationUniqueKey";
 
                 cmd.CommandText += " order by SortName";
 
@@ -3679,7 +3678,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 if (query.EnableTotalRecordCount)
                 {
-                    cmd.CommandText += "select count (guid)" + GetFromText();
+                    cmd.CommandText += "select count (distinct PresentationUniqueKey)" + GetFromText();
 
                     cmd.CommandText += GetJoinUserDataText(query);
                     cmd.CommandText += whereText;

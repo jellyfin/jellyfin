@@ -988,7 +988,7 @@
     "OptionDisplayChannelsInline": "Display channels inline within my views",
     "OptionDisplayChannelsInlineHelp": "If enabled, channels will be displayed directly alongside other views. If disabled, they'll be displayed within a separate Channels view.",
     "LabelDisplayCollectionsView": "Display a collections view to show movie collections",
-    "LabelDisplayCollectionsViewHelp": "This will create a separate view to display collections that you've created or have access to. To create a collection, right-click or tap-hold any movie and select 'Add to Collection'. ",
+    "LabelDisplayCollectionsViewHelp": "This will create a separate view to display movie collections. To create a collection, right-click or tap-hold any movie and select 'Add to Collection'. ",
     "LabelKodiMetadataEnableExtraThumbs": "Copy extrafanart into extrathumbs",
     "LabelKodiMetadataEnableExtraThumbsHelp": "When downloading images they can be saved into both extrafanart and extrathumbs for maximum Kodi skin compatibility.",
     "TabServices": "\u670d\u52d9",
@@ -2367,5 +2367,10 @@
     "XmlTvKidsCategoriesHelp": "Programs with these categories will be displayed as programs for children. Separate multiple with '|'.",
     "LabelMovieCategories": "Movie categories:",
     "XmlTvMovieCategoriesHelp": "Programs with these categories will be displayed as movies. Separate multiple with '|'.",
-    "XmlTvPathHelp": "A path to an xml tv file. Emby will read this file and periodically check it for updates. You are responsible for creating and updating the file."
+    "XmlTvPathHelp": "A path to an xml tv file. Emby will read this file and periodically check it for updates. You are responsible for creating and updating the file.",
+    "LabelBindToLocalNetworkAddress": "Bind to local network address:",
+    "LabelBindToLocalNetworkAddressHelp": "Optional. Override the local IP address to bind the http server to. If left empty, the server will bind to all availabile addresses. Changing this value requires restarting Emby Server.",
+    "TitleHostingSettings": "Hosting Settings",
+    "SettingsWarning": "Changing these values may cause instability or connectivity failures. If you experience any problems, we recommend changing them back to default.",
+    "MapChannels": "Map Channels"
 }

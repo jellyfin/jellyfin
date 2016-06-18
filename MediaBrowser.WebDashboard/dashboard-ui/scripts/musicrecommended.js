@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'libraryBrowser', 'scrollStyles'], function ($, libraryBrowser) {
+﻿define(['libraryBrowser', 'scrollStyles'], function (libraryBrowser) {
 
     function itemsPerRow() {
 
@@ -71,12 +71,12 @@
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
 
-            var elem;
+            var elem = page.querySelector('#recentlyPlayed');
 
             if (result.Items.length) {
-                elem = $('#recentlyPlayed', page).show()[0];
+                elem.classList.remove('hide');
             } else {
-                elem = $('#recentlyPlayed', page).hide()[0];
+                elem.classList.add('hide');
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
@@ -117,12 +117,12 @@
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
 
-            var elem;
+            var elem = page.querySelector('#topPlayed');
 
             if (result.Items.length) {
-                elem = $('#topPlayed', page).show()[0];
+                elem.classList.remove('hide');
             } else {
-                elem = $('#topPlayed', page).hide()[0];
+                elem.classList.add('hide');
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
@@ -160,12 +160,12 @@
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
 
-            var elem;
+            var elem = page.querySelector('#playlists');
 
             if (result.Items.length) {
-                elem = $('#playlists', page).show()[0];
+                elem.classList.remove('hide');
             } else {
-                elem = $('#playlists', page).hide()[0];
+                elem.classList.add('hide');
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
@@ -252,13 +252,13 @@
             var tabContent = view.querySelector('.pageTabContent[data-index=\'' + 0 + '\']');
 
             var containers = tabContent.querySelectorAll('.itemsContainer');
-            if (enableScrollX()) {
-                $(containers).addClass('hiddenScrollX');
-            } else {
-                $(containers).removeClass('hiddenScrollX');
-            }
-
             for (var i = 0, length = containers.length; i < length; i++) {
+                if (enableScrollX()) {
+                    containers[i].classList.add('hiddenScrollX');
+                } else {
+                    containers[i].classList.remove('hiddenScrollX');
+                }
+
                 LibraryBrowser.createCardMenus(containers[i]);
             }
         };
@@ -283,7 +283,7 @@
                     depends.push('scripts/musicalbums');
                     break;
                 case 2:
-                    depends.push('scripts/musicalbumartists');
+                    depends.push('scripts/musicartists');
                     break;
                 case 3:
                     depends.push('scripts/musicartists');
@@ -311,6 +311,13 @@
                 var controller = tabControllers[index];
                 if (!controller) {
                     controller = index ? new controllerFactory(view, params, tabContent) : self;
+
+                    if (index == 2) {
+                        controller.mode = 'albumartists';
+                    } else if (index == 3) {
+                        controller.mode = 'artists';
+                    }
+
                     tabControllers[index] = controller;
 
                     if (controller.initTab) {
