@@ -6,7 +6,12 @@
 
             <div style="margin:1em 0 .5em;padding-left:5px;">
                 <h1 style="display:inline-block;vertical-align:middle;margin: 0;">${HeaderSelectServer}</h1>
-                <a href="https://github.com/MediaBrowser/Wiki/wiki/Emby%20Connect" target="_blank" class="clearLink" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:1em;"><button is="emby-button" type="button" class="raised secondary mini"><iron-icon icon="info"></iron-icon><span>${ButtonHelp}</span></button></a>
+                <a href="https://github.com/MediaBrowser/Wiki/wiki/Emby%20Connect" target="_blank" class="clearLink" style="margin-top: 0; display: inline-block; vertical-align: middle; margin-left: 1em;">
+                    <button is="emby-button" type="button" class="raised secondary mini">
+                        <i class="md-icon">info</i>
+                        <span>${ButtonHelp}</span>
+                    </button>
+                </a>
             </div>
 
             <div class="serverList paperList"></div>
@@ -17,11 +22,21 @@
             </div>
 
             <div class="addServer" style="margin:0 0 1em;">
-                <a href="connectlogin.html?mode=manualserver" class="clearLink"><button is="emby-button" type="button" class="raised cancel block"><iron-icon icon="add"></iron-icon><span>${ButtonAddServer}</span></button></a>
+                <a href="connectlogin.html?mode=manualserver" class="clearLink">
+                    <button is="emby-button" type="button" class="raised cancel block">
+                        <i class="md-icon">add</i>
+                        <span>${ButtonAddServer}</span>
+                    </button>
+                </a>
             </div>
 
             <div class="connectLogin" style="margin:1em 0;display:none;">
-                <a href="connectlogin.html?mode=connect" class="clearLink"><button is="emby-button" type="button" class="raised accent block"><iron-icon icon="check"></iron-icon><span>${ButtonSignInWithConnect}</span></button></a>
+                <a href="connectlogin.html?mode=connect" class="clearLink">
+                    <button is="emby-button" type="button" class="raised accent block">
+                        <i class="md-icon">check</i>
+                        <span>${ButtonSignInWithConnect}</span>
+                    </button>
+                </a>
             </div>
 
             <div class="invitationSection" style="display:none;">

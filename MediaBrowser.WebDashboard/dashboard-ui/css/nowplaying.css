@@ -91,9 +91,10 @@
     }
 }
 
-.nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
-    width: 60px;
-    height: 60px;
+.nowPlayingPage .btnCommand i, .nowPlayingPage .btnPlayStateCommand i {
+    width: 44px;
+    height: 44px;
+    font-size: 44px;
 }
 
 
@@ -173,21 +174,6 @@
 @media (orientation: landscape) and (min-width: 700px) {
     .nowPlayingInfoButtons {
         margin-left: 3em;
-    }
-}
-
-@media (orientation: landscape) and (max-height: 400px) {
-    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
-        width: 60px;
-        height: 60px;
-    }
-}
-
-@media (orientation: portrait) and (max-height: 600px) {
-
-    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
-        width: 60px;
-        height: 60px;
     }
 }
 

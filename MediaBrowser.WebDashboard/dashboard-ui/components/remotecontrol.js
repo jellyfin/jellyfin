@@ -371,14 +371,14 @@
             var toggleRepeatButton = context.querySelector('.repeatToggleButton');
 
             if (playState.RepeatMode == 'RepeatAll') {
-                toggleRepeatButton.icon = "repeat";
+                toggleRepeatButton.innerHTML = "<i class='md-icon'>repeat</i>";
                 toggleRepeatButton.classList.add('nowPlayingPageRepeatActive');
             }
             else if (playState.RepeatMode == 'RepeatOne') {
-                toggleRepeatButton.icon = "repeat-one";
+                toggleRepeatButton.innerHTML = "<i class='md-icon'>repeat_one</i>";
                 toggleRepeatButton.classList.add('nowPlayingPageRepeatActive');
             } else {
-                toggleRepeatButton.icon = "repeat";
+                toggleRepeatButton.innerHTML = "<i class='md-icon'>repeat</i>";
                 toggleRepeatButton.classList.remove('nowPlayingPageRepeatActive');
             }
 
@@ -533,13 +533,13 @@
 
             if (info.isLocalPlayer) {
 
-                btnCast.querySelector('iron-icon').icon = 'cast';
+                btnCast.querySelector('i').innerHTML = 'cast';
                 btnCast.classList.remove('btnActiveCast');
                 context.querySelector('.nowPlayingSelectedPlayer').innerHTML = '';
 
             } else {
 
-                btnCast.querySelector('iron-icon').icon = 'cast-connected';
+                btnCast.querySelector('i').innerHTML = 'cast-connected';
                 btnCast.classList.add('btnActiveCast');
                 context.querySelector('.nowPlayingSelectedPlayer').innerHTML = info.deviceName || info.name;
             }

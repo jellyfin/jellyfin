@@ -48,7 +48,7 @@
     <div class="pageTabContent ehsContent" id="channelsTab" data-index="2">
         <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
             <div class="paging"></div>
-            <button is="paper-icon-button-light" class="btnFilter" title="${ButtonFilter}"><iron-icon icon="filter-list"></iron-icon></button>
+            <button is="paper-icon-button-light" class="btnFilter autoSize" title="${ButtonFilter}"><i class="md-icon">filter_list</i></button>
         </div>
         <div id="items" class="itemsContainer"></div>
     </div>
@@ -61,7 +61,10 @@
         <div id="latestRecordings" class="homePageSection hide">
             <div>
                 <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderLatestRecordings}</h1>
-                <button is="emby-button" type="button" class="raised submit mini categorySyncButton" data-category="Latest"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></button>
+                <button is="emby-button" type="button" class="raised submit mini categorySyncButton" data-category="Latest">
+                    <i class="md-icon">sync</i>
+                    <span>${ButtonSync}</span>
+                </button>
             </div>
             <div class="recordingItems itemsContainer"></div>
             <br />

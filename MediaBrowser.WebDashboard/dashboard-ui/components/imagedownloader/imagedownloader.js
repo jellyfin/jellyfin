@@ -107,8 +107,8 @@
         if (showControls) {
             html += '<div data-role="controlgroup" data-type="horizontal" style="display:inline-block;">';
 
-            html += '<button is="paper-icon-button-light" title="' + Globalize.translate('ButtonPreviousPage') + '" class="btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '><iron-icon icon="arrow-back"></iron-icon></button>';
-            html += '<button is="paper-icon-button-light" title="' + Globalize.translate('ButtonNextPage') + '" class="btnNextPage" ' + (startIndex + limit >= totalRecordCount ? 'disabled' : '') + '><iron-icon icon="arrow-forward"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" title="' + Globalize.translate('ButtonPreviousPage') + '" class="btnPreviousPage autoSize" ' + (startIndex ? '' : 'disabled') + '><i class="md-icon">arrow_back</i></button>';
+            html += '<button is="paper-icon-button-light" title="' + Globalize.translate('ButtonNextPage') + '" class="btnNextPage autoSize" ' + (startIndex + limit >= totalRecordCount ? 'disabled' : '') + '><i class="md-icon">arrow_forward</i></button>';
             html += '</div>';
         }
 
@@ -223,7 +223,7 @@
             html += '</div>';
         }
 
-        html += '<button is="paper-icon-button-light" class="btnDownloadRemoteImage" raised data-imageprovider="' + image.ProviderName + '" data-imageurl="' + image.Url + '" data-imagetype="' + image.Type + '" title="' + Globalize.translate('ButtonDownload') + '"><iron-icon icon="cloud-download"></iron-icon></button>';
+        html += '<button is="paper-icon-button-light" class="btnDownloadRemoteImage autoSize" raised data-imageprovider="' + image.ProviderName + '" data-imageurl="' + image.Url + '" data-imagetype="' + image.Type + '" title="' + Globalize.translate('ButtonDownload') + '"><i class="md-icon">cloud_download</i></button>';
 
         html += '</div>';
         html += '</div>';
