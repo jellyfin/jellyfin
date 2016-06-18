@@ -23,10 +23,5 @@ namespace MediaBrowser.Controller.Drawing
         /// </summary>
         /// <value>The height.</value>
         public int Height { get; set; }
-        /// <summary>
-        /// Gets or sets the text.
-        /// </summary>
-        /// <value>The text.</value>
-        public string Text { get; set; }
     }
 }

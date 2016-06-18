@@ -80,7 +80,6 @@
     <Compile Include="ImageMagick\UnplayedCountIndicator.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="ImageMagick\fonts\MontserratLight.otf" />
     <EmbeddedResource Include="ImageMagick\fonts\robotoregular.ttf" />
   </ItemGroup>
   <ItemGroup>
