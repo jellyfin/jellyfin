@@ -471,29 +471,15 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 var folder = (Folder)item;
 
-                if (fields.Contains(ItemFields.SyncInfo))
+                // Skip the user data manager because we've already looped through the recursive tree and don't want to do it twice
+                // TODO: Improve in future
+                dto.UserData = GetUserItemDataDto(_userDataRepository.GetUserData(user, item));
+
+                if (item.SourceType == SourceType.Library && folder.SupportsUserDataFromChildren)
                 {
-                    var userData = _userDataRepository.GetUserData(user, item);
-
-                    // Skip the user data manager because we've already looped through the recursive tree and don't want to do it twice
-                    // TODO: Improve in future
-                    dto.UserData = GetUserItemDataDto(userData);
-
-                    if (item.SourceType == SourceType.Library && folder.SupportsUserDataFromChildren)
-                    {
-                        SetSpecialCounts(folder, user, dto, fields, syncProgress);
-                    }
+                    SetSpecialCounts(folder, user, dto, fields, syncProgress);
 
                     dto.UserData.Played = dto.UserData.PlayedPercentage.HasValue && dto.UserData.PlayedPercentage.Value >= 100;
-                }
-                else if (item.SourceType == SourceType.Library)
-                {
-                    dto.UserData = _userDataRepository.GetUserDataDto(item, user);
-                }
-                else
-                {
-                    var userData = _userDataRepository.GetUserData(user, item);
-                    dto.UserData = GetUserItemDataDto(userData);
                 }
 
                 if (item.SourceType == SourceType.Library)
@@ -549,6 +535,13 @@ namespace MediaBrowser.Server.Implementations.Dto
 
         private int GetChildCount(Folder folder, User user)
         {
+            // Right now this is too slow to calculate for top level folders on a per-user basis
+            // Just return something so that apps that are expecting a value won't think the folders are empty
+            if (folder is ICollectionFolder || folder is UserView)
+            {
+                return new Random().Next(1, 10);
+            }
+
             return folder.GetChildCount(user);
         }
 

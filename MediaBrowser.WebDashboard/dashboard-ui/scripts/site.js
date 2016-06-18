@@ -310,18 +310,20 @@ var Dashboard = {
             footerHtml += '<div id="footerNotifications"></div>';
             footerHtml += '</div>';
 
-            $(document.body).append(footerHtml);
-
+            document.body.insertAdjacentHTML('beforeend', footerHtml);
         }
 
-        var footer = $(".footer").css("top", "initial").show();
+        var footer = document.querySelector('.footer');
+        footer.style.top = 'initial';
+        footer.classList.remove('hide');
 
-        var parentElem = $('#footerNotifications', footer);
+        var parentElem = footer.querySelector('#footerNotifications');
 
-        var elem = $('#' + options.id, parentElem);
+        var elem = parentElem.querySelector('#' + options.id);
 
         if (!elem.length) {
-            elem = $('<p id="' + options.id + '" class="footerNotification"></p>').appendTo(parentElem);
+            parentElem.insertAdjacentHTML('beforeend', '<p id="' + options.id + '" class="footerNotification"></p>');
+            elem = parentElem.querySelector('#' + options.id);
         }
 
         var onclick = removeOnHide ? "jQuery(\"#" + options.id + "\").trigger(\"notification.remove\").remove();" : "jQuery(\"#" + options.id + "\").trigger(\"notification.hide\").hide();";
@@ -331,30 +333,30 @@ var Dashboard = {
         }
 
         if (options.forceShow) {
-            elem.show();
+            elem.classList.remove('hide');
         }
 
-        elem.html(options.html);
+        elem.innerHTML = options.html;
 
         if (options.timeout) {
 
             setTimeout(function () {
 
                 if (removeOnHide) {
-                    elem.trigger("notification.remove").remove();
+                    $(elem).trigger("notification.remove").remove();
                 } else {
-                    elem.trigger("notification.hide").hide();
+                    $(elem).trigger("notification.hide").hide();
                 }
 
             }, options.timeout);
         }
 
-        footer.on("notification.remove notification.hide", function (e) {
+        $(footer).on("notification.remove notification.hide", function (e) {
 
             setTimeout(function () { // give the DOM time to catch up
 
-                if (!parentElem.html()) {
-                    footer.hide();
+                if (!parentElem.innerHTML) {
+                    footer.classList.add('hide');
                 }
 
             }, 50);
@@ -2429,9 +2431,10 @@ var AppInfo = {};
 
         defineRoute({
             path: '/connectlogin.html',
-            dependencies: ['emby-button'],
+            dependencies: ['emby-button', 'emby-input'],
             autoFocus: false,
-            anonymous: true
+            anonymous: true,
+            controller: 'scripts/connectlogin'
         });
 
         defineRoute({
@@ -2928,9 +2931,10 @@ var AppInfo = {};
 
         defineRoute({
             path: '/selectserver.html',
-            dependencies: [],
+            dependencies: ['paper-fab', 'paper-item-body', 'paper-icon-item', 'emby-button'],
             autoFocus: false,
-            anonymous: true
+            anonymous: true,
+            controller: 'scripts/selectserver'
         });
 
         defineRoute({
@@ -3179,7 +3183,6 @@ var AppInfo = {};
 
             layoutManager.init();
 
-            //$.mobile.initializePage();
             window.Emby = {};
             window.Emby.Page = pageObjects;
             window.Emby.TransparencyLevel = pageObjects.TransparencyLevel;

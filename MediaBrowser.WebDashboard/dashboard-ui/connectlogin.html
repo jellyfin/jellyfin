@@ -1,8 +1,8 @@
-﻿<div id="connectLoginPage" data-role="page" class="page standalonePage connectLoginPage" data-theme="b" data-require="scripts/connectlogin,emby-input,emby-button">
+﻿<div id="connectLoginPage" data-role="page" class="page standalonePage connectLoginPage" data-theme="b">
 
     <div data-role="content">
 
-        <form class="connectLoginForm" style="margin: 0 auto;display:none;">
+        <form class="connectLoginForm hide" style="margin: 0 auto">
 
             <div style="height:0; overflow: hidden;"><input type="text" name="fakeusernameremembered" tabindex="-1" /><input type="password" name="fakepasswordremembered" tabindex="-1" /></div>
 
@@ -36,7 +36,7 @@
             <div class="hide tvAppInfo"><br /><br /><iron-icon icon="new-releases" style="color: #52B54B"></iron-icon> Try the new <a href="//tv.emby.media" target="_blank">Emby Theater at tv.emby.media</a>, a remote-friendly app designed for your TV or large screen monitor.</div>
         </form>
 
-        <form class="manualServerForm" style="margin: 0 auto;display:none;">
+        <form class="manualServerForm hide" style="margin: 0 auto;;">
 
             <div style="display: none;">
                 <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete" autocomplete="address-level4" />
@@ -57,7 +57,7 @@
             <button is="emby-button" type="button" class="raised cancel block btnCancelManualServer"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></button>
         </form>
 
-        <form class="signupForm" style="margin: 0 auto;display:none;">
+        <form class="signupForm hide" style="margin: 0 auto;">
 
             <div style="display: none;">
                 <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete" autocomplete="address-level4" />
@@ -85,7 +85,7 @@
             <button is="emby-button" type="button" class="raised cancel block btnCancelSignup"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></button>
         </form>
 
-        <div class="welcomeContainer readOnlyContent" style="text-align: center; margin: 0 auto; display: none;">
+        <div class="welcomeContainer readOnlyContent hide" style="text-align: center; margin: 0 auto;">
 
             <div style="text-align: left;">
                 <h1>${HeaderWelcomeToEmby}</h1>

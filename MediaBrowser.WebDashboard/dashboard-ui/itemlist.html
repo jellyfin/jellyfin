@@ -3,9 +3,11 @@
     </div>
     <div data-role="content" class="itemListContent">
 
-        <div class="viewSettings">
-            <div class="listTopPaging">
-            </div>
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+            <button is="paper-icon-button-light" class="btnSelectView" title="${ButtonSelectView}"><iron-icon icon="view-comfy"></iron-icon></button>
+            <button is="paper-icon-button-light" class="btnSort" title="${ButtonSort}"><iron-icon icon="sort-by-alpha"></iron-icon></button>
+            <button is="paper-icon-button-light" class="btnFilter" title="${ButtonFilter}"><iron-icon icon="filter-list"></iron-icon></button>
         </div>
         <div id="items" class="itemsContainer paddedItemsContainer itemsContainerWithAlphaPicker" style="text-align:center;"></div>
     </div>

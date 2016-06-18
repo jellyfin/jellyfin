@@ -29,7 +29,7 @@
 
             updateFilterControls();
 
-            var screenWidth = $(window).width();
+            var screenWidth = window.innerWidth;
 
             html += LibraryBrowser.getPosterViewHtml({
 

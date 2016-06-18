@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define([], function () {
 
     return function (view, params, tabContent) {
 
@@ -52,14 +52,14 @@
 
             var query = getQuery(context);
 
-            $('.listTopPaging', context).html(LibraryBrowser.getQueryPagingHtml({
+            context.querySelector('.paging').innerHTML = LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 showLimit: false,
                 updatePageSizeSetting: false,
-                filterButton: true
-            }));
+                filterButton: false
+            });
 
             var html = getChannelsHtml(result.Items);
 
@@ -67,19 +67,28 @@
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
 
-            $('.btnNextPage', context).on('click', function () {
+            var i, length;
+            var elems;
+
+            function onNextPageClick() {
                 query.StartIndex += query.Limit;
                 reloadItems(context);
-            });
+            }
 
-            $('.btnPreviousPage', context).on('click', function () {
+            function onPreviousPageClick() {
                 query.StartIndex -= query.Limit;
                 reloadItems(context);
-            });
+            }
 
-            $('.btnFilter', context).on('click', function () {
-                showFilterMenu(context);
-            });
+            elems = context.querySelectorAll('.btnNextPage');
+            for (i = 0, length = elems.length; i < length; i++) {
+                elems[i].addEventListener('click', onNextPageClick);
+            }
+
+            elems = context.querySelectorAll('.btnPreviousPage');
+            for (i = 0, length = elems.length; i < length; i++) {
+                elems[i].addEventListener('click', onPreviousPageClick);
+            }
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(context), query);
         }
@@ -116,6 +125,10 @@
                 Dashboard.hideLoadingMsg();
             });
         }
+
+        tabContent.querySelector('.btnFilter').addEventListener('click', function () {
+            showFilterMenu(tabContent);
+        });
 
         self.renderTab = function () {
 
