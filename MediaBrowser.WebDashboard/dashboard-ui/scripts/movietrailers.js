@@ -184,7 +184,8 @@
             require(['components/filterdialog/filterdialog'], function (filterDialogFactory) {
 
                 var filterDialog = new filterDialogFactory({
-                    query: getQuery(tabContent)
+                    query: getQuery(tabContent),
+                    mode: 'movies'
                 });
 
                 Events.on(filterDialog, 'filterchange', function () {

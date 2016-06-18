@@ -58,7 +58,7 @@
                         showItemCounts: true,
                         centerText: true,
                         lazy: true,
-                        overlayPlayButton: true
+                        overlayMoreButton: true
                     });
                 }
                 else if (viewStyle == "ThumbCard") {
@@ -93,7 +93,7 @@
                         centerText: true,
                         showItemCounts: true,
                         lazy: true,
-                        overlayPlayButton: true
+                        overlayMoreButton: true
                     });
                 }
 

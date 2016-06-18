@@ -621,7 +621,7 @@ var Dashboard = {
             headerHtml += '</a>';
 
             headerHtml += '</div>';
-            $(page).prepend(headerHtml);
+            page.insertAdjacentHTML('afterbegin', headerHtml);
         }
     },
 
@@ -2528,15 +2528,17 @@ var AppInfo = {};
 
         defineRoute({
             path: '/forgotpassword.html',
-            dependencies: [],
-            anonymous: true
+            dependencies: ['emby-input', 'emby-button'],
+            anonymous: true,
+            controller: 'scripts/forgotpassword'
         });
 
         defineRoute({
             path: '/forgotpasswordpin.html',
-            dependencies: [],
+            dependencies: ['emby-input', 'emby-button'],
             autoFocus: false,
-            anonymous: true
+            anonymous: true,
+            controller: 'scripts/forgotpasswordpin'
         });
 
         defineRoute({
