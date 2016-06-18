@@ -2424,12 +2424,6 @@ var AppInfo = {};
         });
 
         defineRoute({
-            path: '/collections.html',
-            dependencies: [],
-            autoFocus: false
-        });
-
-        defineRoute({
             path: '/connectlogin.html',
             dependencies: ['emby-button', 'emby-input'],
             autoFocus: false,

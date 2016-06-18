@@ -1033,7 +1033,7 @@
                     }
 
                     if (item.CollectionType == 'boxsets') {
-                        return 'collections.html?topParentId=' + item.Id;
+                        return 'itemlist.html?topParentId=' + item.Id + '&parentId=' + item.Id;
                     }
 
                     if (item.CollectionType == 'tvshows') {
