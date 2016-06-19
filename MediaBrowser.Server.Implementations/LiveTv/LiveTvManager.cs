@@ -1665,6 +1665,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
             var timers = results.SelectMany(i => i.ToList());
 
+            if (query.IsActive.HasValue)
+            {
+                if (query.IsActive.Value)
+                {
+                    timers = timers.Where(i => i.Item1.Status == RecordingStatus.InProgress);
+                }
+                else
+                {
+                    timers = timers.Where(i => i.Item1.Status != RecordingStatus.InProgress);
+                }
+            }
+
             if (!string.IsNullOrEmpty(query.ChannelId))
             {
                 var guid = new Guid(query.ChannelId);
