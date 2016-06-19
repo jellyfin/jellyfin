@@ -1398,7 +1398,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     return true;
                 }
 
-                _logger.Debug("Query requires ancestor query due to type: " + i.GetType().Name);
+                //_logger.Debug("Query requires ancestor query due to type: " + i.GetType().Name);
                 return false;
 
             }))

@@ -144,7 +144,7 @@ namespace MediaBrowser.Api.System
             return ToOptimizedResult(result);
         }
 
-        public object Get(GetLogFile request)
+        public Task<object> Get(GetLogFile request)
         {
 			var file = _fileSystem.GetFiles(_appPaths.LogDirectoryPath)
                 .First(i => string.Equals(i.Name, request.Name, StringComparison.OrdinalIgnoreCase));

@@ -8,6 +8,7 @@ using MediaBrowser.Model.Tasks;
 using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.LiveTv;
 
@@ -52,24 +53,29 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             }
         }
 
-        private void TimerCallback(object state)
+        private async void TimerCallback(object state)
         {
-            if (_config.Configuration.EnableAutomaticRestart && IsIdle())
+            if (_config.Configuration.EnableAutomaticRestart)
             {
-                DisposeTimer();
+                var isIdle = await IsIdle().ConfigureAwait(false);
 
-                try
+                if (isIdle)
                 {
-                    _appHost.Restart();
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error restarting server", ex);
+                    DisposeTimer();
+
+                    try
+                    {
+                        _appHost.Restart();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error restarting server", ex);
+                    }
                 }
             }
         }
 
-        private bool IsIdle()
+        private async Task<bool> IsIdle()
         {
             if (_iTaskManager.ScheduledTasks.Any(i => i.State != TaskState.Idle))
             {
@@ -80,7 +86,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             {
                 try
                 {
-                    var timers = _liveTvManager.GetTimers(new TimerQuery(), CancellationToken.None).Result;
+                    var timers = await _liveTvManager.GetTimers(new TimerQuery(), CancellationToken.None).ConfigureAwait(false);
                     if (timers.Items.Any(i => i.Status == RecordingStatus.InProgress))
                     {
                         return false;

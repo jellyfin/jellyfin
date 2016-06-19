@@ -202,12 +202,21 @@ namespace MediaBrowser.Server.Implementations.Library
             return GetUserData(userId, item.Id, item.GetUserDataKeys());
         }
 
-        public UserItemDataDto GetUserDataDto(IHasUserData item, User user)
+        public async Task<UserItemDataDto> GetUserDataDto(IHasUserData item, User user)
         {
             var userData = GetUserData(user.Id, item);
             var dto = GetUserItemDataDto(userData);
 
-            item.FillUserDataDtoValues(dto, userData, user);
+            await item.FillUserDataDtoValues(dto, userData, null, user).ConfigureAwait(false);
+            return dto;
+        }
+
+        public async Task<UserItemDataDto> GetUserDataDto(IHasUserData item, BaseItemDto itemDto, User user)
+        {
+            var userData = GetUserData(user.Id, item);
+            var dto = GetUserItemDataDto(userData);
+
+            await item.FillUserDataDtoValues(dto, userData, itemDto, user).ConfigureAwait(false);
             return dto;
         }
 

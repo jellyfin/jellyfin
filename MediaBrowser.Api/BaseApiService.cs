@@ -115,7 +115,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         protected object ToStaticFileResult(string path)
         {
-            return ResultFactory.GetStaticFileResult(Request, path);
+            return ResultFactory.GetStaticFileResult(Request, path).Result;
         }
 
         protected DtoOptions GetDtoOptions(object request)

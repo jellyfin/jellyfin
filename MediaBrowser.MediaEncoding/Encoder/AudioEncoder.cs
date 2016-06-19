@@ -6,6 +6,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using CommonIO;
 
 namespace MediaBrowser.MediaEncoding.Encoder
@@ -16,7 +17,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
         }
 
-        protected override string GetCommandLineArguments(EncodingJob state)
+        protected override Task<string> GetCommandLineArguments(EncodingJob state)
         {
             var audioTranscodeParams = new List<string>();
 
@@ -61,7 +62,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 vn = " -vn";
             }
 
-            return string.Format("{0} {1}{6}{7} -threads {2}{3} {4} -id3v2_version 3 -write_id3v1 1{8} -y \"{5}\"",
+            var result = string.Format("{0} {1}{6}{7} -threads {2}{3} {4} -id3v2_version 3 -write_id3v1 1{8} -y \"{5}\"",
                 inputModifier,
                 GetInputArgument(state),
                 threads,
@@ -71,6 +72,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 albumCoverInput,
                 mapArgs,
                 metadata).Trim();
+
+            return Task.FromResult(result);
         }
 
         protected override string GetOutputFileExtension(EncodingJob state)
