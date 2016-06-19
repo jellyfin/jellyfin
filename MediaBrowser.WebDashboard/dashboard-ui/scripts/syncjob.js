@@ -12,7 +12,7 @@
 
         html += '<br/>';
         html += '<br/>';
-        html += '<button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonSave') + '</span></button>';
+        html += '<button is="emby-button" type="submit" class="raised submit block"><span>' + Globalize.translate('ButtonSave') + '</span></button>';
 
         $('.syncJobForm', page).html(html);
 
@@ -90,9 +90,9 @@
 
         if (hasActions) {
 
-            html += '<button type="button" is="paper-icon-button-light" class="btnJobItemMenu"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
+            html += '<button type="button" is="paper-icon-button-light" class="btnJobItemMenu autoSize"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button>';
         } else {
-            html += '<button type="button" is="paper-icon-button-light" class="btnJobItemMenu" disabled><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
+            html += '<button type="button" is="paper-icon-button-light" class="btnJobItemMenu autoSize" disabled><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button>';
         }
 
         html += '</paper-icon-item>';
@@ -144,36 +144,31 @@
         if (status == 'Failed') {
             menuItems.push({
                 name: Globalize.translate('ButtonQueueForRetry'),
-                id: 'retry',
-                ironIcon: 'check'
+                id: 'retry'
             });
         }
         else if (status == 'Cancelled') {
             menuItems.push({
                 name: Globalize.translate('ButtonReenable'),
-                id: 'retry',
-                ironIcon: 'check'
+                id: 'retry'
             });
         }
         else if (status == 'Queued' || status == 'Transferring' || status == 'Converting' || status == 'ReadyToTransfer') {
             menuItems.push({
                 name: Globalize.translate('ButtonCancelItem'),
-                id: 'cancel',
-                ironIcon: 'delete'
+                id: 'cancel'
             });
         }
         else if (status == 'Synced' && remove) {
             menuItems.push({
                 name: Globalize.translate('ButtonUnmarkForRemoval'),
-                id: 'unmarkforremoval',
-                ironIcon: 'check'
+                id: 'unmarkforremoval'
             });
         }
         else if (status == 'Synced') {
             menuItems.push({
                 name: Globalize.translate('ButtonMarkForRemoval'),
-                id: 'markforremoval',
-                ironIcon: 'delete'
+                id: 'markforremoval'
             });
         }
 

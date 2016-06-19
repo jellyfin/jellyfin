@@ -94,24 +94,24 @@
             if (image.ImageType == "Backdrop" || image.ImageType == "Screenshot") {
 
                 if (i > 0) {
-                    html += '<button is="paper-icon-button-light"" class="btnMoveImage" data-imagetype="' + image.ImageType + '" data-index="' + image.ImageIndex + '" data-newindex="' + (image.ImageIndex - 1) + '" title="' + Globalize.translate('ButtonMoveLeft') + '"><iron-icon icon="chevron-left"></iron-icon></button>';
+                    html += '<button is="paper-icon-button-light" class="btnMoveImage autoSize" data-imagetype="' + image.ImageType + '" data-index="' + image.ImageIndex + '" data-newindex="' + (image.ImageIndex - 1) + '" title="' + Globalize.translate('ButtonMoveLeft') + '"><i class="md-icon">chevron_left</i></button>';
                 } else {
-                    html += '<button is="paper-icon-button-light"" disabled title="' + Globalize.translate('ButtonMoveLeft') + '"><iron-icon icon="chevron-left"></iron-icon></button>';
+                    html += '<button is="paper-icon-button-light" class="autoSize" disabled title="' + Globalize.translate('ButtonMoveLeft') + '"><i class="md-icon">chevron_left</i></button>';
                 }
 
                 if (i < length - 1) {
-                    html += '<button is="paper-icon-button-light"" class="btnMoveImage" data-imagetype="' + image.ImageType + '" data-index="' + image.ImageIndex + '" data-newindex="' + (image.ImageIndex + 1) + '" title="' + Globalize.translate('ButtonMoveRight') + '"><iron-icon icon="chevron-right"></iron-icon></button>';
+                    html += '<button is="paper-icon-button-light" class="btnMoveImage autoSize" data-imagetype="' + image.ImageType + '" data-index="' + image.ImageIndex + '" data-newindex="' + (image.ImageIndex + 1) + '" title="' + Globalize.translate('ButtonMoveRight') + '"><i class="md-icon">chevron_right</i></button>';
                 } else {
-                    html += '<button is="paper-icon-button-light"" disabled title="' + Globalize.translate('ButtonMoveRight') + '"><iron-icon icon="chevron-right"></iron-icon></button>';
+                    html += '<button is="paper-icon-button-light" class="autoSize" disabled title="' + Globalize.translate('ButtonMoveRight') + '"><i class="md-icon">chevron_right</i></button>';
                 }
             }
             else {
                 if (imageProviders.length) {
-                    html += '<button is="paper-icon-button-light"" data-imagetype="' + image.ImageType + '" class="btnSearchImages" title="' + Globalize.translate('ButtonBrowseOnlineImages') + '"><iron-icon icon="search"></iron-icon></button>';
+                    html += '<button is="paper-icon-button-light" data-imagetype="' + image.ImageType + '" class="btnSearchImages autoSize" title="' + Globalize.translate('ButtonBrowseOnlineImages') + '"><i class="md-icon">search</i></button>';
                 }
             }
 
-            html += '<button is="paper-icon-button-light"" data-imagetype="' + image.ImageType + '" data-index="' + (image.ImageIndex != null ? image.ImageIndex : "null") + '" class="btnDeleteImage" title="' + Globalize.translate('Delete') + '"><iron-icon icon="delete"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" data-imagetype="' + image.ImageType + '" data-index="' + (image.ImageIndex != null ? image.ImageIndex : "null") + '" class="btnDeleteImage autoSize" title="' + Globalize.translate('Delete') + '"><i class="md-icon">delete</i></button>';
 
             html += '</div>';
 
@@ -269,7 +269,7 @@
 
                 var html = '';
                 html += '<h2 class="dialogHeader">';
-                html += '<button type="button" is="emby-button" icon="arrow-back" class="fab mini btnCloseDialog" tabindex="-1"><iron-icon icon="arrow-back"></iron-icon></button>';
+                html += '<button type="button" is="emby-button" icon="arrow-back" class="fab mini btnCloseDialog autoSize" tabindex="-1"><i class="md-icon">arrow_back</i></button>';
                 html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + item.Name + '</div>';
                 html += '</h2>';
 

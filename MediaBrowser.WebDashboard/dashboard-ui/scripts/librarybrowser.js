@@ -1406,15 +1406,6 @@
                         html += '</div>';
                     }
 
-                    //html += LibraryBrowser.getSyncIndicator(item);
-
-                    //if (item.Type == 'Series' || item.Type == 'Season' || item.Type == 'BoxSet' || item.MediaType == 'Video') {
-                    //    if (item.UserData.UnplayedItemCount) {
-                    //        //html += '<span class="ui-li-count">' + item.UserData.UnplayedItemCount + '</span>';
-                    //    } else if (item.UserData.Played && item.Type != 'TvChannel') {
-                    //        html += '<div class="playedIndicator"><iron-icon icon="check"></iron-icon></div>';
-                    //    }
-                    //}
                     html += '</a>';
                     html += '</paper-item-body>';
 
@@ -2101,14 +2092,14 @@
                 } else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
 
                     if (item.Name && showTitle) {
-                        icon = 'library-music';
+                        icon = 'library_music';
                     }
                     cssClass += " defaultBackground";
 
                 } else if (item.Type == "Recording" || item.Type == "Program" || item.Type == "TvChannel") {
 
                     if (item.Name && showTitle) {
-                        icon = 'folder-open';
+                        icon = 'folder_open';
                     }
 
                     cssClass += " defaultBackground";
@@ -2126,7 +2117,7 @@
                     cssClass += " defaultBackground";
                 } else {
                     if (item.Name && showTitle) {
-                        icon = 'folder-open';
+                        icon = 'folder_open';
                     }
                     cssClass += " defaultBackground";
                 }
@@ -2211,7 +2202,7 @@
                 html += '<a' + onclick + transition + ' class="' + anchorCssClass + '" href="' + href + '"' + defaultActionAttribute + '>';
                 html += '<div class="' + imageCssClass + '" style="' + style + '"' + dataSrc + '>';
                 if (icon) {
-                    html += '<iron-icon icon="' + icon + '"></iron-icon>';
+                    html += '<i class="md-icon">' + icon + '</i>';
                 }
                 html += '</div>';
 
@@ -2226,7 +2217,7 @@
                 }
 
                 if (item.SeriesTimerId) {
-                    html += '<iron-icon icon="fiber-smart-record" class="seriesTimerIndicator"></iron-icon>';
+                    html += '<i class="md-icon seriesTimerIndicator">fiber_smart_record</i>';
                 }
 
                 html += LibraryBrowser.getSyncIndicator(item);
@@ -2289,7 +2280,7 @@
 
                 if (options.cardLayout) {
                     html += '<div class="cardButtonContainer">';
-                    html += '<button is="paper-icon-button-light" class="listviewMenuButton btnCardOptions autoSize"><i class="md-icon">' + AppInfo.moreIcon.replace('-','_') + '</i></button>';
+                    html += '<button is="paper-icon-button-light" class="listviewMenuButton btnCardOptions autoSize"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button>';
                     html += "</div>";
                 }
 
@@ -2586,7 +2577,7 @@
 
                     if (item.Type != 'TvChannel') {
                         if (item.UserData.PlayedPercentage && item.UserData.PlayedPercentage >= 100 || (item.UserData && item.UserData.Played)) {
-                            return '<div class="playedIndicator"><iron-icon icon="check"></iron-icon></div>';
+                            return '<div class="playedIndicator"><i class="md-icon">check</i></div>';
                         }
                     }
                 }
@@ -2607,17 +2598,17 @@
 
                 if (item.SyncStatus == 'Synced') {
 
-                    return '<div class="syncIndicator"><iron-icon icon="sync"></iron-icon></div>';
+                    return '<div class="syncIndicator"><i class="md-icon">sync</i></div>';
                 }
 
                 var syncPercent = item.SyncPercent;
                 if (syncPercent) {
-                    return '<div class="syncIndicator"><iron-icon icon="sync"></iron-icon></div>';
+                    return '<div class="syncIndicator"><i class="md-icon">sync</i></div>';
                 }
 
                 if (item.SyncStatus == 'Queued' || item.SyncStatus == 'Converting' || item.SyncStatus == 'ReadyToTransfer' || item.SyncStatus == 'Transferring') {
 
-                    return '<div class="syncIndicator"><iron-icon icon="sync"></iron-icon></div>';
+                    return '<div class="syncIndicator"><i class="md-icon">sync</i></div>';
                 }
 
                 return '';
@@ -3030,7 +3021,7 @@
                     return '<' + tagName + ' title="' + tooltip + '" data-itemid="' + itemId + '" icon="' + icon + '" class="' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"></' + tagName + '>';
                 }
 
-                return '<button is="paper-icon-button-light" title="' + tooltip + '" data-itemid="' + itemId + '"  class="' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"><iron-icon icon="' + icon + '"></iron-icon></button>';
+                return '<button is="paper-icon-button-light" title="' + tooltip + '" data-itemid="' + itemId + '"  class="autoSize ' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"><i class="md-icon">' + icon + '</i></button>';
             },
 
             getUserDataIconsHtml: function (item, includePlayed, style) {

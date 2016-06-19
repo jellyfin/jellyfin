@@ -7,38 +7,38 @@
         var html = '';
 
         html += '<div class="primaryIcons">';
-        var backIcon = browserInfo.safari ? 'chevron-left' : 'arrow-back';
+        var backIcon = browserInfo.safari ? 'chevron_left' : 'arrow_back';
 
-        html += '<button type="button" is="paper-icon-button-light" class="headerButton headerButtonLeft headerBackButton hide"><iron-icon icon="' + backIcon + '"></iron-icon></button>';
+        html += '<button type="button" is="paper-icon-button-light" class="headerButton headerButtonLeft headerBackButton hide autoSize"><i class="md-icon">' + backIcon + '</i></button>';
 
-        html += '<button type="button" is="paper-icon-button-light" class="headerButton mainDrawerButton barsMenuButton headerButtonLeft"><iron-icon icon="menu"></iron-icon></button>';
-        html += '<button type="button" is="paper-icon-button-light" class="headerButton headerAppsButton barsMenuButton headerButtonLeft"><iron-icon icon="menu"></iron-icon></button>';
+        html += '<button type="button" is="paper-icon-button-light" class="headerButton mainDrawerButton barsMenuButton headerButtonLeft autoSize"><i class="md-icon">menu</i></button>';
+        html += '<button type="button" is="paper-icon-button-light" class="headerButton headerAppsButton barsMenuButton headerButtonLeft autoSize"><i class="md-icon">menu</i></button>';
 
         html += '<div class="libraryMenuButtonText headerButton">' + Globalize.translate('ButtonHome') + '</div>';
 
         html += '<div class="viewMenuSecondary">';
 
         html += '<span class="headerSelectedPlayer"></span>';
-        html += '<button is="paper-icon-button-light" class="btnCast headerButton headerButtonRight hide"><iron-icon icon="cast"></iron-icon></button>';
+        html += '<button is="paper-icon-button-light" class="btnCast headerButton headerButtonRight hide autoSize"><i class="md-icon">cast</i></button>';
 
         if (AppInfo.enableSearchInTopMenu) {
-            html += '<button type="button" is="paper-icon-button-light" class=headerButton headerButtonRight headerSearchButton hide" onclick="Search.showSearchPanel();"><iron-icon icon="search"></iron-icon></button>';
+            html += '<button type="button" is="paper-icon-button-light" class=headerButton headerButtonRight headerSearchButton hide autoSize" onclick="Search.showSearchPanel();"><i class="md-icon">search</i></button>';
             html += '<div class="viewMenuSearch hide">';
             html += '<form class="viewMenuSearchForm">';
             html += '<input type="text" data-role="none" data-type="search" class="headerSearchInput" autocomplete="off" spellcheck="off" />';
-            html += '<button type="button" is="paper-icon-button-light" class="btnCloseSearch"><iron-icon icon="close"></iron-icon></button>';
+            html += '<button type="button" is="paper-icon-button-light" class="btnCloseSearch autoSize"><i class="md-icon">close</i></button>';
             html += '</form>';
             html += '</div>';
         }
 
-        html += '<button is="paper-icon-button-light" class="headerButton headerButtonRight headerVoiceButton hide"><iron-icon icon="mic"></iron-icon></button>';
+        html += '<button is="paper-icon-button-light" class="headerButton headerButtonRight headerVoiceButton hide autoSize"><i class="md-icon">mic</i></button>';
 
         html += '<button is="paper-icon-button-light" class="headerButton headerButtonRight btnNotifications"><div class="btnNotificationsInner">0</div></button>';
 
-        html += '<button is="paper-icon-button-light" class="headerButton headerButtonRight headerUserButton"><iron-icon icon="person"></iron-icon></button>';
+        html += '<button is="paper-icon-button-light" class="headerButton headerButtonRight headerUserButton autoSize"><i class="md-icon">person</i></button>';
 
         if (!browserInfo.mobile && !Dashboard.isConnectMode()) {
-            html += '<button is="paper-icon-button-light" class="headerButton headerButtonRight dashboardEntryHeaderButton" onclick="return LibraryMenu.onSettingsClicked(event);"><iron-icon icon="settings"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" class="headerButton headerButtonRight dashboardEntryHeaderButton autoSize" onclick="return LibraryMenu.onSettingsClicked(event);"><i class="md-icon">settings</i></button>';
         }
 
         html += '</div>';
@@ -112,11 +112,14 @@
 
         if (src) {
             headerUserButton.classList.add('headerUserButtonRound');
+            headerUserButton.classList.remove('autoSize');
             headerUserButton.innerHTML = '<img src="' + src + '" />';
         } else if (icon) {
             headerUserButton.classList.remove('headerUserButtonRound');
-            headerUserButton.innerHTML = '<iron-icon icon="' + icon + '"></iron-icon>';
+            headerUserButton.classList.add('autoSize');
+            headerUserButton.innerHTML = '<i class="md-icon>' + icon + '</i>';
         } else {
+            headerUserButton.classList.add('autoSize');
             headerUserButton.classList.remove('headerUserButtonRound');
         }
     }
@@ -199,7 +202,7 @@
             html += '<div class="adminAppsMenuRow">';
 
             html += '<a class="adminAppsButton" href="home.html">';
-            html += '<button is="paper-icon-button-light"><iron-icon icon="home"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" class="autoSize"><i class="md-icon">home</i></button>';
             html += '<div>' + Globalize.translate('ButtonHome') + '</div>';
             html += '</a>';
 
@@ -208,11 +211,11 @@
             html += '<div class="adminAppsMenuRow">';
 
             html += '<a class="adminAppsButton" href="edititemmetadata.html">';
-            html += '<button is="paper-icon-button-light"><iron-icon icon="mode-edit"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" class="autoSize"><i class="md-icon">mode_edit</i></button>';
             html += '<div>' + Globalize.translate('ButtonMetadataManager') + '</div>';
             html += '</a>';
             html += '<a class="adminAppsButton" href="reports.html">';
-            html += '<button is="paper-icon-button-light"><iron-icon icon="insert-chart"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" class="autoSize"><i class="md-icon">insert_chart</i></button>';
             html += '<div>' + Globalize.translate('ButtonReports') + '</div>';
             html += '</a>';
 
@@ -327,7 +330,7 @@
         html += Globalize.translate('ButtonHome');
         html += '</a>';
 
-        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="remote" href="nowplaying.html" onclick="return LibraryMenu.onLinkClicked(event, this);"><iron-icon icon="tablet-android" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonRemote') + '</span></a>';
+        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="remote" href="nowplaying.html" onclick="return LibraryMenu.onLinkClicked(event, this);"><i class="md-icon sidebarLinkIcon">tablet_android</i><span class="sidebarLinkText">' + Globalize.translate('ButtonRemote') + '</span></a>';
 
         html += '<div class="sidebarDivider"></div>';
 
@@ -344,11 +347,11 @@
             html += Globalize.translate('HeaderAdmin');
             html += '</div>';
 
-            html += '<a class="sidebarLink lnkMediaFolder lnkManageServer" data-itemid="dashboard" href="#"><iron-icon icon="dashboard" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonManageServer') + '</span></a>';
-            html += '<a class="sidebarLink lnkMediaFolder editorViewMenu" data-itemid="editor" onclick="return LibraryMenu.onLinkClicked(event, this);" href="edititemmetadata.html"><iron-icon icon="mode-edit" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonMetadataManager') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder lnkManageServer" data-itemid="dashboard" href="#"><i class="md-icon sidebarLinkIcon">dashboard</i><span class="sidebarLinkText">' + Globalize.translate('ButtonManageServer') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder editorViewMenu" data-itemid="editor" onclick="return LibraryMenu.onLinkClicked(event, this);" href="edititemmetadata.html"><i class="md-icon sidebarLinkIcon">mode_edit</i><span class="sidebarLinkText">' + Globalize.translate('ButtonMetadataManager') + '</span></a>';
 
             if (!browserInfo.mobile) {
-                html += '<a class="sidebarLink lnkMediaFolder" data-itemid="reports" onclick="return LibraryMenu.onLinkClicked(event, this);" href="reports.html"><iron-icon icon="insert-chart" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonReports') + '</span></a>';
+                html += '<a class="sidebarLink lnkMediaFolder" data-itemid="reports" onclick="return LibraryMenu.onLinkClicked(event, this);" href="reports.html"><i class="md-icon sidebarLinkIcon">insert_chart</i><span class="sidebarLinkText">' + Globalize.translate('ButtonReports') + '</span></a>';
             }
             html += '</div>';
         }
@@ -358,17 +361,17 @@
         html += '<div class="sidebarDivider"></div>';
 
         if (user.localUser && (AppInfo.isNativeApp && browserInfo.android)) {
-            html += '<a class="sidebarLink lnkMediaFolder lnkMySettings" onclick="return LibraryMenu.onLinkClicked(event, this);" href="mypreferencesmenu.html?userId=' + user.localUser.Id + '"><iron-icon icon="settings" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSettings') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder lnkMySettings" onclick="return LibraryMenu.onLinkClicked(event, this);" href="mypreferencesmenu.html?userId=' + user.localUser.Id + '"><i class="md-icon sidebarLinkIcon">settings</i><span class="sidebarLinkText">' + Globalize.translate('ButtonSettings') + '</span></a>';
         }
 
-        html += '<a class="sidebarLink lnkMediaFolder lnkMySync" data-itemid="mysync" onclick="return LibraryMenu.onLinkClicked(event, this);" href="mysync.html"><iron-icon icon="sync" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSync') + '</span></a>';
+        html += '<a class="sidebarLink lnkMediaFolder lnkMySync" data-itemid="mysync" onclick="return LibraryMenu.onLinkClicked(event, this);" href="mysync.html"><i class="md-icon sidebarLinkIcon">sync</i><span class="sidebarLinkText">' + Globalize.translate('ButtonSync') + '</span></a>';
 
         if (Dashboard.isConnectMode()) {
-            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="selectserver" onclick="return LibraryMenu.onLinkClicked(event, this);" href="selectserver.html?showuser=1"><iron-icon icon="wifi" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSelectServer') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="selectserver" onclick="return LibraryMenu.onLinkClicked(event, this);" href="selectserver.html?showuser=1"><i class="md-icon sidebarLinkIcon">wifi</i><span class="sidebarLinkText">' + Globalize.translate('ButtonSelectServer') + '</span></a>';
         }
 
         if (user.localUser) {
-            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="logout" onclick="return LibraryMenu.onLogoutClicked(this);" href="#"><iron-icon icon="lock" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSignOut') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="logout" onclick="return LibraryMenu.onLogoutClicked(this);" href="#"><i class="md-icon sidebarLinkIcon">lock</i><span class="sidebarLinkText">' + Globalize.translate('ButtonSignOut') + '</span></a>';
         }
 
         html += '</div>';
@@ -428,6 +431,7 @@
 
                 var title = '';
 
+                link = link.querySelector('span') || link;
                 var secondaryTitle = (link.innerText || link.textContent).trim();
                 title += secondaryTitle;
 
@@ -481,7 +485,7 @@
                 if (view.CollectionType == 'livetv') {
 
                     view.ImageTags = {};
-                    view.icon = 'live-tv';
+                    view.icon = 'live_tv';
                     view.onclick = "LibraryBrowser.showTab('livetv.html', 0);";
 
                     var guideView = Object.assign({}, view);
@@ -558,19 +562,19 @@
                 }
 
                 if (i.CollectionType == "photos") {
-                    icon = 'photo-library';
+                    icon = 'photo_library';
                     color = "#009688";
                 }
                 else if (i.CollectionType == "music" || i.CollectionType == "musicvideos") {
-                    icon = 'library-music';
+                    icon = 'library_music';
                     color = '#FB8521';
                 }
                 else if (i.CollectionType == "books") {
-                    icon = 'library-books';
+                    icon = 'library_books';
                     color = "#1AA1E1";
                 }
                 else if (i.CollectionType == "playlists") {
-                    icon = 'view-list';
+                    icon = 'view_list';
                     color = "#795548";
                 }
                 else if (i.CollectionType == "games") {
@@ -578,7 +582,7 @@
                     color = "#F44336";
                 }
                 else if (i.CollectionType == "movies") {
-                    icon = 'video-library';
+                    icon = 'video_library';
                     color = '#CE5043';
                 }
                 else if (i.CollectionType == "channels" || i.Type == 'Channel') {
@@ -590,14 +594,14 @@
                     color = "#4CAF50";
                 }
                 else if (i.CollectionType == "livetv") {
-                    icon = 'live-tv';
+                    icon = 'live_tv';
                     color = "#293AAE";
                 }
 
                 icon = i.icon || icon;
 
                 var onclick = i.onclick ? ' function(){' + i.onclick + '}' : 'null';
-                return '<a data-itemid="' + itemId + '" class="lnkMediaFolder sidebarLink" onclick="return LibraryMenu.onLinkClicked(event, this, ' + onclick + ');" href="' + getItemHref(i, i.CollectionType) + '"><iron-icon icon="' + icon + '" class="sidebarLinkIcon" style="color:' + color + '"></iron-icon><span class="sectionName">' + i.Name + '</span></a>';
+                return '<a data-itemid="' + itemId + '" class="lnkMediaFolder sidebarLink" onclick="return LibraryMenu.onLinkClicked(event, this, ' + onclick + ');" href="' + getItemHref(i, i.CollectionType) + '"><i class="md-icon sidebarLinkIcon" style="color:' + color + '">' + icon + '</i><span class="sectionName">' + i.Name + '</span></a>';
 
             }).join('');
 
@@ -742,7 +746,7 @@
                 var helpUrl = page.getAttribute('data-helpurl');
 
                 if (helpUrl) {
-                    html += '<a href="' + helpUrl + '" target="_blank" class="clearLink" style="margin-left:2em;" title="' + Globalize.translate('ButtonHelp') + '"><button is="emby-button" type="button" class="accent" style="margin:0;font-weight:normal;font-size:13px;padding:.25em;display:block;align-items:center;"><iron-icon icon="info"></iron-icon><span>' + Globalize.translate('ButtonHelp') + '</span></button></a>';
+                    html += '<a href="' + helpUrl + '" target="_blank" class="clearLink" style="margin-left:2em;" title="' + Globalize.translate('ButtonHelp') + '"><button is="emby-button" type="button" class="accent" style="margin:0;font-weight:normal;font-size:14px;padding:.25em;display:block;align-items:center;"><i class="md-icon">info</i><span>' + Globalize.translate('ButtonHelp') + '</span></button></a>';
                 }
             }
 
@@ -805,14 +809,14 @@
 
         if (info.isLocalPlayer) {
 
-            btnCast.querySelector('iron-icon').icon = 'cast';
+            btnCast.querySelector('i').innerHTML = 'cast';
             btnCast.classList.remove('btnActiveCast');
 
             context.querySelector('.headerSelectedPlayer').innerHTML = '';
 
         } else {
 
-            btnCast.querySelector('iron-icon').icon = 'cast-connected';
+            btnCast.querySelector('i').icon = 'cast_connected';
             btnCast.classList.add('btnActiveCast');
             context.querySelector('.headerSelectedPlayer').innerHTML = info.deviceName || info.name;
         }
@@ -1108,7 +1112,7 @@
     var headerCreated;
     var userRequiresUpdateAfterHeader;
 
-    require(['paper-icon-button-light', 'emby-icons'], function () {
+    require(['paper-icon-button-light', 'material-icons'], function () {
         renderHeader();
         headerCreated = true;
 

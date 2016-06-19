@@ -324,7 +324,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 @media all and (min-width: 540px) {
 
     .detailUserDataIcons {
-        margin-left: 1em;
+        margin-left: .5em;
     }
 }
 
@@ -899,6 +899,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     line-height: initial;
     font-weight: 500;
 }
+
+    .playedIndicator i, .syncIndicator i {
+        font-size: 180%;
+    }
 
 .mediaSourceIndicator {
     display: block;

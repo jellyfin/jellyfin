@@ -97,7 +97,7 @@
         menuItems.unshift({
             id: -1,
             name: Globalize.translate('ButtonOff'),
-            ironIcon: currentIndex == null ? 'check' : null
+            selected: currentIndex == null
         });
 
         require(['actionsheet'], function (actionsheet) {
