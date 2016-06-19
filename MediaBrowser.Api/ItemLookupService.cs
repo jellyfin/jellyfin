@@ -132,58 +132,58 @@ namespace MediaBrowser.Api
             return ToOptimizedResult(infos);
         }
 
-        public object Post(GetMovieRemoteSearchResults request)
+        public async Task<object> Post(GetMovieRemoteSearchResults request)
         {
-            var result = _providerManager.GetRemoteSearchResults<Movie, MovieInfo>(request, CancellationToken.None).Result;
+            var result = await _providerManager.GetRemoteSearchResults<Movie, MovieInfo>(request, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }
 
-        public object Post(GetSeriesRemoteSearchResults request)
+        public async Task<object> Post(GetSeriesRemoteSearchResults request)
         {
-            var result = _providerManager.GetRemoteSearchResults<Series, SeriesInfo>(request, CancellationToken.None).Result;
+            var result = await _providerManager.GetRemoteSearchResults<Series, SeriesInfo>(request, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }
 
-        public object Post(GetGameRemoteSearchResults request)
+        public async Task<object> Post(GetGameRemoteSearchResults request)
         {
-            var result = _providerManager.GetRemoteSearchResults<Game, GameInfo>(request, CancellationToken.None).Result;
+            var result = await _providerManager.GetRemoteSearchResults<Game, GameInfo>(request, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }
 
-        public object Post(GetBoxSetRemoteSearchResults request)
+        public async Task<object> Post(GetBoxSetRemoteSearchResults request)
         {
-            var result = _providerManager.GetRemoteSearchResults<BoxSet, BoxSetInfo>(request, CancellationToken.None).Result;
+            var result = await _providerManager.GetRemoteSearchResults<BoxSet, BoxSetInfo>(request, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }
 
-        public object Post(GetPersonRemoteSearchResults request)
+        public async Task<object> Post(GetPersonRemoteSearchResults request)
         {
-            var result = _providerManager.GetRemoteSearchResults<Person, PersonLookupInfo>(request, CancellationToken.None).Result;
+            var result = await _providerManager.GetRemoteSearchResults<Person, PersonLookupInfo>(request, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }
 
-        public object Post(GetMusicAlbumRemoteSearchResults request)
+        public async Task<object> Post(GetMusicAlbumRemoteSearchResults request)
         {
-            var result = _providerManager.GetRemoteSearchResults<MusicAlbum, AlbumInfo>(request, CancellationToken.None).Result;
+            var result = await _providerManager.GetRemoteSearchResults<MusicAlbum, AlbumInfo>(request, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }
 
-        public object Post(GetMusicArtistRemoteSearchResults request)
+        public async Task<object> Post(GetMusicArtistRemoteSearchResults request)
         {
-            var result = _providerManager.GetRemoteSearchResults<MusicArtist, ArtistInfo>(request, CancellationToken.None).Result;
+            var result = await _providerManager.GetRemoteSearchResults<MusicArtist, ArtistInfo>(request, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }
 
-        public object Get(GetRemoteSearchImage request)
+        public async Task<object> Get(GetRemoteSearchImage request)
         {
-            var result = GetRemoteImage(request).Result;
+            var result = GetRemoteImage(request).ConfigureAwait(false);
 
             return result;
         }
@@ -241,7 +241,7 @@ namespace MediaBrowser.Api
 
                 if (_fileSystem.FileExists(contentPath))
                 {
-                    return ToStaticFileResult(contentPath);
+                    return await ResultFactory.GetStaticFileResult(Request, contentPath).ConfigureAwait(false);
                 }
             }
             catch (DirectoryNotFoundException)
@@ -261,7 +261,7 @@ namespace MediaBrowser.Api
                 contentPath = await reader.ReadToEndAsync().ConfigureAwait(false);
             }
 
-            return ToStaticFileResult(contentPath);
+            return await ResultFactory.GetStaticFileResult(Request, contentPath).ConfigureAwait(false);
         }
 
         /// <summary>

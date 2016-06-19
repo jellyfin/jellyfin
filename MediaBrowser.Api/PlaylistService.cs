@@ -157,7 +157,7 @@ namespace MediaBrowser.Api
             Task.WaitAll(task);
         }
 
-        public object Get(GetPlaylistItems request)
+        public async Task<object> Get(GetPlaylistItems request)
         {
             var playlist = (Playlist)_libraryManager.GetItemById(request.Id);
             var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
@@ -178,7 +178,7 @@ namespace MediaBrowser.Api
 
             var dtoOptions = GetDtoOptions(request);
 
-            var dtos = _dtoService.GetBaseItemDtos(items.Select(i => i.Item2), dtoOptions, user)
+            var dtos = (await _dtoService.GetBaseItemDtos(items.Select(i => i.Item2), dtoOptions, user).ConfigureAwait(false))
                    .ToArray();
 
             var index = 0;

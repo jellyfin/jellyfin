@@ -247,9 +247,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public object Post(MarkPlayedItem request)
+        public async Task<object> Post(MarkPlayedItem request)
         {
-            var result = MarkPlayed(request).Result;
+            var result = await MarkPlayed(request).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }
@@ -429,7 +429,7 @@ namespace MediaBrowser.Api.UserLibrary
                 await item.MarkUnplayed(user).ConfigureAwait(false);
             }
 
-            return _userDataRepository.GetUserDataDto(item, user);
+            return await _userDataRepository.GetUserDataDto(item, user).ConfigureAwait(false);
         }
     }
 }

@@ -8,6 +8,7 @@ using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Music
 {
@@ -49,18 +50,18 @@ namespace MediaBrowser.Api.Music
             _dtoService = dtoService;
         }
 
-        public object Get(GetSimilarArtists request)
+        public async Task<object> Get(GetSimilarArtists request)
         {
             var dtoOptions = GetDtoOptions(request);
 
-            var result = SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
+            var result = await SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
                 _itemRepo,
                 _libraryManager,
                 _userDataRepository,
                 _dtoService,
                 Logger,
                 request, new[] { typeof(MusicArtist) },
-                SimilarItemsHelper.GetSimiliarityScore);
+                SimilarItemsHelper.GetSimiliarityScore).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
@@ -70,18 +71,18 @@ namespace MediaBrowser.Api.Music
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetSimilarAlbums request)
+        public async Task<object> Get(GetSimilarAlbums request)
         {
             var dtoOptions = GetDtoOptions(request);
 
-            var result = SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
+            var result = await SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
                 _itemRepo,
                 _libraryManager,
                 _userDataRepository,
                 _dtoService,
                 Logger,
                 request, new[] { typeof(MusicAlbum) },
-                GetAlbumSimilarityScore);
+                GetAlbumSimilarityScore).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }

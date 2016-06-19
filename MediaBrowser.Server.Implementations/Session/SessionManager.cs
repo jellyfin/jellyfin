@@ -932,7 +932,7 @@ namespace MediaBrowser.Server.Implementations.Session
             return session.SessionController.SendGeneralCommand(command, cancellationToken);
         }
 
-        public Task SendPlayCommand(string controllingSessionId, string sessionId, PlayRequest command, CancellationToken cancellationToken)
+        public async Task SendPlayCommand(string controllingSessionId, string sessionId, PlayRequest command, CancellationToken cancellationToken)
         {
             var session = GetSessionToRemoteControl(sessionId);
 
@@ -950,7 +950,14 @@ namespace MediaBrowser.Server.Implementations.Session
             }
             else
             {
-                items = command.ItemIds.SelectMany(i => TranslateItemForPlayback(i, user))
+                var list = new List<BaseItem>();
+                foreach (var itemId in command.ItemIds)
+                {
+                    var subItems = await TranslateItemForPlayback(itemId, user).ConfigureAwait(false);
+                    list.AddRange(subItems);
+                }
+                
+                items = list
                    .Where(i => i.LocationType != LocationType.Virtual)
                    .ToList();
             }
@@ -1013,10 +1020,10 @@ namespace MediaBrowser.Server.Implementations.Session
                 command.ControllingUserId = controllingSession.UserId.Value.ToString("N");
             }
 
-            return session.SessionController.SendPlayCommand(command, cancellationToken);
+            await session.SessionController.SendPlayCommand(command, cancellationToken).ConfigureAwait(false);
         }
 
-        private IEnumerable<BaseItem> TranslateItemForPlayback(string id, User user)
+        private async Task<List<BaseItem>> TranslateItemForPlayback(string id, User user)
         {
             var item = _libraryManager.GetItemById(id);
 
@@ -1037,25 +1044,27 @@ namespace MediaBrowser.Server.Implementations.Session
                 });
 
                 return FilterToSingleMediaType(items)
-                    .OrderBy(i => i.SortName);
+                    .OrderBy(i => i.SortName)
+                    .ToList();
             }
 
             if (item.IsFolder)
             {
                 var folder = (Folder)item;
 
-                var items = folder.GetItems(new InternalItemsQuery(user)
+                var itemsResult = await folder.GetItems(new InternalItemsQuery(user)
                 {
                     Recursive = true,
                     IsFolder = false
 
-                }).Result.Items;
+                }).ConfigureAwait(false);
 
-                return FilterToSingleMediaType(items)
-                    .OrderBy(i => i.SortName);
+                return FilterToSingleMediaType(itemsResult.Items)
+                    .OrderBy(i => i.SortName)
+                    .ToList();
             }
 
-            return new[] { item };
+            return new List<BaseItem> { item };
         }
 
         private IEnumerable<BaseItem> FilterToSingleMediaType(IEnumerable<BaseItem> items)

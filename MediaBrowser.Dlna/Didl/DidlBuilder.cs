@@ -846,7 +846,7 @@ namespace MediaBrowser.Dlna.Didl
 
             if (item is Video)
             {
-                var userData = _userDataManager.GetUserDataDto(item, _user);
+                var userData = _userDataManager.GetUserDataDto(item, _user).Result;
 
                 playbackPercentage = Convert.ToInt32(userData.PlayedPercentage ?? 0);
                 if (playbackPercentage >= 100 || userData.Played)
@@ -856,7 +856,7 @@ namespace MediaBrowser.Dlna.Didl
             }
             else if (item is Series || item is Season || item is BoxSet)
             {
-                var userData = _userDataManager.GetUserDataDto(item, _user);
+                var userData = _userDataManager.GetUserDataDto(item, _user).Result;
 
                 if (userData.Played)
                 {

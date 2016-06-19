@@ -5,6 +5,7 @@ using ServiceStack;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -89,7 +90,7 @@ namespace MediaBrowser.Api.Playback.Hls
             _config = config;
         }
 
-        public object Get(GetHlsPlaylistLegacy request)
+        public Task<object> Get(GetHlsPlaylistLegacy request)
         {
             var file = request.PlaylistId + Path.GetExtension(Request.PathInfo);
             file = Path.Combine(_appPaths.TranscodingTempPath, file);
@@ -107,7 +108,7 @@ namespace MediaBrowser.Api.Playback.Hls
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetHlsVideoSegmentLegacy request)
+        public Task<object> Get(GetHlsVideoSegmentLegacy request)
         {
             var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
             file = Path.Combine(_config.ApplicationPaths.TranscodingTempPath, file);
@@ -131,10 +132,10 @@ namespace MediaBrowser.Api.Playback.Hls
             var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
             file = Path.Combine(_appPaths.TranscodingTempPath, file);
 
-            return ResultFactory.GetStaticFileResult(Request, file, FileShare.ReadWrite);
+            return ResultFactory.GetStaticFileResult(Request, file, FileShare.ReadWrite).Result;
         }
 
-        private object GetFileResult(string path, string playlistPath)
+        private Task<object> GetFileResult(string path, string playlistPath)
         {
             var transcodingJob = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType.Hls);
 

@@ -2093,7 +2093,7 @@ namespace MediaBrowser.Controller.Entities
             return path;
         }
 
-        public virtual void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, User user)
+        public virtual Task FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user)
         {
             if (RunTimeTicks.HasValue)
             {
@@ -2109,6 +2109,8 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
             }
+
+            return Task.FromResult(true);
         }
 
         protected Task RefreshMetadataForOwnedVideo(MetadataRefreshOptions options, string path, CancellationToken cancellationToken)
