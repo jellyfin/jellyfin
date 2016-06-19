@@ -122,7 +122,7 @@
         html += '<div class="' + imageClass + '" style="background-image:url(\'' + imgUrl + '\');">';
 
         if (user.ConnectUserId && addConnectIndicator) {
-            html += '<div class="playedIndicator" title="' + Globalize.translate('TooltipLinkedToEmbyConnect') + '"><iron-icon icon="cloud"></iron-icon></div>';
+            html += '<div class="playedIndicator" title="' + Globalize.translate('TooltipLinkedToEmbyConnect') + '"><i class="md-icon">cloud</i></div>';
         }
 
         html += "</div>";
@@ -136,7 +136,7 @@
         html += '<div class="cardFooter">';
 
         html += '<div class="cardText" style="text-align:right; float:right;padding:0;">';
-        html += '<button type="button" is="paper-icon-button-light" class="btnUserMenu"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
+        html += '<button type="button" is="paper-icon-button-light" class="btnUserMenu autoSize"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button>';
         html += "</div>";
 
         html += '<div class="cardText" style="padding-top:10px;padding-bottom:10px;">';

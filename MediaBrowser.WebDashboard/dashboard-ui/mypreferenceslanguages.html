@@ -1,4 +1,4 @@
-﻿<div id="languagePreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderPlaybackSettings}" data-require="scripts/mypreferenceslanguages,emby-checkbox,emby-button" data-backbutton="true" data-menubutton="false">
+﻿<div id="languagePreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderPlaybackSettings}" data-backbutton="true" data-menubutton="false">
 
     <div data-role="content">
 
@@ -40,14 +40,14 @@
                     <option value="Always">${OptionAlwaysPlaySubtitles}</option>
                     <option value="None">${OptionNoSubtitles}</option>
                 </select>
-                <div class="fieldDescription subtitlesDefaultHelp subtitlesHelp" style="display: none;">${OptionDefaultSubtitlesHelp}</div>
-                <div class="fieldDescription subtitlesSmartHelp subtitlesHelp" style="display: none;">${OptionSmartSubtitlesHelp}</div>
-                <div class="fieldDescription subtitlesAlwaysHelp subtitlesHelp" style="display: none;">${OptionAlwaysPlaySubtitlesHelp}</div>
-                <div class="fieldDescription subtitlesOnlyForcedHelp subtitlesHelp" style="display: none;">${OptionOnlyForcedSubtitlesHelp}</div>
-                <div class="fieldDescription subtitlesNoneHelp subtitlesHelp" style="display: none;">${OptionNoSubtitlesHelp}</div>
+                <div class="fieldDescription subtitlesDefaultHelp subtitlesHelp hide">${OptionDefaultSubtitlesHelp}</div>
+                <div class="fieldDescription subtitlesSmartHelp subtitlesHelp hide">${OptionSmartSubtitlesHelp}</div>
+                <div class="fieldDescription subtitlesAlwaysHelp subtitlesHelp hide">${OptionAlwaysPlaySubtitlesHelp}</div>
+                <div class="fieldDescription subtitlesOnlyForcedHelp subtitlesHelp hide">${OptionOnlyForcedSubtitlesHelp}</div>
+                <div class="fieldDescription subtitlesNoneHelp subtitlesHelp hide">${OptionNoSubtitlesHelp}</div>
 
             </div>
-            <div class="detailSection cinemaModeOptions" style="display:none;">
+            <div class="detailSection cinemaModeOptions hide">
                 <h1>
                     ${HeaderCinemaMode}
                 </h1>
@@ -88,8 +88,8 @@
                         <span>${OptionEnableExternalVideoPlayers}</span>
                     </label>
                     <div class="fieldDescription checkboxFieldDescription">
-                        <div style="display:none;" class="labelGenericExternalPlayers">${LabelExternalPlayersHelp}</div>
-                        <div style="display:none;" class="labelNativeExternalPlayers">${LabelNativeExternalPlayersHelp}</div>
+                        <div class="labelGenericExternalPlayers hide">${LabelExternalPlayersHelp}</div>
+                        <div class="labelNativeExternalPlayers hide">${LabelNativeExternalPlayersHelp}</div>
                     </div>
                 </div>
             </div>
