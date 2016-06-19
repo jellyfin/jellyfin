@@ -200,6 +200,8 @@ namespace MediaBrowser.Api.LiveTv
 
         [ApiMember(Name = "SeriesTimerId", Description = "Optional filter by timers belonging to a series timer", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string SeriesTimerId { get; set; }
+
+        public bool? IsActive { get; set; }
     }
 
     [Route("/LiveTv/Programs", "GET,POST", Summary = "Gets available live tv epgs..")]
@@ -927,7 +929,8 @@ namespace MediaBrowser.Api.LiveTv
             var result = await _liveTvManager.GetTimers(new TimerQuery
             {
                 ChannelId = request.ChannelId,
-                SeriesTimerId = request.SeriesTimerId
+                SeriesTimerId = request.SeriesTimerId,
+                IsActive = request.IsActive
 
             }, CancellationToken.None).ConfigureAwait(false);
 

@@ -392,7 +392,103 @@
     <EmbeddedResource Include="Localization\Ratings\ru.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\backbone-min.js">
+      <Link>swagger-ui\lib\backbone-min.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\handlebars-2.0.0.js">
+      <Link>swagger-ui\lib\handlebars-2.0.0.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\highlight.7.3.pack.js">
+      <Link>swagger-ui\lib\highlight.7.3.pack.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery-1.8.0.min.js">
+      <Link>swagger-ui\lib\jquery-1.8.0.min.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery.ba-bbq.min.js">
+      <Link>swagger-ui\lib\jquery.ba-bbq.min.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery.slideto.min.js">
+      <Link>swagger-ui\lib\jquery.slideto.min.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery.wiggle.min.js">
+      <Link>swagger-ui\lib\jquery.wiggle.min.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\marked.js">
+      <Link>swagger-ui\lib\marked.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\shred.bundle.js">
+      <Link>swagger-ui\lib\shred.bundle.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\swagger-client.js">
+      <Link>swagger-ui\lib\swagger-client.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\swagger-oauth.js">
+      <Link>swagger-ui\lib\swagger-oauth.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\underscore-min.js">
+      <Link>swagger-ui\lib\underscore-min.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\o2c.html">
+      <Link>swagger-ui\o2c.html</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\patch.js">
+      <Link>swagger-ui\patch.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\swagger-ui.js">
+      <Link>swagger-ui\swagger-ui.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\swagger-ui.min.js">
+      <Link>swagger-ui\swagger-ui.min.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <EmbeddedResource Include="Localization\countries.json" />
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-700.eot">
+      <Link>swagger-ui\fonts\droid-sans-v6-latin-700.eot</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-700.ttf">
+      <Link>swagger-ui\fonts\droid-sans-v6-latin-700.ttf</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-700.woff">
+      <Link>swagger-ui\fonts\droid-sans-v6-latin-700.woff</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-700.woff2">
+      <Link>swagger-ui\fonts\droid-sans-v6-latin-700.woff2</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-regular.eot">
+      <Link>swagger-ui\fonts\droid-sans-v6-latin-regular.eot</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-regular.ttf">
+      <Link>swagger-ui\fonts\droid-sans-v6-latin-regular.ttf</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-regular.woff">
+      <Link>swagger-ui\fonts\droid-sans-v6-latin-regular.woff</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-regular.woff2">
+      <Link>swagger-ui\fonts\droid-sans-v6-latin-regular.woff2</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="app.config" />
     <EmbeddedResource Include="Localization\Core\core.json" />
     <EmbeddedResource Include="Localization\Core\ar.json" />
@@ -609,8 +705,28 @@
     <EmbeddedResource Include="Localization\Ratings\ca.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\css\reset.css">
+      <Link>swagger-ui\css\reset.css</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="..\ThirdParty\ServiceStack\swagger-ui\css\screen.css">
       <Link>swagger-ui\css\screen.css</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\css\typography.css">
+      <Link>swagger-ui\css\typography.css</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-700.svg">
+      <Link>swagger-ui\fonts\droid-sans-v6-latin-700.svg</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-regular.svg">
+      <Link>swagger-ui\fonts\droid-sans-v6-latin-regular.svg</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\images\explorer_icons.png">
+      <Link>swagger-ui\images\explorer_icons.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="..\ThirdParty\ServiceStack\swagger-ui\images\logo_small.png">
@@ -633,56 +749,8 @@
       <Link>swagger-ui\index.html</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\backbone-min.js">
-      <Link>swagger-ui\lib\backbone-min.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\handlebars-1.0.0.js">
-      <Link>swagger-ui\lib\handlebars-1.0.0.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\highlight.7.3.pack.js">
-      <Link>swagger-ui\lib\highlight.7.3.pack.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery-1.8.0.min.js">
-      <Link>swagger-ui\lib\jquery-1.8.0.min.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery.ba-bbq.min.js">
-      <Link>swagger-ui\lib\jquery.ba-bbq.min.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery.slideto.min.js">
-      <Link>swagger-ui\lib\jquery.slideto.min.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery.wiggle.min.js">
-      <Link>swagger-ui\lib\jquery.wiggle.min.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\shred.bundle.js">
-      <Link>swagger-ui\lib\shred.bundle.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\shred\content.js">
       <Link>swagger-ui\lib\shred\content.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\swagger.js">
-      <Link>swagger-ui\lib\swagger.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\underscore-min.js">
-      <Link>swagger-ui\lib\underscore-min.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\swagger-ui.js">
-      <Link>swagger-ui\swagger-ui.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\swagger-ui.min.js">
-      <Link>swagger-ui\swagger-ui.min.js</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <EmbeddedResource Include="Localization\iso6392.txt" />

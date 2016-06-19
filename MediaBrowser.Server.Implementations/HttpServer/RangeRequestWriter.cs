@@ -39,6 +39,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// </summary>
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
+        public Func<IDisposable> ResultScope { get; set; }
+        public List<Cookie> Cookies { get; private set; }
+
         /// <summary>
         /// Additional HTTP Headers
         /// </summary>
@@ -81,6 +84,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             Options["Accept-Ranges"] = "bytes";
             StatusCode = HttpStatusCode.PartialContent;
 
+            Cookies = new List<Cookie>();
             SetRangeValues();
         }
 

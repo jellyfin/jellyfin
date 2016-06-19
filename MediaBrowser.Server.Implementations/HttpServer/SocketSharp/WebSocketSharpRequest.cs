@@ -22,7 +22,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             this.OperationName = operationName;
             this.RequestAttributes = requestAttributes;
             this.request = httpContext.Request;
-            this.response = new WebSocketSharpResponse(logger, httpContext.Response);
+            this.response = new WebSocketSharpResponse(logger, httpContext.Response, this);
 
             this.RequestPreferences = new RequestPreferences(this);
         }
