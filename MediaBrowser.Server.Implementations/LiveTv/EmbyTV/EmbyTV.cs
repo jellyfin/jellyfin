@@ -1010,6 +1010,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                     Action onStarted = () =>
                     {
+                        timer.Status = RecordingStatus.InProgress;
+                        _timerProvider.AddOrUpdate(timer);
+
                         result.Item3.Release();
                         isResourceOpen = false;
                     };

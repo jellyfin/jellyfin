@@ -89,17 +89,33 @@
 
     function renderActiveRecordings(context) {
 
-        ApiClient.getLiveTvRecordings({
+        ApiClient.getLiveTvTimers({
 
-            userId: Dashboard.getCurrentUserId(),
-            IsInProgress: true,
-            Fields: 'CanDelete'
+            IsActive: true
 
         }).then(function (result) {
 
-            renderRecordings(context.querySelector('#activeRecordings'), result.Items);
+            // The IsActive param is new, so handle older servers that don't support it
+            if (result.Items.length && result.Items[0].Status != 'InProgress') {
+                result.Items = [];
+            }
 
+            renderTimers(context.querySelector('#activeRecordings'), result.Items, {
+                indexByDate: false
+            });
         });
+
+        //ApiClient.getLiveTvRecordings({
+
+        //    userId: Dashboard.getCurrentUserId(),
+        //    IsInProgress: true,
+        //    Fields: 'CanDelete'
+
+        //}).then(function (result) {
+
+        //    renderRecordings(context.querySelector('#activeRecordings'), result.Items);
+
+        //});
     }
 
     function renderLatestRecordings(context) {
@@ -117,11 +133,11 @@
         });
     }
 
-    function renderTimers(context, timers) {
+    function renderTimers(context, timers, options) {
 
-        LiveTvHelpers.getTimersHtml(timers).then(function (html) {
+        LiveTvHelpers.getTimersHtml(timers, options).then(function (html) {
 
-            var elem = context.querySelector('#upcomingRecordings');
+            var elem = context;
 
             if (html) {
                 elem.classList.remove('hide');
@@ -138,9 +154,11 @@
 
     function renderUpcomingRecordings(context) {
 
-        ApiClient.getLiveTvTimers().then(function (result) {
+        ApiClient.getLiveTvTimers({
+            IsActive: false
+        }).then(function (result) {
 
-            renderTimers(context, result.Items);
+            renderTimers(context.querySelector('#upcomingRecordings'), result.Items);
         });
     }
 
@@ -167,6 +185,9 @@
     return function (view, params, tabContent) {
 
         var self = this;
+        tabContent.querySelector('#activeRecordings .recordingItems').addEventListener('timercancelled', function () {
+            reload(tabContent);
+        });
         tabContent.querySelector('#upcomingRecordings .recordingItems').addEventListener('timercancelled', function () {
             reload(tabContent);
         });

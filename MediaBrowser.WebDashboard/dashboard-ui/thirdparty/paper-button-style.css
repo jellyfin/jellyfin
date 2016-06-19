@@ -419,6 +419,11 @@ div.dialogHeader {
     color: #fff;
 }
 
+.ui-body-a .dialogHeader a {
+    color: #fff!important;
+    text-transform: uppercase;
+}
+
 .ui-body-b div.dialogHeader {
     background-color: #101010;
 }

@@ -1,5 +1,17 @@
 ﻿define([], function () {
 
+    function getApiClient() {
+
+        var serverId = getParameterByName('serverid');
+
+        if (serverId) {
+            return ConnectionManager.getOrCreateApiClient(serverId);
+
+        } else {
+            return ApiClient;
+        }
+    }
+
     var LoginPage = {
 
         showVisualForm: function (page) {
@@ -66,18 +78,6 @@
             message: Globalize.translate("MessageUnableToConnectToServer"),
             title: Globalize.translate("HeaderConnectionFailure")
         });
-    }
-
-    function getApiClient() {
-
-        var serverId = getParameterByName('serverid');
-
-        if (serverId) {
-            return Promise.resolve(ConnectionManager.getOrCreateApiClient(serverId));
-
-        } else {
-            return Promise.resolve(ApiClient);
-        }
     }
 
     function showManualForm(context, showCancel, focusPassword) {
@@ -198,9 +198,9 @@
         });
 
         view.querySelector('.manualLoginForm').addEventListener('submit', function (e) {
-            getApiClient().then(function (apiClient) {
-                LoginPage.authenticateUserByName(view, apiClient, view.querySelector('#txtManualName').value, view.querySelector('#txtManualPassword').value);
-            });
+
+            var apiClient = getApiClient();
+            LoginPage.authenticateUserByName(view, apiClient, view.querySelector('#txtManualName').value, view.querySelector('#txtManualPassword').value);
 
             e.preventDefault();
             // Disable default form submission
@@ -222,27 +222,25 @@
         view.addEventListener('viewshow', function (e) {
             Dashboard.showLoadingMsg();
 
-            getApiClient().then(function (apiClient) {
+            var apiClient = getApiClient();
+            apiClient.getPublicUsers().then(function (users) {
 
-                apiClient.getPublicUsers().then(function (users) {
+                if (!users.length) {
 
-                    if (!users.length) {
+                    showManualForm(view, false, false);
 
-                        showManualForm(view, false, false);
+                } else {
 
-                    } else {
+                    LoginPage.showVisualForm(view);
+                    loadUserList(view, apiClient, users);
+                }
 
-                        LoginPage.showVisualForm(view);
-                        loadUserList(view, apiClient, users);
-                    }
+                Dashboard.hideLoadingMsg();
+            });
 
-                    Dashboard.hideLoadingMsg();
-                });
+            apiClient.getJSON(apiClient.getUrl('Branding/Configuration')).then(function (options) {
 
-                apiClient.getJSON(apiClient.getUrl('Branding/Configuration')).then(function (options) {
-
-                    view.querySelector('.disclaimer').innerHTML = options.LoginDisclaimer || '';
-                });
+                view.querySelector('.disclaimer').innerHTML = options.LoginDisclaimer || '';
             });
 
             if (Dashboard.isConnectMode()) {

@@ -2771,9 +2771,10 @@ var AppInfo = {};
 
         defineRoute({
             path: '/mypreferencesdisplay.html',
-            dependencies: ['emby-button'],
+            dependencies: ['emby-checkbox', 'emby-button', 'emby-select'],
             autoFocus: false,
-            transition: 'fade'
+            transition: 'fade',
+            controller: 'scripts/mypreferencesdisplay'
         });
 
         defineRoute({
@@ -2785,9 +2786,10 @@ var AppInfo = {};
 
         defineRoute({
             path: '/mypreferenceslanguages.html',
-            dependencies: ['emby-button'],
+            dependencies: ['emby-button', 'emby-checkbox'],
             autoFocus: false,
-            transition: 'fade'
+            transition: 'fade',
+            controller: 'scripts/mypreferenceslanguages'
         });
 
         defineRoute({
@@ -2806,9 +2808,10 @@ var AppInfo = {};
 
         defineRoute({
             path: '/mysync.html',
-            dependencies: [],
+            dependencies: ['scripts/syncactivity', 'scripts/taskbutton', 'paper-spinner', 'paper-fab', 'emby-button'],
             autoFocus: false,
-            transition: 'fade'
+            transition: 'fade',
+            controller: 'scripts/mysync'
         });
 
         defineRoute({
@@ -2821,9 +2824,10 @@ var AppInfo = {};
 
         defineRoute({
             path: '/mysyncsettings.html',
-            dependencies: [],
+            dependencies: ['emby-checkbox', 'emby-input', 'emby-button', 'paper-icon-button-light'],
             autoFocus: false,
-            transition: 'fade'
+            transition: 'fade',
+            controller: 'scripts/mysyncsettings'
         });
 
         defineRoute({

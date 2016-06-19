@@ -91,7 +91,7 @@
                 }
 
                 if (headerUserButton) {
-                    updateHeaderUserButton(headerUserButton, url, null);
+                    updateHeaderUserButton(headerUserButton, url);
                     hasImage = true;
                 }
             }
@@ -99,7 +99,7 @@
 
         if (headerUserButton && !hasImage) {
 
-            updateHeaderUserButton(headerUserButton, null, 'person');
+            updateHeaderUserButton(headerUserButton, null);
         }
         if (user) {
             updateLocalUser(user.localUser);
@@ -108,19 +108,16 @@
         requiresUserRefresh = false;
     }
 
-    function updateHeaderUserButton(headerUserButton, src, icon) {
+    function updateHeaderUserButton(headerUserButton, src) {
 
         if (src) {
             headerUserButton.classList.add('headerUserButtonRound');
             headerUserButton.classList.remove('autoSize');
             headerUserButton.innerHTML = '<img src="' + src + '" />';
-        } else if (icon) {
-            headerUserButton.classList.remove('headerUserButtonRound');
-            headerUserButton.classList.add('autoSize');
-            headerUserButton.innerHTML = '<i class="md-icon>' + icon + '</i>';
         } else {
-            headerUserButton.classList.add('autoSize');
             headerUserButton.classList.remove('headerUserButtonRound');
+            headerUserButton.classList.add('autoSize');
+            headerUserButton.innerHTML = '<i class="md-icon">person</i>';
         }
     }
 

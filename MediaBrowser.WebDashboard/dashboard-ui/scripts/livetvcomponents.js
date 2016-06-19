@@ -8,8 +8,9 @@
         return enableScrollX() ? 'overflowSquare' : 'square';
     }
 
-    function getTimersHtml(timers) {
+    function getTimersHtml(timers, options) {
 
+        options = options || {};
         var items = timers.map(function (t) {
             t.Type = 'Timer';
             return t;
@@ -28,7 +29,7 @@
 
             var dateText = '';
 
-            if (item.StartDate) {
+            if (options.indexByDate !== false && item.StartDate) {
                 try {
 
                     var premiereDate = datetime.parseISO8601Date(item.StartDate, true);
@@ -55,14 +56,24 @@
             }
         }
 
+        if (currentGroup.length) {
+            groups.push({
+                name: currentGroupName,
+                items: currentGroup
+            });
+        }
+
         var html = '';
 
         for (i = 0, length = groups.length; i < length; i++) {
 
             var group = groups[i];
 
-            html += '<div class="homePageSection">';
-            html += '<h1 class="listHeader">' + group.name + '</h1>';
+            if (group.name) {
+                html += '<div class="homePageSection">';
+
+                html += '<h1 class="listHeader">' + group.name + '</h1>';
+            }
 
             if (enableScrollX()) {
                 html += '<div class="itemsContainer hiddenScrollX">';
@@ -84,7 +95,9 @@
             });
             html += '</div>';
 
-            html += '</div>';
+            if (group.name) {
+                html += '</div>';
+            }
         }
 
         return Promise.resolve(html);

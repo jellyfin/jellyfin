@@ -874,6 +874,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     position: absolute;
     top: 5px;
     right: 5px;
+    font-size: 200%;
 }
 
 .playedIndicator + .syncIndicator {
