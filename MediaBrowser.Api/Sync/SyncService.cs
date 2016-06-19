@@ -227,7 +227,7 @@ namespace MediaBrowser.Api.Sync
             Task.WaitAll(task);
         }
 
-        public object Get(GetSyncJobItemFile request)
+        public async Task<object> Get(GetSyncJobItemFile request)
         {
             var jobItem = _syncManager.GetJobItem(request.Id);
 
@@ -241,8 +241,7 @@ namespace MediaBrowser.Api.Sync
                 throw new ArgumentException("The job item is not yet ready for transfer.");
             }
 
-            var task = _syncManager.ReportSyncJobItemTransferBeginning(request.Id);
-            Task.WaitAll(task);
+            await _syncManager.ReportSyncJobItemTransferBeginning(request.Id).ConfigureAwait(false);
 
             return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
             {
@@ -255,7 +254,7 @@ namespace MediaBrowser.Api.Sync
             });
         }
 
-        public object Get(GetSyncDialogOptions request)
+        public async Task<object> Get(GetSyncDialogOptions request)
         {
             var result = new SyncDialogOptions();
 
@@ -298,8 +297,7 @@ namespace MediaBrowser.Api.Sync
                     .Select(_libraryManager.GetItemById)
                     .Where(i => i != null);
 
-                var dtos = _dtoService.GetBaseItemDtos(items, dtoOptions, authenticatedUser)
-                    .ToList();
+                var dtos = (await _dtoService.GetBaseItemDtos(items, dtoOptions, authenticatedUser).ConfigureAwait(false));
 
                 result.Options = SyncHelper.GetSyncOptions(dtos);
             }
@@ -343,7 +341,7 @@ namespace MediaBrowser.Api.Sync
             Task.WaitAll(task);
         }
 
-        public object Get(GetSyncJobItemAdditionalFile request)
+        public Task<object> Get(GetSyncJobItemAdditionalFile request)
         {
             var jobItem = _syncManager.GetJobItem(request.Id);
 
@@ -359,7 +357,7 @@ namespace MediaBrowser.Api.Sync
                 throw new ArgumentException("Sync job additional file not found.");
             }
 
-            return ToStaticFileResult(file.Path);
+            return ResultFactory.GetStaticFileResult(Request, file.Path);
         }
 
         public void Post(EnableSyncJobItem request)

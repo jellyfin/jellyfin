@@ -3,6 +3,7 @@ using MediaBrowser.Model.System;
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller
 {
@@ -65,13 +66,13 @@ namespace MediaBrowser.Controller
         /// Gets the local ip address.
         /// </summary>
         /// <value>The local ip address.</value>
-        List<IPAddress> LocalIpAddresses { get; }
+        Task<List<IPAddress>> GetLocalIpAddresses();
 
         /// <summary>
         /// Gets the local API URL.
         /// </summary>
         /// <value>The local API URL.</value>
-        string LocalApiUrl { get; }
+        Task<string> GetLocalApiUrl();
 
         /// <summary>
         /// Gets the local API URL.

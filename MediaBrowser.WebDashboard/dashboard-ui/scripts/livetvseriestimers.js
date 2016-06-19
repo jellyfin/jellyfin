@@ -79,7 +79,7 @@
 
             html += '</paper-item-body>';
 
-            html += '<button type="button" is="paper-icon-button-light" data-seriestimerid="' + timer.Id + '" title="' + Globalize.translate('ButtonCancelSeries') + '" class="btnCancelSeries"><iron-icon icon="cancel"></iron-icon></button>';
+            html += '<button type="button" is="paper-icon-button-light" data-seriestimerid="' + timer.Id + '" title="' + Globalize.translate('ButtonCancelSeries') + '" class="btnCancelSeries autoSize"><i class="md-icon">cancel</i></button>';
 
             html += '</paper-icon-item>';
         }

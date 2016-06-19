@@ -416,7 +416,7 @@ paper-input + .fieldDescription {
 .sidebarLinkIcon {
     text-align: center;
     vertical-align: middle;
-    margin-right: 2em;
+    margin-right: 1.2em;
 }
 
     .sidebarLinkIcon + span {

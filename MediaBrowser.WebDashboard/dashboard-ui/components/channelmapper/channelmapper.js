@@ -110,7 +110,7 @@ function (dialogHelper, loading, connectionManager, globalize, actionsheet) {
 
             html += '</div>';
 
-            html += '<button class="btnMap" is="paper-icon-button-light" type="button" data-number="' + channel.Number + '" data-providernumber="' + channel.ProviderChannelNumber + '"><iron-icon icon="mode-edit"></iron-icon></button>';
+            html += '<button class="btnMap autoSize" is="paper-icon-button-light" type="button" data-number="' + channel.Number + '" data-providernumber="' + channel.ProviderChannelNumber + '"><i class="md-icon">mode_edit</i></button>';
 
             html += '</div>';
 

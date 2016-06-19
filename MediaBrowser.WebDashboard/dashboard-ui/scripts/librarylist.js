@@ -149,16 +149,16 @@
 
             var resumePosition = (item.UserData || {}).PlaybackPositionTicks || 0;
 
-            html += '<button is="paper-icon-button-light" class="btnPlayItem" data-itemid="' + item.Id + '" data-itemtype="' + item.Type + '" data-isfolder="' + item.IsFolder + '" data-mediatype="' + item.MediaType + '" data-resumeposition="' + resumePosition + '"><iron-icon icon="play-circle-outline"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" class="btnPlayItem autoSize" data-itemid="' + item.Id + '" data-itemtype="' + item.Type + '" data-isfolder="' + item.IsFolder + '" data-mediatype="' + item.MediaType + '" data-resumeposition="' + resumePosition + '"><i class="md-icon">play_circle_outline</i></button>';
             buttonCount++;
         }
 
         if (commands.indexOf('trailer') != -1) {
-            html += '<button is="paper-icon-button-light" class="btnPlayTrailer" data-itemid="' + item.Id + '"><iron-icon icon="videocam"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" class="btnPlayTrailer autoSize" data-itemid="' + item.Id + '"><i class="md-icon">videocam</i></button>';
             buttonCount++;
         }
 
-        html += '<button is="paper-icon-button-light" class="btnMoreCommands"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
+        html += '<button is="paper-icon-button-light" class="btnMoreCommands autoSize"><i class="md-icon">more_vert</i></button>';
         buttonCount++;
 
         html += '</div>';
@@ -1097,11 +1097,11 @@
             var html = '';
 
             html += '<div style="float:left;">';
-            html += '<button is="paper-icon-button-light" class="btnCloseSelectionPanel"><iron-icon icon="close"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" class="btnCloseSelectionPanel autoSize"><i class="md-icon">close</i></button>';
             html += '<span class="itemSelectionCount"></span>';
             html += '</div>';
 
-            html += '<button is="paper-icon-button-light" class="btnSelectionPanelOptions" style="margin-left:auto;"><iron-icon icon="more-vert"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" class="btnSelectionPanelOptions autoSize" style="margin-left:auto;"><i class="md-icon">more_vert</i></button>';
 
             selectionCommandsPanel.innerHTML = html;
 
@@ -1544,7 +1544,7 @@
                 playedIndicator.classList.add('playedIndicator');
                 card.querySelector('.cardContent').appendChild(playedIndicator);
             }
-            playedIndicator.innerHTML = '<iron-icon icon="check"></iron-icon>';
+            playedIndicator.innerHTML = '<i class="md-icon">check</i>';
         }
         else if (userData.UnplayedItemCount) {
 

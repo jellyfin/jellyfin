@@ -118,12 +118,21 @@
                     posterOptions.shape = "backdrop";
                     html = libraryBrowser.getPosterViewHtml(posterOptions);
                 } else {
-                    
+
                     // Poster
                     posterOptions.showTitle = context == 'photos' ? 'auto' : true;
                     posterOptions.overlayText = context == 'photos';
 
                     html = libraryBrowser.getPosterViewHtml(posterOptions);
+                }
+
+                if (currentItem.CollectionType == 'boxsets') {
+                    view.querySelector('.btnNewCollection').classList.remove('hide');
+                    if (!result.Items.length) {
+                        html = '<p style="text-align:center;">' + Globalize.translate('MessageNoCollectionsAvailable') + '</p>';
+                    }
+                } else {
+                    view.querySelector('.btnNewCollection').classList.add('hide');
                 }
 
                 var elem = view.querySelector('#items');
@@ -307,6 +316,20 @@
                     reloadItems(view);
                 },
                 query: getQuery()
+            });
+        });
+
+        // The button is created dynamically
+        view.querySelector('.btnNewCollection').addEventListener('click', function () {
+
+            require(['collectionEditor'], function (collectionEditor) {
+
+                var serverId = ApiClient.serverInfo().Id;
+                new collectionEditor().show({
+                    items: [],
+                    serverId: serverId
+                });
+
             });
         });
 

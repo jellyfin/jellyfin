@@ -93,7 +93,8 @@
         require(['dialogHelper', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'emby-button'], function (dialogHelper) {
 
             var dlg = dialogHelper.createDialog({
-                size: 'fullscreen-border'
+                size: 'fullscreen-border',
+                removeOnClose: true
             });
 
             dlg.classList.add('ui-body-b');
@@ -122,8 +123,8 @@
 
             html += '<br/>';
 
-            html += '<a class="clearLink" href="http://emby.media/premiere" target="_blank"><button is="emby-button" type="button" class="raised submit block" autoFocus><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonBecomeSupporter') + '</span></button></a>';
-            html += '<button is="emby-button" type="button" class="raised subdued block btnCancelSupporterInfo" style="background:#444;"><iron-icon icon="close"></iron-icon><span>' + Globalize.translate('ButtonClosePlayVideo') + '</span></button>';
+            html += '<a class="clearLink" href="http://emby.media/premiere" target="_blank"><button is="emby-button" type="button" class="raised submit block" autoFocus><i class="md-icon">check</i><span>' + Globalize.translate('ButtonBecomeSupporter') + '</span></button></a>';
+            html += '<button is="emby-button" type="button" class="raised subdued block btnCancelSupporterInfo" style="background:#444;"><i class="md-icon">close</i><span>' + Globalize.translate('ButtonClosePlayVideo') + '</span></button>';
 
             html += '</div>';
 
@@ -133,15 +134,19 @@
             // Has to be assigned a z-index after the call to .open() 
             dlg.addEventListener('close', function (e) {
                 appStorage.setItem(supporterPlaybackKey, new Date().getTime());
-                dlg.parentNode.removeChild(dlg);
                 resolve();
             });
 
             dialogHelper.open(dlg);
 
-            $('.btnCancelSupporterInfo').on('click', function () {
+            var onCancelClick = function () {
                 dialogHelper.close(dlg);
-            });
+            };
+            var i, length;
+            var elems = dlg.querySelectorAll('.btnCancelSupporterInfo');
+            for (i = 0, length = elems.length; i < length; i++) {
+                elems[i].addEventListener('click', onCancelClick);
+            }
         });
     }
 

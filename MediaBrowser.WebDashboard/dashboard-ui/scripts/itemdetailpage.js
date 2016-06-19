@@ -1075,7 +1075,7 @@
         html += '<span>' + type.name + '</span>';
 
         html += '</h1>';
-        html += '<button class="btnAddToCollection" type="button" is="paper-icon-button-light" style="margin-left:1em;"><iron-icon icon="add"></iron-icon></button>';
+        html += '<button class="btnAddToCollection autoSize" type="button" is="paper-icon-button-light" style="margin-left:1em;"><i class="md-icon" icon="add">add</i></button>';
         html += '</div>';
 
         html += '<div class="detailSectionContent itemsContainer">';

@@ -42,8 +42,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             IFileSystem fileSystem,
             IIsoManager isoManager,
             ILibraryManager libraryManager,
-            ISessionManager sessionManager, 
-            ISubtitleEncoder subtitleEncoder, 
+            ISessionManager sessionManager,
+            ISubtitleEncoder subtitleEncoder,
             IMediaSourceManager mediaSourceManager)
         {
             MediaEncoder = mediaEncoder;
@@ -71,7 +71,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             await AcquireResources(encodingJob, cancellationToken).ConfigureAwait(false);
 
-            var commandLineArgs = GetCommandLineArguments(encodingJob);
+            var commandLineArgs = await GetCommandLineArguments(encodingJob).ConfigureAwait(false);
 
             var process = new Process
             {
@@ -131,7 +131,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             cancellationToken.Register(() => Cancel(process, encodingJob));
-            
+
             // MUST read both stdout and stderr asynchronously or a deadlock may occurr
             process.BeginOutputReadLine();
 
@@ -139,7 +139,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             new JobLogger(Logger).StartStreamingLog(encodingJob, process.StandardError.BaseStream, encodingJob.LogFileStream);
 
             // Wait for the file to exist before proceeeding
-			while (!FileSystem.FileExists(encodingJob.OutputFilePath) && !encodingJob.HasExited)
+            while (!FileSystem.FileExists(encodingJob.OutputFilePath) && !encodingJob.HasExited)
             {
                 await Task.Delay(100, cancellationToken).ConfigureAwait(false);
             }
@@ -264,11 +264,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return ConfigurationManager.GetConfiguration<EncodingOptions>("encoding");
         }
 
-        protected abstract string GetCommandLineArguments(EncodingJob job);
+        protected abstract Task<string> GetCommandLineArguments(EncodingJob job);
 
         private string GetOutputFilePath(EncodingJob state)
         {
-            var folder = string.IsNullOrWhiteSpace(state.Options.OutputDirectory) ? 
+            var folder = string.IsNullOrWhiteSpace(state.Options.OutputDirectory) ?
                 ConfigurationManager.ApplicationPaths.TranscodingTempPath :
                 state.Options.OutputDirectory;
 
@@ -363,7 +363,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                return null;    
+                return null;
             }
 
             if (state.VideoStream != null && !string.IsNullOrWhiteSpace(state.VideoStream.Codec))
@@ -536,7 +536,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <param name="state">The state.</param>
         /// <param name="outputVideoCodec">The output video codec.</param>
         /// <returns>System.String.</returns>
-        protected string GetGraphicalSubtitleParam(EncodingJob state, string outputVideoCodec)
+        protected async Task<string> GetGraphicalSubtitleParam(EncodingJob state, string outputVideoCodec)
         {
             var outputSizeParam = string.Empty;
 
@@ -545,7 +545,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Add resolution params, if specified
             if (request.Width.HasValue || request.Height.HasValue || request.MaxHeight.HasValue || request.MaxWidth.HasValue)
             {
-                outputSizeParam = GetOutputSizeParam(state, outputVideoCodec).TrimEnd('"');
+                outputSizeParam = await GetOutputSizeParam(state, outputVideoCodec).ConfigureAwait(false);
+                outputSizeParam = outputSizeParam.TrimEnd('"');
                 outputSizeParam = "," + outputSizeParam.Substring(outputSizeParam.IndexOf("scale", StringComparison.OrdinalIgnoreCase));
             }
 
@@ -858,7 +859,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <param name="outputVideoCodec">The output video codec.</param>
         /// <param name="allowTimeStampCopy">if set to <c>true</c> [allow time stamp copy].</param>
         /// <returns>System.String.</returns>
-        protected string GetOutputSizeParam(EncodingJob state,
+        protected async Task<string> GetOutputSizeParam(EncodingJob state,
             string outputVideoCodec,
             bool allowTimeStampCopy = true)
         {
@@ -935,7 +936,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.Options.SubtitleMethod == SubtitleDeliveryMethod.Encode)
             {
-                var subParam = GetTextSubtitleParam(state);
+                var subParam = await GetTextSubtitleParam(state).ConfigureAwait(false);
 
                 filters.Add(subParam);
 
@@ -958,7 +959,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         /// <param name="state">The state.</param>
         /// <returns>System.String.</returns>
-        protected string GetTextSubtitleParam(EncodingJob state)
+        protected async Task<string> GetTextSubtitleParam(EncodingJob state)
         {
             var seconds = Math.Round(TimeSpan.FromTicks(state.Options.StartTimeTicks ?? 0).TotalSeconds);
 
@@ -970,7 +971,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 if (!string.IsNullOrEmpty(state.SubtitleStream.Language))
                 {
-                    var charenc = SubtitleEncoder.GetSubtitleFileCharacterSet(subtitlePath, state.SubtitleStream.Language, state.MediaSource.Protocol, CancellationToken.None).Result;
+                    var charenc = await SubtitleEncoder.GetSubtitleFileCharacterSet(subtitlePath, state.SubtitleStream.Language, state.MediaSource.Protocol, CancellationToken.None).ConfigureAwait(false);
 
                     if (!string.IsNullOrEmpty(charenc))
                     {

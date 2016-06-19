@@ -471,6 +471,16 @@ body:not(.dashboardDocument) .btnNotifications {
     margin-left: 1.6em;
 }
 
+i.sidebarLinkIcon {
+    font-size: 24px;
+    height: 24px;
+    width: 24px;
+}
+
+.darkDrawerPanel i.sidebarLinkIcon {
+    margin-left: 1em;
+}
+
 .darkDrawerPanel .sidebarLinkText, .darkDrawerPanel .sidebarLink {
     color: #fff !important;
     font-weight: normal !important;

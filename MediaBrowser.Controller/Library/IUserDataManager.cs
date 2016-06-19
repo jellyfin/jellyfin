@@ -40,7 +40,9 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <returns>UserItemDataDto.</returns>
-        UserItemDataDto GetUserDataDto(IHasUserData item, User user);
+        Task<UserItemDataDto> GetUserDataDto(IHasUserData item, User user);
+
+        Task<UserItemDataDto> GetUserDataDto(IHasUserData item, BaseItemDto itemDto, User user);
 
         /// <summary>
         /// Get all user data for the given user

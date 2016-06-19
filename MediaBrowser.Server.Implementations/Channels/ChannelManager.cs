@@ -191,7 +191,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var dtoOptions = new DtoOptions();
 
-            var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
+            var returnItems = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user).ConfigureAwait(false))
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>
@@ -596,7 +596,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var dtoOptions = new DtoOptions();
 
-            var returnItems = _dtoService.GetBaseItemDtos(items, dtoOptions, user)
+            var returnItems = (await _dtoService.GetBaseItemDtos(items, dtoOptions, user).ConfigureAwait(false))
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>
@@ -863,7 +863,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var dtoOptions = new DtoOptions();
 
-            var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
+            var returnItems = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user).ConfigureAwait(false))
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>
@@ -1012,7 +1012,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var dtoOptions = new DtoOptions();
 
-            var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
+            var returnItems = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user).ConfigureAwait(false))
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>

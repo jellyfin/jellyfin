@@ -44,7 +44,7 @@
         html += '</paper-item-body>';
 
         if (server.Id) {
-            html += '<button is="paper-icon-button-light" class="btnServerMenu"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" class="btnServerMenu autoSize"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button>';
         }
 
         html += '</paper-icon-item>';
@@ -198,8 +198,7 @@
 
             menuItems.push({
                 name: Globalize.translate('ButtonDelete'),
-                id: 'delete',
-                ironIcon: 'delete'
+                id: 'delete'
             });
 
             require(['actionsheet'], function (actionsheet) {
@@ -233,14 +232,12 @@
 
             menuItems.push({
                 name: Globalize.translate('ButtonAccept'),
-                id: 'accept',
-                ironIcon: 'add'
+                id: 'accept'
             });
 
             menuItems.push({
                 name: Globalize.translate('ButtonReject'),
-                id: 'reject',
-                ironIcon: 'cancel'
+                id: 'reject'
             });
 
             require(['actionsheet'], function (actionsheet) {
@@ -283,7 +280,7 @@
 
             html += '</paper-item-body>';
 
-            html += '<button is="paper-icon-button-light" class="btnInviteMenu"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" class="btnInviteMenu autoSize"><i class="md-icon">' + AppInfo.moreIcon.replace('-','_') + '</i></button>';
 
             html += '</paper-icon-item>';
 
@@ -361,7 +358,7 @@
                     return s.Id == id;
                 })[0];
 
-                connectToServer(page, server);
+                connectToServer(view, server);
             }
 
             var btnServerMenu = parentWithClass(e.target, 'btnServerMenu');

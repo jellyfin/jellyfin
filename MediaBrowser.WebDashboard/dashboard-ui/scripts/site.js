@@ -255,7 +255,7 @@ var Dashboard = {
         var html = '<span style="margin-right: 1em;">' + Globalize.translate('MessagePleaseRestart') + '</span>';
 
         if (systemInfo.CanSelfRestart) {
-            html += '<button is="emby-button" type="button" class="raised submit mini" onclick="this.disabled=\'disabled\';Dashboard.restartServer();"><iron-icon icon="refresh"></iron-icon><span>' + Globalize.translate('ButtonRestart') + '</span></button>';
+            html += '<button is="emby-button" type="button" class="raised submit mini" onclick="this.disabled=\'disabled\';Dashboard.restartServer();"><i class="md-icon">refresh</i><span>' + Globalize.translate('ButtonRestart') + '</span></button>';
         }
 
         Dashboard.showFooterNotification({ id: "serverRestartWarning", html: html, forceShow: true, allowHide: false });
@@ -277,7 +277,7 @@ var Dashboard = {
 
         var html = '<span style="margin-right: 1em;">' + Globalize.translate('MessagePleaseRefreshPage') + '</span>';
 
-        html += '<button is="emby-button" type="button" class="raised submit mini" onclick="this.disabled=\'disabled\';Dashboard.reloadPage();"><iron-icon icon="refresh"></iron-icon><span>' + Globalize.translate('ButtonRefresh') + '</span></button>';
+        html += '<button is="emby-button" type="button" class="raised submit mini" onclick="this.disabled=\'disabled\';Dashboard.reloadPage();"><i class="md-icon">refresh</i><span>' + Globalize.translate('ButtonRefresh') + '</span></button>';
 
         Dashboard.showFooterNotification({ id: "dashboardVersionWarning", html: html, forceShow: true, allowHide: false });
     },
@@ -639,7 +639,7 @@ var Dashboard = {
         if (icon) {
             var style = item.color ? ' style="color:' + item.color + '"' : '';
 
-            menuHtml += '<iron-icon icon="' + icon + '" class="sidebarLinkIcon"' + style + '></iron-icon>';
+            menuHtml += '<i class="md-icon sidebarLinkIcon"' + style + '>' + icon + '</i>';
         }
 
         menuHtml += '<span class="sidebarLinkText">';
@@ -726,16 +726,16 @@ var Dashboard = {
             name: Globalize.translate('TabMetadata'),
             href: "metadata.html",
             pageIds: ['metadataConfigurationPage', 'metadataImagesConfigurationPage', 'metadataNfoPage'],
-            icon: 'insert-drive-file',
+            icon: 'insert_drive_file',
             color: '#FF9800'
         }, {
             name: Globalize.translate('TabSubtitles'),
             href: "metadatasubtitles.html",
             pageIds: ['metadataSubtitlesPage'],
-            icon: 'closed-caption'
+            icon: 'closed_caption'
         }, {
             name: Globalize.translate('TabPlayback'),
-            icon: 'play-circle-filled',
+            icon: 'play_circle_filled',
             color: '#E5342E',
             href: "cinemamodeconfiguration.html",
             pageIds: ['cinemaModeConfigurationPage', 'playbackConfigurationPage', 'streamingSettingsPage', 'encodingSettingsPage']
@@ -771,7 +771,7 @@ var Dashboard = {
             pageIds: ['notificationSettingsPage', 'notificationSettingPage']
         }, {
             name: Globalize.translate('TabPlugins'),
-            icon: 'add-shopping-cart',
+            icon: 'add_shopping_cart',
             color: '#9D22B1',
             href: "plugins.html",
             pageIds: ['pluginsPage', 'pluginCatalogPage']
@@ -1900,7 +1900,7 @@ var AppInfo = {};
         define("fade-in-animation", ["html!" + bowerPath + "/neon-animation/animations/fade-in-animation.html"]);
         define("fade-out-animation", ["html!" + bowerPath + "/neon-animation/animations/fade-out-animation.html"]);
         define("scale-up-animation", ["html!" + bowerPath + "/neon-animation/animations/scale-up-animation.html"]);
-        define("paper-fab", ["html!" + bowerPath + "/paper-fab/paper-fab.html"]);
+        define("paper-fab", ["emby-icons", "html!" + bowerPath + "/paper-fab/paper-fab.html"]);
         define("iron-list", ["html!" + bowerPath + "/iron-list/iron-list.html"]);
         define("iron-scroll-threshold", ["html!" + bowerPath + "/iron-scroll-threshold/iron-scroll-threshold.html"]);
         define("paper-progress", ["html!" + bowerPath + "/paper-progress/paper-progress.html"]);
@@ -2421,12 +2421,6 @@ var AppInfo = {};
             dependencies: [],
             autoFocus: false,
             roles: 'admin'
-        });
-
-        defineRoute({
-            path: '/collections.html',
-            dependencies: [],
-            autoFocus: false
         });
 
         defineRoute({

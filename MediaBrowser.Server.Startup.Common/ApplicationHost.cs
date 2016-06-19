@@ -313,7 +313,6 @@ namespace MediaBrowser.Server.Startup.Common
         /// <summary>
         /// Runs the startup tasks.
         /// </summary>
-        /// <returns>Task.</returns>
         public override async Task RunStartupTasks()
         {
             if (ServerConfigurationManager.Configuration.MigrationVersion < CleanDatabaseScheduledTask.MigrationVersion &&
@@ -402,7 +401,6 @@ namespace MediaBrowser.Server.Startup.Common
         /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
-        /// <returns>Task.</returns>
         protected override async Task RegisterResources(IProgress<double> progress)
         {
             await base.RegisterResources(progress).ConfigureAwait(false);
@@ -727,7 +725,6 @@ namespace MediaBrowser.Server.Startup.Common
         /// <summary>
         /// Configures the repositories.
         /// </summary>
-        /// <returns>Task.</returns>
         private async Task ConfigureNotificationsRepository()
         {
             var repo = new SqliteNotificationsRepository(LogManager, ApplicationPaths, NativeApp.GetDbConnector());
@@ -742,7 +739,6 @@ namespace MediaBrowser.Server.Startup.Common
         /// <summary>
         /// Configures the user data repositories.
         /// </summary>
-        /// <returns>Task.</returns>
         private async Task ConfigureUserDataRepositories()
         {
             var repo = new SqliteUserDataRepository(LogManager, ApplicationPaths, NativeApp.GetDbConnector());
@@ -1102,7 +1098,7 @@ namespace MediaBrowser.Server.Startup.Common
         /// Gets the system status.
         /// </summary>
         /// <returns>SystemInfo.</returns>
-        public virtual SystemInfo GetSystemInfo()
+        public SystemInfo GetSystemInfo()
         {
             return new SystemInfo
             {
@@ -1134,7 +1130,7 @@ namespace MediaBrowser.Server.Startup.Common
                 IsRunningAsService = IsRunningAsService,
                 SupportsRunningAsService = SupportsRunningAsService,
                 ServerName = FriendlyName,
-                LocalAddress = LocalApiUrl,
+                LocalAddress = GetLocalApiUrl().Result,
                 SupportsLibraryMonitor = SupportsLibraryMonitor
             };
         }
@@ -1152,29 +1148,26 @@ namespace MediaBrowser.Server.Startup.Common
             get { return !string.IsNullOrWhiteSpace(HttpServer.CertificatePath); }
         }
 
-        public string LocalApiUrl
+        public async Task<string> GetLocalApiUrl()
         {
-            get
+            try
             {
-                try
-                {
-                    // Return the first matched address, if found, or the first known local address
-                    var address = LocalIpAddresses.FirstOrDefault(i => !IPAddress.IsLoopback(i));
+                // Return the first matched address, if found, or the first known local address
+                var address = (await GetLocalIpAddresses().ConfigureAwait(false)).FirstOrDefault(i => !IPAddress.IsLoopback(i));
 
-                    if (address != null)
-                    {
-                        return GetLocalApiUrl(address);
-                    }
-
-                    return null;
-                }
-                catch (Exception ex)
+                if (address != null)
                 {
-                    Logger.ErrorException("Error getting local Ip address information", ex);
+                    return GetLocalApiUrl(address);
                 }
 
                 return null;
             }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error getting local Ip address information", ex);
+            }
+
+            return null;
         }
 
         public string GetLocalApiUrl(IPAddress ipAddress)
@@ -1194,16 +1187,13 @@ namespace MediaBrowser.Server.Startup.Common
                 HttpPort.ToString(CultureInfo.InvariantCulture));
         }
 
-        public List<IPAddress> LocalIpAddresses
+        public async Task<List<IPAddress>> GetLocalIpAddresses()
         {
-            get
-            {
-                var localAddresses = NetworkManager.GetLocalIpAddresses()
-                    .Where(IsIpAddressValid)
-                    .ToList();
+            var localAddresses = NetworkManager.GetLocalIpAddresses()
+                .Where(IsIpAddressValid)
+                .ToList();
 
-                return localAddresses;
-            }
+            return localAddresses;
         }
 
         private readonly ConcurrentDictionary<string, bool> _validAddressResults = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
@@ -1389,7 +1379,6 @@ namespace MediaBrowser.Server.Startup.Common
         /// <param name="package">The package that contains the update</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
         public override async Task UpdateApplication(PackageVersionInfo package, CancellationToken cancellationToken, IProgress<double> progress)
         {
             await InstallationManager.InstallPackage(package, false, progress, cancellationToken).ConfigureAwait(false);

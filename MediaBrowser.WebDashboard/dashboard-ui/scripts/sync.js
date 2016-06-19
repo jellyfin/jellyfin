@@ -258,12 +258,12 @@
 
                 var html = '';
                 html += '<div class="dialogHeader" style="margin:0 0 2em;">';
-                html += '<button is="paper-icon-button-light" class="btnCancel" tabindex="-1"><iron-icon icon="arrow-back"></iron-icon></button>';
+                html += '<button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">arrow_back</i></button>';
                 html += '<div class="dialogHeaderTitle">';
                 html += Globalize.translate('SyncMedia');
                 html += '</div>';
 
-                html += '<a href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank" class="clearLink" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:auto;"><button is="emby-button" type="button" class="mini"><iron-icon icon="info"></iron-icon><span>' + Globalize.translate('ButtonHelp') + '</span></button></a>';
+                html += '<a href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank" class="clearLink" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:auto;"><button is="emby-button" type="button" class="mini"><i class="md-icon">info</i><span>' + Globalize.translate('ButtonHelp') + '</span></button></a>';
 
                 html += '</div>';
 
@@ -272,7 +272,7 @@
                 html += '<div class="formFields"></div>';
 
                 html += '<p>';
-                html += '<button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="sync"></iron-icon><span>' + Globalize.translate('ButtonSync') + '</span></button>';
+                html += '<button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">sync</i><span>' + Globalize.translate('ButtonSync') + '</span></button>';
                 html += '</p>';
 
                 html += '</form>';

@@ -92,7 +92,7 @@ namespace MediaBrowser.Api.UserLibrary
             return new ItemsResult
             {
                 TotalRecordCount = result.TotalRecordCount,
-                Items = _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user).ToArray()
+                Items = (await _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user).ConfigureAwait(false)).ToArray()
             };
         }
 

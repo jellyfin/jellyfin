@@ -52,10 +52,10 @@
     }
 
         [is="emby-button"].fab i {
-            height: 4.4vh;
-            width: 4.4vh;
+            height: 40px;
+            width: 40px;
             vertical-align: middle;
-            font-size: 4.4vh;
+            font-size: 40px;
         }
 
     [is="emby-button"].noflex {
@@ -108,6 +108,12 @@
 
     [is="emby-button"] i + span {
         margin-left: .5em;
+    }
+
+    [is="emby-button"]:not(.autoSize) i {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
     }
 
 [is=emby-button].autoSize {

@@ -10,7 +10,7 @@
         <div class="ui-bar-b readOnlyContent welcomeMessage hide" style="padding: 2em; border-radius: 10px; margin: 2em auto; font-weight: normal;">
             <h1 style="margin-top: 0;" class="tourHeader"></h1>
             <p>
-                <button is="emby-button" type="button" class="raised submit block btnTakeTour"><iron-icon icon="check"></iron-icon><span class="tourButtonText"></span></button>
+                <button is="emby-button" type="button" class="raised submit block btnTakeTour"><span class="tourButtonText"></span></button>
             </p>
         </div>
 
@@ -20,7 +20,10 @@
         <div class="homePageSection">
             <div>
                 <h1 class="listHeader nextUpHeader" style="display: inline-block; vertical-align: middle;">${HeaderNextUp}</h1>
-                <button is="emby-button" type="button" class="raised submit mini categorySyncButton" data-category="NextUp"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></button>
+                <button is="emby-button" type="button" class="raised submit mini categorySyncButton" data-category="NextUp">
+                    <i class="md-icon">sync</i>
+                    <span>${ButtonSync}</span>
+                </button>
             </div>
             <div id="nextUpItems" class="itemsContainer">
             </div>

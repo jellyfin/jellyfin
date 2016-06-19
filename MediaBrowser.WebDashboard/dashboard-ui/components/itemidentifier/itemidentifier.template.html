@@ -18,7 +18,10 @@
     </div>
 
     <p>
-        <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="search"></iron-icon><span>${ButtonSearch}</span></button>
+        <button is="emby-button" type="submit" class="raised submit block">
+            <i class="md-icon">search</i>
+            <span>${ButtonSearch}</span>
+        </button>
     </p>
 </form>
 <div class="identificationSearchResults" style="display:none; text-align: center;">
@@ -34,5 +37,8 @@
         <input type="checkbox" is="emby-checkbox" id="chkIdentifyReplaceImages" />
         <span>${OptionReplaceExistingImages}</span>
     </label>
-    <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSubmit}</span></button>
+    <button is="emby-button" type="submit" class="raised submit block">
+        <i class="md-icon">check</i>
+        <span>${ButtonSubmit}</span>
+    </button>
 </form>
