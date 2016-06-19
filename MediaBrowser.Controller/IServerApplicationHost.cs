@@ -18,7 +18,7 @@ namespace MediaBrowser.Controller
         /// Gets the system info.
         /// </summary>
         /// <returns>SystemInfo.</returns>
-        SystemInfo GetSystemInfo();
+        Task<SystemInfo> GetSystemInfo();
 
         /// <summary>
         /// Gets a value indicating whether [supports automatic run at startup].

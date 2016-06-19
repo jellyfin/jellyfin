@@ -1098,8 +1098,10 @@ namespace MediaBrowser.Server.Startup.Common
         /// Gets the system status.
         /// </summary>
         /// <returns>SystemInfo.</returns>
-        public SystemInfo GetSystemInfo()
+        public async Task<SystemInfo> GetSystemInfo()
         {
+            var localAddress = await GetLocalApiUrl().ConfigureAwait(false);
+
             return new SystemInfo
             {
                 HasPendingRestart = HasPendingRestart,
@@ -1130,7 +1132,7 @@ namespace MediaBrowser.Server.Startup.Common
                 IsRunningAsService = IsRunningAsService,
                 SupportsRunningAsService = SupportsRunningAsService,
                 ServerName = FriendlyName,
-                LocalAddress = GetLocalApiUrl().Result,
+                LocalAddress = localAddress,
                 SupportsLibraryMonitor = SupportsLibraryMonitor
             };
         }
