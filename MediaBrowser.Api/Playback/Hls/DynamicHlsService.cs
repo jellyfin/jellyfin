@@ -475,7 +475,7 @@ namespace MediaBrowser.Api.Playback.Hls
                         ApiEntryPoint.Instance.OnTranscodeEndRequest(transcodingJob);
                     }
                 }
-            });
+            }).Result;
         }
 
         private async Task<object> GetMasterPlaylistInternal(StreamRequest request, string method)

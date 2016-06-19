@@ -15,6 +15,7 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Dlna.Channels;
 
@@ -105,7 +106,7 @@ namespace MediaBrowser.Dlna.Main
             }
         }
 
-        private void ReloadComponents()
+        private async void ReloadComponents()
         {
             var options = _config.GetDlnaConfiguration();
 
@@ -130,7 +131,7 @@ namespace MediaBrowser.Dlna.Main
 
             if (options.EnableServer && !isServerStarted)
             {
-                StartDlnaServer();
+                await StartDlnaServer().ConfigureAwait(false);
             }
             else if (!options.EnableServer && isServerStarted)
             {
@@ -208,11 +209,11 @@ namespace MediaBrowser.Dlna.Main
             }
         }
 
-        public void StartDlnaServer()
+        public async Task StartDlnaServer()
         {
             try
             {
-                RegisterServerEndpoints();
+                await RegisterServerEndpoints().ConfigureAwait(false);
 
                 _dlnaServerStarted = true;
             }
@@ -222,9 +223,9 @@ namespace MediaBrowser.Dlna.Main
             }
         }
 
-        private void RegisterServerEndpoints()
+        private async Task RegisterServerEndpoints()
         {
-            foreach (var address in _appHost.LocalIpAddresses)
+            foreach (var address in await _appHost.GetLocalIpAddresses().ConfigureAwait(false))
             {
                 //if (IPAddress.IsLoopback(address))
                 //{

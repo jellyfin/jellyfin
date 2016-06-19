@@ -13,6 +13,7 @@ using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Model.Channels;
 
 namespace MediaBrowser.Controller.Entities
@@ -1422,19 +1423,27 @@ namespace MediaBrowser.Controller.Entities
                 {
                     return false;
                 }
+                if (this is Channel)
+                {
+                    return false;
+                }
+                if (SourceType != SourceType.Library)
+                {
+                    return false;
+                }
 
                 return true;
             }
         }
 
-        public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, User user)
+        public override async Task FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user)
         {
             if (!SupportsUserDataFromChildren)
             {
                 return;
             }
 
-            var unplayedQueryResult = GetItems(new InternalItemsQuery(user)
+            var unplayedQueryResult = await GetItems(new InternalItemsQuery(user)
             {
                 Recursive = true,
                 IsFolder = false,
@@ -1443,9 +1452,9 @@ namespace MediaBrowser.Controller.Entities
                 Limit = 0,
                 IsPlayed = false
 
-            }).Result;
+            }).ConfigureAwait(false);
 
-            var allItemsQueryResult = GetItems(new InternalItemsQuery(user)
+            var allItemsQueryResult = await GetItems(new InternalItemsQuery(user)
             {
                 Recursive = true,
                 IsFolder = false,
@@ -1453,7 +1462,12 @@ namespace MediaBrowser.Controller.Entities
                 EnableTotalRecordCount = true,
                 Limit = 0
 
-            }).Result;
+            }).ConfigureAwait(false);
+
+            if (itemDto != null)
+            {
+                itemDto.RecursiveItemCount = allItemsQueryResult.TotalRecordCount;
+            }
 
             double recursiveItemCount = allItemsQueryResult.TotalRecordCount;
             double unplayedCount = unplayedQueryResult.TotalRecordCount;

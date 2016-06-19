@@ -294,7 +294,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             return null;
         }
 
-        public object GetStaticFileResult(IRequest requestContext,
+        public Task<object> GetStaticFileResult(IRequest requestContext,
             string path,
             FileShare fileShare = FileShare.Read)
         {
@@ -310,7 +310,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             });
         }
 
-        public object GetStaticFileResult(IRequest requestContext,
+        public Task<object> GetStaticFileResult(IRequest requestContext,
             StaticFileResultOptions options)
         {
             var path = options.Path;
@@ -351,7 +351,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             return _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, fileShare);
         }
 
-        public object GetStaticResult(IRequest requestContext,
+        public Task<object> GetStaticResult(IRequest requestContext,
             Guid cacheKey,
             DateTime? lastDateModified,
             TimeSpan? cacheDuration,
@@ -372,7 +372,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             });
         }
 
-        public object GetStaticResult(IRequest requestContext, StaticResultOptions options)
+        public async Task<object> GetStaticResult(IRequest requestContext, StaticResultOptions options)
         {
             var cacheKey = options.CacheKey;
             options.ResponseHeaders = options.ResponseHeaders ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -398,7 +398,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
 
             var compress = ShouldCompressResponse(requestContext, contentType);
-            var hasOptions = GetStaticResult(requestContext, options, compress).Result;
+            var hasOptions = await GetStaticResult(requestContext, options, compress).ConfigureAwait(false);
             AddResponseHeaders(hasOptions, options.ResponseHeaders);
 
             return hasOptions;

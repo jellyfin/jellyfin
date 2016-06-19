@@ -785,7 +785,7 @@ namespace MediaBrowser.Api.LiveTv
 
             var user = string.IsNullOrEmpty(request.UserId) ? null : _userManager.GetUserById(request.UserId);
 
-            var returnArray = _dtoService.GetBaseItemDtos(channelResult.Items, GetDtoOptions(Request), user).ToArray();
+            var returnArray = (await _dtoService.GetBaseItemDtos(channelResult.Items, GetDtoOptions(Request), user).ConfigureAwait(false)).ToArray();
 
             var result = new QueryResult<BaseItemDto>
             {

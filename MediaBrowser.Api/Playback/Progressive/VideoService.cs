@@ -10,6 +10,7 @@ using MediaBrowser.Model.Serialization;
 using ServiceStack;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Model.Dlna;
 
@@ -76,7 +77,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetVideoStream request)
+        public Task<object> Get(GetVideoStream request)
         {
             return ProcessRequest(request, false);
         }
@@ -86,7 +87,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Head(GetVideoStream request)
+        public Task<object> Head(GetVideoStream request)
         {
             return ProcessRequest(request, true);
         }

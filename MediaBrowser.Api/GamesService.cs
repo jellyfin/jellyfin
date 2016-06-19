@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Api
@@ -186,14 +187,14 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetSimilarGames request)
+        public async Task<object> Get(GetSimilarGames request)
         {
-            var result = GetSimilarItemsResult(request);
+            var result = await GetSimilarItemsResult(request).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
-        private QueryResult<BaseItemDto> GetSimilarItemsResult(BaseGetSimilarItemsFromItem request)
+        private async Task<QueryResult<BaseItemDto>> GetSimilarItemsResult(BaseGetSimilarItemsFromItem request)
         {
             var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
 
@@ -216,7 +217,7 @@ namespace MediaBrowser.Api
 
             var result = new QueryResult<BaseItemDto>
             {
-                Items = _dtoService.GetBaseItemDtos(itemsResult, dtoOptions, user).ToArray(),
+                Items = (await _dtoService.GetBaseItemDtos(itemsResult, dtoOptions, user).ConfigureAwait(false)).ToArray(),
 
                 TotalRecordCount = itemsResult.Count
             };

@@ -493,7 +493,7 @@ namespace MediaBrowser.Api.Library
             }
         }
 
-        public object Get(GetDownload request)
+        public Task<object> Get(GetDownload request)
         {
             var item = _libraryManager.GetItemById(request.Id);
             var auth = _authContext.GetAuthorizationInfo(Request);
@@ -552,7 +552,7 @@ namespace MediaBrowser.Api.Library
             }
         }
 
-        public object Get(GetFile request)
+        public Task<object> Get(GetFile request)
         {
             var item = _libraryManager.GetItemById(request.Id);
             var locationType = item.LocationType;
@@ -565,7 +565,7 @@ namespace MediaBrowser.Api.Library
                 throw new ArgumentException("This command cannot be used for directories.");
             }
 
-            return ToStaticFileResult(item.Path);
+            return ResultFactory.GetStaticFileResult(Request, item.Path);
         }
 
         /// <summary>

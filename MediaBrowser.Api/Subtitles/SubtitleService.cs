@@ -210,7 +210,7 @@ namespace MediaBrowser.Api.Subtitles
                 var subtitleStream = mediaSource.MediaStreams
                     .First(i => i.Type == MediaStreamType.Subtitle && i.Index == request.Index);
 
-                return ToStaticFileResult(subtitleStream.Path);
+                return await ResultFactory.GetStaticFileResult(Request, subtitleStream.Path).ConfigureAwait(false);
             }
 
             using (var stream = await GetSubtitles(request).ConfigureAwait(false))
@@ -229,9 +229,9 @@ namespace MediaBrowser.Api.Subtitles
             }
         }
 
-        private  Task<Stream> GetSubtitles(GetSubtitle request)
+        private Task<Stream> GetSubtitles(GetSubtitle request)
         {
-            return  _subtitleEncoder.GetSubtitles(request.Id,
+            return _subtitleEncoder.GetSubtitles(request.Id,
                 request.MediaSourceId,
                 request.Index,
                 request.Format,
@@ -264,9 +264,9 @@ namespace MediaBrowser.Api.Subtitles
             return ToOptimizedResult(result);
         }
 
-        public object Get(GetRemoteSubtitles request)
+        public async Task<object> Get(GetRemoteSubtitles request)
         {
-            var result = _subtitleManager.GetRemoteSubtitles(request.Id, CancellationToken.None).Result;
+            var result = await _subtitleManager.GetRemoteSubtitles(request.Id, CancellationToken.None).ConfigureAwait(false);
 
             return ResultFactory.GetResult(result.Stream, MimeTypes.GetMimeType("file." + result.Format));
         }
