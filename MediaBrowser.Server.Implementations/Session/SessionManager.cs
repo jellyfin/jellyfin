@@ -1134,11 +1134,11 @@ namespace MediaBrowser.Server.Implementations.Session
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task SendRestartRequiredNotification(CancellationToken cancellationToken)
+        public async Task SendRestartRequiredNotification(CancellationToken cancellationToken)
         {
             var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null).ToList();
 
-            var info = _appHost.GetSystemInfo();
+            var info = await _appHost.GetSystemInfo().ConfigureAwait(false);
 
             var tasks = sessions.Select(session => Task.Run(async () =>
             {
@@ -1153,7 +1153,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             }, cancellationToken));
 
-            return Task.WhenAll(tasks);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
         /// <summary>

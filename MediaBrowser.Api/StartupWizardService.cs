@@ -69,9 +69,9 @@ namespace MediaBrowser.Api
             _config.SaveConfiguration();
         }
 
-        public object Get(GetStartupInfo request)
+        public async Task<object> Get(GetStartupInfo request)
         {
-            var info = _appHost.GetSystemInfo();
+            var info = await _appHost.GetSystemInfo().ConfigureAwait(false);
 
             return new StartupInfo
             {

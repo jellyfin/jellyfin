@@ -4,27 +4,167 @@
         <name>ServiceStack.Common</name>
     </assembly>
     <members>
-        <member name="T:ServiceStack.CryptUtils">
+        <member name="T:ServiceStack.MiniProfiler.Data.ExecuteType">
             <summary>
-            Useful .NET Encryption Utils from:
-            http://andrewlocatelliwoodcock.com/2011/08/01/implementing-rsa-asymmetric-public-private-key-encryption-in-c-encrypting-under-the-public-key/
+            Categories of sql statements.
             </summary>
         </member>
-        <member name="M:ServiceStack.CryptUtils.Encrypt(System.String,System.String,ServiceStack.RsaKeyLengths)">
+        <member name="F:ServiceStack.MiniProfiler.Data.ExecuteType.None">
             <summary>
-            Encrypt an arbitrary string of data under the supplied public key
+            Unknown
             </summary>
-            <param name="publicKey">The public key to encrypt under</param>
-            <param name="data">The data to encrypt</param>
-            <param name="length">The bit length or strength of the public key: 1024, 2048 or 4096 bits. This must match the 
-            value actually used to create the publicKey</param>
-            <returns></returns>
         </member>
-        <member name="M:ServiceStack.CryptUtils.CreatePublicAndPrivateKeyPair">
+        <member name="F:ServiceStack.MiniProfiler.Data.ExecuteType.NonQuery">
             <summary>
-            Create Public and Private Key Pair based on settings already in static class.
-            </summary>        
-            <returns>RsaKeyPair</returns>
+            DML statements that alter database state, e.g. INSERT, UPDATE
+            </summary>
+        </member>
+        <member name="F:ServiceStack.MiniProfiler.Data.ExecuteType.Scalar">
+            <summary>
+            Statements that return a single record
+            </summary>
+        </member>
+        <member name="F:ServiceStack.MiniProfiler.Data.ExecuteType.Reader">
+            <summary>
+            Statements that iterate over a result set
+            </summary>
+        </member>
+        <member name="T:ServiceStack.MiniProfiler.Data.IDbProfiler">
+            <summary>
+            A callback for ProfiledDbConnection and family
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.IDbProfiler.ExecuteStart(System.Data.Common.DbCommand,ServiceStack.MiniProfiler.Data.ExecuteType)">
+            <summary>
+            Called when a command starts executing
+            </summary>
+            <param name="profiledDbCommand"></param>
+            <param name="executeType"></param>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.IDbProfiler.ExecuteFinish(System.Data.Common.DbCommand,ServiceStack.MiniProfiler.Data.ExecuteType,System.Data.Common.DbDataReader)">
+            <summary>
+            Called when a reader finishes executing
+            </summary>
+            <param name="profiledDbCommand"></param>
+            <param name="executeType"></param>
+            <param name="reader"></param>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.IDbProfiler.ReaderFinish(System.Data.Common.DbDataReader)">
+            <summary>
+            Called when a reader is done iterating through the data 
+            </summary>
+            <param name="reader"></param>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.IDbProfiler.OnError(System.Data.Common.DbCommand,ServiceStack.MiniProfiler.Data.ExecuteType,System.Exception)">
+            <summary>
+            Called when an error happens during execution of a command 
+            </summary>
+            <param name="profiledDbCommand"></param>
+            <param name="executeType"></param>
+            <param name="exception"></param>
+        </member>
+        <member name="P:ServiceStack.MiniProfiler.Data.IDbProfiler.IsActive">
+            <summary>
+            True if the profiler instance is active
+            </summary>
+        </member>
+        <member name="T:ServiceStack.MiniProfiler.Data.ProfiledConnection">
+            <summary>
+            Wraps a database connection, allowing sql execution timings to be collected when a <see cref="T:ServiceStack.MiniProfiler.Data.IDbProfiler"/> session is started.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledConnection.#ctor(System.Data.Common.DbConnection,ServiceStack.MiniProfiler.Data.IDbProfiler,System.Boolean)">
+            <summary>
+            Returns a new <see cref="T:ServiceStack.MiniProfiler.Data.ProfiledConnection"/> that wraps <paramref name="connection"/>, 
+            providing query execution profiling.  If profiler is null, no profiling will occur.
+            </summary>
+            <param name="connection">Your provider-specific flavor of connection, e.g. SqlConnection, OracleConnection</param>
+            <param name="profiler">The currently started <see cref="T:ServiceStack.MiniProfiler.Data.IDbProfiler"/> or null.</param>
+            <param name="autoDisposeConnection">Determines whether the ProfiledDbConnection will dispose the underlying connection.</param>
+        </member>
+        <member name="P:ServiceStack.MiniProfiler.Data.ProfiledConnection.InnerConnection">
+            <summary>
+            The underlying, real database connection to your db provider.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.MiniProfiler.Data.ProfiledConnection.Profiler">
+            <summary>
+            The current profiler instance; could be null.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.MiniProfiler.Data.ProfiledConnection.WrappedConnection">
+            <summary>
+            The raw connection this is wrapping
+            </summary>
+        </member>
+        <member name="T:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory">
+            <summary>
+            Wrapper for a db provider factory to enable profiling
+            </summary>
+        </member>
+        <member name="F:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.Instance">
+            <summary>
+            Every provider factory must have an Instance public field
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.InitProfiledDbProviderFactory(ServiceStack.MiniProfiler.Data.IDbProfiler,System.Data.Common.DbProviderFactory)">
+            <summary>
+            Allow to re-init the provider factory.
+            </summary>
+            <param name="profiler"></param>
+            <param name="wrappedFactory"></param>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.#ctor(ServiceStack.MiniProfiler.Data.IDbProfiler,System.Data.Common.DbProviderFactory)">
+            <summary>
+            proxy
+            </summary>
+            <param name="profiler"></param>
+            <param name="wrappedFactory"></param>
+        </member>
+        <member name="P:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CanCreateDataSourceEnumerator">
+            <summary>
+            proxy
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CreateDataSourceEnumerator">
+            <summary>
+            proxy
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CreateCommand">
+            <summary>
+            proxy
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CreateConnection">
+            <summary>
+            proxy
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CreateParameter">
+            <summary>
+            proxy
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CreateConnectionStringBuilder">
+            <summary>
+            proxy
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CreateCommandBuilder">
+            <summary>
+            proxy
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CreateDataAdapter">
+            <summary>
+            proxy
+            </summary>
+        </member>
+        <member name="M:ServiceStack.MiniProfiler.Data.ProfiledProviderFactory.CreatePermission(System.Security.Permissions.PermissionState)">
+            <summary>
+            proxy
+            </summary>
         </member>
         <member name="M:ServiceStack.EnumerableExtensions.Safe``1(System.Collections.Generic.IEnumerable{``0})">
             <summary>
@@ -86,24 +226,44 @@
             Logs the specified message.
             </summary>
         </member>
-        <member name="T:ServiceStack.IPAddressExtensions">
+        <member name="T:ServiceStack.Logging.DebugLogFactory">
             <summary>
-            Useful IPAddressExtensions from: 
-            http://blogs.msdn.com/knom/archive/2008/12/31/ip-address-calculations-with-c-subnetmasks-networks.aspx
+            Creates a Debug Logger, that logs all messages to: System.Diagnostics.Debug
             
+            Made public so its testable
             </summary>
         </member>
-        <member name="M:ServiceStack.IPAddressExtensions.GetAllNetworkInterfaceIpv4Addresses">
+        <member name="T:ServiceStack.Logging.DebugLogger">
             <summary>
-            Gets the ipv4 addresses from all Network Interfaces that have Subnet masks.
+            Default logger is to System.Diagnostics.Debug.WriteLine
+            
+            Made public so its testable
             </summary>
-            <returns></returns>
         </member>
-        <member name="M:ServiceStack.IPAddressExtensions.GetAllNetworkInterfaceIpv6Addresses">
+        <member name="M:ServiceStack.Logging.DebugLogger.#ctor(System.String)">
             <summary>
-            Gets the ipv6 addresses from all Network Interfaces.
+            Initializes a new instance of the <see cref="T:ServiceStack.Logging.DebugLogger"/> class.
             </summary>
-            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Logging.DebugLogger.#ctor(System.Type)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.Logging.DebugLogger"/> class.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.DebugLogger.Log(System.Object,System.Exception)">
+            <summary>
+            Logs the specified message.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.DebugLogger.LogFormat(System.Object,System.Object[])">
+            <summary>
+            Logs the format.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Logging.DebugLogger.Log(System.Object)">
+            <summary>
+            Logs the specified message.
+            </summary>
         </member>
         <member name="M:ServiceStack.Reflection.PropertyAccessor`1.TypedGetPropertyFn``1">
             <summary>
@@ -154,6 +314,25 @@
             <summary>
             Required to cast the ValueType to an object for caching
             </summary>
+        </member>
+        <member name="T:ServiceStack.IPAddressExtensions">
+            <summary>
+            Useful IPAddressExtensions from: 
+            http://blogs.msdn.com/knom/archive/2008/12/31/ip-address-calculations-with-c-subnetmasks-networks.aspx
+            
+            </summary>
+        </member>
+        <member name="M:ServiceStack.IPAddressExtensions.GetAllNetworkInterfaceIpv4Addresses">
+            <summary>
+            Gets the ipv4 addresses from all Network Interfaces that have Subnet masks.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.IPAddressExtensions.GetAllNetworkInterfaceIpv6Addresses">
+            <summary>
+            Gets the ipv6 addresses from all Network Interfaces.
+            </summary>
+            <returns></returns>
         </member>
         <member name="T:ServiceStack.Support.AdapterBase">
             <summary>

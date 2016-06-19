@@ -157,16 +157,16 @@ namespace MediaBrowser.Api.System
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetSystemInfo request)
+        public async Task<object> Get(GetSystemInfo request)
         {
-            var result = _appHost.GetSystemInfo();
+            var result = await _appHost.GetSystemInfo().ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }
 
-        public object Get(GetPublicSystemInfo request)
+        public async Task<object> Get(GetPublicSystemInfo request)
         {
-            var result = _appHost.GetSystemInfo();
+            var result = await _appHost.GetSystemInfo().ConfigureAwait(false);
 
             var publicInfo = new PublicSystemInfo
             {
