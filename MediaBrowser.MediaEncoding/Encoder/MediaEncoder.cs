@@ -115,7 +115,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             var appPath = GetEncodingOptions().EncoderAppPath;
-            appPath = "C:\\dev\\Emby.dev\\ProgramData-Server\\ffmpeg";
 
             if (Directory.Exists(appPath))
             {
