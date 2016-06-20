@@ -1306,7 +1306,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     ItemIds = new[] { item.Id.ToString("N") }
                 });
 
-                dto.ArtistItems = artistItems.Items
+                dto.AlbumArtists = artistItems.Items
                     .Select(i =>
                     {
                         var artist = i.Item1;
