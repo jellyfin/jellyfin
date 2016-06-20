@@ -155,12 +155,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create index if not exists idx_AncestorIds1 on AncestorIds(AncestorId)",
                                 "create index if not exists idx_AncestorIds2 on AncestorIds(AncestorIdText)",
 
-                                "create table if not exists UserDataKeys (ItemId GUID, UserDataKey TEXT, PRIMARY KEY (ItemId, UserDataKey))",
-                                "create index if not exists idx_UserDataKeys1 on UserDataKeys(ItemId)",
+                                "create table if not exists UserDataKeys (ItemId GUID, UserDataKey TEXT Priority INT, PRIMARY KEY (ItemId, UserDataKey))",
+                                //"create index if not exists idx_UserDataKeys1 on UserDataKeys(ItemId)",
+                                "create index if not exists idx_UserDataKeys2 on UserDataKeys(ItemId,Priority)",
 
                                 "create table if not exists ItemValues (ItemId GUID, Type INT, Value TEXT, CleanValue TEXT)",
-                                "create index if not exists idx_ItemValues on ItemValues(ItemId)",
+                                //"create index if not exists idx_ItemValues on ItemValues(ItemId)",
                                 "create index if not exists idx_ItemValues2 on ItemValues(ItemId,Type)",
+                                "create index if not exists idx_ItemValues3 on ItemValues(ItemId,Type,CleanValue)",
 
                                 "create table if not exists ProviderIds (ItemId GUID, Name TEXT, Value TEXT, PRIMARY KEY (ItemId, Name))",
                                 "create index if not exists Idx_ProviderIds on ProviderIds(ItemId)",
@@ -169,11 +171,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create index if not exists idx_Images on Images(ItemId)",
 
                                 "create table if not exists People (ItemId GUID, Name TEXT NOT NULL, Role TEXT, PersonType TEXT, SortOrder int, ListOrder int)",
-                                "create index if not exists idxPeopleItemId on People(ItemId)",
+                                "create index if not exists idxPeopleItemId1 on People(ItemId,ListOrder)",
                                 "create index if not exists idxPeopleName on People(Name)",
 
                                 "create table if not exists "+ChaptersTableName+" (ItemId GUID, ChapterIndex INT, StartPositionTicks BIGINT, Name TEXT, ImagePath TEXT, PRIMARY KEY (ItemId, ChapterIndex))",
-                                "create index if not exists idx_"+ChaptersTableName+"1 on "+ChaptersTableName+"(ItemId)",
 
                                 createMediaStreamsTableCommand,
                                 "create index if not exists idx_mediastreams1 on mediastreams(ItemId)",
@@ -270,13 +271,23 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 {
                 "create index if not exists idx_PresentationUniqueKey on TypedBaseItems(PresentationUniqueKey)",
                 "create index if not exists idx_GuidType on TypedBaseItems(Guid,Type)",
+                "create index if not exists idx_CleanNameType on TypedBaseItems(CleanName,Type)",
                 "create index if not exists idx_Type on TypedBaseItems(Type)",
                 "create index if not exists idx_TopParentId on TypedBaseItems(TopParentId)",
                 "create index if not exists idx_TypeTopParentId on TypedBaseItems(Type,TopParentId)",
+
+                // used by movie suggestions
+                "create index if not exists idx_TypeTopParentIdGroup on TypedBaseItems(Type,TopParentId,PresentationUniqueKey)",
                 "create index if not exists idx_TypeTopParentId2 on TypedBaseItems(TopParentId,MediaType,IsVirtualItem)",
                 "create index if not exists idx_TypeTopParentId3 on TypedBaseItems(TopParentId,IsFolder,IsVirtualItem)",
                 "create index if not exists idx_TypeTopParentId4 on TypedBaseItems(TopParentId,Type,IsVirtualItem)",
-                "create index if not exists idx_TypeTopParentId5 on TypedBaseItems(TopParentId,IsVirtualItem)"
+                "create index if not exists idx_TypeTopParentId5 on TypedBaseItems(TopParentId,IsVirtualItem)",
+                "create index if not exists idx_TypeTopParentId6 on TypedBaseItems(TopParentId,Type,IsVirtualItem,PresentationUniqueKey)",
+
+                // latest items
+                "create index if not exists idx_TypeTopParentId9 on TypedBaseItems(TopParentId,Type,IsVirtualItem,PresentationUniqueKey,DateCreated)",
+                "create index if not exists idx_TypeTopParentId7 on TypedBaseItems(TopParentId,MediaType,IsVirtualItem,PresentationUniqueKey)",
+                "create index if not exists idx_TypeTopParentId8 on TypedBaseItems(TopParentId,IsFolder,IsVirtualItem,PresentationUniqueKey)"
                 };
 
             _connection.RunQueries(postQueries, Logger);

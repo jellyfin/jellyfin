@@ -21,13 +21,10 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             _fileSystem = fileSystem;
         }
 
-        public Tuple<List<string>,List<string>> Validate(FFMpegInfo info)
+        public Tuple<List<string>,List<string>> Validate(string encoderPath)
         {
-            _logger.Info("FFMpeg: {0}", info.EncoderPath);
-            _logger.Info("FFProbe: {0}", info.ProbePath);
-
-            var decoders = GetDecoders(info.EncoderPath);
-            var encoders = GetEncoders(info.EncoderPath);
+            var decoders = GetDecoders(encoderPath);
+            var encoders = GetEncoders(encoderPath);
 
             return new Tuple<List<string>, List<string>>(decoders, encoders);
         }

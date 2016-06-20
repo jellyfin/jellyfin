@@ -21,6 +21,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Common.Configuration;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
@@ -64,8 +66,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public string FFProbePath { get; private set; }
 
-        public string Version { get; private set; }
-
         protected readonly IServerConfigurationManager ConfigurationManager;
         protected readonly IFileSystem FileSystem;
         protected readonly ILiveTvManager LiveTvManager;
@@ -77,12 +77,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
         protected readonly Func<IMediaSourceManager> MediaSourceManager;
 
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
+        private readonly bool _hasExternalEncoder;
 
-        public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, string version, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, Func<ISubtitleEncoder> subtitleEncoder, Func<IMediaSourceManager> mediaSourceManager)
+        public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, bool hasExternalEncoder, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, Func<ISubtitleEncoder> subtitleEncoder, Func<IMediaSourceManager> mediaSourceManager)
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;
-            Version = version;
             ConfigurationManager = configurationManager;
             FileSystem = fileSystem;
             LiveTvManager = liveTvManager;
@@ -94,6 +94,95 @@ namespace MediaBrowser.MediaEncoding.Encoder
             MediaSourceManager = mediaSourceManager;
             FFProbePath = ffProbePath;
             FFMpegPath = ffMpegPath;
+
+            _hasExternalEncoder = hasExternalEncoder;
+        }
+
+        public void Init()
+        {
+            ConfigureEncoderPaths();
+
+            if (_hasExternalEncoder)
+            {
+                LogPaths();
+                return;
+            }
+
+            // If the path was passed in, save it into config now.
+            var encodingOptions = GetEncodingOptions();
+            var appPath = encodingOptions.EncoderAppPath;
+            if (!string.IsNullOrWhiteSpace(FFMpegPath) && !string.Equals(FFMpegPath, appPath, StringComparison.Ordinal))
+            {
+                encodingOptions.EncoderAppPath = FFMpegPath;
+                ConfigurationManager.SaveConfiguration("encoding", encodingOptions);
+            }
+        }
+
+        private void ConfigureEncoderPaths()
+        {
+            if (_hasExternalEncoder)
+            {
+                return;
+            }
+
+            var appPath = GetEncodingOptions().EncoderAppPath;
+
+            if (string.IsNullOrWhiteSpace(appPath))
+            {
+                appPath = Path.Combine(ConfigurationManager.ApplicationPaths.ProgramDataPath, "ffmpeg");
+            }
+
+            if (!string.IsNullOrWhiteSpace(appPath))
+            {
+                if (Directory.Exists(appPath))
+                {
+                    SetPathsFromDirectory(appPath);
+                }
+
+                else if (File.Exists(appPath))
+                {
+                    FFMpegPath = appPath;
+
+                    SetProbePathFromEncoderPath(appPath);
+                }
+            }
+
+            LogPaths();
+        }
+
+        private void SetPathsFromDirectory(string path)
+        {
+            // Since we can't predict the file extension, first try directly within the folder 
+            // If that doesn't pan out, then do a recursive search
+            var files = Directory.GetFiles(path);
+
+            FFMpegPath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffmpeg", StringComparison.OrdinalIgnoreCase));
+            FFProbePath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffprobe", StringComparison.OrdinalIgnoreCase));
+
+            if (string.IsNullOrWhiteSpace(FFMpegPath) || !File.Exists(FFMpegPath))
+            {
+                files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
+
+                FFMpegPath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffmpeg", StringComparison.OrdinalIgnoreCase));
+                SetProbePathFromEncoderPath(FFMpegPath);
+            }
+        }
+
+        private void SetProbePathFromEncoderPath(string appPath)
+        {
+            FFProbePath = Directory.GetFiles(Path.GetDirectoryName(appPath))
+                .FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffprobe", StringComparison.OrdinalIgnoreCase));
+        }
+
+        private void LogPaths()
+        {
+            _logger.Info("FFMpeg: {0}", FFMpegPath ?? "not found");
+            _logger.Info("FFProbe: {0}", FFProbePath ?? "not found");
+        }
+
+        private EncodingOptions GetEncodingOptions()
+        {
+            return ConfigurationManager.GetConfiguration<EncodingOptions>("encoding");
         }
 
         private List<string> _encoders = new List<string>();
