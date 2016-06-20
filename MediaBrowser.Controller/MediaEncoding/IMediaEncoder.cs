@@ -20,12 +20,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         string EncoderPath { get; }
 
         /// <summary>
-        /// Gets the version.
-        /// </summary>
-        /// <value>The version.</value>
-        string Version { get; }
-
-        /// <summary>
         /// Supportses the decoder.
         /// </summary>
         /// <param name="decoder">The decoder.</param>
@@ -134,5 +128,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="path">The path.</param>
         /// <returns>System.String.</returns>
         string EscapeSubtitleFilterPath(string path);
+
+        void Init();
     }
 }
