@@ -146,6 +146,13 @@ namespace MediaBrowser.Api.LiveTv
         /// <value>The fields.</value>
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, CriticRatingSummary, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Fields { get; set; }
+
+        public bool EnableTotalRecordCount { get; set; }
+
+        public GetRecordings()
+        {
+            EnableTotalRecordCount = true;
+        }
     }
 
     [Route("/LiveTv/Recordings/Groups", "GET", Summary = "Gets live tv recording groups")]
@@ -898,7 +905,8 @@ namespace MediaBrowser.Api.LiveTv
                 Limit = request.Limit,
                 Status = request.Status,
                 SeriesTimerId = request.SeriesTimerId,
-                IsInProgress = request.IsInProgress
+                IsInProgress = request.IsInProgress,
+                EnableTotalRecordCount = request.EnableTotalRecordCount
 
             }, options, CancellationToken.None).ConfigureAwait(false);
 
