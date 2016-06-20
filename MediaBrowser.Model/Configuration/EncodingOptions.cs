@@ -9,6 +9,7 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableThrottling { get; set; }
         public int ThrottleDelaySeconds { get; set; }
         public string HardwareAccelerationType { get; set; }
+        public string EncoderAppPath { get; set; }
 
         public EncodingOptions()
         {

@@ -1276,26 +1276,22 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 dto.Artists = hasArtist.Artists;
 
-                dto.ArtistItems = hasArtist
-                    .Artists
+                var artistItems = _libraryManager.GetArtists(new InternalItemsQuery
+                {
+                    EnableTotalRecordCount = false,
+                    ItemIds = new[] { item.Id.ToString("N") }
+                });
+
+                dto.ArtistItems = artistItems.Items
                     .Select(i =>
                     {
-                        try
+                        var artist = i.Item1;
+                        return new NameIdPair
                         {
-                            var artist = _libraryManager.GetArtist(i);
-                            return new NameIdPair
-                            {
-                                Name = artist.Name,
-                                Id = artist.Id.ToString("N")
-                            };
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error getting artist", ex);
-                            return null;
-                        }
+                            Name = artist.Name,
+                            Id = artist.Id.ToString("N")
+                        };
                     })
-                    .Where(i => i != null)
                     .ToList();
             }
 
@@ -1304,26 +1300,22 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 dto.AlbumArtist = hasAlbumArtist.AlbumArtists.FirstOrDefault();
 
-                dto.AlbumArtists = hasAlbumArtist
-                    .AlbumArtists
+                var artistItems = _libraryManager.GetAlbumArtists(new InternalItemsQuery
+                {
+                    EnableTotalRecordCount = false,
+                    ItemIds = new[] { item.Id.ToString("N") }
+                });
+
+                dto.ArtistItems = artistItems.Items
                     .Select(i =>
                     {
-                        try
+                        var artist = i.Item1;
+                        return new NameIdPair
                         {
-                            var artist = _libraryManager.GetArtist(i);
-                            return new NameIdPair
-                            {
-                                Name = artist.Name,
-                                Id = artist.Id.ToString("N")
-                            };
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error getting album artist", ex);
-                            return null;
-                        }
+                            Name = artist.Name,
+                            Id = artist.Id.ToString("N")
+                        };
                     })
-                    .Where(i => i != null)
                     .ToList();
             }
 
@@ -1604,7 +1596,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 IsFolder = false,
                 Recursive = true,
-                ExcludeLocationTypes = new[] {LocationType.Virtual},
+                ExcludeLocationTypes = new[] { LocationType.Virtual },
                 User = user
 
             }).ConfigureAwait(false);
