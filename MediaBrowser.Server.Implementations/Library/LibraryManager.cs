@@ -944,9 +944,7 @@ namespace MediaBrowser.Server.Implementations.Library
         private T CreateItemByName<T>(string path, string name)
             where T : BaseItem, new()
         {
-            var isArtist = typeof(T) == typeof(MusicArtist);
-
-            if (isArtist)
+            if (typeof(T) == typeof(MusicArtist))
             {
                 var existing = GetItemList(new InternalItemsQuery
                 {
@@ -1277,11 +1275,6 @@ namespace MediaBrowser.Server.Implementations.Library
             return item;
         }
 
-        private bool EnableCaching
-        {
-            get { return false; }
-        }
-
         public IEnumerable<BaseItem> GetItemList(InternalItemsQuery query)
         {
             if (query.User != null)
@@ -1289,14 +1282,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 AddUserToQuery(query, query.User);
             }
 
-            if (!EnableCaching)
-            {
-                return ItemRepository.GetItemList(query);
-            }
-
-            var result = ItemRepository.GetItemIdsList(query);
-
-            return result.Select(GetItemById).Where(i => i != null);
+            return ItemRepository.GetItemList(query);
         }
 
         public QueryResult<BaseItem> QueryItems(InternalItemsQuery query)
@@ -1426,12 +1412,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             SetTopParentIdsOrAncestors(query, parents);
 
-            if (!EnableCaching)
-            {
-                return ItemRepository.GetItemList(query);
-            }
-
-            return GetItemIds(query).Select(GetItemById).Where(i => i != null);
+            return ItemRepository.GetItemList(query);
         }
 
         public QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query)
@@ -1453,31 +1434,12 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (query.EnableTotalRecordCount)
             {
-                if (!EnableCaching)
-                {
-                    return ItemRepository.GetItems(query);
-                }
-
-                var initialResult = ItemRepository.GetItemIds(query);
-
-                return new QueryResult<BaseItem>
-                {
-                    TotalRecordCount = initialResult.TotalRecordCount,
-                    Items = initialResult.Items.Select(GetItemById).Where(i => i != null).ToArray()
-                };
-            }
-
-            if (!EnableCaching)
-            {
-                return new QueryResult<BaseItem>
-                {
-                    Items = ItemRepository.GetItemList(query).ToArray()
-                };
+                return ItemRepository.GetItems(query);
             }
 
             return new QueryResult<BaseItem>
             {
-                Items = ItemRepository.GetItemIdsList(query).Select(GetItemById).Where(i => i != null).ToArray()
+                Items = ItemRepository.GetItemList(query).ToArray()
             };
         }
 
