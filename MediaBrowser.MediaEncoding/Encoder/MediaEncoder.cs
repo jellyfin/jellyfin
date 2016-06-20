@@ -127,6 +127,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var appPath = GetEncodingOptions().EncoderAppPath;
 
+            if (string.IsNullOrWhiteSpace(appPath))
+            {
+                appPath = Path.Combine(ConfigurationManager.ApplicationPaths.ProgramDataPath, "ffmpeg");
+            }
+
             if (!string.IsNullOrWhiteSpace(appPath))
             {
                 if (Directory.Exists(appPath))
