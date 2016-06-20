@@ -1059,6 +1059,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             if (recordingStatus == RecordingStatus.Completed)
             {
+                timer.Status = RecordingStatus.Completed;
+                _timerProvider.AddOrUpdate(timer);
+
                 OnSuccessfulRecording(info.IsSeries, recordPath);
                 _timerProvider.Delete(timer);
             }
@@ -1067,7 +1070,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 const int retryIntervalSeconds = 60;
                 _logger.Info("Retrying recording in {0} seconds.", retryIntervalSeconds);
 
-                _timerProvider.StartTimer(timer, TimeSpan.FromSeconds(retryIntervalSeconds));
+                timer.Status = RecordingStatus.New;
+                timer.StartDate = DateTime.UtcNow.AddSeconds(retryIntervalSeconds);
+                _timerProvider.AddOrUpdate(timer);
             }
             else
             {
@@ -1119,7 +1124,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                 if (regInfo.IsValid)
                 {
-                    return new EncodedRecorder(_logger, _fileSystem, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer, config);
+                    return new EncodedRecorder(_logger, _fileSystem, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer, config, _httpClient);
                 }
             }
 
