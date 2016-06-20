@@ -896,6 +896,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var topFolder = await GetInternalLiveTvFolder(cancellationToken).ConfigureAwait(false);
 
+            if (query.SortBy.Length == 0)
+            {
+                // Unless something else was specified, order by start date to take advantage of a specialized index
+                query.SortBy = new[] { ItemSortBy.StartDate };
+            }
+
             var internalQuery = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
@@ -1414,7 +1420,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 ExcludeLocationTypes = new[] { LocationType.Virtual },
                 Limit = Math.Min(200, query.Limit ?? int.MaxValue),
                 SortBy = new[] { ItemSortBy.DateCreated },
-                SortOrder = SortOrder.Descending
+                SortOrder = SortOrder.Descending,
+                EnableTotalRecordCount = query.EnableTotalRecordCount
             });
         }
 
