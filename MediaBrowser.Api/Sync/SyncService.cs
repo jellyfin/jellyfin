@@ -243,7 +243,7 @@ namespace MediaBrowser.Api.Sync
 
             await _syncManager.ReportSyncJobItemTransferBeginning(request.Id).ConfigureAwait(false);
 
-            return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
+            return await ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
             {
                 Path = jobItem.OutputPath,
                 OnError = () =>
@@ -251,7 +251,8 @@ namespace MediaBrowser.Api.Sync
                     var failedTask = _syncManager.ReportSyncJobItemTransferFailed(request.Id);
                     Task.WaitAll(failedTask);
                 }
-            });
+
+            }).ConfigureAwait(false);
         }
 
         public async Task<object> Get(GetSyncDialogOptions request)
