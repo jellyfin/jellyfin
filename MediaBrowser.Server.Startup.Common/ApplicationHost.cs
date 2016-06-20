@@ -650,13 +650,13 @@ namespace MediaBrowser.Server.Startup.Common
             var info = await new FFMpegLoader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager, NativeApp.Environment, NativeApp.GetType().Assembly, NativeApp.GetFfmpegInstallInfo())
                 .GetFFMpegInfo(NativeApp.Environment, _startupOptions, progress).ConfigureAwait(false);
 
-            _hasExternalEncoder = !string.IsNullOrWhiteSpace(info.EncoderPath);
+            _hasExternalEncoder = string.Equals(info.Version, "custom", StringComparison.OrdinalIgnoreCase);
 
             var mediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"),
                 JsonSerializer,
                 info.EncoderPath,
                 info.ProbePath,
-                info.Version,
+                _hasExternalEncoder,
                 ServerConfigurationManager,
                 FileSystemManager,
                 LiveTvManager,
