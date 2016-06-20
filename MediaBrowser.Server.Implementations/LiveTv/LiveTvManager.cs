@@ -140,10 +140,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
 
+            var topFolder = await GetInternalLiveTvFolder(cancellationToken).ConfigureAwait(false);
+
             var channels = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(LiveTvChannel).Name },
-                SortBy = new[] { ItemSortBy.SortName }
+                SortBy = new[] { ItemSortBy.SortName },
+                TopParentIds = new[] { topFolder.Id.ToString("N") }
 
             }).Cast<LiveTvChannel>();
 
@@ -891,6 +894,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
 
+            var topFolder = await GetInternalLiveTvFolder(cancellationToken).ConfigureAwait(false);
+
             var internalQuery = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
@@ -907,7 +912,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Limit = query.Limit,
                 SortBy = query.SortBy,
                 SortOrder = query.SortOrder ?? SortOrder.Ascending,
-                EnableTotalRecordCount = query.EnableTotalRecordCount
+                EnableTotalRecordCount = query.EnableTotalRecordCount,
+                TopParentIds = new[] { topFolder.Id.ToString("N") }
             };
 
             if (query.HasAired.HasValue)
@@ -939,6 +945,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var user = _userManager.GetUserById(query.UserId);
 
+            var topFolder = await GetInternalLiveTvFolder(cancellationToken).ConfigureAwait(false);
+
             var internalQuery = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
@@ -947,7 +955,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 IsSports = query.IsSports,
                 IsKids = query.IsKids,
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
-                SortBy = new[] { ItemSortBy.StartDate }
+                SortBy = new[] { ItemSortBy.StartDate },
+                TopParentIds = new[] { topFolder.Id.ToString("N") }
             };
 
             if (query.Limit.HasValue)
@@ -1905,7 +1914,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 MaxStartDate = now,
                 MinEndDate = now,
                 Limit = channelIds.Length,
-                SortBy = new[] { "StartDate" }
+                SortBy = new[] { "StartDate" },
+                TopParentIds = new[] { GetInternalLiveTvFolder(CancellationToken.None).Result.Id.ToString("N") }
 
             }, new string[] { }).ToList();
 
