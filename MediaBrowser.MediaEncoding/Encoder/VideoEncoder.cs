@@ -94,7 +94,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Add resolution params, if specified
             if (!hasGraphicalSubs)
             {
-                args += GetOutputSizeParam(state, videoCodec);
+                args += await GetOutputSizeParam(state, videoCodec).ConfigureAwait(false);
             }
 
             var qualityParam = GetVideoQualityParam(state, videoCodec);
