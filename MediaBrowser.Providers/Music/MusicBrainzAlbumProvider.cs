@@ -14,6 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -24,14 +25,16 @@ namespace MediaBrowser.Providers.Music
         private readonly IHttpClient _httpClient;
         private readonly IApplicationHost _appHost;
         private readonly ILogger _logger;
+        private readonly IJsonSerializer _json;
 
         public static string MusicBrainzBaseUrl = "https://www.musicbrainz.org";
 
-        public MusicBrainzAlbumProvider(IHttpClient httpClient, IApplicationHost appHost, ILogger logger)
+        public MusicBrainzAlbumProvider(IHttpClient httpClient, IApplicationHost appHost, ILogger logger, IJsonSerializer json)
         {
             _httpClient = httpClient;
             _appHost = appHost;
             _logger = logger;
+            _json = json;
             Current = this;
         }
 
@@ -332,33 +335,38 @@ namespace MediaBrowser.Providers.Music
 
         private async Task<MbzUrl> GetMbzUrl()
         {
-            if (_mbzUrls == null || (DateTime.UtcNow.Ticks - _lastMbzUrlQueryTicks) > TimeSpan.FromHours(12).Ticks)
+            if (_chosenUrl == null || _mbzUrls == null || (DateTime.UtcNow.Ticks - _lastMbzUrlQueryTicks) > TimeSpan.FromHours(12).Ticks)
             {
-                await RefreshMzbUrls().ConfigureAwait(false);
+                var urls = await RefreshMzbUrls().ConfigureAwait(false);
 
-                var urls = _mbzUrls.ToList();
                 _chosenUrl = urls[new Random().Next(0, urls.Count - 1)];
             }
 
             return _chosenUrl;
         }
 
-        private async Task RefreshMzbUrls()
+        private async Task<List<MbzUrl>> RefreshMzbUrls()
         {
+            List<MbzUrl> list;
+
             try
             {
-                _mbzUrls = new List<MbzUrl>
+                var options = new HttpRequestOptions
                 {
-                    new MbzUrl
-                    {
-                        url = MusicBrainzBaseUrl,
-                        throttleMs = 1000
-                    }
+                    Url = "https://mb3admin.com/admin/service/standards/musicBrainzUrls",
+                    UserAgent = _appHost.Name + "/" + _appHost.ApplicationVersion
                 };
+
+                using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
+                {
+                    list = _json.DeserializeFromStream<List<MbzUrl>>(stream);
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                _mbzUrls = new List<MbzUrl>
+                _logger.ErrorException("Error getting music brainz info", ex);
+
+                list = new List<MbzUrl>
                 {
                     new MbzUrl
                     {
@@ -367,6 +375,10 @@ namespace MediaBrowser.Providers.Music
                     }
                 };
             }
+
+            _mbzUrls = list.ToList();
+
+            return list;
         }
 
         /// <summary>
