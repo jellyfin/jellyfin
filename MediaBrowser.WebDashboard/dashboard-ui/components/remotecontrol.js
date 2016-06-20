@@ -1,4 +1,4 @@
-﻿define(['browser', 'datetime', 'jQuery', 'libraryBrowser'], function (browser, datetime, $, libraryBrowser) {
+﻿define(['browser', 'datetime', 'libraryBrowser'], function (browser, datetime, libraryBrowser) {
 
     function showSlideshowMenu(context) {
         require(['scripts/slideshow'], function () {
@@ -408,7 +408,7 @@
             //        smallIcon: true
             //    });
 
-            //    $(".playlist", page).html(html).lazyChildren();
+            //    page(".playlist").html(html).lazyChildren();
             //});
 
             html += libraryBrowser.getListViewHtml({
@@ -595,22 +595,26 @@
             }
         }
 
+        function onBtnCommandClick() {
+            if (currentPlayer) {
+
+                if (this.classList.contains('repeatToggleButton')) {
+                    toggleRepeat(currentPlayer);
+                } else {
+                    MediaController.sendCommand({
+                        Name: this.getAttribute('data-command')
+
+                    }, currentPlayer);
+                }
+            }
+        }
+
         function bindEvents(context) {
 
-            $('.btnCommand', context).on('click', function () {
-
-                if (currentPlayer) {
-
-                    if (this.classList.contains('repeatToggleButton')) {
-                        toggleRepeat(currentPlayer);
-                    } else {
-                        MediaController.sendCommand({
-                            Name: this.getAttribute('data-command')
-
-                        }, currentPlayer);
-                    }
-                }
-            });
+            var btnCommand = context.querySelectorAll('.btnCommand');
+            for (var i = 0, length = btnCommand.length; i < length; i++) {
+                btnCommand[i].addEventListener('click', onBtnCommandClick);
+            }
 
             context.querySelector('.btnToggleFullscreen').addEventListener('click', function (e) {
 
@@ -729,13 +733,13 @@
                 Name: 'DisplayMessage',
                 Arguments: {
 
-                    Header: $('#txtMessageTitle', form).val(),
-                    Text: $('#txtMessageText', form).val()
+                    Header: form.querySelector('#txtMessageTitle').value,
+                    Text: form.querySelector('#txtMessageText', form).value
                 }
 
             }, currentPlayer);
 
-            $('input', form).val('');
+            form.querySelector('input').value = '';
             require(['toast'], function (toast) {
                 toast('Message sent.');
             });
@@ -753,12 +757,12 @@
                 Name: 'SendString',
                 Arguments: {
 
-                    String: $('#txtTypeText', form).val()
+                    String: form.querySelector('#txtTypeText', form).value
                 }
 
             }, currentPlayer);
 
-            $('input', form).val('');
+            form.querySelector('input').value = '';
             require(['toast'], function (toast) {
                 toast('Text sent.');
             });

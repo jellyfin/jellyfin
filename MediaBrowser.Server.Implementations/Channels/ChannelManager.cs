@@ -1310,6 +1310,18 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.HomePageUrl = info.HomePageUrl;
             }
 
+            var hasArtists = item as IHasArtist;
+            if (hasArtists != null)
+            {
+                hasArtists.Artists = info.Artists;
+            }
+
+            var hasAlbumArtists = item as IHasAlbumArtist;
+            if (hasAlbumArtists != null)
+            {
+                hasAlbumArtists.AlbumArtists = info.AlbumArtists;
+            }
+
             var trailer = item as Trailer;
             if (trailer != null)
             {
