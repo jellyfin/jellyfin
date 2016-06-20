@@ -155,8 +155,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create index if not exists idx_AncestorIds1 on AncestorIds(AncestorId)",
                                 "create index if not exists idx_AncestorIds2 on AncestorIds(AncestorIdText)",
 
-                                "create table if not exists UserDataKeys (ItemId GUID, UserDataKey TEXT, PRIMARY KEY (ItemId, UserDataKey))",
+                                "create table if not exists UserDataKeys (ItemId GUID, UserDataKey TEXT Priority INT, PRIMARY KEY (ItemId, UserDataKey))",
                                 "create index if not exists idx_UserDataKeys1 on UserDataKeys(ItemId)",
+                                "create index if not exists idx_UserDataKeys2 on UserDataKeys(ItemId,Priority)",
 
                                 "create table if not exists ItemValues (ItemId GUID, Type INT, Value TEXT, CleanValue TEXT)",
                                 "create index if not exists idx_ItemValues on ItemValues(ItemId)",
@@ -270,6 +271,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 {
                 "create index if not exists idx_PresentationUniqueKey on TypedBaseItems(PresentationUniqueKey)",
                 "create index if not exists idx_GuidType on TypedBaseItems(Guid,Type)",
+                "create index if not exists idx_CleanNameType on TypedBaseItems(CleanName,Type)",
                 "create index if not exists idx_Type on TypedBaseItems(Type)",
                 "create index if not exists idx_TopParentId on TypedBaseItems(TopParentId)",
                 "create index if not exists idx_TypeTopParentId on TypedBaseItems(Type,TopParentId)",
