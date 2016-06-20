@@ -134,5 +134,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="path">The path.</param>
         /// <returns>System.String.</returns>
         string EscapeSubtitleFilterPath(string path);
+
+        void Init();
     }
 }

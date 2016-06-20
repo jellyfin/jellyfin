@@ -56,6 +56,7 @@ define(['browser'], function (browser) {
             dependencies.push('jqmlistview');
             dependencies.push('scripts/notifications');
             dependencies.push('dashboardcss');
+            dependencies.push('emby-icons');
         }
 
         return new Promise(function (resolve, reject) {

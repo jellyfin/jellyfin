@@ -323,6 +323,8 @@ namespace MediaBrowser.Server.Startup.Common
 
             await base.RunStartupTasks().ConfigureAwait(false);
 
+            InitMediaEncoder();
+
             Logger.Info("ServerId: {0}", SystemId);
             Logger.Info("Core startup complete");
             HttpServer.GlobalResponse = null;
@@ -342,6 +344,20 @@ namespace MediaBrowser.Server.Startup.Common
             });
 
             LogManager.RemoveConsoleOutput();
+        }
+
+        private void InitMediaEncoder()
+        {
+            MediaEncoder.Init();
+
+            Task.Run(() =>
+            {
+                var result = new FFmpegValidator(Logger, ApplicationPaths, FileSystemManager).Validate(MediaEncoder.EncoderPath);
+
+                var mediaEncoder = (MediaEncoder) MediaEncoder;
+                mediaEncoder.SetAvailableDecoders(result.Item1);
+                mediaEncoder.SetAvailableEncoders(result.Item2);
+            });
         }
 
         public override Task Init(IProgress<double> progress)
@@ -634,6 +650,8 @@ namespace MediaBrowser.Server.Startup.Common
             var info = await new FFMpegLoader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager, NativeApp.Environment, NativeApp.GetType().Assembly, NativeApp.GetFfmpegInstallInfo())
                 .GetFFMpegInfo(NativeApp.Environment, _startupOptions, progress).ConfigureAwait(false);
 
+            _hasExternalEncoder = !string.IsNullOrWhiteSpace(info.EncoderPath);
+
             var mediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"),
                 JsonSerializer,
                 info.EncoderPath,
@@ -651,14 +669,6 @@ namespace MediaBrowser.Server.Startup.Common
 
             MediaEncoder = mediaEncoder;
             RegisterSingleInstance(MediaEncoder);
-
-            Task.Run(() =>
-            {
-                var result = new FFmpegValidator(Logger, ApplicationPaths, FileSystemManager).Validate(info);
-
-                mediaEncoder.SetAvailableDecoders(result.Item1);
-                mediaEncoder.SetAvailableEncoders(result.Item2);
-            });
         }
 
         /// <summary>
@@ -1094,6 +1104,7 @@ namespace MediaBrowser.Server.Startup.Common
             }
         }
 
+        private bool _hasExternalEncoder;
         /// <summary>
         /// Gets the system status.
         /// </summary>
@@ -1133,7 +1144,8 @@ namespace MediaBrowser.Server.Startup.Common
                 SupportsRunningAsService = SupportsRunningAsService,
                 ServerName = FriendlyName,
                 LocalAddress = localAddress,
-                SupportsLibraryMonitor = SupportsLibraryMonitor
+                SupportsLibraryMonitor = SupportsLibraryMonitor,
+                HasExternalEncoder = _hasExternalEncoder
             };
         }
 
