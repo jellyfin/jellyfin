@@ -2375,5 +2375,5 @@
   "MapChannels": "Map Channels",
   "LabelffmpegPath": "FFMpeg path:",
   "LabelffmpegPathHelp": "The path to your ffmpeg application, or folder containing ffmpeg.",
-  "LabelffmpegPathHelp2": "Important: FFProbe must exist within the same folder."
+  "LabelffmpegPathHelp2": "Important: FFProbe must also exist within the same folder."
 }

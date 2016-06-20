@@ -66,8 +66,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public string FFProbePath { get; private set; }
 
-        public string Version { get; private set; }
-
         protected readonly IServerConfigurationManager ConfigurationManager;
         protected readonly IFileSystem FileSystem;
         protected readonly ILiveTvManager LiveTvManager;
@@ -81,11 +79,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
         private readonly bool _hasExternalEncoder;
 
-        public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, string version, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, Func<ISubtitleEncoder> subtitleEncoder, Func<IMediaSourceManager> mediaSourceManager)
+        public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, bool hasExternalEncoder, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, Func<ISubtitleEncoder> subtitleEncoder, Func<IMediaSourceManager> mediaSourceManager)
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;
-            Version = version;
             ConfigurationManager = configurationManager;
             FileSystem = fileSystem;
             LiveTvManager = liveTvManager;
@@ -98,34 +95,51 @@ namespace MediaBrowser.MediaEncoding.Encoder
             FFProbePath = ffProbePath;
             FFMpegPath = ffMpegPath;
 
-            _hasExternalEncoder = !string.IsNullOrWhiteSpace(ffMpegPath);
+            _hasExternalEncoder = hasExternalEncoder;
         }
 
         public void Init()
         {
             ConfigureEncoderPaths();
-        }
 
-        private void ConfigureEncoderPaths()
-        {
             if (_hasExternalEncoder)
             {
                 LogPaths();
                 return;
             }
 
-            var appPath = GetEncodingOptions().EncoderAppPath;
-
-            if (Directory.Exists(appPath))
+            // If the path was passed in, save it into config now.
+            var encodingOptions = GetEncodingOptions();
+            var appPath = encodingOptions.EncoderAppPath;
+            if (!string.IsNullOrWhiteSpace(FFMpegPath) && !string.Equals(FFMpegPath, appPath, StringComparison.Ordinal))
             {
-                SetPathsFromDirectory(appPath);
+                encodingOptions.EncoderAppPath = FFMpegPath;
+                ConfigurationManager.SaveConfiguration("encoding", encodingOptions);
+            }
+        }
+
+        private void ConfigureEncoderPaths()
+        {
+            if (_hasExternalEncoder)
+            {
+                return;
             }
 
-            else if (File.Exists(appPath))
-            {
-                FFMpegPath = appPath;
+            var appPath = GetEncodingOptions().EncoderAppPath;
 
-                SetProbePathFromEncoderPath(appPath);
+            if (!string.IsNullOrWhiteSpace(appPath))
+            {
+                if (Directory.Exists(appPath))
+                {
+                    SetPathsFromDirectory(appPath);
+                }
+
+                else if (File.Exists(appPath))
+                {
+                    FFMpegPath = appPath;
+
+                    SetProbePathFromEncoderPath(appPath);
+                }
             }
 
             LogPaths();
