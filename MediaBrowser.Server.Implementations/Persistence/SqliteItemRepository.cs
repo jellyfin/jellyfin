@@ -1742,7 +1742,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             return " from TypedBaseItems A";
         }
 
-        public IEnumerable<BaseItem> GetItemList(InternalItemsQuery query)
+        public List<BaseItem> GetItemList(InternalItemsQuery query)
         {
             if (query == null)
             {
@@ -1841,6 +1841,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
 
             CheckDisposed();
+
+            if (!query.EnableTotalRecordCount || (!query.Limit.HasValue && (query.StartIndex ?? 0) == 0))
+            {
+                var list = GetItemList(query);
+                return new QueryResult<BaseItem>
+                {
+                    Items = list.ToArray(),
+                    TotalRecordCount = list.Count
+                };
+            }
 
             var now = DateTime.UtcNow;
 
@@ -2195,6 +2205,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
 
             CheckDisposed();
+
+            if (!query.EnableTotalRecordCount || (!query.Limit.HasValue && (query.StartIndex ?? 0) == 0))
+            {
+                var list = GetItemIdsList(query);
+                return new QueryResult<Guid>
+                {
+                    Items = list.ToArray(),
+                    TotalRecordCount = list.Count
+                };
+            }
 
             var now = DateTime.UtcNow;
 
