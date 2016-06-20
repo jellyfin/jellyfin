@@ -697,7 +697,8 @@
             userId: userId,
             limit: 5,
             Fields: "PrimaryImageAspectRatio,SyncInfo",
-            IsInProgress: false
+            IsInProgress: false,
+            EnableTotalRecordCount: false
 
         }).then(function (result) {
 

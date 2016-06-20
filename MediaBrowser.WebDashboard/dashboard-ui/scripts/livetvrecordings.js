@@ -125,7 +125,8 @@
             userId: Dashboard.getCurrentUserId(),
             limit: enableScrollX() ? 12 : 4,
             IsInProgress: false,
-            Fields: 'CanDelete,PrimaryImageAspectRatio'
+            Fields: 'CanDelete,PrimaryImageAspectRatio',
+            EnableTotalRecordCount: false
 
         }).then(function (result) {
 
