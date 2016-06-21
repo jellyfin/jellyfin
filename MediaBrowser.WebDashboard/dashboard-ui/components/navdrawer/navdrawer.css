@@ -8,13 +8,14 @@
     will-change: transform;
     contain: layout style;
     display: flex;
-    transition: transform ease-out 0.1s;
+    transition: transform ease-out 60ms;
+    z-index: 1099;
 }
 
     .touch-menu-la.transition {
         /*transition: transform 0.3s ease-out;*/
-        transition: -webkit-transform ease-out 0.3s;
-        transition: transform ease-out 0.3s;
+        transition: -webkit-transform ease-out 280ms;
+        transition: transform ease-out 280ms;
         /*transition: -webkit-transform ease-in-out 0.3s, width ease-in-out 0.3s, visibility 0.3s;
         transition: transform ease-in-out 0.3s, width ease-in-out 0.3s, visibility 0.3s;*/
     }
@@ -31,13 +32,20 @@
 }
 
 .tmla-mask {
-    width: 100%;
-    height: 100%;
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
+    right: 0;
+    bottom: 0;
     background-color: #000;
     opacity: 0.0;
-    z-index: -1;
+    z-index: 1098;
     transition: opacity ease-in-out 0.38s, visibility ease-in-out 0.38s;
+    background-color: rgba(0, 0, 0, 0.3);
+    visibility: hidden;
 }
+
+    .tmla-mask.backdrop {
+        visibility: visible;
+        opacity: 1;
+    }

@@ -5,7 +5,6 @@
             defaults,
             menuClassName = '',
             mask,
-            handle,
             maskHammer,
             menuHammer,
             newPos = 0,
@@ -25,10 +24,7 @@
 
             defaults = {
                 width: 280,
-                zIndex: 99999,
-                disableSlide: false,
                 handleSize: 30,
-                disableMask: false,
                 disableMask: false,
                 maxMaskOpacity: 0.5
             };
@@ -47,16 +43,17 @@
         };
 
         TouchMenuLA.prototype.initElements = function () {
-            options.target.style.zIndex = options.zIndex;
+            options.target.classList.add('touch-menu-la');
             options.target.style.width = options.width + 'px';
             options.target.style.left = -options.width + 'px';
 
-            handle = document.createElement('div');
-            handle.className = "tmla-handle";
-            handle.style.width = options.handleSize + 'px';
-            handle.style.right = -options.handleSize + 'px';
-
-            options.target.appendChild(handle);
+            if (!options.disableEdgeSwipe) {
+                var handle = document.createElement('div');
+                handle.className = "tmla-handle";
+                handle.style.width = options.handleSize + 'px';
+                handle.style.right = -options.handleSize + 'px';
+                options.target.appendChild(handle);
+            }
 
             if (!options.disableMask) {
                 mask = document.createElement('div');
@@ -81,15 +78,18 @@
                 velocity = Math.abs(ev.velocity);
                 // Depending on the deltas, choose X or Y
 
+                var isOpen = self.visible;
+
                 // If it's already open, then treat any right-swipe as vertical pan
-                if (!draggingX && ev.deltaX > 0) {
+                if (isOpen && !draggingX && ev.deltaX > 0) {
                     draggingY = true;
                 }
 
-                if (!draggingX && !draggingY && Math.abs(ev.deltaX) >= 10) {
+                if (!draggingX && !draggingY && (!isOpen || Math.abs(ev.deltaX) >= 10)) {
                     draggingX = true;
                     scrollContainer.addEventListener('scroll', disableEvent);
                     options.target.classList.add('draggingX');
+                    self.showMask();
 
                 } else if (!draggingY) {
                     draggingY = true;
@@ -104,36 +104,22 @@
 
         TouchMenuLA.prototype.animateToPosition = function (pos) {
 
-            if (pos) {
-                options.target.style.transform = 'translate3d(' + pos + 'px, 0, 0)';
-                options.target.style.WebkitTransform = 'translate3d(' + pos + 'px, 0, 0)';
-                options.target.style.MozTransform = 'translate3d(' + pos + 'px, 0, 0)';
-            } else {
-                options.target.style.transform = 'none';
-                options.target.style.WebkitTransform = 'none';
-                options.target.style.MozTransform = 'none';
-            }
+            requestAnimationFrame(function() {
+                if (pos) {
+                    options.target.style.transform = 'translate3d(' + pos + 'px, 0, 0)';
+                    options.target.style.WebkitTransform = 'translate3d(' + pos + 'px, 0, 0)';
+                    options.target.style.MozTransform = 'translate3d(' + pos + 'px, 0, 0)';
+                } else {
+                    options.target.style.transform = 'none';
+                    options.target.style.WebkitTransform = 'none';
+                    options.target.style.MozTransform = 'none';
+                }
+            });
         };
 
         TouchMenuLA.prototype.changeMenuPos = function () {
             if (newPos <= options.width) {
                 this.animateToPosition(newPos);
-
-                if (!options.disableMask) {
-                    this.setMaskOpacity(newPos);
-                }
-            }
-        };
-
-        TouchMenuLA.prototype.setMaskOpacity = function (newMenuPos) {
-            var opacity = parseFloat((newMenuPos / options.width) * options.maxMaskOpacity);
-
-            mask.style.opacity = opacity;
-
-            if (opacity === 0) {
-                mask.style.zIndex = -1;
-            } else {
-                mask.style.zIndex = options.zIndex - 1;
             }
         };
 
@@ -175,18 +161,20 @@
 
             currentPos = options.width;
             this.isVisible = true;
+            options.target.classList.add('open');
 
             self.showMask();
-            self.invoke(options.onOpen);
+            self.invoke(options.onChange);
         };
 
         TouchMenuLA.prototype.close = function () {
             this.animateToPosition(0);
             currentPos = 0;
             self.isVisible = false;
+            options.target.classList.remove('open');
 
             self.hideMask();
-            self.invoke(options.onClose);
+            self.invoke(options.onChange);
         };
 
         TouchMenuLA.prototype.toggle = function () {
@@ -224,13 +212,13 @@
         };
 
         TouchMenuLA.prototype.showMask = function () {
-            mask.style.opacity = options.maxMaskOpacity;
-            mask.style.zIndex = options.zIndex - 1;
+
+            mask.classList.add('backdrop');
         };
 
         TouchMenuLA.prototype.hideMask = function () {
-            mask.style.opacity = 0;
-            mask.style.zIndex = -1;
+
+            mask.classList.remove('backdrop');
         };
 
         TouchMenuLA.prototype.setMenuClassName = function () {
@@ -251,12 +239,10 @@
                 self.setMenuClassName();
                 self.initElements();
 
-                if (!options.disableSlide) {
-                    self.touchStartMenu();
-                    self.touchEndMenu();
-                    self.eventStartMask();
-                    self.eventEndMask();
-                }
+                self.touchStartMenu();
+                self.touchEndMenu();
+                self.eventStartMask();
+                self.eventEndMask();
 
                 if (!options.disableMask) {
                     self.clickMaskClose();
