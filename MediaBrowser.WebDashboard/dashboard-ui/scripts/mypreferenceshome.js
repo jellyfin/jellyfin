@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define([], function () {
 
     function renderViews(page, user, result) {
 
@@ -27,7 +27,7 @@
 
         folderHtml += '</div>';
 
-        $('.folderGroupList', page).html(folderHtml);
+        page.querySelector('.folderGroupList').innerHTML = folderHtml;
     }
 
     function renderLatestItems(page, user, result) {
@@ -55,7 +55,7 @@
 
         folderHtml += '</div>';
 
-        $('.latestItemsList', page).html(folderHtml);
+        page.querySelector('.latestItemsList').innerHTML = folderHtml;
     }
 
     function renderViewOrder(page, user, result) {
@@ -97,7 +97,7 @@
 
         }).join('');
 
-        $('.viewOrderList', page).html(html);
+        page.querySelector('.viewOrderList').innerHTML = html;
     }
 
     function loadForm(page, user, displayPreferences) {
@@ -105,10 +105,10 @@
         page.querySelector('.chkHidePlayedFromLatest').checked = user.Configuration.HidePlayedInLatest || false;
         page.querySelector('.chkDisplayChannelsInline').checked = !(user.Configuration.EnableChannelView || false);
 
-        $('#selectHomeSection1', page).val(displayPreferences.CustomPrefs.home0 || '');
-        $('#selectHomeSection2', page).val(displayPreferences.CustomPrefs.home1 || '');
-        $('#selectHomeSection3', page).val(displayPreferences.CustomPrefs.home2 || '');
-        $('#selectHomeSection4', page).val(displayPreferences.CustomPrefs.home3 || '');
+        page.querySelector('#selectHomeSection1').value = displayPreferences.CustomPrefs.home0 || '';
+        page.querySelector('#selectHomeSection2').value = displayPreferences.CustomPrefs.home1 || '';
+        page.querySelector('#selectHomeSection3').value = displayPreferences.CustomPrefs.home2 || '';
+        page.querySelector('#selectHomeSection4').value = displayPreferences.CustomPrefs.home3 || '';
 
         var promise1 = ApiClient.getItems(user.Id, {
             sortBy: "SortName"
@@ -133,41 +133,53 @@
 
         return 'webclient';
     }
+
+    function getCheckboxItems(selector, page, isChecked) {
+
+        var inputs = page.querySelectorAll(selector);
+        var list = [];
+
+        for (var i = 0, length = inputs.length; i < length; i++) {
+
+            if (inputs[i].checked == isChecked) {
+                list.push(inputs[i]);
+            }
+
+        }
+
+        return list;
+    }
+
     function saveUser(page, user, displayPreferences) {
 
         user.Configuration.HidePlayedInLatest = page.querySelector('.chkHidePlayedFromLatest').checked;
 
         user.Configuration.EnableChannelView = !page.querySelector('.chkDisplayChannelsInline').checked;
 
-        user.Configuration.LatestItemsExcludes = $(".chkIncludeInLatest", page).get().filter(function (i) {
-
-            return !i.checked;
-
-        }).map(function (i) {
+        user.Configuration.LatestItemsExcludes = getCheckboxItems(".chkIncludeInLatest", page, false).map(function (i) {
 
             return i.getAttribute('data-folderid');
         });
 
         user.Configuration.ExcludeFoldersFromGrouping = null;
 
-        user.Configuration.GroupedFolders = $(".chkGroupFolder", page).get().filter(function (i) {
-
-            return i.checked;
-
-        }).map(function (i) {
+        user.Configuration.GroupedFolders = getCheckboxItems(".chkGroupFolder", page, true).map(function (i) {
 
             return i.getAttribute('data-folderid');
         });
 
-        user.Configuration.OrderedViews = $(".viewItem", page).get().map(function (i) {
+        var viewItems = page.querySelectorAll('.viewItem');
+        var orderedViews = [];
+        for (var i = 0, length = viewItems.length; i < length; i++) {
+            orderedViews.push(viewItems[i].getAttribute('data-viewid'));
+        }
 
-            return i.getAttribute('data-viewid');
-        });
+        user.Configuration.OrderedViews = orderedViews;
 
-        displayPreferences.CustomPrefs.home0 = $('#selectHomeSection1', page).val();
-        displayPreferences.CustomPrefs.home1 = $('#selectHomeSection2', page).val();
-        displayPreferences.CustomPrefs.home2 = $('#selectHomeSection3', page).val();
-        displayPreferences.CustomPrefs.home3 = $('#selectHomeSection4', page).val();
+        displayPreferences.CustomPrefs.home0 = page.querySelector('#selectHomeSection1').value;
+        displayPreferences.CustomPrefs.home1 = page.querySelector('#selectHomeSection2').value;
+        displayPreferences.CustomPrefs.home2 = page.querySelector('#selectHomeSection3').value;
+        displayPreferences.CustomPrefs.home3 = page.querySelector('#selectHomeSection4').value;
 
         return ApiClient.updateDisplayPreferences('home', displayPreferences, user.Id, displayPreferencesKey()).then(function () {
 
@@ -206,43 +218,80 @@
         });
     }
 
-    function onSubmit() {
+    function parentWithClass(elem, className) {
 
-        var page = $(this).parents('.page')[0];
+        while (!elem.classList || !elem.classList.contains(className)) {
+            elem = elem.parentNode;
 
-        save(page);
+            if (!elem) {
+                return null;
+            }
+        }
 
-        // Disable default form submission
-        return false;
+        return elem;
     }
 
-    pageIdOn('pageinit', "homeScreenPreferencesPage", function () {
+    function getSibling(elem, type, className) {
 
-        var page = this;
+        var sibling = elem[type];
 
-        $('.viewOrderList', page).on('click', '.btnViewItemMove', function () {
+        while (sibling != null) {
+            if (sibling.classList.contains(className)) {
+                break;
+            }
+        }
 
-            var li = $(this).parents('.viewItem');
-            var ul = li.parents('.paperList');
+        if (sibling != null) {
+            if (!sibling.classList.contains(className)) {
+                sibling = null;
+            }
+        }
 
-            if ($(this).hasClass('btnViewItemDown')) {
+        return sibling;
+    }
 
-                var next = li.next();
+    return function (view, params) {
 
-                li.remove().insertAfter(next);
+        function onSubmit(e) {
+
+            save(view);
+
+            // Disable default form submission
+            e.preventDefault();
+            return false;
+        }
+
+        view.querySelector('.viewOrderList').addEventListener('click', function (e) {
+
+            var target = parentWithClass(e.target, 'btnViewItemMove');
+
+            var li = parentWithClass(target, 'viewItem');
+            var ul = parentWithClass(li, 'paperList');
+
+            if (target.classList.contains('btnViewItemDown')) {
+
+                var next = li.nextSibling;
+
+                li.parentNode.removeChild(li);
+                next.parentNode.insertBefore(li, next.nextSibling);
 
             } else {
 
-                var prev = li.prev();
+                var prev = li.previousSibling;
 
-                li.remove().insertBefore(prev);
+                li.parentNode.removeChild(li);
+                prev.parentNode.insertBefore(li, prev);
             }
 
-            $('.viewItem', ul).each(function () {
+            var viewItems = ul.querySelectorAll('.viewItem');
+            for (var i = 0, length = viewItems.length; i < length; i++) {
+                var viewItem = viewItems[i];
 
-                var btn = $('.btnViewItemMove', this)[0];
+                var btn = viewItem.querySelector('.btnViewItemMove');
 
-                if ($(this).prev('.viewItem').length) {
+                var prevViewItem = getSibling(viewItem, 'previousSibling', 'viewItem');
+
+                if (prevViewItem) {
 
                     btn.classList.add('btnViewItemUp');
                     btn.classList.remove('btnViewItemDown');
@@ -253,45 +302,40 @@
                     btn.classList.add('btnViewItemDown');
                     btn.icon = 'keyboard-arrow-down';
                 }
-
-            });
+            }
         });
 
-        $('.homeScreenPreferencesForm').off('submit', onSubmit).on('submit', onSubmit);
+        view.querySelector('.homeScreenPreferencesForm').addEventListener('submit', onSubmit);
 
         if (AppInfo.enableAutoSave) {
-            page.querySelector('.btnSave').classList.add('hide');
+            view.querySelector('.btnSave').classList.add('hide');
         } else {
-            page.querySelector('.btnSave').classList.remove('hide');
+            view.querySelector('.btnSave').classList.remove('hide');
         }
 
-    });
+        view.addEventListener('viewshow', function () {
+            var page = this;
 
-    pageIdOn('pageshow', "homeScreenPreferencesPage", function () {
+            Dashboard.showLoadingMsg();
 
-        var page = this;
+            var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
-        Dashboard.showLoadingMsg();
+            ApiClient.getUser(userId).then(function (user) {
 
-        var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
+                ApiClient.getDisplayPreferences('home', user.Id, displayPreferencesKey()).then(function (result) {
 
-        ApiClient.getUser(userId).then(function (user) {
+                    loadForm(page, user, result);
 
-            ApiClient.getDisplayPreferences('home', user.Id, displayPreferencesKey()).then(function (result) {
-
-                loadForm(page, user, result);
-
+                });
             });
         });
-    });
 
-    pageIdOn('pagebeforehide', "homeScreenPreferencesPage", function () {
+        view.addEventListener('viewbeforehide', function () {
+            var page = this;
 
-        var page = this;
-
-        if (AppInfo.enableAutoSave) {
-            save(page);
-        }
-    });
-
+            if (AppInfo.enableAutoSave) {
+                save(page);
+            }
+        });
+    };
 });

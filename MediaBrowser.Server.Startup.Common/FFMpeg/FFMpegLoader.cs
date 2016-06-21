@@ -24,7 +24,6 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
         private readonly IZipClient _zipClient;
         private readonly IFileSystem _fileSystem;
         private readonly NativeEnvironment _environment;
-        private readonly Assembly _ownerAssembly;
         private readonly FFMpegInstallInfo _ffmpegInstallInfo;
 
         private readonly string[] _fontUrls =
@@ -32,7 +31,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/ARIALUNI.7z"
         };
 
-        public FFMpegLoader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IZipClient zipClient, IFileSystem fileSystem, NativeEnvironment environment, Assembly ownerAssembly, FFMpegInstallInfo ffmpegInstallInfo)
+        public FFMpegLoader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IZipClient zipClient, IFileSystem fileSystem, NativeEnvironment environment, FFMpegInstallInfo ffmpegInstallInfo)
         {
             _logger = logger;
             _appPaths = appPaths;
@@ -40,7 +39,6 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             _zipClient = zipClient;
             _fileSystem = fileSystem;
             _environment = environment;
-            _ownerAssembly = ownerAssembly;
             _ffmpegInstallInfo = ffmpegInstallInfo;
         }
 
@@ -99,14 +97,8 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                 }
                 else
                 {
-                    // Older version found. 
-                    // Start with that. Download new version in the background.
-                    var newPath = versionedDirectoryPath;
-                    Task.Run(() => DownloadFFMpegInBackground(downloadInfo, newPath));
-
                     info = existingVersion;
                     versionedDirectoryPath = Path.GetDirectoryName(info.EncoderPath);
-
                     excludeFromDeletions.Add(versionedDirectoryPath);
                 }
             }

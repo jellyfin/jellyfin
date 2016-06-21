@@ -116,7 +116,7 @@
         var reader = new FileReader();
 
         reader.onerror = onFileReaderError;
-        reader.onloadstart = function() {
+        reader.onloadstart = function () {
             $('#fldUpload', page).hide();
         };
         reader.onabort = onFileReaderAbort;
@@ -150,8 +150,8 @@
 
         reloadUser(page);
 
-        $("#userImageDropZone", page).on('dragover', onImageDragOver).on('drop', function(e) {
-            
+        $("#userImageDropZone", page).on('dragover', onImageDragOver).on('drop', function (e) {
+
             e.preventDefault();
 
             setFiles(page, e.originalEvent.dataTransfer.files);
@@ -310,8 +310,8 @@
 
         var userId = getParameterByName("userId");
 
-        var currentPassword = $('#txtCurrentPassword', page).val();
-        var newPassword = $('#txtNewPassword', page).val();
+        var currentPassword = page.querySelector('#txtCurrentPassword').value;
+        var newPassword = page.querySelector('#txtNewPassword').value;
 
         ApiClient.updateUserPassword(userId, currentPassword, newPassword).then(function () {
 
@@ -344,7 +344,7 @@
             var form = this;
             var page = $(form).parents('.page')[0];
 
-            if ($('#txtNewPassword', page).val() != $('#txtNewPasswordConfirm', page).val()) {
+            if (page.querySelector('#txtNewPassword').value != page.querySelector('#txtNewPasswordConfirm').value) {
 
                 require(['toast'], function (toast) {
                     toast(Globalize.translate('PasswordMatchError'));

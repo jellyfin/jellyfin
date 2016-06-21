@@ -14,7 +14,7 @@
         html += '<br/>';
         html += '<button is="emby-button" type="submit" class="raised submit block"><span>' + Globalize.translate('ButtonSave') + '</span></button>';
 
-        $('.syncJobForm', page).html(html);
+        page.querySelector('.syncJobForm').innerHTML = html;
 
         require(['syncDialog'], function (syncDialog) {
             syncDialog.renderForm({
@@ -99,14 +99,6 @@
         return html;
     }
 
-    $.fn.lazyChildren = function () {
-
-        for (var i = 0, length = this.length; i < length; i++) {
-            ImageLoader.lazyChildren(this[i]);
-        }
-        return this;
-    };
-
     function renderJobItems(page, items) {
 
         var html = '';
@@ -124,7 +116,9 @@
 
         html += '</div>';
 
-        var elem = $('.jobItems', page).html(html).lazyChildren();
+        var elem = page.querySelector('.jobItems');
+        elem.innerHTML = html;
+        ImageLoader.lazyChildren(elem);
 
         $('.btnJobItemMenu', elem).on('click', function () {
             showJobItemMenu(this);

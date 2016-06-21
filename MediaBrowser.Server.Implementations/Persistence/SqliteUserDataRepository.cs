@@ -66,6 +66,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                                 "create index if not exists idx_userdata on userdata(key)",
                                 "create unique index if not exists userdataindex on userdata (key, userId)",
+                                "create index if not exists userdataindex1 on userdata (key, userId)",
 
                                 //pragmas
                                 "pragma temp_store = memory",
