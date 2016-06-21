@@ -48,11 +48,11 @@
             options.target.style.left = -options.width + 'px';
 
             if (!options.disableEdgeSwipe) {
-                var handle = document.createElement('div');
-                handle.className = "tmla-handle";
-                handle.style.width = options.handleSize + 'px';
-                handle.style.right = -options.handleSize + 'px';
-                options.target.appendChild(handle);
+                //var handle = document.createElement('div');
+                //handle.className = "tmla-handle";
+                //handle.style.width = options.handleSize + 'px';
+                //handle.style.right = -options.handleSize + 'px';
+                //options.target.appendChild(handle);
             }
 
             if (!options.disableMask) {
@@ -71,6 +71,7 @@
         TouchMenuLA.prototype.touchStartMenu = function () {
             menuHammer.on('panstart', function (ev) {
                 options.target.classList.remove('transition');
+                options.target.classList.add('open');
                 velocity = Math.abs(ev.velocity);
             });
             menuHammer.on('panmove', function (ev) {

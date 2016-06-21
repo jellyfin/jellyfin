@@ -2212,8 +2212,6 @@ var AppInfo = {};
 
         deps.push('scripts/mediacontroller');
 
-        deps.push('paper-drawer-panel');
-
         require(deps, function (events) {
 
             window.Events = events;
@@ -2231,25 +2229,6 @@ var AppInfo = {};
     }
 
     function initAfterDependencies() {
-
-        var drawer = document.querySelector('.mainDrawerPanel');
-        drawer.classList.remove('mainDrawerPanelPreInit');
-        drawer.forceNarrow = true;
-
-        var drawerWidth = screen.availWidth - 50;
-        // At least 240
-        drawerWidth = Math.max(drawerWidth, 240);
-        // But not exceeding 270
-        drawerWidth = Math.min(drawerWidth, 270);
-
-        drawer.drawerWidth = drawerWidth + "px";
-
-        if (browserInfo.safari) {
-            drawer.disableEdgeSwipe = true;
-        }
-
-        // Default is 600px
-        drawer.responsiveWidth = '640px';
 
         var deps = [];
         deps.push('scripts/extensions');
@@ -3382,3 +3361,4 @@ window.addEventListener("beforeunload", function () {
         }
     }
 });
+
