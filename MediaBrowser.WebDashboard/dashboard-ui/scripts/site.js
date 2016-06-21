@@ -2769,9 +2769,10 @@ var AppInfo = {};
 
         defineRoute({
             path: '/mypreferenceshome.html',
-            dependencies: ['emby-button'],
+            dependencies: ['emby-checkbox', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'emby-button'],
             autoFocus: false,
-            transition: 'fade'
+            transition: 'fade',
+            controller: 'scripts/mypreferenceshome'
         });
 
         defineRoute({
