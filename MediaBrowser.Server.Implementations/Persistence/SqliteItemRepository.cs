@@ -156,8 +156,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create index if not exists idx_AncestorIds2 on AncestorIds(AncestorIdText)",
 
                                 "create table if not exists UserDataKeys (ItemId GUID, UserDataKey TEXT Priority INT, PRIMARY KEY (ItemId, UserDataKey))",
-                                //"create index if not exists idx_UserDataKeys1 on UserDataKeys(ItemId)",
-                                "create index if not exists idx_UserDataKeys2 on UserDataKeys(ItemId,Priority)",
 
                                 "create table if not exists ItemValues (ItemId GUID, Type INT, Value TEXT, CleanValue TEXT)",
                                 //"create index if not exists idx_ItemValues on ItemValues(ItemId)",
@@ -294,7 +292,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "create index if not exists idx_TypeTopParentId7 on TypedBaseItems(TopParentId,MediaType,IsVirtualItem,PresentationUniqueKey)",
 
                 // items by name
-                "create index if not exists idx_ItemValues3 on ItemValues(ItemId,Type,CleanValue)"
+                "create index if not exists idx_ItemValues3 on ItemValues(ItemId,Type,CleanValue)",
+
+                //"create index if not exists idx_UserDataKeys1 on UserDataKeys(ItemId)",
+                "create index if not exists idx_UserDataKeys2 on UserDataKeys(ItemId,Priority)"
                 };
 
             _connection.RunQueries(postQueries, Logger);
@@ -1712,7 +1713,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 return string.Empty;
             }
 
-            return " left join UserDataDb.UserData on (select UserDataKey from UserDataKeys where ItemId=Guid order by Priority LIMIT 1)=UserDataDb.UserData.Key";
+            return " left join UserDataDb.UserData on (select UserDataKey from UserDataKeys where ItemId=Guid order by Priority LIMIT 1)=UserDataDb.UserData.Key And (UserId=@UserId)";
         }
 
         private string GetGroupBy(InternalItemsQuery query)
@@ -1961,11 +1962,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     if (query.User != null)
                     {
-                        query.SortBy = new[] { "SimilarityScore", "IsPlayed", "Random" };
+                        query.SortBy = new[] { "SimilarityScore", ItemSortBy.IsPlayed, ItemSortBy.Random };
                     }
                     else
                     {
-                        query.SortBy = new[] { "SimilarityScore", "Random" };
+                        query.SortBy = new[] { "SimilarityScore", ItemSortBy.Random };
                     }
                     query.SortOrder = SortOrder.Descending;
                 }
@@ -2296,7 +2297,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (EnableJoinUserData(query))
             {
-                whereClauses.Add("(UserId is null or UserId=@UserId)");
+                //whereClauses.Add("(UserId is null or UserId=@UserId)");
             }
             if (query.IsCurrentSchema.HasValue)
             {
