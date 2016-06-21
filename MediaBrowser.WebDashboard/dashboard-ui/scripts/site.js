@@ -1974,7 +1974,7 @@ var AppInfo = {};
         define("scrollStyles", ['css!' + embyWebComponentsBowerPath + '/scrollstyles']);
 
         define("navdrawer", ['components/navdrawer/navdrawer'], returnFirstDependency);
-        define("viewcontainer", ['components/viewcontainer-lite'], returnFirstDependency);
+        define("viewcontainer", ['components/viewcontainer-lite', 'css!' + embyWebComponentsBowerPath + '/viewmanager/viewcontainer-lite'], returnFirstDependency);
         define('queryString', [bowerPath + '/query-string/index'], function () {
             return queryString;
         });
