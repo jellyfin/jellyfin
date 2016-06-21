@@ -1973,7 +1973,8 @@ var AppInfo = {};
         define("montserratFont", ['css!' + embyWebComponentsBowerPath + '/fonts/montserrat/style']);
         define("scrollStyles", ['css!' + embyWebComponentsBowerPath + '/scrollstyles']);
 
-        define("viewcontainer", ['components/viewcontainer-lite', embyWebComponentsBowerPath + '/viewmanager/viewcontainer-lite'], returnFirstDependency);
+        define("navdrawer", ['components/navdrawer/navdrawer'], returnFirstDependency);
+        define("viewcontainer", ['components/viewcontainer-lite'], returnFirstDependency);
         define('queryString', [bowerPath + '/query-string/index'], function () {
             return queryString;
         });

@@ -1,0 +1,43 @@
+﻿.touch-menu-la {
+    width: 240px;
+    position: fixed;
+    top: 0;
+    left: -280px;
+    bottom: 0;
+    background-color: #FFF;
+    will-change: transform;
+    contain: layout style;
+    display: flex;
+    transition: transform ease-out 0.1s;
+}
+
+    .touch-menu-la.transition {
+        /*transition: transform 0.3s ease-out;*/
+        transition: -webkit-transform ease-out 0.3s;
+        transition: transform ease-out 0.3s;
+        /*transition: -webkit-transform ease-in-out 0.3s, width ease-in-out 0.3s, visibility 0.3s;
+        transition: transform ease-in-out 0.3s, width ease-in-out 0.3s, visibility 0.3s;*/
+    }
+
+    .touch-menu-la .tmla-handle {
+        position: absolute;
+        top: 0;
+        height: 100%;
+    }
+
+.scrollContainer {
+    flex-grow: 1;
+    overflow: auto;
+}
+
+.tmla-mask {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #000;
+    opacity: 0.0;
+    z-index: -1;
+    transition: opacity ease-in-out 0.38s, visibility ease-in-out 0.38s;
+}
