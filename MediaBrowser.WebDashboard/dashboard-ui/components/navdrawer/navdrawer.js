@@ -1,9 +1,9 @@
 ﻿define(['hammer', 'css!./navdrawer'], function (Hammer) {
 
     return function (options) {
+
         var self,
             defaults,
-            menuClassName = '',
             mask,
             maskHammer,
             menuHammer,
@@ -34,14 +34,6 @@
             this.initialize();
         };
 
-        TouchMenuLA.prototype.setDefaultsOptions = function () {
-            for (var key in defaults) {
-                if (!options[key]) {
-                    options[key] = defaults[key];
-                }
-            }
-        };
-
         TouchMenuLA.prototype.initElements = function () {
             options.target.classList.add('touch-menu-la');
             options.target.style.width = options.width + 'px';
@@ -63,49 +55,95 @@
             }
         };
 
+        function onPanStart(ev) {
+            options.target.classList.remove('transition');
+            options.target.classList.add('open');
+            velocity = Math.abs(ev.velocity);
+        }
+
+        function onPanMove(ev) {
+            velocity = Math.abs(ev.velocity);
+            // Depending on the deltas, choose X or Y
+
+            var isOpen = self.visible;
+
+            // If it's already open, then treat any right-swipe as vertical pan
+            if (isOpen && !draggingX && ev.deltaX > 0) {
+                draggingY = true;
+            }
+
+            if (!draggingX && !draggingY && (!isOpen || Math.abs(ev.deltaX) >= 10)) {
+                draggingX = true;
+                scrollContainer.addEventListener('scroll', disableEvent);
+                self.showMask();
+
+            } else if (!draggingY) {
+                draggingY = true;
+            }
+
+            if (draggingX) {
+                newPos = currentPos + ev.deltaX;
+                self.changeMenuPos();
+            }
+        }
+
+        function onPanEnd(ev) {
+            options.target.classList.add('transition');
+            scrollContainer.removeEventListener('scroll', disableEvent);
+            draggingX = false;
+            draggingY = false;
+            currentPos = ev.deltaX;
+            self.checkMenuState(ev.deltaX, ev.deltaY);
+        }
+
+        function initEdgeSwipe() {
+            if (options.disableEdgeSwipe) {
+                return;
+            }
+
+            var edgeHammer = new Hammer(options.edgeSwipeElement, null);
+            var isPeeking = false;
+
+            edgeHammer.on('panstart', function (ev) {
+
+                if (ev.srcEvent.clientX <= options.handleSize && ev.deltaX > 0) {
+                    isPeeking = true;
+                    onPanStart(ev);
+                }
+            });
+            edgeHammer.on('panmove', function (ev) {
+
+                if (isPeeking) {
+                    onPanMove(ev);
+                }
+            });
+            edgeHammer.on('panend pancancel', function (ev) {
+                if (isPeeking) {
+                    isPeeking = false;
+                    onPanEnd(ev);
+                }
+            });
+        }
+
         function disableEvent(e) {
+
             e.preventDefault();
             e.stopPropagation();
         }
 
         TouchMenuLA.prototype.touchStartMenu = function () {
+
             menuHammer.on('panstart', function (ev) {
-                options.target.classList.remove('transition');
-                options.target.classList.add('open');
-                velocity = Math.abs(ev.velocity);
+                onPanStart(ev);
             });
             menuHammer.on('panmove', function (ev) {
-
-                velocity = Math.abs(ev.velocity);
-                // Depending on the deltas, choose X or Y
-
-                var isOpen = self.visible;
-
-                // If it's already open, then treat any right-swipe as vertical pan
-                if (isOpen && !draggingX && ev.deltaX > 0) {
-                    draggingY = true;
-                }
-
-                if (!draggingX && !draggingY && (!isOpen || Math.abs(ev.deltaX) >= 10)) {
-                    draggingX = true;
-                    scrollContainer.addEventListener('scroll', disableEvent);
-                    options.target.classList.add('draggingX');
-                    self.showMask();
-
-                } else if (!draggingY) {
-                    draggingY = true;
-                }
-
-                if (draggingX) {
-                    newPos = currentPos + ev.deltaX;
-                    self.changeMenuPos();
-                }
+                onPanMove(ev);
             });
         };
 
         TouchMenuLA.prototype.animateToPosition = function (pos) {
 
-            requestAnimationFrame(function() {
+            requestAnimationFrame(function () {
                 if (pos) {
                     options.target.style.transform = 'translate3d(' + pos + 'px, 0, 0)';
                     options.target.style.WebkitTransform = 'translate3d(' + pos + 'px, 0, 0)';
@@ -125,14 +163,7 @@
         };
 
         TouchMenuLA.prototype.touchEndMenu = function () {
-            menuHammer.on('panend pancancel', function (ev) {
-                options.target.classList.add('transition');
-                scrollContainer.removeEventListener('scroll', disableEvent);
-                draggingX = false;
-                draggingY = false;
-                currentPos = ev.deltaX;
-                self.checkMenuState(ev.deltaX, ev.deltaY);
-            });
+            menuHammer.on('panend pancancel', onPanEnd);
         };
 
         TouchMenuLA.prototype.clickMaskClose = function () {
@@ -222,10 +253,6 @@
             mask.classList.remove('backdrop');
         };
 
-        TouchMenuLA.prototype.setMenuClassName = function () {
-            menuClassName = options.target.className;
-        };
-
         TouchMenuLA.prototype.invoke = function (fn) {
             if (fn) {
                 fn.apply(self);
@@ -233,24 +260,23 @@
         };
 
         TouchMenuLA.prototype.initialize = function () {
-            if (options.target) {
-                menuHammer = Hammer(options.target, null);
 
-                self.setDefaultsOptions();
-                self.setMenuClassName();
-                self.initElements();
+            options = Object.assign(defaults, options || {});
 
-                self.touchStartMenu();
-                self.touchEndMenu();
-                self.eventStartMask();
-                self.eventEndMask();
+            menuHammer = Hammer(options.target, null);
 
-                if (!options.disableMask) {
-                    self.clickMaskClose();
-                }
-            } else {
-                console.error('TouchMenuLA: The option \'target\' is required.');
+            self.initElements();
+
+            self.touchStartMenu();
+            self.touchEndMenu();
+            self.eventStartMask();
+            self.eventEndMask();
+
+            if (!options.disableMask) {
+                self.clickMaskClose();
             }
+
+            initEdgeSwipe();
         };
 
         return new TouchMenuLA();

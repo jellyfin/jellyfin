@@ -1879,7 +1879,6 @@ var AppInfo = {};
         define("paper-tabs", ['webcomponentsjs', "html!" + bowerPath + "/paper-tabs/paper-tabs.html"]);
         define("paper-button", ["html!" + bowerPath + "/paper-button/paper-button.html"]);
         define("paper-icon-button", ["html!" + bowerPath + "/paper-icon-button/paper-icon-button.html"]);
-        define("paper-drawer-panel", ['webcomponentsjs', "html!" + bowerPath + "/paper-drawer-panel/paper-drawer-panel.html"]);
         define("paper-radio-group", ["html!" + bowerPath + "/paper-radio-group/paper-radio-group.html"]);
         define("paper-radio-button", ['webcomponentsjs', "html!" + bowerPath + "/paper-radio-button/paper-radio-button.html"]);
         define("paper-toggle-button", ['webcomponentsjs', "html!" + bowerPath + "/paper-toggle-button/paper-toggle-button.html"]);
