@@ -219,7 +219,7 @@
 }
 
 .viewMenuBar, .libraryViewNav {
-    background-color: #282828;
+    background-color: #2a2a2a;
     color: #fff;
 }
 
@@ -499,6 +499,10 @@ body:not(.dashboardDocument) .headerAppsButton {
         bottom: 0;
         left: 270px;
     }
+
+    .dashboardDocument .adminDrawerLogo {
+        display: none;
+    }
 }
 
 .adminDrawer .sidebarLink {
@@ -537,13 +541,9 @@ body:not(.dashboardDocument) .headerAppsButton {
     display: block;
 }
 
-.dashboardDocument.mainDrawerOpen .adminDrawerLogo {
-    display: none;
-}
-
-.adminDrawerLogo img {
-    height: 30px;
-}
+    .adminDrawerLogo img {
+        height: 30px;
+    }
 
 @media all and (max-width: 640px) {
 

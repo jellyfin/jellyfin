@@ -1,4 +1,4 @@
-﻿<div id="userImagePage" data-role="page" class="page libraryPage userPreferencesPage userPasswordPage noSecondaryNavPage" data-title="${HeaderProfile}" data-require="emby-collapsible,scripts/myprofile,emby-checkbox,emby-input,emby-button" data-backbutton="true" data-menubutton="false">
+﻿<div id="userImagePage" data-role="page" class="page libraryPage userPreferencesPage userPasswordPage noSecondaryNavPage" data-title="${HeaderProfile}" data-backbutton="true" data-menubutton="false">
 
     <div data-role="content">
         <br />
@@ -12,12 +12,12 @@
             </div>
         </div>
 
-        <div class="connectMessage readOnlyContent" style="display:none;margin: 0 auto; padding: 0 1em; text-align:center;">
+        <div class="connectMessage readOnlyContent hide" style="margin: 0 auto; padding: 0 1em; text-align:center;">
             <p>${MessageProfileInfoSynced}</p>
             <div style="margin-top: .75em;"><a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a></div>
         </div>
 
-        <form class="newImageForm userProfileSettingsForm" style="display:none;margin: 1em auto 0;">
+        <form class="newImageForm userProfileSettingsForm hide" style="margin: 1em auto 0;">
 
             <emby-collapsible title="${HeaderUploadNewImage}">
                 <div id="fldNewImage">
@@ -30,7 +30,7 @@
                     </div>
                 </div>
                 <div id="fldNewImagePreview"></div>
-                <div id="fldUpload" style="display: none;">
+                <div id="fldUpload" class="hide">
                     <button type="submit" data-icon="check" data-theme="a">${ButtonUpload}</button>
                 </div>
             </emby-collapsible>
@@ -39,14 +39,14 @@
 
         <br />
 
-        <form class="updatePasswordForm passwordSection userProfileSettingsForm" style="display:none;margin: 0 auto 2em;">
+        <form class="updatePasswordForm passwordSection userProfileSettingsForm hide" style="margin: 0 auto 2em;">
 
             <div class="detailSection">
                 <h1>
                     ${HeaderPassword}
                 </h1>
                 <br />
-                <div id="fldCurrentPassword" style="display: none;" class="inputContainer">
+                <div id="fldCurrentPassword" class="inputContainer hide">
                     <input is="emby-input" type="password" id="txtCurrentPassword" label="${LabelCurrentPassword}" autocomplete="off" />
                 </div>
                 <div class="inputContainer">
@@ -57,13 +57,11 @@
                 </div>
                 <div>
                     <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
-                    <div id="btnResetPassword" style="display: none;">
-                        <button is="emby-button" type="button" class="raised cancel block" onclick="UpdatePasswordPage.resetPassword();"><iron-icon icon="lock"></iron-icon><span>${ButtonResetPassword}</span></button>
-                    </div>
+                    <button is="emby-button" type="button" id="btnResetPassword" class="raised cancel block hide"><iron-icon icon="lock"></iron-icon><span>${ButtonResetPassword}</span></button>
                 </div>
             </div>
         </form>
-        <form class="localAccessForm localAccessSection userProfileSettingsForm" style="margin: 0 auto;display:none;">
+        <form class="localAccessForm localAccessSection userProfileSettingsForm hide" style="margin: 0 auto;">
             <div class="detailSection">
                 <h1>
                     ${HeaderEasyPinCode}
@@ -83,7 +81,7 @@
                 </div>
                 <div>
                     <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
-                    <button is="emby-button" type="button" id="btnResetEasyPassword" class="raised cancel block hide" onclick="UpdatePasswordPage.resetEasyPassword();"><iron-icon icon="lock"></iron-icon><span>${ButtonResetEasyPassword}</span></button>
+                    <button is="emby-button" type="button" id="btnResetEasyPassword" class="raised cancel block hide"><iron-icon icon="lock"></iron-icon><span>${ButtonResetEasyPassword}</span></button>
                 </div>
             </div>
         </form>

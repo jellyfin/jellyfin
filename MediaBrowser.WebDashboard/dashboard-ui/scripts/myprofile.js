@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['scripts/userpasswordpage'], function (Userpasswordpage) {
 
     var currentFile;
 
@@ -10,8 +10,10 @@
 
         ApiClient.getUser(userId).then(function (user) {
 
-            $('.username', page).html(user.Name);
-            $('#uploadUserImage', page).val('').trigger('change');
+            page.querySelector('.username').innerHTML = user.Name;
+            var uploadUserImage = page.querySelector('#uploadUserImage');
+            uploadUserImage.value = '';
+            uploadUserImage.dispatchEvent(new CustomEvent('change', {}));
 
             Dashboard.setPageTitle(user.Name);
 
@@ -29,34 +31,34 @@
                 imageUrl = "css/images/logindefault.png";
             }
 
-            $('#fldImage', page).show().html('').html("<img width='140px' src='" + imageUrl + "' />");
+            var fldImage = page.querySelector('#fldImage');
+            fldImage.classList.remove('hide');
+            fldImage.innerHTML = "<img width='140px' src='" + imageUrl + "' />";
 
             var showImageEditing = false;
 
             if (user.ConnectLinkType == 'Guest') {
 
-                $('.connectMessage', page).show();
+                page.querySelector('.connectMessage').classList.remove('hide');
             }
             else if (user.PrimaryImageTag) {
 
-                $('#headerUploadNewImage', page).show();
                 showImageEditing = true;
-                $('.connectMessage', page).hide();
+                page.querySelector('.connectMessage').classList.add('hide');
 
             } else {
                 showImageEditing = true;
-                $('#headerUploadNewImage', page).show();
-                $('.connectMessage', page).hide();
+                page.querySelector('.connectMessage').classList.add('hide');
             }
 
             Dashboard.getCurrentUser().then(function (loggedInUser) {
 
                 if (showImageEditing && AppInfo.supportsFileInput && (loggedInUser.Policy.IsAdministrator || user.Policy.EnableUserPreferenceAccess)) {
-                    $('.newImageForm', page).show();
-                    $('#btnDeleteImage', page).removeClass('hide');
+                    page.querySelector('.newImageForm').classList.remove('hide');
+                    page.querySelector('#btnDeleteImage').classList.remove('hide');
                 } else {
-                    $('.newImageForm', page).hide();
-                    $('#btnDeleteImage', page).addClass('hide');
+                    page.querySelector('.newImageForm').classList.add('hide');
+                    page.querySelector('#btnDeleteImage').classList.add('hide');
                 }
             });
 
@@ -105,8 +107,8 @@
         var file = files[0];
 
         if (!file || !file.type.match('image.*')) {
-            $('#userImageOutput', page).html('');
-            $('#fldUpload', page).hide();
+            page.querySelector('#userImageOutput').innerHTML = '';
+            page.querySelector('#fldUpload').classList.add('hide');
             currentFile = null;
             return;
         }
@@ -117,7 +119,7 @@
 
         reader.onerror = onFileReaderError;
         reader.onloadstart = function () {
-            $('#fldUpload', page).hide();
+            page.querySelector('#fldUpload').classList.add('hide');
         };
         reader.onabort = onFileReaderAbort;
 
@@ -127,8 +129,8 @@
             // Render thumbnail.
             var html = ['<img style="max-width:500px;max-height:200px;" src="', e.target.result, '" title="', escape(file.name), '"/>'].join('');
 
-            $('#userImageOutput', page).html(html);
-            $('#fldUpload', page).show();
+            page.querySelector('#userImageOutput').innerHTML = html;
+            page.querySelector('#fldUpload').classList.remove('hide');
         };
 
         // Read in the image file as a data URL.
@@ -144,22 +146,24 @@
         return false;
     }
 
-    $(document).on('pageinit', "#userImagePage", function () {
+    return function (view, params) {
 
-        var page = this;
+        reloadUser(view);
 
-        reloadUser(page);
+        var userpasswordpage = new Userpasswordpage(view, params);
 
-        $("#userImageDropZone", page).on('dragover', onImageDragOver).on('drop', function (e) {
+        var userImageDropZone = view.querySelector('#userImageDropZone');
+        userImageDropZone.addEventListener('dragOver', onImageDragOver);
+        userImageDropZone.addEventListener('drop', function (e) {
 
             e.preventDefault();
 
-            setFiles(page, e.originalEvent.dataTransfer.files);
+            setFiles(view, e.originalEvent.dataTransfer.files);
 
             return false;
         });
 
-        $('#btnDeleteImage', page).on('click', function () {
+        view.querySelector('#btnDeleteImage').addEventListener('click', function () {
 
             require(['confirm'], function (confirm) {
 
@@ -173,285 +177,41 @@
 
                         Dashboard.hideLoadingMsg();
 
-                        reloadUser(page);
+                        reloadUser(view);
                     });
                 });
             });
         });
 
-        $('.newImageForm').on('submit', function () {
+        view.querySelector('.newImageForm').addEventListener('submit', function (e) {
 
-            var self = this;
+            var file = currentFile;
 
-            self.onImageSubmit = function () {
-
-                var file = currentFile;
-
-                if (!file) {
-                    return false;
-                }
-
-                if (file.type != "image/png" && file.type != "image/jpeg" && file.type != "image/jpeg") {
-                    return false;
-                }
-
-                Dashboard.showLoadingMsg();
-
-                var userId = getParameterByName("userId");
-
-                ApiClient.uploadUserImage(userId, 'Primary', file).then(function () {
-
-                    Dashboard.hideLoadingMsg();
-
-                    reloadUser(page);
-                });
-
+            if (!file) {
                 return false;
-            };
-        });
-
-        page.querySelector('#uploadUserImage').addEventListener('change', function (e) {
-            setFiles(page, e.target.files);
-        });
-    });
-
-    function loadUser(page) {
-
-        var userid = getParameterByName("userId");
-
-        ApiClient.getUser(userid).then(function (user) {
-
-            Dashboard.getCurrentUser().then(function (loggedInUser) {
-
-                Dashboard.setPageTitle(user.Name);
-
-                var showPasswordSection = true;
-                var showLocalAccessSection = false;
-                if (user.ConnectLinkType == 'Guest') {
-                    $('.localAccessSection', page).hide();
-                    showPasswordSection = false;
-                }
-                else if (user.HasConfiguredPassword) {
-                    $('#btnResetPassword', page).show();
-                    $('#fldCurrentPassword', page).show();
-                    showLocalAccessSection = true;
-                } else {
-                    $('#btnResetPassword', page).hide();
-                    $('#fldCurrentPassword', page).hide();
-                }
-
-                if (showPasswordSection && (loggedInUser.Policy.IsAdministrator || user.Policy.EnableUserPreferenceAccess)) {
-                    $('.passwordSection', page).show();
-                } else {
-                    $('.passwordSection', page).hide();
-                }
-
-                if (showLocalAccessSection && (loggedInUser.Policy.IsAdministrator || user.Policy.EnableUserPreferenceAccess)) {
-                    $('.localAccessSection', page).show();
-                } else {
-                    $('.localAccessSection', page).hide();
-                }
-
-                if (user.HasConfiguredEasyPassword) {
-                    $('#txtEasyPassword', page).val('').attr('placeholder', '******');
-                    $('#btnResetEasyPassword', page).removeClass('hide');
-                } else {
-                    $('#txtEasyPassword', page).val('').attr('placeholder', '');
-                    $('#btnResetEasyPassword', page).addClass('hide');
-                }
-
-                page.querySelector('.chkEnableLocalEasyPassword').checked = user.Configuration.EnableLocalPassword;
-            });
-        });
-
-        $('#txtCurrentPassword', page).val('');
-        $('#txtNewPassword', page).val('');
-        $('#txtNewPasswordConfirm', page).val('');
-    }
-
-    function saveEasyPassword(page) {
-
-        var userId = getParameterByName("userId");
-
-        var easyPassword = $('#txtEasyPassword', page).val();
-
-        if (easyPassword) {
-
-            ApiClient.updateEasyPassword(userId, easyPassword).then(function () {
-
-                onEasyPasswordSaved(page, userId);
-
-            });
-
-        } else {
-            onEasyPasswordSaved(page, userId);
-        }
-    }
-
-    function onEasyPasswordSaved(page, userId) {
-
-        ApiClient.getUser(userId).then(function (user) {
-
-            user.Configuration.EnableLocalPassword = page.querySelector('.chkEnableLocalEasyPassword').checked;
-
-            ApiClient.updateUserConfiguration(user.Id, user.Configuration).then(function () {
-
-                Dashboard.hideLoadingMsg();
-
-                require(['toast'], function (toast) {
-                    toast(Globalize.translate('MessageSettingsSaved'));
-                });
-                loadUser(page);
-            });
-        });
-    }
-
-    function savePassword(page) {
-
-        var userId = getParameterByName("userId");
-
-        var currentPassword = page.querySelector('#txtCurrentPassword').value;
-        var newPassword = page.querySelector('#txtNewPassword').value;
-
-        ApiClient.updateUserPassword(userId, currentPassword, newPassword).then(function () {
-
-            Dashboard.hideLoadingMsg();
-
-            require(['toast'], function (toast) {
-                toast(Globalize.translate('PasswordSaved'));
-            });
-            loadUser(page);
-
-        }, function () {
-
-            Dashboard.hideLoadingMsg();
-
-            Dashboard.alert({
-                title: Globalize.translate('HeaderLoginFailure'),
-                message: Globalize.translate('MessageInvalidUser')
-            });
-
-        });
-
-    }
-
-    function updatePasswordPage() {
-
-        var self = this;
-
-        self.onSubmit = function () {
-
-            var form = this;
-            var page = $(form).parents('.page')[0];
-
-            if (page.querySelector('#txtNewPassword').value != page.querySelector('#txtNewPasswordConfirm').value) {
-
-                require(['toast'], function (toast) {
-                    toast(Globalize.translate('PasswordMatchError'));
-                });
-            } else {
-
-                Dashboard.showLoadingMsg();
-                savePassword(page);
             }
 
-
-            // Disable default form submission
-            return false;
-
-        };
-
-        self.onLocalAccessSubmit = function () {
-
-            var form = this;
-            var page = $(form).parents('.page')[0];
+            if (file.type != "image/png" && file.type != "image/jpeg" && file.type != "image/jpeg") {
+                return false;
+            }
 
             Dashboard.showLoadingMsg();
 
-            saveEasyPassword(page);
+            var userId = getParameterByName("userId");
 
-            // Disable default form submission
+            ApiClient.uploadUserImage(userId, 'Primary', file).then(function () {
+
+                Dashboard.hideLoadingMsg();
+
+                reloadUser(view);
+            });
+
+            e.preventDefault();
             return false;
+        });
 
-        };
-
-        self.resetPassword = function () {
-
-            var msg = Globalize.translate('PasswordResetConfirmation');
-
-            var page = $($.mobile.activePage)[0];
-
-            require(['confirm'], function (confirm) {
-
-                confirm(msg, Globalize.translate('PasswordResetHeader')).then(function () {
-
-                    var userId = getParameterByName("userId");
-
-                    Dashboard.showLoadingMsg();
-
-                    ApiClient.resetUserPassword(userId).then(function () {
-
-                        Dashboard.hideLoadingMsg();
-
-                        Dashboard.alert({
-                            message: Globalize.translate('PasswordResetComplete'),
-                            title: Globalize.translate('PasswordResetHeader')
-                        });
-
-                        loadUser(page);
-
-                    });
-                });
-            });
-
-        };
-
-        self.resetEasyPassword = function () {
-
-            var msg = Globalize.translate('PinCodeResetConfirmation');
-
-            var page = $($.mobile.activePage)[0];
-
-            require(['confirm'], function (confirm) {
-
-                confirm(msg, Globalize.translate('HeaderPinCodeReset')).then(function () {
-
-                    var userId = getParameterByName("userId");
-
-                    Dashboard.showLoadingMsg();
-
-                    ApiClient.resetEasyPassword(userId).then(function () {
-
-                        Dashboard.hideLoadingMsg();
-
-                        Dashboard.alert({
-                            message: Globalize.translate('PinCodeResetComplete'),
-                            title: Globalize.translate('HeaderPinCodeReset')
-                        });
-
-                        loadUser(page);
-
-                    });
-                });
-            });
-        };
-    }
-
-    window.UpdatePasswordPage = new updatePasswordPage();
-
-    $(document).on('pageinit', ".userPasswordPage", function () {
-
-        var page = this;
-
-        $('.updatePasswordForm').off('submit', UpdatePasswordPage.onSubmit).on('submit', UpdatePasswordPage.onSubmit);
-        $('.localAccessForm').off('submit', UpdatePasswordPage.onLocalAccessSubmit).on('submit', UpdatePasswordPage.onLocalAccessSubmit);
-
-    }).on('pageshow', ".userPasswordPage", function () {
-
-        var page = this;
-
-        loadUser(page);
-
-    });
-
+        view.querySelector('#uploadUserImage').addEventListener('change', function (e) {
+            setFiles(view, e.target.files);
+        });
+    };
 });

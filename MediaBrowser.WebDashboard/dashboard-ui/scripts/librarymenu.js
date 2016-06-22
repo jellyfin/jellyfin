@@ -617,6 +617,11 @@
         return getParameterByName('topParentId') || null;
     }
 
+    function getNavigateDelay() {
+        // On mobile devices don't navigate until after the closing animation has completed or it may stutter
+        return browserInfo.mobile ? 320 : 200;;
+    }
+
     window.LibraryMenu = {
         getTopParentId: getTopParentId,
 
@@ -632,8 +637,6 @@
                 setTimeout(function () {
                     closeMainDrawer();
 
-                    // On mobile devices don't navigate until after the closing animation has completed or it may stutter
-                    var delay = browserInfo.mobile ? 350 : 200;
 
                     setTimeout(function () {
                         if (action) {
@@ -641,7 +644,7 @@
                         } else {
                             Dashboard.navigate(link.href);
                         }
-                    }, delay);
+                    }, getNavigateDelay());
 
                 }, 50);
             }
@@ -657,12 +660,9 @@
 
                 closeMainDrawer();
 
-                // On mobile devices don't navigate until after the closing animation has completed or it may stutter
-                var delay = browserInfo.mobile ? 350 : 200;
-
                 setTimeout(function () {
                     Dashboard.logout();
-                }, delay);
+                }, getNavigateDelay());
             }
 
             return false;

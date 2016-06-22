@@ -2771,9 +2771,10 @@ var AppInfo = {};
 
         defineRoute({
             path: '/myprofile.html',
-            dependencies: ['emby-button'],
+            dependencies: ['emby-button', 'emby-collapsible', 'emby-checkbox', 'emby-input'],
             autoFocus: false,
-            transition: 'fade'
+            transition: 'fade',
+            controller: 'scripts/myprofile'
         });
 
         defineRoute({
@@ -2998,8 +2999,9 @@ var AppInfo = {};
 
         defineRoute({
             path: '/userpassword.html',
-            dependencies: [],
-            autoFocus: false
+            dependencies: ['emby-input', 'emby-button', 'emby-checkbox'],
+            autoFocus: false,
+            controller: 'scripts/userpasswordpage'
         });
 
         defineRoute({

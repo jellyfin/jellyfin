@@ -1,4 +1,4 @@
-﻿define(['scripts/livetvcomponents'], function () {
+﻿define(['scripts/livetvcomponents', 'emby-button'], function () {
 
     function getRecordingGroupHtml(group) {
 
@@ -6,7 +6,7 @@
 
         html += '<paper-icon-item>';
 
-        html += '<paper-fab mini class="blue" icon="live-tv" item-icon></paper-fab>';
+        html += '<button type="button" is="emby-button" class="fab mini autoSize blue" item-icon><i class="md-icon">live_tv</i></button>';
 
         html += '<paper-item-body two-line>';
         html += '<a href="livetvrecordinglist.html?groupid=' + group.Id + '" class="clearLink">';
@@ -177,7 +177,7 @@
 
         }).then(function (result) {
 
-            require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
+            require(['paper-item-body', 'paper-icon-item'], function () {
                 renderRecordingGroups(context, result.Items);
             });
         });
