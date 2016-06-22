@@ -31,7 +31,6 @@
 
 .scrollContainer {
     flex-grow: 1;
-    overflow: auto;
 }
 
 .tmla-mask {
