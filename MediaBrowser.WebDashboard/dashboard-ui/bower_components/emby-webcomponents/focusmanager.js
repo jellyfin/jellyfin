@@ -73,6 +73,13 @@ define([], function () {
             return false;
         }
 
+        if (elem.tagName == 'INPUT') {
+            var type = elem.type;
+            if (type == 'range') {
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -272,7 +279,6 @@ define([], function () {
                     nearestElement = nearestElementFocusableParent;
                 }
             }
-
             focus(nearestElement);
         }
     }

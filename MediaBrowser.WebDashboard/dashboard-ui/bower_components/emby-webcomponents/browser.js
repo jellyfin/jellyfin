@@ -89,6 +89,10 @@
         browser.safari = true;
     }
 
+    if (userAgent.toLowerCase().indexOf("playstation 4") != -1) {
+        browser.ps4 = true;
+    }
+
     if (isMobile.any) {
         browser.mobile = true;
     }
@@ -101,7 +105,7 @@
     browser.tv = isTv();
     browser.operaTv = browser.tv && userAgent.toLowerCase().indexOf('opr/') != -1;
 
-    browser.noFlex = browser.tv && !browser.chrome && !browser.operaTv;
+    browser.noFlex = (browser.tv && !browser.chrome && !browser.operaTv) || browser.ps4;
 
     return browser;
 });

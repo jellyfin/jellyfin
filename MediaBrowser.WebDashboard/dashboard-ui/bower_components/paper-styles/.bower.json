@@ -37,6 +37,6 @@
     "commit": "885bbd74db88dab4fb5dc229cdf994c55fb2b31b"
   },
   "_source": "git://github.com/PolymerElements/paper-styles.git",
-  "_target": "^1.0.0",
+  "_target": "^1.1.4",
   "_originalSource": "PolymerElements/paper-styles"
 }
