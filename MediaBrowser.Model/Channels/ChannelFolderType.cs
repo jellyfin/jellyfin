@@ -6,6 +6,8 @@ namespace MediaBrowser.Model.Channels
 
         MusicAlbum = 1,
 
-        PhotoAlbum = 2
+        PhotoAlbum = 2,
+
+        MusicArtist = 3
     }
 }

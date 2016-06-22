@@ -1250,6 +1250,10 @@ namespace MediaBrowser.Server.Implementations.Channels
                 {
                     item = GetItemById<MusicAlbum>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
                 }
+                else if (info.FolderType == ChannelFolderType.MusicArtist)
+                {
+                    item = GetItemById<MusicArtist>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                }
                 else if (info.FolderType == ChannelFolderType.PhotoAlbum)
                 {
                     item = GetItemById<PhotoAlbum>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
