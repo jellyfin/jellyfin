@@ -90,7 +90,7 @@
     filter: grayscale(100%);
 }
 
-.bottomPaddedCard .cardBox {
+.bottomPaddedCard .cardBox:not(.visualCardBox) {
     margin-bottom: 24px;
 }
 
@@ -107,7 +107,6 @@
     -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     background: #fff;
-    margin: 7px;
 }
 
 .ui-body-b .visualCardBox {
@@ -115,7 +114,7 @@
 }
 
 .defaultBackground .cardImage, .ui-body-b .visualCardBox {
-    background-color: #262626;
+    background-color: #2a2a2a;
 }
 
 .cardScalable {

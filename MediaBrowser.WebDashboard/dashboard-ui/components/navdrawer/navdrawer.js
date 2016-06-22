@@ -1,4 +1,4 @@
-﻿define(['hammer', 'css!./navdrawer'], function (Hammer) {
+﻿define(['browser', 'hammer', 'css!./navdrawer'], function (browser, Hammer) {
 
     return function (options) {
 
@@ -38,14 +38,6 @@
             options.target.classList.add('touch-menu-la');
             options.target.style.width = options.width + 'px';
             options.target.style.left = -options.width + 'px';
-
-            if (!options.disableEdgeSwipe) {
-                //var handle = document.createElement('div');
-                //handle.className = "tmla-handle";
-                //handle.style.width = options.handleSize + 'px';
-                //handle.style.right = -options.handleSize + 'px';
-                //options.target.appendChild(handle);
-            }
 
             if (!options.disableMask) {
                 mask = document.createElement('div');
@@ -104,17 +96,23 @@
             var edgeHammer = new Hammer(options.edgeSwipeElement, null);
             var isPeeking = false;
 
-            edgeHammer.on('panstart', function (ev) {
-
-                if (ev.srcEvent.clientX <= options.handleSize && ev.deltaX > 0) {
-                    isPeeking = true;
-                    onPanStart(ev);
-                }
-            });
-            edgeHammer.on('panmove', function (ev) {
+            edgeHammer.on('panstart panmove', function (ev) {
 
                 if (isPeeking) {
                     onPanMove(ev);
+                } else {
+                    var srcEvent = ev.srcEvent;
+                    var clientX = srcEvent.clientX;
+                    if (!clientX) {
+                        var touches = srcEvent.touches;
+                        if (touches && touches.length) {
+                            clientX = touches[0].clientX;
+                        }
+                    }
+                    if (clientX <= options.handleSize) {
+                        isPeeking = true;
+                        onPanStart(ev);
+                    }
                 }
             });
             edgeHammer.on('panend pancancel', function (ev) {
@@ -262,6 +260,11 @@
         TouchMenuLA.prototype.initialize = function () {
 
             options = Object.assign(defaults, options || {});
+
+            // Not ready yet
+            if (browser.edge) {
+                options.disableEdgeSwipe = true;
+            }
 
             menuHammer = Hammer(options.target, null);
 
