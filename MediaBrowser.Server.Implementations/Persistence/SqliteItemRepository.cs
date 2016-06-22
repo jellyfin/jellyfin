@@ -123,7 +123,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         protected override async Task<IDbConnection> CreateConnection(bool isReadOnly = false)
         {
-            var connection = await DbConnector.Connect(DbFilePath, false, false, 5000).ConfigureAwait(false);
+            var connection = await DbConnector.Connect(DbFilePath, false, false, 10000).ConfigureAwait(false);
 
             connection.RunQueries(new[]
             {
@@ -1780,13 +1780,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 if (query.Limit.HasValue || query.StartIndex.HasValue)
                 {
-                    var limit = query.Limit ?? int.MaxValue;
+                    var offset = query.StartIndex ?? 0;
 
-                    cmd.CommandText += " LIMIT " + limit.ToString(CultureInfo.InvariantCulture);
-
-                    if (query.StartIndex.HasValue)
+                    if (query.Limit.HasValue || offset > 0)
                     {
-                        cmd.CommandText += " OFFSET " + query.StartIndex.Value.ToString(CultureInfo.InvariantCulture);
+                        cmd.CommandText += " LIMIT " + (query.Limit ?? int.MaxValue).ToString(CultureInfo.InvariantCulture);
+                    }
+
+                    if (offset > 0)
+                    {
+                        cmd.CommandText += " OFFSET " + offset.ToString(CultureInfo.InvariantCulture);
                     }
                 }
 
@@ -1883,13 +1886,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 if (query.Limit.HasValue || query.StartIndex.HasValue)
                 {
-                    var limit = query.Limit ?? int.MaxValue;
+                    var offset = query.StartIndex ?? 0;
 
-                    cmd.CommandText += " LIMIT " + limit.ToString(CultureInfo.InvariantCulture);
-
-                    if (query.StartIndex.HasValue)
+                    if (query.Limit.HasValue || offset > 0)
                     {
-                        cmd.CommandText += " OFFSET " + query.StartIndex.Value.ToString(CultureInfo.InvariantCulture);
+                        cmd.CommandText += " LIMIT " + (query.Limit ?? int.MaxValue).ToString(CultureInfo.InvariantCulture);
+                    }
+
+                    if (offset > 0)
+                    {
+                        cmd.CommandText += " OFFSET " + offset.ToString(CultureInfo.InvariantCulture);
                     }
                 }
 
@@ -2096,13 +2102,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 if (query.Limit.HasValue || query.StartIndex.HasValue)
                 {
-                    var limit = query.Limit ?? int.MaxValue;
+                    var offset = query.StartIndex ?? 0;
 
-                    cmd.CommandText += " LIMIT " + limit.ToString(CultureInfo.InvariantCulture);
-
-                    if (query.StartIndex.HasValue)
+                    if (query.Limit.HasValue || offset > 0)
                     {
-                        cmd.CommandText += " OFFSET " + query.StartIndex.Value.ToString(CultureInfo.InvariantCulture);
+                        cmd.CommandText += " LIMIT " + (query.Limit ?? int.MaxValue).ToString(CultureInfo.InvariantCulture);
+                    }
+
+                    if (offset > 0)
+                    {
+                        cmd.CommandText += " OFFSET " + offset.ToString(CultureInfo.InvariantCulture);
                     }
                 }
 
@@ -2153,13 +2162,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 if (query.Limit.HasValue || query.StartIndex.HasValue)
                 {
-                    var limit = query.Limit ?? int.MaxValue;
+                    var offset = query.StartIndex ?? 0;
 
-                    cmd.CommandText += " LIMIT " + limit.ToString(CultureInfo.InvariantCulture);
-
-                    if (query.StartIndex.HasValue)
+                    if (query.Limit.HasValue || offset > 0)
                     {
-                        cmd.CommandText += " OFFSET " + query.StartIndex.Value.ToString(CultureInfo.InvariantCulture);
+                        cmd.CommandText += " LIMIT " + (query.Limit ?? int.MaxValue).ToString(CultureInfo.InvariantCulture);
+                    }
+
+                    if (offset > 0)
+                    {
+                        cmd.CommandText += " OFFSET " + offset.ToString(CultureInfo.InvariantCulture);
                     }
                 }
 
@@ -2243,13 +2255,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 if (query.Limit.HasValue || query.StartIndex.HasValue)
                 {
-                    var limit = query.Limit ?? int.MaxValue;
+                    var offset = query.StartIndex ?? 0;
 
-                    cmd.CommandText += " LIMIT " + limit.ToString(CultureInfo.InvariantCulture);
-
-                    if (query.StartIndex.HasValue)
+                    if (query.Limit.HasValue || offset > 0)
                     {
-                        cmd.CommandText += " OFFSET " + query.StartIndex.Value.ToString(CultureInfo.InvariantCulture);
+                        cmd.CommandText += " LIMIT " + (query.Limit ?? int.MaxValue).ToString(CultureInfo.InvariantCulture);
+                    }
+
+                    if (offset > 0)
+                    {
+                        cmd.CommandText += " OFFSET " + offset.ToString(CultureInfo.InvariantCulture);
                     }
                 }
 
@@ -3700,13 +3715,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 if (query.Limit.HasValue || query.StartIndex.HasValue)
                 {
-                    var limit = query.Limit ?? int.MaxValue;
+                    var offset = query.StartIndex ?? 0;
 
-                    cmd.CommandText += " LIMIT " + limit.ToString(CultureInfo.InvariantCulture);
-
-                    if (query.StartIndex.HasValue)
+                    if (query.Limit.HasValue || offset > 0)
                     {
-                        cmd.CommandText += " OFFSET " + query.StartIndex.Value.ToString(CultureInfo.InvariantCulture);
+                        cmd.CommandText += " LIMIT " + (query.Limit ?? int.MaxValue).ToString(CultureInfo.InvariantCulture);
+                    }
+
+                    if (offset > 0)
+                    {
+                        cmd.CommandText += " OFFSET " + offset.ToString(CultureInfo.InvariantCulture);
                     }
                 }
 
