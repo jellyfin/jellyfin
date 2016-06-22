@@ -1,0 +1,43 @@
+{
+  "name": "paper-progress",
+  "version": "1.0.9",
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "description": "A material design progress bar",
+  "authors": "The Polymer Authors",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "progress"
+  ],
+  "main": "paper-progress.html",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/paper-progress.git"
+  },
+  "dependencies": {
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",
+    "iron-range-behavior": "PolymerElements/iron-range-behavior#^1.0.0",
+    "paper-styles": "PolymerElements/paper-styles#^1.0.0",
+    "polymer": "Polymer/polymer#^1.1.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^1.0.0",
+    "paper-button": "PolymerElements/paper-button#^1.0.0",
+    "test-fixture": "PolymerElements/test-fixture#^1.0.0",
+    "web-component-tester": "^4.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": [],
+  "homepage": "https://github.com/PolymerElements/paper-progress",
+  "_release": "1.0.9",
+  "_resolution": {
+    "type": "version",
+    "tag": "v1.0.9",
+    "commit": "389e717d2e600bb44c6cb1537ee12b203b55fca1"
+  },
+  "_source": "git://github.com/PolymerElements/paper-progress.git",
+  "_target": "^1.0.9",
+  "_originalSource": "PolymerElements/paper-progress",
+  "_direct": true
+}

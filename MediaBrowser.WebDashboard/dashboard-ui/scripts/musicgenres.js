@@ -14,7 +14,7 @@
                     query: {
                         SortBy: "SortName",
                         SortOrder: "Ascending",
-                        IncludeItemTypes: "Audio,MusicVideo,MusicAlbum",
+                        IncludeItemTypes: "Audio,MusicAlbum",
                         Recursive: true,
                         Fields: "DateCreated,SyncInfo,ItemCounts",
                         StartIndex: 0

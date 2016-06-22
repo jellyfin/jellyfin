@@ -70,13 +70,13 @@
     }
 
     [is="emby-button"].fab.mini {
-        padding: .4em;
+        padding: 8px;
     }
 
         [is="emby-button"].fab.mini i {
-            height: 2.4vh !important;
-            width: 2.4vh !important;
-            font-size: 2.4vh !important;
+            height: 24px !important;
+            width: 24px !important;
+            font-size: 24px !important;
         }
 
     [is="emby-button"].fab iron-icon {

@@ -6,7 +6,7 @@
         background: #e1f5f3;
     }
 
-button[is="emby-button"].fab.blue {
+button[is="emby-button"].fab.blue, paper-fab.blue {
     background: #03a9f4;
 }
 

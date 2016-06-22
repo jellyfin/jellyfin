@@ -1,4 +1,4 @@
-﻿define(['browser', 'hammer', 'css!./navdrawer'], function (browser, Hammer) {
+﻿define(['browser', 'hammer', 'css!./navdrawer', 'scrollStyles'], function (browser, Hammer) {
 
     return function (options) {
 
@@ -18,6 +18,7 @@
         var draggingY;
 
         var scrollContainer = options.target.querySelector('.scrollContainer');
+        scrollContainer.classList.add('smoothScrollY');
 
         var TouchMenuLA = function () {
             self = this;
