@@ -1,6 +1,8 @@
-﻿define(['imageLoader', 'layoutManager', 'viewManager'], function (imageLoader, layoutManager, viewManager) {
+﻿define(['imageLoader', 'layoutManager', 'viewManager', 'navdrawer', 'paper-icon-button-light', 'material-icons'], function (imageLoader, layoutManager, viewManager, navdrawer) {
 
-    var mainDrawerPanel = document.querySelector('.mainDrawerPanel');
+    var navDrawerElement = document.querySelector('.mainDrawer');
+    var navDrawerScrollContainer = navDrawerElement.querySelector('.scrollContainer');
+    var navDrawerInstance;
 
     function renderHeader() {
 
@@ -278,17 +280,16 @@
 
     function toggleMainDrawer() {
 
-        if (mainDrawerPanel.selected == 'drawer') {
-            closeMainDrawer(mainDrawerPanel);
+        if (navDrawerInstance.isVisible) {
+            closeMainDrawer();
         } else {
-            openMainDrawer(mainDrawerPanel);
+            openMainDrawer();
         }
     }
 
-    function openMainDrawer(drawerPanel) {
+    function openMainDrawer() {
 
-        drawerPanel = drawerPanel || document.querySelector('.mainDrawerPanel');
-        drawerPanel.openDrawer();
+        navDrawerInstance.open();
         lastOpenTime = new Date().getTime();
     }
 
@@ -298,16 +299,13 @@
             document.body.classList.add('bodyWithPopupOpen');
         }
     }
-    function closeMainDrawer(drawerPanel) {
+    function closeMainDrawer() {
 
-        drawerPanel = drawerPanel || document.querySelector('.mainDrawerPanel');
-        drawerPanel.closeDrawer();
+        navDrawerInstance.close();
     }
     function onMainDrawerSelect(e) {
 
-        var drawer = e.target;
-
-        if (drawer.selected != 'drawer') {
+        if (!navDrawerInstance.isVisible) {
             document.body.classList.remove('bodyWithPopupOpen');
         } else {
             onMainDrawerOpened();
@@ -373,23 +371,17 @@
 
         html += '</div>';
 
-        var drawer = mainDrawerPanel.querySelector('.mainDrawer');
+        navDrawerScrollContainer.innerHTML = html;
 
-        drawer.innerHTML = html;
-
-        var lnkManageServer = drawer.querySelector('.lnkManageServer');
+        var lnkManageServer = navDrawerScrollContainer.querySelector('.lnkManageServer');
         if (lnkManageServer) {
             lnkManageServer.addEventListener('click', onManageServerClicked);
         }
-
-        require(['imageLoader'], function (imageLoader) {
-            imageLoader.fillImages(mainDrawerPanel.getElementsByClassName('lazy'));
-        });
     }
 
     function refreshDashboardInfoInDrawer(page, user) {
 
-        if (!mainDrawerPanel.querySelector('.adminDrawerLogo')) {
+        if (!navDrawerScrollContainer.querySelector('.adminDrawerLogo')) {
             createDashboardMenu(page);
         } else {
             updateDashboardMenuSelectedItem();
@@ -411,7 +403,7 @@
 
     function updateDashboardMenuSelectedItem() {
 
-        var links = mainDrawerPanel.querySelectorAll('.sidebarLink');
+        var links = navDrawerScrollContainer.querySelectorAll('.sidebarLink');
 
         for (var i = 0, length = links.length; i < length; i++) {
             var link = links[i];
@@ -453,7 +445,7 @@
 
         html = html.split('href=').join('onclick="return LibraryMenu.onLinkClicked(event, this);" href=');
 
-        mainDrawerPanel.querySelector('.mainDrawer').innerHTML = html;
+        navDrawerScrollContainer.innerHTML = html;
 
         updateDashboardMenuSelectedItem();
     }
@@ -625,6 +617,11 @@
         return getParameterByName('topParentId') || null;
     }
 
+    function getNavigateDelay() {
+        // On mobile devices don't navigate until after the closing animation has completed or it may stutter
+        return browserInfo.mobile ? 320 : 200;;
+    }
+
     window.LibraryMenu = {
         getTopParentId: getTopParentId,
 
@@ -640,8 +637,6 @@
                 setTimeout(function () {
                     closeMainDrawer();
 
-                    // On mobile devices don't navigate until after the closing animation has completed or it may stutter
-                    var delay = browserInfo.mobile ? 350 : 200;
 
                     setTimeout(function () {
                         if (action) {
@@ -649,7 +644,7 @@
                         } else {
                             Dashboard.navigate(link.href);
                         }
-                    }, delay);
+                    }, getNavigateDelay());
 
                 }, 50);
             }
@@ -665,12 +660,9 @@
 
                 closeMainDrawer();
 
-                // On mobile devices don't navigate until after the closing animation has completed or it may stutter
-                var delay = browserInfo.mobile ? 350 : 200;
-
                 setTimeout(function () {
                     Dashboard.logout();
-                }, delay);
+                }, getNavigateDelay());
             }
 
             return false;
@@ -698,7 +690,7 @@
             if (!type) {
                 if (LibraryMenu.tabType) {
 
-                    mainDrawerPanel.classList.remove('withTallToolbar');
+                    document.body.classList.remove('withTallToolbar');
                     viewMenuBarTabs = document.querySelector('.viewMenuBarTabs');
                     viewMenuBarTabs.innerHTML = '';
                     viewMenuBarTabs.classList.add('hide');
@@ -724,7 +716,7 @@
                         return '<paper-tab link><a class="clearLink paperTabLink" href="' + t.href + '"><div>' + t.name + '</div></a></paper-tab>';
 
                     }).join('') + '</paper-tabs>';
-                    mainDrawerPanel.classList.add('withTallToolbar');
+                    document.body.classList.add('withTallToolbar');
                     LibraryMenu.tabType = type;
                 });
                 return;
@@ -958,14 +950,14 @@
 
         if (isDashboardPage) {
             refreshDashboardInfoInDrawer(page);
-            mainDrawerPanel.forceNarrow = false;
+            //mainDrawerPanel.forceNarrow = false;
         } else {
 
-            if (mainDrawerPanel.classList.contains('adminDrawerPanel')) {
+            if (navDrawerElement.classList.contains('adminDrawer')) {
                 refreshLibraryDrawer();
             }
 
-            mainDrawerPanel.forceNarrow = true;
+            //mainDrawerPanel.forceNarrow = true;
         }
 
         setDrawerClass(page);
@@ -1085,11 +1077,11 @@
         }
 
         if (admin) {
-            mainDrawerPanel.classList.add('adminDrawerPanel');
-            mainDrawerPanel.classList.remove('darkDrawerPanel');
+            navDrawerElement.classList.add('adminDrawer');
+            navDrawerElement.classList.remove('darkDrawer');
         } else {
-            mainDrawerPanel.classList.add('darkDrawerPanel');
-            mainDrawerPanel.classList.remove('adminDrawerPanel');
+            navDrawerElement.classList.add('darkDrawer');
+            navDrawerElement.classList.remove('adminDrawer');
         }
     }
 
@@ -1105,20 +1097,35 @@
         });
     }
 
-    mainDrawerPanel.addEventListener('iron-select', onMainDrawerSelect);
-    var headerCreated;
-    var userRequiresUpdateAfterHeader;
+    function getNavDrawerOptions() {
 
-    require(['paper-icon-button-light', 'material-icons'], function () {
-        renderHeader();
-        headerCreated = true;
+        var drawerWidth = screen.availWidth - 50;
+        // At least 240
+        drawerWidth = Math.max(drawerWidth, 240);
+        // But not exceeding 270
+        drawerWidth = Math.min(drawerWidth, 270);
 
-        var user = userRequiresUpdateAfterHeader;
-        if (user) {
-            updateUserInHeader(user);
+        var disableEdgeSwipe = false;
+
+        if (browserInfo.safari) {
+            disableEdgeSwipe = true;
         }
-        userRequiresUpdateAfterHeader = null;
-    });
+
+        // Default is 600px
+        //drawer.responsiveWidth = '640px';
+
+        return {
+            target: navDrawerElement,
+            onChange: onMainDrawerSelect,
+            width: drawerWidth,
+            disableEdgeSwipe: disableEdgeSwipe,
+            edgeSwipeElement: document.querySelector('.mainDrawerPanelContent')
+        };
+    }
+
+    navDrawerInstance = new navdrawer(getNavDrawerOptions());
+    navDrawerElement.classList.remove('hide');
+    renderHeader();
 
     Events.on(ConnectionManager, 'apiclientcreated', function (e, apiClient) {
         initializeApiClient(apiClient);
@@ -1128,12 +1135,7 @@
         setDrawerClass();
         ConnectionManager.user(ConnectionManager.getApiClient(user.ServerId)).then(function (user) {
             refreshLibraryDrawer(user);
-
-            if (headerCreated) {
-                updateUserInHeader(user);
-            } else {
-                userRequiresUpdateAfterHeader = user;
-            }
+            updateUserInHeader(user);
         });
     });
 

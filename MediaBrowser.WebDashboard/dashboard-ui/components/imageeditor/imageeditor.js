@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'css!css/metadataeditor.css', 'emby-button', 'paper-fab', 'paper-icon-button-light'], function (dialogHelper) {
+﻿define(['dialogHelper', 'css!css/metadataeditor.css', 'emby-button', 'paper-icon-button-light'], function (dialogHelper) {
 
     var currentItem;
     var currentDeferred;

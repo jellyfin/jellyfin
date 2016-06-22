@@ -2,20 +2,23 @@
     width: 240px;
     position: fixed;
     top: 0;
-    left: -280px;
     bottom: 0;
     background-color: #FFF;
     will-change: transform;
     contain: layout style;
     display: flex;
-    transition: transform ease-out 60ms;
+    transition: transform ease-out 60ms, left ease-out 260ms;
     z-index: 1099;
 }
 
+    .touch-menu-la.open {
+        box-shadow: 2px 0 12px rgba(0, 0, 0, 0.4);
+    }
+
     .touch-menu-la.transition {
         /*transition: transform 0.3s ease-out;*/
-        transition: -webkit-transform ease-out 280ms;
-        transition: transform ease-out 280ms;
+        transition: -webkit-transform ease-out 260ms, left ease-out 260ms;
+        transition: transform ease-out 260ms, left ease-out 260ms;
         /*transition: -webkit-transform ease-in-out 0.3s, width ease-in-out 0.3s, visibility 0.3s;
         transition: transform ease-in-out 0.3s, width ease-in-out 0.3s, visibility 0.3s;*/
     }

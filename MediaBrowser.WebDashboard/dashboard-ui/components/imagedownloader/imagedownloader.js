@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'emby-checkbox', 'paper-fab', 'paper-icon-button-light'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'emby-checkbox', 'emby-button', 'paper-icon-button-light'], function (dialogHelper, $) {
 
     var currentItemId;
     var currentItemType;
@@ -284,7 +284,7 @@
 
             var html = '';
             html += '<h2 class="dialogHeader">';
-            html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog" tabindex="-1"></paper-fab>';
+            html += '<button type="button" is="emby-button" icon="arrow-back" class="fab mini btnCloseDialog autoSize" tabindex="-1"><i class="md-icon">arrow_back</i></button>';
             html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + Globalize.translate('HeaderSearch') + '</div>';
             html += '</h2>';
 

@@ -1879,7 +1879,6 @@ var AppInfo = {};
         define("paper-tabs", ['webcomponentsjs', "html!" + bowerPath + "/paper-tabs/paper-tabs.html"]);
         define("paper-button", ["html!" + bowerPath + "/paper-button/paper-button.html"]);
         define("paper-icon-button", ["html!" + bowerPath + "/paper-icon-button/paper-icon-button.html"]);
-        define("paper-drawer-panel", ['webcomponentsjs', "html!" + bowerPath + "/paper-drawer-panel/paper-drawer-panel.html"]);
         define("paper-radio-group", ["html!" + bowerPath + "/paper-radio-group/paper-radio-group.html"]);
         define("paper-radio-button", ['webcomponentsjs', "html!" + bowerPath + "/paper-radio-button/paper-radio-button.html"]);
         define("paper-toggle-button", ['webcomponentsjs', "html!" + bowerPath + "/paper-toggle-button/paper-toggle-button.html"]);
@@ -2212,8 +2211,6 @@ var AppInfo = {};
 
         deps.push('scripts/mediacontroller');
 
-        deps.push('paper-drawer-panel');
-
         require(deps, function (events) {
 
             window.Events = events;
@@ -2231,25 +2228,6 @@ var AppInfo = {};
     }
 
     function initAfterDependencies() {
-
-        var drawer = document.querySelector('.mainDrawerPanel');
-        drawer.classList.remove('mainDrawerPanelPreInit');
-        drawer.forceNarrow = true;
-
-        var drawerWidth = screen.availWidth - 50;
-        // At least 240
-        drawerWidth = Math.max(drawerWidth, 240);
-        // But not exceeding 270
-        drawerWidth = Math.min(drawerWidth, 270);
-
-        drawer.drawerWidth = drawerWidth + "px";
-
-        if (browserInfo.safari) {
-            drawer.disableEdgeSwipe = true;
-        }
-
-        // Default is 600px
-        drawer.responsiveWidth = '640px';
 
         var deps = [];
         deps.push('scripts/extensions');
@@ -2793,9 +2771,10 @@ var AppInfo = {};
 
         defineRoute({
             path: '/myprofile.html',
-            dependencies: ['emby-button'],
+            dependencies: ['emby-button', 'emby-collapsible', 'emby-checkbox', 'emby-input'],
             autoFocus: false,
-            transition: 'fade'
+            transition: 'fade',
+            controller: 'scripts/myprofile'
         });
 
         defineRoute({
@@ -3020,8 +2999,9 @@ var AppInfo = {};
 
         defineRoute({
             path: '/userpassword.html',
-            dependencies: [],
-            autoFocus: false
+            dependencies: ['emby-input', 'emby-button', 'emby-checkbox'],
+            autoFocus: false,
+            controller: 'scripts/userpasswordpage'
         });
 
         defineRoute({
@@ -3382,3 +3362,4 @@ window.addEventListener("beforeunload", function () {
         }
     }
 });
+

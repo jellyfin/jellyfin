@@ -228,7 +228,7 @@
 
     function showSyncMenuInternal(options) {
 
-        require(['dialogHelper', 'paper-fab'], function (dialogHelper) {
+        require(['dialogHelper'], function (dialogHelper) {
 
             var userId = Dashboard.getCurrentUserId();
 

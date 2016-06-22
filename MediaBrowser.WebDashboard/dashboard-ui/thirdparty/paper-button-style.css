@@ -1,10 +1,14 @@
-﻿button[is="emby-button"].blue {
+﻿button[is="emby-button"]:not(.fab).blue {
     color: #03a9f4;
 }
 
-    button[is="emby-button"].blue:hover {
+    button[is="emby-button"]:not(.fab).blue:hover {
         background: #e1f5f3;
     }
+
+button[is="emby-button"].fab.blue {
+    background: #03a9f4;
+}
 
 button[is="emby-button"].menuButton {
     color: #212121;
@@ -219,14 +223,6 @@ paper-fab.white {
         color: #fff;
     }
 
-paper-fab.blue {
-    background: #03a9f4;
-}
-
-    paper-fab.blue paper-material.keyboard-focus {
-        background: #01579b !important;
-    }
-
 paper-fab.square {
     border-radius: 5px;
 }
@@ -241,10 +237,6 @@ paper-fab.green {
 
 paper-fab.orange {
     background-color: #ffd54f;
-}
-
-paper-fab.blue {
-    background-color: #4fc3f7;
 }
 
 paper-fab.red {
@@ -420,7 +412,7 @@ div.dialogHeader {
 }
 
 .ui-body-a .dialogHeader a {
-    color: #fff!important;
+    color: #fff !important;
     text-transform: uppercase;
 }
 
@@ -462,4 +454,8 @@ paper-toggle-button paper-ripple {
 
 .formDialog.background-theme-b {
     background-color: #181818;
+}
+
+.ui-body-b .listItem .secondary {
+    color: #aaa;
 }
