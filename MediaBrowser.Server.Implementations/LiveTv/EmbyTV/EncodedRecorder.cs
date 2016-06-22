@@ -108,17 +108,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     // Give the temp file a little time to build up
                     await Task.Delay(bufferMs, cancellationToken).ConfigureAwait(false);
 
-                    await RecordFromFile(mediaSource, tempFile, targetFile, onStarted, cancellationToken)
-                            .ConfigureAwait(false);
+                    var recordTask = Task.Run(() => RecordFromFile(mediaSource, tempFile, targetFile, duration, onStarted, cancellationToken), cancellationToken);
 
                     await tempFileTask.ConfigureAwait(false);
+
+                    await recordTask.ConfigureAwait(false);
                 }
             }
 
             _logger.Info("Recording completed to file {0}", targetFile);
         }
 
-        private async Task RecordFromFile(MediaSourceInfo mediaSource, string inputFile, string targetFile, Action onStarted, CancellationToken cancellationToken)
+        private Task RecordFromFile(MediaSourceInfo mediaSource, string inputFile, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
             _targetPath = targetFile;
             _fileSystem.CreateDirectory(Path.GetDirectoryName(targetFile));
@@ -136,7 +137,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     RedirectStandardInput = true,
 
                     FileName = _mediaEncoder.EncoderPath,
-                    Arguments = GetCommandLineArgs(mediaSource, inputFile, targetFile),
+                    Arguments = GetCommandLineArgs(mediaSource, inputFile, targetFile, duration),
 
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false
@@ -157,7 +158,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _logFileStream = _fileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true);
 
             var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(_json.SerializeToString(mediaSource) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
-            await _logFileStream.WriteAsync(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length, cancellationToken).ConfigureAwait(false);
+            _logFileStream.Write(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length);
 
             process.Exited += (sender, args) => OnFfMpegProcessExited(process);
 
@@ -173,10 +174,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
             StartStreamingLog(process.StandardError.BaseStream, _logFileStream);
 
-            await _taskCompletionSource.Task.ConfigureAwait(false);
+            return _taskCompletionSource.Task;
         }
 
-        private string GetCommandLineArgs(MediaSourceInfo mediaSource, string inputTempFile, string targetFile)
+        private string GetCommandLineArgs(MediaSourceInfo mediaSource, string inputTempFile, string targetFile, TimeSpan duration)
         {
             string videoArgs;
             if (EncodeVideo(mediaSource))
@@ -192,14 +193,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 videoArgs = "-codec:v:0 copy";
             }
 
-            var commandLineArgs = "-fflags +genpts -async 1 -vsync -1 -re -i \"{0}\" -sn {2} -map_metadata -1 -threads 0 {3} -y \"{1}\"";
+            var durationParam = " -t " + _mediaEncoder.GetTimeParameter(duration.Ticks);
+            var commandLineArgs = "-fflags +genpts -async 1 -vsync -1 -re -i \"{0}\"{4} -sn {2} -map_metadata -1 -threads 0 {3} -y \"{1}\"";
 
             if (mediaSource.ReadAtNativeFramerate)
             {
                 commandLineArgs = "-re " + commandLineArgs;
             }
 
-            commandLineArgs = string.Format(commandLineArgs, inputTempFile, targetFile, videoArgs, GetAudioArgs(mediaSource));
+            commandLineArgs = string.Format(commandLineArgs, inputTempFile, targetFile, videoArgs, GetAudioArgs(mediaSource), durationParam);
 
             return commandLineArgs;
         }
