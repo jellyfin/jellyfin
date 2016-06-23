@@ -181,11 +181,9 @@ namespace MediaBrowser.Api
             return ToOptimizedResult(result);
         }
 
-        public async Task<object> Get(GetRemoteSearchImage request)
+        public Task<object> Get(GetRemoteSearchImage request)
         {
-            var result = GetRemoteImage(request).ConfigureAwait(false);
-
-            return result;
+            return GetRemoteImage(request);
         }
 
         public void Post(ApplySearchCriteria request)
