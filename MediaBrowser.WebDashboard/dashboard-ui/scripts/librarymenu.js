@@ -27,7 +27,7 @@
             html += '<button type="button" is="paper-icon-button-light" class=headerButton headerButtonRight headerSearchButton hide autoSize" onclick="Search.showSearchPanel();"><i class="md-icon">search</i></button>';
             html += '<div class="viewMenuSearch hide">';
             html += '<form class="viewMenuSearchForm">';
-            html += '<input type="text" data-role="none" data-type="search" class="headerSearchInput" autocomplete="off" spellcheck="off" />';
+            html += '<input type="text" class="headerSearchInput" autocomplete="off" />';
             html += '<button type="button" is="paper-icon-button-light" class="btnCloseSearch autoSize"><i class="md-icon">close</i></button>';
             html += '</form>';
             html += '</div>';

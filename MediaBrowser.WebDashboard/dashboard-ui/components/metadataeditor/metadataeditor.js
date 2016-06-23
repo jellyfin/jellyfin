@@ -311,7 +311,9 @@
                     switch (id) {
 
                         case 'identify':
-                            LibraryBrowser.identifyItem(currentItem.Id);
+                            LibraryBrowser.identifyItem(currentItem.Id).then(function () {
+                                reload(context, currentItem.Id);
+                            });
                             break;
                         case 'refresh':
                             showRefreshMenu(context, button);

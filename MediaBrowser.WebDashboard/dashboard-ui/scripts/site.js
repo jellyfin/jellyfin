@@ -3020,6 +3020,14 @@ var AppInfo = {};
         });
 
         defineRoute({
+            path: '/wizardcomponents.html',
+            dependencies: ['dashboardcss', 'emby-button', 'emby-input'],
+            autoFocus: false,
+            anonymous: true,
+            controller: 'scripts/wizardcomponents'
+        });
+
+        defineRoute({
             path: '/wizardfinish.html',
             dependencies: ['emby-button', 'dashboardcss'],
             autoFocus: false,

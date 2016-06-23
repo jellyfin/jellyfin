@@ -119,11 +119,17 @@ namespace MediaBrowser.Api.UserLibrary
 
             // Default list type = children
 
+            var folder = item as Folder;
+            if (folder == null)
+            {
+                folder = user == null ? _libraryManager.RootFolder : _libraryManager.GetUserRootFolder();
+            }
+
             if (!string.IsNullOrEmpty(request.Ids))
             {
                 request.Recursive = true;
                 var query = GetItemsQuery(request, user);
-                var result = await ((Folder)item).GetItems(query).ConfigureAwait(false);
+                var result = await folder.GetItems(query).ConfigureAwait(false);
 
                 if (string.IsNullOrWhiteSpace(request.SortBy))
                 {
@@ -138,22 +144,22 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (request.Recursive)
             {
-                return await ((Folder)item).GetItems(GetItemsQuery(request, user)).ConfigureAwait(false);
+                return await folder.GetItems(GetItemsQuery(request, user)).ConfigureAwait(false);
             }
 
             if (user == null)
             {
-                return await ((Folder)item).GetItems(GetItemsQuery(request, null)).ConfigureAwait(false);
+                return await folder.GetItems(GetItemsQuery(request, null)).ConfigureAwait(false);
             }
 
             var userRoot = item as UserRootFolder;
 
             if (userRoot == null)
             {
-                return await ((Folder)item).GetItems(GetItemsQuery(request, user)).ConfigureAwait(false);
+                return await folder.GetItems(GetItemsQuery(request, user)).ConfigureAwait(false);
             }
 
-            IEnumerable<BaseItem> items = ((Folder)item).GetChildren(user, true);
+            IEnumerable<BaseItem> items = folder.GetChildren(user, true);
 
             var itemsArray = items.ToArray();
 

@@ -60,16 +60,8 @@
     }
 
     function skip() {
-        var apiClient = ApiClient;
-
-        apiClient.getJSON(apiClient.getUrl('Startup/Info')).then(function (info) {
-
-            if (info.SupportsRunningAsService) {
-                Dashboard.navigate('wizardservice.html');
-
-            } else {
-                Dashboard.navigate('wizardagreement.html');
-            }
+        require(['scripts/wizardcontroller'], function (wizardcontroller) {
+            wizardcontroller.navigateToComponents();
         });
     }
 

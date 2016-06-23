@@ -53,13 +53,17 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                 {
                     ProbePath = customffProbePath,
                     EncoderPath = customffMpegPath,
-                    Version = "custom"
+                    Version = "external"
                 };
             }
 
             var downloadInfo = _ffmpegInstallInfo;
 
             var version = downloadInfo.Version;
+            if (string.Equals(version, "0", StringComparison.OrdinalIgnoreCase))
+            {
+                return new FFMpegInfo();
+            }
 
             if (string.Equals(version, "path", StringComparison.OrdinalIgnoreCase))
             {
@@ -173,18 +177,6 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             }
 
             return null;
-        }
-
-        private async void DownloadFFMpegInBackground(FFMpegInstallInfo downloadinfo, string directory)
-        {
-            try
-            {
-                await DownloadFFMpeg(downloadinfo, directory, new Progress<double>()).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error downloading ffmpeg", ex);
-            }
         }
 
         private async Task DownloadFFMpeg(FFMpegInstallInfo downloadinfo, string directory, IProgress<double> progress)

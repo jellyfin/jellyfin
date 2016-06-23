@@ -13,6 +13,20 @@
         Dashboard.hideLoadingMsg();
     }
 
+    function onSaveEncodingPathFailure(response) {
+
+        Dashboard.hideLoadingMsg();
+
+        var msg = '';
+
+        // This is a fallback that handles both 404 and 400 (no path entered)
+        msg = Globalize.translate('FFmpegSavePathNotFound');
+
+        require(['alert'], function (alert) {
+            alert(msg);
+        });
+    }
+
     function onSubmit() {
 
         var form = this;
@@ -24,13 +38,22 @@
 
                 config.DownMixAudioBoost = $('#txtDownMixAudioBoost', form).val();
                 config.TranscodingTempPath = $('#txtTranscodingTempPath', form).val();
-                config.EncoderAppPath = $('.txtEncoderPath', form).val();
                 config.EncodingThreadCount = $('#selectThreadCount', form).val();
                 config.HardwareAccelerationType = $('#selectVideoDecoder', form).val();
 
                 config.EnableThrottling = form.querySelector('#chkEnableThrottle').checked;
 
-                ApiClient.updateNamedConfiguration("encoding", config).then(Dashboard.processServerConfigurationUpdateResult);
+                ApiClient.updateNamedConfiguration("encoding", config).then(function () {
+
+                    ApiClient.ajax({
+                        url: ApiClient.getUrl('System/MediaEncoder/Path'),
+                        type: 'POST',
+                        data: {
+                            Path: form.querySelector('.txtEncoderPath').value
+                        }
+                    }).then(Dashboard.processServerConfigurationUpdateResult, onSaveEncodingPathFailure);
+
+                });
             });
         };
 
@@ -80,12 +103,11 @@
 
             require(['directorybrowser'], function (directoryBrowser) {
 
-                var picker = new directoryBrowser({
-                    includeFiles: true
-                });
+                var picker = new directoryBrowser();
 
                 picker.show({
 
+                    includeFiles: true,
                     callback: function (path) {
 
                         if (path) {

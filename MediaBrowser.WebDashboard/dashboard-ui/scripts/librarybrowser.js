@@ -981,9 +981,12 @@
 
             identifyItem: function (itemId) {
 
-                require(['components/itemidentifier/itemidentifier'], function (itemidentifier) {
+                return new Promise(function (resolve, reject) {
 
-                    itemidentifier.show(itemId);
+                    require(['components/itemidentifier/itemidentifier'], function (itemidentifier) {
+
+                        itemidentifier.show(itemId).then(resolve, reject);
+                    });
                 });
             },
 

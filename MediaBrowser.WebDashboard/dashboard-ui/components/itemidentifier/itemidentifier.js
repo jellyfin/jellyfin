@@ -2,7 +2,8 @@
 
     var currentItem;
     var currentItemType;
-    var currentDeferred;
+    var currentResolve;
+    var currentReject;
     var hasChanges = false;
     var currentSearchResult;
 
@@ -288,7 +289,8 @@
                 currentItemType = currentItem.Type;
 
                 var dlg = dialogHelper.createDialog({
-                    size: 'medium'
+                    size: 'medium',
+                    removeOnClose: true
                 });
 
                 dlg.classList.add('ui-body-b');
@@ -336,9 +338,12 @@
 
     function onDialogClosed() {
 
-        $(this).remove();
         loading.hide();
-        currentDeferred.resolveWith(null, [hasChanges]);
+        if (hasChanges) {
+            currentResolve();
+        } else {
+            currentReject();
+        }
     }
 
     function showEditorFindNew(itemName, itemYear, itemType, resolveFunc) {
@@ -417,13 +422,14 @@
     return {
         show: function (itemId) {
 
-            var deferred = jQuery.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            currentDeferred = deferred;
-            hasChanges = false;
+                currentResolve = resolve;
+                currentReject = reject;
+                hasChanges = false;
 
-            showEditor(itemId);
-            return deferred.promise();
+                showEditor(itemId);
+            });
         },
 
         showFindNew: function (itemName, itemYear, itemType) {

@@ -38,6 +38,12 @@ namespace MediaBrowser.Api
     {
     }
 
+    [Route("/Items/RemoteSearch/Trailer", "POST")]
+    [Authenticated]
+    public class GetTrailerRemoteSearchResults : RemoteSearchQuery<TrailerInfo>, IReturn<List<RemoteSearchResult>>
+    {
+    }
+
     [Route("/Items/RemoteSearch/AdultVideo", "POST")]
     [Authenticated]
     public class GetAdultVideoRemoteSearchResults : RemoteSearchQuery<ItemLookupInfo>, IReturn<List<RemoteSearchResult>>
@@ -130,6 +136,13 @@ namespace MediaBrowser.Api
             var infos = _providerManager.GetExternalIdInfos(item).ToList();
 
             return ToOptimizedResult(infos);
+        }
+
+        public async Task<object> Post(GetTrailerRemoteSearchResults request)
+        {
+            var result = await _providerManager.GetRemoteSearchResults<Trailer, TrailerInfo>(request, CancellationToken.None).ConfigureAwait(false);
+
+            return ToOptimizedResult(result);
         }
 
         public async Task<object> Post(GetMovieRemoteSearchResults request)

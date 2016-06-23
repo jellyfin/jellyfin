@@ -12,12 +12,13 @@
     function searchMenu() {
 
         var self = this;
+        var headerSearchInput = document.querySelector('.headerSearchInput');
 
         self.show = function () {
 
             require(['css!css/search.css'], function () {
 
-                document.querySelector('.headerSearchInput').value = '';
+                headerSearchInput.value = '';
 
                 document.querySelector('.btnCloseSearch').classList.add('hide');
                 var elem = document.querySelector('.viewMenuSearch');
@@ -25,7 +26,7 @@
                 elem.classList.remove('hide');
 
                 var onFinish = function() {
-                    document.querySelector('.headerSearchInput').focus();
+                    headerSearchInput.focus();
                     document.querySelector('.btnCloseSearch').classList.remove('hide');
                 };
 
@@ -62,24 +63,8 @@
             Events.trigger(self, 'closed');
         });
 
-        document.querySelector('.headerSearchInput').addEventListener('keyup', function (e) {
-
-            // Down key
-            if (e.keyCode == 40) {
-
-                e.preventDefault();
-                return false;
-
-            } else {
-
-                Events.trigger(self, 'change', [this.value]);
-            }
-        });
-
-        document.querySelector('.headerSearchInput').addEventListener('search', function (e) {
-            if (!this.value) {
-                Events.trigger(self, 'change', ['']);
-            }
+        headerSearchInput.addEventListener('input', function (e) {
+            Events.trigger(self, 'change', [this.value]);
         });
     }
 
