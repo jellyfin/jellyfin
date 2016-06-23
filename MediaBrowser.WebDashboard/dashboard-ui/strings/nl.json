@@ -2372,5 +2372,14 @@
     "LabelBindToLocalNetworkAddressHelp": "Optioneel. Overrule het lokale IP-adres om aan de http-server te binden. Indien leeg gelaten, zal de server binden aan alle beschikbare adressen. Het veranderen van deze waarde vereist herstarten van Emby Server.",
     "TitleHostingSettings": "Hosting Instellingen",
     "SettingsWarning": "Het veranderen van deze waarden kunnen instabiliteit of connectiviteit storingen veroorzaken. Als u problemen ondervindt, raden wij aan de veranderingen terug te zetten naar standaard.",
-    "MapChannels": "Map Kanalen"
+    "MapChannels": "Map Kanalen",
+    "LabelffmpegPath": "FFmpeg path:",
+    "LabelffmpegPathHelp": "The path to your downloaded FFmpeg application, or folder containing FFmpeg.",
+    "SetupFFmpeg": "Setup FFmpeg",
+    "SetupFFmpegHelp": "FFmpeg is a required component and needs to be configured.",
+    "EnterFFmpegLocation": "Enter FFmpeg path",
+    "DownloadFFmpeg": "Download FFmpeg",
+    "FFmpegSuggestedDownload": "Suggested download: {0}",
+    "UnzipFFmpegFile": "Unzip the downloaded file to a folder of your choice.",
+    "FFmpegSavePathNotFound": "We're unable to locaate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again."
 }

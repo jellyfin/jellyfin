@@ -2351,7 +2351,7 @@
     "LabelTitle": "T\u00edtulo:",
     "LabelOriginalTitle": "T\u00edtulo original:",
     "LabelSortTitle": "T\u00edtulo para ordena\u00e7\u00e3o:",
-    "OptionConvertRecordingPreserveAudio": "Preservar o \u00e1udio original ao converter grava\u00e7\u00f5es",
+    "OptionConvertRecordingPreserveAudio": "Preservar o \u00e1udio original ao converter grava\u00e7\u00f5es (quando poss\u00edvel)",
     "OptionConvertRecordingPreserveAudioHelp": "Isto permitir\u00e1 um \u00e1udio melhor mas pode necessitar transcodifica\u00e7\u00e3o durante a reprodu\u00e7\u00e3o em alguns dispositivos.",
     "CreateCollectionHelp": "Colet\u00e2neas permitem que voc\u00ea crie grupos personalizados de filmes e outros conte\u00fados da biblioteca.",
     "AddItemToCollectionHelp": "Adicione itens \u00e0s colet\u00e2neas atrav\u00e9s da busca deles e usando o bot\u00e3o direito ou clique no menu para os adicionar \u00e0 uma colet\u00e2nea.",
@@ -2372,5 +2372,14 @@
     "LabelBindToLocalNetworkAddressHelp": "Opcional. Sobrepor o endere\u00e7o de IP local para vincular o servidor http. Se deixado em branco, o servidor ser\u00e1 vinculado a todos os endere\u00e7os dispon\u00edveis. Para alterar este valor \u00e9 necess\u00e1rio reiniciar o Servidor Emby.",
     "TitleHostingSettings": "Ajustes de Hospedagem",
     "SettingsWarning": "Alterar estes valores pode causar instabilidade ou falhas de conectividade. Se tiver algum problema, recomendamos volt\u00e1-los ao padr\u00e3o.",
-    "MapChannels": "Mapear Canais"
+    "MapChannels": "Mapear Canais",
+    "LabelffmpegPath": "Caminho do FFMpeg:",
+    "LabelffmpegPathHelp": "O caminho para a aplica\u00e7\u00e3o ffmpeg, ou pasta contendo ffmpeg.",
+    "SetupFFmpeg": "Setup FFmpeg",
+    "SetupFFmpegHelp": "FFmpeg is a required component and needs to be configured.",
+    "EnterFFmpegLocation": "Enter FFmpeg path",
+    "DownloadFFmpeg": "Download FFmpeg",
+    "FFmpegSuggestedDownload": "Suggested download: {0}",
+    "UnzipFFmpegFile": "Unzip the downloaded file to a folder of your choice.",
+    "FFmpegSavePathNotFound": "We're unable to locaate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again."
 }
