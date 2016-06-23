@@ -72,6 +72,26 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
+        public void AddOrUpdate(TimerInfo item, bool resetTimer)
+        {
+            if (resetTimer)
+            {
+                AddOrUpdate(item);
+                return;
+            }
+
+            var list = GetAll().ToList();
+
+            if (!list.Any(i => EqualityComparer(i, item)))
+            {
+                base.Add(item);
+            }
+            else
+            {
+                base.Update(item);
+            }
+        }
+
         public override void Add(TimerInfo item)
         {
             if (string.IsNullOrWhiteSpace(item.Id))
