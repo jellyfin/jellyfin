@@ -93,7 +93,7 @@ namespace MediaBrowser.Providers.Music
                         {
                             if (string.Equals(child.Name, "name", StringComparison.OrdinalIgnoreCase))
                             {
-                                name = node.InnerText;
+                                name = child.InnerText;
                                 break;
                             }
                         }
