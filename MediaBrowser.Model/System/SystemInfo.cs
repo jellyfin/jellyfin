@@ -154,6 +154,8 @@ namespace MediaBrowser.Model.System
 
         public bool HasExternalEncoder { get; set; }
 
+        public Architecture SystemArchitecture { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemInfo" /> class.
         /// </summary>

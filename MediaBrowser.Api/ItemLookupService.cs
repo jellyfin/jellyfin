@@ -38,6 +38,12 @@ namespace MediaBrowser.Api
     {
     }
 
+    [Route("/Items/RemoteSearch/Trailer", "POST")]
+    [Authenticated]
+    public class GetTrailerRemoteSearchResults : RemoteSearchQuery<TrailerInfo>, IReturn<List<RemoteSearchResult>>
+    {
+    }
+
     [Route("/Items/RemoteSearch/AdultVideo", "POST")]
     [Authenticated]
     public class GetAdultVideoRemoteSearchResults : RemoteSearchQuery<ItemLookupInfo>, IReturn<List<RemoteSearchResult>>
@@ -132,6 +138,13 @@ namespace MediaBrowser.Api
             return ToOptimizedResult(infos);
         }
 
+        public async Task<object> Post(GetTrailerRemoteSearchResults request)
+        {
+            var result = await _providerManager.GetRemoteSearchResults<Trailer, TrailerInfo>(request, CancellationToken.None).ConfigureAwait(false);
+
+            return ToOptimizedResult(result);
+        }
+
         public async Task<object> Post(GetMovieRemoteSearchResults request)
         {
             var result = await _providerManager.GetRemoteSearchResults<Movie, MovieInfo>(request, CancellationToken.None).ConfigureAwait(false);
@@ -181,11 +194,9 @@ namespace MediaBrowser.Api
             return ToOptimizedResult(result);
         }
 
-        public async Task<object> Get(GetRemoteSearchImage request)
+        public Task<object> Get(GetRemoteSearchImage request)
         {
-            var result = GetRemoteImage(request).ConfigureAwait(false);
-
-            return result;
+            return GetRemoteImage(request);
         }
 
         public void Post(ApplySearchCriteria request)
