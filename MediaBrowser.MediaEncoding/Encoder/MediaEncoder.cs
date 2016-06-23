@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
@@ -118,6 +119,35 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
+        public async Task UpdateEncoderPath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
+            if (!File.Exists(path) && !Directory.Exists(path))
+            {
+                throw new ResourceNotFoundException();
+            }
+
+            var newPaths = GetEncoderPaths(path);
+            if (string.IsNullOrWhiteSpace(newPaths.Item1))
+            {
+                throw new ResourceNotFoundException("ffmpeg not found");
+            }
+            if (string.IsNullOrWhiteSpace(newPaths.Item2))
+            {
+                throw new ResourceNotFoundException("ffprobe not found");
+            }
+
+            var config = GetEncodingOptions();
+            config.EncoderAppPath = path;
+            ConfigurationManager.SaveConfiguration("encoding", config);
+
+            Init();
+        }
+
         private void ConfigureEncoderPaths()
         {
             if (_hasExternalEncoder)
@@ -131,46 +161,60 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 appPath = Path.Combine(ConfigurationManager.ApplicationPaths.ProgramDataPath, "ffmpeg");
             }
+            var newPaths = GetEncoderPaths(appPath);
 
-            if (!string.IsNullOrWhiteSpace(appPath))
+            if (!string.IsNullOrWhiteSpace(newPaths.Item1) && !string.IsNullOrWhiteSpace(newPaths.Item2))
             {
-                if (Directory.Exists(appPath))
-                {
-                    SetPathsFromDirectory(appPath);
-                }
-
-                else if (File.Exists(appPath))
-                {
-                    FFMpegPath = appPath;
-
-                    SetProbePathFromEncoderPath(appPath);
-                }
+                FFMpegPath = newPaths.Item1;
+                FFProbePath = newPaths.Item2;
             }
 
             LogPaths();
         }
 
-        private void SetPathsFromDirectory(string path)
+        private Tuple<string, string> GetEncoderPaths(string configuredPath)
+        {
+            var appPath = configuredPath;
+
+            if (!string.IsNullOrWhiteSpace(appPath))
+            {
+                if (Directory.Exists(appPath))
+                {
+                    return GetPathsFromDirectory(appPath);
+                }
+
+                if (File.Exists(appPath))
+                {
+                    return new Tuple<string, string>(appPath, GetProbePathFromEncoderPath(appPath));
+                }
+            }
+
+            return new Tuple<string, string>(null, null);
+        }
+
+        private Tuple<string,string> GetPathsFromDirectory(string path)
         {
             // Since we can't predict the file extension, first try directly within the folder 
             // If that doesn't pan out, then do a recursive search
             var files = Directory.GetFiles(path);
 
-            FFMpegPath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffmpeg", StringComparison.OrdinalIgnoreCase));
-            FFProbePath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffprobe", StringComparison.OrdinalIgnoreCase));
+            var ffmpegPath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffmpeg", StringComparison.OrdinalIgnoreCase));
+            var ffprobePath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffprobe", StringComparison.OrdinalIgnoreCase));
 
-            if (string.IsNullOrWhiteSpace(FFMpegPath) || !File.Exists(FFMpegPath))
+            if (string.IsNullOrWhiteSpace(ffmpegPath) || !File.Exists(ffmpegPath))
             {
                 files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
 
-                FFMpegPath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffmpeg", StringComparison.OrdinalIgnoreCase));
-                SetProbePathFromEncoderPath(FFMpegPath);
+                ffmpegPath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffmpeg", StringComparison.OrdinalIgnoreCase));
+                ffprobePath = GetProbePathFromEncoderPath(ffmpegPath);
             }
+
+            return new Tuple<string, string>(ffmpegPath, ffprobePath);
         }
 
-        private void SetProbePathFromEncoderPath(string appPath)
+        private string GetProbePathFromEncoderPath(string appPath)
         {
-            FFProbePath = Directory.GetFiles(Path.GetDirectoryName(appPath))
+            return Directory.GetFiles(Path.GetDirectoryName(appPath))
                 .FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffprobe", StringComparison.OrdinalIgnoreCase));
         }
 

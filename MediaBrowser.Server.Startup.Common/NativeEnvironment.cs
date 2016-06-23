@@ -1,4 +1,5 @@
-﻿
+﻿using MediaBrowser.Model.System;
+
 namespace MediaBrowser.Server.Startup.Common
 {
     public class NativeEnvironment
@@ -14,12 +15,5 @@ namespace MediaBrowser.Server.Startup.Common
         Osx = 1,
         Bsd = 2,
         Linux = 3
-    }
-
-    public enum Architecture
-    {
-        X86 = 0,
-        X86_X64 = 1,
-        Arm = 2
     }
 }
