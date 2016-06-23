@@ -10,7 +10,7 @@ env:
     - secure: vIs86+z7s1QwihkHtLBRQzlmJRSIWIadq3SlDdZHS4HOivH7fNV0d4hm8QnZYZ9X8yvSvxFCzEFdLuX1TpU0H3oy5wgYky7DnfJtsEhuOfW8dobHHZeCNi/t2FQAXpobqpRwojC3A+1b1lNrY1XNpYRz7aEialO4Yr8e1SQSLex5zw/pqm7g9Vz6PnQwobDQcGXKc6ZWc84+DqOo9qfkSlnEJC/1vQxHYpUa172UnnAnmHJ7gZKdhf9aLWJSZcSpPcoKEnvslRFmeDyRMNRDWVzcg2vHnV+tc1aYzp1wsrRW3P+oqwYlvGlxo+5U92QLXKIcKZhGblVWxe8BtXgiVzgS1sz5D11vKs61Xe46onbguG/XK3UxX9bPRK5uklkC5fwAY2hhvOTGXqimTb2YrlyEWO3BCKGBk6Is3KGyCe7c2nNEmXPUSun9X1JLGRPivJb9iBR4/WSEFvibYHl6/gIke9LdXPOCHuJ3+Iu14lCz+pwi8ADIWVuGpDIxFcorG8a3BCoxQo5VouUbSe0mcNttAvSzBNxhljaaBuFs56DLDpLRr0sGhqvfA1JzdCyzVyrk4WECfZw26pAnYCyTczVXmu5msVdKnjPJKtDqWazvIhHk2G1mk8CKb14lrN58u/Kh6PQ3miJ+61c1stBWhRDlp2QffOkBJiOATKHF+AA=
 node_js: stable
 addons:
-  firefox: latest
+  firefox: '46.0'
   apt:
     sources:
       - google-chrome

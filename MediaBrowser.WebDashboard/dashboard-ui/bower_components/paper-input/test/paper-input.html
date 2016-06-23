@@ -251,6 +251,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         MockInteractions.blur(input.inputElement);
         assert(!input.focused, 'input is blurred');
       });
+
+      test('focusing then bluring with shift-tab removes the focused attribute correctly', function() {
+        MockInteractions.focus(input);
+        assert(input.focused, 'input is focused');
+
+        // Fake a shift-tab induced blur by forcing the flag.
+        input._shiftTabPressed = true;
+        MockInteractions.blur(input.inputElement);
+        assert(!input.focused, 'input is blurred');
+      });
     });
 
     suite('focused styling (integration test)', function() {

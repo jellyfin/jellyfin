@@ -569,8 +569,9 @@ Apply `circle` class to make the rippling effect within a circle.
         } else {
           this.keyEventTarget = this.parentNode;
         }
-        this.listen(this.keyEventTarget, 'up', 'uiUpAction');
-        this.listen(this.keyEventTarget, 'down', 'uiDownAction');
+        var keyEventTarget = /** @type {!EventTarget} */ (this.keyEventTarget);
+        this.listen(keyEventTarget, 'up', 'uiUpAction');
+        this.listen(keyEventTarget, 'down', 'uiDownAction');
       },
 
       detached: function() {

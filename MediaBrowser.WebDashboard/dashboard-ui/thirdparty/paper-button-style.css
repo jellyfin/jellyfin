@@ -328,15 +328,15 @@ paper-input label, paper-textarea label {
     color: #ccc;
 }
 
-.ui-body-a .inputLabel {
+.ui-body-a .inputLabel, .ui-body-a .textareaLabel {
     color: #555;
 }
 
-    .ui-body-a .inputLabel.focused:not(.blank) {
+    .ui-body-a .inputLabel.focused:not(.blank), .ui-body-a .textareaLabel.focused:not(.blank) {
         color: green;
     }
 
-.ui-body-b .selectLabelUnfocused, .ui-body-b .inputLabel {
+.ui-body-b .selectLabelUnfocused, .ui-body-b .inputLabel, .ui-body-b .textareaLabel {
     color: #ccc;
 }
 
