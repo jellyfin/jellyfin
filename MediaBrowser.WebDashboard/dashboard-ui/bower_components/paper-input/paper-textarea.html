@@ -39,11 +39,15 @@ style this element.
       :host {
         display: block;
       }
+
+      :host([hidden]) {
+        display: none !important;
+      }
     </style>
 
     <paper-input-container no-label-float$="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
 
-      <label hidden$="[[!label]]">[[label]]</label>
+      <label hidden$="[[!label]]" aria-hidden="true">[[label]]</label>
 
       <iron-autogrow-textarea id="input" class="paper-input-input"
         bind-value="{{value}}"

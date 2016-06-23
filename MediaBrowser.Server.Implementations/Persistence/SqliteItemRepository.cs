@@ -127,7 +127,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             connection.RunQueries(new[]
             {
-                "pragma temp_store = memory"
+                "pragma temp_store = memory",
+                "PRAGMA main.locking_mode=EXCLUSIVE"
 
             }, Logger);
 

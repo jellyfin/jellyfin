@@ -339,7 +339,14 @@ namespace MediaBrowser.Providers.Music
             {
                 var urls = await RefreshMzbUrls().ConfigureAwait(false);
 
-                _chosenUrl = urls[new Random().Next(0, urls.Count - 1)];
+                if (urls.Count > 1)
+                {
+                    _chosenUrl = urls[new Random().Next(0, urls.Count)];
+                }
+                else
+                {
+                    _chosenUrl = urls[0];
+                }
             }
 
             return _chosenUrl;
@@ -361,6 +368,7 @@ namespace MediaBrowser.Providers.Music
                 {
                     list = _json.DeserializeFromStream<List<MbzUrl>>(stream);
                 }
+                _lastMbzUrlQueryTicks = DateTime.UtcNow.Ticks;
             }
             catch (Exception ex)
             {

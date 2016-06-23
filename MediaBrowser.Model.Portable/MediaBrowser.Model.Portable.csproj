@@ -1136,6 +1136,9 @@
     <Compile Include="..\MediaBrowser.Model\Sync\SyncTarget.cs">
       <Link>Sync\SyncTarget.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\System\Architecture.cs">
+      <Link>System\Architecture.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\System\LogFile.cs">
       <Link>System\LogFile.cs</Link>
     </Compile>

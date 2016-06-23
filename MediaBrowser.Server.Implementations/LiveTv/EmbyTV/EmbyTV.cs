@@ -461,7 +461,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             return CreateTimer(info, cancellationToken);
         }
 
-        public  Task CreateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
+        public Task CreateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
         {
             return CreateSeriesTimer(info, cancellationToken);
         }
@@ -1011,7 +1011,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     Action onStarted = () =>
                     {
                         timer.Status = RecordingStatus.InProgress;
-                        _timerProvider.AddOrUpdate(timer);
+                        _timerProvider.AddOrUpdate(timer, false);
 
                         result.Item3.Release();
                         isResourceOpen = false;
@@ -1060,7 +1060,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             if (recordingStatus == RecordingStatus.Completed)
             {
                 timer.Status = RecordingStatus.Completed;
-                _timerProvider.AddOrUpdate(timer);
+                _timerProvider.AddOrUpdate(timer, false);
 
                 OnSuccessfulRecording(info.IsSeries, recordPath);
                 _timerProvider.Delete(timer);

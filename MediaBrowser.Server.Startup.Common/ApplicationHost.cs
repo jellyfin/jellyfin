@@ -647,15 +647,20 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task.</returns>
         private async Task RegisterMediaEncoder(IProgress<double> progress)
         {
+            string encoderPath = null;
+            string probePath = null;
+
             var info = await new FFMpegLoader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager, NativeApp.Environment, NativeApp.GetFfmpegInstallInfo())
                 .GetFFMpegInfo(NativeApp.Environment, _startupOptions, progress).ConfigureAwait(false);
 
-            _hasExternalEncoder = string.Equals(info.Version, "custom", StringComparison.OrdinalIgnoreCase);
+            encoderPath = info.EncoderPath;
+            probePath = info.ProbePath;
+            _hasExternalEncoder = string.Equals(info.Version, "external", StringComparison.OrdinalIgnoreCase);
 
             var mediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"),
                 JsonSerializer,
-                info.EncoderPath,
-                info.ProbePath,
+                encoderPath,
+                probePath,
                 _hasExternalEncoder,
                 ServerConfigurationManager,
                 FileSystemManager,
@@ -1145,7 +1150,8 @@ namespace MediaBrowser.Server.Startup.Common
                 ServerName = FriendlyName,
                 LocalAddress = localAddress,
                 SupportsLibraryMonitor = SupportsLibraryMonitor,
-                HasExternalEncoder = _hasExternalEncoder
+                HasExternalEncoder = _hasExternalEncoder,
+                SystemArchitecture = NativeApp.Environment.SystemArchitecture
             };
         }
 

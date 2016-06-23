@@ -384,8 +384,8 @@
             $('#additionalPartsCollapsible', page).addClass('hide');
         }
 
-        $('#themeSongsCollapsible', page).hide();
-        $('#themeVideosCollapsible', page).hide();
+        page.querySelector('#themeSongsCollapsible').classList.add('hide');
+        page.querySelector('#themeVideosCollapsible').classList.add('hide');
 
         if (item.Type == "MusicAlbum") {
             renderMusicVideos(page, item, user);
@@ -676,8 +676,8 @@
         }
 
         var shape = item.Type == "MusicAlbum" || item.Type == "MusicArtist" ? getSquareShape() : getPortraitShape();
-        var screenWidth = $(window).width();
-        var screenHeight = $(window).height();
+        var screenWidth = window.innerWidth;
+        var screenHeight = window.innerHeight;
 
         var options = {
             userId: Dashboard.getCurrentUserId(),
@@ -734,18 +734,12 @@
         });
     }
 
-    $.fn.lazyChildren = function () {
-
-        for (var i = 0, length = this.length; i < length; i++) {
-            ImageLoader.lazyChildren(this[i]);
-        }
-        return this;
-    };
-
     function renderSeriesAirTime(page, item, isStatic) {
 
+        var seriesAirTime = page.querySelector('#seriesAirTime');
+
         if (item.Type != "Series") {
-            $('#seriesAirTime', page).hide();
+            seriesAirTime.classList.add('hide');
             return;
         }
 
@@ -774,13 +768,16 @@
         if (html) {
             html = (item.Status == 'Ended' ? 'Aired ' : 'Airs ') + html;
 
-            $('#seriesAirTime', page).show().html(html);
+            seriesAirTime.innerHTML = html;
+            seriesAirTime.classList.remove('hide');
         } else {
-            $('#seriesAirTime', page).hide();
+            seriesAirTime.classList.add('hide');
         }
     }
 
     function renderTags(page, item) {
+
+        var itemTags = page.querySelector('.itemTags');
 
         if (item.Tags && item.Tags.length) {
 
@@ -792,16 +789,17 @@
 
             }
 
-            $('.itemTags', page).show().html(html);
+            itemTags.innerHTML = html;
+            itemTags.classList.remove('hide');
 
         } else {
-            $('.itemTags', page).hide();
+            itemTags.classList.add('hide');
         }
     }
 
     function getEpisodesFunction(seriesId, query) {
 
-        query = $.extend({}, query);
+        query = Object.assign({}, query);
 
         return function (index, limit, fields) {
 
@@ -817,7 +815,7 @@
 
     function getAlbumSongsFunction(query) {
 
-        query = $.extend({}, query);
+        query = Object.assign({}, query);
 
         return function (index, limit, fields) {
 
@@ -1138,7 +1136,7 @@
     function renderCriticReviews(page, item, limit) {
 
         if (item.Type != "Movie" && item.Type != "Trailer" && item.Type != "MusicVideo") {
-            $('#criticReviewsCollapsible', page).hide();
+            page.querySelector('#criticReviewsCollapsible').classList.add('hide');
             return;
         }
 
@@ -1151,10 +1149,10 @@
         ApiClient.getCriticReviews(item.Id, options).then(function (result) {
 
             if (result.TotalRecordCount || item.CriticRatingSummary || item.AwardSummary) {
-                $('#criticReviewsCollapsible', page).show();
+                page.querySelector('#criticReviewsCollapsible').classList.remove('hide');
                 renderCriticReviewsContent(page, result, limit);
             } else {
-                $('#criticReviewsCollapsible', page).hide();
+                page.querySelector('#criticReviewsCollapsible').classList.add('hide');
             }
         });
     }
@@ -1267,7 +1265,7 @@
 
         if (items.length) {
 
-            $('#themeSongsCollapsible', page).show();
+            page.querySelector('#themeSongsCollapsible').classList.remove('hide');
 
             var html = LibraryBrowser.getListViewHtml({
                 items: items,
@@ -1276,7 +1274,7 @@
 
             page.querySelector('#themeSongsContent').innerHTML = html;
         } else {
-            $('#themeSongsCollapsible', page).hide();
+            page.querySelector('#themeSongsCollapsible').classList.add('hide');
         }
     }
 
@@ -1284,11 +1282,13 @@
 
         if (items.length) {
 
-            $('#themeVideosCollapsible', page).show();
+            page.querySelector('#themeVideosCollapsible').classList.remove('hide');
 
-            $('#themeVideosContent', page).html(getVideosHtml(items, user)).lazyChildren();
+            var themeVideosContent = page.querySelector('#themeVideosContent');
+            themeVideosContent.innerHTML = getVideosHtml(items, user);
+            ImageLoader.lazyChildren(themeVideosContent);
         } else {
-            $('#themeVideosCollapsible', page).hide();
+            page.querySelector('#themeVideosCollapsible').classList.add('hide');
         }
     }
 
@@ -1306,11 +1306,14 @@
         }).then(function (result) {
             if (result.Items.length) {
 
-                $('#musicVideosCollapsible', page).show();
+                page.querySelector('#musicVideosCollapsible').classList.remove('hide');
 
-                $('#musicVideosContent', page).html(getVideosHtml(result.Items, user)).lazyChildren();
+                var musicVideosContent = page.querySelector('.musicVideosContent');
+                musicVideosContent.innerHTML = getVideosHtml(result.Items, user);
+                ImageLoader.lazyChildren(musicVideosContent);
+
             } else {
-                $('#musicVideosCollapsible', page).hide();
+                page.querySelector('#musicVideosCollapsible').classList.add('hide');
             }
         });
 
@@ -1322,11 +1325,14 @@
 
             if (result.Items.length) {
 
-                $('#additionalPartsCollapsible', page).show();
+                page.querySelector('#additionalPartsCollapsible').classList.remove('hide');
 
-                $('#additionalPartsContent', page).html(getVideosHtml(result.Items, user)).lazyChildren();
+                var additionalPartsContent = page.querySelector('#additionalPartsContent');
+                additionalPartsContent.innerHTML = getVideosHtml(result.Items, user);
+                ImageLoader.lazyChildren(additionalPartsContent);
+
             } else {
-                $('#additionalPartsCollapsible', page).hide();
+                page.querySelector('#additionalPartsCollapsible').classList.add('hide');
             }
         });
     }

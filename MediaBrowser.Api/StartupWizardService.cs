@@ -11,6 +11,7 @@ using ServiceStack;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.MediaEncoding;
 
 namespace MediaBrowser.Api
 {
@@ -52,14 +53,16 @@ namespace MediaBrowser.Api
         private readonly IUserManager _userManager;
         private readonly IConnectManager _connectManager;
         private readonly ILiveTvManager _liveTvManager;
+        private readonly IMediaEncoder _mediaEncoder;
 
-        public StartupWizardService(IServerConfigurationManager config, IServerApplicationHost appHost, IUserManager userManager, IConnectManager connectManager, ILiveTvManager liveTvManager)
+        public StartupWizardService(IServerConfigurationManager config, IServerApplicationHost appHost, IUserManager userManager, IConnectManager connectManager, ILiveTvManager liveTvManager, IMediaEncoder mediaEncoder)
         {
             _config = config;
             _appHost = appHost;
             _userManager = userManager;
             _connectManager = connectManager;
             _liveTvManager = liveTvManager;
+            _mediaEncoder = mediaEncoder;
         }
 
         public void Post(ReportStartupWizardComplete request)
@@ -75,7 +78,8 @@ namespace MediaBrowser.Api
 
             return new StartupInfo
             {
-                SupportsRunningAsService = info.SupportsRunningAsService
+                SupportsRunningAsService = info.SupportsRunningAsService,
+                HasMediaEncoder = !string.IsNullOrWhiteSpace(_mediaEncoder.EncoderPath)
             };
         }
 
@@ -231,6 +235,7 @@ namespace MediaBrowser.Api
     public class StartupInfo
     {
         public bool SupportsRunningAsService { get; set; }
+        public bool HasMediaEncoder { get; set; }
     }
 
     public class StartupUser

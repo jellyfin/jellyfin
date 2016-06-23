@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'events', 'scrollStyles'], function (libraryBrowser, events) {
+﻿define(['libraryBrowser', 'events', 'scrollStyles', 'scripts/librarymenu'], function (libraryBrowser, events) {
 
     var searchHintTimeout;
 
@@ -233,7 +233,6 @@
         require(['searchmenu'], function (searchmenu) {
             events.on(window.SearchMenu, 'closed', closeSearchResults);
             events.on(window.SearchMenu, 'change', function (e, value) {
-
                 onHeaderSearchChange(value);
             });
         });
@@ -259,10 +258,7 @@
 
     document.addEventListener('viewbeforehide', closeSearchResults);
 
-    document.addEventListener('headercreated', function () {
-
-        bindSearchEvents();
-    });
+    bindSearchEvents();
 
     // dismiss search UI if user clicks a play button on a search result
     events.on(MediaController, 'beforeplaybackstart', closeSearchResults);

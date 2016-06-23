@@ -41,6 +41,10 @@ Custom property | Description | Default
         @apply(--paper-input-char-counter);
       }
 
+      :host([hidden]) {
+        display: none !important;
+      }
+
       :host-context([dir="rtl"]) {
         float: left;
       }

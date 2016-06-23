@@ -1,0 +1,54 @@
+[is="emby-textarea"] {
+    display: block;
+    margin: 0;
+    margin-bottom: 0 !important;
+    background: none;
+    border: 1px solid rgb(221, 221, 221);
+    border-width: 0 0 1px 0;
+    /* Prefixed box-sizing rules necessary for older browsers */
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    /* Remove select styling */
+    /* Font size must the 16px or larger to prevent iOS page zoom on focus */
+    font-size: inherit;
+    /* General select styles: change as needed */
+    font-family: inherit;
+    font-weight: inherit;
+    color: inherit;
+    padding: .35em 0 .3em 0;
+    cursor: pointer;
+    outline: none !important;
+    width: 100%;
+    background-color: transparent;
+    border-radius: 0;
+}
+
+.inputContainer {
+    margin-bottom: 2em;
+}
+
+.textareaLabel {
+    display: inline-block;
+    transition: all .2s ease-out;
+}
+
+.textareaLabel.focused:not(.blank) {
+    color: #52B54B;
+}
+
+.emby-textarea-selectionbar {
+    height: 2px;
+    transform: scale(.01, 1);
+    transition: transform .25s ease-out;
+    position: relative;
+    top: -1px;
+    margin-bottom: .5em;
+    -webkit-transform-origin: center center;
+    transform-origin: center center;
+}
+
+[is="emby-textarea"]:focus + .emby-textarea-selectionbar {
+    background-color: #52B54B;
+    transform: none;
+}
