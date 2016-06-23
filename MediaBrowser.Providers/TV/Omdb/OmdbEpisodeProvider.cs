@@ -42,7 +42,7 @@ namespace MediaBrowser.Providers.TV
 
         public async Task<MetadataResult<Episode>> GetMetadata(EpisodeInfo info, CancellationToken cancellationToken)
         {
-            var result = new MetadataResult<Episode>
+            var result = new MetadataResult<Episode>()
             {
                 Item = new Episode()
             };
@@ -53,28 +53,14 @@ namespace MediaBrowser.Providers.TV
                 return result;
             }
 
-            var imdbId = info.GetProviderId(MetadataProviders.Imdb);
-            if (string.IsNullOrWhiteSpace(imdbId))
+            if (OmdbProvider.IsValidSeries(info.SeriesProviderIds) && info.IndexNumber.HasValue && info.ParentIndexNumber.HasValue)
             {
-                imdbId = await GetEpisodeImdbId(info, cancellationToken).ConfigureAwait(false);
-            }
+                var seriesImdbId = info.SeriesProviderIds[MetadataProviders.Imdb.ToString()];
 
-            if (!string.IsNullOrEmpty(imdbId))
-            {
-                result.Item.SetProviderId(MetadataProviders.Imdb, imdbId);
-                result.HasMetadata = true;
-
-                await new OmdbProvider(_jsonSerializer, _httpClient, _fileSystem, _configurationManager).Fetch(result.Item, imdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                result.HasMetadata = await new OmdbProvider(_jsonSerializer, _httpClient, _fileSystem, _configurationManager).FetchEpisodeData(result.Item, info.IndexNumber.Value, info.ParentIndexNumber.Value, seriesImdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
             }
 
             return result;
-        }
-
-        private async Task<string> GetEpisodeImdbId(EpisodeInfo info, CancellationToken cancellationToken)
-        {
-            var results = await GetSearchResults(info, cancellationToken).ConfigureAwait(false);
-            var first = results.FirstOrDefault();
-            return first == null ? null : first.GetProviderId(MetadataProviders.Imdb);
         }
 
         public int Order
