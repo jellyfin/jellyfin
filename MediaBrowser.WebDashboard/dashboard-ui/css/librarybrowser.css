@@ -210,6 +210,10 @@
     font-weight: normal !important;
 }
 
+.itemOverview {
+    white-space: pre-wrap;
+}
+
 a.itemTag:hover {
     background-color: #2489ce;
 }
