@@ -336,18 +336,19 @@ namespace MediaBrowser.Server.Implementations.Persistence
             using (var cmd = _connection.CreateCommand())
             {
                 var index = 0;
-                var excludeIds = new List<string>();
+                var userdataKeys = new List<string>();
                 var builder = new StringBuilder();
                 foreach (var key in keys)
                 {
                     var paramName = "@Key" + index;
-                    excludeIds.Add("Key =" + paramName);
+                    userdataKeys.Add("Key =" + paramName);
                     cmd.Parameters.Add(cmd, paramName, DbType.String).Value = key;
                     builder.Append(" WHEN Key=" + paramName + " THEN " + index);
                     index++;
+                    break;
                 }
 
-                var keyText = string.Join(" OR ", excludeIds.ToArray());
+                var keyText = string.Join(" OR ", userdataKeys.ToArray());
 
                 cmd.CommandText = "select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where userId=@userId AND (" + keyText + ") ";
 

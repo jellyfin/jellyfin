@@ -95,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        public const int LatestSchemaVersion = 95;
+        public const int LatestSchemaVersion = 96;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -266,6 +266,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "Album", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "IsVirtualItem", "BIT");
             _connection.AddColumn(Logger, "TypedBaseItems", "SeriesName", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "UserDataKey", "Text");
 
             _connection.AddColumn(Logger, "UserDataKeys", "Priority", "INT");
             _connection.AddColumn(Logger, "ItemValues", "CleanValue", "Text");
@@ -510,7 +511,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "DateLastMediaAdded",
                 "Album",
                 "IsVirtualItem",
-                "SeriesName"
+                "SeriesName",
+                "UserDataKey"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -938,6 +940,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     {
                         _saveItemCommand.GetParameter(index++).Value = null;
                     }
+
+                    _saveItemCommand.GetParameter(index++).Value = item.GetUserDataKeys().FirstOrDefault();
 
                     _saveItemCommand.Transaction = transaction;
 
@@ -1737,6 +1741,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 return string.Empty;
             }
 
+            if (_config.Configuration.SchemaVersion >= 96)
+            {
+                return " left join UserDataDb.UserData on UserDataKey=UserDataDb.UserData.Key And (UserId=@UserId)";
+            }
+
             return " left join UserDataDb.UserData on (select UserDataKey from UserDataKeys where ItemId=Guid order by Priority LIMIT 1)=UserDataDb.UserData.Key And (UserId=@UserId)";
         }
 
@@ -1842,7 +1851,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var slowThreshold = 1000;
 
 #if DEBUG
-            slowThreshold = 60;
+            slowThreshold = 50;
 #endif
 
             if (elapsed >= slowThreshold)
