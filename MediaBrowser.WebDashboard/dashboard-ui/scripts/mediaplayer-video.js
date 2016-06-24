@@ -8,6 +8,7 @@
         var muteButton = null;
         var unmuteButton = null;
         var volumeSlider = null;
+        var volumeSliderContainer = null;
         var positionSlider;
         var currentTimeElement;
 
@@ -766,7 +767,7 @@
             html += '<button is="paper-icon-button-light" class="muteButton mediaButton autoSize" onclick="MediaPlayer.mute();"><i class="md-icon">volume_up</i></button>';
             html += '<button is="paper-icon-button-light" class="unmuteButton mediaButton autoSize" onclick="MediaPlayer.unMute();"><i class="md-icon">volume_off</i></button>';
 
-            html += '<div class="sliderContainer" style="width:100px;vertical-align:middle;;margin-right:2em;display:inline-flex;">';
+            html += '<div class="sliderContainer volumeSliderContainer" style="width:100px;vertical-align:middle;;margin-right:2em;display:inline-flex;">';
             html += '<input type="range" is="emby-slider" pin step="1" min="0" max="100" value="0" class="videoVolumeSlider"/>';
             html += '</div>'; // guide
 
@@ -820,6 +821,7 @@
             };
 
             volumeSlider = parent.querySelector('.videoVolumeSlider');
+            volumeSliderContainer = parent.querySelector('.volumeSliderContainer');
             volumeSlider.addEventListener('change', function () {
 
                 var vol = this.value;
@@ -852,12 +854,14 @@
 
         function updateVolumeButtons(vol) {
 
-            if (vol) {
-                muteButton.classList.remove('hide');
-                unmuteButton.classList.add('hide');
-            } else {
-                muteButton.classList.add('hide');
-                unmuteButton.classList.remove('hide');
+            if (!AppInfo.hasPhysicalVolumeButtons) {
+                if (vol) {
+                    muteButton.classList.remove('hide');
+                    unmuteButton.classList.add('hide');
+                } else {
+                    muteButton.classList.add('hide');
+                    unmuteButton.classList.remove('hide');
+                }
             }
         }
 
@@ -1130,11 +1134,11 @@
             }
 
             if (AppInfo.hasPhysicalVolumeButtons) {
-                volumeSlider.classList.add('hide');
+                volumeSliderContainer.classList.add('hide');
                 videoControls.querySelector('.muteButton').classList.add('hide');
                 videoControls.querySelector('.unmuteButton').classList.add('hide');
             } else {
-                volumeSlider.classList.remove('hide');
+                volumeSliderContainer.classList.remove('hide');
                 videoControls.querySelector('.muteButton').classList.remove('hide');
                 videoControls.querySelector('.unmuteButton').classList.remove('hide');
             }

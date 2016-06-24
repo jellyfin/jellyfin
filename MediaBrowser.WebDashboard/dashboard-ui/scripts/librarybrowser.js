@@ -2706,9 +2706,9 @@
                 Dashboard.setPageTitle(name);
 
                 if (linkToElement) {
-                    nameElem.html('<a class="detailPageParentLink" href="' + LibraryBrowser.getHref(item, context) + '">' + name + '</a>');
+                    nameElem.innerHTML = '<a class="detailPageParentLink" href="' + LibraryBrowser.getHref(item, context) + '">' + name + '</a>';
                 } else {
-                    nameElem.html(name);
+                    nameElem.innerHTML = name;
                 }
             },
 
@@ -2748,9 +2748,10 @@
                 }
 
                 if (html.length) {
-                    parentNameElem.show().html(html.join(' - '));
+                    parentNameElem.classList.remove('hide');
+                    parentNameElem.innerHTML = html.join(' - ');
                 } else {
-                    parentNameElem.hide();
+                    parentNameElem.classList.add('hide');
                 }
             },
 

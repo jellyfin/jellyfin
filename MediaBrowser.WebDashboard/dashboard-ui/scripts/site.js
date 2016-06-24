@@ -1524,6 +1524,7 @@ var AppInfo = {};
         AppInfo.supportsFileInput = !(AppInfo.isNativeApp && isAndroid);
 
         AppInfo.hasPhysicalVolumeButtons = isCordova || isMobile;
+        AppInfo.hasPhysicalVolumeButtons = true;
         AppInfo.enableBackButton = isIOS && (window.navigator.standalone || AppInfo.isNativeApp);
 
         AppInfo.supportsSyncPathSetting = isCordova && isAndroid;
