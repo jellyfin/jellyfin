@@ -1172,8 +1172,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             items = ApplyFilters(items, query.Filters, user);
 
-            var sortBy = query.SortBy.Length == 0 ? new[] { ItemSortBy.SortName } : query.SortBy;
-            items = _libraryManager.Sort(items, user, sortBy, query.SortOrder ?? SortOrder.Ascending);
+            items = _libraryManager.Sort(items, user, query.SortBy, query.SortOrder ?? SortOrder.Ascending);
 
             var all = items.ToList();
             var totalCount = totalCountFromProvider ?? all.Count;
@@ -1320,6 +1319,21 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.DateCreated = info.DateCreated ?? DateTime.UtcNow;
                 item.Tags = info.Tags;
                 item.HomePageUrl = info.HomePageUrl;
+            }
+            else
+            {
+                // Can't do this right now due to channels that utilize the server's metadata services
+                //if (item.Name != info.Name)
+                //{
+                //    item.Name = info.Name;
+                //    forceUpdate = true;
+                //}
+
+                //if (item.CommunityRating != info.CommunityRating)
+                //{
+                //    item.CommunityRating = info.CommunityRating;
+                //    forceUpdate = true;
+                //}
             }
 
             var hasArtists = item as IHasArtist;

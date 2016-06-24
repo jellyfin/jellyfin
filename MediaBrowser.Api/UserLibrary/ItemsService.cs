@@ -34,7 +34,6 @@ namespace MediaBrowser.Api.UserLibrary
         /// The _user manager
         /// </summary>
         private readonly IUserManager _userManager;
-        private readonly IUserDataManager _userDataRepository;
 
         /// <summary>
         /// The _library manager
@@ -43,7 +42,6 @@ namespace MediaBrowser.Api.UserLibrary
         private readonly ILocalizationManager _localization;
 
         private readonly IDtoService _dtoService;
-        private readonly ICollectionManager _collectionManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsService" /> class.
@@ -58,10 +56,8 @@ namespace MediaBrowser.Api.UserLibrary
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
-            _userDataRepository = userDataRepository;
             _localization = localization;
             _dtoService = dtoService;
-            _collectionManager = collectionManager;
         }
 
         /// <summary>
