@@ -56,17 +56,21 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// Opens the connection to the database
         /// </summary>
         /// <returns>Task.</returns>
-        public async Task Initialize()
+        public async Task Initialize(IDbConnection connection)
         {
-            _connection = await CreateConnection(false).ConfigureAwait(false);
+            _connection = connection;
 
             string[] queries = {
 
-                                "create table if not exists userdata (key nvarchar, userId GUID, rating float null, played bit, playCount int, isFavorite bit, playbackPositionTicks bigint, lastPlayedDate datetime null)",
+                                "create table if not exists UserDataDb.userdata (key nvarchar, userId GUID, rating float null, played bit, playCount int, isFavorite bit, playbackPositionTicks bigint, lastPlayedDate datetime null)",
 
-                                "create index if not exists idx_userdata on userdata(key)",
-                                "create unique index if not exists userdataindex on userdata (key, userId)",
-                                "create index if not exists userdataindex1 on userdata (key, userId)",
+                                "drop index if exists UserDataDb.idx_userdata",
+                                "drop index if exists UserDataDb.idx_userdata1",
+                                "drop index if exists UserDataDb.idx_userdata2",
+                                "drop index if exists UserDataDb.userdataindex1",
+
+                                "create unique index if not exists UserDataDb.userdataindex on userdata (key, userId)",
+                                "create index if not exists UserDataDb.userdataindex2 on userdata (key, userId, played)",
 
                                 //pragmas
                                 "pragma temp_store = memory",
