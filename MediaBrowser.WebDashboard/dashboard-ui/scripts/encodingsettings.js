@@ -7,7 +7,7 @@
         $('#selectVideoDecoder', page).val(config.HardwareAccelerationType);
         $('#selectThreadCount', page).val(config.EncodingThreadCount);
         $('#txtDownMixAudioBoost', page).val(config.DownMixAudioBoost);
-        $('.txtEncoderPath', page).val(config.EncoderAppPath || '');
+        page.querySelector('.txtEncoderPath').value = config.EncoderAppPath || '';
         $('#txtTranscodingTempPath', page).val(config.TranscodingTempPath || '');
 
         Dashboard.hideLoadingMsg();

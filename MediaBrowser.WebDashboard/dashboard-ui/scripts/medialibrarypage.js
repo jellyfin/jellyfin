@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'emby-icons'], function ($) {
 
     function changeCollectionType(page, virtualFolder) {
 

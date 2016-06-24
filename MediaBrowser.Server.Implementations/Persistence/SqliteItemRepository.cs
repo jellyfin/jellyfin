@@ -95,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        public const int LatestSchemaVersion = 95;
+        public const int LatestSchemaVersion = 96;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -128,7 +128,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             connection.RunQueries(new[]
             {
                 "pragma temp_store = memory",
-                "PRAGMA main.locking_mode=EXCLUSIVE"
+                "pragma default_temp_store = memory",
+                "PRAGMA locking_mode=EXCLUSIVE"
 
             }, Logger);
 
@@ -139,7 +140,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// Opens the connection to the database
         /// </summary>
         /// <returns>Task.</returns>
-        public async Task Initialize()
+        public async Task Initialize(SqliteUserDataRepository userDataRepo)
         {
             _connection = await CreateConnection(false).ConfigureAwait(false);
 
@@ -163,18 +164,22 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create index if not exists idx_ItemValues2 on ItemValues(ItemId,Type)",
 
                                 "create table if not exists ProviderIds (ItemId GUID, Name TEXT, Value TEXT, PRIMARY KEY (ItemId, Name))",
-                                "create index if not exists Idx_ProviderIds on ProviderIds(ItemId)",
+                                // covering index
+                                "create index if not exists Idx_ProviderIds1 on ProviderIds(ItemId,Name,Value)",
 
                                 "create table if not exists Images (ItemId GUID NOT NULL, Path TEXT NOT NULL, ImageType INT NOT NULL, DateModified DATETIME, IsPlaceHolder BIT NOT NULL, SortOrder INT)",
                                 "create index if not exists idx_Images on Images(ItemId)",
 
                                 "create table if not exists People (ItemId GUID, Name TEXT NOT NULL, Role TEXT, PersonType TEXT, SortOrder int, ListOrder int)",
+
+                                "drop index if exists idxPeopleItemId",
                                 "create index if not exists idxPeopleItemId1 on People(ItemId,ListOrder)",
                                 "create index if not exists idxPeopleName on People(Name)",
 
                                 "create table if not exists "+ChaptersTableName+" (ItemId GUID, ChapterIndex INT, StartPositionTicks BIGINT, Name TEXT, ImagePath TEXT, PRIMARY KEY (ItemId, ChapterIndex))",
 
                                 createMediaStreamsTableCommand,
+
                                 "create index if not exists idx_mediastreams1 on mediastreams(ItemId)",
 
                                };
@@ -261,29 +266,45 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "Album", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "IsVirtualItem", "BIT");
             _connection.AddColumn(Logger, "TypedBaseItems", "SeriesName", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "UserDataKey", "Text");
 
             _connection.AddColumn(Logger, "UserDataKeys", "Priority", "INT");
             _connection.AddColumn(Logger, "ItemValues", "CleanValue", "Text");
 
             string[] postQueries =
+
                                 {
+                // obsolete
+                "drop index if exists idx_TypedBaseItems",
+                "drop index if exists idx_mediastreams",
+                "drop index if exists idx_"+ChaptersTableName,
+                "drop index if exists idx_UserDataKeys1",
+                "drop index if exists idx_UserDataKeys2",
+                "drop index if exists idx_TypeTopParentId3",
+                "drop index if exists idx_TypeTopParentId2",
+                "drop index if exists idx_TypeTopParentId4",
+                "drop index if exists idx_Type",
+                "drop index if exists idx_TypeTopParentId",
+                "drop index if exists idx_GuidType",
+                "drop index if exists idx_TopParentId",
+                "drop index if exists idx_TypeTopParentId6",
+                "drop index if exists idx_ItemValues2",
+                "drop index if exists Idx_ProviderIds",
+
                 "create index if not exists idx_PresentationUniqueKey on TypedBaseItems(PresentationUniqueKey)",
-                "create index if not exists idx_GuidType on TypedBaseItems(Guid,Type)",
+                "create index if not exists idx_GuidTypeIsFolderIsVirtualItem on TypedBaseItems(Guid,Type,IsFolder,IsVirtualItem)",
+                //"create index if not exists idx_GuidMediaTypeIsFolderIsVirtualItem on TypedBaseItems(Guid,MediaType,IsFolder,IsVirtualItem)",
                 "create index if not exists idx_CleanNameType on TypedBaseItems(CleanName,Type)",
-                "create index if not exists idx_Type on TypedBaseItems(Type)",
-                "create index if not exists idx_TopParentId on TypedBaseItems(TopParentId)",
-                "create index if not exists idx_TypeTopParentId on TypedBaseItems(Type,TopParentId)",
+
+                // covering index
+                "create index if not exists idx_TopParentIdGuid on TypedBaseItems(TopParentId,Guid)",
 
                 // live tv programs
                 "create index if not exists idx_TypeTopParentIdStartDate on TypedBaseItems(Type,TopParentId,StartDate)",
 
                 // used by movie suggestions
                 "create index if not exists idx_TypeTopParentIdGroup on TypedBaseItems(Type,TopParentId,PresentationUniqueKey)",
-                "create index if not exists idx_TypeTopParentId2 on TypedBaseItems(TopParentId,MediaType,IsVirtualItem)",
-                "create index if not exists idx_TypeTopParentId3 on TypedBaseItems(TopParentId,IsFolder,IsVirtualItem)",
-                "create index if not exists idx_TypeTopParentId4 on TypedBaseItems(TopParentId,Type,IsVirtualItem)",
                 "create index if not exists idx_TypeTopParentId5 on TypedBaseItems(TopParentId,IsVirtualItem)",
-                "create index if not exists idx_TypeTopParentId6 on TypedBaseItems(TopParentId,Type,IsVirtualItem,PresentationUniqueKey)",
 
                 // latest items
                 "create index if not exists idx_TypeTopParentId9 on TypedBaseItems(TopParentId,Type,IsVirtualItem,PresentationUniqueKey,DateCreated)",
@@ -294,9 +315,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 // items by name
                 "create index if not exists idx_ItemValues3 on ItemValues(ItemId,Type,CleanValue)",
+                "create index if not exists idx_ItemValues4 on ItemValues(ItemId,Type,Value,CleanValue)",
 
-                //"create index if not exists idx_UserDataKeys1 on UserDataKeys(ItemId)",
-                "create index if not exists idx_UserDataKeys2 on UserDataKeys(ItemId,Priority)"
+                // covering index
+                "create index if not exists idx_UserDataKeys3 on UserDataKeys(ItemId,Priority,UserDataKey)"
                 };
 
             _connection.RunQueries(postQueries, Logger);
@@ -306,6 +328,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             new MediaStreamColumns(_connection, Logger).AddColumns();
 
             DataExtensions.Attach(_connection, Path.Combine(_config.ApplicationPaths.DataPath, "userdata_v2.db"), "UserDataDb");
+            await userDataRepo.Initialize(_connection).ConfigureAwait(false);
+            //await Vacuum(_connection).ConfigureAwait(false);
         }
 
         private readonly string[] _retriveItemColumns =
@@ -487,7 +511,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "DateLastMediaAdded",
                 "Album",
                 "IsVirtualItem",
-                "SeriesName"
+                "SeriesName",
+                "UserDataKey"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -915,6 +940,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     {
                         _saveItemCommand.GetParameter(index++).Value = null;
                     }
+
+                    _saveItemCommand.GetParameter(index++).Value = item.GetUserDataKeys().FirstOrDefault();
 
                     _saveItemCommand.Transaction = transaction;
 
@@ -1714,6 +1741,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 return string.Empty;
             }
 
+            if (_config.Configuration.SchemaVersion >= 96)
+            {
+                return " left join UserDataDb.UserData on UserDataKey=UserDataDb.UserData.Key And (UserId=@UserId)";
+            }
+
             return " left join UserDataDb.UserData on (select UserDataKey from UserDataKeys where ItemId=Guid order by Priority LIMIT 1)=UserDataDb.UserData.Key And (UserId=@UserId)";
         }
 
@@ -1819,7 +1851,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var slowThreshold = 1000;
 
 #if DEBUG
-            slowThreshold = 80;
+            slowThreshold = 50;
 #endif
 
             if (elapsed >= slowThreshold)
