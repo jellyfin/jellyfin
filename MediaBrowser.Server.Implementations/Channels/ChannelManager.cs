@@ -1320,6 +1320,20 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.Tags = info.Tags;
                 item.HomePageUrl = info.HomePageUrl;
             }
+            else
+            {
+                if (item.Name != info.Name)
+                {
+                    item.Name = info.Name;
+                    forceUpdate = true;
+                }
+
+                if (item.CommunityRating != info.CommunityRating)
+                {
+                    item.CommunityRating = info.CommunityRating;
+                    forceUpdate = true;
+                }
+            }
 
             var hasArtists = item as IHasArtist;
             if (hasArtists != null)
