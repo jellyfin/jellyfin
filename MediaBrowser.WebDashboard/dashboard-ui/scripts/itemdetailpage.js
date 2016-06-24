@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'datetime', 'jQuery', 'mediaInfo', 'backdrop', 'scrollStyles'], function (layoutManager, datetime, $, mediaInfo, backdrop) {
+﻿define(['layoutManager', 'datetime', 'mediaInfo', 'backdrop', 'scrollStyles'], function (layoutManager, datetime, mediaInfo, backdrop) {
 
     var currentItem;
 
@@ -48,6 +48,19 @@
         });
     }
 
+    function hideAll(page, className, show) {
+
+        var i, length;
+        var elems = page.querySelectorAll('.' + className);
+        for (i = 0, length = elems.length; i < length; i++) {
+            if (show) {
+                elems[i].classList.remove('hide');
+            } else {
+                elems[i].classList.add('hide');
+            }
+        }
+    }
+
     function reloadFromItem(page, params, item) {
 
         currentItem = item;
@@ -57,8 +70,8 @@
         LibraryMenu.setBackButtonVisible(true);
         LibraryMenu.setMenuButtonVisible(false);
 
-        LibraryBrowser.renderName(item, $('.itemName', page), false, context);
-        LibraryBrowser.renderParentName(item, $('.parentName', page), context);
+        LibraryBrowser.renderName(item, page.querySelector('.itemName'), false, context);
+        LibraryBrowser.renderParentName(item, page.querySelector('.parentName'), context);
         LibraryMenu.setTitle(item.SeriesName || item.Name);
 
         Dashboard.getCurrentUser().then(function (user) {
@@ -95,59 +108,64 @@
                 var now = new Date();
 
                 if (now >= datetime.parseISO8601Date(item.StartDate, true) && now < datetime.parseISO8601Date(item.EndDate, true)) {
-                    $('.btnPlay', page).removeClass('hide');
+                    hideAll(page, 'btnPlay', true);
                     canPlay = true;
                 } else {
-                    $('.btnPlay', page).addClass('hide');
+                    hideAll(page, 'btnPlay');
                 }
             }
             else if (MediaController.canPlay(item)) {
-                $('.btnPlay', page).removeClass('hide');
+                hideAll(page, 'btnPlay', true);
                 canPlay = true;
             }
             else {
-                $('.btnPlay', page).addClass('hide');
+                hideAll(page, 'btnPlay');
             }
 
             if (item.LocalTrailerCount && item.PlayAccess == 'Full') {
-                $('.btnPlayTrailer', page).removeClass('hide');
+                hideAll(page, 'btnPlayTrailer', true);
             } else {
-                $('.btnPlayTrailer', page).addClass('hide');
+                hideAll(page, 'btnPlayTrailer');
             }
 
             if (LibraryBrowser.enableSync(item, user)) {
-                $('.btnSync', page).removeClass('hide');
+                hideAll(page, 'btnSync', true);
             } else {
-                $('.btnSync', page).addClass('hide');
+                hideAll(page, 'btnSync');
             }
 
             if (item.Type == 'Program' && item.TimerId) {
-                $('.btnCancelRecording', page).removeClass('hide');
+                hideAll(page, 'btnCancelRecording', true);
             } else {
-                $('.btnCancelRecording', page).addClass('hide');
+                hideAll(page, 'btnCancelRecording');
             }
 
             if (item.Type == 'Program' && (!item.TimerId && !item.SeriesTimerId)) {
 
                 if (canPlay) {
-                    $('.btnRecord', page).removeClass('hide');
-                    $('.btnFloatingRecord', page).addClass('hide');
+                    hideAll(page, 'btnRecord', true);
+                    hideAll(page, 'btnFloatingRecord');
                 } else {
-                    $('.btnRecord', page).addClass('hide');
-                    $('.btnFloatingRecord', page).removeClass('hide');
+                    hideAll(page, 'btnRecord');
+                    hideAll(page, 'btnFloatingRecord', true);
                 }
             } else {
-                $('.btnRecord', page).addClass('hide');
-                $('.btnFloatingRecord', page).addClass('hide');
+                hideAll(page, 'btnRecord');
+                hideAll(page, 'btnFloatingRecord');
             }
 
-            if (!item.LocalTrailerCount && item.RemoteTrailers.length && item.PlayAccess == 'Full') {
+            var btnPlayExternalTrailer = page.querySelectorAll('.btnPlayExternalTrailer');
+            for (var i = 0, length = btnPlayExternalTrailer.length; i < length; i++) {
+                if (!item.LocalTrailerCount && item.RemoteTrailers.length && item.PlayAccess == 'Full') {
 
-                $('.btnPlayExternalTrailer', page).removeClass('hide').attr('href', item.RemoteTrailers[0].Url);
+                    btnPlayExternalTrailer[i].classList.remove('hide');
+                    btnPlayExternalTrailer[i].href = item.RemoteTrailers[0].Url;
 
-            } else {
+                } else {
 
-                $('.btnPlayExternalTrailer', page).addClass('hide').attr('href', '#');
+                    btnPlayExternalTrailer[i].classList.add('hide');
+                    btnPlayExternalTrailer[i].href = '#';
+                }
             }
 
             var groupedVersions = (item.MediaSources || []).filter(function (g) {
@@ -161,9 +179,9 @@
             }
 
             if (LibraryBrowser.getMoreCommands(item, user).length > 0) {
-                $('.btnMoreCommands', page).removeClass('hide');
+                hideAll(page, 'btnMoreCommands', true);
             } else {
-                $('.btnMoreCommands', page).addClass('hide');
+                hideAll(page, 'btnMoreCommands');
             }
 
             if (user.Policy.IsAdministrator) {
@@ -442,15 +460,18 @@
 
         LibraryBrowser.renderAwardSummary(page.querySelector('#awardSummary'), item);
 
-        $('.itemMiscInfo', page).each(function () {
-            mediaInfo.fillPrimaryMediaInfo(this, item, {
+        var i, length;
+        var itemMiscInfo = page.querySelectorAll('.itemMiscInfo');
+        for (i = 0, length = itemMiscInfo.length; i < length; i++) {
+            mediaInfo.fillPrimaryMediaInfo(itemMiscInfo[i], item, {
                 interactive: true
             });
-        });
+        }
+        var itemGenres = page.querySelectorAll('.itemGenres');
+        for (i = 0, length = itemMiscInfo.length; i < length; i++) {
+            LibraryBrowser.renderGenres(itemGenres[i], item, null, isStatic);
+        }
 
-        $('.itemGenres', page).each(function () {
-            LibraryBrowser.renderGenres(this, item, null, isStatic);
-        });
         LibraryBrowser.renderStudios(page.querySelector('.itemStudios'), item, isStatic);
         renderUserDataIcons(page, item);
         LibraryBrowser.renderLinks(page.querySelector('.itemExternalLinks'), item);
@@ -478,10 +499,14 @@
             playersElement.classList.add('hide');
         }
 
-        if (item.ArtistItems && item.ArtistItems.length && item.Type != "MusicAlbum") {
-            $('.artist', page).show().html(getArtistLinksHtml(item.ArtistItems, context));
-        } else {
-            $('.artist', page).hide();
+        var artist = page.querySelectorAll('.artist');
+        for (i = 0, length = itemMiscInfo.length; i < length; i++) {
+            if (item.ArtistItems && item.ArtistItems.length && item.Type != "MusicAlbum") {
+                artist[i].classList.remove('hide');
+                artist[i].innerHTML = getArtistLinksHtml(item.ArtistItems, context);
+            } else {
+                artist[i].classList.add('hide');
+            }
         }
 
         if (item.MediaSources && item.MediaSources.length && item.Path) {
@@ -1190,13 +1215,12 @@
         var html = '';
 
         var reviews = result.Items;
-
         for (var i = 0, length = reviews.length; i < length; i++) {
 
             var review = reviews[i];
 
             html += '<div class="paperList criticReviewPaperList">';
-            html += '<paper-icon-item style="padding-top:.5em;padding-bottom:.5em;">';
+            html += '<div class="listItem">';
 
             if (review.Score != null) {
                 //html += review.Score;
@@ -1204,13 +1228,13 @@
             else if (review.Likes != null) {
 
                 if (review.Likes) {
-                    html += '<paper-fab mini style="background-color:transparent;background-image:url(\'css/images/fresh.png\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
+                    html += '<div style="background-color:transparent;background-image:url(\'css/images/fresh.png\');background-repeat:no-repeat;background-position:center center;background-size: cover;width:40px;height:40px;"></div>';
                 } else {
-                    html += '<paper-fab mini style="background-color:transparent;background-image:url(\'css/images/rotten.png\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
+                    html += '<div style="background-color:transparent;background-image:url(\'css/images/rotten.png\');background-repeat:no-repeat;background-position:center center;background-size: cover;width:40px;height:40px;"></div>';
                 }
             }
 
-            html += '<paper-item-body three-line>';
+            html += '<div class="listItemBody">';
 
             html += '<div style="white-space:normal;">' + review.Caption + '</div>';
 
@@ -1223,7 +1247,7 @@
                 vals.push(review.Publisher);
             }
 
-            html += '<div secondary>' + vals.join(', ') + '.';
+            html += '<div class="secondary">' + vals.join(', ') + '.';
             if (review.Date) {
 
                 try {
@@ -1240,12 +1264,12 @@
             html += '</div>';
 
             if (review.Url) {
-                html += '<div secondary><a class="textlink" href="' + review.Url + '" target="_blank">' + Globalize.translate('ButtonFullReview') + '</a></div>';
+                html += '<div class="secondary"><a class="textlink" href="' + review.Url + '" target="_blank">' + Globalize.translate('ButtonFullReview') + '</a></div>';
             }
 
-            html += '</paper-item-body>';
+            html += '</div>';
 
-            html += '</paper-icon-item>';
+            html += '</div>';
             html += '</div>';
         }
 
@@ -2127,14 +2151,12 @@
             elems[i].addEventListener('click', onMoreCommandsClick);
         }
 
-        $('.childrenItemsContainer', view).on('playallfromhere', function (e, index) {
-
-            LibraryBrowser.playAllFromHere(_childrenItemsFunction, index);
-
-        }).on('queueallfromhere', function (e, index) {
-
-            LibraryBrowser.queueAllFromHere(_childrenItemsFunction, index);
-
+        var childrenItemsContainer = view.querySelector('.childrenItemsContainer');
+        childrenItemsContainer.addEventListener('playallfromhere', function (e) {
+            LibraryBrowser.playAllFromHere(_childrenItemsFunction, e.detail.index);
+        });
+        childrenItemsContainer.addEventListener('playallfromhere', function (e) {
+            LibraryBrowser.playAllFromHere(_childrenItemsFunction, e.detail.index);
         });
 
         view.addEventListener('click', function (e) {

@@ -1,7 +1,8 @@
 ﻿define(['dialogHelper', 'css!css/metadataeditor.css', 'emby-button', 'paper-icon-button-light'], function (dialogHelper) {
 
     var currentItem;
-    var currentDeferred;
+    var currentResolve;
+    var currentReject;
     var hasChanges = false;
 
     function getBaseRemoteOptions() {
@@ -303,19 +304,25 @@
     function onDialogClosed() {
 
         Dashboard.hideLoadingMsg();
-        currentDeferred.resolveWith(null, [hasChanges]);
+
+        if (hasChanges) {
+            currentResolve();
+        } else {
+            currentReject();
+        }
     }
 
     return {
         show: function (itemId, options) {
 
-            var deferred = jQuery.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            currentDeferred = deferred;
-            hasChanges = false;
+                currentResolve = resolve;
+                currentReject = reject;
+                hasChanges = false;
 
-            showEditor(itemId, options);
-            return deferred.promise();
+                showEditor(itemId, options);
+            });
         }
     };
 });

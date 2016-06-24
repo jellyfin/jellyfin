@@ -9,6 +9,7 @@
     var unmuteButton;
     var muteButton;
     var volumeSlider;
+    var volumeSliderContainer;
     var unpauseButtons;
     var pauseButtons;
     var positionSlider;
@@ -51,7 +52,7 @@
         html += '<button is="paper-icon-button-light" class="muteButton mediaButton autoSize"><i class="md-icon">volume_up</i></button>';
         html += '<button is="paper-icon-button-light" class="unmuteButton mediaButton autoSize"><i class="md-icon">volume_off</i></button>';
 
-        html += '<div class="sliderContainer nowPlayingBarVolumeSliderContainer" style="width:100px;vertical-align:middle;display:inline-flex;">';
+        html += '<div class="sliderContainer nowPlayingBarVolumeSliderContainer hide" style="width:100px;vertical-align:middle;display:inline-flex;">';
         html += '<input type="range" is="emby-slider" pin step="1" min="0" max="100" value="0" class="nowPlayingBarVolumeSlider"/>';
         html += '</div>';
 
@@ -229,46 +230,50 @@
 
         toggleRepeatButtonIcon = toggleRepeatButton.querySelector('i');
 
-        // Unfortunately this is necessary because the polymer elements might not be ready immediately and there doesn't seem to be an event-driven way to find out when
-        setTimeout(function () {
+        volumeSlider = elem.querySelector('.nowPlayingBarVolumeSlider');
+        volumeSliderContainer = elem.querySelector('.nowPlayingBarVolumeSliderContainer');
 
-            volumeSlider = elem.querySelector('.nowPlayingBarVolumeSlider');
-            volumeSlider.addEventListener('change', function () {
+        if (AppInfo.hasPhysicalVolumeButtons) {
+            volumeSliderContainer.classList.add('hide');
+        } else {
+            volumeSliderContainer.classList.remove('hide');
+        }
 
-                if (currentPlayer) {
-                    currentPlayer.setVolume(this.value);
-                }
+        volumeSlider.addEventListener('change', function () {
 
-            });
+            if (currentPlayer) {
+                currentPlayer.setVolume(this.value);
+            }
 
-            positionSlider = elem.querySelector('.nowPlayingBarPositionSlider');
-            positionSlider.addEventListener('change', function () {
+        });
 
-                if (currentPlayer && lastPlayerState) {
+        positionSlider = elem.querySelector('.nowPlayingBarPositionSlider');
+        positionSlider.addEventListener('change', function () {
 
-                    var newPercent = parseFloat(this.value);
-                    var newPositionTicks = (newPercent / 100) * lastPlayerState.NowPlayingItem.RunTimeTicks;
+            if (currentPlayer && lastPlayerState) {
 
-                    currentPlayer.seek(Math.floor(newPositionTicks));
-                }
+                var newPercent = parseFloat(this.value);
+                var newPositionTicks = (newPercent / 100) * lastPlayerState.NowPlayingItem.RunTimeTicks;
 
-            });
+                currentPlayer.seek(Math.floor(newPositionTicks));
+            }
 
-            positionSlider.getBubbleText = function (value) {
+        });
 
-                var state = lastPlayerState;
+        positionSlider.getBubbleText = function (value) {
 
-                if (!state || !state.NowPlayingItem || !state.NowPlayingItem.RunTimeTicks) {
-                    return '--:--';
-                }
+            var state = lastPlayerState;
 
-                var ticks = state.NowPlayingItem.RunTimeTicks;
-                ticks /= 100;
-                ticks *= value;
+            if (!state || !state.NowPlayingItem || !state.NowPlayingItem.RunTimeTicks) {
+                return '--:--';
+            }
 
-                return datetime.getDisplayRunningTime(ticks);
-            };
-        }, 300);
+            var ticks = state.NowPlayingItem.RunTimeTicks;
+            ticks /= 100;
+            ticks *= value;
+
+            return datetime.getDisplayRunningTime(ticks);
+        };
     }
 
     function showRemoteControl(tabIndex) {
@@ -488,9 +493,9 @@
         if (volumeSlider) {
 
             if (showVolumeSlider) {
-                volumeSlider.classList.remove('hide');
+                volumeSliderContainer.classList.remove('hide');
             } else {
-                volumeSlider.classList.add('hide');
+                volumeSliderContainer.classList.add('hide');
             }
 
             if (!volumeSlider.dragging) {

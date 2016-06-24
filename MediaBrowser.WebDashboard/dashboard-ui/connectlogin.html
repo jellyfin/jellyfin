@@ -8,11 +8,11 @@
 
             <h1 style="text-align: left;">${HeaderSignInWithConnect}</h1>
             <div class="inputContainer">
-                <input is="emby-input" type="text" id="txtManualName" required="required" label="${LabelUser}" autocomplete="off" />
+                <input is="emby-input" type="text" id="txtManualName" required="required" label="${LabelUser}" />
                 <div class="fieldDescription" style="text-align:left;">${LabelEnterConnectUserNameHelp}</div>
             </div>
             <div class="inputContainer">
-                <input is="emby-input" type="password" id="txtManualPassword" required="required" label="${LabelPassword}" autocomplete="off" />
+                <input is="emby-input" type="password" id="txtManualPassword" required="required" label="${LabelPassword}" />
             </div>
             <br />
             <button is="emby-button" type="submit" class="raised accent block">
@@ -48,7 +48,7 @@
             <div class="hide tvAppInfo"><br /><br /><i class="md-icon" style="color: #52B54B">new_releases</i> Try the new <a href="//tv.emby.media" target="_blank">Emby Theater at tv.emby.media</a>, a remote-friendly app designed for your TV or large screen monitor.</div>
         </form>
 
-        <form class="manualServerForm hide" style="margin: 0 auto;;">
+        <form class="manualServerForm hide" style="margin: 0 auto;">
 
             <div style="display: none;">
                 <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete" autocomplete="address-level4" />
