@@ -587,8 +587,11 @@ namespace MediaBrowser.Server.Startup.Common
             RegisterSingleInstance(SubtitleEncoder);
 
             await displayPreferencesRepo.Initialize().ConfigureAwait(false);
-            await ConfigureUserDataRepositories().ConfigureAwait(false);
-            await itemRepo.Initialize().ConfigureAwait(false);
+
+            var userDataRepo = new SqliteUserDataRepository(LogManager, ApplicationPaths, NativeApp.GetDbConnector());
+
+            ((UserDataManager)UserDataManager).Repository = userDataRepo;
+            await itemRepo.Initialize(userDataRepo).ConfigureAwait(false);
             ((LibraryManager)LibraryManager).ItemRepository = ItemRepository;
             await ConfigureNotificationsRepository().ConfigureAwait(false);
             progress.Report(100);
@@ -749,18 +752,6 @@ namespace MediaBrowser.Server.Startup.Common
             NotificationsRepository = repo;
 
             RegisterSingleInstance(NotificationsRepository);
-        }
-
-        /// <summary>
-        /// Configures the user data repositories.
-        /// </summary>
-        private async Task ConfigureUserDataRepositories()
-        {
-            var repo = new SqliteUserDataRepository(LogManager, ApplicationPaths, NativeApp.GetDbConnector());
-
-            await repo.Initialize().ConfigureAwait(false);
-
-            ((UserDataManager)UserDataManager).Repository = repo;
         }
 
         /// <summary>

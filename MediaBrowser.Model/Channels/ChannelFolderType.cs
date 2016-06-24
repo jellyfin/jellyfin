@@ -8,6 +8,10 @@ namespace MediaBrowser.Model.Channels
 
         PhotoAlbum = 2,
 
-        MusicArtist = 3
+        MusicArtist = 3,
+
+        Series = 4,
+
+        Season = 5
     }
 }

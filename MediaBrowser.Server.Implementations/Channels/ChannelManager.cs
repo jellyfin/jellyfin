@@ -1258,6 +1258,14 @@ namespace MediaBrowser.Server.Implementations.Channels
                 {
                     item = GetItemById<PhotoAlbum>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
                 }
+                else if (info.FolderType == ChannelFolderType.Series)
+                {
+                    item = GetItemById<Series>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                }
+                else if (info.FolderType == ChannelFolderType.Season)
+                {
+                    item = GetItemById<Season>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                }
                 else
                 {
                     item = GetItemById<Folder>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
