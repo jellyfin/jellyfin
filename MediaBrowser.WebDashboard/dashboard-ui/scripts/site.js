@@ -1524,7 +1524,7 @@ var AppInfo = {};
         AppInfo.supportsFileInput = !(AppInfo.isNativeApp && isAndroid);
 
         AppInfo.hasPhysicalVolumeButtons = isCordova || isMobile;
-        AppInfo.hasPhysicalVolumeButtons = true;
+
         AppInfo.enableBackButton = isIOS && (window.navigator.standalone || AppInfo.isNativeApp);
 
         AppInfo.supportsSyncPathSetting = isCordova && isAndroid;
@@ -2556,7 +2556,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/itemdetails.html',
-            dependencies: ['emby-button', 'tileitemcss', 'scripts/livetvcomponents', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light'],
+            dependencies: ['emby-button', 'tileitemcss', 'scripts/livetvcomponents', 'paper-icon-button-light', 'listViewStyle'],
             controller: 'scripts/itemdetailpage',
             autoFocus: false,
             transition: 'fade'

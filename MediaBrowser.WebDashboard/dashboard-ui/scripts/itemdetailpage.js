@@ -1215,13 +1215,12 @@
         var html = '';
 
         var reviews = result.Items;
-
         for (var i = 0, length = reviews.length; i < length; i++) {
 
             var review = reviews[i];
 
             html += '<div class="paperList criticReviewPaperList">';
-            html += '<paper-icon-item style="padding-top:.5em;padding-bottom:.5em;">';
+            html += '<div class="listItem">';
 
             if (review.Score != null) {
                 //html += review.Score;
@@ -1229,13 +1228,13 @@
             else if (review.Likes != null) {
 
                 if (review.Likes) {
-                    html += '<paper-fab mini style="background-color:transparent;background-image:url(\'css/images/fresh.png\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
+                    html += '<div style="background-color:transparent;background-image:url(\'css/images/fresh.png\');background-repeat:no-repeat;background-position:center center;background-size: cover;width:40px;height:40px;"></div>';
                 } else {
-                    html += '<paper-fab mini style="background-color:transparent;background-image:url(\'css/images/rotten.png\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
+                    html += '<div style="background-color:transparent;background-image:url(\'css/images/rotten.png\');background-repeat:no-repeat;background-position:center center;background-size: cover;width:40px;height:40px;"></div>';
                 }
             }
 
-            html += '<paper-item-body three-line>';
+            html += '<div class="listItemBody">';
 
             html += '<div style="white-space:normal;">' + review.Caption + '</div>';
 
@@ -1248,7 +1247,7 @@
                 vals.push(review.Publisher);
             }
 
-            html += '<div secondary>' + vals.join(', ') + '.';
+            html += '<div class="secondary">' + vals.join(', ') + '.';
             if (review.Date) {
 
                 try {
@@ -1265,12 +1264,12 @@
             html += '</div>';
 
             if (review.Url) {
-                html += '<div secondary><a class="textlink" href="' + review.Url + '" target="_blank">' + Globalize.translate('ButtonFullReview') + '</a></div>';
+                html += '<div class="secondary"><a class="textlink" href="' + review.Url + '" target="_blank">' + Globalize.translate('ButtonFullReview') + '</a></div>';
             }
 
-            html += '</paper-item-body>';
+            html += '</div>';
 
-            html += '</paper-icon-item>';
+            html += '</div>';
             html += '</div>';
         }
 
