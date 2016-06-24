@@ -1322,17 +1322,18 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
             else
             {
-                if (item.Name != info.Name)
-                {
-                    item.Name = info.Name;
-                    forceUpdate = true;
-                }
+                // Can't do this right now due to channels that utilize the server's metadata services
+                //if (item.Name != info.Name)
+                //{
+                //    item.Name = info.Name;
+                //    forceUpdate = true;
+                //}
 
-                if (item.CommunityRating != info.CommunityRating)
-                {
-                    item.CommunityRating = info.CommunityRating;
-                    forceUpdate = true;
-                }
+                //if (item.CommunityRating != info.CommunityRating)
+                //{
+                //    item.CommunityRating = info.CommunityRating;
+                //    forceUpdate = true;
+                //}
             }
 
             var hasArtists = item as IHasArtist;
