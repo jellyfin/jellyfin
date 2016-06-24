@@ -3263,7 +3263,6 @@ var AppInfo = {};
     }
 
     onWebComponentsReady();
-
 })();
 
 function pageClassOn(eventName, className, fn) {

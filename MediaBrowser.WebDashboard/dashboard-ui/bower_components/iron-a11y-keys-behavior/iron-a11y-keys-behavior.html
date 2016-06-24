@@ -396,15 +396,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       },
 
-      _listenKeyEventListeners: function() {
-        Object.keys(this._keyBindings).forEach(function(eventName) {
-          var keyBindings = this._keyBindings[eventName];
-          var boundKeyHandler = this._onKeyBindingEvent.bind(this, keyBindings);
+      _listenKeyEventListeners: function () {
 
-          this._boundKeyHandlers.push([this.keyEventTarget, eventName, boundKeyHandler]);
+          if (this.keyEventTarget) {
+              Object.keys(this._keyBindings).forEach(function (eventName) {
+                  var keyBindings = this._keyBindings[eventName];
+                  var boundKeyHandler = this._onKeyBindingEvent.bind(this, keyBindings);
 
-          this.keyEventTarget.addEventListener(eventName, boundKeyHandler);
-        }, this);
+                  this._boundKeyHandlers.push([this.keyEventTarget, eventName, boundKeyHandler]);
+
+                  this.keyEventTarget.addEventListener(eventName, boundKeyHandler);
+              }, this);
+          }
+        
       },
 
       _unlistenKeyEventListeners: function() {

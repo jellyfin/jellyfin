@@ -3298,11 +3298,11 @@
 
                     html = Globalize.translate(translationKey, html);
 
-                    elem.show().html(html).trigger('create');
-
+                    elem.innerHTML = html;
+                    elem.classList.remove('hide');
 
                 } else {
-                    elem.hide();
+                    elem.classList.add('hide');
                 }
             },
 
@@ -3358,9 +3358,10 @@
 
             renderAwardSummary: function (elem, item) {
                 if (item.AwardSummary) {
-                    elem.show().html(Globalize.translate('ValueAwards', item.AwardSummary));
+                    elem.classList.remove('hide');
+                    elem.innerHTML = Globalize.translate('ValueAwards', item.AwardSummary);
                 } else {
-                    elem.hide();
+                    elem.classList.add('hide');
                 }
             },
 
