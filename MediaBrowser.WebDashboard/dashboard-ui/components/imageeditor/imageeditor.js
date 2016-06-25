@@ -206,12 +206,10 @@
     function showImageDownloader(page, imageType) {
         require(['components/imagedownloader/imagedownloader'], function (ImageDownloader) {
 
-            ImageDownloader.show(currentItem.Id, currentItem.Type, imageType).then(function (hasChanged) {
+            ImageDownloader.show(currentItem.Id, currentItem.Type, imageType).then(function () {
 
-                if (hasChanged) {
-                    hasChanges = true;
-                    reload(page);
-                }
+                hasChanges = true;
+                reload(page);
             });
         });
     }
