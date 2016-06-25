@@ -49,7 +49,19 @@ define(['browser'], function (browser) {
 
         var typeString;
 
-        if (format == 'opus') {
+        if (format == 'flac') {
+            if (browser.tizen) {
+                return true;
+            }
+        }
+
+        else if (format == 'wma') {
+            if (browser.tizen) {
+                return true;
+            }
+        }
+
+        else if (format == 'opus') {
             typeString = 'audio/ogg; codecs="opus"';
 
             if (document.createElement('audio').canPlayType(typeString).replace(/no/, '')) {
@@ -258,7 +270,7 @@ define(['browser'], function (browser) {
             profile.DirectPlayProfiles.push(i);
         });
 
-        ['opus', 'mp3', 'aac', 'flac', 'webma'].filter(canPlayAudioFormat).forEach(function (audioFormat) {
+        ['opus', 'mp3', 'aac', 'flac', 'webma', 'wma'].filter(canPlayAudioFormat).forEach(function (audioFormat) {
 
             profile.DirectPlayProfiles.push({
                 Container: audioFormat == 'webma' ? 'webma,webm' : audioFormat,

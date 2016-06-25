@@ -45,6 +45,14 @@
         }
     }
 
+    function enableAnimation() {
+        if (browser.tv) {
+            // too slow
+            return false;
+        }
+        return true;
+    }
+
     EmbyButtonPrototype.attachedCallback = function () {
 
         if (this.getAttribute('data-embybutton') == 'true') {
@@ -57,12 +65,14 @@
             this.classList.add('noflex');
         }
 
-        this.addEventListener('keydown', onKeyDown);
-        if (browser.safari) {
-            this.addEventListener('click', animateButton);
-        } else {
-            this.addEventListener('mousedown', onMouseDown);
-            //this.addEventListener('touchstart', animateButton);
+        if (enableAnimation()) {
+            this.addEventListener('keydown', onKeyDown);
+            if (browser.safari) {
+                this.addEventListener('click', animateButton);
+            } else {
+                this.addEventListener('mousedown', onMouseDown);
+                //this.addEventListener('touchstart', animateButton);
+            }
         }
     };
 
