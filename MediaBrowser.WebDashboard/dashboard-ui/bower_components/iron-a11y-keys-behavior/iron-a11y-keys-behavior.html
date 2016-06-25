@@ -391,24 +391,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _resetKeyEventListeners: function() {
         this._unlistenKeyEventListeners();
 
-        if (this.isAttached && this.keyEventTarget) {
+        if (this.isAttached) {
           this._listenKeyEventListeners();
         }
       },
 
-      _listenKeyEventListeners: function () {
+      _listenKeyEventListeners: function() {
+        if (!this.keyEventTarget) {
+          return;
+        }
+        Object.keys(this._keyBindings).forEach(function(eventName) {
+          var keyBindings = this._keyBindings[eventName];
+          var boundKeyHandler = this._onKeyBindingEvent.bind(this, keyBindings);
 
-          if (this.keyEventTarget) {
-              Object.keys(this._keyBindings).forEach(function (eventName) {
-                  var keyBindings = this._keyBindings[eventName];
-                  var boundKeyHandler = this._onKeyBindingEvent.bind(this, keyBindings);
+          this._boundKeyHandlers.push([this.keyEventTarget, eventName, boundKeyHandler]);
 
-                  this._boundKeyHandlers.push([this.keyEventTarget, eventName, boundKeyHandler]);
-
-                  this.keyEventTarget.addEventListener(eventName, boundKeyHandler);
-              }, this);
-          }
-        
+          this.keyEventTarget.addEventListener(eventName, boundKeyHandler);
+        }, this);
       },
 
       _unlistenKeyEventListeners: function() {

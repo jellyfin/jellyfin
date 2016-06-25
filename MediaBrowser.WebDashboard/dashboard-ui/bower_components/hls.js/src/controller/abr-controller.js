@@ -21,7 +21,6 @@ class AbrController extends EventHandler {
     this._autoLevelCapping = -1;
     this._nextAutoLevel = -1;
     this.hls = hls;
-    this.bwEstimator = new EwmaBandWidthEstimator(hls);
     this.onCheck = this.abandonRulesCheck.bind(this);
   }
 
@@ -34,6 +33,26 @@ class AbrController extends EventHandler {
     if (!this.timer) {
       this.timer = setInterval(this.onCheck, 100);
     }
+
+    // lazy init of bw Estimator, rationale is that we use different params for Live/VoD
+    // so we need to wait for stream manifest / playlist type to instantiate it.
+    if (!this.bwEstimator) {
+      let hls = this.hls,
+          level = data.frag.level,
+          isLive = hls.levels[level].details.live,
+          config = hls.config,
+          ewmaFast, ewmaSlow;
+
+      if (isLive) {
+        ewmaFast = config.abrEwmaFastLive;
+        ewmaSlow = config.abrEwmaSlowLive;
+      } else {
+        ewmaFast = config.abrEwmaFastVoD;
+        ewmaSlow = config.abrEwmaSlowVoD;
+      }
+      this.bwEstimator = new EwmaBandWidthEstimator(hls,ewmaSlow,ewmaFast);
+    }
+
     let frag = data.frag;
     frag.trequest = performance.now();
     this.fragCurrent = frag;

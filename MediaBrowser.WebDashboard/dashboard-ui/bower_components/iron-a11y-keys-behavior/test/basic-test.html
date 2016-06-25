@@ -431,6 +431,15 @@ suite('Polymer.IronA11yKeysBehavior', function() {
     });
   });
 
+  suite('remove key behavior with null target', function () {
+    test('add and remove a iron-a11y-keys-behavior', function () {
+      var element = document.createElement('x-a11y-basic-keys');
+      element.keyEventTarget = null;
+      document.body.appendChild(element);
+      document.body.removeChild(element);
+    });
+  });
+
 });
   </script>
 </body>

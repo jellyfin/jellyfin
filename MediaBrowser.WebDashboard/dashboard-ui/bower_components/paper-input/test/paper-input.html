@@ -83,6 +83,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+  <test-fixture id="type-number-char-counter">
+    <template>
+      <paper-input type="number" char-counter value="1138"></paper-input>
+    </template>
+  </test-fixture>
+
   <test-fixture id="always-float-label">
     <template>
       <paper-input always-float-label label="foo"></paper-input>
@@ -177,6 +183,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var counter = Polymer.dom(input.root).querySelector('paper-input-char-counter')
         assert.ok(counter, 'paper-input-char-counter exists');
         assert.equal(counter._charCounterStr, input.value.length, 'character counter shows the value length');
+      });
+
+      test('character counter is correct for type=number', function() {
+        var input = fixture('type-number-char-counter');
+        forceXIfStamp(input);
+        var counter = Polymer.dom(input.root).querySelector('paper-input-char-counter')
+        assert.ok(counter, 'paper-input-char-counter exists');
+        assert.equal(counter._charCounterStr, input.value.toString().length, 'character counter shows the value length');
       });
 
       test('validator is used', function() {
