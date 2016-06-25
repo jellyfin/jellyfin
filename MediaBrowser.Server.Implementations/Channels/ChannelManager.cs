@@ -1320,20 +1320,14 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.Tags = info.Tags;
                 item.HomePageUrl = info.HomePageUrl;
             }
-            else
+            else if (info.Type == ChannelItemType.Folder && info.FolderType == ChannelFolderType.Container)
             {
-                // Can't do this right now due to channels that utilize the server's metadata services
-                //if (item.Name != info.Name)
-                //{
-                //    item.Name = info.Name;
-                //    forceUpdate = true;
-                //}
-
-                //if (item.CommunityRating != info.CommunityRating)
-                //{
-                //    item.CommunityRating = info.CommunityRating;
-                //    forceUpdate = true;
-                //}
+                // At least update names of container folders
+                if (item.Name != info.Name)
+                {
+                    item.Name = info.Name;
+                    forceUpdate = true;
+                }
             }
 
             var hasArtists = item as IHasArtist;
