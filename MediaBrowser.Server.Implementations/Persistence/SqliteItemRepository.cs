@@ -328,7 +328,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             new MediaStreamColumns(_connection, Logger).AddColumns();
 
             DataExtensions.Attach(_connection, Path.Combine(_config.ApplicationPaths.DataPath, "userdata_v2.db"), "UserDataDb");
-            await userDataRepo.Initialize(_connection).ConfigureAwait(false);
+            await userDataRepo.Initialize(_connection, WriteLock).ConfigureAwait(false);
             //await Vacuum(_connection).ConfigureAwait(false);
         }
 

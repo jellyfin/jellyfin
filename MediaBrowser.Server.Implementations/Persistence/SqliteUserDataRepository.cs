@@ -56,8 +56,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// Opens the connection to the database
         /// </summary>
         /// <returns>Task.</returns>
-        public async Task Initialize(IDbConnection connection)
+        public async Task Initialize(IDbConnection connection, SemaphoreSlim writeLock)
         {
+            WriteLock.Dispose();
+            WriteLock = writeLock;
             _connection = connection;
 
             string[] queries = {
@@ -438,18 +440,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
             return userData;
         }
 
+        protected override void Dispose(bool dispose)
+        {
+            // handled by library database
+        }
+
         protected override void CloseConnection()
         {
-            if (_connection != null)
-            {
-                if (_connection.IsOpen())
-                {
-                    _connection.Close();
-                }
-
-                _connection.Dispose();
-                _connection = null;
-            }
+            // handled by library database
         }
     }
 }

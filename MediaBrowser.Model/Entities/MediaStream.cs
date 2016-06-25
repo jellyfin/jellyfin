@@ -282,6 +282,36 @@ namespace MediaBrowser.Model.Entities
                    !StringHelper.EqualsIgnoreCase(codec, "sub");
         }
 
+        public bool SupportsSubtitleConversionTo(string codec)
+        {
+            if (!IsTextSubtitleStream)
+            {
+                return false;
+            }
+
+            // Can't convert from this 
+            if (StringHelper.EqualsIgnoreCase(Codec, "ass"))
+            {
+                return false;
+            }
+            if (StringHelper.EqualsIgnoreCase(Codec, "ssa"))
+            {
+                return false;
+            }
+
+            // Can't convert to this 
+            if (StringHelper.EqualsIgnoreCase(codec, "ass"))
+            {
+                return false;
+            }
+            if (StringHelper.EqualsIgnoreCase(codec, "ssa"))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Gets or sets a value indicating whether [supports external stream].
         /// </summary>
