@@ -1,21 +1,5 @@
 ﻿define(['datetime', 'jQuery', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function (datetime, $) {
 
-    function getTabs() {
-        return [
-        {
-            href: 'about.html',
-            name: Globalize.translate('TabAbout')
-        },
-         {
-             href: 'log.html',
-             name: Globalize.translate('TabLogs')
-         },
-         {
-             href: 'supporterkey.html',
-             name: Globalize.translate('TabEmbyPremiere')
-         }];
-    }
-
     return function (view, params) {
 
         view.querySelector('#chkDebugLog').addEventListener('change', function () {
@@ -30,7 +14,6 @@
 
         view.addEventListener('viewbeforeshow', function () {
 
-            LibraryMenu.setTabs('helpadmin', 1, getTabs);
             Dashboard.showLoadingMsg();
 
             var apiClient = ApiClient;

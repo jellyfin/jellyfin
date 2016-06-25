@@ -48,11 +48,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="userManager">The user manager.</param>
         /// <param name="libraryManager">The library manager.</param>
-        /// <param name="userDataRepository">The user data repository.</param>
         /// <param name="localization">The localization.</param>
         /// <param name="dtoService">The dto service.</param>
-        /// <param name="collectionManager">The collection manager.</param>
-        public ItemsService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, ILocalizationManager localization, IDtoService dtoService, ICollectionManager collectionManager)
+        public ItemsService(IUserManager userManager, ILibraryManager libraryManager, ILocalizationManager localization, IDtoService dtoService)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -302,7 +300,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 query.LocationTypes = request.LocationTypes.Split(',').Select(d => (LocationType)Enum.Parse(typeof(LocationType), d, true)).ToArray();
             }
-            
+
             // Min official rating
             if (!string.IsNullOrWhiteSpace(request.MinOfficialRating))
             {
