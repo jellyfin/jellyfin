@@ -83,7 +83,7 @@ namespace MediaBrowser.Providers.BoxSets
                 VoteCount = i.vote_count,
                 Width = i.width,
                 Height = i.height,
-                Language = i.iso_639_1,
+                Language = MovieDbProvider.AdjustImageLanguage(i.iso_639_1, language),
                 ProviderName = Name,
                 Type = ImageType.Primary,
                 RatingType = RatingType.Score
