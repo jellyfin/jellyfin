@@ -7,10 +7,6 @@
             name: Globalize.translate('TabAbout')
         },
          {
-             href: 'log.html',
-             name: Globalize.translate('TabLogs')
-         },
-         {
              href: 'supporterkey.html',
              name: Globalize.translate('TabEmbyPremiere')
          }];

@@ -71,6 +71,13 @@ class LevelHelper {
     fragments = details.fragments;
     frag = fragments[fragIdx];
     if(!isNaN(frag.startPTS)) {
+      // delta PTS between audio and video
+      let deltaPTS = Math.abs(frag.startPTS-startPTS);
+      if (isNaN(frag.deltaPTS)) {
+        frag.deltaPTS = deltaPTS;
+      } else {
+        frag.deltaPTS = Math.max(deltaPTS,frag.deltaPTS);
+      }
       startPTS = Math.min(startPTS,frag.startPTS);
       endPTS = Math.max(endPTS, frag.endPTS);
       startDTS = Math.min(startDTS,frag.startDTS);

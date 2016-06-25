@@ -418,7 +418,6 @@ var AbrController = function (_EventHandler) {
     _this._autoLevelCapping = -1;
     _this._nextAutoLevel = -1;
     _this.hls = hls;
-    _this.bwEstimator = new _ewmaBandwidthEstimator2.default(hls);
     _this.onCheck = _this.abandonRulesCheck.bind(_this);
     return _this;
   }
@@ -435,6 +434,27 @@ var AbrController = function (_EventHandler) {
       if (!this.timer) {
         this.timer = setInterval(this.onCheck, 100);
       }
+
+      // lazy init of bw Estimator, rationale is that we use different params for Live/VoD
+      // so we need to wait for stream manifest / playlist type to instantiate it.
+      if (!this.bwEstimator) {
+        var hls = this.hls,
+            level = data.frag.level,
+            isLive = hls.levels[level].details.live,
+            config = hls.config,
+            ewmaFast = void 0,
+            ewmaSlow = void 0;
+
+        if (isLive) {
+          ewmaFast = config.abrEwmaFastLive;
+          ewmaSlow = config.abrEwmaSlowLive;
+        } else {
+          ewmaFast = config.abrEwmaFastVoD;
+          ewmaSlow = config.abrEwmaSlowVoD;
+        }
+        this.bwEstimator = new _ewmaBandwidthEstimator2.default(hls, ewmaSlow, ewmaFast);
+      }
+
       var frag = data.frag;
       frag.trequest = performance.now();
       this.fragCurrent = frag;
@@ -993,9 +1013,10 @@ var BufferController = function (_EventHandler) {
             } else {
               // QuotaExceededError: http://www.w3.org/TR/html5/infrastructure.html#quotaexceedederror
               // let's stop appending any segments, and report BUFFER_FULL_ERROR error
-              segments = [];
+              this.segments = [];
               event.details = _errors.ErrorDetails.BUFFER_FULL_ERROR;
               hls.trigger(_events2.default.ERROR, event);
+              return;
             }
           }
         }
@@ -1230,33 +1251,28 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var EwmaBandWidthEstimator = function () {
-  function EwmaBandWidthEstimator(hls) {
+  function EwmaBandWidthEstimator(hls, slow, fast) {
     _classCallCheck(this, EwmaBandWidthEstimator);
 
     this.hls = hls;
     this.defaultEstimate_ = 5e5; // 500kbps
     this.minWeight_ = 0.001;
     this.minDelayMs_ = 50;
+    this.slow_ = new _ewma2.default(slow);
+    this.fast_ = new _ewma2.default(fast);
   }
 
   _createClass(EwmaBandWidthEstimator, [{
     key: 'sample',
     value: function sample(durationMs, numBytes) {
       durationMs = Math.max(durationMs, this.minDelayMs_);
-      var bandwidth = 8000 * numBytes / durationMs;
+      var bandwidth = 8000 * numBytes / durationMs,
+
       //console.log('instant bw:'+ Math.round(bandwidth));
       // we weight sample using loading duration....
-      var weigth = durationMs / 1000;
-
-      // lazy initialization. this allows to take into account config param changes that could happen after Hls instantiation,
-      // but before first fragment loading. this is useful to A/B tests those params
-      if (!this.fast_) {
-        var config = this.hls.config;
-        this.fast_ = new _ewma2.default(config.abrEwmaFast);
-        this.slow_ = new _ewma2.default(config.abrEwmaSlow);
-      }
-      this.fast_.sample(weigth, bandwidth);
-      this.slow_.sample(weigth, bandwidth);
+      weight = durationMs / 1000;
+      this.fast_.sample(weight, bandwidth);
+      this.slow_.sample(weight, bandwidth);
     }
   }, {
     key: 'getEstimate',
@@ -1959,8 +1975,21 @@ var StreamController = function (_EventHandler) {
               //logger.log('find SN matching with pos:' +  bufferEnd + ':' + frag.sn);
               if (fragPrevious && frag.level === fragPrevious.level && frag.sn === fragPrevious.sn) {
                 if (frag.sn < levelDetails.endSN) {
-                  frag = fragments[frag.sn + 1 - levelDetails.startSN];
-                  _logger.logger.log('SN just loaded, load next one: ' + frag.sn);
+                  var deltaPTS = fragPrevious.deltaPTS,
+                      curSNIdx = frag.sn - levelDetails.startSN;
+                  // if there is a significant delta between audio and video, larger than max allowed hole,
+                  // it might be because video fragment does not start with a keyframe.
+                  // let's try to load previous fragment again to get last keyframe
+                  // then we will reload again current fragment (that way we should be able to fill the buffer hole ...)
+                  if (deltaPTS && deltaPTS > config.maxBufferHole) {
+                    frag = fragments[curSNIdx - 1];
+                    _logger.logger.warn('SN just loaded, with large PTS gap between audio and video, maybe frag is not starting with a keyframe ? load previous one to try to overcome this');
+                    // decrement previous frag load counter to avoid frag loop loading error when next fragment will get reloaded
+                    fragPrevious.loadCounter--;
+                  } else {
+                    frag = fragments[curSNIdx + 1];
+                    _logger.logger.log('SN just loaded, load next one: ' + frag.sn);
+                  }
                 } else {
                   // have we reached end of VOD playlist ?
                   if (!levelDetails.live) {
@@ -1973,7 +2002,7 @@ var StreamController = function (_EventHandler) {
                       this.state = State.ENDED;
                     }
                   }
-                  return;
+                  break;
                 }
               }
               //logger.log('      loading frag ' + i +',pos/bufEnd:' + pos.toFixed(3) + '/' + bufferEnd.toFixed(3));
@@ -2654,11 +2683,15 @@ var StreamController = function (_EventHandler) {
           }
           break;
         case _errors.ErrorDetails.BUFFER_FULL_ERROR:
-          // trigger a smooth level switch to empty buffers
-          // also reduce max buffer length as it might be too high. we do this to avoid loop flushing ...
-          this.config.maxMaxBufferLength /= 2;
-          _logger.logger.warn('reduce max buffer length to ' + this.config.maxMaxBufferLength + 's and trigger a nextLevelSwitch to flush old buffer and fix QuotaExceededError');
-          this.nextLevelSwitch();
+          // only reduce max buf len if in appending state
+          if (this.state === State.PARSING || this.state === State.PARSED) {
+            // reduce max buffer length as it might be too high. we do this to avoid loop flushing ...
+            this.config.maxMaxBufferLength /= 2;
+            _logger.logger.warn('reduce max buffer length to ' + this.config.maxMaxBufferLength + 's and switch to IDLE state');
+            // increase fragment load Index to avoid frag loop loading error after buffer flush
+            this.fragLoadIdx += 2 * this.config.fragLoadingLoopThreshold;
+            this.state = State.IDLE;
+          }
           break;
         default:
           break;
@@ -5765,6 +5798,13 @@ var LevelHelper = function () {
       fragments = details.fragments;
       frag = fragments[fragIdx];
       if (!isNaN(frag.startPTS)) {
+        // delta PTS between audio and video
+        var deltaPTS = Math.abs(frag.startPTS - startPTS);
+        if (isNaN(frag.deltaPTS)) {
+          frag.deltaPTS = deltaPTS;
+        } else {
+          frag.deltaPTS = Math.max(deltaPTS, frag.deltaPTS);
+        }
         startPTS = Math.min(startPTS, frag.startPTS);
         endPTS = Math.max(endPTS, frag.endPTS);
         startDTS = Math.min(startDTS, frag.startDTS);
@@ -5966,8 +6006,10 @@ var Hls = function () {
           timelineController: _timelineController2.default,
           enableCEA708Captions: true,
           enableMP2TPassThrough: false,
-          abrEwmaFast: 0,
-          abrEwmaSlow: 0,
+          abrEwmaFastLive: 5,
+          abrEwmaSlowLive: 9,
+          abrEwmaFastVoD: 4,
+          abrEwmaSlowVoD: 15,
           abrBandWidthFactor: 0.8,
           abrBandWidthUpFactor: 0.7
         };
@@ -7509,6 +7551,14 @@ var MP4Remuxer = function () {
           dtsnorm,
           flags,
           samples = [];
+
+      // handle broken streams with PTS < DTS, tolerance up 200ms (18000 in 90kHz timescale)
+      var PTSDTSshift = track.samples.reduce(function (prev, curr) {
+        return Math.max(Math.min(prev, curr.pts - curr.dts), -18000);
+      }, 0);
+      if (PTSDTSshift < 0) {
+        _logger.logger.warn('PTS < DTS detected in video samples, shifting DTS by ' + Math.round(PTSDTSshift / 90) + ' ms to overcome this issue');
+      }
       /* concatenate the video data and construct the mdat in place
         (need 8 more bytes to fill length and mpdat type) */
       mdat = new Uint8Array(track.len + 4 * track.nbNalu + 8);
@@ -7528,10 +7578,11 @@ var MP4Remuxer = function () {
           mp4SampleLength += 4 + unit.data.byteLength;
         }
         pts = avcSample.pts - this._initDTS;
-        dts = avcSample.dts - this._initDTS;
-        // ensure DTS is not bigger than PTS
+        // shift dts by PTSDTSshift, to ensure that PTS >= DTS
+        dts = avcSample.dts - this._initDTS + PTSDTSshift;
+        // ensure DTS is not bigger than PTS // strap belt !!!
         dts = Math.min(pts, dts);
-        //logger.log(`Video/PTS/DTS:${Math.round(pts/90)}/${Math.round(dts/90)}`);
+        //logger.log(`Video/PTS/DTS/ptsnorm/DTSnorm:${Math.round(avcSample.pts/90)}/${Math.round(avcSample.dts/90)}/${Math.round(pts/90)}/${Math.round(dts/90)}`);
         // if not first AVC sample of video track, normalize PTS/DTS with previous sample value
         // and ensure that sample duration is positive
         if (lastDTS !== undefined) {
@@ -7574,7 +7625,7 @@ var MP4Remuxer = function () {
           firstPTS = Math.max(0, ptsnorm);
           firstDTS = Math.max(0, dtsnorm);
         }
-        //console.log('PTS/DTS/initDTS/normPTS/normDTS/relative PTS : ${avcSample.pts}/${avcSample.dts}/${this._initDTS}/${ptsnorm}/${dtsnorm}/${(avcSample.pts/4294967296).toFixed(3)}');
+        //console.log(`PTS/DTS/initDTS/normPTS/normDTS/relative PTS : ${avcSample.pts}/${avcSample.dts}/${this._initDTS}/${ptsnorm}/${dtsnorm}/${(avcSample.pts/4294967296).toFixed(3)});
         mp4Sample = {
           size: mp4SampleLength,
           duration: 0,

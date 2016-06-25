@@ -285,8 +285,21 @@ class StreamController extends EventHandler {
             //logger.log('find SN matching with pos:' +  bufferEnd + ':' + frag.sn);
             if (fragPrevious && frag.level === fragPrevious.level && frag.sn === fragPrevious.sn) {
               if (frag.sn < levelDetails.endSN) {
-                frag = fragments[frag.sn + 1 - levelDetails.startSN];
-                logger.log(`SN just loaded, load next one: ${frag.sn}`);
+                let deltaPTS = fragPrevious.deltaPTS,
+                    curSNIdx = frag.sn - levelDetails.startSN;
+                // if there is a significant delta between audio and video, larger than max allowed hole,
+                // it might be because video fragment does not start with a keyframe.
+                // let's try to load previous fragment again to get last keyframe
+                // then we will reload again current fragment (that way we should be able to fill the buffer hole ...)
+                if (deltaPTS && deltaPTS > config.maxBufferHole) {
+                  frag = fragments[curSNIdx-1];
+                  logger.warn(`SN just loaded, with large PTS gap between audio and video, maybe frag is not starting with a keyframe ? load previous one to try to overcome this`);
+                  // decrement previous frag load counter to avoid frag loop loading error when next fragment will get reloaded
+                  fragPrevious.loadCounter--;
+                } else {
+                  frag = fragments[curSNIdx+1];
+                  logger.log(`SN just loaded, load next one: ${frag.sn}`);
+                }
               } else {
                 // have we reached end of VOD playlist ?
                 if (!levelDetails.live) {
@@ -299,7 +312,7 @@ class StreamController extends EventHandler {
                     this.state = State.ENDED;
                   }
                 }
-                return;
+                break;
               }
             }
             //logger.log('      loading frag ' + i +',pos/bufEnd:' + pos.toFixed(3) + '/' + bufferEnd.toFixed(3));
@@ -974,11 +987,15 @@ class StreamController extends EventHandler {
         }
         break;
       case ErrorDetails.BUFFER_FULL_ERROR:
-        // trigger a smooth level switch to empty buffers
-        // also reduce max buffer length as it might be too high. we do this to avoid loop flushing ...
-        this.config.maxMaxBufferLength/=2;
-        logger.warn(`reduce max buffer length to ${this.config.maxMaxBufferLength}s and trigger a nextLevelSwitch to flush old buffer and fix QuotaExceededError`);
-        this.nextLevelSwitch();
+        // only reduce max buf len if in appending state
+        if (this.state === State.PARSING || this.state === State.PARSED) {
+          // reduce max buffer length as it might be too high. we do this to avoid loop flushing ...
+          this.config.maxMaxBufferLength/=2;
+          logger.warn(`reduce max buffer length to ${this.config.maxMaxBufferLength}s and switch to IDLE state`);
+          // increase fragment load Index to avoid frag loop loading error after buffer flush
+          this.fragLoadIdx += 2 * this.config.fragLoadingLoopThreshold;
+          this.state = State.IDLE;
+        }
         break;
       default:
         break;

@@ -716,12 +716,17 @@ var Dashboard = {
             pageIds: ['userProfilesPage', 'newUserPage', 'editUserPage', 'userLibraryAccessPage', 'userParentalControlPage', 'userPasswordPage'],
             icon: 'people'
         }, {
+            name: 'Emby Premiere',
+            href: "supporterkey.html",
+            pageIds: ['supporterKeyPage'],
+            icon: 'star'
+        }, {
             divider: true,
             name: Globalize.translate('TabLibrary'),
             href: "library.html",
             pageIds: ['mediaLibraryPage', 'libraryPathMappingPage', 'librarySettingsPage', 'libraryDisplayPage'],
             icon: 'folder',
-            color: '#009688'
+            color: '#38c'
         }, {
             name: Globalize.translate('TabMetadata'),
             href: "metadata.html",
@@ -743,7 +748,8 @@ var Dashboard = {
             name: Globalize.translate('TabSync'),
             icon: 'sync',
             href: "syncactivity.html",
-            pageIds: ['syncActivityPage', 'syncJobPage', 'devicesUploadPage', 'syncSettingsPage']
+            pageIds: ['syncActivityPage', 'syncJobPage', 'devicesUploadPage', 'syncSettingsPage'],
+            color: '#009688'
         }, {
             divider: true,
             name: Globalize.translate('TabExtras')
@@ -785,8 +791,12 @@ var Dashboard = {
             color: '#F16834',
             pageIds: ['dashboardHostingPage', 'serverSecurityPage']
         }, {
+            name: Globalize.translate('TabLogs'),
+            href: "log.html",
+            pageIds: ['logPage'],
+            icon: 'folder-open'
+        }, {
             name: Globalize.translate('TabScheduledTasks'),
-            color: '#38c',
             href: "scheduledtasks.html",
             pageIds: ['scheduledTasksPage', 'scheduledTaskPage'],
             icon: 'schedule'
@@ -796,7 +806,7 @@ var Dashboard = {
             icon: 'help',
             color: '#679C34',
             divider: true,
-            pageIds: ['supporterKeyPage', 'logPage', 'aboutPage']
+            pageIds: ['aboutPage']
         }];
 
     },

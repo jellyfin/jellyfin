@@ -842,17 +842,17 @@ namespace MediaBrowser.Model.Dlna
                 {
                     bool requiresConversion = !StringHelper.EqualsIgnoreCase(subtitleStream.Codec, profile.Format);
 
-                    if (requiresConversion && !allowConversion)
-                    {
-                        continue;
-                    }
-
                     if (!requiresConversion)
                     {
                         return profile;
                     }
 
-                    if (subtitleStream.IsTextSubtitleStream && subtitleStream.SupportsExternalStream)
+                    if (!allowConversion)
+                    {
+                        continue;
+                    }
+
+                    if (subtitleStream.IsTextSubtitleStream && subtitleStream.SupportsExternalStream && subtitleStream.SupportsSubtitleConversionTo(profile.Format))
                     {
                         return profile;
                     }

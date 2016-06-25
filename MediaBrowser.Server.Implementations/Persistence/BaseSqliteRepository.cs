@@ -8,7 +8,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 {
     public abstract class BaseSqliteRepository : IDisposable
     {
-        protected readonly SemaphoreSlim WriteLock = new SemaphoreSlim(1, 1);
+        protected SemaphoreSlim WriteLock = new SemaphoreSlim(1, 1);
         protected readonly IDbConnector DbConnector;
         protected ILogger Logger;
 

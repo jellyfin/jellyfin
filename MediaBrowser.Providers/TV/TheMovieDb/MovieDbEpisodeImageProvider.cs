@@ -57,8 +57,10 @@ namespace MediaBrowser.Providers.TV
                 return list;
             }
 
+            var language = item.GetPreferredMetadataLanguage();
+
             var response = await GetEpisodeInfo(seriesId, seasonNumber.Value, episodeNumber.Value,
-                        item.GetPreferredMetadataLanguage(), cancellationToken).ConfigureAwait(false);
+                        language, cancellationToken).ConfigureAwait(false);
 
             var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
@@ -71,12 +73,12 @@ namespace MediaBrowser.Providers.TV
                 VoteCount = i.vote_count,
                 Width = i.width,
                 Height = i.height,
+                Language = MovieDbProvider.AdjustImageLanguage(i.iso_639_1, language),
                 ProviderName = Name,
                 Type = ImageType.Primary,
                 RatingType = RatingType.Score
             }));
 
-            var language = item.GetPreferredMetadataLanguage();
 
             var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
 

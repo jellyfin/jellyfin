@@ -3,11 +3,19 @@
     function enableAnimation(elem) {
 
         if (browser.mobile) {
-            i
             return false;
         }
 
         return elem.animate;
+    }
+
+    function enableRotation() {
+
+        if (browser.tv) {
+            return false;
+        }
+
+        return true;
     }
 
     function backdrop() {
@@ -270,7 +278,7 @@
         currentRotatingImages = images;
         currentRotationIndex = -1;
 
-        if (images.length > 1) {
+        if (images.length > 1 && enableRotation()) {
             rotationInterval = setInterval(onRotationInterval, 20000);
         }
         onRotationInterval();

@@ -216,7 +216,7 @@ define(['browser'], function (browser) {
 
         var mp3Added = false;
         if (canPlayMkv || canPlayTs) {
-            if (supportsMp3VideoAudio) {
+            if (supportsMp3VideoAudio && !browser.tizen) {
                 mp3Added = true;
                 videoAudioCodecs.push('mp3');
                 hlsVideoAudioCodecs.push('mp3');
@@ -314,7 +314,7 @@ define(['browser'], function (browser) {
             });
         }
 
-        if (canPlayTs) {
+        if (canPlayTs && options.supportsCustomSeeking) {
             profile.TranscodingProfiles.push({
                 Container: 'ts',
                 Type: 'Video',
