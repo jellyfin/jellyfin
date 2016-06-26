@@ -108,6 +108,11 @@ namespace MediaBrowser.Api.UserLibrary
                 throw new InvalidOperationException("GetItemsToSerialize returned null");
             }
 
+            if (result.Items == null)
+            {
+                throw new InvalidOperationException("GetItemsToSerialize result.Items returned null");
+            }
+
             var dtoOptions = GetDtoOptions(request);
 
             var dtoList = await _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user).ConfigureAwait(false);
