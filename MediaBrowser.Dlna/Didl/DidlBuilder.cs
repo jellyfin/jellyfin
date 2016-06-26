@@ -160,7 +160,7 @@ namespace MediaBrowser.Dlna.Didl
 
             var contentFeatureList = new ContentFeatureBuilder(_profile).BuildVideoHeader(streamInfo.Container,
                 streamInfo.VideoCodec,
-                streamInfo.AudioCodec,
+                streamInfo.TargetAudioCodec,
                 targetWidth,
                 targetHeight,
                 streamInfo.TargetVideoBitDepth,
@@ -307,7 +307,7 @@ namespace MediaBrowser.Dlna.Didl
             }
 
             var mediaProfile = _profile.GetVideoMediaProfile(streamInfo.Container,
-                streamInfo.AudioCodec,
+                streamInfo.TargetAudioCodec,
                 streamInfo.VideoCodec,
                 streamInfo.TargetAudioBitrate,
                 targetWidth,
@@ -441,7 +441,7 @@ namespace MediaBrowser.Dlna.Didl
             }
 
             var mediaProfile = _profile.GetAudioMediaProfile(streamInfo.Container,
-                streamInfo.AudioCodec,
+                streamInfo.TargetAudioCodec,
                 targetChannels,
                 targetAudioBitrate);
 

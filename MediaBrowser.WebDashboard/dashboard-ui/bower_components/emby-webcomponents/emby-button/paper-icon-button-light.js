@@ -1,6 +1,14 @@
-﻿define(['css!./emby-button', 'registerElement'], function () {
+﻿define(['browser', 'css!./emby-button', 'registerElement'], function (browser) {
 
     var EmbyButtonPrototype = Object.create(HTMLButtonElement.prototype);
+
+    function enableAnimation() {
+        if (browser.tv) {
+            // too slow
+            return false;
+        }
+        return true;
+    }
 
     function animateButtonInternal(e, btn) {
 
@@ -46,8 +54,10 @@
 
         this.setAttribute('data-embybutton', 'true');
 
-        this.addEventListener('keydown', onKeyDown);
-        this.addEventListener('click', animateButton);
+        if (enableAnimation()) {
+            this.addEventListener('keydown', onKeyDown);
+            this.addEventListener('click', animateButton);
+        }
     };
 
     document.registerElement('paper-icon-button-light', {

@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['listViewStyle'], function () {
 
     function renderViews(page, user, result) {
 
@@ -68,17 +68,17 @@
 
             var currentHtml = '';
 
-            currentHtml += '<paper-icon-item class="viewItem" data-viewid="' + view.Id + '">';
+            currentHtml += '<div class="listItem viewItem" data-viewid="' + view.Id + '">';
 
-            currentHtml += '<paper-fab mini style="background-color:#444;" icon="folder-open" item-icon></paper-fab>';
+            currentHtml += '<button type="button" is="emby-button" class="fab mini autoSize" item-icon><i class="md-icon">folder_open</i></button>';
 
-            currentHtml += '<paper-item-body>';
+            currentHtml += '<div class="listItemBody">';
 
             currentHtml += '<div>';
             currentHtml += view.Name;
             currentHtml += '</div>';
 
-            currentHtml += '</paper-item-body>';
+            currentHtml += '</div>';
 
             if (index > 0) {
 
@@ -90,7 +90,7 @@
             }
 
 
-            currentHtml += '</paper-icon-item>';
+            currentHtml += '</div>';
 
             index++;
             return currentHtml;

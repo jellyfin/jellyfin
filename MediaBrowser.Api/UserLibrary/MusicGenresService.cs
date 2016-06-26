@@ -17,10 +17,6 @@ namespace MediaBrowser.Api.UserLibrary
     [Route("/MusicGenres", "GET", Summary = "Gets all music genres from a given item, folder, or the entire library")]
     public class GetMusicGenres : GetItemsByName
     {
-        public GetMusicGenres()
-        {
-            IncludeItemTypes = typeof(Audio).Name;
-        }
     }
 
     [Route("/MusicGenres/{Name}", "GET", Summary = "Gets a music genre, by name")]

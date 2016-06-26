@@ -2760,7 +2760,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/mypreferenceshome.html',
-            dependencies: ['emby-checkbox', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'emby-button'],
+            dependencies: ['emby-checkbox', 'emby-button'],
             autoFocus: false,
             transition: 'fade',
             controller: 'scripts/mypreferenceshome'
@@ -2912,7 +2912,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/selectserver.html',
-            dependencies: ['paper-fab', 'paper-item-body', 'paper-icon-item', 'emby-button'],
+            dependencies: ['listViewStyle', 'emby-button'],
             autoFocus: false,
             anonymous: true,
             controller: 'scripts/selectserver'

@@ -8,6 +8,11 @@
             return false;
         }
 
+        // Doesn't seem to work at all
+        if (browser.tizen) {
+            return false;
+        }
+
         // Take advantage of the native input methods
         if (browser.tv) {
             return true;
@@ -120,13 +125,15 @@
             inputId++;
         }
 
-        this.removeEventListener('mousedown', onMouseDown);
-        this.removeEventListener('keydown', onKeyDown);
         this.removeEventListener('focus', onFocus);
         this.removeEventListener('blur', onBlur);
 
+        this.removeEventListener('mousedown', onMouseDown);
+        this.removeEventListener('keydown', onKeyDown);
+
         this.addEventListener('mousedown', onMouseDown);
         this.addEventListener('keydown', onKeyDown);
+
         this.addEventListener('focus', onFocus);
         this.addEventListener('blur', onBlur);
     };

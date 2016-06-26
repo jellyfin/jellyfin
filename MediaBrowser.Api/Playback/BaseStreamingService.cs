@@ -1650,7 +1650,8 @@ namespace MediaBrowser.Api.Playback
             if (!string.IsNullOrWhiteSpace(request.AudioCodec))
             {
                 state.SupportedAudioCodecs = request.AudioCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
-                state.Request.AudioCodec = state.SupportedAudioCodecs.FirstOrDefault();
+                state.Request.AudioCodec = state.SupportedAudioCodecs.FirstOrDefault(i => MediaEncoder.CanEncodeToAudioCodec(i)) 
+                    ?? state.SupportedAudioCodecs.FirstOrDefault();
             }
 
             var item = LibraryManager.GetItemById(request.Id);

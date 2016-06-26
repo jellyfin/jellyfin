@@ -25,11 +25,11 @@
 
         var html = '';
 
-        html += '<paper-icon-item class="serverItem" data-id="' + server.Id + '">';
+        html += '<div class="listItem serverItem" data-id="' + server.Id + '">';
 
-        html += '<paper-fab mini class="blue lnkServer" icon="wifi" item-icon></paper-fab>';
+        html += '<button type="button" is="emby-button" class="fab mini autoSize blue lnkServer" item-icon><i class="md-icon">wifi</i></button>';
 
-        html += '<paper-item-body class="lnkServer" two-line>';
+        html += '<div class="listItemBody lnkServer">';
         html += '<a class="clearLink" href="#">';
 
         html += '<div>';
@@ -41,13 +41,13 @@
         //html += '</div>';
 
         html += '</a>';
-        html += '</paper-item-body>';
+        html += '</div>';
 
         if (server.Id) {
             html += '<button is="paper-icon-button-light" class="btnServerMenu autoSize"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button>';
         }
 
-        html += '</paper-icon-item>';
+        html += '</div>';
 
         return html;
     }
@@ -268,21 +268,21 @@
 
             var html = '';
 
-            html += '<paper-icon-item class="inviteItem" data-id="' + invite.Id + '">';
+            html += '<div class="listItem inviteItem" data-id="' + invite.Id + '">';
 
-            html += '<paper-fab mini class="blue lnkServer" icon="wifi" item-icon></paper-fab>';
+            html += '<button type="button" is="emby-button" class="fab mini autoSize blue lnkServer" item-icon><i class="md-icon">wifi</i></button>';
 
-            html += '<paper-item-body two-line>';
+            html += '<div class="listItemBody">';
 
             html += '<div>';
             html += invite.Name;
             html += '</div>';
 
-            html += '</paper-item-body>';
+            html += '</div>';
 
             html += '<button is="paper-icon-button-light" class="btnInviteMenu autoSize"><i class="md-icon">' + AppInfo.moreIcon.replace('-','_') + '</i></button>';
 
-            html += '</paper-icon-item>';
+            html += '</div>';
 
             return html;
         }
