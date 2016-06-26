@@ -1,21 +1,21 @@
-﻿define(['scripts/livetvcomponents', 'emby-button'], function () {
+﻿define(['scripts/livetvcomponents', 'emby-button', 'listViewStyle'], function () {
 
     function getRecordingGroupHtml(group) {
 
         var html = '';
 
-        html += '<paper-icon-item>';
+        html += '<div class="listItem">';
 
         html += '<button type="button" is="emby-button" class="fab mini autoSize blue" item-icon><i class="md-icon">live_tv</i></button>';
 
-        html += '<paper-item-body two-line>';
+        html += '<div class="listItemBody">';
         html += '<a href="livetvrecordinglist.html?groupid=' + group.Id + '" class="clearLink">';
 
         html += '<div>';
         html += group.Name;
         html += '</div>';
 
-        html += '<div secondary>';
+        html += '<div class="secondary">';
         if (group.RecordingCount == 1) {
             html += Globalize.translate('ValueItemCount', group.RecordingCount);
         } else {
@@ -24,8 +24,8 @@
         html += '</div>';
 
         html += '</a>';
-        html += '</paper-item-body>';
-        html += '</paper-icon-item>';
+        html += '</div>';
+        html += '</div>';
 
         return html;
     }
@@ -177,9 +177,7 @@
 
         }).then(function (result) {
 
-            require(['paper-item-body', 'paper-icon-item'], function () {
-                renderRecordingGroups(context, result.Items);
-            });
+            renderRecordingGroups(context, result.Items);
         });
     }
 

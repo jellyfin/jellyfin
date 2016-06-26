@@ -161,8 +161,6 @@
                 case 2:
                     document.body.classList.remove('autoScrollY');
                     depends.push('scripts/livetvchannels');
-                    depends.push('paper-icon-item');
-                    depends.push('paper-item-body');
                     break;
                 case 3:
                     document.body.classList.remove('autoScrollY');

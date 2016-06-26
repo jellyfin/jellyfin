@@ -231,16 +231,16 @@ paper-fab.accent {
     background-color: #52B54B;
 }
 
-paper-fab.green {
-    background-color: #81c784;
+.fab.green {
+    background-color: #81c784 !important;
 }
 
-paper-fab.orange {
-    background-color: #ffd54f;
+.fab.orange {
+    background-color: #ffd54f !important;
 }
 
-paper-fab.red {
-    background-color: #e57373;
+.fab.red {
+    background-color: #e57373 !important;
 }
 
 paper-menu-item {
