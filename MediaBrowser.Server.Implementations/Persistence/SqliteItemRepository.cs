@@ -290,6 +290,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "drop index if exists idx_TypeTopParentId6",
                 "drop index if exists idx_ItemValues2",
                 "drop index if exists Idx_ProviderIds",
+                "drop index if exists idx_ItemValues3",
+                "drop index if exists idx_ItemValues4",
+                "drop index if exists idx_ItemValues5",
 
                 "create index if not exists idx_PresentationUniqueKey on TypedBaseItems(PresentationUniqueKey)",
                 "create index if not exists idx_GuidTypeIsFolderIsVirtualItem on TypedBaseItems(Guid,Type,IsFolder,IsVirtualItem)",
@@ -301,6 +304,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 // live tv programs
                 "create index if not exists idx_TypeTopParentIdStartDate on TypedBaseItems(Type,TopParentId,StartDate)",
+
+                // covering index for getitemvalues
+                "create index if not exists idx_TypeTopParentIdGuid on TypedBaseItems(Type,TopParentId,Guid)",
 
                 // used by movie suggestions
                 "create index if not exists idx_TypeTopParentIdGroup on TypedBaseItems(Type,TopParentId,PresentationUniqueKey)",
@@ -314,8 +320,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "create index if not exists idx_TypeTopParentId7 on TypedBaseItems(TopParentId,MediaType,IsVirtualItem,PresentationUniqueKey)",
 
                 // items by name
-                "create index if not exists idx_ItemValues3 on ItemValues(ItemId,Type,CleanValue)",
-                "create index if not exists idx_ItemValues4 on ItemValues(ItemId,Type,Value,CleanValue)",
+                "create index if not exists idx_ItemValues6 on ItemValues(ItemId,Type,CleanValue)",
 
                 // covering index
                 "create index if not exists idx_UserDataKeys3 on UserDataKeys(ItemId,Priority,UserDataKey)"
@@ -1704,14 +1709,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 builder.Append("+(Select Case When Abs(COALESCE(ProductionYear, 0) - @ItemProductionYear) < 5 Then 2 Else 0 End )");
 
                 //// genres
-                builder.Append("+ ((Select count(value) from ItemValues where ItemId=Guid and Type=2 and value in (select value from itemvalues where ItemId=@SimilarItemId and type=2)) * 10)");
+                builder.Append("+ ((Select count(CleanValue) from ItemValues where ItemId=Guid and Type=2 and CleanValue in (select CleanValue from itemvalues where ItemId=@SimilarItemId and type=2)) * 10)");
 
                 //// tags
-                builder.Append("+ ((Select count(value) from ItemValues where ItemId=Guid and Type=4 and value in (select value from itemvalues where ItemId=@SimilarItemId and type=4)) * 10)");
+                builder.Append("+ ((Select count(CleanValue) from ItemValues where ItemId=Guid and Type=4 and CleanValue in (select CleanValue from itemvalues where ItemId=@SimilarItemId and type=4)) * 10)");
 
-                builder.Append("+ ((Select count(value) from ItemValues where ItemId=Guid and Type=5 and value in (select value from itemvalues where ItemId=@SimilarItemId and type=5)) * 10)");
+                builder.Append("+ ((Select count(CleanValue) from ItemValues where ItemId=Guid and Type=5 and CleanValue in (select CleanValue from itemvalues where ItemId=@SimilarItemId and type=5)) * 10)");
 
-                builder.Append("+ ((Select count(value) from ItemValues where ItemId=Guid and Type=3 and value in (select value from itemvalues where ItemId=@SimilarItemId and type=3)) * 3)");
+                builder.Append("+ ((Select count(CleanValue) from ItemValues where ItemId=Guid and Type=3 and CleanValue in (select CleanValue from itemvalues where ItemId=@SimilarItemId and type=3)) * 3)");
 
                 //builder.Append("+ ((Select count(Name) from People where ItemId=Guid and Name in (select Name from People where ItemId=@SimilarItemId)) * 3)");
 
@@ -1863,10 +1868,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             else
             {
-                //Logger.Debug("{2} query time: {0}ms. Query: {1}",
-                //    Convert.ToInt32(elapsed),
-                //    cmd.CommandText,
-                //    methodName);
+                Logger.Debug("{2} query time: {0}ms. Query: {1}",
+                    Convert.ToInt32(elapsed),
+                    cmd.CommandText,
+                    methodName);
             }
         }
 
@@ -2078,11 +2083,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             if (string.Equals(name, ItemSortBy.Artist, StringComparison.OrdinalIgnoreCase))
             {
-                return new Tuple<string, bool>("(select value from itemvalues where ItemId=Guid and Type=0 LIMIT 1)", false);
+                return new Tuple<string, bool>("(select CleanValue from itemvalues where ItemId=Guid and Type=0 LIMIT 1)", false);
             }
             if (string.Equals(name, ItemSortBy.AlbumArtist, StringComparison.OrdinalIgnoreCase))
             {
-                return new Tuple<string, bool>("(select value from itemvalues where ItemId=Guid and Type=1 LIMIT 1)", false);
+                return new Tuple<string, bool>("(select CleanValue from itemvalues where ItemId=Guid and Type=1 LIMIT 1)", false);
             }
             if (string.Equals(name, ItemSortBy.OfficialRating, StringComparison.OrdinalIgnoreCase))
             {
@@ -2090,7 +2095,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             if (string.Equals(name, ItemSortBy.Studio, StringComparison.OrdinalIgnoreCase))
             {
-                return new Tuple<string, bool>("(select value from itemvalues where ItemId=Guid and Type=3 LIMIT 1)", false);
+                return new Tuple<string, bool>("(select CleanValue from itemvalues where ItemId=Guid and Type=3 LIMIT 1)", false);
             }
             if (string.Equals(name, ItemSortBy.SeriesDatePlayed, StringComparison.OrdinalIgnoreCase))
             {
@@ -2592,6 +2597,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
             }
 
+            if (query.PersonIds.Length > 0)
+            {
+                // Todo: improve without having to do this
+                query.Person = query.PersonIds.Select(i => RetrieveItem(new Guid(i))).Where(i => i != null).Select(i => i.Name).FirstOrDefault();
+            }
+
             if (!string.IsNullOrWhiteSpace(query.Person))
             {
                 whereClauses.Add("Guid in (select ItemId from People where Name=@PersonName)");
@@ -2728,6 +2739,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 whereClauses.Add(clause);
             }
 
+            if (query.GenreIds.Length > 0)
+            {
+                // Todo: improve without having to do this
+                query.Genres = query.GenreIds.Select(i => RetrieveItem(new Guid(i))).Where(i => i != null).Select(i => i.Name).ToArray();
+            }
+
             if (query.Genres.Length > 0)
             {
                 var clauses = new List<string>();
@@ -2754,6 +2771,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
                 var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
                 whereClauses.Add(clause);
+            }
+
+            if (query.StudioIds.Length > 0)
+            {
+                // Todo: improve without having to do this
+                query.Studios = query.StudioIds.Select(i => RetrieveItem(new Guid(i))).Where(i => i != null).Select(i => i.Name).ToArray();
             }
 
             if (query.Studios.Length > 0)
@@ -3645,7 +3668,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 foreach (var type in typesToCount)
                 {
-                    var itemCountColumnQuery = "Select Count(Value) from ItemValues where ItemValues.CleanValue=CleanName AND Type=@ItemValueType AND ItemId in (";
+                    var itemCountColumnQuery = "Select Count(CleanValue) from ItemValues where ItemValues.CleanValue=CleanName AND Type=@ItemValueType AND ItemId in (";
                     itemCountColumnQuery += "select guid" + GetFromText();
 
                     var typeSubQuery = new InternalItemsQuery(query.User)

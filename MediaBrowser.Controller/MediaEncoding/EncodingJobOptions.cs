@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Dlna;
+﻿using System.Linq;
+using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
@@ -74,7 +75,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             Level = info.VideoLevel;
             ItemId = info.ItemId;
             MediaSourceId = info.MediaSourceId;
-            AudioCodec = info.AudioCodec;
+            AudioCodec = info.TargetAudioCodec;
             MaxAudioChannels = info.MaxAudioChannels;
             AudioBitRate = info.AudioBitrate;
             AudioSampleRate = info.TargetAudioSampleRate;
