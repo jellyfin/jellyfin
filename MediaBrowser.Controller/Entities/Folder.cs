@@ -778,12 +778,6 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (query.PersonIds.Length > 0)
-            {
-                Logger.Debug("Query requires post-filtering due to PersonIds");
-                return true;
-            }
-
             if (query.IsInBoxSet.HasValue)
             {
                 Logger.Debug("Query requires post-filtering due to IsInBoxSet");
@@ -843,20 +837,6 @@ namespace MediaBrowser.Controller.Entities
             if (query.VideoTypes.Length > 0)
             {
                 Logger.Debug("Query requires post-filtering due to VideoTypes");
-                return true;
-            }
-
-            // Apply studio filter
-            if (query.StudioIds.Length > 0)
-            {
-                Logger.Debug("Query requires post-filtering due to StudioIds");
-                return true;
-            }
-
-            // Apply genre filter
-            if (query.GenreIds.Length > 0)
-            {
-                Logger.Debug("Query requires post-filtering due to GenreIds");
                 return true;
             }
 

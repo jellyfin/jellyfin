@@ -499,7 +499,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 return new ContentFeatureBuilder(profile)
                     .BuildAudioHeader(streamInfo.Container,
-                    streamInfo.AudioCodec,
+                    streamInfo.TargetAudioCodec,
                     streamInfo.TargetAudioBitrate,
                     streamInfo.TargetAudioSampleRate,
                     streamInfo.TargetAudioChannels,
@@ -513,7 +513,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 var list = new ContentFeatureBuilder(profile)
                     .BuildVideoHeader(streamInfo.Container,
                     streamInfo.VideoCodec,
-                    streamInfo.AudioCodec,
+                    streamInfo.TargetAudioCodec,
                     streamInfo.TargetWidth,
                     streamInfo.TargetHeight,
                     streamInfo.TargetVideoBitDepth,
