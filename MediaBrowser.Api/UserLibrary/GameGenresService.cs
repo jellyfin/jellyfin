@@ -16,10 +16,6 @@ namespace MediaBrowser.Api.UserLibrary
     [Route("/GameGenres", "GET", Summary = "Gets all Game genres from a given item, folder, or the entire library")]
     public class GetGameGenres : GetItemsByName
     {
-        public GetGameGenres()
-        {
-            MediaTypes = MediaType.Game;
-        }
     }
 
     [Route("/GameGenres/{Name}", "GET", Summary = "Gets a Game genre, by name")]

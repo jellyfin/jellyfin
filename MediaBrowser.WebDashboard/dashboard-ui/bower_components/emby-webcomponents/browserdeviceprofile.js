@@ -172,6 +172,7 @@ define(['browser'], function (browser) {
 
         if (browser.tizen) {
 
+            return 10000000;
             // 2015 models
             if (userAgent.indexOf('tizen 2.3') != -1) {
                 return 20000000;
@@ -228,7 +229,7 @@ define(['browser'], function (browser) {
 
         var mp3Added = false;
         if (canPlayMkv || canPlayTs) {
-            if (supportsMp3VideoAudio && !browser.tizen) {
+            if (supportsMp3VideoAudio) {
                 mp3Added = true;
                 videoAudioCodecs.push('mp3');
                 hlsVideoAudioCodecs.push('mp3');
@@ -314,26 +315,31 @@ define(['browser'], function (browser) {
             });
         });
 
+        var copyTimestamps = false;
+        if (browser.chrome) {
+            copyTimestamps = true;
+        }
+
         // Can't use mkv on mobile because we have to use the native player controls and they won't be able to seek it
-        if (canPlayMkv && options.supportsCustomSeeking) {
+        if (canPlayMkv && options.supportsCustomSeeking && !browser.tizen) {
             profile.TranscodingProfiles.push({
                 Container: 'mkv',
                 Type: 'Video',
                 AudioCodec: videoAudioCodecs.join(','),
                 VideoCodec: 'h264',
                 Context: 'Streaming',
-                CopyTimestamps: true
+                CopyTimestamps: copyTimestamps
             });
         }
 
-        if (canPlayTs && options.supportsCustomSeeking) {
+        if (canPlayTs && options.supportsCustomSeeking && !browser.tizen) {
             profile.TranscodingProfiles.push({
                 Container: 'ts',
                 Type: 'Video',
                 AudioCodec: videoAudioCodecs.join(','),
                 VideoCodec: 'h264',
                 Context: 'Streaming',
-                CopyTimestamps: true,
+                CopyTimestamps: copyTimestamps,
                 // If audio transcoding is needed, limit channels to number of physical audio channels
                 // Trying to transcode to 5 channels when there are only 2 speakers generally does not sound good
                 MaxAudioChannels: physicalAudioChannels.toString()
