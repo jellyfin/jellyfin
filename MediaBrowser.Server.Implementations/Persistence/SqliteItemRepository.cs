@@ -1868,10 +1868,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             else
             {
-                Logger.Debug("{2} query time: {0}ms. Query: {1}",
-                    Convert.ToInt32(elapsed),
-                    cmd.CommandText,
-                    methodName);
+                //Logger.Debug("{2} query time: {0}ms. Query: {1}",
+                //    Convert.ToInt32(elapsed),
+                //    cmd.CommandText,
+                //    methodName);
             }
         }
 
