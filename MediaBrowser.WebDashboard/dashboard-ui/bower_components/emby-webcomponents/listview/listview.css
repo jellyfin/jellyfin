@@ -77,7 +77,7 @@ button.listItem {
     background-repeat: no-repeat;
     background-size: contain;
     flex-shrink: 0;
-    margin-left: -.9em;
+    margin-left: -.75em;
 }
 
 .listItemIcon {
