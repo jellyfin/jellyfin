@@ -24,13 +24,7 @@
         html += '<button is="paper-icon-button-light" class="btnCast headerButton headerButtonRight hide autoSize"><i class="md-icon">cast</i></button>';
 
         if (AppInfo.enableSearchInTopMenu) {
-            html += '<button type="button" is="paper-icon-button-light" class=headerButton headerButtonRight headerSearchButton hide autoSize" onclick="Search.showSearchPanel();"><i class="md-icon">search</i></button>';
-            html += '<div class="viewMenuSearch hide">';
-            html += '<form class="viewMenuSearchForm">';
-            html += '<input type="text" class="headerSearchInput" autocomplete="off" />';
-            html += '<button type="button" is="paper-icon-button-light" class="btnCloseSearch autoSize"><i class="md-icon">close</i></button>';
-            html += '</form>';
-            html += '</div>';
+            html += '<button type="button" is="paper-icon-button-light" class="headerButton headerButtonRight headerSearchButton hide autoSize"><i class="md-icon">search</i></button>';
         }
 
         html += '<button is="paper-icon-button-light" class="headerButton headerButtonRight headerVoiceButton hide autoSize"><i class="md-icon">mic</i></button>';
@@ -175,6 +169,10 @@
         });
     }
 
+    function showSearch() {
+        Dashboard.navigate('search.html');
+    }
+
     function onHeaderUserButtonClick(e) {
         Dashboard.showUserFlyout(e.target);
     }
@@ -250,6 +248,11 @@
         var headerVoiceButton = document.querySelector('.headerVoiceButton');
         if (headerVoiceButton) {
             headerVoiceButton.addEventListener('click', showVoice);
+        }
+
+        var headerSearchButton = document.querySelector('.headerSearchButton');
+        if (headerSearchButton) {
+            headerSearchButton.addEventListener('click', showSearch);
         }
 
         var headerUserButton = document.querySelector('.headerUserButton');

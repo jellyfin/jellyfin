@@ -830,7 +830,7 @@ var Dashboard = {
                 Dashboard.onBrowseCommand(cmd.Arguments);
                 break;
             case 'GoToSearch':
-                Search.showSearchPanel();
+                Dashboard.navigate('search.html');
                 break;
             case 'DisplayMessage':
                 {
@@ -2212,12 +2212,6 @@ var AppInfo = {};
         define("detailtablecss", ['css!css/detailtable.css']);
         define("tileitemcss", ['css!css/tileitem.css']);
 
-        if (Dashboard.isRunningInCordova() && browserInfo.safari) {
-            define("searchmenu", ["cordova/searchmenu"]);
-        } else {
-            define("searchmenu", ["scripts/searchmenu"]);
-        }
-
         define("buttonenabled", ["legacy/buttonenabled"]);
 
         var deps = [];
@@ -2902,7 +2896,8 @@ var AppInfo = {};
         defineRoute({
             path: '/search.html',
             dependencies: [],
-            autoFocus: false
+            autoFocus: false,
+            controller: 'scripts/searchpage'
         });
 
         defineRoute({
@@ -3159,7 +3154,6 @@ var AppInfo = {};
             deps.push('devices/ie/ie');
         }
 
-        deps.push('scripts/search');
         deps.push('scripts/librarylist');
         deps.push('scripts/librarymenu');
 
