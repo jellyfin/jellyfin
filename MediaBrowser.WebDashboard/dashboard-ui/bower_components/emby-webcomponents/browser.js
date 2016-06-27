@@ -91,6 +91,7 @@
 
     if (userAgent.toLowerCase().indexOf("playstation 4") != -1) {
         browser.ps4 = true;
+        browser.tv = true;
     }
 
     if (isMobile.any) {

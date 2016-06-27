@@ -1019,7 +1019,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .itemsContainer {
     margin: 0 auto;
-    line-height: 0;
 }
 
 .alphabetPicker {
@@ -1174,21 +1173,12 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .itemsListview {
     margin: 0 auto !important;
     max-width: 1000px;
-}
-
-.itemsListview {
     background-color: transparent !important;
     box-shadow: none !important;
 }
 
     .itemsListview .listItem {
-        border-bottom: 1px solid #303030;
-        padding-left: 0;
-        padding-right: 0;
-    }
-
-    .itemsListview .listviewMenuButton {
-        margin-right: 0 !important;
+        border-bottom: 1px solid #2a2a2a;
     }
 
     .itemsListview .ui-li-count {
@@ -1206,50 +1196,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .itemsListview .syncIndicator, .itemsListview .pieIndicator {
         left: 55px;
     }
-
-    .itemsListview .content-icon {
-        width: auto !important;
-        padding-right: .7em;
-    }
-
-    .itemsListview.paperList {
-        text-align: left;
-    }
-
-    .itemsListview paper-item-body {
-        min-height: 0 !important;
-    }
-
-    .itemsListview .mediaItem {
-        padding: 7px 0;
-    }
-
-.listviewImage {
-    width: 80px;
-    height: 80px;
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-position: center center;
-}
-
-    .listviewImage.small {
-        width: 70px;
-        height: 70px;
-        background-repeat: no-repeat;
-        background-size: contain;
-        background-position: center center;
-    }
-
-.listViewUserDataButtons {
-    visibility: hidden;
-}
-
-@media all and (min-width: 1200px) {
-
-    .listItem:hover .listViewUserDataButtons {
-        visibility: visible !important;
-    }
-}
 
 @media all and (max-width: 1200px) {
 

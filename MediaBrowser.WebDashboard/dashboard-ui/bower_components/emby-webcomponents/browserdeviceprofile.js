@@ -172,7 +172,6 @@ define(['browser'], function (browser) {
 
         if (browser.tizen) {
 
-            return 10000000;
             // 2015 models
             if (userAgent.indexOf('tizen 2.3') != -1) {
                 return 20000000;

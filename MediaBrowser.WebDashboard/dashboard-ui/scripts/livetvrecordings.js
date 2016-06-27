@@ -8,7 +8,7 @@
 
         html += '<button type="button" is="emby-button" class="fab mini autoSize blue" item-icon><i class="md-icon">live_tv</i></button>';
 
-        html += '<div class="listItemBody">';
+        html += '<div class="listItemBody two-line">';
         html += '<a href="livetvrecordinglist.html?groupid=' + group.Id + '" class="clearLink">';
 
         html += '<div>';

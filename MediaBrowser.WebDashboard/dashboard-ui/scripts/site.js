@@ -319,14 +319,16 @@ var Dashboard = {
 
         var parentElem = footer.querySelector('#footerNotifications');
 
-        var elem = parentElem.querySelector('#' + options.id);
+        var notificationElementId = 'notification' + options.id;
 
-        if (!elem.length) {
-            parentElem.insertAdjacentHTML('beforeend', '<p id="' + options.id + '" class="footerNotification"></p>');
-            elem = parentElem.querySelector('#' + options.id);
+        var elem = parentElem.querySelector('#' + notificationElementId);
+
+        if (!elem) {
+            parentElem.insertAdjacentHTML('beforeend', '<p id="' + notificationElementId + '" class="footerNotification"></p>');
+            elem = parentElem.querySelector('#' + notificationElementId);
         }
 
-        var onclick = removeOnHide ? "jQuery(\"#" + options.id + "\").trigger(\"notification.remove\").remove();" : "jQuery(\"#" + options.id + "\").trigger(\"notification.hide\").hide();";
+        var onclick = removeOnHide ? "jQuery('#" + notificationElementId + "').trigger('notification.remove').remove();" : "jQuery('#" + notificationElementId + "').trigger('notification.hide').hide();";
 
         if (options.allowHide !== false) {
             options.html += '<span style="margin-left: 1em;"><button is="emby-button" type="button" class="submit" onclick="' + onclick + '">' + Globalize.translate('ButtonHide') + "</button></span>";

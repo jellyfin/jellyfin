@@ -59,7 +59,7 @@
     /* Above everything, except for the video player and popup overlays */
     z-index: 1097;
     color: #fff;
-    background-color: #2a2a2a;
+    background-color: #2b2b2b;
     text-align: center;
     display: flex;
     flex-direction: row;

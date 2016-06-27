@@ -14,7 +14,8 @@ button.listItem {
     display: flex;
     align-items: center;
     text-align: left;
-    padding: .25em 1.25em !important;
+    padding: 0 1em !important;
+    line-height: 170%;
 }
 
     .listItem.largeImage {
@@ -27,21 +28,42 @@ button.listItem {
 
 .listItemBody {
     flex-grow: 1;
-    padding: .85em 1.25em;
+    padding: 0 1.15em;
     overflow: hidden;
     text-overflow: ellipsis;
+    display: flex;
+    flex-direction: column;
+    vertical-align: middle;
+    justify-content: center;
+    min-height: 48px;
 }
+
+    .listItemBody.two-line {
+        min-height: 72px;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    .listItemBody.three-line {
+        min-height: 88px;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
 
     .listItemBody h3 {
         margin: 0;
         font-weight: normal;
-        padding: .25em 0;
+        padding: 0;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
 .layout-tv .listItemBody h3 {
     padding: 0;
+}
+
+.listItemBody > div:not(.secondary) {
+    font-size: 115%;
 }
 
 .listItemBodyText {
@@ -55,6 +77,7 @@ button.listItem {
     background-repeat: no-repeat;
     background-size: contain;
     flex-shrink: 0;
+    margin-left: -.9em;
 }
 
 .listItemIcon {

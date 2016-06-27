@@ -76,7 +76,7 @@
             elem.innerHTML = html;
 
             var listItems = [];
-            var elems = elem.querySelectorAll('PAPER-ICON-ITEM');
+            var elems = elem.querySelectorAll('.listItem');
             for (var i = 0, length = elems.length; i < length; i++) {
                 listItems.push(elems[i]);
             }

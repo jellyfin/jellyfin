@@ -97,7 +97,7 @@ function (dialogHelper, loading, connectionManager, globalize, actionsheet) {
 
             html += '<button is="emby-button" type="button" class="fab autoSize mini" style="background:#52B54B;"><i class="md-icon listItemIcon">dvr</i></button>';
 
-            html += '<div class="listItemBody">';
+            html += '<div class="listItemBody two-line">';
             html += '<h3>';
             html += channel.Name;
             html += '</h3>';
