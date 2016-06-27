@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'focusManager', 'emby-input', 'paper-icon-button-light', 'material-icons'], function (libraryBrowser, focusManager) {
+﻿define(['libraryBrowser', 'focusManager', 'embyRouter', 'emby-input', 'paper-icon-button-light', 'material-icons'], function (libraryBrowser, focusManager, embyRouter) {
 
     function loadSuggestions(page) {
 
@@ -178,6 +178,21 @@
 
         view.querySelector('.txtSearch').addEventListener('input', function () {
             onSearchChange(this.value);
+        });
+
+        view.querySelector('.btnBack').addEventListener('click', function () {
+            embyRouter.back();
+        });
+
+        view.addEventListener('viewbeforeshow', function (e) {
+            document.body.classList.add('hiddenViewMenuBar');
+            document.body.classList.add('hiddenNowPlayingBar');
+        });
+
+        view.addEventListener('viewbeforehide', function (e) {
+
+            document.body.classList.remove('hiddenViewMenuBar');
+            document.body.classList.remove('hiddenNowPlayingBar');
         });
 
     };
