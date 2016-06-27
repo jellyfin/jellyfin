@@ -2896,8 +2896,8 @@ var AppInfo = {};
         defineRoute({
             path: '/search.html',
             dependencies: [],
-            autoFocus: false,
-            controller: 'scripts/searchpage'
+            controller: 'scripts/searchpage',
+            transition: 'slidedown'
         });
 
         defineRoute({

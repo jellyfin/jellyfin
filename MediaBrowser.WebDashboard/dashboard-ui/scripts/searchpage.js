@@ -176,10 +176,6 @@
             loadSuggestions(view);
         }
 
-        view.addEventListener('viewshow', function () {
-            focusManager.focus(view.querySelector('.txtSearch'));
-        });
-
         view.querySelector('.txtSearch').addEventListener('input', function () {
             onSearchChange(this.value);
         });
