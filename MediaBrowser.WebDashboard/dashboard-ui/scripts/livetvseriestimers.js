@@ -42,7 +42,7 @@
 
             html += '<button type="button" is="emby-button" class="fab mini autoSize blue" item-icon><i class="md-icon">live_tv</i></button>';
 
-            html += '<div class="listItemBody">';
+            html += '<div class="listItemBody three-line">';
             html += '<a class="clearLink" href="livetvseriestimer.html?id=' + timer.Id + '">';
             html += '<h3>';
             html += timer.Name;

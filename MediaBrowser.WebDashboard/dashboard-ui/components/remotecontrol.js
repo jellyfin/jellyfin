@@ -435,7 +435,7 @@
 
                     var item = itemsContainer.querySelectorAll('.listItem')[index];
                     if (item) {
-                        var img = item.querySelector('.listviewImage');
+                        var img = item.querySelector('.listItemImage');
 
                         img.classList.remove('lazy');
                         img.classList.add('playlistIndexIndicatorImage');

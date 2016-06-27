@@ -1229,7 +1229,7 @@
 
             getListViewHtml: function (options) {
 
-                require(['paper-icon-item', 'paper-item-body', 'material-icons']);
+                require(['listViewStyle', 'material-icons']);
 
                 var outerHtml = "";
 
@@ -1276,7 +1276,7 @@
                     var cssClass = 'listItem';
 
                     var href = LibraryBrowser.getHref(item, options.context);
-                    html += '<paper-icon-item class="' + cssClass + '"' + dataAttributes + ' data-itemid="' + item.Id + '" data-playlistitemid="' + (item.PlaylistItemId || '') + '" data-href="' + href + '" data-icon="false">';
+                    html += '<div class="' + cssClass + '"' + dataAttributes + ' data-itemid="' + item.Id + '" data-playlistitemid="' + (item.PlaylistItemId || '') + '" data-href="' + href + '" data-icon="false">';
 
                     var imgUrl;
 
@@ -1327,15 +1327,15 @@
 
                     if (imgUrl) {
                         if (options.smallIcon) {
-                            html += '<div class="listviewImage lazy small" data-src="' + imgUrl + '" item-icon></div>';
+                            html += '<div class="listItemImage lazy small" data-src="' + imgUrl + '" item-icon></div>';
                         } else {
-                            html += '<div class="listviewImage lazy" data-src="' + imgUrl + '" item-icon></div>';
+                            html += '<div class="listItemImage lazy" data-src="' + imgUrl + '" item-icon></div>';
                         }
                     } else {
                         if (options.smallIcon) {
-                            html += '<div class="listviewImage small" item-icon></div>';
+                            html += '<div class="listItemImage small" item-icon></div>';
                         } else {
-                            html += '<div class="listviewImage" item-icon></div>';
+                            html += '<div class="listItemImage" item-icon></div>';
                         }
                     }
 
@@ -1383,19 +1383,20 @@
                         }) + '</div>');
                     }
 
-                    if (textlines.length > 2) {
-                        html += '<paper-item-body three-line>';
-                    } else {
-                        html += '<paper-item-body two-line>';
-                    }
-
                     var defaultAction = options.defaultAction;
                     if (defaultAction == 'play' || defaultAction == 'playallfromhere') {
                         if (item.PlayAccess != 'Full') {
                             defaultAction = null;
                         }
                     }
-                    var defaultActionAttribute = defaultAction ? (' data-action="' + defaultAction + '" class="itemWithAction mediaItem clearLink"') : ' class="mediaItem clearLink"';
+
+                    var bodyCssClass = 'mediaItem clearLink listItemBody';
+                    if (textlines.length > 2) {
+                        bodyCssClass += ' three-line';
+                    } else {
+                        bodyCssClass += ' two-line';
+                    }
+                    var defaultActionAttribute = defaultAction ? (' data-action="' + defaultAction + '" class="itemWithAction ' + bodyCssClass + '"') : ' class="' + bodyCssClass + '"';
                     html += '<a' + defaultActionAttribute + ' href="' + href + '">';
 
                     for (var i = 0, textLinesLength = textlines.length; i < textLinesLength; i++) {
@@ -1403,21 +1404,20 @@
                         if (i == 0) {
                             html += '<div>';
                         } else {
-                            html += '<div secondary>';
+                            html += '<div class="secondary">';
                         }
                         html += textlines[i] || '&nbsp;';
                         html += '</div>';
                     }
 
                     html += '</a>';
-                    html += '</paper-item-body>';
 
                     html += '<button is="paper-icon-button-light" class="listviewMenuButton autoSize"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button>';
                     html += '<span class="listViewUserDataButtons">';
                     html += LibraryBrowser.getUserDataIconsHtml(item);
                     html += '</span>';
 
-                    html += '</paper-icon-item>';
+                    html += '</div>';
 
                     index++;
                     return html;

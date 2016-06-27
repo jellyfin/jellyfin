@@ -389,9 +389,9 @@
         }
 
         if (!item.SpecialFeatureCount || item.SpecialFeatureCount == 0 || item.Type == "Series") {
-            page.querySelector('#scenesCollapsible').classList.add('hide');
+            page.querySelector('#specialsCollapsible').classList.add('hide');
         } else {
-            page.querySelector('#scenesCollapsible').classList.remove('hide');
+            page.querySelector('#specialsCollapsible').classList.remove('hide');
             renderSpecials(page, item, user, 6);
         }
         if (!item.People || !item.People.length) {
@@ -1234,7 +1234,7 @@
                 }
             }
 
-            html += '<div class="listItemBody">';
+            html += '<div class="listItemBody two-line">';
 
             html += '<div style="white-space:normal;">' + review.Caption + '</div>';
 

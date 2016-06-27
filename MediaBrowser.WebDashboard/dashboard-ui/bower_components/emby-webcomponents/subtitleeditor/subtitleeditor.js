@@ -123,7 +123,7 @@
 
                 itemHtml += '<i class="listItemIcon md-icon">closed_caption</i>';
 
-                itemHtml += '<div class="listItemBody">';
+                itemHtml += '<div class="listItemBody two-line">';
 
                 itemHtml += '<h3 class="listItemBodyText">';
                 itemHtml += s.DisplayTitle || '';
@@ -237,7 +237,7 @@
 
             html += '<i class="listItemIcon md-icon">closed_caption</i>';
 
-            html += '<div class="listItemBody">';
+            html += '<div class="listItemBody two-line">';
 
             //html += '<a class="btnViewSubtitle" href="#" data-subid="' + result.Id + '">';
 

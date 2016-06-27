@@ -52,6 +52,23 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="dtoService">The dto service.</param>
         public ItemsService(IUserManager userManager, ILibraryManager libraryManager, ILocalizationManager localization, IDtoService dtoService)
         {
+            if (userManager == null)
+            {
+                throw new ArgumentNullException("userManager");
+            }
+            if (libraryManager == null)
+            {
+                throw new ArgumentNullException("libraryManager");
+            }
+            if (localization == null)
+            {
+                throw new ArgumentNullException("localization");
+            }
+            if (dtoService == null)
+            {
+                throw new ArgumentNullException("dtoService");
+            }
+
             _userManager = userManager;
             _libraryManager = libraryManager;
             _localization = localization;
@@ -65,6 +82,11 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public async Task<object> Get(GetItems request)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException("request");
+            }
+
             var result = await GetItems(request).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
@@ -78,15 +100,32 @@ namespace MediaBrowser.Api.UserLibrary
         private async Task<ItemsResult> GetItems(GetItems request)
         {
             var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
-
+        
             var result = await GetItemsToSerialize(request, user).ConfigureAwait(false);
 
+            if (result == null)
+            {
+                throw new InvalidOperationException("GetItemsToSerialize returned null");
+            }
+
+            if (result.Items == null)
+            {
+                throw new InvalidOperationException("GetItemsToSerialize result.Items returned null");
+            }
+
             var dtoOptions = GetDtoOptions(request);
+
+            var dtoList = await _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user).ConfigureAwait(false);
+
+            if (dtoList == null)
+            {
+                throw new InvalidOperationException("GetBaseItemDtos returned null");
+            }
 
             return new ItemsResult
             {
                 TotalRecordCount = result.TotalRecordCount,
-                Items = (await _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user).ConfigureAwait(false)).ToArray()
+                Items = dtoList.ToArray()
             };
         }
 
