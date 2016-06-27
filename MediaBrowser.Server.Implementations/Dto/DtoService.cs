@@ -88,6 +88,16 @@ namespace MediaBrowser.Server.Implementations.Dto
 
         public async Task<List<BaseItemDto>> GetBaseItemDtos(IEnumerable<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null)
         {
+            if (items == null)
+            {
+                throw new ArgumentNullException("items");
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException("options");
+            }
+
             var syncJobItems = GetSyncedItemProgress(options);
             var syncDictionary = GetSyncedItemProgressDictionary(syncJobItems);
 
