@@ -656,7 +656,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             item.Audio = info.Audio;
             item.ChannelId = channel.Id.ToString("N");
             item.CommunityRating = item.CommunityRating ?? info.CommunityRating;
-            item.EndDate = info.EndDate;
+
             item.EpisodeTitle = info.EpisodeTitle;
             item.ExternalId = info.Id;
             item.Genres = info.Genres;
@@ -673,7 +673,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             item.OfficialRating = item.OfficialRating ?? info.OfficialRating;
             item.Overview = item.Overview ?? info.Overview;
             item.RunTimeTicks = (info.EndDate - info.StartDate).Ticks;
+
+            if (item.StartDate != info.StartDate)
+            {
+                forceUpdate = true;
+            }
             item.StartDate = info.StartDate;
+
+            if (item.EndDate != info.EndDate)
+            {
+                forceUpdate = true;
+            }
+            item.EndDate = info.EndDate;
+
             item.HomePageUrl = info.HomePageUrl;
 
             item.ProductionYear = info.ProductionYear;

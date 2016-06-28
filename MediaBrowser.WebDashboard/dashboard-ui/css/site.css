@@ -1,7 +1,7 @@
 ﻿/* Links */
 .ui-body-b a {
     color: #52B54B /*{b-link-color}*/;
-    font-weight: bold;
+    font-weight: 500;
 }
 
     .ui-body-b a:visited {

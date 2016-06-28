@@ -1,12 +1,29 @@
-﻿<div id="searchPage" data-role="page" class="page homePage libraryPage allLibraryPage noSecondaryNavPage" data-title="${ButtonSearch}" data-require="scripts/searchpage">
+﻿<div id="searchPage" data-role="page" class="page libraryPage allLibraryPage noSecondaryNavPage" data-title="${ButtonSearch}" data-backbutton="true">
+
+    <button is="paper-icon-button-light" style="position: absolute; top: .5em; left: .5em; z-index: 1;" tabindex="-1" class="btnBack autoSize">
+        <i class="md-icon">arrow_back</i>
+    </button>
 
     <div data-role="content">
-        <div style="text-align:center;">
+        <div class="readOnlyContent" style="text-align: center;margin: 0 auto;">
 
-            <h1>${TabSuggestions}</h1>
+            <div class="inputContainer" style="margin-bottom:1em;">
+                <div style="display: flex; align-items: center;">
+                    <i class="md-icon" style="width:28px;height:28px;font-size:28px;color:#aaa;">search</i>
+                    <div style="flex-grow:1;">
+                        <input is="emby-input" class="txtSearch" autocomplete="off" autofocus />
+                    </div>
+                </div>
+            </div>
 
-            <div class="searchSuggestions">
+            <div class="textSuggestions hide">
+                <h1>${TabSuggestions}</h1>
+
+                <div class="searchSuggestions">
+                </div>
             </div>
         </div>
+
+        <div class="searchResults hide"></div>
     </div>
 </div>
