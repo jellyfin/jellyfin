@@ -62,7 +62,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
             finally
             {
-                File.Delete(tempfile);
+                try
+                {
+                    File.Delete(tempfile);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error deleting recording temp file", ex);
+                }
             }
         }
 

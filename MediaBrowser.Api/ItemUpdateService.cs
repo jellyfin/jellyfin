@@ -70,26 +70,21 @@ namespace MediaBrowser.Api
                 Cultures = _localizationManager.GetCultures().ToList()
             };
 
-            var locationType = item.LocationType;
-            if (locationType == LocationType.FileSystem ||
-                locationType == LocationType.Offline)
+            if (!item.IsVirtualItem && !(item is ICollectionFolder) && !(item is UserView) && !(item is AggregateFolder) && !(item is LiveTvChannel) && !(item is IItemByName))
             {
-                if (!(item is ICollectionFolder) && !(item is UserView) && !(item is AggregateFolder) && !(item is LiveTvChannel) && !(item is IItemByName))
+                var inheritedContentType = _libraryManager.GetInheritedContentType(item);
+                var configuredContentType = _libraryManager.GetConfiguredContentType(item);
+
+                if (string.IsNullOrWhiteSpace(inheritedContentType) || string.Equals(inheritedContentType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(configuredContentType))
                 {
-                    var inheritedContentType = _libraryManager.GetInheritedContentType(item);
-                    var configuredContentType = _libraryManager.GetConfiguredContentType(item);
+                    info.ContentTypeOptions = GetContentTypeOptions(true);
+                    info.ContentType = configuredContentType;
 
-                    if (string.IsNullOrWhiteSpace(inheritedContentType) || string.Equals(inheritedContentType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(configuredContentType))
+                    if (string.Equals(inheritedContentType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
                     {
-                        info.ContentTypeOptions = GetContentTypeOptions(true);
-                        info.ContentType = configuredContentType;
-
-                        if (string.Equals(inheritedContentType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
-                        {
-                            info.ContentTypeOptions = info.ContentTypeOptions
-                                .Where(i => string.IsNullOrWhiteSpace(i.Value) || string.Equals(i.Value, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
-                                .ToList();
-                        }
+                        info.ContentTypeOptions = info.ContentTypeOptions
+                            .Where(i => string.IsNullOrWhiteSpace(i.Value) || string.Equals(i.Value, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
+                            .ToList();
                     }
                 }
             }
