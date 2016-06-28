@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.XmlTv.Classes;
+using Emby.XmlTv.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -109,12 +110,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             return results.Select(p => new ProgramInfo()
             {
                 ChannelId = p.ChannelId,
-                EndDate = p.EndDate,
+                EndDate = GetDate(p.EndDate),
                 EpisodeNumber = p.Episode == null ? null : p.Episode.Episode,
                 EpisodeTitle = p.Episode == null ? null : p.Episode.Title,
                 Genres = p.Categories,
                 Id = String.Format("{0}_{1:O}", p.ChannelId, p.StartDate), // Construct an id from the channel and start date,
-                StartDate = p.StartDate,
+                StartDate = GetDate(p.StartDate),
                 Name = p.Title,
                 Overview = p.Description,
                 ShortOverview = p.Description,
@@ -133,6 +134,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 CommunityRating = p.StarRating.HasValue ? p.StarRating.Value : (float?)null,
                 SeriesId = p.Episode != null ? p.Title.GetMD5().ToString("N") : null
             });
+        }
+
+        private DateTime GetDate(DateTime date)
+        {
+            if (date.Kind != DateTimeKind.Utc)
+            {
+                date = DateTime.SpecifyKind(date, DateTimeKind.Utc);
+            }
+            return date;
         }
 
         public async Task AddMetadata(ListingsProviderInfo info, List<ChannelInfo> channels, CancellationToken cancellationToken)
