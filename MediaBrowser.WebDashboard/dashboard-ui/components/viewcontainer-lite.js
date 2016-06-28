@@ -214,7 +214,9 @@ define(['browser'], function (browser) {
 
         if (enableAnimation() && oldAnimatedPage && newAnimatedPage.animate) {
             if (transition == 'slide') {
-                return slide(newAnimatedPage, oldAnimatedPage, transition, isBack);
+                return slideLeft(newAnimatedPage, oldAnimatedPage, transition, isBack);
+            } else if (transition == 'slidedown') {
+                return slideDown(newAnimatedPage, oldAnimatedPage, transition, isBack);
             } else if (transition == 'fade') {
                 return fade(newAnimatedPage, oldAnimatedPage, transition, isBack);
             }
@@ -223,7 +225,7 @@ define(['browser'], function (browser) {
         return Promise.resolve();
     }
 
-    function slide(newAnimatedPage, oldAnimatedPage, transition, isBack) {
+    function slideLeft(newAnimatedPage, oldAnimatedPage, transition, isBack) {
 
         return new Promise(function (resolve, reject) {
 
@@ -266,13 +268,56 @@ define(['browser'], function (browser) {
         });
     }
 
+    function slideDown(newAnimatedPage, oldAnimatedPage, transition, isBack) {
+
+        return new Promise(function (resolve, reject) {
+
+            // Do not use fill: both or the ability to swipe horizontally may be affected on Chrome 50
+            var timings = {
+                duration: 450,
+                iterations: 1,
+                easing: 'ease-out'
+            }
+
+            if (!browser.chrome) {
+                timings.fill = 'both';
+            }
+
+            var animations = [];
+
+            if (oldAnimatedPage) {
+                var destination = isBack ? '100%' : '-100%';
+
+                animations.push(oldAnimatedPage.animate([
+
+                  { transform: 'none', offset: 0 },
+                  { transform: 'translate3d(' + destination + ', 0, 0)', offset: 1 }
+
+                ], timings));
+            }
+
+            var start = isBack ? '100%' : '-100%';
+
+            animations.push(newAnimatedPage.animate([
+
+              { transform: 'translate3d(0, ' + start + ', 0)', offset: 0 },
+              { transform: 'none', offset: 1 }
+
+            ], timings));
+
+            currentAnimations = animations;
+
+            animations[animations.length - 1].onfinish = resolve;
+        });
+    }
+
     function fade(newAnimatedPage, oldAnimatedPage, transition, isBack) {
 
         return new Promise(function (resolve, reject) {
 
             // Do not use fill: both or the ability to swipe horizontally may be affected on Chrome 50
             var timings = {
-                duration: 140,
+                duration: 160,
                 iterations: 1,
                 easing: 'ease-out'
             }

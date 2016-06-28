@@ -2791,6 +2791,31 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             _fileSystem.CreateShortcut(lnk, path);
+
+            RemoveContentTypeOverrides(path);
+        }
+
+        private void RemoveContentTypeOverrides(string path)
+        {
+            var removeList = new List<NameValuePair>();
+
+            foreach (var contentType in ConfigurationManager.Configuration.ContentTypes)
+            {
+                if (string.Equals(path, contentType.Name, StringComparison.OrdinalIgnoreCase)
+                    || _fileSystem.ContainsSubPath(path, contentType.Name))
+                {
+                    removeList.Add(contentType);
+                }
+            }
+
+            if (removeList.Count > 0)
+            {
+                ConfigurationManager.Configuration.ContentTypes = ConfigurationManager.Configuration.ContentTypes
+                    .Except(removeList)
+                        .ToArray();
+
+                ConfigurationManager.SaveConfiguration();
+            }
         }
 
         public void RemoveMediaPath(string virtualFolderName, string mediaPath)

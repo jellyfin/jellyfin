@@ -278,7 +278,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>IEnumerable{System.String}.</returns>
         private string[] GetSavePaths(IHasImages item, ImageType type, int? imageIndex, string mimeType, bool saveLocally)
         {
-            if (!saveLocally)
+            if (!saveLocally || (_config.Configuration.ImageSavingConvention == ImageSavingConvention.Legacy))
             {
                 return new[] { GetStandardSavePath(item, type, imageIndex, mimeType, saveLocally) };
             }
