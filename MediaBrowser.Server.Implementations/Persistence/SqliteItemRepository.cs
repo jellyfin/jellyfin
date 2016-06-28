@@ -160,8 +160,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create table if not exists UserDataKeys (ItemId GUID, UserDataKey TEXT Priority INT, PRIMARY KEY (ItemId, UserDataKey))",
 
                                 "create table if not exists ItemValues (ItemId GUID, Type INT, Value TEXT, CleanValue TEXT)",
-                                //"create index if not exists idx_ItemValues on ItemValues(ItemId)",
-                                "create index if not exists idx_ItemValues2 on ItemValues(ItemId,Type)",
 
                                 "create table if not exists ProviderIds (ItemId GUID, Name TEXT, Value TEXT, PRIMARY KEY (ItemId, Name))",
                                 // covering index
@@ -321,6 +319,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 // items by name
                 "create index if not exists idx_ItemValues6 on ItemValues(ItemId,Type,CleanValue)",
+                "create index if not exists idx_ItemValues7 on ItemValues(Type,CleanValue,ItemId)",
 
                 // covering index
                 "create index if not exists idx_UserDataKeys3 on UserDataKeys(ItemId,Priority,UserDataKey)"
@@ -1776,9 +1775,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             return string.Empty;
         }
 
-        private string GetFromText()
+        private string GetFromText(string alias = "A")
         {
-            return " from TypedBaseItems A";
+            return " from TypedBaseItems " + alias;
         }
 
         public List<BaseItem> GetItemList(InternalItemsQuery query)
@@ -3661,19 +3660,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 var typesToCount = query.IncludeItemTypes.ToList();
 
-                if (typesToCount.Count == 0)
+                if (typesToCount.Count > 0)
                 {
-                    //typesToCount.Add("Item");
-                }
-
-                foreach (var type in typesToCount)
-                {
-                    var itemCountColumnQuery = "Select Count(CleanValue) from ItemValues where ItemValues.CleanValue=CleanName AND Type=@ItemValueType AND ItemId in (";
-                    itemCountColumnQuery += "select guid" + GetFromText();
+                    var itemCountColumnQuery = "select group_concat(type, '|')" + GetFromText("B");
 
                     var typeSubQuery = new InternalItemsQuery(query.User)
                     {
                         ExcludeItemTypes = query.ExcludeItemTypes,
+                        IncludeItemTypes = query.IncludeItemTypes,
                         MediaTypes = query.MediaTypes,
                         AncestorIds = query.AncestorIds,
                         ExcludeItemIds = query.ExcludeItemIds,
@@ -3682,15 +3676,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         ParentId = query.ParentId,
                         IsPlayed = query.IsPlayed
                     };
-                    if (string.Equals(type, "Item", StringComparison.OrdinalIgnoreCase))
-                    {
-                        typeSubQuery.IncludeItemTypes = query.IncludeItemTypes;
-                    }
-                    else
-                    {
-                        typeSubQuery.IncludeItemTypes = new[] { type };
-                    }
-                    var whereClauses = GetWhereClauses(typeSubQuery, cmd, type);
+                    var whereClauses = GetWhereClauses(typeSubQuery, cmd, "itemTypes");
+
+                    whereClauses.Add("guid in (select ItemId from ItemValues where ItemValues.CleanValue=A.CleanName AND Type=@ItemValueType)");
 
                     var typeWhereText = whereClauses.Count == 0 ?
                         string.Empty :
@@ -3698,11 +3686,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                     itemCountColumnQuery += typeWhereText;
 
-                    itemCountColumnQuery += ")";
+                    //itemCountColumnQuery += ")";
 
-                    var columnName = type + "Count";
-
-                    itemCountColumns.Add(new Tuple<string, string>(columnName, "(" + itemCountColumnQuery + ") as " + columnName));
+                    itemCountColumns.Add(new Tuple<string, string>("itemTypes", "(" + itemCountColumnQuery + ") as itemTypes"));
                 }
 
                 var columns = _retriveItemColumns.ToList();
@@ -3731,7 +3717,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     " where " + string.Join(" AND ", innerWhereClauses.ToArray());
 
                 var whereText = " where Type=@SelectType";
-                whereText += " And CleanName In (Select CleanValue from ItemValues where Type=@ItemValueType AND ItemId in (select guid from TypedBaseItems" + innerWhereText + "))";
+
+                if (typesToCount.Count == 0)
+                {
+                    whereText += " And CleanName In (Select CleanValue from ItemValues where Type=@ItemValueType AND ItemId in (select guid from TypedBaseItems" + innerWhereText + "))";
+                }
+                else
+                {
+                    whereText += " And itemTypes not null";
+                }
 
                 var outerQuery = new InternalItemsQuery(query.User)
                 {
@@ -3812,6 +3806,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     ? (CommandBehavior.SequentialAccess | CommandBehavior.SingleResult)
                     : CommandBehavior.SequentialAccess;
 
+                //Logger.Debug("GetItemValues: " + cmd.CommandText);
+
                 using (var reader = cmd.ExecuteReader(commandBehavior))
                 {
                     LogQueryTime("GetItemValues", cmd, now);
@@ -3830,7 +3826,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                             var item = GetItem(reader);
                             if (item != null)
                             {
-                                var countStartColumn = columns.Count - typesToCount.Count;
+                                var countStartColumn = columns.Count - 1;
 
                                 list.Add(new Tuple<BaseItem, ItemCounts>(item, GetItemCounts(reader, countStartColumn, typesToCount)));
                             }
@@ -3861,34 +3857,53 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var counts = new ItemCounts();
 
-            for (var i = 0; i < typesToCount.Count; i++)
+            if (typesToCount.Count == 0)
             {
-                var value = reader.GetInt32(countStartColumn + i);
+                return counts;
+            }
 
-                var type = typesToCount[i];
-                if (string.Equals(type, "Series", StringComparison.OrdinalIgnoreCase))
+            var typeString = reader.IsDBNull(countStartColumn) ? null : reader.GetString(countStartColumn);
+
+            if (string.IsNullOrWhiteSpace(typeString))
+            {
+                return counts;
+            }
+
+            var allTypes = typeString.Split(new[] {'|'}, StringSplitOptions.RemoveEmptyEntries)
+                .ToLookup(i => i).ToList();
+
+            foreach (var type in allTypes)
+            {
+                var value = type.ToList().Count;
+                var typeName = type.Key;
+
+                if (string.Equals(typeName, typeof(Series).FullName, StringComparison.OrdinalIgnoreCase))
                 {
                     counts.SeriesCount = value;
                 }
-                else if (string.Equals(type, "Episode", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(typeName, typeof(Episode).FullName, StringComparison.OrdinalIgnoreCase))
                 {
                     counts.EpisodeCount = value;
                 }
-                else if (string.Equals(type, "Movie", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(typeName, typeof(Movie).FullName, StringComparison.OrdinalIgnoreCase))
                 {
                     counts.MovieCount = value;
                 }
-                else if (string.Equals(type, "MusicAlbum", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(typeName, typeof(MusicAlbum).FullName, StringComparison.OrdinalIgnoreCase))
                 {
                     counts.AlbumCount = value;
                 }
-                else if (string.Equals(type, "Audio", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(typeName, typeof(Audio).FullName, StringComparison.OrdinalIgnoreCase))
                 {
                     counts.SongCount = value;
                 }
-                else if (string.Equals(type, "Game", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(typeName, typeof(Game).FullName, StringComparison.OrdinalIgnoreCase))
                 {
                     counts.GameCount = value;
+                }
+                else if (string.Equals(typeName, typeof(Trailer).FullName, StringComparison.OrdinalIgnoreCase))
+                {
+                    counts.TrailerCount = value;
                 }
                 counts.ItemCount += value;
             }

@@ -2222,7 +2222,6 @@
 
         view.addEventListener('viewbeforeshow', function () {
             var page = this;
-
             reload(page, params);
 
             Events.on(ApiClient, 'websocketmessage', onWebSocketMessage);

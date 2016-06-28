@@ -102,11 +102,11 @@ function (dialogHelper, loading, connectionManager, globalize, actionsheet) {
             html += channel.Name;
             html += '</h3>';
 
+            html += '<div class="secondary">';
             if (channel.ProviderChannelNumber || channel.ProviderChannelName) {
-                html += '<div class="secondary">';
                 html += getMappingSecondaryName(channel, providerName);
-                html += '</div>';
             }
+            html += '</div>';
 
             html += '</div>';
 
