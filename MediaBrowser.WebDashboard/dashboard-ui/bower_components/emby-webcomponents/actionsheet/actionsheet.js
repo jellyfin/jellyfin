@@ -142,8 +142,13 @@
         }
 
         var scrollType = layoutManager.desktop ? 'smoothScrollY' : 'hiddenScrollY';
-        var style = (browser.noFlex || browser.firefox) ? ' style="max-height:400px;"' : '';
-        html += '<div class="actionSheetScroller ' + scrollType + '"' + style + '>';
+        var style = (browser.noFlex || browser.firefox) ? 'max-height:400px;' : '';
+
+        // Admittedly a hack but right now the scrollbar is being factored into the width which is causing truncation
+        if (options.items.length > 20) {
+            style += "min-width:200px;";
+        }
+        html += '<div class="actionSheetScroller ' + scrollType + '" style="' + style + '">';
 
         var i, length, option;
         var renderIcon = false;

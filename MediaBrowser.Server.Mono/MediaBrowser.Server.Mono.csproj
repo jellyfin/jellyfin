@@ -23,6 +23,7 @@
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
     <Externalconsole>true</Externalconsole>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>full</DebugType>
@@ -60,11 +61,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Mono.Posix.4.0.0.0\lib\net40\Mono.Posix.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Security, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ThirdParty\Mono.Security\Mono.Security.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Patterns.Logging, Version=1.0.5494.41209, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
@@ -95,6 +91,22 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Native\NativeApp.cs" />
     <Compile Include="Networking\NetworkManager.cs" />
+    <Compile Include="Security\ASN1.cs" />
+    <Compile Include="Security\ASN1Convert.cs" />
+    <Compile Include="Security\BitConverterLE.cs" />
+    <Compile Include="Security\CryptoConvert.cs" />
+    <Compile Include="Security\PKCS1.cs" />
+    <Compile Include="Security\PKCS12.cs" />
+    <Compile Include="Security\PKCS7.cs" />
+    <Compile Include="Security\PKCS8.cs" />
+    <Compile Include="Security\X501Name.cs" />
+    <Compile Include="Security\X509Builder.cs" />
+    <Compile Include="Security\X509Certificate.cs" />
+    <Compile Include="Security\X509CertificateBuilder.cs" />
+    <Compile Include="Security\X509CertificateCollection.cs" />
+    <Compile Include="Security\X509Extension.cs" />
+    <Compile Include="Security\X509Extensions.cs" />
+    <Compile Include="Security\X520Attributes.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
