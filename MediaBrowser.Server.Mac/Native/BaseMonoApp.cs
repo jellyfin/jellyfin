@@ -189,11 +189,6 @@ namespace MediaBrowser.Server.Mac
                     {
                                 "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/osx/ffmpeg-x64-2.8.5.7z"
                             };
-                case Architecture.X86:
-                    return new[]
-                    {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/osx/ffmpeg-x86-2.5.3.7z"
-                            };
             }
 
             // No version available 
