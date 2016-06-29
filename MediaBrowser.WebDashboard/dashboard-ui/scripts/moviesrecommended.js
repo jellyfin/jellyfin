@@ -213,7 +213,7 @@
 
             userId: userId,
             categoryLimit: 6,
-            ItemLimit: screenWidth >= 1920 ? 8 : (screenWidth >= 1600 ? 7 : (screenWidth >= 1200 ? 6 : 5)),
+            ItemLimit: screenWidth >= 1920 ? 8 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 6 : 5)),
             Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
