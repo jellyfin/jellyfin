@@ -79,6 +79,8 @@ namespace MediaBrowser.Api
     {
         [ApiMember(Name = "Path", Description = "Path", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Path { get; set; }
+        [ApiMember(Name = "PathType", Description = "PathType", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string PathType { get; set; }
     }
 
     public class ConfigurationService : BaseApiService
@@ -110,7 +112,7 @@ namespace MediaBrowser.Api
 
         public void Post(UpdateMediaEncoderPath request)
         {
-            var task = _mediaEncoder.UpdateEncoderPath(request.Path);
+            var task = _mediaEncoder.UpdateEncoderPath(request.Path, request.PathType);
             Task.WaitAll(task);
         }
 
