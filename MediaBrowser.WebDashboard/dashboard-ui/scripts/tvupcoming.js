@@ -1,6 +1,6 @@
 ﻿define(['datetime', 'scrollStyles'], function (datetime) {
 
-    function loadUpcoming(context, params) {
+    function getUpcomingPromise(context, params) {
 
         Dashboard.showLoadingMsg();
 
@@ -16,7 +16,12 @@
 
         query.ParentId = params.topParentId;
 
-        ApiClient.getJSON(ApiClient.getUrl("Shows/Upcoming", query)).then(function (result) {
+        return ApiClient.getJSON(ApiClient.getUrl("Shows/Upcoming", query));
+    }
+
+    function loadUpcoming(context, params, promise) {
+
+        promise.then(function (result) {
 
             var items = result.Items;
 
@@ -127,10 +132,15 @@
     return function (view, params, tabContent) {
 
         var self = this;
+        var upcomingPromise;
+
+        self.preRender = function () {
+            upcomingPromise = getUpcomingPromise(view, params);
+        };
 
         self.renderTab = function () {
 
-            loadUpcoming(tabContent, params);
+            loadUpcoming(tabContent, params, upcomingPromise);
         };
     };
 });

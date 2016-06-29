@@ -296,9 +296,8 @@
         var tabControllers = [];
         var renderedTabs = [];
 
-        function loadTab(page, index) {
+        function getTabController(page, index, callback) {
 
-            var tabContent = view.querySelector('.pageTabContent[data-index=\'' + index + '\']');
             var depends = [];
 
             switch (index) {
@@ -325,12 +324,14 @@
             }
 
             require(depends, function (controllerFactory) {
-
+                var tabContent;
                 if (index == 0) {
+                    tabContent = view.querySelector('.pageTabContent[data-index=\'' + index + '\']');
                     self.tabContent = tabContent;
                 }
                 var controller = tabControllers[index];
                 if (!controller) {
+                    tabContent = view.querySelector('.pageTabContent[data-index=\'' + index + '\']');
                     controller = index ? new controllerFactory(view, params, tabContent) : self;
                     tabControllers[index] = controller;
 
@@ -339,6 +340,24 @@
                     }
                 }
 
+                callback(controller);
+            });
+        }
+
+        function preLoadTab(page, index) {
+
+            getTabController(page, index, function (controller) {
+                if (renderedTabs.indexOf(index) == -1) {
+                    if (controller.preRender) {
+                        controller.preRender();
+                    }
+                }
+            });
+        }
+
+        function loadTab(page, index) {
+
+            getTabController(page, index, function (controller) {
                 if (renderedTabs.indexOf(index) == -1) {
                     renderedTabs.push(index);
                     controller.renderTab();
@@ -346,6 +365,9 @@
             });
         }
 
+        mdlTabs.addEventListener('beforetabchange', function (e) {
+            preLoadTab(view, parseInt(e.detail.selectedTabIndex));
+        });
         mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));
         });
