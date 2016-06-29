@@ -1,8 +1,6 @@
 ﻿define(['dialogHelper', 'css!css/metadataeditor.css', 'emby-button', 'paper-icon-button-light'], function (dialogHelper) {
 
     var currentItem;
-    var currentResolve;
-    var currentReject;
     var hasChanges = false;
 
     function getBaseRemoteOptions() {
@@ -241,7 +239,7 @@
         });
     }
 
-    function showEditor(itemId, options) {
+    function showEditor(itemId, options, resolve, reject) {
 
         options = options || {};
 
@@ -282,7 +280,16 @@
                 initEditor(dlg, options);
 
                 // Has to be assigned a z-index after the call to .open() 
-                dlg.addEventListener('close', onDialogClosed);
+                dlg.addEventListener('close', function () {
+
+                    Dashboard.hideLoadingMsg();
+
+                    if (hasChanges) {
+                        resolve();
+                    } else {
+                        reject();
+                    }
+                });
 
                 dialogHelper.open(dlg);
 
@@ -299,27 +306,14 @@
         xhr.send();
     }
 
-    function onDialogClosed() {
-
-        Dashboard.hideLoadingMsg();
-
-        if (hasChanges) {
-            currentResolve();
-        } else {
-            currentReject();
-        }
-    }
-
     return {
         show: function (itemId, options) {
 
             return new Promise(function (resolve, reject) {
 
-                currentResolve = resolve;
-                currentReject = reject;
                 hasChanges = false;
 
-                showEditor(itemId, options);
+                showEditor(itemId, options, resolve, reject);
             });
         }
     };

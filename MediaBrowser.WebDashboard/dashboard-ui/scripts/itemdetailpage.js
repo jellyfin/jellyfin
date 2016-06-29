@@ -2109,7 +2109,7 @@
 
             Dashboard.getCurrentUser().then(function (user) {
 
-                LibraryBrowser.showMoreCommands(button, currentItem.Id, currentItem.Type, LibraryBrowser.getMoreCommands(currentItem, user)).then(function() {
+                LibraryBrowser.showMoreCommands(button, currentItem.Id, currentItem.Type, LibraryBrowser.getMoreCommands(currentItem, user)).then(function () {
                     reload(view, params);
                 });
             });
@@ -2185,6 +2185,14 @@
             removeFromCollection(view, currentItem, [itemId]);
         });
 
+        view.querySelector('.detailImageContainer').addEventListener('click', function (e) {
+            var itemDetailGalleryLink = parentWithClass(e.target, 'itemDetailGalleryLink');
+            if (itemDetailGalleryLink) {
+                LibraryBrowser.editImages(currentItem.Id).then(function () {
+                    reload(view, params);
+                });
+            }
+        });
 
         //var btnMore = page.querySelectorAll('.btnMoreCommands iron-icon');
         //for (var i = 0, length = btnMore.length; i < length; i++) {

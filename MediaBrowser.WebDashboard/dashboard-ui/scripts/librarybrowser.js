@@ -773,18 +773,24 @@
 
             editImages: function (itemId) {
 
-                require(['components/imageeditor/imageeditor'], function (ImageEditor) {
+                return new Promise(function (resolve, reject) {
 
-                    ImageEditor.show(itemId);
+                    require(['components/imageeditor/imageeditor'], function (ImageEditor) {
+
+                        ImageEditor.show(itemId).then(resolve, reject);
+                    });
                 });
             },
 
             editSubtitles: function (itemId) {
 
-                require(['subtitleEditor'], function (subtitleEditor) {
+                return new Promise(function (resolve, reject) {
 
-                    var serverId = ApiClient.serverInfo().Id;
-                    subtitleEditor.show(itemId, serverId);
+                    require(['subtitleEditor'], function (subtitleEditor) {
+
+                        var serverId = ApiClient.serverInfo().Id;
+                        subtitleEditor.show(itemId, serverId).then(resolve, reject);
+                    });
                 });
             },
 
@@ -956,10 +962,10 @@
                                         }
                                         break;
                                     case 'editsubtitles':
-                                        LibraryBrowser.editSubtitles(itemId);
+                                        LibraryBrowser.editSubtitles(itemId).then(resolve, reject);
                                         break;
                                     case 'editimages':
-                                        LibraryBrowser.editImages(itemId);
+                                        LibraryBrowser.editImages(itemId).then(resolve, reject);
                                         break;
                                     case 'identify':
                                         LibraryBrowser.identifyItem(itemId).then(resolve, reject);
@@ -3192,7 +3198,7 @@
                 html += '<div style="position:relative;">';
 
                 if (editable) {
-                    html += "<a onclick='LibraryBrowser.editImages(\"" + item.Id + "\");' class='itemDetailGalleryLink' href='#'>";
+                    html += "<a class='itemDetailGalleryLink' href='#'>";
                 }
 
                 if (detectRatio && item.PrimaryImageAspectRatio) {
