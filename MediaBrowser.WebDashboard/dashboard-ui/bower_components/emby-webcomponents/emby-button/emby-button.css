@@ -60,6 +60,7 @@
 
     [is="emby-button"].noflex {
         display: inline-block;
+        white-space: nowrap;
     }
 
     [is="emby-button"].fab.mini:not(.autoSize) {
