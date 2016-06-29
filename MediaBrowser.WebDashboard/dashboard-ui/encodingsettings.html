@@ -29,10 +29,17 @@
                 </div>
                 <div class="checkboxContainer">
                     <label>
-                        <input is="emby-checkbox" type="checkbox" id="chkEnableThrottle" />
+                        <input is="emby-checkbox" type="checkbox" id="chkEnableThrottle"/>
                         <span>${OptionEnableTranscodingThrottle}</span>
                     </label>
                     <div class="fieldDescription checkboxFieldDescription">${OptionEnableTranscodingThrottleHelp}</div>
+                </div>
+
+                <div class="selectContainer fldSelectEncoderPathType hide">
+                    <select is="emby-select" id="selectEncoderPath" label="${LabelffmpegVersion}">
+                        <option value="System">${OptionUseSystemInstalledVersion}</option>
+                        <option value="Custom">${OptionUseMyCustomVersion}</option>
+                    </select>
                 </div>
                 <div class="inputContainer fldEncoderPath hide">
                     <div style="display: flex; align-items: center;">

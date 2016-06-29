@@ -16,10 +16,10 @@
                 view.querySelector('.suggestedLocation').innerHTML = Globalize.translate('FFmpegSuggestedDownload', '<a target="_blank" href="https://ffmpeg.zeranoe.com/builds">https://ffmpeg.zeranoe.com</a>');
 
                 if (systemInfo.SystemArchitecture == 'X86') {
-                    instructions = 'Download 32-Bit Static';
+                    instructions = 'Download FFmpeg 32-Bit Static';
                 }
                 else if (systemInfo.SystemArchitecture == 'X64') {
-                    instructions = 'Download 64-Bit Static';
+                    instructions = 'Download FFmpeg 64-Bit Static';
                 }
 
                 view.querySelector('.downloadInstructions').innerHTML = instructions;
@@ -90,7 +90,8 @@
                 url: ApiClient.getUrl('System/MediaEncoder/Path'),
                 type: 'POST',
                 data: {
-                    Path: form.querySelector('.txtEncoderPath').value
+                    Path: form.querySelector('.txtEncoderPath').value,
+                    PathType: 'Custom'
                 }
             }).then(goNext, onSaveEncodingPathFailure);
 
