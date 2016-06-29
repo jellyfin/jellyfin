@@ -46,6 +46,7 @@ namespace MediaBrowser.Controller.Entities
         public string NameStartsWith { get; set; }
         public string NameLessThan { get; set; }
         public string NameContains { get; set; }
+        public string MinSortName { get; set; }
 
         public string PresentationUniqueKey { get; set; }
         public string Path { get; set; }
