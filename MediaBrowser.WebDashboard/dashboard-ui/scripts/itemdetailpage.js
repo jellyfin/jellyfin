@@ -468,7 +468,7 @@
             });
         }
         var itemGenres = page.querySelectorAll('.itemGenres');
-        for (i = 0, length = itemMiscInfo.length; i < length; i++) {
+        for (i = 0, length = itemGenres.length; i < length; i++) {
             LibraryBrowser.renderGenres(itemGenres[i], item, null, isStatic);
         }
 
@@ -712,6 +712,10 @@
 
         var similarCollapsible = page.querySelector('#similarCollapsible');
 
+        if (!similarCollapsible) {
+            return;
+        }
+
         if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Series" || item.Type == "Program" || item.Type == "Recording" || item.Type == "Game" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "ChannelVideoItem") {
             similarCollapsible.classList.remove('hide');
         }
@@ -721,18 +725,12 @@
         }
 
         var shape = item.Type == "MusicAlbum" || item.Type == "MusicArtist" ? getSquareShape() : getPortraitShape();
-        var screenWidth = window.innerWidth;
-        var screenHeight = window.innerHeight;
 
         var options = {
             userId: Dashboard.getCurrentUserId(),
-            limit: screenWidth > 800 && shape == "detailPagePortrait" ? 4 : 4,
+            limit: 8,
             fields: "PrimaryImageAspectRatio,UserData,SyncInfo,CanDelete"
         };
-
-        if (screenWidth >= 800 && screenHeight >= 1000) {
-            options.limit *= 2;
-        }
 
         if (enableScrollX()) {
             options.limit = 12;
@@ -2111,7 +2109,9 @@
 
             Dashboard.getCurrentUser().then(function (user) {
 
-                LibraryBrowser.showMoreCommands(button, currentItem.Id, currentItem.Type, LibraryBrowser.getMoreCommands(currentItem, user));
+                LibraryBrowser.showMoreCommands(button, currentItem.Id, currentItem.Type, LibraryBrowser.getMoreCommands(currentItem, user)).then(function () {
+                    reload(view, params);
+                });
             });
         }
 
@@ -2185,6 +2185,14 @@
             removeFromCollection(view, currentItem, [itemId]);
         });
 
+        view.querySelector('.detailImageContainer').addEventListener('click', function (e) {
+            var itemDetailGalleryLink = parentWithClass(e.target, 'itemDetailGalleryLink');
+            if (itemDetailGalleryLink) {
+                LibraryBrowser.editImages(currentItem.Id).then(function () {
+                    reload(view, params);
+                });
+            }
+        });
 
         //var btnMore = page.querySelectorAll('.btnMoreCommands iron-icon');
         //for (var i = 0, length = btnMore.length; i < length; i++) {

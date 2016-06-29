@@ -32,7 +32,7 @@
         var hasId = false;
 
         var txtLookupId = page.querySelectorAll('.txtLookupId');
-        for (i = 0, length = identifyField.length; i < length; i++) {
+        for (i = 0, length = txtLookupId.length; i < length; i++) {
 
             var value = txtLookupId[i].value;
 

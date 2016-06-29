@@ -156,7 +156,9 @@ namespace MediaBrowser.Api.Movies
                         typeof(LiveTvProgram).Name
                 },
                 IsMovie = true,
-                SimilarTo = item
+                SimilarTo = item,
+                EnableGroupByMetadataKey = true
+
             }).ToList();
 
             var dtoOptions = GetDtoOptions(request);
@@ -205,7 +207,8 @@ namespace MediaBrowser.Api.Movies
                 SortOrder = SortOrder.Descending,
                 Limit = 10,
                 IsFavoriteOrLiked = true,
-                ExcludeItemIds = recentlyPlayedMovies.Select(i => i.Id.ToString("N")).ToArray()
+                ExcludeItemIds = recentlyPlayedMovies.Select(i => i.Id.ToString("N")).ToArray(),
+                EnableGroupByMetadataKey = true
 
             }, parentIds).ToList();
 
@@ -283,7 +286,8 @@ namespace MediaBrowser.Api.Movies
                         typeof(Trailer).Name,
                         typeof(LiveTvProgram).Name
                     },
-                    IsMovie = true
+                    IsMovie = true,
+                    EnableGroupByMetadataKey = true
 
                 }).DistinctBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N"))
                 .Take(itemLimit)
@@ -317,7 +321,8 @@ namespace MediaBrowser.Api.Movies
                         typeof(Trailer).Name,
                         typeof(LiveTvProgram).Name
                     },
-                    IsMovie = true
+                    IsMovie = true,
+                    EnableGroupByMetadataKey = true
 
                 }).DistinctBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N"))
                 .Take(itemLimit)
@@ -350,7 +355,8 @@ namespace MediaBrowser.Api.Movies
                         typeof(LiveTvProgram).Name
                     },
                     IsMovie = true,
-                    SimilarTo = item
+                    SimilarTo = item,
+                    EnableGroupByMetadataKey = true
 
                 }).ToList();
 

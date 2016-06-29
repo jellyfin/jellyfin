@@ -211,6 +211,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           ripple.downAction();
           ripple.upAction();
         });
+        test('reuse a paper-ripple', function (done) {
+          var ripple = document.createElement('paper-ripple');
+          Polymer.dom(rippleContainer).appendChild(ripple);
+          Polymer.dom(rippleContainer).removeChild(ripple);
+          
+          ripple.addEventListener('transitionend', function() {
+            expect(ripple.parentNode).to.be.ok;
+            Polymer.dom(document.body).removeChild(ripple);
+            done();
+          });
+          Polymer.dom(document.body).appendChild(ripple);
+          ripple.downAction();
+          ripple.upAction();
+        });
       });
 
       suite('avoid double transitionend event', function () {
