@@ -24,6 +24,17 @@
 
                 view.querySelector('.downloadInstructions').innerHTML = instructions;
 
+            } else if (systemInfo.OperatingSystem == 'Linux' && systemInfo.SystemArchitecture != 'Arm') {
+
+                view.querySelector('.suggestedLocation').innerHTML = Globalize.translate('FFmpegSuggestedDownload', '<a target="_blank" href="http://johnvansickle.com/ffmpeg">http://johnvansickle.com/ffmpeg</a>');
+                if (systemInfo.SystemArchitecture == 'X86') {
+                    instructions = 'Download x86 build';
+                }
+                else if (systemInfo.SystemArchitecture == 'X64') {
+                    instructions = 'Download x86_64 build';
+                }
+                view.querySelector('.downloadInstructions').innerHTML = instructions;
+
             } else if (systemInfo.OperatingSystem == 'Osx' && systemInfo.SystemArchitecture == 'X64') {
 
                 view.querySelector('.suggestedLocation').innerHTML = Globalize.translate('FFmpegSuggestedDownload', '<a target="_blank" href="http://evermeet.cx/ffmpeg">http://evermeet.cx/ffmpeg</a>');

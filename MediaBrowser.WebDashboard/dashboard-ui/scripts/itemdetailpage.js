@@ -725,18 +725,12 @@
         }
 
         var shape = item.Type == "MusicAlbum" || item.Type == "MusicArtist" ? getSquareShape() : getPortraitShape();
-        var screenWidth = window.innerWidth;
-        var screenHeight = window.innerHeight;
 
         var options = {
             userId: Dashboard.getCurrentUserId(),
-            limit: screenWidth > 800 && shape == "detailPagePortrait" ? 4 : 4,
+            limit: 8,
             fields: "PrimaryImageAspectRatio,UserData,SyncInfo,CanDelete"
         };
-
-        if (screenWidth >= 800 && screenHeight >= 1000) {
-            options.limit *= 2;
-        }
 
         if (enableScrollX()) {
             options.limit = 12;

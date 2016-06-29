@@ -276,11 +276,6 @@ namespace MediaBrowser.Server.Mono.Native
                             {
                                 "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-git-20160215-64bit-static.7z"
                             };
-                        case Architecture.X86:
-                            return new[]
-                            {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-git-20160215-32bit-static.7z"
-                            };
                     }
                     break;
             }
