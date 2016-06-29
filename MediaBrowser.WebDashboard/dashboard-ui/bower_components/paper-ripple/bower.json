@@ -1,6 +1,6 @@
 {
   "name": "paper-ripple",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "license": "http://polymer.github.io/LICENSE.txt",
   "description": "Adds a material design ripple to any container",
   "private": true,
@@ -18,7 +18,7 @@
   },
   "main": "paper-ripple.html",
   "dependencies": {
-    "iron-a11y-keys-behavior": "polymerelements/iron-a11y-keys-behavior#^1.1.4",
+    "iron-a11y-keys-behavior": "polymerelements/iron-a11y-keys-behavior#^1.1.5",
     "polymer": "Polymer/polymer#^1.1.0"
   },
   "devDependencies": {
