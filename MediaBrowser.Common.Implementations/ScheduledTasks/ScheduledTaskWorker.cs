@@ -122,30 +122,27 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         {
             get
             {
-                if (_lastExecutionResult == null)
-                {
-                    var path = GetHistoryFilePath();
+                var path = GetHistoryFilePath();
 
-                    lock (_lastExecutionResultSyncLock)
+                lock (_lastExecutionResultSyncLock)
+                {
+                    if (_lastExecutionResult == null)
                     {
-                        if (_lastExecutionResult == null)
+                        try
                         {
-                            try
-                            {
-                                return JsonSerializer.DeserializeFromFile<TaskResult>(path);
-                            }
-                            catch (DirectoryNotFoundException)
-                            {
-                                // File doesn't exist. No biggie
-                            }
-                            catch (FileNotFoundException)
-                            {
-                                // File doesn't exist. No biggie
-                            }
-                            catch (Exception ex)
-                            {
-                                Logger.ErrorException("Error deserializing {0}", ex, path);
-                            }
+                            _lastExecutionResult = JsonSerializer.DeserializeFromFile<TaskResult>(path);
+                        }
+                        catch (DirectoryNotFoundException)
+                        {
+                            // File doesn't exist. No biggie
+                        }
+                        catch (FileNotFoundException)
+                        {
+                            // File doesn't exist. No biggie
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.ErrorException("Error deserializing {0}", ex, path);
                         }
                     }
                 }
