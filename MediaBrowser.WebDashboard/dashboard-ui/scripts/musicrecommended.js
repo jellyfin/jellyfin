@@ -270,9 +270,8 @@
         var tabControllers = [];
         var renderedTabs = [];
 
-        function loadTab(page, index) {
+        function getTabController(page, index, callback) {
 
-            var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
             var depends = [];
 
             switch (index) {
@@ -302,20 +301,15 @@
             }
 
             require(depends, function (controllerFactory) {
-
+                var tabContent;
                 if (index == 0) {
+                    tabContent = view.querySelector('.pageTabContent[data-index=\'' + index + '\']');
                     self.tabContent = tabContent;
                 }
                 var controller = tabControllers[index];
                 if (!controller) {
+                    tabContent = view.querySelector('.pageTabContent[data-index=\'' + index + '\']');
                     controller = index ? new controllerFactory(view, params, tabContent) : self;
-
-                    if (index == 2) {
-                        controller.mode = 'albumartists';
-                    } else if (index == 3) {
-                        controller.mode = 'artists';
-                    }
-
                     tabControllers[index] = controller;
 
                     if (controller.initTab) {
@@ -323,6 +317,24 @@
                     }
                 }
 
+                callback(controller);
+            });
+        }
+
+        function preLoadTab(page, index) {
+
+            getTabController(page, index, function (controller) {
+                if (renderedTabs.indexOf(index) == -1) {
+                    if (controller.preRender) {
+                        controller.preRender();
+                    }
+                }
+            });
+        }
+
+        function loadTab(page, index) {
+
+            getTabController(page, index, function (controller) {
                 if (renderedTabs.indexOf(index) == -1) {
                     renderedTabs.push(index);
                     controller.renderTab();
@@ -340,6 +352,9 @@
 
         libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'), [0, 4, 5, 6]);
 
+        mdlTabs.addEventListener('beforetabchange', function (e) {
+            preLoadTab(view, parseInt(e.detail.selectedTabIndex));
+        });
         mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));
         });

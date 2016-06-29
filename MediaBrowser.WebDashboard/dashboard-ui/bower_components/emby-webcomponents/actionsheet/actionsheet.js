@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'layoutManager', 'globalize', 'emby-button', 'css!./actionsheet', 'material-icons', 'scrollStyles'], function (dialogHelper, layoutManager, globalize) {
+﻿define(['dialogHelper', 'layoutManager', 'globalize', 'browser', 'emby-button', 'css!./actionsheet', 'material-icons', 'scrollStyles'], function (dialogHelper, layoutManager, globalize, browser) {
 
     function parentWithClass(elem, className) {
 
@@ -142,8 +142,8 @@
         }
 
         var scrollType = layoutManager.desktop ? 'smoothScrollY' : 'hiddenScrollY';
-
-        html += '<div class="actionSheetScroller ' + scrollType + '">';
+        var style = (browser.noFlex || browser.firefox) ? ' style="max-height:400px;"' : '';
+        html += '<div class="actionSheetScroller ' + scrollType + '"' + style + '>';
 
         var i, length, option;
         var renderIcon = false;

@@ -99,6 +99,39 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _hasExternalEncoder = hasExternalEncoder;
         }
 
+        public string EncoderLocationType
+        {
+            get
+            {
+                if (_hasExternalEncoder)
+                {
+                    return "External";
+                }
+
+                if (string.IsNullOrWhiteSpace(FFMpegPath))
+                {
+                    return null;
+                }
+
+                if (IsSystemInstalledPath(FFMpegPath))
+                {
+                    return "System";
+                }
+
+                return "Custom";
+            }
+        }
+
+        private bool IsSystemInstalledPath(string path)
+        {
+            if (path.IndexOf("/", StringComparison.Ordinal) == -1 && path.IndexOf("\\", StringComparison.Ordinal) == -1)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         public void Init()
         {
             ConfigureEncoderPaths();
@@ -115,10 +148,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var valueToSave = FFMpegPath;
 
-            // if using system variable, don't save this.
-            if (string.Equals(valueToSave, "ffmpeg", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(valueToSave))
             {
-                valueToSave = null;
+                // if using system variable, don't save this.
+                if (IsSystemInstalledPath(valueToSave))
+                {
+                    valueToSave = null;
+                }
             }
 
             if (!string.Equals(valueToSave, appPath, StringComparison.Ordinal))
@@ -128,19 +164,39 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
-        public async Task UpdateEncoderPath(string path)
+        public async Task UpdateEncoderPath(string path, string pathType)
         {
-            if (string.IsNullOrWhiteSpace(path))
+            if (_hasExternalEncoder)
             {
-                throw new ArgumentNullException("path");
+                return;
             }
 
-            if (!File.Exists(path) && !Directory.Exists(path))
+            Tuple<string, string> newPaths;
+
+            if (string.Equals(pathType, "system", StringComparison.OrdinalIgnoreCase))
             {
-                throw new ResourceNotFoundException();
+                path = "ffmpeg";
+
+                newPaths = TestForInstalledVersions();
+            }
+            else if (string.Equals(pathType, "custom", StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.IsNullOrWhiteSpace(path))
+                {
+                    throw new ArgumentNullException("path");
+                }
+
+                if (!File.Exists(path) && !Directory.Exists(path))
+                {
+                    throw new ResourceNotFoundException();
+                }
+                newPaths = GetEncoderPaths(path);
+            }
+            else
+            {
+                throw new ArgumentException("Unexpected pathType value");
             }
 
-            var newPaths = GetEncoderPaths(path);
             if (string.IsNullOrWhiteSpace(newPaths.Item1))
             {
                 throw new ResourceNotFoundException("ffmpeg not found");
@@ -252,7 +308,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
-        private Tuple<string,string> GetPathsFromDirectory(string path)
+        private Tuple<string, string> GetPathsFromDirectory(string path)
         {
             // Since we can't predict the file extension, first try directly within the folder 
             // If that doesn't pan out, then do a recursive search

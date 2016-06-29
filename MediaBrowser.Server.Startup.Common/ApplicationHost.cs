@@ -658,13 +658,13 @@ namespace MediaBrowser.Server.Startup.Common
 
             encoderPath = info.EncoderPath;
             probePath = info.ProbePath;
-            _hasExternalEncoder = string.Equals(info.Version, "external", StringComparison.OrdinalIgnoreCase);
+            var hasExternalEncoder = string.Equals(info.Version, "external", StringComparison.OrdinalIgnoreCase);
 
             var mediaEncoder = new MediaEncoder(LogManager.GetLogger("MediaEncoder"),
                 JsonSerializer,
                 encoderPath,
                 probePath,
-                _hasExternalEncoder,
+                hasExternalEncoder,
                 ServerConfigurationManager,
                 FileSystemManager,
                 LiveTvManager,
@@ -1100,7 +1100,6 @@ namespace MediaBrowser.Server.Startup.Common
             }
         }
 
-        private bool _hasExternalEncoder;
         /// <summary>
         /// Gets the system status.
         /// </summary>
@@ -1141,7 +1140,7 @@ namespace MediaBrowser.Server.Startup.Common
                 ServerName = FriendlyName,
                 LocalAddress = localAddress,
                 SupportsLibraryMonitor = SupportsLibraryMonitor,
-                HasExternalEncoder = _hasExternalEncoder,
+                EncoderLocationType = MediaEncoder.EncoderLocationType,
                 SystemArchitecture = NativeApp.Environment.SystemArchitecture
             };
         }

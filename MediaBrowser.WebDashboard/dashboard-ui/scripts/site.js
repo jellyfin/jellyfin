@@ -3028,7 +3028,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/wizardcomponents.html',
-            dependencies: ['dashboardcss', 'emby-button', 'emby-input'],
+            dependencies: ['dashboardcss', 'emby-button', 'emby-input', 'emby-select'],
             autoFocus: false,
             anonymous: true,
             controller: 'scripts/wizardcomponents'

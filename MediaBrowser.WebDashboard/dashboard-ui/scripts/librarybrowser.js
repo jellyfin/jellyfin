@@ -215,6 +215,11 @@
                 var current = LibraryBrowser.selectedTab(tabs);
                 tabs.selectedTabIndex = selected;
                 if (current == selected) {
+                    tabs.dispatchEvent(new CustomEvent("beforetabchange", {
+                        detail: {
+                            selectedTabIndex: selected
+                        }
+                    }));
                     tabs.dispatchEvent(new CustomEvent("tabchange", {
                         detail: {
                             selectedTabIndex: selected
@@ -289,6 +294,12 @@
                         var index = parseInt(link.getAttribute('data-index'));
                         var newPanel = panels[index];
 
+                        tabs.dispatchEvent(new CustomEvent("beforetabchange", {
+                            detail: {
+                                selectedTabIndex: index
+                            }
+                        }));
+
                         // If toCenter is called syncronously within the click event, it sometimes ends up canceling it
                         setTimeout(function () {
 
@@ -355,6 +366,11 @@
                         LibraryBrowser.selectedTab(pageTabsContainer, 0);
                         return;
                     }
+                    pageTabsContainer.dispatchEvent(new CustomEvent("beforetabchange", {
+                        detail: {
+                            selectedTabIndex: LibraryBrowser.selectedTab(pageTabsContainer)
+                        }
+                    }));
                     pageTabsContainer.dispatchEvent(new CustomEvent("tabchange", {
                         detail: {
                             selectedTabIndex: LibraryBrowser.selectedTab(pageTabsContainer)

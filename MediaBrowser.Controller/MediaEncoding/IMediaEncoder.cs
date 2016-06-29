@@ -13,6 +13,8 @@ namespace MediaBrowser.Controller.MediaEncoding
     /// </summary>
     public interface IMediaEncoder : ITranscoderSupport
     {
+        string EncoderLocationType { get; }
+
         /// <summary>
         /// Gets the encoder path.
         /// </summary>
@@ -60,12 +62,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task ExtractVideoImagesOnInterval(string[] inputFiles, 
-            MediaProtocol protocol, 
-            Video3DFormat? threedFormat, 
-            TimeSpan interval, 
-            string targetDirectory, 
-            string filenamePrefix, 
+        Task ExtractVideoImagesOnInterval(string[] inputFiles,
+            MediaProtocol protocol,
+            Video3DFormat? threedFormat,
+            TimeSpan interval,
+            string targetDirectory,
+            string filenamePrefix,
             int? maxWidth,
             CancellationToken cancellationToken);
 
@@ -131,6 +133,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         void Init();
 
-        Task UpdateEncoderPath(string path);
+        Task UpdateEncoderPath(string path, string pathType);
     }
 }

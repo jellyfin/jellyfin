@@ -38,12 +38,19 @@
             return LibraryBrowser.getSavedQueryKey('genres');
         }
 
-        function reloadItems(context) {
+        function getPromise() {
 
             Dashboard.showLoadingMsg();
             var query = getQuery();
 
-            ApiClient.getMusicGenres(Dashboard.getCurrentUserId(), query).then(function (result) {
+            return ApiClient.getGenres(Dashboard.getCurrentUserId(), query);
+        }
+
+        function reloadItems(context, promise) {
+
+            var query = getQuery();
+
+            promise.then(function (result) {
 
                 var html = '';
 
@@ -58,7 +65,7 @@
                         showItemCounts: true,
                         centerText: true,
                         lazy: true,
-                        overlayPlayButton: true
+                        overlayMoreButton: true
                     });
                 }
                 else if (viewStyle == "ThumbCard") {
@@ -93,7 +100,7 @@
                         centerText: true,
                         showItemCounts: true,
                         lazy: true,
-                        overlayPlayButton: true
+                        overlayMoreButton: true
                     });
                 }
 
@@ -117,15 +124,25 @@
         self.setCurrentViewStyle = function (viewStyle) {
             getPageData(tabContent).view = viewStyle;
             LibraryBrowser.saveViewSetting(getSavedQueryKey(tabContent), viewStyle);
-            reloadItems(tabContent);
+            fullyReload();
         };
 
         self.enableViewSelection = true;
+        var promise;
+
+        self.preRender = function () {
+            promise = getPromise();
+        };
 
         self.renderTab = function () {
 
-            reloadItems(tabContent);
+            reloadItems(tabContent, promise);
         };
+
+        function fullyReload() {
+            self.preRender();
+            self.renderTab();
+        }
 
         var btnSelectView = tabContent.querySelector('.btnSelectView');
         btnSelectView.addEventListener('click', function (e) {
