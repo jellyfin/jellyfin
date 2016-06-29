@@ -330,18 +330,21 @@ namespace MediaBrowser.Server.Startup.Common
             HttpServer.GlobalResponse = null;
 
             PerformPostInitMigrations();
+            Logger.Info("Post-init migrations complete");
 
-            Parallel.ForEach(GetExports<IServerEntryPoint>(), entryPoint =>
+            foreach (var entryPoint in GetExports<IServerEntryPoint>().ToList())
             {
+                var name = entryPoint.GetType().FullName;
                 try
                 {
                     entryPoint.Run();
                 }
                 catch (Exception ex)
                 {
-                    Logger.ErrorException("Error in {0}", ex, entryPoint.GetType().FullName);
+                    Logger.ErrorException("Error in {0}", ex, name);
                 }
-            });
+            }
+            Logger.Info("Entry points complete");
 
             LogManager.RemoveConsoleOutput();
         }
