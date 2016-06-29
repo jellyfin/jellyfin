@@ -468,7 +468,7 @@
             });
         }
         var itemGenres = page.querySelectorAll('.itemGenres');
-        for (i = 0, length = itemMiscInfo.length; i < length; i++) {
+        for (i = 0, length = itemGenres.length; i < length; i++) {
             LibraryBrowser.renderGenres(itemGenres[i], item, null, isStatic);
         }
 
@@ -711,6 +711,10 @@
     function renderSimilarItems(page, item, context) {
 
         var similarCollapsible = page.querySelector('#similarCollapsible');
+
+        if (!similarCollapsible) {
+            return;
+        }
 
         if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Series" || item.Type == "Program" || item.Type == "Recording" || item.Type == "Game" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "ChannelVideoItem") {
             similarCollapsible.classList.remove('hide');
@@ -2111,7 +2115,9 @@
 
             Dashboard.getCurrentUser().then(function (user) {
 
-                LibraryBrowser.showMoreCommands(button, currentItem.Id, currentItem.Type, LibraryBrowser.getMoreCommands(currentItem, user));
+                LibraryBrowser.showMoreCommands(button, currentItem.Id, currentItem.Type, LibraryBrowser.getMoreCommands(currentItem, user)).then(function() {
+                    reload(view, params);
+                });
             });
         }
 

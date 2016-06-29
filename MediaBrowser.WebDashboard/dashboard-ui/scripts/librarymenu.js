@@ -767,7 +767,7 @@
 
             if (mainDrawerButton) {
                 if (!visible && browserInfo.mobile) {
-                    mainDrawerButton.classList.add('hide');
+                    mainDrawerButton.classList.remove('hide');
                 } else {
                     mainDrawerButton.classList.remove('hide');
                 }
