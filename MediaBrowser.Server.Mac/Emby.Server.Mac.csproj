@@ -37,6 +37,7 @@
     <HttpClientHandler>HttpClientHandler</HttpClientHandler>
     <TlsProvider>Legacy</TlsProvider>
     <LinkMode>None</LinkMode>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
@@ -56,6 +57,7 @@
     <HttpClientHandler>HttpClientHandler</HttpClientHandler>
     <TlsProvider>Default</TlsProvider>
     <LinkMode>None</LinkMode>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'AppStore|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -76,6 +78,7 @@
     <HttpClientHandler>HttpClientHandler</HttpClientHandler>
     <TlsProvider>Default</TlsProvider>
     <LinkMode>None</LinkMode>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -86,10 +89,6 @@
     <Reference Include="XamMac" />
     <Reference Include="Mono.Posix">
       <HintPath>..\packages\Mono.Posix.4.0.0.0\lib\net40\Mono.Posix.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Security">
-      <HintPath>..\ThirdParty\Mono.Security\Mono.Security.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="Patterns.Logging">
       <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
@@ -105,6 +104,7 @@
   <ItemGroup>
     <Folder Include="Resources\" />
     <Folder Include="Native\" />
+    <Folder Include="Security\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppDelegate.cs" />
@@ -129,6 +129,54 @@
     <Compile Include="Native\DbConnector.cs" />
     <Compile Include="..\MediaBrowser.Server.Implementations\Persistence\SqliteExtensions.cs">
       <Link>Native\SqliteExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Server.Mono\Security\ASN1.cs">
+      <Link>Security\ASN1.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Server.Mono\Security\ASN1Convert.cs">
+      <Link>Security\ASN1Convert.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Server.Mono\Security\BitConverterLE.cs">
+      <Link>Security\BitConverterLE.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Server.Mono\Security\CryptoConvert.cs">
+      <Link>Security\CryptoConvert.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Server.Mono\Security\PKCS1.cs">
+      <Link>Security\PKCS1.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Server.Mono\Security\PKCS12.cs">
+      <Link>Security\PKCS12.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Server.Mono\Security\PKCS7.cs">
+      <Link>Security\PKCS7.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Server.Mono\Security\PKCS8.cs">
+      <Link>Security\PKCS8.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Server.Mono\Security\X501Name.cs">
+      <Link>Security\X501Name.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Server.Mono\Security\X509Builder.cs">
+      <Link>Security\X509Builder.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Server.Mono\Security\X509Certificate.cs">
+      <Link>Security\X509Certificate.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Server.Mono\Security\X509CertificateBuilder.cs">
+      <Link>Security\X509CertificateBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Server.Mono\Security\X509CertificateCollection.cs">
+      <Link>Security\X509CertificateCollection.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Server.Mono\Security\X509Extension.cs">
+      <Link>Security\X509Extension.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Server.Mono\Security\X509Extensions.cs">
+      <Link>Security\X509Extensions.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Server.Mono\Security\X520Attributes.cs">
+      <Link>Security\X520Attributes.cs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>
