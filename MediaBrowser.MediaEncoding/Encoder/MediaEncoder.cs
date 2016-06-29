@@ -112,9 +112,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // If the path was passed in, save it into config now.
             var encodingOptions = GetEncodingOptions();
             var appPath = encodingOptions.EncoderAppPath;
-            if (!string.IsNullOrWhiteSpace(FFMpegPath) && !string.Equals(FFMpegPath, appPath, StringComparison.Ordinal))
+
+            var valueToSave = FFMpegPath;
+
+            // if using system variable, don't save this.
+            if (string.Equals(valueToSave, "ffmpeg", StringComparison.OrdinalIgnoreCase))
             {
-                encodingOptions.EncoderAppPath = FFMpegPath;
+                valueToSave = null;
+            }
+
+            if (!string.Equals(valueToSave, appPath, StringComparison.Ordinal))
+            {
+                encodingOptions.EncoderAppPath = valueToSave;
                 ConfigurationManager.SaveConfiguration("encoding", encodingOptions);
             }
         }
@@ -161,7 +170,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 appPath = Path.Combine(ConfigurationManager.ApplicationPaths.ProgramDataPath, "ffmpeg");
             }
+
             var newPaths = GetEncoderPaths(appPath);
+            if (string.IsNullOrWhiteSpace(newPaths.Item1) || string.IsNullOrWhiteSpace(newPaths.Item2))
+            {
+                newPaths = TestForInstalledVersions();
+            }
 
             if (!string.IsNullOrWhiteSpace(newPaths.Item1) && !string.IsNullOrWhiteSpace(newPaths.Item2))
             {
@@ -190,6 +204,52 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             return new Tuple<string, string>(null, null);
+        }
+
+        private Tuple<string, string> TestForInstalledVersions()
+        {
+            string encoderPath = null;
+            string probePath = null;
+
+            if (TestSystemInstalled("ffmpeg"))
+            {
+                encoderPath = "ffmpeg";
+            }
+            if (TestSystemInstalled("ffprobe"))
+            {
+                probePath = "ffprobe";
+            }
+
+            return new Tuple<string, string>(encoderPath, probePath);
+        }
+
+        private bool TestSystemInstalled(string app)
+        {
+            try
+            {
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = app,
+                    Arguments = "-v",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    ErrorDialog = false
+                };
+
+                using (var process = Process.Start(startInfo))
+                {
+                    process.WaitForExit();
+                }
+
+                _logger.Debug("System app installed: " + app);
+                return true;
+            }
+            catch
+            {
+                _logger.Debug("System app not installed: " + app);
+                return false;
+            }
         }
 
         private Tuple<string,string> GetPathsFromDirectory(string path)
