@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Power;
 using MediaBrowser.Server.Implementations.Persistence;
 using MediaBrowser.Server.Startup.Common.FFMpeg;
 using System.Diagnostics;
+using MediaBrowser.Model.System;
 
 namespace MediaBrowser.Server.Mac
 {
@@ -166,7 +167,7 @@ namespace MediaBrowser.Server.Mac
 
             switch (environment.SystemArchitecture)
             {
-                case Architecture.X86_X64:
+                case Architecture.X64:
                     info.Version = "20160124";
                     break;
                 case Architecture.X86:
@@ -183,15 +184,10 @@ namespace MediaBrowser.Server.Mac
         {
             switch (environment.SystemArchitecture)
             {
-                case Architecture.X86_X64:
+                case Architecture.X64:
                     return new[]
                     {
                                 "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/osx/ffmpeg-x64-2.8.5.7z"
-                            };
-                case Architecture.X86:
-                    return new[]
-                    {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/osx/ffmpeg-x86-2.5.3.7z"
                             };
             }
 
@@ -230,7 +226,7 @@ namespace MediaBrowser.Server.Mac
             }
             else if (string.Equals(uname.machine, "x86_64", StringComparison.OrdinalIgnoreCase))
             {
-                info.SystemArchitecture = Architecture.X86_X64;
+                info.SystemArchitecture = Architecture.X64;
             }
             else if (uname.machine.StartsWith("arm", StringComparison.OrdinalIgnoreCase))
             {
