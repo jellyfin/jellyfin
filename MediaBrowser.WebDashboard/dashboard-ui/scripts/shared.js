@@ -18,8 +18,8 @@
 
         currentItem = item;
 
-        LibraryBrowser.renderName(item, $('.itemName', page), false);
-        LibraryBrowser.renderParentName(item, $('.parentName', page));
+        LibraryBrowser.renderName(item, $('.itemName', page)[0], false);
+        LibraryBrowser.renderParentName(item, $('.parentName', page)[0]);
         LibraryBrowser.renderDetailPageBackdrop(page, item);
 
         renderImage(page, item);
