@@ -107,7 +107,6 @@ namespace MediaBrowser.Server.Implementations.TV
             var currentUser = user;
 
             return series
-                .AsParallel()
                 .Select(i => GetNextUp(i, currentUser))
                 // Include if an episode was found, and either the series is not unwatched or the specific series was requested
                 .Where(i => i.Item1 != null && (!i.Item3 || !string.IsNullOrWhiteSpace(request.SeriesId)))
@@ -124,6 +123,19 @@ namespace MediaBrowser.Server.Implementations.TV
         /// <returns>Task{Episode}.</returns>
         private Tuple<Episode, DateTime, bool> GetNextUp(Series series, User user)
         {
+            var lastWatchedEpisode = _libraryManager.GetItemList(new InternalItemsQuery(user)
+            {
+                AncestorWithPresentationUniqueKey = series.PresentationUniqueKey,
+                IncludeItemTypes = new[] { typeof(Episode).Name },
+                SortBy = new[] { ItemSortBy.SortName },
+                SortOrder = SortOrder.Descending,
+                IsPlayed = true,
+                Limit = 1,
+                IsVirtualItem = false,
+                ParentIndexNumberNotEquals = 0
+
+            }).FirstOrDefault();
+
             var firstUnwatchedEpisode = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 AncestorWithPresentationUniqueKey = series.PresentationUniqueKey,
@@ -133,58 +145,10 @@ namespace MediaBrowser.Server.Implementations.TV
                 Limit = 1,
                 IsPlayed = false,
                 IsVirtualItem = false,
-                ParentIndexNumberNotEquals = 0
+                ParentIndexNumberNotEquals = 0,
+                MinSortName = lastWatchedEpisode == null ? null : lastWatchedEpisode.SortName
 
             }).Cast<Episode>().FirstOrDefault();
-
-            // series is fully played
-            if (firstUnwatchedEpisode == null)
-            {
-                return new Tuple<Episode, DateTime, bool>(null, DateTime.MinValue, true);
-            }
-
-            var lastWatchedEpisode = _libraryManager.GetItemList(new InternalItemsQuery(user)
-            {
-                AncestorWithPresentationUniqueKey = series.PresentationUniqueKey,
-                IncludeItemTypes = new[] { typeof(Episode).Name },
-                SortBy = new[] { ItemSortBy.DatePlayed },
-                SortOrder = SortOrder.Descending,
-                Limit = 1,
-                IsVirtualItem = false,
-                ParentIndexNumberNotEquals = 0
-
-            }).FirstOrDefault();
-
-            //// Get them in display order, then reverse
-            //var allEpisodes = series.GetEpisodes(user, false, false)
-            //    .Where(i => !i.ParentIndexNumber.HasValue || i.ParentIndexNumber.Value != 0)
-            //    .Reverse()
-            //    .ToList();
-
-            //Episode lastWatched = null;
-            //var lastWatchedDate = DateTime.MinValue;
-            //Episode nextUp = null;
-
-            //// Go back starting with the most recent episodes
-            //foreach (var episode in allEpisodes)
-            //{
-            //    var userData = _userDataManager.GetUserData(user, episode);
-
-            //    if (userData.Played)
-            //    {
-            //        if (lastWatched != null || nextUp == null)
-            //        {
-            //            break;
-            //        }
-
-            //        lastWatched = episode;
-            //        lastWatchedDate = userData.LastPlayedDate ?? DateTime.MinValue;
-            //    }
-            //    else
-            //    {
-            //        nextUp = episode;
-            //    }
-            //}
 
             if (lastWatchedEpisode != null)
             {

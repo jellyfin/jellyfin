@@ -2663,6 +2663,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 cmd.Parameters.Add(cmd, "@SlugName", DbType.String).Value = query.SlugName;
             }
 
+            if (!string.IsNullOrWhiteSpace(query.MinSortName))
+            {
+                whereClauses.Add("SortName>=@MinSortName");
+                cmd.Parameters.Add(cmd, "@MinSortName", DbType.String).Value = query.MinSortName;
+            }
+
             if (!string.IsNullOrWhiteSpace(query.Name))
             {
                 whereClauses.Add("CleanName=@Name");
@@ -3773,7 +3779,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
                 else
                 {
-                    whereText += " And itemTypes not null";
+                    //whereText += " And itemTypes not null";
+                    whereText += " And CleanName In (Select CleanValue from ItemValues where Type=@ItemValueType AND ItemId in (select guid from TypedBaseItems" + innerWhereText + "))";
                 }
 
                 var outerQuery = new InternalItemsQuery(query.User)
@@ -3855,7 +3862,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     ? (CommandBehavior.SequentialAccess | CommandBehavior.SingleResult)
                     : CommandBehavior.SequentialAccess;
 
-                //Logger.Debug("GetItemValues: " + cmd.CommandText);
+                Logger.Debug("GetItemValues: " + cmd.CommandText);
 
                 using (var reader = cmd.ExecuteReader(commandBehavior))
                 {
