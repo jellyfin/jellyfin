@@ -7,12 +7,13 @@
     }
 
     function loadDownloadInfo(view) {
+
+        var instructions = '';
+
         ApiClient.getSystemInfo().then(function (systemInfo) {
 
             if (systemInfo.OperatingSystem == 'Windows' && systemInfo.SystemArchitecture != 'Arm') {
                 view.querySelector('.suggestedLocation').innerHTML = Globalize.translate('FFmpegSuggestedDownload', '<a target="_blank" href="https://ffmpeg.zeranoe.com/builds">https://ffmpeg.zeranoe.com</a>');
-
-                var instructions = '';
 
                 if (systemInfo.SystemArchitecture == 'X86') {
                     instructions = 'Download 32-Bit Static';
@@ -22,8 +23,15 @@
                 }
 
                 view.querySelector('.downloadInstructions').innerHTML = instructions;
+
+            } else if (systemInfo.OperatingSystem == 'Osx' && systemInfo.SystemArchitecture == 'X64') {
+
+                view.querySelector('.suggestedLocation').innerHTML = Globalize.translate('FFmpegSuggestedDownload', '<a target="_blank" href="http://evermeet.cx/ffmpeg">http://evermeet.cx/ffmpeg</a>');
+                instructions = 'Download both ffmpeg and ffprobe, and extract them to the same folder.';
+                view.querySelector('.downloadInstructions').innerHTML = instructions;
+
             } else {
-                view.querySelector('.suggestedLocation').innerHTML = Globalize.translate('FFmpegSuggestedDownload', '<a target="_blank" href="http://ffmpeg.org">http://ffmpeg.org</a>');
+                view.querySelector('.suggestedLocation').innerHTML = Globalize.translate('FFmpegSuggestedDownload', '<a target="_blank" href="http://ffmpeg.org">https://ffmpeg.org/download.html</a>');
                 view.querySelector('.downloadInstructions').innerHTML = '';
             }
         });
