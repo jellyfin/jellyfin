@@ -1622,7 +1622,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 return false;
             }
 
-            if (query.SimilarTo != null)
+            if (query.SimilarTo != null && query.User != null)
             {
                 return true;
             }
@@ -1757,11 +1757,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var groups = new List<string>();
 
-            if (!string.IsNullOrWhiteSpace(query.GroupByAncestorOfType))
-            {
-                groups.Add("(Select PresentationUniqueKey from TypedBaseItems B where B.Type = 'MediaBrowser.Controller.Entities.TV.Series' And B.Guid in (Select AncestorId from AncestorIds where ItemId=A.Guid))");
-            }
-
             if (EnableGroupByPresentationUniqueKey(query))
             {
                 groups.Add("PresentationUniqueKey");
@@ -1792,6 +1787,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var now = DateTime.UtcNow;
 
             var list = new List<BaseItem>();
+
+            // Hack for right now since we currently don't support filtering out these duplicates within a query
+            if (query.Limit.HasValue && query.EnableGroupByMetadataKey)
+            {
+                query.Limit = query.Limit.Value + 4;
+            }
 
             using (var cmd = _connection.CreateCommand())
             {
@@ -1845,7 +1846,55 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
             }
 
+            // Hack for right now since we currently don't support filtering out these duplicates within a query
+            if (query.EnableGroupByMetadataKey)
+            {
+                var limit = query.Limit ?? int.MaxValue;
+                limit -= 4;
+                var newList = new List<BaseItem>();
+
+                foreach (var item in list)
+                {
+                    AddItem(newList, item);
+
+                    if (newList.Count >= limit)
+                    {
+                        break;
+                    }
+                }
+
+                list = newList;
+            }
+
             return list;
+        }
+
+        private void AddItem(List<BaseItem> items, BaseItem newItem)
+        {
+            var providerIds = newItem.ProviderIds.ToList();
+
+            for (var i = 0; i < items.Count; i++)
+            {
+                var item = items[i];
+
+                foreach (var providerId in providerIds)
+                {
+                    if (providerId.Key == MetadataProviders.TmdbCollection.ToString())
+                    {
+                        continue;
+                    }
+                    if (item.GetProviderId(providerId.Key) == providerId.Value)
+                    {
+                        if (newItem.SourceType == SourceType.Library)
+                        {
+                            items[i] = newItem;
+                        }
+                        return;
+                    }
+                }
+            }
+
+            items.Add(newItem);
         }
 
         private void LogQueryTime(string methodName, IDbCommand cmd, DateTime startDate)
@@ -3869,7 +3918,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 return counts;
             }
 
-            var allTypes = typeString.Split(new[] {'|'}, StringSplitOptions.RemoveEmptyEntries)
+            var allTypes = typeString.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
                 .ToLookup(i => i).ToList();
 
             foreach (var type in allTypes)
