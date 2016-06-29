@@ -35,7 +35,7 @@
     <UseRefCounting>false</UseRefCounting>
     <Profiling>false</Profiling>
     <HttpClientHandler>HttpClientHandler</HttpClientHandler>
-    <TlsProvider>Default</TlsProvider>
+    <TlsProvider>Legacy</TlsProvider>
     <LinkMode>None</LinkMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -6012,9 +6012,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\nowplayingbar.css">
       <Link>Resources\dashboard-ui\css\nowplayingbar.css</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\search.css">
-      <Link>Resources\dashboard-ui\css\search.css</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\site.css">
       <Link>Resources\dashboard-ui\css\site.css</Link>
     </BundleResource>
@@ -6662,12 +6659,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\scheduledtaskspage.js">
       <Link>Resources\dashboard-ui\scripts\scheduledtaskspage.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\search.js">
-      <Link>Resources\dashboard-ui\scripts\search.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\searchmenu.js">
-      <Link>Resources\dashboard-ui\scripts\searchmenu.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\searchpage.js">
       <Link>Resources\dashboard-ui\scripts\searchpage.js</Link>
