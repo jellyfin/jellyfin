@@ -524,18 +524,6 @@ namespace MediaBrowser.WebDashboard.Api
 
                 await DumpFile(filename, Path.Combine(destination, filename), mode, culture, appVersion).ConfigureAwait(false);
             }
-
-            var excludeFiles = new List<string>();
-
-            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
-            {
-                excludeFiles.Add("supporterkey.html");
-            }
-
-            foreach (var file in excludeFiles)
-            {
-                _fileSystem.DeleteFile(Path.Combine(destination, file));
-            }
         }
 
         private async Task DumpFile(string resourceVirtualPath, string destinationFilePath, string mode, string culture, string appVersion)
