@@ -1,8 +1,8 @@
 ﻿using MediaBrowser.Model.Logging;
-using Mono.Security.X509;
 using System;
 using System.Collections;
 using System.Security.Cryptography;
+using MediaBrowser.Server.Mono.Security;
 
 namespace MediaBrowser.Server.Mono.Networking
 {

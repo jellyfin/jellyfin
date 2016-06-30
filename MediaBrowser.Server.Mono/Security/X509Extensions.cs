@@ -32,20 +32,13 @@
 using System;
 using System.Collections;
 
-using Mono.Security;
-
-namespace Mono.Security.X509 {
+namespace MediaBrowser.Server.Mono.Security {
 	/*
 	 * Extensions  ::=  SEQUENCE SIZE (1..MAX) OF Extension
 	 * 
 	 * Note: 1..MAX -> There shouldn't be 0 Extensions in the ASN1 structure
 	 */
-#if INSIDE_CORLIB
-	internal
-#else
-	public 
-#endif
-	sealed class X509ExtensionCollection : CollectionBase, IEnumerable {
+    public sealed class X509ExtensionCollection : CollectionBase, IEnumerable {
 
 		private bool readOnly;
 

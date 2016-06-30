@@ -32,14 +32,9 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Mono.Security.Cryptography {
+namespace MediaBrowser.Server.Mono.Security {
 
-#if INSIDE_CORLIB
-	internal
-#else
-	public
-#endif
-	sealed class CryptoConvert {
+    public sealed class CryptoConvert {
 
 		private CryptoConvert () 
 		{
@@ -166,32 +161,31 @@ namespace Mono.Security.Cryptography {
 				throw new CryptographicException ("Invalid blob.", e);
 			}
 
-#if INSIDE_CORLIB && MOBILE
-			RSA rsa = RSA.Create ();
-			rsa.ImportParameters (rsap);
-#else
-			RSA rsa = null;
-			try {
-				rsa = RSA.Create ();
-				rsa.ImportParameters (rsap);
-			}
-			catch (CryptographicException ce) {
-				// this may cause problem when this code is run under
-				// the SYSTEM identity on Windows (e.g. ASP.NET). See
-				// http://bugzilla.ximian.com/show_bug.cgi?id=77559
-				try {
-					CspParameters csp = new CspParameters ();
-					csp.Flags = CspProviderFlags.UseMachineKeyStore;
-					rsa = new RSACryptoServiceProvider (csp);
-					rsa.ImportParameters (rsap);
-				}
-				catch {
-					// rethrow original, not the later, exception if this fails
-					throw ce;
-				}
-			}
-#endif
-			return rsa;
+            RSA rsa = null;
+            try
+            {
+                rsa = RSA.Create();
+                rsa.ImportParameters(rsap);
+            }
+            catch (CryptographicException ce)
+            {
+                // this may cause problem when this code is run under
+                // the SYSTEM identity on Windows (e.g. ASP.NET). See
+                // http://bugzilla.ximian.com/show_bug.cgi?id=77559
+                try
+                {
+                    CspParameters csp = new CspParameters();
+                    csp.Flags = CspProviderFlags.UseMachineKeyStore;
+                    rsa = new RSACryptoServiceProvider(csp);
+                    rsa.ImportParameters(rsap);
+                }
+                catch
+                {
+                    // rethrow original, not the later, exception if this fails
+                    throw ce;
+                }
+            }
+            return rsa;
 		}
 
 		static public DSA FromCapiPrivateKeyBlobDSA (byte[] blob)
@@ -251,32 +245,31 @@ namespace Mono.Security.Cryptography {
 				throw new CryptographicException ("Invalid blob.", e);
 			}
 
-#if INSIDE_CORLIB && MOBILE
-			DSA dsa = (DSA)DSA.Create ();
-			dsa.ImportParameters (dsap);
-#else
-			DSA dsa = null;
-			try {
-				dsa = (DSA)DSA.Create ();
-				dsa.ImportParameters (dsap);
-			}
-			catch (CryptographicException ce) {
-				// this may cause problem when this code is run under
-				// the SYSTEM identity on Windows (e.g. ASP.NET). See
-				// http://bugzilla.ximian.com/show_bug.cgi?id=77559
-				try {
-					CspParameters csp = new CspParameters ();
-					csp.Flags = CspProviderFlags.UseMachineKeyStore;
-					dsa = new DSACryptoServiceProvider (csp);
-					dsa.ImportParameters (dsap);
-				}
-				catch {
-					// rethrow original, not the later, exception if this fails
-					throw ce;
-				}
-			}
-#endif
-			return dsa;
+            DSA dsa = null;
+            try
+            {
+                dsa = (DSA)DSA.Create();
+                dsa.ImportParameters(dsap);
+            }
+            catch (CryptographicException ce)
+            {
+                // this may cause problem when this code is run under
+                // the SYSTEM identity on Windows (e.g. ASP.NET). See
+                // http://bugzilla.ximian.com/show_bug.cgi?id=77559
+                try
+                {
+                    CspParameters csp = new CspParameters();
+                    csp.Flags = CspProviderFlags.UseMachineKeyStore;
+                    dsa = new DSACryptoServiceProvider(csp);
+                    dsa.ImportParameters(dsap);
+                }
+                catch
+                {
+                    // rethrow original, not the later, exception if this fails
+                    throw ce;
+                }
+            }
+            return dsa;
 		}
 
 		static public byte[] ToCapiPrivateKeyBlob (RSA rsa) 
@@ -444,26 +437,23 @@ namespace Mono.Security.Cryptography {
 				rsap.Modulus = new byte [byteLen];
 				Buffer.BlockCopy (blob, pos, rsap.Modulus, 0, byteLen);
 				Array.Reverse (rsap.Modulus);
-#if INSIDE_CORLIB && MOBILE
-				RSA rsa = RSA.Create ();
-				rsa.ImportParameters (rsap);
-#else
-				RSA rsa = null;
-				try {
-					rsa = RSA.Create ();
-					rsa.ImportParameters (rsap);
-				}
-				catch (CryptographicException) {
-					// this may cause problem when this code is run under
-					// the SYSTEM identity on Windows (e.g. ASP.NET). See
-					// http://bugzilla.ximian.com/show_bug.cgi?id=77559
-					CspParameters csp = new CspParameters ();
-					csp.Flags = CspProviderFlags.UseMachineKeyStore;
-					rsa = new RSACryptoServiceProvider (csp);
-					rsa.ImportParameters (rsap);
-				}
-#endif
-				return rsa;
+                RSA rsa = null;
+                try
+                {
+                    rsa = RSA.Create();
+                    rsa.ImportParameters(rsap);
+                }
+                catch (CryptographicException)
+                {
+                    // this may cause problem when this code is run under
+                    // the SYSTEM identity on Windows (e.g. ASP.NET). See
+                    // http://bugzilla.ximian.com/show_bug.cgi?id=77559
+                    CspParameters csp = new CspParameters();
+                    csp.Flags = CspProviderFlags.UseMachineKeyStore;
+                    rsa = new RSACryptoServiceProvider(csp);
+                    rsa.ImportParameters(rsap);
+                }
+                return rsa;
 			}
 			catch (Exception e) {
 				throw new CryptographicException ("Invalid blob.", e);

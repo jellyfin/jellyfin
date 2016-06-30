@@ -30,23 +30,17 @@
 //
 
 using System;
-using System.Collections;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Mono.Security {
+namespace MediaBrowser.Server.Mono.Security {
 
 	// References:
 	// a.	ITU ASN.1 standards (free download)
 	//	http://www.itu.int/ITU-T/studygroups/com17/languages/
 
-#if INSIDE_CORLIB
-	internal
-#else
-	public
-#endif
-	static class ASN1Convert {
+    public static class ASN1Convert {
 		// RFC3280, section 4.2.1.5
 		// CAs conforming to this profile MUST always encode certificate
 		// validity dates through the year 2049 as UTCTime; certificate validity
