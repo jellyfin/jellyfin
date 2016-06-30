@@ -607,10 +607,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             }
 
-            // h264 (libnvenc)
-            else if (string.Equals(videoCodec, "libnvenc", StringComparison.OrdinalIgnoreCase))
+            // h264 (h264_nvenc)
+            else if (string.Equals(videoCodec, "h264_nvenc", StringComparison.OrdinalIgnoreCase))
             {
-                param = "-preset high-performance";
+                param = "-preset llhq";
             }
 
             // webm
@@ -683,9 +683,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (!string.IsNullOrEmpty(levelString))
             {
-                // h264_qsv and libnvenc expect levels to be expressed as a decimal. libx264 supports decimal and non-decimal format
+                // h264_qsv and h264_nvenc expect levels to be expressed as a decimal. libx264 supports decimal and non-decimal format
                 if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(videoCodec, "libnvenc", StringComparison.OrdinalIgnoreCase))
+                    string.Equals(videoCodec, "h264_nvenc", StringComparison.OrdinalIgnoreCase))
                 {
                     switch (levelString)
                     {
@@ -729,7 +729,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (!string.Equals(videoCodec, "h264_omx", StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(videoCodec, "libnvenc", StringComparison.OrdinalIgnoreCase))
+                !string.Equals(videoCodec, "h264_nvenc", StringComparison.OrdinalIgnoreCase))
             {
                 param = "-pix_fmt yuv420p " + param;
             }
