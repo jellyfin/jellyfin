@@ -123,7 +123,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         protected override async Task<IDbConnection> CreateConnection(bool isReadOnly = false)
         {
-            var connection = await DbConnector.Connect(DbFilePath, false, false, 10000).ConfigureAwait(false);
+            var connection = await DbConnector.Connect(DbFilePath, false, false, _config.Configuration.SqliteCachePages).ConfigureAwait(false);
 
             connection.RunQueries(new[]
             {
