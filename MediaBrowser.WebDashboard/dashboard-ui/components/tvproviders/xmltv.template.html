@@ -30,7 +30,6 @@
         </div>
     </div>
     <div>
-        <br />
         <paper-checkbox class="chkAllTuners">${OptionEnableForAllTuners}</paper-checkbox>
         <div class="selectTunersSection hide">
             <br /><br />
@@ -39,7 +38,11 @@
             </div>
         </div>
     </div>
-    <br /><br />
+    <br />
+    <div class="paperList" style="padding:1em;border-radius:5px;">
+        <div class="premiereHelp"></div>
+        <a class="lnkPremiere" href="https://emby.media/premiere">${ButtonLearnMore}</a>
+    </div><br />
     <div>
         <button is="emby-button" type="submit" class="raised submit block btnSubmitListings hide"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
         <button is="emby-button" type="button" class="raised cancel block btnCancel hide" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></button>

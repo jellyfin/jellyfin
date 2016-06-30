@@ -2175,7 +2175,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (GetParent() is AggregateFolder || this is BasePluginFolder)
+                if (GetParent() is AggregateFolder || this is BasePluginFolder || this is Channel)
                 {
                     return true;
                 }

@@ -27,17 +27,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return new Tuple<List<string>, List<string>>(decoders, encoders);
         }
 
-        private List<string> GetDecoders(string ffmpegPath)
+        private List<string> GetDecoders(string encoderAppPath)
         {
             string output = string.Empty;
             try
             {
-                output = GetFFMpegOutput(ffmpegPath, "-decoders");
+                output = GetProcessOutput(encoderAppPath, "-decoders");
             }
             catch
             {
             }
-            //_logger.Debug("ffmpeg decoder query result: {0}", output ?? string.Empty);
 
             var found = new List<string>();
             var required = new[]
@@ -51,12 +50,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 var srch = " " + codec + "  ";
 
-                if (output.IndexOf(srch, StringComparison.OrdinalIgnoreCase) == -1)
+                if (output.IndexOf(srch, StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    _logger.Warn("ffmpeg is missing decoder " + codec);
-                }
-                else
-                {
+                    _logger.Info("Decoder available: " + codec);
                     found.Add(codec);
                 }
             }
@@ -64,17 +60,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return found;
         }
 
-        private List<string> GetEncoders(string ffmpegPath)
+        private List<string> GetEncoders(string encoderAppPath)
         {
             string output = null;
             try
             {
-                output = GetFFMpegOutput(ffmpegPath, "-encoders");
+                output = GetProcessOutput(encoderAppPath, "-encoders");
             }
             catch
             {
             }
-            //_logger.Debug("ffmpeg encoder query result: {0}", output ?? string.Empty);
 
             var found = new List<string>();
             var required = new[]
@@ -89,19 +84,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 "libmp3lame",
                 "libopus",
                 //"libvorbis",
-                "srt"
+                "srt",
+                "libnvenc",
+                "h264_qsv"
             };
 
             foreach (var codec in required)
             {
                 var srch = " " + codec + "  ";
 
-                if (output.IndexOf(srch, StringComparison.OrdinalIgnoreCase) == -1)
+                if (output.IndexOf(srch, StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    _logger.Warn("ffmpeg is missing encoder " + codec);
-                }
-                else
-                {
+                    _logger.Info("Encoder available: " + codec);
                     found.Add(codec);
                 }
             }
@@ -109,7 +103,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return found;
         }
 
-        private string GetFFMpegOutput(string path, string arguments)
+        private string GetProcessOutput(string path, string arguments)
         {
             var process = new Process
             {
@@ -147,7 +141,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     }
                     catch (Exception ex1)
                     {
-                        _logger.ErrorException("Error killing ffmpeg", ex1);
+                        _logger.ErrorException("Error killing process", ex1);
                     }
 
                     throw;

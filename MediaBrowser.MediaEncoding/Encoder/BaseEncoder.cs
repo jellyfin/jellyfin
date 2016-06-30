@@ -377,7 +377,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                             if (MediaEncoder.SupportsDecoder("h264_qsv"))
                             {
                                 // Seeing stalls and failures with decoding. Not worth it compared to encoding.
-                                //return "-c:v h264_qsv ";
+                                return "-c:v h264_qsv ";
                             }
                             break;
                         case "mpeg2video":
@@ -672,17 +672,20 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (!string.IsNullOrEmpty(state.Options.Profile))
             {
-                param += " -profile:v " + state.Options.Profile;
+                if (!string.Equals(videoCodec, "h264_omx", StringComparison.OrdinalIgnoreCase))
+                {
+                    // not supported by h264_omx
+                    param += " -profile:v " + state.Options.Profile;
+                }
             }
 
             var levelString = state.Options.Level.HasValue ? state.Options.Level.Value.ToString(CultureInfo.InvariantCulture) : null;
 
             if (!string.IsNullOrEmpty(levelString))
             {
-                var h264Encoder = EncodingJobFactory.GetH264Encoder(state, GetEncodingOptions());
-
                 // h264_qsv and libnvenc expect levels to be expressed as a decimal. libx264 supports decimal and non-decimal format
-                if (String.Equals(h264Encoder, "h264_qsv", StringComparison.OrdinalIgnoreCase) || String.Equals(h264Encoder, "libnvenc", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(videoCodec, "libnvenc", StringComparison.OrdinalIgnoreCase))
                 {
                     switch (levelString)
                     {
@@ -718,13 +721,20 @@ namespace MediaBrowser.MediaEncoding.Encoder
                             break;
                     }
                 }
-                else
+                else if (!string.Equals(videoCodec, "h264_omx", StringComparison.OrdinalIgnoreCase))
                 {
                     param += " -level " + levelString;
                 }
             }
 
-            return "-pix_fmt yuv420p " + param;
+            if (!string.Equals(videoCodec, "h264_omx", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(videoCodec, "libnvenc", StringComparison.OrdinalIgnoreCase))
+            {
+                param = "-pix_fmt yuv420p " + param;
+            }
+
+            return param;
         }
 
         protected string GetVideoBitrateParam(EncodingJob state, string videoCodec)

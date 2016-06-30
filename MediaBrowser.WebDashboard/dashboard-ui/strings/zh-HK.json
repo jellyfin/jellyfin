@@ -316,7 +316,7 @@
     "OptionAllowRemoteSharedDevices": "\u5141\u8a31\u9060\u7a0b\u63a7\u5236\u5171\u4eab\u88dd\u7f6e",
     "OptionAllowRemoteSharedDevicesHelp": "DLNA \u88dd\u7f6e\u6703\u88ab\u8a8d\u70ba\u662f\u5171\u4eab\uff0c\u76f4\u5230\u7528\u6236\u9032\u884c\u63a7\u5236\u3002",
     "OptionAllowLinkSharing": "\u5141\u8a31\u793e\u4ea4\u5a92\u9ad4\u5206\u4eab",
-    "OptionAllowLinkSharingHelp": "\u5171\u4eab\u53ea\u6709\u5305\u542b\u5a92\u9ad4\u4fe1\u606f\u7684\u7db2\u9801\u3002\u5a92\u9ad4\u6587\u4ef6\u5f9e\u672a\u516c\u958b\u5206\u4eab\u3002\u5171\u4eab\u662f\u6709\u6642\u9650\uff0c\u671f\u6eff\u662f\u57fa\u65bc\u4f3a\u670d\u5668\u7684\u5206\u4eab\u8a2d\u7f6e\u3002",
+    "OptionAllowLinkSharingHelp": "Only web pages containing media information are shared. Media files are never shared publicly. Shares are time-limited and will expire after {0} days.",
     "HeaderSharing": "\u5206\u4eab",
     "HeaderRemoteControl": "\u9059\u63a7\u5668",
     "OptionMissingTmdbId": "\u7f3a\u5c11 TMDB \u7de8\u865f",
@@ -2374,6 +2374,7 @@
     "SettingsWarning": "Changing these values may cause instability or connectivity failures. If you experience any problems, we recommend changing them back to default.",
     "MapChannels": "Map Channels",
     "LabelffmpegPath": "FFmpeg path:",
+    "LabelffmpegVersion": "FFmpeg version:",
     "LabelffmpegPathHelp": "The path to your downloaded FFmpeg application, or folder containing FFmpeg.",
     "SetupFFmpeg": "Setup FFmpeg",
     "SetupFFmpegHelp": "FFmpeg is a required component and needs to be configured.",
@@ -2381,5 +2382,7 @@
     "DownloadFFmpeg": "Download FFmpeg",
     "FFmpegSuggestedDownload": "Suggested download: {0}",
     "UnzipFFmpegFile": "Unzip the downloaded file to a folder of your choice.",
+    "OptionUseSystemInstalledVersion": "Use system installed version",
+    "OptionUseMyCustomVersion": "Use a custom version",
     "FFmpegSavePathNotFound": "We're unable to locaate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again."
 }

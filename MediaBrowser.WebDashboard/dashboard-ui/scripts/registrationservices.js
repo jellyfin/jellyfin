@@ -1,4 +1,4 @@
-﻿define(['appStorage'], function (appStorage) {
+﻿define(['appStorage', 'shell'], function (appStorage, shell) {
 
     var supporterPlaybackKey = 'lastSupporterPlaybackMessage4';
 
@@ -190,7 +190,6 @@
     }
 
     window.RegistrationServices = {
-
         renderPluginInfo: function (page, pkg, pluginSecurityInfo) {
 
             require(['jQuery'], function ($) {
@@ -213,8 +212,7 @@
                         if (expDateTime <= nowTime) {
                             regStatus += "<p style='color:red;'>";
                             regStatus += Globalize.translate('MessageTrialExpired');
-                        }
-                        else if (expDateTime > new Date(1970, 1, 1).getTime()) {
+                        } else if (expDateTime > new Date(1970, 1, 1).getTime()) {
 
                             regStatus += "<p style='color:blue;'>";
                             regStatus += Globalize.translate('MessageTrialWillExpireIn').replace('{0}', Math.round(expDateTime - nowTime) / (86400000));
@@ -294,6 +292,10 @@
                     resolve();
                 }
             });
+        },
+
+        showPremiereInfo: function () {
+            shell.openUrl('https://emby.media/premiere');
         }
     };
 
