@@ -33,6 +33,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Library;
@@ -1512,8 +1513,13 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
                 if (string.Equals(view.ViewType, CollectionType.Channels))
                 {
-                    // TODO: Return channels
-                    return new[] { view };
+                    var channelResult = BaseItem.ChannelManager.GetChannelsInternal(new ChannelQuery
+                    {
+                        UserId = user.Id.ToString("N")
+
+                    }, CancellationToken.None).Result;
+                    
+                    return channelResult.Items;
                 }
 
                 // Translate view into folders
