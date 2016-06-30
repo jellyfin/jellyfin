@@ -38,17 +38,15 @@ namespace MediaBrowser.Providers.TV
         private readonly IServerConfigurationManager _config;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly ILogger _logger;
-        private readonly ISeriesOrderManager _seriesOrder;
         private readonly ILibraryManager _libraryManager;
 
-        public TvdbSeriesProvider(IZipClient zipClient, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager config, ILogger logger, ISeriesOrderManager seriesOrder, ILibraryManager libraryManager)
+        public TvdbSeriesProvider(IZipClient zipClient, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager config, ILogger logger, ILibraryManager libraryManager)
         {
             _zipClient = zipClient;
             _httpClient = httpClient;
             _fileSystem = fileSystem;
             _config = config;
             _logger = logger;
-            _seriesOrder = seriesOrder;
             _libraryManager = libraryManager;
             Current = this;
         }
@@ -112,21 +110,9 @@ namespace MediaBrowser.Providers.TV
                 result.HasMetadata = true;
 
                 FetchSeriesData(result, itemId.MetadataLanguage, itemId.ProviderIds, cancellationToken);
-                await FindAnimeSeriesIndex(result.Item, itemId).ConfigureAwait(false);
             }
 
             return result;
-        }
-
-        private async Task FindAnimeSeriesIndex(Series series, SeriesInfo info)
-        {
-            var index = await _seriesOrder.FindSeriesIndex(SeriesOrderTypes.Anime, series.Name);
-            if (index == null)
-                return;
-
-            var offset = info.AnimeSeriesIndex - index;
-            var id = string.Format(TvdbSeriesOffsetFormat, series.GetProviderId(MetadataProviders.Tvdb), offset);
-            series.SetProviderId(TvdbSeriesOffset, id);
         }
 
         internal static int? GetSeriesOffset(Dictionary<string, string> seriesProviderIds)

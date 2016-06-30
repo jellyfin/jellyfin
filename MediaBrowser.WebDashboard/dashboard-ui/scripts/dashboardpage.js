@@ -819,21 +819,22 @@
 
             var imgUrl, text;
 
+            var supporterIconContainer = page.querySelector('.supporterIconContainer');
+
             if (!AppInfo.enableSupporterMembership) {
-                $('.supporterIconContainer', page).remove();
+                supporterIconContainer.classList.add('hide');
             }
             else if (pluginSecurityInfo.IsMBSupporter) {
+
+                supporterIconContainer.classList.remove('hide');
 
                 imgUrl = "css/images/supporter/supporterbadge.png";
                 text = Globalize.translate('MessageThankYouForSupporting');
 
-                $('.supporterIconContainer', page).html('<a class="imageLink supporterIcon" href="http://emby.media/premiere" target="_blank" title="' + text + '"><img src="' + imgUrl + '" style="height:32px;vertical-align: middle; margin-right: .5em;" /></a><span style="position:relative;top:2px;text-decoration:none;">' + text + '</span>');
+                supporterIconContainer.innerHTML = '<a class="imageLink supporterIcon" href="http://emby.media/premiere" target="_blank" title="' + text + '"><img src="' + imgUrl + '" style="height:32px;vertical-align: middle; margin-right: .5em;" /></a><span style="position:relative;top:2px;text-decoration:none;">' + text + '</span>';
             } else {
 
-                imgUrl = "css/images/supporter/nonsupporterbadge.png";
-                text = Globalize.translate('MessagePleaseSupportProject');
-
-                $('.supporterIconContainer', page).html('<a class="imageLink supporterIcon" href="http://emby.media/premiere" target="_blank" title="' + text + '"><img src="' + imgUrl + '" style="height:32px;vertical-align: middle; margin-right: .5em;" /><span style="position:relative;top:2px;text-decoration:none;">' + text + '</span></a>');
+                supporterIconContainer.classList.add('hide');
             }
         },
 

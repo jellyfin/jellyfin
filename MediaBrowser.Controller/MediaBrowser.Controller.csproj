@@ -302,7 +302,6 @@
     <Compile Include="Providers\IMetadataService.cs" />
     <Compile Include="Providers\IRemoteMetadataProvider.cs" />
     <Compile Include="Providers\IRemoteSearchProvider.cs" />
-    <Compile Include="Providers\ISeriesOrderProvider.cs" />
     <Compile Include="Providers\ItemInfo.cs" />
     <Compile Include="Providers\LiveTvProgramLookupInfo.cs" />
     <Compile Include="Providers\LocalImageInfo.cs" />
@@ -330,7 +329,6 @@
     <Compile Include="Subtitles\ISubtitleProvider.cs" />
     <Compile Include="Providers\ItemLookupInfo.cs" />
     <Compile Include="Providers\MetadataRefreshOptions.cs" />
-    <Compile Include="Providers\ISeriesOrderManager.cs" />
     <Compile Include="Session\ISessionManager.cs" />
     <Compile Include="Entities\AggregateFolder.cs" />
     <Compile Include="Entities\Audio\Audio.cs" />

@@ -132,7 +132,20 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return false;
         }
 
-        public void Init()
+        public async Task Init()
+        {
+            InitPaths();
+
+            if (!string.IsNullOrWhiteSpace(FFMpegPath))
+            {
+                var result = new EncoderValidator(_logger).Validate(FFMpegPath);
+
+                SetAvailableDecoders(result.Item1);
+                SetAvailableEncoders(result.Item2);
+            }
+        }
+
+        private void InitPaths()
         {
             ConfigureEncoderPaths();
 
@@ -322,7 +335,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
 
                 ffmpegPath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffmpeg", StringComparison.OrdinalIgnoreCase));
-                ffprobePath = GetProbePathFromEncoderPath(ffmpegPath);
+
+                if (!string.IsNullOrWhiteSpace(ffmpegPath))
+                {
+                    ffprobePath = GetProbePathFromEncoderPath(ffmpegPath);
+                }
             }
 
             return new Tuple<string, string>(ffmpegPath, ffprobePath);

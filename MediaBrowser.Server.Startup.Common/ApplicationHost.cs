@@ -160,7 +160,6 @@ namespace MediaBrowser.Server.Startup.Common
         private IHttpServer HttpServer { get; set; }
         private IDtoService DtoService { get; set; }
         private IImageProcessor ImageProcessor { get; set; }
-        private ISeriesOrderManager SeriesOrderManager { get; set; }
 
         /// <summary>
         /// Gets or sets the media encoder.
@@ -323,7 +322,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             await base.RunStartupTasks().ConfigureAwait(false);
 
-            InitMediaEncoder();
+            await MediaEncoder.Init().ConfigureAwait(false);
 
             Logger.Info("ServerId: {0}", SystemId);
             Logger.Info("Core startup complete");
@@ -349,20 +348,6 @@ namespace MediaBrowser.Server.Startup.Common
             Logger.Info("All entry points have started");
 
             LogManager.RemoveConsoleOutput();
-        }
-
-        private void InitMediaEncoder()
-        {
-            MediaEncoder.Init();
-
-            Task.Run(() =>
-            {
-                var result = new FFmpegValidator(Logger, ApplicationPaths, FileSystemManager).Validate(MediaEncoder.EncoderPath);
-
-                var mediaEncoder = (MediaEncoder) MediaEncoder;
-                mediaEncoder.SetAvailableDecoders(result.Item1);
-                mediaEncoder.SetAvailableEncoders(result.Item2);
-            });
         }
 
         public override Task Init(IProgress<double> progress)
@@ -475,9 +460,6 @@ namespace MediaBrowser.Server.Startup.Common
 
             ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, LibraryMonitor, LogManager, FileSystemManager, ApplicationPaths, () => LibraryManager, JsonSerializer);
             RegisterSingleInstance(ProviderManager);
-
-            SeriesOrderManager = new SeriesOrderManager();
-            RegisterSingleInstance(SeriesOrderManager);
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
 
@@ -818,8 +800,6 @@ namespace MediaBrowser.Server.Startup.Common
                                      GetExports<IMetadataSaver>(),
                                      GetExports<IImageSaver>(),
                                      GetExports<IExternalId>());
-
-            SeriesOrderManager.AddParts(GetExports<ISeriesOrderProvider>());
 
             ImageProcessor.AddParts(GetExports<IImageEnhancer>());
 
