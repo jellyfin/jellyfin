@@ -1277,6 +1277,16 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public IEnumerable<BaseItem> GetItemList(InternalItemsQuery query)
         {
+            if (query.Recursive && query.ParentId.HasValue)
+            {
+                var parent = GetItemById(query.ParentId.Value);
+                if (parent != null)
+                {
+                    SetTopParentIdsOrAncestors(query, new List<BaseItem> { parent });
+                    query.ParentId = null;
+                }
+            }
+
             if (query.User != null)
             {
                 AddUserToQuery(query, query.User);
