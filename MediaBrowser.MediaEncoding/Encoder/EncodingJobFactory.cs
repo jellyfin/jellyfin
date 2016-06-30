@@ -556,13 +556,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         internal static string GetH264Encoder(EncodingJob state, EncodingOptions options)
         {
-            if (string.Equals(options.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(options.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(options.HardwareAccelerationType, "h264_qsv", StringComparison.OrdinalIgnoreCase))
             {
-                // It's currently failing on live tv
-                if (state.RunTimeTicks.HasValue)
-                {
-                    return "h264_qsv";
-                }
+                return "h264_qsv";
+            }
+
+            if (string.Equals(options.HardwareAccelerationType, "libnvenc", StringComparison.OrdinalIgnoreCase))
+            {
+                return "libnvenc";
+            }
+            if (string.Equals(options.HardwareAccelerationType, "h264_omx", StringComparison.OrdinalIgnoreCase))
+            {
+                return "h264_omx";
             }
 
             return "libx264";
