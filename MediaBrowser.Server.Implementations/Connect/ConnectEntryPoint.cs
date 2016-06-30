@@ -41,7 +41,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         public void Run()
         {
-            Task.Run(() => LoadCachedAddress());
+            LoadCachedAddress();
 
             _timer = new PeriodicTimer(TimerCallback, null, TimeSpan.FromSeconds(5), TimeSpan.FromHours(3));
         }

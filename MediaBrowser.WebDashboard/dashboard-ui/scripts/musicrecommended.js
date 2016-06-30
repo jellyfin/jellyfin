@@ -310,6 +310,13 @@
                 if (!controller) {
                     tabContent = view.querySelector('.pageTabContent[data-index=\'' + index + '\']');
                     controller = index ? new controllerFactory(view, params, tabContent) : self;
+
+                    if (index == 2) {
+                        controller.mode = 'albumartists';
+                    } else if (index == 3) {
+                        controller.mode = 'artists';
+                    }
+
                     tabControllers[index] = controller;
 
                     if (controller.initTab) {

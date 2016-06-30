@@ -316,7 +316,7 @@
   "OptionAllowRemoteSharedDevices": "Allow remote control of shared devices",
   "OptionAllowRemoteSharedDevicesHelp": "Dlna devices are considered shared until a user begins controlling it.",
   "OptionAllowLinkSharing": "Allow social media sharing",
-  "OptionAllowLinkSharingHelp": "Only web pages containing media information are shared. Media files are never shared publicly. Shares are time-limited and will expire based on your server sharing settings.",
+  "OptionAllowLinkSharingHelp": "Only web pages containing media information are shared. Media files are never shared publicly. Shares are time-limited and will expire after {0} days.",
   "HeaderSharing": "Sharing",
   "HeaderRemoteControl": "Remote Control",
   "OptionMissingTmdbId": "Missing Tmdb Id",
