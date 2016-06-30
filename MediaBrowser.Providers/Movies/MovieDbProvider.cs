@@ -267,9 +267,21 @@ namespace MediaBrowser.Providers.Movies
 
             if (!string.IsNullOrEmpty(preferredLanguage))
             {
+                preferredLanguage = NormalizeLanguage(preferredLanguage);
+
                 languages.Add(preferredLanguage);
+
+                if (preferredLanguage.Length == 5) // like en-US
+                {
+                    // Currenty, TMDB supports 2-letter language codes only
+                    // They are planning to change this in the future, thus we're
+                    // supplying both codes if we're having a 5-letter code.
+                    languages.Add(preferredLanguage.Substring(0, 2));
+                }
             }
+
             languages.Add("null");
+
             if (!string.Equals(preferredLanguage, "en", StringComparison.OrdinalIgnoreCase))
             {
                 languages.Add("en");
@@ -280,16 +292,33 @@ namespace MediaBrowser.Providers.Movies
 
         public static string NormalizeLanguage(string language)
         {
-            // They require this to be uppercase
-            // https://emby.media/community/index.php?/topic/32454-fr-follow-tmdbs-new-language-api-update/?p=311148
-            var parts = language.Split('-');
-
-            if (parts.Length == 2)
+            if (!string.IsNullOrEmpty(language))
             {
-                language = parts[0] + "-" + parts[1].ToUpper();
+                // They require this to be uppercase
+                // https://emby.media/community/index.php?/topic/32454-fr-follow-tmdbs-new-language-api-update/?p=311148
+                var parts = language.Split('-');
+
+                if (parts.Length == 2)
+                {
+                    language = parts[0] + "-" + parts[1].ToUpper();
+                }
             }
 
             return language;
+        }
+
+        public static string AdjustImageLanguage(string imageLanguage, string requestLanguage)
+        {
+            if (!string.IsNullOrEmpty(imageLanguage) 
+                && !string.IsNullOrEmpty(requestLanguage) 
+                && requestLanguage.Length > 2 
+                && imageLanguage.Length == 2
+                && requestLanguage.StartsWith(imageLanguage, StringComparison.OrdinalIgnoreCase))
+            {
+                return requestLanguage;
+            }
+
+            return imageLanguage;
         }
 
         /// <summary>
@@ -407,33 +436,6 @@ namespace MediaBrowser.Providers.Movies
             options.UserAgent = "Emby/" + _appHost.ApplicationVersion;
 
             return await _httpClient.Get(options).ConfigureAwait(false);
-        }
-
-        public TheMovieDbOptions GetTheMovieDbOptions()
-        {
-            return _configurationManager.GetConfiguration<TheMovieDbOptions>("themoviedb");
-        }
-
-        public bool HasChanged(IHasMetadata item)
-        {
-            if (!GetTheMovieDbOptions().EnableAutomaticUpdates)
-            {
-                return false;
-            }
-
-            var tmdbId = item.GetProviderId(MetadataProviders.Tmdb);
-
-            if (!String.IsNullOrEmpty(tmdbId))
-            {
-                // Process images
-                var dataFilePath = GetDataFilePath(tmdbId, item.GetPreferredMetadataLanguage());
-
-                var fileInfo = _fileSystem.GetFileInfo(dataFilePath);
-
-                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > item.DateLastRefreshed;
-            }
-
-            return false;
         }
 
         public void Dispose()
@@ -657,21 +659,6 @@ namespace MediaBrowser.Providers.Movies
                 Url = url,
                 ResourcePool = MovieDbResourcePool
             });
-        }
-    }
-
-    public class TmdbConfigStore : IConfigurationFactory
-    {
-        public IEnumerable<ConfigurationStore> GetConfigurations()
-        {
-            return new List<ConfigurationStore>
-            {
-                new ConfigurationStore
-                {
-                     Key = "themoviedb",
-                     ConfigurationType = typeof(TheMovieDbOptions)
-                }
-            };
         }
     }
 }

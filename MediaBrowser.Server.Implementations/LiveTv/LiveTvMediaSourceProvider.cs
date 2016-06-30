@@ -83,7 +83,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
 
             var list = sources.ToList();
-            var serverUrl = _appHost.LocalApiUrl;
+            var serverUrl = await _appHost.GetLocalApiUrl().ConfigureAwait(false);
 
             foreach (var source in list)
             {

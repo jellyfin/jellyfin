@@ -97,8 +97,6 @@
     <Compile Include="Configuration\FanartOptions.cs" />
     <Compile Include="Configuration\MetadataConfiguration.cs" />
     <Compile Include="Configuration\PeopleMetadataOptions.cs" />
-    <Compile Include="Configuration\TheMovieDbOptions.cs" />
-    <Compile Include="Configuration\TvdbOptions.cs" />
     <Compile Include="Configuration\XbmcMetadataOptions.cs" />
     <Compile Include="Configuration\SubtitlePlaybackMode.cs" />
     <Compile Include="Connect\ConnectAuthenticationExchangeResult.cs" />
@@ -229,7 +227,6 @@
     <Compile Include="Entities\ProviderIdsExtensions.cs" />
     <Compile Include="Entities\ScrollDirection.cs" />
     <Compile Include="Entities\SortOrder.cs" />
-    <Compile Include="Entities\VideoSize.cs" />
     <Compile Include="Events\GenericEventArgs.cs" />
     <Compile Include="Extensions\DoubleHelper.cs" />
     <Compile Include="Extensions\IHasPropertyChangedEvent.cs" />
@@ -398,6 +395,7 @@
     <Compile Include="Sync\SyncProfileOption.cs" />
     <Compile Include="Sync\SyncQualityOption.cs" />
     <Compile Include="Sync\SyncTarget.cs" />
+    <Compile Include="System\Architecture.cs" />
     <Compile Include="System\LogFile.cs" />
     <Compile Include="System\PublicSystemInfo.cs" />
     <Compile Include="Updates\CheckForUpdateResult.cs" />

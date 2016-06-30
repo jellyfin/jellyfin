@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using CommonIO;
 using MediaBrowser.Controller.Power;
+using MediaBrowser.Model.System;
 using MediaBrowser.Server.Implementations.Persistence;
 using MediaBrowser.Server.Startup.Common.FFMpeg;
 using OperatingSystem = MediaBrowser.Server.Startup.Common.OperatingSystem;
@@ -53,7 +54,7 @@ namespace MediaBrowser.ServerApplication.Native
                 return new NativeEnvironment
                 {
                     OperatingSystem = OperatingSystem.Windows,
-                    SystemArchitecture = System.Environment.Is64BitOperatingSystem ? Architecture.X86_X64 : Architecture.X86,
+                    SystemArchitecture = System.Environment.Is64BitOperatingSystem ? Architecture.X64 : Architecture.X86,
                     OperatingSystemVersionString = System.Environment.OSVersion.VersionString
                 };
             }
@@ -158,10 +159,7 @@ namespace MediaBrowser.ServerApplication.Native
 
             info.FFMpegFilename = "ffmpeg.exe";
             info.FFProbeFilename = "ffprobe.exe";
-            info.Version = "20160410";
-            info.ArchiveType = "7z";
-            info.IsEmbedded = false;
-            info.DownloadUrls = GetDownloadUrls();
+            info.Version = "0";
 
             return info;
         }
@@ -205,24 +203,6 @@ namespace MediaBrowser.ServerApplication.Native
         private static void ProcessExited(object sender, EventArgs e)
         {
             ((Process)sender).Dispose();
-        }
-
-        private string[] GetDownloadUrls()
-        {
-            switch (Environment.SystemArchitecture)
-            {
-                case Architecture.X86_X64:
-                    return new[]
-                    {
-                                "https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-20160409-git-0c90b2e-win64-static.7z"
-                            };
-                case Architecture.X86:
-                    return new[]
-                    {
-                                "https://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20160409-git-0c90b2e-win32-static.7z"
-                            };
-            }
-            return new string[] { };
         }
     }
 }

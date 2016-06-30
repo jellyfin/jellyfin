@@ -8,13 +8,14 @@ using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Controller.Entities.Movies
 {
     /// <summary>
     /// Class Movie
     /// </summary>
-    public class Movie : Video, IHasCriticRating, IHasSpecialFeatures, IHasProductionLocations, IHasBudget, IHasKeywords, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping, IHasOriginalTitle
+    public class Movie : Video, IHasCriticRating, IHasSpecialFeatures, IHasProductionLocations, IHasBudget, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping, IHasOriginalTitle
     {
         public List<Guid> SpecialFeatureIds { get; set; }
 
@@ -31,7 +32,6 @@ namespace MediaBrowser.Controller.Entities.Movies
             ThemeSongIds = new List<Guid>();
             ThemeVideoIds = new List<Guid>();
             Taglines = new List<string>();
-            Keywords = new List<string>();
             ProductionLocations = new List<string>();
         }
 
@@ -41,7 +41,6 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public List<Guid> LocalTrailerIds { get; set; }
         public List<Guid> RemoteTrailerIds { get; set; }
-        public List<string> Keywords { get; set; }
 
         public List<MediaUrl> RemoteTrailers { get; set; }
 
@@ -162,6 +161,23 @@ namespace MediaBrowser.Controller.Entities.Movies
             }
 
             return hasChanges;
+        }
+
+        public override List<ExternalUrl> GetRelatedUrls()
+        {
+            var list = base.GetRelatedUrls();
+
+            var imdbId = this.GetProviderId(MetadataProviders.Imdb);
+            if (!string.IsNullOrWhiteSpace(imdbId))
+            {
+                list.Add(new ExternalUrl
+                {
+                    Name = "Trakt",
+                    Url = string.Format("https://trakt.tv/movies/{0}", imdbId)
+                });
+            }
+
+            return list;
         }
     }
 }

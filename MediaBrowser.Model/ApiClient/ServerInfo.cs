@@ -12,6 +12,7 @@ namespace MediaBrowser.Model.ApiClient
         
         public String Name { get; set; }
         public String Id { get; set; }
+        public String ConnectServerId { get; set; }
         public String LocalAddress { get; set; }
         public String RemoteAddress { get; set; }
         public String ManualAddress { get; set; }

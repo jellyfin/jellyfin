@@ -38,6 +38,11 @@ namespace MediaBrowser.Controller.Entities
             return PostFilterAndSort(result.Where(filter), query);
         }
 
+        public override int GetChildCount(User user)
+        {
+            return GetChildren(user, true).Count();
+        }
+
         [IgnoreDataMember]
         protected override bool SupportsShortcutChildren
         {

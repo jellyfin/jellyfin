@@ -234,10 +234,22 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public async Task<IEnumerable<BaseItem>> GetItemsForSync(SyncCategory? category, string parentId, IEnumerable<string> itemIds, User user, bool unwatchedOnly)
         {
-            var items = category.HasValue ?
-                await GetItemsForSync(category.Value, parentId, user).ConfigureAwait(false) :
-                itemIds.SelectMany(i => GetItemsForSync(i, user));
+            var list = new List<BaseItem>();
 
+            if (category.HasValue)
+            {
+                list = (await GetItemsForSync(category.Value, parentId, user).ConfigureAwait(false)).ToList();
+            }
+            else
+            {
+                foreach (var itemId in itemIds)
+                {
+                    var subList = await GetItemsForSync(itemId, user).ConfigureAwait(false);
+                    list.AddRange(subList);
+                }
+            }
+
+            IEnumerable<BaseItem> items = list;
             items = items.Where(_syncManager.SupportsSync);
 
             if (unwatchedOnly)
@@ -314,7 +326,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             return result.Items;
         }
 
-        private IEnumerable<BaseItem> GetItemsForSync(string id, User user)
+        private async Task<List<BaseItem>> GetItemsForSync(string id, User user)
         {
             var item = _libraryManager.GetItemById(id);
 
@@ -330,18 +342,20 @@ namespace MediaBrowser.Server.Implementations.Sync
                 {
                     IsFolder = false,
                     Recursive = true
-                });
+                }).ToList();
             }
 
             if (item.IsFolder)
             {
                 var folder = (Folder)item;
-                var items = folder.GetItems(new InternalItemsQuery(user)
+                var itemsResult = await folder.GetItems(new InternalItemsQuery(user)
                 {
                     Recursive = true,
                     IsFolder = false
 
-                }).Result.Items;
+                }).ConfigureAwait(false);
+
+                var items = itemsResult.Items;
 
                 if (!folder.IsPreSorted)
                 {
@@ -349,10 +363,10 @@ namespace MediaBrowser.Server.Implementations.Sync
                         .ToArray();
                 }
 
-                return items;
+                return items.ToList();
             }
 
-            return new[] { item };
+            return new List<BaseItem> { item };
         }
 
         private async Task EnsureSyncJobItems(string targetId, CancellationToken cancellationToken)
@@ -483,6 +497,11 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private async Task ProcessJobItem(SyncJobItem jobItem, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
         {
+            if (jobItem == null)
+            {
+                throw new ArgumentNullException("jobItem");
+            }
+
             var item = _libraryManager.GetItemById(jobItem.ItemId);
             if (item == null)
             {
@@ -748,7 +767,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
-            using (var stream = await _subtitleEncoder.GetSubtitles(streamInfo.ItemId, streamInfo.MediaSourceId, subtitleStreamIndex, subtitleStreamInfo.Format, 0, null, cancellationToken).ConfigureAwait(false))
+            using (var stream = await _subtitleEncoder.GetSubtitles(streamInfo.ItemId, streamInfo.MediaSourceId, subtitleStreamIndex, subtitleStreamInfo.Format, 0, null, false, cancellationToken).ConfigureAwait(false))
             {
                 using (var fs = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                 {

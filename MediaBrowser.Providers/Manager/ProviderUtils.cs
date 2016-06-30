@@ -151,29 +151,17 @@ namespace MediaBrowser.Providers.Manager
 
             if (!lockedFields.Contains(MetadataFields.Tags))
             {
-                var sourceHasTags = source as IHasTags;
-                var targetHasTags = target as IHasTags;
-
-                if (sourceHasTags != null && targetHasTags != null)
+                if (replaceData || target.Tags.Count == 0)
                 {
-                    if (replaceData || targetHasTags.Tags.Count == 0)
-                    {
-                        targetHasTags.Tags = sourceHasTags.Tags;
-                    }
+                    target.Tags = source.Tags;
                 }
             }
 
             if (!lockedFields.Contains(MetadataFields.Keywords))
             {
-                var sourceHasKeywords = source as IHasKeywords;
-                var targetHasKeywords = target as IHasKeywords;
-
-                if (sourceHasKeywords != null && targetHasKeywords != null)
+                if (replaceData || target.Keywords.Count == 0)
                 {
-                    if (replaceData || targetHasKeywords.Keywords.Count == 0)
-                    {
-                        targetHasKeywords.Keywords = sourceHasKeywords.Keywords;
-                    }
+                    target.Keywords = source.Keywords;
                 }
             }
 

@@ -36,6 +36,9 @@ namespace MediaBrowser.Model.Entities
         /// <value>The comment.</value>
         public string Comment { get; set; }
 
+        public string TimeBase { get; set; }
+        public string CodecTimeBase { get; set; }
+
         public string Title { get; set; }
 
         public string DisplayTitle
@@ -72,15 +75,12 @@ namespace MediaBrowser.Model.Entities
                     {
                         attributes.Add(StringHelper.ToStringCultureInvariant(Channels.Value) + " ch");
                     }
-
-                    string name = string.Join(" ", attributes.ToArray());
-
                     if (IsDefault)
                     {
-                        name += " (D)";
+                        attributes.Add("Default");
                     }
 
-                    return name;
+                    return string.Join(" ", attributes.ToArray());
                 }
 
                 if (Type == MediaStreamType.Subtitle)
@@ -89,29 +89,19 @@ namespace MediaBrowser.Model.Entities
 
                     if (!string.IsNullOrEmpty(Language))
                     {
-                        attributes.Add(Language);
+                        attributes.Add(StringHelper.FirstToUpper(Language));
                     }
-                    if (!string.IsNullOrEmpty(Codec))
-                    {
-                        attributes.Add(Codec);
-                    }
-
-                    string name = string.Join(" ", attributes.ToArray());
-
                     if (IsDefault)
                     {
-                        name += " (D)";
+                        attributes.Add("Default");
                     }
 
                     if (IsForced)
                     {
-                        name += " (F)";
+                        attributes.Add("Forced");
                     }
 
-                    if (IsExternal)
-                    {
-                        name += " (EXT)";
-                    }
+                    string name = string.Join(" ", attributes.ToArray());
 
                     return name;
                 }
@@ -290,6 +280,36 @@ namespace MediaBrowser.Model.Entities
                    StringHelper.IndexOfIgnoreCase(codec, "dvd") == -1 &&
                    StringHelper.IndexOfIgnoreCase(codec, "dvbsub") == -1 &&
                    !StringHelper.EqualsIgnoreCase(codec, "sub");
+        }
+
+        public bool SupportsSubtitleConversionTo(string codec)
+        {
+            if (!IsTextSubtitleStream)
+            {
+                return false;
+            }
+
+            // Can't convert from this 
+            if (StringHelper.EqualsIgnoreCase(Codec, "ass"))
+            {
+                return false;
+            }
+            if (StringHelper.EqualsIgnoreCase(Codec, "ssa"))
+            {
+                return false;
+            }
+
+            // Can't convert to this 
+            if (StringHelper.EqualsIgnoreCase(codec, "ass"))
+            {
+                return false;
+            }
+            if (StringHelper.EqualsIgnoreCase(codec, "ssa"))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>

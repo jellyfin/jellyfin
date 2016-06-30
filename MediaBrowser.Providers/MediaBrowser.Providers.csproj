@@ -89,7 +89,6 @@
     <Compile Include="Channels\ChannelMetadataService.cs" />
     <Compile Include="Chapters\ChapterManager.cs" />
     <Compile Include="Folders\CollectionFolderMetadataService.cs" />
-    <Compile Include="Folders\DefaultImageProvider.cs" />
     <Compile Include="Folders\FolderMetadataService.cs" />
     <Compile Include="Folders\UserViewMetadataService.cs" />
     <Compile Include="GameGenres\GameGenreMetadataService.cs" />
@@ -104,7 +103,6 @@
     <Compile Include="Manager\ItemImageProvider.cs" />
     <Compile Include="Manager\ProviderManager.cs" />
     <Compile Include="Manager\MetadataService.cs" />
-    <Compile Include="Manager\SeriesOrderManager.cs" />
     <Compile Include="MediaInfo\FFProbeAudioInfo.cs" />
     <Compile Include="MediaInfo\FFProbeProvider.cs" />
     <Compile Include="MediaInfo\FFProbeVideoInfo.cs" />
@@ -145,10 +143,7 @@
     <Compile Include="Omdb\OmdbProvider.cs" />
     <Compile Include="Omdb\OmdbItemProvider.cs" />
     <Compile Include="People\MovieDbPersonImageProvider.cs" />
-    <Compile Include="Movies\MovieUpdatesPrescanTask.cs" />
-    <Compile Include="Movies\FanArtMovieUpdatesPostScanTask.cs" />
     <Compile Include="Movies\MovieDbProvider.cs" />
-    <Compile Include="Music\FanArtUpdatesPostScanTask.cs" />
     <Compile Include="Music\FanArtAlbumProvider.cs" />
     <Compile Include="Music\FanArtArtistProvider.cs" />
     <Compile Include="Music\MusicBrainzAlbumProvider.cs" />
@@ -168,7 +163,6 @@
     <Compile Include="Subtitles\SubtitleManager.cs" />
     <Compile Include="TV\DummySeasonProvider.cs" />
     <Compile Include="TV\EpisodeMetadataService.cs" />
-    <Compile Include="TV\FanArt\FanArtTvUpdatesPostScanTask.cs" />
     <Compile Include="TV\FanArt\FanArtSeasonProvider.cs" />
     <Compile Include="TV\FanArt\FanartSeriesProvider.cs" />
     <Compile Include="TV\MissingEpisodeProvider.cs" />
@@ -182,7 +176,6 @@
     <Compile Include="TV\SeriesMetadataService.cs" />
     <Compile Include="TV\TheTVDB\TvdbEpisodeImageProvider.cs" />
     <Compile Include="People\TvdbPersonImageProvider.cs" />
-    <Compile Include="TV\TheTVDB\TvdbSeasonIdentityProvider.cs" />
     <Compile Include="TV\TheTVDB\TvdbSeasonImageProvider.cs" />
     <Compile Include="TV\TheTVDB\TvdbSeriesImageProvider.cs" />
     <Compile Include="TV\SeasonMetadataService.cs" />

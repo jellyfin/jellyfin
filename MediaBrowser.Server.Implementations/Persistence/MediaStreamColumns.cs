@@ -28,6 +28,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             AddNalColumn();
             AddIsAvcColumn();
             AddTitleColumn();
+            AddTimeBaseColumn();
+            AddCodecTimeBaseColumn();
         }
 
         private void AddIsAvcColumn()
@@ -57,6 +59,68 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             builder.AppendLine("alter table mediastreams");
             builder.AppendLine("add column IsAvc BIT NULL");
+
+            _connection.RunQueries(new[] { builder.ToString() }, _logger);
+        }
+
+        private void AddTimeBaseColumn()
+        {
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "PRAGMA table_info(mediastreams)";
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        if (!reader.IsDBNull(1))
+                        {
+                            var name = reader.GetString(1);
+
+                            if (string.Equals(name, "TimeBase", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            var builder = new StringBuilder();
+
+            builder.AppendLine("alter table mediastreams");
+            builder.AppendLine("add column TimeBase TEXT");
+
+            _connection.RunQueries(new[] { builder.ToString() }, _logger);
+        }
+
+        private void AddCodecTimeBaseColumn()
+        {
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "PRAGMA table_info(mediastreams)";
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        if (!reader.IsDBNull(1))
+                        {
+                            var name = reader.GetString(1);
+
+                            if (string.Equals(name, "CodecTimeBase", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            var builder = new StringBuilder();
+
+            builder.AppendLine("alter table mediastreams");
+            builder.AppendLine("add column CodecTimeBase TEXT");
 
             _connection.RunQueries(new[] { builder.ToString() }, _logger);
         }

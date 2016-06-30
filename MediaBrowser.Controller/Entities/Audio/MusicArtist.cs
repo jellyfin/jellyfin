@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -62,13 +63,6 @@ namespace MediaBrowser.Controller.Entities.Audio
                 query.ArtistNames = new[] { Name };
             }
 
-            // Need this for now since the artist filter isn't yet supported by the db
-            if (ConfigurationManager.Configuration.SchemaVersion < 79)
-            {
-                var filter = GetItemFilter();
-                return LibraryManager.GetItemList(query).Where(filter);
-            }
-
             return LibraryManager.GetItemList(query);
         }
 
@@ -84,6 +78,15 @@ namespace MediaBrowser.Controller.Entities.Audio
 
                 return base.ActualChildren;
             }
+        }
+
+        public override int GetChildCount(User user)
+        {
+            if (IsAccessedByName)
+            {
+                return 0;
+            }
+            return base.GetChildCount(user);
         }
 
         public override bool IsSaveLocalMetadataEnabled()
@@ -163,10 +166,17 @@ namespace MediaBrowser.Controller.Entities.Audio
                 list.Add("Artist-Musicbrainz-" + id);
             }
 
-            list.Add("Artist-" + item.Name);
+            list.Add("Artist-" + (item.Name ?? string.Empty).RemoveDiacritics());
             return list;
         }
 
+        public override string PresentationUniqueKey
+        {
+            get
+            {
+                return "Artist-" + (Name ?? string.Empty).RemoveDiacritics();
+            }
+        }
         protected override bool GetBlockUnratedValue(UserPolicy config)
         {
             return config.BlockUnratedItems.Contains(UnratedItem.Music);

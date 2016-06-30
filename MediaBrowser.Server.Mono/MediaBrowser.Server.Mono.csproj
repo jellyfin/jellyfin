@@ -23,6 +23,7 @@
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
     <Externalconsole>true</Externalconsole>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>full</DebugType>
@@ -33,6 +34,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <Externalconsole>true</Externalconsole>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>false</Optimize>
@@ -40,6 +42,7 @@
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Mono|AnyCPU' ">
     <Optimize>false</Optimize>
@@ -47,9 +50,11 @@
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release Mono|x86'">
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CommonIO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -59,11 +64,6 @@
     <Reference Include="Mono.Posix, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Mono.Posix.4.0.0.0\lib\net40\Mono.Posix.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Security, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ThirdParty\Mono.Security\Mono.Security.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="Patterns.Logging, Version=1.0.5494.41209, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -82,16 +82,35 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\MediaBrowser.Server.Implementations\Persistence\SqliteExtensions.cs">
+      <Link>Native\SqliteExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="Native\BaseMonoApp.cs" />
-    <Compile Include="Native\SqliteExtensions.cs" />
+    <Compile Include="Native\DbConnector.cs" />
     <Compile Include="Networking\CertificateGenerator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Native\NativeApp.cs" />
     <Compile Include="Networking\NetworkManager.cs" />
+    <Compile Include="Security\ASN1.cs" />
+    <Compile Include="Security\ASN1Convert.cs" />
+    <Compile Include="Security\BitConverterLE.cs" />
+    <Compile Include="Security\CryptoConvert.cs" />
+    <Compile Include="Security\PKCS1.cs" />
+    <Compile Include="Security\PKCS12.cs" />
+    <Compile Include="Security\PKCS7.cs" />
+    <Compile Include="Security\PKCS8.cs" />
+    <Compile Include="Security\X501Name.cs" />
+    <Compile Include="Security\X509Builder.cs" />
+    <Compile Include="Security\X509Certificate.cs" />
+    <Compile Include="Security\X509CertificateBuilder.cs" />
+    <Compile Include="Security\X509CertificateCollection.cs" />
+    <Compile Include="Security\X509Extension.cs" />
+    <Compile Include="Security\X509Extensions.cs" />
+    <Compile Include="Security\X520Attributes.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

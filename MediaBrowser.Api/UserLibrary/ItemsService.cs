@@ -34,7 +34,6 @@ namespace MediaBrowser.Api.UserLibrary
         /// The _user manager
         /// </summary>
         private readonly IUserManager _userManager;
-        private readonly IUserDataManager _userDataRepository;
 
         /// <summary>
         /// The _library manager
@@ -43,25 +42,37 @@ namespace MediaBrowser.Api.UserLibrary
         private readonly ILocalizationManager _localization;
 
         private readonly IDtoService _dtoService;
-        private readonly ICollectionManager _collectionManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsService" /> class.
         /// </summary>
         /// <param name="userManager">The user manager.</param>
         /// <param name="libraryManager">The library manager.</param>
-        /// <param name="userDataRepository">The user data repository.</param>
         /// <param name="localization">The localization.</param>
         /// <param name="dtoService">The dto service.</param>
-        /// <param name="collectionManager">The collection manager.</param>
-        public ItemsService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, ILocalizationManager localization, IDtoService dtoService, ICollectionManager collectionManager)
+        public ItemsService(IUserManager userManager, ILibraryManager libraryManager, ILocalizationManager localization, IDtoService dtoService)
         {
+            if (userManager == null)
+            {
+                throw new ArgumentNullException("userManager");
+            }
+            if (libraryManager == null)
+            {
+                throw new ArgumentNullException("libraryManager");
+            }
+            if (localization == null)
+            {
+                throw new ArgumentNullException("localization");
+            }
+            if (dtoService == null)
+            {
+                throw new ArgumentNullException("dtoService");
+            }
+
             _userManager = userManager;
             _libraryManager = libraryManager;
-            _userDataRepository = userDataRepository;
             _localization = localization;
             _dtoService = dtoService;
-            _collectionManager = collectionManager;
         }
 
         /// <summary>
@@ -71,6 +82,11 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public async Task<object> Get(GetItems request)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException("request");
+            }
+
             var result = await GetItems(request).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
@@ -84,15 +100,32 @@ namespace MediaBrowser.Api.UserLibrary
         private async Task<ItemsResult> GetItems(GetItems request)
         {
             var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
-
+        
             var result = await GetItemsToSerialize(request, user).ConfigureAwait(false);
 
+            if (result == null)
+            {
+                throw new InvalidOperationException("GetItemsToSerialize returned null");
+            }
+
+            if (result.Items == null)
+            {
+                throw new InvalidOperationException("GetItemsToSerialize result.Items returned null");
+            }
+
             var dtoOptions = GetDtoOptions(request);
+
+            var dtoList = await _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user).ConfigureAwait(false);
+
+            if (dtoList == null)
+            {
+                throw new InvalidOperationException("GetBaseItemDtos returned null");
+            }
 
             return new ItemsResult
             {
                 TotalRecordCount = result.TotalRecordCount,
-                Items = _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user).ToArray()
+                Items = dtoList.ToArray()
             };
         }
 
@@ -119,11 +152,17 @@ namespace MediaBrowser.Api.UserLibrary
 
             // Default list type = children
 
+            var folder = item as Folder;
+            if (folder == null)
+            {
+                folder = user == null ? _libraryManager.RootFolder : _libraryManager.GetUserRootFolder();
+            }
+
             if (!string.IsNullOrEmpty(request.Ids))
             {
                 request.Recursive = true;
                 var query = GetItemsQuery(request, user);
-                var result = await ((Folder)item).GetItems(query).ConfigureAwait(false);
+                var result = await folder.GetItems(query).ConfigureAwait(false);
 
                 if (string.IsNullOrWhiteSpace(request.SortBy))
                 {
@@ -138,22 +177,22 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (request.Recursive)
             {
-                return await ((Folder)item).GetItems(GetItemsQuery(request, user)).ConfigureAwait(false);
+                return await folder.GetItems(GetItemsQuery(request, user)).ConfigureAwait(false);
             }
 
             if (user == null)
             {
-                return await ((Folder)item).GetItems(GetItemsQuery(request, null)).ConfigureAwait(false);
+                return await folder.GetItems(GetItemsQuery(request, null)).ConfigureAwait(false);
             }
 
             var userRoot = item as UserRootFolder;
 
             if (userRoot == null)
             {
-                return await ((Folder)item).GetItems(GetItemsQuery(request, user)).ConfigureAwait(false);
+                return await folder.GetItems(GetItemsQuery(request, user)).ConfigureAwait(false);
             }
 
-            IEnumerable<BaseItem> items = ((Folder)item).GetChildren(user, true);
+            IEnumerable<BaseItem> items = folder.GetChildren(user, true);
 
             var itemsArray = items.ToArray();
 
@@ -187,7 +226,6 @@ namespace MediaBrowser.Api.UserLibrary
                 NameStartsWith = request.NameStartsWith,
                 NameStartsWithOrGreater = request.NameStartsWithOrGreater,
                 HasImdbId = request.HasImdbId,
-                IsYearMismatched = request.IsYearMismatched,
                 IsPlaceHolder = request.IsPlaceHolder,
                 IsLocked = request.IsLocked,
                 IsInBoxSet = request.IsInBoxSet,
@@ -301,7 +339,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 query.LocationTypes = request.LocationTypes.Split(',').Select(d => (LocationType)Enum.Parse(typeof(LocationType), d, true)).ToArray();
             }
-            
+
             // Min official rating
             if (!string.IsNullOrWhiteSpace(request.MinOfficialRating))
             {

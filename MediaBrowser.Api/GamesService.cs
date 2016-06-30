@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Api
 {
@@ -107,8 +109,7 @@ namespace MediaBrowser.Api
             {
                 IncludeItemTypes = new[] { typeof(GameSystem).Name }
             };
-            var parentIds = new string[] { } ;
-            var gameSystems = _libraryManager.GetItemList(query, parentIds)
+            var gameSystems = _libraryManager.GetItemList(query)
                 .Cast<GameSystem>()
                 .ToList();
 
@@ -128,8 +129,7 @@ namespace MediaBrowser.Api
             {
                 IncludeItemTypes = new[] { typeof(Game).Name }
             };
-            var parentIds = new string[] { };
-            var games = _libraryManager.GetItemList(query, parentIds)
+            var games = _libraryManager.GetItemList(query)
                 .Cast<Game>()
                 .ToList();
 
@@ -185,20 +185,42 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetSimilarGames request)
+        public async Task<object> Get(GetSimilarGames request)
         {
-            var dtoOptions = GetDtoOptions(request);
-
-            var result = SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
-                _itemRepo,
-                _libraryManager,
-                _userDataRepository,
-                _dtoService,
-                Logger,
-                request, new[] { typeof(Game) },
-                SimilarItemsHelper.GetSimiliarityScore);
+            var result = await GetSimilarItemsResult(request).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
+        }
+
+        private async Task<QueryResult<BaseItemDto>> GetSimilarItemsResult(BaseGetSimilarItemsFromItem request)
+        {
+            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
+
+            var item = string.IsNullOrEmpty(request.Id) ?
+                (!string.IsNullOrWhiteSpace(request.UserId) ? user.RootFolder :
+                _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
+
+            var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
+            {
+                Limit = request.Limit,
+                IncludeItemTypes = new[]
+                {
+                        typeof(Game).Name
+                },
+                SimilarTo = item
+
+            }).ToList();
+
+            var dtoOptions = GetDtoOptions(request);
+
+            var result = new QueryResult<BaseItemDto>
+            {
+                Items = (await _dtoService.GetBaseItemDtos(itemsResult, dtoOptions, user).ConfigureAwait(false)).ToArray(),
+
+                TotalRecordCount = itemsResult.Count
+            };
+
+            return result;
         }
     }
 }

@@ -314,11 +314,7 @@ namespace MediaBrowser.Providers.Movies
 
             if (movieData.keywords != null && movieData.keywords.keywords != null)
             {
-                var hasTags = movie as IHasKeywords;
-                if (hasTags != null)
-                {
-                    hasTags.Keywords = movieData.keywords.keywords.Select(i => i.name).ToList();
-                }
+                movie.Keywords = movieData.keywords.keywords.Select(i => i.name).ToList();
             }
 
             if (movieData.trailers != null && movieData.trailers.youtube != null &&
@@ -330,8 +326,7 @@ namespace MediaBrowser.Providers.Movies
                     hasTrailers.RemoteTrailers = movieData.trailers.youtube.Select(i => new MediaUrl
                     {
                         Url = string.Format("https://www.youtube.com/watch?v={0}", i.source),
-                        Name = i.name,
-                        VideoSize = string.Equals("hd", i.size, StringComparison.OrdinalIgnoreCase) ? VideoSize.HighDefinition : VideoSize.StandardDefinition
+                        Name = i.name
 
                     }).ToList();
                 }

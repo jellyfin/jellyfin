@@ -1,48 +1,42 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Model.Logging;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Collections.Generic;
-using CommonIO;
+using MediaBrowser.Model.Logging;
 
-namespace MediaBrowser.Server.Startup.Common.FFMpeg
+namespace MediaBrowser.MediaEncoding.Encoder
 {
-    public class FFmpegValidator
+    public class EncoderValidator
     {
         private readonly ILogger _logger;
-        private readonly IApplicationPaths _appPaths;
-        private readonly IFileSystem _fileSystem;
 
-        public FFmpegValidator(ILogger logger, IApplicationPaths appPaths, IFileSystem fileSystem)
+        public EncoderValidator(ILogger logger)
         {
             _logger = logger;
-            _appPaths = appPaths;
-            _fileSystem = fileSystem;
         }
 
-        public Tuple<List<string>,List<string>> Validate(FFMpegInfo info)
+        public Tuple<List<string>, List<string>> Validate(string encoderPath)
         {
-            _logger.Info("FFMpeg: {0}", info.EncoderPath);
-            _logger.Info("FFProbe: {0}", info.ProbePath);
+            _logger.Info("Validating media encoder at {0}", encoderPath);
 
-            var decoders = GetDecoders(info.EncoderPath);
-            var encoders = GetEncoders(info.EncoderPath);
+            var decoders = GetDecoders(encoderPath);
+            var encoders = GetEncoders(encoderPath);
+
+            _logger.Info("Encoder validation complete");
 
             return new Tuple<List<string>, List<string>>(decoders, encoders);
         }
 
-        private List<string> GetDecoders(string ffmpegPath)
+        private List<string> GetDecoders(string encoderAppPath)
         {
             string output = string.Empty;
             try
             {
-                output = GetFFMpegOutput(ffmpegPath, "-decoders");
+                output = GetProcessOutput(encoderAppPath, "-decoders");
             }
             catch
             {
             }
-            //_logger.Debug("ffmpeg decoder query result: {0}", output ?? string.Empty);
 
             var found = new List<string>();
             var required = new[]
@@ -56,12 +50,9 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             {
                 var srch = " " + codec + "  ";
 
-                if (output.IndexOf(srch, StringComparison.OrdinalIgnoreCase) == -1)
+                if (output.IndexOf(srch, StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    _logger.Warn("ffmpeg is missing decoder " + codec);
-                }
-                else
-                {
+                    _logger.Info("Decoder available: " + codec);
                     found.Add(codec);
                 }
             }
@@ -69,17 +60,16 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             return found;
         }
 
-        private List<string> GetEncoders(string ffmpegPath)
+        private List<string> GetEncoders(string encoderAppPath)
         {
             string output = null;
             try
             {
-                output = GetFFMpegOutput(ffmpegPath, "-encoders");
+                output = GetProcessOutput(encoderAppPath, "-encoders");
             }
             catch
             {
             }
-            //_logger.Debug("ffmpeg encoder query result: {0}", output ?? string.Empty);
 
             var found = new List<string>();
             var required = new[]
@@ -94,19 +84,18 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                 "libmp3lame",
                 "libopus",
                 //"libvorbis",
-                "srt"
+                "srt",
+                "libnvenc",
+                "h264_qsv"
             };
 
             foreach (var codec in required)
             {
                 var srch = " " + codec + "  ";
 
-                if (output.IndexOf(srch, StringComparison.OrdinalIgnoreCase) == -1)
+                if (output.IndexOf(srch, StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    _logger.Warn("ffmpeg is missing encoder " + codec);
-                }
-                else
-                {
+                    _logger.Info("Encoder available: " + codec);
                     found.Add(codec);
                 }
             }
@@ -114,7 +103,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             return found;
         }
 
-        private string GetFFMpegOutput(string path, string arguments)
+        private string GetProcessOutput(string path, string arguments)
         {
             var process = new Process
             {
@@ -139,13 +128,12 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                 {
                     process.BeginErrorReadLine();
 
-                    using (var reader = new StreamReader(process.StandardOutput.BaseStream))
-                    {
-                        return reader.ReadToEnd();
-                    }
+                    return process.StandardOutput.ReadToEnd();
                 }
                 catch
                 {
+                    _logger.Info("Killing process {0} {1}", path, arguments);
+
                     // Hate having to do this
                     try
                     {
@@ -153,7 +141,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                     }
                     catch (Exception ex1)
                     {
-                        _logger.ErrorException("Error killing ffmpeg", ex1);
+                        _logger.ErrorException("Error killing process", ex1);
                     }
 
                     throw;

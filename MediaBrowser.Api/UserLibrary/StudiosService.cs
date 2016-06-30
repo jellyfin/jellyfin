@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Dto;
+﻿using System;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -7,6 +8,7 @@ using MediaBrowser.Model.Dto;
 using ServiceStack;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -90,9 +92,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>System.Object.</returns>
         public object Get(GetStudios request)
         {
-            var result = GetResult(request);
+            var result = GetResultSlim(request);
 
             return ToOptimizedSerializedResultUsingCache(result);
+        }
+
+        protected override QueryResult<Tuple<BaseItem, ItemCounts>> GetItems(GetItemsByName request, InternalItemsQuery query)
+        {
+            return LibraryManager.GetStudios(query);
         }
 
         /// <summary>

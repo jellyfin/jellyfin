@@ -133,7 +133,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetDashboardConfigurationPage request)
+        public Task<object> Get(GetDashboardConfigurationPage request)
         {
             var page = ServerEntryPoint.Instance.PluginConfigurationPages.First(p => p.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
 
@@ -201,7 +201,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetDashboardResource request)
+        public async Task<object> Get(GetDashboardResource request)
         {
             var path = request.ResourceName;
 
@@ -230,7 +230,8 @@ namespace MediaBrowser.WebDashboard.Api
                 !contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase) &&
                 !contentType.StartsWith("font/", StringComparison.OrdinalIgnoreCase))
             {
-                return ResultFactory.GetResult(GetResourceStream(path, localizationCulture).Result, contentType);
+                var stream = await GetResourceStream(path, localizationCulture).ConfigureAwait(false);
+                return ResultFactory.GetResult(stream, contentType);
             }
 
             TimeSpan? cacheDuration = null;
@@ -246,7 +247,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var cacheKey = (assembly.Version + (localizationCulture ?? string.Empty) + path).GetMD5();
 
-            return ResultFactory.GetStaticResult(Request, cacheKey, null, cacheDuration, contentType, () => GetResourceStream(path, localizationCulture));
+            return await ResultFactory.GetStaticResult(Request, cacheKey, null, cacheDuration, contentType, () => GetResourceStream(path, localizationCulture)).ConfigureAwait(false);
         }
 
         private string GetLocalizationCulture()
@@ -342,7 +343,9 @@ namespace MediaBrowser.WebDashboard.Api
 
             if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
             {
-                DeleteFoldersByName(Path.Combine(bowerPath, "emby-webcomponents"), "fonts");
+                DeleteFoldersByName(Path.Combine(bowerPath, "emby-webcomponents", "fonts"), "montserrat");
+                DeleteFoldersByName(Path.Combine(bowerPath, "emby-webcomponents", "fonts"), "opensans");
+                DeleteFoldersByName(Path.Combine(bowerPath, "emby-webcomponents", "fonts"), "roboto");
             }
 
             _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "jquery", "src"), true);
@@ -356,9 +359,6 @@ namespace MediaBrowser.WebDashboard.Api
             DeleteFoldersByName(Path.Combine(bowerPath, "Sortable"), "meteor");
             DeleteFoldersByName(Path.Combine(bowerPath, "Sortable"), "st");
             DeleteFoldersByName(Path.Combine(bowerPath, "Swiper"), "src");
-            DeleteFoldersByName(Path.Combine(bowerPath, "material-design-lite"), "src");
-            DeleteFoldersByName(Path.Combine(bowerPath, "material-design-lite"), "utils");
-            _fileSystem.DeleteFile(Path.Combine(bowerPath, "material-design-lite", "gulpfile.babel.js"));
 
             _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "marked"), true);
             _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "marked-element"), true);
@@ -523,18 +523,6 @@ namespace MediaBrowser.WebDashboard.Api
                 var filename = Path.GetFileName(file);
 
                 await DumpFile(filename, Path.Combine(destination, filename), mode, culture, appVersion).ConfigureAwait(false);
-            }
-
-            var excludeFiles = new List<string>();
-
-            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
-            {
-                excludeFiles.Add("supporterkey.html");
-            }
-
-            foreach (var file in excludeFiles)
-            {
-                _fileSystem.DeleteFile(Path.Combine(destination, file));
             }
         }
 

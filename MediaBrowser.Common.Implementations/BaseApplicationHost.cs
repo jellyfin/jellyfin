@@ -199,7 +199,7 @@ namespace MediaBrowser.Common.Implementations
             ILogManager logManager, 
             IFileSystem fileSystem)
         {
-			XmlSerializer = new MediaBrowser.Common.Implementations.Serialization.XmlSerializer (fileSystem);
+			XmlSerializer = new XmlSerializer (fileSystem, logManager.GetLogger("XmlSerializer"));
             FailedAssemblies = new List<string>();
 
             ApplicationPaths = applicationPaths;
@@ -321,7 +321,7 @@ namespace MediaBrowser.Common.Implementations
 
         protected virtual IJsonSerializer CreateJsonSerializer()
         {
-            return new JsonSerializer(FileSystemManager);
+            return new JsonSerializer(FileSystemManager, LogManager.GetLogger("JsonSerializer"));
         }
 
         private void SetHttpLimit()
@@ -552,7 +552,7 @@ namespace MediaBrowser.Common.Implementations
             }
             catch (Exception ex)
             {
-                Logger.Error("Error creating {0}", ex, type.Name);
+                Logger.ErrorException("Error creating {0}", ex, type.Name);
 
                 throw;
             }
@@ -571,7 +571,7 @@ namespace MediaBrowser.Common.Implementations
             }
             catch (Exception ex)
             {
-                Logger.Error("Error creating {0}", ex, type.Name);
+                Logger.ErrorException("Error creating {0}", ex, type.Name);
                 // Don't blow up in release mode
                 return null;
             }

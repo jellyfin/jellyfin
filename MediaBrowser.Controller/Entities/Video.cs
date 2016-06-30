@@ -21,7 +21,6 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Video : BaseItem,
         IHasAspectRatio,
-        IHasTags,
         ISupportsPlaceHolders,
         IHasMediaSources,
         IHasShortOverview,
@@ -59,10 +58,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public long? Size { get; set; }
-        public string Container { get; set; }
         public int? TotalBitrate { get; set; }
-        public string ShortOverview { get; set; }
         public ExtraType? ExtraType { get; set; }
 
         /// <summary>

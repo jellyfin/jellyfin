@@ -148,6 +148,13 @@ namespace MediaBrowser.Providers.Movies
 
         public bool Supports(IHasProviderIds item)
         {
+            // Supports images for tv movies
+            var tvProgram = item as LiveTvProgram;
+            if (tvProgram != null && tvProgram.IsMovie)
+            {
+                return true;
+            }
+
             return item is Movie || item is MusicVideo || item is Series || item is Episode || item is Trailer;
         }
     }

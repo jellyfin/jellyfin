@@ -104,6 +104,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                     {
                         info.DeviceId = tokenInfo.DeviceId;
                     }
+                    if (string.IsNullOrWhiteSpace(info.Version))
+                    {
+                        info.Version = tokenInfo.AppVersion;
+                    }
                 }
                 else
                 {

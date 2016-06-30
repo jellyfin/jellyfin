@@ -188,6 +188,48 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                case "displayseason":
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            int rval;
+
+                            // int.TryParse is local aware, so it can be probamatic, force us culture
+                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out rval))
+                            {
+                                if ((item.ParentIndexNumber ?? 0) == 0)
+                                {
+                                    item.AirsBeforeSeasonNumber = rval;
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+
+                case "displayepisode":
+                    {
+                        var val = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(val))
+                        {
+                            int rval;
+
+                            // int.TryParse is local aware, so it can be probamatic, force us culture
+                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out rval))
+                            {
+                                if ((item.ParentIndexNumber ?? 0) == 0)
+                                {
+                                    item.AirsBeforeEpisodeNumber = rval;
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+
 
                 default:
                     base.FetchDataFromXmlNode(reader, itemResult);

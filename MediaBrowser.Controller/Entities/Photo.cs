@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class Photo : BaseItem, IHasTags, IHasTaglines
+    public class Photo : BaseItem, IHasTaglines
     {
         public List<string> Taglines { get; set; }
 

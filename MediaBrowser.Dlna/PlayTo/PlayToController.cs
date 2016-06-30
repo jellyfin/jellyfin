@@ -62,7 +62,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     }
                     return false;
                 }
-               
+
                 return _device != null;
             }
         }
@@ -119,7 +119,7 @@ namespace MediaBrowser.Dlna.PlayTo
             string nt;
             if (!e.Headers.TryGetValue("NT", out nt)) nt = String.Empty;
 
-            if ( usn.IndexOf(_device.Properties.UUID, StringComparison.OrdinalIgnoreCase) != -1 &&
+            if (usn.IndexOf(_device.Properties.UUID, StringComparison.OrdinalIgnoreCase) != -1 &&
                 !_disposed)
             {
                 if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1 ||
@@ -141,7 +141,7 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             try
             {
-                var streamInfo = StreamParams.ParseFromUrl(e.OldMediaInfo.Url, _libraryManager, _mediaSourceManager);
+                var streamInfo = await StreamParams.ParseFromUrl(e.OldMediaInfo.Url, _libraryManager, _mediaSourceManager).ConfigureAwait(false);
                 if (streamInfo.Item != null)
                 {
                     var progress = GetProgressInfo(e.OldMediaInfo, streamInfo);
@@ -151,9 +151,9 @@ namespace MediaBrowser.Dlna.PlayTo
                     ReportPlaybackStopped(e.OldMediaInfo, streamInfo, positionTicks);
                 }
 
-                streamInfo = StreamParams.ParseFromUrl(e.NewMediaInfo.Url, _libraryManager, _mediaSourceManager);
+                streamInfo = await StreamParams.ParseFromUrl(e.NewMediaInfo.Url, _libraryManager, _mediaSourceManager).ConfigureAwait(false);
                 if (streamInfo.Item == null) return;
-                
+
                 var newItemProgress = GetProgressInfo(e.NewMediaInfo, streamInfo);
 
                 await _sessionManager.OnPlaybackStart(newItemProgress).ConfigureAwait(false);
@@ -168,7 +168,8 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             try
             {
-                var streamInfo = StreamParams.ParseFromUrl(e.MediaInfo.Url, _libraryManager, _mediaSourceManager);
+                var streamInfo = await StreamParams.ParseFromUrl(e.MediaInfo.Url, _libraryManager, _mediaSourceManager)
+                            .ConfigureAwait(false);
 
                 if (streamInfo.Item == null) return;
 
@@ -230,7 +231,7 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             try
             {
-                var info = StreamParams.ParseFromUrl(e.MediaInfo.Url, _libraryManager, _mediaSourceManager);
+                var info = await StreamParams.ParseFromUrl(e.MediaInfo.Url, _libraryManager, _mediaSourceManager).ConfigureAwait(false);
 
                 if (info.Item != null)
                 {
@@ -249,7 +250,7 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             try
             {
-                var info = StreamParams.ParseFromUrl(e.MediaInfo.Url, _libraryManager, _mediaSourceManager);
+                var info = await StreamParams.ParseFromUrl(e.MediaInfo.Url, _libraryManager, _mediaSourceManager).ConfigureAwait(false);
 
                 if (info.Item != null)
                 {
@@ -377,7 +378,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (media != null)
             {
-                var info = StreamParams.ParseFromUrl(media.Url, _libraryManager, _mediaSourceManager);
+                var info = await StreamParams.ParseFromUrl(media.Url, _libraryManager, _mediaSourceManager).ConfigureAwait(false);
 
                 if (info.Item != null && !EnableClientSideSeek(info))
                 {
@@ -470,7 +471,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var profile = _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification()) ??
                 _dlnaManager.GetDefaultProfile();
-            
+
             var hasMediaSources = item as IHasMediaSources;
             var mediaSources = hasMediaSources != null
                 ? (_mediaSourceManager.GetStaticMediaSources(hasMediaSources, true, user)).ToList()
@@ -498,7 +499,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 return new ContentFeatureBuilder(profile)
                     .BuildAudioHeader(streamInfo.Container,
-                    streamInfo.AudioCodec,
+                    streamInfo.TargetAudioCodec,
                     streamInfo.TargetAudioBitrate,
                     streamInfo.TargetAudioSampleRate,
                     streamInfo.TargetAudioChannels,
@@ -512,7 +513,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 var list = new ContentFeatureBuilder(profile)
                     .BuildVideoHeader(streamInfo.Container,
                     streamInfo.VideoCodec,
-                    streamInfo.AudioCodec,
+                    streamInfo.TargetAudioCodec,
                     streamInfo.TargetWidth,
                     streamInfo.TargetHeight,
                     streamInfo.TargetVideoBitDepth,
@@ -739,7 +740,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (media != null)
             {
-                var info = StreamParams.ParseFromUrl(media.Url, _libraryManager, _mediaSourceManager);
+                var info = await StreamParams.ParseFromUrl(media.Url, _libraryManager, _mediaSourceManager).ConfigureAwait(false);
 
                 if (info.Item != null)
                 {
@@ -765,7 +766,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (media != null)
             {
-                var info = StreamParams.ParseFromUrl(media.Url, _libraryManager, _mediaSourceManager);
+                var info = await StreamParams.ParseFromUrl(media.Url, _libraryManager, _mediaSourceManager).ConfigureAwait(false);
 
                 if (info.Item != null)
                 {
@@ -840,7 +841,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 return null;
             }
 
-            public static StreamParams ParseFromUrl(string url, ILibraryManager libraryManager, IMediaSourceManager mediaSourceManager)
+            public static async Task<StreamParams> ParseFromUrl(string url, ILibraryManager libraryManager, IMediaSourceManager mediaSourceManager)
             {
                 var request = new StreamParams
                 {
@@ -906,11 +907,9 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 var hasMediaSources = request.Item as IHasMediaSources;
 
-                request.MediaSource = hasMediaSources == null ?
-                    null :
-                    mediaSourceManager.GetMediaSource(hasMediaSources, request.MediaSourceId, false).Result;
-
-
+                request.MediaSource = hasMediaSources == null
+                    ? null
+                    : (await mediaSourceManager.GetMediaSource(hasMediaSources, request.MediaSourceId, false).ConfigureAwait(false));
 
                 return request;
             }

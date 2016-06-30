@@ -126,7 +126,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
             }
             else
             {
-                var videoInfo = parser.ResolveFile(args.Path);
+                var videoInfo = parser.Resolve(args.Path, false, false);
 
                 if (videoInfo == null)
                 {

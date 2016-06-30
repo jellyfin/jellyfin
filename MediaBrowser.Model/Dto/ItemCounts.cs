@@ -60,5 +60,6 @@
         /// </summary>
         /// <value>The book count.</value>
         public int BookCount { get; set; }
+        public int ItemCount { get; set; }
     }
 }

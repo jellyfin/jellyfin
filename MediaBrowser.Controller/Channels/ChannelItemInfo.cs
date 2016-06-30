@@ -53,6 +53,12 @@ namespace MediaBrowser.Controller.Channels
 
         public bool IsInfiniteStream { get; set; }
 
+        public string HomePageUrl { get; set; }
+
+        public List<string> Artists { get; set; }
+
+        public List<string> AlbumArtists { get; set; }
+
         public ChannelItemInfo()
         {
             MediaSources = new List<ChannelMediaInfo>();
@@ -62,6 +68,8 @@ namespace MediaBrowser.Controller.Channels
             People = new List<PersonInfo>();
             Tags = new List<string>();
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Artists = new List<string>();
+            AlbumArtists = new List<string>();
         }
     }
 }
