@@ -1929,34 +1929,5 @@ namespace MediaBrowser.Server.Mono.Security {
 				password_max_length = value;
 			}
 		}
-
-		// static methods
-
-		static private byte[] LoadFile (string filename) 
-		{
-			byte[] data = null;
-			using (FileStream fs = File.OpenRead (filename)) {
-				data = new byte [fs.Length];
-				fs.Read (data, 0, data.Length);
-				fs.Close ();
-			}
-			return data;
-		}
-
-		static public PKCS12 LoadFromFile (string filename) 
-		{
-			if (filename == null)
-				throw new ArgumentNullException ("filename");
-
-			return new PKCS12 (LoadFile (filename));
-		}
-
-		static public PKCS12 LoadFromFile (string filename, string password) 
-		{
-			if (filename == null)
-				throw new ArgumentNullException ("filename");
-
-			return new PKCS12 (LoadFile (filename), password);
-		}
 	}
 }

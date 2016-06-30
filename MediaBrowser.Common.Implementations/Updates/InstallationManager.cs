@@ -193,6 +193,7 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// <returns>Task{List{PackageInfo}}.</returns>
         public async Task<IEnumerable<PackageInfo>> GetAvailablePackagesWithoutRegistrationInfo(CancellationToken cancellationToken)
         {
+            _logger.Info("Opening {0}", PackageCachePath);
             try
             {
                 using (var stream = _fileSystem.OpenRead(PackageCachePath))
