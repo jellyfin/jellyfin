@@ -53,7 +53,8 @@ namespace MediaBrowser.Server.Implementations.TV
                 SortOrder = SortOrder.Ascending,
                 PresentationUniqueKey = presentationUniqueKey,
                 Limit = limit,
-                ParentId = parentIdGuid
+                ParentId = parentIdGuid,
+                Recursive = true
 
             }).Cast<Series>();
 
