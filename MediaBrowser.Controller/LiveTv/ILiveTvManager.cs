@@ -345,6 +345,13 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="validateListings">if set to <c>true</c> [validate listings].</param>
         /// <returns>Task.</returns>
         Task<ListingsProviderInfo> SaveListingProvider(ListingsProviderInfo info, bool validateLogin, bool validateListings);
+
+        void DeleteListingsProvider(string id);
+
+        Task<TunerChannelMapping> SetChannelMapping(string providerId, string tunerChannelNumber, string providerChannelNumber);
+
+        TunerChannelMapping GetTunerChannelMapping(ChannelInfo channel, List<NameValuePair> mappings, List<ChannelInfo> providerChannels);
+
         /// <summary>
         /// Gets the lineups.
         /// </summary>
