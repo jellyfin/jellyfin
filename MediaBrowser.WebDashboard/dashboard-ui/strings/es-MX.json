@@ -2374,6 +2374,7 @@
     "SettingsWarning": "Cambiar estos valores podr\u00eda causar inestabilidad o fallas de conexi\u00f3n, si experimenta cualquier problema, recomendamos volver a los valores por defecto.",
     "MapChannels": "Mapear Canales",
     "LabelffmpegPath": "Ruta FFmpeg:",
+    "LabelffmpegVersion": "Versi\u00f3n de FFmpeg:",
     "LabelffmpegPathHelp": "La ruta donde descargo la aplicaci\u00f3n de FFmpeg, o la carpeta que contenga FFmpeg.",
     "SetupFFmpeg": "Configurar FFmpeg",
     "SetupFFmpegHelp": "FFmpeg es un componente requerido y necesita ser configurado.",
@@ -2381,5 +2382,7 @@
     "DownloadFFmpeg": "Descargar FFmpeg",
     "FFmpegSuggestedDownload": "Descarga sugerida: {0}",
     "UnzipFFmpegFile": "Descomprimir el archivo descargado a una carpeta de su elecci\u00f3n.",
+    "OptionUseSystemInstalledVersion": "Usar una versi\u00f3n instalada en el sistema",
+    "OptionUseMyCustomVersion": "Usar una versi\u00f3n personalizada",
     "FFmpegSavePathNotFound": "No fue posible localizar FFmpeg usando la ruta que introdujo. FFprobe tambi\u00e9n es requerido y debe de estar en la misma carpeta. Estos componentes normalmente est\u00e1n empaquetados en la misma descarga. Por favor verifique la ruta e intente de nuevo."
 }

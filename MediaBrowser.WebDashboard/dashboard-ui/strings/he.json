@@ -316,7 +316,7 @@
     "OptionAllowRemoteSharedDevices": "Allow remote control of shared devices",
     "OptionAllowRemoteSharedDevicesHelp": "Dlna devices are considered shared until a user begins controlling it.",
     "OptionAllowLinkSharing": "\u05d0\u05e4\u05e9\u05e8 \u05e9\u05d9\u05ea\u05d5\u05e3 \u05d1\u05e8\u05e9\u05ea\u05d5\u05ea \u05d7\u05d1\u05e8\u05ea\u05d9\u05d5\u05ea",
-    "OptionAllowLinkSharingHelp": "Only web pages containing media information are shared. Media files are never shared publicly. Shares are time-limited and will expire based on your server sharing settings.",
+    "OptionAllowLinkSharingHelp": "Only web pages containing media information are shared. Media files are never shared publicly. Shares are time-limited and will expire after {0} days.",
     "HeaderSharing": "\u05e9\u05d9\u05ea\u05d5\u05e3",
     "HeaderRemoteControl": "Remote Control",
     "OptionMissingTmdbId": "\u05d7\u05d6\u05e8 \u05de\u05d6\u05d4\u05d4 Tmdb",
@@ -2374,6 +2374,7 @@
     "SettingsWarning": "Changing these values may cause instability or connectivity failures. If you experience any problems, we recommend changing them back to default.",
     "MapChannels": "Map Channels",
     "LabelffmpegPath": "FFmpeg path:",
+    "LabelffmpegVersion": "FFmpeg version:",
     "LabelffmpegPathHelp": "The path to your downloaded FFmpeg application, or folder containing FFmpeg.",
     "SetupFFmpeg": "Setup FFmpeg",
     "SetupFFmpegHelp": "FFmpeg is a required component and needs to be configured.",
@@ -2381,5 +2382,7 @@
     "DownloadFFmpeg": "Download FFmpeg",
     "FFmpegSuggestedDownload": "Suggested download: {0}",
     "UnzipFFmpegFile": "Unzip the downloaded file to a folder of your choice.",
+    "OptionUseSystemInstalledVersion": "Use system installed version",
+    "OptionUseMyCustomVersion": "Use a custom version",
     "FFmpegSavePathNotFound": "We're unable to locaate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again."
 }

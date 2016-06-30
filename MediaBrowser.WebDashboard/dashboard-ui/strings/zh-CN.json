@@ -316,7 +316,7 @@
     "OptionAllowRemoteSharedDevices": "Allow remote control of shared devices",
     "OptionAllowRemoteSharedDevicesHelp": "Dlna devices are considered shared until a user begins controlling it.",
     "OptionAllowLinkSharing": "Allow social media sharing",
-    "OptionAllowLinkSharingHelp": "Only web pages containing media information are shared. Media files are never shared publicly. Shares are time-limited and will expire based on your server sharing settings.",
+    "OptionAllowLinkSharingHelp": "Only web pages containing media information are shared. Media files are never shared publicly. Shares are time-limited and will expire after {0} days.",
     "HeaderSharing": "\u5206\u4eab",
     "HeaderRemoteControl": "\u9065\u63a7",
     "OptionMissingTmdbId": "\u7f3a\u5c11Tmdb \u7f16\u53f7",
@@ -988,7 +988,7 @@
     "OptionDisplayChannelsInline": "Display channels inline within my views",
     "OptionDisplayChannelsInlineHelp": "If enabled, channels will be displayed directly alongside other views. If disabled, they'll be displayed within a separate Channels view.",
     "LabelDisplayCollectionsView": "\u663e\u793a\u5408\u96c6\u89c6\u56fe\u6765\u5448\u73b0\u7535\u5f71\u5408\u96c6",
-    "LabelDisplayCollectionsViewHelp": "\u8fd9\u5c06\u521b\u5efa\u4e00\u4e2a\u5355\u72ec\u7684\u89c6\u56fe\u6765\u663e\u793a\u60a8\u5df2\u7ecf\u521b\u5efa\u6216\u8bbf\u95ee\u7684\u5408\u96c6\u3002\u8981\u521b\u5efa\u5408\u96c6\uff0c\u8bf7\u5728\u4efb\u4e00\u7535\u5f71\u4e0a\u70b9\u51fb\u53f3\u952e\u5e76\u6309\u4f4f\uff0c\u7136\u540e\u9009\u62e9\u201c\u6dfb\u52a0\u5230\u5408\u96c6\u201d\u3002",
+    "LabelDisplayCollectionsViewHelp": "This will create a separate view to display movie collections. To create a collection, right-click or tap-hold any movie and select 'Add to Collection'. ",
     "LabelKodiMetadataEnableExtraThumbs": "\u590d\u5236\u540c\u4eba\u753b\u5230extrathumbs\u6587\u4ef6\u5939",
     "LabelKodiMetadataEnableExtraThumbsHelp": "\u4e3a\u4e86\u6700\u5927\u5316\u517c\u5bb9Kodi\u76ae\u80a4\uff0c\u4e0b\u8f7d\u7684\u56fe\u7247\u540c\u65f6\u50a8\u5b58\u5728 extrafanart \u548c extrathumbs \u6587\u4ef6\u5939\u3002",
     "TabServices": "\u670d\u52a1",
@@ -2374,6 +2374,7 @@
     "SettingsWarning": "Changing these values may cause instability or connectivity failures. If you experience any problems, we recommend changing them back to default.",
     "MapChannels": "Map Channels",
     "LabelffmpegPath": "FFmpeg path:",
+    "LabelffmpegVersion": "FFmpeg version:",
     "LabelffmpegPathHelp": "The path to your downloaded FFmpeg application, or folder containing FFmpeg.",
     "SetupFFmpeg": "Setup FFmpeg",
     "SetupFFmpegHelp": "FFmpeg is a required component and needs to be configured.",
@@ -2381,5 +2382,7 @@
     "DownloadFFmpeg": "Download FFmpeg",
     "FFmpegSuggestedDownload": "Suggested download: {0}",
     "UnzipFFmpegFile": "Unzip the downloaded file to a folder of your choice.",
+    "OptionUseSystemInstalledVersion": "Use system installed version",
+    "OptionUseMyCustomVersion": "Use a custom version",
     "FFmpegSavePathNotFound": "We're unable to locaate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again."
 }

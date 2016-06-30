@@ -2374,6 +2374,7 @@
     "SettingsWarning": "Changing these values may cause instability or connectivity failures. If you experience any problems, we recommend changing them back to default.",
     "MapChannels": "Map Channels",
     "LabelffmpegPath": "FFmpeg path:",
+    "LabelffmpegVersion": "FFmpeg version:",
     "LabelffmpegPathHelp": "The path to your downloaded FFmpeg application, or folder containing FFmpeg.",
     "SetupFFmpeg": "Setup FFmpeg",
     "SetupFFmpegHelp": "FFmpeg is a required component and needs to be configured.",
@@ -2381,5 +2382,7 @@
     "DownloadFFmpeg": "Download FFmpeg",
     "FFmpegSuggestedDownload": "Suggested download: {0}",
     "UnzipFFmpegFile": "Unzip the downloaded file to a folder of your choice.",
+    "OptionUseSystemInstalledVersion": "Use system installed version",
+    "OptionUseMyCustomVersion": "Use a custom version",
     "FFmpegSavePathNotFound": "We're unable to locaate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again."
 }

@@ -316,7 +316,7 @@
     "OptionAllowRemoteSharedDevices": "Permetre el control remot de dispositius compartits",
     "OptionAllowRemoteSharedDevicesHelp": "Els dispositius dlna es consideren compartits fins que un usuari comen\u00e7a a controlar-los.",
     "OptionAllowLinkSharing": "Permetre compartir els mitjans a les xarxes socials",
-    "OptionAllowLinkSharingHelp": "Nom\u00e9s les p\u00e0gines contenint informaci\u00f3 de multim\u00e8dia son compartides. Els fitxers multim\u00e8dia mai es comparteixen p\u00fablicament. Les comparticions estan limitades per temps i expiraran en funci\u00f3 de les teves prefer\u00e8ncies de compartici\u00f3.",
+    "OptionAllowLinkSharingHelp": "Only web pages containing media information are shared. Media files are never shared publicly. Shares are time-limited and will expire after {0} days.",
     "HeaderSharing": "Compartir",
     "HeaderRemoteControl": "Control Remot",
     "OptionMissingTmdbId": "Sense id de Tmdb",
@@ -2374,6 +2374,7 @@
     "SettingsWarning": "Changing these values may cause instability or connectivity failures. If you experience any problems, we recommend changing them back to default.",
     "MapChannels": "Map Channels",
     "LabelffmpegPath": "FFmpeg path:",
+    "LabelffmpegVersion": "FFmpeg version:",
     "LabelffmpegPathHelp": "The path to your downloaded FFmpeg application, or folder containing FFmpeg.",
     "SetupFFmpeg": "Setup FFmpeg",
     "SetupFFmpegHelp": "FFmpeg is a required component and needs to be configured.",
@@ -2381,5 +2382,7 @@
     "DownloadFFmpeg": "Download FFmpeg",
     "FFmpegSuggestedDownload": "Suggested download: {0}",
     "UnzipFFmpegFile": "Unzip the downloaded file to a folder of your choice.",
+    "OptionUseSystemInstalledVersion": "Use system installed version",
+    "OptionUseMyCustomVersion": "Use a custom version",
     "FFmpegSavePathNotFound": "We're unable to locaate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again."
 }
