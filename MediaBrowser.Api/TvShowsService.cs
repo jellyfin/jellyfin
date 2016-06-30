@@ -327,7 +327,8 @@ namespace MediaBrowser.Api
                 MinPremiereDate = minPremiereDate,
                 StartIndex = request.StartIndex,
                 Limit = request.Limit,
-                ParentId = parentIdGuid
+                ParentId = parentIdGuid,
+                Recursive = true
 
             }).ToList();
 
