@@ -322,7 +322,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
 
                 ffmpegPath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffmpeg", StringComparison.OrdinalIgnoreCase));
-                ffprobePath = GetProbePathFromEncoderPath(ffmpegPath);
+
+                if (!string.IsNullOrWhiteSpace(ffmpegPath))
+                {
+                    ffprobePath = GetProbePathFromEncoderPath(ffmpegPath);
+                }
             }
 
             return new Tuple<string, string>(ffmpegPath, ffprobePath);
