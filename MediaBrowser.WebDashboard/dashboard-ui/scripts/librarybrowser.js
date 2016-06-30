@@ -2279,7 +2279,7 @@
                 // cardContent
                 html += '</a>';
 
-                if (options.overlayPlayButton && !item.IsPlaceHolder && (item.LocationType != 'Virtual' || !item.MediaType || item.Type == 'Program') && item.Type != 'Person') {
+                if (options.overlayPlayButton && !item.IsPlaceHolder && (item.LocationType != 'Virtual' || !item.MediaType || item.Type == 'Program') && item.Type != 'Person' && item.PlayAccess == 'Full') {
                     html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayPlayButton autoSize" onclick="return false;"><i class="md-icon">play_arrow</i></button></div>';
                 }
                 if (options.overlayMoreButton) {
