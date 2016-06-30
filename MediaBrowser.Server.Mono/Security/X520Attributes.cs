@@ -28,12 +28,9 @@
 //
 
 using System;
-using System.Globalization;
 using System.Text;
 
-using Mono.Security;
-
-namespace Mono.Security.X509 {
+namespace MediaBrowser.Server.Mono.Security {
 
 	// References:
 	// 1.	Information technology - Open Systems Interconnection - The Directory: Selected attribute types 
@@ -55,12 +52,7 @@ namespace Mono.Security.X509 {
 	 * 
 	 * AttributeValue ::= ANY DEFINED BY AttributeType
 	 */
-#if INSIDE_CORLIB
-	internal
-#else
-	public 
-#endif
-	class X520 {
+    public class X520 {
 
 		public abstract class AttributeTypeAndValue {
 			private string oid;
