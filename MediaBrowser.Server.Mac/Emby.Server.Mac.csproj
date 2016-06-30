@@ -474,9 +474,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\itemlist.html">
       <Link>Resources\dashboard-ui\itemlist.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\kids.html">
-      <Link>Resources\dashboard-ui\kids.html</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\library.html">
       <Link>Resources\dashboard-ui\library.html</Link>
     </BundleResource>
@@ -6339,12 +6336,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\devices\android\android.css">
       <Link>Resources\dashboard-ui\devices\android\android.css</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\devices\ie\ie.css">
-      <Link>Resources\dashboard-ui\devices\ie\ie.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\devices\ie\ie.js">
-      <Link>Resources\dashboard-ui\devices\ie\ie.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\devices\ios\ios.css">
       <Link>Resources\dashboard-ui\devices\ios\ios.css</Link>
     </BundleResource>
@@ -6497,9 +6488,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\itemlistpage.js">
       <Link>Resources\dashboard-ui\scripts\itemlistpage.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\kids.js">
-      <Link>Resources\dashboard-ui\scripts\kids.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\librarybrowser.js">
       <Link>Resources\dashboard-ui\scripts\librarybrowser.js</Link>
