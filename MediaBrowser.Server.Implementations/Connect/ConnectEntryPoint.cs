@@ -162,6 +162,8 @@ namespace MediaBrowser.Server.Implementations.Connect
         {
             var path = CacheFilePath;
 
+            _logger.Info("Loading data from {0}", path);
+
             try
             {
                 var endpoint = _fileSystem.ReadAllText(path, Encoding.UTF8);

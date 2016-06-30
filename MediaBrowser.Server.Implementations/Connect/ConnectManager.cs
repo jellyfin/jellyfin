@@ -359,7 +359,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         {
             var path = CacheFilePath;
 
-            _logger.Debug("Loading data from {0}", path);
+            _logger.Info("Loading data from {0}", path);
 
             try
             {
