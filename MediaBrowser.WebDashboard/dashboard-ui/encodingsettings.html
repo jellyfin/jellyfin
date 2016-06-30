@@ -9,7 +9,8 @@
                     <select is="emby-select" id="selectVideoDecoder" label="${LabelHardwareAccelerationType}">
                         <option value="">${OptionNone}</option>
                         <option value="qsv">Intel Quick Sync</option>
-                        <option value="h264_omx">h264_omx</option>
+                        <option value="h264_omx">h264_omx (experimental)</option>
+                        <option value="nvenc">Nvidia NVENC (experimental)</option>
                     </select>
                     <div class="fieldDescription">${LabelHardwareAccelerationTypeHelp}</div>
                 </div>
@@ -30,7 +31,7 @@
                 </div>
                 <div class="checkboxContainer">
                     <label>
-                        <input is="emby-checkbox" type="checkbox" id="chkEnableThrottle"/>
+                        <input is="emby-checkbox" type="checkbox" id="chkEnableThrottle" />
                         <span>${OptionEnableTranscodingThrottle}</span>
                     </label>
                     <div class="fieldDescription checkboxFieldDescription">${OptionEnableTranscodingThrottleHelp}</div>
