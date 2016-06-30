@@ -1,30 +1,28 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Model.Logging;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Collections.Generic;
-using CommonIO;
+using MediaBrowser.Model.Logging;
 
-namespace MediaBrowser.Server.Startup.Common.FFMpeg
+namespace MediaBrowser.MediaEncoding.Encoder
 {
-    public class FFmpegValidator
+    public class EncoderValidator
     {
         private readonly ILogger _logger;
-        private readonly IApplicationPaths _appPaths;
-        private readonly IFileSystem _fileSystem;
 
-        public FFmpegValidator(ILogger logger, IApplicationPaths appPaths, IFileSystem fileSystem)
+        public EncoderValidator(ILogger logger)
         {
             _logger = logger;
-            _appPaths = appPaths;
-            _fileSystem = fileSystem;
         }
 
-        public Tuple<List<string>,List<string>> Validate(string encoderPath)
+        public Tuple<List<string>, List<string>> Validate(string encoderPath)
         {
+            _logger.Info("Validating media encoder at {0}", encoderPath);
+
             var decoders = GetDecoders(encoderPath);
             var encoders = GetEncoders(encoderPath);
+
+            _logger.Info("Encoder validation complete");
 
             return new Tuple<List<string>, List<string>>(decoders, encoders);
         }
@@ -136,13 +134,12 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                 {
                     process.BeginErrorReadLine();
 
-                    using (var reader = new StreamReader(process.StandardOutput.BaseStream))
-                    {
-                        return reader.ReadToEnd();
-                    }
+                    return process.StandardOutput.ReadToEnd();
                 }
                 catch
                 {
+                    _logger.Info("Killing process {0} {1}", path, arguments);
+
                     // Hate having to do this
                     try
                     {

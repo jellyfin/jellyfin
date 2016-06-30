@@ -68,7 +68,6 @@
     <Compile Include="FFMpeg\FFMpegLoader.cs" />
     <Compile Include="FFMpeg\FFMpegInstallInfo.cs" />
     <Compile Include="FFMpeg\FFMpegInfo.cs" />
-    <Compile Include="FFMpeg\FFmpegValidator.cs" />
     <Compile Include="INativeApp.cs" />
     <Compile Include="MbLinkShortcutHandler.cs" />
     <Compile Include="Migrations\CollectionGroupingMigration.cs" />

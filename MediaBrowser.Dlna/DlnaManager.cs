@@ -29,6 +29,8 @@ namespace MediaBrowser.Dlna
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerApplicationHost _appHost;
 
+        private readonly Dictionary<string, DeviceProfile> _profiles = new Dictionary<string, DeviceProfile>(StringComparer.Ordinal);
+
         public DlnaManager(IXmlSerializer xmlSerializer,
             IFileSystem fileSystem,
             IApplicationPaths appPaths,
@@ -300,20 +302,31 @@ namespace MediaBrowser.Dlna
 
         private DeviceProfile ParseProfileXmlFile(string path, DeviceProfileType type)
         {
-            try
+            lock (_profiles)
             {
-                var profile = (DeviceProfile)_xmlSerializer.DeserializeFromFile(typeof(DeviceProfile), path);
+                DeviceProfile profile;
+                if (_profiles.TryGetValue(path, out profile))
+                {
+                    return profile;
+                }
 
-                profile.Id = path.ToLower().GetMD5().ToString("N");
-                profile.ProfileType = type;
+                try
+                {
+                    profile = (DeviceProfile)_xmlSerializer.DeserializeFromFile(typeof(DeviceProfile), path);
 
-                return profile;
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error parsing profile xml: {0}", ex, path);
+                    profile.Id = path.ToLower().GetMD5().ToString("N");
+                    profile.ProfileType = type;
 
-                return null;
+                    _profiles[path] = profile;
+
+                    return profile;
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error parsing profile xml: {0}", ex, path);
+
+                    return null;
+                }
             }
         }
 
@@ -428,7 +441,7 @@ namespace MediaBrowser.Dlna
             var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".xml";
             var path = Path.Combine(UserProfilesPath, newFilename);
 
-            _xmlSerializer.SerializeToFile(profile, path);
+            SaveProfile(profile, path);
         }
 
         public void UpdateProfile(DeviceProfile profile)
@@ -455,6 +468,15 @@ namespace MediaBrowser.Dlna
                 _fileSystem.DeleteFile(current.Path);
             }
 
+            SaveProfile(profile, path);
+        }
+
+        private void SaveProfile(DeviceProfile profile, string path)
+        {
+            lock (_profiles)
+            {
+                _profiles[path] = profile;
+            }
             _xmlSerializer.SerializeToFile(profile, path);
         }
 
