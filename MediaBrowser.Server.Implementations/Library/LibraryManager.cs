@@ -1295,6 +1295,23 @@ namespace MediaBrowser.Server.Implementations.Library
             return ItemRepository.GetItemList(query);
         }
 
+        public IEnumerable<BaseItem> GetItemList(InternalItemsQuery query, IEnumerable<string> parentIds)
+        {
+            var parents = parentIds.Select(i => GetItemById(new Guid(i))).Where(i => i != null).ToList();
+
+            SetTopParentIdsOrAncestors(query, parents);
+
+            if (query.AncestorIds.Length == 0 && query.TopParentIds.Length == 0)
+            {
+                if (query.User != null)
+                {
+                    AddUserToQuery(query, query.User);
+                }
+            }
+
+            return ItemRepository.GetItemList(query);
+        }
+
         public QueryResult<BaseItem> QueryItems(InternalItemsQuery query)
         {
             if (query.User != null)
@@ -1416,15 +1433,6 @@ namespace MediaBrowser.Server.Implementations.Library
             return ItemRepository.GetAlbumArtists(query);
         }
 
-        public IEnumerable<BaseItem> GetItemList(InternalItemsQuery query, IEnumerable<string> parentIds)
-        {
-            var parents = parentIds.Select(i => GetItemById(new Guid(i))).Where(i => i != null).ToList();
-
-            SetTopParentIdsOrAncestors(query, parents);
-
-            return ItemRepository.GetItemList(query);
-        }
-
         public QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query)
         {
             if (query.Recursive && query.ParentId.HasValue)
@@ -1451,15 +1459,6 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 Items = ItemRepository.GetItemList(query).ToArray()
             };
-        }
-
-        public QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query, IEnumerable<string> parentIds)
-        {
-            var parents = parentIds.Select(i => GetItemById(new Guid(i))).Where(i => i != null).ToList();
-
-            SetTopParentIdsOrAncestors(query, parents);
-
-            return GetItemsResult(query);
         }
 
         private void SetTopParentIdsOrAncestors(InternalItemsQuery query, List<BaseItem> parents)

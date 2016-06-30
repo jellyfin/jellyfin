@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'paper-checkbox', 'paper-button', 'emby-input', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light'], function ($) {
+﻿define(['jQuery', 'registrationservices', 'paper-checkbox', 'paper-button', 'emby-input', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light'], function ($, registrationServices) {
 
     return function (page, providerId, options) {
 
@@ -8,10 +8,10 @@
 
             if (config && id) {
 
-                var result = config.ListingProviders.filter(function(i) {
+                var result = config.ListingProviders.filter(function (i) {
                     return i.Id == id;
                 })[0];
-                
+
                 if (result) {
                     return Promise.resolve(result);
                 }
@@ -200,12 +200,19 @@
                 page.querySelector('.btnSubmitListings').classList.add('hide');
             }
 
+            page.querySelector('.premiereHelp').innerHTML = Globalize.translate('XmlTvPremiere', 24);
+
             $('form', page).on('submit', function () {
                 submitListingsForm();
                 return false;
             });
 
             page.querySelector('#btnSelectPath').addEventListener("click", onSelectPathClick);
+
+            page.querySelector('.lnkPremiere').addEventListener('click', function (e) {
+                registrationServices.showPremiereInfo();
+                e.preventDefault();
+            });
 
             page.querySelector('.chkAllTuners').addEventListener('change', function (e) {
                 if (e.target.checked) {

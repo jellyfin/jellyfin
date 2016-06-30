@@ -177,7 +177,8 @@ namespace MediaBrowser.Api.Movies
         {
             var categories = new List<RecommendationDto>();
 
-            var parentIds = string.IsNullOrWhiteSpace(parentId) ? new string[] { } : new[] { parentId };
+            var parentIdGuid = string.IsNullOrWhiteSpace(parentId) ? (Guid?)null : new Guid(parentId);
+
             var query = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[]
@@ -189,10 +190,12 @@ namespace MediaBrowser.Api.Movies
                 // IsMovie = true
                 SortBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.Random },
                 SortOrder = SortOrder.Descending,
-                Limit = 7
+                Limit = 7,
+                ParentId = parentIdGuid,
+                Recursive = true
             };
 
-            var recentlyPlayedMovies = _libraryManager.GetItemList(query, parentIds).ToList();
+            var recentlyPlayedMovies = _libraryManager.GetItemList(query).ToList();
 
             var likedMovies = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
@@ -208,9 +211,11 @@ namespace MediaBrowser.Api.Movies
                 Limit = 10,
                 IsFavoriteOrLiked = true,
                 ExcludeItemIds = recentlyPlayedMovies.Select(i => i.Id.ToString("N")).ToArray(),
-                EnableGroupByMetadataKey = true
+                EnableGroupByMetadataKey = true,
+                ParentId = parentIdGuid,
+                Recursive = true
 
-            }, parentIds).ToList();
+            }).ToList();
 
             var mostRecentMovies = recentlyPlayedMovies.Take(6).ToList();
             // Get recently played directors

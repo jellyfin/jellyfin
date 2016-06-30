@@ -3149,10 +3149,6 @@ var AppInfo = {};
             }
         }
 
-        if (browserInfo.msie) {
-            deps.push('devices/ie/ie');
-        }
-
         deps.push('scripts/librarylist');
         deps.push('scripts/librarymenu');
 
