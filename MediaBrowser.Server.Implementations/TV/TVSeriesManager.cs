@@ -32,9 +32,7 @@ namespace MediaBrowser.Server.Implementations.TV
                 throw new ArgumentException("User not found");
             }
 
-            var parentIds = string.IsNullOrEmpty(request.ParentId)
-                ? new string[] { }
-                : new[] { request.ParentId };
+            var parentIdGuid = string.IsNullOrWhiteSpace(request.ParentId) ? (Guid?)null : new Guid(request.ParentId);
 
             string presentationUniqueKey = null;
             int? limit = null;
@@ -54,9 +52,11 @@ namespace MediaBrowser.Server.Implementations.TV
                 IncludeItemTypes = new[] { typeof(Series).Name },
                 SortOrder = SortOrder.Ascending,
                 PresentationUniqueKey = presentationUniqueKey,
-                Limit = limit
+                Limit = limit,
+                ParentId = parentIdGuid,
+                Recursive = true
 
-            }, parentIds).Cast<Series>();
+            }).Cast<Series>();
 
             // Avoid implicitly captured closure
             var episodes = GetNextUpEpisodes(request, user, items);
