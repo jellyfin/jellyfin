@@ -335,6 +335,7 @@ namespace MediaBrowser.Server.Startup.Common
             foreach (var entryPoint in GetExports<IServerEntryPoint>().ToList())
             {
                 var name = entryPoint.GetType().FullName;
+                Logger.Info("Starting entry point {0}", name);
                 try
                 {
                     entryPoint.Run();
@@ -343,8 +344,9 @@ namespace MediaBrowser.Server.Startup.Common
                 {
                     Logger.ErrorException("Error in {0}", ex, name);
                 }
+                Logger.Info("Entry point completed: {0}", name);
             }
-            Logger.Info("Entry points complete");
+            Logger.Info("All entry points have started");
 
             LogManager.RemoveConsoleOutput();
         }
