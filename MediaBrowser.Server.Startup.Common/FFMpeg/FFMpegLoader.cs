@@ -203,13 +203,6 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                     _logger.ErrorException("Error downloading {0}", ex, url);
                 }
             }
-
-            if (downloadinfo.DownloadUrls.Length == 0)
-            {
-                throw new ApplicationException("ffmpeg unvailable. Please install it and start the server with two command line arguments: -ffmpeg \"{PATH}\" and -ffprobe \"{PATH}\"");
-            }
-
-            throw new ApplicationException("Unable to download required components. Please try again later.");
         }
 
         private void ExtractFFMpeg(FFMpegInstallInfo downloadinfo, string tempFile, string targetFolder)
