@@ -1645,9 +1645,10 @@ namespace MediaBrowser.Api.Playback
             var state = new StreamState(MediaSourceManager, Logger)
             {
                 Request = request,
-                RequestedUrl = url
+                RequestedUrl = url,
+                UserAgent = Request.UserAgent
             };
-
+            
             //if ((Request.UserAgent ?? string.Empty).IndexOf("iphone", StringComparison.OrdinalIgnoreCase) != -1 ||
             //    (Request.UserAgent ?? string.Empty).IndexOf("ipad", StringComparison.OrdinalIgnoreCase) != -1 ||
             //    (Request.UserAgent ?? string.Empty).IndexOf("ipod", StringComparison.OrdinalIgnoreCase) != -1)
