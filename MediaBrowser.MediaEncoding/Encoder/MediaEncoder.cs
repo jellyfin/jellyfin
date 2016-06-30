@@ -132,7 +132,20 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return false;
         }
 
-        public void Init()
+        public async Task Init()
+        {
+            InitPaths();
+
+            if (!string.IsNullOrWhiteSpace(FFMpegPath))
+            {
+                var result = new EncoderValidator(_logger).Validate(FFMpegPath);
+
+                SetAvailableDecoders(result.Item1);
+                SetAvailableEncoders(result.Item2);
+            }
+        }
+
+        private void InitPaths()
         {
             ConfigureEncoderPaths();
 
