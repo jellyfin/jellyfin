@@ -134,13 +134,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     process.BeginErrorReadLine();
 
-                    using (var reader = new StreamReader(process.StandardOutput.BaseStream))
-                    {
-                        return reader.ReadToEnd();
-                    }
+                    return process.StandardOutput.ReadToEnd();
                 }
                 catch
                 {
+                    _logger.Info("Killing process {0} {1}", path, arguments);
+
                     // Hate having to do this
                     try
                     {
