@@ -31,18 +31,13 @@
 using System;
 using System.Security.Cryptography;
 
-namespace Mono.Security.Cryptography { 
+namespace MediaBrowser.Server.Mono.Security { 
 
 	// References:
 	// a.	PKCS#1: RSA Cryptography Standard 
 	//	http://www.rsasecurity.com/rsalabs/pkcs/pkcs-1/index.html
 	
-#if INSIDE_CORLIB
-	internal
-#else
-	public
-#endif
-	sealed class PKCS1 {
+    public sealed class PKCS1 {
 
 		private PKCS1 () 
 		{

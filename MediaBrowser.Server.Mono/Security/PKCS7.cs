@@ -33,16 +33,9 @@ using System;
 using System.Collections;
 using System.Security.Cryptography;
 
-using Mono.Security.X509;
+namespace MediaBrowser.Server.Mono.Security {
 
-namespace Mono.Security {
-
-#if INSIDE_CORLIB
-	internal
-#else
-	public
-#endif
-	sealed class PKCS7 {
+    public sealed class PKCS7 {
 
 		public class Oid {
 			// pkcs 1

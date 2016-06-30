@@ -31,26 +31,21 @@
 using System;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
-using SSCX = System.Security.Cryptography.X509Certificates;
 using System.Security.Permissions;
 using System.Text;
-using Mono.Security.Cryptography;
 
-namespace Mono.Security.X509 {
+namespace MediaBrowser.Server.Mono.Security {
 
-	// References:
-	// a.	Internet X.509 Public Key Infrastructure Certificate and CRL Profile
-	//	http://www.ietf.org/rfc/rfc3280.txt
-	// b.	ITU ASN.1 standards (free download)
-	//	http://www.itu.int/ITU-T/studygroups/com17/languages/
+    // References:
+    // a.	Internet X.509 Public Key Infrastructure Certificate and CRL Profile
+    //	http://www.ietf.org/rfc/rfc3280.txt
+    // b.	ITU ASN.1 standards (free download)
+    //	http://www.itu.int/ITU-T/studygroups/com17/languages/
 
-#if INSIDE_CORLIB
-	internal class X509Certificate : ISerializable {
-#else
-	public class X509Certificate : ISerializable {
-#endif
+    public class X509Certificate : ISerializable
+    {
 
-		private ASN1 decoder;
+        private ASN1 decoder;
 
 		private byte[] m_encodedcert;
 		private DateTime m_from;

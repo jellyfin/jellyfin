@@ -29,7 +29,7 @@
 
 using System;
 
-namespace Mono.Security
+namespace MediaBrowser.Server.Mono.Security
 {
 	internal sealed class BitConverterLE
 	{

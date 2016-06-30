@@ -31,10 +31,7 @@ using System;
 using System.Globalization;
 using System.Text;
 
-using Mono.Security;
-using Mono.Security.Cryptography;
-
-namespace Mono.Security.X509 {
+namespace MediaBrowser.Server.Mono.Security {
 
 	// References:
 	// 1.	Information technology - Open Systems Interconnection - The Directory: Models
@@ -49,12 +46,7 @@ namespace Mono.Security.X509 {
 	 * 
 	 * RelativeDistinguishedName ::= SET OF AttributeTypeAndValue
 	 */
-#if INSIDE_CORLIB
-	internal
-#else
-	public 
-#endif
-	sealed class X501 {
+    public sealed class X501 {
 
 		static byte[] countryName = { 0x55, 0x04, 0x06 };
 		static byte[] organizationName = { 0x55, 0x04, 0x0A };
