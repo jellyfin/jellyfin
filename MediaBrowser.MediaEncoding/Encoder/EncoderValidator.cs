@@ -85,7 +85,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 "libopus",
                 //"libvorbis",
                 "srt",
-                "libnvenc",
+                "h264_nvenc",
                 "h264_qsv"
             };
 
