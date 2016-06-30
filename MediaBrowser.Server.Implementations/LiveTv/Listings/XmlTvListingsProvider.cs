@@ -103,6 +103,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelNumber, string channelName, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
+            if (!await EmbyTV.EmbyTVRegistration.Instance.EnableXmlTv().ConfigureAwait(false))
+            {
+                var length = endDateUtc - startDateUtc;
+                if (length.TotalDays > 1)
+                {
+                    endDateUtc = startDateUtc.AddDays(1);
+                }
+            }
+
             var path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
             var reader = new XmlTvReader(path, GetLanguage(), null);
 

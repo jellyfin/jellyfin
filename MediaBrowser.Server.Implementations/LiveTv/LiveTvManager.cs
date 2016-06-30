@@ -1462,7 +1462,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 internalQuery.ChannelIds = new[] { query.ChannelId };
             }
 
-            var queryResult = _libraryManager.GetItemList(internalQuery, new string[] { });
+            var queryResult = _libraryManager.GetItemList(internalQuery);
             IEnumerable<ILiveTvRecording> recordings = queryResult.Cast<ILiveTvRecording>();
 
             if (!string.IsNullOrWhiteSpace(query.Id))
@@ -1936,7 +1936,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 SortBy = new[] { "StartDate" },
                 TopParentIds = new[] { GetInternalLiveTvFolder(CancellationToken.None).Result.Id.ToString("N") }
 
-            }, new string[] { }).ToList();
+            }).ToList();
 
             foreach (var tuple in tuples)
             {
@@ -2524,6 +2524,79 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             _taskManager.CancelIfRunningAndQueue<RefreshChannelsScheduledTask>();
 
             return info;
+        }
+
+        public void DeleteListingsProvider(string id)
+        {
+            var config = GetConfiguration();
+
+            config.ListingProviders = config.ListingProviders.Where(i => !string.Equals(id, i.Id, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            _config.SaveConfiguration("livetv", config);
+            _taskManager.CancelIfRunningAndQueue<RefreshChannelsScheduledTask>();
+        }
+
+        public async Task<TunerChannelMapping> SetChannelMapping(string providerId, string tunerChannelNumber, string providerChannelNumber)
+        {
+            var config = GetConfiguration();
+
+            var listingsProviderInfo = config.ListingProviders.First(i => string.Equals(providerId, i.Id, StringComparison.OrdinalIgnoreCase));
+            listingsProviderInfo.ChannelMappings = listingsProviderInfo.ChannelMappings.Where(i => !string.Equals(i.Name, tunerChannelNumber, StringComparison.OrdinalIgnoreCase)).ToArray();
+
+            if (!string.Equals(tunerChannelNumber, providerChannelNumber, StringComparison.OrdinalIgnoreCase))
+            {
+                var list = listingsProviderInfo.ChannelMappings.ToList();
+                list.Add(new NameValuePair
+                {
+                    Name = tunerChannelNumber,
+                    Value = providerChannelNumber
+                });
+                listingsProviderInfo.ChannelMappings = list.ToArray();
+            }
+
+            _config.SaveConfiguration("livetv", config);
+
+            var tunerChannels = await GetChannelsForListingsProvider(providerId, CancellationToken.None)
+                        .ConfigureAwait(false);
+
+            var providerChannels = await GetChannelsFromListingsProviderData(providerId, CancellationToken.None)
+                     .ConfigureAwait(false);
+
+            var mappings = listingsProviderInfo.ChannelMappings.ToList();
+
+            var tunerChannelMappings =
+                tunerChannels.Select(i => GetTunerChannelMapping(i, mappings, providerChannels)).ToList();
+
+            _taskManager.CancelIfRunningAndQueue<RefreshChannelsScheduledTask>();
+
+            return tunerChannelMappings.First(i => string.Equals(i.Number, tunerChannelNumber, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public TunerChannelMapping GetTunerChannelMapping(ChannelInfo channel, List<NameValuePair> mappings, List<ChannelInfo> providerChannels)
+        {
+            var result = new TunerChannelMapping
+            {
+                Name = channel.Number + " " + channel.Name,
+                Number = channel.Number
+            };
+
+            var mapping = mappings.FirstOrDefault(i => string.Equals(i.Name, channel.Number, StringComparison.OrdinalIgnoreCase));
+            var providerChannelNumber = channel.Number;
+
+            if (mapping != null)
+            {
+                providerChannelNumber = mapping.Value;
+            }
+
+            var providerChannel = providerChannels.FirstOrDefault(i => string.Equals(i.Number, providerChannelNumber, StringComparison.OrdinalIgnoreCase));
+
+            if (providerChannel != null)
+            {
+                result.ProviderChannelNumber = providerChannel.Number;
+                result.ProviderChannelName = providerChannel.Name;
+            }
+
+            return result;
         }
 
         public Task<List<NameIdPair>> GetLineups(string providerType, string providerId, string country, string location)

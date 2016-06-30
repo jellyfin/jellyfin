@@ -286,11 +286,19 @@ namespace MediaBrowser.Api.Playback
 
         protected string GetH264Encoder(StreamState state)
         {
-            if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareAccelerationType, "h264_qsv", StringComparison.OrdinalIgnoreCase))
             {
-
                 return "h264_qsv";
+            }
 
+            if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareAccelerationType, "libnvenc", StringComparison.OrdinalIgnoreCase))
+            {
+                return "libnvenc";
+            }
+            if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareAccelerationType, "h264_omx", StringComparison.OrdinalIgnoreCase))
+            {
+                return "h264_omx";
             }
 
             return "libx264";
@@ -395,15 +403,18 @@ namespace MediaBrowser.Api.Playback
 
             if (!string.IsNullOrEmpty(state.VideoRequest.Profile))
             {
-                param += " -profile:v " + state.VideoRequest.Profile;
+                if (!string.Equals(videoCodec, "h264_omx", StringComparison.OrdinalIgnoreCase))
+                {
+                    // not supported by h264_omx
+                    param += " -profile:v " + state.VideoRequest.Profile;
+                }
             }
 
             if (!string.IsNullOrEmpty(state.VideoRequest.Level))
             {
-                var h264Encoder = GetH264Encoder(state);
-
                 // h264_qsv and libnvenc expect levels to be expressed as a decimal. libx264 supports decimal and non-decimal format
-                if (String.Equals(h264Encoder, "h264_qsv", StringComparison.OrdinalIgnoreCase) || String.Equals(h264Encoder, "libnvenc", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(videoCodec, "libnvenc", StringComparison.OrdinalIgnoreCase))
                 {
                     switch (state.VideoRequest.Level)
                     {
@@ -438,16 +449,21 @@ namespace MediaBrowser.Api.Playback
                             param += " -level " + state.VideoRequest.Level;
                             break;
                     }
-
-                    return param;
                 }
-                else
+                else if (!string.Equals(videoCodec, "h264_omx", StringComparison.OrdinalIgnoreCase))
                 {
                     param += " -level " + state.VideoRequest.Level;
                 }
             }
 
-            return "-pix_fmt yuv420p " + param;
+            if (!string.Equals(videoCodec, "h264_omx", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(videoCodec, "libnvenc", StringComparison.OrdinalIgnoreCase))
+            {
+                param = "-pix_fmt yuv420p " + param;
+            }
+
+            return param;
         }
 
         protected string GetAudioFilterParam(StreamState state, bool isHls)
@@ -561,14 +577,6 @@ namespace MediaBrowser.Api.Playback
                 var maxHeightParam = request.MaxHeight.Value.ToString(UsCulture);
 
                 filters.Add(string.Format("scale=trunc(oh*a/2)*2:min(ih\\,{0})", maxHeightParam));
-            }
-
-            if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
-            {
-                if (filters.Count > 1)
-                {
-                    //filters[filters.Count - 1] += ":flags=fast_bilinear";
-                }
             }
 
             var output = string.Empty;
@@ -1650,7 +1658,7 @@ namespace MediaBrowser.Api.Playback
             if (!string.IsNullOrWhiteSpace(request.AudioCodec))
             {
                 state.SupportedAudioCodecs = request.AudioCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
-                state.Request.AudioCodec = state.SupportedAudioCodecs.FirstOrDefault(i => MediaEncoder.CanEncodeToAudioCodec(i)) 
+                state.Request.AudioCodec = state.SupportedAudioCodecs.FirstOrDefault(i => MediaEncoder.CanEncodeToAudioCodec(i))
                     ?? state.SupportedAudioCodecs.FirstOrDefault();
             }
 

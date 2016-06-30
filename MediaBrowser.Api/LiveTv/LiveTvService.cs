@@ -519,14 +519,6 @@ namespace MediaBrowser.Api.LiveTv
         public string ProviderName { get; set; }
     }
 
-    public class TunerChannelMapping
-    {
-        public string Name { get; set; }
-        public string Number { get; set; }
-        public string ProviderChannelNumber { get; set; }
-        public string ProviderChannelName { get; set; }
-    }
-
     [Route("/LiveTv/Registration", "GET")]
     [Authenticated]
     public class GetLiveTvRegistrationInfo : IReturn<MBRegistrationRecord>
@@ -595,36 +587,7 @@ namespace MediaBrowser.Api.LiveTv
 
         public async Task<object> Post(SetChannelMapping request)
         {
-            var config = GetConfiguration();
-
-            var listingsProviderInfo = config.ListingProviders.First(i => string.Equals(request.ProviderId, i.Id, StringComparison.OrdinalIgnoreCase));
-            listingsProviderInfo.ChannelMappings = listingsProviderInfo.ChannelMappings.Where(i => !string.Equals(i.Name, request.TunerChannelNumber, StringComparison.OrdinalIgnoreCase)).ToArray();
-
-            if (!string.Equals(request.TunerChannelNumber, request.ProviderChannelNumber, StringComparison.OrdinalIgnoreCase))
-            {
-                var list = listingsProviderInfo.ChannelMappings.ToList();
-                list.Add(new NameValuePair
-                {
-                    Name = request.TunerChannelNumber,
-                    Value = request.ProviderChannelNumber
-                });
-                listingsProviderInfo.ChannelMappings = list.ToArray();
-            }
-
-            UpdateConfiguration(config);
-
-            var tunerChannels = await _liveTvManager.GetChannelsForListingsProvider(request.ProviderId, CancellationToken.None)
-                        .ConfigureAwait(false);
-
-            var providerChannels = await _liveTvManager.GetChannelsFromListingsProviderData(request.ProviderId, CancellationToken.None)
-                     .ConfigureAwait(false);
-
-            var mappings = listingsProviderInfo.ChannelMappings.ToList();
-
-            var tunerChannelMappings =
-                tunerChannels.Select(i => GetTunerChannelMapping(i, mappings, providerChannels)).ToList();
-
-            return tunerChannelMappings.First(i => string.Equals(i.Number, request.TunerChannelNumber, StringComparison.OrdinalIgnoreCase));
+            return await _liveTvManager.SetChannelMapping(request.ProviderId, request.TunerChannelNumber, request.ProviderChannelNumber).ConfigureAwait(false);
         }
 
         public async Task<object> Get(GetChannelMappingOptions request)
@@ -645,7 +608,7 @@ namespace MediaBrowser.Api.LiveTv
 
             var result = new ChannelMappingOptions
             {
-                TunerChannels = tunerChannels.Select(i => GetTunerChannelMapping(i, mappings, providerChannels)).ToList(),
+                TunerChannels = tunerChannels.Select(i => _liveTvManager.GetTunerChannelMapping(i, mappings, providerChannels)).ToList(),
 
                 ProviderChannels = providerChannels.Select(i => new NameIdPair
                 {
@@ -660,33 +623,6 @@ namespace MediaBrowser.Api.LiveTv
             };
 
             return ToOptimizedResult(result);
-        }
-
-        private TunerChannelMapping GetTunerChannelMapping(ChannelInfo channel, List<NameValuePair> mappings, List<ChannelInfo> providerChannels)
-        {
-            var result = new TunerChannelMapping
-            {
-                Name = channel.Number + " " + channel.Name,
-                Number = channel.Number
-            };
-
-            var mapping = mappings.FirstOrDefault(i => string.Equals(i.Name, channel.Number, StringComparison.OrdinalIgnoreCase));
-            var providerChannelNumber = channel.Number;
-
-            if (mapping != null)
-            {
-                providerChannelNumber = mapping.Value;
-            }
-
-            var providerChannel = providerChannels.FirstOrDefault(i => string.Equals(i.Number, providerChannelNumber, StringComparison.OrdinalIgnoreCase));
-
-            if (providerChannel != null)
-            {
-                result.ProviderChannelNumber = providerChannel.Number;
-                result.ProviderChannelName = providerChannel.Name;
-            }
-
-            return result;
         }
 
         public object Get(GetSatIniMappings request)
@@ -730,11 +666,7 @@ namespace MediaBrowser.Api.LiveTv
 
         public void Delete(DeleteListingProvider request)
         {
-            var config = GetConfiguration();
-
-            config.ListingProviders = config.ListingProviders.Where(i => !string.Equals(request.Id, i.Id, StringComparison.OrdinalIgnoreCase)).ToList();
-
-            _config.SaveConfiguration("livetv", config);
+            _liveTvManager.DeleteListingsProvider(request.Id);
         }
 
         public async Task<object> Post(AddTunerHost request)

@@ -128,11 +128,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
         private void AddIpv4Option(HttpWebRequest request, HttpRequestOptions options)
         {
-            if (!options.PreferIpv4)
-            {
-                return;
-            }
-
             request.ServicePoint.BindIPEndPointDelegate = (servicePount, remoteEndPoint, retryCount) =>
             {
                 if (remoteEndPoint.AddressFamily == AddressFamily.InterNetwork)
@@ -150,7 +145,10 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             if (httpWebRequest != null)
             {
-                AddIpv4Option(httpWebRequest, options);
+                if (options.PreferIpv4)
+                {
+                    AddIpv4Option(httpWebRequest, options);
+                }
 
                 AddRequestHeaders(httpWebRequest, options);
 

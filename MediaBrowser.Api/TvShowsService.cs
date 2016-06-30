@@ -317,7 +317,7 @@ namespace MediaBrowser.Api
 
             var minPremiereDate = DateTime.Now.Date.ToUniversalTime().AddDays(-1);
 
-            var parentIds = string.IsNullOrWhiteSpace(request.ParentId) ? new string[] { } : new[] { request.ParentId };
+            var parentIdGuid = string.IsNullOrWhiteSpace(request.ParentId) ? (Guid?)null : new Guid(request.ParentId);
 
             var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
@@ -326,9 +326,10 @@ namespace MediaBrowser.Api
                 SortOrder = SortOrder.Ascending,
                 MinPremiereDate = minPremiereDate,
                 StartIndex = request.StartIndex,
-                Limit = request.Limit
+                Limit = request.Limit,
+                ParentId = parentIdGuid
 
-            }, parentIds).ToList();
+            }).ToList();
 
             var options = GetDtoOptions(request);
 

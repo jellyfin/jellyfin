@@ -95,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        public const int LatestSchemaVersion = 96;
+        public const int LatestSchemaVersion = 97;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -123,7 +123,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         protected override async Task<IDbConnection> CreateConnection(bool isReadOnly = false)
         {
-            var connection = await DbConnector.Connect(DbFilePath, false, false, 10000).ConfigureAwait(false);
+            var connection = await DbConnector.Connect(DbFilePath, false, false, _config.Configuration.SqliteCachePages).ConfigureAwait(false);
 
             connection.RunQueries(new[]
             {
