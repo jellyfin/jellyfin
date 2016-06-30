@@ -56,48 +56,6 @@
     vertical-align: middle;
 }
 
-.mainDrawerPanel {
-    position: static !important;
-    width: auto !important;
-    height: auto !important;
-    touch-action: auto !important;
-    overflow: visible;
-}
-
-.mainDrawerPanelPreInit #drawer {
-    display: none !important;
-}
-
-.mainDrawerPanel #drawer {
-    z-index: 1099 !important;
-    position: fixed !important;
-    bottom: 0;
-    height: auto !important;
-    /* Need to reset this because it causes the entire panel to be draggable in safari */
-    box-sizing: initial !important;
-    font-size: 108%;
-}
-
-.mainDrawerPanel[narrow] #main {
-    left: 0 !important;
-    position: static !important;
-    z-index: 1;
-}
-
-.mainDrawerPanel #scrim {
-    /* Give it at least something to make it visible */
-    z-index: 1098;
-    /* It defaults to absolute, not visible after scrolling */
-    position: fixed !important;
-}
-
-.mainDrawer {
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch;
-    overflow-x: hidden;
-    scroll-behavior: smooth;
-}
-
 .drawerContent {
     padding-bottom: 100px;
 }
@@ -123,6 +81,7 @@
 .headerButtonRight {
     border-width: 0 !important;
     display: inline-block;
+    flex-shrink: 0;
 }
 
     .headerButtonRight:first-child {
@@ -185,6 +144,7 @@
     text-transform: uppercase;
     white-space: nowrap;
     padding: 0 0 0;
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),1px 5px 1px rgba(0,0,0,.12);
 }
 
     .libraryViewNav.bottom {
@@ -218,7 +178,7 @@
         transition: none !important;
         position: relative;
         text-transform: uppercase;
-        font-weight: 500 !important;
+        font-weight: bold !important;
         height: auto;
         min-width: initial;
         line-height: initial;
@@ -235,11 +195,11 @@
         }*/
 
         .libraryViewNav .pageTabButton:focus {
-            font-weight: 500 !important;
+            font-weight: bold !important;
         }
 
         .libraryViewNav .pageTabButton.is-active {
-            color: #fff !important;
+            color: #52B54B !important;
         }
 
 .pageTabButtonSelectionBar {
@@ -259,7 +219,7 @@
 }
 
 .viewMenuBar, .libraryViewNav {
-    background-color: #020202;
+    background-color: #2b2b2b;
     color: #fff;
 }
 
@@ -271,16 +231,16 @@
     }
 
 .dashboardDocument .viewMenuBar {
-    background-color: #222;
-    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12);
+    background-color: #333;
     height: auto;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
     .dashboardDocument .viewMenuBar .primaryIcons {
-        padding: .92em 0;
+        padding: .7em 0;
     }
 
-.dashboardDocument .withTallToolbar .primaryIcons {
+.dashboardDocument.withTallToolbar .primaryIcons {
     padding-bottom: 0;
 }
 
@@ -303,42 +263,30 @@
         display: flex;
     }
 
-.mainDrawerPanel:not([narrow]) .viewMenuBarTabs {
-    width: auto;
-    padding-left: 272px;
-}
 
-.mainDrawerPanel .viewMenuBarTabs #tabsContent {
-    display: block !important;
-    width: 100%;
-}
+    .viewMenuBarTabs #tabsContent {
+        display: block !important;
+        width: 100%;
+    }
 
-.mainDrawerPanel:not([narrow]) .viewMenuBarTabs paper-tab {
-    width: auto !important;
-}
+    .viewMenuBarTabs #tabsContainer {
+        margin: auto;
+        -ms-flex: none;
+        -webkit-flex: none;
+        flex: none;
+        flex-shrink: 0;
+        flex-grow: 1;
+        touch-action: auto !important;
+    }
 
-.viewMenuBarTabs #tabsContainer {
-    margin: auto;
-    -ms-flex: none;
-    -webkit-flex: none;
-    flex: none;
-    flex-shrink: 0;
-    flex-grow: 1;
-    touch-action: auto !important;
-}
+    .viewMenuBarTabs paper-tabs {
+        overflow: visible !important;
+    }
 
-.viewMenuBarTabs paper-tabs {
-    overflow: visible !important;
-}
-
-.viewMenuBarTabs .paperTabLink {
-    padding-left: 1.5em;
-    padding-right: 1.5em;
-}
-
-.mainDrawerPanel:not([narrow]) .viewMenuBarTabs .tab-content {
-    display: block !important;
-}
+    .viewMenuBarTabs .paperTabLink {
+        padding-left: 1.5em;
+        padding-right: 1.5em;
+    }
 
 .viewMenuBar paper-icon-button.paper-tabs {
     display: none !important;
@@ -393,7 +341,7 @@
 }
 
 .ui-panel.ui-body-b {
-    background-color: #212121;
+    background-color: #1D1D20;
 }
 
 @media all and (max-width: 400px) {
@@ -445,7 +393,7 @@
     display: none !important;
 }
 
-.dashboardDocument .btnCast {
+.dashboardDocument .btnCast, .dashboardDocument .headerSelectedPlayer {
     display: none !important;
 }
 
@@ -453,84 +401,136 @@ body:not(.dashboardDocument) .btnNotifications {
     display: none !important;
 }
 
-.darkDrawerPanel #drawer {
-    background-color: #212121 !important;
+.darkDrawer {
+    background-color: #1D1D20 !important;
     /*background-color: rgba(40,40,40,.8) !important;
     -webkit-backdrop-filter: blur(5px);
     backdrop-filter: blur(5px);*/
-    box-shadow: none !important;
 }
 
-.darkDrawerPanel .sidebarLinkIcon {
-    color: #bbb !important;
-    margin-left: 1.6em;
+    .darkDrawer .sidebarLinkIcon {
+        color: #bbb !important;
+        margin-left: 1.6em;
+    }
+
+i.sidebarLinkIcon {
+    font-size: 24px;
+    height: 24px;
+    width: 24px;
 }
 
-.darkDrawerPanel .sidebarLinkText, .darkDrawerPanel .sidebarLink {
+.darkDrawer i.sidebarLinkIcon {
+    margin-left: 1em;
+}
+
+.darkDrawer .sidebarLinkText, .darkDrawer .sidebarLink {
     color: #fff !important;
     font-weight: normal !important;
 }
 
-.darkDrawerPanel .sidebarHeader {
+.darkDrawer .sidebarHeader {
     color: #bbb !important;
 }
 
-.darkDrawerPanel .sidebarDivider {
+.darkDrawer .sidebarDivider {
     background: #282828 !important;
 }
 
-.darkDrawerPanel .sidebarLink:hover {
-    background: #4d4d4d;
+.darkDrawer .sidebarLink:hover {
+    background: #252528;
 }
 
-.darkDrawerPanel .sidebarLink.selectedSidebarLink, .darkDrawerPanel .selectedMediaFolder {
-    background: #4d4d4d !important;
+.darkDrawer .sidebarLink.selectedSidebarLink, .darkDrawer .selectedMediaFolder {
+    background: #252528 !important;
+    color: #52B54B !important;
 }
 
-.darkDrawerPanel .headerAppsButton {
+body:not(.dashboardDocument) .headerAppsButton {
     display: none;
 }
 
-.adminDrawerPanel #drawer {
+.adminDrawer {
     background: #fff !important;
-    box-shadow: none !important;
 }
 
-.adminDrawerPanel:not([narrow]) #drawer {
-    z-index: 998 !important;
-    top: 65px !important;
+.dashboardDocument .mainDrawerPanelContent {
+    transition: left ease-in-out 0.3s, padding ease-in-out 0.3s;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
 }
 
-.adminDrawerPanel:not([narrow]) .mainDrawerButton {
-    display: none !important;
+@media all and (min-width: 640px) {
+
+    .mainDrawerPanel .viewMenuBarTabs {
+        width: auto;
+        padding-left: 272px;
+    }
+
+        .mainDrawerPanel .viewMenuBarTabs paper-tab {
+            width: auto !important;
+        }
+
+        .mainDrawerPanel .viewMenuBarTabs .tab-content {
+            display: block !important;
+        }
+
+    .dashboardDocument .mainDrawer {
+        z-index: 998 !important;
+        top: 65px !important;
+        left: 0 !important;
+    }
+
+    .dashboardDocument .mainDrawerButton {
+        display: none !important;
+    }
+
+    .dashboardDocument .libraryMenuButtonText {
+        font-size: 150%;
+        margin-left: 1em;
+    }
+
+    .dashboardDocument .mainDrawerPanelContent {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 270px;
+    }
+
+    .dashboardDocument .adminDrawerLogo {
+        display: none;
+    }
 }
 
-.adminDrawerPanel .sidebarLink {
+.adminDrawer .sidebarLink {
     color: #333 !important;
     font-weight: 400 !important;
     padding: .7em 0 .7em 1.5em;
 }
 
-.adminDrawerPanel .sidebarHeader {
+.adminDrawer .sidebarHeader {
     color: #666 !important;
     font-weight: 500 !important;
 }
 
-.adminDrawerPanel .sidebarLinkIcon {
+.adminDrawer .sidebarLinkIcon {
     color: #666;
     margin-right: 1em;
 }
 
-.adminDrawerPanel .sidebarLink:hover {
+.adminDrawer .sidebarLink:hover {
     color: #00897B !important;
 }
 
-.adminDrawerPanel .sidebarLink.selectedSidebarLink {
+.adminDrawer .sidebarLink.selectedSidebarLink {
     background: #52B54B !important;
     color: #fff !important;
 }
 
-    .adminDrawerPanel .sidebarLink.selectedSidebarLink .sidebarLinkIcon {
+    .adminDrawer .sidebarLink.selectedSidebarLink .sidebarLinkIcon {
         color: #fff !important;
     }
 
@@ -541,29 +541,15 @@ body:not(.dashboardDocument) .btnNotifications {
     display: block;
 }
 
-.adminDrawerPanel:not([narrow]) .adminDrawerLogo {
-    display: none;
-}
+    .adminDrawerLogo img {
+        height: 30px;
+    }
 
-.adminDrawerLogo img {
-    height: 30px;
-}
+@media all and (max-width: 640px) {
 
-.adminDrawerPanel #drawer #expandIcon {
-    color: #000;
-}
-
-.adminDrawerPanel #drawer emby-collapsible > .style-scope {
-    margin: .7em 0;
-}
-
-.adminDrawerPanel:not([narrow]) .libraryMenuButtonText {
-    font-size: 150%;
-    margin-left: 1em;
-}
-
-.adminDrawerPanel[narrow] .headerAppsButton {
-    display: none;
+    .dashboardDocument .headerAppsButton {
+        display: none;
+    }
 }
 
 .title-separator {

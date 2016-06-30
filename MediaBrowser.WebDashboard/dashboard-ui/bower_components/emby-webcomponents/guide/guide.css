@@ -105,6 +105,47 @@
     position: relative;
 }
 
+.timeslotHeadersInner {
+    position: relative;
+}
+
+.currentTimeIndicatorBar {
+    position: absolute;
+    bottom: .05em;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    display: flex;
+    margin-left: .65vh;
+    background-color: #52B54B;
+    height: 2px;
+    transform-origin: left;
+    transition: transform 500ms ease-out;
+}
+
+.currentTimeIndicatorArrowContainer {
+    position: absolute;
+    bottom: -1.3vh;
+    width: 100%;
+    color: #52B54B;
+    margin-left: .65vh;
+    transform-origin: left;
+    transition: transform 500ms ease-out;
+}
+
+.layout-tv .currentTimeIndicatorBar, .layout-tv .currentTimeIndicatorArrowContainer {
+    /* Need to account for the scrollbar not being there */
+    left: 4px;
+}
+
+.currentTimeIndicatorArrow {
+    width: 4vh;
+    height: 4vh;
+    font-size: 4vh;
+    color: #52B54B;
+    margin-left: -2vh;
+}
+
 .channelPrograms, .timeslotHeadersInner {
     width: 1800vw;
 }
@@ -148,6 +189,7 @@
     text-decoration: none;
     /* Needed in firefox */
     text-align: left;
+    contain: strict;
 }
 
 @media all and (min-width: 500px) {
@@ -185,7 +227,7 @@
 
 .channelHeaderCell {
     border-bottom: .65vh solid #121212 !important;
-    background-size: auto 65.7%;
+    background-size: auto 70%;
     background-position: 90% center;
     background-repeat: no-repeat;
 }
@@ -201,7 +243,7 @@
     }
 }
 
-@media all and (max-width: 1280px) {
+@media all and (max-width: 1200px) {
 
     .channelHeaderCell.withImage .guideChannelNumber {
         display: none;
@@ -233,7 +275,7 @@
     }
 
     .layout-tv .channelPrograms, .layout-tv .channelHeaderCell {
-        height: 7.6vh;
+        height: 9vh;
     }
 }
 
@@ -300,6 +342,7 @@
     align-items: center;
     /* Needed for Firefox */
     text-align: left;
+    contain: strict;
 }
 
 .timeslotCellInner {
@@ -324,16 +367,17 @@
     color: #bbb;
 }
 
-.programCell iron-icon {
+.programCell i {
     margin-left: auto;
     margin-right: .5em;
     height: 3.5vh;
     width: 3.5vh;
+    font-size: 3.5vh;
     color: #ddd;
     flex-shrink: 0;
 }
 
-    .programCell iron-icon + iron-icon {
+    .programCell i + i {
         margin-left: .25em;
     }
 
@@ -347,14 +391,21 @@
 .guideChannelName {
     margin-left: auto;
     margin-right: 1em;
-    max-width: 40%;
     text-overflow: ellipsis;
     overflow: hidden;
+    max-width: 70%;
+}
+
+@media all and (min-width: 1000px) {
+
+    .guideChannelName {
+        max-width: 40%;
+    }
 }
 
 @media all and (max-width: 1000px) {
 
-    .guideChannelName {
+    .guideChannelNumber {
         display: none;
     }
 }
@@ -363,13 +414,12 @@
     height: auto !important;
 }
 
-.programCell:focus, .channelHeaderCell:focus, .btnSelectDate:focus {
-    background-color: #52B54B;
+.programCell, .channelHeaderCell, .btnSelectDate {
     outline: none !important;
 }
 
-    .programCell:focus .programAccent {
-        background-color: transparent !important;
+    .programCell:focus, .channelHeaderCell:focus, .btnSelectDate:focus {
+        background-color: #555;
     }
 
 .timerIcon, .seriesTimerIcon {

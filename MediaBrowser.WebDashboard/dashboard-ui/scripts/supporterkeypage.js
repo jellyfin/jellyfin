@@ -40,7 +40,7 @@
         var url = "https://mb3admin.com/admin/service/supporter/retrievekey?email=" + email;
         console.log(url);
         fetchHelper.ajax({
-            
+
             url: url,
             type: 'POST',
             dataType: 'json'
@@ -153,10 +153,6 @@
             name: Globalize.translate('TabAbout')
         },
          {
-             href: 'log.html',
-             name: Globalize.translate('TabLogs')
-         },
-         {
              href: 'supporterkey.html',
              name: Globalize.translate('TabEmbyPremiere')
          }];
@@ -173,7 +169,7 @@
 
     }).on('pageshow', "#supporterKeyPage", function () {
 
-        LibraryMenu.setTabs('helpadmin', 2, getTabs);
+        LibraryMenu.setTabs('helpadmin', 1, getTabs);
 
         var page = this;
         loadUserInfo(page);

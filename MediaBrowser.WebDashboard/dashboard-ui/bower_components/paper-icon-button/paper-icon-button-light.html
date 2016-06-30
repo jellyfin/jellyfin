@@ -32,7 +32,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         position: relative;
         cursor: pointer;
+
+        /* NOTE: Both values are needed, since some phones require the value to be `transparent`. */
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        -webkit-tap-highlight-color: transparent;
       }
 
       :host([disabled]) {

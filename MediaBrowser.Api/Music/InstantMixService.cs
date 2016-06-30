@@ -8,6 +8,7 @@ using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Music
 {
@@ -76,7 +77,7 @@ namespace MediaBrowser.Api.Music
             _libraryManager = libraryManager;
         }
 
-        public object Get(GetInstantMixFromItem request)
+        public Task<object> Get(GetInstantMixFromItem request)
         {
             var item = _libraryManager.GetItemById(request.Id);
 
@@ -87,7 +88,7 @@ namespace MediaBrowser.Api.Music
             return GetResult(items, user, request);
         }
 
-        public object Get(GetInstantMixFromArtistId request)
+        public Task<object> Get(GetInstantMixFromArtistId request)
         {
             var item = _libraryManager.GetItemById(request.Id);
 
@@ -98,7 +99,7 @@ namespace MediaBrowser.Api.Music
             return GetResult(items, user, request);
         }
 
-        public object Get(GetInstantMixFromMusicGenreId request)
+        public Task<object> Get(GetInstantMixFromMusicGenreId request)
         {
             var item = _libraryManager.GetItemById(request.Id);
 
@@ -109,7 +110,7 @@ namespace MediaBrowser.Api.Music
             return GetResult(items, user, request);
         }
 
-        public object Get(GetInstantMixFromSong request)
+        public Task<object> Get(GetInstantMixFromSong request)
         {
             var item = _libraryManager.GetItemById(request.Id);
 
@@ -120,7 +121,7 @@ namespace MediaBrowser.Api.Music
             return GetResult(items, user, request);
         }
 
-        public object Get(GetInstantMixFromAlbum request)
+        public Task<object> Get(GetInstantMixFromAlbum request)
         {
             var album = _libraryManager.GetItemById(request.Id);
 
@@ -131,7 +132,7 @@ namespace MediaBrowser.Api.Music
             return GetResult(items, user, request);
         }
 
-        public object Get(GetInstantMixFromPlaylist request)
+        public Task<object> Get(GetInstantMixFromPlaylist request)
         {
             var playlist = (Playlist)_libraryManager.GetItemById(request.Id);
 
@@ -142,7 +143,7 @@ namespace MediaBrowser.Api.Music
             return GetResult(items, user, request);
         }
 
-        public object Get(GetInstantMixFromMusicGenre request)
+        public Task<object> Get(GetInstantMixFromMusicGenre request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -151,7 +152,7 @@ namespace MediaBrowser.Api.Music
             return GetResult(items, user, request);
         }
 
-        public object Get(GetInstantMixFromArtist request)
+        public Task<object> Get(GetInstantMixFromArtist request)
         {
             var user = _userManager.GetUserById(request.UserId);
             var artist = _libraryManager.GetArtist(request.Name);
@@ -161,7 +162,7 @@ namespace MediaBrowser.Api.Music
             return GetResult(items, user, request);
         }
 
-        private object GetResult(IEnumerable<Audio> items, User user, BaseGetSimilarItems request)
+        private async Task<object> GetResult(IEnumerable<Audio> items, User user, BaseGetSimilarItems request)
         {
             var list = items.ToList();
 
@@ -172,7 +173,7 @@ namespace MediaBrowser.Api.Music
 
             var dtoOptions = GetDtoOptions(request);
 
-            result.Items = _dtoService.GetBaseItemDtos(list.Take(request.Limit ?? list.Count), dtoOptions, user).ToArray();
+            result.Items = (await _dtoService.GetBaseItemDtos(list.Take(request.Limit ?? list.Count), dtoOptions, user).ConfigureAwait(false)).ToArray();
 
             return ToOptimizedResult(result);
         }

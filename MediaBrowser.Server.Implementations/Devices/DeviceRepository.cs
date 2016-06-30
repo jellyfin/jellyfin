@@ -23,7 +23,7 @@ namespace MediaBrowser.Server.Implementations.Devices
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
-        private List<DeviceInfo> _devices;
+        private Dictionary<string, DeviceInfo> _devices;
 
         public DeviceRepository(IApplicationPaths appPaths, IJsonSerializer json, ILogger logger, IFileSystem fileSystem)
         {
@@ -46,12 +46,12 @@ namespace MediaBrowser.Server.Implementations.Devices
         public Task SaveDevice(DeviceInfo device)
         {
             var path = Path.Combine(GetDevicePath(device.Id), "device.json");
-			_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_syncLock)
             {
                 _json.SerializeToFile(device, path);
-                _devices = null;
+                _devices[device.Id] = device;
             }
             return Task.FromResult(true);
         }
@@ -95,9 +95,15 @@ namespace MediaBrowser.Server.Implementations.Devices
             {
                 if (_devices == null)
                 {
-                    _devices = LoadDevices().ToList();
+                    _devices = new Dictionary<string, DeviceInfo>(StringComparer.OrdinalIgnoreCase);
+
+                    var devices = LoadDevices().ToList();
+                    foreach (var device in devices)
+                    {
+                        _devices[device.Id] = device;
+                    }
                 }
-                return _devices.ToList();
+                return _devices.Values.ToList();
             }
         }
 
@@ -144,7 +150,7 @@ namespace MediaBrowser.Server.Implementations.Devices
                 catch (DirectoryNotFoundException)
                 {
                 }
-                
+
                 _devices = null;
             }
 
@@ -174,7 +180,7 @@ namespace MediaBrowser.Server.Implementations.Devices
         public void AddCameraUpload(string deviceId, LocalFileInfo file)
         {
             var path = Path.Combine(GetDevicePath(deviceId), "camerauploads.json");
-			_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_syncLock)
             {

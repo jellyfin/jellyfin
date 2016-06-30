@@ -7,12 +7,13 @@
 	"immed": true,
 	"noarg": true,
 	"quotmark": "double",
+	"strict": true,
 	"undef": true,
 	"unused": true,
 
 	"sub": true,
 
-	// Support: IE < 10, Android < 4.1
+	// Support: IE <=9 only, Android <=4.0 only
 	// The above browsers are failing a lot of tests in the ES5
 	// test suite at http://test262.ecmascript.org.
 	"es3": true,

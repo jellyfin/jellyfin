@@ -1,4 +1,4 @@
-﻿<div id="languagePreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderPlaybackSettings}" data-require="scripts/mypreferenceslanguages,paper-checkbox,paper-button" data-backbutton="true" data-menubutton="false">
+﻿<div id="languagePreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderPlaybackSettings}" data-backbutton="true" data-menubutton="false">
 
     <div data-role="content">
 
@@ -9,54 +9,55 @@
                 <h1>
                     ${HeaderAudioSettings}
                 </h1>
-                <div class="detailSectionContent">
-                    <br />
-                    <div>
-                        <label for="selectAudioLanguage" class="selectLabel">${LabelAudioLanguagePreference}</label>
-                        <select id="selectAudioLanguage" data-mini="true"></select>
-                    </div>
-                    <br />
-                    <paper-checkbox class="chkPlayDefaultAudioTrack">${LabelPlayDefaultAudioTrack}</paper-checkbox>
+                <br />
+                <div>
+                    <label for="selectAudioLanguage" class="selectLabel">${LabelAudioLanguagePreference}</label>
+                    <select id="selectAudioLanguage" data-mini="true"></select>
                 </div>
+                <br />
+                <label class="checkboxContainer">
+                    <input type="checkbox" is="emby-checkbox" class="chkPlayDefaultAudioTrack" />
+                    <span>${LabelPlayDefaultAudioTrack}</span>
+                </label>
             </div>
             <div class="detailSection">
                 <h1>
                     ${HeaderSubtitleSettings}
                 </h1>
-                <div class="detailSectionContent">
-                    <br />
-                    <div>
-                        <label for="selectSubtitleLanguage" class="selectLabel">${LabelSubtitleLanguagePreference}</label>
-                        <select id="selectSubtitleLanguage" data-mini="true"></select>
-                    </div>
-                    <br />
-                    <div>
-                    </div>  <br />
-                    <label for="selectSubtitlePlaybackMode" class="selectLabel">${LabelSubtitlePlaybackMode}</label>
-                    <select id="selectSubtitlePlaybackMode" data-mini="true">
-                        <option value="Default">${OptionDefaultSubtitles}</option>
-                        <option value="Smart">${OptionSmartSubtitles}</option>
-                        <option value="OnlyForced">${OptionOnlyForcedSubtitles}</option>
-                        <option value="Always">${OptionAlwaysPlaySubtitles}</option>
-                        <option value="None">${OptionNoSubtitles}</option>
-                    </select>
-                    <div class="fieldDescription subtitlesDefaultHelp subtitlesHelp" style="display: none;">${OptionDefaultSubtitlesHelp}</div>
-                    <div class="fieldDescription subtitlesSmartHelp subtitlesHelp" style="display: none;">${OptionSmartSubtitlesHelp}</div>
-                    <div class="fieldDescription subtitlesAlwaysHelp subtitlesHelp" style="display: none;">${OptionAlwaysPlaySubtitlesHelp}</div>
-                    <div class="fieldDescription subtitlesOnlyForcedHelp subtitlesHelp" style="display: none;">${OptionOnlyForcedSubtitlesHelp}</div>
-                    <div class="fieldDescription subtitlesNoneHelp subtitlesHelp" style="display: none;">${OptionNoSubtitlesHelp}</div>
+                <br />
+                <div>
+                    <label for="selectSubtitleLanguage" class="selectLabel">${LabelSubtitleLanguagePreference}</label>
+                    <select id="selectSubtitleLanguage" data-mini="true"></select>
                 </div>
+                <br />
+                <div>
+                </div>  <br />
+                <label for="selectSubtitlePlaybackMode" class="selectLabel">${LabelSubtitlePlaybackMode}</label>
+                <select id="selectSubtitlePlaybackMode" data-mini="true">
+                    <option value="Default">${OptionDefaultSubtitles}</option>
+                    <option value="Smart">${OptionSmartSubtitles}</option>
+                    <option value="OnlyForced">${OptionOnlyForcedSubtitles}</option>
+                    <option value="Always">${OptionAlwaysPlaySubtitles}</option>
+                    <option value="None">${OptionNoSubtitles}</option>
+                </select>
+                <div class="fieldDescription subtitlesDefaultHelp subtitlesHelp hide">${OptionDefaultSubtitlesHelp}</div>
+                <div class="fieldDescription subtitlesSmartHelp subtitlesHelp hide">${OptionSmartSubtitlesHelp}</div>
+                <div class="fieldDescription subtitlesAlwaysHelp subtitlesHelp hide">${OptionAlwaysPlaySubtitlesHelp}</div>
+                <div class="fieldDescription subtitlesOnlyForcedHelp subtitlesHelp hide">${OptionOnlyForcedSubtitlesHelp}</div>
+                <div class="fieldDescription subtitlesNoneHelp subtitlesHelp hide">${OptionNoSubtitlesHelp}</div>
 
             </div>
-            <div class="detailSection cinemaModeOptions" style="display:none;">
+            <div class="detailSection cinemaModeOptions hide">
                 <h1>
                     ${HeaderCinemaMode}
                 </h1>
-                <div class="detailSectionContent">
-                    <br />
-                    <paper-checkbox class="chkEnableCinemaMode">${LabelEnableCinemaMode}</paper-checkbox>
-
-                    <div class="fieldDescription paperCheckboxFieldDescription">${CinemaModeConfigurationHelp}</div>
+                <br/>
+                <div class="checkboxContainer">
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkEnableCinemaMode" />
+                        <span>${LabelEnableCinemaMode}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">${CinemaModeConfigurationHelp}</div>
                 </div>
 
             </div>
@@ -65,32 +66,37 @@
                 <h1>
                     ${HeaderAdvanced}
                 </h1>
-                <div class="detailSectionContent">
-                    <br />
-                    <div>
-                        <label for="selectMaxBitrate" class="selectLabel">${LabelMaxStreamingBitrate}</label>
-                        <select id="selectMaxBitrate" data-mini="true"></select>
-                    </div>
-                    <br />
-                    <div>
-                        <label for="selectMaxChromecastBitrate" class="selectLabel">${LabelMaxChromecastBitrate}</label>
-                        <select id="selectMaxChromecastBitrate" data-mini="true"></select>
-                    </div>
-                    <div style="margin-top:2em;">
-                        <paper-checkbox class="chkEpisodeAutoPlay">${OptionPlayNextEpisodeAutomatically}</paper-checkbox>
-                    </div>
-                    <div class="fldExternalPlayer" style="margin-top:2em;display: none;">
-                        <paper-checkbox class="chkExternalVideoPlayer">${OptionEnableExternalVideoPlayers}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">
-                            <div style="display:none;" class="labelGenericExternalPlayers">${LabelExternalPlayersHelp}</div>
-                            <div style="display:none;" class="labelNativeExternalPlayers">${LabelNativeExternalPlayersHelp}</div>
-                        </div>
+                <br />
+                <div>
+                    <label for="selectMaxBitrate" class="selectLabel">${LabelMaxStreamingBitrate}</label>
+                    <select id="selectMaxBitrate" data-mini="true"></select>
+                </div>
+                <br />
+                <div>
+                    <label for="selectMaxChromecastBitrate" class="selectLabel">${LabelMaxChromecastBitrate}</label>
+                    <select id="selectMaxChromecastBitrate" data-mini="true"></select>
+                </div>
+                <br />
+                <label class="checkboxContainer">
+                    <input type="checkbox" is="emby-checkbox" class="chkEpisodeAutoPlay" />
+                    <span>${OptionPlayNextEpisodeAutomatically}</span>
+                </label>
+
+                <div class="checkboxContainer fldExternalPlayer">
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkExternalVideoPlayer" />
+                        <span>${OptionEnableExternalVideoPlayers}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">
+                        <div class="labelGenericExternalPlayers hide">${LabelExternalPlayersHelp}</div>
+                        <div class="labelNativeExternalPlayers hide">${LabelNativeExternalPlayersHelp}</div>
                     </div>
                 </div>
             </div>
 
-            <button type="submit" data-role="none" class="clearButton block btnSave hide">
-                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+            <button is="emby-button" type="submit" class="raised submit block btnSave hide">
+                <i class="md-icon">check</i>
+                <span>${ButtonSave}</span>
             </button>
         </form>
     </div>

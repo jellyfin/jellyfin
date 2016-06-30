@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Web;
+using ServiceStack;
 using ServiceStack.Web;
 
 namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
@@ -116,6 +117,21 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             }
         }
 
+        public string Accept
+        {
+            get
+            {
+                return string.IsNullOrEmpty(request.Headers[HttpHeaders.Accept]) ? null : request.Headers[HttpHeaders.Accept];
+            }
+        }
+
+        public string Authorization
+        {
+            get
+            {
+                return string.IsNullOrEmpty(request.Headers[HttpHeaders.Authorization]) ? null : request.Headers[HttpHeaders.Authorization];
+            }
+        }
 
         protected bool validate_cookies, validate_query_string, validate_form;
         protected bool checked_cookies, checked_query_string, checked_form;

@@ -64,11 +64,6 @@
     padding-top: .5em;
 }
 
-    .videoAdvancedControls paper-icon-button {
-        width: 30px;
-        height: 30px;
-    }
-
 .nowPlayingInfo {
     text-align: center;
     padding: 1.5em 1em 2em 1em;
@@ -105,42 +100,40 @@
     display: inline-block;
     width: 70%;
     font-weight: normal;
-    font-size: 14px;
 }
 
-.videoPositionSlider {
+.videoPositionSliderContainer {
     width: 300px;
     vertical-align: middle;
-    margin-left: -1em;
+}
+
+@media all and (max-width: 600px) {
+    .videoPositionSliderContainer {
+        width: 220px;
+    }
 }
 
 @media all and (max-width: 440px) {
-    .videoPositionSlider {
-        width: 240px;
-    }
-}
-
-@media all and (max-width: 400px) {
-    .videoPositionSlider {
-        width: 200px;
-    }
-}
-
-@media all and (max-width: 350px) {
-    .videoPositionSlider {
+    .videoPositionSliderContainer {
         width: 180px;
     }
 }
 
-@media all and (max-width: 320px) {
-    .videoPositionSlider {
+@media all and (max-width: 400px) {
+    .videoPositionSliderContainer {
+        width: 150px;
+    }
+}
+
+@media all and (max-width: 350px) {
+    .videoPositionSliderContainer {
         width: 120px;
     }
 }
 
-@media all and (max-width: 1200px) {
-    #videoPlayer .nowPlayingTabs {
-        font-size: 13px;
+@media all and (max-width: 320px) {
+    .videoPositionSliderContainer {
+        width: 100px;
     }
 }
 

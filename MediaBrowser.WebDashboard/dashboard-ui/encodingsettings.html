@@ -1,65 +1,75 @@
-﻿<div id="encodingSettingsPage" data-role="page" class="page type-interior playbackConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Transcoding" data-require="scripts/encodingsettings,paper-input,paper-checkbox,paper-button">
+﻿<div id="encodingSettingsPage" data-role="page" class="page type-interior playbackConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Transcoding" data-require="scripts/encodingsettings,emby-input,emby-checkbox,emby-button,emby-select">
 
     <div data-role="content">
         <div class="content-primary">
 
             <form class="encodingSettingsForm">
 
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <label for="selectVideoDecoder" class="selectLabel">${LabelHardwareAccelerationType}</label>
-                        <select id="selectVideoDecoder" data-mini="true">
-                            <option value="">${OptionNone}</option>
-                            <option value="qsv">Intel Quick Sync</option>
-                        </select>
-                        <div class="fieldDescription">${LabelHardwareAccelerationTypeHelp}</div>
-                    </li>
-                    <li>
-                        <label for="selectThreadCount" class="selectLabel">${LabelTranscodingThreadCount}</label>
-                        <select id="selectThreadCount" data-mini="true">
-                            <option value="-1">${OptionAuto}</option>
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                            <option value="6">6</option>
-                            <option value="7">7</option>
-                            <option value="8">8</option>
-                            <option value="0">${OptionMax}</option>
-                        </select>
-                        <div class="fieldDescription">${LabelTranscodingThreadCountHelp}</div>
-                    </li>
-                    <li>
-                        <br />
-                        <paper-checkbox id="chkEnableThrottle">${OptionEnableTranscodingThrottle}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${OptionEnableTranscodingThrottleHelp}</div>
-                    </li>
-                    <li>
-                        <paper-input id="txtTranscodingTempPath" label="${LabelTranscodingTempPath}" style="width:80%;display:inline-block;"></paper-input>
-                        <button type="button" is="paper-icon-button-light" id="btnSelectTranscodingTempPath" title="${ButtonSelectDirectory}"><iron-icon icon="search"></iron-icon></button>
-                        <div class="fieldDescription">
-                            ${LabelTranscodingTempPathHelp}
-                        </div>
-                    </li>
-                    <li>
-                        <paper-input type="number" id="txtDownMixAudioBoost" pattern="[0-9]*" required="required" min=".5" max="3" step=".1" label="${LabelDownMixAudioScale}"></paper-input>
-                        <div class="fieldDescription">${LabelDownMixAudioScaleHelp}</div>
-                    </li>
-                    <li style="display:none;">
-                        <input type="checkbox" id="chkEnableDebugEncodingLogging" name="chkEnableDebugEncodingLogging" data-mini="true" />
-                        <label for="chkEnableDebugEncodingLogging">${OptionEnableDebugTranscodingLogging}</label>
-                        <div class="fieldDescription">${OptionEnableDebugTranscodingLoggingHelp}</div>
-                    </li>
-                </ul>
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectVideoDecoder" label="${LabelHardwareAccelerationType}">
+                        <option value="">${OptionNone}</option>
+                        <option value="qsv">Intel Quick Sync</option>
+                        <option value="h264_omx">h264_omx</option>
+                    </select>
+                    <div class="fieldDescription">${LabelHardwareAccelerationTypeHelp}</div>
+                </div>
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectThreadCount" label="${LabelTranscodingThreadCount}">
+                        <option value="-1">${OptionAuto}</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="0">${OptionMax}</option>
+                    </select>
+                    <div class="fieldDescription">${LabelTranscodingThreadCountHelp}</div>
+                </div>
+                <div class="checkboxContainer">
+                    <label>
+                        <input is="emby-checkbox" type="checkbox" id="chkEnableThrottle"/>
+                        <span>${OptionEnableTranscodingThrottle}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">${OptionEnableTranscodingThrottleHelp}</div>
+                </div>
 
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <button type="submit" data-role="none" class="clearButton">
-                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                        </button>
-                    </li>
-                </ul>
+                <div class="selectContainer fldSelectEncoderPathType hide">
+                    <select is="emby-select" id="selectEncoderPath" label="${LabelffmpegVersion}">
+                        <option value="System">${OptionUseSystemInstalledVersion}</option>
+                        <option value="Custom">${OptionUseMyCustomVersion}</option>
+                    </select>
+                </div>
+                <div class="inputContainer fldEncoderPath hide">
+                    <div style="display: flex; align-items: center;">
+                        <div style="flex-grow:1;">
+                            <input is="emby-input" class="txtEncoderPath" label="${LabelffmpegPath}" autocomplete="off" required />
+                        </div>
+                        <button type="button" is="paper-icon-button-light" id="btnSelectEncoderPath" class="autoSize"><i class="md-icon">search</i></button>
+                    </div>
+                    <div class="fieldDescription">
+                        <div>${LabelffmpegPathHelp}</div>
+                    </div>
+                </div>
+                <div class="inputContainer">
+                    <div style="display: flex; align-items: center;">
+                        <div style="flex-grow:1;">
+                            <input is="emby-input" id="txtTranscodingTempPath" label="${LabelTranscodingTempPath}" autocomplete="off" />
+                        </div>
+                        <button type="button" is="paper-icon-button-light" id="btnSelectTranscodingTempPath" class="autoSize"><i class="md-icon">search</i></button>
+                    </div>
+                    <div class="fieldDescription">${LabelTranscodingTempPathHelp}</div>
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="txtDownMixAudioBoost" pattern="[0-9]*" required="required" min=".5" max="3" step=".1" label="${LabelDownMixAudioScale}" />
+                    <div class="fieldDescription">${LabelDownMixAudioScaleHelp}</div>
+                </div>
+
+                <div>
+                    <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
+                </div>
             </form>
         </div>
     </div>

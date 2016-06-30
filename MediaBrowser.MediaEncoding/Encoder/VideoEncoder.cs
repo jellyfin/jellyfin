@@ -7,6 +7,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using CommonIO;
 
 namespace MediaBrowser.MediaEncoding.Encoder
@@ -17,7 +18,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
         }
 
-        protected override string GetCommandLineArguments(EncodingJob state)
+        protected override async Task<string> GetCommandLineArguments(EncodingJob state)
         {
             // Get the output codec name
             var videoCodec = EncodingJobFactory.GetVideoEncoder(state, GetEncodingOptions());
@@ -36,12 +37,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var inputModifier = GetInputModifier(state);
 
+            var videoArguments = await GetVideoArguments(state, videoCodec).ConfigureAwait(false);
+
             return string.Format("{0} {1}{2} {3} {4} -map_metadata -1 -threads {5} {6}{7} -y \"{8}\"",
                 inputModifier,
                 GetInputArgument(state),
                 keyFrame,
                 GetMapArgs(state),
-                GetVideoArguments(state, videoCodec),
+                videoArguments,
                 threads,
                 GetAudioArguments(state),
                 format,
@@ -55,7 +58,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <param name="state">The state.</param>
         /// <param name="videoCodec">The video codec.</param>
         /// <returns>System.String.</returns>
-        private string GetVideoArguments(EncodingJob state, string videoCodec)
+        private async Task<string> GetVideoArguments(EncodingJob state, string videoCodec)
         {
             var args = "-codec:v:0 " + videoCodec;
 
@@ -91,7 +94,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Add resolution params, if specified
             if (!hasGraphicalSubs)
             {
-                args += GetOutputSizeParam(state, videoCodec);
+                args += await GetOutputSizeParam(state, videoCodec).ConfigureAwait(false);
             }
 
             var qualityParam = GetVideoQualityParam(state, videoCodec);
@@ -104,7 +107,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // This is for internal graphical subs
             if (hasGraphicalSubs)
             {
-                args += GetGraphicalSubtitleParam(state, videoCodec);
+                args += await GetGraphicalSubtitleParam(state, videoCodec).ConfigureAwait(false);
             }
 
             return args;

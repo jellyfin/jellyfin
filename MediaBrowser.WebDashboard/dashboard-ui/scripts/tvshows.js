@@ -1,4 +1,4 @@
-﻿define(['events', 'libraryBrowser', 'imageLoader', 'jQuery'], function (events, libraryBrowser, imageLoader, $) {
+﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker'], function (events, libraryBrowser, imageLoader, alphaPicker) {
 
     return function (view, params, tabContent) {
 
@@ -140,17 +140,31 @@
                     });
                 }
 
-                $('.paging', tabContent).html(pagingHtml);
+                var i, length;
+                var elems = tabContent.querySelectorAll('.paging');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].innerHTML = pagingHtml;
+                }
 
-                $('.btnNextPage', tabContent).on('click', function () {
+                function onNextPageClick() {
                     query.StartIndex += query.Limit;
                     reloadItems(tabContent);
-                });
+                }
 
-                $('.btnPreviousPage', tabContent).on('click', function () {
+                function onPreviousPageClick() {
                     query.StartIndex -= query.Limit;
                     reloadItems(tabContent);
-                });
+                }
+
+                elems = tabContent.querySelectorAll('.btnNextPage');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onNextPageClick);
+                }
+
+                elems = tabContent.querySelectorAll('.btnPreviousPage');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onPreviousPageClick);
+                }
 
                 var itemsContainer = tabContent.querySelector('.itemsContainer');
                 itemsContainer.innerHTML = html;
@@ -183,26 +197,23 @@
         function updateFilterControls(tabContent) {
 
             var query = getQuery(tabContent);
-            $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWithOrGreater);
+            self.alphaPicker.value(query.NameStartsWithOrGreater);
         }
 
         function initPage(tabContent) {
 
-            $('.alphabetPicker', tabContent).on('alphaselect', function (e, character) {
-
+            var alphaPickerElement = tabContent.querySelector('.alphaPicker');
+            alphaPickerElement.addEventListener('alphavaluechanged', function (e) {
+                var newValue = e.detail.value;
                 var query = getQuery(tabContent);
-                query.NameStartsWithOrGreater = character;
+                query.NameStartsWithOrGreater = newValue;
                 query.StartIndex = 0;
-
                 reloadItems(tabContent);
+            });
 
-            }).on('alphaclear', function (e) {
-
-                var query = getQuery(tabContent);
-                query.NameStartsWithOrGreater = '';
-                getQuery(tabContent).StartIndex = 0;
-
-                reloadItems(tabContent);
+            self.alphaPicker = new alphaPicker({
+                element: alphaPickerElement,
+                valueChangeEvent: 'click'
             });
 
             tabContent.querySelector('.btnFilter').addEventListener('click', function () {
@@ -252,12 +263,13 @@
                 });
             });
 
-            tabContent.querySelector('.btnSelectView').addEventListener('click', function (e) {
+            var btnSelectView = tabContent.querySelector('.btnSelectView');
+            btnSelectView.addEventListener('click', function (e) {
 
                 libraryBrowser.showLayoutMenu(e.target, self.getCurrentViewStyle(), 'Banner,List,Poster,PosterCard,Thumb,ThumbCard'.split(','));
             });
 
-            tabContent.querySelector('.btnSelectView').addEventListener('layoutchange', function (e) {
+            btnSelectView.addEventListener('layoutchange', function (e) {
 
                 var viewStyle = e.detail.viewStyle;
 

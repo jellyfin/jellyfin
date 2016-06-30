@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'scrollStyles', 'paper-checkbox', 'emby-collapsible', 'paper-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'html!./../icons/mediainfo.html', 'html!./../icons/nav.html'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper) {
+﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'scrollStyles', 'emby-button', 'emby-collapsible', 'emby-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'material-icons'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper) {
 
     var currentDialog;
     var recordingUpdated = false;
@@ -80,22 +80,6 @@
         context.querySelector('.btnHeaderSave').addEventListener('click', function (e) {
 
             context.querySelector('.btnSubmit').click();
-        });
-
-        context.querySelector('.btnSubmit').addEventListener('click', function () {
-
-            // Do a fake form submit this the button isn't a real submit button
-            var fakeSubmit = document.createElement('input');
-            fakeSubmit.setAttribute('type', 'submit');
-            fakeSubmit.style.display = 'none';
-            var form = context.querySelector('form');
-            form.appendChild(fakeSubmit);
-            fakeSubmit.click();
-
-            // Seeing issues in smart tv browsers where the form does not get submitted if the button is removed prior to the submission actually happening
-            setTimeout(function () {
-                form.removeChild(fakeSubmit);
-            }, 500);
         });
     }
 

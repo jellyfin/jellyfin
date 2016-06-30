@@ -11,13 +11,25 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Episode
     /// </summary>
-    public class Episode : Video, IHasLookupInfo<EpisodeInfo>, IHasSeries
+    public class Episode : Video, IHasTrailers, IHasLookupInfo<EpisodeInfo>, IHasSeries
     {
-        /// <summary>
-        /// Gets the season in which it aired.
-        /// </summary>
-        /// <value>The aired season.</value>
-        public int? AirsBeforeSeasonNumber { get; set; }
+
+        public Episode()
+        {
+            RemoteTrailers = new List<MediaUrl>();
+            LocalTrailerIds = new List<Guid>();
+            RemoteTrailerIds = new List<Guid>();
+        }
+
+        public List<Guid> LocalTrailerIds { get; set; }
+        public List<Guid> RemoteTrailerIds { get; set; }
+        public List<MediaUrl> RemoteTrailers { get; set; }
+
+    /// <summary>
+    /// Gets the season in which it aired.
+    /// </summary>
+    /// <value>The aired season.</value>
+    public int? AirsBeforeSeasonNumber { get; set; }
         public int? AirsAfterSeasonNumber { get; set; }
         public int? AirsBeforeEpisodeNumber { get; set; }
 
@@ -96,7 +108,13 @@ namespace MediaBrowser.Controller.Entities.TV
             var series = Series;
             if (series != null && ParentIndexNumber.HasValue && IndexNumber.HasValue)
             {
-                list.InsertRange(0, series.GetUserDataKeys().Select(i => i + ParentIndexNumber.Value.ToString("000") + IndexNumber.Value.ToString("000")));
+                var seriesUserDataKeys = series.GetUserDataKeys();
+                var take = seriesUserDataKeys.Count;
+                if (seriesUserDataKeys.Count > 1)
+                {
+                    take--;
+                }
+                list.InsertRange(0, seriesUserDataKeys.Take(take).Select(i => i + ParentIndexNumber.Value.ToString("000") + IndexNumber.Value.ToString("000")));
             }
 
             return list;

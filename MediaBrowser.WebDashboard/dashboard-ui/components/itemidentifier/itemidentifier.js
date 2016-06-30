@@ -1,8 +1,9 @@
-﻿define(['dialogHelper', 'loading', 'jQuery', 'paper-fab', 'paper-input', 'paper-checkbox', 'paper-icon-button-light'], function (dialogHelper, loading, $) {
+﻿define(['dialogHelper', 'loading', 'emby-input', 'emby-checkbox', 'paper-icon-button-light'], function (dialogHelper, loading) {
 
     var currentItem;
     var currentItemType;
-    var currentDeferred;
+    var currentResolve;
+    var currentReject;
     var hasChanges = false;
     var currentSearchResult;
 
@@ -12,33 +13,34 @@
             ProviderIds: {}
         };
 
-        $('.identifyField', page).each(function () {
+        var i, length;
+        var identifyField = page.querySelectorAll('.identifyField');
+        for (i = 0, length = identifyField.length; i < length; i++) {
 
-            var value = this.value;
+            var value = identifyField[i].value;
 
             if (value) {
 
-                if (this.type == 'number') {
+                if (identifyField[i].type == 'number') {
                     value = parseInt(value);
                 }
 
-                lookupInfo[this.getAttribute('data-lookup')] = value;
+                lookupInfo[identifyField[i].getAttribute('data-lookup')] = value;
             }
-
-        });
+        }
 
         var hasId = false;
 
-        $('.txtLookupId', page).each(function () {
+        var txtLookupId = page.querySelectorAll('.txtLookupId');
+        for (i = 0, length = txtLookupId.length; i < length; i++) {
 
-            var value = this.value;
+            var value = txtLookupId[i].value;
 
             if (value) {
                 hasId = true;
             }
-            lookupInfo.ProviderIds[this.getAttribute('data-providerkey')] = value;
-
-        });
+            lookupInfo.ProviderIds[txtLookupId[i].getAttribute('data-providerkey')] = value;
+        }
 
         if (!hasId && !lookupInfo.Name) {
             require(['toast'], function (toast) {
@@ -74,23 +76,22 @@
 
     function showIdentificationSearchResults(page, results) {
 
-        $('.popupIdentifyForm', page).hide();
-        $('.identificationSearchResults', page).show();
-        $('.identifyOptionsForm', page).hide();
-        $('.btnIdentifyBack', page).show();
+        page.querySelector('.popupIdentifyForm').classList.add('hide');
+        page.querySelector('.identificationSearchResults').classList.remove('hide');
+        page.querySelector('.identifyOptionsForm').classList.add('hide');
 
         var html = '';
-
-        for (var i = 0, length = results.length; i < length; i++) {
+        var i, length;
+        for (i = 0, length = results.length; i < length; i++) {
 
             var result = results[i];
             html += getSearchResultHtml(result, i);
         }
 
-        var elem = $('.identificationSearchResultList', page).html(html);
+        var elem = page.querySelector('.identificationSearchResultList');
+        elem.innerHTML = html;
 
-        $('.searchImage', elem).on('click', function () {
-
+        function onSearchImageClick() {
             var index = parseInt(this.getAttribute('data-index'));
 
             var currentResult = results[index];
@@ -102,7 +103,13 @@
 
                 finishFindNewDialog(page, currentResult);
             }
-        });
+        }
+
+        var searchImages = elem.querySelectorAll('.searchImage');
+        for (i = 0, length = searchImages.length; i < length; i++) {
+
+            searchImages[i].addEventListener('click', onSearchImageClick);
+        }
     }
 
     function finishFindNewDialog(dlg, identifyResult) {
@@ -115,11 +122,10 @@
 
     function showIdentifyOptions(page, identifyResult) {
 
-        $('.popupIdentifyForm', page).hide();
-        $('.identificationSearchResults', page).hide();
-        $('.identifyOptionsForm', page).show();
-        $('.btnIdentifyBack', page).show();
-        $('#chkIdentifyReplaceImages', page).checked(true);
+        page.querySelector('.popupIdentifyForm').classList.add('hide');
+        page.querySelector('.identificationSearchResults').classList.add('hide');
+        page.querySelector('.identifyOptionsForm').classList.remove('hide');
+        page.querySelector('#chkIdentifyReplaceImages').checked = true;
 
         currentSearchResult = identifyResult;
 
@@ -142,7 +148,7 @@
             resultHtml = '<img src="' + displayUrl + '" style="max-height:160px;" /><br/>' + resultHtml;
         }
 
-        $('.selectedSearchResult', page).html(resultHtml);
+        page.querySelector('.selectedSearchResult').innerHTML = resultHtml;
     }
 
     function getSearchResultHtml(result, index) {
@@ -205,7 +211,7 @@
         loading.show();
 
         var options = {
-            ReplaceAllImages: $('#chkIdentifyReplaceImages', page).checked()
+            ReplaceAllImages: page.querySelector('#chkIdentifyReplaceImages').checked
         };
 
         ApiClient.ajax({
@@ -243,30 +249,30 @@
 
                 var id = "txtLookup" + idInfo.Key;
 
-                html += '<div>';
+                html += '<div class="inputContainer">';
 
                 var idLabel = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
 
                 var value = providerIds[idInfo.Key] || '';
 
-                html += '<paper-input class="txtLookupId" data-providerkey="' + idInfo.Key + '" id="' + id + '" label="' + idLabel + '"></paper-input>';
+                html += '<input is="emby-input" class="txtLookupId" data-providerkey="' + idInfo.Key + '" id="' + id + '" label="' + idLabel + '"/>';
 
                 html += '</div>';
             }
 
-            $('#txtLookupName', page).val('');
+            page.querySelector('#txtLookupName').value = '';
 
             if (item.Type == "Person" || item.Type == "BoxSet") {
 
-                $('.fldLookupYear', page).hide();
-                $('#txtLookupYear', page).val('');
+                page.querySelector('.fldLookupYear').classList.add('hide');
+                page.querySelector('#txtLookupYear').value = '';
             } else {
 
-                $('.fldLookupYear', page).show();
-                $('#txtLookupYear', page).val('');
+                page.querySelector('.fldLookupYear').classList.remove('hide');
+                page.querySelector('#txtLookupYear').value = '';
             }
 
-            $('.identifyProviderIds', page).html(html);
+            page.querySelector('.identifyProviderIds').innerHTML = html;
 
             page.querySelector('.dialogHeaderTitle').innerHTML = Globalize.translate('HeaderIdentify');
         });
@@ -288,7 +294,8 @@
                 currentItemType = currentItem.Type;
 
                 var dlg = dialogHelper.createDialog({
-                    size: 'medium'
+                    size: 'medium',
+                    removeOnClose: true
                 });
 
                 dlg.classList.add('ui-body-b');
@@ -301,7 +308,7 @@
                 document.body.appendChild(dlg);
 
                 // Has to be assigned a z-index after the call to .open() 
-                $(dlg).on('close', onDialogClosed);
+                dlg.addEventListener('close', onDialogClosed);
 
                 dialogHelper.open(dlg);
 
@@ -319,7 +326,7 @@
                     return false;
                 });
 
-                $('.btnCancel', dlg).on('click', function () {
+                dlg.querySelector('.btnCancel').addEventListener('click', function (e) {
 
                     dialogHelper.close(dlg);
                 });
@@ -336,9 +343,12 @@
 
     function onDialogClosed() {
 
-        $(this).remove();
         loading.hide();
-        currentDeferred.resolveWith(null, [hasChanges]);
+        if (hasChanges) {
+            currentResolve();
+        } else {
+            currentReject();
+        }
     }
 
     function showEditorFindNew(itemName, itemYear, itemType, resolveFunc) {
@@ -417,13 +427,14 @@
     return {
         show: function (itemId) {
 
-            var deferred = jQuery.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            currentDeferred = deferred;
-            hasChanges = false;
+                currentResolve = resolve;
+                currentReject = reject;
+                hasChanges = false;
 
-            showEditor(itemId);
-            return deferred.promise();
+                showEditor(itemId);
+            });
         },
 
         showFindNew: function (itemName, itemYear, itemType) {

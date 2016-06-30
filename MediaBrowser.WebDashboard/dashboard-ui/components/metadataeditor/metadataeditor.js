@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'datetime', 'jQuery', 'paper-checkbox', 'paper-input', 'paper-item-body', 'paper-icon-item', 'paper-textarea', 'paper-fab', 'paper-icon-button-light'], function (dialogHelper, datetime, $) {
+﻿define(['dialogHelper', 'datetime', 'jQuery', 'emby-checkbox', 'emby-input', 'emby-select', 'paper-item-body', 'paper-icon-item', 'emby-textarea', 'paper-fab', 'paper-icon-button-light'], function (dialogHelper, datetime, $) {
 
     var currentContext;
     var metadataEditorInfo;
@@ -133,7 +133,6 @@
                 CriticRating: $('#txtCriticRating', form).val(),
                 CriticRatingSummary: $('#txtCriticRatingSummary', form).val(),
                 IndexNumber: $('#txtIndexNumber', form).val() || null,
-                DisplaySpecialsWithSeasons: form.querySelector('#chkDisplaySpecialsInline').checked,
                 AbsoluteEpisodeNumber: $('#txtAbsoluteEpisodeNumber', form).val(),
                 DvdEpisodeNumber: $('#txtDvdEpisodeNumber', form).val(),
                 DvdSeasonNumber: $('#txtDvdSeasonNumber', form).val(),
@@ -270,16 +269,11 @@
 
     function showRefreshMenu(context, button) {
 
-        ApiClient.refreshItem(currentItem.Id, {
-            Recursive: true,
-            ImageRefreshMode: 'FullRefresh',
-            MetadataRefreshMode: 'FullRefresh',
-            ReplaceAllImages: false,
-            ReplaceAllMetadata: true
-        });
-
-        require(['toast'], function (toast) {
-            toast(Globalize.translate('MessageRefreshQueued'));
+        require(['refreshDialog'], function (refreshDialog) {
+            new refreshDialog({
+                itemIds: [currentItem.Id],
+                serverId: ApiClient.serverInfo().Id
+            }).show();
         });
     }
 
@@ -317,7 +311,9 @@
                     switch (id) {
 
                         case 'identify':
-                            LibraryBrowser.identifyItem(currentItem.Id);
+                            LibraryBrowser.identifyItem(currentItem.Id).then(function () {
+                                reload(context, currentItem.Id);
+                            });
                             break;
                         case 'refresh':
                             showRefreshMenu(context, button);
@@ -510,15 +506,19 @@
 
             var labelText = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
 
-            html += '<div>';
+            html += '<div class="inputContainer">';
+            html += '<div style="display: flex; align-items: center;">';
 
             var value = providerIds[idInfo.Key] || '';
 
-            html += '<paper-input style="display:inline-block;width:80%;" class="txtExternalId" value="' + value + '" data-providerkey="' + idInfo.Key + '" data-formatstring="' + formatString + '" data-buttonclass="' + buttonId + '" id="' + id + '" label="' + labelText + '"></paper-input>';
+            html += '<div style="flex-grow:1;">';
+            html += '<input is="emby-input" class="txtExternalId" value="' + value + '" data-providerkey="' + idInfo.Key + '" data-formatstring="' + formatString + '" data-buttonclass="' + buttonId + '" id="' + id + '" label="' + labelText + '"/>';
+            html += '</div>';
 
             if (formatString) {
                 html += '<a class="clearLink ' + buttonId + '" href="#" target="_blank" data-role="none" style="float: none; width: 1.75em"><button type="button" is="paper-icon-button-light"><iron-icon icon="open-in-browser"></iron-icon></button></a>';
             }
+            html += '</div>';
 
             html += '</div>';
         }
@@ -692,14 +692,14 @@
         }
 
         if (item.Type == "Person") {
-            context.querySelector('#txtProductionYear').label = Globalize.translate('LabelBirthYear');
-            context.querySelector("#txtPremiereDate").label = Globalize.translate('LabelBirthDate');
-            context.querySelector("#txtEndDate").label = Globalize.translate('LabelDeathDate');
+            context.querySelector('#txtProductionYear').label(Globalize.translate('LabelBirthYear'));
+            context.querySelector("#txtPremiereDate").label(Globalize.translate('LabelBirthDate'));
+            context.querySelector("#txtEndDate").label(Globalize.translate('LabelDeathDate'));
             $('#fldPlaceOfBirth', context).show();
         } else {
-            context.querySelector('#txtProductionYear').label = Globalize.translate('LabelYear');
-            context.querySelector("#txtPremiereDate").label = Globalize.translate('LabelReleaseDate');
-            context.querySelector("#txtEndDate").label = Globalize.translate('LabelEndDate');
+            context.querySelector('#txtProductionYear').label(Globalize.translate('LabelYear'));
+            context.querySelector("#txtPremiereDate").label(Globalize.translate('LabelReleaseDate'));
+            context.querySelector("#txtEndDate").label(Globalize.translate('LabelEndDate'));
             $('#fldPlaceOfBirth', context).hide();
         }
 
@@ -713,13 +713,13 @@
             $('#fldIndexNumber', context).show();
 
             if (item.Type == "Episode") {
-                context.querySelector('#txtIndexNumber').label = Globalize.translate('LabelEpisodeNumber');
+                context.querySelector('#txtIndexNumber').label(Globalize.translate('LabelEpisodeNumber'));
             } else if (item.Type == "Season") {
-                context.querySelector('#txtIndexNumber').label = Globalize.translate('LabelSeasonNumber');
+                context.querySelector('#txtIndexNumber').label(Globalize.translate('LabelSeasonNumber'));
             } else if (item.Type == "Audio") {
-                context.querySelector('#txtIndexNumber').label = Globalize.translate('LabelTrackNumber');
+                context.querySelector('#txtIndexNumber').label(Globalize.translate('LabelTrackNumber'));
             } else {
-                context.querySelector('#txtIndexNumber').label = Globalize.translate('LabelNumber');
+                context.querySelector('#txtIndexNumber').label(Globalize.translate('LabelNumber'));
             }
         } else {
             $('#fldIndexNumber', context).hide();
@@ -729,26 +729,19 @@
             $('#fldParentIndexNumber', context).show();
 
             if (item.Type == "Episode") {
-                context.querySelector('#txtParentIndexNumber').label = Globalize.translate('LabelSeasonNumber');
+                context.querySelector('#txtParentIndexNumber').label(Globalize.translate('LabelSeasonNumber'));
             } else if (item.Type == "Audio") {
-                context.querySelector('#txtParentIndexNumber').label = Globalize.translate('LabelDiscNumber');
+                context.querySelector('#txtParentIndexNumber').label(Globalize.translate('LabelDiscNumber'));
             } else {
-                context.querySelector('#txtParentIndexNumber').label = Globalize.translate('LabelParentNumber');
+                context.querySelector('#txtParentIndexNumber').label(Globalize.translate('LabelParentNumber'));
             }
         } else {
             $('#fldParentIndexNumber', context).hide();
         }
 
-        if (item.Type == "Series") {
-            $('#fldDisplaySpecialsInline', context).show();
-        } else {
-            $('#fldDisplaySpecialsInline', context).hide();
-        }
-
         if (item.Type == "BoxSet") {
             $('#fldDisplayOrder', context).show();
 
-            $('#labelDisplayOrder', context).html(Globalize.translate('LabelTitleDisplayOrder'));
             $('#selectDisplayOrder', context).html('<option value="SortName">' + Globalize.translate('OptionSortName') + '</option><option value="PremiereDate">' + Globalize.translate('OptionReleaseDate') + '</option>');
         } else {
             $('#selectDisplayOrder', context).html('');
@@ -811,8 +804,6 @@
             $('.providerSettingsContainer', context).show();
         }
         populateInternetProviderSettings(context, item, item.LockedFields);
-
-        context.querySelector('#chkDisplaySpecialsInline').checked = item.DisplaySpecialsWithSeasons || false;
 
         $('#txtPath', context).val(item.Path || '');
         $('#txtName', context).val(item.Name || "");
@@ -1058,7 +1049,10 @@
             var name = field.name;
             var value = field.value || field.name;
             var checkedHtml = currentFields.indexOf(value) == -1 ? ' checked' : '';
-            html += '<paper-checkbox class="selectLockedField" data-value="' + value + '" style="display:block;margin:1em 0;"' + checkedHtml + '>' + name + '</paper-checkbox>';
+            html += '<label>';
+            html += '<input type="checkbox" is="emby-checkbox" class="selectLockedField" data-value="' + value + '"' + checkedHtml + '/>';
+            html += '<span>' + name + '</span>';
+            html += '</label>';
         }
         return html;
     }

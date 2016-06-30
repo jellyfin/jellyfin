@@ -2,22 +2,13 @@
     visibility: hidden;
 }
 
-/* Fixes the issue of jqm panels altering the page background. */
-.ui-panel-content-wrap {
-    background: none !important;
-}
-
-.ui-panel fieldset + fieldset {
-    margin-top: 2em;
-}
-
 .headerArrowImage {
     height: 20px;
     margin-left: .5em;
 }
 
 .background-theme-b, .dialog.background-theme-b {
-    background-color: #181818;
+    background-color: #19191A;
     /*background: radial-gradient(circle, #282828, #141414);*/
 }
 
@@ -62,6 +53,10 @@
     padding-bottom: 0;
 }
 
+.pageTabContent {
+    contain: style;
+}
+
 .pageWithAbsoluteTabs .pageTabContent, .libraryPage > .ui-content {
     padding-top: 10px;
 }
@@ -101,7 +96,7 @@
     }
 }
 
-.listHeader + paper-button {
+.listHeader + button {
     margin-left: 2em;
 }
 
@@ -163,7 +158,7 @@
     }
 }
 
-.detailPageContent, .detailPageContent > table {
+.detailPageContent {
     margin: 0 auto;
     padding: 0;
     border-spacing: 0;
@@ -180,29 +175,8 @@
     margin: .5em 0 .5em;
 }
 
-    .listPaging paper-fab {
-        width: 40px;
-        height: 40px;
-        vertical-align: middle;
-    }
-
 .viewControls + .listTopPaging {
     margin-left: .5em !important;
-}
-
-.labelPageSize {
-    margin-left: 1em !important;
-    display: inline !important;
-}
-
-.pageSizeContainer {
-    display: inline-block;
-}
-
-@media all and (max-width: 650px) {
-    .pageSizeContainer {
-        display: none !important;
-    }
 }
 
 .criticReview {
@@ -234,6 +208,10 @@
     color: #fff !important;
     text-decoration: none;
     font-weight: normal !important;
+}
+
+.itemOverview {
+    white-space: pre-wrap;
 }
 
 a.itemTag:hover {
@@ -350,7 +328,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 @media all and (min-width: 540px) {
 
     .detailUserDataIcons {
-        margin-left: 1em;
+        margin-left: .5em;
     }
 }
 
@@ -428,22 +406,17 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     font-size: 90%;
 }
 
-.detailFloatingButton {
-    width: 56px;
-    height: 56px;
+[is="emby-button"].detailFloatingButton {
+    width: 56px !important;
+    height: 56px !important;
     top: -28px;
     position: absolute;
     right: 25%;
     background-color: #52B54B !important;
 }
 
-.btnFloatingRecord {
+[is="emby-button"].btnFloatingRecord {
     background-color: #cc3333 !important;
-}
-
-.detailFloatingButton iron-icon {
-    width: 40px;
-    height: 40px;
 }
 
 @media all and (max-width: 1000px) {
@@ -491,7 +464,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 @media all and (max-width: 600px) {
 
     .detailFloatingButton {
-        right: 15px;
+        right: 15px !important;
     }
 }
 
@@ -598,7 +571,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     font-size: 20px;
 }
 
-    .detailSectionHeader paper-button {
+    .detailSectionHeader button {
         font-size: 13px;
     }
 
@@ -613,28 +586,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .editMetadataForm {
     max-width: 100%;
 }
-
-.libraryPanelHeader {
-    margin: 5px 0 15px 0;
-    font-size: 15px;
-    font-family: Montserrat;
-}
-
-    .libraryPanelHeader a {
-        text-decoration: none;
-    }
-
-    .libraryPanelHeader img {
-        height: 24px;
-        vertical-align: middle;
-        margin-right: 6px;
-    }
-
-    .libraryPanelHeader span {
-        color: #fff;
-        vertical-align: middle;
-        font-weight: 400;
-    }
 
 .detailImageProgressContainer {
     position: absolute;
@@ -658,10 +609,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .inlineDetailSection:not(.hide) {
         display: inline-block;
         margin-bottom: 2em;
-    }
-
-    .editMetadataForm .ui-field-contain {
-        margin: .25em 0;
     }
 }
 
@@ -931,6 +878,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     position: absolute;
     top: 5px;
     right: 5px;
+    font-size: 200%;
 }
 
 .playedIndicator + .syncIndicator {
@@ -957,6 +905,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     font-weight: 500;
 }
 
+    .playedIndicator i, .syncIndicator i {
+        font-size: 180%;
+    }
+
 .mediaSourceIndicator {
     display: block;
     position: absolute;
@@ -979,12 +931,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     font-size: 19px;
     margin-right: 15px;
     font-weight: bold;
-}
-
-@media all and (min-width: 650px) {
-    .libraryTabs .ui-btn-inner {
-        padding: .5em 15px !important;
-    }
 }
 
 /* All HTML5 progress enabled browsers */
@@ -1073,12 +1019,11 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .itemsContainer {
     margin: 0 auto;
-    line-height: 0;
 }
 
 .alphabetPicker {
     position: fixed;
-    right: 5px;
+    right: 0;
     bottom: 0;
     z-index: 999;
     text-align: center;
@@ -1090,18 +1035,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .layout-desktop .absolutePageTabContent .alphabetPicker {
     right: 20px;
 }
-
-.alphabetPicker a {
-    display: block;
-    text-decoration: none;
-    padding: 1px 2px 1px 5px;
-    font-weight: 500;
-}
-
-    .alphabetPicker a:not(.selectedCharacter) {
-        color: #bbb !important;
-    }
-
 
 .selectedCharacter {
     color: #52B54B !important;
@@ -1151,11 +1084,14 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     padding-top: 1px;
 }
 
-@media all and (min-height: 480px) {
+@media all and (max-height: 480px) {
 
     .alphabetPicker {
-        display: block;
+        display: none !important;
     }
+}
+
+@media all and (min-height: 480px) {
 
     .itemsContainerWithAlphaPicker {
         margin-right: 20px;
@@ -1163,13 +1099,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
     .absolutePageTabContent .itemsContainerWithAlphaPicker {
         margin-right: 30px;
-    }
-}
-
-@media all and (min-height: 480px) and (max-width: 800px) {
-
-    .absolutePageTabContent .itemsContainerWithAlphaPicker iron-list {
-        width: 99.5% !important;
     }
 }
 
@@ -1187,35 +1116,33 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-@media all and (min-height: 600px) {
+@media all and (max-height: 700px) {
 
-    .alphabetPicker a {
-        padding-top: 2px;
-        padding-bottom: 2px;
+    .vertical.alphabetPicker .alphaPickerButton {
+        padding-top: 1px !important;
+        padding-bottom: 1px !important;
     }
 }
 
-@media all and (min-height: 650px) {
+@media all and (max-height: 600px) {
 
-    .alphabetPicker a {
-        padding-top: 3px;
-        padding-bottom: 3px;
+    .vertical.alphabetPicker .alphaPickerButton {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
     }
 }
 
-@media all and (min-height: 700px) {
+@media all and (max-height: 530px) {
 
-    .alphabetPicker a {
-        padding-top: 4px;
-        padding-bottom: 4px;
+    .alphabetPicker {
+        font-size: 80%;
     }
 }
 
-@media all and (min-height: 750px) {
+@media all and (max-height: 480px) {
 
-    .alphabetPicker a {
-        padding-top: 5px;
-        padding-bottom: 5px;
+    .alphabetPicker {
+        font-size: 76%;
     }
 }
 
@@ -1233,107 +1160,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-.viewCollageImage {
-    display: inline-block;
-    margin: 0 1px 0 0;
-    width: 32.62%;
-    height: 49%;
-    background-repeat: no-repeat;
-    background-position: center 15%;
-    background-size: cover;
-}
-
-@media all and (min-width: 650px) {
-
-    .viewCollageImage {
-        width: 32.9%;
-        height: 49.1%;
-    }
-}
-
-@media all and (min-width: 1440px) {
-
-    .viewCollageImage {
-        width: 32.95%;
-    }
-}
-
-.spotlight {
-    position: absolute;
-    left: 0;
-    right: 0;
-    background-size: cover;
-    background-position: center 25%;
-    background-repeat: no-repeat;
-}
-
-.spotlight, .spotlightPlaceHolder {
-    height: 340px;
-}
-
-.spotlightContainer {
-    min-height: 340px;
-    margin-top: 3em;
-}
-
-.spotlightPlaceHolder {
-    margin-bottom: 3em;
-}
-
-.spotlightTitle {
-    margin: 1em 0 .2em;
-}
-
-.spotlightContent {
-    position: absolute;
-    top: 60px;
-    bottom: 55px;
-    left: 210px;
-    width: 600px;
-    background: rgba(0,0,0,.8);
-    border-radius: 5px;
-}
-
-.rightSpotlightContent {
-    left: initial;
-    width: 400px;
-    right: 100px;
-}
-
-.spotlightPoster {
-    height: 100%;
-    background-size: 150px 100%;
-    background-position: left center;
-    background-repeat: no-repeat;
-    overflow: hidden;
-}
-
-.rightSpotlightContent .spotlightPoster {
-    background-size: 100% 180px;
-    background-position: center top;
-}
-
-.spotlightContentInner {
-    padding: 1em 1em 1em 170px;
-}
-
-    .spotlightContentInner p {
-        max-height: 130px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-.rightSpotlightContent .spotlightContentInner {
-    padding: 195px 1em 1em 1em;
-}
-
-@media all and (max-height: 1079px) and (max-width: 1400px) {
-
-    .spotlightContainer {
-        display: none;
-    }
-}
-
 .channelHeader {
     padding: 1em;
     text-align: center;
@@ -1347,21 +1173,12 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .itemsListview {
     margin: 0 auto !important;
     max-width: 1000px;
-}
-
-.itemsListview {
     background-color: transparent !important;
     box-shadow: none !important;
 }
 
     .itemsListview .listItem {
-        border-bottom: 1px solid #303030;
-        padding-left: 0;
-        padding-right: 0;
-    }
-
-    .itemsListview .listviewMenuButton {
-        margin-right: 0 !important;
+        border-bottom: 1px solid #2a2a2a;
     }
 
     .itemsListview .ui-li-count {
@@ -1380,50 +1197,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         left: 55px;
     }
 
-    .itemsListview .content-icon {
-        width: auto !important;
-        padding-right: .7em;
-    }
-
-    .itemsListview.paperList {
-        text-align: left;
-    }
-
-    .itemsListview paper-item-body {
-        min-height: 0 !important;
-    }
-
-    .itemsListview .mediaItem {
-        padding: 7px 0;
-    }
-
-.listviewImage {
-    width: 80px;
-    height: 80px;
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-position: center center;
-}
-
-    .listviewImage.small {
-        width: 70px;
-        height: 70px;
-        background-repeat: no-repeat;
-        background-size: contain;
-        background-position: center center;
-    }
-
-.listViewUserDataButtons {
-    visibility: hidden;
-}
-
-@media all and (min-width: 1200px) {
-
-    .listItem:hover .listViewUserDataButtons {
-        visibility: visible !important;
-    }
-}
-
 @media all and (max-width: 1200px) {
 
     .listViewUserDataButtons {
@@ -1434,10 +1207,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .userProfileSettingsForm {
     max-width: 700px;
 }
-
-    .userProfileSettingsForm .detailSectionContent {
-        padding: 0 .5em;
-    }
 
 @media all and (max-width: 700px) {
 
@@ -1452,14 +1221,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .smallDetailImageContainer {
         padding-left: 1em;
     }
-}
-
-.studioTabDisabled .tvStudiosTab, .studioTabDisabled .movieStudiosTab {
-    display: none !important;
-}
-
-.tvEpisodesTabDisabled .tvEpisodesTab {
-    display: none !important;
 }
 
 .homeFavoritesDisabled .homeFavoritesTab {

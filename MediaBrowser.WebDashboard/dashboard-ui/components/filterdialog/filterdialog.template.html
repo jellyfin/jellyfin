@@ -2,47 +2,115 @@
     <h2 style="margin-bottom: .25em;">
         ${HeaderFilters}
     </h2>
-    <div class="paperCheckboxList">
-        <paper-checkbox class="chkStandardFilter videoStandard" data-filter="IsPlayed">${OptionPlayed}</paper-checkbox>
-        <paper-checkbox class="chkStandardFilter videoStandard" data-filter="IsUnPlayed">${OptionUnplayed}</paper-checkbox>
-        <paper-checkbox class="chkStandardFilter videoStandard" data-filter="IsResumable">${OptionResumable}</paper-checkbox>
-        <paper-checkbox class="chkStandardFilter chkFavorite" data-filter="IsFavorite">${OptionFavorite}</paper-checkbox>
-        <paper-checkbox class="chkStandardFilter chkLikes" data-filter="Likes">${OptionLikes}</paper-checkbox>
-        <paper-checkbox class="chkStandardFilter chkDislikes" data-filter="Dislikes">${OptionDislikes}</paper-checkbox>
-
-        <paper-checkbox id="chkSpecialEpisode" class="episodeFilter hide">${OptionSpecialEpisode}</paper-checkbox>
-        <paper-checkbox id="chkMissingEpisode" class="episodeFilter hide">${OptionMissingEpisode}</paper-checkbox>
-        <paper-checkbox id="chkFutureEpisode" class="episodeFilter hide">${OptionUnairedEpisode}</paper-checkbox>
+    <div class="checkboxList">
+        <label>
+            <input type="checkbox" is="emby-checkbox" class="chkStandardFilter videoStandard" data-filter="IsPlayed" />
+            <span>${OptionPlayed}</span>
+        </label>
+        <label>
+            <input type="checkbox" is="emby-checkbox" class="chkStandardFilter videoStandard" data-filter="IsUnPlayed" />
+            <span>${OptionUnplayed}</span>
+        </label>
+        <label>
+            <input type="checkbox" is="emby-checkbox" class="chkStandardFilter videoStandard" data-filter="IsResumable" />
+            <span>${OptionResumable}</span>
+        </label>
+        <label>
+            <input type="checkbox" is="emby-checkbox" class="chkStandardFilter chkFavorite" data-filter="IsFavorite" />
+            <span>${OptionFavorite}</span>
+        </label>
+        <label>
+            <input type="checkbox" is="emby-checkbox" class="chkStandardFilter chkLikes" data-filter="Likes" />
+            <span>${OptionLikes}</span>
+        </label>
+        <label>
+            <input type="checkbox" is="emby-checkbox" class="chkStandardFilter chkDislikes" data-filter="Dislikes" />
+            <span>${OptionDislikes}</span>
+        </label>
+        <label class="episodeFilter hide">
+            <input type="checkbox" is="emby-checkbox" id="chkSpecialEpisode" />
+            <span>${OptionSpecialEpisode}</span>
+        </label>
+        <label class="episodeFilter hide">
+            <input type="checkbox" is="emby-checkbox" id="chkMissingEpisode" />
+            <span>${OptionMissingEpisode}</span>
+        </label>
+        <label class="episodeFilter hide">
+            <input type="checkbox" is="emby-checkbox" id="chkFutureEpisode" />
+            <span>${OptionUnairedEpisode}</span>
+        </label>
     </div>
     <div class="seriesStatus hide">
         <br />
         <h2 style="margin-bottom: .25em;">
             ${HeaderStatus}
         </h2>
-        <div class="paperCheckboxList">
-            <paper-checkbox class="chkStatus" id="chkStatusContinuing" data-filter="Continuing">${OptionContinuing}</paper-checkbox>
-            <paper-checkbox class="chkStatus" id="chkStatusEnded" data-filter="Ended">${OptionEnded}</paper-checkbox>
+        <div class="checkboxList">
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkStatus" data-filter="Continuing"/>
+                <span>${OptionContinuing}</span>
+            </label>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkStatus" data-filter="Ended" />
+                <span>${OptionEnded}</span>
+            </label>
         </div>
     </div>
     <br />
     <emby-collapsible title="${HeaderAirDays}" class="airdays hide">
-        <div class="paperCheckboxList">
-            <paper-checkbox class="chkAirDays" id="chkSunday" data-filter="Sunday">${OptionSunday}</paper-checkbox>
-            <paper-checkbox class="chkAirDays" id="chkMonday" data-filter="Monday">${OptionMonday}</paper-checkbox>
-            <paper-checkbox class="chkAirDays" id="chkTuesday" data-filter="Tuesday">${OptionTuesday}</paper-checkbox>
-            <paper-checkbox class="chkAirDays" id="chkWednesday" data-filter="Wednesday">${OptionWednesday}</paper-checkbox>
-            <paper-checkbox class="chkAirDays" id="chkThursday" data-filter="Thursday">${OptionThursday}</paper-checkbox>
-            <paper-checkbox class="chkAirDays" id="chkFriday" data-filter="Friday">${OptionFriday}</paper-checkbox>
-            <paper-checkbox class="chkAirDays" id="chkSaturday" data-filter="Saturday">${OptionSaturday}</paper-checkbox>
+        <div class="checkboxList">
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkSunday" data-filter="Sunday" />
+                <span>${OptionSunday}</span>
+            </label>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkMonday" data-filter="Monday" />
+                <span>${OptionMonday}</span>
+            </label>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkTuesday" data-filter="Tuesday" />
+                <span>${OptionTuesday}</span>
+            </label>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkWednesday" data-filter="Wednesday" />
+                <span>${OptionWednesday}</span>
+            </label>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkThursday" data-filter="Thursday" />
+                <span>${OptionThursday}</span>
+            </label>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkFriday" data-filter="Friday" />
+                <span>${OptionFriday}</span>
+            </label>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkSaturday" data-filter="Saturday" />
+                <span>${OptionSaturday}</span>
+            </label>
         </div>
     </emby-collapsible>
     <emby-collapsible title="${HeaderFeatures}" class="features hide">
-        <div class="paperCheckboxList">
-            <paper-checkbox class="chkFeatureFilter" id="chkSubtitle">${OptionHasSubtitles}</paper-checkbox>
-            <paper-checkbox class="chkFeatureFilter" id="chkTrailer">${OptionHasTrailer}</paper-checkbox>
-            <paper-checkbox class="chkFeatureFilter" id="chkSpecialFeature">${OptionHasSpecialFeatures}</paper-checkbox>
-            <paper-checkbox class="chkFeatureFilter" id="chkThemeSong">${OptionHasThemeSong}</paper-checkbox>
-            <paper-checkbox class="chkFeatureFilter" id="chkThemeVideo">${OptionHasThemeVideo}</paper-checkbox>
+        <div class="checkboxList">
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkFeatureFilter" id="chkSubtitle" />
+                <span>${OptionHasSubtitles}</span>
+            </label>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkFeatureFilter" id="chkTrailer" />
+                <span>${OptionHasTrailer}</span>
+            </label>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkFeatureFilter" id="chkSpecialFeature" />
+                <span>${OptionHasSpecialFeatures}</span>
+            </label>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkFeatureFilter" id="chkThemeSong" />
+                <span>${OptionHasThemeSong}</span>
+            </label>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkFeatureFilter" id="chkThemeVideo" />
+                <span>${OptionHasThemeVideo}</span>
+            </label>
         </div>
     </emby-collapsible>
 
@@ -73,14 +141,34 @@
     </emby-collapsible>
 
     <emby-collapsible title="${HeaderVideoTypes}" class="videoTypeFilters hide">
-        <div class="paperCheckboxList">
-            <paper-checkbox class="chkVideoTypeFilter chkBluray" data-filter="Bluray">${OptionBluray}</paper-checkbox>
-            <paper-checkbox class="chkVideoTypeFilter chkDvd" data-filter="Dvd">${OptionDvd}</paper-checkbox>
-            <paper-checkbox class="chkVideoTypeFilter chkIso" data-filter="Iso">${OptionIso}</paper-checkbox>
+        <div class="checkboxList">
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkVideoTypeFilter chkBluray" data-filter="Bluray" />
+                <span>${OptionBluray}</span>
+            </label>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkVideoTypeFilter chkDvd" data-filter="Dvd" />
+                <span>${OptionDvd}</span>
+            </label>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkVideoTypeFilter chkIso" data-filter="Iso" />
+                <span>${OptionIso}</span>
+            </label>
 
-            <paper-checkbox class="chkHDFilter IsHD">${OptionIsHD}</paper-checkbox>
-            <paper-checkbox class="chkSDFilter IsHD">${OptionIsSD}</paper-checkbox>
-            <paper-checkbox class="chk3DFilter chk3D">${Option3D}</paper-checkbox>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkHDFilter IsHD" />
+                <span>${OptionIsHD}</span>
+            </label>
+
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkSDFilter IsHD" />
+                <span>${OptionIsSD}</span>
+            </label>
+
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chk3DFilter chk3D" />
+                <span>${Option3D}</span>
+            </label>
         </div>
     </emby-collapsible>
 

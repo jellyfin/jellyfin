@@ -18,7 +18,14 @@ class BufferController extends EventHandler {
       Event.BUFFER_APPENDING,
       Event.BUFFER_CODECS,
       Event.BUFFER_EOS,
-      Event.BUFFER_FLUSHING);
+      Event.BUFFER_FLUSHING,
+      Event.LEVEL_UPDATED);
+
+    // the value that we have set mediasource.duration to
+    // (the actual duration may be tweaked slighly by the browser)
+    this._msDuration = null;
+    // the value that we want to set mediaSource.duration to
+    this._levelDuration = null;
 
     // Source Buffer listeners
     this.onsbue = this.onSBUpdateEnd.bind(this);
@@ -209,6 +216,46 @@ class BufferController extends EventHandler {
     this.doFlush();
   }
 
+  onLevelUpdated(event) {
+    let details = event.details;
+    if (details.fragments.length === 0) {
+      return;
+    }
+    this._levelDuration = details.totalduration + details.fragments[0].start;
+    this.updateMediaElementDuration();
+  }
+
+  // https://github.com/dailymotion/hls.js/issues/355
+  updateMediaElementDuration() {
+    if (this._levelDuration === null) {
+      return;
+    }
+    let media = this.media;
+    let mediaSource = this.mediaSource;
+    if (!media || !mediaSource || media.readyState === 0 || mediaSource.readyState !== 'open') {
+      return;
+    }
+    for (let type in mediaSource.sourceBuffers) {
+      if (mediaSource.sourceBuffers[type].updating) {
+        // can't set duration whilst a buffer is updating
+        return;
+      }
+    }
+    if (this._msDuration === null) {
+      // initialise to the value that the media source is reporting
+      this._msDuration = mediaSource.duration;
+    }
+    // this._levelDuration was the last value we set.
+    // not using mediaSource.duration as the browser may tweak this value
+    // only update mediasource duration if its value increase, this is to avoid
+    // flushing already buffered portion when switching between quality level, as they
+    if (this._levelDuration > this._msDuration) {
+      logger.log(`Updating mediasource duration to ${this._levelDuration}`);
+      mediaSource.duration = this._levelDuration;
+      this._msDuration = this._levelDuration;
+    }
+  }
+
   doFlush() {
     // loop through all buffer ranges to flush
     while(this.flushRange.length) {
@@ -291,9 +338,10 @@ class BufferController extends EventHandler {
           } else {
             // QuotaExceededError: http://www.w3.org/TR/html5/infrastructure.html#quotaexceedederror
             // let's stop appending any segments, and report BUFFER_FULL_ERROR error
-            segments = [];
+            this.segments = [];
             event.details = ErrorDetails.BUFFER_FULL_ERROR;
             hls.trigger(Event.ERROR,event);
+            return;
           }
         }
       }

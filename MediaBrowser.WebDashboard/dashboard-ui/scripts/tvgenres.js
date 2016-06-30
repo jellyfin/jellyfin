@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define([], function () {
 
     return function (view, params, tabContent) {
 
@@ -38,12 +38,19 @@
             return LibraryBrowser.getSavedQueryKey('genres');
         }
 
-        function reloadItems(context) {
+        function getPromise() {
 
             Dashboard.showLoadingMsg();
             var query = getQuery();
 
-            ApiClient.getGenres(Dashboard.getCurrentUserId(), query).then(function (result) {
+            return ApiClient.getGenres(Dashboard.getCurrentUserId(), query);
+        }
+
+        function reloadItems(context, promise) {
+
+            var query = getQuery();
+
+            promise.then(function (result) {
 
                 var html = '';
 
@@ -58,7 +65,7 @@
                         showItemCounts: true,
                         centerText: true,
                         lazy: true,
-                        overlayPlayButton: true
+                        overlayMoreButton: true
                     });
                 }
                 else if (viewStyle == "ThumbCard") {
@@ -93,7 +100,7 @@
                         centerText: true,
                         showItemCounts: true,
                         lazy: true,
-                        overlayPlayButton: true
+                        overlayMoreButton: true
                     });
                 }
 
@@ -117,22 +124,33 @@
         self.setCurrentViewStyle = function(viewStyle) {
             getPageData(tabContent).view = viewStyle;
             LibraryBrowser.saveViewSetting(getSavedQueryKey(tabContent), viewStyle);
-            reloadItems(tabContent);
+            fullyReload();
         };
 
         self.enableViewSelection = true;
+        var promise;
+
+        self.preRender = function () {
+            promise = getPromise();
+        };
 
         self.renderTab = function () {
 
-            reloadItems(tabContent);
+            reloadItems(tabContent, promise);
         };
 
-        tabContent.querySelector('.btnSelectView').addEventListener('click', function (e) {
+        function fullyReload() {
+            self.preRender();
+            self.renderTab();
+        }
+
+        var btnSelectView = tabContent.querySelector('.btnSelectView');
+        btnSelectView.addEventListener('click', function (e) {
 
             LibraryBrowser.showLayoutMenu(e.target, self.getCurrentViewStyle(), self.getViewStyles());
         });
 
-        tabContent.querySelector('.btnSelectView').addEventListener('layoutchange', function (e) {
+        btnSelectView.addEventListener('layoutchange', function (e) {
 
             self.setCurrentViewStyle(e.detail.viewStyle);
         });

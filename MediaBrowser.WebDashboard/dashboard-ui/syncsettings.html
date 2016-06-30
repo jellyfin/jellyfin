@@ -1,44 +1,48 @@
-﻿<div id="syncSettingsPage" data-role="page" class="page type-interior withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Sync" data-require="scripts/syncsettings,paper-checkbox,paper-input,paper-button,paper-icon-button-light">
+﻿<div id="syncSettingsPage" data-role="page" class="page type-interior withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Sync" data-require="scripts/syncsettings,paper-checkbox,emby-input,emby-button,paper-icon-button-light,material-icons">
 
     <div data-role="content">
         <div class="content-primary">
 
             <form class="syncSettingsForm">
 
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <paper-input type="text" id="txtSyncTempPath" label="${LabelSyncTempPath}" style="display: inline-block; width: 84%;"></paper-input>
-                        <button type="button" is="paper-icon-button-light" id="btnSelectSyncTempPath" title="${ButtonSelectDirectory}"><iron-icon icon="search"></iron-icon></button>
-                        <div class="fieldDescription">
-                            ${LabelSyncTempPathHelp}
+                <div class="inputContainer">
+                    <div style="display: flex; align-items: center;">
+                        <div style="flex-grow:1;">
+                            <input is="emby-input" type="text" id="txtSyncTempPath" label="${LabelSyncTempPath}" />
                         </div>
-                    </li>
-                    <li>
-                        <paper-input type="number" min="0" step=".5" id="txtUploadSpeedLimit" label="${LabelUploadSpeedLimit}"></paper-input>
-                    </li>
-                    <li>
-                        <paper-input type="number" min="0" max="8" step="1" id="txtCpuCoreLimit" label="${LabelConversionCpuCoreLimit}" required="required"></paper-input>
-                        <div class="fieldDescription">
-                            ${LabelConversionCpuCoreLimitHelp}
-                        </div>
-                    </li>
-                    <li>
-                        <paper-checkbox id="chkEnableFullSpeedConversion">${OptionEnableFullSpeedConversion}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">
-                            ${OptionEnableFullSpeedConversionHelp}
-                        </div>
-                    </li>
-                </ul>
+                        <button type="button" is="paper-icon-button-light" id="btnSelectSyncTempPath" title="${ButtonSelectDirectory}" class="autoSize"><i class="md-icon">search</i></button>
+                    </div>
+                    <div class="fieldDescription">${LabelSyncTempPathHelp}</div>
+                </div>
 
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <button type="submit" data-role="none" class="clearButton">
-                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                        </button>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" min="0" step=".5" id="txtUploadSpeedLimit" label="${LabelUploadSpeedLimit}" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" min="0" max="8" step="1" id="txtCpuCoreLimit" label="${LabelConversionCpuCoreLimit}" required="required" />
+                    <div class="fieldDescription">
+                        ${LabelConversionCpuCoreLimitHelp}
+                    </div>
+                </div>
+                <div>
+                    <paper-checkbox id="chkEnableFullSpeedConversion">${OptionEnableFullSpeedConversion}</paper-checkbox>
+                    <div class="fieldDescription paperCheckboxFieldDescription">
+                        ${OptionEnableFullSpeedConversionHelp}
+                    </div>
+                </div>
+                <br />
+                <br />
+                <div>
+                    <button is="emby-button" type="submit" class="raised submit block">
+                        <i class="md-icon">check</i>
+                        <span>${ButtonSave}</span>
+                    </button>
 
-                        <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
-                    </li>
-                </ul>
+                    <button is="emby-button" type="button" class="raised cancel block btnCancel" onclick="history.back();">
+                        <i class="md-icon">close</i>
+                        <span>${ButtonCancel}</span>
+                    </button>
+                </div>
             </form>
         </div>
     </div>

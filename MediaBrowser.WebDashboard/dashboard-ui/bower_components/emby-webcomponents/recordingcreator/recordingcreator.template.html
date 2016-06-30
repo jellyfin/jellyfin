@@ -1,5 +1,5 @@
 ﻿<div class="dialogHeader">
-    <button is="paper-icon-button-light" class="btnCancel" tabindex="-1"><iron-icon icon="nav:arrow-back"></iron-icon></button>
+    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">arrow_back</i></button>
     <div class="dialogHeaderTitle">
         ${HeaderNewRecording}
     </div>
@@ -14,49 +14,83 @@
 
         <div id="eligibleForSeriesFields" class="hide">
             <br />
-            <div>
-                <paper-checkbox id="chkRecordSeries">${RecordSeries}</paper-checkbox>
-            </div>
+            <label class="checkboxContainer">
+                <input type="checkbox" is="emby-checkbox" id="chkRecordSeries" />
+                <span>${RecordSeries}</span>
+            </label>
 
-            <div id="seriesFields" class="hide">
-                <div>
-                    <h1>${Days}</h1>
-                </div>
-                <div class="paperCheckboxList">
-                    <paper-checkbox id="chkSunday">${Sunday}</paper-checkbox>
-                    <paper-checkbox id="chkMonday">${Monday}</paper-checkbox>
-                    <paper-checkbox id="chkTuesday">${Tuesday}</paper-checkbox>
-                    <paper-checkbox id="chkWednesday">${Wednesday}</paper-checkbox>
-                    <paper-checkbox id="chkThursday">${Thursday}</paper-checkbox>
-                    <paper-checkbox id="chkFriday">${Friday}</paper-checkbox>
-                    <paper-checkbox id="chkSaturday">${Saturday}</paper-checkbox>
+            <div class="seriesFields hide">
+                <div class="checkboxList">
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" id="chkNewOnly" />
+                        <span>${RecordOnlyNewEpisodes}</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" id="chkAnyTime" />
+                        <span>${RecordAnytime}</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" id="chkAllChannels" />
+                        <span>${RecordOnAllChannels}</span>
+                    </label>
                 </div>
                 <br />
-                <div class="paperCheckboxList">
-                    <paper-checkbox id="chkNewOnly">${RecordOnlyNewEpisodes}</paper-checkbox>
-                    <paper-checkbox id="chkAnyTime">${RecordAnytime}</paper-checkbox>
-                    <paper-checkbox id="chkAllChannels">${RecordOnAllChannels}</paper-checkbox>
-                </div>
             </div>
         </div>
-        <div class="convertRecordingsContainer hide">
-            <br />
-            <paper-checkbox id="chkConvertRecordings">${OptionConvertRecordingsToStreamingFormat}</paper-checkbox>
-            <div class="fieldDescription paperCheckboxFieldDescription">${OptionConvertRecordingsToStreamingFormatHelp}</div>
-            <div class="fieldDescription paperCheckboxFieldDescription btnSupporterForConverting hide">
+        <div class="convertRecordingsContainer hide checkboxContainer">
+            <label>
+                <input type="checkbox" is="emby-checkbox" id="chkConvertRecordings" />
+                <span>${OptionConvertRecordingsToStreamingFormat}</span>
+            </label>
+            <div class="fieldDescription checkboxFieldDescription">${OptionConvertRecordingsToStreamingFormatHelp}</div>
+            <div class="fieldDescription checkboxFieldDescription btnSupporterForConverting hide">
                 <a href="#" class="accent lnkPremiere">${FeatureRequiresEmbyPremiere}</a>
             </div>
         </div>
         <div class="advanced hide">
-            <br />
-            <br />
             <emby-collapsible title="${Advanced}">
-                <div>
-                    <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
+                <div class="seriesDays hide">
+                    <div>
+                        <h1>${Days}</h1>
+                    </div>
+                    <div class="checkboxList">
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" id="chkSunday" />
+                            <span>${Sunday}</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" id="chkMonday" />
+                            <span>${Monday}</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" id="chkTuesday" />
+                            <span>${Tuesday}</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" id="chkWednesday" />
+                            <span>${Wednesday}</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" id="chkThursday" />
+                            <span>${Thursday}</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" id="chkFriday" />
+                            <span>${Friday}</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" id="chkSaturday" />
+                            <span>${Saturday}</span>
+                        </label>
+                    </div>
+                    <br />
                 </div>
                 <br />
-                <div>
-                    <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}" />
                 </div>
             </emby-collapsible>
             <br />
@@ -66,9 +100,15 @@
             <div class="supporterContainer hide">
                 <p>${MessageActiveSubscriptionRequiredSeriesRecordings}</p>
                 <p class="supporterTrial hide">${HeaderEnjoyDayTrial}</p>
-                <a class="clearLink btnSupporter hide" href="http://emby.media/premiere" target="_blank"><paper-button raised class="accent block"><iron-icon icon="nav:check"></iron-icon><span>${HeaderBecomeProjectSupporter}</span></paper-button></a>
+                <button is="emby-button" type="button" raised class="btnSupporter hide raised accent block">
+                    <i class="md-icon">check</i>
+                    <span>${HeaderBecomeProjectSupporter}</span>
+                </button>
             </div>
-            <paper-button raised class="btnSubmit block" autofocus><iron-icon icon="mediainfo:fiber-manual-record"></iron-icon><span>${Record}</span></paper-button>
+            <button is="emby-button" type="submit" class="raised btnSubmit block" autofocus>
+                <i class="md-icon">fiber_manual_record</i>
+                <span>${Record}</span>
+            </button>
         </div>
     </form>
 </div>

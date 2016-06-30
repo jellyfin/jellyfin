@@ -68,14 +68,15 @@
     <Compile Include="FFMpeg\FFMpegLoader.cs" />
     <Compile Include="FFMpeg\FFMpegInstallInfo.cs" />
     <Compile Include="FFMpeg\FFMpegInfo.cs" />
-    <Compile Include="FFMpeg\FFmpegValidator.cs" />
     <Compile Include="INativeApp.cs" />
     <Compile Include="MbLinkShortcutHandler.cs" />
+    <Compile Include="Migrations\CollectionGroupingMigration.cs" />
+    <Compile Include="Migrations\CollectionsViewMigration.cs" />
+    <Compile Include="Migrations\FolderViewSettingMigration.cs" />
     <Compile Include="Migrations\IVersionMigration.cs" />
     <Compile Include="Migrations\DbMigration.cs" />
     <Compile Include="Migrations\MovieDbEpisodeProviderMigration.cs" />
     <Compile Include="Migrations\OmdbEpisodeProviderMigration.cs" />
-    <Compile Include="Migrations\RenameXmlOptions.cs" />
     <Compile Include="NativeEnvironment.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StartupOptions.cs" />

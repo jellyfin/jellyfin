@@ -259,7 +259,8 @@
 
                 html += '<paper-icon-item>';
 
-                var isChecked = providerInfo.EnableAllTuners || providerInfo.EnabledTuners.indexOf(device.Id) != -1;
+                var enabledTuners = providerInfo.EnableAllTuners || [];
+                var isChecked = providerInfo.EnableAllTuners || enabledTuners.indexOf(device.Id) != -1;
                 var checkedAttribute = isChecked ? ' checked' : '';
                 html += '<paper-checkbox data-id="' + device.Id + '" class="chkTuner" item-icon ' + checkedAttribute + '></paper-checkbox>';
 

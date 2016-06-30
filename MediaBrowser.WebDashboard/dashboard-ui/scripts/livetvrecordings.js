@@ -1,21 +1,21 @@
-﻿define(['jQuery', 'scripts/livetvcomponents'], function ($) {
+﻿define(['scripts/livetvcomponents', 'emby-button', 'listViewStyle'], function () {
 
     function getRecordingGroupHtml(group) {
 
         var html = '';
 
-        html += '<paper-icon-item>';
+        html += '<div class="listItem">';
 
-        html += '<paper-fab mini class="blue" icon="live-tv" item-icon></paper-fab>';
+        html += '<button type="button" is="emby-button" class="fab mini autoSize blue" item-icon><i class="md-icon">live_tv</i></button>';
 
-        html += '<paper-item-body two-line>';
+        html += '<div class="listItemBody two-line">';
         html += '<a href="livetvrecordinglist.html?groupid=' + group.Id + '" class="clearLink">';
 
         html += '<div>';
         html += group.Name;
         html += '</div>';
 
-        html += '<div secondary>';
+        html += '<div class="secondary">';
         if (group.RecordingCount == 1) {
             html += Globalize.translate('ValueItemCount', group.RecordingCount);
         } else {
@@ -24,8 +24,8 @@
         html += '</div>';
 
         html += '</a>';
-        html += '</paper-item-body>';
-        html += '</paper-icon-item>';
+        html += '</div>';
+        html += '</div>';
 
         return html;
     }
@@ -33,9 +33,9 @@
     function renderRecordingGroups(context, groups) {
 
         if (groups.length) {
-            $('#recordingGroups', context).show();
+            context.querySelector('#recordingGroups').classList.remove('hide');
         } else {
-            $('#recordingGroups', context).hide();
+            context.querySelector('#recordingGroups').classList.add('hide');
         }
 
         var html = '';
@@ -73,7 +73,7 @@
         } else {
             recordingItems.classList.remove('hiddenScrollX');
         }
-         
+
         recordingItems.innerHTML = LibraryBrowser.getPosterViewHtml({
             items: recordings,
             shape: (enableScrollX() ? 'autooverflow' : 'auto'),
@@ -89,17 +89,33 @@
 
     function renderActiveRecordings(context) {
 
-        ApiClient.getLiveTvRecordings({
+        ApiClient.getLiveTvTimers({
 
-            userId: Dashboard.getCurrentUserId(),
-            IsInProgress: true,
-            Fields: 'CanDelete'
+            IsActive: true
 
         }).then(function (result) {
 
-            renderRecordings(context.querySelector('#activeRecordings'), result.Items);
+            // The IsActive param is new, so handle older servers that don't support it
+            if (result.Items.length && result.Items[0].Status != 'InProgress') {
+                result.Items = [];
+            }
 
+            renderTimers(context.querySelector('#activeRecordings'), result.Items, {
+                indexByDate: false
+            });
         });
+
+        //ApiClient.getLiveTvRecordings({
+
+        //    userId: Dashboard.getCurrentUserId(),
+        //    IsInProgress: true,
+        //    Fields: 'CanDelete'
+
+        //}).then(function (result) {
+
+        //    renderRecordings(context.querySelector('#activeRecordings'), result.Items);
+
+        //});
     }
 
     function renderLatestRecordings(context) {
@@ -109,7 +125,8 @@
             userId: Dashboard.getCurrentUserId(),
             limit: enableScrollX() ? 12 : 4,
             IsInProgress: false,
-            Fields: 'CanDelete,PrimaryImageAspectRatio'
+            Fields: 'CanDelete,PrimaryImageAspectRatio',
+            EnableTotalRecordCount: false
 
         }).then(function (result) {
 
@@ -117,11 +134,11 @@
         });
     }
 
-    function renderTimers(context, timers) {
+    function renderTimers(context, timers, options) {
 
-        LiveTvHelpers.getTimersHtml(timers).then(function (html) {
+        LiveTvHelpers.getTimersHtml(timers, options).then(function (html) {
 
-            var elem = context.querySelector('#upcomingRecordings');
+            var elem = context;
 
             if (html) {
                 elem.classList.remove('hide');
@@ -132,15 +149,17 @@
             elem.querySelector('.recordingItems').innerHTML = html;
 
             ImageLoader.lazyChildren(elem);
-            $(elem).createCardMenus();
+            LibraryBrowser.createCardMenus(elem);
         });
     }
 
     function renderUpcomingRecordings(context) {
 
-        ApiClient.getLiveTvTimers().then(function (result) {
+        ApiClient.getLiveTvTimers({
+            IsActive: false
+        }).then(function (result) {
 
-            renderTimers(context, result.Items);
+            renderTimers(context.querySelector('#upcomingRecordings'), result.Items);
         });
     }
 
@@ -158,15 +177,16 @@
 
         }).then(function (result) {
 
-            require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
-                renderRecordingGroups(context, result.Items);
-            });
+            renderRecordingGroups(context, result.Items);
         });
     }
 
     return function (view, params, tabContent) {
 
         var self = this;
+        tabContent.querySelector('#activeRecordings .recordingItems').addEventListener('timercancelled', function () {
+            reload(tabContent);
+        });
         tabContent.querySelector('#upcomingRecordings .recordingItems').addEventListener('timercancelled', function () {
             reload(tabContent);
         });

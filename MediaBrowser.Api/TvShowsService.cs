@@ -12,6 +12,8 @@ using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Api
 {
@@ -271,29 +273,51 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetSimilarShows request)
+        public async Task<object> Get(GetSimilarShows request)
         {
-            var dtoOptions = GetDtoOptions(request);
-
-            var result = SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
-                _itemRepo,
-                _libraryManager,
-                _userDataManager,
-                _dtoService,
-                Logger,
-                request, new[] { typeof(Series) },
-                SimilarItemsHelper.GetSimiliarityScore);
+            var result = await GetSimilarItemsResult(request).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
-        public object Get(GetUpcomingEpisodes request)
+        private async Task<QueryResult<BaseItemDto>> GetSimilarItemsResult(BaseGetSimilarItemsFromItem request)
+        {
+            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
+
+            var item = string.IsNullOrEmpty(request.Id) ?
+                (!string.IsNullOrWhiteSpace(request.UserId) ? user.RootFolder :
+                _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
+
+            var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
+            {
+                Limit = request.Limit,
+                IncludeItemTypes = new[]
+                {
+                        typeof(Series).Name
+                },
+                SimilarTo = item
+
+            }).ToList();
+
+            var dtoOptions = GetDtoOptions(request);
+
+            var result = new QueryResult<BaseItemDto>
+            {
+                Items = (await _dtoService.GetBaseItemDtos(itemsResult, dtoOptions, user).ConfigureAwait(false)).ToArray(),
+
+                TotalRecordCount = itemsResult.Count
+            };
+
+            return result;
+        }
+
+        public async Task<object> Get(GetUpcomingEpisodes request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
             var minPremiereDate = DateTime.Now.Date.ToUniversalTime().AddDays(-1);
 
-            var parentIds = string.IsNullOrWhiteSpace(request.ParentId) ? new string[] { } : new[] { request.ParentId };
+            var parentIdGuid = string.IsNullOrWhiteSpace(request.ParentId) ? (Guid?)null : new Guid(request.ParentId);
 
             var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
@@ -302,13 +326,15 @@ namespace MediaBrowser.Api
                 SortOrder = SortOrder.Ascending,
                 MinPremiereDate = minPremiereDate,
                 StartIndex = request.StartIndex,
-                Limit = request.Limit
+                Limit = request.Limit,
+                ParentId = parentIdGuid,
+                Recursive = true
 
-            }, parentIds).ToList();
+            }).ToList();
 
             var options = GetDtoOptions(request);
 
-            var returnItems = _dtoService.GetBaseItemDtos(itemsResult, options, user).ToArray();
+            var returnItems = (await _dtoService.GetBaseItemDtos(itemsResult, options, user).ConfigureAwait(false)).ToArray();
 
             var result = new ItemsResult
             {
@@ -324,7 +350,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetNextUpEpisodes request)
+        public async Task<object> Get(GetNextUpEpisodes request)
         {
             var result = _tvSeriesManager.GetNextUp(new NextUpQuery
             {
@@ -339,7 +365,7 @@ namespace MediaBrowser.Api
 
             var options = GetDtoOptions(request);
 
-            var returnItems = _dtoService.GetBaseItemDtos(result.Items, options, user).ToArray();
+            var returnItems = (await _dtoService.GetBaseItemDtos(result.Items, options, user).ConfigureAwait(false)).ToArray();
 
             return ToOptimizedSerializedResultUsingCache(new ItemsResult
             {
@@ -372,7 +398,7 @@ namespace MediaBrowser.Api
             return items;
         }
 
-        public object Get(GetSeasons request)
+        public async Task<object> Get(GetSeasons request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -403,7 +429,7 @@ namespace MediaBrowser.Api
 
             var dtoOptions = GetDtoOptions(request);
 
-            var returnItems = _dtoService.GetBaseItemDtos(seasons, dtoOptions, user)
+            var returnItems = (await _dtoService.GetBaseItemDtos(seasons, dtoOptions, user).ConfigureAwait(false))
                 .ToArray();
 
             return new ItemsResult
@@ -430,7 +456,7 @@ namespace MediaBrowser.Api
             return items;
         }
 
-        public object Get(GetEpisodes request)
+        public async Task<object> Get(GetEpisodes request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -512,7 +538,7 @@ namespace MediaBrowser.Api
 
             var dtoOptions = GetDtoOptions(request);
 
-            var dtos = _dtoService.GetBaseItemDtos(pagedItems, dtoOptions, user)
+            var dtos = (await _dtoService.GetBaseItemDtos(pagedItems, dtoOptions, user).ConfigureAwait(false))
                 .ToArray();
 
             return new ItemsResult

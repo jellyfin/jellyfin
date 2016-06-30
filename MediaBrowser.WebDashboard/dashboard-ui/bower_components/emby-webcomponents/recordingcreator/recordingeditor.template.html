@@ -1,13 +1,13 @@
-﻿<div class="dialogHeader" style="margin:0 0 2em;">
-    <button is="paper-icon-button-light" class="btnCancel" tabindex="-1"><iron-icon icon="arrow-back"></iron-icon></button>
+﻿<div class="dialogHeader">
+    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">arrow_back</i></button>
     <div class="dialogHeaderTitle">
         ${Edit}
     </div>
     <div style="margin-left:auto; display: flex; align-items: center; justify-content: center;">
-        <paper-button class="btnHeaderSave accent" tabindex="-1">
-            <iron-icon icon="check"></iron-icon>
+        <button is="emby-button" type="button" class="btnHeaderSave accent" tabindex="-1">
+            <i class="md-icon">check</i>
             <span>${Save}</span>
-        </paper-button>
+        </button>
     </div>
 </div>
 
@@ -24,15 +24,18 @@
         </p>
 
         <form>
-            <div>
-                <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
+            <br />
+            <div class="inputContainer">
+                <input is="emby-input" type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}" />
+            </div>
+            <div class="inputContainer">
+                <input is="emby-input" type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}" />
             </div>
             <br />
-            <div>
-                <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
-            </div>
-            <br />
-            <paper-button raised class="btnSubmit block" autofocus><iron-icon icon="mediainfo:fiber-manual-record"></iron-icon><span>${Save}</span></paper-button>
+            <button is="emby-button" type="submit" class="raised btnSubmit block" autofocus>
+                <i class="md-icon">fiber_manual_record</i>
+                <span>${Save}</span>
+            </button>
         </form>
     </div>
 </div>

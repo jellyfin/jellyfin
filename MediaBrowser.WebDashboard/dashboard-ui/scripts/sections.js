@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'jQuery', 'appSettings', 'scrollStyles', 'paper-button', 'paper-icon-button-light'], function (LibraryBrowser, $, appSettings) {
+﻿define(['libraryBrowser', 'appSettings', 'scrollStyles', 'emby-button', 'paper-icon-button-light'], function (LibraryBrowser, appSettings) {
 
     function getUserViews(userId) {
 
@@ -143,8 +143,6 @@
             return getAppInfo().then(function (infoHtml) {
 
                 elem.innerHTML = html + infoHtml;
-
-                handleLibraryLinkNavigations(elem);
             });
         });
     }
@@ -192,22 +190,45 @@
                 infos.push(getTheaterInfo);
             }
 
+            if (!AppInfo.enableAppLayouts) {
+                infos.push(getUpgradeMobileLayoutsInfo);
+            }
+
             appSettings.set(cacheKey, new Date().getTime());
 
-            return infos[getRandomInt(0, 1)]();
+            return infos[getRandomInt(0, infos.length - 1)]();
         });
     }
 
-    function getCard(img, target) {
+    function getCard(img, target, shape) {
 
-        return '<div class="card backdropCard"><div class="cardBox"><div class="cardScalable"><div class="cardPadder"></div><a class="cardContent" href="' + target + '" target="_blank"><div class="cardImage lazy" data-src="' + img + '"></div></a></div></div></div>';
+        shape = shape || 'backdropCard';
+        var html = '<div class="card ' + shape + '"><div class="cardBox"><div class="cardScalable"><div class="cardPadder"></div>';
+
+        if (target) {
+            html += '<a class="cardContent" href="' + target + '" target="_blank">';
+        } else {
+            html += '<div class="cardContent">';
+        }
+
+        html += '<div class="cardImage lazy" data-src="' + img + '"></div>';
+
+        if (target) {
+            html += '</a>';
+        } else {
+            html += '</div>';
+        }
+
+        html += '</div></div></div>';
+
+        return html;
     }
 
     function getTheaterInfo() {
 
         var html = '';
         html += '<div>';
-        html += '<h1>Try Emby Theater<button is="paper-icon-button-light" style="margin-left:1em;" onclick="jQuery(this.parentNode.parentNode).remove();"><iron-icon icon="close"></iron-icon></button></h1>';
+        html += '<h1>Try Emby Theater<button is="paper-icon-button-light" style="margin-left:1em;" onclick="this.parentNode.parentNode.remove();"><iron-icon icon="close"></iron-icon></button></h1>';
 
         var nameText = AppInfo.isNativeApp ? 'Emby Theater' : '<a href="https://emby.media/download" target="_blank">Emby Theater</a>';
         html += '<p>A beautiful app for your TV and large screen tablet. ' + nameText + ' runs on Windows, Xbox One, Google Chrome, FireFox, Microsoft Edge and Opera.</p>';
@@ -225,15 +246,34 @@
 
         var html = '';
         html += '<div>';
-        html += '<h1>Try Emby Premiere<button is="paper-icon-button-light" style="margin-left:1em;" onclick="jQuery(this.parentNode.parentNode).remove();"><iron-icon icon="close"></iron-icon></button></h1>';
+        html += '<h1>Try Emby Premiere<button is="paper-icon-button-light" style="margin-left:1em;" onclick="this.parentNode.parentNode.remove();"><iron-icon icon="close"></iron-icon></button></h1>';
 
+        var cardTarget = AppInfo.isNativeApp ? '' : 'https://emby.media/premiere';
         var learnMoreText = AppInfo.isNativeApp ? '' : '<a href="https://emby.media/premiere" target="_blank">Learn more</a>';
 
         html += '<p>Design beautiful Cover Art, enjoy free access to Emby apps, and more. ' + learnMoreText + '</p>';
         html += '<div class="itemsContainer">';
-        html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/theater1.png', 'https://emby.media/premiere');
-        html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/theater2.png', 'https://emby.media/premiere');
-        html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/theater3.png', 'https://emby.media/premiere');
+        html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/theater1.png', cardTarget);
+        html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/theater2.png', cardTarget);
+        html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/theater3.png', cardTarget);
+        html += '</div>';
+        html += '<br/>';
+        html += '</div>';
+        return html;
+    }
+
+    function getUpgradeMobileLayoutsInfo() {
+        var html = '';
+        html += '<div>';
+        html += '<h1>Unlock Improved Layouts with Emby Premiere<button is="paper-icon-button-light" style="margin-left:1em;" onclick="this.parentNode.parentNode.remove();"><iron-icon icon="close"></iron-icon></button></h1>';
+
+        var cardTarget = AppInfo.isNativeApp ? '' : 'https://emby.media/premiere';
+        var learnMoreText = AppInfo.isNativeApp ? '' : '<a href="https://emby.media/premiere" target="_blank">Learn more</a>';
+
+        html += '<p>Combined horizontal and vertical swiping, better detail layouts, and more. ' + learnMoreText + '</p>';
+        html += '<div class="itemsContainer">';
+        html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/ms1.png', cardTarget, 'portraitCard');
+        html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/ms2.png', cardTarget, 'portraitCard');
         html += '</div>';
         html += '<br/>';
         html += '</div>';
@@ -378,7 +418,7 @@
 
     function loadLatestChannelMedia(elem, userId) {
 
-        var screenWidth = $(window).width();
+        var screenWidth = window.innerWidth;
 
         var options = {
 
@@ -428,7 +468,7 @@
 
             if (items.length) {
 
-                var screenWidth = $(window).width();
+                var screenWidth = window.innerWidth;
 
                 html += '<div>';
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyMedia') + '</h1>';
@@ -468,15 +508,13 @@
                 ImageLoader.lazyChildren(elem);
 
                 LibraryBrowser.createCardMenus(elem, { showDetailsMenu: false });
-
-                handleLibraryLinkNavigations(elem);
             });
         });
     }
 
     function loadResume(elem, userId) {
 
-        var screenWidth = $(window).width();
+        var screenWidth = window.innerWidth;
 
         var options = {
 
@@ -572,26 +610,9 @@
         });
     }
 
-    function handleLibraryLinkNavigations(elem) {
-
-        $('a', elem).on('click', function () {
-
-            var card = this;
-
-            if (!this.classList.contains('card')) {
-                card = $(this).parents('.card')[0];
-            }
-
-            var textElem = $('.cardText', card);
-            var text = textElem.text();
-
-            LibraryMenu.setTitle(text);
-        });
-    }
-
     function loadLatestChannelItems(elem, userId, options) {
 
-        options = $.extend(options || {}, {
+        options = Object.assign(options || {}, {
 
             UserId: userId,
             SupportsLatestItems: true
@@ -621,7 +642,7 @@
 
     function loadLatestChannelItemsFromChannel(page, channel, index) {
 
-        var screenWidth = $(window).width();
+        var screenWidth = window.innerWidth;
 
         var options = {
 
@@ -643,7 +664,7 @@
                 html += '<div>';
                 var text = Globalize.translate('HeaderLatestFromChannel').replace('{0}', channel.Name);
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="listHeader">' + text + '</h1>';
-                html += '<a href="channelitems.html?id=' + channel.Id + '" class="clearLink" style="margin-left:2em;"><paper-button raised class="more mini"><span>' + Globalize.translate('ButtonMore') + '</span></paper-button></a>';
+                html += '<a href="channelitems.html?id=' + channel.Id + '" class="clearLink" style="margin-left:2em;"><button is="emby-button" type="button" class="raised more mini"><span>' + Globalize.translate('ButtonMore') + '</span></button></a>';
                 html += '</div>';
 
                 html += '<div class="itemsContainer">';
@@ -676,7 +697,8 @@
             userId: userId,
             limit: 5,
             Fields: "PrimaryImageAspectRatio,SyncInfo",
-            IsInProgress: false
+            IsInProgress: false,
+            EnableTotalRecordCount: false
 
         }).then(function (result) {
 
@@ -688,7 +710,7 @@
 
                 html += '<div>';
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + Globalize.translate('HeaderLatestTvRecordings') + '</h1>';
-                html += '<a href="livetv.html?tab=3" onclick="LibraryBrowser.showTab(\'livetv.html\',3);" class="clearLink" style="margin-left:2em;"><paper-button raised class="more mini"><span>' + Globalize.translate('ButtonMore') + '</span></paper-button></a>';
+                html += '<a href="livetv.html?tab=3" onclick="LibraryBrowser.showTab(\'livetv.html\',3);" class="clearLink" style="margin-left:2em;"><button is="emby-button" type="button" class="raised more mini"><span>' + Globalize.translate('ButtonMore') + '</span></button></a>';
                 html += '</div>';
             }
 

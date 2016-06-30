@@ -1,4 +1,4 @@
-﻿<div id="librarySettingsPage" data-role="page" class="page type-interior librarySectionPage withTabs" data-require="emby-collapsible,scripts/librarysettings,paper-input,paper-checkbox,paper-button">
+﻿<div id="librarySettingsPage" data-role="page" class="page type-interior librarySectionPage withTabs">
 
     <div data-role="content">
         <div class="content-primary">
@@ -35,19 +35,6 @@
                         <br /><br />
                     </li>
                 </ul>
-
-                <emby-collapsible title="${HeaderAutomaticUpdates}" class="hide">
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <paper-checkbox id="chkEnableTmdbUpdates">${LabelAutomaticUpdatesTmdb}</paper-checkbox>
-                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelAutomaticUpdatesTmdbHelp}</div>
-                        </li>
-                        <li>
-                            <paper-checkbox id="chkEnableTvdbUpdates">${LabelAutomaticUpdatesTvdb}</paper-checkbox>
-                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelAutomaticUpdatesTvdbHelp}</div>
-                        </li>
-                    </ul>
-                </emby-collapsible>
 
                 <emby-collapsible title="${HeaderAudio}">
                     <br />
@@ -131,19 +118,12 @@
                             <div class="fieldDescription">${LabelFanartApiKeyHelp}</div>
                             <div class="fieldDescription"><a href="https://fanart.tv/2015/01/personal-api-keys" target="_blank">${ButtonLearnMore}</a></div>
                         </li>
-                        <li style="display:none;">
-                            <input type="checkbox" id="chkEnableFanartUpdates" data-mini="true" />
-                            <label for="chkEnableFanartUpdates">${LabelAutomaticUpdates}</label>
-                            <div class="fieldDescription">${LabelAutomaticUpdatesFanartHelp}</div>
-                        </li>
                     </ul>
                 </emby-collapsible>
 
                 <br />
                 <br />
-                <button type="submit" data-role="none" class="clearButton">
-                    <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                </button>
+                <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
 
             </form>
 

@@ -1,6 +1,9 @@
-﻿using MediaBrowser.Controller.Entities.TV;
+﻿using System;
+using System.IO;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using System.Linq;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 {
@@ -37,7 +40,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
             }
 
             // If the parent is a Season or Series, then this is an Episode if the VideoResolver returns something
-            if (season != null || args.HasParent<Series>())
+            // Also handle flat tv folders
+            if (season != null || args.HasParent<Series>() || string.Equals(args.GetCollectionType(), CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
             {
                 var episode = ResolveVideo<Episode>(args, false);
 

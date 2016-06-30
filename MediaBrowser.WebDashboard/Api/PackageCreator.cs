@@ -258,7 +258,6 @@ namespace MediaBrowser.WebDashboard.Api
 
                     if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
                     {
-                        html = ModifyForCordova(html);
                     }
                     else if (!string.IsNullOrWhiteSpace(path) && !string.Equals(path, "index.html", StringComparison.OrdinalIgnoreCase))
                     {
@@ -274,7 +273,7 @@ namespace MediaBrowser.WebDashboard.Api
                         }
                         var mainFile = File.ReadAllText(GetDashboardResourcePath("index.html"));
 
-                        html = ReplaceFirst(mainFile, "<div class=\"mainAnimatedPage hide\"></div>", "<div class=\"mainAnimatedPage hide\">" + html + "</div>");
+                        html = ReplaceFirst(mainFile, "<div class=\"mainAnimatedPages skinBody\"></div>", "<div class=\"mainAnimatedPages skinBody hide\">" + html + "</div>");
                     }
 
                     if (!string.IsNullOrWhiteSpace(localizationCulture))
@@ -337,41 +336,6 @@ namespace MediaBrowser.WebDashboard.Api
                 return text;
             }
             return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
-        }
-
-        private string ModifyForCordova(string html)
-        {
-            // Replace CORDOVA_REPLACE_SUPPORTER_SUBMIT_START
-            html = ReplaceBetween(html, "<!--CORDOVA_REPLACE_SUPPORTER_SUBMIT_START-->", "<!--CORDOVA_REPLACE_SUPPORTER_SUBMIT_END-->", "<i class=\"fa fa-check\"></i><span>${ButtonPurchase}</span>");
-
-            return html;
-        }
-
-        private string ReplaceBetween(string html, string startToken, string endToken, string newHtml)
-        {
-            var start = html.IndexOf(startToken, StringComparison.OrdinalIgnoreCase);
-
-            if (start == -1)
-            {
-                return html;
-            }
-
-            var end = html.IndexOf(endToken, start, StringComparison.OrdinalIgnoreCase);
-
-            if (end == -1)
-            {
-                return html;
-            }
-
-            string result = html.Substring(start, end - start);
-            html = html.Replace(result, newHtml);
-
-            return ReplaceBetween(html, startToken, endToken, newHtml);
-        }
-
-        private string GetLocalizationToken(string phrase)
-        {
-            return "${" + phrase + "}";
         }
 
         /// <summary>

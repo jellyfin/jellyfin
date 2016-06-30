@@ -63,8 +63,9 @@ class XhrLoader {
       xhr.setRequestHeader('Range', 'bytes=' + this.byteRange);
     }
     xhr.responseType = this.responseType;
-    this.stats.tfirst = null;
-    this.stats.loaded = 0;
+    let stats = this.stats;
+    stats.tfirst = 0;
+    stats.loaded = 0;
     if (this.xhrSetup) {
       this.xhrSetup(xhr, this.url);
     }
@@ -81,7 +82,7 @@ class XhrLoader {
         // http status between 200 to 299 are all successful
         if (status >= 200 && status < 300)  {
           window.clearTimeout(this.timeoutHandle);
-          stats.tload = performance.now();
+          stats.tload = Math.max(stats.tfirst,performance.now());
           this.onSuccess(event, stats);
       } else {
         // error ...
@@ -108,8 +109,8 @@ class XhrLoader {
 
   loadprogress(event) {
     var stats = this.stats;
-    if (stats.tfirst === null) {
-      stats.tfirst = performance.now();
+    if (stats.tfirst === 0) {
+      stats.tfirst = Math.max(performance.now(), stats.trequest);
     }
     stats.loaded = event.loaded;
     if (this.onProgress) {

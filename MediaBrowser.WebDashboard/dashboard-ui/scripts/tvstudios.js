@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define([], function () {
 
     // The base query options
     var data = {};
@@ -21,7 +21,6 @@
             };
 
             pageData.query.ParentId = params.topParentId;
-            LibraryBrowser.loadSavedQueryValues(key, pageData.query);
         }
         return pageData.query;
     }
@@ -31,13 +30,17 @@
         return LibraryBrowser.getSavedQueryKey('studios');
     }
 
-    function reloadItems(context, params) {
+    function getPromise(context, params) {
 
         var query = getQuery(params);
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getStudios(Dashboard.getCurrentUserId(), query).then(function (result) {
+        return ApiClient.getStudios(Dashboard.getCurrentUserId(), query);
+    }
+    function reloadItems(context, params, promise) {
+
+        promise.then(function (result) {
 
             var html = '';
 
@@ -57,17 +60,21 @@
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
 
-            LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
             Dashboard.hideLoadingMsg();
         });
     }
     return function (view, params, tabContent) {
 
         var self = this;
+        var promise;
+
+        self.preRender = function () {
+            promise = getPromise(view, params);
+        };
 
         self.renderTab = function () {
 
-            reloadItems(tabContent, params);
+            reloadItems(tabContent, params, promise);
         };
     };
 });

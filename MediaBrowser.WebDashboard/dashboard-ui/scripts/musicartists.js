@@ -1,10 +1,11 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker'], function (events, libraryBrowser, imageLoader, alphaPicker) {
 
     return function (view, params, tabContent) {
 
         var self = this;
 
         var data = {};
+
         function getPageData(context) {
             var key = getSavedQueryKey(context);
             var pageData = data[key];
@@ -21,11 +22,11 @@
                         EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
                         Limit: LibraryBrowser.getDefaultPageSize()
                     },
-                    view: LibraryBrowser.getSavedView(key) || LibraryBrowser.getDefaultItemsView('Poster', 'Poster')
+                    view: libraryBrowser.getSavedView(key) || libraryBrowser.getDefaultItemsView('Poster', 'Poster')
                 };
 
-                pageData.query.ParentId = LibraryMenu.getTopParentId();
-                LibraryBrowser.loadSavedQueryValues(key, pageData.query);
+                pageData.query.ParentId = params.topParentId;
+                libraryBrowser.loadSavedQueryValues(key, pageData.query);
             }
             return pageData;
         }
@@ -38,7 +39,7 @@
         function getSavedQueryKey(context) {
 
             if (!context.savedQueryKey) {
-                context.savedQueryKey = LibraryBrowser.getSavedQueryKey('artists');
+                context.savedQueryKey = LibraryBrowser.getSavedQueryKey(self.mode);
             }
             return context.savedQueryKey;
         }
@@ -49,30 +50,32 @@
 
             var query = getQuery(page);
 
-            ApiClient.getArtists(Dashboard.getCurrentUserId(), query).then(function (result) {
+            var promise = self.mode == 'albumartists' ?
+                ApiClient.getAlbumArtists(Dashboard.getCurrentUserId(), query) :
+                ApiClient.getArtists(Dashboard.getCurrentUserId(), query);
+
+            promise.then(function (result) {
 
                 // Scroll back up so they can see the results from the beginning
                 window.scrollTo(0, 0);
 
-                var view = getPageData(page).view;
+                updateFilterControls(page);
 
-                var html = '';
                 var pagingHtml = LibraryBrowser.getQueryPagingHtml({
                     startIndex: query.StartIndex,
                     limit: query.Limit,
                     totalRecordCount: result.TotalRecordCount,
                     showLimit: false,
                     updatePageSizeSetting: false,
-                    addLayoutButton: true,
-                    currentLayout: view,
-                    filterButton: true
+                    addLayoutButton: false,
+                    sortButton: false,
+                    filterButton: false
                 });
 
-                page.querySelector('.listTopPaging').innerHTML = pagingHtml;
+                var html;
+                var viewStyle = self.getCurrentViewStyle();
 
-                updateFilterControls(page);
-
-                if (view == "List") {
+                if (viewStyle == "List") {
 
                     html = LibraryBrowser.getListViewHtml({
                         items: result.Items,
@@ -80,19 +83,7 @@
                         sortBy: query.SortBy
                     });
                 }
-                else if (view == "Poster") {
-                    html = LibraryBrowser.getPosterViewHtml({
-                        items: result.Items,
-                        shape: "square",
-                        context: 'music',
-                        showTitle: true,
-                        coverImage: true,
-                        lazy: true,
-                        centerText: true,
-                        overlayPlayButton: true
-                    });
-                }
-                else if (view == "PosterCard") {
+                else if (viewStyle == "PosterCard") {
 
                     html = LibraryBrowser.getPosterViewHtml({
                         items: result.Items,
@@ -105,47 +96,69 @@
                         showSongCount: true
                     });
                 }
+                else {
 
-                var elem = page.querySelector('#items');
-                elem.innerHTML = html + pagingHtml;
-                ImageLoader.lazyChildren(elem);
+                    // Poster
+                    html = LibraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "square",
+                        context: 'music',
+                        showTitle: true,
+                        coverImage: true,
+                        lazy: true,
+                        centerText: true,
+                        overlayPlayButton: true
+                    });
+                }
 
-                $('.btnNextPage', page).on('click', function () {
+                var i, length;
+                var elems = tabContent.querySelectorAll('.paging');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].innerHTML = pagingHtml;
+                }
+
+                function onNextPageClick() {
                     query.StartIndex += query.Limit;
-                    reloadItems(page);
-                });
+                    reloadItems(tabContent);
+                }
 
-                $('.btnPreviousPage', page).on('click', function () {
+                function onPreviousPageClick() {
                     query.StartIndex -= query.Limit;
-                    reloadItems(page);
-                });
+                    reloadItems(tabContent);
+                }
 
-                $('.btnChangeLayout', page).on('layoutchange', function (e, layout) {
-                    getPageData(page).view = layout;
-                    LibraryBrowser.saveViewSetting(getSavedQueryKey(page), layout);
-                    reloadItems(page);
-                });
+                elems = tabContent.querySelectorAll('.btnNextPage');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onNextPageClick);
+                }
 
-                $('.btnFilter', page).on('click', function () {
-                    showFilterMenu(page);
-                });
+                elems = tabContent.querySelectorAll('.btnPreviousPage');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onPreviousPageClick);
+                }
 
-                LibraryBrowser.saveQueryValues(getSavedQueryKey(page), query);
+                var itemsContainer = tabContent.querySelector('.itemsContainer');
+                itemsContainer.innerHTML = html;
+                imageLoader.lazyChildren(itemsContainer);
+
+                libraryBrowser.saveQueryValues(getSavedQueryKey(page), query);
+
                 Dashboard.hideLoadingMsg();
             });
         }
 
-        function showFilterMenu(page) {
+        self.showFilterMenu = function () {
 
             require(['components/filterdialog/filterdialog'], function (filterDialogFactory) {
 
                 var filterDialog = new filterDialogFactory({
-                    query: getQuery(page),
-                    mode: 'artists'
+                    query: getQuery(tabContent),
+                    mode: self.mode
                 });
 
                 Events.on(filterDialog, 'filterchange', function () {
-                    reloadItems(page);
+                    getQuery(tabContent).StartIndex = 0;
+                    reloadItems(tabContent);
                 });
 
                 filterDialog.show();
@@ -155,30 +168,59 @@
         function updateFilterControls(tabContent) {
 
             var query = getQuery(tabContent);
-
-            $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWithOrGreater);
+            self.alphaPicker.value(query.NameStartsWithOrGreater);
         }
 
-        $('.alphabetPicker', tabContent).on('alphaselect', function (e, character) {
+        function initPage(tabContent) {
 
-            var query = getQuery(tabContent);
+            var alphaPickerElement = tabContent.querySelector('.alphaPicker');
+            alphaPickerElement.addEventListener('alphavaluechanged', function (e) {
+                var newValue = e.detail.value;
+                var query = getQuery(tabContent);
+                query.NameStartsWithOrGreater = newValue;
+                query.StartIndex = 0;
+                reloadItems(tabContent);
+            });
 
-            query.NameStartsWithOrGreater = character;
-            query.StartIndex = 0;
+            self.alphaPicker = new alphaPicker({
+                element: alphaPickerElement,
+                valueChangeEvent: 'click'
+            });
+
+            tabContent.querySelector('.btnFilter').addEventListener('click', function () {
+                self.showFilterMenu();
+            });
+
+            var btnSelectView = tabContent.querySelector('.btnSelectView');
+            btnSelectView.addEventListener('click', function (e) {
+
+                libraryBrowser.showLayoutMenu(e.target, self.getCurrentViewStyle(), 'List,Poster,PosterCard'.split(','));
+            });
+
+            btnSelectView.addEventListener('layoutchange', function (e) {
+
+                var viewStyle = e.detail.viewStyle;
+
+                getPageData(tabContent).view = viewStyle;
+                libraryBrowser.saveViewSetting(getSavedQueryKey(tabContent), viewStyle);
+                getQuery(tabContent).StartIndex = 0;
+                reloadItems(tabContent);
+            });
+        }
+
+        self.getCurrentViewStyle = function () {
+            return getPageData(tabContent).view;
+        };
+
+        initPage(tabContent);
+
+        self.renderTab = function () {
 
             reloadItems(tabContent);
+            updateFilterControls(tabContent);
+        };
 
-        }).on('alphaclear', function (e) {
-
-            var query = getQuery(tabContent);
-
-            query.NameStartsWithOrGreater = '';
-
-            reloadItems(tabContent);
-        });
-        self.renderTab = function () {
-
-            reloadItems(tabContent);
+        self.destroy = function () {
         };
     };
 });

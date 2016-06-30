@@ -4,7 +4,7 @@
 script[type='text/plain'].lang-markup,
 script[type='text/plain'].language-markup {
 	display: block;
-	font: 100% Consolas, Monaco, monoscpace;
+	font: 100% Consolas, Monaco, monospace;
 	white-space: pre;
 	overflow: auto;
 }

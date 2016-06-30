@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using MediaBrowser.Controller.Power;
+using MediaBrowser.Model.System;
 using MediaBrowser.Server.Implementations.Persistence;
 using MediaBrowser.Server.Startup.Common.FFMpeg;
 using OperatingSystem = MediaBrowser.Server.Startup.Common.OperatingSystem;
@@ -176,7 +177,7 @@ namespace MediaBrowser.Server.Mono.Native
             }
             else if (string.Equals(uname.machine, "x86_64", StringComparison.OrdinalIgnoreCase))
             {
-                info.SystemArchitecture = Architecture.X86_X64;
+                info.SystemArchitecture = Architecture.X64;
             }
             else if (uname.machine.StartsWith("arm", StringComparison.OrdinalIgnoreCase))
             {
@@ -247,26 +248,13 @@ namespace MediaBrowser.Server.Mono.Native
 
             switch (environment.OperatingSystem)
             {
+                case OperatingSystem.Osx:
                 case OperatingSystem.Bsd:
                     break;
                 case OperatingSystem.Linux:
 
                     info.ArchiveType = "7z";
                     info.Version = "20160215";
-                    break;
-                case OperatingSystem.Osx:
-
-                    info.ArchiveType = "7z";
-
-                    switch (environment.SystemArchitecture)
-                    {
-                        case Architecture.X86_X64:
-                            info.Version = "20160124";
-                            break;
-                        case Architecture.X86:
-                            info.Version = "20150110";
-                            break;
-                    }
                     break;
             }
 
@@ -279,41 +267,14 @@ namespace MediaBrowser.Server.Mono.Native
         {
             switch (environment.OperatingSystem)
             {
-                case OperatingSystem.Osx:
-
-                    switch (environment.SystemArchitecture)
-                    {
-                        case Architecture.X86_X64:
-                            return new[]
-                            {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/osx/ffmpeg-x64-2.8.5.7z"
-                            };
-                        case Architecture.X86:
-                            return new[]
-                            {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/osx/ffmpeg-x86-2.5.3.7z"
-                            };
-                    }
-                    break;
-
                 case OperatingSystem.Linux:
 
                     switch (environment.SystemArchitecture)
                     {
-                        case Architecture.X86_X64:
+                        case Architecture.X64:
                             return new[]
                             {
                                 "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-git-20160215-64bit-static.7z"
-                            };
-                        case Architecture.X86:
-                            return new[]
-                            {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-git-20160215-32bit-static.7z"
-                            };
-                        case Architecture.Arm:
-                            return new[]
-                            {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-arm.7z"
                             };
                     }
                     break;

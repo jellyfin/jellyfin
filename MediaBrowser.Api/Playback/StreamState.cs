@@ -96,7 +96,7 @@ namespace MediaBrowser.Api.Playback
         public long? InputFileSize { get; set; }
 
         public string OutputAudioSync = "1";
-        public string OutputVideoSync = "vfr";
+        public string OutputVideoSync = "-1";
 
         public List<string> SupportedAudioCodecs { get; set; }
 

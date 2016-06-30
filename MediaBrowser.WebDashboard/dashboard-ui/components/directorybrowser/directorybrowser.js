@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'paper-item', 'paper-input', 'paper-fab', 'paper-item-body', 'paper-icon-button-light'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'paper-item', 'emby-input', 'emby-button', 'paper-item-body', 'paper-icon-button-light'], function (dialogHelper, $) {
 
     var systemInfo;
     function getSystemInfo() {
@@ -128,22 +128,23 @@
             html += '<br/>';
             html += Globalize.translate('MessageDirectoryPickerLinuxInstruction');
             html += '<br/>';
-            //html += '<a href="http://doc.freenas.org/9.3/freenas_jails.html#add-storage" target="_blank">' + Globalize.translate('ButtonMoreInformation') + '</a>';
         }
 
         html += '</p>';
 
         html += '<form style="max-width:100%;">';
-        html += '<div>';
-        html += '<paper-input id="txtDirectoryPickerPath" type="text" required="required" style="width:82%;display:inline-block;" label="' + Globalize.translate('LabelCurrentPath') + '"></paper-input>';
 
+        html += '<div class="inputContainer" style="display: flex; align-items: center;">';
+        html += '<div style="flex-grow:1;">';
+        html += '<input is="emby-input" id="txtDirectoryPickerPath" type="text" required="required" label="' + Globalize.translate('LabelCurrentPath') + '"/>';
+        html += '</div>';
         html += '<button type="button" is="paper-icon-button-light" class="btnRefreshDirectories" title="' + Globalize.translate('ButtonRefresh') + '"><iron-icon icon="refresh"></iron-icon></button>';
         html += '</div>';
 
         html += '<div class="results paperList" style="height: 180px; overflow-y: auto;"></div>';
 
         html += '<div>';
-        html += '<button type="submit" class="clearButton" data-role="none"><paper-button raised class="submit block">' + Globalize.translate('ButtonOk') + '</paper-button></button>';
+        html += '<button is="emby-button" type="submit" class="raised submit block">' + Globalize.translate('ButtonOk') + '</button>';
         html += '</div>';
 
         html += '</form>';
@@ -219,7 +220,7 @@
 
                 var html = '';
                 html += '<h2 class="dialogHeader">';
-                html += '<paper-fab icon="arrow-back" mini class="btnCloseDialog"></paper-fab>';
+                html += '<button type="button" is="emby-button" icon="arrow-back" class="fab mini btnCloseDialog autoSize" tabindex="-1"><i class="md-icon">arrow_back</i></button>';
                 html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + (options.header || Globalize.translate('HeaderSelectPath')) + '</div>';
                 html += '</h2>';
 

@@ -316,7 +316,7 @@
 
                 html += '</a>';
                 html += '</paper-item-body>';
-                html += '<button type="button" is="paper-icon-button-light" class="btnDeleteDevice" data-id="' + provider.Id + '" title="' + Globalize.translate('ButtonDelete') + '"><iron-icon icon="delete"></iron-icon></button>';
+                html += '<button type="button" is="paper-icon-button-light" class="btnOptions" data-id="' + provider.Id + '"><iron-icon icon="more-vert"></iron-icon></button>';
                 html += '</paper-icon-item>';
             }
 
@@ -325,11 +325,59 @@
 
         var elem = $('.providerList', page).html(html);
 
-        $('.btnDelete', elem).on('click', function () {
+        $('.btnOptions', elem).on('click', function () {
 
             var id = this.getAttribute('data-id');
 
-            deleteProvider(page, id);
+            showProviderOptions(page, id, this);
+        });
+    }
+
+    function showProviderOptions(page, providerId, button) {
+
+        var items = [];
+
+        items.push({
+            name: Globalize.translate('ButtonDelete'),
+            id: 'delete'
+        });
+
+        items.push({
+            name: Globalize.translate('MapChannels'),
+            id: 'map'
+        });
+
+        require(['actionsheet'], function (actionsheet) {
+
+            actionsheet.show({
+                items: items,
+                positionTo: button
+
+            }).then(function (id) {
+
+                switch (id) {
+
+                    case 'delete':
+                        deleteProvider(page, providerId);
+                        break;
+                    case 'map':
+                        mapChannels(page, providerId);
+                        break;
+                    default:
+                        break;
+                }
+            });
+
+        });
+    }
+
+    function mapChannels(page, providerId) {
+
+        require(['components/channelmapper/channelmapper'], function (channelmapper) {
+            new channelmapper({
+                serverId: ApiClient.serverInfo().Id,
+                providerId: providerId
+            }).show();
         });
     }
 
@@ -386,6 +434,8 @@
 
             case 'schedulesdirect':
                 return 'Schedules Direct';
+            case 'xmltv':
+                return 'Xml TV';
             case 'emby':
                 return 'Emby Guide';
             default:
@@ -399,6 +449,8 @@
 
         switch (providerId) {
 
+            case 'xmltv':
+                return 'livetvguideprovider.html?type=xmltv';
             case 'schedulesdirect':
                 return 'livetvguideprovider.html?type=schedulesdirect';
             case 'emby':
@@ -421,6 +473,11 @@
         //    name: 'Emby Guide',
         //    id: 'emby'
         //});
+
+        menuItems.push({
+            name: 'Xml TV',
+            id: 'xmltv'
+        });
 
         menuItems.push({
             name: Globalize.translate('ButtonOther'),

@@ -1,10 +1,10 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['listViewStyle'], function () {
 
     function renderViews(page, user, result) {
 
         var folderHtml = '';
 
-        folderHtml += '<div class="paperCheckboxList">';
+        folderHtml += '<div class="checkboxList">';
         folderHtml += result.map(function (i) {
 
             var currentHtml = '';
@@ -16,7 +16,10 @@
 
             var checkedHtml = isChecked ? ' checked="checked"' : '';
 
-            currentHtml += '<paper-checkbox class="chkGroupFolder" data-folderid="' + i.Id + '" id="' + id + '"' + checkedHtml + '>' + i.Name + '</paper-checkbox>';
+            currentHtml += '<label>';
+            currentHtml += '<input type="checkbox" is="emby-checkbox" class="chkGroupFolder" data-folderid="' + i.Id + '" id="' + id + '"' + checkedHtml + '/>';
+            currentHtml += '<span>' + i.Name + '</span>';
+            currentHtml += '</label>';
 
             return currentHtml;
 
@@ -24,45 +27,14 @@
 
         folderHtml += '</div>';
 
-        $('.folderGroupList', page).html(folderHtml);
-    }
-
-    function renderViewStyles(page, user, result) {
-
-        var folderHtml = '';
-
-        folderHtml += '<div class="paperCheckboxList">';
-        folderHtml += result.map(function (i) {
-
-            var currentHtml = '';
-
-            var id = 'chkPlainFolder' + i.Id;
-
-            var isChecked = user.Configuration.PlainFolderViews.indexOf(i.Id) == -1;
-            var checkedHtml = isChecked ? ' checked="checked"' : '';
-
-            currentHtml += '<paper-checkbox class="chkPlainFolder" data-folderid="' + i.Id + '" id="' + id + '"' + checkedHtml + '>' + i.Name + '</paper-checkbox>';
-
-            return currentHtml;
-
-        }).join('');
-
-        folderHtml += '</div>';
-
-        $('.viewStylesList', page).html(folderHtml);
-
-        if (result.length) {
-            $('.viewStylesSection', page).show();
-        } else {
-            $('.viewStylesSection', page).hide();
-        }
+        page.querySelector('.folderGroupList').innerHTML = folderHtml;
     }
 
     function renderLatestItems(page, user, result) {
 
         var folderHtml = '';
 
-        folderHtml += '<div class="paperCheckboxList">';
+        folderHtml += '<div class="checkboxList">';
         folderHtml += result.Items.map(function (i) {
 
             var currentHtml = '';
@@ -72,7 +44,10 @@
             var isChecked = user.Configuration.LatestItemsExcludes.indexOf(i.Id) == -1;
             var checkedHtml = isChecked ? ' checked="checked"' : '';
 
-            currentHtml += '<paper-checkbox class="chkIncludeInLatest" data-folderid="' + i.Id + '" id="' + id + '"' + checkedHtml + '>' + i.Name + '</paper-checkbox>';
+            currentHtml += '<label>';
+            currentHtml += '<input type="checkbox" is="emby-checkbox" class="chkIncludeInLatest" data-folderid="' + i.Id + '" id="' + id + '"' + checkedHtml + '/>';
+            currentHtml += '<span>' + i.Name + '</span>';
+            currentHtml += '</label>';
 
             return currentHtml;
 
@@ -80,7 +55,7 @@
 
         folderHtml += '</div>';
 
-        $('.latestItemsList', page).html(folderHtml);
+        page.querySelector('.latestItemsList').innerHTML = folderHtml;
     }
 
     function renderViewOrder(page, user, result) {
@@ -93,62 +68,59 @@
 
             var currentHtml = '';
 
-            currentHtml += '<paper-icon-item class="viewItem" data-viewid="' + view.Id + '">';
+            currentHtml += '<div class="listItem viewItem" data-viewid="' + view.Id + '">';
 
-            currentHtml += '<paper-fab mini style="background-color:#444;" icon="folder-open" item-icon></paper-fab>';
+            currentHtml += '<button type="button" is="emby-button" class="fab mini autoSize" item-icon><i class="md-icon">folder_open</i></button>';
 
-            currentHtml += '<paper-item-body>';
+            currentHtml += '<div class="listItemBody">';
 
             currentHtml += '<div>';
             currentHtml += view.Name;
             currentHtml += '</div>';
 
-            currentHtml += '</paper-item-body>';
+            currentHtml += '</div>';
 
             if (index > 0) {
 
-                currentHtml += '<button type="button" is="paper-icon-button-light" class="btnViewItemUp btnViewItemMove" title="' + Globalize.translate('ButtonUp') + '"><iron-icon icon="keyboard-arrow-up"></iron-icon></button>';
+                currentHtml += '<button type="button" is="paper-icon-button-light" class="btnViewItemUp btnViewItemMove autoSize" title="' + Globalize.translate('ButtonUp') + '"><i class="md-icon">keyboard_arrow_up</i></button>';
             }
             else if (result.Items.length > 1) {
 
-                currentHtml += '<button type="button" is="paper-icon-button-light" class="btnViewItemDown btnViewItemMove" title="' + Globalize.translate('ButtonDown') + '"><iron-icon icon="keyboard-arrow-down"></iron-icon></button>';
+                currentHtml += '<button type="button" is="paper-icon-button-light" class="btnViewItemDown btnViewItemMove autoSize" title="' + Globalize.translate('ButtonDown') + '"><i class="md-icon">keyboard_arrow_down</i></button>';
             }
 
 
-            currentHtml += '</paper-icon-item>';
+            currentHtml += '</div>';
 
             index++;
             return currentHtml;
 
         }).join('');
 
-        $('.viewOrderList', page).html(html);
+        page.querySelector('.viewOrderList').innerHTML = html;
     }
 
     function loadForm(page, user, displayPreferences) {
 
-        page.querySelector('.chkDisplayCollectionView').checked = user.Configuration.DisplayCollectionsView || false;
         page.querySelector('.chkHidePlayedFromLatest').checked = user.Configuration.HidePlayedInLatest || false;
         page.querySelector('.chkDisplayChannelsInline').checked = !(user.Configuration.EnableChannelView || false);
 
-        $('#selectHomeSection1', page).val(displayPreferences.CustomPrefs.home0 || '');
-        $('#selectHomeSection2', page).val(displayPreferences.CustomPrefs.home1 || '');
-        $('#selectHomeSection3', page).val(displayPreferences.CustomPrefs.home2 || '');
-        $('#selectHomeSection4', page).val(displayPreferences.CustomPrefs.home3 || '');
+        page.querySelector('#selectHomeSection1').value = displayPreferences.CustomPrefs.home0 || '';
+        page.querySelector('#selectHomeSection2').value = displayPreferences.CustomPrefs.home1 || '';
+        page.querySelector('#selectHomeSection3').value = displayPreferences.CustomPrefs.home2 || '';
+        page.querySelector('#selectHomeSection4').value = displayPreferences.CustomPrefs.home3 || '';
 
         var promise1 = ApiClient.getItems(user.Id, {
             sortBy: "SortName"
         });
         var promise2 = ApiClient.getUserViews({}, user.Id);
-        var promise3 = ApiClient.getJSON(ApiClient.getUrl("Users/" + user.Id + "/SpecialViewOptions"));
-        var promise4 = ApiClient.getJSON(ApiClient.getUrl("Users/" + user.Id + "/GroupingOptions"));
+        var promise3 = ApiClient.getJSON(ApiClient.getUrl("Users/" + user.Id + "/GroupingOptions"));
 
-        Promise.all([promise1, promise2, promise3, promise4]).then(function (responses) {
+        Promise.all([promise1, promise2, promise3]).then(function (responses) {
 
-            renderViews(page, user, responses[3]);
+            renderViews(page, user, responses[2]);
             renderLatestItems(page, user, responses[0]);
             renderViewOrder(page, user, responses[1]);
-            renderViewStyles(page, user, responses[2]);
 
             Dashboard.hideLoadingMsg();
         });
@@ -161,51 +133,53 @@
 
         return 'webclient';
     }
+
+    function getCheckboxItems(selector, page, isChecked) {
+
+        var inputs = page.querySelectorAll(selector);
+        var list = [];
+
+        for (var i = 0, length = inputs.length; i < length; i++) {
+
+            if (inputs[i].checked == isChecked) {
+                list.push(inputs[i]);
+            }
+
+        }
+
+        return list;
+    }
+
     function saveUser(page, user, displayPreferences) {
 
-        user.Configuration.DisplayCollectionsView = page.querySelector('.chkDisplayCollectionView').checked;
         user.Configuration.HidePlayedInLatest = page.querySelector('.chkHidePlayedFromLatest').checked;
 
         user.Configuration.EnableChannelView = !page.querySelector('.chkDisplayChannelsInline').checked;
 
-        user.Configuration.LatestItemsExcludes = $(".chkIncludeInLatest", page).get().filter(function (i) {
-
-            return !i.checked;
-
-        }).map(function (i) {
+        user.Configuration.LatestItemsExcludes = getCheckboxItems(".chkIncludeInLatest", page, false).map(function (i) {
 
             return i.getAttribute('data-folderid');
         });
 
         user.Configuration.ExcludeFoldersFromGrouping = null;
 
-        user.Configuration.GroupedFolders = $(".chkGroupFolder", page).get().filter(function (i) {
-
-            return i.checked;
-
-        }).map(function (i) {
+        user.Configuration.GroupedFolders = getCheckboxItems(".chkGroupFolder", page, true).map(function (i) {
 
             return i.getAttribute('data-folderid');
         });
 
-        user.Configuration.PlainFolderViews = $(".chkPlainFolder", page).get().filter(function (i) {
+        var viewItems = page.querySelectorAll('.viewItem');
+        var orderedViews = [];
+        for (var i = 0, length = viewItems.length; i < length; i++) {
+            orderedViews.push(viewItems[i].getAttribute('data-viewid'));
+        }
 
-            return !i.checked;
+        user.Configuration.OrderedViews = orderedViews;
 
-        }).map(function (i) {
-
-            return i.getAttribute('data-folderid');
-        });
-
-        user.Configuration.OrderedViews = $(".viewItem", page).get().map(function (i) {
-
-            return i.getAttribute('data-viewid');
-        });
-
-        displayPreferences.CustomPrefs.home0 = $('#selectHomeSection1', page).val();
-        displayPreferences.CustomPrefs.home1 = $('#selectHomeSection2', page).val();
-        displayPreferences.CustomPrefs.home2 = $('#selectHomeSection3', page).val();
-        displayPreferences.CustomPrefs.home3 = $('#selectHomeSection4', page).val();
+        displayPreferences.CustomPrefs.home0 = page.querySelector('#selectHomeSection1').value;
+        displayPreferences.CustomPrefs.home1 = page.querySelector('#selectHomeSection2').value;
+        displayPreferences.CustomPrefs.home2 = page.querySelector('#selectHomeSection3').value;
+        displayPreferences.CustomPrefs.home3 = page.querySelector('#selectHomeSection4').value;
 
         return ApiClient.updateDisplayPreferences('home', displayPreferences, user.Id, displayPreferencesKey()).then(function () {
 
@@ -244,43 +218,80 @@
         });
     }
 
-    function onSubmit() {
+    function parentWithClass(elem, className) {
 
-        var page = $(this).parents('.page')[0];
+        while (!elem.classList || !elem.classList.contains(className)) {
+            elem = elem.parentNode;
 
-        save(page);
+            if (!elem) {
+                return null;
+            }
+        }
 
-        // Disable default form submission
-        return false;
+        return elem;
     }
 
-    pageIdOn('pageinit', "homeScreenPreferencesPage", function () {
+    function getSibling(elem, type, className) {
 
-        var page = this;
+        var sibling = elem[type];
 
-        $('.viewOrderList', page).on('click', '.btnViewItemMove', function () {
+        while (sibling != null) {
+            if (sibling.classList.contains(className)) {
+                break;
+            }
+        }
 
-            var li = $(this).parents('.viewItem');
-            var ul = li.parents('.paperList');
+        if (sibling != null) {
+            if (!sibling.classList.contains(className)) {
+                sibling = null;
+            }
+        }
 
-            if ($(this).hasClass('btnViewItemDown')) {
+        return sibling;
+    }
 
-                var next = li.next();
+    return function (view, params) {
 
-                li.remove().insertAfter(next);
+        function onSubmit(e) {
+
+            save(view);
+
+            // Disable default form submission
+            e.preventDefault();
+            return false;
+        }
+
+        view.querySelector('.viewOrderList').addEventListener('click', function (e) {
+
+            var target = parentWithClass(e.target, 'btnViewItemMove');
+
+            var li = parentWithClass(target, 'viewItem');
+            var ul = parentWithClass(li, 'paperList');
+
+            if (target.classList.contains('btnViewItemDown')) {
+
+                var next = li.nextSibling;
+
+                li.parentNode.removeChild(li);
+                next.parentNode.insertBefore(li, next.nextSibling);
 
             } else {
 
-                var prev = li.prev();
+                var prev = li.previousSibling;
 
-                li.remove().insertBefore(prev);
+                li.parentNode.removeChild(li);
+                prev.parentNode.insertBefore(li, prev);
             }
 
-            $('.viewItem', ul).each(function () {
+            var viewItems = ul.querySelectorAll('.viewItem');
+            for (var i = 0, length = viewItems.length; i < length; i++) {
+                var viewItem = viewItems[i];
 
-                var btn = $('.btnViewItemMove', this)[0];
+                var btn = viewItem.querySelector('.btnViewItemMove');
 
-                if ($(this).prev('.viewItem').length) {
+                var prevViewItem = getSibling(viewItem, 'previousSibling', 'viewItem');
+
+                if (prevViewItem) {
 
                     btn.classList.add('btnViewItemUp');
                     btn.classList.remove('btnViewItemDown');
@@ -291,45 +302,40 @@
                     btn.classList.add('btnViewItemDown');
                     btn.icon = 'keyboard-arrow-down';
                 }
-
-            });
+            }
         });
 
-        $('.homeScreenPreferencesForm').off('submit', onSubmit).on('submit', onSubmit);
+        view.querySelector('.homeScreenPreferencesForm').addEventListener('submit', onSubmit);
 
         if (AppInfo.enableAutoSave) {
-            page.querySelector('.btnSave').classList.add('hide');
+            view.querySelector('.btnSave').classList.add('hide');
         } else {
-            page.querySelector('.btnSave').classList.remove('hide');
+            view.querySelector('.btnSave').classList.remove('hide');
         }
 
-    });
+        view.addEventListener('viewshow', function () {
+            var page = this;
 
-    pageIdOn('pageshow', "homeScreenPreferencesPage", function () {
+            Dashboard.showLoadingMsg();
 
-        var page = this;
+            var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
-        Dashboard.showLoadingMsg();
+            ApiClient.getUser(userId).then(function (user) {
 
-        var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
+                ApiClient.getDisplayPreferences('home', user.Id, displayPreferencesKey()).then(function (result) {
 
-        ApiClient.getUser(userId).then(function (user) {
+                    loadForm(page, user, result);
 
-            ApiClient.getDisplayPreferences('home', user.Id, displayPreferencesKey()).then(function (result) {
-
-                loadForm(page, user, result);
-
+                });
             });
         });
-    });
 
-    pageIdOn('pagebeforehide', "homeScreenPreferencesPage", function () {
+        view.addEventListener('viewbeforehide', function () {
+            var page = this;
 
-        var page = this;
-
-        if (AppInfo.enableAutoSave) {
-            save(page);
-        }
-    });
-
+            if (AppInfo.enableAutoSave) {
+                save(page);
+            }
+        });
+    };
 });

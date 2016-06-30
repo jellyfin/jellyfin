@@ -1,15 +1,14 @@
-﻿define(['userSettings', 'appStorage', 'jQuery'], function (userSettings, appStorage, $) {
+﻿define(['userSettings', 'appStorage'], function (userSettings, appStorage) {
 
     function loadForm(page, user) {
 
         page.querySelector('.chkDisplayMissingEpisodes').checked = user.Configuration.DisplayMissingEpisodes || false;
         page.querySelector('.chkDisplayUnairedEpisodes').checked = user.Configuration.DisplayUnairedEpisodes || false;
-        page.querySelector('.chkGroupMoviesIntoCollections').checked = user.Configuration.GroupMoviesIntoBoxSets || false;
 
-        $('#selectThemeSong', page).val(appStorage.getItem('enableThemeSongs-' + user.Id) || '');
-        $('#selectBackdrop', page).val(appStorage.getItem('enableBackdrops-' + user.Id) || '');
+        page.querySelector('#selectThemeSong').value = appStorage.getItem('enableThemeSongs-' + user.Id) || '';
+        page.querySelector('#selectBackdrop').value = appStorage.getItem('enableBackdrops-' + user.Id) || '';
 
-        $('#selectLanguage', page).val(userSettings.language() || '');
+        page.querySelector('#selectLanguage').value = userSettings.language() || '';
 
         Dashboard.hideLoadingMsg();
     }
@@ -18,12 +17,11 @@
 
         user.Configuration.DisplayMissingEpisodes = page.querySelector('.chkDisplayMissingEpisodes').checked;
         user.Configuration.DisplayUnairedEpisodes = page.querySelector('.chkDisplayUnairedEpisodes').checked;
-        user.Configuration.GroupMoviesIntoBoxSets = page.querySelector('.chkGroupMoviesIntoCollections').checked;
 
         userSettings.language(page.querySelector('#selectLanguage').value);
 
-        appStorage.setItem('enableThemeSongs-' + user.Id, $('#selectThemeSong', page).val());
-        appStorage.setItem('enableBackdrops-' + user.Id, $('#selectBackdrop', page).val());
+        appStorage.setItem('enableThemeSongs-' + user.Id, page.querySelector('#selectThemeSong').value);
+        appStorage.setItem('enableBackdrops-' + user.Id, page.querySelector('#selectBackdrop').value);
 
         return ApiClient.updateUserConfiguration(user.Id, user.Configuration);
     }
@@ -54,65 +52,56 @@
         });
     }
 
-    function onSubmit() {
+    return function (view, params) {
 
-        var page = $(this).parents('.page')[0];
-
-        save(page);
-
-        // Disable default form submission
-        return false;
-    }
-
-    pageIdOn('pageinit', "displayPreferencesPage", function () {
-
-        var page = this;
-
-        $('.displayPreferencesForm').off('submit', onSubmit).on('submit', onSubmit);
+        view.querySelector('.displayPreferencesForm').addEventListener('submit', function (e) {
+            save(view);
+            e.preventDefault();
+            // Disable default form submission
+            return false;
+        });
 
         if (AppInfo.enableAutoSave) {
-            page.querySelector('.btnSave').classList.add('hide');
+            view.querySelector('.btnSave').classList.add('hide');
         } else {
-            page.querySelector('.btnSave').classList.remove('hide');
+            view.querySelector('.btnSave').classList.remove('hide');
         }
 
-    });
-    pageIdOn('pageshow', "displayPreferencesPage", function () {
+        view.addEventListener('viewshow', function () {
+            var page = this;
 
-        var page = this;
+            Dashboard.showLoadingMsg();
 
-        Dashboard.showLoadingMsg();
+            var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
-        var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
+            ApiClient.getUser(userId).then(function (user) {
 
-        ApiClient.getUser(userId).then(function (user) {
+                loadForm(page, user);
 
-            loadForm(page, user);
+                var requiresUserPreferences = view.querySelectorAll('.requiresUserPreferences');
+                for (var i = 0, length = requiresUserPreferences.length; i < length; i++) {
+                    if (user.Policy.EnableUserPreferenceAccess) {
+                        requiresUserPreferences[i].classList.remove('hide');
+                    } else {
+                        requiresUserPreferences[i].classList.add('hide');
+                    }
+                }
+            });
 
-            if (user.Policy.EnableUserPreferenceAccess) {
-                $('.requiresUserPreferences', page).show();
+            if (AppInfo.supportsUserDisplayLanguageSetting) {
+                page.querySelector('.languageSection').classList.remove('hide');
             } else {
-                $('.requiresUserPreferences', page).hide();
+                page.querySelector('.languageSection').classList.add('hide');
             }
         });
 
-        $('.fldEnableBackdrops', page).show();
+        view.addEventListener('viewbeforehide', function () {
+            var page = this;
 
-        if (AppInfo.supportsUserDisplayLanguageSetting) {
-            $('.languageSection', page).show();
-        } else {
-            $('.languageSection', page).hide();
-        }
-
-    });
-    pageIdOn('pagebeforehide', "displayPreferencesPage", function () {
-
-        var page = this;
-
-        if (AppInfo.enableAutoSave) {
-            save(page);
-        }
-
-    });
+            if (AppInfo.enableAutoSave) {
+                save(page);
+            }
+        });
+    };
 
 });

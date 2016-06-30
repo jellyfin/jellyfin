@@ -3,14 +3,14 @@
     <div id="itemBackdrop" class="itemBackdrop noBackdrop">
         <div class="itemBackdropContent">
         </div>
-        <a href="#" id="lnkPreviousItem" class="lnkPreviousItem lnkSibling hide clearLink"><paper-button raised class="subdued notext"><iron-icon icon="arrow-back"></iron-icon></paper-button></a>
-        <a href="#" id="lnkNextItem" class="lnkNextItem lnkSibling hide clearLink"><paper-button raised class="subdued notext"><iron-icon icon="arrow-forward"></iron-icon></paper-button></a>
+        <a href="#" id="lnkPreviousItem" class="lnkPreviousItem lnkSibling hide clearLink"><button is="emby-button" type="button" class="raised subdued notext"><i class="md-icon">arrow_back</i></button></a>
+        <a href="#" id="lnkNextItem" class="lnkNextItem lnkSibling hide clearLink"><button is="emby-button" type="button" class="raised subdued notext"><i class="md-icon">arrow_forward</i></button></a>
     </div>
 
     <div class="detailPageContent" style="position:relative;">
 
-        <paper-fab class="btnPlay detailFloatingButton hide" icon="play-arrow" title="${ButtonPlay}"></paper-fab>
-        <paper-fab class="btnFloatingRecord detailFloatingButton hide" icon="videocam" title="${ButtonRecord}"></paper-fab>
+        <button is="emby-button" type="button" class="btnPlay detailFloatingButton hide fab autoSize" title="${ButtonPlay}"><i class="md-icon">play_arrow</i></button>
+        <button is="emby-button" type="button" class="btnFloatingRecord detailFloatingButton hide fab autoSize" title="${ButtonRecord}"><i class="md-icon">videocam</i></button>
 
         <div class="detailImageContainer">
         </div>
@@ -27,12 +27,12 @@
                 <p class="artist"></p>
                 <p class="itemGenres"></p>
                 <div class="detailButtonsContainer">
-                    <paper-button raised class="subdued btnPlayTrailer hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonTrailer}</span></paper-button>
-                    <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><paper-button raised class="subdued"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonTrailer}</span></paper-button></a>
-                    <paper-button raised class="subdued btnRecord hide"><iron-icon icon="videocam"></iron-icon><span>${ButtonRecord}</span></paper-button>
-                    <paper-button raised class="subdued hide btnCancelRecording"><iron-icon icon="delete"></iron-icon><span>${ButtonCancelRecording}</span></paper-button>
-                    <paper-button raised class="subdued btnSync hide"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
-                    <paper-button raised class="subdued btnMoreCommands hide notext"><iron-icon icon="more-vert"></iron-icon></paper-button>
+                    <button is="emby-button" type="button" class="raised subdued btnPlayTrailer hide"><i class="md-icon">play_arrow</i><span>${ButtonTrailer}</span></button>
+                    <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><button is="emby-button" type="button" class="raised subdued"><i class="md-icon">play_arrow</i><span>${ButtonTrailer}</span></button></a>
+                    <button is="emby-button" type="button" class="raised subdued btnRecord hide"><i class="md-icon">videocam</i><span>${ButtonRecord}</span></button>
+                    <button is="emby-button" type="button" class="raised subdued hide btnCancelRecording"><i class="md-icon">delete</i><span>${ButtonCancelRecording}</span></button>
+                    <button is="emby-button" type="button" class="raised subdued btnSync hide"><i class="md-icon">sync</i><span>${ButtonSync}</span></button>
+                    <button is="emby-button" type="button" class="raised subdued btnMoreCommands hide notext"><i class="md-icon">more_vert</i></button>
                     <div class="detailUserDataIcons userDataIcons"></div>
                 </div>
             </div>
@@ -45,12 +45,12 @@
         </div>
         <div class="detailButtonsContainer">
             <br />
-            <paper-button raised class="subdued btnPlayTrailer hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonTrailer}</span></paper-button>
-            <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><paper-button raised class="subdued"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonTrailer}</span></paper-button></a>
-            <paper-button raised class="subdued btnRecord hide"><iron-icon icon="videocam"></iron-icon><span>${ButtonRecord}</span></paper-button>
-            <paper-button raised class="subdued hide btnCancelRecording"><iron-icon icon="delete"></iron-icon><span>${ButtonCancelRecording}</span></paper-button>
-            <paper-button raised class="subdued btnSync hide"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
-            <paper-button raised class="subdued btnMoreCommands hide notext"><iron-icon icon="more-vert"></iron-icon></paper-button>
+            <button is="emby-button" type="button" class="raised subdued btnPlayTrailer hide"><i class="md-icon">play_arrow</i><span>${ButtonTrailer}</span></button>
+            <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><button is="emby-button" type="button" class="raised subdued"><i class="md-icon">play_arrow</i><span>${ButtonTrailer}</span></button></a>
+            <button is="emby-button" type="button" class="raised subdued btnRecord hide"><i class="md-icon">videocam</i><span>${ButtonRecord}</span></button>
+            <button is="emby-button" type="button" class="raised subdued hide btnCancelRecording"><i class="md-icon">delete</i><span>${ButtonCancelRecording}</span></button>
+            <button is="emby-button" type="button" class="raised subdued btnSync hide"><i class="md-icon">sync</i><span>${ButtonSync}</span></button>
+            <button is="emby-button" type="button" class="raised subdued btnMoreCommands hide notext"><i class="md-icon">more_vert</i></button>
             <div class="detailUserDataIcons userDataIcons"></div>
         </div>
     </div>
@@ -90,7 +90,7 @@
                 </h1>
                 <div id="additionalPartsContent" class="smallItemsContainer"></div>
             </div>
-            <div id="castCollapsible" style="display: none;" class="detailSection">
+            <div id="castCollapsible" class="detailSection hide">
                 <h1 id="peopleHeader">
                     ${HeaderCastCrew}
                 </h1>
@@ -112,46 +112,46 @@
                 </h1>
                 <div id="specialsContent" class="smallItemsContainer"></div>
             </div>
-            <div id="musicVideosCollapsible" style="display: none;" class="detailSection">
+            <div id="musicVideosCollapsible" class="detailSection hide">
                 <h1>
                     ${HeaderMusicVideos}
                 </h1>
                 <div id="musicVideosContent" class="smallItemsContainer"></div>
             </div>
-            <div id="similarCollapsible" style="display: none;" class="detailSection">
+            <div id="similarCollapsible" class="detailSection hide">
                 <h1 class="similiarHeader"></h1>
                 <div id="similarContent"></div>
             </div>
-            <div id="criticReviewsCollapsible" style="display: none;" class="detailSection">
+            <div id="criticReviewsCollapsible" class="detailSection hide">
                 <h1>
                     ${HeaderAwardsAndReviews}
                 </h1>
                 <div>
                     <p id="awardSummary"></p>
                     <div class="paperList" id="criticRatingSummary">
-                        <paper-icon-item>
-                            <paper-fab mini style="background-color: transparent; background-repeat: no-repeat; background-position: center center; background-size: cover; background-image: url(css/images/fresh.png);" item-icon></paper-fab>
-                            <paper-item-body three-line>
+                        <div class="listItem">
+                            <button is="emby-button" type="button" class="mini fab" style="background-color: transparent; background-repeat: no-repeat; background-position: center center; background-size: cover; background-image: url(css/images/fresh.png);" item-icon></button>
+                            <div class="listItemBody three-line">
                                 <div>TOMATOMETER®</div>
                                 <div class="criticRatingScore"></div>
-                                <div class="criticRatingSummaryText" style="white-space: normal;" secondary></div>
-                            </paper-item-body>
-                        </paper-icon-item>
+                                <div class="criticRatingSummaryText secondary" style="white-space: normal;"></div>
+                            </div>
+                        </div>
                     </div>
                     <div id="criticReviewsContent"></div>
                 </div>
             </div>
 
-            <div id="scenesCollapsible" style="display: none;" class="detailSection">
+            <div id="scenesCollapsible" class="detailSection hide">
                 <h1>
                     ${HeaderScenes}
-                    <a class="detailSectionHeaderButton chapterSettingsButton clearLink" style="margin-top: -8px; display: inline-block;" href="metadataadvanced.html" title="${ButtonSettings}" style="display: none;">
-                        <button is="paper-icon-button-light"><iron-icon icon="settings"></iron-icon></button>
+                    <a class="detailSectionHeaderButton chapterSettingsButton clearLink hide" style="margin-top: -8px; display: inline-block;" href="librarysettings.html" title="${ButtonSettings}">
+                        <button is="paper-icon-button-light" class="autoSize"><i class="md-icon">settings</i></button>
                     </a>
                 </h1>
                 <div id="scenesContent" class="smallItemsContainer"></div>
             </div>
-            <div id="themeSongsCollapsible" style="display: none;" class="detailSection">
+            <div id="themeSongsCollapsible" class="detailSection hide">
                 <h1>
                     ${HeaderThemeSongs}
                 </h1>
@@ -172,7 +172,7 @@
                 </div>
             </div>
 
-            <div id="themeVideosCollapsible" style="display: none;" class="detailSection">
+            <div id="themeVideosCollapsible" class="detailSection hide">
                 <h1>
                     ${HeaderThemeVideos}
                 </h1>
@@ -183,7 +183,7 @@
                 <h1>${HeaderMediaInfo}</h1>
                 <div>
                     <div class="splitVersionContainer" style="border-bottom: 1px solid #444;padding:1em 0;">
-                        <paper-button raised class="btnSplitVersions subdued">${ButtonSplitVersionsApart}</paper-button>
+                        <button is="emby-button" type="button" class="raised btnSplitVersions subdued">${ButtonSplitVersionsApart}</button>
                     </div>
                     <div id="mediaInfoContent" class="mediaInfoContent"></div>
                 </div>

@@ -1,10 +1,23 @@
-﻿define(['jQuery'], function ($) {
+﻿define([], function () {
+
+    function getApiClient() {
+
+        var serverId = getParameterByName('serverid');
+
+        if (serverId) {
+            return ConnectionManager.getOrCreateApiClient(serverId);
+
+        } else {
+            return ApiClient;
+        }
+    }
 
     var LoginPage = {
 
         showVisualForm: function (page) {
-            $('.visualLoginForm', page).show();
-            $('.manualLoginForm', page).hide();
+
+            page.querySelector('.visualLoginForm').classList.remove('hide');
+            page.querySelector('.manualLoginForm').classList.add('hide');
         },
 
         getLastSeenText: function (lastActivityDate) {
@@ -39,62 +52,49 @@
                 Dashboard.onServerChanged(user.Id, result.AccessToken, apiClient);
                 Dashboard.navigate(newUrl);
 
-            }, function () {
+            }, function (response) {
 
-                $('#pw', page).val('');
-                $('#txtManualName', page).val('');
-                $('#txtManualPassword', page).val('');
+                page.querySelector('#txtManualName').value = '';
+                page.querySelector('#txtManualPassword').value = '';
 
                 Dashboard.hideLoadingMsg();
 
-                setTimeout(function () {
+                if (response.status == 401) {
                     require(['toast'], function (toast) {
                         toast(Globalize.translate('MessageInvalidUser'));
                     });
-                }, 300);
+                } else {
+                    showServerConnectionFailure();
+                }
             });
 
         }
 
     };
 
-    function getApiClient() {
+    function showServerConnectionFailure() {
 
-        var serverId = getParameterByName('serverid');
-
-        if (serverId) {
-            return Promise.resolve(ConnectionManager.getOrCreateApiClient(serverId));
-
-        } else {
-            return Promise.resolve(ApiClient);
-        }
-    }
-
-    function onManualSubmit() {
-        var page = $(this).parents('.page');
-
-        getApiClient().then(function (apiClient) {
-            LoginPage.authenticateUserByName(page, apiClient, $('#txtManualName', page).val(), $('#txtManualPassword', page).val());
+        Dashboard.alert({
+            message: Globalize.translate("MessageUnableToConnectToServer"),
+            title: Globalize.translate("HeaderConnectionFailure")
         });
-
-        // Disable default form submission
-        return false;
     }
 
     function showManualForm(context, showCancel, focusPassword) {
-        $('.visualLoginForm', context).hide();
-        $('.manualLoginForm', context).show();
+
+        context.querySelector('.manualLoginForm').classList.remove('hide');
+        context.querySelector('.visualLoginForm').classList.add('hide');
 
         if (focusPassword) {
-            $('#txtManualPassword input', context).focus();
+            context.querySelector('#txtManualPassword').focus();
         } else {
-            $('#txtManualName input', context).focus();
+            context.querySelector('#txtManualName').focus();
         }
 
         if (showCancel) {
-            $('.btnCancel', context).show();
+            context.querySelector('.btnCancel').classList.remove('hide');
         } else {
-            $('.btnCancel', context).hide();
+            context.querySelector('.btnCancel').classList.add('hide');
         }
     }
 
@@ -153,32 +153,59 @@
             html += '</div>';
         }
 
-        var elem = $('#divUsers', context).html(html);
+        context.querySelector('#divUsers').innerHTML = html;
+    }
 
-        $('a', elem).on('click', function () {
+    function parentWithClass(elem, className) {
 
-            var id = this.getAttribute('data-userid');
-            var name = this.getAttribute('data-username');
-            var haspw = this.getAttribute('data-haspw');
+        while (!elem.classList || !elem.classList.contains(className)) {
+            elem = elem.parentNode;
 
-            if (id == 'manual') {
-                showManualForm(context, true);
+            if (!elem) {
+                return null;
             }
-            else if (haspw == 'false') {
-                LoginPage.authenticateUserByName(context, apiClient, name, '');
-            } else {
-                $('#txtManualName', context).val(name);
-                $('#txtManualPassword', context).val('');
-                showManualForm(context, true, true);
-            }
-        });
+        }
+
+        return elem;
     }
 
     return function (view, params) {
 
         var self = this;
 
-        $('.manualLoginForm', view).on('submit', onManualSubmit);
+        view.querySelector('#divUsers').addEventListener('click', function(e) {
+            var cardContent = parentWithClass(e.target, 'cardContent');
+
+            if (cardContent) {
+
+                var context = view;
+                var id = cardContent.getAttribute('data-userid');
+                var name = cardContent.getAttribute('data-username');
+                var haspw = cardContent.getAttribute('data-haspw');
+
+                if (id == 'manual') {
+                    showManualForm(context, true);
+                }
+                else if (haspw == 'false') {
+                    LoginPage.authenticateUserByName(context, getApiClient(), name, '');
+                } else {
+
+                    context.querySelector('#txtManualName').value = name;
+                    context.querySelector('#txtManualPassword').value = '';
+                    showManualForm(context, true, true);
+                }
+            }
+        });
+
+        view.querySelector('.manualLoginForm').addEventListener('submit', function (e) {
+
+            var apiClient = getApiClient();
+            LoginPage.authenticateUserByName(view, apiClient, view.querySelector('#txtManualName').value, view.querySelector('#txtManualPassword').value);
+
+            e.preventDefault();
+            // Disable default form submission
+            return false;
+        });
 
         view.querySelector('.btnForgotPassword').addEventListener('click', function () {
             Dashboard.navigate('forgotpassword.html');
@@ -195,33 +222,31 @@
         view.addEventListener('viewshow', function (e) {
             Dashboard.showLoadingMsg();
 
-            getApiClient().then(function (apiClient) {
+            var apiClient = getApiClient();
+            apiClient.getPublicUsers().then(function (users) {
 
-                apiClient.getPublicUsers().then(function (users) {
+                if (!users.length) {
 
-                    if (!users.length) {
+                    showManualForm(view, false, false);
 
-                        showManualForm(view, false, false);
+                } else {
 
-                    } else {
+                    LoginPage.showVisualForm(view);
+                    loadUserList(view, apiClient, users);
+                }
 
-                        LoginPage.showVisualForm(view);
-                        loadUserList(view, apiClient, users);
-                    }
+                Dashboard.hideLoadingMsg();
+            });
 
-                    Dashboard.hideLoadingMsg();
-                });
+            apiClient.getJSON(apiClient.getUrl('Branding/Configuration')).then(function (options) {
 
-                apiClient.getJSON(apiClient.getUrl('Branding/Configuration')).then(function (options) {
-
-                    $('.disclaimer', view).html(options.LoginDisclaimer || '');
-                });
+                view.querySelector('.disclaimer').innerHTML = options.LoginDisclaimer || '';
             });
 
             if (Dashboard.isConnectMode()) {
-                $('.connectButtons', view).show();
+                view.querySelector('.connectButtons').classList.remove('hide');
             } else {
-                $('.connectButtons', view).hide();
+                view.querySelector('.connectButtons').classList.add('hide');
             }
         });
     };

@@ -1,6 +1,7 @@
 ﻿define(['datetime', 'scrollStyles'], function (datetime) {
 
-    function loadUpcoming(page) {
+    function getUpcomingPromise() {
+
         Dashboard.showLoadingMsg();
 
         var query = {
@@ -13,7 +14,12 @@
             EnableTotalRecordCount: false
         };
 
-        ApiClient.getJSON(ApiClient.getUrl("Shows/Upcoming", query)).then(function (result) {
+        return ApiClient.getJSON(ApiClient.getUrl("Shows/Upcoming", query));
+    }
+
+    function loadUpcoming(page, promise) {
+
+        promise.then(function (result) {
 
             var items = result.Items;
 
@@ -119,15 +125,22 @@
         }
 
         elem.innerHTML = html;
+        LibraryBrowser.createCardMenus(elem);
         ImageLoader.lazyChildren(elem);
     }
     return function (view, params, tabContent) {
 
         var self = this;
+        var upcomingPromise;
+
+        self.preRender = function () {
+            upcomingPromise = getUpcomingPromise();
+        };
 
         self.renderTab = function () {
 
-            loadUpcoming(tabContent);
+            Dashboard.showLoadingMsg();
+            loadUpcoming(view, upcomingPromise);
         };
     };
 

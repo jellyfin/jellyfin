@@ -2,9 +2,10 @@
     margin: 0 1em 0 0;
 }
 
-iron-icon.mediaInfoItem {
+i.mediaInfoItem {
     width: 3vh;
     height: 3vh;
+    font-size: 3vh;
     margin-right: .6em;
 }
 
@@ -21,10 +22,11 @@ iron-icon.mediaInfoItem {
     padding-bottom: 0;
 }
 
-    .starRatingContainer iron-icon {
+    .starRatingContainer i {
         color: #CB272A;
         width: 3vh;
         height: 3vh;
+        font-size: 3vh;
     }
 
 .mediaInfoItem.criticRating {
@@ -50,16 +52,26 @@ iron-icon.mediaInfoItem {
 }
 
 .mediaInfoProgramAttribute {
-    color: yellow;
+    color: #fff;
     text-transform: uppercase;
+    background: #EF6C00;
+    padding: .25em .5em;
+    border-radius: .25em;
 }
 
-.layout-tv iron-icon.mediaInfoItem {
+.layout-tv .mediaInfoProgramAttribute {
+    font-size: 90%;
+    padding: .1em .5em;
+}
+
+.layout-tv i.mediaInfoItem {
     width: 4vh;
     height: 4vh;
+    font-size: 4vh;
 }
 
-.layout-tv .starRatingContainer iron-icon {
+.layout-tv .starRatingContainer i {
     width: 3.4vh;
     height: 3.4vh;
+    font-size: 3.4vh;
 }

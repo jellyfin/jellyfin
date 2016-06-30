@@ -191,7 +191,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var dtoOptions = new DtoOptions();
 
-            var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
+            var returnItems = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user).ConfigureAwait(false))
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>
@@ -596,7 +596,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var dtoOptions = new DtoOptions();
 
-            var returnItems = _dtoService.GetBaseItemDtos(items, dtoOptions, user)
+            var returnItems = (await _dtoService.GetBaseItemDtos(items, dtoOptions, user).ConfigureAwait(false))
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>
@@ -863,7 +863,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var dtoOptions = new DtoOptions();
 
-            var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
+            var returnItems = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user).ConfigureAwait(false))
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>
@@ -1012,7 +1012,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var dtoOptions = new DtoOptions();
 
-            var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
+            var returnItems = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user).ConfigureAwait(false))
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>
@@ -1172,8 +1172,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             items = ApplyFilters(items, query.Filters, user);
 
-            var sortBy = query.SortBy.Length == 0 ? new[] { ItemSortBy.SortName } : query.SortBy;
-            items = _libraryManager.Sort(items, user, sortBy, query.SortOrder ?? SortOrder.Ascending);
+            items = _libraryManager.Sort(items, user, query.SortBy, query.SortOrder ?? SortOrder.Ascending);
 
             var all = items.ToList();
             var totalCount = totalCountFromProvider ?? all.Count;
@@ -1250,9 +1249,21 @@ namespace MediaBrowser.Server.Implementations.Channels
                 {
                     item = GetItemById<MusicAlbum>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
                 }
+                else if (info.FolderType == ChannelFolderType.MusicArtist)
+                {
+                    item = GetItemById<MusicArtist>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                }
                 else if (info.FolderType == ChannelFolderType.PhotoAlbum)
                 {
                     item = GetItemById<PhotoAlbum>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                }
+                else if (info.FolderType == ChannelFolderType.Series)
+                {
+                    item = GetItemById<Series>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                }
+                else if (info.FolderType == ChannelFolderType.Season)
+                {
+                    item = GetItemById<Season>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
                 }
                 else
                 {
@@ -1307,6 +1318,28 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.OfficialRating = info.OfficialRating;
                 item.DateCreated = info.DateCreated ?? DateTime.UtcNow;
                 item.Tags = info.Tags;
+                item.HomePageUrl = info.HomePageUrl;
+            }
+            else if (info.Type == ChannelItemType.Folder && info.FolderType == ChannelFolderType.Container)
+            {
+                // At least update names of container folders
+                if (item.Name != info.Name)
+                {
+                    item.Name = info.Name;
+                    forceUpdate = true;
+                }
+            }
+
+            var hasArtists = item as IHasArtist;
+            if (hasArtists != null)
+            {
+                hasArtists.Artists = info.Artists;
+            }
+
+            var hasAlbumArtists = item as IHasAlbumArtist;
+            if (hasAlbumArtists != null)
+            {
+                hasAlbumArtists.AlbumArtists = info.AlbumArtists;
             }
 
             var trailer = item as Trailer;

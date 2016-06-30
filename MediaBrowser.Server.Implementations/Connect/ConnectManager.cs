@@ -139,9 +139,12 @@ namespace MediaBrowser.Server.Implementations.Connect
             _securityManager = securityManager;
             _fileSystem = fileSystem;
 
-            _config.ConfigurationUpdated += _config_ConfigurationUpdated;
-
             LoadCachedData();
+        }
+
+        internal void Start()
+        {
+            _config.ConfigurationUpdated += _config_ConfigurationUpdated;
         }
 
         internal void OnWanAddressResolved(IPAddress address)
@@ -177,7 +180,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             try
             {
-                var localAddress = _appHost.LocalApiUrl;
+                var localAddress = await _appHost.GetLocalApiUrl().ConfigureAwait(false);
 
                 var hasExistingRecord = !string.IsNullOrWhiteSpace(ConnectServerId) &&
                                   !string.IsNullOrWhiteSpace(ConnectAccessKey);
@@ -217,24 +220,26 @@ namespace MediaBrowser.Server.Implementations.Connect
         }
 
         private string _lastReportedIdentifier;
-        private string GetConnectReportingIdentifier()
+        private async Task<string> GetConnectReportingIdentifier()
         {
-            return GetConnectReportingIdentifier(_appHost.LocalApiUrl, WanApiAddress);
+            var url = await _appHost.GetLocalApiUrl().ConfigureAwait(false);
+            return GetConnectReportingIdentifier(url, WanApiAddress);
         }
         private string GetConnectReportingIdentifier(string localAddress, string remoteAddress)
         {
             return (remoteAddress ?? string.Empty) + (localAddress ?? string.Empty);
         }
 
-        void _config_ConfigurationUpdated(object sender, EventArgs e)
+        async void _config_ConfigurationUpdated(object sender, EventArgs e)
         {
             // If info hasn't changed, don't report anything
-            if (string.Equals(_lastReportedIdentifier, GetConnectReportingIdentifier(), StringComparison.OrdinalIgnoreCase))
+            var connectIdentifier = await GetConnectReportingIdentifier().ConfigureAwait(false);
+            if (string.Equals(_lastReportedIdentifier, connectIdentifier, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
 
-            UpdateConnectInfo();
+            await UpdateConnectInfo().ConfigureAwait(false);
         }
 
         private async Task CreateServerRegistration(string wanApiAddress, string localAddress)
@@ -356,6 +361,8 @@ namespace MediaBrowser.Server.Implementations.Connect
         private void LoadCachedData()
         {
             var path = CacheFilePath;
+
+            _logger.Info("Loading data from {0}", path);
 
             try
             {

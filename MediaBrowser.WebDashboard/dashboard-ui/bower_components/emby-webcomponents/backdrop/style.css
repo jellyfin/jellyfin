@@ -1,3 +1,7 @@
+.backdropContainer {
+    contain: layout style;
+}
+
 .backdropImage {
     background-repeat: no-repeat;
     background-position: center center;
@@ -8,4 +12,5 @@
     left: 0;
     right: 0;
     bottom: 0;
+    contain: layout style;
 }

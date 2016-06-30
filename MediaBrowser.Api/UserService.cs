@@ -385,7 +385,7 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("User not found");
             }
 
-            await _sessionMananger.RevokeUserTokens(user.Id.ToString("N")).ConfigureAwait(false);
+            await _sessionMananger.RevokeUserTokens(user.Id.ToString("N"), null).ConfigureAwait(false);
 
             await _userManager.DeleteUser(user).ConfigureAwait(false);
         }
@@ -465,6 +465,10 @@ namespace MediaBrowser.Api
                 }
 
                 await _userManager.ChangePassword(user, request.NewPassword).ConfigureAwait(false);
+
+                var currentToken = AuthorizationContext.GetAuthorizationInfo(Request).Token;
+
+                await _sessionMananger.RevokeUserTokens(user.Id.ToString("N"), currentToken).ConfigureAwait(false);
             }
         }
 
@@ -602,7 +606,8 @@ namespace MediaBrowser.Api
                     throw new ArgumentException("There must be at least one enabled user in the system.");
                 }
 
-                await _sessionMananger.RevokeUserTokens(user.Id.ToString("N")).ConfigureAwait(false);
+                var currentToken = AuthorizationContext.GetAuthorizationInfo(Request).Token;
+                await _sessionMananger.RevokeUserTokens(user.Id.ToString("N"), currentToken).ConfigureAwait(false);
             }
 
             await _userManager.UpdateUserPolicy(request.Id, request).ConfigureAwait(false);

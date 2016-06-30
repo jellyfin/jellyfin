@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'appStorage', 'libraryBrowser', 'apphost', 'jQuery', 'itemHelper', 'mediaInfo'], function (appSettings, appStorage, LibraryBrowser, appHost, $, itemHelper, mediaInfo) {
+﻿define(['appSettings', 'appStorage', 'libraryBrowser', 'apphost', 'itemHelper', 'mediaInfo'], function (appSettings, appStorage, LibraryBrowser, appHost, itemHelper, mediaInfo) {
 
     var showOverlayTimeout;
 
@@ -149,16 +149,16 @@
 
             var resumePosition = (item.UserData || {}).PlaybackPositionTicks || 0;
 
-            html += '<button is="paper-icon-button-light" class="btnPlayItem" data-itemid="' + item.Id + '" data-itemtype="' + item.Type + '" data-isfolder="' + item.IsFolder + '" data-mediatype="' + item.MediaType + '" data-resumeposition="' + resumePosition + '"><iron-icon icon="play-circle-outline"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" class="btnPlayItem autoSize" data-itemid="' + item.Id + '" data-itemtype="' + item.Type + '" data-isfolder="' + item.IsFolder + '" data-mediatype="' + item.MediaType + '" data-resumeposition="' + resumePosition + '"><i class="md-icon">play_circle_outline</i></button>';
             buttonCount++;
         }
 
         if (commands.indexOf('trailer') != -1) {
-            html += '<button is="paper-icon-button-light" class="btnPlayTrailer" data-itemid="' + item.Id + '"><iron-icon icon="videocam"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" class="btnPlayTrailer autoSize" data-itemid="' + item.Id + '"><i class="md-icon">videocam</i></button>';
             buttonCount++;
         }
 
-        html += '<button is="paper-icon-button-light" class="btnMoreCommands"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
+        html += '<button is="paper-icon-button-light" class="btnMoreCommands autoSize"><i class="md-icon">more_vert</i></button>';
         buttonCount++;
 
         html += '</div>';
@@ -168,7 +168,7 @@
         return html;
     }
 
-    function onTrailerButtonClick() {
+    function onTrailerButtonClick(e) {
 
         var id = this.getAttribute('data-itemid');
 
@@ -176,10 +176,12 @@
             MediaController.play({ items: trailers });
         });
 
+        e.preventDefault();
+        e.stopPropagation();
         return false;
     }
 
-    function onPlayItemButtonClick() {
+    function onPlayItemButtonClick(e) {
 
         var target = this;
 
@@ -191,10 +193,12 @@
 
         LibraryBrowser.showPlayMenu(this, id, type, isFolder, mediaType, resumePosition);
 
+        e.preventDefault();
+        e.stopPropagation();
         return false;
     }
 
-    function onMoreButtonClick() {
+    function onMoreButtonClick(e) {
 
         var card = parentWithClass(this, 'card');
 
@@ -202,6 +206,8 @@
             showPlayOptions: false
         });
 
+        e.preventDefault();
+        e.stopPropagation();
         return false;
     }
 
@@ -249,7 +255,7 @@
         var displayContextItem = card;
 
         if (!card.classList.contains('card') && !card.classList.contains('listItem')) {
-            card = $(card).parents('.listItem,.card')[0];
+            card = parentWithAnyClass(card, ['listItem', 'card']);
         }
 
         var itemId = card.getAttribute('data-itemid');
@@ -494,15 +500,20 @@
                         switch (id) {
 
                             case 'addtocollection':
-                                require(['collectioneditor'], function (collectioneditor) {
+                                require(['collectionEditor'], function (collectionEditor) {
 
-                                    new collectioneditor().show([itemId]);
+                                    new collectionEditor().show({
+                                        items: [itemId],
+                                        serverId: serverId
+                                    });
                                 });
                                 break;
                             case 'playlist':
-                                require(['playlistManager'], function (playlistManager) {
-
-                                    playlistManager.showPanel([itemId]);
+                                require(['playlistEditor'], function (playlistEditor) {
+                                    new playlistEditor().show({
+                                        items: [itemId],
+                                        serverId: serverId
+                                    });
                                 });
                                 break;
                             case 'delete':
@@ -533,17 +544,11 @@
                                 }
                                 break;
                             case 'refresh':
-                                ApiClient.refreshItem(itemId, {
-
-                                    Recursive: true,
-                                    ImageRefreshMode: 'FullRefresh',
-                                    MetadataRefreshMode: 'FullRefresh',
-                                    ReplaceAllImages: false,
-                                    ReplaceAllMetadata: true
-                                });
-
-                                require(['toast'], function (toast) {
-                                    toast(Globalize.translate('MessageRefreshQueued'));
+                                require(['refreshDialog'], function (refreshDialog) {
+                                    new refreshDialog({
+                                        itemIds: [itemId],
+                                        serverId: serverId
+                                    }).show();
                                 });
                                 break;
                             case 'instantmix':
@@ -613,7 +618,7 @@
                                 LibraryBrowser.playInExternalPlayer(itemId);
                                 break;
                             case 'canceltimer':
-                                deleteTimer(itemId, $(card).parents('.itemsContainer')[0]);
+                                deleteTimer(itemId, parentWithClass(card, 'itemsContainer'));
                                 break;
                             case 'share':
                                 require(['sharingmanager'], function (sharingManager) {
@@ -624,10 +629,26 @@
                                 });
                                 break;
                             case 'removefromplaylist':
-                                $(card).parents('.itemsContainer').trigger('removefromplaylist', [playlistItemId]);
+                                var itemsContainer = parentWithClass(card, 'itemsContainer');
+                                if (itemsContainer) {
+                                    itemsContainer.dispatchEvent(new CustomEvent('removefromplaylist', {
+                                        detail: {
+                                            playlistItemId: playlistItemId
+                                        },
+                                        cancelable: false
+                                    }));
+                                }
                                 break;
                             case 'removefromcollection':
-                                $(card).parents('.collectionItems').trigger('removefromcollection', [itemId]);
+                                var itemsContainer = parentWithClass(card, 'collectionItems');
+                                if (itemsContainer) {
+                                    itemsContainer.dispatchEvent(new CustomEvent('removefromcollection', {
+                                        detail: {
+                                            itemId: itemId
+                                        },
+                                        cancelable: false
+                                    }));
+                                }
                                 break;
                             default:
                                 break;
@@ -644,7 +665,7 @@
         var card = e.target;
 
         if (!card.classList.contains('card') && !card.classList.contains('listItem')) {
-            card = $(card).parents('.listItem,.card')[0];
+            card = parentWithAnyClass(card, ['listItem', 'card']);
         }
 
         var id = card.getAttribute('data-itemid');
@@ -694,7 +715,7 @@
 
         if (listviewMenuButton) {
             showContextMenu(listviewMenuButton, {});
-
+            e.stopPropagation();
             e.preventDefault();
             return false;
         }
@@ -727,9 +748,11 @@
 
         var userId = Dashboard.getCurrentUserId();
 
+        var playedIndicator = card.querySelector('.playedIndicator');
+        var playedIndicatorHtml = playedIndicator ? playedIndicator.innerHTML : null;
         var options = {
 
-            Limit: parseInt($('.playedIndicator', card).html() || '10'),
+            Limit: parseInt(playedIndicatorHtml || '10'),
             Fields: "PrimaryImageAspectRatio,DateCreated",
             ParentId: itemId,
             GroupItems: false
@@ -758,6 +781,25 @@
         e.stopPropagation();
         e.preventDefault();
         return false;
+    }
+
+    function hasAnyClass(elem, classNames) {
+        return classNames.filter(function (c) {
+            return elem.classList.contains(c);
+        }).length > 0;
+    }
+
+    function parentWithAnyClass(elem, classNames) {
+
+        while (!elem.classList || !hasAnyClass(elem, classNames)) {
+            elem = elem.parentNode;
+
+            if (!elem) {
+                return null;
+            }
+        }
+
+        return elem;
     }
 
     function parentWithClass(elem, className) {
@@ -818,12 +860,19 @@
 
                 innerElem.innerHTML = getOverlayHtml(item, user, card, commands);
 
-                $('.btnPlayItem', innerElem).on('click', onPlayItemButtonClick);
-                $('.btnPlayTrailer', innerElem).on('click', onTrailerButtonClick);
-                $('.btnMoreCommands', innerElem).on('click', onMoreButtonClick);
+                var btnPlayItem = innerElem.querySelector('.btnPlayItem');
+                if (btnPlayItem) {
+                    btnPlayItem.addEventListener('click', onPlayItemButtonClick);
+                }
+                var btnPlayTrailer = innerElem.querySelector('.btnPlayTrailer');
+                if (btnPlayTrailer) {
+                    btnPlayTrailer.addEventListener('click', onTrailerButtonClick);
+                }
+                var btnMoreCommands = innerElem.querySelector('.btnMoreCommands');
+                if (btnMoreCommands) {
+                    btnMoreCommands.addEventListener('click', onMoreButtonClick);
+                }
             });
-
-            $(innerElem).show();
 
             slideUpToShow(innerElem);
         }
@@ -883,17 +932,6 @@
         }
 
         initTapHoldMenus(curr);
-    };
-
-    $.fn.createCardMenus = function (options) {
-
-        for (var i = 0, length = this.length; i < length; i++) {
-
-            var curr = this[i];
-            LibraryBrowser.createCardMenus(curr, options);
-        }
-
-        return this;
     };
 
     function initTapHoldMenus(elem) {
@@ -1039,8 +1077,8 @@
                 cssClass += ' checkedInitial';
             }
             var checkedAttribute = isChecked ? ' checked' : '';
-            itemSelectionPanel.innerHTML = '<paper-checkbox class="' + cssClass + '"' + checkedAttribute + '></paper-checkbox>';
-            var chkItemSelect = itemSelectionPanel.querySelector('paper-checkbox');
+            itemSelectionPanel.innerHTML = '<label class="checkboxContainer"><input type="checkbox" is="emby-checkbox" class="' + cssClass + '"' + checkedAttribute + '/><span></span></label>>';
+            var chkItemSelect = itemSelectionPanel.querySelector('.chkItemSelect');
             chkItemSelect.addEventListener('change', onSelectionChange);
         }
     }
@@ -1059,11 +1097,11 @@
             var html = '';
 
             html += '<div style="float:left;">';
-            html += '<button is="paper-icon-button-light" class="btnCloseSelectionPanel"><iron-icon icon="close"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" class="btnCloseSelectionPanel autoSize"><i class="md-icon">close</i></button>';
             html += '<span class="itemSelectionCount"></span>';
             html += '</div>';
 
-            html += '<button is="paper-icon-button-light" class="btnSelectionPanelOptions" style="margin-left:auto;"><iron-icon icon="more-vert"></iron-icon></button>';
+            html += '<button is="paper-icon-button-light" class="btnSelectionPanelOptions autoSize" style="margin-left:auto;"><i class="md-icon">more_vert</i></button>';
 
             selectionCommandsPanel.innerHTML = html;
 
@@ -1101,7 +1139,7 @@
 
     function showSelections(initialCard) {
 
-        require(['paper-checkbox'], function () {
+        require(['emby-checkbox'], function () {
             var cards = document.querySelectorAll('.card');
             for (var i = 0, length = cards.length; i < length; i++) {
                 showSelection(cards[i], initialCard == cards[i]);
@@ -1228,22 +1266,28 @@
                     callback: function (id) {
 
                         var items = selectedItems.slice(0);
+                        var serverId = ApiClient.serverInfo().Id;
 
                         switch (id) {
 
                             case 'addtocollection':
-                                require(['collectioneditor'], function (collectioneditor) {
+                                require(['collectionEditor'], function (collectionEditor) {
 
-                                    new collectioneditor().show(items);
+                                    new collectionEditor().show({
+                                        items: items,
+                                        serverId: serverId
+                                    });
                                 });
                                 hideSelections();
                                 break;
                             case 'playlist':
-                                require(['playlistManager'], function (playlistManager) {
-
-                                    playlistManager.showPanel(items);
-                                    hideSelections();
+                                require(['playlistEditor'], function (playlistEditor) {
+                                    new playlistEditor().show({
+                                        items: items,
+                                        serverId: serverId
+                                    });
                                 });
+                                hideSelections();
                                 break;
                             case 'delete':
                                 LibraryBrowser.deleteItems(items).then(function () {
@@ -1267,22 +1311,11 @@
                                 hideSelections();
                                 break;
                             case 'refresh':
-                                items.map(function (itemId) {
-
-                                    // TODO: Create an endpoint to do this in bulk
-                                    ApiClient.refreshItem(itemId, {
-
-                                        Recursive: true,
-                                        ImageRefreshMode: 'FullRefresh',
-                                        MetadataRefreshMode: 'FullRefresh',
-                                        ReplaceAllImages: false,
-                                        ReplaceAllMetadata: true
-                                    });
-
-                                });
-
-                                require(['toast'], function (toast) {
-                                    toast(Globalize.translate('MessageRefreshQueued'));
+                                require(['refreshDialog'], function (refreshDialog) {
+                                    new refreshDialog({
+                                        itemIds: items,
+                                        serverId: serverId
+                                    }).show();
                                 });
                                 hideSelections();
                                 break;
@@ -1337,7 +1370,7 @@
 
                     Dashboard.hideLoadingMsg();
                     hideSelections();
-                    $('.itemsContainer', page).trigger('needsrefresh');
+                    page.querySelector('.itemsContainer').dispatchEvent(new CustomEvent('needsrefresh', {}));
                 });
             });
         });
@@ -1397,16 +1430,18 @@
 
     function playAllFromHere(index, itemsContainer, method) {
 
-        var ids = $('.mediaItem', itemsContainer).get().map(function (i) {
+        var ids = [];
 
-            var node = i;
+        var mediaItems = itemsContainer.querySelectorAll('.mediaItem');
+        for (var i = 0, length = mediaItems.length; i < length; i++) {
+            var node = mediaItems[i];
             var id = node.getAttribute('data-itemid');
             while (!id) {
                 node = node.parentNode;
                 id = node.getAttribute('data-itemid');
             }
-            return id;
-        });
+            ids.push(id);
+        }
 
         ids = ids.slice(index);
 
@@ -1438,16 +1473,20 @@
                 SupportsSync: true
             };
 
-            if (LibraryBrowser.enableSync(item, user)) {
-                $('.categorySyncButton', page).removeClass('hide');
-            } else {
-                $('.categorySyncButton', page).addClass('hide');
+            var categorySyncButtons = page.querySelectorAll('.categorySyncButton');
+            for (var i = 0, length = categorySyncButtons.length; i < length; i++) {
+                if (LibraryBrowser.enableSync(item, user)) {
+                    categorySyncButtons[i].classList.remove('hide');
+                } else {
+                    categorySyncButtons[i].classList.add('hide');
+                }
             }
         });
     }
 
-    function onCategorySyncButtonClick(page, button) {
+    function onCategorySyncButtonClick(e) {
 
+        var button = this;
         var category = button.getAttribute('data-category');
         var parentId = LibraryMenu.getTopParentId();
 
@@ -1466,15 +1505,15 @@
         page.addEventListener('click', onItemWithActionClick);
 
         var itemsContainers = page.querySelectorAll('.itemsContainer:not(.noautoinit)');
-        for (var i = 0, length = itemsContainers.length; i < length; i++) {
+        var i, length;
+        for (i = 0, length = itemsContainers.length; i < length; i++) {
             LibraryBrowser.createCardMenus(itemsContainers[i]);
         }
 
-        $('.categorySyncButton', page).on('click', function () {
-
-            onCategorySyncButtonClick(page, this);
-        });
-
+        var categorySyncButtons = page.querySelectorAll('.categorySyncButton');
+        for (i = 0, length = categorySyncButtons.length; i < length; i++) {
+            categorySyncButtons[i].addEventListener('click', onCategorySyncButtonClick);
+        }
     });
 
     pageClassOn('pageshow', "libraryPage", function () {
@@ -1505,7 +1544,7 @@
                 playedIndicator.classList.add('playedIndicator');
                 card.querySelector('.cardContent').appendChild(playedIndicator);
             }
-            playedIndicator.innerHTML = '<iron-icon icon="check"></iron-icon>';
+            playedIndicator.innerHTML = '<i class="md-icon">check</i>';
         }
         else if (userData.UnplayedItemCount) {
 
@@ -1521,38 +1560,48 @@
         }
 
         var progressHtml = LibraryBrowser.getItemProgressBarHtml(userData);
+        var cardProgress;
 
         if (progressHtml) {
-            var cardProgress = card.querySelector('.cardProgress');
+            cardProgress = card.querySelector('.cardProgress');
 
             if (!cardProgress) {
                 cardProgress = document.createElement('div');
                 cardProgress.classList.add('cardProgress');
 
-                $('.cardFooter', card).append(cardProgress);
+                var cardFooter = card.querySelector('.cardFooter');
+                if (cardFooter) {
+                    cardFooter.appendChild(cardProgress);
+                }
             }
 
             cardProgress.innerHTML = progressHtml;
         }
         else {
-            $('.cardProgress', card).remove();
+            cardProgress = card.querySelector('.cardProgress');
+            if (cardProgress) {
+                cardProgress.parentNode.removeChild(cardProgress);
+            }
         }
     }
 
     function onUserDataChanged(userData) {
 
-        $(document.querySelectorAll("*[data-itemid='" + userData.ItemId + "']")).each(function () {
+        var elems = document.querySelectorAll("*[data-itemid='" + userData.ItemId + "']");
 
-            var mediaType = this.getAttribute('data-mediatype');
+        for (var i = 0, length = elems.length; i < length; i++) {
+
+            var elem = elems[i];
+            var mediaType = elem.getAttribute('data-mediatype');
 
             if (mediaType == 'Video') {
-                this.setAttribute('data-positionticks', (userData.PlaybackPositionTicks || 0));
+                elem.setAttribute('data-positionticks', (userData.PlaybackPositionTicks || 0));
 
-                if (this.classList.contains('card')) {
-                    renderUserDataChanges(this, userData);
+                if (elem.classList.contains('card')) {
+                    renderUserDataChanges(elem, userData);
                 }
             }
-        });
+        }
     }
 
     function onWebSocketMessage(e, data) {
@@ -1576,10 +1625,6 @@
         Events.on(apiClient, "websocketmessage", onWebSocketMessage);
     }
 
-    function clearRefreshTimes() {
-        $('.hasrefreshtime').removeClass('hasrefreshtime').removeAttr('data-lastrefresh');
-    }
-
     if (window.ApiClient) {
         initializeApiClient(window.ApiClient);
     }
@@ -1587,8 +1632,5 @@
     Events.on(ConnectionManager, 'apiclientcreated', function (e, apiClient) {
         initializeApiClient(apiClient);
     });
-
-    Events.on(ConnectionManager, 'localusersignedin', clearRefreshTimes);
-    Events.on(ConnectionManager, 'localusersignedout', clearRefreshTimes);
 
 });

@@ -4,10 +4,10 @@
         ${ButtonEdit}
     </div>
     <div style="margin-left:auto; display: flex; align-items: center; justify-content: center;">
-        <paper-button class="btnHeaderSave accent" tabindex="-1">
+        <button is="emby-button" type="button" class="btnHeaderSave accent" tabindex="-1">
             <iron-icon icon="check"></iron-icon>
             <span>${ButtonSave}</span>
-        </paper-button>
+        </button>
         <button is="paper-icon-button-light" class="btnMore" tabindex="-1"><iron-icon icon="more-vert"></iron-icon></button>
     </div>
 </div>
@@ -16,137 +16,147 @@
     <div class="metadataFormFields">
 
         <div style="padding: 0 0 10px;">
-            <div id="fldContentType" style="display:none;">
-                <label for="selectContentType" class="selectLabel">${LabelContentType}</label>
-                <select id="selectContentType" data-mini="true"></select>
+            <div id="fldContentType" style="display:none;" class="selectContainer">
+                <select is="emby-select" id="selectContentType" label="${LabelContentType}"></select>
             </div>
-            <div id="fldPath">
-                <paper-input id="txtPath" type="text" label="${LabelPath}" readonly></paper-input>
+            <div id="fldPath" class="inputContainer">
+                <input is="emby-input" id="txtPath" type="text" label="${LabelPath}" readonly />
             </div>
-            <div>
-                <paper-input id="txtName" type="text" label="${LabelTitle}" required="required"></paper-input>
+            <div class="inputContainer">
+                <input is="emby-input" id="txtName" type="text" label="${LabelTitle}" required="required" />
             </div>
-            <div id="fldOriginalName">
-                <paper-input id="txtOriginalName" type="text" label="${LabelOriginalTitle}"></paper-input>
+            <div id="fldOriginalName" class="inputContainer">
+                <input is="emby-input" id="txtOriginalName" type="text" label="${LabelOriginalTitle}" />
             </div>
-            <div>
-                <paper-input id="txtSortName" type="text" label="${LabelSortTitle}"></paper-input>
+            <div class="inputContainer">
+                <input is="emby-input" id="txtSortName" type="text" label="${LabelSortTitle}" />
             </div>
-            <div id="fldDateAdded" style="display: none;">
-                <paper-input id="txtDateAdded" type="date" label="${LabelDateAdded}"></paper-input>
+            <div id="fldDateAdded" style="display: none;" class="inputContainer">
+                <input is="emby-input" id="txtDateAdded" type="date" label="${LabelDateAdded}" />
                 <div class="fieldDescription">${ConfigureDateAdded}</div>
-                <br/>
             </div>
-            <div id="fldStatus" style="display: none;margin:1em 0;">
-                <label for="selectStatus" class="selectLabel">${LabelStatus}</label>
-                <select id="selectStatus" data-mini="true"></select>
+            <div id="fldStatus" style="display: none;" class="selectContainer">
+                <select is="emby-select" id="selectStatus" label="${LabelStatus}"></select>
             </div>
-            <div id="fldArtist" style="display: none;">
-                <paper-input id="txtArtist" type="text" label="${LabelArtists}" placeholder="${LabelArtistsHelp}"></paper-input>
+            <div id="fldArtist" style="display: none;" class="inputContainer">
+                <input is="emby-input" id="txtArtist" type="text" label="${LabelArtists}" placeholder="${LabelArtistsHelp}" />
             </div>
-            <div id="fldAlbumArtist" style="display: none;">
-                <paper-input id="txtAlbumArtist" type="text" label="${LabelAlbumArtists}" placeholder="${LabelArtistsHelp}"></paper-input>
+            <div id="fldAlbumArtist" style="display: none;" class="inputContainer">
+                <input is="emby-input" id="txtAlbumArtist" type="text" label="${LabelAlbumArtists}" placeholder="${LabelArtistsHelp}" />
             </div>
-            <div id="fldAlbum" style="display: none;">
-                <paper-input id="txtAlbum" type="text" label="${LabelAlbum}"></paper-input>
+            <div id="fldAlbum" style="display: none;" class="inputContainer">
+                <input is="emby-input" id="txtAlbum" type="text" label="${LabelAlbum}" />
             </div>
-            <div id="fldParentIndexNumber" style="display: none;">
-                <paper-input id="txtParentIndexNumber" type="number"></paper-input>
+            <div id="fldParentIndexNumber" style="display: none;" class="inputContainer">
+                <input is="emby-input" id="txtParentIndexNumber" type="number" />
             </div>
-            <div id="fldIndexNumber" style="display: none;">
-                <paper-input id="txtIndexNumber" type="number" pattern="[0-9]*"></paper-input>
+            <div id="fldIndexNumber" style="display: none;" class="inputContainer">
+                <input is="emby-input" id="txtIndexNumber" type="number" pattern="[0-9]*" />
             </div>
-            <div id="fldCommunityRating" style="display: none;">
-                <paper-input id="txtCommunityRating" type="number" step=".1" min="0" max="10" label="${LabelCommunityRating}"></paper-input>
+            <div id="fldCommunityRating" style="display: none;" class="inputContainer">
+                <input is="emby-input" id="txtCommunityRating" type="number" step=".1" min="0" max="10" label="${LabelCommunityRating}" />
             </div>
-            <div id="fldCommunityVoteCount" style="display: none;">
-                <paper-input id="txtCommunityVoteCount" type="number" step="1" label="${LabelVoteCount}"></paper-input>
+            <div id="fldCommunityVoteCount" style="display: none;" class="inputContainer">
+                <input is="emby-input" id="txtCommunityVoteCount" type="number" step="1" label="${LabelVoteCount}" />
             </div>
-            <div id="fldMetascore" style="display: none;">
-                <paper-input id="txtMetascore" type="number" step="1" min="0" max="100" label="${LabelMetascore}"></paper-input>
+            <div id="fldMetascore" style="display: none;" class="inputContainer">
+                <input is="emby-input" id="txtMetascore" type="number" step="1" min="0" max="100" label="${LabelMetascore}" />
             </div>
-            <div id="fldCriticRating" style="display: none;">
-                <paper-input id="txtCriticRating" type="number" step=".1" label="${LabelCriticRating}"></paper-input>
+            <div id="fldCriticRating" style="display: none;" class="inputContainer">
+                <input is="emby-input" id="txtCriticRating" type="number" step=".1" label="${LabelCriticRating}" />
             </div>
-            <div id="fldCriticRatingSummary" style="display: none;">
-                <paper-input id="txtCriticRatingSummary" type="text" label="${LabelCriticRatingSummary}"></paper-input>
+            <div id="fldCriticRatingSummary" style="display: none;" class="inputContainer">
+                <input is="emby-input" id="txtCriticRatingSummary" type="text" label="${LabelCriticRatingSummary}" />
             </div>
-            <div id="fldAwardSummary" style="display: none;">
-                <paper-input id="txtAwardSummary" type="text" label="${LabelAwardSummary}"></paper-input>
+            <div id="fldAwardSummary" style="display: none;" class="inputContainer">
+                <input is="emby-input" id="txtAwardSummary" type="text" label="${LabelAwardSummary}" />
             </div>
-            <div>
-                <paper-input id="txtHomePageUrl" type="text" label="${LabelWebsite}"></paper-input>
+            <div class="inputContainer">
+                <input is="emby-input" id="txtHomePageUrl" type="text" label="${LabelWebsite}" />
             </div>
-            <div id="fldTagline" style="display: none;">
-                <paper-input id="txtTagline" type="text" label="${LabelTagline}"></paper-input>
+            <div id="fldTagline" style="display: none;" class="inputContainer">
+                <input is="emby-input" id="txtTagline" type="text" label="${LabelTagline}" />
             </div>
-            <div>
-                <label for="txtOverview" class="likePaperLabel">${LabelOverview}</label>
-                <paper-textarea id="txtOverview"></paper-textarea>
-                <br />
+            <div class="inputContainer">
+                <textarea is="emby-textarea" id="txtOverview" label="${LabelOverview}"></textarea>
             </div>
-            <div id="fldShortOverview" style="display: none;">
-                <paper-input id="txtShortOverview" type="text" label="${LabelShortOverview}"></paper-input>
+            <div id="fldShortOverview" style="display: none;" class="inputContainer">
+                <input is="emby-input" id="txtShortOverview" type="text" label="${LabelShortOverview}" />
             </div>
-            <div id="fldPremiereDate">
-                <paper-input id="txtPremiereDate" label="${LabelReleaseDate}" type="date"></paper-input>
+            <div id="fldPremiereDate" class="inputContainer">
+                <input is="emby-input" id="txtPremiereDate" label="${LabelReleaseDate}" type="date" />
             </div>
-            <div id="fldYear" style="display: none;">
-                <paper-input id="txtProductionYear" type="number" label="${LabelYear}"></paper-input>
+            <div id="fldYear" style="display: none;" class="inputContainer">
+                <input is="emby-input" id="txtProductionYear" type="number" label="${LabelYear}" />
             </div>
-            <div id="fldPlaceOfBirth" style="display: none;">
-                <paper-input id="txtPlaceOfBirth" type="text" label="${LabelPlaceOfBirth}"></paper-input>
+            <div id="fldPlaceOfBirth" style="display: none;" class="inputContainer">
+                <input is="emby-input" id="txtPlaceOfBirth" type="text" label="${LabelPlaceOfBirth}" />
             </div>
-            <div id="fldEndDate">
-                <paper-input id="txtEndDate" label="${LabelEndDate}" type="date"></paper-input>
+            <div id="fldEndDate" class="inputContainer">
+                <input is="emby-input" id="txtEndDate" label="${LabelEndDate}" type="date" />
             </div>
             <div id="fldAirDays" style="display: none;">
                 <p>${LabelAirDays}</p>
 
-                <div>
-                    <paper-checkbox class="chkAirDay" data-day="Sunday">${OptionSunday}</paper-checkbox>
-                    <paper-checkbox class="chkAirDay" data-day="Monday">${OptionMonday}</paper-checkbox>
-                    <paper-checkbox class="chkAirDay" data-day="Tuesday">${OptionTuesday}</paper-checkbox>
-                    <paper-checkbox class="chkAirDay" data-day="Wednesday">${OptionWednesday}</paper-checkbox>
-                    <paper-checkbox class="chkAirDay" data-day="Thursday">${OptionThursday}</paper-checkbox>
-                    <paper-checkbox class="chkAirDay" data-day="Friday">${OptionFriday}</paper-checkbox>
-                    <paper-checkbox class="chkAirDay" data-day="Saturday">${OptionSaturday}</paper-checkbox>
+                <div class="checkboxList">
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkAirDay" data-day="Sunday" />
+                        <span>${OptionSunday}</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkAirDay" data-day="Monday" />
+                        <span>${OptionMonday}</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkAirDay" data-day="Tuesday" />
+                        <span>${OptionTuesday}</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkAirDay" data-day="Wednesday" />
+                        <span>${OptionWednesday}</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkAirDay" data-day="Thursday" />
+                        <span>${OptionThursday}</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkAirDay" data-day="Friday" />
+                        <span>${OptionFriday}</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkAirDay" data-day="Saturday" />
+                        <span>${OptionSaturday}</span>
+                    </label>
                 </div>
                 <br />
 
             </div>
-            <div id="fldAirTime" style="display: none;">
-                <paper-input id="txtAirTime" type="text" label="${LabelAirTime}"></paper-input>
+            <div id="fldAirTime" style="display: none;" class="inputContainer">
+                <input is="emby-input" id="txtAirTime" type="text" label="${LabelAirTime}" />
             </div>
-            <div id="fldSeriesRuntime" style="display: none;">
-                <paper-input id="txtSeriesRuntime" type="number" label="${LabelRuntimeMinutes}"></paper-input>
+            <div id="fldSeriesRuntime" style="display: none;" class="inputContainer">
+                <input is="emby-input" id="txtSeriesRuntime" type="number" label="${LabelRuntimeMinutes}" />
             </div>
-            <div id="fldOfficialRating" style="display: none;">
-                <br />
-                <label for="selectOfficialRating" class="selectLabel">${LabelParentalRating}</label>
-                <select id="selectOfficialRating" data-mini="true"></select>
+            <div id="fldOfficialRating" style="display: none;" class="selectContainer">
+                <select is="emby-select" id="selectOfficialRating" label="${LabelParentalRating}"></select>
             </div>
-            <div id="fldCustomRating" style="display: none;">
-                <br />
-                <label for="selectCustomRating" class="selectLabel">${LabelCustomRating}</label>
-                <select id="selectCustomRating" data-mini="true"></select>
+            <div id="fldCustomRating" style="display: none;" class="selectContainer">
+                <select is="emby-select" id="selectCustomRating" label="${LabelCustomRating}"></select>
             </div>
-            <div id="fldBudget" style="display: none;">
-                <paper-input id="txtBudget" type="number" label="${LabelBudget}"></paper-input>
+            <div id="fldBudget" style="display: none;" class="inputContainer">
+                <input is="emby-input" id="txtBudget" type="number" label="${LabelBudget}" />
             </div>
-            <div id="fldRevenue" style="display: none;">
-                <paper-input id="txtRevenue" type="number" label="${LabelRevenue}"></paper-input>
+            <div id="fldRevenue" style="display: none;" class="inputContainer">
+                <input is="emby-input" id="txtRevenue" type="number" label="${LabelRevenue}" />
             </div>
-            <div id="fldOriginalAspectRatio" style="display: none;">
-                <paper-input id="txtOriginalAspectRatio" type="text" label="${LabelOriginalAspectRatio}"></paper-input>
+            <div id="fldOriginalAspectRatio" style="display: none;" class="inputContainer">
+                <input is="emby-input" id="txtOriginalAspectRatio" type="text" label="${LabelOriginalAspectRatio}" />
             </div>
-            <div id="fldPlayers" style="display: none;">
-                <paper-input id="txtPlayers" type="number" pattern="[0-9]*" label="${LabelPlayers}"></paper-input>
+            <div id="fldPlayers" style="display: none;" class="inputContainer">
+                <input is="emby-input" id="txtPlayers" type="number" pattern="[0-9]*" label="${LabelPlayers}" />
             </div>
-            <div id="fld3dFormat" style="display: none;">
-                <br />
-                <label for="select3dFormat" class="selectLabel">${Label3DFormat}</label>
-                <select id="select3dFormat" data-mini="true">
+            <div id="fld3dFormat" style="display: none;" class="selectContainer">
+                <select is="emby-select" id="select3dFormat" label="${Label3DFormat}">
                     <option value=""></option>
                     <option value="HalfSideBySide">HSBS</option>
                     <option value="HalfTopAndBottom">HTAB</option>
@@ -162,16 +172,14 @@
             <h1>
                 ${HeaderAlternateEpisodeNumbers}
             </h1>
-            <div class="detailSectionContent">
-                <div>
-                    <paper-input id="txtDvdSeasonNumber" type="number" pattern="[0-9]*" label="${LabelDvdSeasonNumber}"></paper-input>
-                </div>
-                <div>
-                    <paper-input id="txtDvdEpisodeNumber" type="number" pattern="[0-9]*" label="${LabelDvdEpisodeNumber}"></paper-input>
-                </div>
-                <div>
-                    <paper-input id="txtAbsoluteEpisodeNumber" type="number" pattern="[0-9]*" label="${LabelAbsoluteEpisodeNumber}"></paper-input>
-                </div>
+            <div class="inputContainer">
+                <input is="emby-input" id="txtDvdSeasonNumber" type="number" pattern="[0-9]*" label="${LabelDvdSeasonNumber}" />
+            </div>
+            <div class="inputContainer">
+                <input is="emby-input" id="txtDvdEpisodeNumber" type="number" pattern="[0-9]*" label="${LabelDvdEpisodeNumber}" />
+            </div>
+            <div class="inputContainer">
+                <input is="emby-input" id="txtAbsoluteEpisodeNumber" type="number" pattern="[0-9]*" label="${LabelAbsoluteEpisodeNumber}" />
             </div>
         </div>
 
@@ -179,16 +187,14 @@
             <h1>
                 ${HeaderSpecialEpisodeInfo}
             </h1>
-            <div class="detailSectionContent">
-                <div>
-                    <paper-input id="txtAirsBeforeSeason" type="number" pattern="[0-9]*" label="${LabelAirsBeforeSeason}"></paper-input>
-                </div>
-                <div>
-                    <paper-input id="txtAirsAfterSeason" type="number" pattern="[0-9]*" label="${LabelAirsAfterSeason}"></paper-input>
-                </div>
-                <div>
-                    <paper-input id="txtAirsBeforeEpisode" type="number" pattern="[0-9]*" label="${LabelAirsBeforeEpisode}"></paper-input>
-                </div>
+            <div class="inputContainer">
+                <input is="emby-input" id="txtAirsBeforeSeason" type="number" pattern="[0-9]*" label="${LabelAirsBeforeSeason}" />
+            </div>
+            <div class="inputContainer">
+                <input is="emby-input" id="txtAirsAfterSeason" type="number" pattern="[0-9]*" label="${LabelAirsAfterSeason}" />
+            </div>
+            <div class="inputContainer">
+                <input is="emby-input" id="txtAirsBeforeEpisode" type="number" pattern="[0-9]*" label="${LabelAirsBeforeEpisode}" />
             </div>
         </div>
 
@@ -196,9 +202,7 @@
             <h1>
                 ${HeaderExternalIds}
             </h1>
-            <div class="detailSectionContent">
-                <div class="externalIds editorFieldset">
-                </div>
+            <div class="externalIds editorFieldset">
             </div>
         </div>
 
@@ -206,18 +210,11 @@
             <h1>
                 ${HeaderDisplaySettings}
             </h1>
-            <div class="detailSectionContent">
-                <div id="fldSourceType" style="display: none;" class="fldDisplaySetting">
-                    <paper-input id="txtDisplayMediaType" type="text" label="${LabelTreatImageAs}"></paper-input>
-                </div>
-                <div id="fldDisplaySpecialsInline" class="fldDisplaySetting">
-                    <br />
-                    <paper-checkbox id="chkDisplaySpecialsInline">${LabelDisplaySpecialsWithinSeasons}</paper-checkbox>
-                </div>
-                <div id="fldDisplayOrder" class="fldDisplaySetting">
-                    <label for="selectDisplayOrder" class="selectLabel" id="labelDisplayOrder">${LabelDisplayOrder}</label>
-                    <select id="selectDisplayOrder" data-mini="true"></select>
-                </div>
+            <div id="fldSourceType" style="display: none;" class="fldDisplaySetting inputContainer">
+                <input is="emby-input" id="txtDisplayMediaType" type="text" label="${LabelTreatImageAs}" />
+            </div>
+            <div id="fldDisplayOrder" class="fldDisplaySetting selectContainer">
+                <select is="emby-select" id="selectDisplayOrder" label="${LabelDisplayOrder}"></select>
             </div>
         </div>
 
@@ -225,30 +222,30 @@
             <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                 ${HeaderCountries}
             </h1>
-            <paper-button raised class="btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
-                <iron-icon icon="add"></iron-icon>
+            <button is="emby-button" type="button" class="raised btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+                <i class="md-icon">add</i>
                 <span>${ButtonAdd}</span>
-            </paper-button>
+            </button>
             <div class="paperList" id="listCountries"></div>
         </div>
         <div id="genresCollapsible" class="editableListviewContainer" style="display: none; margin-top: 3em;">
             <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                 ${HeaderGenres}
             </h1>
-            <paper-button raised class="btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
-                <iron-icon icon="add"></iron-icon>
+            <button is="emby-button" type="button" class="raised btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+                <i class="md-icon">add</i>
                 <span>${ButtonAdd}</span>
-            </paper-button>
+            </button>
             <div class="paperList" id="listGenres"></div>
         </div>
         <div data-mini="true" data-role="collapsible" id="peopleCollapsible" style="display: none; margin-top: 3em;">
             <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                 ${HeaderPeople}
             </h1>
-            <paper-button raised id="btnAddPerson" class="btnAddPerson submit mini" style="margin-left:1em;" title="${ButtonAdd}">
-                <iron-icon icon="add"></iron-icon>
+            <button is="emby-button" type="button" id="btnAddPerson" class="raised btnAddPerson submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+                <i class="md-icon">add</i>
                 <span>${ButtonAdd}</span>
-            </paper-button>
+            </button>
             <div id="peopleList" class="paperList">
             </div>
         </div>
@@ -256,59 +253,58 @@
             <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                 ${HeaderPlotKeywords}
             </h1>
-            <paper-button raised class="btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
-                <iron-icon icon="add"></iron-icon>
+            <button is="emby-button" type="button" class="raised btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+                <i class="md-icon">add</i>
                 <span>${ButtonAdd}</span>
-            </paper-button>
+            </button>
             <div class="paperList" id="listKeywords"></div>
         </div>
         <div id="studiosCollapsible" class="editableListviewContainer" style="display: none; margin-top: 3em;">
             <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                 ${HeaderStudios}
             </h1>
-            <paper-button raised class="btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
-                <iron-icon icon="add"></iron-icon>
+            <button is="emby-button" type="button" class="raised btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+                <i class="md-icon">add</i>
                 <span>${ButtonAdd}</span>
-            </paper-button>
+            </button>
             <div class="paperList" id="listStudios"></div>
         </div>
         <div id="tagsCollapsible" class="editableListviewContainer" style="display: none; margin-top: 3em;">
             <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                 ${HeaderTags}
             </h1>
-            <paper-button raised class="btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
-                <iron-icon icon="add"></iron-icon>
+            <button is="emby-button" type="button" class="raised btnAddTextItem submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+                <i class="md-icon">add</i>
                 <span>${ButtonAdd}</span>
-            </paper-button>
+            </button>
             <div class="paperList" id="listTags"></div>
         </div>
         <div id="metadataSettingsCollapsible" style="display: none; margin-top: 3em;">
             <h1>${HeaderMetadataSettings}</h1>
             <div>
-                <div>
-                    <label for="selectLanguage" class="selectLabel">${LabelMetadataDownloadLanguage}</label>
-                    <select id="selectLanguage" data-mini="true"></select>
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectLanguage" label="${LabelMetadataDownloadLanguage}"></select>
+                    <div class="fieldDescription editorfieldDescription">${MessageLeaveEmptyToInherit}</div>
                 </div>
-                <div class="fieldDescription editorfieldDescription">${MessageLeaveEmptyToInherit}</div>
-                <br />
-                <div>
-                    <label for="selectCountry" class="selectLabel">${LabelCountry}</label>
-                    <select id="selectCountry" data-mini="true"></select>
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectCountry" label="${LabelCountry}"></select>
                 </div>
                 <div class="fieldDescription editorfieldDescription">${MessageLeaveEmptyToInherit}</div>
 
-                <div>
-                    <br /><br />
-                    <paper-checkbox id="chkLockData">${LabelLockItemToPreventChanges}</paper-checkbox>
-                </div>
-                <br />
-                <div class="providerSettingsContainer" style="display: none">
+                <br /><br />
+                <label class="checkboxContainer">
+                    <input type="checkbox" is="emby-checkbox" id="chkLockData" />
+                    <span>${LabelLockItemToPreventChanges}</span>
+                </label>
+
+                <div class="providerSettingsContainer checkboxList" style="display: none">
                 </div>
             </div>
         </div>
         <br />
-        <button type="submit" data-role="none" class="clearButton btnSave">
-            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+        <button is="emby-button" type="submit" class="raised submit block btnSave">
+            <i class="md-icon">check</i>
+            <span>${ButtonSave}</span>
         </button>
     </div>
     <br />

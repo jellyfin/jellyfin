@@ -8,7 +8,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
-using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -22,8 +24,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
     {
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
+        private readonly IHttpClient _httpClient;
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IApplicationPaths _appPaths;
+        private readonly IServerApplicationPaths _appPaths;
         private readonly LiveTvOptions _liveTvOptions;
         private bool _hasExited;
         private Stream _logFileStream;
@@ -32,7 +35,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         private readonly IJsonSerializer _json;
         private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
 
-        public EncodedRecorder(ILogger logger, IFileSystem fileSystem, IMediaEncoder mediaEncoder, IApplicationPaths appPaths, IJsonSerializer json, LiveTvOptions liveTvOptions)
+        public EncodedRecorder(ILogger logger, IFileSystem fileSystem, IMediaEncoder mediaEncoder, IServerApplicationPaths appPaths, IJsonSerializer json, LiveTvOptions liveTvOptions, IHttpClient httpClient)
         {
             _logger = logger;
             _fileSystem = fileSystem;
@@ -40,39 +43,91 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _appPaths = appPaths;
             _json = json;
             _liveTvOptions = liveTvOptions;
+            _httpClient = httpClient;
         }
 
         public string GetOutputPath(MediaSourceInfo mediaSource, string targetFile)
         {
-            if (_liveTvOptions.EnableOriginalAudioWithEncodedRecordings)
-            {
-                // if the audio is aac_latm, stream copying to mp4 will fail
-                var streams = mediaSource.MediaStreams ?? new List<MediaStream>();
-                if (streams.Any(i => i.Type == MediaStreamType.Audio && (i.Codec ?? string.Empty).IndexOf("aac", StringComparison.OrdinalIgnoreCase) != -1))
-                {
-                    return Path.ChangeExtension(targetFile, ".mkv");
-                }
-            }
-
             return Path.ChangeExtension(targetFile, ".mp4");
         }
 
         public async Task Record(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
-            if (mediaSource.RunTimeTicks.HasValue)
+            var tempfile = Path.Combine(_appPaths.TranscodingTempPath, Guid.NewGuid().ToString("N") + ".ts");
+
+            try
             {
-                // The media source already has a fixed duration
-                // But add another stop 1 minute later just in case the recording gets stuck for any reason
-                var durationToken = new CancellationTokenSource(duration.Add(TimeSpan.FromMinutes(1)));
-                cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+                await RecordInternal(mediaSource, tempfile, targetFile, duration, onStarted, cancellationToken)
+                        .ConfigureAwait(false);
             }
-            else
+            finally
             {
-                // The media source if infinite so we need to handle stopping ourselves
-                var durationToken = new CancellationTokenSource(duration);
-                cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+                try
+                {
+                    File.Delete(tempfile);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error deleting recording temp file", ex);
+                }
+            }
+        }
+
+        public async Task RecordInternal(MediaSourceInfo mediaSource, string tempFile, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
+        {
+            var httpRequestOptions = new HttpRequestOptions()
+            {
+                Url = mediaSource.Path
+            };
+
+            httpRequestOptions.BufferContent = false;
+
+            using (var response = await _httpClient.SendAsync(httpRequestOptions, "GET").ConfigureAwait(false))
+            {
+                _logger.Info("Opened recording stream from tuner provider");
+
+                Directory.CreateDirectory(Path.GetDirectoryName(tempFile));
+
+                using (var output = _fileSystem.GetFileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read))
+                {
+                    //onStarted();
+
+                    _logger.Info("Copying recording stream to file {0}", tempFile);
+
+                    var bufferMs = 5000;
+
+                    if (mediaSource.RunTimeTicks.HasValue)
+                    {
+                        // The media source already has a fixed duration
+                        // But add another stop 1 minute later just in case the recording gets stuck for any reason
+                        var durationToken = new CancellationTokenSource(duration.Add(TimeSpan.FromMinutes(1)));
+                        cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+                    }
+                    else
+                    {
+                        // The media source if infinite so we need to handle stopping ourselves
+                        var durationToken = new CancellationTokenSource(duration.Add(TimeSpan.FromMilliseconds(bufferMs)));
+                        cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+                    }
+
+                    var tempFileTask = response.Content.CopyToAsync(output, StreamDefaults.DefaultCopyToBufferSize, cancellationToken);
+
+                    // Give the temp file a little time to build up
+                    await Task.Delay(bufferMs, cancellationToken).ConfigureAwait(false);
+
+                    var recordTask = Task.Run(() => RecordFromFile(mediaSource, tempFile, targetFile, duration, onStarted, cancellationToken), cancellationToken);
+
+                    await tempFileTask.ConfigureAwait(false);
+
+                    await recordTask.ConfigureAwait(false);
+                }
             }
 
+            _logger.Info("Recording completed to file {0}", targetFile);
+        }
+
+        private Task RecordFromFile(MediaSourceInfo mediaSource, string inputFile, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
+        {
             _targetPath = targetFile;
             _fileSystem.CreateDirectory(Path.GetDirectoryName(targetFile));
 
@@ -89,7 +144,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     RedirectStandardInput = true,
 
                     FileName = _mediaEncoder.EncoderPath,
-                    Arguments = GetCommandLineArgs(mediaSource, targetFile, duration),
+                    Arguments = GetCommandLineArgs(mediaSource, inputFile, targetFile, duration),
 
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false
@@ -110,7 +165,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _logFileStream = _fileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true);
 
             var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(_json.SerializeToString(mediaSource) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
-            await _logFileStream.WriteAsync(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length, cancellationToken).ConfigureAwait(false);
+            _logFileStream.Write(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length);
 
             process.Exited += (sender, args) => OnFfMpegProcessExited(process);
 
@@ -126,10 +181,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
             StartStreamingLog(process.StandardError.BaseStream, _logFileStream);
 
-            await _taskCompletionSource.Task.ConfigureAwait(false);
+            return _taskCompletionSource.Task;
         }
 
-        private string GetCommandLineArgs(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration)
+        private string GetCommandLineArgs(MediaSourceInfo mediaSource, string inputTempFile, string targetFile, TimeSpan duration)
         {
             string videoArgs;
             if (EncodeVideo(mediaSource))
@@ -145,23 +200,31 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 videoArgs = "-codec:v:0 copy";
             }
 
-            var commandLineArgs = "-fflags +genpts -async 1 -vsync -1 -i \"{0}\" -t {4} -sn {2} -map_metadata -1 -threads 0 {3} -y \"{1}\"";
+            var durationParam = " -t " + _mediaEncoder.GetTimeParameter(duration.Ticks);
+            var commandLineArgs = "-fflags +genpts -async 1 -vsync -1 -re -i \"{0}\"{4} -sn {2} -map_metadata -1 -threads 0 {3} -y \"{1}\"";
 
             if (mediaSource.ReadAtNativeFramerate)
             {
                 commandLineArgs = "-re " + commandLineArgs;
             }
 
-            commandLineArgs = string.Format(commandLineArgs, mediaSource.Path, targetFile, videoArgs, GetAudioArgs(mediaSource), _mediaEncoder.GetTimeParameter(duration.Ticks));
+            commandLineArgs = string.Format(commandLineArgs, inputTempFile, targetFile, videoArgs, GetAudioArgs(mediaSource), durationParam);
 
             return commandLineArgs;
         }
 
         private string GetAudioArgs(MediaSourceInfo mediaSource)
         {
-            var copyAudio = new[] { "aac", "mp3" };
+            // do not copy aac because many players have difficulty with aac_latm
+            var copyAudio = new[] { "mp3" };
             var mediaStreams = mediaSource.MediaStreams ?? new List<MediaStream>();
-            if (_liveTvOptions.EnableOriginalAudioWithEncodedRecordings || mediaStreams.Any(i => i.Type == MediaStreamType.Audio && copyAudio.Contains(i.Codec, StringComparer.OrdinalIgnoreCase)))
+            var inputAudioCodec = mediaStreams.Where(i => i.Type == MediaStreamType.Audio).Select(i => i.Codec).FirstOrDefault() ?? string.Empty;
+
+            if (copyAudio.Contains(inputAudioCodec, StringComparer.OrdinalIgnoreCase))
+            {
+                return "-codec:a:0 copy";
+            }
+            if (_liveTvOptions.EnableOriginalAudioWithEncodedRecordings && !string.Equals(inputAudioCodec, "aac", StringComparison.OrdinalIgnoreCase))
             {
                 return "-codec:a:0 copy";
             }

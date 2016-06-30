@@ -1,4 +1,4 @@
-﻿<div id="liveTvTunerProviderHdHomerunPage" data-role="page" class="page type-interior liveTvSettingsPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvtunerprovider-hdhomerun,paper-input,paper-checkbox,paper-button">
+﻿<div id="liveTvTunerProviderHdHomerunPage" data-role="page" class="page type-interior liveTvSettingsPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvtunerprovider-hdhomerun,paper-input,paper-checkbox,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -31,10 +31,8 @@
                         <p>${DrmChannelsNotImported}</p>
                         <br />
                         <div>
-                            <button type="submit" data-role="none" class="clearButton">
-                                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                            </button>
-                            <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+                            <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
+                            <button is="emby-button" type="button" class="raised cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></button>
                         </div>
                     </div>
                 </form>

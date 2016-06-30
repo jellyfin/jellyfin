@@ -1,4 +1,4 @@
-﻿define(['browser', 'css!./style'], function (browser) {
+﻿define(['browser', 'connectionManager', 'playbackManager', 'css!./style'], function (browser, connectionManager, playbackManager) {
 
     function enableAnimation(elem) {
 
@@ -7,6 +7,15 @@
         }
 
         return elem.animate;
+    }
+
+    function enableRotation() {
+
+        if (browser.tv) {
+            return false;
+        }
+
+        return true;
     }
 
     function backdrop() {
@@ -99,6 +108,8 @@
 
     function clearBackdrop(clearAll) {
 
+        clearRotation();
+
         if (currentLoadingBackdrop) {
             currentLoadingBackdrop.destroy();
             currentLoadingBackdrop = null;
@@ -114,16 +125,18 @@
     }
 
     var skinContainer;
-    function setSkinContainerBackgroundEnabled() {
-
+    function getSkinContainer() {
         if (!skinContainer) {
             skinContainer = document.querySelector('.skinContainer');
         }
+        return skinContainer;
+    }
+    function setSkinContainerBackgroundEnabled() {
 
         if (hasInternalBackdrop || hasExternalBackdrop) {
-            skinContainer.classList.add('withBackdrop');
+            getSkinContainer().classList.add('withBackdrop');
         } else {
-            skinContainer.classList.remove('withBackdrop');
+            getSkinContainer().classList.remove('withBackdrop');
         }
     }
 
@@ -166,58 +179,145 @@
         currentLoadingBackdrop = instance;
     }
 
-    function setBackdrops(items) {
+    var windowWidth;
+    function resetWindowSize() {
+        windowWidth = screen.availWidth || window.innerWidth;
+    }
+    window.addEventListener("orientationchange", resetWindowSize);
+    window.addEventListener('resize', resetWindowSize);
+    resetWindowSize();
 
-        var images = items.map(function (i) {
+    function getItemImageUrls(item) {
 
-            if (i.BackdropImageTags && i.BackdropImageTags.length > 0) {
-                return {
-                    id: i.Id,
-                    tag: i.BackdropImageTags[0],
-                    serverId: i.ServerId
-                };
-            }
+        var apiClient = connectionManager.getApiClient(item.ServerId);
 
-            if (i.ParentBackdropItemId && i.ParentBackdropImageTags && i.ParentBackdropImageTags.length) {
+        if (item.BackdropImageTags && item.BackdropImageTags.length > 0) {
 
-                return {
-                    id: i.ParentBackdropItemId,
-                    tag: i.ParentBackdropImageTags[0],
-                    serverId: i.ServerId
-                };
-            }
-            return null;
+            return item.BackdropImageTags.map(function (imgTag, index) {
 
-        }).filter(function (i) {
-            return i != null;
-        });
+                return apiClient.getScaledImageUrl(item.Id, {
+                    type: "Backdrop",
+                    tag: imgTag,
+                    maxWidth: Math.min(windowWidth, 1920),
+                    index: index
+                });
+            });
+        }
 
+        if (item.ParentBackdropItemId && item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
+
+            return item.ParentBackdropImageTags.map(function (imgTag, index) {
+
+                return apiClient.getScaledImageUrl(item.ParentBackdropItemId, {
+                    type: "Backdrop",
+                    tag: imgTag,
+                    maxWidth: Math.min(windowWidth, 1920),
+                    index: index
+                });
+            });
+        }
+
+        return [];
+    }
+
+    function getImageUrls(items) {
+
+        var list = [];
+
+        for (var i = 0, length = items.length; i < length; i++) {
+
+            var itemImages = getItemImageUrls(items[i]);
+
+            itemImages.forEach(function (img) {
+                list.push(img);
+            });
+        }
+
+        return list;
+    }
+
+    function arraysEqual(a, b) {
+        if (a === b) return true;
+        if (a == null || b == null) return false;
+        if (a.length != b.length) return false;
+
+        // If you don't care about the order of the elements inside
+        // the array, you should sort both arrays here.
+
+        for (var i = 0; i < a.length; ++i) {
+            if (a[i] !== b[i]) return false;
+        }
+        return true;
+    }
+
+    var rotationInterval;
+    var currentRotatingImages = [];
+    var currentRotationIndex = -1;
+    function setBackdrops(items, imageSetId) {
+
+        var images = getImageUrls(items);
+
+        imageSetId = imageSetId || new Date().getTime();
         if (images.length) {
 
-            var index = getRandom(0, images.length - 1);
-            var item = images[index];
-
-            require(['connectionManager'], function (connectionManager) {
-
-                var apiClient = connectionManager.getApiClient(item.serverId);
-                var imgUrl = apiClient.getScaledImageUrl(item.id, {
-                    type: "Backdrop",
-                    tag: item.tag,
-                    //maxWidth: window.innerWidth,
-                    quality: 100
-                });
-
-                setBackdrop(imgUrl);
-            });
+            startRotation(images, imageSetId);
 
         } else {
             clearBackdrop();
         }
     }
 
+    function startRotation(images) {
+
+        if (arraysEqual(images, currentRotatingImages)) {
+            return;
+        }
+
+        clearRotation();
+
+        currentRotatingImages = images;
+        currentRotationIndex = -1;
+
+        if (images.length > 1 && enableRotation()) {
+            rotationInterval = setInterval(onRotationInterval, 20000);
+        }
+        onRotationInterval();
+    }
+
+    function onRotationInterval() {
+
+        if (playbackManager.isPlayingVideo()) {
+            return;
+        }
+
+        var newIndex = currentRotationIndex + 1;
+        if (newIndex >= currentRotatingImages.length) {
+            newIndex = 0;
+        }
+
+        currentRotationIndex = newIndex;
+        setBackdropImage(currentRotatingImages[newIndex]);
+    }
+
+    function clearRotation() {
+        var interval = rotationInterval;
+        if (interval) {
+            clearInterval(interval);
+        }
+        rotationInterval = null;
+        currentRotatingImages = [];
+        currentRotationIndex = -1;
+    }
+
     function setBackdrop(url) {
 
+        if (typeof url !== 'string') {
+            url = getImageUrls([url])[0];
+        }
+
         if (url) {
+            clearRotation();
+
             setBackdropImage(url);
 
         } else {

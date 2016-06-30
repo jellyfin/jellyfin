@@ -13,5 +13,7 @@
         /// </summary>
         /// <value>The series timer identifier.</value>
         public string SeriesTimerId { get; set; }
+
+        public bool? IsActive { get; set; }
     }
 }

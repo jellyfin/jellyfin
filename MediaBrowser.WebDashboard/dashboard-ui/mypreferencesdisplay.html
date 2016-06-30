@@ -1,54 +1,51 @@
-﻿<div id="displayPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderDisplaySettings}" data-require="scripts/mypreferencesdisplay,paper-checkbox,paper-button" data-backbutton="true" data-menubutton="false">
+﻿<div id="displayPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderDisplaySettings}" data-backbutton="true" data-menubutton="false">
     <div data-role="content">
         <form class="displayPreferencesForm userProfileSettingsForm" style="margin: 0 auto;">
-            <div class="detailSection languageSection">
+            <div class="detailSection languageSection hide">
                 <h1>
                     ${HeaderLanguage}
                 </h1>
-                <div class="detailSectionContent">
-                    <br />
-                    <div>
-                        <label for="selectLanguage" class="selectLabel">${LabelPreferredDisplayLanguage}</label>
-                        <select id="selectLanguage" data-mini="true">
-                            <option value="">${OptionAuto}</option>
-                            <option value="ar">Arabic</option>
-                            <option value="bg-BG">Bulgarian (Bulgaria)</option>
-                            <option value="ca">Catalan</option>
-                            <option value="zh-CN">Chinese Simplified</option>
-                            <option value="zh-TW">Chinese Traditional</option>
-                            <option value="hr">Croatian</option>
-                            <option value="cs">Czech</option>
-                            <option value="da">Danish</option>
-                            <option value="nl">Dutch</option>
-                            <option value="en-GB">English (United Kingdom)</option>
-                            <option value="en-US">English (United States)</option>
-                            <option value="fi">Finnish</option>
-                            <option value="fr">French</option>
-                            <option value="de">German</option>
-                            <option value="el">Greek</option>
-                            <option value="he">Hebrew</option>
-                            <option value="hu">Hungarian</option>
-                            <option value="id">Indonesian</option>
-                            <option value="it">Italian</option>
-                            <option value="kk">Kazakh</option>
-                            <option value="nb">Norwegian Bokmål</option>
-                            <option value="pl">Polish</option>
-                            <option value="pt-BR">Portuguese (Brazil)</option>
-                            <option value="pt-PT">Portuguese (Portugal)</option>
-                            <option value="ru">Russian</option>
-                            <option value="sl-SI">Slovenian (Slovenia)</option>
-                            <option value="es-ES">Spanish</option>
-                            <option value="es-MX">Spanish (Mexico)</option>
-                            <option value="sv">Swedish</option>
-                            <option value="tr">Turkish</option>
-                            <option value="uk">Ukrainian</option>
-                            <option value="vi">Vietnamese</option>
-                        </select>
-                        <div class="fieldDescription">
-                            <div>${LabelPreferredDisplayLanguageHelp}</div>
-                            <div style="margin-top: .25em;">
-                                <a href="http://emby.media/community/index.php?/topic/5727-join-our-translation-team/" target="_blank">${LabelReadHowYouCanContribute}</a>
-                            </div>
+                <br />
+                <div class="selectContainer">
+                    <select id="selectLanguage" is="emby-select" label="${LabelPreferredDisplayLanguage}">
+                        <option value="">${OptionAuto}</option>
+                        <option value="ar">Arabic</option>
+                        <option value="bg-BG">Bulgarian (Bulgaria)</option>
+                        <option value="ca">Catalan</option>
+                        <option value="zh-CN">Chinese Simplified</option>
+                        <option value="zh-TW">Chinese Traditional</option>
+                        <option value="hr">Croatian</option>
+                        <option value="cs">Czech</option>
+                        <option value="da">Danish</option>
+                        <option value="nl">Dutch</option>
+                        <option value="en-GB">English (United Kingdom)</option>
+                        <option value="en-US">English (United States)</option>
+                        <option value="fi">Finnish</option>
+                        <option value="fr">French</option>
+                        <option value="de">German</option>
+                        <option value="el">Greek</option>
+                        <option value="he">Hebrew</option>
+                        <option value="hu">Hungarian</option>
+                        <option value="id">Indonesian</option>
+                        <option value="it">Italian</option>
+                        <option value="kk">Kazakh</option>
+                        <option value="nb">Norwegian Bokmål</option>
+                        <option value="pl">Polish</option>
+                        <option value="pt-BR">Portuguese (Brazil)</option>
+                        <option value="pt-PT">Portuguese (Portugal)</option>
+                        <option value="ru">Russian</option>
+                        <option value="sl-SI">Slovenian (Slovenia)</option>
+                        <option value="es-ES">Spanish</option>
+                        <option value="es-MX">Spanish (Mexico)</option>
+                        <option value="sv">Swedish</option>
+                        <option value="tr">Turkish</option>
+                        <option value="uk">Ukrainian</option>
+                        <option value="vi">Vietnamese</option>
+                    </select>
+                    <div class="fieldDescription">
+                        <div>${LabelPreferredDisplayLanguageHelp}</div>
+                        <div style="margin-top: .25em;">
+                            <a href="http://emby.media/community/index.php?/topic/5727-join-our-translation-team/" target="_blank">${LabelReadHowYouCanContribute}</a>
                         </div>
                     </div>
                 </div>
@@ -57,51 +54,44 @@
                 <h1>
                     ${HeaderNavigation}
                 </h1>
-                <div class="detailSectionContent">
-                    <br />
-                    <div>
-                        <label for="selectThemeSong" class="selectLabel">${LabelEnableThemeSongs}</label>
-                        <select id="selectThemeSong" data-mini="true">
-                            <option value="">${OptionAuto}</option>
-                            <option value="1">${OptionYes}</option>
-                            <option value="0">${OptionNo}</option>
-                        </select>
-                        <div class="fieldDescription">${LabelEnableThemeSongsHelp}</div>
-                    </div>
-                    <br />
-                    <div class="fldEnableBackdrops" style="display:none;">
-                        <label for="selectBackdrop" class="selectLabel">${LabelEnableBackdrops}</label>
-                        <select id="selectBackdrop" data-mini="true">
-                            <option value="">${OptionAuto}</option>
-                            <option value="1">${OptionYes}</option>
-                            <option value="0">${OptionNo}</option>
-                        </select>
-                        <div class="fieldDescription">${LabelEnableBackdropsHelp}</div>
-                    </div>
+                <br />
+                <div class="selectContainer">
+                    <select id="selectThemeSong" is="emby-select" label="${LabelEnableThemeSongs}">
+                        <option value="">${OptionAuto}</option>
+                        <option value="1">${OptionYes}</option>
+                        <option value="0">${OptionNo}</option>
+                    </select>
+                    <div class="fieldDescription">${LabelEnableThemeSongsHelp}</div>
+                </div>
+                <br />
+                <div class="fldEnableBackdrops selectContainer">
+                    <select id="selectBackdrop" is="emby-select" label="${LabelEnableBackdrops}">
+                        <option value="">${OptionAuto}</option>
+                        <option value="1">${OptionYes}</option>
+                        <option value="0">${OptionNo}</option>
+                    </select>
+                    <div class="fieldDescription">${LabelEnableBackdropsHelp}</div>
                 </div>
             </div>
             <div class="detailSection requiresUserPreferences">
                 <h1>
                     ${HeaderDisplay}
                 </h1>
-                <div class="detailSectionContent">
-                    <br />
-                    <div>
-                        <paper-checkbox class="chkDisplayMissingEpisodes">${LabelDisplayMissingEpisodesWithinSeasons}</paper-checkbox>
-                    </div>
-                    <br />
-                    <div>
-                        <paper-checkbox class="chkDisplayUnairedEpisodes">${LabelUnairedMissingEpisodesWithinSeasons}</paper-checkbox>
-                    </div>
-                    <br />
-                    <div>
-                        <paper-checkbox class="chkGroupMoviesIntoCollections">${LabelGroupMoviesIntoCollections}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelGroupMoviesIntoCollectionsHelp}</div>
-                    </div>
+                <br />
+                <div class="checkboxList">
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkDisplayMissingEpisodes" />
+                        <span>${LabelDisplayMissingEpisodesWithinSeasons}</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkDisplayUnairedEpisodes" />
+                        <span>${LabelUnairedMissingEpisodesWithinSeasons}</span>
+                    </label>
                 </div>
             </div>
-            <button type="submit" data-role="none" class="clearButton block btnSave hide">
-                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+            <button is="emby-button" type="submit" class="raised submit block btnSave hide">
+                <i class="md-icon">check</i>
+                <span>${ButtonSave}</span>
             </button>
         </form>
     </div>

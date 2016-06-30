@@ -69,10 +69,6 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (stream.IsTextSubtitleStream)
             {
-                if (string.Equals(stream.Codec, "ass", StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
                 return true;
             }
 

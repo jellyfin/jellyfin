@@ -1,178 +1,7 @@
-﻿/* Swatches */
-
-/* A
------------------------------------------------------------------------------------------------------------*/
-
-/* Bar: Toolbars, dividers, slider track */
-.ui-bar-a,
-.ui-page-theme-a .ui-bar-inherit,
-html .ui-bar-a .ui-bar-inherit,
-html .ui-body-a .ui-bar-inherit,
-html body .ui-group-theme-a .ui-bar-inherit {
-    background-color: #e9e9e9 /*{a-bar-background-color}*/;
-    border-color: #ddd /*{a-bar-border}*/;
-    color: #333 /*{a-bar-color}*/;
-    font-weight: bold;
-}
-
-.ui-bar-a {
-    border-width: 1px;
-    border-style: solid;
-}
-
-/* Page and overlay */
-.ui-page-theme-a .ui-panel-wrapper {
-    background-color: #f9f9f9 /*{a-page-background-color}*/;
-    border-color: #bbb /*{a-page-border}*/;
-    color: #333 /*{a-page-color}*/;
-}
-
-/* Body: Read-only lists, text inputs, collapsible content */
-.ui-page-theme-a .ui-body-inherit,
-html .ui-bar-a .ui-body-inherit,
-html .ui-body-a .ui-body-inherit,
-html body .ui-group-theme-a .ui-body-inherit,
-html .ui-panel-page-container-a {
-    background-color: #fff /*{a-body-background-color}*/;
-    border-color: #ddd /*{a-body-border}*/;
-    color: #333 /*{a-body-color}*/;
-}
-
-/* Links */
-.ui-page-theme-a a,
-html .ui-bar-a a,
-html .ui-body-a a,
-html body .ui-group-theme-a a {
-    color: #388E3C /*{a-link-color}*/;
-    font-weight: bold;
-}
-
-    .ui-page-theme-a a:visited,
-    html .ui-bar-a a:visited,
-    html .ui-body-a a:visited,
-    html body .ui-group-theme-a a:visited {
-        color: #388E3C /*{a-link-visited}*/;
-    }
-
-    .ui-page-theme-a a:hover,
-    html .ui-bar-a a:hover,
-    html .ui-body-a a:hover,
-    html body .ui-group-theme-a a:hover {
-        color: #1B5E20 /*{a-link-hover}*/;
-    }
-
-    .ui-page-theme-a a:active,
-    html .ui-bar-a a:active,
-    html .ui-body-a a:active,
-    html body .ui-group-theme-a a:active {
-        color: #1B5E20 /*{a-link-active}*/;
-    }
-
-/* Button up */
-.ui-page-theme-a .ui-btn,
-html .ui-bar-a .ui-btn,
-html .ui-body-a .ui-btn,
-html body .ui-group-theme-a .ui-btn,
-html head + body .ui-btn.ui-btn-a,
-/* Button visited */
-.ui-page-theme-a .ui-btn:visited,
-html .ui-bar-a .ui-btn:visited,
-html .ui-body-a .ui-btn:visited,
-html body .ui-group-theme-a .ui-btn:visited,
-html head + body .ui-btn.ui-btn-a:visited,
-ul[data-role="listview"] a + a {
-    background-color: #f6f6f6 /*{a-bup-background-color}*/;
-    border-color: #ddd /*{a-bup-border}*/;
-    color: #333 /*{a-bup-color}*/;
-}
-    /* Button hover */
-    .ui-page-theme-a .ui-btn:hover,
-    html .ui-bar-a .ui-btn:hover,
-    html .ui-body-a .ui-btn:hover,
-    html body .ui-group-theme-a .ui-btn:hover,
-    html head + body .ui-btn.ui-btn-a:hover {
-        background-color: #ededed /*{a-bhover-background-color}*/;
-        border-color: #ddd /*{a-bhover-border}*/;
-        color: #333 /*{a-bhover-color}*/;
-    }
-    /* Button down */
-    .ui-page-theme-a .ui-btn:active,
-    html .ui-bar-a .ui-btn:active,
-    html .ui-body-a .ui-btn:active,
-    html body .ui-group-theme-a .ui-btn:active,
-    html head + body .ui-btn.ui-btn-a:active {
-        background-color: #e8e8e8 /*{a-bdown-background-color}*/;
-        border-color: #ddd /*{a-bdown-border}*/;
-        color: #333 /*{a-bdown-color}*/;
-    }
-
-    /* Active button */
-    .ui-page-theme-a .ui-btn.ui-btn-active,
-    html .ui-bar-a .ui-btn.ui-btn-active,
-    html .ui-body-a .ui-btn.ui-btn-active,
-    html body .ui-group-theme-a .ui-btn.ui-btn-active,
-    html head + body .ui-btn.ui-btn-a.ui-btn-active,
-    /* Active checkbox icon */
-    .ui-page-theme-a .ui-checkbox-on:after,
-    html .ui-bar-a .ui-checkbox-on:after,
-    html .ui-body-a .ui-checkbox-on:after,
-    html body .ui-group-theme-a .ui-checkbox-on:after,
-    .ui-btn.ui-checkbox-on.ui-btn-a:after {
-        background-color: #3388cc /*{a-active-background-color}*/;
-        border-color: #3388cc /*{a-active-border}*/;
-        color: #fff /*{a-active-color}*/;
-    }
-/* Active radio button icon */
-.ui-page-theme-a .ui-radio-on:after,
-html .ui-bar-a .ui-radio-on:after,
-html .ui-body-a .ui-radio-on:after,
-html body .ui-group-theme-a .ui-radio-on:after,
-.ui-btn.ui-radio-on.ui-btn-a:after {
-    border-color: #3388cc /*{a-active-background-color}*/;
-}
-
-/* B
------------------------------------------------------------------------------------------------------------*/
-
-/* Bar: Toolbars, dividers, slider track */
-.ui-bar-b,
-.ui-page-theme-b .ui-bar-inherit,
-html .ui-bar-b .ui-bar-inherit,
-html .ui-body-b .ui-bar-inherit,
-html body .ui-group-theme-b .ui-bar-inherit {
-    background-color: #1d1d1d /*{b-bar-background-color}*/;
-    border-color: #1b1b1b /*{b-bar-border}*/;
-    color: #fff /*{b-bar-color}*/;
-    font-weight: bold;
-}
-
-.ui-bar-b {
-    border-width: 1px;
-    border-style: solid;
-}
-
-/* Page and overlay */
-.ui-page-theme-b .ui-panel-wrapper {
-    background-color: #252525 /*{b-page-background-color}*/;
-    border-color: #454545 /*{b-page-border}*/;
-    color: #fff /*{b-page-color}*/;
-}
-
-/* Body: Read-only lists, text inputs, collapsible content */
-.ui-page-theme-b .ui-body-inherit,
-html .ui-bar-b .ui-body-inherit,
-html .ui-body-b .ui-body-inherit,
-html body .ui-group-theme-b .ui-body-inherit,
-html .ui-panel-page-container-b {
-    background-color: #2a2a2a /*{b-body-background-color}*/;
-    border-color: #1d1d1d /*{b-body-border}*/;
-    color: #fff /*{b-body-color}*/;
-}
-
-/* Links */
+﻿/* Links */
 .ui-body-b a {
     color: #52B54B /*{b-link-color}*/;
-    font-weight: bold;
+    font-weight: 500;
 }
 
     .ui-body-b a:visited {
@@ -187,68 +16,6 @@ html .ui-panel-page-container-b {
         color: #2E7D32 /*{b-link-active}*/;
     }
 
-/* Button up */
-.ui-page-theme-b .ui-btn,
-html .ui-bar-b .ui-btn,
-html .ui-body-b .ui-btn,
-html body .ui-group-theme-b .ui-btn,
-html head + body .ui-btn.ui-btn-b,
-/* Button visited */
-.ui-page-theme-b .ui-btn:visited,
-html .ui-bar-b .ui-btn:visited,
-html .ui-body-b .ui-btn:visited,
-html body .ui-group-theme-b .ui-btn:visited,
-html head + body .ui-btn.ui-btn-b:visited {
-    background-color: #333 /*{b-bup-background-color}*/;
-    border-color: #1f1f1f /*{b-bup-border}*/;
-    color: #fff /*{b-bup-color}*/;
-}
-    /* Button hover */
-    .ui-page-theme-b .ui-btn:hover,
-    html .ui-bar-b .ui-btn:hover,
-    html .ui-body-b .ui-btn:hover,
-    html body .ui-group-theme-b .ui-btn:hover,
-    html head + body .ui-btn.ui-btn-b:hover {
-        background-color: #373737 /*{b-bhover-background-color}*/;
-        border-color: #1f1f1f /*{b-bhover-border}*/;
-        color: #fff /*{b-bhover-color}*/;
-    }
-    /* Button down */
-    .ui-page-theme-b .ui-btn:active,
-    html .ui-bar-b .ui-btn:active,
-    html .ui-body-b .ui-btn:active,
-    html body .ui-group-theme-b .ui-btn:active,
-    html head + body .ui-btn.ui-btn-b:active {
-        background-color: #404040 /*{b-bdown-background-color}*/;
-        border-color: #1f1f1f /*{b-bdown-border}*/;
-        color: #fff /*{b-bdown-color}*/;
-    }
-
-    /* Active button */
-    .ui-page-theme-b .ui-btn.ui-btn-active,
-    html .ui-bar-b .ui-btn.ui-btn-active,
-    html .ui-body-b .ui-btn.ui-btn-active,
-    html body .ui-group-theme-b .ui-btn.ui-btn-active,
-    html head + body .ui-btn.ui-btn-b.ui-btn-active,
-    /* Active checkbox icon */
-    .ui-page-theme-b .ui-checkbox-on:after,
-    html .ui-bar-b .ui-checkbox-on:after,
-    html .ui-body-b .ui-checkbox-on:after,
-    html body .ui-group-theme-b .ui-checkbox-on:after,
-    .ui-btn.ui-checkbox-on.ui-btn-b:after {
-        background-color: #22aadd /*{b-active-background-color}*/;
-        border-color: #22aadd /*{b-active-border}*/;
-        color: #fff /*{b-active-color}*/;
-    }
-/* Active radio button icon */
-.ui-page-theme-b .ui-radio-on:after,
-html .ui-bar-b .ui-radio-on:after,
-html .ui-body-b .ui-radio-on:after,
-html body .ui-group-theme-b .ui-radio-on:after,
-.ui-btn.ui-radio-on.ui-btn-b:after {
-    border-color: #22aadd /*{b-active-background-color}*/;
-}
-
 /* latin */
 @font-face {
     font-family: 'Montserrat';
@@ -261,11 +28,6 @@ html body .ui-group-theme-b .ui-radio-on:after,
 /* For some reason jquery mobile 1.4.5 wants to horitontally pad mini form fields. */
 .ui-mini {
     margin-left: 0;
-}
-
-/* jQuery mobile adds a text shadow that seems unnecessary. */
-* {
-    -webkit-font-smoothing: antialiased;
 }
 
 /* Remove IE mobile 300ms tap delay */
@@ -282,10 +44,6 @@ html {
     font-size: 14px;
 }
 
-    html.smallerDefault {
-        font-size: 13px;
-    }
-
 body {
     overflow-y: scroll !important;
     /* This is needed to prevent a horizontal scrollbar while neon-animated-pages are animating. */
@@ -298,11 +56,17 @@ body {
     margin: 0;
     padding: 0;
     height: 100%;
+    -webkit-font-smoothing: antialiased;
 }
 
     body.autoScrollY {
         overflow-y: auto !important;
     }
+
+.mainAnimatedPage {
+    /* Have to override because it breaks scrolling when dependant on window scroll */
+    contain: style !important;
+}
 
 iron-icon {
     min-width: 24px;
@@ -325,32 +89,21 @@ iron-icon {
     overflow-y: hidden !important;
 }
 
-.jqmButtonNoText {
-    padding: 3px 4px !important;
-    border-radius: 4px !important;
-    vertical-align: top;
-}
-
 .textlink {
     text-decoration: none;
 }
 
-h1, h1 a {
-    font-weight: 300 !important;
-    font-size: 24px;
+h1, h2, h3 {
+    margin-top: 1em;
 }
 
-.ui-loader {
-    display: none !important;
-}
+    h1, h1 a {
+        font-weight: 300 !important;
+        font-size: 24px;
+    }
 
 h2 {
     font-weight: 400;
-}
-
-.ui-btn {
-    font-family: inherit;
-    font-weight: 500 !important;
 }
 
 a, a:active, a:hover {
@@ -369,47 +122,7 @@ h1 a:hover {
     color: #52B54B !important;
 }
 
-.ui-listview li h3 {
-    font-weight: 400;
-}
-
-.ui-listview > .ui-li-divider {
-    line-height: 1.5;
-    line-height: initial;
-}
-/* 
-    Make all panels vertically scrollable 
-    If this causes any problems then perhaps require a css class to activate
-*/
-.ui-panel.ui-panel-open {
-    position: fixed;
-}
-
-/* Show over now playing bar */
-.ui-panel-display-overlay {
-    z-index: 1098;
-}
-
-.ui-panel-inner {
-    position: absolute;
-    top: 1px;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    overflow: hidden;
-}
-
-.ui-slider-track.ui-mini .ui-slider-handle {
-    height: 18px;
-    width: 18px;
-    margin: -10px 0 0 -10px;
-}
-
-fieldset {
-    border: none;
-}
-
-input:not(.paper-input):not(.likePaperText):not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']) {
+input:not(.paper-input):not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']):not([is='emby-input']) {
     -webkit-appearance: none;
     -webkit-font-smoothing: antialiased;
     -webkit-rtl-ordering: logical;
@@ -480,7 +193,7 @@ select {
         color: #000;
     }
 
-.ui-body-b select {
+.ui-body-b select, .ui-body-b [is="emby-input"] {
     background: none;
     border-color: #454545;
 }
@@ -492,73 +205,6 @@ select {
 
 div[data-role='page'] {
     outline: none;
-}
-
-a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearButton):not([is]) {
-    -webkit-font-smoothing: antialiased;
-    -webkit-user-select: none;
-    background-clip: padding-box;
-    border-radius: .3125em;
-    border: 1px solid #ddd !important;
-    color: rgb(51, 51, 51) !important;
-    cursor: pointer !important;
-    font-family: inherit !important;
-    font-size: inherit !important;
-    font-weight: 500 !important;
-    margin: 0 .25em !important;
-    display: inline-block;
-    padding: .8em 1em;
-    text-align: center;
-    text-decoration: none !important;
-    background: #f6f6f6 !important;
-    font-size: 16px;
-    -webkit-box-shadow: 0 1px 3px /*{global-box-shadow-size}*/ rgba(0,0,0,.15) /*{global-box-shadow-color}*/;
-    -moz-box-shadow: 0 1px 3px /*{global-box-shadow-size}*/ rgba(0,0,0,.15) /*{global-box-shadow-color}*/;
-    box-shadow: 0 1px 3px /*{global-box-shadow-size}*/ rgba(0,0,0,.15) /*{global-box-shadow-color}*/;
-}
-
-    a[data-role='button'][data-iconpos='notext'], .type-interior button[data-iconpos='notext']:not([data-role='none']):not(.clearButton):not([is]) {
-        padding: 4px;
-        border-radius: 50px;
-        outline: 0;
-    }
-
-    a[data-role='button']:not([data-inline='true']), .type-interior button:not([data-role='none']):not([data-inline='true']):not(.clearButton):not([is]) {
-        display: block;
-        margin: .5em 0 !important;
-    }
-
-.type-interior button:not([data-role='none']):not([data-inline='true']):not(.clearButton):not([is]) {
-    width: 100%;
-}
-
-div[data-role="controlgroup"] a[data-role='button'] {
-    display: inline-block !important;
-    margin: 0 !important;
-    -webkit-box-shadow: none !important;
-    -moz-box-shadow: none !important;
-    box-shadow: none !important;
-    border-radius: 0;
-}
-
-    div[data-role="controlgroup"] a[data-role='button']:first-child {
-        border-bottom-left-radius: .3125em;
-        border-top-left-radius: .3125em;
-    }
-
-    div[data-role="controlgroup"] a[data-role='button']:last-child {
-        border-bottom-right-radius: .3125em;
-        border-top-right-radius: .3125em;
-    }
-
-    div[data-role="controlgroup"] a[data-role='button'] + a[data-role='button'] {
-        border-left-width: 0 !important;
-        margin: 0 0 0 -3px !important;
-    }
-
-div[data-role="controlgroup"] a.ui-btn-active {
-    background: #38c !important;
-    color: #fff !important;
 }
 
 /**
@@ -594,7 +240,7 @@ div[data-role="controlgroup"] a.ui-btn-active {
     white-space: nowrap;
 }
 
-    .checkboxContainer input {
+    .checkboxContainer input:not([is=emby-checkbox]) {
         width: 20px;
         height: 20px;
         vertical-align: middle;
@@ -603,7 +249,7 @@ div[data-role="controlgroup"] a.ui-btn-active {
         padding: 0;
     }
 
-    .checkboxContainer label {
+    .checkboxContainer label:not(.mdl-checkbox) {
         vertical-align: middle;
         display: inline-block;
         padding: .7em .5em;
@@ -632,10 +278,6 @@ textarea {
         color: #000;
     }
 
-.type-interior h2 {
-    color: #1B58B8;
-}
-
 .hide {
     display: none !important;
 }
@@ -658,19 +300,6 @@ textarea {
 
 .ui-popup-container {
     z-index: 99999;
-}
-
-.header .imageLink {
-    display: inline-block;
-}
-
-.imageLink + .imageLink {
-    margin-left: 30px;
-}
-
-.header .imageLink img {
-    height: 28px;
-    vertical-align: middle;
 }
 
 @media all and (max-height: 800px) {
@@ -754,57 +383,6 @@ paper-input + .fieldDescription {
     margin-top: 5px;
 }
 
-.ulForm {
-    margin: -1em !important;
-    margin-bottom: 20px !important;
-}
-
-    .ulForm li:not(.ui-li-divider) {
-        background: none;
-        border: 0 !important;
-    }
-
-.popup .ulForm {
-    margin-bottom: 0 !important;
-}
-
-.content-primary {
-    padding-top: 70px;
-}
-
-.withTabs .content-primary {
-    padding-top: 115px;
-}
-
-.mainDrawerPanel:not([narrow]) .content-primary {
-    padding-top: 110px;
-    padding-bottom: 3em;
-}
-
-@media all and (min-width: 800px) {
-
-    .mainDrawerPanel:not([narrow]) .content-primary {
-        padding-right: 1.5em;
-        padding-left: 1.5em;
-    }
-}
-
-@media all and (min-width: 1200px) {
-
-    .mainDrawerPanel:not([narrow]) .content-primary {
-        padding-right: 1.5em;
-        padding-left: 3em;
-    }
-}
-
-.mainDrawerPanel:not([narrow]) .withTabs .content-primary {
-    padding-top: 135px !important;
-}
-
-.mainDrawerPanel:not([narrow]) .content-primary ul:first-child {
-    margin-top: 0;
-}
-
 .background-theme-a, .dialog.background-theme-a {
     background-color: #f5f5f5;
 }
@@ -838,7 +416,7 @@ paper-input + .fieldDescription {
 .sidebarLinkIcon {
     text-align: center;
     vertical-align: middle;
-    margin-right: 2em;
+    margin-right: 1.2em;
 }
 
     .sidebarLinkIcon + span {
@@ -850,10 +428,6 @@ paper-input + .fieldDescription {
     margin: 15px 0 10px;
     color: #666;
     font-weight: 500;
-}
-
-.invalidEntry {
-    background-color: lightpink !important;
 }
 
 /* Tabs (e.g. advanced metadata page) */
@@ -871,22 +445,6 @@ paper-input + .fieldDescription {
 .page > .ui-content, .pageWithAbsoluteTabs .pageTabContent, .absolutePageTabContent .itemsContainer {
     /* Need this so that the audio player doesn't cover content, but also for unveil lazy loading. */
     padding-bottom: 160px;
-}
-
-.appLinks a {
-    text-decoration: none !important;
-}
-
-    .appLinks a + a {
-        margin-left: 5px;
-    }
-
-.appLinks img {
-    height: 36px;
-}
-
-.activeDevicesCollapsible .ui-collapsible-content {
-    padding: .5em .5em !important;
 }
 
 @media all and (min-width: 450px) {
@@ -924,30 +482,6 @@ paper-input + .fieldDescription {
     }
 }
 
-/*
-    Media Library Page
-    */
-.mediaFolderButtons {
-    margin-top: 10px;
-}
-
-.mediaFolderLocations {
-    margin: 1em .25em !important;
-}
-
-.mediaLocationsHeader {
-    padding-top: .75em !important;
-    padding-bottom: .75em !important;
-}
-
-    .mediaLocationsHeader .ui-btn {
-        position: absolute;
-        right: -3px;
-        margin-top: 0 !important;
-        margin-bottom: 0 !important;
-        top: 4px;
-    }
-
 #ulDirectoryPickerList a {
     padding-top: .4em;
     padding-bottom: .4em;
@@ -970,38 +504,6 @@ paper-input + .fieldDescription {
     border-bottom: 1px solid #eee;
     outline: none;
     cursor: pointer;
-}
-
-.premiumBanner img {
-    position: absolute;
-    text-align: right;
-    top: 0;
-    right: 0;
-    width: 60px;
-    height: 60px;
-}
-
-.wizardContent {
-    max-width: 800px;
-    padding: .5em 2em 1em;
-    margin: 0 auto;
-    background: #fff;
-}
-
-.wizardNavigation {
-    text-align: right;
-}
-
-.wizardContent form {
-    max-width: 100%;
-}
-
-.wizardContent h2 img {
-    height: 35px;
-    vertical-align: middle;
-    margin-right: .5em;
-    position: relative;
-    top: -3px;
 }
 
 /* Footer */
@@ -1094,7 +596,7 @@ progress {
 
 .btnUserItemRating {
     vertical-align: middle;
-    color: #aaa;
+    color: #aaa !important;
     display: inline-block !important;
 }
 
@@ -1118,284 +620,6 @@ progress {
         opacity: .5;
     }
 
-.userProfileIcon {
-    width: 36px;
-}
-
-#editItemMetadataPage #txtOverview {
-    height: 70px;
-}
-
-.newsItem {
-    padding: 1em 0;
-    border-bottom: 1px solid #ddd;
-}
-
-.newsItemDescription {
-    max-height: 34px;
-    text-overflow: ellipsis;
-    overflow: hidden;
-}
-
-.newsItemHeader {
-    text-decoration: none !important;
-}
-
-.newsItemDate {
-    margin: .25em 0;
-    color: green;
-}
-
-@media all and (max-width: 1439px) {
-
-    .dashboardHomeRightColumn {
-        margin-top: 1em;
-    }
-}
-
-.dashboardContent {
-    margin-top: -10px;
-}
-
-.dashboardHomeRightColumn {
-    vertical-align: top;
-}
-
-@media all and (min-width: 1440px) {
-
-    .dashboardHomeLeftColumn {
-        width: 600px;
-        display: inline-block;
-        vertical-align: top;
-    }
-
-    .dashboardHomeRightColumn {
-        vertical-align: top;
-    }
-
-    .firstDashboardHomeRightColumn {
-        display: inline-block;
-        width: 440px;
-        margin-left: 2em;
-        min-width: 300px;
-    }
-
-        .firstDashboardHomeRightColumn .ui-collapsible-content {
-            min-height: 585px;
-        }
-}
-
-@media all and (min-width: 1580px) {
-
-    .dashboardHomeRightColumn {
-        display: inline-block;
-        margin-left: 1em;
-        width: 300px;
-        min-width: 300px;
-    }
-
-        .dashboardHomeRightColumn .ui-collapsible-content {
-            height: auto;
-            min-height: 585px;
-        }
-}
-
-@media all and (min-width: 1680px) {
-
-    .dashboardHomeRightColumn {
-        width: 350px;
-        min-width: 350px;
-    }
-}
-
-
-@media all and (min-width: 1880px) {
-
-    .dashboardHomeRightColumn {
-        max-width: 440px;
-        margin-left: 2em;
-        min-width: 440px;
-    }
-}
-
-.organizerButtonCell {
-    white-space: nowrap;
-}
-
-.organizerButton {
-    margin-top: 0;
-    margin-bottom: 0;
-}
-
-.btnShowStatusMessage {
-    font-weight: normal !important;
-    text-decoration: none;
-}
-
-    .btnShowStatusMessage:hover {
-        text-decoration: underline;
-    }
-
-.activeSession {
-    width: 50%;
-}
-
-    .activeSession .cardPadder {
-        padding-bottom: 56.25%;
-    }
-
-
-.sessionNowPlayingContent {
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center center;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-}
-
-.sessionNowPlayingInnerContent {
-    background-color: rgba(0, 0, 0, .6);
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    color: #fff;
-    font-weight: 400;
-}
-
-.sessionAppInfo {
-    padding: .5em;
-    overflow: hidden;
-}
-
-.sessionAppName {
-    vertical-align: top;
-    max-width: 200px;
-}
-
-.sessionNowPlayingInfo {
-    position: absolute;
-    left: 0;
-    bottom: 11px;
-    padding: .5em;
-    max-width: 150px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.sessionAppInfo img {
-    max-width: 32px;
-    max-height: 32px;
-    margin-right: 5px;
-}
-
-.activeSession .playbackProgress {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    height: 7px;
-    width: 100%;
-    opacity: .95;
-    z-index: 999;
-}
-
-.activeDevicesCollapsible .ui-collapsible-content {
-    padding: .25em !important;
-}
-
-.activeSession:not(.playingSession) .sessionNowPlayingContent {
-    display: none;
-}
-
-.activeSession:not(.playingSession) .sessionNowPlayingInnerContent {
-    background-color: #fff;
-    color: #000;
-}
-
-.activeSession:not(.playingSession) .sessionNowPlayingInfo {
-    bottom: 0;
-}
-
-.sessionNowPlayingTime {
-    color: #fff;
-    position: absolute;
-    right: 10px;
-    bottom: 39px;
-}
-
-.sessionTranscodingFramerate {
-    position: absolute;
-    left: 10px;
-    bottom: 19px;
-    color: #fff;
-}
-
-.sessionNowPlayingStreamInfo {
-    color: #fff;
-    position: absolute;
-    right: 10px;
-    bottom: 19px;
-}
-
-.activeSession .transcodingProgress {
-    right: 0;
-    bottom: 0;
-    left: 0;
-    height: 5px;
-    width: 100%;
-    opacity: .9;
-    z-index: 999;
-    position: absolute;
-}
-
-.transcodingSession .playbackProgress {
-    bottom: 5px;
-}
-
-/* Firefox */
-.transcodingProgress::-moz-progress-bar {
-    border-radius: 5px;
-    background-image: -moz-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
-}
-
-/* Chrome */
-.transcodingProgress::-webkit-progress-value {
-    border-radius: 5px;
-    background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0, rgb(221, 73, 25)), color-stop(1, rgb(221, 73, 25)) ) !important;
-    background-image: -webkit-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
-}
-
-/* Polyfill */
-.transcodingProgress[aria-valuenow]:before {
-    border-radius: 5px;
-    background-image: -moz-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
-    background-image: -ms-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
-    background-image: -o-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
-}
-
-@media all and (max-width: 550px) {
-
-    .sessionAppName {
-        max-width: 160px;
-    }
-}
-
-@media all and (max-width: 500px) {
-
-    .sessionAppName {
-        max-width: 150px;
-    }
-
-    .activeSession {
-        width: 100%;
-    }
-}
-
 .dashboardFooter {
     margin-top: 50px;
     text-align: center;
@@ -1415,42 +639,26 @@ progress {
         height: 16px;
     }
 
-.supporterPromotion {
-    margin: 1em 0;
+.supporterPromotionContainer {
+    margin: 0 0 2em;
 }
 
 @media all and (min-width: 800px) {
 
-    .supporterPromotion:not(.inlineSupporterPromotion) {
-        position: absolute;
-        top: 70px;
-        right: 20px;
-        margin: 0;
+    .supporterPromotionContainer {
+        display: flex;
+        flex-direction: row-reverse;
     }
 
-    .inlineSupporterPromotion {
-        display: inline-block;
+    .supporterPromotion {
+        text-align: center;
+        padding: 0 2em;
     }
-}
 
-.disabledUser {
-    -webkit-filter: grayscale(100%);
-    filter: grayscale(100%);
-}
-
-.disabledUserBanner {
-    margin: 0 0 2em;
-}
-
-.modalLoading {
-    position: fixed;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, .3);
-    /* One less than jqm loading spinner, so we can combine them */
-    z-index: 9999998;
+        .supporterPromotion button {
+            padding-left: 2em;
+            padding-right: 2em;
+        }
 }
 
 .nativeApp *:not(input):not(select):not(textarea) {
@@ -1467,10 +675,6 @@ progress {
     -moz-user-drag: none;
     -ms-user-drag: none;
     user-drag: none;
-}
-
-.supporterMembershipDisabled .tabSupporterMembership {
-    display: none;
 }
 
 .syncActivityForTarget {
@@ -1491,36 +695,6 @@ progress {
         min-width: 400px;
     }
 }
-
-.scheduledTaskPaperIconItem {
-    outline: none !important;
-}
-
-    .scheduledTaskPaperIconItem[data-status='Idle'] paper-fab {
-        background-color: #999;
-    }
-
-    .scheduledTaskPaperIconItem[data-status="Cancelling"] paper-fab {
-        background-color: #cc3333;
-    }
-
-    .scheduledTaskPaperIconItem[data-status="Running"] paper-fab {
-        background-color: #52B54B;
-    }
-
-    .scheduledTaskPaperIconItem #progressContainer {
-        height: 8px !important;
-        border-radius: 5px;
-    }
-
-    .scheduledTaskPaperIconItem #primaryProgress {
-        border-bottom-left-radius: 5px;
-        border-top-left-radius: 5px;
-    }
-
-    .scheduledTaskPaperIconItem paper-progress {
-        display: inline-block;
-    }
 
 .imageDropZone {
     border: 2px dashed #bbb;
@@ -1577,4 +751,8 @@ emby-collapsible > .style-scope {
     border: 1px solid #252525;
     border-width: 0 1px 1px 1px;
     padding: 1em 1.25em;
+}
+
+#editItemMetadataPage #txtOverview .paper-input-input {
+    max-height: 90px;
 }

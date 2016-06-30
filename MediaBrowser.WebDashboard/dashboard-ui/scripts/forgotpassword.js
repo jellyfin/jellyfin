@@ -1,6 +1,6 @@
-﻿define(['jQuery'], function ($) {
+﻿define([], function () {
 
-    function processForgotPasswordResult(page, result) {
+    function processForgotPasswordResult(result) {
 
         if (result.Action == 'ContactAdmin') {
 
@@ -40,32 +40,26 @@
         }
     }
 
-    function onSubmit() {
+    return function (view, params) {
 
-        var page = $(this).parents('.page');
+        function onSubmit(e) {
 
-        ApiClient.ajax({
+            ApiClient.ajax({
 
-            type: 'POST',
-            url: ApiClient.getUrl('Users/ForgotPassword'),
-            dataType: 'json',
-            data: {
-                EnteredUsername: $('#txtName', page).val()
-            }
+                type: 'POST',
+                url: ApiClient.getUrl('Users/ForgotPassword'),
+                dataType: 'json',
+                data: {
+                    EnteredUsername: view.querySelector('#txtName').value
+                }
 
-        }).then(function (result) {
+            }).then(processForgotPasswordResult);
 
-            processForgotPasswordResult(page, result);
-        });
+            e.preventDefault();
+            return false;
+        }
 
-        return false;
-    }
-
-
-    $(document).on('pageinit', '#forgotPasswordPage', function () {
-
-        var page = this;
-        $('.forgotPasswordForm', page).off('submit', onSubmit).on('submit', onSubmit);
-    });
+        view.querySelector('form').addEventListener('submit', onSubmit);
+    };
 
 });

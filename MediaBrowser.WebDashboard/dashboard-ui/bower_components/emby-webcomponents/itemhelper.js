@@ -48,7 +48,25 @@ define([], function () {
         return name;
     }
 
+    function supportsAddingToCollection(item) {
+        var invalidTypes = ['Person', 'Genre', 'MusicGenre', 'Studio', 'GameGenre', 'BoxSet', 'Playlist', 'UserView', 'CollectionFolder', 'Audio', 'TvChannel', 'Program', 'MusicAlbum', 'Timer'];
+
+        return !item.CollectionType && invalidTypes.indexOf(item.Type) == -1 && item.MediaType != 'Photo';
+    }
+
+    function supportsAddingToPlaylist(item) {
+        if (item.Type == 'Program') {
+            return false;
+        }
+        if (item.Type == 'Timer') {
+            return false;
+        }
+        return item.RunTimeTicks || item.IsFolder || item.Type == "Genre" || item.Type == "MusicGenre" || item.Type == "MusicArtist";
+    }
+
     return {
-        getDisplayName: getDisplayName
+        getDisplayName: getDisplayName,
+        supportsAddingToCollection: supportsAddingToCollection,
+        supportsAddingToPlaylist: supportsAddingToPlaylist
     };
 });

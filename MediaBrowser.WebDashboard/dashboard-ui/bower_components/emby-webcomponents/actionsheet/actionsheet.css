@@ -27,7 +27,7 @@
     text-align: center;
 }
 
-.actionSheetMenuItem {
+button.actionSheetMenuItem {
     padding: 0 1.6em;
     margin: 0;
     text-transform: none;
@@ -35,13 +35,22 @@
     display: flex;
     font-weight: inherit;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .actionSheetItemText {
     padding: .8em 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
 }
 
-.layout-tv .actionSheetMenuItem {
+.noflex .actionSheetItemText {
+    display: inline-block;
+}
+
+.layout-tv button.actionSheetMenuItem {
     padding-top: .16em;
     padding-bottom: .16em;
 }
@@ -53,10 +62,15 @@
 .actionSheetScroller {
     /* Override default style being applied by polymer */
     margin-bottom: 0 !important;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 }
 
 .layout-tv .actionSheetScroller {
     max-height: 60%;
+    max-width: 60%;
+    width: auto;
 }
 
 h1.actionSheetTitle {

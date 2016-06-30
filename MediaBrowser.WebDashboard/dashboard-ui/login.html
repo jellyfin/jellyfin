@@ -2,46 +2,63 @@
 
     <div data-role="content">
 
-        <form class="manualLoginForm" style="display: none; margin: 0 auto;">
+        <form class="manualLoginForm hide" style="margin: 0 auto;">
 
             <h1 style="text-align: left;">${HeaderPleaseSignIn}</h1>
 
-            <div style="display: none;">
-                <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete" autocomplete="address-level4" />
+            <div style="height:0; overflow: hidden;"><input type="text" name="fakeusernameremembered" tabindex="-1" /><input type="password" name="fakepasswordremembered" tabindex="-1" /></div>
+
+            <div class="inputContainer">
+                <input is="emby-input" type="text" id="txtManualName" required="required" label="${LabelUser}" />
             </div>
 
-            <paper-input type="text" id="txtManualName" required="required" label="${LabelUser}" autocomplete="off"></paper-input>
-
-            <paper-input id="txtManualPassword" type="password" label="${LabelPassword}" autocomplete="off"></paper-input>
+            <div class="inputContainer">
+                <input is="emby-input" id="txtManualPassword" type="password" label="${LabelPassword}" />
+            </div>
 
             <br />
-            <button type="submit" data-role="none" class="clearButton">
-                <paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${ButtonSignIn}</span></paper-button>
+            <button is="emby-button" type="submit" class="raised accent block">
+                <i class="md-icon">check</i>
+                <span>${ButtonSignIn}</span>
             </button>
             <div style="margin-top:.5em;">
-                <paper-button raised class="cancel block btnCancel"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+                <button is="emby-button" type="button" class="raised cancel block btnCancel">
+                    <i class="md-icon">close</i>
+                    <span>${ButtonCancel}</span>
+                </button>
             </div>
             <br />
             <br />
         </form>
 
         <div class="visualLoginForm" style="text-align: center;">
+            <h1>${HeaderPleaseSignIn}</h1>
+            <p>${VisualLoginFormHelp}</p>
             <br />
             <div id="divUsers" class="itemsContainer"></div>
 
             <br />
 
             <div class="readOnlyContent" style="margin: 2em auto 0;">
-                <paper-button raised class="cancel block btnManual"><iron-icon icon="lock"></iron-icon><span>${ButtonManualLogin}</span></paper-button>
+                <button is="emby-button" type="button" class="raised cancel block btnManual">
+                    <i class="md-icon">lock</i>
+                    <span>${ButtonManualLogin}</span>
+                </button>
             </div>
         </div>
 
         <div class="readOnlyContent" style="margin: .5em auto 1em;">
-            <paper-button raised class="cancel block btnForgotPassword"><iron-icon icon="info"></iron-icon><span>${ButtonForgotPassword}</span></paper-button>
+            <button is="emby-button" type="button" class="raised cancel block btnForgotPassword">
+                <i class="md-icon">info</i>
+                <span>${ButtonForgotPassword}</span>
+            </button>
 
-            <div class="connectButtons" style="display:none;">
+            <div class="connectButtons hide">
                 <a href="selectserver.html" class="clearLink">
-                    <paper-button raised class="cancel block"><iron-icon icon="settings"></iron-icon><span>${ButtonChangeServer}</span></paper-button>
+                    <button is="emby-button" type="button" class="raised cancel block">
+                        <i class="md-icon">settings</i>
+                        <span>${ButtonChangeServer}</span>
+                    </button>
                 </a>
             </div>
 

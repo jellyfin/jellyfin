@@ -43,7 +43,7 @@
 
                     reloadItems(page);
 
-                }, onApiFailure);
+                }, Dashboard.processErrorResponse);
             });
         });
     }
@@ -101,7 +101,7 @@
 
                     reloadItems(page);
 
-                }, onApiFailure);
+                }, Dashboard.processErrorResponse);
             });
         });
     }
@@ -116,7 +116,7 @@
             renderResults(page, result);
 
             Dashboard.hideLoadingMsg();
-        }, onApiFailure);
+        }, Dashboard.processErrorResponse);
     }
 
     function getStatusText(item, enhance) {
@@ -257,9 +257,9 @@
         });
 
         if (result.TotalRecordCount) {
-            $('.btnClearLog', page).show();
+            page.querySelector('.btnClearLog').classList.remove('hide');
         } else {
-            $('.btnClearLog', page).hide();
+            page.querySelector('.btnClearLog').classList.add('hide');
         }
     }
 
@@ -270,26 +270,6 @@
         if ((msg.MessageType == 'ScheduledTaskEnded' && msg.Data.Key == 'AutoOrganize') || msg.MessageType == 'AutoOrganizeUpdate') {
 
             reloadItems(page);
-        }
-    }
-
-    function onApiFailure(e) {
-
-        Dashboard.hideLoadingMsg();
-
-        if (e.status == 0) {
-
-            Dashboard.alert({
-                title: 'Auto-Organize',
-                message: 'The operation is going to take a little longer. The view will be updated on completion.'
-            });
-        }
-        else {
-
-            Dashboard.alert({
-                title: Globalize.translate('AutoOrganizeError'),
-                message: Globalize.translate('ErrorOrganizingFileWithErrorCode', e.headers.get('X-Application-Error-Code'))
-            });
         }
     }
 
@@ -317,7 +297,7 @@
 
             ApiClient.clearOrganizationLog().then(function () {
                 reloadItems(page);
-            }, onApiFailure);
+            }, Dashboard.processErrorResponse);
         });
 
     }).on('pageshow', '#libraryFileOrganizerLogPage', function () {
@@ -332,7 +312,7 @@
         $('.btnOrganize', page).taskButton({
             mode: 'on',
             progressElem: page.querySelector('.organizeProgress'),
-            panel: $('.organizeTaskPanel', page),
+            panel: page.querySelector('.organizeTaskPanel'),
             taskKey: 'AutoOrganize'
         });
 

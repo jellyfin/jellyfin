@@ -59,12 +59,12 @@
     /* Above everything, except for the video player and popup overlays */
     z-index: 1097;
     color: #fff;
-    background-color: rgba(26,26,26,.94);
-    border-top: 1px solid #444;
+    background-color: #2b2b2b;
     text-align: center;
     display: flex;
     flex-direction: row;
     align-items: center;
+    box-shadow: 0 -2px 2px 0 rgba(0,0,0,.14),-1px 5px 1px rgba(0,0,0,.12);
 }
 
 .hiddenNowPlayingBar .nowPlayingBar {
@@ -78,19 +78,20 @@
     text-align: center;
 }
 
-.mediaButton {
-    box-sizing: content-box !important;
-}
+    .mediaButton i {
+        height: 40px;
+        width: 40px;
+        font-size: 40px;
+    }
 
-    .mediaButton.remoteControlButton, .mediaButton.muteButton, .mediaButton.unmuteButton {
-        height: 26px;
+    .mediaButton.remoteControlButton i, .mediaButton.muteButton i, .mediaButton.unmuteButton i, .mediaButton.castButton i, .mediaButton.infoButton i {
+        height: 28px;
+        width: 28px;
+        font-size: 28px;
     }
 
 .nowPlayingDoubleText {
     top: -3px;
-}
-
-.nowPlayingBarInfoContainer {
 }
 
 .nowPlayingImage {
@@ -123,10 +124,6 @@
     vertical-align: middle;
     text-align: left;
     max-width: 130px;
-}
-
-.toggleRepeatButton {
-    height: 32px;
 }
 
 .repeatActive {
@@ -177,9 +174,9 @@
 }
 
 .nowPlayingBarPositionContainer {
-    position: absolute;
+    position: absolute !important;
     left: 80px;
-    top: 0;
+    top: -8px;
     right: 0;
     z-index: 1;
 }
@@ -188,26 +185,13 @@
     display: none;
 }
 
-.nowPlayingBarPositionSlider {
-    position: relative;
-    top: -15px;
-    width: 100%;
-}
-
-    .nowPlayingBarPositionSlider #sliderContainer {
-        width: 100%;
-        margin-left: 0 !important;
-    }
-
-    .nowPlayingBarPositionSlider #progressContainer {
-        background-color: transparent !important;
-    }
-
 .nowPlayingBarRight {
     position: relative;
     margin: 0 1em 0 auto;
     /* Need this to make sure it's on top of nowPlayingBarPositionContainer so that buttons are fully clickable */
     z-index: 2;
+    display: flex;
+    align-items: center;
 }
 
 .nowPlayingBarCurrentTime {
@@ -219,8 +203,7 @@
     padding-left: 50px;
 }
 
-.nowPlayingBarVolumeSlider {
-    margin-left: -1em;
+.nowPlayingBarVolumeSliderContainer {
     margin-right: 2em;
 }
 
@@ -240,7 +223,7 @@
 
 @media all and (max-width: 1100px) {
 
-    .nowPlayingBarVolumeSlider, .nowPlayingBar .muteButton, .nowPlayingBar .unmuteButton {
+    .nowPlayingBarVolumeSliderContainer, .nowPlayingBar .muteButton, .nowPlayingBar .unmuteButton {
         display: none !important;
     }
 }
@@ -276,10 +259,6 @@
 
     .nowPlayingBarPositionContainer {
         left: 70px;
-    }
-
-    .nowPlayingBarPositionSlider paper-progress {
-        height: 3px !important;
     }
 
     .toggleRepeatButton {

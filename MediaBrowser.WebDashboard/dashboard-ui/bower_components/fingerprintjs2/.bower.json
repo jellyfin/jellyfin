@@ -23,12 +23,12 @@
     "spec"
   ],
   "homepage": "https://github.com/Valve/fingerprintjs2",
-  "version": "1.1.4",
-  "_release": "1.1.4",
+  "version": "1.4.0",
+  "_release": "1.4.0",
   "_resolution": {
     "type": "version",
-    "tag": "1.1.4",
-    "commit": "ae5719db3d942a1a84ab43b707d4d1c34138934e"
+    "tag": "1.4.0",
+    "commit": "75cbd474158f8ecce43e00f198c76e486b896937"
   },
   "_source": "https://github.com/Valve/fingerprintjs2.git",
   "_target": "^1.1.3",

@@ -70,26 +70,21 @@ namespace MediaBrowser.Api
                 Cultures = _localizationManager.GetCultures().ToList()
             };
 
-            var locationType = item.LocationType;
-            if (locationType == LocationType.FileSystem ||
-                locationType == LocationType.Offline)
+            if (!item.IsVirtualItem && !(item is ICollectionFolder) && !(item is UserView) && !(item is AggregateFolder) && !(item is LiveTvChannel) && !(item is IItemByName))
             {
-                if (!(item is ICollectionFolder) && !(item is UserView) && !(item is AggregateFolder) && !(item is LiveTvChannel) && !(item is IItemByName))
+                var inheritedContentType = _libraryManager.GetInheritedContentType(item);
+                var configuredContentType = _libraryManager.GetConfiguredContentType(item);
+
+                if (string.IsNullOrWhiteSpace(inheritedContentType) || string.Equals(inheritedContentType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(configuredContentType))
                 {
-                    var inheritedContentType = _libraryManager.GetInheritedContentType(item);
-                    var configuredContentType = _libraryManager.GetConfiguredContentType(item);
+                    info.ContentTypeOptions = GetContentTypeOptions(true);
+                    info.ContentType = configuredContentType;
 
-                    if (string.IsNullOrWhiteSpace(inheritedContentType) || string.Equals(inheritedContentType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(configuredContentType))
+                    if (string.Equals(inheritedContentType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
                     {
-                        info.ContentTypeOptions = GetContentTypeOptions(true);
-                        info.ContentType = configuredContentType;
-
-                        if (string.Equals(inheritedContentType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
-                        {
-                            info.ContentTypeOptions = info.ContentTypeOptions
-                                .Where(i => string.IsNullOrWhiteSpace(i.Value) || string.Equals(i.Value, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
-                                .ToList();
-                        }
+                        info.ContentTypeOptions = info.ContentTypeOptions
+                            .Where(i => string.IsNullOrWhiteSpace(i.Value) || string.Equals(i.Value, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
+                            .ToList();
                     }
                 }
             }
@@ -280,11 +275,7 @@ namespace MediaBrowser.Api
                 episode.AbsoluteEpisodeNumber = request.AbsoluteEpisodeNumber;
             }
 
-            var hasTags = item as IHasTags;
-            if (hasTags != null)
-            {
-                hasTags.Tags = request.Tags;
-            }
+            item.Tags = request.Tags;
 
             var hasTaglines = item as IHasTaglines;
             if (hasTaglines != null)
@@ -298,11 +289,7 @@ namespace MediaBrowser.Api
                 hasShortOverview.ShortOverview = request.ShortOverview;
             }
 
-            var hasKeywords = item as IHasKeywords;
-            if (hasKeywords != null)
-            {
-                hasKeywords.Keywords = request.Keywords;
-            }
+            item.Keywords = request.Keywords;
 
             if (request.Studios != null)
             {
@@ -427,11 +414,6 @@ namespace MediaBrowser.Api
                 series.Status = request.SeriesStatus;
                 series.AirDays = request.AirDays;
                 series.AirTime = request.AirTime;
-
-                if (request.DisplaySpecialsWithSeasons.HasValue)
-                {
-                    series.DisplaySpecialsWithSeasons = request.DisplaySpecialsWithSeasons.Value;
-                }
             }
         }
 

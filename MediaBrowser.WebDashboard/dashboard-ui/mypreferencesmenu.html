@@ -1,57 +1,57 @@
-﻿<div id="myPreferencesMenuPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-contextname="${HeaderSettings}" data-require="scripts/mypreferencescommon,paper-fab,paper-item-body,paper-icon-item">
+﻿<div id="myPreferencesMenuPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-contextname="${HeaderSettings}" data-require="scripts/mypreferencescommon,listViewStyle">
 
     <div data-role="content">
         <div class="readOnlyContent" style="margin: 0 auto;">
             <h1 class="settingsMenuHeader">${HeaderSettings}</h1>
             <div>
                 <a href="#" class="clearLink lnkDisplayPreferences">
-                    <paper-icon-item>
-                        <paper-fab mini class="blue" icon="tv" item-icon></paper-fab>
-                        <paper-item-body two-line>
+                    <div class="listItem">
+                        <button type="button" is="emby-button" class="fab mini autoSize blue" item-icon><i class="md-icon">tv</i></button>
+                        <div class="listItemBody two-line">
                             <div>${ButtonDisplaySettings}</div>
-                            <div secondary>${ButtonDisplaySettingsHelp}</div>
-                        </paper-item-body>
-                    </paper-icon-item>
+                            <div class="secondary">${ButtonDisplaySettingsHelp}</div>
+                        </div>
+                    </div>
                 </a>
 
                 <a href="#" class="clearLink lnkHomeScreenPreferences">
-                    <paper-icon-item>
-                        <paper-fab mini class="red" icon="home" item-icon></paper-fab>
-                        <paper-item-body two-line>
+                    <div class="listItem">
+                        <button type="button" is="emby-button" class="fab mini autoSize red" item-icon><i class="md-icon">home</i></button>
+                        <div class="listItemBody two-line">
                             <div>${ButtonHomeScreenSettings}</div>
-                            <div secondary>${ButtonHomeScreenSettingsHelp}</div>
-                        </paper-item-body>
-                    </paper-icon-item>
+                            <div class="secondary">${ButtonHomeScreenSettingsHelp}</div>
+                        </div>
+                    </div>
                 </a>
 
                 <a href="#" class="clearLink lnkLanguagePreferences">
-                    <paper-icon-item>
-                        <paper-fab mini class="green" icon="play-circle-filled" item-icon></paper-fab>
-                        <paper-item-body two-line>
+                    <div class="listItem">
+                        <button type="button" is="emby-button" class="fab mini autoSize green" item-icon><i class="md-icon">play_circle_filled</i></button>
+                        <div class="listItemBody two-line">
                             <div>${ButtonPlaybackSettings}</div>
-                            <div secondary>${ButtonPlaybackSettingsHelp}</div>
-                        </paper-item-body>
-                    </paper-icon-item>
+                            <div class="secondary">${ButtonPlaybackSettingsHelp}</div>
+                        </div>
+                    </div>
                 </a>
 
                 <a href="#" class="clearLink lnkMyProfile">
-                    <paper-icon-item>
-                        <paper-fab mini class="orange" icon="person" item-icon></paper-fab>
-                        <paper-item-body two-line>
+                    <div class="listItem">
+                        <button type="button" is="emby-button" class="fab mini autoSize orange" item-icon><i class="md-icon">person</i></button>
+                        <div class="listItemBody two-line">
                             <div>${ButtonProfile}</div>
-                            <div secondary>${ButtonProfileHelp}</div>
-                        </paper-item-body>
-                    </paper-icon-item>
+                            <div class="secondary">${ButtonProfileHelp}</div>
+                        </div>
+                    </div>
                 </a>
 
                 <a href="#" class="clearLink lnkSync hide">
-                    <paper-icon-item>
-                        <paper-fab mini icon="sync" style="background-color: #673AB7;" item-icon></paper-fab>
-                        <paper-item-body two-line>
+                    <div class="listItem">
+                        <button type="button" is="emby-button" class="fab mini autoSize" style="background-color: #673AB7;" item-icon><i class="md-icon">sync</i></button>
+                        <div class="listItemBody two-line">
                             <div>${ButtonSyncSettings}</div>
-                            <div secondary>${ButtonSyncSettingsHelp}</div>
-                        </paper-item-body>
-                    </paper-icon-item>
+                            <div class="secondary">${ButtonSyncSettingsHelp}</div>
+                        </div>
+                    </div>
                 </a>
             </div>
             <div>
@@ -59,19 +59,19 @@
                 <h1 class="headerUser"></h1>
                 <div>
                     <a href="selectserver.html" class="clearLink selectServer hide">
-                        <paper-icon-item>
-                            <paper-fab mini icon="wifi" style="background-color: #444;" item-icon></paper-fab>
-                            <paper-item-body two-line>
+                        <div class="listItem">
+                            <button type="button" is="emby-button" class="fab mini autoSize"><i class="md-icon">wifi</i></button>
+                            <div class="listItemBody two-line">
                                 <div>${HeaderSelectServer}</div>
-                            </paper-item-body>
-                        </paper-icon-item>
+                            </div>
+                        </div>
                     </a>
-                    <paper-icon-item class="btnLogout">
-                        <paper-fab mini icon="lock" style="background-color: #444;" item-icon></paper-fab>
-                        <paper-item-body two-line>
+                    <div class="listItem btnLogout">
+                        <button type="button" is="emby-button" class="fab mini autoSize"><i class="md-icon">lock</i></button>
+                        <div class="listItemBody two-line">
                             <div>${ButtonSignOut}</div>
-                        </paper-item-body>
-                    </paper-icon-item>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -80,12 +80,12 @@
                 <h1>${HeaderAdmin}</h1>
                 <div>
                     <a href="dashboard.html" class="clearLink">
-                        <paper-icon-item>
-                            <paper-fab mini icon="settings" style="background-color: #444;" item-icon></paper-fab>
-                            <paper-item-body two-line>
+                        <div class="listItem">
+                            <button type="button" is="emby-button" class="fab mini autoSize"><i class="md-icon">settings</i></button>
+                            <div class="listItemBody two-line">
                                 <div>${ButtonServerDashboard}</div>
-                            </paper-item-body>
-                        </paper-icon-item>
+                            </div>
+                        </div>
                     </a>
                 </div>
             </div>

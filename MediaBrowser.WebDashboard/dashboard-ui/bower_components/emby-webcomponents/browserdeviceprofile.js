@@ -49,7 +49,19 @@ define(['browser'], function (browser) {
 
         var typeString;
 
-        if (format == 'opus') {
+        if (format == 'flac') {
+            if (browser.tizen) {
+                return true;
+            }
+        }
+
+        else if (format == 'wma') {
+            if (browser.tizen) {
+                return true;
+            }
+        }
+
+        else if (format == 'opus') {
             typeString = 'audio/ogg; codecs="opus"';
 
             if (document.createElement('audio').canPlayType(typeString).replace(/no/, '')) {
@@ -150,6 +162,11 @@ define(['browser'], function (browser) {
     }
 
     function getMaxBitrate() {
+
+        // 10mbps
+        if (browser.xboxOne) {
+            return 10000000;
+        }
 
         var userAgent = navigator.userAgent.toLowerCase();
 
@@ -253,7 +270,7 @@ define(['browser'], function (browser) {
             profile.DirectPlayProfiles.push(i);
         });
 
-        ['opus', 'mp3', 'aac', 'flac', 'webma'].filter(canPlayAudioFormat).forEach(function (audioFormat) {
+        ['opus', 'mp3', 'aac', 'flac', 'webma', 'wma'].filter(canPlayAudioFormat).forEach(function (audioFormat) {
 
             profile.DirectPlayProfiles.push({
                 Container: audioFormat == 'webma' ? 'webma,webm' : audioFormat,
@@ -297,26 +314,31 @@ define(['browser'], function (browser) {
             });
         });
 
+        var copyTimestamps = false;
+        if (browser.chrome) {
+            copyTimestamps = true;
+        }
+
         // Can't use mkv on mobile because we have to use the native player controls and they won't be able to seek it
-        if (canPlayMkv && options.supportsCustomSeeking) {
+        if (canPlayMkv && options.supportsCustomSeeking && !browser.tizen) {
             profile.TranscodingProfiles.push({
                 Container: 'mkv',
                 Type: 'Video',
                 AudioCodec: videoAudioCodecs.join(','),
                 VideoCodec: 'h264',
                 Context: 'Streaming',
-                CopyTimestamps: true
+                CopyTimestamps: copyTimestamps
             });
         }
 
-        if (canPlayTs) {
+        if (canPlayTs && options.supportsCustomSeeking && !browser.tizen) {
             profile.TranscodingProfiles.push({
                 Container: 'ts',
                 Type: 'Video',
                 AudioCodec: videoAudioCodecs.join(','),
                 VideoCodec: 'h264',
                 Context: 'Streaming',
-                CopyTimestamps: true,
+                CopyTimestamps: copyTimestamps,
                 // If audio transcoding is needed, limit channels to number of physical audio channels
                 // Trying to transcode to 5 channels when there are only 2 speakers generally does not sound good
                 MaxAudioChannels: physicalAudioChannels.toString()

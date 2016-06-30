@@ -1,4 +1,4 @@
-﻿define(['browser', 'datetime', 'jQuery', 'libraryBrowser', 'paper-fab', 'paper-slider'], function (browser, datetime, $, libraryBrowser) {
+﻿define(['browser', 'datetime', 'libraryBrowser'], function (browser, datetime, libraryBrowser) {
 
     function showSlideshowMenu(context) {
         require(['scripts/slideshow'], function () {
@@ -97,7 +97,7 @@
         menuItems.unshift({
             id: -1,
             name: Globalize.translate('ButtonOff'),
-            ironIcon: currentIndex == null ? 'check' : null
+            selected: currentIndex == null
         });
 
         require(['actionsheet'], function (actionsheet) {
@@ -234,8 +234,6 @@
 
     function hideChapterMenu(page) {
 
-        //$('.chapterMenuOverlay', page).hide();
-        //$('.chapterMenu', page).hide();
     }
 
     return function () {
@@ -373,14 +371,14 @@
             var toggleRepeatButton = context.querySelector('.repeatToggleButton');
 
             if (playState.RepeatMode == 'RepeatAll') {
-                toggleRepeatButton.icon = "repeat";
+                toggleRepeatButton.innerHTML = "<i class='md-icon'>repeat</i>";
                 toggleRepeatButton.classList.add('nowPlayingPageRepeatActive');
             }
             else if (playState.RepeatMode == 'RepeatOne') {
-                toggleRepeatButton.icon = "repeat-one";
+                toggleRepeatButton.innerHTML = "<i class='md-icon'>repeat_one</i>";
                 toggleRepeatButton.classList.add('nowPlayingPageRepeatActive');
             } else {
-                toggleRepeatButton.icon = "repeat";
+                toggleRepeatButton.innerHTML = "<i class='md-icon'>repeat</i>";
                 toggleRepeatButton.classList.remove('nowPlayingPageRepeatActive');
             }
 
@@ -410,7 +408,7 @@
             //        smallIcon: true
             //    });
 
-            //    $(".playlist", page).html(html).lazyChildren();
+            //    page(".playlist").html(html).lazyChildren();
             //});
 
             html += libraryBrowser.getListViewHtml({
@@ -437,7 +435,7 @@
 
                     var item = itemsContainer.querySelectorAll('.listItem')[index];
                     if (item) {
-                        var img = item.querySelector('.listviewImage');
+                        var img = item.querySelector('.listItemImage');
 
                         img.classList.remove('lazy');
                         img.classList.add('playlistIndexIndicatorImage');
@@ -535,13 +533,13 @@
 
             if (info.isLocalPlayer) {
 
-                btnCast.querySelector('iron-icon').icon = 'cast';
+                btnCast.querySelector('i').innerHTML = 'cast';
                 btnCast.classList.remove('btnActiveCast');
                 context.querySelector('.nowPlayingSelectedPlayer').innerHTML = '';
 
             } else {
 
-                btnCast.querySelector('iron-icon').icon = 'cast-connected';
+                btnCast.querySelector('i').innerHTML = 'cast-connected';
                 btnCast.classList.add('btnActiveCast');
                 context.querySelector('.nowPlayingSelectedPlayer').innerHTML = info.deviceName || info.name;
             }
@@ -597,22 +595,26 @@
             }
         }
 
+        function onBtnCommandClick() {
+            if (currentPlayer) {
+
+                if (this.classList.contains('repeatToggleButton')) {
+                    toggleRepeat(currentPlayer);
+                } else {
+                    MediaController.sendCommand({
+                        Name: this.getAttribute('data-command')
+
+                    }, currentPlayer);
+                }
+            }
+        }
+
         function bindEvents(context) {
 
-            $('.btnCommand', context).on('click', function () {
-
-                if (currentPlayer) {
-
-                    if (this.classList.contains('repeatToggleButton')) {
-                        toggleRepeat(currentPlayer);
-                    } else {
-                        MediaController.sendCommand({
-                            Name: this.getAttribute('data-command')
-
-                        }, currentPlayer);
-                    }
-                }
-            });
+            var btnCommand = context.querySelectorAll('.btnCommand');
+            for (var i = 0, length = btnCommand.length; i < length; i++) {
+                btnCommand[i].addEventListener('click', onBtnCommandClick);
+            }
 
             context.querySelector('.btnToggleFullscreen').addEventListener('click', function (e) {
 
@@ -698,20 +700,19 @@
                 }
             });
 
-            context.querySelector('.nowPlayingPositionSlider', context)._setPinValue = function (value) {
+            context.querySelector('.nowPlayingPositionSlider', context).getBubbleText = function (value) {
 
                 var state = lastPlayerState;
 
                 if (!state || !state.NowPlayingItem || !state.NowPlayingItem.RunTimeTicks) {
-                    this.pinValue = '--:--';
-                    return;
+                    return '--:--';
                 }
 
                 var ticks = state.NowPlayingItem.RunTimeTicks;
                 ticks /= 100;
                 ticks *= value;
 
-                this.pinValue = datetime.getDisplayRunningTime(ticks);
+                return datetime.getDisplayRunningTime(ticks);
             };
 
             context.addEventListener('click', onContextClick);
@@ -732,13 +733,13 @@
                 Name: 'DisplayMessage',
                 Arguments: {
 
-                    Header: $('#txtMessageTitle', form).val(),
-                    Text: $('#txtMessageText', form).val()
+                    Header: form.querySelector('#txtMessageTitle').value,
+                    Text: form.querySelector('#txtMessageText', form).value
                 }
 
             }, currentPlayer);
 
-            $('input', form).val('');
+            form.querySelector('input').value = '';
             require(['toast'], function (toast) {
                 toast('Message sent.');
             });
@@ -756,12 +757,12 @@
                 Name: 'SendString',
                 Arguments: {
 
-                    String: $('#txtTypeText', form).val()
+                    String: form.querySelector('#txtTypeText', form).value
                 }
 
             }, currentPlayer);
 
-            $('input', form).val('');
+            form.querySelector('input').value = '';
             require(['toast'], function (toast) {
                 toast('Text sent.');
             });
@@ -810,7 +811,7 @@
 
             Events.on(MediaController, 'playerchange', onPlayerChange);
 
-            $(context.querySelector('.itemsContainer')).createCardMenus();
+            libraryBrowser.createCardMenus(context.querySelector('.itemsContainer'));
 
         }
 

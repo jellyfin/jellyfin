@@ -404,6 +404,10 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <returns>SessionInfo.</returns>
         private async Task<SessionInfo> GetSessionInfo(string appName, string appVersion, string deviceId, string deviceName, string remoteEndPoint, User user)
         {
+            if (string.IsNullOrWhiteSpace(deviceId))
+            {
+                throw new ArgumentNullException("deviceId");
+            }
             var key = GetSessionKey(appName, deviceId);
 
             await _sessionLock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
@@ -928,7 +932,7 @@ namespace MediaBrowser.Server.Implementations.Session
             return session.SessionController.SendGeneralCommand(command, cancellationToken);
         }
 
-        public Task SendPlayCommand(string controllingSessionId, string sessionId, PlayRequest command, CancellationToken cancellationToken)
+        public async Task SendPlayCommand(string controllingSessionId, string sessionId, PlayRequest command, CancellationToken cancellationToken)
         {
             var session = GetSessionToRemoteControl(sessionId);
 
@@ -946,7 +950,14 @@ namespace MediaBrowser.Server.Implementations.Session
             }
             else
             {
-                items = command.ItemIds.SelectMany(i => TranslateItemForPlayback(i, user))
+                var list = new List<BaseItem>();
+                foreach (var itemId in command.ItemIds)
+                {
+                    var subItems = await TranslateItemForPlayback(itemId, user).ConfigureAwait(false);
+                    list.AddRange(subItems);
+                }
+                
+                items = list
                    .Where(i => i.LocationType != LocationType.Virtual)
                    .ToList();
             }
@@ -1009,10 +1020,10 @@ namespace MediaBrowser.Server.Implementations.Session
                 command.ControllingUserId = controllingSession.UserId.Value.ToString("N");
             }
 
-            return session.SessionController.SendPlayCommand(command, cancellationToken);
+            await session.SessionController.SendPlayCommand(command, cancellationToken).ConfigureAwait(false);
         }
 
-        private IEnumerable<BaseItem> TranslateItemForPlayback(string id, User user)
+        private async Task<List<BaseItem>> TranslateItemForPlayback(string id, User user)
         {
             var item = _libraryManager.GetItemById(id);
 
@@ -1033,25 +1044,27 @@ namespace MediaBrowser.Server.Implementations.Session
                 });
 
                 return FilterToSingleMediaType(items)
-                    .OrderBy(i => i.SortName);
+                    .OrderBy(i => i.SortName)
+                    .ToList();
             }
 
             if (item.IsFolder)
             {
                 var folder = (Folder)item;
 
-                var items = folder.GetItems(new InternalItemsQuery(user)
+                var itemsResult = await folder.GetItems(new InternalItemsQuery(user)
                 {
                     Recursive = true,
                     IsFolder = false
 
-                }).Result.Items;
+                }).ConfigureAwait(false);
 
-                return FilterToSingleMediaType(items)
-                    .OrderBy(i => i.SortName);
+                return FilterToSingleMediaType(itemsResult.Items)
+                    .OrderBy(i => i.SortName)
+                    .ToList();
             }
 
-            return new[] { item };
+            return new List<BaseItem> { item };
         }
 
         private IEnumerable<BaseItem> FilterToSingleMediaType(IEnumerable<BaseItem> items)
@@ -1121,11 +1134,11 @@ namespace MediaBrowser.Server.Implementations.Session
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task SendRestartRequiredNotification(CancellationToken cancellationToken)
+        public async Task SendRestartRequiredNotification(CancellationToken cancellationToken)
         {
             var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null).ToList();
 
-            var info = _appHost.GetSystemInfo();
+            var info = await _appHost.GetSystemInfo().ConfigureAwait(false);
 
             var tasks = sessions.Select(session => Task.Run(async () =>
             {
@@ -1140,7 +1153,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
             }, cancellationToken));
 
-            return Task.WhenAll(tasks);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1447,7 +1460,7 @@ namespace MediaBrowser.Server.Implementations.Session
             }
         }
 
-        public async Task RevokeUserTokens(string userId)
+        public async Task RevokeUserTokens(string userId, string currentAccessToken)
         {
             var existing = _authRepo.Get(new AuthenticationInfoQuery
             {
@@ -1457,7 +1470,10 @@ namespace MediaBrowser.Server.Implementations.Session
 
             foreach (var info in existing.Items)
             {
-                await Logout(info.AccessToken).ConfigureAwait(false);
+                if (!string.Equals(currentAccessToken, info.AccessToken, StringComparison.OrdinalIgnoreCase))
+                {
+                    await Logout(info.AccessToken).ConfigureAwait(false);
+                }
             }
         }
 
@@ -1748,6 +1764,11 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public void ReportNowViewingItem(string sessionId, string itemId)
         {
+            if (string.IsNullOrWhiteSpace(itemId))
+            {
+                throw new ArgumentNullException("itemId");
+            }
+
             var item = _libraryManager.GetItemById(new Guid(itemId));
 
             var info = GetItemInfo(item, null, null);

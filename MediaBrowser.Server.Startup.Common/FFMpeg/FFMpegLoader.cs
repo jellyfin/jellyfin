@@ -24,7 +24,6 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
         private readonly IZipClient _zipClient;
         private readonly IFileSystem _fileSystem;
         private readonly NativeEnvironment _environment;
-        private readonly Assembly _ownerAssembly;
         private readonly FFMpegInstallInfo _ffmpegInstallInfo;
 
         private readonly string[] _fontUrls =
@@ -32,7 +31,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/ARIALUNI.7z"
         };
 
-        public FFMpegLoader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IZipClient zipClient, IFileSystem fileSystem, NativeEnvironment environment, Assembly ownerAssembly, FFMpegInstallInfo ffmpegInstallInfo)
+        public FFMpegLoader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IZipClient zipClient, IFileSystem fileSystem, NativeEnvironment environment, FFMpegInstallInfo ffmpegInstallInfo)
         {
             _logger = logger;
             _appPaths = appPaths;
@@ -40,7 +39,6 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             _zipClient = zipClient;
             _fileSystem = fileSystem;
             _environment = environment;
-            _ownerAssembly = ownerAssembly;
             _ffmpegInstallInfo = ffmpegInstallInfo;
         }
 
@@ -55,7 +53,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                 {
                     ProbePath = customffProbePath,
                     EncoderPath = customffMpegPath,
-                    Version = "custom"
+                    Version = "external"
                 };
             }
 
@@ -71,6 +69,11 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                     EncoderPath = downloadInfo.FFMpegFilename,
                     Version = version
                 };
+            }
+
+            if (string.Equals(version, "0", StringComparison.OrdinalIgnoreCase))
+            {
+                return new FFMpegInfo();
             }
 
             var rootEncoderPath = Path.Combine(_appPaths.ProgramDataPath, "ffmpeg");
@@ -95,18 +98,16 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                 // No older version. Need to download and block until complete
                 if (existingVersion == null)
                 {
-                    await DownloadFFMpeg(downloadInfo, versionedDirectoryPath, progress).ConfigureAwait(false);
+                    var success = await DownloadFFMpeg(downloadInfo, versionedDirectoryPath, progress).ConfigureAwait(false);
+                    if (!success)
+                    {
+                        return new FFMpegInfo();
+                    }
                 }
                 else
                 {
-                    // Older version found. 
-                    // Start with that. Download new version in the background.
-                    var newPath = versionedDirectoryPath;
-                    Task.Run(() => DownloadFFMpegInBackground(downloadInfo, newPath));
-
                     info = existingVersion;
                     versionedDirectoryPath = Path.GetDirectoryName(info.EncoderPath);
-
                     excludeFromDeletions.Add(versionedDirectoryPath);
                 }
             }
@@ -183,36 +184,8 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             return null;
         }
 
-        private async void DownloadFFMpegInBackground(FFMpegInstallInfo downloadinfo, string directory)
+        private async Task<bool> DownloadFFMpeg(FFMpegInstallInfo downloadinfo, string directory, IProgress<double> progress)
         {
-            try
-            {
-                await DownloadFFMpeg(downloadinfo, directory, new Progress<double>()).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error downloading ffmpeg", ex);
-            }
-        }
-
-        private async Task DownloadFFMpeg(FFMpegInstallInfo downloadinfo, string directory, IProgress<double> progress)
-        {
-            if (downloadinfo.IsEmbedded)
-            {
-                var tempFile = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString());
-                _fileSystem.CreateDirectory(Path.GetDirectoryName(tempFile));
-
-                using (var stream = _ownerAssembly.GetManifestResourceStream(downloadinfo.DownloadUrls[0]))
-                {
-                    using (var fs = _fileSystem.GetFileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read, true))
-                    {
-                        await stream.CopyToAsync(fs).ConfigureAwait(false);
-                    }
-                }
-                ExtractFFMpeg(downloadinfo, tempFile, directory);
-                return;
-            }
-
             foreach (var url in downloadinfo.DownloadUrls)
             {
                 progress.Report(0);
@@ -228,20 +201,14 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                     }).ConfigureAwait(false);
 
                     ExtractFFMpeg(downloadinfo, tempFile, directory);
-                    return;
+                    return true;
                 }
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error downloading {0}", ex, url);
                 }
             }
-
-            if (downloadinfo.DownloadUrls.Length == 0)
-            {
-                throw new ApplicationException("ffmpeg unvailable. Please install it and start the server with two command line arguments: -ffmpeg \"{PATH}\" and -ffprobe \"{PATH}\"");
-            }
-
-            throw new ApplicationException("Unable to download required components. Please try again later.");
+            return false;
         }
 
         private void ExtractFFMpeg(FFMpegInstallInfo downloadinfo, string tempFile, string targetFolder)

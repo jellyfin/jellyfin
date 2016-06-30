@@ -1,4 +1,4 @@
-﻿define(['playlistManager', 'scrollHelper', 'appSettings', 'appStorage', 'apphost', 'datetime', 'jQuery', 'itemHelper', 'mediaInfo', 'scrollStyles'], function (playlistManager, scrollHelper, appSettings, appStorage, appHost, datetime, $, itemHelper, mediaInfo) {
+﻿define(['scrollHelper', 'viewManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'itemHelper', 'mediaInfo', 'scrollStyles'], function (scrollHelper, viewManager, appSettings, appStorage, appHost, datetime, itemHelper, mediaInfo) {
 
     function parentWithClass(elem, className) {
 
@@ -15,7 +15,7 @@
 
     function fadeInRight(elem) {
 
-        var pct = browserInfo.mobile ? '2%' : '0.5%';
+        var pct = browserInfo.mobile ? '2.5%' : '0.5%';
 
         var keyframes = [
           { opacity: '0', transform: 'translate3d(' + pct + ', 0, 0)', offset: 0 },
@@ -187,10 +187,6 @@
 
                 function allowSwipeOn(elem) {
 
-                    if (elem.tagName == 'PAPER-SLIDER') {
-                        return false;
-                    }
-
                     if (elem.classList) {
                         return !elem.classList.contains('hiddenScrollX') && !elem.classList.contains('smoothScrollX') && !elem.classList.contains('libraryViewNav');
                     }
@@ -219,6 +215,11 @@
                 var current = LibraryBrowser.selectedTab(tabs);
                 tabs.selectedTabIndex = selected;
                 if (current == selected) {
+                    tabs.dispatchEvent(new CustomEvent("beforetabchange", {
+                        detail: {
+                            selectedTabIndex: selected
+                        }
+                    }));
                     tabs.dispatchEvent(new CustomEvent("tabchange", {
                         detail: {
                             selectedTabIndex: selected
@@ -293,6 +294,12 @@
                         var index = parseInt(link.getAttribute('data-index'));
                         var newPanel = panels[index];
 
+                        tabs.dispatchEvent(new CustomEvent("beforetabchange", {
+                            detail: {
+                                selectedTabIndex: index
+                            }
+                        }));
+
                         // If toCenter is called syncronously within the click event, it sometimes ends up canceling it
                         setTimeout(function () {
 
@@ -359,6 +366,11 @@
                         LibraryBrowser.selectedTab(pageTabsContainer, 0);
                         return;
                     }
+                    pageTabsContainer.dispatchEvent(new CustomEvent("beforetabchange", {
+                        detail: {
+                            selectedTabIndex: LibraryBrowser.selectedTab(pageTabsContainer)
+                        }
+                    }));
                     pageTabsContainer.dispatchEvent(new CustomEvent("tabchange", {
                         detail: {
                             selectedTabIndex: LibraryBrowser.selectedTab(pageTabsContainer)
@@ -381,7 +393,7 @@
 
                 if (window.location.href.toLowerCase().indexOf(url.toLowerCase()) != -1) {
 
-                    afterNavigate.call($.mobile.activePage);
+                    afterNavigate.call(viewManager.currentView());
                 } else {
 
                     pageClassOn('pagebeforeshow', 'page', afterNavigate);
@@ -670,11 +682,11 @@
 
                 var commands = [];
 
-                if (LibraryBrowser.supportsAddingToCollection(item)) {
+                if (itemHelper.supportsAddingToCollection(item)) {
                     commands.push('addtocollection');
                 }
 
-                if (playlistManager.supportsPlaylists(item)) {
+                if (itemHelper.supportsAddingToPlaylist(item)) {
                     commands.push('playlist');
                 }
 
@@ -747,23 +759,6 @@
                 return false;
             },
 
-            refreshItem: function (itemId) {
-
-                ApiClient.refreshItem(itemId, {
-
-                    Recursive: true,
-                    ImageRefreshMode: 'FullRefresh',
-                    MetadataRefreshMode: 'FullRefresh',
-                    ReplaceAllImages: false,
-                    ReplaceAllMetadata: true
-
-                });
-
-                require(['toast'], function (toast) {
-                    toast(Globalize.translate('MessageRefreshQueued'));
-                });
-            },
-
             deleteItems: function (itemIds) {
 
                 return new Promise(function (resolve, reject) {
@@ -794,17 +789,24 @@
 
             editImages: function (itemId) {
 
-                require(['components/imageeditor/imageeditor'], function (ImageEditor) {
+                return new Promise(function (resolve, reject) {
 
-                    ImageEditor.show(itemId);
+                    require(['components/imageeditor/imageeditor'], function (ImageEditor) {
+
+                        ImageEditor.show(itemId).then(resolve, reject);
+                    });
                 });
             },
 
             editSubtitles: function (itemId) {
 
-                require(['components/subtitleeditor/subtitleeditor'], function (SubtitleEditor) {
+                return new Promise(function (resolve, reject) {
 
-                    SubtitleEditor.show(itemId);
+                    require(['subtitleEditor'], function (subtitleEditor) {
+
+                        var serverId = ApiClient.serverInfo().Id;
+                        subtitleEditor.show(itemId, serverId).then(resolve, reject);
+                    });
                 });
             },
 
@@ -909,102 +911,107 @@
                     });
                 }
 
-                var serverId = ApiClient.serverInfo().Id;
+                return new Promise(function (resolve, reject) {
 
-                require(['actionsheet'], function (actionsheet) {
+                    var serverId = ApiClient.serverInfo().Id;
 
-                    actionsheet.show({
-                        items: items,
-                        positionTo: positionTo,
-                        callback: function (id) {
+                    require(['actionsheet'], function (actionsheet) {
 
-                            switch (id) {
+                        actionsheet.show({
+                            items: items,
+                            positionTo: positionTo,
+                            callback: function (id) {
 
-                                case 'share':
-                                    require(['sharingmanager'], function (sharingManager) {
-                                        sharingManager.showMenu({
-                                            serverId: serverId,
-                                            itemId: itemId
+                                switch (id) {
+
+                                    case 'share':
+                                        require(['sharingmanager'], function (sharingManager) {
+                                            sharingManager.showMenu({
+                                                serverId: serverId,
+                                                itemId: itemId
+                                            });
                                         });
-                                    });
-                                    break;
-                                case 'addtocollection':
-                                    require(['collectioneditor'], function (collectioneditor) {
+                                        break;
+                                    case 'addtocollection':
+                                        require(['collectionEditor'], function (collectionEditor) {
 
-                                        new collectioneditor().show([itemId]);
-                                    });
-                                    break;
-                                case 'playlist':
-                                    require(['playlistManager'], function (playlistManager) {
+                                            new collectionEditor().show({
+                                                items: [itemId],
+                                                serverId: serverId
+                                            });
+                                        });
+                                        break;
+                                    case 'playlist':
+                                        require(['playlistEditor'], function (playlistEditor) {
+                                            new playlistEditor().show({
+                                                items: [itemId],
+                                                serverId: serverId
+                                            });
+                                        });
+                                        break;
+                                    case 'delete':
+                                        LibraryBrowser.deleteItems([itemId]);
+                                        break;
+                                    case 'download':
+                                        {
+                                            require(['fileDownloader'], function (fileDownloader) {
 
-                                        playlistManager.showPanel([itemId]);
-                                    });
-                                    break;
-                                case 'delete':
-                                    LibraryBrowser.deleteItems([itemId]);
-                                    break;
-                                case 'download':
-                                    {
-                                        require(['fileDownloader'], function (fileDownloader) {
+                                                var downloadHref = ApiClient.getUrl("Items/" + itemId + "/Download", {
+                                                    api_key: ApiClient.accessToken()
+                                                });
 
-                                            var downloadHref = ApiClient.getUrl("Items/" + itemId + "/Download", {
-                                                api_key: ApiClient.accessToken()
+                                                fileDownloader.download([
+                                                {
+                                                    url: downloadHref,
+                                                    itemId: itemId,
+                                                    serverId: serverId
+                                                }]);
                                             });
 
-                                            fileDownloader.download([
-                                            {
-                                                url: downloadHref,
-                                                itemId: itemId,
-                                                serverId: serverId
-                                            }]);
-                                        });
-
+                                            break;
+                                        }
+                                    case 'edit':
+                                        if (itemType == 'Timer') {
+                                            LibraryBrowser.editTimer(itemId);
+                                        } else {
+                                            LibraryBrowser.editMetadata(itemId);
+                                        }
                                         break;
-                                    }
-                                case 'edit':
-                                    if (itemType == 'Timer') {
-                                        LibraryBrowser.editTimer(itemId);
-                                    } else {
-                                        LibraryBrowser.editMetadata(itemId);
-                                    }
-                                    break;
-                                case 'editsubtitles':
-                                    LibraryBrowser.editSubtitles(itemId);
-                                    break;
-                                case 'editimages':
-                                    LibraryBrowser.editImages(itemId);
-                                    break;
-                                case 'identify':
-                                    LibraryBrowser.identifyItem(itemId);
-                                    break;
-                                case 'refresh':
-                                    ApiClient.refreshItem(itemId, {
-
-                                        Recursive: true,
-                                        ImageRefreshMode: 'FullRefresh',
-                                        MetadataRefreshMode: 'FullRefresh',
-                                        ReplaceAllImages: false,
-                                        ReplaceAllMetadata: true
-                                    });
-
-                                    require(['toast'], function (toast) {
-                                        toast(Globalize.translate('MessageRefreshQueued'));
-                                    });
-                                    break;
-                                default:
-                                    break;
+                                    case 'editsubtitles':
+                                        LibraryBrowser.editSubtitles(itemId).then(resolve, reject);
+                                        break;
+                                    case 'editimages':
+                                        LibraryBrowser.editImages(itemId).then(resolve, reject);
+                                        break;
+                                    case 'identify':
+                                        LibraryBrowser.identifyItem(itemId).then(resolve, reject);
+                                        break;
+                                    case 'refresh':
+                                        require(['refreshDialog'], function (refreshDialog) {
+                                            new refreshDialog({
+                                                itemIds: [itemId],
+                                                serverId: serverId
+                                            }).show();
+                                        });
+                                        break;
+                                    default:
+                                        break;
+                                }
                             }
-                        }
-                    });
+                        });
 
+                    });
                 });
             },
 
             identifyItem: function (itemId) {
 
-                require(['components/itemidentifier/itemidentifier'], function (itemidentifier) {
+                return new Promise(function (resolve, reject) {
 
-                    itemidentifier.show(itemId);
+                    require(['components/itemidentifier/itemidentifier'], function (itemidentifier) {
+
+                        itemidentifier.show(itemId).then(resolve, reject);
+                    });
                 });
             },
 
@@ -1054,7 +1061,7 @@
                     }
 
                     if (item.CollectionType == 'boxsets') {
-                        return 'collections.html?topParentId=' + item.Id;
+                        return 'itemlist.html?topParentId=' + item.Id + '&parentId=' + item.Id;
                     }
 
                     if (item.CollectionType == 'tvshows') {
@@ -1247,7 +1254,7 @@
 
             getListViewHtml: function (options) {
 
-                require(['paper-icon-item', 'paper-item-body']);
+                require(['listViewStyle', 'material-icons']);
 
                 var outerHtml = "";
 
@@ -1294,7 +1301,7 @@
                     var cssClass = 'listItem';
 
                     var href = LibraryBrowser.getHref(item, options.context);
-                    html += '<paper-icon-item class="' + cssClass + '"' + dataAttributes + ' data-itemid="' + item.Id + '" data-playlistitemid="' + (item.PlaylistItemId || '') + '" data-href="' + href + '" data-icon="false">';
+                    html += '<div class="' + cssClass + '"' + dataAttributes + ' data-itemid="' + item.Id + '" data-playlistitemid="' + (item.PlaylistItemId || '') + '" data-href="' + href + '" data-icon="false">';
 
                     var imgUrl;
 
@@ -1345,15 +1352,15 @@
 
                     if (imgUrl) {
                         if (options.smallIcon) {
-                            html += '<div class="listviewImage lazy small" data-src="' + imgUrl + '" item-icon></div>';
+                            html += '<div class="listItemImage lazy small" data-src="' + imgUrl + '" item-icon></div>';
                         } else {
-                            html += '<div class="listviewImage lazy" data-src="' + imgUrl + '" item-icon></div>';
+                            html += '<div class="listItemImage lazy" data-src="' + imgUrl + '" item-icon></div>';
                         }
                     } else {
                         if (options.smallIcon) {
-                            html += '<div class="listviewImage small" item-icon></div>';
+                            html += '<div class="listItemImage small" item-icon></div>';
                         } else {
-                            html += '<div class="listviewImage" item-icon></div>';
+                            html += '<div class="listItemImage" item-icon></div>';
                         }
                     }
 
@@ -1401,19 +1408,20 @@
                         }) + '</div>');
                     }
 
-                    if (textlines.length > 2) {
-                        html += '<paper-item-body three-line>';
-                    } else {
-                        html += '<paper-item-body two-line>';
-                    }
-
                     var defaultAction = options.defaultAction;
                     if (defaultAction == 'play' || defaultAction == 'playallfromhere') {
                         if (item.PlayAccess != 'Full') {
                             defaultAction = null;
                         }
                     }
-                    var defaultActionAttribute = defaultAction ? (' data-action="' + defaultAction + '" class="itemWithAction mediaItem clearLink"') : ' class="mediaItem clearLink"';
+
+                    var bodyCssClass = 'mediaItem clearLink listItemBody';
+                    if (textlines.length > 2) {
+                        bodyCssClass += ' three-line';
+                    } else {
+                        bodyCssClass += ' two-line';
+                    }
+                    var defaultActionAttribute = defaultAction ? (' data-action="' + defaultAction + '" class="itemWithAction ' + bodyCssClass + '"') : ' class="' + bodyCssClass + '"';
                     html += '<a' + defaultActionAttribute + ' href="' + href + '">';
 
                     for (var i = 0, textLinesLength = textlines.length; i < textLinesLength; i++) {
@@ -1421,30 +1429,20 @@
                         if (i == 0) {
                             html += '<div>';
                         } else {
-                            html += '<div secondary>';
+                            html += '<div class="secondary">';
                         }
                         html += textlines[i] || '&nbsp;';
                         html += '</div>';
                     }
 
-                    //html += LibraryBrowser.getSyncIndicator(item);
-
-                    //if (item.Type == 'Series' || item.Type == 'Season' || item.Type == 'BoxSet' || item.MediaType == 'Video') {
-                    //    if (item.UserData.UnplayedItemCount) {
-                    //        //html += '<span class="ui-li-count">' + item.UserData.UnplayedItemCount + '</span>';
-                    //    } else if (item.UserData.Played && item.Type != 'TvChannel') {
-                    //        html += '<div class="playedIndicator"><iron-icon icon="check"></iron-icon></div>';
-                    //    }
-                    //}
                     html += '</a>';
-                    html += '</paper-item-body>';
 
-                    html += '<button is="paper-icon-button-light" class="listviewMenuButton"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
+                    html += '<button is="paper-icon-button-light" class="listviewMenuButton autoSize"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button>';
                     html += '<span class="listViewUserDataButtons">';
                     html += LibraryBrowser.getUserDataIconsHtml(item);
                     html += '</span>';
 
-                    html += '</paper-icon-item>';
+                    html += '</div>';
 
                     index++;
                     return html;
@@ -1558,13 +1556,6 @@
                 return html;
             },
 
-            supportsAddingToCollection: function (item) {
-
-                var invalidTypes = ['Person', 'Genre', 'MusicGenre', 'Studio', 'GameGenre', 'BoxSet', 'Playlist', 'UserView', 'CollectionFolder', 'Audio', 'Episode', 'TvChannel', 'Program', 'MusicAlbum', 'Timer'];
-
-                return !item.CollectionType && invalidTypes.indexOf(item.Type) == -1 && item.MediaType != 'Photo';
-            },
-
             enableSync: function (item, user) {
                 if (AppInfo.isNativeApp && !Dashboard.capabilities().SupportsSync) {
                     return false;
@@ -1601,7 +1592,7 @@
                     itemCommands.push('shuffle');
                 }
 
-                if (playlistManager.supportsPlaylists(item)) {
+                if (itemHelper.supportsAddingToPlaylist(item)) {
 
                     if (options.showRemoveFromPlaylist) {
                         itemCommands.push('removefromplaylist');
@@ -1611,7 +1602,7 @@
                 }
 
                 if (options.showAddToCollection !== false) {
-                    if (LibraryBrowser.supportsAddingToCollection(item)) {
+                    if (itemHelper.supportsAddingToCollection(item)) {
                         itemCommands.push('addtocollection');
                     }
                 }
@@ -1691,8 +1682,12 @@
                         default:
                             break;
                     }
-                    var div = $('<div class="card ' + shape + 'Card"><div class="cardBox"><div class="cardImage"></div></div></div>').appendTo(document.body);
-                    var innerWidth = $('.cardImage', div).innerWidth();
+                    var div = document.createElement('div');
+                    div.classList.add('card');
+                    div.classList.add(shape + 'Card');
+                    div.innerHTML = '<div class="cardBox"><div class="cardImage"></div></div>';
+                    document.body.appendChild(div);
+                    var innerWidth = div.querySelector('.cardImage').clientWidth;
 
                     if (!innerWidth || isNaN(innerWidth)) {
                         cache = false;
@@ -1700,7 +1695,7 @@
                     }
 
                     var width = screenWidth / innerWidth;
-                    div.remove();
+                    div.parentNode.removeChild(div);
                     return Math.floor(width);
                 }
 
@@ -2125,14 +2120,14 @@
                 } else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
 
                     if (item.Name && showTitle) {
-                        icon = 'library-music';
+                        icon = 'library_music';
                     }
                     cssClass += " defaultBackground";
 
                 } else if (item.Type == "Recording" || item.Type == "Program" || item.Type == "TvChannel") {
 
                     if (item.Name && showTitle) {
-                        icon = 'folder-open';
+                        icon = 'folder_open';
                     }
 
                     cssClass += " defaultBackground";
@@ -2150,7 +2145,7 @@
                     cssClass += " defaultBackground";
                 } else {
                     if (item.Name && showTitle) {
-                        icon = 'folder-open';
+                        icon = 'folder_open';
                     }
                     cssClass += " defaultBackground";
                 }
@@ -2235,7 +2230,7 @@
                 html += '<a' + onclick + transition + ' class="' + anchorCssClass + '" href="' + href + '"' + defaultActionAttribute + '>';
                 html += '<div class="' + imageCssClass + '" style="' + style + '"' + dataSrc + '>';
                 if (icon) {
-                    html += '<iron-icon icon="' + icon + '"></iron-icon>';
+                    html += '<i class="md-icon">' + icon + '</i>';
                 }
                 html += '</div>';
 
@@ -2250,7 +2245,7 @@
                 }
 
                 if (item.SeriesTimerId) {
-                    html += '<iron-icon icon="fiber-smart-record" class="seriesTimerIndicator"></iron-icon>';
+                    html += '<i class="md-icon seriesTimerIndicator">fiber_smart_record</i>';
                 }
 
                 html += LibraryBrowser.getSyncIndicator(item);
@@ -2284,11 +2279,11 @@
                 // cardContent
                 html += '</a>';
 
-                if (options.overlayPlayButton && !item.IsPlaceHolder && (item.LocationType != 'Virtual' || !item.MediaType || item.Type == 'Program') && item.Type != 'Person') {
-                    html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayPlayButton" onclick="return false;"><iron-icon icon="play-arrow"></iron-icon></button></div>';
+                if (options.overlayPlayButton && !item.IsPlaceHolder && (item.LocationType != 'Virtual' || !item.MediaType || item.Type == 'Program') && item.Type != 'Person' && item.PlayAccess == 'Full') {
+                    html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayPlayButton autoSize" onclick="return false;"><i class="md-icon">play_arrow</i></button></div>';
                 }
                 if (options.overlayMoreButton) {
-                    html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayMoreButton" onclick="return false;"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button></div>';
+                    html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayMoreButton autoSize" onclick="return false;"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button></div>';
                 }
 
                 // cardScalable
@@ -2313,7 +2308,7 @@
 
                 if (options.cardLayout) {
                     html += '<div class="cardButtonContainer">';
-                    html += '<button is="paper-icon-button-light" class="listviewMenuButton btnCardOptions"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
+                    html += '<button is="paper-icon-button-light" class="listviewMenuButton btnCardOptions autoSize"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button>';
                     html += "</div>";
                 }
 
@@ -2610,7 +2605,7 @@
 
                     if (item.Type != 'TvChannel') {
                         if (item.UserData.PlayedPercentage && item.UserData.PlayedPercentage >= 100 || (item.UserData && item.UserData.Played)) {
-                            return '<div class="playedIndicator"><iron-icon icon="check"></iron-icon></div>';
+                            return '<div class="playedIndicator"><i class="md-icon">check</i></div>';
                         }
                     }
                 }
@@ -2631,17 +2626,17 @@
 
                 if (item.SyncStatus == 'Synced') {
 
-                    return '<div class="syncIndicator"><iron-icon icon="sync"></iron-icon></div>';
+                    return '<div class="syncIndicator"><i class="md-icon">sync</i></div>';
                 }
 
                 var syncPercent = item.SyncPercent;
                 if (syncPercent) {
-                    return '<div class="syncIndicator"><iron-icon icon="sync"></iron-icon></div>';
+                    return '<div class="syncIndicator"><i class="md-icon">sync</i></div>';
                 }
 
                 if (item.SyncStatus == 'Queued' || item.SyncStatus == 'Converting' || item.SyncStatus == 'ReadyToTransfer' || item.SyncStatus == 'Transferring') {
 
-                    return '<div class="syncIndicator"><iron-icon icon="sync"></iron-icon></div>';
+                    return '<div class="syncIndicator"><i class="md-icon">sync</i></div>';
                 }
 
                 return '';
@@ -2736,9 +2731,9 @@
                 Dashboard.setPageTitle(name);
 
                 if (linkToElement) {
-                    nameElem.html('<a class="detailPageParentLink" href="' + LibraryBrowser.getHref(item, context) + '">' + name + '</a>');
+                    nameElem.innerHTML = '<a class="detailPageParentLink" href="' + LibraryBrowser.getHref(item, context) + '">' + name + '</a>';
                 } else {
-                    nameElem.html(name);
+                    nameElem.innerHTML = name;
                 }
             },
 
@@ -2778,9 +2773,10 @@
                 }
 
                 if (html.length) {
-                    parentNameElem.show().html(html.join(' - '));
+                    parentNameElem.classList.remove('hide');
+                    parentNameElem.innerHTML = html.join(' - ');
                 } else {
-                    parentNameElem.hide();
+                    parentNameElem.classList.add('hide');
                 }
             },
 
@@ -2844,19 +2840,18 @@
                         positionTo: button,
                         callback: function (id) {
 
-                            if (dispatchEvent) {
-                                button.dispatchEvent(new CustomEvent('layoutchange', {
-                                    detail: {
-                                        viewStyle: id
-                                    },
-                                    bubbles: true,
-                                    cancelable: false
-                                }));
-                            } else {
-                                // TODO: remove jQuery
-                                require(['jQuery'], function ($) {
+                            button.dispatchEvent(new CustomEvent('layoutchange', {
+                                detail: {
+                                    viewStyle: id
+                                },
+                                bubbles: true,
+                                cancelable: false
+                            }));
+
+                            if (!dispatchEvent) {
+                                if (window.$) {
                                     $(button).trigger('layoutchange', [id]);
-                                });
+                                }
                             }
                         }
                     });
@@ -2899,27 +2894,27 @@
 
                 if (showControls || options.viewButton || options.filterButton || options.sortButton || options.addLayoutButton) {
 
-                    html += '<div style="display:inline-block;margin-left:10px;">';
+                    html += '<div style="display:inline-block;">';
 
                     if (showControls) {
 
-                        html += '<button is="paper-icon-button-light" class="btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '><iron-icon icon="arrow-back"></iron-icon></button>';
-                        html += '<button is="paper-icon-button-light" class="btnNextPage" ' + (startIndex + limit >= totalRecordCount ? 'disabled' : '') + '><iron-icon icon="arrow-forward"></iron-icon></button>';
+                        html += '<button is="paper-icon-button-light" class="btnPreviousPage autoSize" ' + (startIndex ? '' : 'disabled') + '><i class="md-icon">arrow_back</i></button>';
+                        html += '<button is="paper-icon-button-light" class="btnNextPage autoSize" ' + (startIndex + limit >= totalRecordCount ? 'disabled' : '') + '><i class="md-icon">arrow_forward</i></button>';
                     }
 
                     if (options.addLayoutButton) {
 
-                        html += '<button is="paper-icon-button-light" title="' + Globalize.translate('ButtonSelectView') + '" class="btnChangeLayout" data-layouts="' + (options.layouts || '') + '" onclick="LibraryBrowser.showLayoutMenu(this, \'' + (options.currentLayout || '') + '\');"><iron-icon icon="view-comfy"></iron-icon></button>';
+                        html += '<button is="paper-icon-button-light" title="' + Globalize.translate('ButtonSelectView') + '" class="btnChangeLayout autoSize" data-layouts="' + (options.layouts || '') + '" onclick="LibraryBrowser.showLayoutMenu(this, \'' + (options.currentLayout || '') + '\');"><i class="md-icon">view_comfy</i></button>';
                     }
 
                     if (options.sortButton) {
 
-                        html += '<button is="paper-icon-button-light" class="btnSort" title="' + Globalize.translate('ButtonSort') + '"><iron-icon icon="sort-by-alpha"></iron-icon></button>';
+                        html += '<button is="paper-icon-button-light" class="btnSort autoSize" title="' + Globalize.translate('ButtonSort') + '"><i class="md-icon">sort_by_alpha</i></button>';
                     }
 
                     if (options.filterButton) {
 
-                        html += '<button is="paper-icon-button-light" class="btnFilter" title="' + Globalize.translate('ButtonFilter') + '"><iron-icon icon="filter-list"></iron-icon></button>';
+                        html += '<button is="paper-icon-button-light" class="btnFilter autoSize" title="' + Globalize.translate('ButtonFilter') + '"><i class="md-icon">filter_list</i></button>';
                     }
 
                     html += '</div>';
@@ -2964,6 +2959,7 @@
 
                     dlg.classList.add('ui-body-a');
                     dlg.classList.add('background-theme-a');
+                    dlg.classList.add('formDialog');
 
                     var html = '';
 
@@ -3054,7 +3050,7 @@
                     return '<' + tagName + ' title="' + tooltip + '" data-itemid="' + itemId + '" icon="' + icon + '" class="' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"></' + tagName + '>';
                 }
 
-                return '<button is="paper-icon-button-light" title="' + tooltip + '" data-itemid="' + itemId + '"  class="' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"><iron-icon icon="' + icon + '"></iron-icon></button>';
+                return '<button is="paper-icon-button-light" title="' + tooltip + '" data-itemid="' + itemId + '"  class="autoSize ' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"><i class="md-icon">' + icon + '</i></button>';
             },
 
             getUserDataIconsHtml: function (item, includePlayed, style) {
@@ -3107,22 +3103,17 @@
 
             markFavorite: function (link) {
 
-                // TODO: remove jQuery
-                require(['jQuery'], function ($) {
-                    var id = link.getAttribute('data-itemid');
+                var id = link.getAttribute('data-itemid');
 
-                    var $link = $(link);
+                var markAsFavorite = !link.classList.contains('btnUserItemRatingOn');
 
-                    var markAsFavorite = !$link.hasClass('btnUserItemRatingOn');
+                ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
 
-                    ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
-
-                    if (markAsFavorite) {
-                        $link.addClass('btnUserItemRatingOn');
-                    } else {
-                        $link.removeClass('btnUserItemRatingOn');
-                    }
-                });
+                if (markAsFavorite) {
+                    link.classList.add('btnUserItemRatingOn');
+                } else {
+                    link.classList.remove('btnUserItemRatingOn');
+                }
             },
 
             renderDetailImage: function (elem, item, editable, preferThumb) {
@@ -3223,7 +3214,7 @@
                 html += '<div style="position:relative;">';
 
                 if (editable) {
-                    html += "<a onclick='LibraryBrowser.editImages(\"" + item.Id + "\");' class='itemDetailGalleryLink' href='#'>";
+                    html += "<a class='itemDetailGalleryLink' href='#'>";
                 }
 
                 if (detectRatio && item.PrimaryImageAspectRatio) {
@@ -3333,11 +3324,11 @@
 
                     html = Globalize.translate(translationKey, html);
 
-                    elem.show().html(html).trigger('create');
-
+                    elem.innerHTML = html;
+                    elem.classList.remove('hide');
 
                 } else {
-                    elem.hide();
+                    elem.classList.add('hide');
                 }
             },
 
@@ -3393,9 +3384,10 @@
 
             renderAwardSummary: function (elem, item) {
                 if (item.AwardSummary) {
-                    elem.show().html(Globalize.translate('ValueAwards', item.AwardSummary));
+                    elem.classList.remove('hide');
+                    elem.innerHTML = Globalize.translate('ValueAwards', item.AwardSummary);
                 } else {
-                    elem.hide();
+                    elem.classList.add('hide');
                 }
             },
 

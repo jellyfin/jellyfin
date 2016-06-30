@@ -1,26 +1,49 @@
 ﻿define(['jQuery'], function ($) {
 
     function onSubmit() {
-        Dashboard.showLoadingMsg();
-
         var form = this;
+        var localAddress = form.querySelector('#txtLocalAddress').value;
+        var enableUpnp = $('#chkEnableUpnp', form).checked();
 
-        ApiClient.getServerConfiguration().then(function (config) {
+        confirmSelections(localAddress, enableUpnp, function () {
 
-            config.HttpServerPortNumber = $('#txtPortNumber', form).val();
-            config.PublicPort = $('#txtPublicPort', form).val();
-            config.PublicHttpsPort = $('#txtPublicHttpsPort', form).val();
-            config.EnableHttps = $('#chkEnableHttps', form).checked();
-            config.HttpsPortNumber = $('#txtHttpsPort', form).val();
-            config.EnableUPnP = $('#chkEnableUpnp', form).checked();
-            config.WanDdns = $('#txtDdns', form).val();
-            config.CertificatePath = $('#txtCertificatePath', form).val();
+            Dashboard.showLoadingMsg();
 
-            ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.getServerConfiguration().then(function (config) {
+
+                config.HttpServerPortNumber = $('#txtPortNumber', form).val();
+                config.PublicPort = $('#txtPublicPort', form).val();
+                config.PublicHttpsPort = $('#txtPublicHttpsPort', form).val();
+                config.EnableHttps = $('#chkEnableHttps', form).checked();
+                config.HttpsPortNumber = $('#txtHttpsPort', form).val();
+                config.EnableUPnP = enableUpnp;
+                config.WanDdns = $('#txtDdns', form).val();
+                config.CertificatePath = $('#txtCertificatePath', form).val();
+
+                config.LocalNetworkAddresses = localAddress ? [localAddress] : [];
+
+                ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult, Dashboard.processErrorResponse);
+            });
         });
 
         // Disable default form submission
         return false;
+    }
+
+    function confirmSelections(localAddress, enableUpnp, callback) {
+
+        if (localAddress || !enableUpnp) {
+
+            require(['alert'], function (alert) {
+                alert({
+                    title: Globalize.translate('TitleHostingSettings'),
+                    text: Globalize.translate('SettingsWarning')
+                }).then(callback);
+            });
+
+        } else {
+            callback();
+        }
     }
 
     function getTabs() {
@@ -44,6 +67,8 @@
             $('#txtPortNumber', page).val(config.HttpServerPortNumber);
             $('#txtPublicPort', page).val(config.PublicPort);
             $('#txtPublicHttpsPort', page).val(config.PublicHttpsPort);
+
+            page.querySelector('#txtLocalAddress').value = config.LocalNetworkAddresses[0] || '';
 
             var chkEnableHttps = page.querySelector('#chkEnableHttps');
             chkEnableHttps.checked = config.EnableHttps;

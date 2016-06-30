@@ -514,7 +514,7 @@ namespace MediaBrowser.Api.Images
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>System.Object.</returns>
         /// <exception cref="ResourceNotFoundException"></exception>
-        public object GetImage(ImageRequest request, IHasImages item, bool isHeadRequest)
+        public Task<object> GetImage(ImageRequest request, IHasImages item, bool isHeadRequest)
         {
             if (request.PercentPlayed.HasValue)
             {
@@ -594,8 +594,7 @@ namespace MediaBrowser.Api.Images
                 supportedImageEnhancers,
                 cacheDuration,
                 responseHeaders,
-                isHeadRequest)
-                .Result;
+                isHeadRequest);
         }
 
         private async Task<object> GetImageResult(IHasImages item,
@@ -632,7 +631,7 @@ namespace MediaBrowser.Api.Images
 
             headers["Vary"] = "Accept";
 
-            return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
+            return await ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
             {
                 CacheDuration = cacheDuration,
                 ResponseHeaders = headers,
@@ -643,7 +642,8 @@ namespace MediaBrowser.Api.Images
                 // Sometimes imagemagick keeps a hold on the file briefly even after it's done writing to it.
                 // I'd rather do this than add a delay after saving the file
                 FileShare = FileShare.ReadWrite
-            });
+
+            }).ConfigureAwait(false);
         }
 
         private List<ImageFormat> GetOutputFormats(ImageRequest request, ItemImageInfo image, bool cropwhitespace, List<IImageEnhancer> enhancers)

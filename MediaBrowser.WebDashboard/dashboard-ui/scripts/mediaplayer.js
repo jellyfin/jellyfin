@@ -293,7 +293,7 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
             }
 
             if (currentTimeElement) {
-                currentTimeElement.html(timeText);
+                currentTimeElement.innerHTML = timeText;
             }
 
             var state = self.getPlayerStateInternal(mediaRenderer, self.currentItem, self.currentMediaSource);

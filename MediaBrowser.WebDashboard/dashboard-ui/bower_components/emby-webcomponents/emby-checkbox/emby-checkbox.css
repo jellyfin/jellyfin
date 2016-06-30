@@ -1,0 +1,139 @@
+.mdl-checkbox {
+    position: relative;
+    z-index: 1;
+    vertical-align: middle;
+    display: inline-flex;
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    padding-left: 36px;
+    align-items: center;
+    height: 32px;
+}
+
+.checkboxFieldDescription {
+    padding-left: 36px;
+}
+
+.checkboxContainer {
+    margin-bottom: 2em;
+    display: flex;
+}
+
+div.checkboxContainer {
+    display: block;
+}
+
+.mdl-checkbox__input {
+    position: absolute;
+    width: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    -ms-appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+}
+
+.checkboxOutline {
+    position: absolute;
+    top: 3px;
+    left: 0;
+    display: inline-block;
+    box-sizing: border-box;
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    cursor: pointer;
+    overflow: hidden;
+    border: 2px solid currentcolor;
+    border-radius: 2px;
+    z-index: 2;
+}
+
+.mdl-checkbox__input:checked + span + span + .checkboxOutline {
+    border-color: #52B54B;
+}
+
+.mdl-checkbox__input[disabled] + span + span + .checkboxOutline {
+    border-color: rgba(0, 0, 0, 0.26);
+    cursor: auto;
+}
+
+.mdl-checkbox__focus-helper {
+    position: absolute;
+    top: -12px;
+    left: -12px;
+    width: 48px;
+    height: 48px;
+    display: inline-block;
+    box-sizing: border-box;
+    margin: 3px 0 0 0;
+    border-radius: 50%;
+    background-color: transparent;
+}
+
+.mdl-checkbox__input:focus + span + .mdl-checkbox__focus-helper {
+    background-color: rgba(82, 181, 75, 0.26);
+}
+
+.mdl-checkbox__tick-outline {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: transparent;
+    transition-duration: 0.28s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-property: background;
+}
+
+.mdl-checkbox__input:checked + span + span + .checkboxOutline .mdl-checkbox__tick-outline {
+    background: #52B54B url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIgogICB4bWxuczpjYz0iaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvbnMjIgogICB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiCiAgIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICAgdmVyc2lvbj0iMS4xIgogICB2aWV3Qm94PSIwIDAgMSAxIgogICBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWluWU1pbiBtZWV0Ij4KICA8cGF0aAogICAgIGQ9Ik0gMC4wNDAzODA1OSwwLjYyNjc3NjcgMC4xNDY0NDY2MSwwLjUyMDcxMDY4IDAuNDI5Mjg5MzIsMC44MDM1NTMzOSAwLjMyMzIyMzMsMC45MDk2MTk0MSB6IE0gMC4yMTcxNTcyOSwwLjgwMzU1MzM5IDAuODUzNTUzMzksMC4xNjcxNTcyOSAwLjk1OTYxOTQxLDAuMjczMjIzMyAwLjMyMzIyMzMsMC45MDk2MTk0MSB6IgogICAgIGlkPSJyZWN0Mzc4MCIKICAgICBzdHlsZT0iZmlsbDojZmZmZmZmO2ZpbGwtb3BhY2l0eToxO3N0cm9rZTpub25lIiAvPgo8L3N2Zz4K");
+}
+
+.mdl-checkbox__input:checked[disabled] + span + span + .checkboxOutline .mdl-checkbox__tick-outline {
+    background: rgba(0, 0, 0, 0.26) url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIgogICB4bWxuczpjYz0iaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvbnMjIgogICB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiCiAgIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICAgdmVyc2lvbj0iMS4xIgogICB2aWV3Qm94PSIwIDAgMSAxIgogICBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWluWU1pbiBtZWV0Ij4KICA8cGF0aAogICAgIGQ9Ik0gMC4wNDAzODA1OSwwLjYyNjc3NjcgMC4xNDY0NDY2MSwwLjUyMDcxMDY4IDAuNDI5Mjg5MzIsMC44MDM1NTMzOSAwLjMyMzIyMzMsMC45MDk2MTk0MSB6IE0gMC4yMTcxNTcyOSwwLjgwMzU1MzM5IDAuODUzNTUzMzksMC4xNjcxNTcyOSAwLjk1OTYxOTQxLDAuMjczMjIzMyAwLjMyMzIyMzMsMC45MDk2MTk0MSB6IgogICAgIGlkPSJyZWN0Mzc4MCIKICAgICBzdHlsZT0iZmlsbDojZmZmZmZmO2ZpbGwtb3BhY2l0eToxO3N0cm9rZTpub25lIiAvPgo8L3N2Zz4K");
+}
+
+.checkboxLabel {
+    position: relative;
+    cursor: pointer;
+    margin: 0;
+}
+
+.mdl-checkbox__input[disabled] + .checkboxLabel {
+    color: rgba(0, 0, 0, 0.26);
+    cursor: auto;
+}
+
+.checkboxList .mdl-checkbox {
+    display: flex;
+    margin: .5em 0;
+}
+
+.layout-tv .mdl-checkbox {
+    height: 4.6vh;
+    padding-left: 6vh;
+}
+
+.layout-tv .checkboxFieldDescription {
+    padding-left: 6vh;
+}
+
+.layout-tv .checkboxOutline {
+    width: 4.6vh;
+    height: 4.6vh;
+}
+
+.layout-tv .mdl-checkbox__focus-helper {
+    top: -3.7vh;
+    left: -3.7vh;
+    width: 12vh;
+    height: 12vh;
+}

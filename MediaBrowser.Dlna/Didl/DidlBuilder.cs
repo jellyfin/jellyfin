@@ -160,7 +160,7 @@ namespace MediaBrowser.Dlna.Didl
 
             var contentFeatureList = new ContentFeatureBuilder(_profile).BuildVideoHeader(streamInfo.Container,
                 streamInfo.VideoCodec,
-                streamInfo.AudioCodec,
+                streamInfo.TargetAudioCodec,
                 targetWidth,
                 targetHeight,
                 streamInfo.TargetVideoBitDepth,
@@ -307,7 +307,7 @@ namespace MediaBrowser.Dlna.Didl
             }
 
             var mediaProfile = _profile.GetVideoMediaProfile(streamInfo.Container,
-                streamInfo.AudioCodec,
+                streamInfo.TargetAudioCodec,
                 streamInfo.VideoCodec,
                 streamInfo.TargetAudioBitrate,
                 targetWidth,
@@ -441,7 +441,7 @@ namespace MediaBrowser.Dlna.Didl
             }
 
             var mediaProfile = _profile.GetAudioMediaProfile(streamInfo.Container,
-                streamInfo.AudioCodec,
+                streamInfo.TargetAudioCodec,
                 targetChannels,
                 targetAudioBitrate);
 
@@ -846,7 +846,7 @@ namespace MediaBrowser.Dlna.Didl
 
             if (item is Video)
             {
-                var userData = _userDataManager.GetUserDataDto(item, _user);
+                var userData = _userDataManager.GetUserDataDto(item, _user).Result;
 
                 playbackPercentage = Convert.ToInt32(userData.PlayedPercentage ?? 0);
                 if (playbackPercentage >= 100 || userData.Played)
@@ -856,7 +856,7 @@ namespace MediaBrowser.Dlna.Didl
             }
             else if (item is Series || item is Season || item is BoxSet)
             {
-                var userData = _userDataManager.GetUserDataDto(item, _user);
+                var userData = _userDataManager.GetUserDataDto(item, _user).Result;
 
                 if (userData.Played)
                 {
@@ -1015,17 +1015,17 @@ namespace MediaBrowser.Dlna.Didl
             int? width = null;
             int? height = null;
 
-            //try
-            //{
-            //    var size = _imageProcessor.GetImageSize(imageInfo);
+            try
+            {
+                var size = _imageProcessor.GetImageSize(imageInfo);
 
-            //    width = Convert.ToInt32(size.Width);
-            //    height = Convert.ToInt32(size.Height);
-            //}
-            //catch
-            //{
+                width = Convert.ToInt32(size.Width);
+                height = Convert.ToInt32(size.Height);
+            }
+            catch
+            {
 
-            //}
+            }
 
             var inputFormat = (Path.GetExtension(imageInfo.Path) ?? string.Empty)
                 .TrimStart('.')

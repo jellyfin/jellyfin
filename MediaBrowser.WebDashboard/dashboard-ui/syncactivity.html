@@ -1,26 +1,29 @@
-﻿<div id="syncActivityPage" data-role="page" class="page type-interior syncConfigurationPage syncActivityPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Sync" data-require="scripts/syncactivity,scripts/taskbutton,paper-button">
+﻿<div id="syncActivityPage" data-role="page" class="page type-interior syncConfigurationPage syncActivityPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Sync" data-require="scripts/syncactivity,scripts/taskbutton,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
 
-            <div style="text-align:right;margin-top:-10px;">
-                <paper-button raised class="btnSync"><iron-icon icon="sync"></iron-icon><span>${ButtonConvertMedia}</span></paper-button>
-                <progress max="100" min="0" style="width:100px;display:none;" class="syncProgress"></progress>
-            </div>
-            <br />
             <div class="supporterPromotionContainer" style="display:none;">
                 <div class="customSupporterPromotion supporterPromotion">
                     <a class="clearLink" href="http://emby.media/premiere" target="_blank">
-                        <paper-button raised class="block" style="text-transform:none;background-color:#52B54B;color:#fff;">
+                        <button is="emby-button" type="button" class="raised block" style="text-transform:none;background-color:#52B54B;color:#fff;">
                             <div class="mainText">
                             </div>
                             <div class="btnLearnMore" style="font-weight: normal; margin-top: 5px;">
                                 ${ButtonLearnMore}
                             </div>
-                        </paper-button>
+                        </button>
                     </a>
                 </div>
             </div>
+            <div style="text-align:right;">
+                <button is="emby-button" type="button" class="raised btnSync subdued">
+                    <i class="md-icon">sync</i>
+                    <span>${ButtonConvertMedia}</span>
+                </button>
+                <progress max="100" min="0" style="width:100px;display:none;" class="syncProgress"></progress>
+            </div>
+            <br />
             <div class="syncActivity">
 
             </div>

@@ -1,8 +1,8 @@
-﻿define(['jQuery', 'libraryBrowser', 'scrollStyles'], function ($, libraryBrowser) {
+﻿define(['libraryBrowser', 'scrollStyles'], function (libraryBrowser) {
 
     function itemsPerRow() {
 
-        var screenWidth = $(window).width();
+        var screenWidth = window.innerWidth;
 
         return screenWidth >= 1920 ? 9 : (screenWidth >= 1200 ? 12 : (screenWidth >= 1000 ? 10 : 8));
     }
@@ -71,12 +71,12 @@
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
 
-            var elem;
+            var elem = page.querySelector('#recentlyPlayed');
 
             if (result.Items.length) {
-                elem = $('#recentlyPlayed', page).show()[0];
+                elem.classList.remove('hide');
             } else {
-                elem = $('#recentlyPlayed', page).hide()[0];
+                elem.classList.add('hide');
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
@@ -117,12 +117,12 @@
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
 
-            var elem;
+            var elem = page.querySelector('#topPlayed');
 
             if (result.Items.length) {
-                elem = $('#topPlayed', page).show()[0];
+                elem.classList.remove('hide');
             } else {
-                elem = $('#topPlayed', page).hide()[0];
+                elem.classList.add('hide');
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
@@ -160,12 +160,12 @@
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
 
-            var elem;
+            var elem = page.querySelector('#playlists');
 
             if (result.Items.length) {
-                elem = $('#playlists', page).show()[0];
+                elem.classList.remove('hide');
             } else {
-                elem = $('#playlists', page).hide()[0];
+                elem.classList.add('hide');
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
@@ -252,13 +252,15 @@
             var tabContent = view.querySelector('.pageTabContent[data-index=\'' + 0 + '\']');
 
             var containers = tabContent.querySelectorAll('.itemsContainer');
-            if (enableScrollX()) {
-                $(containers).addClass('hiddenScrollX');
-            } else {
-                $(containers).removeClass('hiddenScrollX');
-            }
+            for (var i = 0, length = containers.length; i < length; i++) {
+                if (enableScrollX()) {
+                    containers[i].classList.add('hiddenScrollX');
+                } else {
+                    containers[i].classList.remove('hiddenScrollX');
+                }
 
-            $(containers).createCardMenus();
+                LibraryBrowser.createCardMenus(containers[i]);
+            }
         };
 
         self.renderTab = function () {
@@ -268,9 +270,8 @@
         var tabControllers = [];
         var renderedTabs = [];
 
-        function loadTab(page, index) {
+        function getTabController(page, index, callback) {
 
-            var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
             var depends = [];
 
             switch (index) {
@@ -281,15 +282,13 @@
                     depends.push('scripts/musicalbums');
                     break;
                 case 2:
-                    depends.push('scripts/musicalbumartists');
+                    depends.push('scripts/musicartists');
                     break;
                 case 3:
                     depends.push('scripts/musicartists');
                     break;
                 case 4:
                     depends.push('scripts/songs');
-                    depends.push('paper-icon-item');
-                    depends.push('paper-item-body');
                     break;
                 case 5:
                     depends.push('scripts/musicgenres');
@@ -302,13 +301,22 @@
             }
 
             require(depends, function (controllerFactory) {
-
+                var tabContent;
                 if (index == 0) {
+                    tabContent = view.querySelector('.pageTabContent[data-index=\'' + index + '\']');
                     self.tabContent = tabContent;
                 }
                 var controller = tabControllers[index];
                 if (!controller) {
+                    tabContent = view.querySelector('.pageTabContent[data-index=\'' + index + '\']');
                     controller = index ? new controllerFactory(view, params, tabContent) : self;
+
+                    if (index == 2) {
+                        controller.mode = 'albumartists';
+                    } else if (index == 3) {
+                        controller.mode = 'artists';
+                    }
+
                     tabControllers[index] = controller;
 
                     if (controller.initTab) {
@@ -316,6 +324,24 @@
                     }
                 }
 
+                callback(controller);
+            });
+        }
+
+        function preLoadTab(page, index) {
+
+            getTabController(page, index, function (controller) {
+                if (renderedTabs.indexOf(index) == -1) {
+                    if (controller.preRender) {
+                        controller.preRender();
+                    }
+                }
+            });
+        }
+
+        function loadTab(page, index) {
+
+            getTabController(page, index, function (controller) {
                 if (renderedTabs.indexOf(index) == -1) {
                     renderedTabs.push(index);
                     controller.renderTab();
@@ -333,6 +359,9 @@
 
         libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'), [0, 4, 5, 6]);
 
+        mdlTabs.addEventListener('beforetabchange', function (e) {
+            preLoadTab(view, parseInt(e.detail.selectedTabIndex));
+        });
         mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));
         });

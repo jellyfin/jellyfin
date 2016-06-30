@@ -1,0 +1,130 @@
+button.listItem {
+    background: transparent;
+    border: 0 !important;
+    cursor: pointer;
+    outline: none !important;
+    color: inherit;
+    width: 100%;
+    vertical-align: middle;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+.listItem {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    padding: 0 1em !important;
+    line-height: 170%;
+}
+
+    .listItem.largeImage {
+        padding: 1em 0 1em 1em;
+    }
+
+    .listItem > *:not(.listItemBody) {
+        flex-shrink: 0;
+    }
+
+.listItemBody {
+    flex-grow: 1;
+    padding: 0 1.15em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    flex-direction: column;
+    vertical-align: middle;
+    justify-content: center;
+    min-height: 48px;
+}
+
+    .listItemBody.two-line {
+        min-height: 72px;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    .listItemBody.three-line {
+        min-height: 88px;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    .listItemBody h3 {
+        margin: 0;
+        font-weight: normal;
+        padding: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+.layout-tv .listItemBody h3 {
+    padding: 0;
+}
+
+.listItemBody > div:not(.secondary) {
+    font-size: 115%;
+}
+
+.listItemBodyText {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.listItemImage {
+    width: 7.4vh;
+    height: 7.4vh;
+    background-repeat: no-repeat;
+    background-size: contain;
+    flex-shrink: 0;
+    margin-left: -.75em;
+}
+
+.listItemIcon {
+    width: 3vh;
+    height: 3vh;
+    font-size: 3vh;
+}
+
+.listItem.largeImage .listItemImage {
+    width: 45vh;
+    height: 30vh;
+    background-position: center center;
+    position: relative;
+    margin-right: 2%;
+    margin-left: 1%;
+}
+
+.listItemImage .itemProgressBar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.listItem .secondary {
+    color: #737373;
+}
+
+.listItem:focus .secondary {
+    color: inherit !important;
+}
+
+.listItem {
+    transition: transform .2s ease-out;
+}
+
+    .listItem:focus {
+        transform: scale(1.025, 1.025);
+    }
+
+.paperList {
+    padding: .5em 0;
+    margin: 1em auto;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+}
+
+    .paperList.clear {
+        box-shadow: none !important;
+        background-color: transparent !important;
+    }

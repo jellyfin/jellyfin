@@ -1,12 +1,16 @@
-﻿<div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage noSecondaryNavPage selfBackdropPage" data-contextname="${TitleRemoteControl}" data-theme="b">
+﻿<div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage noSecondaryNavPage selfBackdropPage" data-contextname="${TitleRemoteControl}" data-theme="b" style="padding:0;">
 
     <div class="remoteControlContent">
 
         <div style="background: #080808;">
-            <button is="paper-icon-button-light" style="position: absolute; top: .5em; left: .5em; z-index: 1;" tabindex="-1" class="btnExitRemoteControl"><iron-icon icon="arrow-back"></iron-icon></button>
+            <button is="paper-icon-button-light" style="position: absolute; top: .5em; left: .5em; z-index: 1;" tabindex="-1" class="btnExitRemoteControl autoSize">
+                <i class="md-icon">arrow_back</i>
+            </button>
             <div style="float: right; position: absolute; top: .5em; right: .5em; text-align: right;" class="topRightContainer">
                 <span class="nowPlayingSelectedPlayer"></span>
-                <button is="paper-icon-button-light" class="nowPlayingCastIcon" style="vertical-align: middle; z-index: 1;" tabindex="-1"><iron-icon icon="cast"></iron-icon></button>
+                <button is="paper-icon-button-light" class="nowPlayingCastIcon autoSize" style="vertical-align: middle; z-index: 1;" tabindex="-1">
+                    <i class="md-icon">cast</i>
+                </button>
             </div>
         </div>
 
@@ -21,38 +25,73 @@
                 </div>
                 <div class="nowPlayingInfoMetadata">
                     <div class="nowPlayingPageImage" style="margin: 1em auto;"></div>
-                    <div class="nowPlayingPageTimeContainer">
-                        <div>
-                            <paper-slider pin step="1" min="0" max="100" value="0" class="nowPlayingPositionSlider" style="width: 100%;"></paper-slider>
+                    <div class="nowPlayingPageTimeContainer" style="display:flex; align-items: center;">
+                        <div class="positionTime"></div>
+                        <div class="sliderContainer nowPlayingPositionSliderContainer" style="flex-grow:1;margin: 0 1em;">
+                            <input type="range" is="emby-slider" pin step="1" min="0" max="100" value="0" class="nowPlayingPositionSlider" />
                         </div>
-                        <div style="text-align:left;">
-                            <div class="positionTime" style="float:left;"></div>
-                            <div class="runtime" style="float: right;"></div>
-                        </div>
+                        <div class="runtime"></div>
                     </div>
                 </div>
                 <div class="nowPlayingInfoButtons">
 
                     <div>
 
-                        <paper-fab icon="skip-previous" class="btnPreviousTrack btnPlayStateCommand subdued" title="${ButtonPreviousTrack}"></paper-fab>
-                        <paper-fab icon="pause" class="btnPause btnPlayStateCommand subdued" title="${ButtonPause}"></paper-fab>
-                        <paper-fab icon="play-arrow" class="btnPlay btnPlayStateCommand subdued" title="${ButtonPlay}"></paper-fab>
-                        <paper-fab icon="stop" class="btnPlayStateCommand btnStop subdued" title="${ButtonStop}"></paper-fab>
-                        <paper-fab icon="skip-next" class="btnPlayStateCommand btnNextTrack subdued" title="${ButtonNextTrack}"></paper-fab>
+                        <button is="paper-icon-button-light" class="btnPreviousTrack btnPlayStateCommand autoSize" title="${ButtonPreviousTrack}">
+                            <i class="md-icon">skip_previous</i>
+                        </button>
+
+                        <button is="paper-icon-button-light" class="btnPause btnPlayStateCommand autoSize" title="${ButtonPause}">
+                            <i class="md-icon">pause</i>
+                        </button>
+
+                        <button is="paper-icon-button-light" class="btnPlay btnPlayStateCommand autoSize" title="${ButtonPlay}">
+                            <i class="md-icon">play_arrow</i>
+                        </button>
+
+                        <button is="paper-icon-button-light" class="btnPlayStateCommand btnStop autoSize" title="${ButtonStop}">
+                            <i class="md-icon">stop</i>
+                        </button>
+
+                        <button is="paper-icon-button-light" class="btnPlayStateCommand btnNextTrack autoSize" title="${ButtonNextTrack}">
+                            <i class="md-icon">skip_next</i>
+                        </button>
                     </div>
                     <div class="buttonsRow2">
 
-                        <paper-fab icon="audiotrack" class="btnAudioTracks videoButton btnPlayStateCommand subdued" title="${ButtonAudioTracks}" data-command="GoToSearch"></paper-fab>
-                        <paper-fab icon="closed-caption" class="btnSubtitles videoButton btnPlayStateCommand subdued" title="${ButtonSubtitles}" data-command="GoToSearch"></paper-fab>
-                        <paper-fab icon="movie" class="btnChapters videoButton btnPlayStateCommand subdued" title="${ButtonScenes}" data-command="GoToSearch"></paper-fab>
-                        <paper-fab icon="fullscreen" class="btnToggleFullscreen videoButton btnPlayStateCommand subdued" title="${ButtonFullscreen}" data-command="ToggleFullscreen"></paper-fab>
+                        <button is="paper-icon-button-light" class="btnAudioTracks videoButton btnPlayStateCommand autoSize" title="${ButtonAudioTracks}" data-command="GoToSearch">
+                            <i class="md-icon">audiotrack</i>
+                        </button>
+
+                        <button is="paper-icon-button-light" class="btnSubtitles videoButton btnPlayStateCommand autoSize" title="${ButtonSubtitles}" data-command="GoToSearch">
+                            <i class="md-icon">closed_caption</i>
+                        </button>
+
+                        <button is="paper-icon-button-light" class="btnChapters videoButton btnPlayStateCommand autoSize" title="${ButtonScenes}" data-command="GoToSearch">
+                            <i class="md-icon">movie</i>
+                        </button>
+
+                        <button is="paper-icon-button-light" class="btnToggleFullscreen videoButton btnPlayStateCommand autoSize" title="${ButtonFullscreen}" data-command="ToggleFullscreen">
+                            <i class="md-icon">fullscreen</i>
+                        </button>
                     </div>
                     <div>
-                        <paper-fab icon="repeat" class="btnCommand subdued repeatToggleButton" title="${ButtonRepeat}" data-command="SetRepeatMode"></paper-fab>
-                        <paper-fab icon="volume-off" class="btnCommand subdued volumeButton" title="${ButtonMute}" data-command="ToggleMute"></paper-fab>
-                        <paper-fab icon="volume-down" class="btnCommand subdued volumeButton" title="${ButtonVolumeDown}" data-command="VolumeDown"></paper-fab>
-                        <paper-fab icon="volume-up" class="btnCommand subdued volumeButton" title="${ButtonVolumeUp}" data-command="VolumeUp"></paper-fab>
+
+                        <button is="paper-icon-button-light" class="btnCommand repeatToggleButton autoSize" title="${ButtonRepeat}" data-command="SetRepeatMode">
+                            <i class="md-icon">repeat</i>
+                        </button>
+
+                        <button is="paper-icon-button-light" class="btnCommand volumeButton autoSize" title="${ButtonMute}" data-command="ToggleMute">
+                            <i class="md-icon">volume_off</i>
+                        </button>
+
+                        <button is="paper-icon-button-light" class="btnCommand volumeButton autoSize" title="${ButtonVolumeDown}" data-command="VolumeDown">
+                            <i class="md-icon">volume_down</i>
+                        </button>
+
+                        <button is="paper-icon-button-light" class="btnCommand volumeButton autoSize" title="${ButtonVolumeUp}" data-command="VolumeUp">
+                            <i class="md-icon">volume_up</i>
+                        </button>
                     </div>
                     <div class="nowPlayingPageUserDataButtons" style="margin-top:1em;">
                     </div>
@@ -62,28 +101,55 @@
         <div class="pageTabContent ehsContent" id="controlsTab" data-index="1">
             <div style="text-align:center;">
                 <div>
-                    <paper-fab icon="keyboard-arrow-up" class="btnArrowUp btnCommand subdued" title="${ButtonArrowUp}" data-command="MoveUp"></paper-fab>
+                    <button is="paper-icon-button-light" class="btnArrowUp btnCommand autoSize" title="${ButtonArrowUp}" data-command="MoveUp">
+                        <i class="md-icon">keyboard_arrow_up</i>
+                    </button>
                 </div>
                 <div>
-                    <paper-fab icon="keyboard-arrow-left" class="btnArrowLeft btnCommand subdued" title="${ButtonArrowLeft}" data-command="MoveLeft"></paper-fab>
-                    <paper-fab icon="check" class="btnOk btnCommand subdued" title="${ButtonOk}" data-command="Select"></paper-fab>
-                    <paper-fab icon="keyboard-arrow-right" class="btnArrowRight btnCommand subdued" title="${ButtonArrowRight}" data-command="MoveRight"></paper-fab>
+                    <button is="paper-icon-button-light" class="btnArrowLeft btnCommand autoSize" title="${ButtonArrowLeft}" data-command="MoveLeft">
+                        <i class="md-icon">keyboard_arrow_left</i>
+                    </button>
+
+                    <button is="paper-icon-button-light" class="btnOk btnCommand autoSize" title="${ButtonOk}" data-command="Select">
+                        <i class="md-icon">check</i>
+                    </button>
+
+                    <button is="paper-icon-button-light" class="btnArrowRight btnCommand autoSize" title="${ButtonArrowRight}" data-command="MoveRight">
+                        <i class="md-icon">keyboard_arrow_right</i>
+                    </button>
                 </div>
                 <div>
-                    <paper-fab icon="keyboard-arrow-down" class="btnArrowDown btnCommand subdued" title="${ButtonArrowDown}" data-command="MoveDown"></paper-fab>
+                    <button is="paper-icon-button-light" class="btnArrowDown btnCommand autoSize" title="${ButtonArrowDown}" data-command="MoveDown">
+                        <i class="md-icon">keyboard_arrow_down</i>
+                    </button>
                 </div>
                 <div>
-                    <paper-fab icon="arrow-back" class="btnBack btnCommand subdued" title="${ButtonBack}" data-command="Back"></paper-fab>
-                    <paper-fab icon="info" class="btnInfo btnCommand subdued" title="${ButtonInfo}" data-command="ToggleContextMenu"></paper-fab>
+                    <button is="paper-icon-button-light" class="btnBack btnCommand autoSize" title="${ButtonBack}" data-command="Back">
+                        <i class="md-icon">arrow_back</i>
+                    </button>
+
+                    <button is="paper-icon-button-light" class="btnInfo btnCommand autoSize" title="${ButtonInfo}" data-command="ToggleContextMenu">
+                        <i class="md-icon">info</i>
+                    </button>
                 </div>
                 <br />
                 <div>
-                    <paper-fab icon="home" class="btnGoHome btnCommand subdued" title="${ButtonHome}" data-command="GoHome"></paper-fab>
-                    <paper-fab icon="search" class="btnShowSearch btnCommand subdued" title="${ButtonSearch}" data-command="GoToSearch"></paper-fab>
+                    <button is="paper-icon-button-light" class="btnGoHome btnCommand autoSize" title="${ButtonHome}" data-command="GoHome">
+                        <i class="md-icon">home</i>
+                    </button>
+
+                    <button is="paper-icon-button-light" class="btnShowSearch btnCommand autoSize" title="${ButtonSearch}" data-command="GoToSearch">
+                        <i class="md-icon">search</i>
+                    </button>
                 </div>
                 <div>
-                    <paper-fab icon="settings" class="bthShowSettings btnCommand subdued" title="${ButtonSettings}" data-command="GoToSettings"></paper-fab>
-                    <paper-fab icon="videocam" class="btnScreenshot btnCommand subdued" title="${ButtonTakeScreenshot}" data-command="TakeScreenshot"></paper-fab>
+                    <button is="paper-icon-button-light" class="bthShowSettings btnCommand autoSize" title="${ButtonSettings}" data-command="GoToSettings">
+                        <i class="md-icon">settings</i>
+                    </button>
+
+                    <button is="paper-icon-button-light" class="btnScreenshot btnCommand autoSize" title="${ButtonTakeScreenshot}" data-command="TakeScreenshot">
+                        <i class="md-icon">videocam</i>
+                    </button>
                 </div>
             </div>
             <div class="readOnlyContent" style="margin: 2em auto 0; padding: 0 1em 100px;">
@@ -91,15 +157,15 @@
                     <br /><h1>${HeaderSendMessage}</h1>
                     <div style="text-align: left;">
                         <form class="sendMessageForm">
-                            <div>
-                                <paper-input class="sendMessageElement" type="text" id="txtMessageTitle" label="${LabelMessageTitle}" required></paper-input>
+                            <div class="inputContainer">
+                                <input is="emby-input" class="sendMessageElement" type="text" id="txtMessageTitle" label="${LabelMessageTitle}" required />
                             </div>
                             <br />
-                            <div>
-                                <paper-input class="sendMessageElement" type="text" id="txtMessageText" label="${LabelMessageText}" required></paper-input>
+                            <div class="inputContainer">
+                                <input is="emby-input" class="sendMessageElement" type="text" id="txtMessageText" label="${LabelMessageText}" required />
                             </div>
                             <p>
-                                <button class="sendMessageElement clearButton" type="submit" data-role="none" style="display:block;"><paper-button class="sendMessageElement accent" type="submit" raised style="display:block;">${ButtonSend}</paper-button></button>
+                                <button is="emby-button" class="sendMessageElement accent block raised" type="submit" raised>${ButtonSend}</button>
                             </p>
                         </form>
                     </div>
@@ -108,11 +174,11 @@
                     <br /><h1>${HeaderTypeText}</h1>
                     <div style="text-align: left;">
                         <form class="typeTextForm">
-                            <div>
-                                <paper-input class="typeTextElement" type="text" id="txtTypeText" label="${LabelTypeText}" required></paper-input>
+                            <div class="inputContainer">
+                                <input is="emby-input" class="typeTextElement" type="text" id="txtTypeText" label="${LabelTypeText}" required />
                             </div>
                             <p>
-                                <button class="typeTextElement clearButton" type="submit" data-role="none" style="display:block;"><paper-button class="typeTextElement accent" type="submit" raised style="display:block;">${ButtonSend}</paper-button></button>
+                                <button is="emby-button" class="typeTextElement accent block raised" type="submit" raised>${ButtonSend}</button>
                             </p>
                         </form>
                     </div>

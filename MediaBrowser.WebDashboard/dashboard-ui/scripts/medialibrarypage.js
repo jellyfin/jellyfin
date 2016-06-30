@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'emby-icons'], function ($) {
 
     function changeCollectionType(page, virtualFolder) {
 
@@ -227,10 +227,8 @@
 
             ImageEditor.show(virtualFolder.ItemId, {
                 theme: 'a'
-            }).then(function (hasChanged) {
-                if (hasChanged) {
-                    reloadLibrary(page);
-                }
+            }).then(function () {
+                reloadLibrary(page);
             });
         });
     }
@@ -459,6 +457,10 @@
             href: 'library.html',
             name: Globalize.translate('TabFolders')
         },
+         {
+             href: 'librarydisplay.html',
+             name: Globalize.translate('TabDisplay')
+         },
          {
              href: 'librarypathmapping.html',
              name: Globalize.translate('TabPathSubstitution')

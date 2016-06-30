@@ -204,12 +204,6 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\SubtitlePlaybackMode.cs">
       <Link>Configuration\SubtitlePlaybackMode.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Configuration\TheMovieDbOptions.cs">
-      <Link>Configuration\TheMovieDbOptions.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Configuration\TvdbOptions.cs">
-      <Link>Configuration\TvdbOptions.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\UnratedItem.cs">
       <Link>Configuration\UnratedItem.cs</Link>
     </Compile>
@@ -578,9 +572,6 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Entities\Video3DFormat.cs">
       <Link>Entities\Video3DFormat.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Entities\VideoSize.cs">
-      <Link>Entities\VideoSize.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Entities\VideoType.cs">
       <Link>Entities\VideoType.cs</Link>
@@ -1109,6 +1100,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncTarget.cs">
       <Link>Sync\SyncTarget.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\System\Architecture.cs">
+      <Link>System\Architecture.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\System\LogFile.cs">
       <Link>System\LogFile.cs</Link>

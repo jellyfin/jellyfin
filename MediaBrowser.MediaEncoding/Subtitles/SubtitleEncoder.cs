@@ -58,6 +58,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             string outputFormat,
             long startTimeTicks,
             long? endTimeTicks,
+            bool preserveOriginalTimestamps,
             CancellationToken cancellationToken)
         {
             var ms = new MemoryStream();
@@ -68,7 +69,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 var trackInfo = reader.Parse(stream, cancellationToken);
 
-                FilterEvents(trackInfo, startTimeTicks, endTimeTicks, false);
+                FilterEvents(trackInfo, startTimeTicks, endTimeTicks, preserveOriginalTimestamps);
 
                 var writer = GetWriter(outputFormat);
 
@@ -116,6 +117,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             string outputFormat,
             long startTimeTicks,
             long? endTimeTicks,
+            bool preserveOriginalTimestamps,
             CancellationToken cancellationToken)
         {
             var subtitle = await GetSubtitleStream(itemId, mediaSourceId, subtitleStreamIndex, cancellationToken)
@@ -130,7 +132,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             using (var stream = subtitle.Item1)
             {
-                return await ConvertSubtitles(stream, inputFormat, outputFormat, startTimeTicks, endTimeTicks, cancellationToken).ConfigureAwait(false);
+                return await ConvertSubtitles(stream, inputFormat, outputFormat, startTimeTicks, endTimeTicks, preserveOriginalTimestamps, cancellationToken).ConfigureAwait(false);
             }
         }
 

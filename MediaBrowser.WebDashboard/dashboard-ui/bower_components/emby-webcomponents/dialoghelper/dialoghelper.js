@@ -2,6 +2,19 @@
 
     var globalOnOpenCallback;
 
+    function enableAnimation() {
+
+        if (browser.animate) {
+            return true;
+        }
+
+        if (browser.edge) {
+            return true;
+        }
+
+        return false;
+    }
+
     function dialogHashHandler(dlg, hash, resolve) {
 
         var self = this;
@@ -129,8 +142,8 @@
 
         dlg.addEventListener('click', function (event) {
             var rect = dlg.getBoundingClientRect();
-            var isInDialog = (rect.top <= event.clientY && event.clientY <= rect.top + rect.height
-              && rect.left <= event.clientX && event.clientX <= rect.left + rect.width);
+            var isInDialog = (rect.top <= event.clientY && event.clientY <= (rect.top + rect.height)
+              && rect.left <= event.clientX && event.clientX <= (rect.left + rect.width));
 
             if (!isInDialog) {
                 if (parentWithTag(event.target, 'SELECT')) {
@@ -150,7 +163,7 @@
         // Without this, seeing some script errors in Firefox
         // Also for some reason it won't auto-focus without a delay here, still investigating that
 
-        var delay = browser.animate ? 0 : 300;
+        var delay = enableAnimation() ? 300 : 300;
 
         setTimeout(function () {
             focusManager.autoFocus(dlg);
@@ -167,7 +180,7 @@
 
         var backdrop = document.createElement('div');
         backdrop.classList.add('dialogBackdrop');
-        dlg.parentNode.insertBefore(backdrop, dlg.nextSibling);
+        dlg.parentNode.insertBefore(backdrop, dlg);
         dlg.backdrop = backdrop;
 
         // Doing this immediately causes the opacity to jump immediately without animating
@@ -240,6 +253,15 @@
         return elem.animate(keyframes, timing).onfinish = onFinish;
     }
 
+    function scaleDown(elem) {
+
+        var keyframes = [
+          { transform: 'none', opacity: 1, offset: 0 },
+          { transform: 'scale(0)', opacity: 0, offset: 1 }];
+        var timing = elem.animationConfig.exit.timing;
+        return elem.animate(keyframes, timing);
+    }
+
     function fadeOut(elem) {
 
         var keyframes = [
@@ -282,6 +304,8 @@
 
             if (dlg.animationConfig.exit.name == 'fadeout') {
                 animation = fadeOut(dlg);
+            } else if (dlg.animationConfig.exit.name == 'scaledown') {
+                animation = scaleDown(dlg);
             } else if (dlg.animationConfig.exit.name == 'slidedown') {
                 animation = slideDown(dlg);
             } else {
@@ -386,33 +410,40 @@
             dlg.setAttribute('data-autofocus', 'true');
         }
 
-        var defaultEntryAnimation = browser.animate ? 'scaleup' : 'fadein';
-        dlg.entryAnimation = options.entryAnimation || defaultEntryAnimation;
-        dlg.exitAnimation = 'fadeout';
+        var defaultEntryAnimation = 'scaleup';
+        var entryAnimation = options.entryAnimation || defaultEntryAnimation;
+        var defaultExitAnimation = 'scaledown';
+        var exitAnimation = options.exitAnimation || defaultExitAnimation;
 
         // If it's not fullscreen then lower the default animation speed to make it open really fast
         var entryAnimationDuration = options.entryAnimationDuration || (options.size ? 200 : 300);
+        var exitAnimationDuration = options.exitAnimationDuration || (options.size ? 200 : 300);
 
         dlg.animationConfig = {
             // scale up
             'entry': {
-                name: dlg.entryAnimation,
+                name: entryAnimation,
                 node: dlg,
-                timing: { duration: entryAnimationDuration, easing: 'ease-out' }
+                timing: {
+                    duration: entryAnimationDuration,
+                    easing: 'ease-out'
+                }
             },
             // fade out
             'exit': {
-                name: dlg.exitAnimation,
+                name: exitAnimation,
                 node: dlg,
-                timing: { duration: options.exitAnimationDuration || 300, easing: 'ease-in' }
+                timing: {
+                    duration: exitAnimationDuration,
+                    easing: 'ease-out',
+                    fill: 'both'
+                }
             }
         };
 
         // too buggy in IE, not even worth it
-        if (!browser.animate) {
+        if (!enableAnimation()) {
             dlg.animationConfig = null;
-            dlg.entryAnimation = null;
-            dlg.exitAnimation = null;
         }
 
         dlg.classList.add('dialog');

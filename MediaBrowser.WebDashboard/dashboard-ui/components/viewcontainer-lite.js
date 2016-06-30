@@ -1,8 +1,9 @@
 define(['browser'], function (browser) {
 
-    var allPages = document.querySelectorAll('.mainAnimatedPage');
+    var mainAnimatedPages = document.querySelector('.mainAnimatedPages');
+    var allPages = [];
     var currentUrls = [];
-    var pageContainerCount = allPages.length;
+    var pageContainerCount = 3;
     var selectedPageIndex = -1;
 
     function enableAnimation() {
@@ -26,7 +27,7 @@ define(['browser'], function (browser) {
 
         cancelActiveAnimations();
 
-        var selected = getSelectedIndex(allPages);
+        var selected = selectedPageIndex;
         var previousAnimatable = selected == -1 ? null : allPages[selected];
         var pageIndex = selected + 1;
 
@@ -54,40 +55,56 @@ define(['browser'], function (browser) {
         if (isPluginpage || (newView.classList && newView.classList.contains('type-interior'))) {
             dependencies.push('jqmlistview');
             dependencies.push('scripts/notifications');
+            dependencies.push('dashboardcss');
+            dependencies.push('emby-icons');
         }
 
         return new Promise(function (resolve, reject) {
 
             require(dependencies, function () {
 
-                var animatable = allPages[pageIndex];
-
-                var currentPage = animatable.querySelector('.page-view');
+                var currentPage = allPages[pageIndex];
 
                 if (currentPage) {
                     triggerDestroy(currentPage);
                 }
 
-                var view;
+                var view = newView;
 
-                if (typeof (newView) == 'string') {
-                    animatable.innerHTML = newView;
-                    view = animatable.querySelector('.page-view');
-                } else {
-                    if (newViewInfo.hasScript) {
-                        // TODO: figure this out without jQuery
-                        animatable.innerHTML = '';
-                        $(newView).appendTo(animatable);
-                    } else {
-                        if (currentPage) {
-                            animatable.replaceChild(newView, currentPage);
-                        } else {
-                            animatable.appendChild(newView);
-                        }
-                    }
-                    enhanceNewView(dependencies, newView);
-                    view = newView;
+                if (typeof (view) == 'string') {
+                    view = document.createElement('div');
+                    view.innerHTML = newView;
                 }
+
+                view.classList.add('mainAnimatedPage');
+
+                if (currentPage) {
+                    if (newViewInfo.hasScript && window.$) {
+                        // TODO: figure this out without jQuery
+                        view = $(view).appendTo(mainAnimatedPages)[0];
+                        mainAnimatedPages.removeChild(currentPage);
+                    } else {
+                        mainAnimatedPages.replaceChild(view, currentPage);
+                    }
+                } else {
+                    if (newViewInfo.hasScript && window.$) {
+                        // TODO: figure this out without jQuery
+                        view = $(view).appendTo(mainAnimatedPages)[0];
+                    } else {
+                        mainAnimatedPages.appendChild(view);
+                    }
+                }
+
+                if (typeof (newView) != 'string') {
+                    enhanceNewView(dependencies, view);
+                }
+
+                if (options.type) {
+                    view.setAttribute('data-type', options.type);
+                }
+
+                var animatable = view;
+                allPages[pageIndex] = view;
 
                 if (onBeforeChange) {
                     onBeforeChange(view, false, options);
@@ -130,7 +147,7 @@ define(['browser'], function (browser) {
             }
         }
 
-        if (hasJqm) {
+        if (hasJqm && window.$) {
             $(newView).trigger('create');
         }
     }
@@ -155,17 +172,15 @@ define(['browser'], function (browser) {
     function normalizeNewView(options) {
 
         if (options.view.indexOf('data-role="page"') == -1) {
-            var html = '<div class="page-view" data-type="' + (options.type || '') + '">';
-            html += options.view;
-            html += '</div>';
-            return html;
+            return options.view;
         }
 
         var hasScript = options.view.indexOf('<script') != -1;
-
         var elem = parseHtml(options.view, hasScript);
-        elem.classList.add('page-view');
-        elem.setAttribute('data-type', options.type || '');
+
+        if (hasScript) {
+            hasScript = elem.querySelector('script') != null;
+        }
 
         return {
             elem: elem,
@@ -195,24 +210,22 @@ define(['browser'], function (browser) {
 
     function animate(newAnimatedPage, oldAnimatedPage, transition, isBack) {
 
+        transition = transition || 'fade';
+
         if (enableAnimation() && oldAnimatedPage && newAnimatedPage.animate) {
             if (transition == 'slide') {
-                return slide(newAnimatedPage, oldAnimatedPage, transition, isBack);
+                return slideLeft(newAnimatedPage, oldAnimatedPage, transition, isBack);
+            } else if (transition == 'slidedown') {
+                return slideDown(newAnimatedPage, oldAnimatedPage, transition, isBack);
             } else if (transition == 'fade') {
                 return fade(newAnimatedPage, oldAnimatedPage, transition, isBack);
             }
         }
 
-        return nullAnimation(newAnimatedPage, oldAnimatedPage, transition, isBack);
-    }
-
-    function nullAnimation(newAnimatedPage, oldAnimatedPage, transition, isBack) {
-
-        newAnimatedPage.classList.remove('hide');
         return Promise.resolve();
     }
 
-    function slide(newAnimatedPage, oldAnimatedPage, transition, isBack) {
+    function slideLeft(newAnimatedPage, oldAnimatedPage, transition, isBack) {
 
         return new Promise(function (resolve, reject) {
 
@@ -221,6 +234,10 @@ define(['browser'], function (browser) {
                 duration: 450,
                 iterations: 1,
                 easing: 'ease-out'
+            }
+
+            if (!browser.chrome) {
+                timings.fill = 'both';
             }
 
             var animations = [];
@@ -235,8 +252,6 @@ define(['browser'], function (browser) {
 
                 ], timings));
             }
-
-            newAnimatedPage.classList.remove('hide');
 
             var start = isBack ? '-100%' : '100%';
 
@@ -253,15 +268,62 @@ define(['browser'], function (browser) {
         });
     }
 
+    function slideDown(newAnimatedPage, oldAnimatedPage, transition, isBack) {
+
+        return new Promise(function (resolve, reject) {
+
+            // Do not use fill: both or the ability to swipe horizontally may be affected on Chrome 50
+            var timings = {
+                duration: 450,
+                iterations: 1,
+                easing: 'ease-out'
+            }
+
+            if (!browser.chrome) {
+                timings.fill = 'both';
+            }
+
+            var animations = [];
+
+            if (oldAnimatedPage) {
+                var destination = isBack ? '100%' : '-100%';
+
+                animations.push(oldAnimatedPage.animate([
+
+                  { transform: 'none', offset: 0 },
+                  { transform: 'translate3d(' + destination + ', 0, 0)', offset: 1 }
+
+                ], timings));
+            }
+
+            var start = isBack ? '100%' : '-100%';
+
+            animations.push(newAnimatedPage.animate([
+
+              { transform: 'translate3d(0, ' + start + ', 0)', offset: 0 },
+              { transform: 'none', offset: 1 }
+
+            ], timings));
+
+            currentAnimations = animations;
+
+            animations[animations.length - 1].onfinish = resolve;
+        });
+    }
+
     function fade(newAnimatedPage, oldAnimatedPage, transition, isBack) {
 
         return new Promise(function (resolve, reject) {
 
             // Do not use fill: both or the ability to swipe horizontally may be affected on Chrome 50
             var timings = {
-                duration: 140,
+                duration: 160,
                 iterations: 1,
                 easing: 'ease-out'
+            }
+
+            if (!browser.chrome) {
+                timings.fill = 'both';
             }
 
             var animations = [];
@@ -274,8 +336,6 @@ define(['browser'], function (browser) {
 
                 ], timings));
             }
-
-            newAnimatedPage.classList.remove('hide');
 
             animations.push(newAnimatedPage.animate([
 
@@ -313,19 +373,15 @@ define(['browser'], function (browser) {
         onBeforeChange = fn;
     }
 
-    function getSelectedIndex(allPages) {
-
-        return selectedPageIndex;
-    }
-
     function tryRestoreView(options) {
 
         var url = options.url;
         var index = currentUrls.indexOf(url);
 
         if (index != -1) {
-            var page = allPages[index];
-            var view = page.querySelector(".page-view");
+
+            var animatable = allPages[index];
+            var view = animatable;
 
             if (view) {
 
@@ -335,8 +391,7 @@ define(['browser'], function (browser) {
 
                 cancelActiveAnimations();
 
-                var animatable = allPages[index];
-                var selected = getSelectedIndex(allPages);
+                var selected = selectedPageIndex;
                 var previousAnimatable = selected == -1 ? null : allPages[selected];
 
                 if (onBeforeChange) {
@@ -344,6 +399,8 @@ define(['browser'], function (browser) {
                 }
 
                 beforeAnimate(allPages, index, selected);
+
+                animatable.classList.remove('hide');
 
                 return animate(animatable, previousAnimatable, options.transition, options.isBack).then(function () {
 
@@ -361,7 +418,6 @@ define(['browser'], function (browser) {
                         $.mobile = $.mobile || {};
                         $.mobile.activePage = view;
                     }
-
                     return view;
                 });
             }
@@ -376,12 +432,18 @@ define(['browser'], function (browser) {
 
     function reset() {
 
+        allPages = [];
         currentUrls = [];
+        mainAnimatedPages.innerHTML = '';
+        selectedPageIndex = -1;
     }
 
     if (enableAnimation() && !document.documentElement.animate) {
         require(['webAnimations']);
     }
+
+    reset();
+    mainAnimatedPages.classList.remove('hide');
 
     return {
         loadView: loadView,

@@ -25,7 +25,7 @@ class MP4Remuxer {
   }
 
   insertDiscontinuity() {
-    this._initPTS = this._initDTS = this.nextAacPts = this.nextAvcDts = undefined;
+    this._initPTS = this._initDTS = undefined;
   }
 
   switchLevel() {
@@ -145,6 +145,12 @@ class MP4Remuxer {
         pts, dts, ptsnorm, dtsnorm,
         flags,
         samples = [];
+
+    // handle broken streams with PTS < DTS, tolerance up 200ms (18000 in 90kHz timescale)
+    let PTSDTSshift = track.samples.reduce( (prev, curr) => Math.max(Math.min(prev,curr.pts-curr.dts),-18000),0);
+    if (PTSDTSshift < 0) {
+      logger.warn(`PTS < DTS detected in video samples, shifting DTS by ${Math.round(PTSDTSshift/90)} ms to overcome this issue`);
+    }
     /* concatenate the video data and construct the mdat in place
       (need 8 more bytes to fill length and mpdat type) */
     mdat = new Uint8Array(track.len + (4 * track.nbNalu) + 8);
@@ -164,10 +170,11 @@ class MP4Remuxer {
         mp4SampleLength += 4 + unit.data.byteLength;
       }
       pts = avcSample.pts - this._initDTS;
-      dts = avcSample.dts - this._initDTS;
-      // ensure DTS is not bigger than PTS
+      // shift dts by PTSDTSshift, to ensure that PTS >= DTS
+      dts = avcSample.dts - this._initDTS + PTSDTSshift;
+      // ensure DTS is not bigger than PTS // strap belt !!!
       dts = Math.min(pts,dts);
-      //logger.log(`Video/PTS/DTS:${Math.round(pts/90)}/${Math.round(dts/90)}`);
+      //logger.log(`Video/PTS/DTS/ptsnorm/DTSnorm:${Math.round(avcSample.pts/90)}/${Math.round(avcSample.dts/90)}/${Math.round(pts/90)}/${Math.round(dts/90)}`);
       // if not first AVC sample of video track, normalize PTS/DTS with previous sample value
       // and ensure that sample duration is positive
       if (lastDTS !== undefined) {
@@ -209,7 +216,7 @@ class MP4Remuxer {
         firstPTS = Math.max(0, ptsnorm);
         firstDTS = Math.max(0, dtsnorm);
       }
-      //console.log('PTS/DTS/initDTS/normPTS/normDTS/relative PTS : ${avcSample.pts}/${avcSample.dts}/${this._initDTS}/${ptsnorm}/${dtsnorm}/${(avcSample.pts/4294967296).toFixed(3)}');
+      //console.log(`PTS/DTS/initDTS/normPTS/normDTS/relative PTS : ${avcSample.pts}/${avcSample.dts}/${this._initDTS}/${ptsnorm}/${dtsnorm}/${(avcSample.pts/4294967296).toFixed(3)});
       mp4Sample = {
         size: mp4SampleLength,
         duration: 0,
@@ -303,7 +310,7 @@ class MP4Remuxer {
         }
         // always adjust sample duration to avoid av sync issue
         mp4Sample.duration = expectedSampleDuration;
-        dtsnorm = expectedSampleDuration * pes2mp4ScaleFactor + lastDTS;
+        ptsnorm = dtsnorm = expectedSampleDuration * pes2mp4ScaleFactor + lastDTS;
       } else {
         let nextAacPts, delta;
         if (contiguous) {

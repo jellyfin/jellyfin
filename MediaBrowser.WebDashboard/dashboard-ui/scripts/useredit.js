@@ -235,6 +235,8 @@
 
         $('.editUserProfileForm').off('submit', onSubmit).on('submit', onSubmit);
 
+        this.querySelector('.sharingHelp').innerHTML = Globalize.translate('OptionAllowLinkSharingHelp', 30);
+
     }).on('pagebeforeshow', "#editUserPage", function () {
 
         var page = this;

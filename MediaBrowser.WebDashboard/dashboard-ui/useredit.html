@@ -1,4 +1,4 @@
-﻿<div id="editUserPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="jqmcollapsible,scripts/useredit,paper-input,paper-checkbox,paper-button">
+﻿<div id="editUserPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/useredit,emby-input,paper-checkbox,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -14,31 +14,32 @@
             </p>
             <form class="editUserProfileForm">
 
-                <div class="disabledUserBanner" style="display:none;">
+                <div class="disabledUserBanner" style="display: none;">
                     <div class="btn btnDarkAccent btnStatic">
                         <div>
                             ${HeaderThisUserIsCurrentlyDisabled}
                         </div>
-                        <div style="margin-top:5px;">
+                        <div style="margin-top: 5px;">
                             ${MessageReenableUser}
                         </div>
                     </div>
 
                 </div>
+                <div id="fldUserName" class="inputContainer">
+                    <input is="emby-input" id="txtUserName" required type="text" label="${LabelName}" />
+                </div>
                 <ul data-role="listview" class="ulForm">
-                    <li id="fldUserName">
-                        <paper-input id="txtUserName" required type="text" label="${LabelName}"></paper-input>
-                    </li>
                     <li id="fldConnectInfo" style="display: none;">
                         <div class="paperList" style="padding: 1em; border-radius: 5px;">
-                            <paper-input id="txtConnectUserName" type="text" label="${LabelConnectUserName}"></paper-input>
-                            <div class="fieldDescription">
-                                <div>${LabelConnectUserNameHelp}</div>
-                                <div style="margin-top: .75em;">
-                                    <a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a>
+                            <div class="inputContainer">
+                                <input is="emby-input" id="txtConnectUserName" type="text" label="${LabelConnectUserName}" />
+                                <div class="fieldDescription">
+                                    <div>${LabelConnectUserNameHelp}</div>
+                                    <div style="margin-top: .75em;">
+                                        <a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a>
+                                    </div>
                                 </div>
                             </div>
-                            <br />
                         </div>
                     </li>
                     <li>
@@ -87,7 +88,7 @@
                 <div>
                     <br />
                     <paper-checkbox id="chkEnableSharing">${OptionAllowLinkSharing}</paper-checkbox>
-                    <div class="fieldDescription paperCheckboxFieldDescription">${OptionAllowLinkSharingHelp}</div>
+                    <div class="fieldDescription paperCheckboxFieldDescription sharingHelp"></div>
                     <br />
                 </div>
                 <div id="fldIsEnabled" style="margin: 1em 0 2em;">
@@ -105,11 +106,9 @@
                 <br />
                 <ul data-role="listview" class="ulForm">
                     <li>
-                        <button type="submit" data-role="none" class="clearButton">
-                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                        </button>
+                        <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
 
-                        <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+                        <button is="emby-button" type="button" class="raised cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></button>
                     </li>
                 </ul>
             </form>

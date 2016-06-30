@@ -168,7 +168,7 @@ namespace MediaBrowser.Providers.TV
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                result.Item = await FetchMovieData(tmdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                result.Item = await FetchSeriesData(tmdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
 
                 result.HasMetadata = result.Item != null;
             }
@@ -176,7 +176,7 @@ namespace MediaBrowser.Providers.TV
             return result;
         }
 
-        private async Task<Series> FetchMovieData(string tmdbId, string language, string preferredCountryCode, CancellationToken cancellationToken)
+        private async Task<Series> FetchSeriesData(string tmdbId, string language, string preferredCountryCode, CancellationToken cancellationToken)
         {
             string dataFilePath = null;
             RootObject seriesInfo = null;
@@ -285,6 +285,21 @@ namespace MediaBrowser.Providers.TV
                 series.OfficialRating = minimumRelease.rating;
             }
 
+            if (seriesInfo.videos != null && seriesInfo.videos.results != null)
+            {
+                foreach (var video in seriesInfo.videos.results)
+                {
+                    if (video.type.Equals("trailer", System.StringComparison.OrdinalIgnoreCase)
+                        || video.type.Equals("clip", System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (video.site.Equals("youtube", System.StringComparison.OrdinalIgnoreCase))
+                        {
+                            var videoUrl = string.Format("http://www.youtube.com/watch?v={0}", video.key);
+                            series.AddTrailerUrl(videoUrl, true);
+                        }
+                    }
+                }
+            }
         }
 
         internal static string GetSeriesDataPath(IApplicationPaths appPaths, string tmdbId)
@@ -412,28 +427,6 @@ namespace MediaBrowser.Providers.TV
             var filename = string.Format("series-{0}.json", preferredLanguage ?? string.Empty);
 
             return Path.Combine(path, filename);
-        }
-
-        public bool HasChanged(IHasMetadata item)
-        {
-            if (!MovieDbProvider.Current.GetTheMovieDbOptions().EnableAutomaticUpdates)
-            {
-                return false;
-            }
-
-            var tmdbId = item.GetProviderId(MetadataProviders.Tmdb);
-
-            if (!String.IsNullOrEmpty(tmdbId))
-            {
-                // Process images
-                var dataFilePath = GetDataFilePath(tmdbId, item.GetPreferredMetadataLanguage());
-
-                var fileInfo = _fileSystem.GetFileInfo(dataFilePath);
-
-                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > item.DateLastRefreshed;
-            }
-
-            return false;
         }
 
         private async Task<RemoteSearchResult> FindByExternalId(string id, string externalSource, CancellationToken cancellationToken)
@@ -577,7 +570,19 @@ namespace MediaBrowser.Providers.TV
 
         public class Videos
         {
-            public List<object> results { get; set; }
+            public List<Video> results { get; set; }
+        }
+
+        public class Video
+        {
+            public string id { get; set; }
+            public string iso_639_1 { get; set; }
+            public string iso_3166_1 { get; set; }
+            public string key { get; set; }
+            public string name { get; set; }
+            public string site { get; set; }
+            public string size { get; set; }
+            public string type { get; set; }
         }
 
         public class ContentRating

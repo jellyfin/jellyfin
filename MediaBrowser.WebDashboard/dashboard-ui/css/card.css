@@ -2,16 +2,28 @@
     display: inline-block;
     text-align: left;
     position: relative;
+    contain: style;
+    /*box-shadow: 0 1px 4px 0 rgba(0,0,0,0.37);*/
 }
 
-iron-list .card {
-    display: block;
+    /*.itemsContainer .card {
+    contain: layout style;
 }
 
-.card, .card a {
-    text-decoration: none;
-    font-weight: 400 !important;
+.itemsContainer {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
 }
+
+    .itemsContainer.smoothScrollX, .itemsContainer.hiddenScrollX {
+        display: block;
+    }*/
+
+    .card, .card a {
+        text-decoration: none;
+        font-weight: 400 !important;
+    }
 
 .cardOverlayTarget {
     position: absolute;
@@ -21,7 +33,6 @@ iron-list .card {
     top: 0;
     background-color: rgba(0, 0, 0, .85);
     z-index: 998;
-    display: none;
     line-height: initial;
 }
 
@@ -44,7 +55,7 @@ iron-list .card {
 }
 
 .cardBox {
-    margin: 5px;
+    margin: 6px;
 }
 
 @media all and (max-width: 500px) {
@@ -54,25 +65,23 @@ iron-list .card {
     }
 }
 
-.cardImage {
-    border-radius: 3px;
-}
-
 .cardOverlayButtonContainer {
     position: absolute;
     bottom: 0;
     right: 0;
-    padding: 1em .5em .5em 1em;
+    padding: 1em .25em .5em 1em;
 }
 
 .cardOverlayMoreButton, .cardOverlayPlayButton {
-    color: #333;
-    background-color: rgba(210,210,210,.9);
+    color: #fff !important;
+    background-color: rgba(0,0,0,.7) !important;
     border-radius: 500px;
-    padding: 5px;
-    width: 36px;
-    height: 36px;
 }
+
+    .cardOverlayMoreButton:hover, .cardOverlayPlayButton:hover {
+        background-color: rgba(0,0,0,.9) !important;
+        transition: background-color .5s ease-out;
+    }
 
 .grayscale {
     -webkit-filter: grayscale(100%);
@@ -80,7 +89,7 @@ iron-list .card {
     filter: grayscale(100%);
 }
 
-.bottomPaddedCard .cardBox {
+.bottomPaddedCard .cardBox:not(.visualCardBox) {
     margin-bottom: 24px;
 }
 
@@ -97,7 +106,6 @@ iron-list .card {
     -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     background: #fff;
-    margin: 7px;
 }
 
 .ui-body-b .visualCardBox {
@@ -105,7 +113,7 @@ iron-list .card {
 }
 
 .defaultBackground .cardImage, .ui-body-b .visualCardBox {
-    background-color: #262626;
+    background-color: #2a2a2a;
 }
 
 .cardScalable {
@@ -264,6 +272,7 @@ iron-list .card {
     background-position: center bottom;
     width: 100%;
     height: 100%;
+    border-radius: 2px;
 }
 
     .cardImage canvas {

@@ -408,7 +408,9 @@ namespace MediaBrowser.MediaEncoding.Probing
                 Level = streamInfo.level,
                 Index = streamInfo.index,
                 PixelFormat = streamInfo.pix_fmt,
-                NalLengthSize = streamInfo.nal_length_size
+                NalLengthSize = streamInfo.nal_length_size,
+                TimeBase = streamInfo.time_base,
+                CodecTimeBase = streamInfo.codec_time_base
             };
 
             if (string.Equals(streamInfo.is_avc, "true", StringComparison.OrdinalIgnoreCase) ||

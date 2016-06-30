@@ -216,7 +216,15 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
                 playlistItem.EstimateContentLength = transcodingProfile.EstimateContentLength;
                 playlistItem.Container = transcodingProfile.Container;
-                playlistItem.AudioCodec = transcodingProfile.AudioCodec;
+
+                if (string.IsNullOrEmpty(transcodingProfile.AudioCodec))
+                {
+                    playlistItem.AudioCodecs = new string[] { };
+                }
+                else
+                {
+                    playlistItem.AudioCodecs = transcodingProfile.AudioCodec.Split(',');
+                }
                 playlistItem.SubProtocol = transcodingProfile.Protocol;
 
                 List<CodecProfile> audioCodecProfiles = new List<CodecProfile>();
@@ -439,22 +447,7 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.EstimateContentLength = transcodingProfile.EstimateContentLength;
                 playlistItem.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
 
-                // TODO: We should probably preserve the full list and sent it to the server that way
-                string[] supportedAudioCodecs = transcodingProfile.AudioCodec.Split(',');
-                string inputAudioCodec = audioStream == null ? null : audioStream.Codec;
-                foreach (string supportedAudioCodec in supportedAudioCodecs)
-                {
-                    if (StringHelper.EqualsIgnoreCase(supportedAudioCodec, inputAudioCodec))
-                    {
-                        playlistItem.AudioCodec = supportedAudioCodec;
-                        break;
-                    }
-                }
-
-                if (string.IsNullOrEmpty(playlistItem.AudioCodec))
-                {
-                    playlistItem.AudioCodec = supportedAudioCodecs[0];
-                }
+                playlistItem.AudioCodecs = transcodingProfile.AudioCodec.Split(',');
 
                 playlistItem.VideoCodec = transcodingProfile.VideoCodec;
                 playlistItem.CopyTimestamps = transcodingProfile.CopyTimestamps;
@@ -488,7 +481,7 @@ namespace MediaBrowser.Model.Dlna
                 List<ProfileCondition> audioTranscodingConditions = new List<ProfileCondition>();
                 foreach (CodecProfile i in options.Profile.CodecProfiles)
                 {
-                    if (i.Type == CodecType.VideoAudio && i.ContainsCodec(playlistItem.AudioCodec, transcodingProfile.Container))
+                    if (i.Type == CodecType.VideoAudio && i.ContainsCodec(playlistItem.TargetAudioCodec, transcodingProfile.Container))
                     {
                         foreach (ProfileCondition c in i.Conditions)
                         {
@@ -842,17 +835,17 @@ namespace MediaBrowser.Model.Dlna
                 {
                     bool requiresConversion = !StringHelper.EqualsIgnoreCase(subtitleStream.Codec, profile.Format);
 
-                    if (requiresConversion && !allowConversion)
-                    {
-                        continue;
-                    }
-
                     if (!requiresConversion)
                     {
                         return profile;
                     }
 
-                    if (subtitleStream.IsTextSubtitleStream && subtitleStream.SupportsExternalStream)
+                    if (!allowConversion)
+                    {
+                        continue;
+                    }
+
+                    if (subtitleStream.IsTextSubtitleStream && subtitleStream.SupportsExternalStream && subtitleStream.SupportsSubtitleConversionTo(profile.Format))
                     {
                         return profile;
                     }

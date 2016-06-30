@@ -110,7 +110,7 @@ This element is `display:block` by default, but you can set the `inline` attribu
         @apply(--paper-input-container);
       }
 
-      :host[inline] {
+      :host([inline]) {
         display: inline-block;
       }
 
@@ -119,6 +119,10 @@ This element is `display:block` by default, but you can set the `inline` attribu
         opacity: 0.33;
 
         @apply(--paper-input-container-disabled);
+      }
+
+      :host([hidden]) {
+        display: none !important;
       }
 
       .floated-label-placeholder {
@@ -310,7 +314,7 @@ This element is `display:block` by default, but you can set the `inline` attribu
     </style>
 
     <template is="dom-if" if="[[!noLabelFloat]]">
-      <div class="floated-label-placeholder">&nbsp;</div>
+      <div class="floated-label-placeholder" aria-hidden="true">&nbsp;</div>
     </template>
 
     <div class$="[[_computeInputContentClass(noLabelFloat,alwaysFloatLabel,focused,invalid,_inputHasContent)]]">

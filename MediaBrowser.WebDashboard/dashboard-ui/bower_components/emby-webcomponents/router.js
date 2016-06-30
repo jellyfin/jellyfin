@@ -1,4 +1,4 @@
-define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'browser', 'pageJs'], function (loading, viewManager, skinManager, pluginManager, backdrop, browser, page) {
+define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'browser', 'pageJs', 'appSettings'], function (loading, viewManager, skinManager, pluginManager, backdrop, browser, page, appSettings) {
 
     var embyRouter = {
         showLocalLogin: function (apiClient, serverId, manualLogin) {
@@ -35,7 +35,11 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
 
         loading.show();
 
-        connectionManager.connect().then(function (result) {
+        connectionManager.connect({
+
+            enableAutoLogin: appSettings.enableAutoLogin()
+
+        }).then(function (result) {
             handleConnectionResult(result, loading);
         });
     }
@@ -210,8 +214,8 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         if (!isBackNav) {
             // Don't force a new view for home due to the back menu
             //if (route.type != 'home') {
-                onNewViewNeeded();
-                return;
+            onNewViewNeeded();
+            return;
             //}
         }
         viewManager.tryRestoreView(currentRequest).then(function () {
@@ -234,7 +238,11 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
 
             connectionManager = connectionManagerInstance;
 
-            connectionManager.connect().then(function (result) {
+            connectionManager.connect({
+
+                enableAutoLogin: appSettings.enableAutoLogin()
+
+            }).then(function (result) {
 
                 firstConnectionResult = result;
 

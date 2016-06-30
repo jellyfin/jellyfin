@@ -1723,7 +1723,7 @@ var zlib = null;
 try {
   zlib = require('zlib');
 } catch (e) {
-  console.warn("no zlib library");
+  // console.warn("no zlib library");
 }
 
 // Iconv doesn't work in browser
@@ -1731,7 +1731,7 @@ var Iconv = null;
 try {
   Iconv = require('iconv-lite');
 } catch (e) {
-  console.warn("no iconv library");
+  // console.warn("no iconv library");
 }
 
 // Construct a `Response` object. You should never have to do this directly. The
@@ -2131,10 +2131,10 @@ require.define("/shred/mixins/headers.js", function (require, module, exports, _
 // to `Content-Type`.
 
 var corsetCase = function(string) {
-  return string.toLowerCase()
+  return string;//.toLowerCase()
       //.replace("_","-")
-      .replace(/(^|-)(\w)/g, 
-          function(s) { return s.toUpperCase(); });
+      // .replace(/(^|-)(\w)/g, 
+          // function(s) { return s.toUpperCase(); });
 };
 
 // We suspect that `initializeHeaders` was once more complicated ...
@@ -2207,7 +2207,7 @@ module.exports = {
     constructor.prototype.getHeaders = function() { return getHeaders(this,arguments); };
     constructor.prototype.setHeader = function(key,value) { return setHeader(this,key,value); };
     constructor.prototype.setHeaders = function(hash) { return setHeaders(this,hash); };
-  },
+  }
 };
 
 });

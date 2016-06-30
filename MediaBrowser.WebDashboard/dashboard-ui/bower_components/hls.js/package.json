@@ -1,6 +1,6 @@
 {
   "name": "hls.js",
-  "version": "0.5.32",
+  "version": "0.5.40",
   "license": "Apache-2.0",
   "description": "Media Source Extension - HLS library, by/for Dailymotion",
   "homepage": "https://github.com/dailymotion/hls.js",
@@ -19,7 +19,7 @@
     "prebuild": "npm run clean & npm run test",
     "build": "npm run babel && browserify -t [babelify] -s Hls src/index.js --debug | exorcist dist/hls.js.map -b . > dist/hls.js",
     "postbuild": "npm run minify",
-    "prerelease": "npm run prebuild && npm run build && npm run postbuild && git add dist/* && git commit -m 'update dist'",
+    "prerelease": "npm run prebuild && npm run build && npm run postbuild && git add --ignore-errors dist/* && git commit -m 'update dist'",
     "patch": "npm run prerelease && mversion p",
     "minor": "npm run prerelease && mversion mi",
     "major": "npm run prerelease && mversion ma",

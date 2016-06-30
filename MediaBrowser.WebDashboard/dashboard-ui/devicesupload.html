@@ -1,4 +1,4 @@
-﻿<div id="devicesUploadPage" data-role="page" class="page type-interior devicesPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Camera%20upload" data-require="scripts/devicesupload,paper-input,paper-checkbox,paper-button">
+﻿<div id="devicesUploadPage" data-role="page" class="page type-interior devicesPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Camera%20upload" data-require="scripts/devicesupload,paper-input,paper-checkbox,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -7,16 +7,8 @@
 
                 <p>${HeaderCameraUploadHelp}</p>
 
-                <p class="noDevices" style="display:none;color:red;">${MessageNoDevicesSupportCameraUpload}</p>
+                <form class="devicesUploadForm">
 
-                <br />
-                <form class="devicesUploadForm" style="display:none;">
-
-                    <div class="devicesList">
-
-                    </div>
-
-                    <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <paper-input id="txtUploadPath" label="${LabelCameraUploadPath}" style="width:84%;display:inline-block;"></paper-input>
@@ -32,9 +24,7 @@
                     </ul><br />
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <button type="submit" data-role="none" class="clearButton">
-                                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                            </button>
+                            <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
                         </li>
                     </ul>
 

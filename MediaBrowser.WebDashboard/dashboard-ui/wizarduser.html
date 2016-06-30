@@ -1,4 +1,4 @@
-﻿<div id="wizardUserPage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizarduserpage,paper-input,paper-button">
+﻿<div id="wizardUserPage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizarduserpage,paper-input,emby-button">
 
     <div data-role="content">
 
@@ -9,25 +9,23 @@
                 </h1>
 
                 <p style="margin-top:2em;">${UserProfilesIntro}</p>
-
-                <div>
-                    <paper-input type="text" id="txtUsername" label="${LabelYourFirstName}" required="required"></paper-input>
+                <br />
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="txtUsername" label="${LabelYourFirstName}" required="required" />
                     <div class="fieldDescription">${MoreUsersCanBeAddedLater}</div>
                 </div>
-                <br />
-                <h1 style="margin-bottom:.25em;">${HeaderOptionalLinkEmbyAccount}</h1>
-                <div>
-                    <paper-input type="text" id="txtConnectUserName" label="${LabelConnectUserName}"></paper-input>
+                <br />   <h1 style="margin-bottom:.25em;">${HeaderOptionalLinkEmbyAccount}</h1>
+                <br /> <div class="inputContainer">
+                    <input is="emby-input" type="text" id="txtConnectUserName" label="${LabelConnectUserName}" />
                     <div class="fieldDescription">
                         <div>${LabelConnectUserNameHelp}</div>
                         <div style="margin-top: .7em;"><a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a></div>
                     </div>
                 </div>
                 <br />
-                <br />
                 <div class="wizardNavigation">
-                    <button type="button" data-role="none" class="clearButton" style="width:auto;"><paper-button raised class="subdued"><iron-icon icon="arrow-back"></iron-icon><span>${LabelPrevious}</span></paper-button></button>
-                    <button type="submit" data-role="none" class="clearButton" style="width:auto;"><paper-button raised class="accent"><iron-icon icon="arrow-forward"></iron-icon><span>${LabelNext}</span></paper-button></button>
+                    <button is="emby-button" type="button" class="raised subdued" onclick="history.back();"><iron-icon icon="arrow-back"></iron-icon><span>${LabelPrevious}</span></button>
+                    <button is="emby-button" type="submit" class="raised accent"><iron-icon icon="arrow-forward"></iron-icon><span>${LabelNext}</span></button>
                 </div>
             </form>
         </div>

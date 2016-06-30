@@ -1,4 +1,4 @@
-define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html', 'css!./mediainfo.css'], function (datetime, globalize, embyRouter) {
+define(['datetime', 'globalize', 'embyRouter', 'material-icons', 'css!./mediainfo.css'], function (datetime, globalize, embyRouter) {
 
     function getProgramInfoHtml(item, options) {
         var html = '';
@@ -42,12 +42,12 @@ define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html',
 
         if (item.SeriesTimerId) {
             miscInfo.push({
-                html: '<iron-icon class="mediaInfoItem timerIcon" icon="mediainfo:fiber-smart-record"></iron-icon>'
+                html: '<i class="md-icon mediaInfoItem timerIcon">fiber-smart-record</i>'
             });
         }
         else if (item.TimerId) {
             miscInfo.push({
-                html: '<iron-icon class="mediaInfoItem timerIcon" icon="mediainfo:fiber-manual-record"></iron-icon>'
+                html: '<i class="md-icon mediaInfoItem timerIcon">fiber-manual-record</i>'
             });
         }
 
@@ -244,7 +244,7 @@ define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html',
         html += getStarIconsHtml(item);
 
         if (item.HasSubtitles && options.subtitles !== false) {
-            html += '<iron-icon class="mediaInfoItem closedCaptionIcon" icon="mediainfo:closed-caption"></iron-icon>';
+            html += '<i class="md-icon mediaInfoItem closedCaptionIcon">closed_caption</i>';
         }
 
         if (item.CriticRating && options.criticRating !== false) {
@@ -321,7 +321,7 @@ define(['datetime', 'globalize', 'embyRouter', 'html!./../icons/mediainfo.html',
         if (rating) {
             html += '<div class="starRatingContainer mediaInfoItem">';
 
-            html += '<iron-icon icon="mediainfo:star"></iron-icon>';
+            html += '<i class="md-icon">star</i>';
             html += rating;
             html += '</div>';
         }

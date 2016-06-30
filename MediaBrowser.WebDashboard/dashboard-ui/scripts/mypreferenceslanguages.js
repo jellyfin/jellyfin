@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'userSettings', 'jQuery'], function (appSettings, userSettings, $) {
+﻿define(['appSettings', 'userSettings'], function (appSettings, userSettings) {
 
     function populateLanguages(select, languages) {
 
@@ -13,22 +13,22 @@
             html += "<option value='" + culture.ThreeLetterISOLanguageName + "'>" + culture.DisplayName + "</option>";
         }
 
-        $(select).html(html);
+        select.innerHTML = html;
     }
 
     function loadForm(page, user, loggedInUser, allCulturesPromise) {
 
         allCulturesPromise.then(function (allCultures) {
 
-            populateLanguages($('#selectAudioLanguage', page), allCultures);
-            populateLanguages($('#selectSubtitleLanguage', page), allCultures);
+            populateLanguages(page.querySelector('#selectAudioLanguage'), allCultures);
+            populateLanguages(page.querySelector('#selectSubtitleLanguage'), allCultures);
 
-            $('#selectAudioLanguage', page).val(user.Configuration.AudioLanguagePreference || "");
-            $('#selectSubtitleLanguage', page).val(user.Configuration.SubtitleLanguagePreference || "");
+            page.querySelector('#selectAudioLanguage', page).value = user.Configuration.AudioLanguagePreference || "";
+            page.querySelector('#selectSubtitleLanguage', page).value = user.Configuration.SubtitleLanguagePreference || "";
             page.querySelector('.chkEpisodeAutoPlay').checked = user.Configuration.EnableNextEpisodeAutoPlay || false;
         });
 
-        $('#selectSubtitlePlaybackMode', page).val(user.Configuration.SubtitleMode || "").trigger('change');
+        page.querySelector('#selectSubtitlePlaybackMode').value = user.Configuration.SubtitleMode || "";
 
         page.querySelector('.chkPlayDefaultAudioTrack').checked = user.Configuration.PlayDefaultAudioTrack || false;
         page.querySelector('.chkEnableCinemaMode').checked = userSettings.enableCinemaMode();
@@ -44,16 +44,16 @@
 
             bitrateOptions = '<option value="">' + Globalize.translate('OptionAutomatic') + '</option>' + bitrateOptions;
 
-            $('#selectMaxBitrate', page).html(bitrateOptions);
-            $('#selectMaxChromecastBitrate', page).html(bitrateOptions);
+            page.querySelector('#selectMaxBitrate').innerHTML = bitrateOptions;
+            page.querySelector('#selectMaxChromecastBitrate').innerHTML = bitrateOptions;
 
             if (appSettings.enableAutomaticBitrateDetection()) {
-                $('#selectMaxBitrate', page).val('');
+                page.querySelector('#selectMaxBitrate').value = '';
             } else {
-                $('#selectMaxBitrate', page).val(appSettings.maxStreamingBitrate());
+                page.querySelector('#selectMaxBitrate').value = appSettings.maxStreamingBitrate();
             }
 
-            $('#selectMaxChromecastBitrate', page).val(appSettings.maxChromecastBitrate());
+            page.querySelector('#selectMaxChromecastBitrate').value = appSettings.maxChromecastBitrate();
 
             Dashboard.hideLoadingMsg();
         });
@@ -80,19 +80,19 @@
         ApiClient.getNamedConfiguration("cinemamode").then(function (cinemaConfig) {
 
             if (cinemaConfig.EnableIntrosForMovies || cinemaConfig.EnableIntrosForEpisodes) {
-                $('.cinemaModeOptions', page).show();
+                page.querySelector('.cinemaModeOptions').classList.remove('hide');
             } else {
-                $('.cinemaModeOptions', page).hide();
+                page.querySelector('.cinemaModeOptions').classList.add('hide');
             }
         });
     }
 
     function saveUser(page, user) {
 
-        user.Configuration.AudioLanguagePreference = $('#selectAudioLanguage', page).val();
-        user.Configuration.SubtitleLanguagePreference = $('#selectSubtitleLanguage', page).val();
+        user.Configuration.AudioLanguagePreference = page.querySelector('#selectAudioLanguage').value;
+        user.Configuration.SubtitleLanguagePreference = page.querySelector('#selectSubtitleLanguage').value;
 
-        user.Configuration.SubtitleMode = $('#selectSubtitlePlaybackMode', page).val();
+        user.Configuration.SubtitleMode = page.querySelector('#selectSubtitlePlaybackMode').value;
         user.Configuration.PlayDefaultAudioTrack = page.querySelector('.chkPlayDefaultAudioTrack').checked;
         user.Configuration.EnableNextEpisodeAutoPlay = page.querySelector('.chkEpisodeAutoPlay').checked;
         userSettings.enableCinemaMode(page.querySelector('.chkEnableCinemaMode').checked);
@@ -104,14 +104,14 @@
 
         appSettings.enableExternalPlayers(page.querySelector('.chkExternalVideoPlayer').checked);
 
-        if ($('#selectMaxBitrate', page).val()) {
-            appSettings.maxStreamingBitrate($('#selectMaxBitrate', page).val());
+        if (page.querySelector('#selectMaxBitrate').value) {
+            appSettings.maxStreamingBitrate(page.querySelector('#selectMaxBitrate').value);
             appSettings.enableAutomaticBitrateDetection(false);
         } else {
             appSettings.enableAutomaticBitrateDetection(true);
         }
 
-        appSettings.maxChromecastBitrate($('#selectMaxChromecastBitrate', page).val());
+        appSettings.maxChromecastBitrate(page.querySelector('#selectMaxChromecastBitrate').value);
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
@@ -137,63 +137,57 @@
         });
     }
 
-    function onSubmit() {
+    return function (view, params) {
 
-        var page = $(this).parents('.page')[0];
+        view.querySelector('#selectSubtitlePlaybackMode').addEventListener('change', function () {
 
-        save(page);
-
-        // Disable default form submission
-        return false;
-    }
-
-    pageIdOn('pageinit', "languagePreferencesPage", function () {
-
-        var page = this;
-
-        $('#selectSubtitlePlaybackMode', page).on('change', function () {
-
-            $('.subtitlesHelp', page).hide();
-            $('.subtitles' + this.value + 'Help', page).show();
+            var subtitlesHelp = view.querySelectorAll('.subtitlesHelp');
+            for (var i = 0, length = subtitlesHelp.length; i < length; i++) {
+                subtitlesHelp[i].classList.add('hide');
+            }
+            view.querySelector('.subtitles' + this.value + 'Help').classList.remove('hide');
         });
 
-        $('.languagePreferencesForm').off('submit', onSubmit).on('submit', onSubmit);
+        view.querySelector('.languagePreferencesForm').addEventListener('submit', function (e) {
+            save(view);
+
+            // Disable default form submission
+            e.preventDefault();
+            return false;
+        });
 
         if (AppInfo.enableAutoSave) {
-            page.querySelector('.btnSave').classList.add('hide');
+            view.querySelector('.btnSave').classList.add('hide');
         } else {
-            page.querySelector('.btnSave').classList.remove('hide');
-        }
-    });
-
-    pageIdOn('pageshow', "languagePreferencesPage", function () {
-
-        var page = this;
-
-        if (AppInfo.supportsExternalPlayers) {
-            $('.fldExternalPlayer', page).show();
-        } else {
-            $('.fldExternalPlayer', page).hide();
+            view.querySelector('.btnSave').classList.remove('hide');
         }
 
-        if (AppInfo.supportsExternalPlayerMenu) {
-            $('.labelNativeExternalPlayers', page).show();
-            $('.labelGenericExternalPlayers', page).hide();
-        } else {
-            $('.labelGenericExternalPlayers', page).show();
-            $('.labelNativeExternalPlayers', page).hide();
-        }
+        view.addEventListener('viewshow', function () {
 
-        loadPage(page);
-    });
+            if (AppInfo.supportsExternalPlayers) {
+                view.querySelector('.fldExternalPlayer').classList.remove('hide');
+            } else {
+                view.querySelector('.fldExternalPlayer').classList.add('hide');
+            }
 
-    pageIdOn('pagebeforehide', "languagePreferencesPage", function () {
+            if (AppInfo.supportsExternalPlayerMenu) {
+                view.querySelector('.labelNativeExternalPlayers').classList.remove('hide');
+                view.querySelector('.labelGenericExternalPlayers').classList.add('hide');
+            } else {
+                view.querySelector('.labelGenericExternalPlayers').classList.remove('hide');
+                view.querySelector('.labelNativeExternalPlayers').classList.add('hide');
+            }
 
-        var page = this;
+            loadPage(view);
+        });
 
-        if (AppInfo.enableAutoSave) {
-            save(page);
-        }
-    });
+        view.addEventListener('viewbeforehide', function () {
+            var page = this;
+
+            if (AppInfo.enableAutoSave) {
+                save(page);
+            }
+        });
+    };
 
 });

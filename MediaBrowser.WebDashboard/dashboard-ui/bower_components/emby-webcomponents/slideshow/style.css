@@ -45,24 +45,27 @@
     top: 50%;
 }
 
-.slideshowDialog .slideshowButton {
-    width: 5.2vh;
-    height: 5.2vh;
+.slideshowDialog .slideshowButton i {
+    width: 4.5vh;
+    height: 4.5vh;
+    font-size: 4.5vh;
     color: #fff;
     opacity: .7;
     min-width: 40px;
     min-height: 40px;
 }
 
-.layout-tv .slideshowDialog .slideshowButtonn {
-    width: 7vh;
-    height: 7vh;
+.layout-tv .slideshowDialog .slideshowButton i {
+    width: 6.3vh;
+    height: 6.3vh;
+    font-size: 6.3vh;
 }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.3), only screen and (min-device-pixel-ratio: 1.3), only screen and (min-resolution: 120dpi) {
-    .slideshowDialog paper-icon-button {
-        width: 11vmin;
-        height: 11vmin;
+    .slideshowDialog [is=paper-icon-button-light] i {
+        width: 10.3vmin;
+        height: 10.3vmin;
+        font-size: 10.3vmin;
     }
 }
 

@@ -1,4 +1,4 @@
-define(['apphost', 'globalize', 'connectionManager'], function (appHost, globalize, connectionManager) {
+define(['apphost', 'globalize', 'connectionManager', 'itemHelper'], function (appHost, globalize, connectionManager, itemHelper) {
 
     function getCommands(options) {
 
@@ -11,11 +11,34 @@ define(['apphost', 'globalize', 'connectionManager'], function (appHost, globali
 
             var commands = [];
 
+            if (itemHelper.supportsAddingToCollection(item)) {
+                commands.push({
+                    name: globalize.translate('sharedcomponents#AddToCollection'),
+                    id: 'addtocollection'
+                });
+            }
+
+            if (itemHelper.supportsAddingToPlaylist(item)) {
+                commands.push({
+                    name: globalize.translate('sharedcomponents#AddToPlaylist'),
+                    id: 'addtoplaylist'
+                });
+            }
+
             if (item.CanDelete) {
                 commands.push({
                     name: globalize.translate('sharedcomponents#Delete'),
                     id: 'delete'
                 });
+            }
+
+            if (user.Policy.IsAdministrator) {
+                if (item.MediaType == 'Video' && item.Type != 'TvChannel' && item.Type != 'Program' && item.LocationType != 'Virtual') {
+                    commands.push({
+                        name: globalize.translate('sharedcomponents#EditSubtitles'),
+                        id: 'editsubtitles'
+                    });
+                }
             }
 
             if (item.CanDownload && appHost.supports('filedownload')) {
@@ -54,6 +77,30 @@ define(['apphost', 'globalize', 'connectionManager'], function (appHost, globali
 
             switch (id) {
 
+                case 'addtocollection':
+                    {
+                        require(['collectionEditor'], function (collectionEditor) {
+
+                            new collectionEditor().show({
+                                items: [itemId],
+                                serverId: serverId
+
+                            }).then(reject, reject);
+                        });
+                        break;
+                    }
+                case 'addtoplaylist':
+                    {
+                        require(['playlistEditor'], function (playlistEditor) {
+
+                            new playlistEditor().show({
+                                items: [itemId],
+                                serverId: serverId
+
+                            }).then(reject, reject);
+                        });
+                        break;
+                    }
                 case 'download':
                     {
                         require(['fileDownloader'], function (fileDownloader) {
@@ -71,6 +118,15 @@ define(['apphost', 'globalize', 'connectionManager'], function (appHost, globali
                             reject();
                         });
 
+                        break;
+                    }
+                case 'editsubtitles':
+                    {
+                        require(['subtitleEditor'], function (subtitleEditor) {
+
+                            var serverId = apiClient.serverInfo().Id;
+                            subtitleEditor.show(itemId, serverId).then(resolve, reject);
+                        });
                         break;
                     }
                 case 'refresh':
@@ -127,17 +183,11 @@ define(['apphost', 'globalize', 'connectionManager'], function (appHost, globali
 
     function refresh(apiClient, itemId) {
 
-        apiClient.refreshItem(itemId, {
-
-            Recursive: true,
-            ImageRefreshMode: 'FullRefresh',
-            MetadataRefreshMode: 'FullRefresh',
-            ReplaceAllImages: false,
-            ReplaceAllMetadata: true
-        });
-
-        require(['toast'], function (toast) {
-            toast(globalize.translate('sharedcomponents#RefreshQueued'));
+        require(['refreshDialog'], function (refreshDialog) {
+            new refreshDialog({
+                itemIds: [itemId],
+                serverId: apiClient.serverInfo().Id
+            }).show();
         });
     }
 

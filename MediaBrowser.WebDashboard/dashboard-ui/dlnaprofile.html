@@ -1,4 +1,4 @@
-﻿<div id="dlnaProfilePage" data-role="page" class="page type-interior dlnaPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Dlna%20profiles" data-require="jqmcollapsible,jqmpopup,scripts/dlnaprofile,jqmcheckbox,paper-button">
+﻿<div id="dlnaProfilePage" data-role="page" class="page type-interior dlnaPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Dlna%20profiles" data-require="jqmcollapsible,jqmpopup,scripts/dlnaprofile,jqmcheckbox,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -102,10 +102,10 @@
 
                             <div>
                                 <h2 style="vertical-align:middle;display:inline-block;">${HeaderHttpHeaders}</h2>
-                                <paper-button raised class="submit mini btnAddIdentificationHttpHeader" style="margin-left:1em;">
+                                <button is="emby-button" type="button" class="raised submit mini btnAddIdentificationHttpHeader" style="margin-left:1em;">
                                     <iron-icon icon="add"></iron-icon>
                                     <span>${ButtonNew}</span>
-                                </paper-button>
+                                </button>
                             </div>
                             <div class="httpHeaderIdentificationList"></div>
                         </div>
@@ -273,10 +273,10 @@
                         <div>
                             <div>
                                 <h2 style="vertical-align:middle;display:inline-block;">${HeaderXmlDocumentAttributes}</h2>
-                                <paper-button raised class="submit mini btnAddXmlDocumentAttribute" style="margin-left:1em;">
+                                <button is="emby-button" type="button" class="raised submit mini btnAddXmlDocumentAttribute" style="margin-left:1em;">
                                     <iron-icon icon="add"></iron-icon>
                                     <span>${ButtonNew}</span>
-                                </paper-button>
+                                </button>
                             </div>
                             <div class="xmlDocumentAttributeList"></div>
                             <div class="fieldDescription">${XmlDocumentAttributeListHelp}</div>

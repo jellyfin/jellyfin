@@ -61,7 +61,7 @@ namespace MediaBrowser.Dlna.Ssdp
 			}
         }
 
-        void _ssdpHandler_MessageReceived(object sender, SsdpMessageEventArgs e)
+        async void _ssdpHandler_MessageReceived(object sender, SsdpMessageEventArgs e)
         {
             string nts;
             e.Headers.TryGetValue("NTS", out nts);
@@ -78,7 +78,7 @@ namespace MediaBrowser.Dlna.Ssdp
             {
                 if (e.LocalEndPoint == null)
                 {
-                    var ip = _appHost.LocalIpAddresses.FirstOrDefault(i => !IPAddress.IsLoopback(i));
+                    var ip = (await _appHost.GetLocalIpAddresses().ConfigureAwait(false)).FirstOrDefault(i => !IPAddress.IsLoopback(i));
                     if (ip != null)
                     {
                         e.LocalEndPoint = new IPEndPoint(ip, 0);

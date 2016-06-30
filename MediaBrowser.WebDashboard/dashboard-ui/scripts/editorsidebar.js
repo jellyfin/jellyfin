@@ -1,4 +1,4 @@
-﻿define(['datetime', 'jQuery'], function (datetime, $) {
+﻿define(['datetime', 'jQuery', 'material-icons'], function (datetime, $) {
 
     function getNode(item, folderState, selected) {
 
@@ -60,7 +60,7 @@
         var htmlName = "<div class='" + cssClass + "'>";
 
         if (item.LockData) {
-            htmlName += '<iron-icon icon="lock" style="height:18px"></iron-icon>';
+            htmlName += '<i class="md-icon">lock</i>';
         }
 
         htmlName += name;

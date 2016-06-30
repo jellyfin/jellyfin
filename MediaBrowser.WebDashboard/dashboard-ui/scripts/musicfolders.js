@@ -1,12 +1,13 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['events', 'libraryBrowser', 'imageLoader'], function (events, libraryBrowser, imageLoader) {
 
     return function (view, params, tabContent) {
 
         var self = this;
 
         var data = {};
-        function getPageData() {
-            var key = getSavedQueryKey();
+
+        function getPageData(context) {
+            var key = getSavedQueryKey(context);
             var pageData = data[key];
 
             if (!pageData) {
@@ -20,88 +21,107 @@
                         EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
                         Limit: LibraryBrowser.getDefaultPageSize()
                     },
-                    view: LibraryBrowser.getSavedView(key) || LibraryBrowser.getDefaultItemsView('Poster', 'Poster')
+                    view: libraryBrowser.getSavedView(key) || libraryBrowser.getDefaultItemsView('Poster', 'Poster')
                 };
 
-                pageData.query.ParentId = LibraryMenu.getTopParentId();
-                LibraryBrowser.loadSavedQueryValues(key, pageData.query);
+                pageData.query.ParentId = params.topParentId;
+                libraryBrowser.loadSavedQueryValues(key, pageData.query);
             }
             return pageData;
         }
 
-        function getQuery() {
+        function getQuery(context) {
 
-            return getPageData().query;
+            return getPageData(context).query;
         }
 
-        function getSavedQueryKey() {
+        function getSavedQueryKey(context) {
 
-            return LibraryBrowser.getSavedQueryKey('folders');
+            if (!context.savedQueryKey) {
+                context.savedQueryKey = libraryBrowser.getSavedQueryKey('folders');
+            }
+            return context.savedQueryKey;
         }
 
-        function reloadItems(context) {
+        function reloadItems(page) {
 
             Dashboard.showLoadingMsg();
 
-            var query = getQuery();
+            var query = getQuery(page);
+
             ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (result) {
 
                 // Scroll back up so they can see the results from the beginning
                 window.scrollTo(0, 0);
 
-                var html = '';
-                var view = getPageData().view;
                 var pagingHtml = LibraryBrowser.getQueryPagingHtml({
                     startIndex: query.StartIndex,
                     limit: query.Limit,
                     totalRecordCount: result.TotalRecordCount,
-                    viewButton: false,
                     showLimit: false,
-                    sortButton: false,
-                    addLayoutButton: false,
-                    currentLayout: view,
                     updatePageSizeSetting: false,
-                    viewIcon: 'filter-list',
-                    layouts: 'List,Poster,PosterCard,Timeline'
+                    addLayoutButton: false,
+                    sortButton: false,
+                    filterButton: false
                 });
 
-                context.querySelector('.listTopPaging').innerHTML = pagingHtml;
+                var html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "square",
+                    context: 'folders',
+                    showTitle: true,
+                    showParentTitle: true,
+                    lazy: true,
+                    centerText: true,
+                    overlayPlayButton: true
+                });
 
-                if (view == "Poster") {
-                    html = LibraryBrowser.getPosterViewHtml({
-                        items: result.Items,
-                        shape: "square",
-                        context: 'folders',
-                        showTitle: true,
-                        showParentTitle: true,
-                        lazy: true,
-                        centerText: true,
-                        overlayPlayButton: true
-                    });
+                var i, length;
+                var elems = tabContent.querySelectorAll('.paging');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].innerHTML = pagingHtml;
                 }
 
-                var elem = context.querySelector('#items');
-                elem.innerHTML = html + pagingHtml;
-                ImageLoader.lazyChildren(elem);
-
-                $('.btnNextPage', context).on('click', function () {
+                function onNextPageClick() {
                     query.StartIndex += query.Limit;
-                    reloadItems(context);
-                });
+                    reloadItems(tabContent);
+                }
 
-                $('.btnPreviousPage', context).on('click', function () {
+                function onPreviousPageClick() {
                     query.StartIndex -= query.Limit;
-                    reloadItems(context);
-                });
+                    reloadItems(tabContent);
+                }
 
-                LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
+                elems = tabContent.querySelectorAll('.btnNextPage');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onNextPageClick);
+                }
+
+                elems = tabContent.querySelectorAll('.btnPreviousPage');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onPreviousPageClick);
+                }
+
+                var itemsContainer = tabContent.querySelector('.itemsContainer');
+                itemsContainer.innerHTML = html;
+                imageLoader.lazyChildren(itemsContainer);
+
+                libraryBrowser.saveQueryValues(getSavedQueryKey(page), query);
+
                 Dashboard.hideLoadingMsg();
             });
         }
-        self.renderTab = function () {
+
+        self.getCurrentViewStyle = function () {
+            return getPageData(tabContent).view;
+        };
+
+        self.renderTab = function () {
 
             reloadItems(tabContent);
         };
-    };
 
+        self.destroy = function () {
+        };
+    };
 });

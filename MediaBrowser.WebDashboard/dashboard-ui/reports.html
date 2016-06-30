@@ -1,4 +1,21 @@
 ﻿<div id="libraryReportManagerPage" data-role="page" class="page libraryPage noSecondaryNavPage reportsPage" data-contextname="${HeaderReports}" data-require="paper-icon-button,jqmcheckbox,jqmcontrolgroup,jqmpanel,jqmcollapsible,jqmtable,scripts/reports,detailtablecss">
+    <style>
+        /* Page and overlay */
+        .ui-page-theme-b .ui-panel-wrapper {
+            background-color: #252525 /*{b-page-background-color}*/;
+            border-color: #454545 /*{b-page-border}*/;
+            color: #fff /*{b-page-color}*/;
+        }
+
+        /* Fixes the issue of jqm panels altering the page background. */
+        .ui-panel-content-wrap {
+            background: none !important;
+        }
+
+        .ui-panel fieldset + fieldset {
+            margin-top: 2em;
+        }
+    </style>
     <div data-role="content">
         <div style="text-align: center;">
             <div class="viewControls">
@@ -127,9 +144,6 @@
 
                             <input class="chkMissingRating" type="checkbox" name="chkMissingRating" id="chkMissingRating">
                             <label for="chkMissingRating">${OptionMissingParentalRating}</label>
-
-                            <input class="chkYearMismatch" type="checkbox" name="chkYearMismatch" id="chkYearMismatch">
-                            <label for="chkYearMismatch">${OptionFileMetadataYearMismatch}</label>
 
                             <input class="chkMissingImdbId" type="checkbox" name="chkMissingImdbId" id="chkMissingImdbId">
                             <label for="chkMissingImdbId">${OptionMissingImdbId}</label>

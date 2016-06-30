@@ -101,6 +101,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 }
 
                 var uri = new Uri(location);
+                _logger.Debug("Attempting to create PlayToController from location {0}", location);
                 var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger).ConfigureAwait(false);
 
                 if (device.RendererCommands == null)
@@ -112,6 +113,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     }
                 }
 
+                _logger.Debug("Logging session activity from location {0}", location);
                 var sessionInfo = await _sessionManager.LogSessionActivity(device.Properties.ClientType, _appHost.ApplicationVersion.ToString(), device.Properties.UUID, device.Properties.Name, uri.OriginalString, null)
                     .ConfigureAwait(false);
 

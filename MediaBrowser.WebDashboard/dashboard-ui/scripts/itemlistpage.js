@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'jQuery'], function (libraryBrowser, $) {
+﻿define(['libraryBrowser', 'alphaPicker'], function (libraryBrowser, alphaPicker) {
 
     return function (view, params) {
 
@@ -75,14 +75,13 @@
                     limit: query.Limit,
                     totalRecordCount: result.TotalRecordCount,
                     showLimit: false,
-                    addLayoutButton: true,
+                    addLayoutButton: false,
                     currentLayout: viewStyle,
-                    sortButton: true,
-                    layouts: 'Poster,PosterCard,Thumb',
-                    filterButton: true
+                    sortButton: false,
+                    filterButton: false
                 });
 
-                view.querySelector('.listTopPaging').innerHTML = pagingHtml;
+                view.querySelector('.paging').innerHTML = pagingHtml;
 
                 updateFilterControls();
 
@@ -104,13 +103,6 @@
 
                     html = libraryBrowser.getPosterViewHtml(posterOptions);
                 }
-                else if (viewStyle == "Poster") {
-
-                    posterOptions.showTitle = context == 'photos' ? 'auto' : true;
-                    posterOptions.overlayText = context == 'photos';
-
-                    html = libraryBrowser.getPosterViewHtml(posterOptions);
-                }
                 else if (viewStyle == "PosterCard") {
 
                     posterOptions.showTitle = true;
@@ -125,77 +117,53 @@
                     posterOptions.preferThumb = true;
                     posterOptions.shape = "backdrop";
                     html = libraryBrowser.getPosterViewHtml(posterOptions);
+                } else {
+
+                    // Poster
+                    posterOptions.showTitle = context == 'photos' ? 'auto' : true;
+                    posterOptions.overlayText = context == 'photos';
+
+                    html = libraryBrowser.getPosterViewHtml(posterOptions);
+                }
+
+                if (currentItem.CollectionType == 'boxsets') {
+                    view.querySelector('.btnNewCollection').classList.remove('hide');
+                    if (!result.Items.length) {
+                        html = '<p style="text-align:center;">' + Globalize.translate('MessageNoCollectionsAvailable') + '</p>';
+                    }
+                } else {
+                    view.querySelector('.btnNewCollection').classList.add('hide');
                 }
 
                 var elem = view.querySelector('#items');
                 elem.innerHTML = html + pagingHtml;
                 ImageLoader.lazyChildren(elem);
 
-                $('.btnFilter', view).on('click', function () {
-                    showFilterMenu();
-                });
+                var i, length;
+                var elems = view.querySelectorAll('.paging');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].innerHTML = pagingHtml;
+                }
 
-                $('.btnNextPage', view).on('click', function () {
+                function onNextPageClick() {
                     query.StartIndex += query.Limit;
                     reloadItems(view);
-                });
+                }
 
-                $('.btnPreviousPage', view).on('click', function () {
+                function onPreviousPageClick() {
                     query.StartIndex -= query.Limit;
                     reloadItems(view);
-                });
+                }
 
-                $('.btnChangeLayout', view).on('layoutchange', function (e, layout) {
-                    getPageData(view).view = layout;
-                    libraryBrowser.saveViewSetting(getSavedQueryKey(), layout);
-                    reloadItems(view);
-                });
+                elems = view.querySelectorAll('.btnNextPage');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onNextPageClick);
+                }
 
-                // On callback make sure to set StartIndex = 0
-                $('.btnSort', view).on('click', function () {
-                    libraryBrowser.showSortMenu({
-                        items: [{
-                            name: Globalize.translate('OptionNameSort'),
-                            id: 'SortName'
-                        },
-                        {
-                            name: Globalize.translate('OptionCommunityRating'),
-                            id: 'CommunityRating,SortName'
-                        },
-                        {
-                            name: Globalize.translate('OptionCriticRating'),
-                            id: 'CriticRating,SortName'
-                        },
-                        {
-                            name: Globalize.translate('OptionDateAdded'),
-                            id: 'DateCreated,SortName'
-                        },
-                        {
-                            name: Globalize.translate('OptionDatePlayed'),
-                            id: 'DatePlayed,SortName'
-                        },
-                        {
-                            name: Globalize.translate('OptionParentalRating'),
-                            id: 'OfficialRating,SortName'
-                        },
-                        {
-                            name: Globalize.translate('OptionPlayCount'),
-                            id: 'PlayCount,SortName'
-                        },
-                        {
-                            name: Globalize.translate('OptionReleaseDate'),
-                            id: 'PremiereDate,SortName'
-                        },
-                        {
-                            name: Globalize.translate('OptionRuntime'),
-                            id: 'Runtime,SortName'
-                        }],
-                        callback: function () {
-                            reloadItems(view);
-                        },
-                        query: query
-                    });
-                });
+                elems = view.querySelectorAll('.btnPreviousPage');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onPreviousPageClick);
+                }
 
                 libraryBrowser.saveQueryValues(params.parentId, query);
 
@@ -237,48 +205,144 @@
             });
         }
 
+        var alphaPickerElement = view.querySelector('.alphaPicker');
+        alphaPickerElement.addEventListener('alphavaluechanged', function (e) {
+            var newValue = e.detail.value;
+            var query = getQuery();
+            query.NameStartsWithOrGreater = newValue;
+            query.StartIndex = 0;
+            reloadItems(view);
+        });
+
+        self.alphaPicker = new alphaPicker({
+            element: alphaPickerElement,
+            valueChangeEvent: 'click'
+        });
+
+        function parentWithClass(elem, className) {
+
+            while (!elem.classList || !elem.classList.contains(className)) {
+                elem = elem.parentNode;
+
+                if (!elem) {
+                    return null;
+                }
+            }
+
+            return elem;
+        }
+
+        view.addEventListener('click', function (e) {
+
+            var mediaItem = parentWithClass(e.target, 'mediaItem');
+            if (mediaItem) {
+                var query = getQuery();
+                var info = libraryBrowser.getListItemInfo(mediaItem);
+
+                if (info.mediaType == 'Photo') {
+                    require(['scripts/photos'], function () {
+                        Photos.startSlideshow(view, query, info.id);
+                    });
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        });
+
         function updateFilterControls() {
 
             var query = getQuery();
 
-            $('.alphabetPicker', view).alphaValue(query.NameStartsWithOrGreater);
+            self.alphaPicker.value(query.NameStartsWithOrGreater);
         }
 
-        function onListItemClick(e) {
+        var btnSelectView = view.querySelector('.btnSelectView');
+        btnSelectView.addEventListener('click', function (e) {
 
-            var query = getQuery();
-            var info = libraryBrowser.getListItemInfo(this);
+            libraryBrowser.showLayoutMenu(e.target, getPageData().view, 'Poster,PosterCard,Thumb'.split(','));
+        });
 
-            if (info.mediaType == 'Photo') {
-                require(['scripts/photos'], function () {
-                    Photos.startSlideshow(view, query, info.id);
-                });
-                return false;
-            }
-        }
-
-        $('.alphabetPicker', view).on('alphaselect', function (e, character) {
-
-            var query = getQuery();
-            query.NameStartsWithOrGreater = character;
-            query.StartIndex = 0;
-
-            reloadItems(view);
-
-        }).on('alphaclear', function (e) {
-
-            var query = getQuery();
-            query.NameStartsWithOrGreater = '';
-
+        btnSelectView.addEventListener('layoutchange', function (e) {
+            var layout = e.detail.viewStyle;
+            getPageData().view = layout;
+            libraryBrowser.saveViewSetting(getSavedQueryKey(), layout);
             reloadItems(view);
         });
 
-        $(view).on('click', '.mediaItem', onListItemClick);
+        view.querySelector('.btnFilter').addEventListener('click', function () {
+            showFilterMenu();
+        });
+
+        // On callback make sure to set StartIndex = 0
+        view.querySelector('.btnSort').addEventListener('click', function () {
+            libraryBrowser.showSortMenu({
+                items: [{
+                    name: Globalize.translate('OptionNameSort'),
+                    id: 'IsFolder,SortName'
+                },
+                {
+                    name: Globalize.translate('OptionCommunityRating'),
+                    id: 'CommunityRating,SortName'
+                },
+                {
+                    name: Globalize.translate('OptionCriticRating'),
+                    id: 'CriticRating,SortName'
+                },
+                {
+                    name: Globalize.translate('OptionDateAdded'),
+                    id: 'DateCreated,SortName'
+                },
+                {
+                    name: Globalize.translate('OptionDatePlayed'),
+                    id: 'DatePlayed,SortName'
+                },
+                {
+                    name: Globalize.translate('OptionParentalRating'),
+                    id: 'OfficialRating,SortName'
+                },
+                {
+                    name: Globalize.translate('OptionPlayCount'),
+                    id: 'PlayCount,SortName'
+                },
+                {
+                    name: Globalize.translate('OptionReleaseDate'),
+                    id: 'PremiereDate,SortName'
+                },
+                {
+                    name: Globalize.translate('OptionRuntime'),
+                    id: 'Runtime,SortName'
+                }],
+                callback: function () {
+                    reloadItems(view);
+                },
+                query: getQuery()
+            });
+        });
+
+        // The button is created dynamically
+        view.querySelector('.btnNewCollection').addEventListener('click', function () {
+
+            require(['collectionEditor'], function (collectionEditor) {
+
+                var serverId = ApiClient.serverInfo().Id;
+                new collectionEditor().show({
+                    items: [],
+                    serverId: serverId
+                });
+
+            });
+        });
 
         view.addEventListener('viewbeforeshow', function (e) {
             reloadItems(view);
             updateFilterControls();
             LibraryMenu.setBackButtonVisible(params.context);
+        });
+
+        view.addEventListener('viewdestroy', function (e) {
+            if (self.alphaPicker) {
+                self.alphaPicker.destroy();
+            }
         });
     };
 });

@@ -1,4 +1,4 @@
-﻿<div id="moviesPage" data-role="page" data-dom-cache="true" class="page libraryPage backdropPage pageWithAbsoluteTabs collectionEditorPage" data-backdroptype="movie">
+﻿<div id="moviesPage" data-role="page" data-dom-cache="true" class="page libraryPage backdropPage collectionEditorPage pageWithAbsoluteTabs" data-backdroptype="movie">
 
     <div class="libraryViewNav">
         <button class="pageTabButton is-active" data-index="0">${TabSuggestions}</button>
@@ -9,10 +9,13 @@
         <button class="pageTabButton movieStudiosTab" data-index="5">${TabStudios}</button>
     </div>
     <div class="is-active pageTabContent ehsContent" id="suggestionsTab" data-index="0">
-        <div id="resumableSection" style="display: none;" class="homePageSection">
+        <div id="resumableSection" class="homePageSection hide">
             <div>
                 <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderResume}</h1>
-                <paper-button raised class="submit mini categorySyncButton" data-category="Resume"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
+                <button is="emby-button" type="button" class="raised submit mini categorySyncButton" data-category="Resume">
+                    <i class="md-icon">sync</i>
+                    <span>${ButtonSync}</span>
+                </button>
             </div>
 
             <div id="resumableItems" class="itemsContainer noautoinit">
@@ -22,7 +25,10 @@
         <div class="homePageSection">
             <div>
                 <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderLatestMovies}</h1>
-                <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
+                <button is="emby-button" type="button" class="raised submit mini categorySyncButton" data-category="Latest">
+                    <i class="md-icon">sync</i>
+                    <span>${ButtonSync}</span>
+                </button>
             </div>
 
             <div id="recentlyAddedItems" class="itemsContainer noautoinit">
@@ -31,57 +37,73 @@
 
         <div class="recommendations homePageSection">
         </div>
-        <div class="noItemsMessage" style="display: none;">
+        <div class="noItemsMessage hide">
             <br />
             <p>${MessageNoMovieSuggestionsAvailable}</p>
         </div>
     </div>
     <div class="pageTabContent ehsContent" id="moviesTab" data-index="1">
-        <div class="alphabetPicker">
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+            <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
+            <button is="paper-icon-button-light" class="btnSort autoSize" title="${ButtonSort}"><i class="md-icon">sort_by_alpha</i></button>
+            <button is="paper-icon-button-light" class="btnFilter autoSize" title="${ButtonFilter}"><i class="md-icon">filter_list</i></button>
         </div>
-        <div class="viewSettings">
-            <div class="listTopPaging">
-            </div>
+
+        <div class="alphaPicker alphabetPicker vertical">
         </div>
-        <div class="itemsContainer" style="text-align:center;"></div>
+
+        <div class="itemsContainer itemsContainerWithAlphaPicker">
+        </div>
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+        </div>
     </div>
     <div class="pageTabContent ehsContent" id="trailersTab" data-index="2">
-        <div class="alphabetPicker">
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+            <button is="paper-icon-button-light" class="btnSort autoSize" title="${ButtonSort}"><i class="md-icon">sort_by_alpha</i></button>
+            <button is="paper-icon-button-light" class="btnFilter autoSize" title="${ButtonFilter}"><i class="md-icon">filter_list</i></button>
         </div>
-        <div class="viewSettings">
-            <div class="listTopPaging">
-            </div>
+
+        <div class="alphaPicker alphabetPicker vertical">
         </div>
-        <div class="itemsContainer" style="text-align:center;"></div>
-        <p class="noItemsMessage" style="display:none;text-align:center;">${MessageNoTrailersFound}</p>
+
+        <div class="itemsContainer itemsContainerWithAlphaPicker">
+        </div>
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+        </div>
     </div>
     <div class="pageTabContent ehsContent" id="collectionsTab" data-index="3">
-        <div class="viewSettings">
-
-            <div class="listTopPaging">
-                &nbsp;
-            </div>
-
-            <button type="button" is="paper-icon-button-light" class="btnNewCollection"><iron-icon icon="add"></iron-icon></button>
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+            <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
+            <button is="paper-icon-button-light" class="btnSort autoSize" title="${ButtonSort}"><i class="md-icon">sort_by_alpha</i></button>
+            <button type="button" is="paper-icon-button-light" class="btnNewCollection autoSize"><i class="md-icon">add</i></button>
         </div>
-        <div class="itemsContainer" style="text-align:center;"></div>
-        <div class="noItemsMessage" style="display: none; text-align: center;">
-            <p>${MessageNoCollectionsAvailable}</p>
+
+        <div class="alphaPicker alphabetPicker vertical">
+        </div>
+
+        <div class="itemsContainer itemsContainerWithAlphaPicker" style="text-align:center;">
+        </div>
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
         </div>
     </div>
     <div class="pageTabContent ehsContent" id="genresTab" data-index="4">
-        <div class="viewSettings">
-            <div class="listTopPaging">
-            </div>
+        <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
+            <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
         </div>
-        <div class="itemsContainer"></div>
+        <div id="items" class="itemsContainer paddedItemsContainer"></div>
     </div>
     <div class="pageTabContent ehsContent" id="studiosTab" data-index="5">
         <div class="viewSettings">
             <div class="listTopPaging">
             </div>
         </div>
-        <div class="itemsContainer" style="text-align:center;"></div>
+        <div id="items" class="itemsContainer paddedItemsContainer" style="text-align: center;"></div>
     </div>
 
     <div data-role="content">

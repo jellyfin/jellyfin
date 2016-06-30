@@ -20,11 +20,6 @@ define([], function () {
 
     function focus(element) {
 
-        var tagName = element.tagName;
-        if (tagName == 'PAPER-INPUT' || tagName == 'EMBY-DROPDOWN-MENU') {
-            element = element.querySelector('input') || element;
-        }
-
         try {
             element.focus();
         } catch (err) {
@@ -32,7 +27,7 @@ define([], function () {
         }
     }
 
-    var focusableTagNames = ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A', 'PAPER-BUTTON', 'PAPER-INPUT', 'PAPER-TEXTAREA', 'PAPER-FAB', 'PAPER-CHECKBOX', 'PAPER-ICON-ITEM', 'PAPER-MENU-ITEM', 'EMBY-DROPDOWN-MENU'];
+    var focusableTagNames = ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A', 'PAPER-CHECKBOX'];
     var focusableContainerTagNames = ['BODY', 'DIALOG'];
     var focusableQuery = focusableTagNames.join(',') + ',.focusable';
 
@@ -76,6 +71,13 @@ define([], function () {
         // http://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
         if (elem.offsetParent === null) {
             return false;
+        }
+
+        if (elem.tagName == 'INPUT') {
+            var type = elem.type;
+            if (type == 'range') {
+                return false;
+            }
         }
 
         return true;
@@ -277,7 +279,6 @@ define([], function () {
                     nearestElement = nearestElementFocusableParent;
                 }
             }
-
             focus(nearestElement);
         }
     }
@@ -340,89 +341,62 @@ define([], function () {
 
             var distX;
             var distY;
-            var distX2;
-            var distY2;
 
             switch (direction) {
 
                 case 0:
                     // left
-                    distX = distX2 = Math.abs(point1x - Math.min(point1x, x2));
+                    distX = Math.abs(point1x - Math.min(point1x, x2));
                     distY = intersectY ? 0 : Math.abs(sourceMidY - midY);
-                    distY2 = Math.abs(sourceMidY - midY);
                     break;
                 case 1:
                     // right
-                    distX = distX2 = Math.abs(point2x - Math.max(point2x, x));
+                    distX = Math.abs(point2x - Math.max(point2x, x));
                     distY = intersectY ? 0 : Math.abs(sourceMidY - midY);
-                    distY2 = Math.abs(sourceMidY - midY);
                     break;
                 case 2:
                     // up
-                    distY = distY2 = Math.abs(point1y - Math.min(point1y, y2));
+                    distY = Math.abs(point1y - Math.min(point1y, y2));
                     distX = intersectX ? 0 : Math.abs(sourceMidX - midX);
-                    distX2 = Math.abs(sourceMidX - midX);
                     break;
                 case 3:
                     // down
-                    distY = distY2 = Math.abs(point2y - Math.max(point2y, y));
+                    distY = Math.abs(point2y - Math.max(point2y, y));
                     distX = intersectX ? 0 : Math.abs(sourceMidX - midX);
-                    distX2 = Math.abs(sourceMidX - midX);
                     break;
                 default:
                     break;
             }
 
             var distT = Math.sqrt(distX * distX + distY * distY);
-            var distT2 = Math.sqrt(distX2 * distX2 + distY2 * distY2);
 
             cache.push({
                 node: elem,
                 distX: distX,
                 distY: distY,
                 distT: distT,
-                distT2: distT2
+                index: i
             });
         }
 
         cache.sort(sortNodesT);
-        //if (direction >= 2) {
-        //    cache.sort(sortNodesX);
-        //} else {
-        //    cache.sort(sortNodesY);
-        //}
 
         return cache;
     }
 
-    function sortNodesX(a, b) {
-        var result = a.distX - b.distX;
-
-        if (result == 0) {
-            return a.distT - b.distT;
-        }
-
-        return result;
-    }
-
     function sortNodesT(a, b) {
+
         var result = a.distT - b.distT;
-
-        if (result == 0) {
-            return a.distT2 - b.distT2;
+        if (result != 0) {
+            return result;
         }
 
-        return result;
-    }
-
-    function sortNodesY(a, b) {
-        var result = a.distY - b.distY;
-
-        if (result == 0) {
-            return a.distT - b.distT;
+        result = a.index - b.index;
+        if (result != 0) {
+            return result;
         }
 
-        return result;
+        return 0;
     }
 
     function sendText(text) {

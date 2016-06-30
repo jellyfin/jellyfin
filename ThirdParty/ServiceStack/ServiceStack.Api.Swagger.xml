@@ -101,6 +101,20 @@
             <exception cref="T:System.ArgumentNullException"><paramref name="valueObject"/> is <null/>, and the value type of the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> is a value type.</exception>
             <exception cref="T:System.ArgumentException">The value type of the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> is not in the inheritance hierarchy of <paramref name="valueObject"/>.</exception>
         </member>
+        <member name="P:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.Dictionary">
+            <summary>
+            Gets the dictionary object that stores the keys and values
+            </summary>
+            <value>The dictionary object that stores the keys and values for the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see></value>
+            <remarks>Accessing this property will create the dictionary object if necessary</remarks>
+        </member>
+        <member name="P:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.List">
+            <summary>
+            Gets the list object that stores the key/value pairs.
+            </summary>
+            <value>The list object that stores the key/value pairs for the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see></value>
+            <remarks>Accessing this property will create the list object if necessary.</remarks>
+        </member>
         <member name="M:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.Insert(System.Int32,`0,`1)">
             <summary>
             Inserts a new entry into the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection with the specified key and value at the specified index.
@@ -142,7 +156,29 @@
             -or-<br/>
             index is equal to or greater than <see cref="P:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.Count"/>.</exception>
         </member>
-        <member name="M:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.System#Collections#Generic#IDictionary{TKey@TValue}#Add(`0,`1)">
+        <member name="P:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.Item(System.Int32)">
+            <summary>
+            Gets or sets the value at the specified index.
+            </summary>
+            <param name="index">The zero-based index of the value to get or set.</param>
+            <value>The value of the item at the specified index.</value>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is less than 0.<br/>
+            -or-<br/>
+            index is equal to or greater than <see cref="P:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.Count"/>.</exception>
+        </member>
+        <member name="P:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.System#Collections#Specialized#IOrderedDictionary#Item(System.Int32)">
+            <summary>
+            Gets or sets the value at the specified index.
+            </summary>
+            <param name="index">The zero-based index of the value to get or set.</param>
+            <value>The value of the item at the specified index.</value>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is less than 0.<br/>
+            -or-<br/>
+            index is equal to or greater than <see cref="P:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.Count"/>.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="valueObject"/> is a null reference, and the value type of the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> is a value type.</exception>
+            <exception cref="T:System.ArgumentException">The value type of the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> is not in the inheritance hierarchy of <paramref name="valueObject"/>.</exception>
+        </member>
+        <member name="M:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.System#Collections#Generic#IDictionary{TKey,TValue}#Add(`0,`1)">
             <summary>
             Adds an entry with the specified key and value into the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection with the lowest available index.
             </summary>
@@ -201,106 +237,6 @@
             <exception cref="T:System.ArgumentNullException"><paramref name="key"/> is <null/></exception>
             <exception cref="T:System.ArgumentException">The key type of the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> is not in the inheritance hierarchy of <paramref name="key"/>.</exception>
         </member>
-        <member name="M:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.IndexOfKey(`0)">
-            <summary>
-            Returns the zero-based index of the specified key in the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>
-            </summary>
-            <param name="key">The key to locate in the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see></param>
-            <returns>The zero-based index of <paramref name="key"/>, if <paramref name="ley"/> is found in the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>; otherwise, -1</returns>
-            <remarks>This method performs a linear search; therefore it has a cost of O(n) at worst.</remarks>
-        </member>
-        <member name="M:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.Remove(`0)">
-            <summary>
-            Removes the entry with the specified key from the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.
-            </summary>
-            <param name="key">The key of the entry to remove</param>
-            <returns><see langword="true"/> if the key was found and the corresponding element was removed; otherwise, <see langword="false"/></returns>
-        </member>
-        <member name="M:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.System#Collections#IDictionary#Remove(System.Object)">
-            <summary>
-            Removes the entry with the specified key from the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.
-            </summary>
-            <param name="key">The key of the entry to remove</param>
-        </member>
-        <member name="M:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.System#Collections#ICollection#CopyTo(System.Array,System.Int32)">
-            <summary>
-            Copies the elements of the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> elements to a one-dimensional Array object at the specified index.
-            </summary>
-            <param name="array">The one-dimensional <see cref="T:System.Array"/> object that is the destination of the <see cref="T:KeyValuePair`2&gt;"/> objects copied from the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>. The <see cref="T:System.Array"/> must have zero-based indexing.</param>
-            <param name="index">The zero-based index in <paramref name="array"/> at which copying begins.</param>
-            <remarks>The <see cref="M:CopyTo"/> method preserves the order of the elements in the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see></remarks>
-        </member>
-        <member name="M:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.TryGetValue(`0,`1@)">
-            <summary>
-            Gets the value associated with the specified key.
-            </summary>
-            <param name="key">The key of the value to get.</param>
-            <param name="value">When this method returns, contains the value associated with the specified key, if the key is found; otherwise, the default value for the type of <paramref name="value"/>. This parameter can be passed uninitialized.</param>
-            <returns><see langword="true"/> if the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> contains an element with the specified key; otherwise, <see langword="false"/>.</returns>
-        </member>
-        <member name="M:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.System#Collections#Generic#ICollection{System#Collections#Generic#KeyValuePair{TKey@TValue}}#Add(System.Collections.Generic.KeyValuePair{`0,`1})">
-            <summary>
-            Adds the specified value to the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> with the specified key.
-            </summary>
-            <param name="item">The <see cref="T:KeyValuePair{TKey,TValue}">KeyValuePair&lt;TKey,TValue&gt;</see> structure representing the key and value to add to the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.</param>
-        </member>
-        <member name="M:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.System#Collections#Generic#ICollection{System#Collections#Generic#KeyValuePair{TKey@TValue}}#Contains(System.Collections.Generic.KeyValuePair{`0,`1})">
-            <summary>
-            Determines whether the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> contains a specific key and value.
-            </summary>
-            <param name="item">The <see cref="T:KeyValuePair{TKey,TValue}">KeyValuePair&lt;TKey,TValue&gt;</see> structure to locate in the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.</param>
-            <returns><see langword="true"/> if <paramref name="keyValuePair"/> is found in the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>; otherwise, <see langword="false"/>.</returns>
-        </member>
-        <member name="M:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.System#Collections#Generic#ICollection{System#Collections#Generic#KeyValuePair{TKey@TValue}}#CopyTo(System.Collections.Generic.KeyValuePair{`0,`1}[],System.Int32)">
-            <summary>
-            Copies the elements of the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> to an array of type <see cref="T:KeyValuePair`2&gt;"/>, starting at the specified index.
-            </summary>
-            <param name="array">The one-dimensional array of type <see cref="T:KeyValuePair{TKey,TValue}">KeyValuePair&lt;TKey,TValue&gt;</see> that is the destination of the <see cref="T:KeyValuePair{TKey,TValue}">KeyValuePair&lt;TKey,TValue&gt;</see> elements copied from the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>. The array must have zero-based indexing.</param>
-            <param name="arrayIndex">The zero-based index in <paramref name="array"/> at which copying begins.</param>
-        </member>
-        <member name="M:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.System#Collections#Generic#ICollection{System#Collections#Generic#KeyValuePair{TKey@TValue}}#Remove(System.Collections.Generic.KeyValuePair{`0,`1})">
-            <summary>
-            Removes a key and value from the dictionary.
-            </summary>
-            <param name="item">The <see cref="T:KeyValuePair{TKey,TValue}">KeyValuePair&lt;TKey,TValue&gt;</see> structure representing the key and value to remove from the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.</param>
-            <returns><see langword="true"/> if the key and value represented by <paramref name="keyValuePair"/> is successfully found and removed; otherwise, <see langword="false"/>. This method returns <see langword="false"/> if <paramref name="keyValuePair"/> is not found in the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.</returns>
-        </member>
-        <member name="P:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.Dictionary">
-            <summary>
-            Gets the dictionary object that stores the keys and values
-            </summary>
-            <value>The dictionary object that stores the keys and values for the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see></value>
-            <remarks>Accessing this property will create the dictionary object if necessary</remarks>
-        </member>
-        <member name="P:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.List">
-            <summary>
-            Gets the list object that stores the key/value pairs.
-            </summary>
-            <value>The list object that stores the key/value pairs for the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see></value>
-            <remarks>Accessing this property will create the list object if necessary.</remarks>
-        </member>
-        <member name="P:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.Item(System.Int32)">
-            <summary>
-            Gets or sets the value at the specified index.
-            </summary>
-            <param name="index">The zero-based index of the value to get or set.</param>
-            <value>The value of the item at the specified index.</value>
-            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is less than 0.<br/>
-            -or-<br/>
-            index is equal to or greater than <see cref="P:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.Count"/>.</exception>
-        </member>
-        <member name="P:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.System#Collections#Specialized#IOrderedDictionary#Item(System.Int32)">
-            <summary>
-            Gets or sets the value at the specified index.
-            </summary>
-            <param name="index">The zero-based index of the value to get or set.</param>
-            <value>The value of the item at the specified index.</value>
-            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is less than 0.<br/>
-            -or-<br/>
-            index is equal to or greater than <see cref="P:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.Count"/>.</exception>
-            <exception cref="T:System.ArgumentNullException"><paramref name="valueObject"/> is a null reference, and the value type of the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> is a value type.</exception>
-            <exception cref="T:System.ArgumentException">The value type of the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> is not in the inheritance hierarchy of <paramref name="valueObject"/>.</exception>
-        </member>
         <member name="P:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.System#Collections#IDictionary#IsFixedSize">
             <summary>
             Gets a value indicating whether the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> has a fixed size.
@@ -324,6 +260,27 @@
             <value>An <see cref="T:System.Collections.ICollection"/> object containing the keys in the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.</value>
             <remarks>The returned <see cref="T:System.Collections.ICollection"/> object is not a static copy; instead, the collection refers back to the keys in the original <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>. Therefore, changes to the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> continue to be reflected in the key collection.</remarks>
         </member>
+        <member name="M:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.IndexOfKey(`0)">
+            <summary>
+            Returns the zero-based index of the specified key in the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>
+            </summary>
+            <param name="key">The key to locate in the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see></param>
+            <returns>The zero-based index of <paramref name="key"/>, if <paramref name="ley"/> is found in the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>; otherwise, -1</returns>
+            <remarks>This method performs a linear search; therefore it has a cost of O(n) at worst.</remarks>
+        </member>
+        <member name="M:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.Remove(`0)">
+            <summary>
+            Removes the entry with the specified key from the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.
+            </summary>
+            <param name="key">The key of the entry to remove</param>
+            <returns><see langword="true"/> if the key was found and the corresponding element was removed; otherwise, <see langword="false"/></returns>
+        </member>
+        <member name="M:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.System#Collections#IDictionary#Remove(System.Object)">
+            <summary>
+            Removes the entry with the specified key from the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.
+            </summary>
+            <param name="key">The key of the entry to remove</param>
+        </member>
         <member name="P:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.System#Collections#IDictionary#Values">
             <summary>
             Gets an <see cref="T:System.Collections.ICollection"/> object containing the values in the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> collection.
@@ -344,6 +301,14 @@
             </summary>
             <param name="key">The key of the value to get or set.</param>
             <value>The value associated with the specified key. If the specified key is not found, attempting to get it returns <null/>, and attempting to set it creates a new element using the specified key.</value>
+        </member>
+        <member name="M:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.System#Collections#ICollection#CopyTo(System.Array,System.Int32)">
+            <summary>
+            Copies the elements of the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> elements to a one-dimensional Array object at the specified index.
+            </summary>
+            <param name="array">The one-dimensional <see cref="T:System.Array"/> object that is the destination of the <see cref="T:KeyValuePair`2>"/> objects copied from the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>. The <see cref="T:System.Array"/> must have zero-based indexing.</param>
+            <param name="index">The zero-based index in <paramref name="array"/> at which copying begins.</param>
+            <remarks>The <see cref="M:CopyTo"/> method preserves the order of the elements in the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see></remarks>
         </member>
         <member name="P:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.Count">
             <summary>
@@ -370,12 +335,47 @@
             <value>An <see cref="T:System.Collections.Generic.ICollection{TKey}">ICollection&lt;TKey&gt;</see> object containing the keys in the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.</value>
             <remarks>The returned <see cref="T:System.Collections.Generic.ICollection{TKey}">ICollection&lt;TKey&gt;</see> object is not a static copy; instead, the collection refers back to the keys in the original <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>. Therefore, changes to the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> continue to be reflected in the key collection.</remarks>
         </member>
+        <member name="M:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.TryGetValue(`0,`1@)">
+            <summary>
+            Gets the value associated with the specified key.
+            </summary>
+            <param name="key">The key of the value to get.</param>
+            <param name="value">When this method returns, contains the value associated with the specified key, if the key is found; otherwise, the default value for the type of <paramref name="value"/>. This parameter can be passed uninitialized.</param>
+            <returns><see langword="true"/> if the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> contains an element with the specified key; otherwise, <see langword="false"/>.</returns>
+        </member>
         <member name="P:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.Values">
             <summary>
             Gets an <see cref="T:ICollection{TValue}">ICollection&lt;TValue&gt;</see> object containing the values in the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.
             </summary>
             <value>An <see cref="T:ICollection{TValue}">ICollection&lt;TValue&gt;</see> object containing the values in the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.</value>
             <remarks>The returned <see cref="T:ICollection{TValue}">ICollection&lt;TKey&gt;</see> object is not a static copy; instead, the collection refers back to the values in the original <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>. Therefore, changes to the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> continue to be reflected in the value collection.</remarks>
+        </member>
+        <member name="M:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.System#Collections#Generic#ICollection{System#Collections#Generic#KeyValuePair{TKey,TValue}}#Add(System.Collections.Generic.KeyValuePair{`0,`1})">
+            <summary>
+            Adds the specified value to the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> with the specified key.
+            </summary>
+            <param name="item">The <see cref="T:KeyValuePair{TKey,TValue}">KeyValuePair&lt;TKey,TValue&gt;</see> structure representing the key and value to add to the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.</param>
+        </member>
+        <member name="M:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.System#Collections#Generic#ICollection{System#Collections#Generic#KeyValuePair{TKey,TValue}}#Contains(System.Collections.Generic.KeyValuePair{`0,`1})">
+            <summary>
+            Determines whether the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> contains a specific key and value.
+            </summary>
+            <param name="item">The <see cref="T:KeyValuePair{TKey,TValue}">KeyValuePair&lt;TKey,TValue&gt;</see> structure to locate in the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.</param>
+            <returns><see langword="true"/> if <paramref name="keyValuePair"/> is found in the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>; otherwise, <see langword="false"/>.</returns>
+        </member>
+        <member name="M:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.System#Collections#Generic#ICollection{System#Collections#Generic#KeyValuePair{TKey,TValue}}#CopyTo(System.Collections.Generic.KeyValuePair{`0,`1}[],System.Int32)">
+            <summary>
+            Copies the elements of the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see> to an array of type <see cref="T:KeyValuePair`2>"/>, starting at the specified index.
+            </summary>
+            <param name="array">The one-dimensional array of type <see cref="T:KeyValuePair{TKey,TValue}">KeyValuePair&lt;TKey,TValue&gt;</see> that is the destination of the <see cref="T:KeyValuePair{TKey,TValue}">KeyValuePair&lt;TKey,TValue&gt;</see> elements copied from the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>. The array must have zero-based indexing.</param>
+            <param name="arrayIndex">The zero-based index in <paramref name="array"/> at which copying begins.</param>
+        </member>
+        <member name="M:ServiceStack.Api.Swagger.Support.OrderedDictionary`2.System#Collections#Generic#ICollection{System#Collections#Generic#KeyValuePair{TKey,TValue}}#Remove(System.Collections.Generic.KeyValuePair{`0,`1})">
+            <summary>
+            Removes a key and value from the dictionary.
+            </summary>
+            <param name="item">The <see cref="T:KeyValuePair{TKey,TValue}">KeyValuePair&lt;TKey,TValue&gt;</see> structure representing the key and value to remove from the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.</param>
+            <returns><see langword="true"/> if the key and value represented by <paramref name="keyValuePair"/> is successfully found and removed; otherwise, <see langword="false"/>. This method returns <see langword="false"/> if <paramref name="keyValuePair"/> is not found in the <see cref="T:ServiceStack.Api.Swagger.Support.OrderedDictionary`2">OrderedDictionary&lt;TKey,TValue&gt;</see>.</returns>
         </member>
         <member name="P:ServiceStack.Api.Swagger.SwaggerFeature.ResourceFilterPattern">
             <summary>

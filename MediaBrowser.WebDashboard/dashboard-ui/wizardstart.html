@@ -1,4 +1,4 @@
-﻿<div id="wizardStartPage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizardstartpage,paper-button">
+﻿<div id="wizardStartPage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizardstartpage,emby-button">
 
     <div data-role="content">
 
@@ -9,7 +9,7 @@
                     <h1 style="float:left;">
                         ${WelcomeToProject}
                     </h1>
-                    <a href="https://github.com/MediaBrowser/Wiki/wiki/Quick%20start" target="_blank" class="clearLink" style="float:right;margin-top:20px;"><paper-button raised class="secondary mini"><iron-icon icon="info"></iron-icon><span>${ButtonQuickStartGuide}</span></paper-button></a>
+                    <a href="https://github.com/MediaBrowser/Wiki/wiki/Quick%20start" target="_blank" class="clearLink" style="float:right;margin-top:20px;"><button is="emby-button" type="button" class="raised secondary mini"><iron-icon icon="info"></iron-icon><span>${ButtonQuickStartGuide}</span></button></a>
                 </div>
 
                 <br style="clear:both;" />
@@ -22,7 +22,7 @@
                 <br />
 
                 <div class="wizardNavigation" style="text-align:right;">
-                    <button type="submit" data-role="none" class="clearButton" style="width:auto;"><paper-button raised class="accent"><iron-icon icon="arrow-forward"></iron-icon><span>${LabelNext}</span></paper-button></button>
+                    <button is="emby-button" type="submit" class="raised accent"><iron-icon icon="arrow-forward"></iron-icon><span>${LabelNext}</span></button>
                 </div>
             </form>
         </div>

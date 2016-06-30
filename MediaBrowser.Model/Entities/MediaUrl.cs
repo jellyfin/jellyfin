@@ -5,6 +5,5 @@ namespace MediaBrowser.Model.Entities
     {
         public string Url { get; set; }
         public string Name { get; set; }
-        public VideoSize? VideoSize { get; set; }
     }
 }

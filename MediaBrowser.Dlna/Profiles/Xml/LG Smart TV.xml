@@ -35,9 +35,9 @@
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <XmlRootAttributes />
   <DirectPlayProfiles>
-    <DirectPlayProfile container="ts" audioCodec="aac,ac3,mp3" videoCodec="h264,hevc" type="Video" />
-    <DirectPlayProfile container="mkv" audioCodec="aac,ac3,mp3" videoCodec="h264,hevc" type="Video" />
-    <DirectPlayProfile container="mp4" audioCodec="aac,ac3,mp3" videoCodec="h264,mpeg4,hevc" type="Video" />
+    <DirectPlayProfile container="ts" audioCodec="aac,ac3,mp3" videoCodec="h264" type="Video" />
+    <DirectPlayProfile container="mkv" audioCodec="aac,ac3,mp3" videoCodec="h264" type="Video" />
+    <DirectPlayProfile container="mp4" audioCodec="aac,ac3,mp3" videoCodec="h264,mpeg4" type="Video" />
     <DirectPlayProfile container="mp3" audioCodec="mp3" type="Audio" />
     <DirectPlayProfile container="jpeg" type="Photo" />
   </DirectPlayProfiles>
@@ -77,5 +77,7 @@
     </CodecProfile>
   </CodecProfiles>
   <ResponseProfiles />
-  <SubtitleProfiles />
+  <SubtitleProfiles>
+    <SubtitleProfile format="srt" method="External" />
+  </SubtitleProfiles>
 </Profile>

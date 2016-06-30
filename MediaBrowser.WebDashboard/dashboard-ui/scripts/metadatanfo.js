@@ -4,7 +4,7 @@
 
     function loadPage(page, config, users) {
 
-        var html = '<option value="" selected="selected"></option>';
+        var html = '<option value="" selected="selected">' + Globalize.translate('OptionNone') + '</option>';
 
         html += users.map(function (user) {
             return '<option value="' + user.Id + '">' + user.Name + '</option>';

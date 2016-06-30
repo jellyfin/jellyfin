@@ -2,20 +2,29 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using MediaBrowser.Common.Extensions;
 
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
     /// Class Studio
     /// </summary>
-    public class Studio : BaseItem, IItemByName, IHasTags
+    public class Studio : BaseItem, IItemByName
     {
         public override List<string> GetUserDataKeys()
         {
             var list = base.GetUserDataKeys();
 
-            list.Insert(0, "Studio-" + Name);
+            list.Insert(0, GetType().Name + "-" + (Name ?? string.Empty).RemoveDiacritics());
             return list;
+        }
+
+        public override string PresentationUniqueKey
+        {
+            get
+            {
+                return GetUserDataKeys()[0];
+            }
         }
 
         /// <summary>
