@@ -322,7 +322,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             await base.RunStartupTasks().ConfigureAwait(false);
 
-            InitMediaEncoder();
+            await MediaEncoder.Init().ConfigureAwait(false);
 
             Logger.Info("ServerId: {0}", SystemId);
             Logger.Info("Core startup complete");
@@ -348,20 +348,6 @@ namespace MediaBrowser.Server.Startup.Common
             Logger.Info("All entry points have started");
 
             LogManager.RemoveConsoleOutput();
-        }
-
-        private void InitMediaEncoder()
-        {
-            MediaEncoder.Init();
-
-            Task.Run(() =>
-            {
-                var result = new FFmpegValidator(Logger, ApplicationPaths, FileSystemManager).Validate(MediaEncoder.EncoderPath);
-
-                var mediaEncoder = (MediaEncoder) MediaEncoder;
-                mediaEncoder.SetAvailableDecoders(result.Item1);
-                mediaEncoder.SetAvailableEncoders(result.Item2);
-            });
         }
 
         public override Task Init(IProgress<double> progress)

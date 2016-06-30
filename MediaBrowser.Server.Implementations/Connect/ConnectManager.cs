@@ -139,9 +139,12 @@ namespace MediaBrowser.Server.Implementations.Connect
             _securityManager = securityManager;
             _fileSystem = fileSystem;
 
-            _config.ConfigurationUpdated += _config_ConfigurationUpdated;
-
             LoadCachedData();
+        }
+
+        internal void Start()
+        {
+            _config.ConfigurationUpdated += _config_ConfigurationUpdated;
         }
 
         internal void OnWanAddressResolved(IPAddress address)
