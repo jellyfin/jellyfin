@@ -60,10 +60,6 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             var downloadInfo = _ffmpegInstallInfo;
 
             var version = downloadInfo.Version;
-            if (string.Equals(version, "0", StringComparison.OrdinalIgnoreCase))
-            {
-                return new FFMpegInfo();
-            }
 
             if (string.Equals(version, "path", StringComparison.OrdinalIgnoreCase))
             {
@@ -73,6 +69,11 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                     EncoderPath = downloadInfo.FFMpegFilename,
                     Version = version
                 };
+            }
+
+            if (string.Equals(version, "0", StringComparison.OrdinalIgnoreCase))
+            {
+                return new FFMpegInfo();
             }
 
             var rootEncoderPath = Path.Combine(_appPaths.ProgramDataPath, "ffmpeg");
@@ -97,7 +98,11 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                 // No older version. Need to download and block until complete
                 if (existingVersion == null)
                 {
-                    await DownloadFFMpeg(downloadInfo, versionedDirectoryPath, progress).ConfigureAwait(false);
+                    var success = await DownloadFFMpeg(downloadInfo, versionedDirectoryPath, progress).ConfigureAwait(false);
+                    if (!success)
+                    {
+                        return new FFMpegInfo();
+                    }
                 }
                 else
                 {
@@ -179,7 +184,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             return null;
         }
 
-        private async Task DownloadFFMpeg(FFMpegInstallInfo downloadinfo, string directory, IProgress<double> progress)
+        private async Task<bool> DownloadFFMpeg(FFMpegInstallInfo downloadinfo, string directory, IProgress<double> progress)
         {
             foreach (var url in downloadinfo.DownloadUrls)
             {
@@ -196,13 +201,14 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                     }).ConfigureAwait(false);
 
                     ExtractFFMpeg(downloadinfo, tempFile, directory);
-                    return;
+                    return true;
                 }
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error downloading {0}", ex, url);
                 }
             }
+            return false;
         }
 
         private void ExtractFFMpeg(FFMpegInstallInfo downloadinfo, string tempFile, string targetFolder)
