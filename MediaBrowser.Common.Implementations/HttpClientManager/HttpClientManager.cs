@@ -296,6 +296,8 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
         private async Task<HttpResponseInfo> GetCachedResponse(string responseCachePath, TimeSpan cacheLength, string url)
         {
+            _logger.Info("Checking for cache file {0}", responseCachePath);
+
             try
             {
                 if (_fileSystem.GetLastWriteTimeUtc(responseCachePath).Add(cacheLength) > DateTime.UtcNow)
