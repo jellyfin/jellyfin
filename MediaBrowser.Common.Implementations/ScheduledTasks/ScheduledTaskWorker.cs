@@ -106,6 +106,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             InitTriggerEvents();
         }
 
+        private bool _readFromFile = false;
         /// <summary>
         /// The _last execution result
         /// </summary>
@@ -126,7 +127,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
 
                 lock (_lastExecutionResultSyncLock)
                 {
-                    if (_lastExecutionResult == null)
+                    if (_lastExecutionResult == null && !_readFromFile)
                     {
                         try
                         {
@@ -144,6 +145,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
                         {
                             Logger.ErrorException("Error deserializing {0}", ex, path);
                         }
+                        _readFromFile = true;
                     }
                 }
 
