@@ -526,16 +526,6 @@ namespace MediaBrowser.Server.Implementations.Library
             return key.GetMD5();
         }
 
-        public IEnumerable<BaseItem> ReplaceVideosWithPrimaryVersions(IEnumerable<BaseItem> items)
-        {
-            if (items == null)
-            {
-                throw new ArgumentNullException("items");
-            }
-
-            return items.DistinctBy(i => i.PresentationUniqueKey, StringComparer.OrdinalIgnoreCase);
-        }
-
         /// <summary>
         /// Ensure supplied item has only one instance throughout
         /// </summary>
