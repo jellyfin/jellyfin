@@ -643,6 +643,19 @@ progress {
     margin: 0 0 2em;
 }
 
+@media all and (min-width: 1280px) {
+
+    .supporterPromotionContainer {
+        position: fixed;
+        top: 120px;
+        right: 0;
+    }
+}
+
+.fullWidthContent .supporterPromotionContainer {
+    position: static!important;
+}
+
 @media all and (min-width: 800px) {
 
     .supporterPromotionContainer {
