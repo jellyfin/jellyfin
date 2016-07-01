@@ -83,12 +83,17 @@ namespace MediaBrowser.Providers.MediaInfo
 
                         var imageStreamIndex = imageStream == null ? (int?)null : imageStream.Index;
 
-                        using (var stream = await _mediaEncoder.ExtractAudioImage(item.Path, imageStreamIndex, cancellationToken).ConfigureAwait(false))
+                        var tempFile = await _mediaEncoder.ExtractAudioImage(item.Path, imageStreamIndex, cancellationToken).ConfigureAwait(false);
+
+                        File.Copy(tempFile, path, true);
+
+                        try
                         {
-                            using (var fileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
-                            {
-                                await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-                            }
+                            File.Delete(tempFile);
+                        }
+                        catch
+                        {
+
                         }
                     }
                 }

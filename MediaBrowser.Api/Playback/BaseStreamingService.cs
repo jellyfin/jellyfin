@@ -292,9 +292,9 @@ namespace MediaBrowser.Api.Playback
                 return "h264_qsv";
             }
 
-            if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareAccelerationType, "libnvenc", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase))
             {
-                return "libnvenc";
+                return "h264_nvenc";
             }
             if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareAccelerationType, "h264_omx", StringComparison.OrdinalIgnoreCase))
             {
@@ -338,8 +338,8 @@ namespace MediaBrowser.Api.Playback
 
             }
 
-            // h264 (libnvenc)
-            else if (string.Equals(videoCodec, "libnvenc", StringComparison.OrdinalIgnoreCase))
+            // h264 (h264_nvenc)
+            else if (string.Equals(videoCodec, "h264_nvenc", StringComparison.OrdinalIgnoreCase))
             {
                 param = "-preset high-performance";
             }
@@ -412,9 +412,9 @@ namespace MediaBrowser.Api.Playback
 
             if (!string.IsNullOrEmpty(state.VideoRequest.Level))
             {
-                // h264_qsv and libnvenc expect levels to be expressed as a decimal. libx264 supports decimal and non-decimal format
+                // h264_qsv and h264_nvenc expect levels to be expressed as a decimal. libx264 supports decimal and non-decimal format
                 if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(videoCodec, "libnvenc", StringComparison.OrdinalIgnoreCase))
+                    string.Equals(videoCodec, "h264_nvenc", StringComparison.OrdinalIgnoreCase))
                 {
                     switch (state.VideoRequest.Level)
                     {
@@ -458,7 +458,7 @@ namespace MediaBrowser.Api.Playback
 
             if (!string.Equals(videoCodec, "h264_omx", StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(videoCodec, "libnvenc", StringComparison.OrdinalIgnoreCase))
+                !string.Equals(videoCodec, "h264_nvenc", StringComparison.OrdinalIgnoreCase))
             {
                 param = "-pix_fmt yuv420p " + param;
             }
@@ -1645,9 +1645,10 @@ namespace MediaBrowser.Api.Playback
             var state = new StreamState(MediaSourceManager, Logger)
             {
                 Request = request,
-                RequestedUrl = url
+                RequestedUrl = url,
+                UserAgent = Request.UserAgent
             };
-
+            
             //if ((Request.UserAgent ?? string.Empty).IndexOf("iphone", StringComparison.OrdinalIgnoreCase) != -1 ||
             //    (Request.UserAgent ?? string.Empty).IndexOf("ipad", StringComparison.OrdinalIgnoreCase) != -1 ||
             //    (Request.UserAgent ?? string.Empty).IndexOf("ipod", StringComparison.OrdinalIgnoreCase) != -1)

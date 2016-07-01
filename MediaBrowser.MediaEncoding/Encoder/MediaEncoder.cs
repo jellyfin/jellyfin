@@ -767,22 +767,22 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        public Task<Stream> ExtractAudioImage(string path, int? imageStreamIndex, CancellationToken cancellationToken)
+        public Task<string> ExtractAudioImage(string path, int? imageStreamIndex, CancellationToken cancellationToken)
         {
             return ExtractImage(new[] { path }, imageStreamIndex, MediaProtocol.File, true, null, null, cancellationToken);
         }
 
-        public Task<Stream> ExtractVideoImage(string[] inputFiles, MediaProtocol protocol, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
+        public Task<string> ExtractVideoImage(string[] inputFiles, MediaProtocol protocol, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
         {
             return ExtractImage(inputFiles, null, protocol, false, threedFormat, offset, cancellationToken);
         }
 
-        public Task<Stream> ExtractVideoImage(string[] inputFiles, MediaProtocol protocol, int? imageStreamIndex, CancellationToken cancellationToken)
+        public Task<string> ExtractVideoImage(string[] inputFiles, MediaProtocol protocol, int? imageStreamIndex, CancellationToken cancellationToken)
         {
             return ExtractImage(inputFiles, imageStreamIndex, protocol, false, null, null, cancellationToken);
         }
 
-        private async Task<Stream> ExtractImage(string[] inputFiles, int? imageStreamIndex, MediaProtocol protocol, bool isAudio,
+        private async Task<string> ExtractImage(string[] inputFiles, int? imageStreamIndex, MediaProtocol protocol, bool isAudio,
             Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
         {
             var resourcePool = isAudio ? _audioImageResourcePool : _videoImageResourcePool;
@@ -816,12 +816,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return await ExtractImageInternal(inputArgument, imageStreamIndex, protocol, threedFormat, offset, false, resourcePool, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task<Stream> ExtractImageInternal(string inputPath, int? imageStreamIndex, MediaProtocol protocol, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
+        private async Task<string> ExtractImageInternal(string inputPath, int? imageStreamIndex, MediaProtocol protocol, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(inputPath))
             {
                 throw new ArgumentNullException("inputPath");
             }
+
+            var tempExtractPath = Path.Combine(ConfigurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + ".jpg");
+            Directory.CreateDirectory(Path.GetDirectoryName(tempExtractPath));
 
             // apply some filters to thumbnail extracted below (below) crop any black lines that we made and get the correct ar then scale to width 600. 
             // This filter chain may have adverse effects on recorded tv thumbnails if ar changes during presentation ex. commercials @ diff ar
@@ -855,8 +858,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var mapArg = imageStreamIndex.HasValue ? (" -map 0:v:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
 
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
-            var args = useIFrame ? string.Format("-i {0}{3} -threads 1 -v quiet -vframes 1 -vf \"{2},thumbnail=30\" -f image2 \"{1}\"", inputPath, "-", vf, mapArg) :
-                string.Format("-i {0}{3} -threads 1 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, "-", vf, mapArg);
+            var args = useIFrame ? string.Format("-i {0}{3} -threads 1 -v quiet -vframes 1 -vf \"{2},thumbnail=30\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg) :
+                string.Format("-i {0}{3} -threads 1 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg);
 
             var probeSize = GetProbeSizeArgument(new[] { inputPath }, protocol);
 
@@ -880,8 +883,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     Arguments = args,
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
                     RedirectStandardInput = true
                 }
             };
@@ -894,19 +895,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 bool ranToCompletion;
 
-                var memoryStream = new MemoryStream();
-
                 try
                 {
                     StartProcess(processWrapper);
-
-#pragma warning disable 4014
-                    // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
-                    process.StandardOutput.BaseStream.CopyToAsync(memoryStream);
-#pragma warning restore 4014
-
-                    // MUST read both stdout and stderr asynchronously or a deadlock may occurr
-                    process.BeginErrorReadLine();
 
                     ranToCompletion = process.WaitForExit(10000);
 
@@ -922,11 +913,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
 
                 var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;
+                var file = new FileInfo(tempExtractPath);
 
-                if (exitCode == -1 || memoryStream.Length == 0)
+                if (exitCode == -1 || !file.Exists || file.Length == 0)
                 {
-                    memoryStream.Dispose();
-
                     var msg = string.Format("ffmpeg image extraction failed for {0}", inputPath);
 
                     _logger.Error(msg);
@@ -934,8 +924,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     throw new ApplicationException(msg);
                 }
 
-                memoryStream.Position = 0;
-                return memoryStream;
+                return tempExtractPath;
             }
         }
 

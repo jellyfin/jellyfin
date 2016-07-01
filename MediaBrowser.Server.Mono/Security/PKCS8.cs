@@ -33,14 +33,9 @@ using System;
 using System.Collections;
 using System.Security.Cryptography;
 
-using Mono.Security.X509;
+namespace MediaBrowser.Server.Mono.Security {
 
-namespace Mono.Security.Cryptography {
-
-#if !INSIDE_CORLIB
-	public 
-#endif
-	sealed class PKCS8 {
+    public sealed class PKCS8 {
 
 		public enum KeyInfo {
 			PrivateKey,
@@ -277,21 +272,15 @@ namespace Mono.Security.Cryptography {
 					rsa.ImportParameters (param);
 				}
 				catch (CryptographicException) {
-#if MONOTOUCH
-					// there's no machine-wide store available for iOS so we can drop the dependency on
-					// CspParameters (which drops other things, like XML key persistance, unless used elsewhere)
-					throw;
-#else
-					// this may cause problem when this code is run under
-					// the SYSTEM identity on Windows (e.g. ASP.NET). See
-					// http://bugzilla.ximian.com/show_bug.cgi?id=77559
-					CspParameters csp = new CspParameters ();
-					csp.Flags = CspProviderFlags.UseMachineKeyStore;
-					rsa = new RSACryptoServiceProvider (csp);
-					rsa.ImportParameters (param);
-#endif
-				}
-				return rsa;
+                    // this may cause problem when this code is run under
+                    // the SYSTEM identity on Windows (e.g. ASP.NET). See
+                    // http://bugzilla.ximian.com/show_bug.cgi?id=77559
+                    CspParameters csp = new CspParameters();
+                    csp.Flags = CspProviderFlags.UseMachineKeyStore;
+                    rsa = new RSACryptoServiceProvider(csp);
+                    rsa.ImportParameters(param);
+                }
+                return rsa;
 			}
 
 			/*
