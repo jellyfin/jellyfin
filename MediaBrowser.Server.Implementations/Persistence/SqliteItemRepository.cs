@@ -3862,7 +3862,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     ? (CommandBehavior.SequentialAccess | CommandBehavior.SingleResult)
                     : CommandBehavior.SequentialAccess;
 
-                Logger.Debug("GetItemValues: " + cmd.CommandText);
+                //Logger.Debug("GetItemValues: " + cmd.CommandText);
 
                 using (var reader = cmd.ExecuteReader(commandBehavior))
                 {

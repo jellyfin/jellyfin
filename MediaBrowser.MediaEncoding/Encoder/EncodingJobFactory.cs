@@ -562,9 +562,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return "h264_qsv";
             }
 
-            if (string.Equals(options.HardwareAccelerationType, "libnvenc", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(options.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase))
             {
-                return "libnvenc";
+                return "h264_nvenc";
             }
             if (string.Equals(options.HardwareAccelerationType, "h264_omx", StringComparison.OrdinalIgnoreCase))
             {

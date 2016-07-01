@@ -78,16 +78,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 "libx265",
                 "mpeg4",
                 "msmpeg4",
-                //"libvpx",
-                //"libvpx-vp9",
+                "libvpx",
+                "libvpx-vp9",
                 "aac",
                 "libmp3lame",
                 "libopus",
-                //"libvorbis",
+                "libvorbis",
                 "srt",
-                "libnvenc",
+                "h264_nvenc",
                 "h264_qsv"
             };
+
+            output = output ?? string.Empty;
 
             foreach (var codec in required)
             {
@@ -115,8 +117,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     Arguments = arguments,
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
+                    RedirectStandardOutput = true
                 }
             };
 
@@ -126,8 +127,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 try
                 {
-                    process.BeginErrorReadLine();
-
                     return process.StandardOutput.ReadToEnd();
                 }
                 catch

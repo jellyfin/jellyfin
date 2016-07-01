@@ -139,12 +139,16 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                         {
 							_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
-                            using (var stream = await _encoder.ExtractVideoImage(inputPath, protocol, video.Video3DFormat, time, cancellationToken).ConfigureAwait(false))
+                            var tempFile = await _encoder.ExtractVideoImage(inputPath, protocol, video.Video3DFormat, time, cancellationToken).ConfigureAwait(false);
+                            File.Copy(tempFile, path, true);
+
+                            try
                             {
-                                using (var fileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
-                                {
-                                    await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-                                }
+                                File.Delete(tempFile);
+                            }
+                            catch
+                            {
+                                
                             }
 
                             chapter.ImagePath = path;

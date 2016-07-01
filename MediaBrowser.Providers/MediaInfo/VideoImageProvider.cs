@@ -116,7 +116,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).IndexOf("cover", StringComparison.OrdinalIgnoreCase) != -1) ??
                     imageStreams.FirstOrDefault();
 
-                Stream stream;
+                string extractedImagePath;
 
                 if (imageStream != null)
                 {
@@ -135,7 +135,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         }
                     }
 
-                    stream = await _mediaEncoder.ExtractVideoImage(inputPath, protocol, videoIndex, cancellationToken).ConfigureAwait(false);
+                    extractedImagePath = await _mediaEncoder.ExtractVideoImage(inputPath, protocol, videoIndex, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
@@ -146,14 +146,15 @@ namespace MediaBrowser.Providers.MediaInfo
                                           ? TimeSpan.FromTicks(Convert.ToInt64(item.RunTimeTicks.Value * .1))
                                           : TimeSpan.FromSeconds(10);
 
-                    stream = await _mediaEncoder.ExtractVideoImage(inputPath, protocol, item.Video3DFormat, imageOffset, cancellationToken).ConfigureAwait(false);
+                    extractedImagePath = await _mediaEncoder.ExtractVideoImage(inputPath, protocol, item.Video3DFormat, imageOffset, cancellationToken).ConfigureAwait(false);
                 }
 
                 return new DynamicImageResponse
                 {
                     Format = ImageFormat.Jpg,
                     HasImage = true,
-                    Stream = stream
+                    Path = extractedImagePath,
+                    Protocol = MediaProtocol.File
                 };
             }
             finally

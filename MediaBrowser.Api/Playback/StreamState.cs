@@ -75,7 +75,13 @@ namespace MediaBrowser.Api.Playback
             {
                 if (string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
-                    return 10;
+                    var userAgent = UserAgent ?? string.Empty;
+                    if (userAgent.IndexOf("AppleTV", StringComparison.OrdinalIgnoreCase) != -1)
+                    {
+                        return 10;
+                    }
+
+                    return 6;
                 }
 
                 return 3;
@@ -99,6 +105,7 @@ namespace MediaBrowser.Api.Playback
         public string OutputVideoSync = "-1";
 
         public List<string> SupportedAudioCodecs { get; set; }
+        public string UserAgent { get; set; }
 
         public StreamState(IMediaSourceManager mediaSourceManager, ILogger logger)
         {

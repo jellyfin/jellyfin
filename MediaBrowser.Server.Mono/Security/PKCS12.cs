@@ -37,17 +37,9 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-using Mono.Security;
-using Mono.Security.Cryptography;
+namespace MediaBrowser.Server.Mono.Security {
 
-namespace Mono.Security.X509 {
-
-#if INSIDE_CORLIB
-	internal
-#else
-	public 
-#endif
-	class PKCS5 {
+    public class PKCS5 {
 
 		public const string pbeWithMD2AndDESCBC = "1.2.840.113549.1.5.1";
 		public const string pbeWithMD5AndDESCBC = "1.2.840.113549.1.5.3";
@@ -59,12 +51,7 @@ namespace Mono.Security.X509 {
 		public PKCS5 () {}
 	}
 
-#if INSIDE_CORLIB
-	internal
-#else
-	public 
-#endif
-	class PKCS9 {
+    public class PKCS9 {
 
 		public const string friendlyName = "1.2.840.113549.1.9.20";
 		public const string localKeyId = "1.2.840.113549.1.9.21";
@@ -92,12 +79,7 @@ namespace Mono.Security.X509 {
 	}
 
 
-#if INSIDE_CORLIB
-	internal
-#else
-	public 
-#endif
-	class PKCS12 : ICloneable {
+    public class PKCS12 : ICloneable {
 
 		public const string pbeWithSHAAnd128BitRC4 = "1.2.840.113549.1.12.1.1";
 		public const string pbeWithSHAAnd40BitRC4 = "1.2.840.113549.1.12.1.2";
@@ -657,29 +639,8 @@ namespace Mono.Security.X509 {
 			}
 
 			SymmetricAlgorithm sa = null;
-#if INSIDE_CORLIB && FULL_AOT_RUNTIME
-			// we do not want CryptoConfig to bring the whole crypto stack
-			// in particular Rijndael which is not supported by CommonCrypto
-			switch (algorithm) {
-			case "DES":
-				sa = DES.Create ();
-				break;
-			case "RC2":
-				sa = RC2.Create ();
-				break;
-			case "TripleDES":
-				sa = TripleDES.Create ();
-				break;
-			case "RC4":
-				sa = RC4.Create ();
-				break;
-			default:
-				throw new NotSupportedException (algorithm);
-			}
-#else
-			sa = SymmetricAlgorithm.Create (algorithm);
-#endif
-			sa.Key = pd.DeriveKey (keyLength);
+            sa = SymmetricAlgorithm.Create(algorithm);
+            sa.Key = pd.DeriveKey (keyLength);
 			// IV required only for block ciphers (not stream ciphers)
 			if (ivLength > 0) {
 				sa.IV = pd.DeriveIV (ivLength);
@@ -1967,35 +1928,6 @@ namespace Mono.Security.X509 {
 				}
 				password_max_length = value;
 			}
-		}
-
-		// static methods
-
-		static private byte[] LoadFile (string filename) 
-		{
-			byte[] data = null;
-			using (FileStream fs = File.OpenRead (filename)) {
-				data = new byte [fs.Length];
-				fs.Read (data, 0, data.Length);
-				fs.Close ();
-			}
-			return data;
-		}
-
-		static public PKCS12 LoadFromFile (string filename) 
-		{
-			if (filename == null)
-				throw new ArgumentNullException ("filename");
-
-			return new PKCS12 (LoadFile (filename));
-		}
-
-		static public PKCS12 LoadFromFile (string filename, string password) 
-		{
-			if (filename == null)
-				throw new ArgumentNullException ("filename");
-
-			return new PKCS12 (LoadFile (filename), password);
 		}
 	}
 }
