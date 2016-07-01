@@ -117,8 +117,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     Arguments = arguments,
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false,
-                    RedirectStandardOutput = true,
-                    //RedirectStandardError = true
+                    RedirectStandardOutput = true
                 }
             };
 
@@ -128,8 +127,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 try
                 {
-                    //process.BeginErrorReadLine();
-
                     return process.StandardOutput.ReadToEnd();
                 }
                 catch
