@@ -80,7 +80,7 @@ namespace MediaBrowser.Common.Implementations.Serialization
         /// <param name="file">The file.</param>
         public void SerializeToFile(object obj, string file)
         {
-            _logger.Info("Serializing to file {0}", file);
+            _logger.Debug("Serializing to file {0}", file);
             using (var stream = new FileStream(file, FileMode.Create))
             {
                 SerializeToStream(obj, stream);
@@ -95,7 +95,7 @@ namespace MediaBrowser.Common.Implementations.Serialization
         /// <returns>System.Object.</returns>
         public object DeserializeFromFile(Type type, string file)
         {
-            _logger.Info("Deserializing file {0}", file);
+            _logger.Debug("Deserializing file {0}", file);
             using (var stream = _fileSystem.OpenRead(file))
             {
                 return DeserializeFromStream(type, stream);
