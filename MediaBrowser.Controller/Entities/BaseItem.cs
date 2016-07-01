@@ -1655,7 +1655,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (datePlayed.HasValue)
             {
-                // Incremenet
+                // Increment
                 data.PlayCount++;
             }
 
@@ -1667,7 +1667,7 @@ namespace MediaBrowser.Controller.Entities
                 data.PlaybackPositionTicks = 0;
             }
 
-            data.LastPlayedDate = datePlayed ?? data.LastPlayedDate;
+            data.LastPlayedDate = datePlayed ?? data.LastPlayedDate ?? DateTime.UtcNow;
             data.Played = true;
 
             await UserDataManager.SaveUserData(user.Id, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None).ConfigureAwait(false);

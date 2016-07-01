@@ -111,11 +111,20 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        private static string GetUniqueSeriesKey(BaseItem series)
+        {
+            if (ConfigurationManager.Configuration.SchemaVersion < 97)
+            {
+                return series.Id.ToString("N");
+            }
+            return series.PresentationUniqueKey;
+        }
+
         public override int GetChildCount(User user)
         {
             var result = LibraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
-                AncestorWithPresentationUniqueKey = PresentationUniqueKey,
+                AncestorWithPresentationUniqueKey = GetUniqueSeriesKey(this),
                 IncludeItemTypes = new[] { typeof(Season).Name },
                 SortBy = new[] { ItemSortBy.SortName },
                 IsVirtualItem = false,
@@ -202,7 +211,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             if (query.Recursive)
             {
-                query.AncestorWithPresentationUniqueKey = PresentationUniqueKey;
+                query.AncestorWithPresentationUniqueKey = GetUniqueSeriesKey(this);
                 if (query.SortBy.Length == 0)
                 {
                     query.SortBy = new[] { ItemSortBy.SortName };
@@ -228,7 +237,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             seasons = LibraryManager.GetItemList(new InternalItemsQuery(user)
             {
-                AncestorWithPresentationUniqueKey = PresentationUniqueKey,
+                AncestorWithPresentationUniqueKey = GetUniqueSeriesKey(this),
                 IncludeItemTypes = new[] { typeof(Season).Name },
                 SortBy = new[] { ItemSortBy.SortName }
 
@@ -257,7 +266,7 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             var allItems = LibraryManager.GetItemList(new InternalItemsQuery(user)
             {
-                AncestorWithPresentationUniqueKey = PresentationUniqueKey,
+                AncestorWithPresentationUniqueKey = GetUniqueSeriesKey(this),
                 IncludeItemTypes = new[] { typeof(Episode).Name, typeof(Season).Name },
                 SortBy = new[] { ItemSortBy.SortName }
 
@@ -354,7 +363,7 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             return LibraryManager.GetItemList(new InternalItemsQuery(user)
             {
-                AncestorWithPresentationUniqueKey = PresentationUniqueKey,
+                AncestorWithPresentationUniqueKey = GetUniqueSeriesKey(this),
                 IncludeItemTypes = new[] { typeof(Episode).Name },
                 SortBy = new[] { ItemSortBy.SortName }
 
@@ -423,7 +432,7 @@ namespace MediaBrowser.Controller.Entities.TV
         public static IEnumerable<Episode> FilterEpisodesBySeason(IEnumerable<Episode> episodes, Season parentSeason, bool includeSpecials)
         {
             var seasonNumber = parentSeason.IndexNumber;
-            var seasonPresentationKey = parentSeason.PresentationUniqueKey;
+            var seasonPresentationKey = GetUniqueSeriesKey(parentSeason);
 
             var supportSpecialsInSeason = includeSpecials && seasonNumber.HasValue && seasonNumber.Value != 0;
 
@@ -443,7 +452,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 if (!episode.ParentIndexNumber.HasValue)
                 {
                     var season = episode.Season;
-                    return season != null && string.Equals(season.PresentationUniqueKey, seasonPresentationKey, StringComparison.OrdinalIgnoreCase);
+                    return season != null && string.Equals(GetUniqueSeriesKey(season), seasonPresentationKey, StringComparison.OrdinalIgnoreCase);
                 }
 
                 return false;
