@@ -226,7 +226,7 @@ namespace MediaBrowser.Providers.Omdb
                 result.Item.SetProviderId(MetadataProviders.Imdb, imdbId);
                 result.HasMetadata = true;
 
-                await new OmdbProvider(_jsonSerializer, _httpClient, _fileSystem, _configurationManager).Fetch(result.Item, imdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                await new OmdbProvider(_jsonSerializer, _httpClient, _fileSystem, _configurationManager).Fetch(result, imdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
             }
 
             return result;
@@ -265,7 +265,7 @@ namespace MediaBrowser.Providers.Omdb
                 result.Item.SetProviderId(MetadataProviders.Imdb, imdbId);
                 result.HasMetadata = true;
 
-                await new OmdbProvider(_jsonSerializer, _httpClient, _fileSystem, _configurationManager).Fetch(result.Item, imdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                await new OmdbProvider(_jsonSerializer, _httpClient, _fileSystem, _configurationManager).Fetch(result, imdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
             }
 
             return result;
