@@ -68,7 +68,7 @@ namespace MediaBrowser.Common.Implementations.Serialization
 
         private Stream OpenFile(string path)
         {
-            _logger.Info("Deserializing file {0}", path);
+            _logger.Debug("Deserializing file {0}", path);
             return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131072);
         }
 
