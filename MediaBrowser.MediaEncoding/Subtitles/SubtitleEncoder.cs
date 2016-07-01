@@ -455,7 +455,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 throw;
             }
-
+            
             var logTask = process.StandardError.BaseStream.CopyToAsync(logFileStream);
 
             var ranToCompletion = process.WaitForExit(60000);

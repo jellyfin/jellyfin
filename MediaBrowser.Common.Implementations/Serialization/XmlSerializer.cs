@@ -80,6 +80,7 @@ namespace MediaBrowser.Common.Implementations.Serialization
         /// <param name="file">The file.</param>
         public void SerializeToFile(object obj, string file)
         {
+            _logger.Debug("Serializing to file {0}", file);
             using (var stream = new FileStream(file, FileMode.Create))
             {
                 SerializeToStream(obj, stream);
