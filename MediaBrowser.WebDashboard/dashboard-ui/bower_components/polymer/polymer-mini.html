@@ -8,8 +8,6 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 --><link rel="import" href="polymer-micro.html">
 
-
-
 <script>Polymer.Base._addFeature({
 _prepTemplate: function () {
 if (this._template === undefined) {
@@ -510,7 +508,7 @@ node.__dom.previousSibling = ref_node ? ref_node.__dom.previousSibling : contain
 if (node.__dom.previousSibling) {
 node.__dom.previousSibling.__dom.nextSibling = node;
 }
-node.__dom.nextSibling = ref_node;
+node.__dom.nextSibling = ref_node || null;
 if (node.__dom.nextSibling) {
 node.__dom.nextSibling.__dom.previousSibling = node;
 }
@@ -2148,6 +2146,8 @@ this._tryReady();
 _marshalBehavior: function (b) {
 }
 });</script>
+
+
 
 
 
