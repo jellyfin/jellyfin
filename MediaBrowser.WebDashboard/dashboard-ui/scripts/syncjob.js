@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'datetime', 'paper-progress', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light', 'emby-button'], function ($, datetime) {
+﻿define(['jQuery', 'datetime', 'paper-progress', 'listViewStyle', 'paper-icon-button-light', 'emby-button'], function ($, datetime) {
 
     function renderJob(page, job, dialogOptions) {
 
@@ -41,7 +41,7 @@
 
         var html = '';
 
-        html += '<paper-icon-item data-itemid="' + jobItem.Id + '" data-status="' + jobItem.Status + '" data-remove="' + jobItem.IsMarkedForRemoval + '">';
+        html += '<div class="listItem" data-itemid="' + jobItem.Id + '" data-status="' + jobItem.Status + '" data-remove="' + jobItem.IsMarkedForRemoval + '">';
 
         var hasActions = ['Queued', 'Cancelled', 'Failed', 'ReadyToTransfer', 'Transferring', 'Converting', 'Synced'].indexOf(jobItem.Status) != -1;
 
@@ -58,22 +58,22 @@
         }
 
         if (imgUrl) {
-            html += '<paper-fab mini class="blue" style="background-image:url(\'' + imgUrl + '\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
+            html += '<button type="button" is="emby-button" class="blue mini fab autoSize" icon="sync" style="background-image:url(\'' + imgUrl + '\');background-repeat:no-repeat;background-position:center center;background-size: cover;"><i style="visibility:hidden;" class="md-icon">sync</i></button>';
         }
         else {
-            html += '<paper-fab mini class="blue" icon="sync" item-icon></paper-fab>';
+            html += '<button type="button" is="emby-button" class="blue mini fab autoSize" icon="sync"><i class="md-icon">sync</i></button>';
         }
 
-        html += '<paper-item-body three-line>';
+        html += '<div class="listItemBody three-line">';
 
         html += '<div>';
         html += jobItem.ItemName;
         html += '</div>';
 
         if (jobItem.Status == 'Failed') {
-            html += '<div secondary style="color:red;">';
+            html += '<div class="secondary" style="color:red;">';
         } else {
-            html += '<div secondary>';
+            html += '<div class="secondary">';
         }
         html += Globalize.translate('SyncJobItemStatus' + jobItem.Status);
         if (jobItem.Status == 'Synced' && jobItem.IsMarkedForRemoval) {
@@ -82,11 +82,11 @@
         }
         html += '</div>';
 
-        html += '<div secondary style="padding-top:5px;">';
+        html += '<div class="secondary" style="padding-top:5px;">';
         html += '<paper-progress class="mini" style="width:100%;" value="' + (jobItem.Progress || 0) + '"></paper-progress>';
         html += '</div>';
 
-        html += '</paper-item-body>';
+        html += '</div>';
 
         if (hasActions) {
 
@@ -95,7 +95,7 @@
             html += '<button type="button" is="paper-icon-button-light" class="btnJobItemMenu autoSize" disabled><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button>';
         }
 
-        html += '</paper-icon-item>';
+        html += '</div>';
         return html;
     }
 
@@ -125,13 +125,26 @@
         });
     }
 
+    function parentWithClass(elem, className) {
+
+        while (!elem.classList || !elem.classList.contains(className)) {
+            elem = elem.parentNode;
+
+            if (!elem) {
+                return null;
+            }
+        }
+
+        return elem;
+    }
+
     function showJobItemMenu(elem) {
 
-        var page = $(elem).parents('.page');
-        var listItem = $(elem).parents('paper-icon-item');
-        var jobItemId = listItem.attr('data-itemid');
-        var status = listItem.attr('data-status');
-        var remove = listItem.attr('data-remove').toLowerCase() == 'true';
+        var page = parentWithClass(elem, 'page');
+        var listItem = parentWithClass(elem, 'listItem');
+        var jobItemId = listItem.getAttribute('data-itemid');
+        var status = listItem.getAttribute('data-status');
+        var remove = listItem.getAttribute('data-remove').toLowerCase() == 'true';
 
         var menuItems = [];
 
