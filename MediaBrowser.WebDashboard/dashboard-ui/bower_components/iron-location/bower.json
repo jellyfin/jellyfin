@@ -1,6 +1,6 @@
 {
   "name": "iron-location",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "description": "Bidirectional data binding into the page's URL.",
   "private": true,
   "authors": [

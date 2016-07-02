@@ -309,13 +309,6 @@ namespace MediaBrowser.Controller.Library
         Task DeleteItem(BaseItem item, DeleteOptions options);
 
         /// <summary>
-        /// Replaces the videos with primary versions.
-        /// </summary>
-        /// <param name="items">The items.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        IEnumerable<BaseItem> ReplaceVideosWithPrimaryVersions(IEnumerable<BaseItem> items);
-
-        /// <summary>
         /// Gets the named view.
         /// </summary>
         /// <param name="user">The user.</param>

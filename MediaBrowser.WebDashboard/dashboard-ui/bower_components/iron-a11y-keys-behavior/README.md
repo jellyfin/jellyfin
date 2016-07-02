@@ -25,11 +25,34 @@ The element takes care of browser differences with respect to Keyboard events
 and uses an expressive syntax to filter key presses.
 
 Use the `keyBindings` prototype property to express what combination of keys
-will trigger the event to fire.
+will trigger the callback. A key binding has the format
+`"KEY+MODIFIER:EVENT": "callback"` (`"KEY": "callback"` or
+`"KEY:EVENT": "callback"` are valid as well). Some examples:
 
-Use the `key-event-target` attribute to set up event handlers on a specific
+```javascript
+ keyBindings: {
+   'space': '_onKeydown', // same as 'space:keydown'
+   'shift+tab': '_onKeydown',
+   'enter:keypress': '_onKeypress',
+   'esc:keyup': '_onKeyup'
+ }
+```
+
+The callback will receive with an event containing the following information in `event.detail`:
+
+```javascript
+ _onKeydown: function(event) {
+   console.log(event.detail.combo); // KEY+MODIFIER, e.g. "shift+tab"
+   console.log(event.detail.key); // KEY only, e.g. "tab"
+   console.log(event.detail.event); // EVENT, e.g. "keydown"
+   console.log(event.detail.keyboardEvent); // the original KeyboardEvent
+ }
+```
+
+Use the `keyEventTarget` attribute to set up event handlers on a specific
 node.
-The `keys-pressed` event will fire when one of the key combinations set with the
-`keys` property is pressed.
+
+See the [demo source code](https://github.com/PolymerElements/iron-a11y-keys-behavior/blob/master/demo/x-key-aware.html)
+for an example.
 
 

@@ -19,21 +19,23 @@
 
         <form class="newImageForm userProfileSettingsForm hide" style="margin: 1em auto 0;">
 
-            <emby-collapsible title="${HeaderUploadNewImage}">
-                <div id="fldNewImage">
-                    <p>${ImageUploadAspectRatioHelp}</p>
-                    <input type="file" accept="image/*" id="uploadUserImage" name="uploadUserImage" />
+            <div is="emby-collapse" title="${HeaderUploadNewImage}">
+                <div class="collapseContent">
+                    <div id="fldNewImage">
+                        <p>${ImageUploadAspectRatioHelp}</p>
+                        <input type="file" accept="image/*" id="uploadUserImage" name="uploadUserImage" />
 
-                    <div id="userImageDropZone" class="imageDropZone">
-                        <h3>${LabelDropImageHere}</h3>
-                        <output id="userImageOutput"></output>
+                        <div id="userImageDropZone" class="imageDropZone">
+                            <h3>${LabelDropImageHere}</h3>
+                            <output id="userImageOutput"></output>
+                        </div>
+                    </div>
+                    <div id="fldNewImagePreview"></div>
+                    <div id="fldUpload" class="hide">
+                        <button type="submit" data-icon="check" data-theme="a">${ButtonUpload}</button>
                     </div>
                 </div>
-                <div id="fldNewImagePreview"></div>
-                <div id="fldUpload" class="hide">
-                    <button type="submit" data-icon="check" data-theme="a">${ButtonUpload}</button>
-                </div>
-            </emby-collapsible>
+            </div>
 
         </form>
 

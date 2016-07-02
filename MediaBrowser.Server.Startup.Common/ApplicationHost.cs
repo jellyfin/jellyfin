@@ -477,7 +477,7 @@ namespace MediaBrowser.Server.Startup.Common
             ImageProcessor = GetImageProcessor();
             RegisterSingleInstance(ImageProcessor);
 
-            TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager);
+            TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager, ServerConfigurationManager);
             RegisterSingleInstance(TVSeriesManager);
 
             SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager, () => MediaEncoder, FileSystemManager, () => SubtitleEncoder, ServerConfigurationManager, UserDataManager, () => MediaSourceManager, JsonSerializer, TaskManager);

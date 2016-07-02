@@ -170,6 +170,7 @@ configuration parameters could be provided to hls.js upon instantiation of Hls O
 
    var config = {
       autoStartLoad : true,
+      startPosition : -1,
       capLevelToPlayerSize: false,
       debug : false,
       defaultAudioCodec : undefined,
@@ -228,7 +229,14 @@ a logger object could also be provided for custom logging : ```config.debug=cust
 (default true)
 
  - if set to true, start level playlist and first fragments will be loaded automatically, after triggering of ```Hls.Events.MANIFEST_PARSED``` event
- - if set to false, an explicit API call (```hls.startLoad()```) will be needed to start quality level/fragment loading.
+ - if set to false, an explicit API call (```hls.startLoad(startPosition=-1)```) will be needed to start quality level/fragment loading.
+
+#### ```startPosition```
+(default -1)
+
+ - if set to -1, playback will start from initialTime=0 for VoD and according to ```liveSyncDuration/liveSyncDurationCount``` config params for Live
+ - Otherwise, playback will start from predefined value. (unless stated otherwise in ```autoStartLoad=false``` mode : in that case startPosition can be overrided using ```hls.startLoad(startPosition)```).
+
 
 #### ```defaultAudioCodec```
 (default undefined)
@@ -477,35 +485,45 @@ parameter should be a boolean
 #### ```abrEwmaFastLive```
 (default : 5.0)
 
-Fast bitrate Exponential moving average half-life , used to compute average bitrate for Live streams
+Fast bitrate Exponential moving average half-life, used to compute average bitrate for Live streams
 Half of the estimate is based on the last abrEwmaFastLive seconds of sample history.
 Each of the sample is weighted by the fragment loading duration.
+
 parameter should be a float greater than 0
 
 #### ```abrEwmaSlowLive```
 (default : 9.0)
 
-Slow bitrate Exponential moving average half-life , used to compute average bitrate for Live streams
+Slow bitrate Exponential moving average half-life, used to compute average bitrate for Live streams
 Half of the estimate is based on the last abrEwmaSlowLive seconds of sample history.
 Each of the sample is weighted by the fragment loading duration.
-parameter should be a float greater than abrEwmaFastLive
 
+parameter should be a float greater than abrEwmaFastLive
 
 #### ```abrEwmaFastVoD```
 (default : 4.0)
 
-Fast bitrate Exponential moving average half-life , used to compute average bitrate for VoD streams 
+Fast bitrate Exponential moving average half-life, used to compute average bitrate for VoD streams 
 Half of the estimate is based on the last abrEwmaFastVoD seconds of sample history.
 Each of the sample is weighted by the fragment loading duration.
+
 parameter should be a float greater than 0
 
 #### ```abrEwmaSlowVoD```
 (default : 15.0)
 
-Slow bitrate Exponential moving average half-life , used to compute average bitrate for VoD streams 
+Slow bitrate Exponential moving average half-life, used to compute average bitrate for VoD streams 
 Half of the estimate is based on the last abrEwmaSlowVoD seconds of sample history.
 Each of the sample is weighted by the fragment loading duration.
+
 parameter should be a float greater than abrEwmaFastVoD
+
+#### ```abrEwmaDefaultEstimate```
+(default : 500000)
+
+Default bandwidth estimate in bits/second prior to collecting fragment bandwidth samples.
+
+parameter should be a float
 
 
 #### ```abrBandWidthFactor```
@@ -599,8 +617,11 @@ by default, hls.js will automatically start loading quality level playlists, and
 
 however if ```config.autoStartLoad``` is set to ```false```, the following method needs to be called to manually start playlist and fragments loading:
 
-#### ```hls.startLoad()```
+#### ```hls.startLoad(startPosition=-1)```
 start/restart playlist/fragment loading. this is only effective if MANIFEST_PARSED event has been triggered and video element has been attached to hls object.
+
+startPosition is the initial position in the playlist.
+if startPosition is not set to -1, it allows to override default startPosition to the one you want (it will bypass hls.config.liveSync* config params for Live for example, so that user can start playback from whatever position)
 
 #### ```hls.stopLoad()```
 stop playlist/fragment loading. could be resumed later on by calling ```hls.startLoad()```

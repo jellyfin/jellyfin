@@ -81,7 +81,7 @@
 
         return new Promise(function (resolve, reject) {
 
-            require(['emby-checkbox', 'emby-input', 'emby-collapsible'], function () {
+            require(['emby-checkbox', 'emby-input', 'emby-collapse'], function () {
 
                 appHost.appInfo().then(function (appInfo) {
                     renderFormInternal(options, appInfo, resolve);
@@ -168,8 +168,8 @@
         if (dialogOptions.Options.indexOf('SyncNewContent') != -1 ||
             dialogOptions.Options.indexOf('ItemLimit') != -1) {
 
-            html += '<emby-collapsible title="' + Globalize.translate('HeaderAdvanced') + '">';
-            html += '<div style="padding:0 0 1em;">';
+            html += '<div is="emby-collapse" title="' + Globalize.translate('HeaderAdvanced') + '">';
+            html += '<div class="collapseContent">';
             if (dialogOptions.Options.indexOf('SyncNewContent') != -1) {
                 html += '<br/>';
                 html += '<div class="checkboxContainer">';
@@ -188,7 +188,7 @@
                 html += '</div>';
             }
             html += '</div>';
-            html += '</emby-collapsible>';
+            html += '</div>';
             html += '<br/>';
         }
 

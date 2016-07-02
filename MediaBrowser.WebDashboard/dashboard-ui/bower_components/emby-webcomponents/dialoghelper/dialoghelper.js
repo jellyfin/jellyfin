@@ -448,7 +448,14 @@
 
         dlg.classList.add('dialog');
 
-        if (options.scrollY !== false) {
+        if (options.scrollX) {
+            dlg.classList.add('smoothScrollX');
+
+            if (layoutManager.tv) {
+                scrollHelper.centerFocus.on(dlg, true);
+            }
+        }
+        else if (options.scrollY !== false) {
             dlg.classList.add('smoothScrollY');
 
             if (layoutManager.tv) {

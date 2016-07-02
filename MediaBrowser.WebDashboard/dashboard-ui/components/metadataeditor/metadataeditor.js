@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'datetime', 'jQuery', 'emby-checkbox', 'emby-input', 'emby-select', 'paper-item-body', 'paper-icon-item', 'emby-textarea', 'paper-fab', 'paper-icon-button-light'], function (dialogHelper, datetime, $) {
+﻿define(['dialogHelper', 'datetime', 'jQuery', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light'], function (dialogHelper, datetime, $) {
 
     var currentContext;
     var metadataEditorInfo;
@@ -968,21 +968,21 @@
         }
         var html = '';
         for (var i = 0; i < items.length; i++) {
-            html += '<paper-icon-item>';
+            html += '<div class="listItem">';
 
-            html += '<paper-fab mini style="background-color:#444;" icon="live-tv" item-icon></paper-fab>';
+            html += '<button type="button" is="emby-button" data-index="' + i + '" class="fab autoSize mini"><i class="md-icon">live_tv</i></button>';
 
-            html += '<paper-item-body>';
+            html += '<div class="listItemBody">';
 
             html += '<div class="textValue">';
             html += items[i];
             html += '</div>';
 
-            html += '</paper-item-body>';
+            html += '</div>';
 
             html += '<button type="button" is="paper-icon-button-light" data-index="' + i + '" class="btnRemoveFromEditorList"><iron-icon icon="delete"></iron-icon></button>';
 
-            html += '</paper-icon-item>';
+            html += '</div>';
         }
 
         list.innerHTML = html;
@@ -999,11 +999,11 @@
 
             var person = people[i];
 
-            html += '<paper-icon-item>';
+            html += '<div class="listItem">';
 
-            html += '<paper-fab class="btnEditPerson" data-index="' + i + '" mini style="background-color:#444;" icon="person" item-icon></paper-fab>';
+            html += '<button type="button" is="emby-button" data-index="' + i + '" class="btnEditPerson fab autoSize mini"><i class="md-icon">person</i></button>';
 
-            html += '<paper-item-body>';
+            html += '<div class="listItemBody">';
             html += '<a class="btnEditPerson clearLink" href="#" data-index="' + i + '">';
 
             html += '<div class="textValue">';
@@ -1011,15 +1011,15 @@
             html += '</div>';
 
             if (person.Role && person.Role != lastType) {
-                html += '<div secondary>' + (person.Role) + '</div>';
+                html += '<div class="secondary">' + (person.Role) + '</div>';
             }
 
             html += '</a>';
-            html += '</paper-item-body>';
+            html += '</div>';
 
             html += '<button type="button" is="paper-icon-button-light" data-index="' + i + '" class="btnDeletePerson"><iron-icon icon="delete"></iron-icon></button>';
 
-            html += '</paper-icon-item>';
+            html += '</div>';
         }
 
         elem.innerHTML = html;

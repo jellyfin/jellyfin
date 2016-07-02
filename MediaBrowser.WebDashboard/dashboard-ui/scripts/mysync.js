@@ -1,4 +1,4 @@
-﻿define(['localsync'], function () {
+﻿define(['loading', 'localsync'], function (loading) {
 
     function refreshSyncStatus(page) {
 
@@ -7,7 +7,11 @@
             var status = LocalSync.getSyncStatus();
 
             page.querySelector('.labelSyncStatus').innerHTML = Globalize.translate('LabelLocalSyncStatusValue', status);
-            page.querySelector('.syncSpinner').active = status == "Active";
+            if (status == 'Active') {
+                loading.show();
+            } else {
+                loading.hide();
+            }
 
             if (status == "Active") {
                 page.querySelector('.btnSyncNow').classList.add('hide');
@@ -42,7 +46,6 @@
 
         } else {
             view.querySelector('.localSyncStatus').classList.add('hide');
-            view.querySelector('.syncSpinner').active = false;
         }
 
         view.addEventListener('viewbeforeshow', function () {
@@ -58,7 +61,7 @@
         view.addEventListener('viewbeforehide', function () {
             var page = this;
 
-            page.querySelector('.syncSpinner').active = false;
+            loading.hide();
 
             if (interval) {
                 clearInterval(interval);

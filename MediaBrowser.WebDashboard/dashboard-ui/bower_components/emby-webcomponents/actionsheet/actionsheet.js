@@ -146,7 +146,8 @@
 
         // Admittedly a hack but right now the scrollbar is being factored into the width which is causing truncation
         if (options.items.length > 20) {
-            style += "min-width:200px;";
+            var minWidth = window.innerWidth >= 300 ? 240 : 200;
+            style += "min-width:" + minWidth + "px;";
         }
         html += '<div class="actionSheetScroller ' + scrollType + '" style="' + style + '">';
 
