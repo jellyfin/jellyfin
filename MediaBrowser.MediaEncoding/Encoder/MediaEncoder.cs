@@ -612,8 +612,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     UseShellExecute = false,
 
                     // Must consume both or ffmpeg may hang due to deadlocks. See comments below.   
-                    RedirectStandardOutput = true,
-                    //RedirectStandardError = true,
+                    //RedirectStandardOutput = true,
+                    RedirectStandardError = true,
                     RedirectStandardInput = true,
                     FileName = FFMpegPath,
                     Arguments = string.Format(args, probeSizeArgument, inputPath, videoStream.Index.ToString(CultureInfo.InvariantCulture)).Trim(),
