@@ -1,3 +1,7 @@
+[is=emby-collapse] {
+    margin: .5em 0;
+}
+
 .collapseContent {
     border-width: 0 1px 1px 1px;
     padding: 1em 1.25em;
@@ -16,7 +20,7 @@
 
 .emby-collapse-expandIcon {
     transform-origin: 50% 50%;
-    transition: transform 350ms ease-out;
+    transition: transform 180ms ease-out;
 }
 
     .emby-collapse-expandIcon.expanded {

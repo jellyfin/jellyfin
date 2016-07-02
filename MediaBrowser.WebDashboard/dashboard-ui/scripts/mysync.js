@@ -46,7 +46,6 @@
 
         } else {
             view.querySelector('.localSyncStatus').classList.add('hide');
-            loading.hide();
         }
 
         view.addEventListener('viewbeforeshow', function () {
