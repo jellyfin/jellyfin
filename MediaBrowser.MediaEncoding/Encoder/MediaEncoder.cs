@@ -482,7 +482,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     UseShellExecute = false,
 
                     // Must consume both or ffmpeg may hang due to deadlocks. See comments below.   
-                    RedirectStandardOutput = true,
+                    //RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     RedirectStandardInput = true,
                     FileName = FFProbePath,
@@ -517,7 +517,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 try
                 {
-                    process.BeginErrorReadLine();
+                    //process.BeginErrorReadLine();
 
                     var result = _jsonSerializer.DeserializeFromStream<InternalMediaInfoResult>(process.StandardOutput.BaseStream);
 
@@ -612,7 +612,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     UseShellExecute = false,
 
                     // Must consume both or ffmpeg may hang due to deadlocks. See comments below.   
-                    RedirectStandardOutput = true,
+                    //RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     RedirectStandardInput = true,
                     FileName = FFMpegPath,
@@ -643,7 +643,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 try
                 {
-                    process.BeginOutputReadLine();
+                    //process.BeginOutputReadLine();
 
                     using (var reader = new StreamReader(process.StandardError.BaseStream))
                     {

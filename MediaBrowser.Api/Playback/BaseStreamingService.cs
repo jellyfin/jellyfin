@@ -996,7 +996,7 @@ namespace MediaBrowser.Api.Playback
                     UseShellExecute = false,
 
                     // Must consume both stdout and stderr or deadlocks may occur
-                    RedirectStandardOutput = true,
+                    //RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     RedirectStandardInput = true,
 
@@ -1063,7 +1063,7 @@ namespace MediaBrowser.Api.Playback
             }
 
             // MUST read both stdout and stderr asynchronously or a deadlock may occurr
-            process.BeginOutputReadLine();
+            //process.BeginOutputReadLine();
 
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
             Task.Run(() => StartStreamingLog(transcodingJob, state, process.StandardError.BaseStream, state.LogFileStream));
