@@ -2776,7 +2776,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/mysync.html',
-            dependencies: ['scripts/syncactivity', 'scripts/taskbutton', 'paper-spinner', 'paper-fab', 'emby-button'],
+            dependencies: ['scripts/syncactivity', 'scripts/taskbutton', 'emby-button'],
             autoFocus: false,
             transition: 'fade',
             controller: 'scripts/mysync'
