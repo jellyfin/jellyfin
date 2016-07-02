@@ -1518,6 +1518,12 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\emby-checkbox\emby-checkbox.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\emby-checkbox\emby-checkbox.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\emby-collapse\emby-collapse.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\emby-collapse\emby-collapse.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\emby-collapse\emby-collapse.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\emby-collapse\emby-collapse.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\emby-input\emby-input.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\emby-input\emby-input.css</Link>
     </BundleResource>
