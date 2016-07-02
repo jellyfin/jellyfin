@@ -50,7 +50,7 @@ class AbrController extends EventHandler {
         ewmaFast = config.abrEwmaFastVoD;
         ewmaSlow = config.abrEwmaSlowVoD;
       }
-      this.bwEstimator = new EwmaBandWidthEstimator(hls,ewmaSlow,ewmaFast);
+      this.bwEstimator = new EwmaBandWidthEstimator(hls,ewmaSlow,ewmaFast,config.abrEwmaDefaultEstimate);
     }
 
     let frag = data.frag;
@@ -184,7 +184,8 @@ class AbrController extends EventHandler {
       return Math.min(this._nextAutoLevel,maxAutoLevel);
     }
 
-    let avgbw = this.bwEstimator.getEstimate(),adjustedbw;
+    let avgbw = this.bwEstimator ? this.bwEstimator.getEstimate() : config.abrEwmaDefaultEstimate,
+        adjustedbw;
     // follow algorithm captured from stagefright :
     // https://android.googlesource.com/platform/frameworks/av/+/master/media/libstagefright/httplive/LiveSession.cpp
     // Pick the highest bandwidth stream below or equal to estimated bandwidth.

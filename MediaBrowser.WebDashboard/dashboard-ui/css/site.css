@@ -643,6 +643,19 @@ progress {
     margin: 0 0 2em;
 }
 
+@media all and (min-width: 1280px) {
+
+    .supporterPromotionContainer {
+        position: fixed;
+        top: 120px;
+        right: 0;
+    }
+}
+
+.fullWidthContent .supporterPromotionContainer {
+    position: static!important;
+}
+
 @media all and (min-width: 800px) {
 
     .supporterPromotionContainer {
@@ -715,8 +728,8 @@ emby-collapsible > .style-scope {
 }
 
 .ui-body-a .emby-collapsible-button {
-    border: 1px solid #ddd;
-    background-color: #f2f2f2;
+    border: 0;
+    background-color: #e8e8e8;
     text-transform: none;
 }
 
@@ -727,15 +740,14 @@ emby-collapsible > .style-scope {
     font-weight: 500;
 }
 
-.ui-body-a .emby-collapsible-content {
-    border: 1px solid #ddd;
-    border-width: 0 1px 1px 1px;
+.ui-body-a .emby-collapsible-content, .ui-body-a .collapseContent {
+    border-width: 0;
     padding: 1em 1.25em;
     background-color: #fff;
 }
 
 .ui-body-b .emby-collapsible-button {
-    border: 1px solid #222;
+    border: 0;
     background-color: #333;
     text-transform: none;
 }
@@ -747,10 +759,10 @@ emby-collapsible > .style-scope {
     font-weight: 500;
 }
 
-.ui-body-b .emby-collapsible-content {
-    border: 1px solid #252525;
-    border-width: 0 1px 1px 1px;
+.ui-body-b .emby-collapsible-content, .ui-body-b .collapseContent {
+    border-width: 0;
     padding: 1em 1.25em;
+    background-color: #222;
 }
 
 #editItemMetadataPage #txtOverview .paper-input-input {

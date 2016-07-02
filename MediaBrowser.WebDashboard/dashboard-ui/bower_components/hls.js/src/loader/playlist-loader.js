@@ -137,7 +137,7 @@ class PlaylistLoader extends EventHandler {
         byteRangeEndOffset,
         byteRangeStartOffset;
 
-    regexp = /(?:#EXT-X-(MEDIA-SEQUENCE):(\d+))|(?:#EXT-X-(TARGETDURATION):(\d+))|(?:#EXT-X-(KEY):(.*))|(?:#EXT(INF):([\d\.]+)[^\r\n]*([\r\n]+[^#|\r\n]+)?)|(?:#EXT-X-(BYTERANGE):([\d]+[@[\d]*)]*[\r\n]+([^#|\r\n]+)?|(?:#EXT-X-(ENDLIST))|(?:#EXT-X-(DIS)CONTINUITY))|(?:#EXT-X-(PROGRAM-DATE-TIME):(.*)[\r\n]+([^#|\r\n]+)?)/g;
+    regexp = /(?:#EXT-X-(MEDIA-SEQUENCE):(\d+))|(?:#EXT-X-(TARGETDURATION):(\d+))|(?:#EXT-X-(KEY):(.*))|(?:#EXT-X-(START):(.*))|(?:#EXT(INF):([\d\.]+)[^\r\n]*([\r\n]+[^#|\r\n]+)?)|(?:#EXT-X-(BYTERANGE):([\d]+[@[\d]*)]*[\r\n]+([^#|\r\n]+)?|(?:#EXT-X-(ENDLIST))|(?:#EXT-X-(DIS)CONTINUITY))|(?:#EXT-X-(PROGRAM-DATE-TIME):(.*)[\r\n]+([^#|\r\n]+)?)/g;
     while ((result = regexp.exec(string)) !== null) {
       result.shift();
       result = result.filter(function(n) { return (n !== undefined); });
@@ -208,6 +208,14 @@ class PlaylistLoader extends EventHandler {
               // Initialization Vector (IV)
               levelkey.iv = decryptiv;
             }
+          }
+          break;
+        case 'START':
+          let startParams = result[1];
+          let startAttrs = new AttrList(startParams);
+          let startTimeOffset = startAttrs.decimalFloatingPoint('TIME-OFFSET');
+          if (startTimeOffset) {
+            level.startTimeOffset = startTimeOffset;
           }
           break;
         case 'PROGRAM-DATE-TIME':

@@ -48,51 +48,53 @@
             </div>
         </div>
         <div class="advanced hide">
-            <emby-collapsible title="${Advanced}">
-                <div class="seriesDays hide">
-                    <div>
-                        <h1>${Days}</h1>
-                    </div>
-                    <div class="checkboxList">
-                        <label>
-                            <input type="checkbox" is="emby-checkbox" id="chkSunday" />
-                            <span>${Sunday}</span>
-                        </label>
-                        <label>
-                            <input type="checkbox" is="emby-checkbox" id="chkMonday" />
-                            <span>${Monday}</span>
-                        </label>
-                        <label>
-                            <input type="checkbox" is="emby-checkbox" id="chkTuesday" />
-                            <span>${Tuesday}</span>
-                        </label>
-                        <label>
-                            <input type="checkbox" is="emby-checkbox" id="chkWednesday" />
-                            <span>${Wednesday}</span>
-                        </label>
-                        <label>
-                            <input type="checkbox" is="emby-checkbox" id="chkThursday" />
-                            <span>${Thursday}</span>
-                        </label>
-                        <label>
-                            <input type="checkbox" is="emby-checkbox" id="chkFriday" />
-                            <span>${Friday}</span>
-                        </label>
-                        <label>
-                            <input type="checkbox" is="emby-checkbox" id="chkSaturday" />
-                            <span>${Saturday}</span>
-                        </label>
+            <div is="emby-collapse" title="${Advanced}">
+                <div class="collapseContent">
+                    <div class="seriesDays hide">
+                        <div>
+                            <h1>${Days}</h1>
+                        </div>
+                        <div class="checkboxList">
+                            <label>
+                                <input type="checkbox" is="emby-checkbox" id="chkSunday" />
+                                <span>${Sunday}</span>
+                            </label>
+                            <label>
+                                <input type="checkbox" is="emby-checkbox" id="chkMonday" />
+                                <span>${Monday}</span>
+                            </label>
+                            <label>
+                                <input type="checkbox" is="emby-checkbox" id="chkTuesday" />
+                                <span>${Tuesday}</span>
+                            </label>
+                            <label>
+                                <input type="checkbox" is="emby-checkbox" id="chkWednesday" />
+                                <span>${Wednesday}</span>
+                            </label>
+                            <label>
+                                <input type="checkbox" is="emby-checkbox" id="chkThursday" />
+                                <span>${Thursday}</span>
+                            </label>
+                            <label>
+                                <input type="checkbox" is="emby-checkbox" id="chkFriday" />
+                                <span>${Friday}</span>
+                            </label>
+                            <label>
+                                <input type="checkbox" is="emby-checkbox" id="chkSaturday" />
+                                <span>${Saturday}</span>
+                            </label>
+                        </div>
+                        <br />
                     </div>
                     <br />
+                    <div class="inputContainer">
+                        <input is="emby-input" type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}" />
+                    </div>
+                    <div class="inputContainer">
+                        <input is="emby-input" type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}" />
+                    </div>
                 </div>
-                <br />
-                <div class="inputContainer">
-                    <input is="emby-input" type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}" />
-                </div>
-                <div class="inputContainer">
-                    <input is="emby-input" type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}" />
-                </div>
-            </emby-collapsible>
+            </div>
             <br />
         </div>
         <br />

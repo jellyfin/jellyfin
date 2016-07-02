@@ -37,7 +37,7 @@
   switchLevel() {
     this.pmtParsed = false;
     this._pmtId = -1;
-    this._avcTrack = {container : 'video/mp2t', type: 'video', id :-1, sequenceNumber: 0, samples : [], len : 0, nbNalu : 0};
+    this._avcTrack = {container : 'video/mp2t', type: 'video', id :-1, sequenceNumber: 0, samples : [], len : 0, nbNalu : 0, dropped : 0};
     this._aacTrack = {container : 'video/mp2t', type: 'audio', id :-1, sequenceNumber: 0, samples : [], len : 0};
     this._id3Track = {type: 'id3', id :-1, sequenceNumber: 0, samples : [], len : 0};
     this._txtTrack = {type: 'text', id: -1, sequenceNumber: 0, samples: [], len: 0};
@@ -355,6 +355,9 @@
           samples.push(avcSample);
           track.len += length;
           track.nbNalu += units2.length;
+        } else {
+          // dropped samples, track it
+          track.dropped++;
         }
         units2 = [];
         length = 0;

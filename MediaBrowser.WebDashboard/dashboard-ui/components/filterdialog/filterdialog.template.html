@@ -47,7 +47,7 @@
         </h2>
         <div class="checkboxList">
             <label>
-                <input type="checkbox" is="emby-checkbox" class="chkStatus" data-filter="Continuing"/>
+                <input type="checkbox" is="emby-checkbox" class="chkStatus" data-filter="Continuing" />
                 <span>${OptionContinuing}</span>
             </label>
             <label>
@@ -57,62 +57,68 @@
         </div>
     </div>
     <br />
-    <emby-collapsible title="${HeaderAirDays}" class="airdays hide">
-        <div class="checkboxList">
-            <label>
-                <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkSunday" data-filter="Sunday" />
-                <span>${OptionSunday}</span>
-            </label>
-            <label>
-                <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkMonday" data-filter="Monday" />
-                <span>${OptionMonday}</span>
-            </label>
-            <label>
-                <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkTuesday" data-filter="Tuesday" />
-                <span>${OptionTuesday}</span>
-            </label>
-            <label>
-                <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkWednesday" data-filter="Wednesday" />
-                <span>${OptionWednesday}</span>
-            </label>
-            <label>
-                <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkThursday" data-filter="Thursday" />
-                <span>${OptionThursday}</span>
-            </label>
-            <label>
-                <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkFriday" data-filter="Friday" />
-                <span>${OptionFriday}</span>
-            </label>
-            <label>
-                <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkSaturday" data-filter="Saturday" />
-                <span>${OptionSaturday}</span>
-            </label>
+
+    <div is="emby-collapse" title="${HeaderAirDays}" class="airdays hide">
+        <div class="collapseContent">
+            <div class="checkboxList">
+                <label>
+                    <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkSunday" data-filter="Sunday" />
+                    <span>${OptionSunday}</span>
+                </label>
+                <label>
+                    <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkMonday" data-filter="Monday" />
+                    <span>${OptionMonday}</span>
+                </label>
+                <label>
+                    <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkTuesday" data-filter="Tuesday" />
+                    <span>${OptionTuesday}</span>
+                </label>
+                <label>
+                    <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkWednesday" data-filter="Wednesday" />
+                    <span>${OptionWednesday}</span>
+                </label>
+                <label>
+                    <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkThursday" data-filter="Thursday" />
+                    <span>${OptionThursday}</span>
+                </label>
+                <label>
+                    <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkFriday" data-filter="Friday" />
+                    <span>${OptionFriday}</span>
+                </label>
+                <label>
+                    <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkSaturday" data-filter="Saturday" />
+                    <span>${OptionSaturday}</span>
+                </label>
+            </div>
         </div>
-    </emby-collapsible>
-    <emby-collapsible title="${HeaderFeatures}" class="features hide">
-        <div class="checkboxList">
-            <label>
-                <input type="checkbox" is="emby-checkbox" class="chkFeatureFilter" id="chkSubtitle" />
-                <span>${OptionHasSubtitles}</span>
-            </label>
-            <label>
-                <input type="checkbox" is="emby-checkbox" class="chkFeatureFilter" id="chkTrailer" />
-                <span>${OptionHasTrailer}</span>
-            </label>
-            <label>
-                <input type="checkbox" is="emby-checkbox" class="chkFeatureFilter" id="chkSpecialFeature" />
-                <span>${OptionHasSpecialFeatures}</span>
-            </label>
-            <label>
-                <input type="checkbox" is="emby-checkbox" class="chkFeatureFilter" id="chkThemeSong" />
-                <span>${OptionHasThemeSong}</span>
-            </label>
-            <label>
-                <input type="checkbox" is="emby-checkbox" class="chkFeatureFilter" id="chkThemeVideo" />
-                <span>${OptionHasThemeVideo}</span>
-            </label>
+    </div>
+
+    <div is="emby-collapse" title="${HeaderFeatures}" class="features hide">
+        <div class="collapseContent">
+            <div class="checkboxList">
+                <label>
+                    <input type="checkbox" is="emby-checkbox" class="chkFeatureFilter" id="chkSubtitle" />
+                    <span>${OptionHasSubtitles}</span>
+                </label>
+                <label>
+                    <input type="checkbox" is="emby-checkbox" class="chkFeatureFilter" id="chkTrailer" />
+                    <span>${OptionHasTrailer}</span>
+                </label>
+                <label>
+                    <input type="checkbox" is="emby-checkbox" class="chkFeatureFilter" id="chkSpecialFeature" />
+                    <span>${OptionHasSpecialFeatures}</span>
+                </label>
+                <label>
+                    <input type="checkbox" is="emby-checkbox" class="chkFeatureFilter" id="chkThemeSong" />
+                    <span>${OptionHasThemeSong}</span>
+                </label>
+                <label>
+                    <input type="checkbox" is="emby-checkbox" class="chkFeatureFilter" id="chkThemeVideo" />
+                    <span>${OptionHasThemeVideo}</span>
+                </label>
+            </div>
         </div>
-    </emby-collapsible>
+    </div>
 
     <div class="players hide">
         <h2 style="margin-bottom: .25em;">
@@ -125,55 +131,58 @@
             <paper-radio-button class="radioPlayers" name="4">${Option4Player}</paper-radio-button>
         </paper-radio-group>
     </div>
-    <emby-collapsible title="${HeaderGenres}" class="genreFilters hide">
-        <div class="filterOptions">
+
+    <div is="emby-collapse" title="${HeaderGenres}" class="genreFilters hide">
+        <div class="collapseContent filterOptions">
         </div>
-    </emby-collapsible>
+    </div>
 
-    <emby-collapsible title="${HeaderParentalRatings}" class="officialRatingFilters hide">
-        <div class="filterOptions">
+    <div is="emby-collapse" title="${HeaderParentalRatings}" class="officialRatingFilters hide">
+        <div class="collapseContent filterOptions">
         </div>
-    </emby-collapsible>
+    </div>
 
-    <emby-collapsible title="${HeaderTags}" class="tagFilters hide">
-        <div class="filterOptions">
+    <div is="emby-collapse" title="${HeaderTags}" class="tagFilters hide">
+        <div class="collapseContent filterOptions">
         </div>
-    </emby-collapsible>
+    </div>
 
-    <emby-collapsible title="${HeaderVideoTypes}" class="videoTypeFilters hide">
-        <div class="checkboxList">
-            <label>
-                <input type="checkbox" is="emby-checkbox" class="chkVideoTypeFilter chkBluray" data-filter="Bluray" />
-                <span>${OptionBluray}</span>
-            </label>
-            <label>
-                <input type="checkbox" is="emby-checkbox" class="chkVideoTypeFilter chkDvd" data-filter="Dvd" />
-                <span>${OptionDvd}</span>
-            </label>
-            <label>
-                <input type="checkbox" is="emby-checkbox" class="chkVideoTypeFilter chkIso" data-filter="Iso" />
-                <span>${OptionIso}</span>
-            </label>
+    <div is="emby-collapse" title="${HeaderVideoTypes}" class="videoTypeFilters hide">
+        <div class="collapseContent">
+            <div class="checkboxList">
+                <label>
+                    <input type="checkbox" is="emby-checkbox" class="chkVideoTypeFilter chkBluray" data-filter="Bluray" />
+                    <span>${OptionBluray}</span>
+                </label>
+                <label>
+                    <input type="checkbox" is="emby-checkbox" class="chkVideoTypeFilter chkDvd" data-filter="Dvd" />
+                    <span>${OptionDvd}</span>
+                </label>
+                <label>
+                    <input type="checkbox" is="emby-checkbox" class="chkVideoTypeFilter chkIso" data-filter="Iso" />
+                    <span>${OptionIso}</span>
+                </label>
 
-            <label>
-                <input type="checkbox" is="emby-checkbox" class="chkHDFilter IsHD" />
-                <span>${OptionIsHD}</span>
-            </label>
+                <label>
+                    <input type="checkbox" is="emby-checkbox" class="chkHDFilter IsHD" />
+                    <span>${OptionIsHD}</span>
+                </label>
 
-            <label>
-                <input type="checkbox" is="emby-checkbox" class="chkSDFilter IsHD" />
-                <span>${OptionIsSD}</span>
-            </label>
+                <label>
+                    <input type="checkbox" is="emby-checkbox" class="chkSDFilter IsHD" />
+                    <span>${OptionIsSD}</span>
+                </label>
 
-            <label>
-                <input type="checkbox" is="emby-checkbox" class="chk3DFilter chk3D" />
-                <span>${Option3D}</span>
-            </label>
+                <label>
+                    <input type="checkbox" is="emby-checkbox" class="chk3DFilter chk3D" />
+                    <span>${Option3D}</span>
+                </label>
+            </div>
         </div>
-    </emby-collapsible>
+    </div>
 
-    <emby-collapsible title="${HeaderYears}" class="yearFilters hide">
-        <div class="filterOptions">
+    <div is="emby-collapse" title="${HeaderYears}" class="yearFilters hide">
+        <div class="collapseContent filterOptions">
         </div>
-    </emby-collapsible>
+    </div>
 </div>

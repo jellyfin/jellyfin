@@ -61,7 +61,7 @@ class StreamController extends EventHandler {
     this.state = State.STOPPED;
   }
 
-  startLoad(startPosition=0) {
+  startLoad(startPosition) {
     if (this.levels) {
       var media = this.media, lastCurrentTime = this.lastCurrentTime;
       this.stopLoad();
@@ -71,7 +71,7 @@ class StreamController extends EventHandler {
       }
       this.level = -1;
       this.fragLoadError = 0;
-      if (media && lastCurrentTime) {
+      if (media && lastCurrentTime > 0) {
         logger.log(`configure startPosition @${lastCurrentTime}`);
         if (!this.lastPaused) {
           logger.log('resuming video');
@@ -288,10 +288,10 @@ class StreamController extends EventHandler {
                 let deltaPTS = fragPrevious.deltaPTS,
                     curSNIdx = frag.sn - levelDetails.startSN;
                 // if there is a significant delta between audio and video, larger than max allowed hole,
-                // it might be because video fragment does not start with a keyframe.
+                // and if previous remuxed fragment did not start with a keyframe. (fragPrevious.dropped)
                 // let's try to load previous fragment again to get last keyframe
                 // then we will reload again current fragment (that way we should be able to fill the buffer hole ...)
-                if (deltaPTS && deltaPTS > config.maxBufferHole) {
+                if (deltaPTS && deltaPTS > config.maxBufferHole && fragPrevious.dropped) {
                   frag = fragments[curSNIdx-1];
                   logger.warn(`SN just loaded, with large PTS gap between audio and video, maybe frag is not starting with a keyframe ? load previous one to try to overcome this`);
                   // decrement previous frag load counter to avoid frag loop loading error when next fragment will get reloaded
@@ -299,6 +299,10 @@ class StreamController extends EventHandler {
                 } else {
                   frag = fragments[curSNIdx+1];
                   logger.log(`SN just loaded, load next one: ${frag.sn}`);
+                }
+                // ensure frag is not undefined
+                if(!frag) {
+                  break;
                 }
               } else {
                 // have we reached end of VOD playlist ?
@@ -489,8 +493,15 @@ class StreamController extends EventHandler {
     logger.log('immediateLevelSwitch');
     if (!this.immediateSwitch) {
       this.immediateSwitch = true;
-      this.previouslyPaused = this.media.paused;
-      this.media.pause();
+      let media = this.media, previouslyPaused;
+      if (media) {
+        previouslyPaused = media.paused;
+        media.pause();
+      } else {
+        // don't restart playback after instant level switch in case media not attached
+        previouslyPaused = true;
+      }
+      this.previouslyPaused = previouslyPaused;
     }
     var fragCurrent = this.fragCurrent;
     if (fragCurrent && fragCurrent.loader) {
@@ -579,8 +590,9 @@ class StreamController extends EventHandler {
     media.addEventListener('seeking', this.onvseeking);
     media.addEventListener('seeked', this.onvseeked);
     media.addEventListener('ended', this.onvended);
-    if(this.levels && this.config.autoStartLoad) {
-      this.hls.startLoad();
+    let config = this.config;
+    if(this.levels && config.autoStartLoad) {
+      this.hls.startLoad(config.startPosition);
     }
   }
 
@@ -688,8 +700,9 @@ class StreamController extends EventHandler {
     this.levels = data.levels;
     this.startLevelLoaded = false;
     this.startFragRequested = false;
-    if (this.config.autoStartLoad) {
-      this.hls.startLoad();
+    let config = this.config;
+    if (config.autoStartLoad) {
+      this.hls.startLoad(config.startPosition);
     }
   }
 
@@ -725,12 +738,23 @@ class StreamController extends EventHandler {
     curLevel.details = newDetails;
     this.hls.trigger(Event.LEVEL_UPDATED, { details: newDetails, level: newLevelId });
 
-    // compute start position
     if (this.startFragRequested === false) {
-      // if live playlist, set start position to be fragment N-this.config.liveSyncDurationCount (usually 3)
-      if (newDetails.live) {
-        let targetLatency = this.config.liveSyncDuration !== undefined ? this.config.liveSyncDuration : this.config.liveSyncDurationCount * newDetails.targetduration;
-        this.startPosition = Math.max(0, sliding + duration - targetLatency);
+    // compute start position if set to -1. use it straight away if value is defined
+      if (this.startPosition === -1) {
+        // first, check if start time offset has been set in playlist, if yes, use this value
+        let startTimeOffset = newDetails.startTimeOffset;
+        if(!isNaN(startTimeOffset)) {
+          logger.log(`start time offset found in playlist, adjust startPosition to ${startTimeOffset}`);
+          this.startPosition = startTimeOffset;
+        } else {
+          // if live playlist, set start position to be fragment N-this.config.liveSyncDurationCount (usually 3)
+          if (newDetails.live) {
+            let targetLatency = this.config.liveSyncDuration !== undefined ? this.config.liveSyncDuration : this.config.liveSyncDurationCount * newDetails.targetduration;
+            this.startPosition = Math.max(0, sliding + duration - targetLatency);
+          } else {
+            this.startPosition = 0;
+          }
+        }
       }
       this.nextLoadPosition = this.startPosition;
     }
@@ -789,7 +813,7 @@ class StreamController extends EventHandler {
           }
         }
         this.pendingAppending = 0;
-        logger.log(`Demuxing ${sn} of [${details.startSN} ,${details.endSN}],level ${level}`);
+        logger.log(`Demuxing ${sn} of [${details.startSN} ,${details.endSN}],level ${level}, cc ${fragCurrent.cc}`);
         let demuxer = this.demuxer;
         if (demuxer) {
           demuxer.push(data.payload, audioCodec, currentLevel.videoCodec, start, fragCurrent.cc, level, sn, duration, fragCurrent.decryptdata);
@@ -885,11 +909,16 @@ class StreamController extends EventHandler {
       var level = this.levels[this.level],
           frag = this.fragCurrent;
 
-      logger.log(`parsed ${data.type},PTS:[${data.startPTS.toFixed(3)},${data.endPTS.toFixed(3)}],DTS:[${data.startDTS.toFixed(3)}/${data.endDTS.toFixed(3)}],nb:${data.nb}`);
+      logger.log(`parsed ${data.type},PTS:[${data.startPTS.toFixed(3)},${data.endPTS.toFixed(3)}],DTS:[${data.startDTS.toFixed(3)}/${data.endDTS.toFixed(3)}],nb:${data.nb},dropped:${data.dropped || 0}`);
 
       var drift = LevelHelper.updateFragPTSDTS(level.details,frag.sn,data.startPTS,data.endPTS,data.startDTS,data.endDTS),
           hls = this.hls;
       hls.trigger(Event.LEVEL_PTS_UPDATED, {details: level.details, level: this.level, drift: drift});
+
+      // has remuxer dropped video frames located before first keyframe ?
+      if(data.type === 'video') {
+        frag.dropped = data.dropped;
+      }
 
       [data.data1, data.data2].forEach(buffer => {
         if (buffer) {

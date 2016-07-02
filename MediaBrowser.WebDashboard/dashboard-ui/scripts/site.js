@@ -666,19 +666,7 @@ var Dashboard = {
                 menuHtml += "<div class='sidebarDivider'></div>";
             }
 
-            if (item.items) {
-
-                var style = item.color ? ' iconstyle="color:' + item.color + '"' : '';
-                var expanded = item.expanded ? (' expanded') : '';
-                if (item.icon) {
-                    menuHtml += '<emby-collapsible icon="' + item.icon + '" title="' + item.name + '"' + style + expanded + '>';
-                } else {
-                    menuHtml += '<emby-collapsible title="' + item.name + '"' + style + expanded + '>';
-                }
-                menuHtml += item.items.map(Dashboard.getToolsLinkHtml).join('');
-                menuHtml += '</emby-collapsible>';
-            }
-            else if (item.href) {
+            if (item.href) {
 
                 menuHtml += Dashboard.getToolsLinkHtml(item);
             } else {
@@ -1805,6 +1793,7 @@ var AppInfo = {};
 
         define("libjass", [bowerPath + "/libjass/libjass", "css!" + bowerPath + "/libjass/libjass"], returnFirstDependency);
 
+        define("emby-collapse", [embyWebComponentsBowerPath + "/emby-collapse/emby-collapse"], returnFirstDependency);
         define("emby-button", [embyWebComponentsBowerPath + "/emby-button/emby-button"], returnFirstDependency);
         define("alphaPicker", [embyWebComponentsBowerPath + "/alphapicker/alphapicker"], returnFirstDependency);
         define("paper-icon-button-light", [embyWebComponentsBowerPath + "/emby-button/paper-icon-button-light"]);
@@ -2779,7 +2768,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/myprofile.html',
-            dependencies: ['emby-button', 'emby-collapsible', 'emby-checkbox', 'emby-input'],
+            dependencies: ['emby-button', 'emby-collapse', 'emby-checkbox', 'emby-input'],
             autoFocus: false,
             transition: 'fade',
             controller: 'scripts/myprofile'
@@ -2787,7 +2776,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/mysync.html',
-            dependencies: ['scripts/syncactivity', 'scripts/taskbutton', 'paper-spinner', 'paper-fab', 'emby-button'],
+            dependencies: ['scripts/syncactivity', 'scripts/taskbutton', 'emby-button'],
             autoFocus: false,
             transition: 'fade',
             controller: 'scripts/mysync'

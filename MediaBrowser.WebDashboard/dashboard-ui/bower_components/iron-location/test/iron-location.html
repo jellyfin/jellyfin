@@ -168,6 +168,113 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         expect(replaceStateCalls).to.be.equal(1);
         expect(pushStateCalls).to.be.equal(0);
       });
+
+      suite('when intercepting links', function() {
+        /**
+         * Clicks the given link while an iron-location element with the given
+         * urlSpaceRegex is in the same document. Returns whether the
+         * iron-location prevented the default behavior of the click.
+         *
+         * No matter what, it prevents the default behavior of the click itself
+         * to ensure that no navigation occurs (as that would interrupt
+         * running and reporting these tests!)
+         */
+        function isClickCaptured(anchor, urlSpaceRegex) {
+          var defaultWasPrevented;
+          function handler(event) {
+            expect(event.target).to.be.eq(anchor);
+            defaultWasPrevented = event.defaultPrevented;
+            event.preventDefault();
+            expect(event.defaultPrevented).to.be.eq(true);
+          }
+          window.addEventListener('click', handler);
+          var ironLocation = fixture('Solo');
+          if (urlSpaceRegex != null) {
+            ironLocation.urlSpaceRegex = urlSpaceRegex;
+          }
+          document.body.appendChild(anchor);
+          anchor.click();
+          document.body.removeChild(anchor);
+          window.removeEventListener('click', handler);
+          return defaultWasPrevented;
+        }
+
+        test('simple link to / is intercepted', function() {
+          var anchor = document.createElement('a');
+          if (document.baseURI !== window.location.href) {
+            anchor.href = makeAbsoluteUrl('/');
+          } else {
+            anchor.href = '/';
+          }
+
+          expect(isClickCaptured(anchor)).to.be.eq(true);
+          expect(pushStateCalls).to.be.equal(1);
+        });
+
+        test('link that matches url space is intercepted', function() {
+          var anchor = document.createElement('a');
+          anchor.href = makeAbsoluteUrl('/foo');
+
+          expect(isClickCaptured(anchor, '/fo+')).to.be.eq(true);
+          expect(pushStateCalls).to.be.equal(1);
+        });
+
+        test('link that doesn\'t match url space isn\'t intercepted', function() {
+          var anchor = document.createElement('a');
+          anchor.href = makeAbsoluteUrl('/bar');
+
+          expect(isClickCaptured(anchor, '/fo+')).to.be.eq(false);
+          expect(pushStateCalls).to.be.equal(0);
+        });
+
+        test('link to another domain isn\'t intercepted', function() {
+          var anchor = document.createElement('a');
+          anchor.href = 'http://example.com/';
+
+          expect(isClickCaptured(anchor)).to.be.eq(false);
+          expect(pushStateCalls).to.be.equal(0);
+        });
+
+        test('a link with target=_blank isn\'t intercepted', function() {
+          var anchor = document.createElement('a');
+          anchor.href = makeAbsoluteUrl('/');
+          anchor.target = '_blank';
+
+          expect(isClickCaptured(anchor)).to.be.eq(false);
+          expect(pushStateCalls).to.be.equal(0);
+        });
+
+        test('a link with an href to the ' +
+             'current page shouldn\'t add to history.', function() {
+          var anchor = document.createElement('a');
+          anchor.href = window.location.href;
+
+          // The click is captured, but it doesn't add to history.
+          expect(isClickCaptured(anchor)).to.be.equal(true);
+          expect(pushStateCalls).to.be.equal(0);
+        });
+
+        test('a click that has already been defaultPrevented ' +
+             'shouldn\'t result in a navigation', function() {
+           fixture('Solo');
+           var anchor = document.createElement('a');
+           anchor.href = makeAbsoluteUrl('/');
+           anchor.addEventListener('click', function(event) {
+             event.preventDefault();
+           });
+           document.body.appendChild(anchor);
+
+           var originalPushState = window.history.pushState;
+           var count = 0;
+           window.history.pushState = function() {
+             count++;
+           }
+           anchor.click();
+           window.history.pushState = originalPushState;
+
+           expect(count).to.be.equal(0);
+        })
+      });
     });
     suite('when used with other iron-location elements', function() {
       var otherUrlElem;
@@ -194,106 +301,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         urlElem.hash = 'lkjljifosjkldfjlksjfldsjf';
         assertHaveSameUrls(urlElem, otherUrlElem);
       });
-    });
-    suite('when intercepting links', function() {
-
-      /**
-       * Clicks the given link while an iron-location element with the given
-       * urlSpaceRegex is in the same document. Returns whether the
-       * iron-location prevented the default behavior of the click.
-       *
-       * No matter what, it prevents the default behavior of the click itself
-       * to ensure that no navigation occurs (as that would interrupt
-       * running and reporting these tests!)
-       */
-      function isClickCaptured(anchor, urlSpaceRegex) {
-        var defaultWasPrevented;
-        function handler(event) {
-          expect(event.target).to.be.eq(anchor);
-          defaultWasPrevented = event.defaultPrevented;
-          event.preventDefault();
-          expect(event.defaultPrevented).to.be.eq(true);
-        }
-        window.addEventListener('click', handler);
-        var ironLocation = fixture('Solo');
-        if (urlSpaceRegex != null) {
-          ironLocation.urlSpaceRegex = urlSpaceRegex;
-        }
-        document.body.appendChild(anchor);
-        anchor.click();
-        document.body.removeChild(anchor);
-        window.removeEventListener('click', handler);
-        return defaultWasPrevented;
-      }
-
-      test('simple link to / is intercepted', function() {
-        var anchor = document.createElement('a');
-        if (document.baseURI !== window.location.href) {
-          anchor.href = makeAbsoluteUrl('/');
-        } else {
-          anchor.href = '/';
-        }
-
-        expect(isClickCaptured(anchor)).to.be.eq(true);
-      });
-
-      test('link that matches url space is intercepted', function() {
-        var anchor = document.createElement('a');
-        anchor.href = makeAbsoluteUrl('/foo');
-
-        expect(isClickCaptured(anchor, '/fo+')).to.be.eq(true);
-      });
-
-      test('link that doesn\'t match url space isn\'t intercepted', function() {
-        var anchor = document.createElement('a');
-        anchor.href = makeAbsoluteUrl('/bar');
-
-        expect(isClickCaptured(anchor, '/fo+')).to.be.eq(false);
-      });
-
-      test('link to another domain isn\'t intercepted', function() {
-        var anchor = document.createElement('a');
-        anchor.href = 'http://example.com/';
-
-        expect(isClickCaptured(anchor)).to.be.eq(false);
-      });
-
-      test('a link with target=_blank isn\'t intercepted', function() {
-        var anchor = document.createElement('a');
-        anchor.href = makeAbsoluteUrl('/');
-        anchor.target = '_blank';
-
-        expect(isClickCaptured(anchor)).to.be.eq(false);
-      });
-
-      test('a link with an href to the ' +
-           'current page shouldn\'t add to history.', function() {
-        var anchor = document.createElement('a');
-        anchor.href = window.location.href;
-
-        expect(isClickCaptured(anchor)).to.be.equal(false);
-      });
-
-      test('a click that has already been defaultPrevented ' +
-           'shouldn\'t result in a navigation', function() {
-         fixture('Solo');
-         var anchor = document.createElement('a');
-         anchor.href = makeAbsoluteUrl('/');
-         anchor.addEventListener('click', function(event) {
-           event.preventDefault();
-         });
-         document.body.appendChild(anchor);
-
-         var originalPushState = window.history.pushState;
-         var count = 0;
-         window.history.pushState = function() {
-           count++;
-         }
-         anchor.click();
-         window.history.pushState = originalPushState;
-
-         expect(count).to.be.equal(0);
-      })
     });
 
     suite('supports doing synchronous redirection', function() {
