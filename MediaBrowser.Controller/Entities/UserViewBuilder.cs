@@ -20,6 +20,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
+using MoreLinq;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -1200,7 +1201,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var user = query.User;
 
-            items = libraryManager.ReplaceVideosWithPrimaryVersions(items);
+            items = items.DistinctBy(i => i.PresentationUniqueKey, StringComparer.OrdinalIgnoreCase);
 
             if (query.SortBy.Length > 0)
             {

@@ -3,6 +3,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -34,12 +35,15 @@ namespace MediaBrowser.Providers.Omdb
             _configurationManager = configurationManager;
         }
 
-        public async Task Fetch(BaseItem item, string imdbId, string language, string country, CancellationToken cancellationToken)
+        public async Task Fetch<T>(MetadataResult<T> itemResult, string imdbId, string language, string country, CancellationToken cancellationToken)
+            where T :BaseItem
         {
             if (string.IsNullOrWhiteSpace(imdbId))
             {
                 throw new ArgumentNullException("imdbId");
             }
+
+            T item = itemResult.Item;
 
             var result = await GetRootObject(imdbId, cancellationToken);
 
@@ -56,8 +60,8 @@ namespace MediaBrowser.Providers.Omdb
 
                 int year;
 
-                if (!string.IsNullOrEmpty(result.Year)
-                    && int.TryParse(result.Year, NumberStyles.Number, _usCulture, out year)
+                if (!string.IsNullOrEmpty(result.Year) && result.Year.Length >= 4
+                    && int.TryParse(result.Year.Substring(0, 4), NumberStyles.Number, _usCulture, out year)
                     && year >= 0)
                 {
                     item.ProductionYear = year;
@@ -112,15 +116,18 @@ namespace MediaBrowser.Providers.Omdb
                     item.SetProviderId(MetadataProviders.Imdb, result.imdbID);
                 }
 
-                ParseAdditionalMetadata(item, result);
+                ParseAdditionalMetadata(itemResult, result);
         }
 
-        public async Task<bool> FetchEpisodeData(BaseItem item, int episodeNumber, int seasonNumber, string imdbId, string language, string country, CancellationToken cancellationToken)
+        public async Task<bool> FetchEpisodeData<T>(MetadataResult<T> itemResult, int episodeNumber, int seasonNumber, string imdbId, string language, string country, CancellationToken cancellationToken)
+            where T : BaseItem
         {
             if (string.IsNullOrWhiteSpace(imdbId))
             {
                 throw new ArgumentNullException("imdbId");
             }
+
+            T item = itemResult.Item;
 
             var seasonResult = await GetSeasonRootObject(imdbId, seasonNumber, cancellationToken);
 
@@ -154,8 +161,8 @@ namespace MediaBrowser.Providers.Omdb
 
             int year;
 
-            if (!string.IsNullOrEmpty(result.Year)
-                && int.TryParse(result.Year, NumberStyles.Number, _usCulture, out year)
+            if (!string.IsNullOrEmpty(result.Year) && result.Year.Length >= 4
+                && int.TryParse(result.Year.Substring(0, 4), NumberStyles.Number, _usCulture, out year)
                 && year >= 0)
             {
                 item.ProductionYear = year;
@@ -210,7 +217,7 @@ namespace MediaBrowser.Providers.Omdb
                 item.SetProviderId(MetadataProviders.Imdb, result.imdbID);
             }
 
-            ParseAdditionalMetadata(item, result);
+            ParseAdditionalMetadata(itemResult, result);
 
             return true;
         }
@@ -376,8 +383,11 @@ namespace MediaBrowser.Providers.Omdb
             return Path.Combine(dataPath, filename);
         }
 
-        private void ParseAdditionalMetadata(BaseItem item, RootObject result)
+        private void ParseAdditionalMetadata<T>(MetadataResult<T> itemResult, RootObject result)
+            where T : BaseItem
         {
+            T item = itemResult.Item;
+
             // Grab series genres because imdb data is better than tvdb. Leave movies alone
             // But only do it if english is the preferred language because this data will not be localized
             if (ShouldFetchGenres(item) &&
@@ -417,6 +427,46 @@ namespace MediaBrowser.Providers.Omdb
                 // Imdb plots are usually pretty short
                 hasShortOverview.ShortOverview = result.Plot;
             }
+
+            //if (!string.IsNullOrWhiteSpace(result.Director))
+            //{
+            //    var person = new PersonInfo
+            //    {
+            //        Name = result.Director.Trim(),
+            //        Type = PersonType.Director
+            //    };
+
+            //    itemResult.AddPerson(person);
+            //}
+
+            //if (!string.IsNullOrWhiteSpace(result.Writer))
+            //{
+            //    var person = new PersonInfo
+            //    {
+            //        Name = result.Director.Trim(),
+            //        Type = PersonType.Writer
+            //    };
+
+            //    itemResult.AddPerson(person);
+            //}
+
+            //if (!string.IsNullOrWhiteSpace(result.Actors))
+            //{
+            //    var actorList = result.Actors.Split(',');
+            //    foreach (var actor in actorList)
+            //    {
+            //        if (!string.IsNullOrWhiteSpace(actor))
+            //        {
+            //            var person = new PersonInfo
+            //            {
+            //                Name = actor.Trim(),
+            //                Type = PersonType.Actor
+            //            };
+
+            //            itemResult.AddPerson(person);
+            //        }
+            //    }
+            //}
         }
 
         private bool ShouldFetchGenres(BaseItem item)
