@@ -428,45 +428,45 @@ namespace MediaBrowser.Providers.Omdb
                 hasShortOverview.ShortOverview = result.Plot;
             }
 
-            if (!string.IsNullOrWhiteSpace(result.Director))
-            {
-                var person = new PersonInfo
-                {
-                    Name = result.Director.Trim(),
-                    Type = PersonType.Director
-                };
+            //if (!string.IsNullOrWhiteSpace(result.Director))
+            //{
+            //    var person = new PersonInfo
+            //    {
+            //        Name = result.Director.Trim(),
+            //        Type = PersonType.Director
+            //    };
 
-                itemResult.AddPerson(person);
-            }
+            //    itemResult.AddPerson(person);
+            //}
 
-            if (!string.IsNullOrWhiteSpace(result.Writer))
-            {
-                var person = new PersonInfo
-                {
-                    Name = result.Director.Trim(),
-                    Type = PersonType.Writer
-                };
+            //if (!string.IsNullOrWhiteSpace(result.Writer))
+            //{
+            //    var person = new PersonInfo
+            //    {
+            //        Name = result.Director.Trim(),
+            //        Type = PersonType.Writer
+            //    };
 
-                itemResult.AddPerson(person);
-            }
+            //    itemResult.AddPerson(person);
+            //}
 
-            if (!string.IsNullOrWhiteSpace(result.Actors))
-            {
-                var actorList = result.Actors.Split(',');
-                foreach (var actor in actorList)
-                {
-                    if (!string.IsNullOrWhiteSpace(actor))
-                    {
-                        var person = new PersonInfo
-                        {
-                            Name = actor.Trim(),
-                            Type = PersonType.Actor
-                        };
+            //if (!string.IsNullOrWhiteSpace(result.Actors))
+            //{
+            //    var actorList = result.Actors.Split(',');
+            //    foreach (var actor in actorList)
+            //    {
+            //        if (!string.IsNullOrWhiteSpace(actor))
+            //        {
+            //            var person = new PersonInfo
+            //            {
+            //                Name = actor.Trim(),
+            //                Type = PersonType.Actor
+            //            };
 
-                        itemResult.AddPerson(person);
-                    }
-                }
-            }
+            //            itemResult.AddPerson(person);
+            //        }
+            //    }
+            //}
         }
 
         private bool ShouldFetchGenres(BaseItem item)
