@@ -139,7 +139,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     UseShellExecute = false,
 
                     // Must consume both stdout and stderr or deadlocks may occur
-                    RedirectStandardOutput = true,
+                    //RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     RedirectStandardInput = true,
 
@@ -174,7 +174,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             cancellationToken.Register(Stop);
 
             // MUST read both stdout and stderr asynchronously or a deadlock may occurr
-            process.BeginOutputReadLine();
+            //process.BeginOutputReadLine();
 
             onStarted();
 
