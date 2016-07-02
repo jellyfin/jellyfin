@@ -43,6 +43,7 @@ class Hls {
     if(!Hls.defaultConfig) {
        Hls.defaultConfig = {
           autoStartLoad: true,
+          startPosition: -1,
           debug: false,
           capLevelToPlayerSize: false,
           maxBufferLength: 30,
@@ -87,6 +88,7 @@ class Hls {
           abrEwmaSlowLive: 9,
           abrEwmaFastVoD: 4,
           abrEwmaSlowVoD: 15,
+          abrEwmaDefaultEstimate: 5e5, // 500 kbps
           abrBandWidthFactor : 0.8,
           abrBandWidthUpFactor : 0.7
         };
@@ -181,7 +183,7 @@ class Hls {
     this.trigger(Event.MANIFEST_LOADING, {url: url});
   }
 
-  startLoad(startPosition=0) {
+  startLoad(startPosition=-1) {
     logger.log('startLoad');
     this.levelController.startLoad();
     this.streamController.startLoad(startPosition);

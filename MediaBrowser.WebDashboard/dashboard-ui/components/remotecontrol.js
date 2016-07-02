@@ -420,9 +420,6 @@
 
             var deps = [];
 
-            deps.push('paper-icon-item');
-            deps.push('paper-item-body');
-
             require(deps, function () {
 
                 var itemsContainer = context.querySelector('.playlist');

@@ -1,0 +1,24 @@
+.collapseContent {
+    border-width: 0 1px 1px 1px;
+    padding: 1em 1.25em;
+    height: 0;
+    transition-property: height;
+    transition-duration: 300ms;
+}
+
+.emby-collapsible-button {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    text-transform: none;
+    width: 100%;
+}
+
+.emby-collapse-expandIcon {
+    transform-origin: 50% 50%;
+    transition: transform 350ms ease-out;
+}
+
+    .emby-collapse-expandIcon.expanded {
+        transform: rotate(180deg);
+    }

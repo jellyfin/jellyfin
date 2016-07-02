@@ -11,9 +11,9 @@ import EWMA from '../utils/ewma';
 
 class EwmaBandWidthEstimator {
 
-  constructor(hls,slow,fast) {
+  constructor(hls,slow,fast,defaultEstimate) {
     this.hls = hls;
-    this.defaultEstimate_ = 5e5; // 500kbps
+    this.defaultEstimate_ = defaultEstimate;
     this.minWeight_ = 0.001;
     this.minDelayMs_ = 50;
     this.slow_ = new EWMA(slow);
@@ -32,7 +32,7 @@ class EwmaBandWidthEstimator {
 
 
   getEstimate() {
-    if (!this.fast_ || this.fast_.getTotalWeight() < this.minWeight_) {
+    if (!this.fast_ || !this.slow_ || this.fast_.getTotalWeight() < this.minWeight_) {
       return this.defaultEstimate_;
     }
     //console.log('slow estimate:'+ Math.round(this.slow_.getEstimate()));
