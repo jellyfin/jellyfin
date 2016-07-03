@@ -24,6 +24,7 @@ using CommonIO;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
@@ -76,11 +77,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
         protected readonly ISessionManager SessionManager;
         protected readonly Func<ISubtitleEncoder> SubtitleEncoder;
         protected readonly Func<IMediaSourceManager> MediaSourceManager;
+        private readonly IHttpClient _httpClient;
+        private readonly IZipClient _zipClient;
 
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
         private readonly bool _hasExternalEncoder;
 
-        public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, bool hasExternalEncoder, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, Func<ISubtitleEncoder> subtitleEncoder, Func<IMediaSourceManager> mediaSourceManager)
+        public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, bool hasExternalEncoder, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, Func<ISubtitleEncoder> subtitleEncoder, Func<IMediaSourceManager> mediaSourceManager, IHttpClient httpClient, IZipClient zipClient)
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;
@@ -93,6 +96,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             SessionManager = sessionManager;
             SubtitleEncoder = subtitleEncoder;
             MediaSourceManager = mediaSourceManager;
+            _httpClient = httpClient;
+            _zipClient = zipClient;
             FFProbePath = ffProbePath;
             FFMpegPath = ffMpegPath;
 
@@ -142,6 +147,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 SetAvailableDecoders(result.Item1);
                 SetAvailableEncoders(result.Item2);
+
+                if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+                {
+                    var directory = Path.GetDirectoryName(FFMpegPath);
+
+                    if (FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.ProgramDataPath, directory))
+                    {
+                        await new FontConfigLoader(_httpClient, ConfigurationManager.ApplicationPaths, _logger, _zipClient,
+                                FileSystem).DownloadFonts(directory).ConfigureAwait(false);
+                    }
+                }
             }
         }
 

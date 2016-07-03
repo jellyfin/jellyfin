@@ -8,6 +8,7 @@
     height: 0;
     transition-property: height;
     transition-duration: 300ms;
+    overflow: hidden;
 }
 
 .emby-collapsible-button {
@@ -16,7 +17,12 @@
     align-items: center;
     text-transform: none;
     width: 100%;
+    text-align: left;
 }
+
+    .emby-collapsible-button.noflex h3 {
+        display: inline-block;
+    }
 
 .emby-collapse-expandIcon {
     transform-origin: 50% 50%;

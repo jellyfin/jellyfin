@@ -2,14 +2,11 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Net;
 using Mono.Unix.Native;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
@@ -25,11 +22,6 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
         private readonly IFileSystem _fileSystem;
         private readonly NativeEnvironment _environment;
         private readonly FFMpegInstallInfo _ffmpegInstallInfo;
-
-        private readonly string[] _fontUrls =
-        {
-            "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/ARIALUNI.7z"
-        };
 
         public FFMpegLoader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IZipClient zipClient, IFileSystem fileSystem, NativeEnvironment environment, FFMpegInstallInfo ffmpegInstallInfo)
         {
@@ -112,13 +104,6 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                 }
             }
 
-            if (_environment.OperatingSystem == OperatingSystem.Windows)
-            {
-                await DownloadFonts(versionedDirectoryPath).ConfigureAwait(false);
-            }
-
-            DeleteOlderFolders(Path.GetDirectoryName(versionedDirectoryPath), excludeFromDeletions);
-
             // Allow just one of these to be overridden, if desired.
             if (!string.IsNullOrWhiteSpace(customffMpegPath))
             {
@@ -130,30 +115,6 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             }
 
             return info;
-        }
-
-        private void DeleteOlderFolders(string path, IEnumerable<string> excludeFolders)
-        {
-            var folders = Directory.GetDirectories(path)
-                .Where(i => !excludeFolders.Contains(i, StringComparer.OrdinalIgnoreCase))
-                .ToList();
-
-            foreach (var folder in folders)
-            {
-                DeleteFolder(folder);
-            }
-        }
-
-        private void DeleteFolder(string path)
-        {
-            try
-            {
-                _fileSystem.DeleteDirectory(path, true);
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error deleting {0}", ex, path);
-            }
         }
 
         private FFMpegInfo GetExistingVersion(FFMpegInfo info, string rootEncoderPath)
@@ -270,12 +231,6 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                 _zipClient.ExtractAllFromTar(archivePath, targetPath, true);
             }
         }
-        private void Extract7zArchive(string archivePath, string targetPath)
-        {
-            _logger.Info("Extracting {0} to {1}", archivePath, targetPath);
-
-            _zipClient.ExtractAllFrom7z(archivePath, targetPath, true);
-        }
 
         private void DeleteFile(string path)
         {
@@ -289,140 +244,5 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
             }
         }
 
-        /// <summary>
-        /// Extracts the fonts.
-        /// </summary>
-        /// <param name="targetPath">The target path.</param>
-        /// <returns>Task.</returns>
-        private async Task DownloadFonts(string targetPath)
-        {
-            try
-            {
-                var fontsDirectory = Path.Combine(targetPath, "fonts");
-
-                _fileSystem.CreateDirectory(fontsDirectory);
-
-                const string fontFilename = "ARIALUNI.TTF";
-
-                var fontFile = Path.Combine(fontsDirectory, fontFilename);
-
-                if (_fileSystem.FileExists(fontFile))
-                {
-                    await WriteFontConfigFile(fontsDirectory).ConfigureAwait(false);
-                }
-                else
-                {
-                    // Kick this off, but no need to wait on it
-                    Task.Run(async () =>
-                    {
-                        await DownloadFontFile(fontsDirectory, fontFilename, new Progress<double>()).ConfigureAwait(false);
-
-                        await WriteFontConfigFile(fontsDirectory).ConfigureAwait(false);
-                    });
-                }
-            }
-            catch (HttpException ex)
-            {
-                // Don't let the server crash because of this
-                _logger.ErrorException("Error downloading ffmpeg font files", ex);
-            }
-            catch (Exception ex)
-            {
-                // Don't let the server crash because of this
-                _logger.ErrorException("Error writing ffmpeg font files", ex);
-            }
-        }
-
-        /// <summary>
-        /// Downloads the font file.
-        /// </summary>
-        /// <param name="fontsDirectory">The fonts directory.</param>
-        /// <param name="fontFilename">The font filename.</param>
-        /// <returns>Task.</returns>
-        private async Task DownloadFontFile(string fontsDirectory, string fontFilename, IProgress<double> progress)
-        {
-            var existingFile = Directory
-                .EnumerateFiles(_appPaths.ProgramDataPath, fontFilename, SearchOption.AllDirectories)
-                .FirstOrDefault();
-
-            if (existingFile != null)
-            {
-                try
-                {
-                    _fileSystem.CopyFile(existingFile, Path.Combine(fontsDirectory, fontFilename), true);
-                    return;
-                }
-                catch (IOException ex)
-                {
-                    // Log this, but don't let it fail the operation
-                    _logger.ErrorException("Error copying file", ex);
-                }
-            }
-
-            string tempFile = null;
-
-            foreach (var url in _fontUrls)
-            {
-                progress.Report(0);
-
-                try
-                {
-                    tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
-                    {
-                        Url = url,
-                        Progress = progress
-
-                    }).ConfigureAwait(false);
-
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    // The core can function without the font file, so handle this
-                    _logger.ErrorException("Failed to download ffmpeg font file from {0}", ex, url);
-                }
-            }
-
-            if (string.IsNullOrEmpty(tempFile))
-            {
-                return;
-            }
-
-            Extract7zArchive(tempFile, fontsDirectory);
-
-            try
-            {
-                _fileSystem.DeleteFile(tempFile);
-            }
-            catch (IOException ex)
-            {
-                // Log this, but don't let it fail the operation
-                _logger.ErrorException("Error deleting temp file {0}", ex, tempFile);
-            }
-        }
-
-        /// <summary>
-        /// Writes the font config file.
-        /// </summary>
-        /// <param name="fontsDirectory">The fonts directory.</param>
-        /// <returns>Task.</returns>
-        private async Task WriteFontConfigFile(string fontsDirectory)
-        {
-            const string fontConfigFilename = "fonts.conf";
-            var fontConfigFile = Path.Combine(fontsDirectory, fontConfigFilename);
-
-            if (!_fileSystem.FileExists(fontConfigFile))
-            {
-                var contents = string.Format("<?xml version=\"1.0\"?><fontconfig><dir>{0}</dir><alias><family>Arial</family><prefer>Arial Unicode MS</prefer></alias></fontconfig>", fontsDirectory);
-
-                var bytes = Encoding.UTF8.GetBytes(contents);
-
-                using (var fileStream = _fileSystem.GetFileStream(fontConfigFile, FileMode.Create, FileAccess.Write,
-                                                    FileShare.Read, true))
-                {
-                    await fileStream.WriteAsync(bytes, 0, bytes.Length);
-                }
-            }
-        }
     }
 }
