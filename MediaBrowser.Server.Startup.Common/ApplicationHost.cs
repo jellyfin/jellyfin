@@ -660,7 +660,9 @@ namespace MediaBrowser.Server.Startup.Common
                 ChannelManager,
                 SessionManager,
                 () => SubtitleEncoder,
-                () => MediaSourceManager);
+                () => MediaSourceManager,
+                HttpClient,
+                ZipClient);
 
             MediaEncoder = mediaEncoder;
             RegisterSingleInstance(MediaEncoder);
