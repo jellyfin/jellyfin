@@ -17,6 +17,7 @@
     align-items: center;
     text-transform: none;
     width: 100%;
+    text-align: left;
 }
 
 .emby-collapse-expandIcon {
