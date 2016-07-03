@@ -2975,8 +2975,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             if (query.IsVirtualItem.HasValue)
             {
-                whereClauses.Add("IsVirtualItem=@IsVirtualItem");
-                cmd.Parameters.Add(cmd, "@IsVirtualItem", DbType.Boolean).Value = query.IsVirtualItem.Value;
+                if (_config.Configuration.SchemaVersion >= 90)
+                {
+                    whereClauses.Add("IsVirtualItem=@IsVirtualItem");
+                    cmd.Parameters.Add(cmd, "@IsVirtualItem", DbType.Boolean).Value = query.IsVirtualItem.Value;
+                }
+                else if (!query.IsVirtualItem.Value)
+                {
+                    whereClauses.Add("LocationType<>'Virtual'");
+                }
             }
             if (query.MediaTypes.Length == 1)
             {
