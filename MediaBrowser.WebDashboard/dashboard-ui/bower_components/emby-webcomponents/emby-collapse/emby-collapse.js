@@ -71,9 +71,9 @@
 
         var title = this.getAttribute('title');
 
-        var html = '<button is="emby-button" type="button" on-click="toggleExpand" id="expandButton" class="emby-collapsible-button">\
+        var html = '<button is="emby-button" type="button" on-click="toggleExpand" id="expandButton" class="emby-collapsible-button iconRight">\
                 <h3 class="emby-collapsible-title" title="' + title + '">' + title + '</h3>\
-                <i style="margin-left: auto; margin-right: .5em;" class="md-icon emby-collapse-expandIcon">expand_more</i>\
+                <i class="md-icon emby-collapse-expandIcon">expand_more</i>\
             </button>';
 
         this.insertAdjacentHTML('afterbegin', html);

@@ -20,6 +20,10 @@
     text-align: left;
 }
 
+    .emby-collapsible-button.noflex h3 {
+        display: inline-block;
+    }
+
 .emby-collapse-expandIcon {
     transform-origin: 50% 50%;
     transition: transform 180ms ease-out;
