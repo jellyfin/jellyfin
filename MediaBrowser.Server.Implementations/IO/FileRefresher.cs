@@ -33,13 +33,13 @@ namespace MediaBrowser.Server.Implementations.IO
         {
             logger.Debug("New file refresher created for {0}", path);
             Path = path;
-            _affectedPaths.Add(path);
 
             _fileSystem = fileSystem;
             ConfigurationManager = configurationManager;
             LibraryManager = libraryManager;
             TaskManager = taskManager;
             Logger = logger;
+            AddPath(path);
         }
 
         private void AddAffectedPath(string path)

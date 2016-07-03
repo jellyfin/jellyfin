@@ -47,9 +47,11 @@
 
         var collapseContent = this.parentNode.querySelector('.collapseContent');
 
-        if (collapseContent.classList.contains('expanded')) {
+        if (collapseContent.expanded) {
+            collapseContent.expanded = false;
             slideUpToHide(this, collapseContent);
         } else {
+            collapseContent.expanded = true;
             slideDownToShow(this, collapseContent);
         }
     }

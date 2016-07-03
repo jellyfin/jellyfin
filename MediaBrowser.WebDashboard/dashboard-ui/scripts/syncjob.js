@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'datetime', 'paper-progress', 'listViewStyle', 'paper-icon-button-light', 'emby-button'], function ($, datetime) {
+﻿define(['jQuery', 'datetime', 'listViewStyle', 'paper-icon-button-light', 'emby-button'], function ($, datetime) {
 
     function renderJob(page, job, dialogOptions) {
 
@@ -83,7 +83,7 @@
         html += '</div>';
 
         html += '<div class="secondary" style="padding-top:5px;">';
-        html += '<paper-progress class="mini" style="width:100%;" value="' + (jobItem.Progress || 0) + '"></paper-progress>';
+        html += '<div style="background:#e0e0e0;height:4px;"><div style="background:#52B54B;width:' + (jobItem.Progress || 0) + '%;height:100%;"></div></div>';
         html += '</div>';
 
         html += '</div>';
