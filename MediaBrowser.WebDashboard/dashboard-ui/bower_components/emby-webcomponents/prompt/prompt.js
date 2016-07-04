@@ -54,7 +54,7 @@ define(['dialogHelper', 'layoutManager', 'globalize', 'material-icons', 'css!./s
 
         html += '<form>';
 
-        html += '<div class="inputContainer">';
+        html += '<div class="inputContainer" style="margin-bottom:0;">';
         html += '<input is="emby-input" type="text" autoFocus class="txtPromptValue" value="' + (options.value || '') + '" label="' + (options.label || '') + '"/>';
 
         if (options.description) {

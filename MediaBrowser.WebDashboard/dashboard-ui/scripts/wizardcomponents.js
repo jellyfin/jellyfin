@@ -19,6 +19,7 @@
             }
 
             if (systemInfo.OperatingSystem == 'Windows' && systemInfo.SystemArchitecture != 'Arm') {
+
                 view.querySelector('.suggestedLocation').innerHTML = Globalize.translate('FFmpegSuggestedDownload', '<a target="_blank" href="https://ffmpeg.zeranoe.com/builds">https://ffmpeg.zeranoe.com</a>');
 
                 if (systemInfo.SystemArchitecture == 'X86') {
@@ -28,29 +29,27 @@
                     instructions = 'Download FFmpeg 64-Bit Static';
                 }
 
-                view.querySelector('.downloadInstructions').innerHTML = instructions;
-
             } else if (systemInfo.OperatingSystem == 'Linux' && systemInfo.SystemArchitecture != 'Arm') {
 
                 view.querySelector('.suggestedLocation').innerHTML = Globalize.translate('FFmpegSuggestedDownload', '<a target="_blank" href="http://johnvansickle.com/ffmpeg">http://johnvansickle.com/ffmpeg</a>');
+
                 if (systemInfo.SystemArchitecture == 'X86') {
                     instructions = 'Download x86 build';
                 }
                 else if (systemInfo.SystemArchitecture == 'X64') {
                     instructions = 'Download x86_64 build';
                 }
-                view.querySelector('.downloadInstructions').innerHTML = instructions;
 
             } else if (systemInfo.OperatingSystem == 'Osx' && systemInfo.SystemArchitecture == 'X64') {
 
                 view.querySelector('.suggestedLocation').innerHTML = Globalize.translate('FFmpegSuggestedDownload', '<a target="_blank" href="http://evermeet.cx/ffmpeg">http://evermeet.cx/ffmpeg</a>');
                 instructions = 'Download both ffmpeg and ffprobe, and extract them to the same folder.';
-                view.querySelector('.downloadInstructions').innerHTML = instructions;
 
             } else {
                 view.querySelector('.suggestedLocation').innerHTML = Globalize.translate('FFmpegSuggestedDownload', '<a target="_blank" href="http://ffmpeg.org">https://ffmpeg.org/download.html</a>');
-                view.querySelector('.downloadInstructions').innerHTML = '';
             }
+
+            view.querySelector('.downloadInstructions').innerHTML = instructions;
 
             var selectEncoderPath = view.querySelector('#selectEncoderPath');
             selectEncoderPath.value = 'Custom';
