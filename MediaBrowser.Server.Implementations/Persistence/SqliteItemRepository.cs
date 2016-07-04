@@ -123,7 +123,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         protected override async Task<IDbConnection> CreateConnection(bool isReadOnly = false)
         {
-            var cacheSize = _config.Configuration.SqliteCacheSizeKb;
+            var cacheSize = _config.Configuration.SqliteCacheSize;
             if (cacheSize <= 0)
             {
                 cacheSize = Math.Min(Environment.ProcessorCount * 50000, 200000);
