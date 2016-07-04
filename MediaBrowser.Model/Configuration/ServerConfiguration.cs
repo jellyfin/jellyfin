@@ -214,7 +214,6 @@ namespace MediaBrowser.Model.Configuration
             Migrations = new string[] { };
             SqliteCacheSize = 0;
 
-            EnableCustomPathSubFolders = true;
             EnableLocalizedGuids = true;
             DisplaySpecialsWithinSeasons = true;
 
