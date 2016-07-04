@@ -71,7 +71,7 @@
 
 .dialog .buttons {
     position: relative;
-    padding: 8px 8px 8px 24px;
+    padding: 8px 8px 0 24px;
     margin: 0;
     color: #3f51b5;
     display: -ms-flexbox;

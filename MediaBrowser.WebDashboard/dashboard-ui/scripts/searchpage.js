@@ -176,6 +176,8 @@
             loadSuggestions(view);
         }
 
+        libraryBrowser.createCardMenus(searchResults);
+
         view.querySelector('.txtSearch').addEventListener('input', function () {
             onSearchChange(this.value);
         });

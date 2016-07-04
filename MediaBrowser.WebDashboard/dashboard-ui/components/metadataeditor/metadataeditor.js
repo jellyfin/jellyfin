@@ -283,22 +283,19 @@
 
         items.push({
             name: Globalize.translate('ButtonEditImages'),
-            id: 'images',
-            ironIcon: 'photo'
+            id: 'images'
         });
 
         if (LibraryBrowser.canIdentify(user, currentItem.Type)) {
             items.push({
                 name: Globalize.translate('ButtonIdentify'),
-                id: 'identify',
-                ironIcon: 'info'
+                id: 'identify'
             });
         }
 
         items.push({
             name: Globalize.translate('ButtonRefresh'),
-            id: 'refresh',
-            ironIcon: 'refresh'
+            id: 'refresh'
         });
 
         require(['actionsheet'], function (actionsheet) {
@@ -516,7 +513,7 @@
             html += '</div>';
 
             if (formatString) {
-                html += '<a class="clearLink ' + buttonId + '" href="#" target="_blank" data-role="none" style="float: none; width: 1.75em"><button type="button" is="paper-icon-button-light"><iron-icon icon="open-in-browser"></iron-icon></button></a>';
+                html += '<a class="clearLink ' + buttonId + '" href="#" target="_blank" data-role="none" style="float: none; width: 1.75em"><button type="button" is="paper-icon-button-light" class="autoSize"><i class="md-icon">open_in_browser</i></button></a>';
             }
             html += '</div>';
 
@@ -980,7 +977,7 @@
 
             html += '</div>';
 
-            html += '<button type="button" is="paper-icon-button-light" data-index="' + i + '" class="btnRemoveFromEditorList"><iron-icon icon="delete"></iron-icon></button>';
+            html += '<button type="button" is="paper-icon-button-light" data-index="' + i + '" class="btnRemoveFromEditorList autoSize"><i class="md-icon">delete</i></button>';
 
             html += '</div>';
         }
@@ -1017,7 +1014,7 @@
             html += '</a>';
             html += '</div>';
 
-            html += '<button type="button" is="paper-icon-button-light" data-index="' + i + '" class="btnDeletePerson"><iron-icon icon="delete"></iron-icon></button>';
+            html += '<button type="button" is="paper-icon-button-light" data-index="' + i + '" class="btnDeletePerson autoSize"><i class="md-icon">delete</i></button>';
 
             html += '</div>';
         }

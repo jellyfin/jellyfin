@@ -2784,7 +2784,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/mysyncjob.html',
-            dependencies: ['paper-fab', 'paper-item-body', 'paper-icon-item'],
+            dependencies: [],
             autoFocus: false,
             transition: 'fade',
             controller: 'scripts/syncjob'
@@ -2946,7 +2946,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/syncjob.html',
-            dependencies: ['paper-fab', 'paper-item-body', 'paper-icon-item'],
+            dependencies: [],
             autoFocus: false,
             transition: 'fade',
             controller: 'scripts/syncjob'

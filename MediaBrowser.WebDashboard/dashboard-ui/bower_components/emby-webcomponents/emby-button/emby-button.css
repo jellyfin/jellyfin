@@ -124,6 +124,18 @@
     min-width: initial !important;
 }
 
+[is=emby-button].iconRight i {
+    margin-left: auto;
+    margin-right: .25em;
+}
+
+[is=emby-button].noflex.iconRight i {
+    position: absolute;
+    right: 0;
+    top: 25%;
+    margin-right: .5em;
+}
+
 [is=paper-icon-button-light] {
     position: relative;
     display: inline-flex;
