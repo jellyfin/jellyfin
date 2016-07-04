@@ -123,7 +123,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         protected override async Task<IDbConnection> CreateConnection(bool isReadOnly = false)
         {
-            var connection = await DbConnector.Connect(DbFilePath, false, false, _config.Configuration.SqliteCachePages).ConfigureAwait(false);
+            var cacheSize = _config.Configuration.SqliteCacheSize;
+            if (cacheSize <= 0)
+            {
+                cacheSize = Math.Min(Environment.ProcessorCount * 50000, 200000);
+            }
+
+            var connection = await DbConnector.Connect(DbFilePath, false, false, 0 - cacheSize).ConfigureAwait(false);
 
             connection.RunQueries(new[]
             {
@@ -2969,8 +2975,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             if (query.IsVirtualItem.HasValue)
             {
-                whereClauses.Add("IsVirtualItem=@IsVirtualItem");
-                cmd.Parameters.Add(cmd, "@IsVirtualItem", DbType.Boolean).Value = query.IsVirtualItem.Value;
+                if (_config.Configuration.SchemaVersion >= 90)
+                {
+                    whereClauses.Add("IsVirtualItem=@IsVirtualItem");
+                    cmd.Parameters.Add(cmd, "@IsVirtualItem", DbType.Boolean).Value = query.IsVirtualItem.Value;
+                }
+                else if (!query.IsVirtualItem.Value)
+                {
+                    whereClauses.Add("LocationType<>'Virtual'");
+                }
             }
             if (query.MediaTypes.Length == 1)
             {
