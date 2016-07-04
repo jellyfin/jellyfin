@@ -390,6 +390,10 @@
              href: 'devicesupload.html',
              name: Globalize.translate('TabCameraUpload')
          },
+        {
+            href: 'appservices.html?context=sync',
+            name: Globalize.translate('TabServices')
+        },
          {
              href: 'syncsettings.html',
              name: Globalize.translate('TabSettings')
