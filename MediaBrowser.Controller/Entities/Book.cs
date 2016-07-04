@@ -17,7 +17,13 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
         public string SeriesName { get; set; }
+
+        public string FindSeriesName()
+        {
+            return SeriesName;
+        }
 
         public override bool CanDownload()
         {

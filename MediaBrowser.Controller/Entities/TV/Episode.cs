@@ -25,11 +25,11 @@ namespace MediaBrowser.Controller.Entities.TV
         public List<Guid> RemoteTrailerIds { get; set; }
         public List<MediaUrl> RemoteTrailers { get; set; }
 
-    /// <summary>
-    /// Gets the season in which it aired.
-    /// </summary>
-    /// <value>The aired season.</value>
-    public int? AirsBeforeSeasonNumber { get; set; }
+        /// <summary>
+        /// Gets the season in which it aired.
+        /// </summary>
+        /// <value>The aired season.</value>
+        public int? AirsBeforeSeasonNumber { get; set; }
         public int? AirsAfterSeasonNumber { get; set; }
         public int? AirsBeforeEpisodeNumber { get; set; }
 
@@ -166,13 +166,21 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
-        public string SeriesName
+        public string SeriesName { get; set; }
+
+        [IgnoreDataMember]
+        public string SeasonName { get; set; }
+
+        public string FindSeasonName()
         {
-            get
-            {
-                var series = Series;
-                return series == null ? null : series.Name;
-            }
+            var season = Season;
+            return season == null ? SeasonName : season.Name;
+        }
+
+        public string FindSeriesName()
+        {
+            var series = Series;
+            return series == null ? SeriesName : series.Name;
         }
 
         /// <summary>

@@ -117,7 +117,7 @@ namespace MediaBrowser.Api
             config.EnableStandaloneMusicKeys = true;
             config.EnableCaseSensitiveItemIds = true;
             //config.EnableFolderView = true;
-            config.SchemaVersion = 97;
+            config.SchemaVersion = 99;
         }
 
         public void Post(UpdateStartupConfiguration request)
