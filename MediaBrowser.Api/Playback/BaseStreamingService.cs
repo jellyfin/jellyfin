@@ -341,7 +341,7 @@ namespace MediaBrowser.Api.Playback
             // h264 (h264_nvenc)
             else if (string.Equals(videoCodec, "h264_nvenc", StringComparison.OrdinalIgnoreCase))
             {
-                param = "-preset high-performance";
+                param = "-preset default";
             }
 
             // webm
