@@ -95,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        public const int LatestSchemaVersion = 97;
+        public const int LatestSchemaVersion = 99;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -271,6 +271,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "IsVirtualItem", "BIT");
             _connection.AddColumn(Logger, "TypedBaseItems", "SeriesName", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "UserDataKey", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "SeasonName", "Text");
 
             _connection.AddColumn(Logger, "UserDataKeys", "Priority", "INT");
             _connection.AddColumn(Logger, "ItemValues", "CleanValue", "Text");
@@ -402,7 +403,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "Album",
             "CriticRating",
             "CriticRatingSummary",
-            "IsVirtualItem"
+            "IsVirtualItem",
+            "SeriesName",
+            "SeasonName"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -522,7 +525,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "Album",
                 "IsVirtualItem",
                 "SeriesName",
-                "UserDataKey"
+                "UserDataKey",
+                "SeasonName"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -944,7 +948,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     var hasSeries = item as IHasSeries;
                     if (hasSeries != null)
                     {
-                        _saveItemCommand.GetParameter(index++).Value = hasSeries.SeriesName;
+                        _saveItemCommand.GetParameter(index++).Value = hasSeries.FindSeriesName();
                     }
                     else
                     {
@@ -952,6 +956,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     }
 
                     _saveItemCommand.GetParameter(index++).Value = item.GetUserDataKeys().FirstOrDefault();
+
+                    var episode = item as Episode;
+                    if (episode != null)
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = episode.FindSeasonName();
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
 
                     _saveItemCommand.Transaction = transaction;
 
@@ -1373,6 +1387,24 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!reader.IsDBNull(58))
             {
                 item.IsVirtualItem = reader.GetBoolean(58);
+            }
+
+            var hasSeries = item as IHasSeries;
+            if (hasSeries != null)
+            {
+                if (!reader.IsDBNull(59))
+                {
+                    hasSeries.SeriesName = reader.GetString(59);
+                }
+            }
+
+            var episode = item as Episode;
+            if (episode != null)
+            {
+                if (!reader.IsDBNull(60))
+                {
+                    episode.SeasonName = reader.GetString(60);
+                }
             }
 
             return item;

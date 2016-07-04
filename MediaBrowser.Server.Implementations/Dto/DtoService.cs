@@ -1076,15 +1076,11 @@ namespace MediaBrowser.Server.Implementations.Dto
             dto.PreferredMetadataCountryCode = item.PreferredMetadataCountryCode;
             dto.PreferredMetadataLanguage = item.PreferredMetadataLanguage;
 
-            var hasCriticRating = item as IHasCriticRating;
-            if (hasCriticRating != null)
-            {
-                dto.CriticRating = hasCriticRating.CriticRating;
+            dto.CriticRating = item.CriticRating;
 
-                if (fields.Contains(ItemFields.CriticRatingSummary))
-                {
-                    dto.CriticRatingSummary = hasCriticRating.CriticRatingSummary;
-                }
+            if (fields.Contains(ItemFields.CriticRatingSummary))
+            {
+                dto.CriticRatingSummary = item.CriticRatingSummary;
             }
 
             var hasTrailers = item as IHasTrailers;
@@ -1127,11 +1123,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (fields.Contains(ItemFields.ShortOverview))
             {
-                var hasShortOverview = item as IHasShortOverview;
-                if (hasShortOverview != null)
-                {
-                    dto.ShortOverview = hasShortOverview.ShortOverview;
-                }
+                dto.ShortOverview = item.ShortOverview;
             }
 
             // If there are no backdrops, indicate what parent has them in case the Ui wants to allow inheritance
@@ -1426,14 +1418,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     dto.SeasonId = seasonId.Value.ToString("N");
                 }
 
-                var episodeSeason = episode.Season;
-                if (episodeSeason != null)
-                {
-                    if (fields.Contains(ItemFields.SeasonName))
-                    {
-                        dto.SeasonName = episodeSeason.Name;
-                    }
-                }
+                dto.SeasonName = episode.SeasonName;
 
                 var episodeSeries = episode.Series;
 
@@ -1483,14 +1468,19 @@ namespace MediaBrowser.Server.Implementations.Dto
             var season = item as Season;
             if (season != null)
             {
+                dto.SeriesName = season.SeriesName;
+
                 series = season.Series;
 
                 if (series != null)
                 {
                     dto.SeriesId = GetDtoId(series);
-                    dto.SeriesName = series.Name;
                     dto.AirTime = series.AirTime;
-                    dto.SeriesStudio = series.Studios.FirstOrDefault();
+
+                    if (fields.Contains(ItemFields.SeriesStudio))
+                    {
+                        dto.SeriesStudio = series.Studios.FirstOrDefault();
+                    }
 
                     if (options.GetImageLimit(ImageType.Primary) > 0)
                     {
