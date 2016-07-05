@@ -159,7 +159,7 @@
         }
 
         self.submit = function () {
-            page.querySelector('.btnSubmitListingsContainer').click();
+            page.querySelector('.btnSubmitListings').click();
         };
 
         function onSelectPathClick(e) {
