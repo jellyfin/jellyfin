@@ -45,18 +45,18 @@
             return context.savedQueryKey;
         }
 
-        function reloadItems(page) {
+        function reloadItems() {
 
             Dashboard.showLoadingMsg();
 
-            var query = getQuery(page);
+            var query = getQuery(tabContent);
 
             ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (result) {
 
                 // Scroll back up so they can see the results from the beginning
                 window.scrollTo(0, 0);
 
-                updateFilterControls(page);
+                updateFilterControls(tabContent);
 
                 var pagingHtml = LibraryBrowser.getQueryPagingHtml({
                     startIndex: query.StartIndex,
@@ -147,12 +147,12 @@
 
                 function onNextPageClick() {
                     query.StartIndex += query.Limit;
-                    reloadItems(tabContent);
+                    reloadItems();
                 }
 
                 function onPreviousPageClick() {
                     query.StartIndex -= query.Limit;
-                    reloadItems(tabContent);
+                    reloadItems();
                 }
 
                 elems = tabContent.querySelectorAll('.btnNextPage');
@@ -165,7 +165,7 @@
                     elems[i].addEventListener('click', onPreviousPageClick);
                 }
 
-                if (!items.length) {
+                if (!result.Items.length) {
                     html = '<p style="text-align:center;">' + Globalize.translate('MessageNoTrailersFound') + '</p>';
                 }
 
@@ -173,7 +173,7 @@
                 itemsContainer.innerHTML = html;
                 imageLoader.lazyChildren(itemsContainer);
 
-                libraryBrowser.saveQueryValues(getSavedQueryKey(page), query);
+                libraryBrowser.saveQueryValues(getSavedQueryKey(tabContent), query);
 
                 Dashboard.hideLoadingMsg();
             });
@@ -190,7 +190,7 @@
 
                 Events.on(filterDialog, 'filterchange', function () {
                     getQuery(tabContent).StartIndex = 0;
-                    reloadItems(tabContent);
+                    reloadItems();
                 });
 
                 filterDialog.show();
@@ -211,7 +211,7 @@
                 var query = getQuery(tabContent);
                 query.NameStartsWithOrGreater = newValue;
                 query.StartIndex = 0;
-                reloadItems(tabContent);
+                reloadItems();
             });
 
             self.alphaPicker = new alphaPicker({
@@ -255,7 +255,7 @@
                     }],
                     callback: function () {
                         getQuery(tabContent).StartIndex = 0;
-                        reloadItems(tabContent);
+                        reloadItems();
                     },
                     query: getQuery(tabContent),
                     button: e.target
@@ -271,7 +271,7 @@
 
         self.renderTab = function () {
 
-            reloadItems(tabContent);
+            reloadItems();
             updateFilterControls(tabContent);
         };
 
