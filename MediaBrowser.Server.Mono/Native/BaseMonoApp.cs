@@ -183,6 +183,14 @@ namespace MediaBrowser.Server.Mono.Native
             {
                 info.SystemArchitecture = Architecture.Arm;
             }
+            else if (System.Environment.Is64BitOperatingSystem)
+            {
+                info.SystemArchitecture = Architecture.X64;
+            }
+            else 
+            {
+                info.SystemArchitecture = Architecture.X86;
+            }
 
             info.OperatingSystemVersionString = string.IsNullOrWhiteSpace(sysName) ?
                 System.Environment.OSVersion.VersionString :
@@ -198,14 +206,21 @@ namespace MediaBrowser.Server.Mono.Native
             if (_unixName == null)
             {
                 var uname = new Uname();
-                Utsname utsname;
-                var callResult = Syscall.uname(out utsname);
-                if (callResult == 0)
+                try
                 {
-                    uname.sysname = utsname.sysname;
-                    uname.machine = utsname.machine;
-                }
+                    Utsname utsname;
+                    var callResult = Syscall.uname(out utsname);
+                    if (callResult == 0)
+                    {
+                        uname.sysname = utsname.sysname ?? string.Empty;
+                        uname.machine = utsname.machine ?? string.Empty;
+                    }
 
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error getting unix name", ex);
+                }
                 _unixName = uname;
             }
             return _unixName;
