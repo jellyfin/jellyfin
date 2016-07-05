@@ -1,4 +1,4 @@
-﻿<div id="liveTvSeriesTimerPage" data-role="page" class="page libraryPage liveTvPage noSecondaryNavPage" data-contextname="${HeaderLiveTv}" data-require="jqmcheckbox,jqmcontrolgroup,emby-button,jqmcollapsible,scripts/livetvcomponents,scripts/livetvseriestimer,livetvcss,paper-checkbox,paper-input" data-backbutton="true" data-menubutton="false">
+﻿<div id="liveTvSeriesTimerPage" data-role="page" class="page libraryPage liveTvPage noSecondaryNavPage" data-contextname="${HeaderLiveTv}" data-require="jqmcheckbox,jqmcontrolgroup,emby-button,emby-collapse,scripts/livetvcomponents,scripts/livetvseriestimer,livetvcss,paper-checkbox,paper-input" data-backbutton="true" data-menubutton="false">
 
     <div data-role="content">
 
@@ -42,9 +42,8 @@
                     <paper-checkbox id="chkAllChannels">${OptionRecordOnAllChannels}</paper-checkbox>
                 </div>
                 <br />
-                <div data-role="collapsible" data-mini="true">
-                    <h3>${HeaderAdvanced}</h3>
-                    <div>
+                <div is="emby-collapse" title="${HeaderAdvanced}">
+                    <div class="collapseContent">
                         <br />
                         <div>
                             <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>

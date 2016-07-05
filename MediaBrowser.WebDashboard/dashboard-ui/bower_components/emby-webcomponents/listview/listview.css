@@ -11,7 +11,7 @@ button.listItem {
 }
 
 .listItem {
-    display: flex;
+    display: block;
     align-items: center;
     text-align: left;
     padding: 0 1em !important;
@@ -26,12 +26,16 @@ button.listItem {
         flex-shrink: 0;
     }
 
+    .listItem > * {
+        display: inline-block;
+        vertical-align: middle;
+    }
+
 .listItemBody {
     flex-grow: 1;
     padding: 0 1.15em;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: flex;
     flex-direction: column;
     vertical-align: middle;
     justify-content: center;
@@ -128,3 +132,11 @@ button.listItem {
         box-shadow: none !important;
         background-color: transparent !important;
     }
+
+
+@supports (display: flex) {
+
+    .listItem, .listItemBody {
+        display: flex;
+    }
+}
