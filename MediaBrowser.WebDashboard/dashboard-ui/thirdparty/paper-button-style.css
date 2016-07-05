@@ -157,25 +157,6 @@ paper-icon-button paper-ripple {
     color: #444 !important;
 }
 
-paper-tabs {
-    background-color: #020202;
-    color: #fff;
-    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
-}
-
-paper-tab {
-    text-transform: uppercase;
-    font-weight: 400;
-}
-
-paper-tabs #selectionBar {
-    background-color: #52B54B !important;
-}
-
-paper-tabs paper-ripple {
-    color: #52B54B !important;
-}
-
 paper-fab {
     vertical-align: middle;
     display: inline-flex !important;
