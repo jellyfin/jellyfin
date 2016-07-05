@@ -18,6 +18,7 @@
             } else {
                 elem.classList.add('hide');
             }
+            elem.style.height = 'auto';
         }, 300);
 
         var icon = button.querySelector('i');
@@ -26,6 +27,9 @@
     }
 
     function slideUpToHide(button, elem) {
+
+        elem.style.height = elem.offsetHeight + 'px';
+        elem.offsetHeight;
 
         elem.classList.remove('expanded');
         elem.style.height = '0';
