@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 namespace MediaBrowser.Controller.Entities
 {
     public interface IHasSeries
@@ -8,7 +10,8 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The name of the series.</value>
         string SeriesName { get; set; }
-
         string FindSeriesName();
+        Guid? SeriesId { get; set; }
+        Guid? FindSeriesId();
     }
 }

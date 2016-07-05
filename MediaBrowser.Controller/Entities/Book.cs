@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Providers;
+﻿using System;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -19,10 +20,16 @@ namespace MediaBrowser.Controller.Entities
 
         [IgnoreDataMember]
         public string SeriesName { get; set; }
+        public Guid? SeriesId { get; set; }
 
         public string FindSeriesName()
         {
             return SeriesName;
+        }
+
+        public Guid? FindSeriesId()
+        {
+            return SeriesId;
         }
 
         public override bool CanDownload()

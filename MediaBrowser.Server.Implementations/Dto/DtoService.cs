@@ -1316,6 +1316,12 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 dto.SeasonName = episode.SeasonName;
 
+                var seriesId = episode.SeriesId;
+                if (seriesId.HasValue)
+                {
+                    dto.SeriesId = seriesId.Value.ToString("N");
+                }
+
                 Series episodeSeries = null;
 
                 if (fields.Contains(ItemFields.SeriesGenres))
@@ -1327,13 +1333,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     }
                 }
 
-                episodeSeries = episodeSeries ?? episode.Series;
-                if (episodeSeries != null)
-                {
-                    dto.SeriesId = GetDtoId(episodeSeries);
-                }
-
-                if (options.GetImageLimit(ImageType.Primary) > 0)
+                if (fields.Contains(ItemFields.SeriesPrimaryImage))
                 {
                     episodeSeries = episodeSeries ?? episode.Series;
                     if (episodeSeries != null)
@@ -1369,18 +1369,27 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 dto.SeriesName = season.SeriesName;
 
-                series = season.Series;
-
-                if (series != null)
+                var seriesId = season.SeriesId;
+                if (seriesId.HasValue)
                 {
-                    dto.SeriesId = GetDtoId(series);
+                    dto.SeriesId = seriesId.Value.ToString("N");
+                }
 
-                    if (fields.Contains(ItemFields.SeriesStudio))
+                series = null;
+
+                if (fields.Contains(ItemFields.SeriesStudio))
+                {
+                    series = series ?? season.Series;
+                    if (series != null)
                     {
                         dto.SeriesStudio = series.Studios.FirstOrDefault();
                     }
+                }
 
-                    if (options.GetImageLimit(ImageType.Primary) > 0)
+                if (fields.Contains(ItemFields.SeriesPrimaryImage))
+                {
+                    series = series ?? season.Series;
+                    if (series != null)
                     {
                         dto.SeriesPrimaryImageTag = GetImageCacheTag(series, ImageType.Primary);
                     }
