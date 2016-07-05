@@ -249,6 +249,13 @@ namespace MediaBrowser.Controller.Entities.TV
 
         [IgnoreDataMember]
         public Guid? SeasonId { get; set; }
+        public Guid? SeriesId { get; set; }
+
+        public Guid? FindSeriesId()
+        {
+            var series = Series;
+            return series == null ? (Guid?)null : series.Id;
+        }
 
         public override IEnumerable<Guid> GetAncestorIds()
         {

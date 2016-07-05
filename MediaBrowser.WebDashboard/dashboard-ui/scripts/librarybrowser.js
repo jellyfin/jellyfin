@@ -1993,6 +1993,15 @@
                         enableImageEnhancers: enableImageEnhancers
                     });
 
+                } else if (options.preferThumb && imageItem.SeriesThumbImageTag && options.inheritThumb !== false) {
+
+                    imgUrl = ApiClient.getScaledImageUrl(imageItem.SeriesId, {
+                        type: "Thumb",
+                        maxWidth: thumbWidth,
+                        tag: imageItem.SeriesThumbImageTag,
+                        enableImageEnhancers: enableImageEnhancers
+                    });
+
                 } else if (options.preferThumb && imageItem.ParentThumbItemId && options.inheritThumb !== false) {
 
                     imgUrl = ApiClient.getScaledImageUrl(imageItem.ParentThumbItemId, {
