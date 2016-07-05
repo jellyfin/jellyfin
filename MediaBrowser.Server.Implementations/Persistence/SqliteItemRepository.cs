@@ -95,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        public const int LatestSchemaVersion = 99;
+        public const int LatestSchemaVersion = 100;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -272,6 +272,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "SeriesName", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "UserDataKey", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "SeasonName", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "SeasonId", "GUID");
 
             _connection.AddColumn(Logger, "UserDataKeys", "Priority", "INT");
             _connection.AddColumn(Logger, "ItemValues", "CleanValue", "Text");
@@ -405,7 +406,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "CriticRatingSummary",
             "IsVirtualItem",
             "SeriesName",
-            "SeasonName"
+            "SeasonName",
+            "SeasonId"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -526,7 +528,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "IsVirtualItem",
                 "SeriesName",
                 "UserDataKey",
-                "SeasonName"
+                "SeasonName",
+                "SeasonId"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -961,9 +964,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     if (episode != null)
                     {
                         _saveItemCommand.GetParameter(index++).Value = episode.FindSeasonName();
+                        _saveItemCommand.GetParameter(index++).Value = episode.FindSeasonId();
                     }
                     else
                     {
+                        _saveItemCommand.GetParameter(index++).Value = null;
                         _saveItemCommand.GetParameter(index++).Value = null;
                     }
 
@@ -1404,6 +1409,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 if (!reader.IsDBNull(60))
                 {
                     episode.SeasonName = reader.GetString(60);
+                }
+                if (!reader.IsDBNull(61))
+                {
+                    episode.SeasonId = reader.GetGuid(61);
                 }
             }
 

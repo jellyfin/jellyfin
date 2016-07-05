@@ -663,19 +663,12 @@ namespace MediaBrowser.Server.Implementations.Dto
             dto.GameSystem = item.GameSystemName;
         }
 
-        private List<string> GetBackdropImageTags(BaseItem item, int limit)
+        private List<string> GetImageTags(BaseItem item, List<ItemImageInfo> images)
         {
-            return GetCacheTags(item, ImageType.Backdrop, limit).ToList();
-        }
-
-        private List<string> GetScreenshotImageTags(BaseItem item, int limit)
-        {
-            var hasScreenshots = item as IHasScreenshots;
-            if (hasScreenshots == null)
-            {
-                return new List<string>();
-            }
-            return GetCacheTags(item, ImageType.Screenshot, limit).ToList();
+            return images
+                .Select(p => GetImageCacheTag(item, p))
+                .Where(i => i != null)
+                .ToList();
         }
 
         private IEnumerable<string> GetCacheTags(BaseItem item, ImageType type, int limit)
@@ -851,53 +844,6 @@ namespace MediaBrowser.Server.Implementations.Dto
         }
 
         /// <summary>
-        /// If an item does not any backdrops, this can be used to find the first parent that does have one
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="owner">The owner.</param>
-        /// <returns>BaseItem.</returns>
-        private BaseItem GetParentBackdropItem(BaseItem item, BaseItem owner)
-        {
-            var parent = item.GetParent() ?? owner;
-
-            while (parent != null)
-            {
-                if (parent.GetImages(ImageType.Backdrop).Any())
-                {
-                    return parent;
-                }
-
-                parent = parent.GetParent();
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// If an item does not have a logo, this can be used to find the first parent that does have one
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="type">The type.</param>
-        /// <param name="owner">The owner.</param>
-        /// <returns>BaseItem.</returns>
-        private BaseItem GetParentImageItem(BaseItem item, ImageType type, BaseItem owner)
-        {
-            var parent = item.GetParent() ?? owner;
-
-            while (parent != null)
-            {
-                if (parent.HasImage(type))
-                {
-                    return parent;
-                }
-
-                parent = parent.GetParent();
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Gets the chapter info dto.
         /// </summary>
         /// <param name="chapterInfo">The chapter info.</param>
@@ -1027,7 +973,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             var backdropLimit = options.GetImageLimit(ImageType.Backdrop);
             if (backdropLimit > 0)
             {
-                dto.BackdropImageTags = GetBackdropImageTags(item, backdropLimit);
+                dto.BackdropImageTags = GetImageTags(item, item.GetImages(ImageType.Backdrop).Take(backdropLimit).ToList());
             }
 
             if (fields.Contains(ItemFields.ScreenshotImageTags))
@@ -1035,7 +981,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 var screenshotLimit = options.GetImageLimit(ImageType.Screenshot);
                 if (screenshotLimit > 0)
                 {
-                    dto.ScreenshotImageTags = GetScreenshotImageTags(item, screenshotLimit);
+                    dto.BackdropImageTags = GetImageTags(item, item.GetImages(ImageType.Screenshot).Take(screenshotLimit).ToList());
                 }
             }
 
@@ -1064,6 +1010,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             dto.Id = GetDtoId(item);
             dto.IndexNumber = item.IndexNumber;
+            dto.ParentIndexNumber = item.ParentIndexNumber;
             dto.IsFolder = item.IsFolder;
             dto.MediaType = item.MediaType;
             dto.LocationType = item.LocationType;
@@ -1126,18 +1073,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.ShortOverview = item.ShortOverview;
             }
 
-            // If there are no backdrops, indicate what parent has them in case the Ui wants to allow inheritance
-            if (backdropLimit > 0 && dto.BackdropImageTags.Count == 0)
-            {
-                var parentWithBackdrop = GetParentBackdropItem(item, owner);
-
-                if (parentWithBackdrop != null)
-                {
-                    dto.ParentBackdropItemId = GetDtoId(parentWithBackdrop);
-                    dto.ParentBackdropImageTags = GetBackdropImageTags(parentWithBackdrop, backdropLimit);
-                }
-            }
-
             if (fields.Contains(ItemFields.ParentId))
             {
                 var displayParentId = item.DisplayParentId;
@@ -1147,46 +1082,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
             }
 
-            dto.ParentIndexNumber = item.ParentIndexNumber;
-
-            // If there is no logo, indicate what parent has one in case the Ui wants to allow inheritance
-            if (!dto.HasLogo && options.GetImageLimit(ImageType.Logo) > 0)
-            {
-                var parentWithLogo = GetParentImageItem(item, ImageType.Logo, owner);
-
-                if (parentWithLogo != null)
-                {
-                    dto.ParentLogoItemId = GetDtoId(parentWithLogo);
-
-                    dto.ParentLogoImageTag = GetImageCacheTag(parentWithLogo, ImageType.Logo);
-                }
-            }
-
-            // If there is no art, indicate what parent has one in case the Ui wants to allow inheritance
-            if (!dto.HasArtImage && options.GetImageLimit(ImageType.Art) > 0)
-            {
-                var parentWithImage = GetParentImageItem(item, ImageType.Art, owner);
-
-                if (parentWithImage != null)
-                {
-                    dto.ParentArtItemId = GetDtoId(parentWithImage);
-
-                    dto.ParentArtImageTag = GetImageCacheTag(parentWithImage, ImageType.Art);
-                }
-            }
-
-            // If there is no thumb, indicate what parent has one in case the Ui wants to allow inheritance
-            if (!dto.HasThumb && options.GetImageLimit(ImageType.Thumb) > 0)
-            {
-                var parentWithImage = GetParentImageItem(item, ImageType.Thumb, owner);
-
-                if (parentWithImage != null)
-                {
-                    dto.ParentThumbItemId = GetDtoId(parentWithImage);
-
-                    dto.ParentThumbImageTag = GetImageCacheTag(parentWithImage, ImageType.Thumb);
-                }
-            }
+            AddInheritedImages(dto, item, options, owner);
 
             if (fields.Contains(ItemFields.Path))
             {
@@ -1420,33 +1316,36 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 dto.SeasonName = episode.SeasonName;
 
-                var episodeSeries = episode.Series;
+                Series episodeSeries = null;
 
-                if (episodeSeries != null)
+                if (fields.Contains(ItemFields.SeriesGenres))
                 {
-                    if (fields.Contains(ItemFields.SeriesGenres))
+                    episodeSeries = episodeSeries ?? episode.Series;
+                    if (episodeSeries != null)
                     {
                         dto.SeriesGenres = episodeSeries.Genres.ToList();
                     }
+                }
 
+                episodeSeries = episodeSeries ?? episode.Series;
+                if (episodeSeries != null)
+                {
                     dto.SeriesId = GetDtoId(episodeSeries);
+                }
 
-                    if (fields.Contains(ItemFields.AirTime))
-                    {
-                        dto.AirTime = episodeSeries.AirTime;
-                    }
-
-                    if (options.GetImageLimit(ImageType.Thumb) > 0)
-                    {
-                        dto.SeriesThumbImageTag = GetImageCacheTag(episodeSeries, ImageType.Thumb);
-                    }
-
-                    if (options.GetImageLimit(ImageType.Primary) > 0)
+                if (options.GetImageLimit(ImageType.Primary) > 0)
+                {
+                    episodeSeries = episodeSeries ?? episode.Series;
+                    if (episodeSeries != null)
                     {
                         dto.SeriesPrimaryImageTag = GetImageCacheTag(episodeSeries, ImageType.Primary);
                     }
+                }
 
-                    if (fields.Contains(ItemFields.SeriesStudio))
+                if (fields.Contains(ItemFields.SeriesStudio))
+                {
+                    episodeSeries = episodeSeries ?? episode.Series;
+                    if (episodeSeries != null)
                     {
                         dto.SeriesStudio = episodeSeries.Studios.FirstOrDefault();
                     }
@@ -1475,7 +1374,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 if (series != null)
                 {
                     dto.SeriesId = GetDtoId(series);
-                    dto.AirTime = series.AirTime;
 
                     if (fields.Contains(ItemFields.SeriesStudio))
                     {
@@ -1530,6 +1428,70 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     dto.ChannelName = channel.Name;
                 }
+            }
+        }
+
+        private void AddInheritedImages(BaseItemDto dto, BaseItem item, DtoOptions options, BaseItem owner)
+        {
+            var logoLimit = options.GetImageLimit(ImageType.Logo);
+            var artLimit = options.GetImageLimit(ImageType.Art);
+            var thumbLimit = options.GetImageLimit(ImageType.Thumb);
+            var backdropLimit = options.GetImageLimit(ImageType.Backdrop);
+
+            if (logoLimit == 0 && artLimit == 0 && thumbLimit == 0 && backdropLimit == 0)
+            {
+                return;
+            }
+
+            BaseItem parent = null;
+            var isFirst = true;
+
+            while (((!dto.HasLogo && logoLimit > 0) || (!dto.HasArtImage && artLimit > 0) || (!dto.HasThumb && thumbLimit > 0) || parent is Series) && 
+                (parent = parent ?? (isFirst ? item.GetParent() ?? owner : parent)) != null)
+            {
+                if (logoLimit > 0 && !dto.HasLogo && dto.ParentLogoItemId == null)
+                {
+                    var image = parent.GetImageInfo(ImageType.Logo, 0);
+
+                    if (image != null)
+                    {
+                        dto.ParentLogoItemId = GetDtoId(parent);
+                        dto.ParentLogoImageTag = GetImageCacheTag(parent, image);
+                    }
+                }
+                if (artLimit > 0 && !dto.HasArtImage && dto.ParentArtItemId == null)
+                {
+                    var image = parent.GetImageInfo(ImageType.Art, 0);
+
+                    if (image != null)
+                    {
+                        dto.ParentArtItemId = GetDtoId(parent);
+                        dto.ParentArtImageTag = GetImageCacheTag(parent, image);
+                    }
+                }
+                if (thumbLimit > 0 && !dto.HasThumb && (dto.ParentThumbItemId == null || parent is Series))
+                {
+                    var image = parent.GetImageInfo(ImageType.Thumb, 0);
+
+                    if (image != null)
+                    {
+                        dto.ParentThumbItemId = GetDtoId(parent);
+                        dto.ParentThumbImageTag = GetImageCacheTag(parent, image);
+                    }
+                }
+                if (backdropLimit > 0 && !dto.HasBackdrop)
+                {
+                    var images = parent.GetImages(ImageType.Backdrop).Take(backdropLimit).ToList();
+
+                    if (images.Count > 0)
+                    {
+                        dto.ParentBackdropItemId = GetDtoId(parent);
+                        dto.ParentBackdropImageTags = GetImageTags(parent, images);
+                    }
+                }
+
+                isFirst = false;
+                parent = parent.GetParent();
             }
         }
 

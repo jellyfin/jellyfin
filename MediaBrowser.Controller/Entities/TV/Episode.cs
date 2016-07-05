@@ -13,7 +13,6 @@ namespace MediaBrowser.Controller.Entities.TV
     /// </summary>
     public class Episode : Video, IHasTrailers, IHasLookupInfo<EpisodeInfo>, IHasSeries
     {
-
         public Episode()
         {
             RemoteTrailers = new List<MediaUrl>();
@@ -183,6 +182,12 @@ namespace MediaBrowser.Controller.Entities.TV
             return series == null ? SeriesName : series.Name;
         }
 
+        public Guid? FindSeasonId()
+        {
+            var season = Season;
+            return season == null ? (Guid?)null : season.Id;
+        }
+
         /// <summary>
         /// Creates the name of the sort.
         /// </summary>
@@ -243,21 +248,7 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
-        public Guid? SeasonId
-        {
-            get
-            {
-                // First see if the parent is a Season
-                var season = Season;
-
-                if (season != null)
-                {
-                    return season.Id;
-                }
-
-                return null;
-            }
-        }
+        public Guid? SeasonId { get; set; }
 
         public override IEnumerable<Guid> GetAncestorIds()
         {

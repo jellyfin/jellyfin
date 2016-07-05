@@ -21,7 +21,7 @@
                         Limit: 100,
                         StartIndex: 0,
                         ImageTypeLimit: 1,
-                        EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+                        EnableImageTypes: "Primary"
                     }
                 };
 
