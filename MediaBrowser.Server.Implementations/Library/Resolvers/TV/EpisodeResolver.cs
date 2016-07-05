@@ -45,6 +45,14 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
             {
                 var episode = ResolveVideo<Episode>(args, false);
 
+                if (episode != null)
+                {
+                    if (season != null)
+                    {
+                        episode.SeasonId = season.Id;
+                    }
+                }
+
                 return episode;
             }
 
