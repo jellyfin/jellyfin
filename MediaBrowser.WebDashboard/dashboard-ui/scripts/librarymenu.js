@@ -40,7 +40,7 @@
         html += '</div>';
         html += '</div>';
 
-        html += '<div class="viewMenuBarTabs hiddenScrollX">';
+        html += '<div class="viewMenuBarTabs">';
         html += '</div>';
 
         var viewMenuBar = document.createElement('div');
@@ -710,22 +710,29 @@
 
             if (LibraryMenu.tabType != type) {
 
-                require(['paper-tabs'], function () {
+                var index = 0;
 
-                    var noInk = browserInfo.animate ? '' : ' noink';
+                viewMenuBarTabs.innerHTML = '<div class="libraryViewNav hiddenScrollX">' + builder().map(function (t) {
 
-                    viewMenuBarTabs.innerHTML = '<paper-tabs selected="' + selectedIndex + '" hidescrollbuttons ' + noInk + '>' + builder().map(function (t) {
+                    var tabClass = selectedIndex == index ? 'pageTabButton is-active' : 'pageTabButton';
 
-                        return '<paper-tab link><a class="clearLink paperTabLink" href="' + t.href + '"><div>' + t.name + '</div></a></paper-tab>';
+                    var tabHtml = '<a class="' + tabClass + '" href="' + t.href + '" data-index="' + index + '">' + t.name + '<div class="pageTabButtonSelectionBar"></div></a>';
+                    index++;
+                    return tabHtml;
 
-                    }).join('') + '</paper-tabs>';
-                    document.body.classList.add('withTallToolbar');
-                    LibraryMenu.tabType = type;
-                });
+                }).join('') + '</div>';
+
+                document.body.classList.add('withTallToolbar');
+                LibraryMenu.tabType = type;
                 return;
             }
 
-            viewMenuBarTabs.querySelector('paper-tabs').selected = selectedIndex;
+            var activeTab = viewMenuBarTabs.querySelector('.is-active');
+            var newTab = viewMenuBarTabs.querySelector('.pageTabButton[data-index="' + selectedIndex + '"]');
+            newTab.classList.add('is-active');
+            if (newTab != activeTab && activeTab) {
+                activeTab.classList.remove('is-active');
+            }
             LibraryMenu.tabType = type;
         },
 

@@ -1922,7 +1922,6 @@ var AppInfo = {};
 
         define("jqmpanel", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.panel", 'css!thirdparty/jquerymobile-1.4.5/jqm.panel.css']);
 
-        define("iron-icon-set", ["html!" + bowerPath + "/iron-icon/iron-icon.html", "html!" + bowerPath + "/iron-iconset-svg/iron-iconset-svg.html"]);
         define("slideshow", [embyWebComponentsBowerPath + "/slideshow/slideshow"], returnFirstDependency);
 
         define('fetch', [bowerPath + '/fetch/fetch']);
@@ -2595,7 +2594,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/librarysettings.html',
-            dependencies: ['emby-collapsible', 'paper-input', 'paper-checkbox', 'emby-button'],
+            dependencies: ['emby-collapsible', 'paper-input', 'paper-checkbox', 'emby-button', 'jqmlistview'],
             autoFocus: false,
             roles: 'admin',
             controller: 'scripts/librarysettings'

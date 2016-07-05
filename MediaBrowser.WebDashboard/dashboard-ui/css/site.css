@@ -226,14 +226,9 @@ div[data-role='page'] {
     transform: translateY(-100%);
 }
 
-.libraryViewNav:not(.paperLibraryViewNav).headroom--unpinned:not(.headroomDisabled) {
+.libraryViewNav.headroom--unpinned:not(.headroomDisabled) {
     -webkit-transform: translateY(-210%);
     transform: translateY(-210%);
-}
-
-.paperLibraryViewNav.headroom--unpinned:not(.headroomDisabled) {
-    -webkit-transform: translateY(-240%);
-    transform: translateY(-240%);
 }
 
 .checkboxContainer {
