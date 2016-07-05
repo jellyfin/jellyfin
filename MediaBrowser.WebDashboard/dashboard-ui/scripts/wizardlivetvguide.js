@@ -32,7 +32,7 @@
                 instance.init();
                 guideController = instance;
 
-                $(guideController).on('submitted', skip);
+                Events.on(guideController, 'submitted', skip);
             });
         });
     }
