@@ -1,4 +1,4 @@
-﻿<div id="supporterKeyPage" data-role="page" class="page type-interior withTabs" data-require="jqmcollapsible,scripts/supporterkeypage,emby-input,emby-button">
+﻿<div id="supporterKeyPage" data-role="page" class="page type-interior withTabs" data-require="emby-collapse,scripts/supporterkeypage,emby-input,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -48,9 +48,8 @@
                     </p>
                 </form>
                 <br />
-                <div data-role="collapsible">
-                    <h3>${HeaderForgotKey}</h3>
-                    <div>
+                <div is="emby-collapse" title="${HeaderForgotKey}">
+                    <div class="collapseContent">
                         <form id="lostKeyForm">
                             <div style="margin: 1em 0;" class="inputContainer">
                                 <input is="emby-input" type="email" required id="txtEmail" label="${LabelEmailAddress}" />
@@ -63,10 +62,8 @@
                     </div>
                 </div>
 
-                <div data-role="collapsible">
-                    <h3>${HeaderMultipleKeyLinking}</h3>
-                    <div>
-
+                <div is="emby-collapse" title="${HeaderMultipleKeyLinking}">
+                    <div class="collapseContent">
                         <form id="linkKeysForm">
                             <p>
                                 ${MultipleKeyLinkingHelp}
