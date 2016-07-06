@@ -30,7 +30,7 @@
                     .then(function (result) {
                         console.log("Result of executed command", result);
                         if (result.item.actionid === 'show' && result.item.sourceid === 'group') {
-                            return Promise.reject({ error: "group", item: result.item, groupName: result.name });
+                            return Promise.resolve({ error: "group", item: result.item, groupName: result.name });
                         } else {
                             return Promise.resolve({ item: result.item });
                         }
