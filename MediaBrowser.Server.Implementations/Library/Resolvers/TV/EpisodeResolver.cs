@@ -30,20 +30,37 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                 return null;
             }
 
-            var season = parent as Season;
-
-            // Just in case the user decided to nest episodes. 
-            // Not officially supported but in some cases we can handle it.
-            if (season == null)
-            {
-                season = parent.GetParents().OfType<Season>().FirstOrDefault();
-            }
-
             // If the parent is a Season or Series, then this is an Episode if the VideoResolver returns something
             // Also handle flat tv folders
-            if (season != null || args.HasParent<Series>() || string.Equals(args.GetCollectionType(), CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(args.GetCollectionType(), CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
             {
                 var episode = ResolveVideo<Episode>(args, false);
+
+                if (episode != null)
+                {
+                    var season = parent as Season;
+                    // Just in case the user decided to nest episodes. 
+                    // Not officially supported but in some cases we can handle it.
+                    if (season == null)
+                    {
+                        season = parent.GetParents().OfType<Season>().FirstOrDefault();
+                    }
+
+                    var series = parent as Series;
+                    if (series == null)
+                    {
+                        series = parent.GetParents().OfType<Series>().FirstOrDefault();
+                    }
+
+                    if (series != null)
+                    {
+                        episode.SeriesId = series.Id;
+                    }
+                    if (season != null)
+                    {
+                        episode.SeasonId = season.Id;
+                    }
+                }
 
                 return episode;
             }

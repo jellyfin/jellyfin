@@ -86,11 +86,6 @@ namespace MediaBrowser.Server.Implementations.UserViews
                     {
                         return series;
                     }
-                    var episodeSeason = episode.Season;
-                    if (episodeSeason != null)
-                    {
-                        return episodeSeason;
-                    }
 
                     return episode;
                 }

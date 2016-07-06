@@ -235,13 +235,20 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
-        public string SeriesName
+        public string SeriesName { get; set; }
+
+        public Guid? SeriesId { get; set; }
+
+        public string FindSeriesName()
         {
-            get
-            {
-                var series = Series;
-                return series == null ? null : series.Name;
-            }
+            var series = Series;
+            return series == null ? SeriesName : series.Name;
+        }
+
+        public Guid? FindSeriesId()
+        {
+            var series = Series;
+            return series == null ? (Guid?)null : series.Id;
         }
 
         /// <summary>

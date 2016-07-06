@@ -95,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        public const int LatestSchemaVersion = 97;
+        public const int LatestSchemaVersion = 107;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -271,9 +271,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "IsVirtualItem", "BIT");
             _connection.AddColumn(Logger, "TypedBaseItems", "SeriesName", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "UserDataKey", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "SeasonName", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "SeasonId", "GUID");
+            _connection.AddColumn(Logger, "TypedBaseItems", "SeriesId", "GUID");
 
             _connection.AddColumn(Logger, "UserDataKeys", "Priority", "INT");
             _connection.AddColumn(Logger, "ItemValues", "CleanValue", "Text");
+
+            _connection.AddColumn(Logger, ChaptersTableName, "ImageDateModified", "DATETIME");
 
             string[] postQueries =
 
@@ -402,7 +407,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "Album",
             "CriticRating",
             "CriticRatingSummary",
-            "IsVirtualItem"
+            "IsVirtualItem",
+            "SeriesName",
+            "SeasonName",
+            "SeasonId",
+            "SeriesId"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -522,7 +531,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "Album",
                 "IsVirtualItem",
                 "SeriesName",
-                "UserDataKey"
+                "UserDataKey",
+                "SeasonName",
+                "SeasonId",
+                "SeriesId"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -581,6 +593,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _saveChapterCommand.Parameters.Add(_saveChapterCommand, "@StartPositionTicks");
             _saveChapterCommand.Parameters.Add(_saveChapterCommand, "@Name");
             _saveChapterCommand.Parameters.Add(_saveChapterCommand, "@ImagePath");
+            _saveChapterCommand.Parameters.Add(_saveChapterCommand, "@ImageDateModified");
 
             // MediaStreams
             _deleteStreamsCommand = _connection.CreateCommand();
@@ -944,7 +957,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     var hasSeries = item as IHasSeries;
                     if (hasSeries != null)
                     {
-                        _saveItemCommand.GetParameter(index++).Value = hasSeries.SeriesName;
+                        _saveItemCommand.GetParameter(index++).Value = hasSeries.FindSeriesName();
                     }
                     else
                     {
@@ -952,6 +965,27 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     }
 
                     _saveItemCommand.GetParameter(index++).Value = item.GetUserDataKeys().FirstOrDefault();
+
+                    var episode = item as Episode;
+                    if (episode != null)
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = episode.FindSeasonName();
+                        _saveItemCommand.GetParameter(index++).Value = episode.FindSeasonId();
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
+
+                    if (hasSeries != null)
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = hasSeries.FindSeriesId();
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
 
                     _saveItemCommand.Transaction = transaction;
 
@@ -1375,6 +1409,36 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 item.IsVirtualItem = reader.GetBoolean(58);
             }
 
+            var hasSeries = item as IHasSeries;
+            if (hasSeries != null)
+            {
+                if (!reader.IsDBNull(59))
+                {
+                    hasSeries.SeriesName = reader.GetString(59);
+                }
+            }
+
+            var episode = item as Episode;
+            if (episode != null)
+            {
+                if (!reader.IsDBNull(60))
+                {
+                    episode.SeasonName = reader.GetString(60);
+                }
+                if (!reader.IsDBNull(61))
+                {
+                    episode.SeasonId = reader.GetGuid(61);
+                }
+            }
+
+            if (hasSeries != null)
+            {
+                if (!reader.IsDBNull(62))
+                {
+                    hasSeries.SeriesId = reader.GetGuid(62);
+                }
+            }
+
             return item;
         }
 
@@ -1436,7 +1500,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select StartPositionTicks,Name,ImagePath from " + ChaptersTableName + " where ItemId = @ItemId order by ChapterIndex asc";
+                cmd.CommandText = "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId order by ChapterIndex asc";
 
                 cmd.Parameters.Add(cmd, "@ItemId", DbType.Guid).Value = id;
 
@@ -1469,7 +1533,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select StartPositionTicks,Name,ImagePath from " + ChaptersTableName + " where ItemId = @ItemId and ChapterIndex=@ChapterIndex";
+                cmd.CommandText = "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId and ChapterIndex=@ChapterIndex";
 
                 cmd.Parameters.Add(cmd, "@ItemId", DbType.Guid).Value = id;
                 cmd.Parameters.Add(cmd, "@ChapterIndex", DbType.Int32).Value = index;
@@ -1505,6 +1569,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!reader.IsDBNull(2))
             {
                 chapter.ImagePath = reader.GetString(2);
+            }
+
+            if (!reader.IsDBNull(3))
+            {
+                chapter.ImageDateModified = reader.GetDateTime(3).ToUniversalTime();
             }
 
             return chapter;
@@ -1566,6 +1635,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveChapterCommand.GetParameter(2).Value = chapter.StartPositionTicks;
                     _saveChapterCommand.GetParameter(3).Value = chapter.Name;
                     _saveChapterCommand.GetParameter(4).Value = chapter.ImagePath;
+                    _saveChapterCommand.GetParameter(5).Value = chapter.ImageDateModified;
 
                     _saveChapterCommand.Transaction = transaction;
 

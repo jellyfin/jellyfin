@@ -49,12 +49,6 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The cache path.</value>
         public string CachePath { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [enable custom path sub folders].
-        /// </summary>
-        /// <value><c>true</c> if [enable custom path sub folders]; otherwise, <c>false</c>.</value>
-        public bool EnableCustomPathSubFolders { get; set; }
         
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationConfiguration" /> class.
