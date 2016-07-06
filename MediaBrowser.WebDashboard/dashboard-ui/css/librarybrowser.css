@@ -1200,7 +1200,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 @media all and (max-width: 1200px) {
 
     .listViewUserDataButtons {
-        display: none;
+        display: none !important;
     }
 }
 
