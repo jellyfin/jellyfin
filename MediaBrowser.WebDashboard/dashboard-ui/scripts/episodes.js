@@ -22,7 +22,7 @@
                         IsMissing: false,
                         IsVirtualUnaired: false,
                         ImageTypeLimit: 1,
-                        EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+                        EnableImageTypes: "Primary,Backdrop,Thumb",
                         StartIndex: 0,
                         Limit: pageSize
                     },

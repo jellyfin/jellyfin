@@ -30,7 +30,7 @@
                 Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
                 UserId: Dashboard.getCurrentUserId(),
                 ImageTypeLimit: 1,
-                EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+                EnableImageTypes: "Primary,Backdrop,Thumb"
             };
 
             query.ParentId = LibraryMenu.getTopParentId();
@@ -108,7 +108,7 @@
                 ExcludeLocationTypes: "Virtual",
                 ParentId: parentId,
                 ImageTypeLimit: 1,
-                EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+                EnableImageTypes: "Primary,Backdrop,Thumb",
                 EnableTotalRecordCount: false
             };
 

@@ -1,4 +1,4 @@
-define(['viewcontainer', 'focusManager', 'queryString', 'connectionManager', 'events'], function (viewcontainer, focusManager, queryString, connectionManager, events) {
+define(['viewcontainer', 'focusManager', 'queryString', 'layoutManager'], function (viewcontainer, focusManager, queryString, layoutManager) {
 
     var currentView;
     var dispatchPageEvents;
@@ -51,7 +51,7 @@ define(['viewcontainer', 'focusManager', 'queryString', 'connectionManager', 'ev
                 focusManager.autoFocus(view);
             }
         }
-        else {
+        else if (!layoutManager.mobile) {
             if (view.activeElement && document.body.contains(view.activeElement) && focusManager.isCurrentlyFocusable(view.activeElement)) {
                 focusManager.focus(view.activeElement);
             } else {

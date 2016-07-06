@@ -40,7 +40,7 @@ body:not(.dashboardDocument) .mainDrawerButton {
     height: 50px;
 }
 
-.viewMenuBar, .libraryViewNav, paper-tabs {
+.viewMenuBar, .libraryViewNav {
     background-color: #000;
 }
 

@@ -142,52 +142,77 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
 
-        private async Task UpdateToLatestSchema(CancellationToken cancellationToken, IProgress<double> progress)
+        private Task UpdateToLatestSchema(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var itemIds = _libraryManager.GetItemIds(new InternalItemsQuery
-            {
-                IsCurrentSchema = false,
-                ExcludeItemTypes = new[] { typeof(LiveTvProgram).Name }
-            });
+            return UpdateToLatestSchema(0, 0, null, cancellationToken, progress);
+        }
 
-            var numComplete = 0;
-            var numItems = itemIds.Count;
+        private async Task UpdateToLatestSchema(int queryStartIndex, int progressStartIndex, int? totalRecordCount, CancellationToken cancellationToken, IProgress<double> progress)
+        {
+            IEnumerable<BaseItem> items;
+            int numItemsToSave;
+            var pageSize = 1000;
+
+            if (totalRecordCount.HasValue)
+            {
+                var list = _libraryManager.GetItemList(new InternalItemsQuery
+                {
+                    IsCurrentSchema = false,
+                    ExcludeItemTypes = new[] { typeof(LiveTvProgram).Name },
+                    StartIndex = queryStartIndex,
+                    Limit = pageSize
+
+                }).ToList();
+
+                items = list;
+                numItemsToSave = list.Count;
+            }
+            else
+            {
+                var itemsResult = _libraryManager.GetItemsResult(new InternalItemsQuery
+                {
+                    IsCurrentSchema = false,
+                    ExcludeItemTypes = new[] { typeof(LiveTvProgram).Name },
+                    StartIndex = queryStartIndex,
+                    Limit = pageSize
+                });
+
+                totalRecordCount = itemsResult.TotalRecordCount;
+                items = itemsResult.Items;
+                numItemsToSave = itemsResult.Items.Length;
+            }
+
+            var numItems = totalRecordCount.Value;
 
             _logger.Debug("Upgrading schema for {0} items", numItems);
 
-            foreach (var itemId in itemIds)
+            if (numItemsToSave > 0)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (itemId != Guid.Empty)
+                try
                 {
-                    // Somehow some invalid data got into the db. It probably predates the boundary checking
-                    var item = _libraryManager.GetItemById(itemId);
-
-                    if (item != null)
-                    {
-                        try
-                        {
-                            await _itemRepo.SaveItem(item, cancellationToken).ConfigureAwait(false);
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            throw;
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error saving item", ex);
-                        }
-                    }
+                    await _itemRepo.SaveItems(items, cancellationToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error saving item", ex);
                 }
 
-                numComplete++;
-                double percent = numComplete;
+                progressStartIndex += pageSize;
+                double percent = progressStartIndex;
                 percent /= numItems;
                 progress.Report(percent * 100);
-            }
 
-            progress.Report(100);
+                var newStartIndex = queryStartIndex + (pageSize - numItemsToSave);
+                await UpdateToLatestSchema(newStartIndex, progressStartIndex, totalRecordCount, cancellationToken, progress).ConfigureAwait(false);
+            }
+            else
+            {
+                progress.Report(100);
+            }
         }
 
         private async Task CleanDeadItems(CancellationToken cancellationToken, IProgress<double> progress)

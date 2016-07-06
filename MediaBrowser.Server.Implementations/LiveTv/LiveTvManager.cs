@@ -1214,8 +1214,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     var item = await GetChannel(channelInfo.Item2, channelInfo.Item1, parentFolderId, cancellationToken).ConfigureAwait(false);
 
                     list.Add(item);
-
-                    _libraryManager.RegisterItem(item);
                 }
                 catch (OperationCanceledException)
                 {

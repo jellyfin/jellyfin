@@ -1330,7 +1330,7 @@
                         });
 
                     }
-                    else if (item.AlbumId && item.SeriesPrimaryImageTag) {
+                    else if (item.SeriesId && item.SeriesPrimaryImageTag) {
 
                         imgUrl = ApiClient.getScaledImageUrl(item.SeriesId, {
                             type: "Primary",
@@ -2004,7 +2004,7 @@
 
                 } else if (options.preferThumb && imageItem.ParentThumbItemId && options.inheritThumb !== false) {
 
-                    imgUrl = ApiClient.getThumbImageUrl(imageItem.ParentThumbItemId, {
+                    imgUrl = ApiClient.getScaledImageUrl(imageItem.ParentThumbItemId, {
                         type: "Thumb",
                         maxWidth: thumbWidth,
                         enableImageEnhancers: enableImageEnhancers
@@ -2097,15 +2097,6 @@
                         type: "Thumb",
                         maxWidth: thumbWidth,
                         tag: imageItem.ImageTags.Thumb,
-                        enableImageEnhancers: enableImageEnhancers
-                    });
-
-                } else if (imageItem.SeriesThumbImageTag) {
-
-                    imgUrl = ApiClient.getScaledImageUrl(imageItem.SeriesId, {
-                        type: "Thumb",
-                        maxWidth: thumbWidth,
-                        tag: imageItem.SeriesThumbImageTag,
                         enableImageEnhancers: enableImageEnhancers
                     });
 
@@ -2539,6 +2530,8 @@
 
             getPremiereDateText: function (item, date) {
 
+                var studio = (item.Studios || [])[0];
+
                 if (!date) {
 
                     var text = '';
@@ -2547,12 +2540,12 @@
                         text += item.AirTime;
                     }
 
-                    if (item.SeriesStudio) {
+                    if (studio) {
 
                         if (text) {
-                            text += " on " + item.SeriesStudio;
+                            text += " on " + studio;
                         } else {
-                            text += item.SeriesStudio;
+                            text += studio;
                         }
                     }
 
@@ -2565,8 +2558,8 @@
                     day += " at " + item.AirTime;
                 }
 
-                if (item.SeriesStudio) {
-                    day += " on " + item.SeriesStudio;
+                if (studio) {
+                    day += " on " + studio;
                 }
 
                 return day;

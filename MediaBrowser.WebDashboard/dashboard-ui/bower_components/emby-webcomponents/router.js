@@ -19,11 +19,20 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         showSearch: function () {
             skinManager.getCurrentSkin().search();
         },
+        showGenre: function (options) {
+            skinManager.getCurrentSkin().showGenre(options);
+        },
         showGuide: function () {
             skinManager.getCurrentSkin().showGuide();
         },
         showLiveTV: function () {
             skinManager.getCurrentSkin().showLiveTV();
+        },
+        showRecordedTV: function () {
+            skinManager.getCurrentSkin().showRecordedTV();
+        },
+        showFavorites: function () {
+            skinManager.getCurrentSkin().showFavorites();
         }
     };
 

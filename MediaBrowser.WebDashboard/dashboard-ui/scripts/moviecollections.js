@@ -166,7 +166,7 @@
                     elems[i].addEventListener('click', onPreviousPageClick);
                 }
 
-                if (!items.length) {
+                if (!result.Items.length) {
                     html = '<p style="text-align:center;">' + Globalize.translate('MessageNoCollectionsAvailable') + '</p>';
                 }
 

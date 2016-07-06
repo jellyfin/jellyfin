@@ -1752,6 +1752,7 @@ var AppInfo = {};
             visibleinviewport: embyWebComponentsBowerPath + "/visibleinviewport",
             browserdeviceprofile: embyWebComponentsBowerPath + "/browserdeviceprofile",
             browser: embyWebComponentsBowerPath + "/browser",
+            inputManager: embyWebComponentsBowerPath + "/inputmanager",
             qualityoptions: embyWebComponentsBowerPath + "/qualityoptions",
             connectservice: apiClientBowerPath + '/connectservice',
             hammer: bowerPath + "/hammerjs/hammer.min",
@@ -1814,6 +1815,7 @@ var AppInfo = {};
         define("fetchHelper", [embyWebComponentsBowerPath + "/fetchhelper"], returnFirstDependency);
 
         define("tvguide", [embyWebComponentsBowerPath + "/guide/guide", 'embyRouter'], returnFirstDependency);
+        define("voiceDialog", [embyWebComponentsBowerPath + "/voice/voicedialog"], returnFirstDependency);
 
         define("viewManager", [embyWebComponentsBowerPath + "/viewmanager/viewmanager"], function (viewManager) {
             window.ViewManager = viewManager;
@@ -1879,7 +1881,6 @@ var AppInfo = {};
         define("emby-icons", ['webcomponentsjs', "html!" + bowerPath + "/emby-icons/emby-icons.html"]);
 
         define("paper-spinner", ['webcomponentsjs', "html!" + bowerPath + "/paper-spinner/paper-spinner.html"]);
-        define("paper-tabs", ['webcomponentsjs', "html!" + bowerPath + "/paper-tabs/paper-tabs.html"]);
         define("paper-button", ["html!" + bowerPath + "/paper-button/paper-button.html"]);
         define("paper-icon-button", ["html!" + bowerPath + "/paper-icon-button/paper-icon-button.html"]);
         define("paper-radio-group", ["html!" + bowerPath + "/paper-radio-group/paper-radio-group.html"]);
@@ -1922,7 +1923,6 @@ var AppInfo = {};
 
         define("jqmpanel", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.panel", 'css!thirdparty/jquerymobile-1.4.5/jqm.panel.css']);
 
-        define("iron-icon-set", ["html!" + bowerPath + "/iron-icon/iron-icon.html", "html!" + bowerPath + "/iron-iconset-svg/iron-iconset-svg.html"]);
         define("slideshow", [embyWebComponentsBowerPath + "/slideshow/slideshow"], returnFirstDependency);
 
         define('fetch', [bowerPath + '/fetch/fetch']);
@@ -2009,16 +2009,6 @@ var AppInfo = {};
         });
 
         // mock this for now. not used in this app
-        define("inputManager", [], function () {
-            return {
-                on: function () {
-                },
-                off: function () {
-                }
-            };
-        });
-
-        // mock this for now. not used in this app
         define("playbackManager", [], function () {
             return {
                 isPlayingVideo: function () {
@@ -2081,6 +2071,22 @@ var AppInfo = {};
 
             embyRouter.showSettings = function () {
                 Dashboard.navigate('mypreferencesmenu.html?userId=' + ApiClient.getCurrentUserId());
+            };
+
+            embyRouter.showGuide = function () {
+                Dashboard.navigate('livetv.html?tab=1');
+            };
+
+            embyRouter.showLiveTV = function () {
+                Dashboard.navigate('livetv.html');
+            };
+
+            embyRouter.showRecordedTV = function () {
+                Dashboard.navigate('livetv.html?tab=3');
+            };
+
+            embyRouter.showFavorites = function () {
+                Dashboard.navigate('home.html?tab=3');
             };
 
             function showItem(item) {
@@ -2406,7 +2412,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/dashboardgeneral.html',
-            dependencies: ['emby-collapsible', 'paper-textarea', 'paper-input', 'paper-checkbox'],
+            dependencies: ['emby-collapsible', 'paper-textarea', 'paper-input', 'paper-checkbox', 'jqmlistview'],
             controller: 'scripts/dashboardgeneral',
             autoFocus: false,
             roles: 'admin'
@@ -2595,7 +2601,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/librarysettings.html',
-            dependencies: ['emby-collapsible', 'paper-input', 'paper-checkbox', 'emby-button'],
+            dependencies: ['emby-collapsible', 'paper-input', 'paper-checkbox', 'emby-button', 'jqmlistview'],
             autoFocus: false,
             roles: 'admin',
             controller: 'scripts/librarysettings'

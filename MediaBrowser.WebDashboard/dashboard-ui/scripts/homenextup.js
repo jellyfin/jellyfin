@@ -8,7 +8,7 @@
             Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
             UserId: Dashboard.getCurrentUserId(),
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+            EnableImageTypes: "Primary,Backdrop,Thumb"
         };
 
         return ApiClient.getNextUpEpisodes(query);

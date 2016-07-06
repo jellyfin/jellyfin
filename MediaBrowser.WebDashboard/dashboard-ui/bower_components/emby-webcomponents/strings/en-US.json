@@ -86,5 +86,11 @@
   "ReplaceAllMetadata": "Replace all metadata",
   "SearchForMissingMetadata": "Search for missing metadata",
   "LabelRefreshMode": "Refresh mode:",
+  "NoItemsFound": "No items found.",
+  "HeaderSaySomethingLike": "Say Something Like...",
+  "ButtonTryAgain": "Try Again",
+  "HeaderYouSaid": "You Said...",
+  "MessageWeDidntRecognizeCommand": "We're sorry, we didn't recognize that command.",
+  "MessageIfYouBlockedVoice": "If you denied voice access to the app you'll need to reconfigure before trying again.",
   "RefreshDialogHelp": "Metadata is refreshed based on settings and internet services that are enabled in the Emby Server dashboard."
 }

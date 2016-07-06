@@ -21,26 +21,6 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
                 options.tag = item.AlbumPrimaryImageTag;
                 return apiClient.getScaledImageUrl(item.AlbumId, options);
             }
-
-            //else if (item.AlbumId && item.SeriesPrimaryImageTag) {
-
-            //    imgUrl = ApiClient.getScaledImageUrl(item.SeriesId, {
-            //        type: "Primary",
-            //        width: downloadWidth,
-            //        tag: item.SeriesPrimaryImageTag,
-            //        minScale: minScale
-            //    });
-
-            //}
-            //else if (item.ParentPrimaryImageTag) {
-
-            //    imgUrl = ApiClient.getImageUrl(item.ParentPrimaryImageItemId, {
-            //        type: "Primary",
-            //        width: downloadWidth,
-            //        tag: item.ParentPrimaryImageTag,
-            //        minScale: minScale
-            //    });
-            //}
         }
 
         return null;

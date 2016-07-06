@@ -50,13 +50,12 @@ define(['browser'], function (browser) {
             dependencies.push('legacy/dashboard');
             dependencies.push('legacy/selectmenu');
             dependencies.push('jqmcontrolgroup');
+            dependencies.push('jqmlistview');
         }
 
         if (isPluginpage || (newView.classList && newView.classList.contains('type-interior'))) {
-            dependencies.push('jqmlistview');
             dependencies.push('scripts/notifications');
             dependencies.push('dashboardcss');
-            dependencies.push('emby-icons');
         }
 
         return new Promise(function (resolve, reject) {

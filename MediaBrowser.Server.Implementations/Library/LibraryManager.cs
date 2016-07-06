@@ -368,10 +368,10 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 return;
             }
-            //if (!(item is Folder))
-            //{
-            //    return;
-            //}
+            if (!(item is Folder))
+            {
+                return;
+            }
             LibraryItemsCache.AddOrUpdate(id, item, delegate { return item; });
         }
 
