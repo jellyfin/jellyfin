@@ -18,7 +18,7 @@
                 view.querySelector('.fldSelectEncoderPathType').classList.remove('hide');
             }
 
-            /*if (systemInfo.OperatingSystem == 'Windows' && systemInfo.SystemArchitecture != 'Arm') {
+            if (systemInfo.OperatingSystem == 'Windows' && systemInfo.SystemArchitecture != 'Arm') {
 
                 view.querySelector('.suggestedLocation').innerHTML = Globalize.translate('FFmpegSuggestedDownload', '<a target="_blank" href="https://ffmpeg.zeranoe.com/builds">https://ffmpeg.zeranoe.com</a>');
 
@@ -29,7 +29,7 @@
                     instructions = 'Download FFmpeg 64-Bit Static';
                 }
 
-            } else*/ if (systemInfo.OperatingSystem == 'Linux' && systemInfo.SystemArchitecture != 'Arm') {
+            } else if (systemInfo.OperatingSystem == 'Linux' && systemInfo.SystemArchitecture != 'Arm') {
 
                 view.querySelector('.suggestedLocation').innerHTML = Globalize.translate('FFmpegSuggestedDownload', '<a target="_blank" href="http://johnvansickle.com/ffmpeg">http://johnvansickle.com/ffmpeg</a>');
 

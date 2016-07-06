@@ -247,9 +247,14 @@ define(['dialogHelper', './voicereceiver', './voiceprocessor', 'globalize', 'emb
         listen();
     }
     function listen() {
-        voicereceiver.listenForCommand(lang || "en-US").then(processInput).then(function (data) {
+        voicereceiver.listenForCommand(lang || "en-US").then(processInput).then(function (result) {
 
             closeDialog();
+
+            // Put a delay here in case navigation/popstate is involved. Allow that to flush out
+            setTimeout(function () {
+                result.fn();
+            }, 1);
 
         }, function (result) {
             if (result.error == 'group') {

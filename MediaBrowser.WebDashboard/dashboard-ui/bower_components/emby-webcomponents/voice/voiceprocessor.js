@@ -28,11 +28,12 @@
                 console.log("Command from Grammar Processor", processor);
                 return voicecommands(processor)
                     .then(function (result) {
+
                         console.log("Result of executed command", result);
                         if (result.item.actionid === 'show' && result.item.sourceid === 'group') {
-                            return Promise.resolve({ error: "group", item: result.item, groupName: result.name });
+                            return Promise.resolve({ error: "group", item: result.item, groupName: result.name, fn: result.fn });
                         } else {
-                            return Promise.resolve({ item: result.item });
+                            return Promise.resolve({ item: result.item, fn: result.fn });
                         }
                     }, function () {
                         return Promise.reject({ error: "unrecognized-command", text: text });

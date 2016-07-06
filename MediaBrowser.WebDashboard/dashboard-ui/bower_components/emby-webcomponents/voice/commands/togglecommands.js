@@ -1,14 +1,20 @@
 ﻿define(['inputManager'], function (inputManager) {
 
+    function toggleDisplayMirror() {
+        return function () {
+            inputManager.trigger('toggledisplaymirror');
+        };
+    }
+
     return function (result) {
-        result.success = true;
+
         switch (result.item.deviceid) {
             case 'displaymirroring':
-                inputManager.trigger('toggledisplaymirror');
+                return toggleDisplayMirror();
                 break;
             default:
-                result.success = false;
                 return;
         }
     }
+
 });

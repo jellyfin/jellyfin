@@ -11,11 +11,15 @@ define(['require'], function (require) {
         return new Promise(function (resolve, reject) {
 
             require([commandPath], function (command) {
-                command(result);
-                if (result.success) {
+
+                var fn = command(result);
+
+                if (fn) {
+                    result.fn = fn;
                     resolve(result);
+                } else {
+                    reject();
                 }
-                reject();
             });
         });
 
@@ -23,38 +27,34 @@ define(['require'], function (require) {
 
     return function (result) {
 
-        return new Promise(function (resolve, reject) {
+        switch (result.item.actionid) {
 
-            switch (result.item.actionid) {
-
-                case 'show':
-                    processCommand('./commands/showcommands.js', result).then(function (result) { resolve(result); });
-                    break;
-                case 'play':
-                    processCommand('./commands/playcommands.js', result).then(function (result) { resolve(result); });
-                    break;
-                case 'shuffle':
-                    processCommand('./commands/playcommands.js', result).then(function (result) { resolve(result); });
-                    break;
-                case 'search':
-                    processCommand('./commands/searchcommands.js', result).then(function (result) { resolve(result); });
-                    break;
-                case 'control':
-                    processCommand('./commands/controlcommands.js', result).then(function (result) { resolve(result); });
-                    break;
-                case 'enable':
-                    processCommand('./commands/enablecommands.js', result).then(function (result) { resolve(result); });
-                    break;
-                case 'disable':
-                    processCommand('./commands/disablecommands.js', result).then(function (result) { resolve(result); });
-                    break;
-                case 'toggle':
-                    processCommand('./commands/togglecommands.js', result).then(function (result) { resolve(result); });
-                    break;
-                default:
-                    reject();
-                    return;
-            }
-        });
+            case 'show':
+                return processCommand('./commands/showcommands.js', result);
+                break;
+            case 'play':
+                return processCommand('./commands/playcommands.js', result);
+                break;
+            case 'shuffle':
+                return processCommand('./commands/playcommands.js', result);
+                break;
+            case 'search':
+                return processCommand('./commands/searchcommands.js', result);
+                break;
+            case 'control':
+                return processCommand('./commands/controlcommands.js', result);
+                break;
+            case 'enable':
+                return processCommand('./commands/enablecommands.js', result);
+                break;
+            case 'disable':
+                return processCommand('./commands/disablecommands.js', result);
+                break;
+            case 'toggle':
+                return processCommand('./commands/togglecommands.js', result);
+                break;
+            default:
+                return Promise.reject();
+        }
     }
 });
