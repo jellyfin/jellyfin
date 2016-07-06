@@ -1,4 +1,4 @@
-define(['dialogHelper', 'voice/voicereceiver', 'voice/voiceprocessor', 'globalize', 'emby-button', 'css!./voice.css', 'material-icons'], function (dialogHelper, voicereceiver, voiceprocessor, globalize) {
+define(['dialogHelper', './voicereceiver', './voiceprocessor', 'globalize', 'emby-button', 'css!./voice.css', 'material-icons', 'css!./../formdialog'], function (dialogHelper, voicereceiver, voiceprocessor, globalize) {
 
     var lang = 'en-US';
 
@@ -126,7 +126,7 @@ define(['dialogHelper', 'voice/voicereceiver', 'voice/voiceprocessor', 'globaliz
 
             html += '<div class="defaultVoiceHelp">';
 
-            html += '<h1 style="margin-bottom:1.25em;">' + globalize.translate('HeaderSaySomethingLike') + '</h1>';
+            html += '<h1 style="margin-bottom:1.25em;">' + globalize.translate('sharedcomponents#HeaderSaySomethingLike') + '</h1>';
 
             html += '<div class="exampleCommands">';
             html += '</div>';
@@ -135,23 +135,23 @@ define(['dialogHelper', 'voice/voicereceiver', 'voice/voiceprocessor', 'globaliz
             html += '</div>';
 
             html += '<div class="unrecognizedCommand hide">';
-            html += '<h1>' + globalize.translate('HeaderYouSaid') + '</h1>';
+            html += '<h1>' + globalize.translate('sharedcomponents#HeaderYouSaid') + '</h1>';
             html +=
                 '<p class="exampleCommand voiceInputContainer"><i class="fa fa-quote-left"></i><span class="voiceInputText exampleCommandText"></span><i class="fa fa-quote-right"></i></p>';
-            html += '<p>' + globalize.translate('MessageWeDidntRecognizeCommand') + '</p>';
+            html += '<p>' + globalize.translate('sharedcomponents#MessageWeDidntRecognizeCommand') + '</p>';
 
             html += '<br/>';
             html += '<button is="emby-button" type="button" class="submit block btnRetry raised"><i class="md-icon">mic</i><span>' +
-                globalize.translate('ButtonTryAgain') +
+                globalize.translate('sharedcomponents#ButtonTryAgain') +
                 '</span></button>';
             html += '<p class="blockedMessage hide">' +
-                globalize.translate('MessageIfYouBlockedVoice') +
+                globalize.translate('sharedcomponents#MessageIfYouBlockedVoice') +
                 '<br/><br/></p>';
 
             html += '</div>';
 
             html +=
-                '<button is="emby-button" type="button" class="raised block btnCancelVoiceInput cancel"><i class="md-icon">close</i><span>' + globalize.translate('ButtonCancel') + '</span></button>';
+                '<button is="emby-button" type="button" class="raised block btnCancelVoiceInput cancel"><i class="md-icon">close</i><span>' + globalize.translate('sharedcomponents#ButtonCancel') + '</span></button>';
 
             html += '</div>';
             html += '</div>';

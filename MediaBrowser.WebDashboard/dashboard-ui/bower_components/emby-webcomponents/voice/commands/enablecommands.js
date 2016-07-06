@@ -1,10 +1,10 @@
-﻿define([], function () {
+﻿define(['inputManager'], function (inputManager) {
 
-     return function (result) {
+    return function (result) {
         result.success = true;
         switch (result.item.deviceid) {
             case 'displaymirroring':
-                MediaController.enableDisplayMirroring(false);
+                inputManager.trigger('enabledisplaymirror');
                 break;
             default:
                 result.success = false;

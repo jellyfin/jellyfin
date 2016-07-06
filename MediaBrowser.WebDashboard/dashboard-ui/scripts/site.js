@@ -1752,6 +1752,7 @@ var AppInfo = {};
             visibleinviewport: embyWebComponentsBowerPath + "/visibleinviewport",
             browserdeviceprofile: embyWebComponentsBowerPath + "/browserdeviceprofile",
             browser: embyWebComponentsBowerPath + "/browser",
+            inputManager: embyWebComponentsBowerPath + "/inputmanager",
             qualityoptions: embyWebComponentsBowerPath + "/qualityoptions",
             connectservice: apiClientBowerPath + '/connectservice',
             hammer: bowerPath + "/hammerjs/hammer.min",
@@ -1814,6 +1815,7 @@ var AppInfo = {};
         define("fetchHelper", [embyWebComponentsBowerPath + "/fetchhelper"], returnFirstDependency);
 
         define("tvguide", [embyWebComponentsBowerPath + "/guide/guide", 'embyRouter'], returnFirstDependency);
+        define("voiceDialog", [embyWebComponentsBowerPath + "/voice/voicedialog"], returnFirstDependency);
 
         define("viewManager", [embyWebComponentsBowerPath + "/viewmanager/viewmanager"], function (viewManager) {
             window.ViewManager = viewManager;
@@ -2004,16 +2006,6 @@ var AppInfo = {};
         // alias
         define("historyManager", [], function () {
             return Emby.Page;
-        });
-
-        // mock this for now. not used in this app
-        define("inputManager", [], function () {
-            return {
-                on: function () {
-                },
-                off: function () {
-                }
-            };
         });
 
         // mock this for now. not used in this app

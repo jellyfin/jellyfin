@@ -27,6 +27,12 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         },
         showLiveTV: function () {
             skinManager.getCurrentSkin().showLiveTV();
+        },
+        showRecordedTV: function () {
+            skinManager.getCurrentSkin().showRecordedTV();
+        },
+        showFavorites: function () {
+            skinManager.getCurrentSkin().showFavorites();
         }
     };
 

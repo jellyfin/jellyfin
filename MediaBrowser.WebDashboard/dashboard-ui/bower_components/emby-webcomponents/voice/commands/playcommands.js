@@ -1,5 +1,4 @@
-﻿
-define([], function () {
+﻿define(['connectionManager', 'playbackManager', 'globalize'], function (connectionManager, playbackManager, globalize) {
 
     /// <summary> Play items. </summary>
     /// <param name="items"> The items. </param>
@@ -16,13 +15,13 @@ define([], function () {
         });
 
         if (items.length) {
-            MediaController.play({
+            playbackManager.play({
                 ids: items
             });
         }
         else {
             require(['toast'], function (toast) {
-                toast(Globalize.translate('MessageNoItemsFound'));
+                toast(globalize.translate('sharedcomponents#NoItemsFound'));
             });
         }
     }
@@ -63,9 +62,10 @@ define([], function () {
             query.IncludeItemTypes = result.item.itemType;
         }
 
+        var apiClient = connectionManager.currentApiClient();
         if (result.item.sourceid === 'nextup') {
 
-            ApiClient.getNextUpEpisodes(query).then(function (queryResult) {
+            apiClient.getNextUpEpisodes(query).then(function (queryResult) {
 
                 playItems(queryResult.Items, result.item.shuffle);
 
@@ -93,7 +93,7 @@ define([], function () {
         }
 
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (queryResult) {
+        apiClient.getItems(apiClient.getCurrentUserId(), query).then(function (queryResult) {
 
             playItems(queryResult.Items, result.item.shuffle);
         });

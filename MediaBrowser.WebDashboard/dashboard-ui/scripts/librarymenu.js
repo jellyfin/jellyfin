@@ -140,9 +140,9 @@
                 }
             }
 
-            require(['voice/voice'], function (voice) {
+            require(['apphost'], function (apphost) {
 
-                if (voice.isSupported()) {
+                if (apphost.supports('voiceinput')) {
                     header.querySelector('.headerVoiceButton').classList.remove('hide');
                 } else {
                     header.querySelector('.headerVoiceButton').classList.add('hide');
@@ -164,8 +164,8 @@
     }
 
     function showVoice() {
-        require(['voice/voice'], function (voice) {
-            voice.showDialog();
+        require(['voiceDialog'], function (voiceDialog) {
+            voiceDialog.showDialog();
         });
     }
 

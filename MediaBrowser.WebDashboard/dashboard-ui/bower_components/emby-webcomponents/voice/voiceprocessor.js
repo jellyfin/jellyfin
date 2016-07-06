@@ -1,4 +1,4 @@
-﻿define(['voice/voicecommands.js', 'voice/grammarprocessor.js'], function (voicecommands, grammarprocessor) {
+﻿define(['./voicecommands.js', './grammarprocessor.js', 'require'], function (voicecommands, grammarprocessor, require) {
 
     var commandgroups;
 
@@ -11,21 +11,11 @@
         return new Promise(function (resolve, reject) {
 
             var file = "grammar";
-            //if (language && language.length > 0)
-            //    file = language;
 
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', "voice/grammar/" + file + ".json", true);
-
-            xhr.onload = function (e) {
-
-                commandgroups = JSON.parse(this.response);
+            require(['text!./grammar/' + file + '.json'], function (response) {
+                commandgroups = JSON.parse(response);
                 resolve(commandgroups);
-            }
-
-            xhr.onerror = reject;
-
-            xhr.send();
+            });
         });
     }
     /// <summary> Process the transcript described by text. </summary>
