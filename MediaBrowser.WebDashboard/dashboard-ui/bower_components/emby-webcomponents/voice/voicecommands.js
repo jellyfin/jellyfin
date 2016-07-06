@@ -1,6 +1,6 @@
 ﻿// <date>09.10.2015</date>
 // <summary>voicecommands class</summary>
-define([], function () {
+define(['require'], function (require) {
 
     /// <summary> Process the command. </summary>
     /// <param name="commandPath"> Full pathname of the command file. </param>
@@ -28,28 +28,28 @@ define([], function () {
             switch (result.item.actionid) {
 
                 case 'show':
-                    processCommand('voice/commands/showcommands.js', result).then(function (result) { resolve(result); });
+                    processCommand('./commands/showcommands.js', result).then(function (result) { resolve(result); });
                     break;
                 case 'play':
-                    processCommand('voice/commands/playcommands.js', result).then(function (result) { resolve(result); });
+                    processCommand('./commands/playcommands.js', result).then(function (result) { resolve(result); });
                     break;
                 case 'shuffle':
-                    processCommand('voice/commands/playcommands.js', result).then(function (result) { resolve(result); });
+                    processCommand('./commands/playcommands.js', result).then(function (result) { resolve(result); });
                     break;
                 case 'search':
-                    processCommand('voice/commands/searchcommands.js', result).then(function (result) { resolve(result); });
+                    processCommand('./commands/searchcommands.js', result).then(function (result) { resolve(result); });
                     break;
                 case 'control':
-                    processCommand('voice/commands/controlcommands.js', result).then(function (result) { resolve(result); });
+                    processCommand('./commands/controlcommands.js', result).then(function (result) { resolve(result); });
                     break;
                 case 'enable':
-                    processCommand('voice/commands/enablecommands.js', result).then(function (result) { resolve(result); });
+                    processCommand('./commands/enablecommands.js', result).then(function (result) { resolve(result); });
                     break;
                 case 'disable':
-                    processCommand('voice/commands/disablecommands.js', result).then(function (result) { resolve(result); });
+                    processCommand('./commands/disablecommands.js', result).then(function (result) { resolve(result); });
                     break;
                 case 'toggle':
-                    processCommand('voice/commands/togglecommands.js', result).then(function (result) { resolve(result); });
+                    processCommand('./commands/togglecommands.js', result).then(function (result) { resolve(result); });
                     break;
                 default:
                     reject();
