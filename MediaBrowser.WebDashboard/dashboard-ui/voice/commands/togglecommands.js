@@ -1,5 +1,4 @@
-﻿
-define([], function () {
+﻿define([], function () {
 
     return function (result) {
         result.success = true;
@@ -12,5 +11,4 @@ define([], function () {
                 return;
         }
     }
-
 });

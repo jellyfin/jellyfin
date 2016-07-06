@@ -139,7 +139,7 @@
         "commandtemplates": [
           "Play music",
           "Play my music",
-          "Listen to my music "
+          "Listen to my music"
         ]
       },
       {
@@ -188,7 +188,7 @@
         "commandtemplates": [
           "Play music",
           "Play my music",
-          "Listen to my music "
+          "Listen to my music"
         ]
       },
       {
@@ -200,7 +200,7 @@
         "commandtemplates": [
           "Play music",
           "Play my music",
-          "Listen to my music ",
+          "Listen to my music",
           "shuffle my favorite songs"
         ]
       }

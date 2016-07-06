@@ -18,9 +18,9 @@ define([], function () {
                    window.msSpeechRecognition;
         },
 
-        startListening: function () {
+        showDialog: function () {
             require(['voice/voicedialog'], function (voicedialog) {
-                voicedialog.startListening();
+                voicedialog.showDialog();
             });
         }
     };

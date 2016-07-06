@@ -1,36 +1,6 @@
-define(['dialogHelper', 'jQuery', 'emby-button'], function (dialogHelper, $) {
+define(['dialogHelper', 'voice/voicereceiver', 'voice/voiceprocessor', 'globalize', 'emby-button', 'css!./voice.css', 'material-icons'], function (dialogHelper, voicereceiver, voiceprocessor, globalize) {
 
-    var currentRecognition;
     var lang = 'en-US';
-
-    var commandgroups;
-
-    function getCommandGroups() {
-    
-        if (commandgroups) {
-            return Promise.resolve(commandgroups);
-        }
-
-        return new Promise(function (resolve, reject) {
-
-            var file = "grammar";
-            //if (language && language.length > 0)
-            //    file = language;
-
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', "voice/grammar/" + file + ".json", true);
-
-            xhr.onload = function (e) {
-
-                commandgroups = JSON.parse(this.response);
-                resolve(commandgroups);
-            }
-
-            xhr.onerror = reject;
-
-            xhr.send();
-        });
-    }
 
     /// <summary> Shuffle array. </summary>
     /// <param name="array"> The array. </param>
@@ -58,7 +28,7 @@ define(['dialogHelper', 'jQuery', 'emby-button'], function (dialogHelper, $) {
     /// <returns> The sample commands. </returns>
     function getSampleCommands(groupid) {
 
-        return getCommandGroups().then(function (commandGroups) {
+        return voiceprocessor.getCommandGroups().then(function (commandGroups) {
             groupid = typeof (groupid) !== 'undefined' ? groupid : '';
 
             var commands = [];
@@ -86,17 +56,20 @@ define(['dialogHelper', 'jQuery', 'emby-button'], function (dialogHelper, $) {
     /// <param name="groupid"> The groupid. </param>
     /// <returns> The command group. </returns>
     function getCommandGroup(groupid) {
-        if (commandgroups) {
-            var idx = -1;
-            idx = commandgroups.map(function (e) { return e.groupid; }).indexOf(groupid);
+        return voicereceiver.getCommandGroups()
+            .then(function (commandgroups) {
+                if (commandgroups) {
+                    var idx = -1;
 
-            if (idx > -1)
-                return commandgroups[idx];
-            else
-                return null;
-        }
-        else
-            return null;
+                    idx = commandgroups.map(function (e) { return e.groupid; }).indexOf(groupid);
+
+                    if (idx > -1)
+                        return commandgroups[idx];
+                    else
+                        return null;
+                } else
+                    return null;
+            });
     }
 
     /// <summary> Renders the sample commands. </summary>
@@ -113,7 +86,7 @@ define(['dialogHelper', 'jQuery', 'emby-button'], function (dialogHelper, $) {
 
         }).join('');
 
-        $('.exampleCommands', elem).html(commands);
+        elem.querySelector('.exampleCommands').innerHTML = commands;
     }
 
     var currentDialog;
@@ -121,212 +94,179 @@ define(['dialogHelper', 'jQuery', 'emby-button'], function (dialogHelper, $) {
     /// <returns> . </returns>
     function showVoiceHelp(groupid, title) {
 
-        var dlg = dialogHelper.createDialog({
-            size: 'medium',
-            removeOnClose: true
-        });
+        console.log("Showing Voice Help", groupid, title);
 
-        dlg.classList.add('ui-body-b');
-        dlg.classList.add('background-theme-b');
+        var isNewDialog = false;
+        var dlg;
 
-        var html = '';
-        html += '<h2 class="dialogHeader">';
-        html += '<paper-fab icon="arrow-back" mini class="btnCancelVoiceInput"></paper-fab>';
-        if (groupid) {
-            var grp = getCommandGroup(groupid);
-            if (grp)
-                html += '  ' + grp.name;
+        if (!currentDialog) {
+
+            isNewDialog = true;
+
+            dlg = dialogHelper.createDialog({
+                size: 'medium',
+                removeOnClose: true
+            });
+
+            dlg.classList.add('ui-body-b');
+            dlg.classList.add('background-theme-b');
+
+            var html = '';
+            html += '<div class="dialogHeader" style="margin:0 0 1em;">';
+            html += '<button is="paper-icon-button-light" class="btnCancel autoSize btnCancelVoiceInput" tabindex="-1"><i class="md-icon">arrow_back</i></button>';
+            html += '<div class="dialogHeaderTitle" id="voiceDialogGroupName">';
+            html += '</div>';
+            html += '</div>';
+
+            html += '<div>';
+
+            html += '<div class="dialogContent smoothScrollY">';
+            html += '<div class="dialogContentInner centeredContent">';
+            html += '<div class="voiceHelpContent">';
+
+            html += '<div class="defaultVoiceHelp">';
+
+            html += '<h1 style="margin-bottom:1.25em;">' + globalize.translate('HeaderSaySomethingLike') + '</h1>';
+
+            html += '<div class="exampleCommands">';
+            html += '</div>';
+
+            // defaultVoiceHelp
+            html += '</div>';
+
+            html += '<div class="unrecognizedCommand hide">';
+            html += '<h1>' + globalize.translate('HeaderYouSaid') + '</h1>';
+            html +=
+                '<p class="exampleCommand voiceInputContainer"><i class="fa fa-quote-left"></i><span class="voiceInputText exampleCommandText"></span><i class="fa fa-quote-right"></i></p>';
+            html += '<p>' + globalize.translate('MessageWeDidntRecognizeCommand') + '</p>';
+
+            html += '<br/>';
+            html += '<button is="emby-button" type="button" class="submit block btnRetry raised"><i class="md-icon">mic</i><span>' +
+                globalize.translate('ButtonTryAgain') +
+                '</span></button>';
+            html += '<p class="blockedMessage hide">' +
+                globalize.translate('MessageIfYouBlockedVoice') +
+                '<br/><br/></p>';
+
+            html += '</div>';
+
+            html +=
+                '<button is="emby-button" type="button" class="raised block btnCancelVoiceInput cancel"><i class="md-icon">close</i><span>' + globalize.translate('ButtonCancel') + '</span></button>';
+
+            html += '</div>';
+            html += '</div>';
+            html += '</div>';
+
+            html += '</div>';
+
+            dlg.innerHTML = html;
+            document.body.appendChild(dlg);
+
+            dialogHelper.open(dlg);
+            currentDialog = dlg;
+
+            dlg.addEventListener('close', function () {
+                currentDialog = null;
+            });
+
+            function onCancelClick() {
+                voicereceiver.cancel();
+                dialogHelper.close(dlg);
+            }
+
+            var closeButtons = dlg.querySelectorAll('.btnCancelVoiceInput');
+            for (var i = 0, length = closeButtons.length; i < length; i++) {
+                closeButtons[i].addEventListener('click', onCancelClick);
+            }
+
+            dlg.querySelector('.btnRetry').addEventListener('click', function () {
+                dlg.querySelector('.unrecognizedCommand').classList.add('hide');
+                dlg.querySelector('.defaultVoiceHelp').classList.remove('hide');
+                listen();
+            });
         }
-        html += '</h2>';
 
-        html += '<div>';
+        dlg = currentDialog;
 
-        var getCommandsPromise = getSampleCommands(groupid);
+        if (groupid) {
+            getCommandGroup(groupid)
+                .then(
+                    function (grp) {
+                        dlg.querySelector('#voiceDialogGroupName').innerText = '  ' + grp.name;
+                    });
 
-        html += '<div class="voiceHelpContent">';
 
-        html += '<div class="defaultVoiceHelp">';
+            getSampleCommands(groupid)
+                .then(function (commands) {
+                    renderSampleCommands(currentDialog, commands);
+                    listen();
+                })
+                .catch(function (e) { console.log("Error", e); });
+        } else if (isNewDialog) {
+            getSampleCommands()
+                .then(function (commands) {
+                    renderSampleCommands(currentDialog, commands);
+                });
 
-        html += '<h1 style="margin-bottom:1.25em;">' + Globalize.translate('HeaderSaySomethingLike') + '</h1>';
-
-        html += '<div class="exampleCommands">';
-        html += '</div>';
-
-        // defaultVoiceHelp
-        html += '</div>';
-
-        html += '<div class="unrecognizedCommand" style="display:none;">';
-        html += '<h1>' + Globalize.translate('HeaderYouSaid') + '</h1>';
-        html += '<p class="exampleCommand voiceInputContainer"><i class="fa fa-quote-left"></i><span class="voiceInputText exampleCommandText"></span><i class="fa fa-quote-right"></i></p>';
-        html += '<p>' + Globalize.translate('MessageWeDidntRecognizeCommand') + '</p>';
-
-        html += '<br/>';
-        html += '<button is="emby-button" type="button" class="raised submit block btnRetry"><iron-icon icon="mic"></iron-icon><span>' + Globalize.translate('ButtonTryAgain') + '</span></button>';
-        html += '<p class="blockedMessage" style="display:none;">' + Globalize.translate('MessageIfYouBlockedVoice') + '<br/><br/></p>';
-
-        html += '</div>';
-
-        html += '<button is="emby-button" type="button" class="raised block btnCancelVoiceInput" style="background-color:#444;"><iron-icon icon="close"></iron-icon><span>' + Globalize.translate('ButtonCancel') + '</span></button>';
-
-        // voiceHelpContent
-        html += '</div>';
-
-        html += '</div>';
-
-        dlg.innerHTML = html;
-        document.body.appendChild(dlg);
-
-        dialogHelper.open(dlg);
-        currentDialog = dlg;
-
-        dlg.addEventListener('close', function () {
-            currentDialog = null;
-        });
-
-        $('.btnCancelVoiceInput', dlg).on('click', function () {
-            destroyCurrentRecognition();
-            dialogHelper.close(dlg);
-        });
-
-        $('.btnRetry', dlg).on('click', function () {
-            $('.unrecognizedCommand').hide();
-            $('.defaultVoiceHelp').show();
-            startListening(false);
-        });
-
-        getCommandsPromise.then(function (commands) {
-            renderSampleCommands(dlg.querySelector('.voiceHelpContent'), commands);
-        });
+        }
     }
-
-    /// <summary> Hides the voice help. </summary>
-    /// <returns> . </returns>
-    function hideVoiceHelp() {
-
-        $('.voiceInputHelp').remove();
+    function processInput(input) {
+        return voiceprocessor.processTranscript(input);
     }
 
     /// <summary> Shows the unrecognized command help. </summary>
     /// <returns> . </returns>
-    function showUnrecognizedCommandHelp() {
+    function showUnrecognizedCommandHelp(command) {
         //speak("I don't understend this command");
-        $('.unrecognizedCommand').show();
-        $('.defaultVoiceHelp').hide();
-    }
-
-    /// <summary> Process the transcript described by text. </summary>
-    /// <param name="text"> The text. </param>
-    /// <returns> . </returns>
-    function processTranscript(text, isCancelled) {
-
-        $('.voiceInputText').html(text);
-
-        if (text || AppInfo.isNativeApp) {
-            $('.blockedMessage').hide();
-        }
-        else {
-            $('.blockedMessage').show();
-        }
-
-        if (text) {
-            require(['voice/voicecommands.js', 'voice/grammarprocessor.js'], function (voicecommands, grammarprocessor) {
-
-                var processor = grammarprocessor(commandgroups, text);
-                if (processor && processor.command) {
-                    voicecommands(processor)
-                        .then(function (result) {
-                            if (result.item.actionid === 'show' && result.item.sourceid === 'group') {
-                                var dlg = currentDialog;
-                                if (dlg)
-                                    showCommands(false, result)
-                                else
-                                    showCommands(true, result)
-                            }
-                        })
-                        .catch(showUnrecognizedCommandHelp);
-                }
-                else
-                    showUnrecognizedCommandHelp();
-
-                var dlg = currentDialog;
-                if (dlg) {
-                    dialogHelper.close(dlg);
-                }
-            });
-
-        }
-        else if (!isCancelled) {
-            showUnrecognizedCommandHelp();
-        }
-    }
-
-    /// <summary> Starts listening internal. </summary>
-    /// <returns> . </returns>
-    function startListening(createUI) {
-
-        destroyCurrentRecognition();
-        var recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.oSpeechRecognition || window.msSpeechRecognition)();
-        recognition.lang = lang;
-        var groupid = '';
-        //recognition.continuous = true;
-        //recognition.interimResults = true;
-
-        recognition.onresult = function (event) {
-            if (event.results.length > 0) {
-                processTranscript(event.results[0][0].transcript || '');
-            }
-        };
-
-        recognition.onerror = function () {
-            processTranscript('', recognition.cancelled);
-        };
-
-        recognition.onnomatch = function () {
-            processTranscript('', recognition.cancelled);
-        };
-
-        recognition.start();
-        currentRecognition = recognition;
-        showCommands(createUI);
-    }
-
-    /// <summary> Destroys the current recognition. </summary>
-    /// <returns> . </returns>
-    function destroyCurrentRecognition() {
-
-        var recognition = currentRecognition;
-        if (recognition) {
-            recognition.abort();
-            currentRecognition = null;
-        }
-    }
-
-    /// <summary> Cancel listener. </summary>
-    /// <returns> . </returns>
-    function cancelListener() {
-
-        destroyCurrentRecognition();
-        hideVoiceHelp();
+        if (command)
+            currentDialog.querySelector('.voiceInputText').innerText = command;
+        currentDialog.querySelector('.unrecognizedCommand').classList.remove('hide');
+        currentDialog.querySelector('.defaultVoiceHelp').classList.add('hide');
     }
 
     /// <summary> Shows the commands. </summary>
     /// <param name="createUI"> The create user interface. </param>
     /// <returns> . </returns>
-    function showCommands(createUI, result) {
-        if (createUI !== false) {
-            //speak('Hello, what can I do for you?');
-            require(['paper-fab', 'css!voice/voice.css'], function () {
-                if (result)
-                    showVoiceHelp(result.groupid, result.name);
-                else
-                    showVoiceHelp();
-            });
+    function showCommands(result) {
+        //speak('Hello, what can I do for you?');
+        if (result)
+            showVoiceHelp(result.groupid, result.name);
+        else
+            showVoiceHelp();
+    }
+
+    function resetDialog() {
+        if (currentDialog) {
+            currentDialog.querySelector('.unrecognizedCommand').classList.add('hide');
+            currentDialog.querySelector('.defaultVoiceHelp').classList.remove('hide');
         }
+    }
+    function showDialog() {
+        resetDialog();
+        showCommands();
+        listen();
+    }
+    function listen() {
+        voicereceiver.listenForCommand(lang || "en-US").then(processInput).then(function (data) {
+
+            closeDialog();
+
+        }, function (result) {
+            if (result.error == 'group') {
+                showVoiceHelp(result.item.groupid, result.groupName);
+                return;
+            }
+            showUnrecognizedCommandHelp(result.text || '');
+        });
+    }
+    function closeDialog() {
+        dialogHelper.close(currentDialog);
+        voicereceiver.cancel();
     }
 
     /// <summary> An enum constant representing the window. voice input manager option. </summary>
     return {
-        startListening: startListening
+        showDialog: showDialog
     };
 
 });
