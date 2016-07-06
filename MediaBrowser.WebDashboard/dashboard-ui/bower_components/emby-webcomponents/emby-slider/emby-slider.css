@@ -153,11 +153,13 @@ _:-ms-input-placeholder, :root .mdl-slider.mdl-slider {
 }
 
 .layout-tv .mdl-slider::-webkit-slider-thumb {
-    display: none;
+    width: 0;
+    height: 0;
 }
 
 .layout-tv .mdl-slider:hover::-webkit-slider-thumb {
-    display: block;
+    width: 16px;
+    height: 16px;
 }
 
 .mdl-slider.is-lowest-value::-webkit-slider-thumb {

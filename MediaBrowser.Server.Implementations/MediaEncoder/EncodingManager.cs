@@ -152,6 +152,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                             }
 
                             chapter.ImagePath = path;
+                            chapter.ImageDateModified = _fileSystem.GetLastWriteTimeUtc(path);
                             changesMade = true;
                         }
                         catch (Exception ex)
@@ -170,6 +171,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 else if (!string.Equals(path, chapter.ImagePath, StringComparison.OrdinalIgnoreCase))
                 {
                     chapter.ImagePath = path;
+                    chapter.ImageDateModified = _fileSystem.GetLastWriteTimeUtc(path);
                     changesMade = true;
                 }
             }

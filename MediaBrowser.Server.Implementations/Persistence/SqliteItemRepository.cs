@@ -278,6 +278,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "UserDataKeys", "Priority", "INT");
             _connection.AddColumn(Logger, "ItemValues", "CleanValue", "Text");
 
+            _connection.AddColumn(Logger, ChaptersTableName, "ImageDateModified", "DATETIME");
+
             string[] postQueries =
 
                                 {
@@ -591,6 +593,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _saveChapterCommand.Parameters.Add(_saveChapterCommand, "@StartPositionTicks");
             _saveChapterCommand.Parameters.Add(_saveChapterCommand, "@Name");
             _saveChapterCommand.Parameters.Add(_saveChapterCommand, "@ImagePath");
+            _saveChapterCommand.Parameters.Add(_saveChapterCommand, "@ImageDateModified");
 
             // MediaStreams
             _deleteStreamsCommand = _connection.CreateCommand();
@@ -1497,7 +1500,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select StartPositionTicks,Name,ImagePath from " + ChaptersTableName + " where ItemId = @ItemId order by ChapterIndex asc";
+                cmd.CommandText = "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId order by ChapterIndex asc";
 
                 cmd.Parameters.Add(cmd, "@ItemId", DbType.Guid).Value = id;
 
@@ -1530,7 +1533,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select StartPositionTicks,Name,ImagePath from " + ChaptersTableName + " where ItemId = @ItemId and ChapterIndex=@ChapterIndex";
+                cmd.CommandText = "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId and ChapterIndex=@ChapterIndex";
 
                 cmd.Parameters.Add(cmd, "@ItemId", DbType.Guid).Value = id;
                 cmd.Parameters.Add(cmd, "@ChapterIndex", DbType.Int32).Value = index;
@@ -1566,6 +1569,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!reader.IsDBNull(2))
             {
                 chapter.ImagePath = reader.GetString(2);
+            }
+
+            if (!reader.IsDBNull(3))
+            {
+                chapter.ImageDateModified = reader.GetDateTime(3).ToUniversalTime();
             }
 
             return chapter;
@@ -1627,6 +1635,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveChapterCommand.GetParameter(2).Value = chapter.StartPositionTicks;
                     _saveChapterCommand.GetParameter(3).Value = chapter.Name;
                     _saveChapterCommand.GetParameter(4).Value = chapter.ImagePath;
+                    _saveChapterCommand.GetParameter(5).Value = chapter.ImageDateModified;
 
                     _saveChapterCommand.Transaction = transaction;
 

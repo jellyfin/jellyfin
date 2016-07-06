@@ -19,6 +19,9 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         showSearch: function () {
             skinManager.getCurrentSkin().search();
         },
+        showGenre: function (options) {
+            skinManager.getCurrentSkin().showGenre(options);
+        },
         showGuide: function () {
             skinManager.getCurrentSkin().showGuide();
         },

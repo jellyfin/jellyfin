@@ -1878,7 +1878,7 @@ namespace MediaBrowser.Controller.Entities
                 return new ItemImageInfo
                 {
                     Path = path,
-                    DateModified = FileSystem.GetLastWriteTimeUtc(path),
+                    DateModified = chapter.ImageDateModified,
                     Type = imageType
                 };
             }

@@ -151,7 +151,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             IEnumerable<BaseItem> items;
             int numItemsToSave;
-            var pageSize = 2000;
+            var pageSize = 1000;
 
             if (totalRecordCount.HasValue)
             {

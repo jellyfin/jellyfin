@@ -24,8 +24,9 @@ define(['focusManager', 'css!./style.css', 'clearButtonStyle', 'paper-icon-butto
 
         html += '<div class="alphaPickerRow">';
         if (options.mode == 'keyboard') {
+            // space_bar icon
             html += '<button data-value=" " is="paper-icon-button-light" class="alphaPickerButton autoSize">\
-                <i class="md-icon">space_bar</i>\
+                <i class="md-icon">&#xE256;</i>\
             </button>';
         } else {
             letters = ['#'];
@@ -36,8 +37,9 @@ define(['focusManager', 'css!./style.css', 'clearButtonStyle', 'paper-icon-butto
         html += letters.map(getLetterButton).join('');
 
         if (options.mode == 'keyboard') {
+            // backspace icon
             html += '<button data-value="backspace" is="paper-icon-button-light" class="alphaPickerButton autoSize">\
-                <i class="md-icon">backspace</i>\
+                <i class="md-icon">&#xE14A;</i>\
             </button>';
             html += '</div>';
 

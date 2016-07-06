@@ -863,7 +863,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     Path = chapterInfo.ImagePath,
                     Type = ImageType.Chapter,
-                    DateModified = _fileSystem.GetLastWriteTimeUtc(chapterInfo.ImagePath)
+                    DateModified = chapterInfo.ImageDateModified
                 });
             }
 
