@@ -53,7 +53,7 @@
                 page.querySelector('#selectMaxBitrate').value = appSettings.maxStreamingBitrate();
             }
 
-            page.querySelector('#selectMaxChromecastBitrate').value = appSettings.maxChromecastBitrate();
+            page.querySelector('#selectMaxChromecastBitrate').value = appSettings.maxChromecastBitrate() || '';
 
             Dashboard.hideLoadingMsg();
         });
