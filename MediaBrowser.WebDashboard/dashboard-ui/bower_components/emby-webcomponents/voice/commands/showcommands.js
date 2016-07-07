@@ -1,96 +1,131 @@
 ﻿define(['inputManager', 'connectionManager', 'embyRouter'], function (inputManager, connectionManager, embyRouter) {
 
-    return function (result) {
-        result.success = true;
-        switch (result.item.sourceid) {
-            case 'music':
-                inputManager.trigger('music');
-                break;
-            case 'movies':
-                if (result.properties.movieName) {
+    function getMusicCommand(result) {
+        return function () {
+            inputManager.trigger('music');
+        };
+    }
 
-                    //TODO: Find a way to display movie
-                    var query = {
-                        Limit: 1,
-                        UserId: result.userId,
-                        ExcludeLocationTypes: "Virtual",
-                        NameStartsWith: result.item.itemType
-                    };
+    function getMoviesCommand(result) {
+        return function () {
+            if (result.properties.movieName) {
 
-                    if (result.item.itemType) {
-                        query.IncludeItemTypes = result.item.itemType;
-                    }
+                //TODO: Find a way to display movie
+                var query = {
+                    Limit: 1,
+                    UserId: result.userId,
+                    ExcludeLocationTypes: "Virtual",
+                    NameStartsWith: result.item.itemType
+                };
 
-                    var apiClient = connectionManager.currentApiClient();
-                    apiClient.getItems(apiClient.getCurrentUserId(), query).then(function (queryResult) {
-
-                        if (queryResult.Items.length) {
-                            embyRouter.showItem(queryResult.Items[0]);
-                        }
-                    });
-
-                } else {
-                    inputManager.trigger('movies');
+                if (result.item.itemType) {
+                    query.IncludeItemTypes = result.item.itemType;
                 }
 
-                break;
-            case 'tvseries':
-                inputManager.trigger('tv');
-                break;
-            case 'livetv':
-                var act = result.item.menuid;
-                if (act) {
-                    if (act.indexOf('livetv') != -1) {
-                        inputManager.trigger('livetv');
-                    } else if (act.indexOf('guide') != -1) {
-                        inputManager.trigger('guide');
-                    } else if (act.indexOf('channels') != -1) {
-                        inputManager.trigger('livetv');
-                    } else if (act.indexOf('recordings') != -1) {
-                        inputManager.trigger('recordedtv');
-                    } else if (act.indexOf('scheduled') != -1) {
-                        inputManager.trigger('recordedtv');
-                    } else if (act.indexOf('series') != -1) {
-                        inputManager.trigger('recordedtv');
-                    } else {
-                        inputManager.trigger('livetv');
+                var apiClient = connectionManager.currentApiClient();
+                apiClient.getItems(apiClient.getCurrentUserId(), query).then(function (queryResult) {
+
+                    if (queryResult.Items.length) {
+                        embyRouter.showItem(queryResult.Items[0]);
                     }
+                });
+
+            } else {
+                inputManager.trigger('movies');
+            }
+        };
+    }
+
+    function getTVCommand(result) {
+        return function () {
+            inputManager.trigger('tv');
+        };
+    }
+
+    function getLiveTVCommand(result) {
+        return function () {
+            var act = result.item.menuid;
+            if (act) {
+                if (act.indexOf('livetv') != -1) {
+                    inputManager.trigger('livetv');
+                } else if (act.indexOf('guide') != -1) {
+                    inputManager.trigger('guide');
+                } else if (act.indexOf('channels') != -1) {
+                    inputManager.trigger('livetv');
+                } else if (act.indexOf('recordings') != -1) {
+                    inputManager.trigger('recordedtv');
+                } else if (act.indexOf('scheduled') != -1) {
+                    inputManager.trigger('recordedtv');
+                } else if (act.indexOf('series') != -1) {
+                    inputManager.trigger('recordedtv');
                 } else {
                     inputManager.trigger('livetv');
                 }
-                break;
-            case 'recordings':
-                inputManager.trigger('recordedtv');
-                break;
-            case 'latestepisodes':
-                inputManager.trigger('latestepisodes');
-            case 'home':
-                var act = result.item.menuid;
-                if (act) {
-                    if (act.indexOf('home') != -1) {
-                        inputManager.trigger('home');
-                    }
-                    else if (act.indexOf('nextup') != -1) {
-                        inputManager.trigger('nextup');
-                    }
-                    else if (act.indexOf('favorites') != -1) {
-                        inputManager.trigger('favorites');
-                    } else if (act.indexOf('upcoming') != -1) {
-                        inputManager.trigger('upcomingtv');
-                    }
-                    else if (act.indexOf('nowplaying') != -1) {
-                        inputManager.trigger('nowplaying');
-                    }
-                    else {
-                        inputManager.trigger('home');
-                    }
-                } else {
+            } else {
+                inputManager.trigger('livetv');
+            }
+        };
+    }
+
+    function getRecordingsCommand(result) {
+        return function () {
+            inputManager.trigger('recordedtv');
+        };
+    }
+
+    function getLatestEpisodesCommand(result) {
+        return function () {
+            inputManager.trigger('latestepisodes');
+        };
+    }
+
+    function getHomeCommand(result) {
+        return function () {
+            var act = result.item.menuid;
+            if (act) {
+                if (act.indexOf('home') != -1) {
                     inputManager.trigger('home');
                 }
+                else if (act.indexOf('nextup') != -1) {
+                    inputManager.trigger('nextup');
+                }
+                else if (act.indexOf('favorites') != -1) {
+                    inputManager.trigger('favorites');
+                } else if (act.indexOf('upcoming') != -1) {
+                    inputManager.trigger('upcomingtv');
+                }
+                else if (act.indexOf('nowplaying') != -1) {
+                    inputManager.trigger('nowplaying');
+                }
+                else {
+                    inputManager.trigger('home');
+                }
+            } else {
+                inputManager.trigger('home');
+            }
+        };
+    }
+
+    return function (result) {
+
+        switch (result.item.sourceid) {
+            case 'music':
+                return getMusicCommand(result);
+            case 'movies':
+                return getMoviesCommand(result);
+            case 'tvseries':
+                return getTVCommand(result);
+            case 'livetv':
+                return getLiveTVCommand(result);
+            case 'recordings':
+                return getRecordingsCommand(result);
+            case 'latestepisodes':
+                return getLatestEpisodesCommand(result);
+            case 'home':
+                return getHomeCommand(result);
             case 'group':
-                break;
+                return;
             default:
-                result.success = false;
                 return;
         }
 

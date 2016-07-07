@@ -49,58 +49,52 @@
     }
 
     return function (result) {
-        result.success = false;
 
-        var query = {
+        return function () {
+            var query = {
 
-            Limit: result.item.limit || 100,
-            UserId: result.userId,
-            ExcludeLocationTypes: "Virtual"
-        };
+                Limit: result.item.limit || 100,
+                UserId: result.userId,
+                ExcludeLocationTypes: "Virtual"
+            };
 
-        if (result.item.itemType) {
-            query.IncludeItemTypes = result.item.itemType;
-        }
+            if (result.item.itemType) {
+                query.IncludeItemTypes = result.item.itemType;
+            }
 
-        var apiClient = connectionManager.currentApiClient();
-        if (result.item.sourceid === 'nextup') {
+            var apiClient = connectionManager.currentApiClient();
+            if (result.item.sourceid === 'nextup') {
 
-            apiClient.getNextUpEpisodes(query).then(function (queryResult) {
+                apiClient.getNextUpEpisodes(query).then(function (queryResult) {
+
+                    playItems(queryResult.Items, result.item.shuffle);
+
+                });
+            }
+
+            if (result.item.shuffle) {
+                result.item.sortBy = result.sortBy ? 'Random,' + result.item.sortBy : 'Random';
+            }
+
+            query.SortBy = result.item.sortBy;
+            query.SortOrder = result.item.sortOrder;
+            query.Recursive = true;
+
+            if (result.item.filters.indexOf('unplayed') !== -1) {
+                query.IsPlayed = false;
+            }
+            if (result.item.filters.indexOf('played') !== -1) {
+                query.IsPlayed = true;
+            }
+            if (result.item.filters.indexOf('favorite') !== -1) {
+                query.Filters = 'IsFavorite';
+            }
+
+
+            apiClient.getItems(apiClient.getCurrentUserId(), query).then(function (queryResult) {
 
                 playItems(queryResult.Items, result.item.shuffle);
-
             });
-            result.success = true;
-            return;
-        }
-
-        if (result.item.shuffle) {
-            result.item.sortBy = result.sortBy ? 'Random,' + result.item.sortBy : 'Random';
-        }
-
-        query.SortBy = result.item.sortBy;
-        query.SortOrder = result.item.sortOrder;
-        query.Recursive = true;
-
-        if (result.item.filters.indexOf('unplayed') !== -1) {
-            query.IsPlayed = false;
-        }
-        if (result.item.filters.indexOf('played') !== -1) {
-            query.IsPlayed = true;
-        }
-        if (result.item.filters.indexOf('favorite') !== -1) {
-            query.Filters = 'IsFavorite';
-        }
-
-
-        apiClient.getItems(apiClient.getCurrentUserId(), query).then(function (queryResult) {
-
-            playItems(queryResult.Items, result.item.shuffle);
-        });
-
-        result.success = true;
-
-        return;
-
+        };
     }
 });

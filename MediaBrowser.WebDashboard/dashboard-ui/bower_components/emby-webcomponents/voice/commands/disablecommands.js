@@ -1,13 +1,18 @@
 ﻿define(['inputManager'], function (inputManager) {
 
+    function disableDisplayMirror() {
+        return function () {
+            inputManager.trigger('disabledisplaymirror');
+        };
+    }
+
     return function (result) {
-        result.success = true;
+
         switch (result.item.deviceid) {
             case 'displaymirroring':
-                inputManager.trigger('disabledisplaymirror');
+                return disableDisplayMirror();
                 break;
             default:
-                result.success = false;
                 return;
         }
     }
