@@ -1,11 +1,13 @@
 ﻿<div id="liveTvSuggestedPage" data-dom-cache="true" data-role="page" class="page libraryPage liveTvPage pageWithAbsoluteTabs" data-contextname="${HeaderLiveTv}" data-backdroptype="series,movie">
 
     <div class="libraryViewNav">
-        <button class="pageTabButton is-active" data-index="0">${TabSuggestions}</button>
-        <button class="pageTabButton" data-index="1">${TabGuide}</button>
-        <button class="pageTabButton" data-index="2">${TabChannels}</button>
-        <button class="pageTabButton" data-index="3">${TabRecordings}</button>
-        <button class="pageTabButton" data-index="4">${TabSeries}</button>
+        <div class="contentScrollSlider">
+            <button class="pageTabButton is-active" data-index="0">${TabSuggestions}</button>
+            <button class="pageTabButton" data-index="1">${TabGuide}</button>
+            <button class="pageTabButton" data-index="2">${TabChannels}</button>
+            <button class="pageTabButton" data-index="3">${TabRecordings}</button>
+            <button class="pageTabButton" data-index="4">${TabSeries}</button>
+        </div>
     </div>
     <div class="is-active pageTabContent ehsContent" id="suggestionsTab" data-index="0">
         <div id="activePrograms" class="homePageSection">

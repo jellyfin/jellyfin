@@ -1,4 +1,4 @@
-﻿define(['scrollHelper', 'viewManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'itemHelper', 'mediaInfo', 'scrollStyles'], function (scrollHelper, viewManager, appSettings, appStorage, appHost, datetime, itemHelper, mediaInfo) {
+﻿define(['scrollHelper', 'viewManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'itemHelper', 'mediaInfo', 'scroller', 'scrollStyles'], function (scrollHelper, viewManager, appSettings, appStorage, appHost, datetime, itemHelper, mediaInfo, scroller) {
 
     function parentWithClass(elem, className) {
 
@@ -264,8 +264,6 @@
                     }
                 }
 
-                tabs.classList.add('hiddenScrollX');
-
                 tabs.addEventListener('click', function (e) {
 
                     var current = tabs.querySelector('.is-active');
@@ -296,6 +294,8 @@
                                 fadeInRight(newPanel);
                             }
 
+                            tabs.selectedTabIndex = index;
+
                             tabs.dispatchEvent(new CustomEvent("tabchange", {
                                 detail: {
                                     selectedTabIndex: index
@@ -303,13 +303,40 @@
                             }));
 
                             newPanel.classList.add('is-active');
-
-                            //scrollHelper.toCenter(tabs, link, true);
                         }, 120);
+
+                        if (tabs.scroller) {
+                            tabs.scroller.toCenter(link, false);
+                        }
                     }
                 });
 
                 ownerpage.addEventListener('viewbeforeshow', LibraryBrowser.onTabbedpagebeforeshow);
+
+                var contentScrollSlider = tabs.querySelector('.contentScrollSlider');
+                if (contentScrollSlider) {
+                    tabs.scroller = new scroller(tabs, {
+                        horizontal: 1,
+                        itemNav: 0,
+                        mouseDragging: 1,
+                        touchDragging: 1,
+                        slidee: tabs.querySelector('.contentScrollSlider'),
+                        smart: true,
+                        releaseSwing: true,
+                        scrollBy: 200,
+                        speed: 120,
+                        elasticBounds: 1,
+                        dragHandle: 1,
+                        dynamicHandle: 1,
+                        clickBar: 1,
+                        //centerOffset: window.innerWidth * .05,
+                        hiddenScroll: true,
+                        requireAnimation: true
+                    });
+                    tabs.scroller.init();
+                } else {
+                    tabs.classList.add('hiddenScrollX');
+                }
             },
 
             onTabbedpagebeforeshow: function (e) {
@@ -1633,7 +1660,6 @@
 
             getPostersPerRow: function (screenWidth) {
 
-                var cache = true;
                 function getValue(shape) {
 
                     switch (shape) {
@@ -1668,24 +1694,37 @@
                             if (screenWidth >= 770) return 3;
                             if (screenWidth >= 420) return 2;
                             return 1;
+                        case 'smallBackdrop':
+                            if (screenWidth >= 1440) return 6;
+                            if (screenWidth >= 1100) return 6;
+                            if (screenWidth >= 800) return 5;
+                            if (screenWidth >= 600) return 4;
+                            if (screenWidth >= 540) return 3;
+                            if (screenWidth >= 420) return 2;
+                            return 1;
+                        case 'homePageSmallBackdrop':
+                            if (screenWidth >= 1440) return 6;
+                            if (screenWidth >= 1100) return 6;
+                            if (screenWidth >= 800) return 5;
+                            if (screenWidth >= 600) return 4;
+                            if (screenWidth >= 540) return 3;
+                            if (screenWidth >= 420) return 2;
+                            return 1;
+                        case 'overflowPortrait':
+                            if (screenWidth >= 1000) return 100 / 23;
+                            if (screenWidth >= 640) return 100 / 36;
+                            return 2.5;
+                        case 'overflowSquare':
+                            if (screenWidth >= 1000) return 100 / 22;
+                            if (screenWidth >= 640) return 100 / 30;
+                            return 100 / 42;
+                        case 'overflowBackdrop':
+                            if (screenWidth >= 1000) return 100 / 40;
+                            if (screenWidth >= 640) return 100 / 60;
+                            return 100 / 84;
                         default:
-                            break;
+                            return 4;
                     }
-                    var div = document.createElement('div');
-                    div.classList.add('card');
-                    div.classList.add(shape + 'Card');
-                    div.innerHTML = '<div class="cardBox"><div class="cardImage"></div></div>';
-                    document.body.appendChild(div);
-                    var innerWidth = div.querySelector('.cardImage').clientWidth;
-
-                    if (!innerWidth || isNaN(innerWidth)) {
-                        cache = false;
-                        innerWidth = Math.min(400, screenWidth / 2);
-                    }
-
-                    var width = screenWidth / innerWidth;
-                    div.parentNode.removeChild(div);
-                    return Math.floor(width);
                 }
 
                 var info = {};
@@ -1694,7 +1733,6 @@
                     var currentShape = LibraryBrowser.shapes[i];
                     info[currentShape] = getValue(currentShape);
                 }
-                info.cache = cache;
                 return info;
             },
 
@@ -1716,9 +1754,7 @@
                 var result = LibraryBrowser.getPosterViewInfoInternal(screenWidth);
                 result.screenWidth = screenWidth;
 
-                if (result.cache) {
-                    cachedResults.push(result);
-                }
+                cachedResults.push(result);
 
                 return result;
             },
@@ -1730,30 +1766,13 @@
                 var result = {};
                 result.screenWidth = screenWidth;
 
-                if (AppInfo.hasLowImageBandwidth) {
-                    if (!AppInfo.isNativeApp) {
-                        screenWidth *= .75;
-                    }
-                } else {
-                    screenWidth *= 1.2;
-                }
-
-                var roundTo = 100;
-
                 for (var i = 0, length = LibraryBrowser.shapes.length; i < length; i++) {
                     var currentShape = LibraryBrowser.shapes[i];
 
                     var shapeWidth = screenWidth / imagesPerRow[currentShape];
 
-                    if (!browserInfo.mobile) {
-
-                        shapeWidth = Math.round(shapeWidth / roundTo) * roundTo;
-                    }
-
                     result[currentShape + 'Width'] = Math.round(shapeWidth);
                 }
-
-                result.cache = imagesPerRow.cache;
 
                 return result;
             },
@@ -1930,7 +1949,7 @@
                     width = posterWidth;
                     height = primaryImageAspectRatio ? Math.round(posterWidth / primaryImageAspectRatio) : null;
 
-                    imgUrl = ApiClient.getImageUrl(imageItem.Id, {
+                    imgUrl = ApiClient.getScaledImageUrl(imageItem.Id, {
                         type: "Primary",
                         maxHeight: height,
                         maxWidth: width,
@@ -2015,7 +2034,7 @@
                     width = posterWidth;
                     height = primaryImageAspectRatio ? Math.round(posterWidth / primaryImageAspectRatio) : null;
 
-                    imgUrl = ApiClient.getImageUrl(imageItem.Id, {
+                    imgUrl = ApiClient.getScaledImageUrl(imageItem.Id, {
                         type: "Primary",
                         maxHeight: height,
                         maxWidth: width,
@@ -2033,7 +2052,7 @@
                 }
                 else if (imageItem.ParentPrimaryImageTag) {
 
-                    imgUrl = ApiClient.getImageUrl(imageItem.ParentPrimaryImageItemId, {
+                    imgUrl = ApiClient.getScaledImageUrl(imageItem.ParentPrimaryImageItemId, {
                         type: "Primary",
                         maxWidth: posterWidth,
                         tag: item.ParentPrimaryImageTag,

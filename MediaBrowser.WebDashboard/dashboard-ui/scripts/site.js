@@ -1179,6 +1179,10 @@ var Dashboard = {
             quality -= 10;
         }
 
+        if (browserInfo.mobile) {
+            quality -= 10;
+        }
+
         if (AppInfo.hasLowImageBandwidth) {
 
             // The native app can handle a little bit more than safari
@@ -1963,6 +1967,7 @@ var AppInfo = {};
 
         define("swiper", [bowerPath + "/Swiper/dist/js/swiper.min", "css!" + bowerPath + "/Swiper/dist/css/swiper.min"], returnFirstDependency);
 
+        define("scroller", [embyWebComponentsBowerPath + "/scroller/smoothscroller"], returnFirstDependency);
         define("toast", [embyWebComponentsBowerPath + "/toast/toast"], returnFirstDependency);
         define("scrollHelper", [embyWebComponentsBowerPath + "/scrollhelper"], returnFirstDependency);
 
