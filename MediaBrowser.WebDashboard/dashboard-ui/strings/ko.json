@@ -1,4 +1,5 @@
 {
+    "XmlTvPremiere": "By default, Emby will import {0} hours of guide data. Importing unlimited data requires an active Emby Premiere subscription.",
     "LabelExit": "\uc885\ub8cc",
     "LabelVisitCommunity": "\ucee4\ubba4\ub2c8\ud2f0 \ubc29\ubb38",
     "LabelGithub": "Github",

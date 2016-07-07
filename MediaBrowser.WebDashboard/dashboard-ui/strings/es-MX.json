@@ -1,4 +1,5 @@
 {
+    "XmlTvPremiere": "Por defecto, Emby importara {0} horas de datos de la gu\u00eda. Para importar datos ilimitados necesita una subscripcion activa de Emby Premiere",
     "LabelExit": "Salir",
     "LabelVisitCommunity": "Visitar la Comunidad",
     "LabelGithub": "Github",
@@ -316,7 +317,7 @@
     "OptionAllowRemoteSharedDevices": "Permitir control remoto de dispositivos compartidos",
     "OptionAllowRemoteSharedDevicesHelp": "Los dispositivos dnla son considerados como compartidos hasta que alg\u00fan usuario comienza a controlarlo.",
     "OptionAllowLinkSharing": "Permitir compartir medios en redes sociales.",
-    "OptionAllowLinkSharingHelp": "Solo son compartidas paginas web que contengan informaci\u00f3n sobre los medios. Los archivos de medios nunca son compartidos p\u00fablicamente. Son compartidos por un tiempo limitado y expiraran basados en las configuraciones para compartir de su servidor.",
+    "OptionAllowLinkSharingHelp": "Solo son compartidas paginas web que contengan informaci\u00f3n sobre los medios. Los archivos de medios nunca son compartidos p\u00fablicamente. Son compartidos por un tiempo limitado y expiraran despu\u00e9s de {0} d\u00edas.",
     "HeaderSharing": "Compartido",
     "HeaderRemoteControl": "Control Remoto",
     "OptionMissingTmdbId": "Falta Id de Tmdb",
