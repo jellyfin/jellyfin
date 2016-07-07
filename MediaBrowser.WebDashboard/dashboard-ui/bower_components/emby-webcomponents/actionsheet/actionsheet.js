@@ -140,6 +140,11 @@
                 html += '</h2>';
             }
         }
+        if (options.text) {
+            html += '<p class="actionSheetText">';
+            html += options.text;
+            html += '</p>';
+        }
 
         var scrollType = layoutManager.desktop ? 'smoothScrollY' : 'hiddenScrollY';
         var style = (browser.noFlex || browser.firefox) ? 'max-height:400px;' : '';

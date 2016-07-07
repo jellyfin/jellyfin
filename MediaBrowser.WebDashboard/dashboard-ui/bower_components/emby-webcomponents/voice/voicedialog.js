@@ -113,7 +113,7 @@ define(['dialogHelper', './voicereceiver', './voiceprocessor', 'globalize', 'emb
 
             var html = '';
             html += '<div class="dialogHeader" style="margin:0 0 1em;">';
-            html += '<button is="paper-icon-button-light" class="btnCancel autoSize btnCancelVoiceInput" tabindex="-1"><i class="md-icon">arrow_back</i></button>';
+            html += '<button is="paper-icon-button-light" class="btnCancel autoSize btnCancelVoiceInput" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
             html += '<div class="dialogHeaderTitle" id="voiceDialogGroupName">';
             html += '</div>';
             html += '</div>';

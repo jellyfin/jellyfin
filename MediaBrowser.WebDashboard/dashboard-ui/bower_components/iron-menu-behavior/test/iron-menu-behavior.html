@@ -36,6 +36,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </template>
     </test-fixture>
 
+     <test-fixture id="single-item">
+      <template>
+        <test-menu>
+          <div>item 1</div>
+        </test-menu>
+      </template>
+    </test-fixture>
+
     <test-fixture id="disabled">
       <template>
         <test-menu>
@@ -92,6 +100,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         test('first item gets focus when menu is focused', function(done) {
           var menu = fixture('basic');
+          MockInteractions.focus(menu);
+          Polymer.Base.async(function() {
+            var ownerRoot = Polymer.dom(menu.firstElementChild).getOwnerRoot() || document;
+            var activeElement = Polymer.dom(ownerRoot).activeElement;
+            assert.equal(activeElement, menu.firstElementChild, 'menu.firstElementChild is focused');
+            done();
+          });
+        });
+
+        test('first item gets focus when menu is focused in a single item menu', function(done) {
+          var menu = fixture('single-item');
           MockInteractions.focus(menu);
           Polymer.Base.async(function() {
             var ownerRoot = Polymer.dom(menu.firstElementChild).getOwnerRoot() || document;

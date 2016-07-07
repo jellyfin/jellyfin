@@ -85,6 +85,11 @@ h2.actionSheetTitle {
     flex-grow: 0;
 }
 
+.actionSheetText {
+    padding: 0 1em;
+    flex-grow: 0;
+}
+
 .actionSheet.extraSpacing {
     font-size: 108%;
 }
