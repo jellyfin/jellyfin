@@ -21,8 +21,10 @@ define(function () {
                 var link = document.createElement('link');
                 link.rel = 'import';
 
-                if (url.toLowerCase().indexOf('bower_') == -1) {
-                    url = url + "?" + config.urlArgs;
+                if (config.urlArgs) {
+                    if (url.toLowerCase().indexOf('bower_') == -1 || url.toLowerCase().indexOf('emby-webcomponents') != -1) {
+                        url = url + config.urlArgs(cssId, url);
+                    }
                 }
 
                 link.onload = load;

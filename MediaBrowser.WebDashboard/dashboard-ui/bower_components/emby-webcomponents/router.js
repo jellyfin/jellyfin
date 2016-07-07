@@ -473,21 +473,19 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
     }
     function show(path, options) {
 
-        return new Promise(function (resolve, reject) {
+        var baseRoute = baseUrl();
+        path = path.replace(baseRoute, '');
 
-            var baseRoute = baseUrl();
-            path = path.replace(baseRoute, '');
+        if (currentRouteInfo && currentRouteInfo.path == path) {
 
-            if (currentRouteInfo && currentRouteInfo.path == path) {
-
-                // can't use this with home right now due to the back menu
-                if (currentRouteInfo.route.type != 'home') {
-                    resolve();
-                    return;
-                }
+            // can't use this with home right now due to the back menu
+            if (currentRouteInfo.route.type != 'home') {
+                return Promise.resolve();
             }
+        }
 
-            page.show(path, options);
+        page.show(path, options);
+        return new Promise(function (resolve, reject) {
             setTimeout(resolve, 500);
         });
     }
