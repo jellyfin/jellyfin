@@ -125,10 +125,6 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
                 fillImage(target);
                 filledCount++;
             }
-
-            if (filledCount >= images.length) {
-                observer.disconnect();
-            }
         },
         options
         );

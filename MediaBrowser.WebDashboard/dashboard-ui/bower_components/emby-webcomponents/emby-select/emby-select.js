@@ -153,6 +153,17 @@
             var div = document.createElement('div');
             div.classList.add('emby-select-selectionbar');
             this.parentNode.insertBefore(div, this.nextSibling);
+
+            var arrowContainer = document.createElement('div');
+            arrowContainer.classList.add('selectArrowContainer');
+            arrowContainer.innerHTML = '<div style="visibility:hidden;">0</div>';
+            this.parentNode.appendChild(arrowContainer);
+
+            var arrow = document.createElement('i');
+            arrow.classList.add('md-icon');
+            arrow.classList.add('selectArrow');
+            arrow.innerHTML = '&#xE313;';
+            arrowContainer.appendChild(arrow);
         }
     };
 
