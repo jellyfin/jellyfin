@@ -237,6 +237,7 @@ namespace MediaBrowser.Controller.Entities.TV
         [IgnoreDataMember]
         public string SeriesName { get; set; }
 
+        [IgnoreDataMember]
         public Guid? SeriesId { get; set; }
 
         public string FindSeriesName()
