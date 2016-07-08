@@ -839,6 +839,7 @@ namespace MediaBrowser.Api.Library
             var dtoOptions = GetDtoOptions(request);
 
             var dtos = GetThemeSongIds(item).Select(_libraryManager.GetItemById)
+                            .Where(i => i != null)
                             .OrderBy(i => i.SortName)
                             .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
 
@@ -882,6 +883,7 @@ namespace MediaBrowser.Api.Library
             var dtoOptions = GetDtoOptions(request);
 
             var dtos = GetThemeVideoIds(item).Select(_libraryManager.GetItemById)
+                            .Where(i => i != null)
                             .OrderBy(i => i.SortName)
                             .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
 
