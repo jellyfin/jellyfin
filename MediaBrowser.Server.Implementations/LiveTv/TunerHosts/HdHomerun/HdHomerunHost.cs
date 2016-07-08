@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -106,18 +107,31 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         private async Task<string> GetModelInfo(TunerHostInfo info, CancellationToken cancellationToken)
         {
-            using (var stream = await _httpClient.Get(new HttpRequestOptions()
+            try
             {
-                Url = string.Format("{0}/discover.json", GetApiUrl(info, false)),
-                CancellationToken = cancellationToken,
-                CacheLength = TimeSpan.FromDays(1),
-                CacheMode = CacheMode.Unconditional,
-                TimeoutMs = Convert.ToInt32(TimeSpan.FromSeconds(5).TotalMilliseconds)
-            }))
-            {
-                var response = JsonSerializer.DeserializeFromStream<DiscoverResponse>(stream);
+                using (var stream = await _httpClient.Get(new HttpRequestOptions()
+                {
+                    Url = string.Format("{0}/discover.json", GetApiUrl(info, false)),
+                    CancellationToken = cancellationToken,
+                    CacheLength = TimeSpan.FromDays(1),
+                    CacheMode = CacheMode.Unconditional,
+                    TimeoutMs = Convert.ToInt32(TimeSpan.FromSeconds(5).TotalMilliseconds)
+                }))
+                {
+                    var response = JsonSerializer.DeserializeFromStream<DiscoverResponse>(stream);
 
-                return response.ModelNumber;
+                    return response.ModelNumber;
+                }
+            }
+            catch (HttpException ex)
+            {
+                if (ex.StatusCode.HasValue && ex.StatusCode.Value == System.Net.HttpStatusCode.NotFound)
+                {
+                    // HDHR4 doesn't have this api
+                    return "HDHR";
+                }
+
+                throw;
             }
         }
 
@@ -455,16 +469,29 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 return;
             }
 
-            // Test it by pulling down the lineup
-            using (var stream = await _httpClient.Get(new HttpRequestOptions
+            try
             {
-                Url = string.Format("{0}/discover.json", GetApiUrl(info, false)),
-                CancellationToken = CancellationToken.None
-            }))
-            {
-                var response = JsonSerializer.DeserializeFromStream<DiscoverResponse>(stream);
+                // Test it by pulling down the lineup
+                using (var stream = await _httpClient.Get(new HttpRequestOptions
+                {
+                    Url = string.Format("{0}/discover.json", GetApiUrl(info, false)),
+                    CancellationToken = CancellationToken.None
+                }))
+                {
+                    var response = JsonSerializer.DeserializeFromStream<DiscoverResponse>(stream);
 
-                info.DeviceId = response.DeviceID;
+                    info.DeviceId = response.DeviceID;
+                }
+            }
+            catch (HttpException ex)
+            {
+                if (ex.StatusCode.HasValue && ex.StatusCode.Value == System.Net.HttpStatusCode.NotFound)
+                {
+                    // HDHR4 doesn't have this api
+                    return;
+                }
+
+                throw;
             }
         }
 
