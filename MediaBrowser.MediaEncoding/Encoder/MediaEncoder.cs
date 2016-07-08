@@ -152,7 +152,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     var directory = Path.GetDirectoryName(FFMpegPath);
 
-                    if (FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.ProgramDataPath, directory))
+                    if (!string.IsNullOrWhiteSpace(directory) && FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.ProgramDataPath, directory))
                     {
                         await new FontConfigLoader(_httpClient, ConfigurationManager.ApplicationPaths, _logger, _zipClient,
                                 FileSystem).DownloadFonts(directory).ConfigureAwait(false);
