@@ -1180,23 +1180,15 @@ var Dashboard = {
         }
 
         if (browserInfo.mobile) {
-            quality -= 15;
+            quality -= 20;
         }
 
         if (AppInfo.hasLowImageBandwidth) {
 
             // The native app can handle a little bit more than safari
-            if (AppInfo.isNativeApp) {
+            if (!AppInfo.isNativeApp) {
 
-                if (isBackdrop) {
-                    quality -= 5;
-                } else {
-                    quality -= 5;
-                }
-
-            } else {
-
-                quality -= 25;
+                quality -= 20;
             }
         }
 
