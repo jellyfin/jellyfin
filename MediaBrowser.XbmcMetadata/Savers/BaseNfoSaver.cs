@@ -99,7 +99,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     "collectionitem",
 
                     "isuserfavorite",
-                    "userrating"
+                    "userrating",
+
+                    "countrycode"
 
         }.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
