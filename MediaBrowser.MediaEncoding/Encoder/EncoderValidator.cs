@@ -86,10 +86,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 "libvorbis",
                 "srt",
                 "h264_nvenc",
-                "h264_qsv"
+                "h264_qsv",
+                "ac3"
             };
 
             output = output ?? string.Empty;
+
+            var index = 0;
 
             foreach (var codec in required)
             {
@@ -97,9 +100,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 if (output.IndexOf(srch, StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    _logger.Info("Encoder available: " + codec);
+                    if (index < required.Length - 1)
+                    {
+                        _logger.Info("Encoder available: " + codec);
+                    }
+
                     found.Add(codec);
                 }
+                index++;
             }
 
             return found;

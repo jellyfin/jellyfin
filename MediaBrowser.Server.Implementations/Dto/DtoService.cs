@@ -671,17 +671,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 .ToList();
         }
 
-        private IEnumerable<string> GetCacheTags(BaseItem item, ImageType type, int limit)
-        {
-            return item.GetImages(type)
-                // Convert to a list now in case GetImageCacheTag is slow
-                .ToList()
-                .Select(p => GetImageCacheTag(item, p))
-                .Where(i => i != null)
-                .Take(limit)
-                .ToList();
-        }
-
         private string GetImageCacheTag(BaseItem item, ImageType type)
         {
             try
@@ -1458,9 +1447,16 @@ namespace MediaBrowser.Server.Implementations.Dto
             while (((!dto.HasLogo && logoLimit > 0) || (!dto.HasArtImage && artLimit > 0) || (!dto.HasThumb && thumbLimit > 0) || parent is Series) && 
                 (parent = parent ?? (isFirst ? item.GetParent() ?? owner : parent)) != null)
             {
+                if (parent == null)
+                {
+                    break;
+                }
+
+                var allImages = parent.ImageInfos;
+
                 if (logoLimit > 0 && !dto.HasLogo && dto.ParentLogoItemId == null)
                 {
-                    var image = parent.GetImageInfo(ImageType.Logo, 0);
+                    var image = allImages.FirstOrDefault(i => i.Type == ImageType.Logo);
 
                     if (image != null)
                     {
@@ -1470,7 +1466,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
                 if (artLimit > 0 && !dto.HasArtImage && dto.ParentArtItemId == null)
                 {
-                    var image = parent.GetImageInfo(ImageType.Art, 0);
+                    var image = allImages.FirstOrDefault(i => i.Type == ImageType.Art);
 
                     if (image != null)
                     {
@@ -1480,7 +1476,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
                 if (thumbLimit > 0 && !dto.HasThumb && (dto.ParentThumbItemId == null || parent is Series))
                 {
-                    var image = parent.GetImageInfo(ImageType.Thumb, 0);
+                    var image = allImages.FirstOrDefault(i => i.Type == ImageType.Thumb);
 
                     if (image != null)
                     {
@@ -1490,7 +1486,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
                 if (backdropLimit > 0 && !dto.HasBackdrop)
                 {
-                    var images = parent.GetImages(ImageType.Backdrop).Take(backdropLimit).ToList();
+                    var images = allImages.Where(i => i.Type == ImageType.Backdrop).Take(backdropLimit).ToList();
 
                     if (images.Count > 0)
                     {
