@@ -1180,7 +1180,7 @@ var Dashboard = {
         }
 
         if (browserInfo.mobile) {
-            quality -= 10;
+            quality -= 15;
         }
 
         if (AppInfo.hasLowImageBandwidth) {
@@ -1191,12 +1191,12 @@ var Dashboard = {
                 if (isBackdrop) {
                     quality -= 5;
                 } else {
-                    quality -= 10;
+                    quality -= 5;
                 }
 
             } else {
 
-                quality -= 40;
+                quality -= 25;
             }
         }
 
@@ -2269,7 +2269,7 @@ var AppInfo = {};
 
         var baseUrl = 'bower_components/emby-webcomponents/strings/';
 
-        var languages = ['da', 'de', 'en-US', 'es-MX', 'kk', 'nb', 'nl', 'pt-BR', 'pt-PT', 'ru'];
+        var languages = ['da', 'de', 'en-US', 'es-MX', 'kk', 'nb', 'nl', 'pt-BR', 'pt-PT', 'ru', 'sv'];
 
         var translations = languages.map(function (i) {
             return {

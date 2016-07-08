@@ -9,7 +9,7 @@
         var html = '';
 
         html += '<div class="primaryIcons">';
-        var backIcon = browserInfo.safari ? 'chevron_left' : 'arrow_back';
+        var backIcon = browserInfo.safari ? 'chevron_left' : '&#xE5C4;';
 
         html += '<button type="button" is="paper-icon-button-light" class="headerButton headerButtonLeft headerBackButton hide autoSize"><i class="md-icon">' + backIcon + '</i></button>';
 
