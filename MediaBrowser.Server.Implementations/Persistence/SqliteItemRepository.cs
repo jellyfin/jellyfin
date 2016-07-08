@@ -156,8 +156,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             string[] queries = {
 
                                 "create table if not exists TypedBaseItems (guid GUID primary key, type TEXT, data BLOB, ParentId GUID, Path TEXT)",
-                                "create index if not exists idx_PathTypedBaseItems on TypedBaseItems(Path)",
-                                "create index if not exists idx_ParentIdTypedBaseItems on TypedBaseItems(ParentId)",
 
                                 "create table if not exists AncestorIds (ItemId GUID, AncestorId GUID, AncestorIdText TEXT, PRIMARY KEY (ItemId, AncestorId))",
                                 "create index if not exists idx_AncestorIds1 on AncestorIds(AncestorId)",
@@ -297,6 +295,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "drop index if exists idx_ItemValues3",
                 "drop index if exists idx_ItemValues4",
                 "drop index if exists idx_ItemValues5",
+
+                "create index if not exists idx_PathTypedBaseItems on TypedBaseItems(Path)",
+                "create index if not exists idx_ParentIdTypedBaseItems on TypedBaseItems(ParentId)",
 
                 "create index if not exists idx_PresentationUniqueKey on TypedBaseItems(PresentationUniqueKey)",
                 "create index if not exists idx_GuidTypeIsFolderIsVirtualItem on TypedBaseItems(Guid,Type,IsFolder,IsVirtualItem)",
