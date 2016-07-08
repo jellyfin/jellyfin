@@ -1,5 +1,31 @@
 define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutManager) {
 
+    var supportsCaptureOption = false;
+    try {
+        var opts = Object.defineProperty({}, 'capture', {
+            get: function () {
+                supportsCaptureOption = true;
+            }
+        });
+        window.addEventListener("test", null, opts);
+    } catch (e) { }
+
+    function addEventListenerWithOptions(target, type, handler, options) {
+        var optionsOrCapture = options;
+        if (!supportsCaptureOption) {
+            optionsOrCapture = options.capture;
+        }
+        target.addEventListener(type, handler, optionsOrCapture);
+    }
+
+    function removeEventListenerWithOptions(target, type, handler, options) {
+        var optionsOrCapture = options;
+        if (!supportsCaptureOption) {
+            optionsOrCapture = options.capture;
+        }
+        target.removeEventListener(type, handler, optionsOrCapture);
+    }
+
     /**
 * Return type of the value.
 *
@@ -900,6 +926,12 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
         self.destroy = function () {
 
             window.removeEventListener('resize', onResize, true);
+
+            // Reset native FRAME element scroll
+            removeEventListenerWithOptions(frameElement, 'scroll', resetScroll, {
+                passive: true
+            });
+
             scrollSource.removeEventListener(wheelEvent, scrollHandler);
 
             // Reset initialized status and return the instance
@@ -909,6 +941,14 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
 
         function onResize() {
             load(false);
+        }
+
+        function resetScroll() {
+            if (o.horizontal) {
+                this.scrollLeft = 0;
+            } else {
+                this.scrollTop = 0;
+            }
         }
 
         /**
@@ -954,11 +994,17 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
             scrollSource.addEventListener(wheelEvent, scrollHandler);
 
             if (transform) {
-                dragInitEventNames.forEach(function(eventName) {
+                dragInitEventNames.forEach(function (eventName) {
                     dragSourceElement.addEventListener(eventName, dragInitSlidee);
                 });
 
                 window.addEventListener('resize', onResize, true);
+
+                if (!o.horizontal) {
+                    addEventListenerWithOptions(frameElement, 'scroll', resetScroll, {
+                        passive: true
+                    });
+                }
             }
 
             // Mark instance as initialized
