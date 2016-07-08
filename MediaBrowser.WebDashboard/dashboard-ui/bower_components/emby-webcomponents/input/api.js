@@ -22,7 +22,7 @@ define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focus
 
         // Full list
         // https://github.com/MediaBrowser/MediaBrowser/blob/master/MediaBrowser.Model/Session/GeneralCommand.cs#L23
-        console.log('Received command: ' + cmd.Name);
+        //console.log('Received command: ' + cmd.Name);
 
         switch (cmd.Name) {
 

@@ -43,7 +43,7 @@ define(['dialogHelper', 'layoutManager', 'globalize', 'material-icons', 'css!./s
 
         html += '<div class="promptDialogContent">';
         if (backButton) {
-            html += getIcon('arrow_back', 'btnPromptExit', false);
+            html += getIcon('&#xE5C4;', 'btnPromptExit', false);
         }
 
         if (options.title) {

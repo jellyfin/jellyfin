@@ -1,4 +1,10 @@
 {
+    "NoItemsFound": "No items found.",
+    "HeaderSaySomethingLike": "Say Something Like...",
+    "HeaderYouSaid": "You Said...",
+    "MessageIfYouBlockedVoice": "If you denied voice access to the app you'll need to reconfigure before trying again.",
+    "ButtonTryAgain": "Try Again",
+    "MessageWeDidntRecognizeCommand": "We're sorry, we didn't recognize that command.",
     "ValueSpecialEpisodeName": "Spesial - {0}",
     "Share": "Del",
     "ServerUpdateNeeded": "Denne Emby serveren trenger en oppdatering. For \u00e5 laste ned nyeste versjon, vennligst bes\u00f8k: {0}",

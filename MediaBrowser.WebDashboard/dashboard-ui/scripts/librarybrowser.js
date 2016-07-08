@@ -1742,6 +1742,11 @@
 
                 var screenWidth = window.innerWidth;
 
+                if (!browserInfo.mobile) {
+                    var roundScreenTo = 100;
+                    screenWidth = Math.ceil(screenWidth / roundScreenTo) * roundScreenTo;
+                }
+
                 var cachedResults = LibraryBrowser.posterSizes;
 
                 for (var i = 0, length = cachedResults.length; i < length; i++) {
@@ -2899,7 +2904,7 @@
 
                     if (showControls) {
 
-                        html += '<button is="paper-icon-button-light" class="btnPreviousPage autoSize" ' + (startIndex ? '' : 'disabled') + '><i class="md-icon">arrow_back</i></button>';
+                        html += '<button is="paper-icon-button-light" class="btnPreviousPage autoSize" ' + (startIndex ? '' : 'disabled') + '><i class="md-icon">&#xE5C4;</i></button>';
                         html += '<button is="paper-icon-button-light" class="btnNextPage autoSize" ' + (startIndex + limit >= totalRecordCount ? 'disabled' : '') + '><i class="md-icon">arrow_forward</i></button>';
                     }
 

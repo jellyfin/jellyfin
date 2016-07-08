@@ -77,7 +77,6 @@
         function cancelAnimation() {
             var animation = currentAnimation;
             if (animation) {
-                console.log('Cancelling backdrop animation');
                 animation.cancel();
                 currentAnimation = null;
             }

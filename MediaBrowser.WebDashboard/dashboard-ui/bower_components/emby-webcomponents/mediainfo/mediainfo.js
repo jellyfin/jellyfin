@@ -42,12 +42,12 @@ define(['datetime', 'globalize', 'embyRouter', 'material-icons', 'css!./mediainf
 
         if (item.SeriesTimerId) {
             miscInfo.push({
-                html: '<i class="md-icon mediaInfoItem timerIcon">fiber-smart-record</i>'
+                html: '<i class="md-icon mediaInfoItem timerIcon">&#xE062;</i>'
             });
         }
         else if (item.TimerId) {
             miscInfo.push({
-                html: '<i class="md-icon mediaInfoItem timerIcon">fiber-manual-record</i>'
+                html: '<i class="md-icon mediaInfoItem timerIcon">&#xE061;</i>'
             });
         }
 
@@ -244,7 +244,7 @@ define(['datetime', 'globalize', 'embyRouter', 'material-icons', 'css!./mediainf
         html += getStarIconsHtml(item);
 
         if (item.HasSubtitles && options.subtitles !== false) {
-            html += '<i class="md-icon mediaInfoItem closedCaptionIcon">closed_caption</i>';
+            html += '<i class="md-icon mediaInfoItem closedCaptionIcon">&#xE01C;</i>';
         }
 
         if (item.CriticRating && options.criticRating !== false) {
@@ -321,7 +321,7 @@ define(['datetime', 'globalize', 'embyRouter', 'material-icons', 'css!./mediainf
         if (rating) {
             html += '<div class="starRatingContainer mediaInfoItem">';
 
-            html += '<i class="md-icon">star</i>';
+            html += '<i class="md-icon">&#xE838;</i>';
             html += rating;
             html += '</div>';
         }
