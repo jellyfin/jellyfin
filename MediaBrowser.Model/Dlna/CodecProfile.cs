@@ -11,6 +11,8 @@ namespace MediaBrowser.Model.Dlna
        
         public ProfileCondition[] Conditions { get; set; }
 
+        public ProfileCondition[] ApplyConditions { get; set; }
+
         [XmlAttribute("codec")]
         public string Codec { get; set; }
 
@@ -20,6 +22,7 @@ namespace MediaBrowser.Model.Dlna
         public CodecProfile()
         {
             Conditions = new ProfileCondition[] {};
+            ApplyConditions = new ProfileCondition[] { };
         }
 
         public List<string> GetCodecs()

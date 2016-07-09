@@ -22,8 +22,8 @@
 
     .dynamicFilterDialog {
         width: auto;
-        left: 15vw !important;
-        right: 15vw !important;
+        left: 10vw !important;
+        right: 10vw !important;
         margin-left: 0 !important;
     }
 }
@@ -35,9 +35,4 @@
         margin-left: -150px !important;
         left: 50% !important;
     }
-}
-
-.filterDialog paper-radio-button {
-    display: block;
-    padding-left: 0;
 }

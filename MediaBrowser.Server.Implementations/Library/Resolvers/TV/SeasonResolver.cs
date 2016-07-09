@@ -38,10 +38,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
             if (args.Parent is Series && args.IsDirectory)
             {
                 var namingOptions = ((LibraryManager)_libraryManager).GetNamingOptions();
-                
+                var series = ((Series)args.Parent);
+
                 var season = new Season
                 {
-                    IndexNumber = new SeasonPathParser(namingOptions, new RegexProvider()).Parse(args.Path, true, true).SeasonNumber
+                    IndexNumber = new SeasonPathParser(namingOptions, new RegexProvider()).Parse(args.Path, true, true).SeasonNumber,
+                    SeriesId = series.Id
                 };
                 
                 if (season.IndexNumber.HasValue && season.IndexNumber.Value == 0)

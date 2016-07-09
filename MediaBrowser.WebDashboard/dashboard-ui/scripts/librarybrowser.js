@@ -1358,7 +1358,7 @@
                     }
                     else if (item.ParentPrimaryImageTag) {
 
-                        imgUrl = ApiClient.getImageUrl(item.ParentPrimaryImageItemId, {
+                        imgUrl = ApiClient.getScaledImageUrl(item.ParentPrimaryImageItemId, {
                             type: "Primary",
                             maxWidth: downloadWidth,
                             tag: item.ParentPrimaryImageTag,
