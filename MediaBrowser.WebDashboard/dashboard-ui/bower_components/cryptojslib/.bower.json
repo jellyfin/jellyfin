@@ -15,8 +15,7 @@
     "tag": "v3.1.2",
     "commit": "79faa50ca65a0bc302ff93518215c015b4d3004c"
   },
-  "_source": "git://github.com/sytelus/CryptoJS.git",
-  "_target": "~3.1.2",
-  "_originalSource": "cryptojslib",
-  "_direct": true
+  "_source": "https://github.com/sytelus/CryptoJS.git",
+  "_target": "^3.1.2",
+  "_originalSource": "cryptojslib"
 }
