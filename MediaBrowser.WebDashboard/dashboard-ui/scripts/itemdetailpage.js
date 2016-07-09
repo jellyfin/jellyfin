@@ -498,7 +498,7 @@
         }
 
         var artist = page.querySelectorAll('.artist');
-        for (i = 0, length = itemMiscInfo.length; i < length; i++) {
+        for (i = 0, length = artist.length; i < length; i++) {
             if (item.ArtistItems && item.ArtistItems.length && item.Type != "MusicAlbum") {
                 artist[i].classList.remove('hide');
                 artist[i].innerHTML = getArtistLinksHtml(item.ArtistItems, context);

@@ -1695,7 +1695,7 @@
                             if (screenWidth >= 420) return 2;
                             return 1;
                         case 'smallBackdrop':
-                            if (screenWidth >= 1440) return 6;
+                            if (screenWidth >= 1440) return 8;
                             if (screenWidth >= 1100) return 6;
                             if (screenWidth >= 800) return 5;
                             if (screenWidth >= 600) return 4;
@@ -1703,7 +1703,7 @@
                             if (screenWidth >= 420) return 2;
                             return 1;
                         case 'homePageSmallBackdrop':
-                            if (screenWidth >= 1440) return 6;
+                            if (screenWidth >= 1440) return 8;
                             if (screenWidth >= 1100) return 6;
                             if (screenWidth >= 800) return 5;
                             if (screenWidth >= 600) return 4;

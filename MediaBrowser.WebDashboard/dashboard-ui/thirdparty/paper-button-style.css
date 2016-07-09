@@ -224,19 +224,6 @@ paper-fab.accent {
     background-color: #e57373 !important;
 }
 
-paper-menu-item {
-    padding: .35em .5em;
-    cursor: pointer;
-}
-
-    paper-menu-item iron-icon {
-        margin-right: 1.5em;
-    }
-
-    paper-menu-item:hover {
-        background: #eee;
-    }
-
 .scrollablePaperTabs paper-icon-button {
     display: none !important;
 }

@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'registrationservices', 'paper-checkbox', 'paper-button', 'emby-input', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light'], function ($, registrationServices) {
+﻿define(['jQuery', 'registrationservices', 'paper-checkbox', 'emby-input', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light'], function ($, registrationServices) {
 
     return function (page, providerId, options) {
 
