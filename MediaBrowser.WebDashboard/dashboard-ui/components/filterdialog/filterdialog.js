@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'events', 'browser', 'emby-checkbox', 'emby-collapse', 'css!components/filterdialog/style', 'paper-radio-button', 'paper-radio-group'], function (dialogHelper, events, browser) {
+﻿define(['dialogHelper', 'events', 'browser', 'emby-checkbox', 'emby-collapse', 'css!components/filterdialog/style'], function (dialogHelper, events, browser) {
 
     function renderOptions(context, selector, cssClass, items, isCheckedFn) {
 
@@ -129,7 +129,7 @@
         context.querySelector('#chkMissingEpisode').checked = query.IsMissing == true;
         context.querySelector('#chkFutureEpisode').checked = query.IsUnaired == true;
 
-        context.querySelector('.playersRadioGroup').selected = query.MinPlayers == null ? 'all' : query.MinPlayers;
+        //context.querySelector('.playersRadioGroup').selected = query.MinPlayers == null ? 'all' : query.MinPlayers;
 
         for (i = 0, length = elems.length; i < length; i++) {
 
@@ -187,7 +187,7 @@
         }
 
         if (options.mode == 'games') {
-            context.querySelector('.players').classList.remove('hide');
+            //context.querySelector('.players').classList.remove('hide');
         }
 
         if (options.mode == 'movies' || options.mode == 'series' || options.mode == 'games' || options.mode == 'episodes') {
@@ -446,17 +446,17 @@
                 triggerChange(self);
             });
 
-            context.querySelector('.playersRadioGroup').addEventListener('iron-select', function (e) {
+            //context.querySelector('.playersRadioGroup').addEventListener('iron-select', function (e) {
 
-                query.StartIndex = 0;
-                var val = e.target.selected;
-                var newValue = val == "all" ? null : val;
-                var changed = query.MinPlayers != newValue;
-                query.MinPlayers = newValue;
-                if (changed) {
-                    triggerChange(self);
-                }
-            });
+            //    query.StartIndex = 0;
+            //    var val = e.target.selected;
+            //    var newValue = val == "all" ? null : val;
+            //    var changed = query.MinPlayers != newValue;
+            //    query.MinPlayers = newValue;
+            //    if (changed) {
+            //        triggerChange(self);
+            //    }
+            //});
 
             context.addEventListener('change', function (e) {
 
@@ -570,22 +570,12 @@
 
                     dlg.addEventListener('close', resolve);
 
-                    var onTimeout = function () {
-                        updateFilterControls(dlg, options);
-                        bindEvents(dlg);
+                    updateFilterControls(dlg, options);
+                    bindEvents(dlg);
 
-                        if (enableDynamicFilters(options.mode)) {
-                            dlg.classList.add('dynamicFilterDialog');
-                            loadDynamicFilters(dlg, Dashboard.getCurrentUserId(), options.query);
-                        }
-                    };
-
-                    // In browsers without native web components (FF/IE), there are some quirks with the checkboxes appearing incorrectly with no visible checkmark
-                    // Applying a delay after setting innerHTML seems to resolve this
-                    if (browser.animate) {
-                        onTimeout();
-                    } else {
-                        setTimeout(onTimeout, 100);
+                    if (enableDynamicFilters(options.mode)) {
+                        dlg.classList.add('dynamicFilterDialog');
+                        loadDynamicFilters(dlg, Dashboard.getCurrentUserId(), options.query);
                     }
                 }
 
