@@ -192,8 +192,8 @@
 
             if (item.Status != 'Success') {
 
-                html += '<button type="button" is="paper-icon-button-light" data-resultid="' + item.Id + '" class="btnProcessResult organizerButton" title="' + Globalize.translate('ButtonOrganizeFile') + '"><iron-icon icon="folder"></iron-icon></button>';
-                html += '<button type="button" is="paper-icon-button-light" data-resultid="' + item.Id + '" class="btnDeleteResult organizerButton" title="' + Globalize.translate('ButtonDeleteFile') + '"><iron-icon icon="delete"></iron-icon></button>';
+                html += '<button type="button" is="paper-icon-button-light" data-resultid="' + item.Id + '" class="btnProcessResult organizerButton autoSize" title="' + Globalize.translate('ButtonOrganizeFile') + '"><i class="md-icon">folder</i></button>';
+                html += '<button type="button" is="paper-icon-button-light" data-resultid="' + item.Id + '" class="btnDeleteResult organizerButton autoSize" title="' + Globalize.translate('ButtonDeleteFile') + '"><i class="md-icon">delete</i></button>';
             }
 
             html += '</td>';
