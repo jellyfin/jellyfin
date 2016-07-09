@@ -51,7 +51,7 @@
     "tag": "v3.3.1",
     "commit": "33101a659e579146f5462e4a9d6a7fdfd7436c35"
   },
-  "_source": "git://github.com/nolimits4web/Swiper.git",
+  "_source": "https://github.com/nolimits4web/Swiper.git",
   "_target": "~3.3.0",
   "_originalSource": "swiper"
 }
