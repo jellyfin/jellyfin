@@ -366,6 +366,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return null;
             }
 
+            // Only use alternative encoders for video files.
+            // When using concat with folder rips, if the mfx session fails to initialize, ffmpeg will be stuck retrying and will not exit gracefully
+            // Since transcoding of folder rips is expiremental anyway, it's not worth adding additional variables such as this.
+            if (state.VideoType != VideoType.VideoFile)
+            {
+                return null;
+            }
+
             if (state.VideoStream != null && !string.IsNullOrWhiteSpace(state.VideoStream.Codec))
             {
                 if (string.Equals(GetEncodingOptions().HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
