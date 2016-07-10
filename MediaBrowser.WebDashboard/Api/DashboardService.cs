@@ -349,8 +349,8 @@ namespace MediaBrowser.WebDashboard.Api
             }
 
             _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "jquery", "src"), true);
-            _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "fingerprintjs2", "flash"), true);
-            _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "fingerprintjs2", "specs"), true);
+            //_fileSystem.DeleteDirectory(Path.Combine(bowerPath, "fingerprintjs2", "flash"), true);
+            //_fileSystem.DeleteDirectory(Path.Combine(bowerPath, "fingerprintjs2", "specs"), true);
 
             DeleteCryptoFiles(Path.Combine(bowerPath, "cryptojslib", "components"));
 
@@ -358,12 +358,7 @@ namespace MediaBrowser.WebDashboard.Api
             DeleteFoldersByName(Path.Combine(bowerPath, "jstree"), "src");
             DeleteFoldersByName(Path.Combine(bowerPath, "Sortable"), "meteor");
             DeleteFoldersByName(Path.Combine(bowerPath, "Sortable"), "st");
-            DeleteFoldersByName(Path.Combine(bowerPath, "Swiper"), "src");
-
-            _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "marked"), true);
-            _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "marked-element"), true);
-            _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "prism"), true);
-            _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "prism-element"), true);
+            //DeleteFoldersByName(Path.Combine(bowerPath, "Swiper"), "src");
            
             if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
             {
