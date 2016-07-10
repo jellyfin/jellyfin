@@ -820,7 +820,7 @@ namespace MediaBrowser.Dlna.Didl
                 var episode = item as Episode;
                 if (episode != null)
                 {
-                    var parent = (BaseItem)episode.Series ?? episode.Season;
+                    var parent = episode.Series;
                     if (parent != null)
                     {
                         imageInfo = GetImageInfo(parent);
