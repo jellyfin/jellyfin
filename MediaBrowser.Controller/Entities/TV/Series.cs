@@ -449,13 +449,8 @@ namespace MediaBrowser.Controller.Entities.TV
                     return true;
                 }
 
-                if (!episode.ParentIndexNumber.HasValue)
-                {
-                    var season = episode.Season;
-                    return season != null && string.Equals(GetUniqueSeriesKey(season), seasonPresentationKey, StringComparison.OrdinalIgnoreCase);
-                }
-
-                return false;
+                var season = episode.Season;
+                return season != null && string.Equals(GetUniqueSeriesKey(season), seasonPresentationKey, StringComparison.OrdinalIgnoreCase);
             });
         }
 

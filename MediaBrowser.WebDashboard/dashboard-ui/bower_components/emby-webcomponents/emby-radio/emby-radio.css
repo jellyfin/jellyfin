@@ -10,8 +10,8 @@
     .mdl-radio.block {
         display: flex;
         align-items: center;
-        margin-top: .25em;
-        margin-bottom: .25em;
+        margin-top: .5em;
+        margin-bottom: .5em;
     }
 
 .mdl-radio {

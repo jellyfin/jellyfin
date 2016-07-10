@@ -22,7 +22,13 @@ namespace MediaBrowser.Controller.Entities
         public string SeriesName { get; set; }
         [IgnoreDataMember]
         public Guid? SeriesId { get; set; }
+        [IgnoreDataMember]
+        public string SeriesSortName { get; set; }
 
+        public string FindSeriesSortName()
+        {
+            return SeriesSortName;
+        }
         public string FindSeriesName()
         {
             return SeriesName;
