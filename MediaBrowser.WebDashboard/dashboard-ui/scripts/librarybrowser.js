@@ -2020,7 +2020,8 @@
                     imgUrl = ApiClient.getScaledImageUrl(imageItem.ParentThumbItemId, {
                         type: "Thumb",
                         maxWidth: thumbWidth,
-                        enableImageEnhancers: enableImageEnhancers
+                        enableImageEnhancers: enableImageEnhancers,
+                        tag: imageItem.ParentThumbImageTag
                     });
 
                 } else if (options.preferThumb && imageItem.BackdropImageTags && imageItem.BackdropImageTags.length) {
@@ -2115,10 +2116,11 @@
 
                 } else if (imageItem.ParentThumbItemId) {
 
-                    imgUrl = ApiClient.getThumbImageUrl(imageItem, {
+                    imgUrl = ApiClient.getScaledImageUrl(imageItem.ParentThumbItemId, {
                         type: "Thumb",
                         maxWidth: thumbWidth,
-                        enableImageEnhancers: enableImageEnhancers
+                        enableImageEnhancers: enableImageEnhancers,
+                        tag: imageItem.ParentThumbImageTag
                     });
 
                 } else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
