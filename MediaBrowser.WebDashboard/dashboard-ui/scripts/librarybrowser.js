@@ -1695,7 +1695,7 @@
                             if (screenWidth >= 420) return 2;
                             return 1;
                         case 'smallBackdrop':
-                            if (screenWidth >= 1440) return 6;
+                            if (screenWidth >= 1440) return 8;
                             if (screenWidth >= 1100) return 6;
                             if (screenWidth >= 800) return 5;
                             if (screenWidth >= 600) return 4;
@@ -1703,7 +1703,7 @@
                             if (screenWidth >= 420) return 2;
                             return 1;
                         case 'homePageSmallBackdrop':
-                            if (screenWidth >= 1440) return 6;
+                            if (screenWidth >= 1440) return 8;
                             if (screenWidth >= 1100) return 6;
                             if (screenWidth >= 800) return 5;
                             if (screenWidth >= 600) return 4;
@@ -2954,7 +2954,7 @@
 
             showSortMenu: function (options) {
 
-                require(['dialogHelper', 'paper-radio-button', 'paper-radio-group'], function (dialogHelper) {
+                require(['dialogHelper', 'emby-radio'], function (dialogHelper) {
 
                     var dlg = dialogHelper.createDialog({
                         removeOnClose: true,
@@ -2975,22 +2975,29 @@
                     html += Globalize.translate('HeaderSortBy');
                     html += '</h2>';
 
-                    html += '<paper-radio-group class="groupSortBy" selected="' + (options.query.SortBy || '').replace(',', '_') + '">';
-                    for (var i = 0, length = options.items.length; i < length; i++) {
+                    var i, length;
+                    var isChecked;
+
+                    html += '<div>';
+                    for (i = 0, length = options.items.length; i < length; i++) {
 
                         var option = options.items[i];
 
-                        html += '<paper-radio-button class="menuSortBy" style="display:block;" data-id="' + option.id + '" name="' + option.id.replace(',', '_') + '">' + option.name + '</paper-radio-button>';
+                        var radioValue = option.id.replace(',', '_');
+                        isChecked = (options.query.SortBy || '').replace(',', '_') == radioValue ? ' checked' : '';
+                        html += '<label class="block"><input type="radio" is="emby-radio" name="SortBy" data-id="' + option.id + '" value="' + radioValue + '" class="menuSortBy" ' + isChecked + ' /><span>' + option.name + '</span></label>';
                     }
-                    html += '</paper-radio-group>';
+                    html += '</div>';
 
                     html += '<h2 style="margin: 1em 0 .5em;">';
                     html += Globalize.translate('HeaderSortOrder');
                     html += '</h2>';
-                    html += '<paper-radio-group class="groupSortOrder" selected="' + (options.query.SortOrder || 'Ascending') + '">';
-                    html += '<paper-radio-button name="Ascending" style="display:block;"  class="menuSortOrder block">' + Globalize.translate('OptionAscending') + '</paper-radio-button>';
-                    html += '<paper-radio-button name="Descending" style="display:block;"  class="menuSortOrder block">' + Globalize.translate('OptionDescending') + '</paper-radio-button>';
-                    html += '</paper-radio-group>';
+                    html += '<div>';
+                    isChecked = options.query.SortOrder == 'Ascending' ? ' checked' : '';
+                    html += '<label class="block"><input type="radio" is="emby-radio" name="SortOrder" value="Ascending" class="menuSortOrder" ' + isChecked + ' /><span>' + Globalize.translate('OptionAscending') + '</span></label>';
+                    isChecked = options.query.SortOrder == 'Descending' ? ' checked' : '';
+                    html += '<label class="block"><input type="radio" is="emby-radio" name="SortOrder" value="Descending" class="menuSortOrder" ' + isChecked + ' /><span>' + Globalize.translate('OptionDescending') + '</span></label>';
+                    html += '</div>';
                     html += '</div>';
 
                     dlg.innerHTML = html;
@@ -3002,31 +3009,43 @@
                         dialogHelper.open(dlg);
                     }, delay);
 
-                    dlg.querySelector('.groupSortBy').addEventListener('iron-select', function () {
+                    function onSortByChange() {
+                        var newValue = this.value;
+                        if (this.checked) {
+                            var changed = options.query.SortBy != newValue;
 
-                        var newValue = this.selected.replace('_', ',');
-                        var changed = options.query.SortBy != newValue;
+                            options.query.SortBy = newValue.replace('_', ',');
+                            options.query.StartIndex = 0;
 
-                        options.query.SortBy = newValue;
-                        options.query.StartIndex = 0;
-
-                        if (options.callback && changed) {
-                            options.callback();
+                            if (options.callback && changed) {
+                                options.callback();
+                            }
                         }
-                    });
+                    }
 
-                    dlg.querySelector('.groupSortOrder').addEventListener('iron-select', function () {
+                    var sortBys = dlg.querySelectorAll('.menuSortBy');
+                    for (i = 0, length = sortBys.length; i < length; i++) {
+                        sortBys[i].addEventListener('change', onSortByChange);
+                    }
 
-                        var newValue = this.selected;
-                        var changed = options.query.SortOrder != newValue;
+                    function onSortOrderChange() {
+                        var newValue = this.value;
+                        if (this.checked) {
+                            var changed = options.query.SortOrder != newValue;
 
-                        options.query.SortOrder = newValue;
-                        options.query.StartIndex = 0;
+                            options.query.SortOrder = newValue;
+                            options.query.StartIndex = 0;
 
-                        if (options.callback && changed) {
-                            options.callback();
+                            if (options.callback && changed) {
+                                options.callback();
+                            }
                         }
-                    });
+                    }
+
+                    var sortOrders = dlg.querySelectorAll('.menuSortOrder');
+                    for (i = 0, length = sortOrders.length; i < length; i++) {
+                        sortOrders[i].addEventListener('change', onSortOrderChange);
+                    }
                 });
             },
 

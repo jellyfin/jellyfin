@@ -95,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        public const int LatestSchemaVersion = 107;
+        public const int LatestSchemaVersion = 108;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -272,6 +272,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "SeasonName", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "SeasonId", "GUID");
             _connection.AddColumn(Logger, "TypedBaseItems", "SeriesId", "GUID");
+            _connection.AddColumn(Logger, "TypedBaseItems", "SeriesSortName", "Text");
 
             _connection.AddColumn(Logger, "UserDataKeys", "Priority", "INT");
             _connection.AddColumn(Logger, "ItemValues", "CleanValue", "Text");
@@ -412,7 +413,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "SeriesName",
             "SeasonName",
             "SeasonId",
-            "SeriesId"
+            "SeriesId",
+            "SeriesSortName"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -535,7 +537,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "UserDataKey",
                 "SeasonName",
                 "SeasonId",
-                "SeriesId"
+                "SeriesId",
+                "SeriesSortName"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -982,9 +985,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     if (hasSeries != null)
                     {
                         _saveItemCommand.GetParameter(index++).Value = hasSeries.FindSeriesId();
+                        _saveItemCommand.GetParameter(index++).Value = hasSeries.FindSeriesSortName();
                     }
                     else
                     {
+                        _saveItemCommand.GetParameter(index++).Value = null;
                         _saveItemCommand.GetParameter(index++).Value = null;
                     }
 
@@ -1437,6 +1442,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 if (!reader.IsDBNull(62))
                 {
                     hasSeries.SeriesId = reader.GetGuid(62);
+                }
+            }
+
+            if (hasSeries != null)
+            {
+                if (!reader.IsDBNull(63))
+                {
+                    hasSeries.SeriesSortName = reader.GetString(63);
                 }
             }
 
@@ -3054,6 +3067,39 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 else if (!query.IsVirtualItem.Value)
                 {
                     whereClauses.Add("LocationType<>'Virtual'");
+                }
+            }
+            if (query.IsUnaired.HasValue)
+            {
+                if (query.IsUnaired.Value)
+                {
+                    whereClauses.Add("PremiereDate >= DATETIME('now')");
+                }
+                else
+                {
+                    whereClauses.Add("PremiereDate < DATETIME('now')");
+                }
+            }
+            if (query.IsMissing.HasValue && _config.Configuration.SchemaVersion >= 90)
+            {
+                if (query.IsMissing.Value)
+                {
+                    whereClauses.Add("(IsVirtualItem=1 AND PremiereDate < DATETIME('now'))");
+                }
+                else
+                {
+                    whereClauses.Add("(IsVirtualItem=0 OR PremiereDate >= DATETIME('now'))");
+                }
+            }
+            if (query.IsVirtualUnaired.HasValue && _config.Configuration.SchemaVersion >= 90)
+            {
+                if (query.IsVirtualUnaired.Value)
+                {
+                    whereClauses.Add("(IsVirtualItem=1 AND PremiereDate >= DATETIME('now'))");
+                }
+                else
+                {
+                    whereClauses.Add("(IsVirtualItem=0 OR PremiereDate < DATETIME('now'))");
                 }
             }
             if (query.MediaTypes.Length == 1)

@@ -31,9 +31,14 @@
         labelElement.classList.add('mdl-js-ripple-effect');
 
         var labelTextElement = labelElement.querySelector('span');
-        labelElement.insertAdjacentHTML('beforeend', '<span class="mdl-checkbox__focus-helper"></span><span class="checkboxOutline"><span class="mdl-checkbox__tick-outline"></span></span>');
 
         labelTextElement.classList.add('radioButtonLabel');
+        labelTextElement.classList.add('mdl-radio__label');
+
+        labelElement.insertAdjacentHTML('beforeend', '<span class="mdl-radio__outer-circle"></span><span class="mdl-radio__inner-circle"></span>');
+
+        // ripple container
+        //labelElement.insertAdjacentHTML('beforeend', '<span class="mdl-radio__ripple-container mdl-js-ripple-effect mdl-ripple--center" data-upgraded=",MaterialRipple"><span class="mdl-ripple is-animating" style="width: 120.794px; height: 120.794px; transform: translate(-50%, -50%) translate(21px, 21px);"></span></span>');
 
         this.addEventListener('keydown', onKeyDown);
     };
