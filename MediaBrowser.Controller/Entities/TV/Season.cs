@@ -51,6 +51,15 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        [IgnoreDataMember]
+        public string SeriesSortName { get; set; }
+
+        public string FindSeriesSortName()
+        {
+            var series = Series;
+            return series == null ? SeriesSortName : series.SortName;
+        }
+
         // Genre, Rating and Stuido will all be the same
         protected override IEnumerable<string> GetIndexByOptions()
         {

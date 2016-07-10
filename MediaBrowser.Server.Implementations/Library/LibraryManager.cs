@@ -1932,7 +1932,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private string GetContentTypeOverride(string path, bool inherit)
         {
-            var nameValuePair = ConfigurationManager.Configuration.ContentTypes.FirstOrDefault(i => string.Equals(i.Name, path, StringComparison.OrdinalIgnoreCase) || (inherit && _fileSystem.ContainsSubPath(i.Name, path)));
+            var nameValuePair = ConfigurationManager.Configuration.ContentTypes.FirstOrDefault(i => string.Equals(i.Name, path, StringComparison.OrdinalIgnoreCase) || (inherit && !string.IsNullOrWhiteSpace(i.Name) && _fileSystem.ContainsSubPath(i.Name, path)));
             if (nameValuePair != null)
             {
                 return nameValuePair.Value;
@@ -2813,6 +2813,11 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private void RemoveContentTypeOverrides(string path)
         {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
             var removeList = new List<NameValuePair>();
 
             foreach (var contentType in ConfigurationManager.Configuration.ContentTypes)

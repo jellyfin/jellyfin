@@ -56,6 +56,15 @@ namespace MediaBrowser.Controller.Entities.TV
         public int? IndexNumberEnd { get; set; }
 
         [IgnoreDataMember]
+        public string SeriesSortName { get; set; }
+
+        public string FindSeriesSortName()
+        {
+            var series = Series;
+            return series == null ? SeriesSortName : series.SortName;
+        }
+
+        [IgnoreDataMember]
         protected override bool SupportsOwnedItems
         {
             get
