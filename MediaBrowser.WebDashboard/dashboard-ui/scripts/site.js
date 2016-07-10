@@ -1170,38 +1170,52 @@ var Dashboard = {
         return caps;
     },
 
-    getDefaultImageQuality: function (imageType) {
-
-        var quality = 90;
-        var isBackdrop = imageType.toLowerCase() == 'backdrop';
-
-        if (isBackdrop) {
-            quality -= 10;
-        }
-
-        if (browserInfo.mobile) {
-            quality -= 20;
-        }
-
-        if (AppInfo.hasLowImageBandwidth) {
-
-            // The native app can handle a little bit more than safari
-            if (AppInfo.isNativeApp) {
-
-                quality -= 5;
-            } else {
-                quality -= 20;
-            }
-        }
-
-        return quality;
-    },
-
     normalizeImageOptions: function (options) {
 
         if (AppInfo.hasLowImageBandwidth) {
 
             options.enableImageEnhancers = false;
+        }
+
+        var setQuality;
+        if (options.maxWidth) {
+            setQuality = true;
+        }
+
+        if (options.width) {
+            setQuality = true;
+        }
+
+        if (options.maxHeight) {
+            setQuality = true;
+        }
+
+        if (options.height) {
+            setQuality = true;
+        }
+
+        if (setQuality) {
+            var quality = 90;
+
+            if ((options.type || '').toLowerCase() == 'backdrop') {
+                quality -= 10;
+            }
+
+            if (browserInfo.mobile || browserInfo.tv) {
+                quality -= 30;
+            }
+
+            if (AppInfo.hasLowImageBandwidth) {
+
+                // The native app can handle a little bit more than safari
+                if (AppInfo.isNativeApp) {
+
+                    //quality -= 5;
+                } else {
+                    quality -= 15;
+                }
+            }
+            options.quality = quality;
         }
     },
 
@@ -1545,7 +1559,6 @@ var AppInfo = {};
             };
         }
 
-        apiClient.getDefaultImageQuality = Dashboard.getDefaultImageQuality;
         apiClient.normalizeImageOptions = Dashboard.normalizeImageOptions;
 
         Events.off(apiClient, 'websocketmessage', Dashboard.onWebSocketMessageReceived);
@@ -1881,8 +1894,6 @@ var AppInfo = {};
 
         define("paper-button", ["html!" + bowerPath + "/paper-button/paper-button.html"]);
         define("paper-icon-button", ["html!" + bowerPath + "/paper-icon-button/paper-icon-button.html"]);
-        define("paper-radio-group", ["html!" + bowerPath + "/paper-radio-group/paper-radio-group.html"]);
-        define("paper-radio-button", ['webcomponentsjs', "html!" + bowerPath + "/paper-radio-button/paper-radio-button.html"]);
         define("paper-toggle-button", ['webcomponentsjs', "html!" + bowerPath + "/paper-toggle-button/paper-toggle-button.html"]);
 
         define("paper-textarea", ['webcomponentsjs', "html!" + bowerPath + "/paper-input/paper-textarea.html"]);
@@ -2179,6 +2190,7 @@ var AppInfo = {};
 
             if (MainActivity.getChromeVersion() >= 48) {
                 define("audiorenderer", ["scripts/htmlmediarenderer"]);
+                //window.VlcAudio = true;
                 //define("audiorenderer", ["cordova/android/vlcplayer"]);
             } else {
                 window.VlcAudio = true;

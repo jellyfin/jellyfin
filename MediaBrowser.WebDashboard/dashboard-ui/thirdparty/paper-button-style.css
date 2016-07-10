@@ -362,10 +362,6 @@ paper-dropdown-menu {
         display: block;
     }
 
-paper-radio-group > * {
-    padding: .5em;
-}
-
 div.dialogHeader {
     padding: .35em .5em;
     display: flex;

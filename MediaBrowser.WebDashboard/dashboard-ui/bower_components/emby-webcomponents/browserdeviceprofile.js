@@ -331,7 +331,7 @@ define(['browser'], function (browser) {
             });
         }
 
-        if (canPlayTs && options.supportsCustomSeeking && !browser.tizen) {
+        if (canPlayTs && options.supportsCustomSeeking && !browser.tizen && !browser.web0s) {
             profile.TranscodingProfiles.push({
                 Container: 'ts',
                 Type: 'Video',
