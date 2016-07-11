@@ -481,6 +481,11 @@ body:not(.dashboardDocument) .headerAppsButton {
         z-index: 998 !important;
         top: 65px !important;
         left: 0 !important;
+        transform: none !important;
+    }
+
+    .dashboardDocument .tmla-mask {
+        display: none !important;
     }
 
     .dashboardDocument .mainDrawerButton {
