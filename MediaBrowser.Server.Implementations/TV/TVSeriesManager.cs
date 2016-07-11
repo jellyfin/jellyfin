@@ -154,7 +154,6 @@ namespace MediaBrowser.Server.Implementations.TV
                 SortOrder = SortOrder.Descending,
                 IsPlayed = true,
                 Limit = 1,
-                IsVirtualItem = false,
                 ParentIndexNumberNotEquals = 0
 
             }).FirstOrDefault();
