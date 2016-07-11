@@ -166,11 +166,11 @@ define(['dialogHelper', './voicereceiver', './voiceprocessor', 'globalize', 'emb
             currentDialog = dlg;
 
             dlg.addEventListener('close', function () {
+                voicereceiver.cancel();
                 currentDialog = null;
             });
 
             function onCancelClick() {
-                voicereceiver.cancel();
                 dialogHelper.close(dlg);
             }
 

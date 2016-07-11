@@ -42,83 +42,92 @@
                     <br /><br />
                 </div>
 
-                <emby-collapsible title="${HeaderAdvanced}">
-                    <br />
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <paper-input type="text" id="txtCachePath" label="${LabelCachePath}" style="display:inline-block;width:85%;"></paper-input>
-                            <button type="button" is="paper-icon-button-light" id="btnSelectCachePath" title="${ButtonSelectDirectory}"><iron-icon icon="search"></iron-icon></button>
-                            <div class="fieldDescription">${LabelCachePathHelp}</div>
-                        </li>
-                    </ul>
-                </emby-collapsible>
-
-                <emby-collapsible title="${HeaderAutomaticUpdates}">
-                    <br />
-                    <ul data-role="listview" class="ulForm">
-                        <li class="fldAutomaticUpdates">
-                            <div data-role="controlgroup">
-                                <input type="checkbox" id="chkEnableAutomaticServerUpdates" data-mini="true" />
-                                <label for="chkEnableAutomaticServerUpdates">${OptionEnableAutomaticServerUpdates}</label>
-                            </div>
-                        </li>
-                        <li>
-                            <label class="lnlAutomaticUpdateLevel selectLabel" for="selectAutomaticUpdateLevel"></label>
-                            <select name="selectAutomaticUpdateLevel" id="selectAutomaticUpdateLevel">
-                                <option value="Release">${OptionRelease}</option>
-                                <option value="Beta">${OptionBeta}</option>
-                                <option value="Dev">${OptionDev}</option>
-                            </select>
-                            <div id="devBuildWarning" class="fieldDescription warningFieldDescription" style="display: none;">
-                                ${DevBuildWarning}
-                            </div>
-                        </li>
-                        <li id="fldEnableAutomaticRestart" style="display: none;">
-                            <paper-checkbox id="chkEnableAutomaticRestart">${LabelAllowServerAutoRestart}</paper-checkbox>
-                            <div class="fieldDescription paperCheckboxFieldDescription">
-                                ${LabelAllowServerAutoRestartHelp}
-                            </div>
-                        </li>
-                    </ul>
-                </emby-collapsible>
-
-                <emby-collapsible title="${HeaderBranding}">
-                    <p>${HeaderBrandingHelp}</p>
-                    <br />
-
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <paper-input type="text" id="txtLoginDisclaimer" label="${LabelLoginDisclaimer}"></paper-input>
-                            <div class="fieldDescription">${LabelLoginDisclaimerHelp}</div>
-                        </li>
-                        <li>
-                            <paper-textarea id="txtCustomCss" label="${LabelCustomCss}" class="mono"></paper-textarea>
-                            <div class="fieldDescription">${LabelCustomCssHelp}</div>
-                        </li>
-                    </ul>
-                </emby-collapsible>
-
-                <emby-collapsible title="${HeaderDeveloperOptions}">
-                    <br />
-                    <div>
-                        <paper-checkbox id="chkEnableDashboardResponseCache">${OptionEnableWebClientResponseCache}</paper-checkbox>
+                <div is="emby-collapse" title="${HeaderAdvanced}">
+                    <div class="collapseContent">
+                        <ul data-role="listview" class="ulForm">
+                            <li>
+                                <paper-input type="text" id="txtCachePath" label="${LabelCachePath}" style="display: inline-block; width: 85%;"></paper-input>
+                                <button type="button" is="paper-icon-button-light" id="btnSelectCachePath" title="${ButtonSelectDirectory}" class="autoSize">
+                                    <i class="md-icon">search</i>
+                                </button>
+                                <div class="fieldDescription">${LabelCachePathHelp}</div>
+                            </li>
+                        </ul>
                     </div>
-                    <br />
-                    <div>
-                        <paper-checkbox id="chkEnableMinification">${OptionEnableWebClientResourceMinification}</paper-checkbox>
+                </div>
+
+                <div is="emby-collapse" title="${HeaderAutomaticUpdates}">
+                    <div class="collapseContent">
+                        <br />
+                        <ul data-role="listview" class="ulForm">
+                            <li class="fldAutomaticUpdates">
+                                <div data-role="controlgroup">
+                                    <input type="checkbox" id="chkEnableAutomaticServerUpdates" data-mini="true" />
+                                    <label for="chkEnableAutomaticServerUpdates">${OptionEnableAutomaticServerUpdates}</label>
+                                </div>
+                            </li>
+                            <li>
+                                <label class="lnlAutomaticUpdateLevel selectLabel" for="selectAutomaticUpdateLevel"></label>
+                                <select name="selectAutomaticUpdateLevel" id="selectAutomaticUpdateLevel">
+                                    <option value="Release">${OptionRelease}</option>
+                                    <option value="Beta">${OptionBeta}</option>
+                                    <option value="Dev">${OptionDev}</option>
+                                </select>
+                                <div id="devBuildWarning" class="fieldDescription warningFieldDescription" style="display: none;">
+                                    ${DevBuildWarning}
+                                </div>
+                            </li>
+                            <li id="fldEnableAutomaticRestart" style="display: none;">
+                                <paper-checkbox id="chkEnableAutomaticRestart">${LabelAllowServerAutoRestart}</paper-checkbox>
+                                <div class="fieldDescription paperCheckboxFieldDescription">
+                                    ${LabelAllowServerAutoRestartHelp}
+                                </div>
+                            </li>
+                        </ul>
                     </div>
-                    <div class="fieldDescription paperCheckboxFieldDescription">
-                        ${OptionDisableForDevelopmentHelp}
+                </div>
+
+                <div is="emby-collapse" title="${HeaderBranding}">
+                    <div class="collapseContent">
+                        <p>${HeaderBrandingHelp}</p>
+                        <br />
+
+                        <ul data-role="listview" class="ulForm">
+                            <li>
+                                <paper-input type="text" id="txtLoginDisclaimer" label="${LabelLoginDisclaimer}"></paper-input>
+                                <div class="fieldDescription">${LabelLoginDisclaimerHelp}</div>
+                            </li>
+                            <li>
+                                <paper-textarea id="txtCustomCss" label="${LabelCustomCss}" class="mono"></paper-textarea>
+                                <div class="fieldDescription">${LabelCustomCssHelp}</div>
+                            </li>
+                        </ul>
                     </div>
-                    <br /><br />
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <paper-input type="text" id="txtDashboardSourcePath" label="${LabelDashboardSourcePath}" style="display: inline-block; width: 80%;"></paper-input>
-                            <button type="button" is="paper-icon-button-light" id="btnSelectDashboardSourcePath" title="${ButtonSelectDirectory}"><iron-icon icon="search"></iron-icon></button>
-                            <div class="fieldDescription">${LabelDashboardSourcePathHelp}</div>
-                        </li>
-                    </ul>
-                </emby-collapsible>
+                </div>
+
+                <div is="emby-collapse" title="${HeaderDeveloperOptions}">
+                    <div class="collapseContent">
+                        <br />
+                        <div>
+                            <paper-checkbox id="chkEnableDashboardResponseCache">${OptionEnableWebClientResponseCache}</paper-checkbox>
+                        </div>
+                        <br />
+                        <div>
+                            <paper-checkbox id="chkEnableMinification">${OptionEnableWebClientResourceMinification}</paper-checkbox>
+                        </div>
+                        <div class="fieldDescription paperCheckboxFieldDescription">
+                            ${OptionDisableForDevelopmentHelp}
+                        </div>
+                        <br /><br />
+                        <ul data-role="listview" class="ulForm">
+                            <li>
+                                <paper-input type="text" id="txtDashboardSourcePath" label="${LabelDashboardSourcePath}" style="display: inline-block; width: 80%;"></paper-input>
+                                <button type="button" is="paper-icon-button-light" id="btnSelectDashboardSourcePath" title="${ButtonSelectDirectory}"><iron-icon icon="search"></iron-icon></button>
+                                <div class="fieldDescription">${LabelDashboardSourcePathHelp}</div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
                 <br />
                 <ul data-role="listview" class="ulForm">
                     <li>

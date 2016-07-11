@@ -1210,7 +1210,7 @@ var Dashboard = {
                 // The native app can handle a little bit more than safari
                 if (AppInfo.isNativeApp) {
 
-                    //quality -= 5;
+                    quality -= 5;
                 } else {
                     quality -= 15;
                 }
@@ -2423,7 +2423,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/dashboardgeneral.html',
-            dependencies: ['emby-collapsible', 'paper-textarea', 'paper-input', 'paper-checkbox', 'jqmlistview'],
+            dependencies: ['emby-collapse', 'paper-textarea', 'paper-input', 'paper-checkbox', 'jqmlistview'],
             controller: 'scripts/dashboardgeneral',
             autoFocus: false,
             roles: 'admin'
@@ -2612,7 +2612,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/librarysettings.html',
-            dependencies: ['emby-collapsible', 'paper-input', 'paper-checkbox', 'emby-button', 'jqmlistview'],
+            dependencies: ['emby-collapse', 'paper-input', 'paper-checkbox', 'emby-button', 'jqmlistview'],
             autoFocus: false,
             roles: 'admin',
             controller: 'scripts/librarysettings'

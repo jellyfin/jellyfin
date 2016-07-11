@@ -36,90 +36,99 @@
                     </li>
                 </ul>
 
-                <emby-collapsible title="${HeaderAudio}">
-                    <br />
-                    <div>
-                        <paper-checkbox id="chkEnableAudioArchiveFiles">${OptionDetectArchiveFilesAsMedia}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${OptionDetectArchiveFilesAsMediaHelp}</div>
+                <div is="emby-collapse" title="${HeaderAudio}">
+                    <div class="collapseContent">
+                        <br />
+                        <div>
+                            <paper-checkbox id="chkEnableAudioArchiveFiles">${OptionDetectArchiveFilesAsMedia}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${OptionDetectArchiveFilesAsMediaHelp}</div>
+                        </div>
+                        <br />
                     </div>
-                    <br />
-                </emby-collapsible>
+                </div>
 
-                <emby-collapsible title="${HeaderVideo}">
-                    <br />
-                    <div>
-                        <paper-checkbox id="chkEnableVideoArchiveFiles">${OptionDetectArchiveFilesAsMedia}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${OptionDetectArchiveFilesAsMediaHelp}</div>
+                <div is="emby-collapse" title="${HeaderVideo}">
+                    <div class="collapseContent">
+                        <br />
+                        <div>
+                            <paper-checkbox id="chkEnableVideoArchiveFiles">${OptionDetectArchiveFilesAsMedia}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${OptionDetectArchiveFilesAsMediaHelp}</div>
+                        </div>
+                        <br />
                     </div>
-                    <br />
-                </emby-collapsible>
+                </div>
 
-                <emby-collapsible title="${HeaderChapters}">
-                    <br />
-                    <ul data-role="listview" class="ulForm" style="margin-bottom:0!important;">
-                        <li>
-                            <div class="paperListLabel">${HeaderExtractChapterImagesFor}</div>
-                            <div class="paperCheckboxList">
-                                <paper-checkbox id="chkChaptersMovies">${OptionMovies}</paper-checkbox>
+                <div is="emby-collapse" title="${HeaderChapters}">
+                    <div class="collapseContent">
+                        <br />
+                        <ul data-role="listview" class="ulForm" style="margin-bottom:0!important;">
+                            <li>
+                                <div class="paperListLabel">${HeaderExtractChapterImagesFor}</div>
+                                <div class="paperCheckboxList">
+                                    <paper-checkbox id="chkChaptersMovies">${OptionMovies}</paper-checkbox>
 
-                                <paper-checkbox id="chkChaptersEpisodes">${OptionEpisodes}</paper-checkbox>
+                                    <paper-checkbox id="chkChaptersEpisodes">${OptionEpisodes}</paper-checkbox>
 
-                                <paper-checkbox id="chkChaptersOtherVideos">${OptionOtherVideos}</paper-checkbox>
-                            </div>
-                            <div class="fieldDescription paperCheckboxFieldDescription">${ExtractChapterImagesHelp}</div>
-                        </li>
-                    </ul>
-                    <br />
-                    <div>
-                        <paper-checkbox id="chkExtractChaptersDuringLibraryScan">${LabelExtractChaptersDuringLibraryScan}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelExtractChaptersDuringLibraryScanHelp}</div>
+                                    <paper-checkbox id="chkChaptersOtherVideos">${OptionOtherVideos}</paper-checkbox>
+                                </div>
+                                <div class="fieldDescription paperCheckboxFieldDescription">${ExtractChapterImagesHelp}</div>
+                            </li>
+                        </ul>
+                        <br />
+                        <div>
+                            <paper-checkbox id="chkExtractChaptersDuringLibraryScan">${LabelExtractChaptersDuringLibraryScan}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelExtractChaptersDuringLibraryScanHelp}</div>
+                        </div>
+                        <br />
                     </div>
-                    <br />
-                </emby-collapsible>
+                </div>
 
-                <emby-collapsible title="${HeaderPeople}">
-                    <br />
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <div class="paperListLabel">${HeaderDownloadPeopleMetadataFor}</div>
-                            <div class="paperCheckboxList">
-                                <paper-checkbox id="chkPeopleActors">${OptionActors}</paper-checkbox>
+                <div is="emby-collapse" title="${HeaderPeople}">
+                    <div class="collapseContent">
+                        <br />
+                        <ul data-role="listview" class="ulForm">
+                            <li>
+                                <div class="paperListLabel">${HeaderDownloadPeopleMetadataFor}</div>
+                                <div class="paperCheckboxList">
+                                    <paper-checkbox id="chkPeopleActors">${OptionActors}</paper-checkbox>
 
-                                <paper-checkbox id="chkPeopleComposers">${OptionComposers}</paper-checkbox>
+                                    <paper-checkbox id="chkPeopleComposers">${OptionComposers}</paper-checkbox>
 
-                                <paper-checkbox id="chkPeopleDirectors">${OptionDirectors}</paper-checkbox>
+                                    <paper-checkbox id="chkPeopleDirectors">${OptionDirectors}</paper-checkbox>
 
-                                <paper-checkbox id="chkPeopleGuestStars">${OptionGuestStars}</paper-checkbox>
+                                    <paper-checkbox id="chkPeopleGuestStars">${OptionGuestStars}</paper-checkbox>
 
-                                <paper-checkbox id="chkPeopleProducers">${OptionProducers}</paper-checkbox>
+                                    <paper-checkbox id="chkPeopleProducers">${OptionProducers}</paper-checkbox>
 
-                                <paper-checkbox id="chkPeopleWriters">${OptionWriters}</paper-checkbox>
+                                    <paper-checkbox id="chkPeopleWriters">${OptionWriters}</paper-checkbox>
 
-                                <paper-checkbox id="chkPeopleOthers">${OptionOthers}</paper-checkbox>
-                            </div>
-                            <div class="fieldDescription paperCheckboxFieldDescription">${HeaderDownloadPeopleMetadataForHelp}</div>
-                        </li>
-                    </ul>
-                </emby-collapsible>
-
-                <emby-collapsible title="${HeaderTV}">
-                    <br />
-                    <div>
-                        <label for="txtSeasonZeroName">${LabelSeasonZeroDisplayName}</label>
-                        <paper-input type="text" id="txtSeasonZeroName" required></paper-input>
+                                    <paper-checkbox id="chkPeopleOthers">${OptionOthers}</paper-checkbox>
+                                </div>
+                                <div class="fieldDescription paperCheckboxFieldDescription">${HeaderDownloadPeopleMetadataForHelp}</div>
+                            </li>
+                        </ul>
                     </div>
-                    <br />
-                </emby-collapsible>
+                </div>
 
-                <emby-collapsible title="Fanart.tv">
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <paper-input type="text" id="txtFanartApiKey" label="${LabelFanartApiKey}"></paper-input>
-                            <div class="fieldDescription">${LabelFanartApiKeyHelp}</div>
-                            <div class="fieldDescription"><a href="https://fanart.tv/2015/01/personal-api-keys" target="_blank">${ButtonLearnMore}</a></div>
-                        </li>
-                    </ul>
-                </emby-collapsible>
+                <div is="emby-collapse" title="${HeaderTV}">
+                    <div class="collapseContent">
+                        <div>
+                            <paper-input type="text" id="txtSeasonZeroName" label="${LabelSeasonZeroDisplayName}" required></paper-input>
+                        </div>
+                    </div>
+                </div>
+
+                <div is="emby-collapse" title="Fanart.tv">
+                    <div class="collapseContent">
+                        <ul data-role="listview" class="ulForm">
+                            <li>
+                                <paper-input type="text" id="txtFanartApiKey" label="${LabelFanartApiKey}"></paper-input>
+                                <div class="fieldDescription">${LabelFanartApiKeyHelp}</div>
+                                <div class="fieldDescription"><a href="https://fanart.tv/2015/01/personal-api-keys" target="_blank">${ButtonLearnMore}</a></div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
 
                 <br />
                 <br />
