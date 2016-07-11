@@ -2153,8 +2153,8 @@
         childrenItemsContainer.addEventListener('playallfromhere', function (e) {
             LibraryBrowser.playAllFromHere(_childrenItemsFunction, e.detail.index);
         });
-        childrenItemsContainer.addEventListener('playallfromhere', function (e) {
-            LibraryBrowser.playAllFromHere(_childrenItemsFunction, e.detail.index);
+        childrenItemsContainer.addEventListener('queueallfromhere', function (e) {
+            LibraryBrowser.queueAllFromHere(_childrenItemsFunction, e.detail.index);
         });
 
         view.addEventListener('click', function (e) {
