@@ -47,7 +47,10 @@
 
         function onDialogClosed() {
 
-            inputManager.off(dlg, onBackCommand);
+            if (!isHistoryEnabled(dlg)) {
+                inputManager.off(dlg, onBackCommand);
+            }
+
             window.removeEventListener('popstate', onHashChange);
 
             removeBackdrop(dlg);

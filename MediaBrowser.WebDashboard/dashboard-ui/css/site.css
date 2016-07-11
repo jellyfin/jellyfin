@@ -718,10 +718,6 @@ progress {
     background-color: #e8e8e8;
 }
 
-emby-collapsible > .style-scope {
-    margin: .5em 0;
-}
-
 .ui-body-a .emby-collapsible-button {
     border: 0;
     background-color: #e8e8e8;
