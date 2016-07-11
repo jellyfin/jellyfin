@@ -119,7 +119,7 @@
     function onDrop(evt, page, item) {
 
         var el = evt.item;
-
+        
         var newIndex = evt.newIndex;
 
         var itemId = el.getAttribute('data-playlistitemid');
@@ -134,6 +134,7 @@
 
         }).then(function () {
 
+            el.setAttribute('data-index', newIndex);
             Dashboard.hideLoadingMsg();
 
         }, function () {
