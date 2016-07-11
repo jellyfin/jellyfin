@@ -247,7 +247,7 @@
     }
 
     function removeElementFromListview(source) {
-        $(source).parents('paper-icon-item').remove();
+        $(source).parents('.listItem').remove();
     }
 
     function editPerson(context, person, index) {
@@ -353,9 +353,11 @@
     }
 
     function onEditorClick(e) {
+
         var btnRemoveFromEditorList = parentWithClass(e.target, 'btnRemoveFromEditorList');
         if (btnRemoveFromEditorList) {
             removeElementFromListview(btnRemoveFromEditorList);
+            return;
         }
 
         var btnAddTextItem = parentWithClass(e.target, 'btnAddTextItem');
