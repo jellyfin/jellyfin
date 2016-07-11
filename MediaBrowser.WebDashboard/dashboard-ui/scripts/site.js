@@ -1202,7 +1202,7 @@ var Dashboard = {
             }
 
             if (browserInfo.mobile || browserInfo.tv) {
-                quality -= 30;
+                quality -= 35;
             }
 
             if (AppInfo.hasLowImageBandwidth) {
@@ -1976,7 +1976,8 @@ var AppInfo = {};
         define("scrollHelper", [embyWebComponentsBowerPath + "/scrollhelper"], returnFirstDependency);
 
         define("appSettings", [embyWebComponentsBowerPath + "/appsettings"], updateAppSettings);
-        define("userSettings", [embyWebComponentsBowerPath + "/usersettings"], returnFirstDependency);
+        define("userSettings", [embyWebComponentsBowerPath + "/usersettings/usersettings"], returnFirstDependency);
+        define("userSettingsBuilder", [embyWebComponentsBowerPath + "/usersettings/usersettingsbuilder"], returnFirstDependency);
 
         define("material-icons", ['css!' + embyWebComponentsBowerPath + '/fonts/material-icons/style']);
         define("robotoFont", ['css!' + embyWebComponentsBowerPath + '/fonts/roboto/style']);
