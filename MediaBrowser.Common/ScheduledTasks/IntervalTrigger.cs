@@ -60,7 +60,15 @@ namespace MediaBrowser.Common.ScheduledTasks
                 triggerDate = DateTime.UtcNow.AddMinutes(1);
             }
 
-            Timer = new Timer(state => OnTriggered(), null, triggerDate - DateTime.UtcNow, TimeSpan.FromMilliseconds(-1));
+            var dueTime = triggerDate - DateTime.UtcNow;
+            var maxDueTime = TimeSpan.FromDays(7);
+
+            if (dueTime > maxDueTime)
+            {
+                dueTime = maxDueTime;
+            }
+
+            Timer = new Timer(state => OnTriggered(), null, dueTime, TimeSpan.FromMilliseconds(-1));
         }
 
         /// <summary>
