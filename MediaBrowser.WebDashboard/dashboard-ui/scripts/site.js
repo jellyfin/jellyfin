@@ -1523,10 +1523,6 @@ var AppInfo = {};
         }
         else {
             AppInfo.enableSupporterMembership = true;
-
-            if (!isAndroid && !isIOS) {
-                AppInfo.enableAppLayouts = true;
-            }
         }
 
         // This doesn't perform well on iOS
