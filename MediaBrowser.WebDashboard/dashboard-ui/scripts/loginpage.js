@@ -184,6 +184,7 @@
                 var haspw = cardContent.getAttribute('data-haspw');
 
                 if (id == 'manual') {
+                    context.querySelector('#txtManualName').value = '';
                     showManualForm(context, true);
                 }
                 else if (haspw == 'false') {
@@ -216,6 +217,7 @@
         });
 
         view.querySelector('.btnManual').addEventListener('click', function () {
+            view.querySelector('#txtManualName').value = '';
             showManualForm(view, true);
         });
 
@@ -227,6 +229,7 @@
 
                 if (!users.length) {
 
+                    view.querySelector('#txtManualName').value = '';
                     showManualForm(view, false, false);
 
                 } else {

@@ -45,14 +45,14 @@ body:not(.dashboardDocument) .mainDrawerButton {
     box-shadow: none !important;
 }
 
-    .viewMenuBar.semiTransparent {
-        background-color: #000;
-    }
+.viewMenuBar.semiTransparent {
+    background-color: #000;
+}
 
-    .libraryViewNav .pageTabButton {
-        font-weight: 400;
-        text-transform: none;
-    }
+.libraryViewNav .pageTabButton {
+    font-weight: 400;
+    text-transform: none;
+}
 
 .pageTabButton.is-active .pageTabButtonSelectionBar {
     display: none !important;
@@ -162,4 +162,8 @@ h1, h1 a {
 
 .searchBackButton {
     display: none !important;
+}
+
+.searchPageSearchButton {
+    display: inline-flex!important;
 }
