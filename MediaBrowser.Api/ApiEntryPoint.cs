@@ -237,9 +237,12 @@ namespace MediaBrowser.Api
         {
             lock (_activeTranscodingJobs)
             {
-                var job = _activeTranscodingJobs.First(j => j.Type == type && string.Equals(j.Path, path, StringComparison.OrdinalIgnoreCase));
+                var job = _activeTranscodingJobs.FirstOrDefault(j => j.Type == type && string.Equals(j.Path, path, StringComparison.OrdinalIgnoreCase));
 
-                _activeTranscodingJobs.Remove(job);
+                if (job != null)
+                {
+                    _activeTranscodingJobs.Remove(job);
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(state.Request.DeviceId))
