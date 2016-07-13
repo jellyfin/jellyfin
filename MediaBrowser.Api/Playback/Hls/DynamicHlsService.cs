@@ -572,12 +572,10 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 const string format = "#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subs\",NAME=\"{0}\",DEFAULT={1},FORCED={2},AUTOSELECT=YES,URI=\"{3}\",LANGUAGE=\"{4}\"";
 
-                var name = stream.Language;
+                var name = stream.DisplayTitle;
 
                 var isDefault = selectedIndex.HasValue && selectedIndex.Value == stream.Index;
                 var isForced = stream.IsForced;
-
-                if (string.IsNullOrWhiteSpace(name)) name = stream.Codec ?? "Unknown";
 
                 var url = string.Format("{0}/Subtitles/{1}/subtitles.m3u8?SegmentLength={2}&api_key={3}",
                     state.Request.MediaSourceId,
