@@ -194,6 +194,8 @@ namespace MediaBrowser.Api.Playback
 
         public bool ForceLiveStream { get; set; }
 
+        public bool EnableSubtitlesInManifest { get; set; }
+
         public VideoStreamRequest()
         {
             EnableAutoStreamCopy = true;

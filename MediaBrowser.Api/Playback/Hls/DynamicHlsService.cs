@@ -525,7 +525,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var subtitleGroup = subtitleStreams.Count > 0 &&
                 request is GetMasterHlsVideoPlaylist &&
-                ((GetMasterHlsVideoPlaylist)request).SubtitleMethod == SubtitleDeliveryMethod.Hls ?
+                (((GetMasterHlsVideoPlaylist)request).SubtitleMethod == SubtitleDeliveryMethod.Hls || ((GetMasterHlsVideoPlaylist)request).EnableSubtitlesInManifest) ?
                 "subs" :
                 null;
 
