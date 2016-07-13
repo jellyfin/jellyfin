@@ -998,7 +998,9 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
                     dragSourceElement.addEventListener(eventName, dragInitSlidee);
                 });
 
-                window.addEventListener('resize', onResize, true);
+                if (!o.scrollWidth) {
+                    window.addEventListener('resize', onResize, true);
+                }
 
                 if (!o.horizontal) {
                     addEventListenerWithOptions(frameElement, 'scroll', resetScroll, {

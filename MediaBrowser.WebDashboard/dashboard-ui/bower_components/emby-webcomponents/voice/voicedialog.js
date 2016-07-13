@@ -108,13 +108,13 @@ define(['dialogHelper', './voicereceiver', './voiceprocessor', 'globalize', 'emb
                 removeOnClose: true
             });
 
-            dlg.classList.add('ui-body-b');
-            dlg.classList.add('background-theme-b');
+            dlg.classList.add('formDialog');
 
             var html = '';
-            html += '<div class="dialogHeader" style="margin:0 0 1em;">';
-            html += '<button is="paper-icon-button-light" class="btnCancel autoSize btnCancelVoiceInput" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
-            html += '<div class="dialogHeaderTitle" id="voiceDialogGroupName">';
+            html += '<div class="dialogHeader" style="margin:0 0 2em;">';
+            html += '<button is="paper-icon-button-light" class="btnCancelVoiceInput autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
+            html += '<div class="dialogHeaderTitle">';
+            //html += title;
             html += '</div>';
             html += '</div>';
 
@@ -126,7 +126,7 @@ define(['dialogHelper', './voicereceiver', './voiceprocessor', 'globalize', 'emb
 
             html += '<div class="defaultVoiceHelp">';
 
-            html += '<h1 style="margin-bottom:1.25em;">' + globalize.translate('sharedcomponents#HeaderSaySomethingLike') + '</h1>';
+            html += '<h1 style="margin-bottom:1.25em;margin-top:0;">' + globalize.translate('sharedcomponents#HeaderSaySomethingLike') + '</h1>';
 
             html += '<div class="exampleCommands">';
             html += '</div>';
@@ -135,7 +135,7 @@ define(['dialogHelper', './voicereceiver', './voiceprocessor', 'globalize', 'emb
             html += '</div>';
 
             html += '<div class="unrecognizedCommand hide">';
-            html += '<h1>' + globalize.translate('sharedcomponents#HeaderYouSaid') + '</h1>';
+            html += '<h1 style="margin-top:0;">' + globalize.translate('sharedcomponents#HeaderYouSaid') + '</h1>';
             html +=
                 '<p class="exampleCommand voiceInputContainer"><i class="fa fa-quote-left"></i><span class="voiceInputText exampleCommandText"></span><i class="fa fa-quote-right"></i></p>';
             html += '<p>' + globalize.translate('sharedcomponents#MessageWeDidntRecognizeCommand') + '</p>';
@@ -149,9 +149,6 @@ define(['dialogHelper', './voicereceiver', './voiceprocessor', 'globalize', 'emb
                 '<br/><br/></p>';
 
             html += '</div>';
-
-            html +=
-                '<button is="emby-button" type="button" class="raised block btnCancelVoiceInput cancel"><i class="md-icon">close</i><span>' + globalize.translate('sharedcomponents#ButtonCancel') + '</span></button>';
 
             html += '</div>';
             html += '</div>';

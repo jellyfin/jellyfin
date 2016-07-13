@@ -525,9 +525,15 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var subtitleGroup = subtitleStreams.Count > 0 &&
                 request is GetMasterHlsVideoPlaylist &&
-                ((GetMasterHlsVideoPlaylist)request).SubtitleMethod == SubtitleDeliveryMethod.Hls ?
+                (state.VideoRequest.SubtitleMethod == SubtitleDeliveryMethod.Hls || state.VideoRequest.EnableSubtitlesInManifest) ?
                 "subs" :
                 null;
+
+            // If we're burning in subtitles then don't add additional subs to the manifest
+            if (state.SubtitleStream != null && state.VideoRequest.SubtitleMethod == SubtitleDeliveryMethod.Encode)
+            {
+                subtitleGroup = null;
+            }
 
             if (!string.IsNullOrWhiteSpace(subtitleGroup))
             {
