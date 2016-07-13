@@ -135,7 +135,7 @@ define(['dialogHelper', './voicereceiver', './voiceprocessor', 'globalize', 'emb
             html += '</div>';
 
             html += '<div class="unrecognizedCommand hide">';
-            html += '<h1>' + globalize.translate('sharedcomponents#HeaderYouSaid') + '</h1>';
+            html += '<h1 style="margin-top:0;">' + globalize.translate('sharedcomponents#HeaderYouSaid') + '</h1>';
             html +=
                 '<p class="exampleCommand voiceInputContainer"><i class="fa fa-quote-left"></i><span class="voiceInputText exampleCommandText"></span><i class="fa fa-quote-right"></i></p>';
             html += '<p>' + globalize.translate('sharedcomponents#MessageWeDidntRecognizeCommand') + '</p>';
