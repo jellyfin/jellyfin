@@ -37,6 +37,7 @@ namespace MediaBrowser.Model.Dlna
 
         public bool CopyTimestamps { get; set; }
         public bool ForceLiveStream { get; set; }
+        public bool EnableSubtitlesInManifest { get; set; }
         public string[] AudioCodecs { get; set; }
 
         public int? AudioStreamIndex { get; set; }
@@ -249,6 +250,7 @@ namespace MediaBrowser.Model.Dlna
             list.Add(new NameValuePair("SubtitleMethod", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External ? item.SubtitleDeliveryMethod.ToString() : string.Empty));
 
             list.Add(new NameValuePair("TranscodingMaxAudioChannels", item.TranscodingMaxAudioChannels.HasValue ? StringHelper.ToStringCultureInvariant(item.TranscodingMaxAudioChannels.Value) : string.Empty));
+            list.Add(new NameValuePair("EnableSubtitlesInManifest", item.EnableSubtitlesInManifest.ToString().ToLower()));
 
             return list;
         }
