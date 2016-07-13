@@ -112,6 +112,13 @@
 
                     html = libraryBrowser.getPosterViewHtml(posterOptions);
                 }
+                else if (viewStyle == "List") {
+
+                    html = libraryBrowser.getListViewHtml({
+                        items: result.Items,
+                        sortBy: query.SortBy
+                    });
+                }
                 else if (viewStyle == "Thumb") {
 
                     posterOptions.preferThumb = true;
@@ -259,7 +266,7 @@
         var btnSelectView = view.querySelector('.btnSelectView');
         btnSelectView.addEventListener('click', function (e) {
 
-            libraryBrowser.showLayoutMenu(e.target, getPageData().view, 'Poster,PosterCard,Thumb'.split(','));
+            libraryBrowser.showLayoutMenu(e.target, getPageData().view, 'List,Poster,PosterCard,Thumb'.split(','));
         });
 
         btnSelectView.addEventListener('layoutchange', function (e) {
