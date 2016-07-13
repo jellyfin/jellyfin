@@ -4,16 +4,16 @@ define(['appSettings', 'apiClientResolver', 'events'], function (appsettings, ap
 
         var self = this;
 
-        function getUserId() {
+        function getUserId(apiClient) {
 
             if (configuredUserId) {
                 return configuredUserId;
             }
 
-            var apiClient = apiClientResolver();
+            var apiClientInstance = apiClient || apiClientResolver();
 
-            if (apiClient) {
-                return apiClient.getCurrentUserId();
+            if (apiClientInstance) {
+                return apiClientInstance.getCurrentUserId();
             }
 
             return null;
@@ -86,13 +86,15 @@ define(['appSettings', 'apiClientResolver', 'events'], function (appsettings, ap
 
         self.serverConfig = function (config) {
 
+            var apiClient = apiClientResolver();
+
             if (config) {
 
-                return apiClientResolver().updateUserConfiguration(getUserId(), config);
+                return apiClient.updateUserConfiguration(getUserId(apiClient), config);
 
             } else {
 
-                return apiClientResolver().getUser(getUserId()).then(function (user) {
+                return apiClient.getUser(getUserId(apiClient)).then(function (user) {
 
                     return user.Configuration;
                 });
