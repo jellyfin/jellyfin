@@ -1568,6 +1568,13 @@ namespace MediaBrowser.Api.Playback
                 {
                     request.TranscodingMaxAudioChannels = int.Parse(val, UsCulture);
                 }
+                else if (i == 28)
+                {
+                    if (videoRequest != null)
+                    {
+                        videoRequest.EnableSubtitlesInManifest = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
+                    }
+                }
             }
         }
 
@@ -2140,6 +2147,7 @@ namespace MediaBrowser.Api.Playback
                     {
                         state.VideoRequest.CopyTimestamps = transcodingProfile.CopyTimestamps;
                         state.VideoRequest.ForceLiveStream = transcodingProfile.ForceLiveStream;
+                        state.VideoRequest.EnableSubtitlesInManifest = transcodingProfile.EnableSubtitlesInManifest;
                     }
                 }
             }
