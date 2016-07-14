@@ -274,7 +274,7 @@ namespace MediaBrowser.Server.Startup.Common
         {
             get
             {
-                return "Media Browser Server";
+                return "Emby Server";
             }
         }
 
