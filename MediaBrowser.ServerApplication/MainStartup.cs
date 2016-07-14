@@ -12,6 +12,7 @@ using System.Configuration.Install;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Management;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Threading;
@@ -102,7 +103,7 @@ namespace MediaBrowser.ServerApplication
 
             if (IsAlreadyRunning(applicationPath, currentProcess))
             {
-                logger.Info("Shutting down because another instance of Media Browser Server is already running.");
+                logger.Info("Shutting down because another instance of Emby Server is already running.");
                 return;
             }
 
@@ -130,13 +131,28 @@ namespace MediaBrowser.ServerApplication
         /// <returns><c>true</c> if [is already running] [the specified current process]; otherwise, <c>false</c>.</returns>
         private static bool IsAlreadyRunning(string applicationPath, Process currentProcess)
         {
-            var filename = Path.GetFileName(applicationPath);
-
             var duplicate = Process.GetProcesses().FirstOrDefault(i =>
             {
                 try
                 {
-                    return string.Equals(filename, Path.GetFileName(i.MainModule.FileName)) && currentProcess.Id != i.Id;
+                    if (currentProcess.Id == i.Id)
+                    {
+                        return false;
+                    }
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+
+                try
+                {
+                    //_logger.Info("Module: {0}", i.MainModule.FileName);
+                    if (string.Equals(applicationPath, i.MainModule.FileName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                    return false;
                 }
                 catch (Exception)
                 {
@@ -151,6 +167,41 @@ namespace MediaBrowser.ServerApplication
                 if (!duplicate.WaitForExit(15000))
                 {
                     _logger.Info("The duplicate process did not exit.");
+                    return true;
+                }
+            }
+
+            if (!_isRunningAsService)
+            {
+                return IsAlreadyRunningAsService(applicationPath);
+            }
+
+            return false;
+        }
+
+        private static bool IsAlreadyRunningAsService(string applicationPath)
+        {
+            var serviceName = BackgroundService.GetExistingServiceName();
+
+            WqlObjectQuery wqlObjectQuery = new WqlObjectQuery(string.Format("SELECT * FROM Win32_Service WHERE State = 'Running' AND Name = '{0}'", serviceName));
+            ManagementObjectSearcher managementObjectSearcher = new ManagementObjectSearcher(wqlObjectQuery);
+            ManagementObjectCollection managementObjectCollection = managementObjectSearcher.Get();
+
+            foreach (ManagementObject managementObject in managementObjectCollection)
+            {
+                var obj = managementObject.GetPropertyValue("PathName");
+                if (obj == null)
+                {
+                    continue;
+                }
+                var path = obj.ToString();
+
+                _logger.Info("Service path: {0}", path);
+                // Need to use indexOf instead of equality because the path will have the full service command line
+                if (path.IndexOf(applicationPath, StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    _logger.Info("The windows service is already running");
+                    MessageBox.Show("Emby Server is already running as a Windows Service. Only one instance is allowed at a time. To run as a tray icon, shut down the Windows Service.");
                     return true;
                 }
             }

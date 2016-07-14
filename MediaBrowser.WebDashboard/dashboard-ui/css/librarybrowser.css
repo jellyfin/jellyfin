@@ -1019,6 +1019,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .itemsContainer {
     margin: 0 auto;
+    line-height: 0;
 }
 
 .alphabetPicker {
