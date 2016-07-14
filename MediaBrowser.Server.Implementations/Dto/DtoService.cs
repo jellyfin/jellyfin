@@ -1322,7 +1322,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     }
                 }
 
-                if (fields.Contains(ItemFields.SeriesPrimaryImage))
+                //if (fields.Contains(ItemFields.SeriesPrimaryImage))
                 {
                     episodeSeries = episodeSeries ?? episode.Series;
                     if (episodeSeries != null)
