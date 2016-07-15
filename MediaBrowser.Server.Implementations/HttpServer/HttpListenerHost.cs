@@ -335,7 +335,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="httpReq">The HTTP req.</param>
         /// <param name="url">The URL.</param>
         /// <returns>Task.</returns>
-        protected Task RequestHandler(IHttpRequest httpReq, Uri url)
+        protected async Task RequestHandler(IHttpRequest httpReq, Uri url)
         {
             var date = DateTime.Now;
 
@@ -345,7 +345,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             {
                 httpRes.StatusCode = 503;
                 httpRes.Close();
-                return Task.FromResult(true);
+                return ;
             }
 
             var operationName = httpReq.OperationName;
@@ -365,13 +365,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 string.Equals(localPath, "/mediabrowser/", StringComparison.OrdinalIgnoreCase))
             {
                 httpRes.RedirectToUrl(DefaultRedirectPath);
-                return Task.FromResult(true);
+                return;
             }
             if (string.Equals(localPath, "/emby", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(localPath, "/mediabrowser", StringComparison.OrdinalIgnoreCase))
             {
                 httpRes.RedirectToUrl("emby/" + DefaultRedirectPath);
-                return Task.FromResult(true);
+                return;
             }
 
             if (string.Equals(localPath, "/mediabrowser/", StringComparison.OrdinalIgnoreCase) ||
@@ -389,35 +389,35 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     httpRes.Write("<!doctype html><html><head><title>Emby</title></head><body>Please update your Emby bookmark to <a href=\"" + newUrl + "\">" + newUrl + "</a></body></html>");
 
                     httpRes.Close();
-                    return Task.FromResult(true);
+                    return;
                 }
             }
 
             if (string.Equals(localPath, "/web", StringComparison.OrdinalIgnoreCase))
             {
                 httpRes.RedirectToUrl(DefaultRedirectPath);
-                return Task.FromResult(true);
+                return;
             }
             if (string.Equals(localPath, "/web/", StringComparison.OrdinalIgnoreCase))
             {
                 httpRes.RedirectToUrl("../" + DefaultRedirectPath);
-                return Task.FromResult(true);
+                return;
             }
             if (string.Equals(localPath, "/", StringComparison.OrdinalIgnoreCase))
             {
                 httpRes.RedirectToUrl(DefaultRedirectPath);
-                return Task.FromResult(true);
+                return;
             }
             if (string.IsNullOrEmpty(localPath))
             {
                 httpRes.RedirectToUrl("/" + DefaultRedirectPath);
-                return Task.FromResult(true);
+                return;
             }
 
             if (string.Equals(localPath, "/emby/pin", StringComparison.OrdinalIgnoreCase))
             {
                 httpRes.RedirectToUrl("web/pin.html");
-                return Task.FromResult(true);
+                return;
             }
 
             if (!string.IsNullOrWhiteSpace(GlobalResponse))
@@ -427,7 +427,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 httpRes.Write(GlobalResponse);
 
                 httpRes.Close();
-                return Task.FromResult(true);
+                return;
             }
 
             var handler = HttpHandlerFactory.GetHandler(httpReq);
@@ -443,13 +443,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     httpReq.OperationName = operationName = restHandler.RestPath.RequestType.GetOperationName();
                 }
 
-                var task = serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, operationName);
-
-                task.ContinueWith(x => httpRes.Close(), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
-                //Matches Exceptions handled in HttpListenerBase.InitTask()
-
-                task.ContinueWith(x =>
+                try
                 {
+                    await serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, operationName).ConfigureAwait(false);
+                }
+                finally
+                {
+                    httpRes.Close();
                     var statusCode = httpRes.StatusCode;
 
                     var duration = DateTime.Now - date;
@@ -458,13 +458,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     {
                         LoggerUtils.LogResponse(_logger, statusCode, urlToLog, remoteIp, duration);
                     }
-
-                }, TaskContinuationOptions.None);
-                return task;
+                }
             }
 
-            return new NotImplementedException("Cannot execute handler: " + handler + " at PathInfo: " + httpReq.PathInfo)
-                .AsTaskException();
+            throw new NotImplementedException("Cannot execute handler: " + handler + " at PathInfo: " + httpReq.PathInfo);
         }
 
         /// <summary>
