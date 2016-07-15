@@ -1202,7 +1202,7 @@ var Dashboard = {
             }
 
             if (browserInfo.mobile || browserInfo.tv) {
-                quality -= 35;
+                quality -= 40;
             }
 
             if (AppInfo.hasLowImageBandwidth) {
