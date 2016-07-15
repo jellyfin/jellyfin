@@ -1,4 +1,4 @@
-﻿<div id="libraryReportManagerPage" data-role="page" class="page libraryPage noSecondaryNavPage reportsPage" data-contextname="${HeaderReports}" data-require="paper-icon-button,jqmcheckbox,jqmcontrolgroup,jqmpanel,jqmcollapsible,jqmtable,scripts/reports,detailtablecss">
+﻿<div id="libraryReportManagerPage" data-role="page" class="page libraryPage noSecondaryNavPage reportsPage" data-contextname="${HeaderReports}" data-require="jQuery,paper-icon-button-light,jqmcheckbox,jqmpanel,jqmcollapsible,jqmtable,scripts/reports,detailtablecss">
     <style>
         /* Page and overlay */
         .ui-page-theme-b .ui-panel-wrapper {
@@ -44,7 +44,9 @@
                         <option value="Audio">${OptionReportSongs}</option>
                     </select>
                 </div>
-                <paper-icon-button icon="more-vert" onclick="jQuery('.viewPanel').panel('toggle');"></paper-icon-button>
+                <button is="paper-icon-button-light" onclick="jQuery('.viewPanel').panel('toggle');" class="autoSize" tabindex="-1">
+                    <i class="md-icon">more_vert</i>
+                </button>
             </div>
             <div class="listTopPaging">
             </div>
@@ -57,7 +59,7 @@
 
         <div data-role="panel" id="viewPanel" class="viewPanel" data-theme="b" data-position="right" data-display="overlay" data-position-fixed="true">
             <form>
-                <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="viewPanelTabs">
+                <div class="viewPanelTabs">
                     <a href="#" id="tabView" data-role="button" class="viewTabButton ui-btn-active" data-tab="tabView">${TabView}</a>
                     <a href="#" id="tabFilter" data-role="button" class="viewTabButton" data-tab="tabFilter">${TabFilter}</a>
                 </div>
@@ -102,7 +104,7 @@
                 </div>
 
                 <div class="tabFilter viewTab hide" id="tabFilterBox">
-                    <fieldset data-role="controlgroup">
+                    <fieldset>
                         <legend>
                             ${HeaderFilters}
                         </legend>
@@ -135,7 +137,7 @@
 
                     <div data-role="collapsible" data-collapsed="true" data-mini="true">
                         <h2>${LabelManagement}</h2>
-                        <div data-role="controlgroup">
+                        <div>
                             <input class="chkIsLocked" type="checkbox" id="chkIsLocked">
                             <label for="chkIsLocked">${OptionLocked}</label>
 
@@ -168,7 +170,7 @@
                     <div data-role="collapsible" data-collapsed="true" data-mini="true" id="GroupAirDays">
                         <h2>${HeaderAirDays}</h2>
 
-                        <div data-role="controlgroup">
+                        <div>
                             <input class="chkAirDays" type="checkbox" name="chkSunday" id="chkSunday" data-filter="Sunday">
                             <label for="chkSunday">${OptionSunday}</label>
                             <input class="chkAirDays" type="checkbox" name="chkMonday" id="chkMonday" data-filter="Monday">
@@ -187,7 +189,7 @@
                     </div>
                     <div data-role="collapsible" data-collapsed="true" data-mini="true" id="GroupEpisodes">
                         <h2>${HeaderEpisodes}</h2>
-                        <div data-role="controlgroup">
+                        <div>
                             <input type="checkbox" name="chkSpecialEpisode" id="chkSpecialEpisode">
                             <label for="chkSpecialEpisode">${OptionSeason0}</label>
 
@@ -198,7 +200,7 @@
                     <div data-role="collapsible" data-collapsed="true" data-mini="true">
                         <h2>${HeaderFeatures}</h2>
 
-                        <div data-role="controlgroup">
+                        <div>
 
                             <input class="chkFeatureFilter" type="checkbox" name="chkSubtitle" id="chkSubtitle">
                             <label for="chkSubtitle">${OptionHasSubtitles}</label>
@@ -244,7 +246,7 @@
                     <div data-role="collapsible" data-collapsed="true" data-mini="true">
                         <h2>${HeaderVideoTypes}</h2>
 
-                        <div data-role="controlgroup">
+                        <div>
 
                             <input class="chkVideoTypeFilter" type="checkbox" name="chkBluray" id="chkBluray" data-filter="Bluray">
                             <label for="chkBluray">${OptionBluray}</label>
