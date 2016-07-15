@@ -18,7 +18,7 @@ namespace MediaBrowser.Model.Dto
     /// This holds information about a BaseItem in a format that is convenient for the client.
     /// </summary>
     [DebuggerDisplay("Name = {Name}, ID = {Id}, Type = {Type}")]
-    public class BaseItemDto : IHasProviderIds, IHasPropertyChangedEvent, IItemDto, IHasServerId, IHasSyncInfo
+    public class BaseItemDto : IHasProviderIds, IItemDto, IHasServerId, IHasSyncInfo
     {
         /// <summary>
         /// Gets or sets the name.
@@ -1108,11 +1108,6 @@ namespace MediaBrowser.Model.Dto
                 return IsType("Movie") || IsType("Series") || IsType("MusicAlbum") || IsType("MusicArtist") || IsType("Program") || IsType("Recording") || IsType("ChannelVideoItem") || IsType("Game");
             }
         }
-
-        /// <summary>
-        /// Occurs when [property changed].
-        /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
         /// Gets or sets the program identifier.
