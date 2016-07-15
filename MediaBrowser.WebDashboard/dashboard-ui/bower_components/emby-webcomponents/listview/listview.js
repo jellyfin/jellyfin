@@ -1,8 +1,116 @@
-define(['itemHelper', 'mediaInfo', 'indicators', 'css!./listview'], function (itemHelper, mediaInfo, indicators) {
+define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutManager', 'userdataButtons', 'css!./listview'], function (itemHelper, mediaInfo, indicators, connectionManager, layoutManager, userdataButtons) {
+
+    function getIndex(item, options) {
+
+        if (options.index == 'disc') {
+
+            return item.ParentIndexNumber == null ? '' : Globalize.translate('sharedcomponents#ValueDiscNumber', item.ParentIndexNumber);
+        }
+
+        var sortBy = (options.sortBy || '').toLowerCase();
+        var code, name;
+
+        if (sortBy.indexOf('sortname') == 0) {
+
+            if (item.Type == 'Episode') return '';
+
+            // SortName
+            name = (item.SortName || item.Name || '?')[0].toUpperCase();
+
+            code = name.charCodeAt(0);
+            if (code < 65 || code > 90) {
+                return '#';
+            }
+
+            return name.toUpperCase();
+        }
+        if (sortBy.indexOf('officialrating') == 0) {
+
+            return item.OfficialRating || globalize.translate('sharedcomponents#Unrated');
+        }
+        if (sortBy.indexOf('communityrating') == 0) {
+
+            if (item.CommunityRating == null) {
+                return globalize.translate('sharedcomponents#Unrated');
+            }
+
+            return Math.floor(item.CommunityRating);
+        }
+        if (sortBy.indexOf('criticrating') == 0) {
+
+            if (item.CriticRating == null) {
+                return globalize.translate('sharedcomponents#Unrated');
+            }
+
+            return Math.floor(item.CriticRating);
+        }
+        if (sortBy.indexOf('metascore') == 0) {
+
+            if (item.Metascore == null) {
+                return globalize.translate('sharedcomponents#Unrated');
+            }
+
+            return Math.floor(item.Metascore);
+        }
+        if (sortBy.indexOf('albumartist') == 0) {
+
+            // SortName
+            if (!item.AlbumArtist) return '';
+
+            name = item.AlbumArtist[0].toUpperCase();
+
+            code = name.charCodeAt(0);
+            if (code < 65 || code > 90) {
+                return '#';
+            }
+
+            return name.toUpperCase();
+        }
+        return '';
+    }
+
+    function getImageUrl(item, width) {
+
+        var apiClient = connectionManager.getApiClient(item.ServerId);
+
+        var options = {
+            width: width,
+            type: "Primary"
+        };
+
+        if (item.ImageTags && item.ImageTags['Primary']) {
+
+            options.tag = item.ImageTags['Primary'];
+            return apiClient.getScaledImageUrl(item.Id, options);
+        }
+
+        if (item.AlbumId && item.AlbumPrimaryImageTag) {
+
+            options.tag = item.AlbumPrimaryImageTag;
+            return apiClient.getScaledImageUrl(item.AlbumId, options);
+        }
+
+        else if (item.SeriesId && item.SeriesPrimaryImageTag) {
+
+            options.tag = item.SeriesPrimaryImageTag;
+            return apiClient.getScaledImageUrl(item.SeriesId, options);
+
+        }
+        else if (item.ParentPrimaryImageTag) {
+
+            options.tag = item.ParentPrimaryImageTag;
+            return apiClient.getScaledImageUrl(item.ParentPrimaryImageItemId, options);
+        }
+
+        return null;
+    }
 
     function getListViewHtml(items, options) {
 
-        var outerHtml = "";
+        if (arguments.length == 1) {
+            options = items;
+            items = options.items;
+        }
 
         var index = 0;
         var groupTitle = '';
@@ -11,9 +119,35 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'css!./listview'], function (it
         var isLargeStyle = options.imageSize == 'large';
         var enableOverview = options.enableOverview;
 
-        outerHtml += items.map(function (item) {
+        var clickEntireItem = layoutManager.tv ? true : false;
+        var outerTagName = clickEntireItem ? 'button' : 'div';
+
+        return items.map(function (item) {
 
             var html = '';
+
+            //if (options.showIndex !== false) {
+
+            //    var itemGroupTitle = LibraryBrowser.getListViewIndex(item, options);
+
+            //    if (itemGroupTitle != groupTitle) {
+
+            //        outerHtml += '</div>';
+
+            //        if (index == 0) {
+            //            html += '<h1>';
+            //        }
+            //        else {
+            //            html += '<h1 style="margin-top:2em;">';
+            //        }
+            //        html += itemGroupTitle;
+            //        html += '</h1>';
+
+            //        html += '<div class="paperList itemsListview">';
+
+            //        groupTitle = itemGroupTitle;
+            //    }
+            //}
 
             var cssClass = "itemAction listItem";
 
@@ -24,19 +158,9 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'css!./listview'], function (it
                 downloadWidth = 500;
             }
 
-            html += '<button class="' + cssClass + '" data-index="' + index + '" data-action="' + action + '" data-isfolder="' + item.IsFolder + '" data-id="' + item.Id + '"  data-serverid="' + item.ServerId + '" data-type="' + item.Type + '">';
+            html += '<' + outerTagName + ' class="' + cssClass + '" data-index="' + index + '" data-action="' + action + '" data-isfolder="' + item.IsFolder + '" data-id="' + item.Id + '"  data-serverid="' + item.ServerId + '" data-type="' + item.Type + '">';
 
-            var imgUrl = Emby.Models.imageUrl(item, {
-                width: downloadWidth,
-                type: "Primary"
-            });
-
-            if (!imgUrl) {
-                imgUrl = Emby.Models.thumbImageUrl(item, {
-                    width: downloadWidth,
-                    type: "Thumb"
-                });
-            }
+            var imgUrl = getImageUrl(item, downloadWidth);
 
             if (imgUrl) {
                 html += '<div class="listItemImage lazy" data-src="' + imgUrl + '" item-icon>';
@@ -122,18 +246,23 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'css!./listview'], function (it
 
             html += '</div>';
 
+            if (!clickEntireItem) {
+                html += '<button is="paper-icon-button-light" class="listviewMenuButton autoSize"><i class="md-icon">&#xE5D4;</i></button>';
+                html += '<span class="listViewUserDataButtons">';
+                html += userdataButtons.getIconsHtml(item);
+                html += '</span>';
+            }
+
             if (options.enableSideMediaInfo) {
                 html += '<div class="secondary listItemMediaInfo">' + mediaInfo.getPrimaryMediaInfoHtml(item) + '</div>';
             }
 
-            html += '</button>';
+            html += '</' + outerTagName + '>';
 
             index++;
             return html;
 
         }).join('');
-
-        return outerHtml;
     }
 
     return {

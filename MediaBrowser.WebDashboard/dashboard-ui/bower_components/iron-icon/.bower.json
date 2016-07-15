@@ -1,7 +1,7 @@
 {
   "name": "iron-icon",
   "private": true,
-  "version": "1.0.8",
+  "version": "1.0.9",
   "license": "http://polymer.github.io/LICENSE.txt",
   "description": "An element that supports displaying an icon",
   "main": "iron-icon.html",
@@ -21,7 +21,7 @@
   "dependencies": {
     "iron-flex-layout": "polymerelements/iron-flex-layout#^1.0.0",
     "iron-meta": "polymerelements/iron-meta#^1.0.0",
-    "polymer": "Polymer/polymer#^1.0.0"
+    "polymer": "Polymer/polymer#^1.1.0"
   },
   "devDependencies": {
     "test-fixture": "polymerelements/test-fixture#^1.0.0",
@@ -33,11 +33,11 @@
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
   "homepage": "https://github.com/PolymerElements/iron-icon",
-  "_release": "1.0.8",
+  "_release": "1.0.9",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.8",
-    "commit": "f36b38928849ef3853db727faa8c9ef104d611eb"
+    "tag": "v1.0.9",
+    "commit": "f6fb241901377e30e2c9c6cd47e3e8e8beb6574d"
   },
   "_source": "git://github.com/PolymerElements/iron-icon.git",
   "_target": "^1.0.0",
