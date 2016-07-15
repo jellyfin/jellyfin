@@ -19,7 +19,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// Gets the options.
         /// </summary>
         /// <value>The options.</value>
-        public IDictionary<string, string> Options { get; }
+        public IDictionary<string, string> Options { get; private set; }
 
         public Action OnComplete { get; set; }
         public Action OnError { get; set; }
