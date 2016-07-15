@@ -13,6 +13,7 @@ using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
@@ -336,17 +337,19 @@ namespace MediaBrowser.Api.Playback.Progressive
                     state.Dispose();
                 }
 
-                var result = new ProgressiveStreamWriter(outputPath, Logger, FileSystem, job);
+                var outputHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-                result.Options["Content-Type"] = contentType;
+                outputHeaders["Content-Type"] = contentType;
 
                 // Add the response headers to the result object
                 foreach (var item in responseHeaders)
                 {
-                    result.Options[item.Key] = item.Value;
+                    outputHeaders[item.Key] = item.Value;
                 }
 
-                return result;
+                Func<Stream,Task> streamWriter = stream => new ProgressiveFileCopier(FileSystem, job, Logger).StreamFile(outputPath, stream);
+
+                return ResultFactory.GetAsyncStreamWriter(streamWriter, outputHeaders);
             }
             finally
             {

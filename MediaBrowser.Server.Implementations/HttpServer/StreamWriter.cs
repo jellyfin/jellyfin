@@ -12,7 +12,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
     /// <summary>
     /// Class StreamWriter
     /// </summary>
-    public class StreamWriter : IStreamWriter, /*IAsyncStreamWriter,*/ IHasOptions
+    public class StreamWriter : IStreamWriter, IAsyncStreamWriter, IHasOptions
     {
         private ILogger Logger { get; set; }
 

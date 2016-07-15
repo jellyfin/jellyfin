@@ -4179,6 +4179,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("values");
             }
 
+            // Just in case there might be case-insensitive duplicates, strip them out now
+            var newValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var pair in values)
+            {
+                newValues[pair.Key] = pair.Value;
+            }
+
             CheckDisposed();
 
             // First delete 
@@ -4187,7 +4194,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             _deleteProviderIdsCommand.ExecuteNonQuery();
 
-            foreach (var pair in values)
+            foreach (var pair in newValues)
             {
                 _saveProviderIdsCommand.GetParameter(0).Value = itemId;
                 _saveProviderIdsCommand.GetParameter(1).Value = pair.Key;
