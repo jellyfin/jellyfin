@@ -48,21 +48,19 @@ namespace MediaBrowser.Api.Playback.Progressive
         /// <param name="responseStream">The response stream.</param>
         public void WriteTo(Stream responseStream)
         {
-            WriteToInternal(responseStream);
+            var task = WriteToAsync(responseStream);
+            Task.WaitAll(task);
         }
 
         /// <summary>
-        /// Writes to async.
+        /// Writes to.
         /// </summary>
         /// <param name="responseStream">The response stream.</param>
-        /// <returns>Task.</returns>
-        private void WriteToInternal(Stream responseStream)
+        public async Task WriteToAsync(Stream responseStream)
         {
             try
             {
-                var task = new ProgressiveFileCopier(_fileSystem, _job, Logger).StreamFile(Path, responseStream);
-
-                Task.WaitAll(task);
+                await new ProgressiveFileCopier(_fileSystem, _job, Logger).StreamFile(Path, responseStream).ConfigureAwait(false);
             }
             catch (IOException)
             {
