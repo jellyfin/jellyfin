@@ -1,4 +1,4 @@
-define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter'], function (appHost, globalize, connectionManager, itemHelper, embyRouter) {
+define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter', 'playbackManager'], function (appHost, globalize, connectionManager, itemHelper, embyRouter, playbackManager) {
 
     function getCommands(options) {
 
@@ -48,44 +48,103 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter']
                 });
             }
 
+            if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "MusicGenre" || item.CollectionType == "music") {
+                if (options.instantMix !== false) {
+                    commands.push({
+                        name: globalize.translate('sharedcomponents#InstantMix'),
+                        id: 'instantmix'
+                    });
+                }
+            }
+
             if (options.open !== false) {
                 commands.push({
-                    name: globalize.translate('Open'),
+                    name: globalize.translate('sharedcomponents#Open'),
                     id: 'open'
                 });
+            }
+
+            if (options.play) {
+                commands.push({
+                    name: globalize.translate('sharedcomponents#Play'),
+                    id: 'resume'
+                });
+            }
+
+            if (options.playAllFromHere) {
+                commands.push({
+                    name: globalize.translate('sharedcomponents#PlayAllFromHere'),
+                    id: 'playallfromhere'
+                });
+            }
+
+            if (playbackManager.canQueueMediaType(item.MediaType)) {
+                if (options.queue) {
+                    commands.push({
+                        name: globalize.translate('sharedcomponents#Queue'),
+                        id: 'queue'
+                    });
+                }
+
+                if (options.queueAllFromHere) {
+                    commands.push({
+                        name: globalize.translate('sharedcomponents#QueueAllFromHere'),
+                        id: 'queueallfromhere'
+                    });
+                }
             }
 
             if (user.Policy.IsAdministrator) {
 
                 commands.push({
-                    name: globalize.translate('Refresh'),
+                    name: globalize.translate('sharedcomponents#Refresh'),
                     id: 'refresh'
                 });
             }
 
             if (item.Type != 'Timer' && user.Policy.EnablePublicSharing && appHost.supports('sharing')) {
                 commands.push({
-                    name: globalize.translate('Share'),
+                    name: globalize.translate('sharedcomponents#Share'),
                     id: 'share'
                 });
             }
 
+            if (item.IsFolder || item.Type == "MusicArtist" || item.Type == "MusicGenre") {
+                if (options.shuffle !== false) {
+                    commands.push({
+                        name: globalize.translate('sharedcomponents#Shuffle'),
+                        id: 'shuffle'
+                    });
+                }
+            }
+
             if (options.openAlbum !== false && item.AlbumId) {
                 commands.push({
-                    name: Globalize.translate('ViewAlbum'),
+                    name: Globalize.translate('sharedcomponents#ViewAlbum'),
                     id: 'album'
                 });
             }
 
             if (options.openArtist !== false && item.ArtistItems && item.ArtistItems.length) {
                 commands.push({
-                    name: Globalize.translate('ViewArtist'),
+                    name: Globalize.translate('sharedcomponents#ViewArtist'),
                     id: 'artist'
                 });
             }
 
             return commands;
         });
+    }
+
+    function getResolveFunction(resolve, id, changed, deleted) {
+
+        return function () {
+            resolve({
+                command: id,
+                updated: changed,
+                deleted: deleted
+            });
+        };
     }
 
     function executeCommand(item, id) {
@@ -106,7 +165,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter']
                                 items: [itemId],
                                 serverId: serverId
 
-                            }).then(reject, reject);
+                            }).then(getResolveFunction(resolve, id, true), getResolveFunction(resolve, id));
                         });
                         break;
                     }
@@ -118,7 +177,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter']
                                 items: [itemId],
                                 serverId: serverId
 
-                            }).then(reject, reject);
+                            }).then(getResolveFunction(resolve, id, true), getResolveFunction(resolve, id));
                         });
                         break;
                     }
@@ -136,7 +195,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter']
                                 serverId: serverId
                             }]);
 
-                            reject();
+                            getResolveFunction(getResolveFunction(resolve, id), id)();
                         });
 
                         break;
@@ -146,27 +205,61 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter']
                         require(['subtitleEditor'], function (subtitleEditor) {
 
                             var serverId = apiClient.serverInfo().Id;
-                            subtitleEditor.show(itemId, serverId).then(resolve, reject);
+                            subtitleEditor.show(itemId, serverId).then(getResolveFunction(resolve, id, true), getResolveFunction(resolve, id));
                         });
                         break;
                     }
                 case 'refresh':
                     {
                         refresh(apiClient, itemId);
-                        reject();
+                        getResolveFunction(resolve, id)();
                         break;
                     }
                 case 'open':
                     {
                         embyRouter.showItem(item);
-                        reject();
+                        getResolveFunction(resolve, id)();
+                        break;
+                    }
+                case 'play':
+                    {
+                        playbackManager.play({
+                            items: [item]
+                        });
+                        getResolveFunction(resolve, id)();
+                        break;
+                    }
+                case 'resume':
+                    {
+                        playbackManager.play({
+                            items: [item]
+                        });
+                        getResolveFunction(resolve, id)();
+                        break;
+                    }
+                case 'queue':
+                    {
+                        playbackManager.queue({
+                            items: [item]
+                        });
+                        getResolveFunction(resolve, id)();
+                        break;
+                    }
+                case 'shuffle':
+                    {
+                        playbackManager.shuffle(item);
+                        getResolveFunction(resolve, id)();
+                        break;
+                    }
+                case 'instantmix':
+                    {
+                        playbackManager.instantMix(item);
+                        getResolveFunction(resolve, id)();
                         break;
                     }
                 case 'delete':
                     {
-                        deleteItem(apiClient, itemId).then(function () {
-                            resolve(true);
-                        });
+                        deleteItem(apiClient, itemId).then(getResolveFunction(resolve, id, true, true), getResolveFunction(resolve, id));
                         break;
                     }
                 case 'share':
@@ -176,20 +269,30 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter']
                                 serverId: serverId,
                                 itemId: itemId
 
-                            }).then(reject);
+                            }).then(getResolveFunction(resolve, id));
                         });
                         break;
                     }
                 case 'album':
                     {
                         embyRouter.showItem(item.AlbumId, item.ServerId);
-                        reject();
+                        getResolveFunction(resolve, id)();
                         break;
                     }
                 case 'artist':
                     {
                         embyRouter.showItem(item.ArtistItems[0].Id, item.ServerId);
-                        reject();
+                        getResolveFunction(resolve, id)();
+                        break;
+                    }
+                case 'playallfromhere':
+                    {
+                        getResolveFunction(resolve, id)();
+                        break;
+                    }
+                case 'queueallfromhere':
+                    {
+                        getResolveFunction(resolve, id)();
                         break;
                     }
                 default:

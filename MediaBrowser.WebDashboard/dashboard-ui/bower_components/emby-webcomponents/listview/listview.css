@@ -179,6 +179,10 @@ div.listItem {
 
 @supports (display: flex) {
 
+    .listItem > * {
+        display: flex;
+    }
+
     .listItem, .listItemBody, .listItemMediaInfo {
         display: flex;
     }

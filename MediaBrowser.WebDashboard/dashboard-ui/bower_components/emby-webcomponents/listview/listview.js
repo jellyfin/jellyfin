@@ -121,6 +121,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
         var clickEntireItem = layoutManager.tv ? true : false;
         var outerTagName = clickEntireItem ? 'button' : 'div';
+        var enableSideMediaInfo = options.enableSideMediaInfo != null ? options.enableSideMediaInfo : clickEntireItem;
 
         var outerHtml = '';
 
@@ -234,7 +235,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             }
 
             var lineCount = textlines.length;
-            if (!options.enableSideMediaInfo) {
+            if (!enableSideMediaInfo) {
                 lineCount++;
             }
             if (enableOverview && item.Overview) {
@@ -268,7 +269,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                 }
             }
 
-            if (!options.enableSideMediaInfo) {
+            if (!enableSideMediaInfo) {
                 html += '<div class="secondary listItemMediaInfo">' + mediaInfo.getPrimaryMediaInfoHtml(item) + '</div>';
             }
 
@@ -280,15 +281,15 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
             html += '</div>';
 
+            if (enableSideMediaInfo) {
+                html += '<div class="secondary listItemMediaInfo">' + mediaInfo.getPrimaryMediaInfoHtml(item) + '</div>';
+            }
+
             if (!clickEntireItem) {
                 html += '<button is="paper-icon-button-light" class="menuButton autoSize"><i class="md-icon">&#xE5D4;</i></button>';
                 html += '<span class="listViewUserDataButtons">';
                 html += userdataButtons.getIconsHtml(item, false);
                 html += '</span>';
-            }
-
-            if (options.enableSideMediaInfo) {
-                html += '<div class="secondary listItemMediaInfo">' + mediaInfo.getPrimaryMediaInfoHtml(item) + '</div>';
             }
 
             html += '</' + outerTagName + '>';

@@ -100,6 +100,12 @@
   "Played": "Played",
   "RefreshDialogHelp": "Metadata is refreshed based on settings and internet services that are enabled in the Emby Server dashboard.",
   "Open": "Open",
+  "Play": "Play",
+  "Queue": "Queue",
+  "Shuffle": "Shuffle",
+  "InstantMix": "Instant Mix",
   "ViewAlbum": "View Album",
-  "ViewArtist": "View Artist"
+  "ViewArtist": "View Artist",
+  "QueueAllFromHere": "Queue All from Here",
+  "PlayAllFromHere": "Play All from Here"
 }
