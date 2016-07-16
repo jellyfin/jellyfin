@@ -1,6 +1,6 @@
 define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'globalize', 'loading'], function (playbackManager, inputManager, connectionManager, embyRouter, globalize, loading) {
 
-    function playAllFromHere(card, serverId) {
+    function playAllFromHere(card, serverId, queue) {
 
         var parent = card.parentNode;
         var className = card.classList.length ? ('.' + card.classList[0]) : '';
@@ -22,10 +22,17 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
             return;
         }
 
-        playbackManager.play({
-            ids: ids,
-            serverId: serverId
-        });
+        if (queue) {
+            playbackManager.queue({
+                ids: ids,
+                serverId: serverId
+            });
+        } else {
+            playbackManager.play({
+                ids: ids,
+                serverId: serverId
+            });
+        }
     }
 
     function showSlideshow(startItemId, serverId) {
@@ -122,6 +129,10 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
         else if (action == 'playallfromhere') {
             playAllFromHere(card, serverId);
+        }
+
+        else if (action == 'queueallfromhere') {
+            playAllFromHere(card, serverId, true);
         }
 
         else if (action == 'setplaylistindex') {
@@ -278,7 +289,8 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
     return {
         on: on,
-        off: off
+        off: off,
+        execute: executeAction
     };
 
 });

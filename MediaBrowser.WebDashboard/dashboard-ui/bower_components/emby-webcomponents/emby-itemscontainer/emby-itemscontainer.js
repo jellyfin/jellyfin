@@ -46,10 +46,18 @@
             require(['itemContextMenu'], function (itemContextMenu) {
                 itemContextMenu.show({
                     positionTo: button,
-                    item: item
-                });
+                    item: item,
+                    play: true,
+                    queue: true,
+                    playAllFromHere: !item.IsFolder,
+                    queueAllFromHere: !item.IsFolder
 
-                // TODO: playallfromhere, queueallfromhere
+                }).then(function(result) {
+
+                    if (result.command == 'playallfromhere' || result.command == 'queueallfromhere') {
+                        itemShortcuts.execute(button, result.command);
+                    }
+                });
             });
         });
     }

@@ -64,7 +64,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 });
             }
 
-            if (options.play) {
+            if (options.play !== false) {
                 commands.push({
                     name: globalize.translate('sharedcomponents#Play'),
                     id: 'resume'
@@ -79,7 +79,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
             }
 
             if (playbackManager.canQueueMediaType(item.MediaType)) {
-                if (options.queue) {
+                if (options.queue !== false) {
                     commands.push({
                         name: globalize.translate('sharedcomponents#Queue'),
                         id: 'queue'
