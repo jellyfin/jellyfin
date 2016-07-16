@@ -12,26 +12,31 @@ button.listItem {
 }
 
 .listItem {
+    margin: 0;
     display: block;
     align-items: center;
     text-align: left;
-    padding: 0 1em !important;
+    padding: .25em .5em .25em 1em !important;
     line-height: 170%;
     border-bottom: 1px solid #2a2a2a;
 }
 
-    .listItem.largeImage {
-        padding: 1em 0 1em 1em;
-    }
+div.listItem {
+    cursor: pointer;
+}
 
-    .listItem > *:not(.listItemBody) {
-        flex-shrink: 0;
-    }
+.listItem.largeImage {
+    padding: 1em 0 1em 1em;
+}
 
-    .listItem > * {
-        display: inline-block;
-        vertical-align: middle;
-    }
+.listItem > *:not(.listItemBody) {
+    flex-shrink: 0;
+}
+
+.listItem > * {
+    display: inline-block;
+    vertical-align: middle;
+}
 
 .listItemBody {
     flex-grow: 1;
@@ -56,9 +61,8 @@ button.listItem {
         padding-bottom: 0;
     }
 
-    .listItemBody h3 {
+    .listItemBody h2, .listItemBody h3 {
         margin: 0;
-        font-weight: normal;
         padding: 0;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -80,6 +84,8 @@ button.listItem {
 .listItemImage {
     width: 7.4vh;
     height: 7.4vh;
+    min-width: 40px;
+    min-height: 40px;
     background-repeat: no-repeat;
     background-size: contain;
     flex-shrink: 0;
@@ -140,13 +146,32 @@ button.listItem {
     align-items: center;
 }
 
-    .listItemMediaInfo > * {
-        display: inline-block;
+.layout-tv .listItemMediaInfo {
+    margin: .5em 0;
+}
+
+.listItemMediaInfo > * {
+    display: inline-block;
+}
+
+.listGroupHeader {
+    margin: 2em 0 1em;
+}
+
+    .listGroupHeader.first {
+        margin-top: 0;
     }
 
 @supports (display: flex) {
 
     .listItem, .listItemBody, .listItemMediaInfo {
         display: flex;
+    }
+}
+
+@media all and (max-width: 800px) {
+
+    .listItem .endsAt, .listItem .criticRating {
+        display: none !important;
     }
 }

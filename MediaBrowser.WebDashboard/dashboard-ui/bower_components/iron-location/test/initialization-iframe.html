@@ -1,0 +1,61 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Base source for injecting into an iframe for tests</title>
+    <script src="../../webcomponentsjs/webcomponents.js"></script>
+    <link rel='import' href='./initialization-cases.html'>
+  </head>
+  <body>
+    <script>
+      window.addEventListener("message", messageReceived, false);
+
+      window.addEventListener('WebComponentsReady', function() {
+        window.parent.postMessage({
+          'type': 'ready'
+        }, '*');
+      });
+
+      var appendBodyReceived = false;
+      function messageReceived(msg) {
+        if (!msg.data) {
+          console.error('got invalid msg?');
+        }
+        // the parent can (at any time) ask for our URL.
+        if (msg.data.type === 'urlQuery') {
+          msg.source.postMessage({
+            'type': 'urlQueryResponse',
+            'href': window.location.href,
+            'pathname': window.location.pathname,
+            'hash': window.location.hash,
+            'search': window.location.search
+          }, '*');
+        } else if (msg.data.type === 'appendBody') {
+          if (appendBodyReceived) {
+            throw new Error('should only receive at most one appendBody call');
+          }
+          var element = document.createElement(msg.data.tagName);
+          document.body.appendChild(element);
+          appendBodyReceived = true;
+        }
+      }
+
+      window.addEventListener('error', function(e) {
+        window.parent.postMessage({
+          'type': 'error',
+          'error': e.message
+        }, '*');
+      });
+    </script>
+  </body>
+</html>

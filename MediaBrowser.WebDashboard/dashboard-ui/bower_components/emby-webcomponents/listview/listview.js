@@ -1,10 +1,10 @@
-define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutManager', 'userdataButtons', 'css!./listview'], function (itemHelper, mediaInfo, indicators, connectionManager, layoutManager, userdataButtons) {
+define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutManager', 'globalize', 'userdataButtons', 'css!./listview'], function (itemHelper, mediaInfo, indicators, connectionManager, layoutManager, globalize, userdataButtons) {
 
     function getIndex(item, options) {
 
         if (options.index == 'disc') {
 
-            return item.ParentIndexNumber == null ? '' : Globalize.translate('sharedcomponents#ValueDiscNumber', item.ParentIndexNumber);
+            return item.ParentIndexNumber == null ? '' : globalize.translate('sharedcomponents#ValueDiscNumber', item.ParentIndexNumber);
         }
 
         var sortBy = (options.sortBy || '').toLowerCase();
@@ -122,32 +122,36 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
         var clickEntireItem = layoutManager.tv ? true : false;
         var outerTagName = clickEntireItem ? 'button' : 'div';
 
-        return items.map(function (item) {
+        var outerHtml = '';
+
+        outerHtml += items.map(function (item) {
 
             var html = '';
 
-            //if (options.showIndex !== false) {
+            if (options.showIndex) {
 
-            //    var itemGroupTitle = LibraryBrowser.getListViewIndex(item, options);
+                var itemGroupTitle = getIndex(item, options);
 
-            //    if (itemGroupTitle != groupTitle) {
+                if (itemGroupTitle != groupTitle) {
 
-            //        outerHtml += '</div>';
+                    if (html) {
+                        html += '</div>';
+                    }
 
-            //        if (index == 0) {
-            //            html += '<h1>';
-            //        }
-            //        else {
-            //            html += '<h1 style="margin-top:2em;">';
-            //        }
-            //        html += itemGroupTitle;
-            //        html += '</h1>';
+                    if (index == 0) {
+                        html += '<h1 class="listGroupHeader first">';
+                    }
+                    else {
+                        html += '<h1 class="listGroupHeader">';
+                    }
+                    html += itemGroupTitle;
+                    html += '</h1>';
 
-            //        html += '<div class="paperList itemsListview">';
+                    html += '<div>';
 
-            //        groupTitle = itemGroupTitle;
-            //    }
-            //}
+                    groupTitle = itemGroupTitle;
+                }
+            }
 
             var cssClass = "itemAction listItem";
 
@@ -165,7 +169,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             if (imgUrl) {
                 html += '<div class="listItemImage lazy" data-src="' + imgUrl + '" item-icon>';
             } else {
-                html += '<div class="listItemImage" item-icon>';
+                html += '<div class="listItemImage">';
             }
 
             var indicatorsHtml = '';
@@ -219,16 +223,18 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             for (var i = 0, textLinesLength = textlines.length; i < textLinesLength; i++) {
 
                 if (i == 0 && isLargeStyle) {
-                    html += '<h2 class="listItemTitle">';
+                    html += '<h2>';
                 }
                 else if (i == 0) {
-                    html += '<div>';
+                    html += '<h3>';
                 } else {
                     html += '<div class="secondary">';
                 }
                 html += textlines[i] || '&nbsp;';
                 if (i == 0 && isLargeStyle) {
                     html += '</h2>';
+                } else if (i == 0) {
+                    html += '</h3>';
                 } else {
                     html += '</div>';
                 }
@@ -249,7 +255,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             if (!clickEntireItem) {
                 html += '<button is="paper-icon-button-light" class="listviewMenuButton autoSize"><i class="md-icon">&#xE5D4;</i></button>';
                 html += '<span class="listViewUserDataButtons">';
-                html += userdataButtons.getIconsHtml(item);
+                html += userdataButtons.getIconsHtml(item, false);
                 html += '</span>';
             }
 
@@ -263,6 +269,8 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             return html;
 
         }).join('');
+
+        return outerHtml;
     }
 
     return {

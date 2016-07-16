@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['listView'], function (listView) {
 
     var data = {};
     function getPageData() {
@@ -80,7 +80,7 @@
 
                 if (view == "List") {
 
-                    html = LibraryBrowser.getListViewHtml({
+                    html = listView.getListViewHtml({
                         items: result.Items,
                         sortBy: query.SortBy
                     });

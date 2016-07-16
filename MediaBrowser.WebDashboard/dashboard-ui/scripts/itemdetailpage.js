@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'datetime', 'mediaInfo', 'backdrop', 'scrollStyles'], function (layoutManager, datetime, mediaInfo, backdrop) {
+﻿define(['layoutManager', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'scrollStyles'], function (layoutManager, datetime, mediaInfo, backdrop, listView) {
 
     var currentItem;
 
@@ -931,14 +931,14 @@
 
             if (item.Type == "MusicAlbum") {
 
-                html = LibraryBrowser.getListViewHtml({
+                html = listView.getListViewHtml({
                     items: result.Items,
                     smallIcon: true,
                     showIndex: true,
                     index: 'disc',
                     showIndexNumber: true,
                     playFromHere: true,
-                    defaultAction: 'playallfromhere',
+                    action: 'playallfromhere',
                     lazy: true
                 });
 
@@ -1315,9 +1315,9 @@
 
             page.querySelector('#themeSongsCollapsible').classList.remove('hide');
 
-            var html = LibraryBrowser.getListViewHtml({
-                items: items,
-                smallIcon: true
+            var html = listView.getListViewHtml({
+                items: result.Items,
+                sortBy: query.SortBy
             });
 
             page.querySelector('#themeSongsContent').innerHTML = html;

@@ -1,4 +1,4 @@
-﻿define(['appStorage', 'jQuery'], function (appStorage, $) {
+﻿define(['appStorage', 'jQuery', 'listView'], function (appStorage, $, listView) {
 
     var data = {};
     function getPageData() {
@@ -60,15 +60,14 @@
 
             if (view == "List") {
 
-                html = LibraryBrowser.getListViewHtml({
+                html = listView.getListViewHtml({
                     items: result.Items,
                     sortBy: query.SortBy,
                     showIndex: false,
                     showRemoveFromPlaylist: true,
                     playFromHere: true,
-                    defaultAction: 'playallfromhere',
+                    action: 'playallfromhere',
                     smallIcon: true
-
                 });
             }
 

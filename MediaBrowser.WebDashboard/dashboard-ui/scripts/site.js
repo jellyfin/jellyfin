@@ -1934,8 +1934,10 @@ var AppInfo = {};
         define('native-promise-only', [bowerPath + '/native-promise-only/lib/npo.src']);
         define("fingerprintjs2", [bowerPath + '/fingerprintjs2/fingerprint2'], returnFirstDependency);
         define("clearButtonStyle", ['css!' + embyWebComponentsBowerPath + '/clearbutton']);
+        define("userdataButtons", [embyWebComponentsBowerPath + "/userdatabuttons/userdatabuttons"], returnFirstDependency);
         define("listView", [embyWebComponentsBowerPath + "/listview/listview"], returnFirstDependency);
         define("listViewStyle", ['css!' + embyWebComponentsBowerPath + "/listview/listview"], returnFirstDependency);
+        define("indicators", [embyWebComponentsBowerPath + "/indicators/indicators"], returnFirstDependency);
 
         if ('registerElement' in document && 'content' in document.createElement('template')) {
             define('webcomponentsjs', []);

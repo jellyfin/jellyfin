@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['listView'], function (listView) {
 
     function renderItems(page, item) {
 
@@ -218,7 +218,7 @@
                     Limit: 30
                 }, {
                     playFromHere: true,
-                    defaultAction: 'playallfromhere',
+                    action: 'playallfromhere',
                     smallIcon: true
                 });
                 break;
@@ -248,7 +248,7 @@
             listOptions.items = result.Items;
 
             if (type == 'Audio') {
-                html = LibraryBrowser.getListViewHtml(listOptions);
+                html = listView.getListViewHtml(listOptions);
             } else {
                 html = LibraryBrowser.getPosterViewHtml(listOptions);
             }

@@ -1,4 +1,4 @@
-﻿define(['browser', 'datetime', 'libraryBrowser'], function (browser, datetime, libraryBrowser) {
+﻿define(['browser', 'datetime', 'libraryBrowser', 'listView'], function (browser, datetime, libraryBrowser, listView) {
 
     function showSlideshowMenu(context) {
         require(['scripts/slideshow'], function () {
@@ -403,7 +403,7 @@
 
             //}).then(function (result) {
 
-            //    html += LibraryBrowser.getListViewHtml({
+            //    html += listView.getListViewHtml({
             //        items: result.Items,
             //        smallIcon: true
             //    });
@@ -411,7 +411,7 @@
             //    page(".playlist").html(html).lazyChildren();
             //});
 
-            html += libraryBrowser.getListViewHtml({
+            html += listView.getListViewHtml({
                 items: MediaController.playlist(),
                 smallIcon: true
             });

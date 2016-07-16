@@ -1,4 +1,4 @@
-define(['connectionManager', 'globalize', 'paper-icon-button-light', 'material-icons', 'emby-button'], function (connectionManager, globalize) {
+define(['connectionManager', 'globalize', 'paper-icon-button-light', 'material-icons', 'emby-button', 'css!./userdatabuttons'], function (connectionManager, globalize) {
 
     function getUserDataButtonHtml(method, itemId, iconCssClass, icon, tooltip, style) {
 
