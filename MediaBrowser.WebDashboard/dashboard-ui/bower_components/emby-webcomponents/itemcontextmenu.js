@@ -1,4 +1,4 @@
-define(['apphost', 'globalize', 'connectionManager', 'itemHelper'], function (appHost, globalize, connectionManager, itemHelper) {
+define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter'], function (appHost, globalize, connectionManager, itemHelper, embyRouter) {
 
     function getCommands(options) {
 
@@ -48,6 +48,13 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper'], function (ap
                 });
             }
 
+            if (options.open !== false) {
+                commands.push({
+                    name: globalize.translate('Open'),
+                    id: 'open'
+                });
+            }
+
             if (user.Policy.IsAdministrator) {
 
                 commands.push({
@@ -60,6 +67,20 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper'], function (ap
                 commands.push({
                     name: globalize.translate('Share'),
                     id: 'share'
+                });
+            }
+
+            if (options.openAlbum !== false && item.AlbumId) {
+                commands.push({
+                    name: Globalize.translate('ViewAlbum'),
+                    id: 'album'
+                });
+            }
+
+            if (options.openArtist !== false && item.ArtistItems && item.ArtistItems.length) {
+                commands.push({
+                    name: Globalize.translate('ViewArtist'),
+                    id: 'artist'
                 });
             }
 
@@ -135,6 +156,12 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper'], function (ap
                         reject();
                         break;
                     }
+                case 'open':
+                    {
+                        embyRouter.showItem(item);
+                        reject();
+                        break;
+                    }
                 case 'delete':
                     {
                         deleteItem(apiClient, itemId).then(function () {
@@ -151,6 +178,18 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper'], function (ap
 
                             }).then(reject);
                         });
+                        break;
+                    }
+                case 'album':
+                    {
+                        embyRouter.showItem(item.AlbumId, item.ServerId);
+                        reject();
+                        break;
+                    }
+                case 'artist':
+                    {
+                        embyRouter.showItem(item.ArtistItems[0].Id, item.ServerId);
+                        reject();
                         break;
                     }
                 default:

@@ -98,5 +98,8 @@
   "Like": "Like",
   "Dislike": "Dislike",
   "Played": "Played",
-  "RefreshDialogHelp": "Metadata is refreshed based on settings and internet services that are enabled in the Emby Server dashboard."
+  "RefreshDialogHelp": "Metadata is refreshed based on settings and internet services that are enabled in the Emby Server dashboard.",
+  "Open": "Open",
+  "ViewAlbum": "View Album",
+  "ViewArtist": "View Artist"
 }
