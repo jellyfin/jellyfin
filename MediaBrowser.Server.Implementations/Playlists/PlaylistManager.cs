@@ -247,15 +247,18 @@ namespace MediaBrowser.Server.Implementations.Playlists
                 return;
             }
 
-            if (newIndex > oldIndex)
-            {
-                newIndex--;
-            }
-
             var item = playlist.LinkedChildren[oldIndex];
 
             playlist.LinkedChildren.Remove(item);
-            playlist.LinkedChildren.Insert(newIndex, item);
+
+            if (newIndex >= playlist.LinkedChildren.Count)
+            {
+                playlist.LinkedChildren.Add(item);
+            }
+            else
+            {
+                playlist.LinkedChildren.Insert(newIndex, item);
+            }
 
             await playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }
