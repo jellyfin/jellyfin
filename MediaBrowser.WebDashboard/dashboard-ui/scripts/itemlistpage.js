@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'alphaPicker', 'listView'], function (libraryBrowser, alphaPicker, listView) {
+﻿define(['libraryBrowser', 'alphaPicker', 'listView', 'emby-itemscontainer'], function (libraryBrowser, alphaPicker, listView) {
 
     return function (view, params) {
 

@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'listView'], function (libraryBrowser, listView) {
+﻿define(['libraryBrowser', 'listView', 'emby-itemscontainer'], function (libraryBrowser, listView) {
 
     return function (view, params) {
 

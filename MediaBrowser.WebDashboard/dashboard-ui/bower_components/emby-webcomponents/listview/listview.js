@@ -153,7 +153,11 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                 }
             }
 
-            var cssClass = "itemAction listItem";
+            var cssClass = "listItem";
+
+            if (clickEntireItem) {
+                cssClass += ' itemAction';
+            }
 
             var downloadWidth = 80;
 
@@ -162,7 +166,13 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                 downloadWidth = 500;
             }
 
-            html += '<' + outerTagName + ' class="' + cssClass + '" data-index="' + index + '" data-action="' + action + '" data-isfolder="' + item.IsFolder + '" data-id="' + item.Id + '"  data-serverid="' + item.ServerId + '" data-type="' + item.Type + '">';
+            var playlistItemId = item.PlaylistItemId ? (' data-playlistitemid="' + item.PlaylistItemId + '"') : '';
+
+            html += '<' + outerTagName + ' class="' + cssClass + '" data-index="' + index + '"' + playlistItemId + ' data-action="' + action + '" data-isfolder="' + item.IsFolder + '" data-id="' + item.Id + '"  data-serverid="' + item.ServerId + '" data-type="' + item.Type + '">';
+
+            if (!clickEntireItem && options.dragHandle) {
+                html += '<button is="paper-icon-button-light" class="listViewDragHandle autoSize"><i class="md-icon">&#xE25D;</i></button>';
+            }
 
             var imgUrl = getImageUrl(item, downloadWidth);
 
@@ -218,7 +228,12 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                 lineCount++;
             }
 
-            html += '<div class="listItemBody">';
+            cssClass = 'listItemBody';
+            if (!clickEntireItem) {
+                cssClass += ' itemAction';
+            }
+
+            html += '<div class="' + cssClass + '">';
 
             for (var i = 0, textLinesLength = textlines.length; i < textLinesLength; i++) {
 

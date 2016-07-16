@@ -16,7 +16,7 @@ button.listItem {
     display: block;
     align-items: center;
     text-align: left;
-    padding: .25em .5em .25em 1em !important;
+    padding: .25em .25em .25em .25em !important;
     line-height: 170%;
     border-bottom: 1px solid #2a2a2a;
 }
@@ -26,7 +26,7 @@ div.listItem {
 }
 
 .listItem.largeImage {
-    padding: 1em 0 1em 1em;
+    padding: .5em !important;
 }
 
 .listItem > *:not(.listItemBody) {
@@ -36,6 +36,14 @@ div.listItem {
 .listItem > * {
     display: inline-block;
     vertical-align: middle;
+}
+
+.listItem [is=paper-icon-button-light] {
+    margin: 0;
+}
+
+.listViewDragHandle {
+    margin-left: -.25em !important;
 }
 
 .listItemBody {
@@ -89,8 +97,8 @@ div.listItem {
     background-repeat: no-repeat;
     background-size: contain;
     flex-shrink: 0;
-    margin-left: -.75em;
     background-position: center center;
+    position: relative;
 }
 
 .listItemIcon {
@@ -103,7 +111,6 @@ div.listItem {
     width: 45vh;
     height: 30vh;
     background-position: center center;
-    position: relative;
     margin-right: 2%;
     margin-left: 1%;
 }

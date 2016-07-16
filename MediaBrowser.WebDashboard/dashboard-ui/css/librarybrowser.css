@@ -949,10 +949,17 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-right: 5px;
 }
 
-    /* Polyfill */
-    .itemProgressBar[role]:after {
-        background-image: none; /* removes default background from polyfill */
-    }
+/* Undo these to original */
+.listItem .itemProgressBar {
+    width: auto;
+    margin: 0;
+    height: .56vh;
+}
+
+/* Polyfill */
+.itemProgressBar[role]:after {
+    background-image: none; /* removes default background from polyfill */
+}
 
 /*
  * Background of the progress bar background

@@ -1,4 +1,4 @@
-﻿define(['listView'], function (listView) {
+﻿define(['listView', 'emby-itemscontainer'], function (listView) {
 
     function renderItems(page, item) {
 
@@ -82,7 +82,7 @@
             html += '<a href="#" class="clearLink hide" style="margin-left:1em;vertical-align:middle;"><button is="emby-button" type="button" class="raised more mini noIcon">' + Globalize.translate('ButtonMore') + '</button></a>';
             html += '</div>';
 
-            html += '<div class="itemsContainer">';
+            html += '<div is="emby-itemscontainer" class="itemsContainer">';
             html += '</div>';
 
             html += '</div>';

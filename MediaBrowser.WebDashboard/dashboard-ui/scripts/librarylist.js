@@ -254,12 +254,15 @@
 
         var displayContextItem = card;
 
-        if (!card.classList.contains('card') && !card.classList.contains('listItem')) {
-            card = parentWithAnyClass(card, ['listItem', 'card']);
+        card = parentWithClass(card, 'card');
+
+        if (!card) {
+            return;
         }
 
         var itemId = card.getAttribute('data-itemid');
         var playlistItemId = card.getAttribute('data-playlistitemid');
+
         var commands = card.getAttribute('data-commands').split(',');
         var itemType = card.getAttribute('data-itemtype');
         var mediaType = card.getAttribute('data-mediatype');

@@ -413,7 +413,8 @@
 
             html += listView.getListViewHtml({
                 items: MediaController.playlist(),
-                smallIcon: true
+                smallIcon: true,
+                action: 'none'
             });
 
             playlistNeedsRefresh = false;
@@ -557,34 +558,15 @@
 
         function onContextClick(e) {
 
-            var lnkPlayFromIndex = parentWithClass(e.target, 'lnkPlayFromIndex');
-            if (lnkPlayFromIndex != null) {
-                var index = parseInt(lnkPlayFromIndex.getAttribute('data-index'));
-
-                MediaController.currentPlaylistIndex(index);
-                loadPlaylist(context);
-
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-            var lnkRemoveFromPlaylist = parentWithClass(e.target, 'lnkRemoveFromPlaylist');
-            if (lnkRemoveFromPlaylist != null) {
-                var index = parseInt(lnkRemoveFromPlaylist.getAttribute('data-index'));
-
-                MediaController.removeFromPlaylist(index);
-                loadPlaylist(context);
-
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-
-            var mediaItem = parentWithClass(e.target, 'mediaItem');
+            var mediaItem = parentWithClass(e.target, 'itemAction');
             if (mediaItem != null) {
-                var info = libraryBrowser.getListItemInfo(mediaItem);
 
-                MediaController.currentPlaylistIndex(info.index);
+                mediaItem = parentWithClass(e.target, 'listItem');
+                var indexValue = mediaItem.getAttribute('data-index');
+
+                if (indexValue) {
+                    MediaController.currentPlaylistIndex(parseInt(indexValue));
+                }
 
                 e.preventDefault();
                 e.stopPropagation();

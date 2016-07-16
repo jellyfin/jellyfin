@@ -1803,6 +1803,7 @@ var AppInfo = {};
 
         define("emby-collapse", [embyWebComponentsBowerPath + "/emby-collapse/emby-collapse"], returnFirstDependency);
         define("emby-button", [embyWebComponentsBowerPath + "/emby-button/emby-button"], returnFirstDependency);
+        define("emby-itemscontainer", [embyWebComponentsBowerPath + "/emby-itemscontainer/emby-itemscontainer"], returnFirstDependency);
         define("alphaPicker", [embyWebComponentsBowerPath + "/alphapicker/alphapicker"], returnFirstDependency);
         define("paper-icon-button-light", [embyWebComponentsBowerPath + "/emby-button/paper-icon-button-light"]);
 
@@ -2021,6 +2022,9 @@ var AppInfo = {};
             return {
                 isPlayingVideo: function () {
                     return false;
+                },
+                play: function (options) {
+                    MediaController.play(options);
                 }
             };
         });
@@ -2273,7 +2277,7 @@ var AppInfo = {};
 
         var baseUrl = 'bower_components/emby-webcomponents/strings/';
 
-        var languages = ['da', 'de', 'en-US', 'es-MX', 'kk', 'nb', 'nl', 'pt-BR', 'pt-PT', 'ru', 'sv'];
+        var languages = ['da', 'de', 'en-US', 'es-MX', 'kk', 'nb', 'nl', 'pt-BR', 'pt-PT', 'ru', 'sv', 'zh-TW'];
 
         var translations = languages.map(function (i) {
             return {
@@ -2566,7 +2570,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/itemdetails.html',
-            dependencies: ['emby-button', 'tileitemcss', 'scripts/livetvcomponents', 'paper-icon-button-light', 'listViewStyle'],
+            dependencies: ['emby-button', 'tileitemcss', 'scripts/livetvcomponents', 'paper-icon-button-light', 'emby-itemscontainer'],
             controller: 'scripts/itemdetailpage',
             autoFocus: false,
             transition: 'fade'
@@ -2836,7 +2840,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/nowplaying.html',
-            dependencies: ['paper-icon-button-light', 'emby-slider', 'emby-button', 'emby-input'],
+            dependencies: ['paper-icon-button-light', 'emby-slider', 'emby-button', 'emby-input', 'emby-itemscontainer'],
             controller: 'scripts/nowplayingpage',
             autoFocus: false,
             transition: 'fade'
