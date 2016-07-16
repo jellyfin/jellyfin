@@ -885,6 +885,12 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     top: 32px;
 }
 
+.card .playedIndicator {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+}
+
 .syncIndicator i {
     font-size: 180%;
 }
@@ -1156,33 +1162,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
     .channelHeader a {
         text-decoration: none;
-    }
-
-.itemsListview {
-    margin: 0 auto !important;
-    max-width: 1000px;
-    background-color: transparent !important;
-    box-shadow: none !important;
-}
-
-    .itemsListview .listItem {
-        border-bottom: 1px solid #2a2a2a;
-    }
-
-    .itemsListview .ui-li-count {
-        right: 1em;
-        top: 70%;
-        background: rgba(82, 181, 75, .8);
-        border: 0;
-    }
-
-    .itemsListview .playedIndicator {
-        left: 55px;
-        top: 2px;
-    }
-
-    .itemsListview .syncIndicator, .itemsListview .pieIndicator {
-        left: 55px;
     }
 
 @media all and (max-width: 1200px) {
