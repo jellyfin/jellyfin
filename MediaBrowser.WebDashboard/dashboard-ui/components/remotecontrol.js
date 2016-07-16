@@ -414,7 +414,7 @@
             html += listView.getListViewHtml({
                 items: MediaController.playlist(),
                 smallIcon: true,
-                action: 'none'
+                action: 'setplaylistindex'
             });
 
             playlistNeedsRefresh = false;
@@ -556,24 +556,6 @@
             return elem;
         }
 
-        function onContextClick(e) {
-
-            var mediaItem = parentWithClass(e.target, 'itemAction');
-            if (mediaItem != null) {
-
-                mediaItem = parentWithClass(e.target, 'listItem');
-                var indexValue = mediaItem.getAttribute('data-index');
-
-                if (indexValue) {
-                    MediaController.currentPlaylistIndex(parseInt(indexValue));
-                }
-
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-        }
-
         function onBtnCommandClick() {
             if (currentPlayer) {
 
@@ -693,8 +675,6 @@
 
                 return datetime.getDisplayRunningTime(ticks);
             };
-
-            context.addEventListener('click', onContextClick);
         }
 
         function onPlayerChange() {

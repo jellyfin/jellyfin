@@ -3,9 +3,9 @@
 }
 
 i.mediaInfoItem {
-    width: 3vh;
-    height: 3vh;
-    font-size: 3vh;
+    width: auto;
+    height: auto;
+    font-size: 1.6em;
     margin-right: .6em;
 }
 
@@ -62,10 +62,4 @@ i.mediaInfoItem {
 .layout-tv .mediaInfoProgramAttribute {
     font-size: 90%;
     padding: .1em .5em;
-}
-
-.layout-tv i.mediaInfoItem {
-    width: 4vh;
-    height: 4vh;
-    font-size: 4vh;
 }

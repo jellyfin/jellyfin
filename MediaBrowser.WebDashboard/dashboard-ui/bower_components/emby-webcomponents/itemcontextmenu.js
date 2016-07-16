@@ -200,7 +200,10 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper'], function (ap
                 require(['actionsheet'], function (actionSheet) {
 
                     actionSheet.show({
-                        items: commands
+
+                        items: commands,
+                        positionTo: options.positionTo
+
                     }).then(function (id) {
                         executeCommand(options.item, id).then(resolve);
                     }, reject);

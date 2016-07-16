@@ -78,7 +78,8 @@
 
                     html = listView.getListViewHtml({
                         items: result.Items,
-                        sortBy: query.SortBy
+                        sortBy: query.SortBy,
+                        showParentTitle: true
                     });
                 }
                 else if (viewStyle == "PosterCard") {

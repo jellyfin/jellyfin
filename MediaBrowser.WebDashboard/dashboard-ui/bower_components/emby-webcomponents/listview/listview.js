@@ -201,8 +201,6 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             if (options.showParentTitle) {
                 if (item.Type == 'Episode') {
                     textlines.push(item.SeriesName || '&nbsp;');
-                } else if (item.Type == 'MusicAlbum') {
-                    textlines.push(item.AlbumArtist || '&nbsp;');
                 }
             }
 
@@ -213,11 +211,26 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             }
             textlines.push(displayName);
 
-            if (item.Type == 'Audio') {
+            if (item.ArtistItems && item.Type != 'MusicAlbum') {
                 textlines.push(item.ArtistItems.map(function (a) {
                     return a.Name;
 
                 }).join(', ') || '&nbsp;');
+            }
+
+            if (item.AlbumArtist && item.Type == 'MusicAlbum') {
+                textlines.push(item.AlbumArtist || '&nbsp;');
+            }
+
+            if (item.Type == 'Game') {
+                textlines.push(item.GameSystem || '&nbsp;');
+            }
+
+            if (item.Type == 'TvChannel') {
+
+                if (item.CurrentProgram) {
+                    textlines.push(itemHelper.getDisplayName(item.CurrentProgram));
+                }
             }
 
             var lineCount = textlines.length;
@@ -241,7 +254,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                     html += '<h2>';
                 }
                 else if (i == 0) {
-                    html += '<h3>';
+                    html += '<div>';
                 } else {
                     html += '<div class="secondary">';
                 }
@@ -249,7 +262,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                 if (i == 0 && isLargeStyle) {
                     html += '</h2>';
                 } else if (i == 0) {
-                    html += '</h3>';
+                    html += '</div>';
                 } else {
                     html += '</div>';
                 }
@@ -268,7 +281,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             html += '</div>';
 
             if (!clickEntireItem) {
-                html += '<button is="paper-icon-button-light" class="listviewMenuButton autoSize"><i class="md-icon">&#xE5D4;</i></button>';
+                html += '<button is="paper-icon-button-light" class="menuButton autoSize"><i class="md-icon">&#xE5D4;</i></button>';
                 html += '<span class="listViewUserDataButtons">';
                 html += userdataButtons.getIconsHtml(item, false);
                 html += '</span>';

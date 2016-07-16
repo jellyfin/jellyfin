@@ -169,6 +169,14 @@ div.listItem {
         margin-top: 0;
     }
 
+.listItem .indicators {
+    right: .5vh;
+    top: .5vh;
+    position: absolute;
+    display: flex;
+    align-items: center;
+}
+
 @supports (display: flex) {
 
     .listItem, .listItemBody, .listItemMediaInfo {

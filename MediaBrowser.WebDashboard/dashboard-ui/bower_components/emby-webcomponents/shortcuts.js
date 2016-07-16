@@ -125,7 +125,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         }
 
         else if (action == 'setplaylistindex') {
-
+            playbackManager.currentPlaylistIndex(parseInt(card.getAttribute('data-index')));
         }
 
         else if (action == 'record') {

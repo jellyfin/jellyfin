@@ -885,29 +885,9 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     top: 32px;
 }
 
-.playedIndicator {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    text-align: center;
-    vertical-align: middle;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    color: #fff;
-    background: rgb(82, 181, 75);
-    background: rgba(82, 181, 75, .95);
-    line-height: 21px;
-    line-height: initial;
-    font-weight: 500;
+.syncIndicator i {
+    font-size: 180%;
 }
-
-    .playedIndicator i, .syncIndicator i {
-        font-size: 180%;
-    }
 
 .mediaSourceIndicator {
     display: block;
