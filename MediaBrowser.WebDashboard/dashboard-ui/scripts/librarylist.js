@@ -78,7 +78,6 @@
         var isMiniItem = className.indexOf('mini') != -1;
         var isSmallItem = isMiniItem || className.indexOf('small') != -1;
         var isPortrait = className.indexOf('portrait') != -1;
-        var isSquare = className.indexOf('square') != -1;
 
         var parentName = isSmallItem || isMiniItem || isPortrait ? null : item.SeriesName;
         var name = itemHelper.getDisplayName(item);
@@ -154,11 +153,11 @@
         }
 
         if (item.LocalTrailerCount) {
-            html += '<button is="paper-icon-button-light" class="btnPlayTrailer autoSize" data-itemid="' + item.Id + '"><i class="md-icon">videocam</i></button>';
+            html += '<button is="paper-icon-button-light" class="itemAction autoSize" data-action="playtrailer" data-itemid="' + item.Id + '"><i class="md-icon">videocam</i></button>';
             buttonCount++;
         }
 
-        html += '<button is="paper-icon-button-light" class="btnMoreCommands autoSize"><i class="md-icon">more_vert</i></button>';
+        html += '<button is="paper-icon-button-light" class="itemAction autoSize" data-action="menu" data-playoptions="false"><i class="md-icon">more_vert</i></button>';
         buttonCount++;
 
         html += '</div>';
@@ -166,67 +165,6 @@
         html += '</div>';
 
         return html;
-    }
-
-    function onTrailerButtonClick(e) {
-
-        var id = this.getAttribute('data-itemid');
-
-        ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), id).then(function (trailers) {
-            MediaController.play({ items: trailers });
-        });
-
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-    }
-
-    function onMoreButtonClick(e) {
-
-        var card = parentWithClass(this, 'card');
-
-        showContextMenu(card, {
-            shuffle: false,
-            instantMix: false,
-            play: false,
-            playAllFromHere: false,
-            queue: false,
-            queueAllFromHere: false
-        });
-
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-    }
-
-    function showContextMenu(card, options) {
-
-        var displayContextItem = card;
-
-        card = parentWithClass(card, 'card');
-
-        if (!card) {
-            return;
-        }
-
-        var itemId = card.getAttribute('data-itemid');
-        var serverId = ApiClient.serverInfo().Id;
-        var type = card.getAttribute('data-itemtype');
-
-        var apiClient = ConnectionManager.getApiClient(serverId);
-
-        var promise = type == 'Timer' ? apiClient.getLiveTvTimer(itemId) : apiClient.getItem(apiClient.getCurrentUserId(), itemId);
-
-        promise.then(function (item) {
-
-            require(['itemContextMenu'], function (itemContextMenu) {
-
-                itemContextMenu.show(Object.assign(options || {}, {
-                    item: item,
-                    positionTo: displayContextItem
-                }));
-            });
-        });
     }
 
     function isClickable(target) {
@@ -363,15 +301,6 @@
                 }
 
                 innerElem.innerHTML = getOverlayHtml(item, user, card);
-
-                var btnPlayTrailer = innerElem.querySelector('.btnPlayTrailer');
-                if (btnPlayTrailer) {
-                    btnPlayTrailer.addEventListener('click', onTrailerButtonClick);
-                }
-                var btnMoreCommands = innerElem.querySelector('.btnMoreCommands');
-                if (btnMoreCommands) {
-                    btnMoreCommands.addEventListener('click', onMoreButtonClick);
-                }
             });
 
             slideUpToShow(innerElem);
