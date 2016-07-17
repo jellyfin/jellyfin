@@ -114,6 +114,8 @@ namespace MediaBrowser.Model.Dto
         /// <value>The synchronize percent.</value>
         public double? SyncPercent { get; set; }
 
+        public string Container { get; set; }
+
         /// <summary>
         /// Gets or sets the DVD season number.
         /// </summary>
