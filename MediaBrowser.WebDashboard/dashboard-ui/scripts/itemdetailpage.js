@@ -1984,27 +1984,31 @@
         }
     }
 
+    function showPlayMenu(item, target) {
+
+        require(['playMenu'], function (playMenu) {
+
+            playMenu.show({
+
+                item: item,
+                positionTo: target
+            });
+        });
+    }
+
     function playCurrentItem(button) {
 
         if (currentItem.Type == 'Program') {
 
             ApiClient.getLiveTvChannel(currentItem.ChannelId, Dashboard.getCurrentUserId()).then(function (channel) {
 
-                LibraryBrowser.showPlayMenu(null, channel.Id, channel.Type, false, channel.MediaType, (channel.UserData || {}).PlaybackPositionTicks);
+                showPlayMenu(channel, button);
             });
 
             return;
         }
 
-        var userdata = currentItem.UserData || {};
-
-        var mediaType = currentItem.MediaType;
-
-        if (currentItem.Type == "MusicArtist" || currentItem.Type == "MusicAlbum") {
-            mediaType = "Audio";
-        }
-
-        LibraryBrowser.showPlayMenu(button, currentItem.Id, currentItem.Type, currentItem.IsFolder, mediaType, userdata.PlaybackPositionTicks);
+        showPlayMenu(currentItem, button);
     }
 
     function deleteTimer(page, params, id) {
