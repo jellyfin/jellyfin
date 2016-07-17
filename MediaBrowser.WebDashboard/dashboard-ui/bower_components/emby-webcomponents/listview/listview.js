@@ -282,7 +282,12 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             html += '</div>';
 
             if (enableSideMediaInfo) {
-                html += '<div class="secondary listItemMediaInfo">' + mediaInfo.getPrimaryMediaInfoHtml(item) + '</div>';
+                html += '<div class="secondary listItemMediaInfo">' + mediaInfo.getPrimaryMediaInfoHtml(item, {
+
+                    year: false,
+                    container: false
+
+                }) + '</div>';
             }
 
             if (!clickEntireItem) {

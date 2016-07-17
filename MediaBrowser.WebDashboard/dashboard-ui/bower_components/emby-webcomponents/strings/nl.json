@@ -1,4 +1,6 @@
 {
+    "EditInfo": "Edit Info",
+    "RemoveFromPlaylist": "Remove from Playlist",
     "ValueSpecialEpisodeName": "Speciaal - {0}",
     "Share": "Delen",
     "ServerUpdateNeeded": "Deze Emby Server moet worden bijgewerkt. Om de laatste versie te downloaden, gaat u naar {0}",

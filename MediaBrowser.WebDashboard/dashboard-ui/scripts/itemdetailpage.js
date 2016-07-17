@@ -345,7 +345,6 @@
 
             itemsContainer.innerHTML = html;
             ImageLoader.lazyChildren(itemsContainer);
-            LibraryBrowser.createCardMenus(itemsContainer);
         });
     }
 
@@ -765,9 +764,9 @@
             var html = '';
 
             if (enableScrollX()) {
-                html += '<div class="hiddenScrollX itemsContainer">';
+                html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
             } else {
-                html += '<div class="itemsContainer">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer">';
             }
             html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
@@ -787,7 +786,6 @@
             var similarContent = page.querySelector('#similarContent');
             similarContent.innerHTML = html;
             ImageLoader.lazyChildren(similarContent);
-            LibraryBrowser.createCardMenus(similarContent);
         });
     }
 
@@ -1006,8 +1004,6 @@
                 elem.classList.remove('hiddenScrollX');
             }
 
-            LibraryBrowser.createCardMenus(elem);
-
             if (item.Type == "BoxSet") {
 
                 var collectionItemTypes = [
@@ -1111,11 +1107,6 @@
 
         if (!items.length) {
             renderCollectionItemType(page, parentItem, { name: Globalize.translate('HeaderItems') }, items);
-        }
-
-        var containers = page.querySelectorAll('.collectionItems .itemsContainer');
-        for (i = 0, length = containers.length; i < length; i++) {
-            LibraryBrowser.createCardMenus(containers[i]);
         }
     }
 

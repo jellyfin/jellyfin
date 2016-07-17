@@ -285,6 +285,8 @@
                 item: currentItem,
                 positionTo: button,
                 edit: false,
+                editImages: true,
+                editSubtitles: true,
                 sync: false,
                 share: false
 

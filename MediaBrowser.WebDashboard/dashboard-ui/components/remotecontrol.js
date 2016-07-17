@@ -769,9 +769,6 @@
             });
 
             Events.on(MediaController, 'playerchange', onPlayerChange);
-
-            libraryBrowser.createCardMenus(context.querySelector('.itemsContainer'));
-
         }
 
         function onDialogClosed(e) {

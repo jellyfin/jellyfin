@@ -235,6 +235,10 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
             if (action) {
                 executeAction(card, action);
+
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
             }
         }
     }
@@ -277,20 +281,34 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         }
     }
 
-    function on(context) {
-        context.addEventListener('click', onClick);
-        inputManager.on(context, onCommand);
+    function on(context, options) {
+
+        options = options || {};
+
+        if (options.click !== false) {
+            context.addEventListener('click', onClick);
+        }
+
+        if (options.command !== false) {
+            inputManager.on(context, onCommand);
+        }
     }
 
-    function off(context) {
+    function off(context, options) {
+        options = options || {};
+
         context.removeEventListener('click', onClick);
-        inputManager.off(context, onCommand);
+
+        if (options.command !== false) {
+            inputManager.off(context, onCommand);
+        }
     }
 
     return {
         on: on,
         off: off,
-        execute: executeAction
+        execute: executeAction,
+        onClick: onClick
     };
 
 });

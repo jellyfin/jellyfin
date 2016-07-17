@@ -1,4 +1,6 @@
 {
+    "EditInfo": "Edit Info",
+    "RemoveFromPlaylist": "Remove from Playlist",
     "ValueSpecialEpisodeName": "Especial - {0}",
     "Share": "Compartilhar",
     "ServerUpdateNeeded": "Este servidor Emby precisa ser atualizado. Para baixar a \u00faltima vers\u00e3o, por favor visite {0}",

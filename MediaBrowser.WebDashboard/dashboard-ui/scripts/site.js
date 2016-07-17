@@ -2035,6 +2035,9 @@ var AppInfo = {};
                 },
                 canPlay: function (item) {
                     return MediaController.canPlay(item);
+                },
+                instantMix: function (item) {
+                    return MediaController.instantMix(item);
                 }
             };
         });
@@ -2287,7 +2290,7 @@ var AppInfo = {};
 
         var baseUrl = 'bower_components/emby-webcomponents/strings/';
 
-        var languages = ['da', 'de', 'en-US', 'es-MX', 'kk', 'nb', 'nl', 'pt-BR', 'pt-PT', 'ru', 'sv', 'zh-TW'];
+        var languages = ['da', 'de', 'en-US', 'es-MX', 'fr', 'kk', 'nb', 'nl', 'pt-BR', 'pt-PT', 'ru', 'sv', 'zh-TW'];
 
         var translations = languages.map(function (i) {
             return {
@@ -3248,7 +3251,7 @@ var AppInfo = {};
     }
 
     function upgradeLayouts() {
-        if (!AppInfo.enableAppLayouts && browserInfo.mobile) {
+        if (!AppInfo.enableAppLayouts) {
             Dashboard.getPluginSecurityInfo().then(function (info) {
                 if (info.IsMBSupporter) {
                     AppInfo.enableAppLayouts = true;

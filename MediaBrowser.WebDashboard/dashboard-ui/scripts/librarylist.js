@@ -216,45 +216,6 @@
         return false;
     }
 
-    function onContextMenu(e) {
-
-        var card = parentWithClass(e.target, 'card');
-
-        if (card) {
-            var itemSelectionPanel = card.querySelector('.itemSelectionPanel');
-
-            if (!itemSelectionPanel) {
-                showContextMenu(card, {});
-            }
-
-            e.preventDefault();
-            return false;
-        }
-    }
-
-    function deleteTimer(id, itemsContainer) {
-
-        require(['confirm'], function (confirm) {
-
-            confirm(Globalize.translate('MessageConfirmRecordingCancellation'), Globalize.translate('HeaderConfirmRecordingCancellation')).then(function () {
-
-                Dashboard.showLoadingMsg();
-
-                ApiClient.cancelLiveTvTimer(id).then(function () {
-
-                    require(['toast'], function (toast) {
-                        toast(Globalize.translate('MessageRecordingCancelled'));
-                    });
-
-                    Dashboard.hideLoadingMsg();
-                    itemsContainer.dispatchEvent(new CustomEvent('timercancelled', {
-                        bubbles: true
-                    }));
-                });
-            });
-        });
-    }
-
     function showContextMenu(card, options) {
 
         var displayContextItem = card;
@@ -525,14 +486,7 @@
         curr.removeEventListener('click', onCardClick);
         curr.addEventListener('click', onCardClick);
 
-        if (AppInfo.isTouchPreferred) {
-
-            curr.removeEventListener('contextmenu', disableEvent);
-            curr.addEventListener('contextmenu', disableEvent);
-        }
-        else {
-            curr.removeEventListener('contextmenu', onContextMenu);
-            curr.addEventListener('contextmenu', onContextMenu);
+        if (!AppInfo.isTouchPreferred) {
 
             curr.removeEventListener('mouseenter', onHoverIn);
             curr.addEventListener('mouseenter', onHoverIn, true);
@@ -544,7 +498,7 @@
             curr.addEventListener("touchstart", preventTouchHover);
         }
 
-        initTapHoldMenus(curr);
+        //initTapHoldMenus(curr);
     };
 
     function initTapHoldMenus(elem) {
@@ -614,12 +568,6 @@
             message: Globalize.translate('TryMultiSelectMessage'),
             title: Globalize.translate('HeaderTryMultiSelect')
         });
-    }
-
-    function disableEvent(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
     }
 
     function onTapHold(e) {
@@ -989,80 +937,6 @@
         });
     }
 
-    function onItemWithActionClick(e) {
-
-        var elem = parentWithClass(e.target, 'itemWithAction');
-
-        if (!elem) {
-            return;
-        }
-
-        var action = elem.getAttribute('data-action');
-        var elemWithAttributes = elem;
-
-        if (action) {
-            while (!elemWithAttributes.getAttribute('data-itemid')) {
-                elemWithAttributes = elemWithAttributes.parentNode;
-            }
-        }
-
-        var index;
-        var itemsContainer;
-
-        var itemId = elemWithAttributes.getAttribute('data-itemid');
-
-        if (action == 'play') {
-            MediaController.play(itemId);
-        }
-        else if (action == 'playallfromhere') {
-
-            index = elemWithAttributes.getAttribute('data-index');
-
-            itemsContainer = parentWithClass(elem, 'itemsContainer');
-
-            playAllFromHere(index, itemsContainer, 'play');
-        }
-        else if (action == 'instantmix') {
-
-            MediaController.instantMix(itemId);
-        }
-
-        e.stopPropagation();
-        e.preventDefault();
-        return false;
-    }
-
-    function playAllFromHere(index, itemsContainer, method) {
-
-        var ids = [];
-
-        var mediaItems = itemsContainer.querySelectorAll('.mediaItem');
-        for (var i = 0, length = mediaItems.length; i < length; i++) {
-            var node = mediaItems[i];
-            var id = node.getAttribute('data-itemid');
-            while (!id) {
-                node = node.parentNode;
-                id = node.getAttribute('data-itemid');
-            }
-            ids.push(id);
-        }
-
-        ids = ids.slice(index);
-
-        ApiClient.getItems(Dashboard.getCurrentUserId(), {
-
-            Ids: ids.join(','),
-            Fields: 'MediaSources,Chapters',
-            Limit: 100
-
-        }).then(function (result) {
-
-            MediaController[method]({
-                items: result.Items
-            });
-        });
-    }
-
     function showSyncButtonsPerUser(page) {
 
         var apiClient = window.ApiClient;
@@ -1106,16 +980,8 @@
 
         var page = this;
 
-        page.addEventListener('click', onItemWithActionClick);
-
-        var itemsContainers = page.querySelectorAll('.itemsContainer:not(.noautoinit)');
-        var i, length;
-        for (i = 0, length = itemsContainers.length; i < length; i++) {
-            LibraryBrowser.createCardMenus(itemsContainers[i]);
-        }
-
         var categorySyncButtons = page.querySelectorAll('.categorySyncButton');
-        for (i = 0, length = categorySyncButtons.length; i < length; i++) {
+        for (var i = 0, length = categorySyncButtons.length; i < length; i++) {
             categorySyncButtons[i].addEventListener('click', onCategorySyncButtonClick);
         }
     });

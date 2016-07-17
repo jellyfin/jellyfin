@@ -903,7 +903,7 @@
 
                 atts.push({
                     name: 'serverid',
-                    value: item.ServerId
+                    value: item.ServerId || options.serverId
                 });
 
                 atts.push({
@@ -1546,7 +1546,7 @@
                 anchorCssClass += ' mediaItem';
 
                 if (options.defaultAction) {
-                    anchorCssClass += ' itemWithAction';
+                    anchorCssClass += ' itemAction';
                 }
 
                 var transition = options.transition === false || !AppInfo.enableSectionTransitions ? '' : ' data-transition="slide"';
