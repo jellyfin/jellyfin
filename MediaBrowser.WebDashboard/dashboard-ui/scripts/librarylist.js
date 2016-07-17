@@ -149,7 +149,7 @@
 
             var resumePosition = (item.UserData || {}).PlaybackPositionTicks || 0;
 
-            html += '<button is="paper-icon-button-light" class="btnPlayItem autoSize" data-itemid="' + item.Id + '" data-itemtype="' + item.Type + '" data-isfolder="' + item.IsFolder + '" data-mediatype="' + item.MediaType + '" data-resumeposition="' + resumePosition + '"><i class="md-icon">play_circle_outline</i></button>';
+            html += '<button is="paper-icon-button-light" class="itemAction autoSize" data-action="playmenu" data-itemid="' + item.Id + '" data-itemtype="' + item.Type + '" data-isfolder="' + item.IsFolder + '" data-mediatype="' + item.MediaType + '" data-resumeposition="' + resumePosition + '"><i class="md-icon">play_circle_outline</i></button>';
             buttonCount++;
         }
 
@@ -175,23 +175,6 @@
         ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), id).then(function (trailers) {
             MediaController.play({ items: trailers });
         });
-
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-    }
-
-    function onPlayItemButtonClick(e) {
-
-        var target = this;
-
-        var id = target.getAttribute('data-itemid');
-        var type = target.getAttribute('data-itemtype');
-        var isFolder = target.getAttribute('data-isfolder') == 'true';
-        var mediaType = target.getAttribute('data-mediatype');
-        var resumePosition = parseInt(target.getAttribute('data-resumeposition'));
-
-        LibraryBrowser.showPlayMenu(this, id, type, isFolder, mediaType, resumePosition);
 
         e.preventDefault();
         e.stopPropagation();
@@ -319,25 +302,6 @@
         return false;
     }
 
-    function hasAnyClass(elem, classNames) {
-        return classNames.filter(function (c) {
-            return elem.classList.contains(c);
-        }).length > 0;
-    }
-
-    function parentWithAnyClass(elem, classNames) {
-
-        while (!elem.classList || !hasAnyClass(elem, classNames)) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
-    }
-
     function parentWithClass(elem, className) {
 
         while (!elem.classList || !elem.classList.contains(className)) {
@@ -400,10 +364,6 @@
 
                 innerElem.innerHTML = getOverlayHtml(item, user, card);
 
-                var btnPlayItem = innerElem.querySelector('.btnPlayItem');
-                if (btnPlayItem) {
-                    btnPlayItem.addEventListener('click', onPlayItemButtonClick);
-                }
                 var btnPlayTrailer = innerElem.querySelector('.btnPlayTrailer');
                 if (btnPlayTrailer) {
                     btnPlayTrailer.addEventListener('click', onTrailerButtonClick);
