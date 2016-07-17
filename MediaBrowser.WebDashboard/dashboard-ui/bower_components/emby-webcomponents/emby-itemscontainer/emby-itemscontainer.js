@@ -33,6 +33,7 @@
         button = parentWithAttribute(button, 'data-id');
         var serverId = button.getAttribute('data-serverid');
         var id = button.getAttribute('data-id');
+        var type = button.getAttribute('data-type');
 
         var apiClient = connectionManager.getApiClient(serverId);
 
@@ -50,7 +51,8 @@
                     play: true,
                     queue: true,
                     playAllFromHere: !item.IsFolder,
-                    queueAllFromHere: !item.IsFolder
+                    queueAllFromHere: !item.IsFolder,
+                    identify: false
 
                 }).then(function(result) {
 

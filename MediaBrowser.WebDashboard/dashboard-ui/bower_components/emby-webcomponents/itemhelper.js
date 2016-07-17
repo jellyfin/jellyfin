@@ -1,4 +1,4 @@
-define([], function () {
+define(['apphost'], function (appHost) {
 
     function getDisplayName(item, options) {
 
@@ -49,6 +49,11 @@ define([], function () {
     }
 
     function supportsAddingToCollection(item) {
+
+        if (item.Type == 'Timer') {
+            return false;
+        }
+
         var invalidTypes = ['Person', 'Genre', 'MusicGenre', 'Studio', 'GameGenre', 'BoxSet', 'Playlist', 'UserView', 'CollectionFolder', 'Audio', 'TvChannel', 'Program', 'MusicAlbum', 'Timer'];
 
         return !item.CollectionType && invalidTypes.indexOf(item.Type) == -1 && item.MediaType != 'Photo';
@@ -92,7 +97,7 @@ define([], function () {
 
         canEdit: function (user, itemType) {
 
-            if (itemType == "UserRootFolder" || /*itemType == "CollectionFolder" ||*/ itemType == "UserView" || itemType == 'Timer') {
+            if (itemType == "UserRootFolder" || /*itemType == "CollectionFolder" ||*/ itemType == "UserView") {
                 return false;
             }
 
@@ -111,6 +116,14 @@ define([], function () {
             }
 
             return item.SupportsSync;
+        },
+
+        canShare: function (user, item) {
+
+            if (item.Type == 'Timer') {
+                return false;
+            }
+            return user.Policy.EnablePublicSharing && appHost.supports('sharing');
         }
     };
 });

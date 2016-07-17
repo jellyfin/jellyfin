@@ -417,14 +417,6 @@
                 }
             },
 
-            canShare: function (item, user) {
-
-                if (item.Type == 'Timer') {
-                    return false;
-                }
-                return user.Policy.EnablePublicSharing;
-            },
-
             getDateParamValue: function (date) {
 
                 function formatDigit(i) {
@@ -685,66 +677,6 @@
                 });
             },
 
-            getMoreCommands: function (item, user) {
-
-                var commands = [];
-
-                if (itemHelper.supportsAddingToCollection(item)) {
-                    commands.push('addtocollection');
-                }
-
-                if (itemHelper.supportsAddingToPlaylist(item)) {
-                    commands.push('playlist');
-                }
-
-                if (item.Type == 'BoxSet' || item.Type == 'Playlist') {
-                    commands.push('delete');
-                }
-                else if (item.CanDelete) {
-                    commands.push('delete');
-                }
-
-                if (user.Policy.IsAdministrator) {
-
-                    if (itemHelper.canEdit(user, item.Type)) {
-                        commands.push('edit');
-                    }
-
-                    if (item.MediaType == 'Video' && item.Type != 'TvChannel' && item.Type != 'Program' && item.LocationType != 'Virtual') {
-                        commands.push('editsubtitles');
-                    }
-
-                    if (item.Type != 'Timer') {
-                        commands.push('editimages');
-                    }
-                }
-
-                if (user.Policy.IsAdministrator) {
-
-                    commands.push('refresh');
-                }
-
-                if (itemHelper.canSync(user, item)) {
-                    commands.push('sync');
-                }
-
-                if (item.CanDownload) {
-                    if (appHost.supports('filedownload')) {
-                        commands.push('download');
-                    }
-                }
-
-                if (LibraryBrowser.canShare(item, user)) {
-                    commands.push('share');
-                }
-
-                if (itemHelper.canIdentify(user, item.Type)) {
-                    commands.push('identify');
-                }
-
-                return commands;
-            },
-
             deleteItems: function (itemIds) {
 
                 return new Promise(function (resolve, reject) {
@@ -784,220 +716,11 @@
                 });
             },
 
-            editSubtitles: function (itemId) {
-
-                return new Promise(function (resolve, reject) {
-
-                    require(['subtitleEditor'], function (subtitleEditor) {
-
-                        var serverId = ApiClient.serverInfo().Id;
-                        subtitleEditor.show(itemId, serverId).then(resolve, reject);
-                    });
-                });
-            },
-
             editMetadata: function (itemId) {
 
                 require(['components/metadataeditor/metadataeditor'], function (metadataeditor) {
 
                     metadataeditor.show(itemId);
-                });
-            },
-
-            editTimer: function (id) {
-
-                require(['recordingEditor'], function (recordingEditor) {
-
-                    var serverId = ApiClient.serverInfo().Id;
-                    recordingEditor.show(id, serverId);
-                });
-            },
-
-            showMoreCommands: function (positionTo, itemId, itemType, commands) {
-
-                var items = [];
-
-                if (commands.indexOf('addtocollection') != -1) {
-                    items.push({
-                        name: Globalize.translate('ButtonAddToCollection'),
-                        id: 'addtocollection',
-                        ironIcon: 'add'
-                    });
-                }
-
-                if (commands.indexOf('playlist') != -1) {
-                    items.push({
-                        name: Globalize.translate('ButtonAddToPlaylist'),
-                        id: 'playlist',
-                        ironIcon: 'playlist-add'
-                    });
-                }
-
-                if (commands.indexOf('delete') != -1) {
-                    items.push({
-                        name: Globalize.translate('ButtonDelete'),
-                        id: 'delete',
-                        ironIcon: 'delete'
-                    });
-                }
-
-                if (commands.indexOf('download') != -1) {
-                    items.push({
-                        name: Globalize.translate('ButtonDownload'),
-                        id: 'download',
-                        ironIcon: 'file-download'
-                    });
-                }
-
-                if (commands.indexOf('edit') != -1) {
-                    items.push({
-                        name: Globalize.translate('ButtonEdit'),
-                        id: 'edit',
-                        ironIcon: 'mode-edit'
-                    });
-                }
-
-                if (commands.indexOf('editimages') != -1) {
-                    items.push({
-                        name: Globalize.translate('ButtonEditImages'),
-                        id: 'editimages',
-                        ironIcon: 'photo'
-                    });
-                }
-
-                if (commands.indexOf('editsubtitles') != -1) {
-                    items.push({
-                        name: Globalize.translate('ButtonEditSubtitles'),
-                        id: 'editsubtitles',
-                        ironIcon: 'closed-caption'
-                    });
-                }
-
-                if (commands.indexOf('identify') != -1) {
-                    items.push({
-                        name: Globalize.translate('ButtonIdentify'),
-                        id: 'identify',
-                        ironIcon: 'info'
-                    });
-                }
-
-                if (commands.indexOf('refresh') != -1) {
-                    items.push({
-                        name: Globalize.translate('ButtonRefresh'),
-                        id: 'refresh',
-                        ironIcon: 'refresh'
-                    });
-                }
-
-                if (commands.indexOf('share') != -1) {
-                    items.push({
-                        name: Globalize.translate('ButtonShare'),
-                        id: 'share',
-                        ironIcon: 'share'
-                    });
-                }
-
-                return new Promise(function (resolve, reject) {
-
-                    var serverId = ApiClient.serverInfo().Id;
-
-                    require(['actionsheet'], function (actionsheet) {
-
-                        actionsheet.show({
-                            items: items,
-                            positionTo: positionTo,
-                            callback: function (id) {
-
-                                switch (id) {
-
-                                    case 'share':
-                                        require(['sharingmanager'], function (sharingManager) {
-                                            sharingManager.showMenu({
-                                                serverId: serverId,
-                                                itemId: itemId
-                                            });
-                                        });
-                                        break;
-                                    case 'addtocollection':
-                                        require(['collectionEditor'], function (collectionEditor) {
-
-                                            new collectionEditor().show({
-                                                items: [itemId],
-                                                serverId: serverId
-                                            });
-                                        });
-                                        break;
-                                    case 'playlist':
-                                        require(['playlistEditor'], function (playlistEditor) {
-                                            new playlistEditor().show({
-                                                items: [itemId],
-                                                serverId: serverId
-                                            });
-                                        });
-                                        break;
-                                    case 'delete':
-                                        LibraryBrowser.deleteItems([itemId]);
-                                        break;
-                                    case 'download':
-                                        {
-                                            require(['fileDownloader'], function (fileDownloader) {
-
-                                                var downloadHref = ApiClient.getUrl("Items/" + itemId + "/Download", {
-                                                    api_key: ApiClient.accessToken()
-                                                });
-
-                                                fileDownloader.download([
-                                                {
-                                                    url: downloadHref,
-                                                    itemId: itemId,
-                                                    serverId: serverId
-                                                }]);
-                                            });
-
-                                            break;
-                                        }
-                                    case 'edit':
-                                        if (itemType == 'Timer') {
-                                            LibraryBrowser.editTimer(itemId);
-                                        } else {
-                                            LibraryBrowser.editMetadata(itemId);
-                                        }
-                                        break;
-                                    case 'editsubtitles':
-                                        LibraryBrowser.editSubtitles(itemId).then(resolve, reject);
-                                        break;
-                                    case 'editimages':
-                                        LibraryBrowser.editImages(itemId).then(resolve, reject);
-                                        break;
-                                    case 'identify':
-                                        LibraryBrowser.identifyItem(itemId).then(resolve, reject);
-                                        break;
-                                    case 'refresh':
-                                        require(['refreshDialog'], function (refreshDialog) {
-                                            new refreshDialog({
-                                                itemIds: [itemId],
-                                                serverId: serverId
-                                            }).show();
-                                        });
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }
-                        });
-
-                    });
-                });
-            },
-
-            identifyItem: function (itemId) {
-
-                return new Promise(function (resolve, reject) {
-
-                    require(['components/itemidentifier/itemidentifier'], function (itemidentifier) {
-
-                        itemidentifier.show(itemId).then(resolve, reject);
-                    });
                 });
             },
 
@@ -1173,15 +896,9 @@
 
                 var atts = [];
 
-                var itemCommands = LibraryBrowser.getItemCommands(item, options);
-
                 atts.push({
                     name: 'itemid',
                     value: item.Id
-                });
-                atts.push({
-                    name: 'commands',
-                    value: itemCommands.join(',')
                 });
 
                 if (options.context) {
@@ -1218,38 +935,14 @@
                 }
 
                 atts.push({
-                    name: 'playaccess',
-                    value: item.PlayAccess || ''
-                });
-
-                atts.push({
-                    name: 'locationtype',
-                    value: item.LocationType || ''
-                });
-
-                atts.push({
                     name: 'index',
                     value: index
                 });
-
-                if (item.AlbumId) {
-                    atts.push({
-                        name: 'albumid',
-                        value: item.AlbumId
-                    });
-                }
 
                 if (item.ChannelId) {
                     atts.push({
                         name: 'channelid',
                         value: item.ChannelId
-                    });
-                }
-
-                if (item.ArtistItems && item.ArtistItems.length) {
-                    atts.push({
-                        name: 'artistid',
-                        value: item.ArtistItems[0].Id
                     });
                 }
 
@@ -1269,76 +962,6 @@
                 }
 
                 return html;
-            },
-
-            getItemCommands: function (item, options) {
-
-                var itemCommands = [];
-
-                //if (MediaController.canPlay(item)) {
-                //    itemCommands.push('playmenu');
-                //}
-
-                itemCommands.push('edit');
-
-                if (item.LocalTrailerCount) {
-                    itemCommands.push('trailer');
-                }
-
-                if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "MusicGenre" || item.CollectionType == "music") {
-                    itemCommands.push('instantmix');
-                }
-
-                if (item.IsFolder || item.Type == "MusicArtist" || item.Type == "MusicGenre") {
-                    itemCommands.push('shuffle');
-                }
-
-                if (itemHelper.supportsAddingToPlaylist(item)) {
-
-                    if (options.showRemoveFromPlaylist) {
-                        itemCommands.push('removefromplaylist');
-                    } else {
-                        itemCommands.push('playlist');
-                    }
-                }
-
-                if (options.showAddToCollection !== false) {
-                    if (itemHelper.supportsAddingToCollection(item)) {
-                        itemCommands.push('addtocollection');
-                    }
-                }
-
-                if (options.showRemoveFromCollection) {
-                    itemCommands.push('removefromcollection');
-                }
-
-                if (options.playFromHere) {
-                    itemCommands.push('playfromhere');
-                    itemCommands.push('queuefromhere');
-                }
-
-                if (item.CanDelete) {
-                    itemCommands.push('delete');
-                }
-
-                if (itemHelper.canSync({ Policy: {} }, item)) {
-                    itemCommands.push('sync');
-                }
-
-                if (item.Type == 'Program' && (!item.TimerId && !item.SeriesTimerId)) {
-
-                    itemCommands.push('record');
-                }
-
-                if (item.MediaType == 'Video' && item.Type != 'TvChannel' && item.Type != 'Program' && item.LocationType != 'Virtual') {
-                    itemCommands.push('editsubtitles');
-                }
-
-                if (item.Type != 'Timer') {
-                    itemCommands.push('editimages');
-                }
-
-                return itemCommands;
             },
 
             shapes: ['square', 'portrait', 'banner', 'smallBackdrop', 'homePageSmallBackdrop', 'backdrop', 'overflowBackdrop', 'overflowPortrait', 'overflowSquare'],

@@ -4,6 +4,11 @@ namespace MediaBrowser.Model.LiveTv
 {
     public class TimerInfoDto : BaseTimerInfoDto
     {
+        public TimerInfoDto()
+        {
+            Type = "Timer";
+        }
+
         /// <summary>
         /// Gets or sets the status.
         /// </summary>
@@ -21,6 +26,8 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The external series timer identifier.</value>
         public string ExternalSeriesTimerId { get; set; }
+
+        public string Type { get; set; }
 
         /// <summary>
         /// Gets or sets the run time ticks.

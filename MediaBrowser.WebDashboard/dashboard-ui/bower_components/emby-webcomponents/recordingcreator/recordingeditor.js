@@ -134,7 +134,10 @@
                 dlg.addEventListener('close', function () {
 
                     if (recordingUpdated) {
-                        resolve();
+                        resolve({
+                            updated: true,
+                            deleted: false
+                        });
                     } else {
                         reject();
                     }

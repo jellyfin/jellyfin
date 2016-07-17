@@ -279,53 +279,25 @@
 
     function showMoreMenu(context, button, user) {
 
-        var items = [];
+        require(['itemContextMenu'], function (itemContextMenu) {
+            itemContextMenu.show({
 
-        items.push({
-            name: Globalize.translate('ButtonEditImages'),
-            id: 'images'
-        });
-
-        if (itemHelper.canIdentify(user, currentItem.Type)) {
-            items.push({
-                name: Globalize.translate('ButtonIdentify'),
-                id: 'identify'
-            });
-        }
-
-        items.push({
-            name: Globalize.translate('ButtonRefresh'),
-            id: 'refresh'
-        });
-
-        require(['actionsheet'], function (actionsheet) {
-
-            actionsheet.show({
-                items: items,
+                item: currentItem,
                 positionTo: button,
-                callback: function (id) {
+                edit: false,
+                sync: false,
+                share: false
 
-                    switch (id) {
+            }).then(function (result) {
 
-                        case 'identify':
-                            LibraryBrowser.identifyItem(currentItem.Id).then(function () {
-                                reload(context, currentItem.Id);
-                            });
-                            break;
-                        case 'refresh':
-                            showRefreshMenu(context, button);
-                            break;
-                        case 'images':
-                            LibraryBrowser.editImages(currentItem.Id);
-                            break;
-                        default:
-                            break;
-                    }
+                if (result.deleted) {
+                    Emby.Page.goHome();
+
+                } else if (result.updated) {
+                    reload(context, currentItem.Id);
                 }
             });
-
         });
-
     }
 
     function onWebSocketMessageReceived(e, data) {
