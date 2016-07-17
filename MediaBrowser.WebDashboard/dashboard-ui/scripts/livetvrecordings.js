@@ -1,4 +1,4 @@
-﻿define(['scripts/livetvcomponents', 'emby-button', 'listViewStyle'], function () {
+﻿define(['scripts/livetvcomponents', 'emby-button', 'listViewStyle', 'emby-itemscontainer'], function () {
 
     function getRecordingGroupHtml(group) {
 

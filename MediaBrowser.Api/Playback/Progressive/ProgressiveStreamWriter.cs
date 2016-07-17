@@ -108,11 +108,11 @@ namespace MediaBrowser.Api.Playback.Progressive
             var eofCount = 0;
             long position = 0;
 
-            using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, false))
+            using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
             {
                 while (eofCount < 15)
                 {
-                    CopyToInternal(fs, outputStream, BufferSize);
+                    await CopyToInternal(fs, outputStream, BufferSize).ConfigureAwait(false);
 
                     var fsPosition = fs.Position;
 
@@ -138,11 +138,11 @@ namespace MediaBrowser.Api.Playback.Progressive
             }
         }
 
-        private void CopyToInternal(Stream source, Stream destination, int bufferSize)
+        private async Task CopyToInternal(Stream source, Stream destination, int bufferSize)
         {
             var array = new byte[bufferSize];
             int count;
-            while ((count = source.Read(array, 0, array.Length)) != 0)
+            while ((count = await source.ReadAsync(array, 0, array.Length).ConfigureAwait(false)) != 0)
             {
                 //if (_job != null)
                 //{
@@ -168,7 +168,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 //    }
                 //}
 
-                destination.Write(array, 0, count);
+                await destination.WriteAsync(array, 0, count).ConfigureAwait(false);
 
                 _bytesWritten += count;
 

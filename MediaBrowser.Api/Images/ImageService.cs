@@ -638,6 +638,7 @@ namespace MediaBrowser.Api.Images
                 CacheDuration = cacheDuration,
                 ResponseHeaders = headers,
                 ContentType = imageResult.Item2,
+                DateLastModified = imageResult.Item3,
                 IsHeadRequest = isHeadRequest,
                 Path = imageResult.Item1,
 

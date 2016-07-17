@@ -67,7 +67,7 @@
         });
     }
 
-    function getOverlayHtml(item, currentUser, card, commands) {
+    function getOverlayHtml(item, currentUser, card) {
 
         var html = '';
 
@@ -153,7 +153,7 @@
             buttonCount++;
         }
 
-        if (commands.indexOf('trailer') != -1) {
+        if (item.LocalTrailerCount) {
             html += '<button is="paper-icon-button-light" class="btnPlayTrailer autoSize" data-itemid="' + item.Id + '"><i class="md-icon">videocam</i></button>';
             buttonCount++;
         }
@@ -203,7 +203,12 @@
         var card = parentWithClass(this, 'card');
 
         showContextMenu(card, {
-            showPlayOptions: false
+            shuffle: false,
+            instantMix: false,
+            play: false,
+            playAllFromHere: false,
+            queue: false,
+            queueAllFromHere: false
         });
 
         e.preventDefault();
@@ -254,408 +259,28 @@
 
         var displayContextItem = card;
 
-        if (!card.classList.contains('card') && !card.classList.contains('listItem')) {
-            card = parentWithAnyClass(card, ['listItem', 'card']);
+        card = parentWithClass(card, 'card');
+
+        if (!card) {
+            return;
         }
 
         var itemId = card.getAttribute('data-itemid');
-        var playlistItemId = card.getAttribute('data-playlistitemid');
-        var commands = card.getAttribute('data-commands').split(',');
-        var itemType = card.getAttribute('data-itemtype');
-        var mediaType = card.getAttribute('data-mediatype');
-        var playbackPositionTicks = parseInt(card.getAttribute('data-positionticks') || '0');
-        var playAccess = card.getAttribute('data-playaccess');
-        var locationType = card.getAttribute('data-locationtype');
-        var index = card.getAttribute('data-index');
-
-        var albumid = card.getAttribute('data-albumid');
-        var artistid = card.getAttribute('data-artistid');
         var serverId = ApiClient.serverInfo().Id;
+        var type = card.getAttribute('data-itemtype');
 
-        Dashboard.getCurrentUser().then(function (user) {
+        var apiClient = ConnectionManager.getApiClient(serverId);
 
-            var items = [];
+        var promise = type == 'Timer' ? apiClient.getLiveTvTimer(itemId) : apiClient.getItem(apiClient.getCurrentUserId(), itemId);
 
-            if (commands.indexOf('addtocollection') != -1) {
-                items.push({
-                    name: Globalize.translate('ButtonAddToCollection'),
-                    id: 'addtocollection',
-                    ironIcon: 'add'
-                });
-            }
+        promise.then(function (item) {
 
-            if (commands.indexOf('playlist') != -1) {
-                items.push({
-                    name: Globalize.translate('ButtonAddToPlaylist'),
-                    id: 'playlist',
-                    ironIcon: 'playlist-add'
-                });
-            }
+            require(['itemContextMenu'], function (itemContextMenu) {
 
-            if (user.Policy.EnableContentDownloading && appHost.supports('filedownload')) {
-                if (mediaType) {
-                    items.push({
-                        name: Globalize.translate('ButtonDownload'),
-                        id: 'download',
-                        ironIcon: 'file-download'
-                    });
-                }
-            }
-
-            if (commands.indexOf('delete') != -1) {
-                items.push({
-                    name: Globalize.translate('ButtonDelete'),
-                    id: 'delete',
-                    ironIcon: 'delete'
-                });
-            }
-
-            if (user.Policy.IsAdministrator) {
-                if (commands.indexOf('edit') != -1) {
-                    items.push({
-                        name: Globalize.translate('ButtonEdit'),
-                        id: 'edit',
-                        ironIcon: 'mode-edit'
-                    });
-                }
-
-                if (commands.indexOf('editimages') != -1) {
-                    items.push({
-                        name: Globalize.translate('ButtonEditImages'),
-                        id: 'editimages',
-                        ironIcon: 'photo'
-                    });
-                }
-
-                if (commands.indexOf('editsubtitles') != -1) {
-                    items.push({
-                        name: Globalize.translate('ButtonEditSubtitles'),
-                        id: 'editsubtitles',
-                        ironIcon: 'closed-caption'
-                    });
-                }
-            }
-
-            if (commands.indexOf('instantmix') != -1) {
-                items.push({
-                    name: Globalize.translate('ButtonInstantMix'),
-                    id: 'instantmix',
-                    ironIcon: 'shuffle'
-                });
-            }
-
-            if (itemType == 'Timer' && user.Policy.EnableLiveTvManagement) {
-                items.push({
-                    name: Globalize.translate('ButtonCancel'),
-                    id: 'canceltimer',
-                    ironIcon: 'cancel'
-                });
-            }
-
-            items.push({
-                name: itemType == 'Timer' ? Globalize.translate('ButtonEdit') : Globalize.translate('ButtonOpen'),
-                id: 'open',
-                ironIcon: 'folder-open'
-            });
-
-            if (options.showPlayOptions !== false) {
-
-                if (MediaController.canPlayByAttributes(itemType, mediaType, playAccess, locationType)) {
-                    items.push({
-                        name: Globalize.translate('ButtonPlay'),
-                        id: 'play',
-                        ironIcon: 'play-arrow'
-                    });
-
-                    if (commands.indexOf('playfromhere') != -1) {
-                        items.push({
-                            name: Globalize.translate('ButtonPlayAllFromHere'),
-                            id: 'playallfromhere',
-                            ironIcon: 'play-arrow'
-                        });
-                    }
-                }
-
-                if (mediaType == 'Video' && AppInfo.supportsExternalPlayers && appSettings.enableExternalPlayers()) {
-                    items.push({
-                        name: Globalize.translate('ButtonPlayExternalPlayer'),
-                        id: 'externalplayer',
-                        ironIcon: 'airplay'
-                    });
-                }
-
-                if (playbackPositionTicks && mediaType != "Audio") {
-                    items.push({
-                        name: Globalize.translate('ButtonResume'),
-                        id: 'resume',
-                        ironIcon: 'play-arrow'
-                    });
-                }
-
-                if (commands.indexOf('trailer') != -1) {
-                    items.push({
-                        name: Globalize.translate('ButtonPlayTrailer'),
-                        id: 'trailer',
-                        ironIcon: 'play-arrow'
-                    });
-                }
-            }
-
-            if (MediaController.canQueueMediaType(mediaType, itemType)) {
-                items.push({
-                    name: Globalize.translate('ButtonQueue'),
-                    id: 'queue',
-                    ironIcon: 'playlist-add'
-                });
-
-                if (commands.indexOf('queuefromhere') != -1) {
-                    items.push({
-                        name: Globalize.translate('ButtonQueueAllFromHere'),
-                        id: 'queueallfromhere',
-                        ironIcon: 'playlist-add'
-                    });
-                }
-            }
-
-            if (commands.indexOf('shuffle') != -1) {
-                items.push({
-                    name: Globalize.translate('ButtonShuffle'),
-                    id: 'shuffle',
-                    ironIcon: 'shuffle'
-                });
-            }
-
-            if (commands.indexOf('record') != -1) {
-                items.push({
-                    name: Globalize.translate('ButtonRecord'),
-                    id: 'record',
-                    ironIcon: 'videocam'
-                });
-            }
-
-            if (commands.indexOf('removefromcollection') != -1) {
-                items.push({
-                    name: Globalize.translate('ButtonRemoveFromCollection'),
-                    id: 'removefromcollection',
-                    ironIcon: 'remove'
-                });
-            }
-
-            if (commands.indexOf('removefromplaylist') != -1) {
-                items.push({
-                    name: Globalize.translate('ButtonRemoveFromPlaylist'),
-                    id: 'removefromplaylist',
-                    ironIcon: 'remove'
-                });
-            }
-
-            if (user.Policy.EnablePublicSharing && commands.indexOf('share') != -1) {
-                items.push({
-                    name: Globalize.translate('ButtonShare'),
-                    id: 'share',
-                    ironIcon: 'share'
-                });
-            }
-
-            if (commands.indexOf('sync') != -1) {
-                items.push({
-                    name: Globalize.translate('ButtonSync'),
-                    id: 'sync',
-                    ironIcon: 'sync'
-                });
-            }
-
-            if (albumid) {
-                items.push({
-                    name: Globalize.translate('ButtonViewAlbum'),
-                    id: 'album',
-                    ironIcon: 'album'
-                });
-            }
-
-            if (artistid) {
-                items.push({
-                    name: Globalize.translate('ButtonViewArtist'),
-                    id: 'artist',
-                    ironIcon: 'person'
-                });
-            }
-
-            var href = card.getAttribute('data-href') || card.href;
-
-            if (!href) {
-                var links = card.getElementsByTagName('a');
-                if (links.length) {
-                    href = links[0].href;
-                }
-            }
-
-            require(['actionsheet'], function (actionsheet) {
-
-                actionsheet.show({
-                    items: items,
-                    positionTo: displayContextItem,
-                    callback: function (id) {
-
-                        switch (id) {
-
-                            case 'addtocollection':
-                                require(['collectionEditor'], function (collectionEditor) {
-
-                                    new collectionEditor().show({
-                                        items: [itemId],
-                                        serverId: serverId
-                                    });
-                                });
-                                break;
-                            case 'playlist':
-                                require(['playlistEditor'], function (playlistEditor) {
-                                    new playlistEditor().show({
-                                        items: [itemId],
-                                        serverId: serverId
-                                    });
-                                });
-                                break;
-                            case 'delete':
-                                LibraryBrowser.deleteItems([itemId]);
-                                break;
-                            case 'download':
-                                {
-                                    require(['fileDownloader'], function (fileDownloader) {
-                                        var downloadHref = ApiClient.getUrl("Items/" + itemId + "/Download", {
-                                            api_key: ApiClient.accessToken()
-                                        });
-
-                                        fileDownloader.download([
-                                        {
-                                            url: downloadHref,
-                                            itemId: itemId,
-                                            serverId: serverId
-                                        }]);
-                                    });
-
-                                    break;
-                                }
-                            case 'edit':
-                                if (itemType == 'Timer') {
-                                    LibraryBrowser.editTimer(itemId);
-                                } else {
-                                    LibraryBrowser.editMetadata(itemId);
-                                }
-                                break;
-                            case 'refresh':
-                                require(['refreshDialog'], function (refreshDialog) {
-                                    new refreshDialog({
-                                        itemIds: [itemId],
-                                        serverId: serverId
-                                    }).show();
-                                });
-                                break;
-                            case 'instantmix':
-                                MediaController.instantMix(itemId);
-                                break;
-                            case 'shuffle':
-                                MediaController.shuffle(itemId);
-                                break;
-                            case 'open':
-                                if (itemType == 'Timer') {
-                                    LibraryBrowser.editTimer(itemId);
-                                } else {
-                                    Dashboard.navigate(href);
-                                }
-                                break;
-                            case 'album':
-                                Dashboard.navigate('itemdetails.html?id=' + albumid);
-                                break;
-                            case 'record':
-                                require(['recordingCreator'], function (recordingCreator) {
-                                    recordingCreator.show(itemId, serverId);
-                                });
-                                break;
-                            case 'artist':
-                                Dashboard.navigate('itemdetails.html?context=music&id=' + artistid);
-                                break;
-                            case 'play':
-                                MediaController.play(itemId);
-                                break;
-                            case 'playallfromhere':
-                                playAllFromHere(index, parentWithClass(card, 'itemsContainer'), 'play');
-                                break;
-                            case 'queue':
-                                MediaController.queue(itemId);
-                                break;
-                            case 'trailer':
-                                ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), itemId).then(function (trailers) {
-                                    MediaController.play({ items: trailers });
-                                });
-                                break;
-                            case 'resume':
-                                MediaController.play({
-                                    ids: [itemId],
-                                    startPositionTicks: playbackPositionTicks
-                                });
-                                break;
-                            case 'queueallfromhere':
-                                playAllFromHere(index, parentWithClass(card, 'itemsContainer'), 'queue');
-                                break;
-                            case 'sync':
-                                require(['syncDialog'], function (syncDialog) {
-                                    syncDialog.showMenu({
-                                        items: [
-                                        {
-                                            Id: itemId
-                                        }]
-                                    });
-                                });
-                                break;
-                            case 'editsubtitles':
-                                LibraryBrowser.editSubtitles(itemId);
-                                break;
-                            case 'editimages':
-                                LibraryBrowser.editImages(itemId);
-                                break;
-                            case 'externalplayer':
-                                LibraryBrowser.playInExternalPlayer(itemId);
-                                break;
-                            case 'canceltimer':
-                                deleteTimer(itemId, parentWithClass(card, 'itemsContainer'));
-                                break;
-                            case 'share':
-                                require(['sharingmanager'], function (sharingManager) {
-                                    sharingManager.showMenu({
-                                        serverId: serverId,
-                                        itemId: itemId
-                                    });
-                                });
-                                break;
-                            case 'removefromplaylist':
-                                var itemsContainer = parentWithClass(card, 'itemsContainer');
-                                if (itemsContainer) {
-                                    itemsContainer.dispatchEvent(new CustomEvent('removefromplaylist', {
-                                        detail: {
-                                            playlistItemId: playlistItemId
-                                        },
-                                        cancelable: false
-                                    }));
-                                }
-                                break;
-                            case 'removefromcollection':
-                                var itemsContainer = parentWithClass(card, 'collectionItems');
-                                if (itemsContainer) {
-                                    itemsContainer.dispatchEvent(new CustomEvent('removefromcollection', {
-                                        detail: {
-                                            itemId: itemId
-                                        },
-                                        cancelable: false
-                                    }));
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                });
-
+                itemContextMenu.show(Object.assign(options || {}, {
+                    item: item,
+                    positionTo: displayContextItem
+                }));
             });
         });
     }
@@ -709,22 +334,6 @@
 
         if (playButton) {
             return onListViewPlayButtonClick(e, playButton);
-        }
-
-        var listviewMenuButton = parentWithClass(e.target, 'listviewMenuButton') || parentWithClass(e.target, 'cardOverlayMoreButton');
-
-        if (listviewMenuButton) {
-            showContextMenu(listviewMenuButton, {});
-            e.stopPropagation();
-            e.preventDefault();
-            return false;
-        }
-
-        var button = parentWithClass(e.target, 'btnUserItemRating');
-        if (button) {
-            e.stopPropagation();
-            e.preventDefault();
-            return false;
         }
 
         var card = parentWithClass(e.target, 'card');
@@ -842,7 +451,11 @@
             }
 
             var id = dataElement.getAttribute('data-itemid');
-            var commands = dataElement.getAttribute('data-commands').split(',');
+            var type = dataElement.getAttribute('data-itemtype');
+
+            if (type == 'Timer') {
+                return;
+            }
 
             var promise1 = ApiClient.getItem(Dashboard.getCurrentUserId(), id);
             var promise2 = Dashboard.getCurrentUser();
@@ -858,7 +471,7 @@
                     card = card.parentNode;
                 }
 
-                innerElem.innerHTML = getOverlayHtml(item, user, card, commands);
+                innerElem.innerHTML = getOverlayHtml(item, user, card);
 
                 var btnPlayItem = innerElem.querySelector('.btnPlayItem');
                 if (btnPlayItem) {
@@ -1413,15 +1026,6 @@
 
             MediaController.instantMix(itemId);
         }
-        else if (action == 'edit') {
-
-            var itemType = elemWithAttributes.getAttribute('data-itemtype');
-            if (itemType == 'Timer') {
-                LibraryBrowser.editTimer(itemId);
-            } else {
-                LibraryBrowser.editMetadata(itemId);
-            }
-        }
 
         e.stopPropagation();
         e.preventDefault();
@@ -1475,7 +1079,7 @@
 
             var categorySyncButtons = page.querySelectorAll('.categorySyncButton');
             for (var i = 0, length = categorySyncButtons.length; i < length; i++) {
-                if (LibraryBrowser.enableSync(item, user)) {
+                if (itemHelper.canSync(user, item)) {
                     categorySyncButtons[i].classList.remove('hide');
                 } else {
                     categorySyncButtons[i].classList.add('hide');

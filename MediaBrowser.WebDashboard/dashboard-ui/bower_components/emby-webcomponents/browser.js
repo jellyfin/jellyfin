@@ -134,7 +134,7 @@
 
     browser.xboxOne = userAgent.toLowerCase().indexOf('xbox') != -1;
     browser.animate = document.documentElement.animate != null;
-    browser.tizen = userAgent.toLowerCase().indexOf('tizen') != -1;
+    browser.tizen = userAgent.toLowerCase().indexOf('tizen') != -1 || userAgent.toLowerCase().indexOf('smarthub') != -1;
     browser.web0s = userAgent.toLowerCase().indexOf('Web0S'.toLowerCase()) != -1;
 
     browser.tv = isTv();

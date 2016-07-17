@@ -1,4 +1,4 @@
-define([], function () {
+define(['apphost'], function (appHost) {
 
     function getDisplayName(item, options) {
 
@@ -49,6 +49,11 @@ define([], function () {
     }
 
     function supportsAddingToCollection(item) {
+
+        if (item.Type == 'Timer') {
+            return false;
+        }
+
         var invalidTypes = ['Person', 'Genre', 'MusicGenre', 'Studio', 'GameGenre', 'BoxSet', 'Playlist', 'UserView', 'CollectionFolder', 'Audio', 'TvChannel', 'Program', 'MusicAlbum', 'Timer'];
 
         return !item.CollectionType && invalidTypes.indexOf(item.Type) == -1 && item.MediaType != 'Photo';
@@ -67,6 +72,58 @@ define([], function () {
     return {
         getDisplayName: getDisplayName,
         supportsAddingToCollection: supportsAddingToCollection,
-        supportsAddingToPlaylist: supportsAddingToPlaylist
+        supportsAddingToPlaylist: supportsAddingToPlaylist,
+
+        canIdentify: function (user, itemType) {
+
+            if (itemType == "Movie" ||
+              itemType == "Trailer" ||
+              itemType == "Series" ||
+              itemType == "Game" ||
+              itemType == "BoxSet" ||
+              itemType == "Person" ||
+              itemType == "Book" ||
+              itemType == "MusicAlbum" ||
+              itemType == "MusicArtist") {
+
+                if (user.Policy.IsAdministrator) {
+
+                    return true;
+                }
+            }
+
+            return false;
+        },
+
+        canEdit: function (user, itemType) {
+
+            if (itemType == "UserRootFolder" || /*itemType == "CollectionFolder" ||*/ itemType == "UserView") {
+                return false;
+            }
+
+            if (user.Policy.IsAdministrator) {
+
+                return true;
+            }
+
+            return false;
+        },
+
+        canSync: function (user, item) {
+
+            if (user && !user.Policy.EnableSync) {
+                return false;
+            }
+
+            return item.SupportsSync;
+        },
+
+        canShare: function (user, item) {
+
+            if (item.Type == 'Timer') {
+                return false;
+            }
+            return user.Policy.EnablePublicSharing && appHost.supports('sharing');
+        }
     };
 });

@@ -1,4 +1,4 @@
-﻿<div id="playlistsPage" data-dom-cache="true" data-role="page" class="page libraryPage noSecondaryNavPage" data-require="scripts/playlists" data-title="${HeaderPlaylists}">
+﻿<div id="playlistsPage" data-dom-cache="true" data-role="page" class="page libraryPage noSecondaryNavPage" data-require="scripts/playlists,emby-itemscontainer" data-title="${HeaderPlaylists}">
 
     <div data-role="content">
         <div class="viewSettings">
@@ -7,7 +7,7 @@
                 &nbsp;
             </div>
         </div>
-        <div id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
+        <div is="emby-itemscontainer" id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
         <div class="noItemsMessage hide" style="text-align: center;">
             <p>${MessageNoPlaylistsAvailable}</p>
         </div>

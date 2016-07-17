@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Extensions;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.Serialization;
 
@@ -9,7 +8,7 @@ namespace MediaBrowser.Model.Dto
     /// This is used by the api to get information about a Person within a BaseItem
     /// </summary>
     [DebuggerDisplay("Name = {Name}, Role = {Role}, Type = {Type}")]
-    public class BaseItemPerson : IHasPropertyChangedEvent
+    public class BaseItemPerson
     {
         /// <summary>
         /// Gets or sets the name.
@@ -53,10 +52,5 @@ namespace MediaBrowser.Model.Dto
                 return PrimaryImageTag != null;
             }
         }
-
-        /// <summary>
-        /// Occurs when [property changed].
-        /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

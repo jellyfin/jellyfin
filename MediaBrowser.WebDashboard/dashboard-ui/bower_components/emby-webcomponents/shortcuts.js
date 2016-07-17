@@ -1,7 +1,11 @@
 define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'globalize', 'loading'], function (playbackManager, inputManager, connectionManager, embyRouter, globalize, loading) {
 
-    function playAllFromHere(card, serverId) {
-        var cards = card.parentNode.querySelectorAll('.itemAction[data-id]');
+    function playAllFromHere(card, serverId, queue) {
+
+        var parent = card.parentNode;
+        var className = card.classList.length ? ('.' + card.classList[0]) : '';
+        var cards = parent.querySelectorAll(className + '[data-id]');
+
         var ids = [];
 
         var foundCard = false;
@@ -13,10 +17,22 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
                 ids.push(cards[i].getAttribute('data-id'));
             }
         }
-        playbackManager.play({
-            ids: ids,
-            serverId: serverId
-        });
+
+        if (!ids.length) {
+            return;
+        }
+
+        if (queue) {
+            playbackManager.queue({
+                ids: ids,
+                serverId: serverId
+            });
+        } else {
+            playbackManager.play({
+                ids: ids,
+                serverId: serverId
+            });
+        }
     }
 
     function showSlideshow(startItemId, serverId) {
@@ -75,7 +91,14 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
     }
 
     function executeAction(card, action) {
+
         var id = card.getAttribute('data-id');
+
+        if (!id) {
+            card = parentWithAttribute(card, 'data-id');
+            id = card.getAttribute('data-id');
+        }
+
         var serverId = card.getAttribute('data-serverid');
         var type = card.getAttribute('data-type');
         var isfolder = card.getAttribute('data-isfolder') == 'true';
@@ -108,8 +131,12 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
             playAllFromHere(card, serverId);
         }
 
-        else if (action == 'setplaylistindex') {
+        else if (action == 'queueallfromhere') {
+            playAllFromHere(card, serverId, true);
+        }
 
+        else if (action == 'setplaylistindex') {
+            playbackManager.currentPlaylistIndex(parseInt(card.getAttribute('data-index')));
         }
 
         else if (action == 'record') {
@@ -197,12 +224,32 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         var card = parentWithClass(e.target, 'itemAction');
 
         if (card) {
-            var action = card.getAttribute('data-action');
+
+            var actionElement = card;
+            var action = actionElement.getAttribute('data-action');
+
+            if (!action) {
+                actionElement = parentWithAttribute(actionElement, 'data-action');
+                action = actionElement.getAttribute('data-action');
+            }
 
             if (action) {
                 executeAction(card, action);
             }
         }
+    }
+
+    function parentWithAttribute(elem, name) {
+
+        while (!elem.getAttribute(name)) {
+            elem = elem.parentNode;
+
+            if (!elem) {
+                return null;
+            }
+        }
+
+        return elem;
     }
 
     function parentWithClass(elem, className) {
@@ -242,7 +289,8 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
     return {
         on: on,
-        off: off
+        off: off,
+        execute: executeAction
     };
 
 });

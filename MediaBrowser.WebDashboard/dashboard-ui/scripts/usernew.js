@@ -98,7 +98,7 @@
                 });
 
             ApiClient.updateUserPolicy(user.Id, user.Policy).then(function () {
-                Dashboard.navigate("userprofiles.html");
+                Dashboard.navigate("useredit.html?userId=" + user.Id);
             });
 
         }, function (response) {

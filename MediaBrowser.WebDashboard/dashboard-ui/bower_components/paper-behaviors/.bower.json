@@ -1,6 +1,6 @@
 {
   "name": "paper-behaviors",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Common behaviors across the paper elements",
   "authors": [
     "The Polymer Authors"
@@ -39,11 +39,11 @@
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
   "ignore": [],
-  "_release": "1.0.11",
+  "_release": "1.0.12",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.11",
-    "commit": "e3c1ab0c72905b58fb4d9adc2921ea73b5c085a5"
+    "tag": "v1.0.12",
+    "commit": "424919089ce3a68dfac1de17e6a56f4e09048e95"
   },
   "_source": "git://github.com/PolymerElements/paper-behaviors.git",
   "_target": "^1.0.0",

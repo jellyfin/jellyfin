@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Connect;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Users;
 using System;
 using System.ComponentModel;
@@ -13,7 +12,7 @@ namespace MediaBrowser.Model.Dto
     /// Class UserDto
     /// </summary>
     [DebuggerDisplay("Name = {Name}, ID = {Id}, HasPassword = {HasPassword}")]
-    public class UserDto : IHasPropertyChangedEvent, IItemDto, IHasServerId
+    public class UserDto : IItemDto, IHasServerId
     {
         /// <summary>
         /// Gets or sets the name.
@@ -140,11 +139,6 @@ namespace MediaBrowser.Model.Dto
             Configuration = new UserConfiguration();
             Policy = new UserPolicy();
         }
-
-        /// <summary>
-        /// Occurs when [property changed].
-        /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
 
         public override string ToString()
         {
