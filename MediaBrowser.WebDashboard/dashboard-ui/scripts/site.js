@@ -2039,6 +2039,9 @@ var AppInfo = {};
                 },
                 instantMix: function (item) {
                     return MediaController.instantMix(item);
+                },
+                shuffle: function (item) {
+                    return MediaController.shuffle(item);
                 }
             };
         });
