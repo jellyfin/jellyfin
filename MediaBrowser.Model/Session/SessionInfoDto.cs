@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,7 +7,7 @@ using System.Diagnostics;
 namespace MediaBrowser.Model.Session
 {
     [DebuggerDisplay("Client = {Client}, Username = {UserName}")]
-    public class SessionInfoDto : IHasPropertyChangedEvent
+    public class SessionInfoDto
     {
         /// <summary>
         /// Gets or sets the supported commands.
@@ -116,8 +115,6 @@ namespace MediaBrowser.Model.Session
 
         public TranscodingInfo TranscodingInfo { get; set; }
         
-        public event PropertyChangedEventHandler PropertyChanged;
-
         public SessionInfoDto()
         {
             AdditionalUsers = new List<SessionUserInfo>();

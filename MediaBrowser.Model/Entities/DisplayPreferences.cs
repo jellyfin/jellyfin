@@ -1,21 +1,14 @@
 ﻿using MediaBrowser.Model.Drawing;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
     /// Defines the display preferences for any item that supports them (usually Folders)
     /// </summary>
-    public class DisplayPreferences : IHasPropertyChangedEvent
+    public class DisplayPreferences
     {
-        /// <summary>
-        /// Occurs when [property changed].
-        /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
-        
         /// <summary>
         /// The image scale
         /// </summary>

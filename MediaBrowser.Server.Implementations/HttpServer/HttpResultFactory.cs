@@ -331,7 +331,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 options.ContentType = MimeTypes.GetMimeType(path);
             }
 
-            options.DateLastModified = _fileSystem.GetLastWriteTimeUtc(path);
+            if (!options.DateLastModified.HasValue)
+            {
+                options.DateLastModified = _fileSystem.GetLastWriteTimeUtc(path);
+            }
+
             var cacheKey = path + options.DateLastModified.Value.Ticks;
 
             options.CacheKey = cacheKey.GetMD5();
