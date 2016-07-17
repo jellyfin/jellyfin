@@ -1,6 +1,8 @@
 ﻿define(['appStorage'], function (appStorage) {
 
     var currentDisplayInfo;
+    var datetime;
+
     function mirrorItem(info) {
 
         var item = info.item;
@@ -614,6 +616,13 @@
 
         self.canPlay = function (item) {
 
+            if (item.Type == "Program") {
+                if (new Date().getTime() > datetime.parseISO8601Date(item.EndDate).getTime() || new Date().getTime() < datetime.parseISO8601Date(item.StartDate).getTime()) {
+                    return false;
+                }
+                return true;
+            }
+
             return self.canPlayByAttributes(item.Type, item.MediaType, item.PlayAccess, item.LocationType);
         };
 
@@ -1052,6 +1061,10 @@
     MediaController.init = function () {
 
         console.log('Beginning MediaController.init');
+        require(['datetime'], function (datetimeInstance) {
+            datetime = datetimeInstance;
+        });
+
         if (window.ApiClient) {
             initializeApiClient(window.ApiClient);
         }

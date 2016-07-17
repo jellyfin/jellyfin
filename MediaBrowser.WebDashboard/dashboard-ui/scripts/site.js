@@ -2032,6 +2032,9 @@ var AppInfo = {};
                 },
                 canQueueMediaType: function(mediaType) {
                     return MediaController.canQueueMediaType(mediaType);
+                },
+                canPlay: function (item) {
+                    return MediaController.canPlay(item);
                 }
             };
         });

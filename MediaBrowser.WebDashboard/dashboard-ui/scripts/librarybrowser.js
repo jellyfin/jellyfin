@@ -1,4 +1,4 @@
-﻿define(['scrollHelper', 'viewManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'itemHelper', 'mediaInfo', 'scroller', 'scrollStyles'], function (scrollHelper, viewManager, appSettings, appStorage, appHost, datetime, itemHelper, mediaInfo, scroller) {
+﻿define(['scrollHelper', 'viewManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'itemHelper', 'mediaInfo', 'scroller', 'indicators', 'scrollStyles'], function (scrollHelper, viewManager, appSettings, appStorage, appHost, datetime, itemHelper, mediaInfo, scroller, indicators) {
 
     function parentWithClass(elem, className) {
 
@@ -15,7 +15,7 @@
 
     function fadeInRight(elem) {
 
-        var pct = browserInfo.mobile ? '2.5%' : '0.5%';
+        var pct = browserInfo.mobile ? '3%' : '0.5%';
 
         var keyframes = [
           { opacity: '0', transform: 'translate3d(' + pct + ', 0, 0)', offset: 0 },
@@ -901,6 +901,16 @@
                     value: item.Id
                 });
 
+                atts.push({
+                    name: 'serverid',
+                    value: item.ServerId
+                });
+
+                atts.push({
+                    name: 'id',
+                    value: item.Id
+                });
+
                 if (options.context) {
                     atts.push({
                         name: 'context',
@@ -1553,7 +1563,7 @@
                         html += LibraryBrowser.getOfflineIndicatorHtml(item);
                     }
                 } else if (options.showUnplayedIndicator !== false) {
-                    html += LibraryBrowser.getPlayedIndicatorHtml(item);
+                    html += indicators.getPlayedIndicatorHtml(item);
                 } else if (options.showChildCountIndicator) {
                     html += LibraryBrowser.getGroupCountIndicator(item);
                 }
@@ -1597,7 +1607,7 @@
                     html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayPlayButton autoSize" onclick="return false;"><i class="md-icon">play_arrow</i></button></div>';
                 }
                 if (options.overlayMoreButton) {
-                    html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayMoreButton autoSize" onclick="return false;"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button></div>';
+                    html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayMoreButton menuButton autoSize" onclick="return false;"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button></div>';
                 }
 
                 // cardScalable
@@ -1622,7 +1632,7 @@
 
                 if (options.cardLayout) {
                     html += '<div class="cardButtonContainer">';
-                    html += '<button is="paper-icon-button-light" class="listviewMenuButton btnCardOptions autoSize"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button>';
+                    html += '<button is="paper-icon-button-light" class="menuButton btnCardOptions autoSize"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button>';
                     html += "</div>";
                 }
 
@@ -1907,23 +1917,6 @@
                     }
 
                     return '<div class="posterRibbon missingPosterRibbon">' + Globalize.translate('HeaderMissing') + '</div>';
-                }
-
-                return '';
-            },
-
-            getPlayedIndicatorHtml: function (item) {
-
-                if (item.Type == "Series" || item.Type == "Season" || item.Type == "BoxSet" || item.MediaType == "Video" || item.MediaType == "Game" || item.MediaType == "Book") {
-                    if (item.UserData.UnplayedItemCount) {
-                        return '<div class="playedIndicator">' + item.UserData.UnplayedItemCount + '</div>';
-                    }
-
-                    if (item.Type != 'TvChannel') {
-                        if (item.UserData.PlayedPercentage && item.UserData.PlayedPercentage >= 100 || (item.UserData && item.UserData.Played)) {
-                            return '<div class="playedIndicator"><i class="md-icon">check</i></div>';
-                        }
-                    }
                 }
 
                 return '';

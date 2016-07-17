@@ -12,6 +12,8 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
         var serverId = item.ServerId;
         var apiClient = connectionManager.getApiClient(serverId);
 
+        var canPlay = playbackManager.canPlay(item);
+
         return apiClient.getCurrentUser().then(function (user) {
 
             var commands = [];
@@ -42,7 +44,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
                     if (!isTheater) {
                         commands.push({
-                            name: globalize.translate('sharedcomponents#Edit'),
+                            name: globalize.translate('sharedcomponents#EditInfo'),
                             id: 'edit'
                         });
                         commands.push({
@@ -85,7 +87,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
             }
 
             if (options.open !== false) {
-                if (item.Type != 'Timer') {
+                if (item.Type != 'Timer' && item.Type != 'Audio') {
                     commands.push({
                         name: globalize.translate('sharedcomponents#Open'),
                         id: 'open'
@@ -93,33 +95,35 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 }
             }
 
-            if (options.play !== false) {
-                commands.push({
-                    name: globalize.translate('sharedcomponents#Play'),
-                    id: 'resume'
-                });
-            }
-
-            if (options.playAllFromHere) {
-                commands.push({
-                    name: globalize.translate('sharedcomponents#PlayAllFromHere'),
-                    id: 'playallfromhere'
-                });
-            }
-
-            if (playbackManager.canQueueMediaType(item.MediaType)) {
-                if (options.queue !== false) {
+            if (canPlay) {
+                if (options.play !== false) {
                     commands.push({
-                        name: globalize.translate('sharedcomponents#Queue'),
-                        id: 'queue'
+                        name: globalize.translate('sharedcomponents#Play'),
+                        id: 'resume'
                     });
                 }
 
-                if (options.queueAllFromHere) {
+                if (options.playAllFromHere) {
                     commands.push({
-                        name: globalize.translate('sharedcomponents#QueueAllFromHere'),
-                        id: 'queueallfromhere'
+                        name: globalize.translate('sharedcomponents#PlayAllFromHere'),
+                        id: 'playallfromhere'
                     });
+                }
+
+                if (playbackManager.canQueueMediaType(item.MediaType)) {
+                    if (options.queue !== false) {
+                        commands.push({
+                            name: globalize.translate('sharedcomponents#Queue'),
+                            id: 'queue'
+                        });
+                    }
+
+                    if (options.queueAllFromHere) {
+                        commands.push({
+                            name: globalize.translate('sharedcomponents#QueueAllFromHere'),
+                            id: 'queueallfromhere'
+                        });
+                    }
                 }
             }
 
@@ -139,6 +143,20 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                         id: 'refresh'
                     });
                 }
+            }
+
+            if (item.PlaylistItemId && options.playlistId) {
+                commands.push({
+                    name: globalize.translate('sharedcomponents#RemoveFromPlaylist'),
+                    id: 'removefromplaylist'
+                });
+            }
+
+            if (options.collectionId) {
+                commands.push({
+                    name: globalize.translate('sharedcomponents#RemoveFromCollection'),
+                    id: 'removefromcollection'
+                });
             }
 
             if (options.share !== false) {
@@ -197,7 +215,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
         };
     }
 
-    function executeCommand(item, id) {
+    function executeCommand(item, id, options) {
 
         var itemId = item.Id;
         var serverId = item.ServerId;
@@ -378,6 +396,37 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                         getResolveFunction(resolve, id)();
                         break;
                     }
+                case 'removefromplaylist':
+
+                    apiClient.ajax({
+
+                        url: apiClient.getUrl('Playlists/' + options.playlistId + '/Items', {
+                            EntryIds: [item.PlaylistItemId].join(',')
+                        }),
+
+                        type: 'DELETE'
+
+                    }).then(function () {
+
+                        getResolveFunction(resolve, id, true)();
+                    });
+
+                    break;
+                case 'removefromcollection':
+
+                    apiClient.ajax({
+                        type: "DELETE",
+                        url: apiClient.getUrl("Collections/" + options.collectionId + "/Items", {
+
+                            Ids: [item.Id].join(',')
+                        })
+
+                    }).then(function () {
+
+                        getResolveFunction(resolve, id, true)();
+                    });
+
+                    break;
                 default:
                     reject();
                     break;
@@ -464,7 +513,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                         positionTo: options.positionTo
 
                     }).then(function (id) {
-                        executeCommand(options.item, id).then(resolve);
+                        executeCommand(options.item, id, options).then(resolve);
                     }, reject);
                 });
             });

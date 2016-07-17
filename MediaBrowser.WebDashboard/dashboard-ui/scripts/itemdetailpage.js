@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'scrollStyles'], function (layoutManager, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper) {
+﻿define(['layoutManager', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'scrollStyles', 'emby-itemscontainer'], function (layoutManager, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper) {
 
     var currentItem;
 
@@ -1133,7 +1133,7 @@
         html += '<button class="btnAddToCollection autoSize" type="button" is="paper-icon-button-light" style="margin-left:1em;"><i class="md-icon" icon="add">add</i></button>';
         html += '</div>';
 
-        html += '<div class="detailSectionContent itemsContainer">';
+        html += '<div is="emby-itemscontainer" class="detailSectionContent itemsContainer" data-collectionid="' + parentItem.Id + '">';
 
         var shape = type.type == 'MusicAlbum' ? 'detailPageSquare' : 'detailPagePortrait';
 
@@ -1163,26 +1163,6 @@
                     html: Globalize.translate('AddItemToCollectionHelp') + '<br/><br/><a target="_blank" href="https://github.com/MediaBrowser/Wiki/wiki/Collections">' + Globalize.translate('ButtonLearnMore') + '</a>'
                 });
             });
-        });
-    }
-
-    function removeFromCollection(page, parentItem, itemIds) {
-
-        Dashboard.showLoadingMsg();
-
-        var url = ApiClient.getUrl("Collections/" + parentItem.Id + "/Items", {
-
-            Ids: itemIds.join(',')
-        });
-
-        ApiClient.ajax({
-            type: "DELETE",
-            url: url
-
-        }).then(function () {
-
-            renderChildren(page, parentItem);
-            Dashboard.hideLoadingMsg();
         });
     }
 
@@ -2195,10 +2175,9 @@
             }
         });
 
-        view.querySelector('.collectionItems').addEventListener('removefromcollection', function (e) {
+        view.querySelector('.collectionItems').addEventListener('needsrefresh', function (e) {
 
-            var itemId = e.detail.itemId;
-            removeFromCollection(view, currentItem, [itemId]);
+            renderChildren(view, currentItem);
         });
 
         view.querySelector('.detailImageContainer').addEventListener('click', function (e) {

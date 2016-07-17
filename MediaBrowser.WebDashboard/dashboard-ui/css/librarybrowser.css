@@ -881,11 +881,11 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     font-size: 200%;
 }
 
-.playedIndicator + .syncIndicator {
+.playedIndicator + .syncIndicator, .countIndicator + .syncIndicator {
     top: 32px;
 }
 
-.card .playedIndicator {
+.card .playedIndicator, .card .countIndicator {
     position: absolute;
     top: 5px;
     right: 5px;

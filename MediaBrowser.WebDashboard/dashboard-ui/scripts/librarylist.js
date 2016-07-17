@@ -336,22 +336,6 @@
             return onListViewPlayButtonClick(e, playButton);
         }
 
-        var listviewMenuButton = parentWithClass(e.target, 'listviewMenuButton') || parentWithClass(e.target, 'cardOverlayMoreButton');
-
-        if (listviewMenuButton) {
-            showContextMenu(listviewMenuButton, {});
-            e.stopPropagation();
-            e.preventDefault();
-            return false;
-        }
-
-        var button = parentWithClass(e.target, 'btnUserItemRating');
-        if (button) {
-            e.stopPropagation();
-            e.preventDefault();
-            return false;
-        }
-
         var card = parentWithClass(e.target, 'card');
 
         if (card) {

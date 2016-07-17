@@ -105,10 +105,12 @@
   "Shuffle": "Shuffle",
   "Identify": "Identify",
   "EditImages": "Edit Images",
+  "EditInfo": "Edit Info",
   "Sync": "Sync",
   "InstantMix": "Instant Mix",
   "ViewAlbum": "View Album",
   "ViewArtist": "View Artist",
   "QueueAllFromHere": "Queue All from Here",
-  "PlayAllFromHere": "Play All from Here"
+  "PlayAllFromHere": "Play All from Here",
+  "RemoveFromPlaylist": "Remove from Playlist"
 }

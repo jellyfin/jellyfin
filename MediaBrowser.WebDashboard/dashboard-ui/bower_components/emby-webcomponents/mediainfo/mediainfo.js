@@ -237,6 +237,10 @@ define(['datetime', 'globalize', 'embyRouter', 'material-icons', 'css!./mediainf
             miscInfo.push(item.Width + "x" + item.Height);
         }
 
+        if (item.Type == 'Audio' && item.Container) {
+            miscInfo.push(item.Container);
+        }
+
         html += miscInfo.map(function (m) {
             return getMediaInfoItem(m);
         }).join('');

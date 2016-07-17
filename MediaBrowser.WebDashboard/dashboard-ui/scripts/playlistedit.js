@@ -73,6 +73,7 @@
             }
 
             var elem = page.querySelector('#childrenContent .itemsContainer');
+            elem.setAttribute('data-playlistid', item.Id);
             elem.innerHTML = html;
 
             var listParent = elem;
@@ -135,23 +136,6 @@
         });
     }
 
-    function removeFromPlaylist(page, item, ids) {
-
-        ApiClient.ajax({
-
-            url: ApiClient.getUrl('Playlists/' + item.Id + '/Items', {
-                EntryIds: ids.join(',')
-            }),
-
-            type: 'DELETE'
-
-        }).then(function () {
-
-            reloadItems(page, item);
-        });
-
-    }
-
     function showDragAndDropHelp() {
 
         if (AppInfo.isTouchPreferred) {
@@ -175,12 +159,6 @@
     function init(page, item) {
 
         var elem = page.querySelector('#childrenContent .itemsContainer');
-
-        elem.addEventListener('removefromplaylist', function (e) {
-
-            var playlistItemId = e.detail.playlistItemId;
-            removeFromPlaylist(page, item, [playlistItemId]);
-        });
 
         elem.addEventListener('needsrefresh', function () {
 

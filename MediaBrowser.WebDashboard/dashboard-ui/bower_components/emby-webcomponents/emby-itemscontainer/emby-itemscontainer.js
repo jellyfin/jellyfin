@@ -40,9 +40,17 @@
         return apiClient.getItem(apiClient.getCurrentUserId(), id);
     }
 
-    function showContextMenu(button) {
+    function showContextMenu(button, itemsContainer) {
 
         getItem(button).then(function (item) {
+
+            var playlistId = itemsContainer.getAttribute('data-playlistid');
+            var collectionId = itemsContainer.getAttribute('data-collectionid');
+
+            if (playlistId) {
+                var elem = parentWithAttribute(button, 'data-playlistitemid');
+                item.PlaylistItemId = elem ? elem.getAttribute('data-playlistitemid') : null;
+            }
 
             require(['itemContextMenu'], function (itemContextMenu) {
                 itemContextMenu.show({
@@ -52,12 +60,22 @@
                     queue: true,
                     playAllFromHere: !item.IsFolder,
                     queueAllFromHere: !item.IsFolder,
-                    identify: false
+                    identify: false,
+                    playlistId: playlistId,
+                    collectionId: collectionId
 
-                }).then(function(result) {
+                }).then(function (result) {
 
                     if (result.command == 'playallfromhere' || result.command == 'queueallfromhere') {
                         itemShortcuts.execute(button, result.command);
+                    }
+                    else if (result.command == 'removefromplaylist' || result.command == 'removefromcollection') {
+
+                        itemsContainer.dispatchEvent(new CustomEvent('needsrefresh', {
+                            detail: {},
+                            cancelable: false,
+                            bubbles: true
+                        }));
                     }
                 });
             });
@@ -66,9 +84,11 @@
 
     function onClick(e) {
 
+        var itemsContainer = this;
+
         var menuButton = parentWithClass(e.target, 'menuButton');
         if (menuButton) {
-            showContextMenu(menuButton);
+            showContextMenu(menuButton, itemsContainer);
             e.stopPropagation();
             return false;
         }
