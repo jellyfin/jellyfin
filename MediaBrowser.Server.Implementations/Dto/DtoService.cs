@@ -893,6 +893,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.LockData = item.IsLocked;
                 dto.ForcedSortName = item.ForcedSortName;
             }
+            dto.Container = item.Container;
 
             var hasBudget = item as IHasBudget;
             if (hasBudget != null)

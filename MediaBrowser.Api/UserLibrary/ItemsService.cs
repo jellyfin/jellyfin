@@ -101,7 +101,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
         
-            var result = await GetItemsToSerialize(request, user).ConfigureAwait(false);
+            var result = await GetQueryResult(request, user).ConfigureAwait(false);
 
             if (result == null)
             {
@@ -135,7 +135,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        private async Task<QueryResult<BaseItem>> GetItemsToSerialize(GetItems request, User user)
+        private async Task<QueryResult<BaseItem>> GetQueryResult(GetItems request, User user)
         {
             var item = string.IsNullOrEmpty(request.ParentId) ?
                 user == null ? _libraryManager.RootFolder : user.RootFolder :

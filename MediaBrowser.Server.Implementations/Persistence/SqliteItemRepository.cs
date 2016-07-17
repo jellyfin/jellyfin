@@ -2144,7 +2144,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     if (query.User != null)
                     {
-                        query.SortBy = new[] { "SimilarityScore", ItemSortBy.IsPlayed, ItemSortBy.Random };
+                        query.SortBy = new[] { ItemSortBy.IsPlayed, "SimilarityScore", ItemSortBy.Random };
                     }
                     else
                     {
