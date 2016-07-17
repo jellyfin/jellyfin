@@ -131,7 +131,7 @@
                 break;
             case "LockDataImage":
                 if (rRow.HasLockData) {
-                    html += '<iron-icon icon="lock" style="height:18px"></iron-icon>';
+                    html += '<i class="md-icon">lock</i>';
                 }
                 break;
             case "TagsPrimaryImage":
@@ -169,11 +169,11 @@
                 break;
             case "StatusImage":
                 if (rRow.HasLockData) {
-                    html += '<iron-icon icon="lock" style="height:18px"></iron-icon>';
+                    html += '<i class="md-icon">lock</i>';
                 }
 
                 if (!rRow.HasLocalTrailer && rRow.RowType === "Movie") {
-                    html += '<iron-icon icon="videocam" title="Missing local trailer." style="height:18px"></iron-icon>';
+                    html += '<i title="Missing local trailer." class="md-icon">videocam</i>';
                 }
 
                 if (!rRow.HasImageTagsPrimary) {

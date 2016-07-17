@@ -1,4 +1,4 @@
-﻿define(['events', 'libraryBrowser', 'imageLoader'], function (events, libraryBrowser, imageLoader) {
+﻿define(['events', 'libraryBrowser', 'imageLoader', 'listView', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, listView) {
 
     return function (view, params, tabContent) {
 
@@ -68,10 +68,9 @@
                     filterButton: false
                 });
 
-                var html = LibraryBrowser.getListViewHtml({
+                var html = listView.getListViewHtml({
                     items: result.Items,
-                    showIndex: true,
-                    defaultAction: 'play',
+                    action: 'playallfromhere',
                     smallIcon: true
                 });
 

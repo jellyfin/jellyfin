@@ -881,33 +881,19 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     font-size: 200%;
 }
 
-.playedIndicator + .syncIndicator {
+.playedIndicator + .syncIndicator, .countIndicator + .syncIndicator {
     top: 32px;
 }
 
-.playedIndicator {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.card .playedIndicator, .card .countIndicator {
     position: absolute;
     top: 5px;
     right: 5px;
-    text-align: center;
-    vertical-align: middle;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    color: #fff;
-    background: rgb(82, 181, 75);
-    background: rgba(82, 181, 75, .95);
-    line-height: 21px;
-    line-height: initial;
-    font-weight: 500;
 }
 
-    .playedIndicator i, .syncIndicator i {
-        font-size: 180%;
-    }
+.syncIndicator i {
+    font-size: 180%;
+}
 
 .mediaSourceIndicator {
     display: block;
@@ -949,10 +935,17 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-right: 5px;
 }
 
-    /* Polyfill */
-    .itemProgressBar[role]:after {
-        background-image: none; /* removes default background from polyfill */
-    }
+/* Undo these to original */
+.listItem .itemProgressBar {
+    width: auto;
+    margin: 0;
+    height: .56vh;
+}
+
+/* Polyfill */
+.itemProgressBar[role]:after {
+    background-image: none; /* removes default background from polyfill */
+}
 
 /*
  * Background of the progress bar background
@@ -1169,33 +1162,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
     .channelHeader a {
         text-decoration: none;
-    }
-
-.itemsListview {
-    margin: 0 auto !important;
-    max-width: 1000px;
-    background-color: transparent !important;
-    box-shadow: none !important;
-}
-
-    .itemsListview .listItem {
-        border-bottom: 1px solid #2a2a2a;
-    }
-
-    .itemsListview .ui-li-count {
-        right: 1em;
-        top: 70%;
-        background: rgba(82, 181, 75, .8);
-        border: 0;
-    }
-
-    .itemsListview .playedIndicator {
-        left: 55px;
-        top: 2px;
-    }
-
-    .itemsListview .syncIndicator, .itemsListview .pieIndicator {
-        left: 55px;
     }
 
 @media all and (max-width: 1200px) {

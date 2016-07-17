@@ -2384,6 +2384,6 @@
   "UnzipFFmpegFile": "Unzip the downloaded file to a folder of your choice.",
   "OptionUseSystemInstalledVersion": "Use system installed version",
   "OptionUseMyCustomVersion": "Use a custom version",
-  "FFmpegSavePathNotFound": "We're unable to locaate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again.",
+  "FFmpegSavePathNotFound": "We're unable to locate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again.",
   "XmlTvPremiere": "By default, Emby will import {0} hours of guide data. Importing unlimited data requires an active Emby Premiere subscription."
 }

@@ -13,52 +13,46 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-button-behavior.html">
 
 <dom-module id="paper-button">
-
-  <style>
-
-    :host {
-      display: inline-block;
-      position: relative;
-      background-color: #4285F4;
-      color: #fff;
-      border-radius: 3px;
-      text-transform: uppercase;
-      outline: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      -webkit-user-select: none;
-      user-select: none;
-      cursor: pointer;
-    }
-
-    paper-material {
-      border-radius: inherit;
-      padding: 16px;
-    }
-
-    :host([disabled]) {
-      background-color: #888;
-      pointer-events: none;
-    }
-
-    :host([active]),
-    :host([pressed]) {
-      background-color: #3367D6;
-      box-shadow: inset 0 3px 5px rgba(0,0,0,.2);
-    }
-
-  </style>
-
   <template>
+    <style>
+      :host {
+        display: inline-block;
+        position: relative;
+        background-color: #4285F4;
+        color: #fff;
+        border-radius: 3px;
+        text-transform: uppercase;
+        outline: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        -webkit-user-select: none;
+        user-select: none;
+        cursor: pointer;
+      }
+
+      paper-material {
+        border-radius: inherit;
+        padding: 16px;
+      }
+
+      :host([disabled]) {
+        background-color: #888;
+        pointer-events: none;
+      }
+
+      :host([active]),
+      :host([pressed]) {
+        background-color: #3367D6;
+        box-shadow: inset 0 3px 5px rgba(0,0,0,.2);
+      }
+    </style>
 
     <paper-material class="content" elevation="[[_elevation]]" animated>
       <content></content>
     </paper-material>
-
   </template>
 
   <script>
-
     Polymer({
       is: 'paper-button',
 
@@ -66,7 +60,5 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         Polymer.PaperButtonBehavior
       ]
     });
-
   </script>
-
 </dom-module>

@@ -64,7 +64,7 @@
 
             if (positive && positive.length > 0) {
 
-                html += '<div data-role="collapsible" data-collapsed="true" style="margin-top: 2em;" >';
+                html += '<div style="margin-top: 2em;" >';
                 html += '<h3>' + Globalize.translate('HeaderLatestReviews') + '</h3>';
 
                 html += "<div><br/>";

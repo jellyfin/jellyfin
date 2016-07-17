@@ -1,4 +1,4 @@
-﻿define(['browser', 'datetime', 'libraryBrowser'], function (browser, datetime, libraryBrowser) {
+﻿define(['browser', 'datetime', 'libraryBrowser', 'listView'], function (browser, datetime, libraryBrowser, listView) {
 
     function showSlideshowMenu(context) {
         require(['scripts/slideshow'], function () {
@@ -403,7 +403,7 @@
 
             //}).then(function (result) {
 
-            //    html += LibraryBrowser.getListViewHtml({
+            //    html += listView.getListViewHtml({
             //        items: result.Items,
             //        smallIcon: true
             //    });
@@ -411,9 +411,10 @@
             //    page(".playlist").html(html).lazyChildren();
             //});
 
-            html += libraryBrowser.getListViewHtml({
+            html += listView.getListViewHtml({
                 items: MediaController.playlist(),
-                smallIcon: true
+                smallIcon: true,
+                action: 'setplaylistindex'
             });
 
             playlistNeedsRefresh = false;
@@ -555,43 +556,6 @@
             return elem;
         }
 
-        function onContextClick(e) {
-
-            var lnkPlayFromIndex = parentWithClass(e.target, 'lnkPlayFromIndex');
-            if (lnkPlayFromIndex != null) {
-                var index = parseInt(lnkPlayFromIndex.getAttribute('data-index'));
-
-                MediaController.currentPlaylistIndex(index);
-                loadPlaylist(context);
-
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-            var lnkRemoveFromPlaylist = parentWithClass(e.target, 'lnkRemoveFromPlaylist');
-            if (lnkRemoveFromPlaylist != null) {
-                var index = parseInt(lnkRemoveFromPlaylist.getAttribute('data-index'));
-
-                MediaController.removeFromPlaylist(index);
-                loadPlaylist(context);
-
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-
-            var mediaItem = parentWithClass(e.target, 'mediaItem');
-            if (mediaItem != null) {
-                var info = libraryBrowser.getListItemInfo(mediaItem);
-
-                MediaController.currentPlaylistIndex(info.index);
-
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-        }
-
         function onBtnCommandClick() {
             if (currentPlayer) {
 
@@ -711,8 +675,6 @@
 
                 return datetime.getDisplayRunningTime(ticks);
             };
-
-            context.addEventListener('click', onContextClick);
         }
 
         function onPlayerChange() {

@@ -1,4 +1,4 @@
-﻿define(['appStorage', 'jQuery'], function (appStorage, $) {
+﻿define(['appStorage', 'jQuery', 'listView'], function (appStorage, $, listView) {
 
     var data = {};
     function getPageData() {
@@ -60,45 +60,38 @@
 
             if (view == "List") {
 
-                html = LibraryBrowser.getListViewHtml({
+                html = listView.getListViewHtml({
                     items: result.Items,
                     sortBy: query.SortBy,
                     showIndex: false,
                     showRemoveFromPlaylist: true,
                     playFromHere: true,
-                    defaultAction: 'playallfromhere',
-                    smallIcon: true
-
+                    action: 'playallfromhere',
+                    smallIcon: true,
+                    dragHandle: true
                 });
             }
 
             var elem = page.querySelector('#childrenContent .itemsContainer');
+            elem.setAttribute('data-playlistid', item.Id);
             elem.innerHTML = html;
 
-            var listItems = [];
-            var elems = elem.querySelectorAll('.listItem');
-            for (var i = 0, length = elems.length; i < length; i++) {
-                listItems.push(elems[i]);
-            }
+            var listParent = elem;
 
-            var listParent = elem.querySelector('.paperList');
+            require(['sortable'], function (Sortable) {
 
-            if (!AppInfo.isTouchPreferred) {
-                require(['sortable'], function (Sortable) {
+                var sortable = new Sortable(listParent, {
 
-                    var sortable = new Sortable(listParent, {
+                    draggable: ".listItem",
+                    handle: '.listViewDragHandle',
 
-                        draggable: ".listItem",
+                    // dragging ended
+                    onEnd: function (/**Event*/evt) {
 
-                        // dragging ended
-                        onEnd: function (/**Event*/evt) {
-
-                            onDrop(evt, page, item);
-                        }
-                    });
+                        onDrop(evt, page, item);
+                    }
                 });
-            }
-
+            });
             ImageLoader.lazyChildren(elem);
             LibraryBrowser.createCardMenus(elem);
 
@@ -118,13 +111,12 @@
 
     function onDrop(evt, page, item) {
 
+        Dashboard.showLoadingMsg();
+
         var el = evt.item;
         
         var newIndex = evt.newIndex;
-
         var itemId = el.getAttribute('data-playlistitemid');
-
-        Dashboard.showLoadingMsg();
 
         ApiClient.ajax({
 
@@ -142,23 +134,6 @@
             Dashboard.hideLoadingMsg();
             reloadItems(page, item);
         });
-    }
-
-    function removeFromPlaylist(page, item, ids) {
-
-        ApiClient.ajax({
-
-            url: ApiClient.getUrl('Playlists/' + item.Id + '/Items', {
-                EntryIds: ids.join(',')
-            }),
-
-            type: 'DELETE'
-
-        }).then(function () {
-
-            reloadItems(page, item);
-        });
-
     }
 
     function showDragAndDropHelp() {
@@ -184,12 +159,6 @@
     function init(page, item) {
 
         var elem = page.querySelector('#childrenContent .itemsContainer');
-
-        elem.addEventListener('removefromplaylist', function (e) {
-
-            var playlistItemId = e.detail.playlistItemId;
-            removeFromPlaylist(page, item, [playlistItemId]);
-        });
 
         elem.addEventListener('needsrefresh', function () {
 

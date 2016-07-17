@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'datetime', 'mediaInfo', 'backdrop', 'scrollStyles'], function (layoutManager, datetime, mediaInfo, backdrop) {
+﻿define(['layoutManager', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'scrollStyles', 'emby-itemscontainer'], function (layoutManager, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper) {
 
     var currentItem;
 
@@ -59,6 +59,19 @@
                 elems[i].classList.add('hide');
             }
         }
+    }
+
+    function getContextMenuOptions(item, button) {
+
+        return {
+            item: item,
+            open: false,
+            play: false,
+            queue: false,
+            playAllFromHere: false,
+            queueAllFromHere: false,
+            positionTo: button
+        };
     }
 
     function reloadFromItem(page, params, item) {
@@ -128,7 +141,7 @@
                 hideAll(page, 'btnPlayTrailer');
             }
 
-            if (LibraryBrowser.enableSync(item, user)) {
+            if (itemHelper.canSync(user, item)) {
                 hideAll(page, 'btnSync', true);
             } else {
                 hideAll(page, 'btnSync');
@@ -178,11 +191,13 @@
                 page.querySelector('.splitVersionContainer').classList.add('hide');
             }
 
-            if (LibraryBrowser.getMoreCommands(item, user).length > 0) {
-                hideAll(page, 'btnMoreCommands', true);
-            } else {
-                hideAll(page, 'btnMoreCommands');
-            }
+            itemContextMenu.getCommands(getContextMenuOptions(item)).then(function (commands) {
+                if (commands.length) {
+                    hideAll(page, 'btnMoreCommands', true);
+                } else {
+                    hideAll(page, 'btnMoreCommands');
+                }
+            });
 
             if (user.Policy.IsAdministrator) {
                 page.querySelector('.chapterSettingsButton').classList.remove('hide');
@@ -931,14 +946,14 @@
 
             if (item.Type == "MusicAlbum") {
 
-                html = LibraryBrowser.getListViewHtml({
+                html = listView.getListViewHtml({
                     items: result.Items,
                     smallIcon: true,
                     showIndex: true,
                     index: 'disc',
                     showIndexNumber: true,
                     playFromHere: true,
-                    defaultAction: 'playallfromhere',
+                    action: 'playallfromhere',
                     lazy: true
                 });
 
@@ -1118,7 +1133,7 @@
         html += '<button class="btnAddToCollection autoSize" type="button" is="paper-icon-button-light" style="margin-left:1em;"><i class="md-icon" icon="add">add</i></button>';
         html += '</div>';
 
-        html += '<div class="detailSectionContent itemsContainer">';
+        html += '<div is="emby-itemscontainer" class="detailSectionContent itemsContainer" data-collectionid="' + parentItem.Id + '">';
 
         var shape = type.type == 'MusicAlbum' ? 'detailPageSquare' : 'detailPagePortrait';
 
@@ -1148,26 +1163,6 @@
                     html: Globalize.translate('AddItemToCollectionHelp') + '<br/><br/><a target="_blank" href="https://github.com/MediaBrowser/Wiki/wiki/Collections">' + Globalize.translate('ButtonLearnMore') + '</a>'
                 });
             });
-        });
-    }
-
-    function removeFromCollection(page, parentItem, itemIds) {
-
-        Dashboard.showLoadingMsg();
-
-        var url = ApiClient.getUrl("Collections/" + parentItem.Id + "/Items", {
-
-            Ids: itemIds.join(',')
-        });
-
-        ApiClient.ajax({
-            type: "DELETE",
-            url: url
-
-        }).then(function () {
-
-            renderChildren(page, parentItem);
-            Dashboard.hideLoadingMsg();
         });
     }
 
@@ -1315,9 +1310,9 @@
 
             page.querySelector('#themeSongsCollapsible').classList.remove('hide');
 
-            var html = LibraryBrowser.getListViewHtml({
-                items: items,
-                smallIcon: true
+            var html = listView.getListViewHtml({
+                items: result.Items,
+                sortBy: query.SortBy
             });
 
             page.querySelector('#themeSongsContent').innerHTML = html;
@@ -2105,11 +2100,14 @@
         function onMoreCommandsClick() {
             var button = this;
 
-            Dashboard.getCurrentUser().then(function (user) {
+            itemContextMenu.show(getContextMenuOptions(currentItem, button)).then(function (result) {
 
-                LibraryBrowser.showMoreCommands(button, currentItem.Id, currentItem.Type, LibraryBrowser.getMoreCommands(currentItem, user)).then(function () {
+                if (result.deleted) {
+                    Emby.Page.goHome();
+
+                } else if (result.updated) {
                     reload(view, params);
-                });
+                }
             });
         }
 
@@ -2177,10 +2175,9 @@
             }
         });
 
-        view.querySelector('.collectionItems').addEventListener('removefromcollection', function (e) {
+        view.querySelector('.collectionItems').addEventListener('needsrefresh', function (e) {
 
-            var itemId = e.detail.itemId;
-            removeFromCollection(view, currentItem, [itemId]);
+            renderChildren(view, currentItem);
         });
 
         view.querySelector('.detailImageContainer').addEventListener('click', function (e) {
@@ -2191,11 +2188,6 @@
                 });
             }
         });
-
-        //var btnMore = page.querySelectorAll('.btnMoreCommands iron-icon');
-        //for (var i = 0, length = btnMore.length; i < length; i++) {
-        //    btnMore[i].icon = AppInfo.moreIcon;
-        //}
 
         function onWebSocketMessage(e, data) {
 

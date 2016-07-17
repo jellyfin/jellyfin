@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Extensions;
-using System;
+﻿using System;
 using System.ComponentModel;
 
 namespace MediaBrowser.Model.Dto
@@ -7,7 +6,7 @@ namespace MediaBrowser.Model.Dto
     /// <summary>
     /// Class UserItemDataDto
     /// </summary>
-    public class UserItemDataDto : IHasPropertyChangedEvent
+    public class UserItemDataDto
     {
         /// <summary>
         /// Gets or sets the rating.
@@ -74,7 +73,5 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The item identifier.</value>
         public string ItemId { get; set; }
-        
-        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

@@ -212,7 +212,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * element, bind this to the `<input is="iron-input">`'s `autofocus` property.
        */
       autofocus: {
-        type: Boolean
+        type: Boolean,
+        observer: '_autofocusChanged'
       },
 
       /**
@@ -528,6 +529,33 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           bubbles: event.bubbles,
           cancelable: event.cancelable
         });
+      }
+    },
+
+    _autofocusChanged: function() {
+      // Firefox doesn't respect the autofocus attribute if it's applied after
+      // the page is loaded (Chrome/WebKit do respect it), preventing an
+      // autofocus attribute specified in markup from taking effect when the
+      // element is upgraded. As a workaround, if the autofocus property is set,
+      // and the focus hasn't already been moved elsewhere, we take focus.
+      if (this.autofocus && this._focusableElement) {
+
+        // In IE 11, the default document.activeElement can be the page's
+        // outermost html element, but there are also cases (under the
+        // polyfill?) in which the activeElement is not a real HTMLElement, but
+        // just a plain object. We identify the latter case as having no valid
+        // activeElement.
+        var activeElement = document.activeElement;
+        var isActiveElementValid = activeElement instanceof HTMLElement;
+
+        // Has some other element has already taken the focus?
+        var isSomeElementActive = isActiveElementValid &&
+            activeElement !== document.body &&
+            activeElement !== document.documentElement; /* IE 11 */
+        if (!isSomeElementActive) {
+          // No specific element has taken the focus yet, so we can take it.
+          this._focusableElement.focus();
+        }
       }
     }
   }

@@ -164,6 +164,12 @@ h1, h1 a {
     display: none !important;
 }
 
-.searchPageSearchButton {
-    display: inline-flex!important;
+.txtSearch {
+    padding-bottom: .5em !important;
+    text-indent: 0 !important;
+}
+
+.searchInputContainer {
+    margin-left: 5%;
+    margin-right: 5%;
 }
