@@ -90,7 +90,80 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         embyRouter.showItem(options);
     }
 
-    function executeAction(card, action) {
+    function getItem(button) {
+
+        button = parentWithAttribute(button, 'data-id');
+        var serverId = button.getAttribute('data-serverid');
+        var id = button.getAttribute('data-id');
+        var type = button.getAttribute('data-type');
+
+        var apiClient = connectionManager.getApiClient(serverId);
+
+        return apiClient.getItem(apiClient.getCurrentUserId(), id);
+    }
+
+    function showContextMenu(card, options) {
+
+        getItem(card).then(function (item) {
+
+            var itemsContainer = options.itemsContainer || parentWithAttribute(card, 'is', 'emby-itemscontainer');
+
+            var playlistId = itemsContainer ? itemsContainer.getAttribute('data-playlistid') : null;
+            var collectionId = itemsContainer ? itemsContainer.getAttribute('data-collectionid') : null;
+
+            if (playlistId) {
+                var elem = parentWithAttribute(card, 'data-playlistitemid');
+                item.PlaylistItemId = elem ? elem.getAttribute('data-playlistitemid') : null;
+            }
+
+            require(['itemContextMenu'], function (itemContextMenu) {
+
+                itemContextMenu.show(Object.assign({
+                    item: item,
+                    play: true,
+                    queue: true,
+                    playAllFromHere: !item.IsFolder,
+                    queueAllFromHere: !item.IsFolder,
+                    identify: false,
+                    playlistId: playlistId,
+                    collectionId: collectionId
+
+                }, options || {})).then(function (result) {
+
+                    if (result.command == 'playallfromhere' || result.command == 'queueallfromhere') {
+                        executeAction(card, options.positionTo, result.command);
+                    }
+                    else if (result.command == 'removefromplaylist' || result.command == 'removefromcollection') {
+
+                        if (itemsContainer) {
+                            itemsContainer.dispatchEvent(new CustomEvent('needsrefresh', {
+                                detail: {},
+                                cancelable: false,
+                                bubbles: true
+                            }));
+                        }
+                    }
+                });
+            });
+        });
+    }
+
+    function showPlayMenu(card, target) {
+
+        getItem(card).then(function (item) {
+
+            require(['playMenu'], function (playMenu) {
+
+                playMenu.show({
+
+                    item: item,
+                    positionTo: target
+                });
+            });
+        });
+    }
+
+    function executeAction(card, target, action) {
 
         var id = card.getAttribute('data-id');
 
@@ -141,6 +214,17 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
         else if (action == 'record') {
             onRecordCommand(serverId, id, type, card.getAttribute('data-timerid'), card.getAttribute('data-seriestimerid'));
+        }
+
+        else if (action == 'menu') {
+            showContextMenu(card, {
+                identify: false,
+                positionTo: target || card
+            });
+        }
+
+        else if (action == 'playmenu') {
+            showPlayMenu(card, target || card);
         }
     }
 
@@ -234,7 +318,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
             }
 
             if (action) {
-                executeAction(card, action);
+                executeAction(card, e.target, action);
 
                 e.preventDefault();
                 e.stopPropagation();
@@ -243,9 +327,9 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         }
     }
 
-    function parentWithAttribute(elem, name) {
+    function parentWithAttribute(elem, name, value) {
 
-        while (!elem.getAttribute(name)) {
+        while ((value ? elem.getAttribute(name) != value : !elem.getAttribute(name))) {
             elem = elem.parentNode;
 
             if (!elem) {
@@ -276,7 +360,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
             var card = parentWithClass(e.target, 'itemAction');
 
             if (card) {
-                executeAction(card, cmd);
+                executeAction(card, card, cmd);
             }
         }
     }
@@ -307,8 +391,8 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
     return {
         on: on,
         off: off,
-        execute: executeAction,
-        onClick: onClick
+        onClick: onClick,
+        showContextMenu: showContextMenu
     };
 
 });

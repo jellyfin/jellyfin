@@ -246,34 +246,6 @@
         });
     }
 
-    function onListViewPlayButtonClick(e, playButton) {
-
-        var card = e.target;
-
-        if (!card.classList.contains('card') && !card.classList.contains('listItem')) {
-            card = parentWithAnyClass(card, ['listItem', 'card']);
-        }
-
-        var id = card.getAttribute('data-itemid');
-        var type = card.getAttribute('data-itemtype');
-        var isFolder = card.getAttribute('data-isfolder') == 'true';
-        var mediaType = card.getAttribute('data-mediatype');
-        var resumePosition = parseInt(card.getAttribute('data-positionticks'));
-
-        if (type == 'MusicAlbum' || type == 'MusicArtist' || type == 'MusicGenre' || type == 'Playlist') {
-            isFolder = true;
-        }
-
-        if (type == 'Program') {
-            id = card.getAttribute('data-channelid');
-        }
-
-        LibraryBrowser.showPlayMenu(playButton, id, type, isFolder, mediaType, resumePosition);
-
-        e.preventDefault();
-        return false;
-    }
-
     function isClickable(target) {
 
         while (target != null) {
@@ -290,12 +262,6 @@
     }
 
     function onCardClick(e) {
-
-        var playButton = parentWithClass(e.target, 'cardOverlayPlayButton');
-
-        if (playButton) {
-            return onListViewPlayButtonClick(e, playButton);
-        }
 
         var card = parentWithClass(e.target, 'card');
 

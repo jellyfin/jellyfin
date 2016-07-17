@@ -1,5 +1,5 @@
 /*
-* Fingerprintjs2 1.4.0 - Modern & flexible browser fingerprint library v2
+* Fingerprintjs2 1.4.1 - Modern & flexible browser fingerprint library v2
 * https://github.com/Valve/fingerprintjs2
 * Copyright (c) 2015 Valentin Vasilyev (valentin.vasilyev@outlook.com)
 * Licensed under the MIT (http://www.opensource.org/licenses/mit-license.php) license.
@@ -58,7 +58,8 @@
       swfContainerId: "fingerprintjs2",
       swfPath: "flash/compiled/FontList.swf",
       detectScreenOrientation: true,
-      sortPluginsFor: [/palemoon/i]
+      sortPluginsFor: [/palemoon/i],
+      userDefinedFonts: []
     };
     this.options = this.extend(options, defaultOptions);
     this.nativeForEach = Array.prototype.forEach;
@@ -394,6 +395,8 @@
         if(that.options.extendedJsFonts) {
             fontList = fontList.concat(extendedFontList);
         }
+
+        fontList = fontList.concat(that.options.userDefinedFonts);
 
         //we use m or w because these two characters take up the maximum width.
         // And we use a LLi so that the same matching fonts can get separated
@@ -1283,6 +1286,6 @@
       return ("00000000" + (h1[0] >>> 0).toString(16)).slice(-8) + ("00000000" + (h1[1] >>> 0).toString(16)).slice(-8) + ("00000000" + (h2[0] >>> 0).toString(16)).slice(-8) + ("00000000" + (h2[1] >>> 0).toString(16)).slice(-8);
     }
   };
-  Fingerprint2.VERSION = "1.4.0";
+  Fingerprint2.VERSION = "1.4.1";
   return Fingerprint2;
 });

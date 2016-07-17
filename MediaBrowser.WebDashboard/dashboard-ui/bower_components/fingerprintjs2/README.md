@@ -98,6 +98,18 @@ new Fingerprint2().get(function(result, components){
 });
 ```
 
+#### `userDefinedFonts` option
+
+While hundreds of the most popular fonts are included in the extended font list, you may wish to increase the entropy of the font fingerprint by specifying the `userDefinedFonts` option as an array of font names.
+
+```
+new Fingerprint2({
+  userDefinedFonts: ["Nimbus Mono", "Junicode", "Presto"]
+}).get(function(result, components){}
+  console.log(result);
+);
+```
+
 #### View the fingerprint locally
 
 You can view your browser fingerprint locally by starting a webserver and viewing the `index.html` page.
@@ -148,6 +160,7 @@ To start a web server you can try using one of the following:
 22. Has the user tampered with its OS <sup>[1](https://github.com/Valve/fingerprintjs2/wiki/Browser-tampering)</sup>
 23. Has the user tampered with its browser <sup>[1](https://github.com/Valve/fingerprintjs2/wiki/Browser-tampering)</sup>
 24. Touch screen detection and capabilities
+25. Pixel Ratio
 
 
 By default, JS font detection will only detect up to 65 installed fonts. If you want to improve the font detection,
