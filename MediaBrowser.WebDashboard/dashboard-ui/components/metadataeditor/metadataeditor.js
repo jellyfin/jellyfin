@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'datetime', 'jQuery', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light'], function (dialogHelper, datetime, $) {
+﻿define(['itemHelper', 'dialogHelper', 'datetime', 'jQuery', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light'], function (itemHelper, dialogHelper, datetime, $) {
 
     var currentContext;
     var metadataEditorInfo;
@@ -286,7 +286,7 @@
             id: 'images'
         });
 
-        if (LibraryBrowser.canIdentify(user, currentItem.Type)) {
+        if (itemHelper.canIdentify(user, currentItem.Type)) {
             items.push({
                 name: Globalize.translate('ButtonIdentify'),
                 id: 'identify'

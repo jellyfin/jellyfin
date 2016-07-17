@@ -1,5 +1,10 @@
 define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter', 'playbackManager'], function (appHost, globalize, connectionManager, itemHelper, embyRouter, playbackManager) {
 
+    var isTheater = true;
+    appHost.appInfo().then(function(result) {
+        isTheater = result.appName.toLowerCase().indexOf('theater') != -1;
+    });
+
     function getCommands(options) {
 
         var item = options.item;
@@ -32,12 +37,25 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 });
             }
 
-            if (user.Policy.IsAdministrator) {
-                if (item.MediaType == 'Video' && item.Type != 'TvChannel' && item.Type != 'Program' && item.LocationType != 'Virtual') {
-                    commands.push({
-                        name: globalize.translate('sharedcomponents#EditSubtitles'),
-                        id: 'editsubtitles'
-                    });
+            if (options.edit !== false) {
+                if (itemHelper.canEdit(user, item.Type)) {
+
+                    if (!isTheater) {
+                        commands.push({
+                            name: globalize.translate('sharedcomponents#Edit'),
+                            id: 'edit'
+                        });
+                        commands.push({
+                            name: globalize.translate('sharedcomponents#EditImages'),
+                            id: 'editimages'
+                        });
+                    }
+                    if (item.MediaType == 'Video' && item.Type != 'TvChannel' && item.Type != 'Program' && item.LocationType != 'Virtual') {
+                        commands.push({
+                            name: globalize.translate('sharedcomponents#EditSubtitles'),
+                            id: 'editsubtitles'
+                        });
+                    }
                 }
             }
 
@@ -46,6 +64,15 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                     name: globalize.translate('sharedcomponents#Download'),
                     id: 'download'
                 });
+            }
+
+            if (!isTheater && options.identify !== false) {
+                if (itemHelper.canIdentify(user, item.Type)) {
+                    commands.push({
+                        name: globalize.translate('sharedcomponents#Identify'),
+                        id: 'identify'
+                    });
+                }
             }
 
             if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "MusicGenre" || item.CollectionType == "music") {
@@ -114,6 +141,15 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                     commands.push({
                         name: globalize.translate('sharedcomponents#Shuffle'),
                         id: 'shuffle'
+                    });
+                }
+            }
+
+            if (!isTheater && options.sync !== false) {
+                if (itemHelper.canSync(user, item)) {
+                    commands.push({
+                        name: globalize.translate('sharedcomponents#Sync'),
+                        id: 'sync'
                     });
                 }
             }
@@ -209,6 +245,30 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                         });
                         break;
                     }
+                case 'edit':
+                    {
+                        require(['components/metadataeditor/metadataeditor'], function (metadataeditor) {
+
+                            metadataeditor.show(itemId).then(getResolveFunction(resolve, id, true), getResolveFunction(resolve, id));
+                        });
+                        break;
+                    }
+                case 'editimages':
+                    {
+                        require(['components/imageeditor/imageeditor'], function (ImageEditor) {
+
+                            ImageEditor.show(itemId).then(getResolveFunction(resolve, id, true), getResolveFunction(resolve, id));
+                        });
+                        break;
+                    }
+                case 'identify':
+                    {
+                        require(['components/itemidentifier/itemidentifier'], function (itemidentifier) {
+
+                            itemidentifier.show(itemId).then(getResolveFunction(resolve, id, true), getResolveFunction(resolve, id));
+                        });
+                        break;
+                    }
                 case 'refresh':
                     {
                         refresh(apiClient, itemId);
@@ -292,6 +352,19 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                     }
                 case 'queueallfromhere':
                     {
+                        getResolveFunction(resolve, id)();
+                        break;
+                    }
+                case 'sync':
+                    {
+                        require(['syncDialog'], function (syncDialog) {
+                            syncDialog.showMenu({
+                                items: [
+                                {
+                                    Id: itemId
+                                }]
+                            });
+                        });
                         getResolveFunction(resolve, id)();
                         break;
                     }

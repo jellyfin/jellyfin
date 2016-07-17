@@ -1478,7 +1478,7 @@
 
             var categorySyncButtons = page.querySelectorAll('.categorySyncButton');
             for (var i = 0, length = categorySyncButtons.length; i < length; i++) {
-                if (LibraryBrowser.enableSync(item, user)) {
+                if (itemHelper.canSync(user, item)) {
                     categorySyncButtons[i].classList.remove('hide');
                 } else {
                     categorySyncButtons[i].classList.add('hide');

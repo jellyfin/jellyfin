@@ -1,10 +1,4 @@
 {
-    "Play": "Play",
-    "Queue": "Queue",
-    "Shuffle": "Shuffle",
-    "InstantMix": "Instant Mix",
-    "QueueAllFromHere": "Queue All from Here",
-    "PlayAllFromHere": "Play All from Here",
     "ValueSpecialEpisodeName": "Specialavsnitt - {0}",
     "Share": "Dela",
     "ServerUpdateNeeded": "Den h\u00e4r Emby servern beh\u00f6ver uppdateras. F\u00f6r att ladda ner senaste versionen, g\u00e5 till {0}",
@@ -106,6 +100,15 @@
     "Played": "Played",
     "RefreshDialogHelp": "Metadata uppdateras baserat p\u00e5 inst\u00e4llningar och internettj\u00e4nster som har aktiverats under Emby servers kontrollpanel.",
     "Open": "Open",
+    "Play": "Play",
+    "Queue": "Queue",
+    "Shuffle": "Shuffle",
+    "Identify": "Identify",
+    "EditImages": "Edit Images",
+    "Sync": "Sync",
+    "InstantMix": "Instant Mix",
     "ViewAlbum": "View Album",
-    "ViewArtist": "View Artist"
+    "ViewArtist": "View Artist",
+    "QueueAllFromHere": "Queue All from Here",
+    "PlayAllFromHere": "Play All from Here"
 }

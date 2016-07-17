@@ -1,10 +1,4 @@
 {
-    "Play": "Play",
-    "Queue": "Queue",
-    "Shuffle": "Shuffle",
-    "InstantMix": "Instant Mix",
-    "QueueAllFromHere": "Queue All from Here",
-    "PlayAllFromHere": "Play All from Here",
     "ValueSpecialEpisodeName": "Special - {0}",
     "Share": "\u5206\u4eab",
     "ServerUpdateNeeded": "\u6b64Emby\u4f3a\u670d\u5668\u9700\u8981\u66f4\u65b0\uff0c\u8acb\u81f3{0}\u53d6\u5f97\u6700\u65b0\u7248\u672c",
@@ -106,6 +100,15 @@
     "Played": "Played",
     "RefreshDialogHelp": "\u8a73\u7d30\u8cc7\u6599\u7684\u66f4\u65b0\u65b9\u5f0f\u6703\u4f9d\u64daEmby\u7684\u8a2d\u5b9a\u53ca\u5df2\u7d93\u555f\u7528\u7684\u7db2\u8def\u670d\u52d9\u4f86\u9032\u884c",
     "Open": "Open",
+    "Play": "Play",
+    "Queue": "Queue",
+    "Shuffle": "Shuffle",
+    "Identify": "Identify",
+    "EditImages": "Edit Images",
+    "Sync": "Sync",
+    "InstantMix": "Instant Mix",
     "ViewAlbum": "View Album",
-    "ViewArtist": "View Artist"
+    "ViewArtist": "View Artist",
+    "QueueAllFromHere": "Queue All from Here",
+    "PlayAllFromHere": "Play All from Here"
 }

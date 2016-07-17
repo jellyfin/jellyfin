@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'scrollStyles'], function (layoutManager, datetime, mediaInfo, backdrop, listView) {
+﻿define(['layoutManager', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'scrollStyles'], function (layoutManager, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper) {
 
     var currentItem;
 
@@ -59,6 +59,19 @@
                 elems[i].classList.add('hide');
             }
         }
+    }
+
+    function getContextMenuOptions(item, button) {
+
+        return {
+            item: item,
+            open: false,
+            play: false,
+            queue: false,
+            playAllFromHere: false,
+            queueAllFromHere: false,
+            positionTo: button
+        };
     }
 
     function reloadFromItem(page, params, item) {
@@ -128,7 +141,7 @@
                 hideAll(page, 'btnPlayTrailer');
             }
 
-            if (LibraryBrowser.enableSync(item, user)) {
+            if (itemHelper.canSync(user, item)) {
                 hideAll(page, 'btnSync', true);
             } else {
                 hideAll(page, 'btnSync');
@@ -178,11 +191,13 @@
                 page.querySelector('.splitVersionContainer').classList.add('hide');
             }
 
-            if (LibraryBrowser.getMoreCommands(item, user).length > 0) {
-                hideAll(page, 'btnMoreCommands', true);
-            } else {
-                hideAll(page, 'btnMoreCommands');
-            }
+            itemContextMenu.getCommands(getContextMenuOptions(item)).then(function (commands) {
+                if (commands.length) {
+                    hideAll(page, 'btnMoreCommands', true);
+                } else {
+                    hideAll(page, 'btnMoreCommands');
+                }
+            });
 
             if (user.Policy.IsAdministrator) {
                 page.querySelector('.chapterSettingsButton').classList.remove('hide');
@@ -2105,11 +2120,14 @@
         function onMoreCommandsClick() {
             var button = this;
 
-            Dashboard.getCurrentUser().then(function (user) {
+            itemContextMenu.show(getContextMenuOptions(currentItem, button)).then(function (result) {
 
-                LibraryBrowser.showMoreCommands(button, currentItem.Id, currentItem.Type, LibraryBrowser.getMoreCommands(currentItem, user)).then(function () {
+                if (result.deleted) {
+                    Emby.Page.goHome();
+
+                } else if (result.updated) {
                     reload(view, params);
-                });
+                }
             });
         }
 
@@ -2191,11 +2209,6 @@
                 });
             }
         });
-
-        //var btnMore = page.querySelectorAll('.btnMoreCommands iron-icon');
-        //for (var i = 0, length = btnMore.length; i < length; i++) {
-        //    btnMore[i].icon = AppInfo.moreIcon;
-        //}
 
         function onWebSocketMessage(e, data) {
 

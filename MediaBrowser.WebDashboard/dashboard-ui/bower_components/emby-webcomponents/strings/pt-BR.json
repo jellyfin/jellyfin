@@ -1,10 +1,4 @@
 {
-    "Play": "Play",
-    "Queue": "Queue",
-    "Shuffle": "Shuffle",
-    "InstantMix": "Instant Mix",
-    "QueueAllFromHere": "Queue All from Here",
-    "PlayAllFromHere": "Play All from Here",
     "ValueSpecialEpisodeName": "Especial - {0}",
     "Share": "Compartilhar",
     "ServerUpdateNeeded": "Este servidor Emby precisa ser atualizado. Para baixar a \u00faltima vers\u00e3o, por favor visite {0}",
@@ -106,6 +100,15 @@
     "Played": "Played",
     "RefreshDialogHelp": "Os metadados s\u00e3o atualizados com bases nas defini\u00e7\u00f5es e nos servi\u00e7os de internet que est\u00e3o ativos no painel do Servidor Emby.",
     "Open": "Open",
+    "Play": "Play",
+    "Queue": "Queue",
+    "Shuffle": "Shuffle",
+    "Identify": "Identify",
+    "EditImages": "Edit Images",
+    "Sync": "Sync",
+    "InstantMix": "Instant Mix",
     "ViewAlbum": "View Album",
-    "ViewArtist": "View Artist"
+    "ViewArtist": "View Artist",
+    "QueueAllFromHere": "Queue All from Here",
+    "PlayAllFromHere": "Play All from Here"
 }

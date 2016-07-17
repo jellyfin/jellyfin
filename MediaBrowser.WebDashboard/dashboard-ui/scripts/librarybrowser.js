@@ -685,15 +685,6 @@
                 });
             },
 
-            supportsEditing: function (itemType) {
-
-                if (itemType == "UserRootFolder" || /*itemType == "CollectionFolder" ||*/ itemType == "UserView" || itemType == 'Timer') {
-                    return false;
-                }
-
-                return true;
-            },
-
             getMoreCommands: function (item, user) {
 
                 var commands = [];
@@ -715,7 +706,7 @@
 
                 if (user.Policy.IsAdministrator) {
 
-                    if (LibraryBrowser.supportsEditing(item.Type)) {
+                    if (itemHelper.canEdit(user, item.Type)) {
                         commands.push('edit');
                     }
 
@@ -733,7 +724,7 @@
                     commands.push('refresh');
                 }
 
-                if (LibraryBrowser.enableSync(item, user)) {
+                if (itemHelper.canSync(user, item)) {
                     commands.push('sync');
                 }
 
@@ -747,32 +738,11 @@
                     commands.push('share');
                 }
 
-                if (LibraryBrowser.canIdentify(user, item.Type)) {
+                if (itemHelper.canIdentify(user, item.Type)) {
                     commands.push('identify');
                 }
 
                 return commands;
-            },
-
-            canIdentify: function (user, itemType) {
-
-                if (itemType == "Movie" ||
-                  itemType == "Trailer" ||
-                  itemType == "Series" ||
-                  itemType == "Game" ||
-                  itemType == "BoxSet" ||
-                  itemType == "Person" ||
-                  itemType == "Book" ||
-                  itemType == "MusicAlbum" ||
-                  itemType == "MusicArtist") {
-
-                    if (user.Policy.IsAdministrator) {
-
-                        return true;
-                    }
-                }
-
-                return false;
             },
 
             deleteItems: function (itemIds) {
@@ -1301,18 +1271,6 @@
                 return html;
             },
 
-            enableSync: function (item, user) {
-                if (AppInfo.isNativeApp && !Dashboard.capabilities().SupportsSync) {
-                    return false;
-                }
-
-                if (user && !user.Policy.EnableSync) {
-                    return false;
-                }
-
-                return item.SupportsSync;
-            },
-
             getItemCommands: function (item, options) {
 
                 var itemCommands = [];
@@ -1321,9 +1279,7 @@
                 //    itemCommands.push('playmenu');
                 //}
 
-                if (LibraryBrowser.supportsEditing(item.Type)) {
-                    itemCommands.push('edit');
-                }
+                itemCommands.push('edit');
 
                 if (item.LocalTrailerCount) {
                     itemCommands.push('trailer');
@@ -1365,7 +1321,7 @@
                     itemCommands.push('delete');
                 }
 
-                if (LibraryBrowser.enableSync(item)) {
+                if (itemHelper.canSync({ Policy: {} }, item)) {
                     itemCommands.push('sync');
                 }
 

@@ -67,6 +67,50 @@ define([], function () {
     return {
         getDisplayName: getDisplayName,
         supportsAddingToCollection: supportsAddingToCollection,
-        supportsAddingToPlaylist: supportsAddingToPlaylist
+        supportsAddingToPlaylist: supportsAddingToPlaylist,
+
+        canIdentify: function (user, itemType) {
+
+            if (itemType == "Movie" ||
+              itemType == "Trailer" ||
+              itemType == "Series" ||
+              itemType == "Game" ||
+              itemType == "BoxSet" ||
+              itemType == "Person" ||
+              itemType == "Book" ||
+              itemType == "MusicAlbum" ||
+              itemType == "MusicArtist") {
+
+                if (user.Policy.IsAdministrator) {
+
+                    return true;
+                }
+            }
+
+            return false;
+        },
+
+        canEdit: function (user, itemType) {
+
+            if (itemType == "UserRootFolder" || /*itemType == "CollectionFolder" ||*/ itemType == "UserView" || itemType == 'Timer') {
+                return false;
+            }
+
+            if (user.Policy.IsAdministrator) {
+
+                return true;
+            }
+
+            return false;
+        },
+
+        canSync: function (user, item) {
+
+            if (user && !user.Policy.EnableSync) {
+                return false;
+            }
+
+            return item.SupportsSync;
+        }
     };
 });
