@@ -135,26 +135,6 @@
         });
     }
 
-    function showDragAndDropHelp() {
-
-        if (AppInfo.isTouchPreferred) {
-            // Not implemented for mobile yet
-            return;
-        }
-
-        var expectedValue = "7";
-        if (appStorage.getItem("playlistitemdragdrophelp") == expectedValue) {
-            return;
-        }
-
-        appStorage.setItem("playlistitemdragdrophelp", expectedValue);
-
-        Dashboard.alert({
-            message: Globalize.translate('TryDragAndDropMessage'),
-            title: Globalize.translate('HeaderTryDragAndDrop')
-        });
-    }
-
     function init(page, item) {
 
         var elem = page.querySelector('#childrenContent .itemsContainer');
@@ -174,7 +154,6 @@
             }
 
             reloadItems(page, item);
-            showDragAndDropHelp();
         }
     };
 

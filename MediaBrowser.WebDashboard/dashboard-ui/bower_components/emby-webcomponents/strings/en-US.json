@@ -97,7 +97,6 @@
   "Favorite": "Favorite",
   "Like": "Like",
   "Dislike": "Dislike",
-  "Played": "Played",
   "RefreshDialogHelp": "Metadata is refreshed based on settings and internet services that are enabled in the Emby Server dashboard.",
   "Open": "Open",
   "Play": "Play",
@@ -115,5 +114,11 @@
   "PlayFromBeginning": "Play from beginning",
   "ResumeAt": "Resume from {0}",
   "RemoveFromPlaylist": "Remove from Playlist",
-  "Trailer": "Trailer"
+  "Trailer": "Trailer",
+  "MarkPlayed": "Mark Played",
+  "MarkUnplayed": "Mark Unplayed",
+  "GroupVersions": "Group Versions",
+  "PleaseSelectTwoItems": "Please select at least two items.",
+  "TheSelectedItemsWillBeGrouped": "The selected videos will be grouped into one virtual item. Emby apps will automatically choose which version to play based on device and network performance. Are you sure you wish to continue?",
+  "Error": "Error"
 }

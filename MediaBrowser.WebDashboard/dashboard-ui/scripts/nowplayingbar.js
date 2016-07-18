@@ -1,4 +1,4 @@
-﻿define(['datetime', 'paper-icon-button-light'], function (datetime) {
+﻿define(['datetime', 'userdataButtons', 'paper-icon-button-light'], function (datetime, userdataButtons) {
 
     var currentPlayer;
 
@@ -572,7 +572,10 @@
 
         if (nowPlayingItem.Id) {
             ApiClient.getItem(Dashboard.getCurrentUserId(), nowPlayingItem.Id).then(function (item) {
-                nowPlayingUserData.innerHTML = LibraryBrowser.getUserDataIconsHtml(item, false);
+                nowPlayingUserData.innerHTML = userdataButtons.getIconsHtml({
+                    item: item,
+                    includePlayed: false
+                });
             });
         } else {
             nowPlayingUserData.innerHTML = '';

@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'scrollStyles', 'emby-itemscontainer'], function (layoutManager, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper) {
+﻿define(['layoutManager', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'scrollStyles', 'emby-itemscontainer'], function (layoutManager, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons) {
 
     var currentItem;
 
@@ -1161,7 +1161,10 @@
 
         var userDataIcons = page.querySelectorAll('.userDataIcons');
 
-        var html = LibraryBrowser.getUserDataIconsHtml(item, true, 'icon-button');
+        var html = userdataButtons.getIconsHtml({
+            item: item,
+            style: 'fab-mini'
+        });
 
         for (var i = 0, length = userDataIcons.length; i < length; i++) {
             userDataIcons[i].innerHTML = html;
@@ -1973,17 +1976,6 @@
         });
     }
 
-    function onItemDeleted(e, itemId) {
-
-        if (currentItem && currentItem.Id == itemId) {
-            if (currentItem.Type == 'Recording') {
-                LibraryBrowser.showTab('livetv.html', 3);
-            } else {
-                Dashboard.navigate('home.html');
-            }
-        }
-    }
-
     function showPlayMenu(item, target) {
 
         require(['playMenu'], function (playMenu) {
@@ -2218,12 +2210,9 @@
             reload(page, params);
 
             Events.on(ApiClient, 'websocketmessage', onWebSocketMessage);
-
-            Events.on(LibraryBrowser, 'itemdeleting', onItemDeleted);
         });
 
         view.addEventListener('viewbeforehide', function () {
-            Events.off(LibraryBrowser, 'itemdeleting', onItemDeleted);
 
             currentItem = null;
 

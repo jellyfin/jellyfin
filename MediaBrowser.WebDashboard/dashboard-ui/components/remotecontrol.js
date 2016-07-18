@@ -1,4 +1,4 @@
-﻿define(['browser', 'datetime', 'libraryBrowser', 'listView'], function (browser, datetime, libraryBrowser, listView) {
+﻿define(['browser', 'datetime', 'libraryBrowser', 'listView', 'userdataButtons'], function (browser, datetime, libraryBrowser, listView, userdataButtons) {
 
     function showSlideshowMenu(context) {
         require(['scripts/slideshow'], function () {
@@ -202,7 +202,11 @@
             }
 
             ApiClient.getItem(Dashboard.getCurrentUserId(), item.Id).then(function (fullItem) {
-                context.querySelector('.nowPlayingPageUserDataButtons').innerHTML = libraryBrowser.getUserDataIconsHtml(fullItem, false);
+                context.querySelector('.nowPlayingPageUserDataButtons').innerHTML = userdataButtons.getIconsHtml({
+                    item: fullItem,
+                    includePlayed: false,
+                    style: 'fab-mini'
+                });
             });
         } else {
             context.querySelector('.nowPlayingPageUserDataButtons').innerHTML = '';

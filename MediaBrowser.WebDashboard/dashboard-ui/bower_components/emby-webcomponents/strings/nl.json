@@ -1,8 +1,10 @@
 {
-    "EditInfo": "Info Bewerken",
-    "RemoveFromPlaylist": "Verwijderen uit afspeellijst",
-    "PlayFromBeginning": "Play from beginning",
-    "ResumeAt": "Resume from {0}",
+    "MarkPlayed": "Mark Played",
+    "MarkUnplayed": "Mark Unplayed",
+    "GroupVersions": "Group Versions",
+    "PleaseSelectTwoItems": "Please select at least two items.",
+    "TheSelectedItemsWillBeGrouped": "The selected videos will be grouped into one virtual item. Emby apps will automatically choose which version to play based on device and network performance. Are you sure you wish to continue?",
+    "Error": "Error",
     "ValueSpecialEpisodeName": "Speciaal - {0}",
     "Share": "Delen",
     "ServerUpdateNeeded": "Deze Emby Server moet worden bijgewerkt. Om de laatste versie te downloaden, gaat u naar {0}",
@@ -109,10 +111,15 @@
     "Shuffle": "Willekeurig",
     "Identify": "Identificeer",
     "EditImages": "Bewerk afbeeldingen",
+    "EditInfo": "Info Bewerken",
     "Sync": "Synchronisatie",
     "InstantMix": "Instant Mix",
     "ViewAlbum": "Bekijk album",
     "ViewArtist": "Bekijk artiest",
     "QueueAllFromHere": "Plaats alles in de wachtrij vanaf hier",
-    "PlayAllFromHere": "Speel alles vanaf hier"
+    "PlayAllFromHere": "Speel alles vanaf hier",
+    "PlayFromBeginning": "Play from beginning",
+    "ResumeAt": "Resume from {0}",
+    "RemoveFromPlaylist": "Verwijderen uit afspeellijst",
+    "Trailer": "Trailer"
 }

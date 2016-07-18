@@ -1,8 +1,10 @@
 {
-    "EditInfo": "Edit Info",
-    "RemoveFromPlaylist": "Remove from Playlist",
-    "PlayFromBeginning": "Play from beginning",
-    "ResumeAt": "Resume from {0}",
+    "MarkPlayed": "Mark Played",
+    "MarkUnplayed": "Mark Unplayed",
+    "GroupVersions": "Group Versions",
+    "PleaseSelectTwoItems": "Please select at least two items.",
+    "TheSelectedItemsWillBeGrouped": "The selected videos will be grouped into one virtual item. Emby apps will automatically choose which version to play based on device and network performance. Are you sure you wish to continue?",
+    "Error": "Error",
     "ValueSpecialEpisodeName": "Special - {0}",
     "Share": "\u5206\u4eab",
     "ServerUpdateNeeded": "\u6b64Emby\u4f3a\u670d\u5668\u9700\u8981\u66f4\u65b0\uff0c\u8acb\u81f3{0}\u53d6\u5f97\u6700\u65b0\u7248\u672c",
@@ -109,10 +111,15 @@
     "Shuffle": "Shuffle",
     "Identify": "Identify",
     "EditImages": "Edit Images",
+    "EditInfo": "Edit Info",
     "Sync": "Sync",
     "InstantMix": "Instant Mix",
     "ViewAlbum": "View Album",
     "ViewArtist": "View Artist",
     "QueueAllFromHere": "Queue All from Here",
-    "PlayAllFromHere": "Play All from Here"
+    "PlayAllFromHere": "Play All from Here",
+    "PlayFromBeginning": "Play from beginning",
+    "ResumeAt": "Resume from {0}",
+    "RemoveFromPlaylist": "Remove from Playlist",
+    "Trailer": "Trailer"
 }

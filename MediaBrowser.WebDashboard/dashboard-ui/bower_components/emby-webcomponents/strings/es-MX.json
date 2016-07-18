@@ -1,8 +1,10 @@
 {
-    "EditInfo": "Edit Info",
-    "RemoveFromPlaylist": "Remove from Playlist",
-    "PlayFromBeginning": "Play from beginning",
-    "ResumeAt": "Resume from {0}",
+    "MarkPlayed": "Mark Played",
+    "MarkUnplayed": "Mark Unplayed",
+    "GroupVersions": "Group Versions",
+    "PleaseSelectTwoItems": "Please select at least two items.",
+    "TheSelectedItemsWillBeGrouped": "The selected videos will be grouped into one virtual item. Emby apps will automatically choose which version to play based on device and network performance. Are you sure you wish to continue?",
+    "Error": "Error",
     "ValueSpecialEpisodeName": "Especial - {0}",
     "Share": "Compartir",
     "ServerUpdateNeeded": "Este Servidor Emby necesita ser actualizado. Para descargar la ultima versi\u00f3n, por favor visite {0}",
@@ -109,10 +111,15 @@
     "Shuffle": "Shuffle",
     "Identify": "Identify",
     "EditImages": "Edit Images",
+    "EditInfo": "Edit Info",
     "Sync": "Sync",
     "InstantMix": "Instant Mix",
     "ViewAlbum": "View Album",
     "ViewArtist": "View Artist",
     "QueueAllFromHere": "Queue All from Here",
-    "PlayAllFromHere": "Play All from Here"
+    "PlayAllFromHere": "Play All from Here",
+    "PlayFromBeginning": "Play from beginning",
+    "ResumeAt": "Resume from {0}",
+    "RemoveFromPlaylist": "Remove from Playlist",
+    "Trailer": "Trailer"
 }
