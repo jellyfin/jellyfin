@@ -444,6 +444,9 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                     });
 
                     break;
+                case 'canceltimer':
+                    deleteTimer(itemId, parentWithClass(card, 'itemsContainer'));
+                    break;
                 default:
                     reject();
                     break;

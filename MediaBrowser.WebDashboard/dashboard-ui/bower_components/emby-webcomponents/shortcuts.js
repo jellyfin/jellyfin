@@ -1,4 +1,4 @@
-define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'globalize', 'loading'], function (playbackManager, inputManager, connectionManager, embyRouter, globalize, loading) {
+define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'globalize', 'loading', 'dom'], function (playbackManager, inputManager, connectionManager, embyRouter, globalize, loading, dom) {
 
     function playAllFromHere(card, serverId, queue) {
 
@@ -92,7 +92,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
     function getItem(button) {
 
-        button = parentWithAttribute(button, 'data-id');
+        button = dom.parentWithAttribute(button, 'data-id');
         var serverId = button.getAttribute('data-serverid');
         var id = button.getAttribute('data-id');
         var type = button.getAttribute('data-type');
@@ -109,13 +109,13 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
         getItem(card).then(function (item) {
 
-            var itemsContainer = options.itemsContainer || parentWithAttribute(card, 'is', 'emby-itemscontainer');
+            var itemsContainer = options.itemsContainer || dom.parentWithAttribute(card, 'is', 'emby-itemscontainer');
 
             var playlistId = itemsContainer ? itemsContainer.getAttribute('data-playlistid') : null;
             var collectionId = itemsContainer ? itemsContainer.getAttribute('data-collectionid') : null;
 
             if (playlistId) {
-                var elem = parentWithAttribute(card, 'data-playlistitemid');
+                var elem = dom.parentWithAttribute(card, 'data-playlistitemid');
                 item.PlaylistItemId = elem ? elem.getAttribute('data-playlistitemid') : null;
             }
 
@@ -173,7 +173,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         var id = card.getAttribute('data-id');
 
         if (!id) {
-            card = parentWithAttribute(card, 'data-id');
+            card = dom.parentWithAttribute(card, 'data-id');
             id = card.getAttribute('data-id');
         }
 
@@ -363,7 +363,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
     function onClick(e) {
 
-        var card = parentWithClass(e.target, 'itemAction');
+        var card = dom.parentWithClass(e.target, 'itemAction');
 
         if (card) {
 
@@ -371,7 +371,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
             var action = actionElement.getAttribute('data-action');
 
             if (!action) {
-                actionElement = parentWithAttribute(actionElement, 'data-action');
+                actionElement = dom.parentWithAttribute(actionElement, 'data-action');
                 action = actionElement.getAttribute('data-action');
             }
 
@@ -385,37 +385,11 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         }
     }
 
-    function parentWithAttribute(elem, name, value) {
-
-        while ((value ? elem.getAttribute(name) != value : !elem.getAttribute(name))) {
-            elem = elem.parentNode;
-
-            if (!elem || !elem.getAttribute) {
-                return null;
-            }
-        }
-
-        return elem;
-    }
-
-    function parentWithClass(elem, className) {
-
-        while (!elem.classList || !elem.classList.contains(className)) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
-    }
-
     function onCommand(e) {
         var cmd = e.detail.command;
 
         if (cmd == 'play' || cmd == 'record' || cmd == 'menu' || cmd == 'info') {
-            var card = parentWithClass(e.target, 'itemAction');
+            var card = dom.parentWithClass(e.target, 'itemAction');
 
             if (card) {
                 executeAction(card, card, cmd);
