@@ -8,8 +8,7 @@ echo "========================================"
 echo "         MediaBrowser for Mono"
 echo "            Package Creator"
 echo ""
-echo "   Logs available in $BUILDPATH/logs"
-echo "    Archive available in $BUILDPATH"
+echo "    Archive will be available in $CWD/BUILDPATH"
 echo "========================================"
 echo ""
 echo "========================================"
@@ -53,53 +52,19 @@ vercomp () {
     echo 0 # Equal
 }
 
-echo "Checking for git"
-if ! type -P git &>/dev/null; then
-    echo "Git not found. Please install."
-    exit
-fi
+for cmd in git tar gzip mono xbuild monodis mozroots; do
+	echo "Checking for $cmd"
+	if ! type -P $cmd &>/dev/null; then
+		echo "$cmd not found. Please install." 1>&2
+		exit 1
+	fi
+done
 
-echo "Checking for tar"
-if ! type -P tar &>/dev/null; then
-    echo "Tar not found. Please install."
-    exit
-fi
-
-echo "Checking for gzip"
-if ! type -P gzip &>/dev/null; then
-    echo "Gzip not found. Please install."
-    exit
-fi
-
-echo "Checking for mono"
-if ! type -P mono &>/dev/null; then
-    echo "Mono not found. Please install."
-    exit
-else
-    MONOVERSION=$(mono --version | awk '$1 == "Mono" {print $5 }')
-    compResult=$(vercomp $MONOVERSION "3.2.7")
-    if [ "$compResult" == "2" ]; then
-        echo "Require Mono version 3.2.7 and higher."
-        exit
-    fi
-fi
-
-echo "Checking for mozroots"
-if ! type -P mozroots &>/dev/null; then
-    echo "Mozroots not found. Please install."
-    exit
-fi
-
-echo "Checking for xbuild"
-if ! type -P xbuild &>/dev/null; then
-    echo "Xbuild not found. Please install."
-    exit
-fi
-
-echo "Checking for monodis"
-if ! type -P monodis &>/dev/null; then
-    echo "Monodis not found. Please install. (mono-utils package on ubuntu!)"
-    exit
+MONOVERSION=$(mono --version | awk '$1 == "Mono" {print $5 }')
+compResult=$(vercomp $MONOVERSION "4.2.3")
+if [ "$compResult" == "2" ]; then
+    echo "$compResult Require Mono version 4.2.3" 1>&2
+    exit 1
 fi
 
 echo ""
@@ -123,29 +88,24 @@ else
     done
 fi
 
-
-
-echo ""
-echo "========================================"
-echo "       Retrieving source from git"
-echo "========================================"
-echo ""
-
-cd "$MBGITPATH"
-
 echo ""
 echo "========================================"
 echo "       Nuget: Restoring packages"
 echo "========================================"
 echo ""
 
-echo "Importing trusted root certificates from Mozilla LXR"
-#wget -O certdata.txt 'http://mxr.mozilla.org/seamonkey/source/security/nss/lib/ckfw/builtins/certdata.txt?raw=1'
-## need to remove some certs manually, see also: http://lists.ximian.com/pipermail/mono-bugs/2011-October/113359.html
-mozroots --import --sync --file Tools/Linux_Build_Scripts/certdata.txt
+cd "$MBGITPATH"
 
+## the following section can be enabled only with most recent mono (4.4+)
+## all other tested versions crash miserably (see also http://lists.ximian.com/pipermail/mono-bugs/2011-October/113359.html)
+## removing certificates did not work with 4.2.3 and neither using 4.4's binary
+function __disabled() {
+echo "Importing trusted root certificates from Mozilla LXR"
+wget -O certdata.txt 'https://hg.mozilla.org/releases/mozilla-release/raw-file/default/security/nss/lib/ckfw/builtins/certdata.txt'
+mozroots --sync --import --file certdata.txt
 echo "Updating NuGet to the latest version"
 mono Nuget/nuget.exe update -self
+}
 echo "Restoring NuGet package"
 mono Nuget/nuget.exe restore MediaBrowser.Mono.sln
 
@@ -175,14 +135,14 @@ echo "Retreiving MediaBrowser version"
 MBVERSION=$(monodis --assembly MediaBrowser.Server.Mono.exe | awk '$1 == "Version:" {print $2 }')
 
 if [ -z "$MBVERSION" ]; then
-    echo "Unable to get Mediabrowser version from monodis." 1>&2
-    exit
+    echo "Unable to get Mediabrowser version via monodis." 1>&2
+    exit 1
 fi
 
 echo "Creating MediaBrowser.Mono.$MBVERSION.tar.gz"
 if [ -e "$CWD/$BUILDPATH/MediaBrowser.Mono.$MBVERSION.tar.gz" ]; then
     echo "Destination file exist: $CWD/$BUILDPATH/MediaBrowser.Mono.$MBVERSION.tar.gz"
-    exit
+    exit 1
 fi
 mkdir "$CWD/$BUILDPATH/MediaBrowser.Mono.$MBVERSION"
 cp -fR * "$CWD/$BUILDPATH/MediaBrowser.Mono.$MBVERSION/"
@@ -220,13 +180,13 @@ MBVERSION=$(monodis --assembly MediaBrowser.Server.Mono.exe | awk '$1 == "Versio
 
 if [ -z "$MBVERSION" ]; then
     echo "Unable to get Mediabrowser version from monodis."
-    exit
+    exit 1
 fi
 
 echo "Creating MediaBrowser.Mono.mkbundlex.$MBVERSION.tar.gz"
 if [ -e "$CWD/$BUILDPATH/MediaBrowser.Mono.mkbundlex.$MBVERSION.tar.gz" ]; then
     echo "Destination file exist: $CWD/$BUILDPATH/MediaBrowser.Mono.mkbundlex.$MBVERSION.tar.gz"
-    exit
+    exit 1
 fi
 mkdir "$CWD/$BUILDPATH/MediaBrowser.Mono.mkbundlex.$MBVERSION"
 cp -fR * "$CWD/$BUILDPATH/MediaBrowser.Mono.mkbundlex.$MBVERSION/"
