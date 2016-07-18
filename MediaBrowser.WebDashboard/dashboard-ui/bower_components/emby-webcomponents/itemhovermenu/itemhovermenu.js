@@ -25,7 +25,7 @@
             showOverlayTimeout = null;
         }
 
-        elem = elem.querySelector('.cardOverlayTarget');
+        elem = elem.classList.contains('cardOverlayTarget') ? elem : elem.querySelector('.cardOverlayTarget');
 
         if (elem) {
             slideDownToHide(elem);
@@ -47,7 +47,7 @@
             var keyframes = [
               { transform: 'translateY(0)', offset: 0 },
               { transform: 'translateY(100%)', offset: 1 }];
-            var timing = { duration: 300, iterations: 1, fill: 'forwards', easing: 'ease-out' };
+            var timing = { duration: 180, iterations: 1, fill: 'forwards', easing: 'ease-out' };
 
             elem.animate(keyframes, timing).onfinish = function () {
                 elem.classList.add('hide');
@@ -72,12 +72,12 @@
             var keyframes = [
               { transform: 'translateY(100%)', offset: 0 },
               { transform: 'translateY(0)', offset: 1 }];
-            var timing = { duration: 300, iterations: 1, fill: 'forwards', easing: 'ease-out' };
+            var timing = { duration: 200, iterations: 1, fill: 'forwards', easing: 'ease-out' };
             elem.animate(keyframes, timing);
         });
     }
 
-    function getOverlayHtml(item, currentUser, card) {
+    function getOverlayHtml(apiClient, item, currentUser, card) {
 
         var html = '';
 
@@ -93,12 +93,12 @@
         var name = itemHelper.getDisplayName(item);
 
         html += '<div>';
-        var logoHeight = isSmallItem || isMiniItem ? 20 : 26;
+        var logoHeight = 26;
         var imgUrl;
 
         if (parentName && item.ParentLogoItemId) {
 
-            imgUrl = ApiClient.getScaledImageUrl(item.ParentLogoItemId, {
+            imgUrl = apiClient.getScaledImageUrl(item.ParentLogoItemId, {
                 maxHeight: logoHeight,
                 type: 'logo',
                 tag: item.ParentLogoImageTag
@@ -109,7 +109,7 @@
         }
         else if (item.ImageTags.Logo) {
 
-            imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+            imgUrl = apiClient.getScaledImageUrl(item.Id, {
                 maxHeight: logoHeight,
                 type: 'logo',
                 tag: item.ImageTags.Logo
@@ -179,15 +179,14 @@
 
     function onShowTimerExpired(elem) {
 
-        elem = elem.querySelector('a');
-
         var innerElem = elem.querySelector('.cardOverlayTarget');
 
         if (!innerElem) {
             innerElem = document.createElement('div');
             innerElem.classList.add('hide');
             innerElem.classList.add('cardOverlayTarget');
-            parentWithClass(elem, 'cardContent').appendChild(innerElem);
+
+            elem.parentNode.appendChild(innerElem);
         }
 
         var dataElement = parentWithAttribute(elem, 'data-id');
@@ -210,11 +209,7 @@
             var item = responses[0];
             var user = responses[1];
 
-            var card = elem;
-
-            elem = parentWithAttribute(elem, 'data-id');
-
-            innerElem.innerHTML = getOverlayHtml(item, user, card);
+            innerElem.innerHTML = getOverlayHtml(apiClient, item, user, dataElement);
         });
 
         slideUpToShow(innerElem);
@@ -223,8 +218,9 @@
     function onHoverIn(e) {
 
         var elem = e.target;
+        var card = parentWithClass(elem, 'cardImageContainer') || parentWithClass(elem, 'cardImage');
 
-        if (!elem.classList.contains('cardImage')) {
+        if (!card) {
             return;
         }
 
@@ -238,12 +234,10 @@
             showOverlayTimeout = null;
         }
 
-        elem = parentWithAttribute(elem, 'data-id');
-
         showOverlayTimeout = setTimeout(function () {
-            onShowTimerExpired(elem);
+            onShowTimerExpired(card);
 
-        }, 1200);
+        }, 1000);
     }
 
     function preventTouchHover() {

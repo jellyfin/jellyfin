@@ -249,6 +249,19 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
                 editItem(item, serverId);
             });
         }
+
+        else if (action == 'playtrailer') {
+            getItem(target).then(playTrailer);
+        }
+    }
+
+    function playTrailer(item) {
+
+        var apiClient = connectionManager.getApiClient(item.ServerId);
+
+        apiClient.getLocalTrailers(apiClient.getCurrentUserId(), item.Id).then(function (trailers) {
+            playbackManager.play({ items: trailers });
+        });
     }
 
     function editItem(item, serverId) {

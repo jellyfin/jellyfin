@@ -120,7 +120,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                     });
                 }
 
-                if (options.playAllFromHere) {
+                if (options.playAllFromHere && item.Type != 'Program' && item.Type != 'TvChannel') {
                     commands.push({
                         name: globalize.translate('sharedcomponents#PlayAllFromHere'),
                         id: 'playallfromhere'
