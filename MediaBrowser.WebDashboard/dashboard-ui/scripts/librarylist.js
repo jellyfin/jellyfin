@@ -15,22 +15,6 @@
         return false;
     }
 
-    function onCardClick(e) {
-
-        var card = parentWithClass(e.target, 'card');
-
-        if (card) {
-
-            var itemSelectionPanel = card.querySelector('.itemSelectionPanel');
-            if (itemSelectionPanel) {
-                return onItemSelectionPanelClick(e, itemSelectionPanel);
-            }
-            else if (card.classList.contains('groupedCard')) {
-                return onGroupedCardClick(e, card);
-            }
-        }
-    }
-
     function onGroupedCardClick(e, card) {
 
         var itemId = card.getAttribute('data-id');
@@ -72,25 +56,6 @@
         e.preventDefault();
         return false;
     }
-
-    function parentWithClass(elem, className) {
-
-        while (!elem.classList || !elem.classList.contains(className)) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
-    }
-
-    libraryBrowser.createCardMenus = function (curr, options) {
-
-        curr.removeEventListener('click', onCardClick);
-        curr.addEventListener('click', onCardClick);
-    };
 
     function showSyncButtonsPerUser(page) {
 
