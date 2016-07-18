@@ -149,7 +149,6 @@
             elem.querySelector('.recordingItems').innerHTML = html;
 
             ImageLoader.lazyChildren(elem);
-            LibraryBrowser.createCardMenus(elem);
         });
     }
 

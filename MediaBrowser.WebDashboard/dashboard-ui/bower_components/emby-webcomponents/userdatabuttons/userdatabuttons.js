@@ -2,10 +2,17 @@ define(['connectionManager', 'globalize', 'paper-icon-button-light', 'material-i
 
     function getUserDataButtonHtml(method, itemId, iconCssClass, icon, tooltip, style) {
 
+        if (style == 'fab-mini') {
+            style = 'fab';
+            iconCssClass = iconCssClass ? (iconCssClass + ' mini') : 'mini';
+        }
+
         var is = style == 'fab' ? 'emby-button' : 'paper-icon-button-light';
         var className = style == 'fab' ? 'autoSize fab' : 'autoSize';
 
-        className += ' ' + iconCssClass;
+        if (iconCssClass) {
+            className += ' ' + iconCssClass;
+        }
 
         return '<button title="' + tooltip + '" data-itemid="' + itemId + '" is="' + is + '" class="' + className + '" onclick="UserDataButtons.' + method + '(this);return false;">\
                 <i class="md-icon">' + icon + '</i>\
@@ -14,12 +21,17 @@ define(['connectionManager', 'globalize', 'paper-icon-button-light', 'material-i
 
     function fill(options) {
 
-        var html = getIconsHtml(options.item, options.includePlayed, options.buttonClass, options.style);
+        var html = getIconsHtml(options);
 
         options.element.innerHTML = html;
     }
 
-    function getIconsHtml(item, includePlayed, cssClass, style) {
+    function getIconsHtml(options) {
+
+        var item = options.item;
+        var includePlayed = options.includePlayed;
+        var cssClass = options.cssClass;
+        var style = options.style;
 
         var html = '';
 
@@ -47,8 +59,8 @@ define(['connectionManager', 'globalize', 'paper-icon-button-light', 'material-i
             }
         }
 
-        var tooltipLike = globalize.translate('sharedcomponents#Like');
-        var tooltipDislike = globalize.translate('sharedcomponents#Dislike');
+        //var tooltipLike = globalize.translate('sharedcomponents#Like');
+        //var tooltipDislike = globalize.translate('sharedcomponents#Dislike');
 
         //if (typeof userData.Likes == "undefined") {
         //    html += getUserDataButtonHtml('markDislike', itemId, btnCssClass + ' btnUserData btnDislike', 'thumb-down', tooltipDislike);

@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'emby-itemscontainer'], function (libraryBrowser) {
 
     // The base query options
     var query = {

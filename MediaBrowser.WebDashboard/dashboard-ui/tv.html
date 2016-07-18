@@ -22,7 +22,7 @@
                 </button>
             </div>
 
-            <div id="resumableItems" class="itemsContainer noautoinit">
+            <div is="emby-itemscontainer" id="resumableItems" class="itemsContainer">
             </div>
         </div>
 
@@ -34,7 +34,7 @@
                     <span>${ButtonSync}</span>
                 </button>
             </div>
-            <div id="nextUpItems" class="itemsContainer">
+            <div is="emby-itemscontainer" id="nextUpItems" class="itemsContainer">
             </div>
         </div>
         <p class="noNextUpItems" style="display: none;">${NoNextUpItemsMessage}</p>
@@ -48,7 +48,7 @@
                     <span>${ButtonSync}</span>
                 </button>
             </div>
-            <div id="latestEpisodes" class="itemsContainer">
+            <div is="emby-itemscontainer" id="latestEpisodes" class="itemsContainer">
             </div>
         </div>
     </div>
@@ -96,14 +96,14 @@
         <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
             <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
         </div>
-        <div id="items" class="itemsContainer paddedItemsContainer"></div>
+        <div is="emby-itemscontainer" id="items" class="itemsContainer paddedItemsContainer"></div>
     </div>
     <div class="pageTabContent ehsContent" id="studiosTab" data-index="6">
         <div class="viewSettings">
             <div class="listTopPaging">
             </div>
         </div>
-        <div id="items" class="itemsContainer paddedItemsContainer" style="text-align: center;"></div>
+        <div is="emby-itemscontainer" id="items" class="itemsContainer paddedItemsContainer" style="text-align: center;"></div>
     </div>
 
     <div data-role="content">

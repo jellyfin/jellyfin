@@ -20,7 +20,7 @@
                 </button>
             </div>
 
-            <div id="resumableItems" class="itemsContainer noautoinit">
+            <div is="emby-itemscontainer" id="resumableItems" class="itemsContainer">
             </div>
         </div>
 
@@ -33,7 +33,7 @@
                 </button>
             </div>
 
-            <div id="recentlyAddedItems" class="itemsContainer noautoinit">
+            <div is="emby-itemscontainer" id="recentlyAddedItems" class="itemsContainer">
             </div>
         </div>
 
@@ -98,14 +98,14 @@
         <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
             <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
         </div>
-        <div id="items" class="itemsContainer paddedItemsContainer"></div>
+        <div is="emby-itemscontainer" id="items" class="itemsContainer paddedItemsContainer"></div>
     </div>
     <div class="pageTabContent ehsContent" id="studiosTab" data-index="5">
         <div class="viewSettings">
             <div class="listTopPaging">
             </div>
         </div>
-        <div id="items" class="itemsContainer paddedItemsContainer" style="text-align: center;"></div>
+        <div is="emby-itemscontainer" id="items" class="itemsContainer paddedItemsContainer" style="text-align: center;"></div>
     </div>
 
     <div data-role="content">

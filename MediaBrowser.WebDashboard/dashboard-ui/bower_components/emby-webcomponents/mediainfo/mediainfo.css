@@ -26,7 +26,7 @@ i.mediaInfoItem {
         color: #CB272A;
         width: auto !important;
         height: auto !important;
-        font-size: 120%;
+        font-size: 1.4em;
     }
 
 .mediaInfoItem.criticRating {

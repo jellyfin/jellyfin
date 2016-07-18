@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'scrollStyles'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser) {
 
     function getView() {
 
@@ -167,9 +167,9 @@
         html += '<h1 class="listHeader">' + title + '</h1>';
 
         if (enableScrollX()) {
-            html += '<div class="hiddenScrollX">';
+            html += '<div is="emby-itemscontainer" class="hiddenScrollX">';
         } else {
-            html += '<div>';
+            html += '<div is="emby-itemscontainer">';
         }
 
         var view = getView();
@@ -247,8 +247,6 @@
             } else {
                 containers[i].classList.remove('hiddenScrollX');
             }
-
-            libraryBrowser.createCardMenus(containers[i]);
         }
     }
 
@@ -280,8 +278,6 @@
             var tabContent = view.querySelector('.pageTabContent[data-index=\'' + 0 + '\']');
             loadSuggestionsTab(view, params, tabContent);
         };
-
-        libraryBrowser.createCardMenus(view.querySelector('.recommendations'));
 
         var mdlTabs = view.querySelector('.libraryViewNav');
 

@@ -90,7 +90,85 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         embyRouter.showItem(options);
     }
 
-    function executeAction(card, action) {
+    function getItem(button) {
+
+        button = parentWithAttribute(button, 'data-id');
+        var serverId = button.getAttribute('data-serverid');
+        var id = button.getAttribute('data-id');
+        var type = button.getAttribute('data-type');
+
+        var apiClient = connectionManager.getApiClient(serverId);
+
+        if (type == 'Timer') {
+            return apiClient.getLiveTvTimer(id);
+        }
+        return apiClient.getItem(apiClient.getCurrentUserId(), id);
+    }
+
+    function showContextMenu(card, options) {
+
+        getItem(card).then(function (item) {
+
+            var itemsContainer = options.itemsContainer || parentWithAttribute(card, 'is', 'emby-itemscontainer');
+
+            var playlistId = itemsContainer ? itemsContainer.getAttribute('data-playlistid') : null;
+            var collectionId = itemsContainer ? itemsContainer.getAttribute('data-collectionid') : null;
+
+            if (playlistId) {
+                var elem = parentWithAttribute(card, 'data-playlistitemid');
+                item.PlaylistItemId = elem ? elem.getAttribute('data-playlistitemid') : null;
+            }
+
+            require(['itemContextMenu'], function (itemContextMenu) {
+
+                itemContextMenu.show(Object.assign({
+                    item: item,
+                    play: true,
+                    queue: true,
+                    playAllFromHere: !item.IsFolder,
+                    queueAllFromHere: !item.IsFolder,
+                    identify: false,
+                    playlistId: playlistId,
+                    collectionId: collectionId
+
+                }, options || {})).then(function (result) {
+
+                    if (result.command == 'playallfromhere' || result.command == 'queueallfromhere') {
+                        executeAction(card, options.positionTo, result.command);
+                    }
+                    else if (result.command == 'removefromplaylist' || result.command == 'removefromcollection') {
+
+                        if (itemsContainer) {
+                            itemsContainer.dispatchEvent(new CustomEvent('needsrefresh', {
+                                detail: {},
+                                cancelable: false,
+                                bubbles: true
+                            }));
+                        }
+                    }
+                });
+            });
+        });
+    }
+
+    function showPlayMenu(card, target) {
+
+        getItem(card).then(function (item) {
+
+            require(['playMenu'], function (playMenu) {
+
+                playMenu.show({
+
+                    item: item,
+                    positionTo: target
+                });
+            });
+        });
+    }
+
+    function executeAction(card, target, action) {
+
+        target = target || card;
 
         var id = card.getAttribute('data-id');
 
@@ -142,6 +220,56 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         else if (action == 'record') {
             onRecordCommand(serverId, id, type, card.getAttribute('data-timerid'), card.getAttribute('data-seriestimerid'));
         }
+
+        else if (action == 'menu') {
+
+            var options = target.getAttribute('data-playoptions') == 'false' ?
+            {
+                shuffle: false,
+                instantMix: false,
+                play: false,
+                playAllFromHere: false,
+                queue: false,
+                queueAllFromHere: false
+            } :
+            {};
+
+            options.identify = false;
+            options.positionTo = target;
+
+            showContextMenu(card, options);
+        }
+
+        else if (action == 'playmenu') {
+            showPlayMenu(card, target);
+        }
+
+        else if (action == 'edit') {
+            getItem(target).then(function (item) {
+                editItem(item, serverId);
+            });
+        }
+    }
+
+    function editItem(item, serverId) {
+
+        var apiClient = connectionManager.getApiClient(serverId);
+
+        return new Promise(function (resolve, reject) {
+
+            if (item.Type == 'Timer') {
+                require(['recordingEditor'], function (recordingEditor) {
+
+                    var serverId = apiClient.serverInfo().Id;
+                    recordingEditor.show(item.Id, serverId).then(resolve, reject);
+                });
+            } else {
+                require(['components/metadataeditor/metadataeditor'], function (metadataeditor) {
+
+                    metadataeditor.show(item.Id).then(resolve, reject);
+                });
+            }
+        });
     }
 
     function onRecordCommand(serverId, id, type, timerId, seriesTimerId) {
@@ -221,6 +349,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
     }
 
     function onClick(e) {
+
         var card = parentWithClass(e.target, 'itemAction');
 
         if (card) {
@@ -234,17 +363,21 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
             }
 
             if (action) {
-                executeAction(card, action);
+                executeAction(card, actionElement, action);
+
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
             }
         }
     }
 
-    function parentWithAttribute(elem, name) {
+    function parentWithAttribute(elem, name, value) {
 
-        while (!elem.getAttribute(name)) {
+        while ((value ? elem.getAttribute(name) != value : !elem.getAttribute(name))) {
             elem = elem.parentNode;
 
-            if (!elem) {
+            if (!elem || !elem.getAttribute) {
                 return null;
             }
         }
@@ -268,29 +401,43 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
     function onCommand(e) {
         var cmd = e.detail.command;
 
-        if (cmd == 'play' || cmd == 'record') {
+        if (cmd == 'play' || cmd == 'record' || cmd == 'menu' || cmd == 'info') {
             var card = parentWithClass(e.target, 'itemAction');
 
             if (card) {
-                executeAction(card, cmd);
+                executeAction(card, card, cmd);
             }
         }
     }
 
-    function on(context) {
-        context.addEventListener('click', onClick);
-        inputManager.on(context, onCommand);
+    function on(context, options) {
+
+        options = options || {};
+
+        if (options.click !== false) {
+            context.addEventListener('click', onClick);
+        }
+
+        if (options.command !== false) {
+            inputManager.on(context, onCommand);
+        }
     }
 
-    function off(context) {
+    function off(context, options) {
+        options = options || {};
+
         context.removeEventListener('click', onClick);
-        inputManager.off(context, onCommand);
+
+        if (options.command !== false) {
+            inputManager.off(context, onCommand);
+        }
     }
 
     return {
         on: on,
         off: off,
-        execute: executeAction
+        onClick: onClick,
+        showContextMenu: showContextMenu
     };
 
 });

@@ -585,12 +585,23 @@
 
         self.shuffle = function (id) {
 
+            // accept both id and item being passed in
+            if (id.Id) {
+                id = id.Id;
+            }
+
             doWithPlaybackValidation(currentPlayer, function () {
                 currentPlayer.shuffle(id);
             });
         };
 
         self.instantMix = function (id) {
+
+            // accept both id and item being passed in
+            if (id.Id) {
+                id = id.Id;
+            }
+
             doWithPlaybackValidation(currentPlayer, function () {
                 currentPlayer.instantMix(id);
             });

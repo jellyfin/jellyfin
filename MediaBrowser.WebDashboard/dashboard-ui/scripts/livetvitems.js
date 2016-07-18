@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['emby-itemscontainer'], function () {
 
     var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
 

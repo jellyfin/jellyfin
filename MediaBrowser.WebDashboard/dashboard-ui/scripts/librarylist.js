@@ -1,317 +1,4 @@
-﻿define(['appSettings', 'appStorage', 'libraryBrowser', 'apphost', 'itemHelper', 'mediaInfo'], function (appSettings, appStorage, LibraryBrowser, appHost, itemHelper, mediaInfo) {
-
-    var showOverlayTimeout;
-
-    function onHoverOut(e) {
-
-        var elem = e.target;
-
-        if (!elem.classList.contains('card')) {
-            return;
-        }
-
-        if (showOverlayTimeout) {
-            clearTimeout(showOverlayTimeout);
-            showOverlayTimeout = null;
-        }
-
-        elem = elem.querySelector('.cardOverlayTarget');
-
-        if (elem) {
-            slideDownToHide(elem);
-        }
-    }
-
-    function slideDownToHide(elem) {
-
-        if (elem.classList.contains('hide')) {
-            return;
-        }
-
-        if (!elem.animate) {
-            elem.classList.add('hide');
-            return;
-        }
-
-        requestAnimationFrame(function () {
-            var keyframes = [
-              { transform: 'translateY(0)', offset: 0 },
-              { transform: 'translateY(100%)', offset: 1 }];
-            var timing = { duration: 300, iterations: 1, fill: 'forwards', easing: 'ease-out' };
-
-            elem.animate(keyframes, timing).onfinish = function () {
-                elem.classList.add('hide');
-            };
-        });
-    }
-
-    function slideUpToShow(elem) {
-
-        if (!elem.classList.contains('hide')) {
-            return;
-        }
-
-        elem.classList.remove('hide');
-
-        if (!elem.animate) {
-            return;
-        }
-
-        requestAnimationFrame(function () {
-
-            var keyframes = [
-              { transform: 'translateY(100%)', offset: 0 },
-              { transform: 'translateY(0)', offset: 1 }];
-            var timing = { duration: 300, iterations: 1, fill: 'forwards', easing: 'ease-out' };
-            elem.animate(keyframes, timing);
-        });
-    }
-
-    function getOverlayHtml(item, currentUser, card) {
-
-        var html = '';
-
-        html += '<div class="cardOverlayInner">';
-
-        var className = card.className.toLowerCase();
-
-        var isMiniItem = className.indexOf('mini') != -1;
-        var isSmallItem = isMiniItem || className.indexOf('small') != -1;
-        var isPortrait = className.indexOf('portrait') != -1;
-        var isSquare = className.indexOf('square') != -1;
-
-        var parentName = isSmallItem || isMiniItem || isPortrait ? null : item.SeriesName;
-        var name = itemHelper.getDisplayName(item);
-
-        html += '<div style="margin-bottom:1em;">';
-        var logoHeight = isSmallItem || isMiniItem ? 20 : 26;
-        var imgUrl;
-
-        if (parentName && item.ParentLogoItemId) {
-
-            imgUrl = ApiClient.getScaledImageUrl(item.ParentLogoItemId, {
-                maxHeight: logoHeight,
-                type: 'logo',
-                tag: item.ParentLogoImageTag
-            });
-
-            html += '<img src="' + imgUrl + '" style="max-height:' + logoHeight + 'px;max-width:100%;" />';
-
-        }
-        else if (item.ImageTags.Logo) {
-
-            imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                maxHeight: logoHeight,
-                type: 'logo',
-                tag: item.ImageTags.Logo
-            });
-
-            html += '<img src="' + imgUrl + '" style="max-height:' + logoHeight + 'px;max-width:100%;" />';
-        }
-        else {
-            html += parentName || name;
-        }
-        html += '</div>';
-
-        if (parentName) {
-            html += '<p>';
-            html += name;
-            html += '</p>';
-        } else if (!isSmallItem && !isMiniItem) {
-            html += '<div class="itemMiscInfo">';
-            html += mediaInfo.getPrimaryMediaInfoHtml(item, {
-                endsAt: false
-            });
-            html += '</div>';
-        }
-
-        if (!isMiniItem) {
-            html += '<div style="margin:1em 0 .75em;">';
-
-            if (isPortrait) {
-                html += '<div class="userDataIcons" style="margin:.5em 0 0em;">';
-                html += LibraryBrowser.getUserDataIconsHtml(item);
-                html += '</div>';
-            } else {
-
-                html += '<span class="userDataIcons" style="vertical-align:middle;">';
-                html += LibraryBrowser.getUserDataIconsHtml(item);
-                html += '</span>';
-            }
-            html += '</div>';
-        }
-
-        html += '<div>';
-
-        var buttonCount = 0;
-
-        if (MediaController.canPlay(item)) {
-
-            var resumePosition = (item.UserData || {}).PlaybackPositionTicks || 0;
-
-            html += '<button is="paper-icon-button-light" class="btnPlayItem autoSize" data-itemid="' + item.Id + '" data-itemtype="' + item.Type + '" data-isfolder="' + item.IsFolder + '" data-mediatype="' + item.MediaType + '" data-resumeposition="' + resumePosition + '"><i class="md-icon">play_circle_outline</i></button>';
-            buttonCount++;
-        }
-
-        if (item.LocalTrailerCount) {
-            html += '<button is="paper-icon-button-light" class="btnPlayTrailer autoSize" data-itemid="' + item.Id + '"><i class="md-icon">videocam</i></button>';
-            buttonCount++;
-        }
-
-        html += '<button is="paper-icon-button-light" class="btnMoreCommands autoSize"><i class="md-icon">more_vert</i></button>';
-        buttonCount++;
-
-        html += '</div>';
-
-        html += '</div>';
-
-        return html;
-    }
-
-    function onTrailerButtonClick(e) {
-
-        var id = this.getAttribute('data-itemid');
-
-        ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), id).then(function (trailers) {
-            MediaController.play({ items: trailers });
-        });
-
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-    }
-
-    function onPlayItemButtonClick(e) {
-
-        var target = this;
-
-        var id = target.getAttribute('data-itemid');
-        var type = target.getAttribute('data-itemtype');
-        var isFolder = target.getAttribute('data-isfolder') == 'true';
-        var mediaType = target.getAttribute('data-mediatype');
-        var resumePosition = parseInt(target.getAttribute('data-resumeposition'));
-
-        LibraryBrowser.showPlayMenu(this, id, type, isFolder, mediaType, resumePosition);
-
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-    }
-
-    function onMoreButtonClick(e) {
-
-        var card = parentWithClass(this, 'card');
-
-        showContextMenu(card, {
-            shuffle: false,
-            instantMix: false,
-            play: false,
-            playAllFromHere: false,
-            queue: false,
-            queueAllFromHere: false
-        });
-
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-    }
-
-    function onContextMenu(e) {
-
-        var card = parentWithClass(e.target, 'card');
-
-        if (card) {
-            var itemSelectionPanel = card.querySelector('.itemSelectionPanel');
-
-            if (!itemSelectionPanel) {
-                showContextMenu(card, {});
-            }
-
-            e.preventDefault();
-            return false;
-        }
-    }
-
-    function deleteTimer(id, itemsContainer) {
-
-        require(['confirm'], function (confirm) {
-
-            confirm(Globalize.translate('MessageConfirmRecordingCancellation'), Globalize.translate('HeaderConfirmRecordingCancellation')).then(function () {
-
-                Dashboard.showLoadingMsg();
-
-                ApiClient.cancelLiveTvTimer(id).then(function () {
-
-                    require(['toast'], function (toast) {
-                        toast(Globalize.translate('MessageRecordingCancelled'));
-                    });
-
-                    Dashboard.hideLoadingMsg();
-                    itemsContainer.dispatchEvent(new CustomEvent('timercancelled', {
-                        bubbles: true
-                    }));
-                });
-            });
-        });
-    }
-
-    function showContextMenu(card, options) {
-
-        var displayContextItem = card;
-
-        card = parentWithClass(card, 'card');
-
-        if (!card) {
-            return;
-        }
-
-        var itemId = card.getAttribute('data-itemid');
-        var serverId = ApiClient.serverInfo().Id;
-        var type = card.getAttribute('data-itemtype');
-
-        var apiClient = ConnectionManager.getApiClient(serverId);
-
-        var promise = type == 'Timer' ? apiClient.getLiveTvTimer(itemId) : apiClient.getItem(apiClient.getCurrentUserId(), itemId);
-
-        promise.then(function (item) {
-
-            require(['itemContextMenu'], function (itemContextMenu) {
-
-                itemContextMenu.show(Object.assign(options || {}, {
-                    item: item,
-                    positionTo: displayContextItem
-                }));
-            });
-        });
-    }
-
-    function onListViewPlayButtonClick(e, playButton) {
-
-        var card = e.target;
-
-        if (!card.classList.contains('card') && !card.classList.contains('listItem')) {
-            card = parentWithAnyClass(card, ['listItem', 'card']);
-        }
-
-        var id = card.getAttribute('data-itemid');
-        var type = card.getAttribute('data-itemtype');
-        var isFolder = card.getAttribute('data-isfolder') == 'true';
-        var mediaType = card.getAttribute('data-mediatype');
-        var resumePosition = parseInt(card.getAttribute('data-positionticks'));
-
-        if (type == 'MusicAlbum' || type == 'MusicArtist' || type == 'MusicGenre' || type == 'Playlist') {
-            isFolder = true;
-        }
-
-        if (type == 'Program') {
-            id = card.getAttribute('data-channelid');
-        }
-
-        LibraryBrowser.showPlayMenu(playButton, id, type, isFolder, mediaType, resumePosition);
-
-        e.preventDefault();
-        return false;
-    }
+﻿define(['appSettings', 'appStorage', 'libraryBrowser', 'apphost', 'itemHelper'], function (appSettings, appStorage, LibraryBrowser, appHost, itemHelper) {
 
     function isClickable(target) {
 
@@ -330,12 +17,6 @@
 
     function onCardClick(e) {
 
-        var playButton = parentWithClass(e.target, 'cardOverlayPlayButton');
-
-        if (playButton) {
-            return onListViewPlayButtonClick(e, playButton);
-        }
-
         var card = parentWithClass(e.target, 'card');
 
         if (card) {
@@ -352,7 +33,7 @@
 
     function onGroupedCardClick(e, card) {
 
-        var itemId = card.getAttribute('data-itemid');
+        var itemId = card.getAttribute('data-id');
         var context = card.getAttribute('data-context');
 
         var userId = Dashboard.getCurrentUserId();
@@ -392,25 +73,6 @@
         return false;
     }
 
-    function hasAnyClass(elem, classNames) {
-        return classNames.filter(function (c) {
-            return elem.classList.contains(c);
-        }).length > 0;
-    }
-
-    function parentWithAnyClass(elem, classNames) {
-
-        while (!elem.classList || !hasAnyClass(elem, classNames)) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
-    }
-
     function parentWithClass(elem, className) {
 
         while (!elem.classList || !elem.classList.contains(className)) {
@@ -426,125 +88,10 @@
 
     LibraryBrowser.createCardMenus = function (curr, options) {
 
-        var preventHover = false;
-
-        function onShowTimerExpired(elem) {
-
-            elem = elem.querySelector('a');
-
-            if (elem.querySelector('.itemSelectionPanel')) {
-                return;
-            }
-
-            var innerElem = elem.querySelector('.cardOverlayTarget');
-
-            if (!innerElem) {
-                innerElem = document.createElement('div');
-                innerElem.classList.add('hide');
-                innerElem.classList.add('cardOverlayTarget');
-                parentWithClass(elem, 'cardContent').appendChild(innerElem);
-            }
-
-            var dataElement = elem;
-            while (dataElement && !dataElement.getAttribute('data-itemid')) {
-                dataElement = dataElement.parentNode;
-            }
-
-            var id = dataElement.getAttribute('data-itemid');
-            var type = dataElement.getAttribute('data-itemtype');
-
-            if (type == 'Timer') {
-                return;
-            }
-
-            var promise1 = ApiClient.getItem(Dashboard.getCurrentUserId(), id);
-            var promise2 = Dashboard.getCurrentUser();
-
-            Promise.all([promise1, promise2]).then(function (responses) {
-
-                var item = responses[0];
-                var user = responses[1];
-
-                var card = elem;
-
-                while (!card.classList.contains('card')) {
-                    card = card.parentNode;
-                }
-
-                innerElem.innerHTML = getOverlayHtml(item, user, card);
-
-                var btnPlayItem = innerElem.querySelector('.btnPlayItem');
-                if (btnPlayItem) {
-                    btnPlayItem.addEventListener('click', onPlayItemButtonClick);
-                }
-                var btnPlayTrailer = innerElem.querySelector('.btnPlayTrailer');
-                if (btnPlayTrailer) {
-                    btnPlayTrailer.addEventListener('click', onTrailerButtonClick);
-                }
-                var btnMoreCommands = innerElem.querySelector('.btnMoreCommands');
-                if (btnMoreCommands) {
-                    btnMoreCommands.addEventListener('click', onMoreButtonClick);
-                }
-            });
-
-            slideUpToShow(innerElem);
-        }
-
-        function onHoverIn(e) {
-
-            var elem = e.target;
-
-            if (!elem.classList.contains('cardImage')) {
-                return;
-            }
-
-            if (preventHover === true) {
-                preventHover = false;
-                return;
-            }
-
-            if (showOverlayTimeout) {
-                clearTimeout(showOverlayTimeout);
-                showOverlayTimeout = null;
-            }
-
-            while (!elem.classList.contains('card')) {
-                elem = elem.parentNode;
-            }
-
-            showOverlayTimeout = setTimeout(function () {
-                onShowTimerExpired(elem);
-
-            }, 1200);
-        }
-
-        function preventTouchHover() {
-            preventHover = true;
-        }
-
         curr.removeEventListener('click', onCardClick);
         curr.addEventListener('click', onCardClick);
 
-        if (AppInfo.isTouchPreferred) {
-
-            curr.removeEventListener('contextmenu', disableEvent);
-            curr.addEventListener('contextmenu', disableEvent);
-        }
-        else {
-            curr.removeEventListener('contextmenu', onContextMenu);
-            curr.addEventListener('contextmenu', onContextMenu);
-
-            curr.removeEventListener('mouseenter', onHoverIn);
-            curr.addEventListener('mouseenter', onHoverIn, true);
-
-            curr.removeEventListener('mouseleave', onHoverOut);
-            curr.addEventListener('mouseleave', onHoverOut, true);
-
-            curr.removeEventListener("touchstart", preventTouchHover);
-            curr.addEventListener("touchstart", preventTouchHover);
-        }
-
-        initTapHoldMenus(curr);
+        //initTapHoldMenus(curr);
     };
 
     function initTapHoldMenus(elem) {
@@ -614,12 +161,6 @@
             message: Globalize.translate('TryMultiSelectMessage'),
             title: Globalize.translate('HeaderTryMultiSelect')
         });
-    }
-
-    function disableEvent(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
     }
 
     function onTapHold(e) {
@@ -781,7 +322,7 @@
     var selectedItems = [];
     function updateItemSelection(chkItemSelect, selected) {
 
-        var id = parentWithClass(chkItemSelect, 'card').getAttribute('data-itemid');
+        var id = parentWithClass(chkItemSelect, 'card').getAttribute('data-id');
 
         if (selected) {
 
@@ -989,80 +530,6 @@
         });
     }
 
-    function onItemWithActionClick(e) {
-
-        var elem = parentWithClass(e.target, 'itemWithAction');
-
-        if (!elem) {
-            return;
-        }
-
-        var action = elem.getAttribute('data-action');
-        var elemWithAttributes = elem;
-
-        if (action) {
-            while (!elemWithAttributes.getAttribute('data-itemid')) {
-                elemWithAttributes = elemWithAttributes.parentNode;
-            }
-        }
-
-        var index;
-        var itemsContainer;
-
-        var itemId = elemWithAttributes.getAttribute('data-itemid');
-
-        if (action == 'play') {
-            MediaController.play(itemId);
-        }
-        else if (action == 'playallfromhere') {
-
-            index = elemWithAttributes.getAttribute('data-index');
-
-            itemsContainer = parentWithClass(elem, 'itemsContainer');
-
-            playAllFromHere(index, itemsContainer, 'play');
-        }
-        else if (action == 'instantmix') {
-
-            MediaController.instantMix(itemId);
-        }
-
-        e.stopPropagation();
-        e.preventDefault();
-        return false;
-    }
-
-    function playAllFromHere(index, itemsContainer, method) {
-
-        var ids = [];
-
-        var mediaItems = itemsContainer.querySelectorAll('.mediaItem');
-        for (var i = 0, length = mediaItems.length; i < length; i++) {
-            var node = mediaItems[i];
-            var id = node.getAttribute('data-itemid');
-            while (!id) {
-                node = node.parentNode;
-                id = node.getAttribute('data-itemid');
-            }
-            ids.push(id);
-        }
-
-        ids = ids.slice(index);
-
-        ApiClient.getItems(Dashboard.getCurrentUserId(), {
-
-            Ids: ids.join(','),
-            Fields: 'MediaSources,Chapters',
-            Limit: 100
-
-        }).then(function (result) {
-
-            MediaController[method]({
-                items: result.Items
-            });
-        });
-    }
-
     function showSyncButtonsPerUser(page) {
 
         var apiClient = window.ApiClient;
@@ -1106,16 +573,8 @@
 
         var page = this;
 
-        page.addEventListener('click', onItemWithActionClick);
-
-        var itemsContainers = page.querySelectorAll('.itemsContainer:not(.noautoinit)');
-        var i, length;
-        for (i = 0, length = itemsContainers.length; i < length; i++) {
-            LibraryBrowser.createCardMenus(itemsContainers[i]);
-        }
-
         var categorySyncButtons = page.querySelectorAll('.categorySyncButton');
-        for (i = 0, length = categorySyncButtons.length; i < length; i++) {
+        for (var i = 0, length = categorySyncButtons.length; i < length; i++) {
             categorySyncButtons[i].addEventListener('click', onCategorySyncButtonClick);
         }
     });
@@ -1134,107 +593,6 @@
         var page = this;
 
         hideSelections();
-    });
-
-    function renderUserDataChanges(card, userData) {
-
-        if (userData.Played) {
-
-            var playedIndicator = card.querySelector('.playedIndicator');
-
-            if (!playedIndicator) {
-
-                playedIndicator = document.createElement('div');
-                playedIndicator.classList.add('playedIndicator');
-                card.querySelector('.cardContent').appendChild(playedIndicator);
-            }
-            playedIndicator.innerHTML = '<i class="md-icon">check</i>';
-        }
-        else if (userData.UnplayedItemCount) {
-
-            var playedIndicator = card.querySelector('.playedIndicator');
-
-            if (!playedIndicator) {
-
-                playedIndicator = document.createElement('div');
-                playedIndicator.classList.add('playedIndicator');
-                card.querySelector('.cardContent').appendChild(playedIndicator);
-            }
-            playedIndicator.innerHTML = userData.UnplayedItemCount;
-        }
-
-        var progressHtml = LibraryBrowser.getItemProgressBarHtml(userData);
-        var cardProgress;
-
-        if (progressHtml) {
-            cardProgress = card.querySelector('.cardProgress');
-
-            if (!cardProgress) {
-                cardProgress = document.createElement('div');
-                cardProgress.classList.add('cardProgress');
-
-                var cardFooter = card.querySelector('.cardFooter');
-                if (cardFooter) {
-                    cardFooter.appendChild(cardProgress);
-                }
-            }
-
-            cardProgress.innerHTML = progressHtml;
-        }
-        else {
-            cardProgress = card.querySelector('.cardProgress');
-            if (cardProgress) {
-                cardProgress.parentNode.removeChild(cardProgress);
-            }
-        }
-    }
-
-    function onUserDataChanged(userData) {
-
-        var elems = document.querySelectorAll("*[data-itemid='" + userData.ItemId + "']");
-
-        for (var i = 0, length = elems.length; i < length; i++) {
-
-            var elem = elems[i];
-            var mediaType = elem.getAttribute('data-mediatype');
-
-            if (mediaType == 'Video') {
-                elem.setAttribute('data-positionticks', (userData.PlaybackPositionTicks || 0));
-
-                if (elem.classList.contains('card')) {
-                    renderUserDataChanges(elem, userData);
-                }
-            }
-        }
-    }
-
-    function onWebSocketMessage(e, data) {
-
-        var msg = data;
-
-        if (msg.MessageType === "UserDataChanged") {
-
-            if (msg.Data.UserId == Dashboard.getCurrentUserId()) {
-
-                for (var i = 0, length = msg.Data.UserDataList.length; i < length; i++) {
-                    onUserDataChanged(msg.Data.UserDataList[i]);
-                }
-            }
-        }
-
-    }
-
-    function initializeApiClient(apiClient) {
-        Events.off(apiClient, "websocketmessage", onWebSocketMessage);
-        Events.on(apiClient, "websocketmessage", onWebSocketMessage);
-    }
-
-    if (window.ApiClient) {
-        initializeApiClient(window.ApiClient);
-    }
-
-    Events.on(ConnectionManager, 'apiclientcreated', function (e, apiClient) {
-        initializeApiClient(apiClient);
     });
 
 });

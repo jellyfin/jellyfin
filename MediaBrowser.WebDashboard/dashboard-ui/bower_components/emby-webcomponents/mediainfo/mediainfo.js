@@ -125,7 +125,7 @@ define(['datetime', 'globalize', 'embyRouter', 'material-icons', 'css!./mediainf
             }
         }
 
-        if (item.ProductionYear && item.Type == "Series") {
+        if (options.year !== false && item.ProductionYear && item.Type == "Series") {
 
             if (item.Status == "Continuing") {
                 miscInfo.push(globalize.translate('sharedcomponents#ValueSeriesYearToPresent', item.ProductionYear));
@@ -237,7 +237,7 @@ define(['datetime', 'globalize', 'embyRouter', 'material-icons', 'css!./mediainf
             miscInfo.push(item.Width + "x" + item.Height);
         }
 
-        if (item.Type == 'Audio' && item.Container) {
+        if (options.container !== false && item.Type == 'Audio' && item.Container) {
             miscInfo.push(item.Container);
         }
 

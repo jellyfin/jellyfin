@@ -1,4 +1,8 @@
 {
+    "EditInfo": "Edit Info",
+    "RemoveFromPlaylist": "Remove from Playlist",
+    "PlayFromBeginning": "Play from beginning",
+    "ResumeAt": "Resume from {0}",
     "ValueSpecialEpisodeName": "Special - {0}",
     "Share": "\u5206\u4eab",
     "ServerUpdateNeeded": "\u6b64Emby\u4f3a\u670d\u5668\u9700\u8981\u66f4\u65b0\uff0c\u8acb\u81f3{0}\u53d6\u5f97\u6700\u65b0\u7248\u672c",

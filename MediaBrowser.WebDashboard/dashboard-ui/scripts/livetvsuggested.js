@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'scrollStyles'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser) {
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
@@ -133,7 +133,6 @@
                 } else {
                     containers[i].classList.remove('hiddenScrollX');
                 }
-                LibraryBrowser.createCardMenus(containers[i]);
             }
         };
 

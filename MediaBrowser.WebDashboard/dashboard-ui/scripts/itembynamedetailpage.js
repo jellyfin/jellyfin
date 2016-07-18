@@ -256,7 +256,6 @@
             var itemsContainer = element.querySelector('.itemsContainer');
             itemsContainer.innerHTML = html;
 
-            LibraryBrowser.createCardMenus(itemsContainer);
             ImageLoader.lazyChildren(itemsContainer);
         });
     }

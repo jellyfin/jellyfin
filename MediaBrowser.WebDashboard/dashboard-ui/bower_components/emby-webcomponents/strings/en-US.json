@@ -112,5 +112,8 @@
   "ViewArtist": "View Artist",
   "QueueAllFromHere": "Queue All from Here",
   "PlayAllFromHere": "Play All from Here",
-  "RemoveFromPlaylist": "Remove from Playlist"
+  "PlayFromBeginning": "Play from beginning",
+  "ResumeAt": "Resume from {0}",
+  "RemoveFromPlaylist": "Remove from Playlist",
+  "Trailer": "Trailer"
 }

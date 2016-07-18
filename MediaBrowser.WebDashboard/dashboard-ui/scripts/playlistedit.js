@@ -93,7 +93,6 @@
                 });
             });
             ImageLoader.lazyChildren(elem);
-            LibraryBrowser.createCardMenus(elem);
 
             $('.btnNextPage', elem).on('click', function () {
                 query.StartIndex += query.Limit;

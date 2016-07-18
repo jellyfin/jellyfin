@@ -1804,6 +1804,7 @@ var AppInfo = {};
         define("emby-collapse", [embyWebComponentsBowerPath + "/emby-collapse/emby-collapse"], returnFirstDependency);
         define("emby-button", [embyWebComponentsBowerPath + "/emby-button/emby-button"], returnFirstDependency);
         define("emby-itemscontainer", [embyWebComponentsBowerPath + "/emby-itemscontainer/emby-itemscontainer"], returnFirstDependency);
+        define("itemHoverMenu", [embyWebComponentsBowerPath + "/itemhovermenu/itemhovermenu"], returnFirstDependency);
         define("alphaPicker", [embyWebComponentsBowerPath + "/alphapicker/alphapicker"], returnFirstDependency);
         define("paper-icon-button-light", [embyWebComponentsBowerPath + "/emby-button/paper-icon-button-light"]);
 
@@ -1820,6 +1821,7 @@ var AppInfo = {};
         define("subtitleEditor", [embyWebComponentsBowerPath + "/subtitleeditor/subtitleeditor"], returnFirstDependency);
         define("mediaInfo", [embyWebComponentsBowerPath + "/mediainfo/mediainfo"], returnFirstDependency);
         define("itemContextMenu", [embyWebComponentsBowerPath + "/itemcontextmenu"], returnFirstDependency);
+        define("playMenu", [embyWebComponentsBowerPath + "/playmenu"], returnFirstDependency);
         define("refreshDialog", [embyWebComponentsBowerPath + "/refreshdialog/refreshdialog"], returnFirstDependency);
         define("backdrop", [embyWebComponentsBowerPath + "/backdrop/backdrop"], returnFirstDependency);
         define("fetchHelper", [embyWebComponentsBowerPath + "/fetchhelper"], returnFirstDependency);
@@ -2035,6 +2037,12 @@ var AppInfo = {};
                 },
                 canPlay: function (item) {
                     return MediaController.canPlay(item);
+                },
+                instantMix: function (item) {
+                    return MediaController.instantMix(item);
+                },
+                shuffle: function (item) {
+                    return MediaController.shuffle(item);
                 }
             };
         });
@@ -2287,7 +2295,7 @@ var AppInfo = {};
 
         var baseUrl = 'bower_components/emby-webcomponents/strings/';
 
-        var languages = ['da', 'de', 'en-US', 'es-MX', 'kk', 'nb', 'nl', 'pt-BR', 'pt-PT', 'ru', 'sv', 'zh-TW'];
+        var languages = ['da', 'de', 'en-US', 'es-MX', 'fr', 'kk', 'nb', 'nl', 'pt-BR', 'pt-PT', 'ru', 'sv', 'zh-TW'];
 
         var translations = languages.map(function (i) {
             return {
@@ -3248,7 +3256,7 @@ var AppInfo = {};
     }
 
     function upgradeLayouts() {
-        if (!AppInfo.enableAppLayouts && browserInfo.mobile) {
+        if (!AppInfo.enableAppLayouts) {
             Dashboard.getPluginSecurityInfo().then(function (info) {
                 if (info.IsMBSupporter) {
                     AppInfo.enableAppLayouts = true;

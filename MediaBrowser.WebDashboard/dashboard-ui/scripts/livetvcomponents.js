@@ -89,7 +89,6 @@
                 showChannelName: true,
                 lazy: true,
                 cardLayout: true,
-                showDetailsMenu: true,
                 defaultAction: 'edit'
 
             });

@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'focusManager', 'embyRouter', 'emby-input', 'paper-icon-button-light', 'material-icons'], function (libraryBrowser, focusManager, embyRouter) {
+﻿define(['libraryBrowser', 'focusManager', 'embyRouter', 'emby-input', 'paper-icon-button-light', 'material-icons', 'emby-itemscontainer'], function (libraryBrowser, focusManager, embyRouter) {
 
     function loadSuggestions(page) {
 
@@ -121,7 +121,8 @@
                 centerImage: true,
                 centerText: true,
                 textLines: getAdditionalTextLines,
-                overlayPlayButton: true
+                overlayPlayButton: true,
+                serverId: ApiClient.serverInfo().Id
             });
 
             var itemsContainer = searchResults;
@@ -175,8 +176,6 @@
             showTextSuggestions();
             loadSuggestions(view);
         }
-
-        libraryBrowser.createCardMenus(searchResults);
 
         view.querySelector('.txtSearch').addEventListener('input', function () {
             onSearchChange(this.value);

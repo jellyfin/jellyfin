@@ -39,20 +39,37 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 });
             }
 
-            if (options.edit !== false) {
-                if (itemHelper.canEdit(user, item.Type)) {
+            if (itemHelper.canEdit(user, item.Type)) {
 
-                    if (!isTheater) {
+                if (!isTheater) {
+                    if (options.edit !== false) {
+
+                        var text = item.Type == 'Timer' ? globalize.translate('sharedcomponents#Edit') : globalize.translate('sharedcomponents#EditInfo');
+
                         commands.push({
-                            name: globalize.translate('sharedcomponents#EditInfo'),
+                            name: text,
                             id: 'edit'
                         });
+                    }
+                }
+            }
+
+            if (itemHelper.canEditImages(user, item.Type)) {
+
+                if (!isTheater) {
+                    if (options.editImages !== false) {
                         commands.push({
                             name: globalize.translate('sharedcomponents#EditImages'),
                             id: 'editimages'
                         });
                     }
-                    if (item.MediaType == 'Video' && item.Type != 'TvChannel' && item.Type != 'Program' && item.LocationType != 'Virtual') {
+                }
+            }
+
+            if (itemHelper.canEdit(user, item.Type)) {
+
+                if (item.MediaType == 'Video' && item.Type != 'TvChannel' && item.Type != 'Program' && item.LocationType != 'Virtual') {
+                    if (options.editSubtitles !== false) {
                         commands.push({
                             name: globalize.translate('sharedcomponents#EditSubtitles'),
                             id: 'editsubtitles'

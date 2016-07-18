@@ -15,28 +15,28 @@
         <div class="homePageSection">
             <h1 class="listHeader">${HeaderLatestMusic}</h1>
 
-            <div id="recentlyAddedSongs" class="itemsContainer noautoinit" style="text-align:left;">
+            <div is="emby-itemscontainer" id="recentlyAddedSongs" class="itemsContainer" style="text-align:left;">
             </div>
         </div>
 
         <div id="playlists" class="homePageSection hide">
             <h1 class="listHeader">${HeaderPlaylists}</h1>
 
-            <div class="itemsContainer noautoinit" style="text-align:left;">
+            <div is="emby-itemscontainer" class="itemsContainer" style="text-align:left;">
             </div>
         </div>
 
         <div id="recentlyPlayed" class="homePageSection hide">
             <h1 class="listHeader">${HeaderRecentlyPlayed}</h1>
 
-            <div id="recentlyPlayedSongs" class="itemsContainer noautoinit" style="text-align:left;">
+            <div is="emby-itemscontainer" id="recentlyPlayedSongs" class="itemsContainer" style="text-align:left;">
             </div>
         </div>
 
         <div id="topPlayed" class="homePageSection hide">
             <h1 class="listHeader">${HeaderFrequentlyPlayed}</h1>
 
-            <div id="topPlayedSongs" class="itemsContainer noautoinit" style="text-align: left;">
+            <div is="emby-itemscontainer" id="topPlayedSongs" class="itemsContainer" style="text-align: left;">
             </div>
         </div>
 
@@ -108,14 +108,14 @@
         <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
             <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
         </div>
-        <div id="items" class="itemsContainer paddedItemsContainer"></div>
+        <div is="emby-itemscontainer" id="items" class="itemsContainer paddedItemsContainer"></div>
     </div>
     <div class="pageTabContent pageTabContent ehsContent" id="foldersTab" data-index="6">
         <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
             <div class="paging"></div>
         </div>
 
-        <div class="itemsContainer itemsContainerWithAlphaPicker">
+        <div is="emby-itemscontainer" class="itemsContainer itemsContainerWithAlphaPicker">
         </div>
         <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
             <div class="paging"></div>

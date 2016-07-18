@@ -577,106 +577,6 @@
                 });
             },
 
-            showPlayMenu: function (positionTo, itemId, itemType, isFolder, mediaType, resumePositionTicks) {
-
-                var externalPlayers = AppInfo.supportsExternalPlayers && appSettings.enableExternalPlayers();
-
-                if (!resumePositionTicks && mediaType != "Audio" && !isFolder) {
-
-                    if (!externalPlayers || mediaType != "Video") {
-
-                        MediaController.play(itemId);
-                        return;
-                    }
-                }
-
-                var menuItems = [];
-
-                if (resumePositionTicks) {
-                    menuItems.push({
-                        name: Globalize.translate('ButtonResume'),
-                        id: 'resume',
-                        ironIcon: 'play-arrow'
-                    });
-                }
-
-                menuItems.push({
-                    name: Globalize.translate('ButtonPlay'),
-                    id: 'play',
-                    ironIcon: 'play-arrow'
-                });
-
-                if (!isFolder && externalPlayers && mediaType != "Audio") {
-                    menuItems.push({
-                        name: Globalize.translate('ButtonPlayExternalPlayer'),
-                        id: 'externalplayer',
-                        ironIcon: 'airplay'
-                    });
-                }
-
-                if (MediaController.canQueueMediaType(mediaType, itemType)) {
-                    menuItems.push({
-                        name: Globalize.translate('ButtonQueue'),
-                        id: 'queue',
-                        ironIcon: 'playlist-add'
-                    });
-                }
-
-                if (itemType == "Audio" || itemType == "MusicAlbum" || itemType == "MusicArtist" || itemType == "MusicGenre") {
-                    menuItems.push({
-                        name: Globalize.translate('ButtonInstantMix'),
-                        id: 'instantmix',
-                        ironIcon: 'shuffle'
-                    });
-                }
-
-                if (isFolder || itemType == "MusicArtist" || itemType == "MusicGenre") {
-                    menuItems.push({
-                        name: Globalize.translate('ButtonShuffle'),
-                        id: 'shuffle',
-                        ironIcon: 'shuffle'
-                    });
-                }
-
-                require(['actionsheet'], function (actionsheet) {
-
-                    actionsheet.show({
-                        items: menuItems,
-                        positionTo: positionTo,
-                        callback: function (id) {
-
-                            switch (id) {
-
-                                case 'play':
-                                    MediaController.play(itemId);
-                                    break;
-                                case 'externalplayer':
-                                    LibraryBrowser.playInExternalPlayer(itemId);
-                                    break;
-                                case 'resume':
-                                    MediaController.play({
-                                        ids: [itemId],
-                                        startPositionTicks: resumePositionTicks
-                                    });
-                                    break;
-                                case 'queue':
-                                    MediaController.queue(itemId);
-                                    break;
-                                case 'instantmix':
-                                    MediaController.instantMix(itemId);
-                                    break;
-                                case 'shuffle':
-                                    MediaController.shuffle(itemId);
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                    });
-
-                });
-            },
-
             deleteItems: function (itemIds) {
 
                 return new Promise(function (resolve, reject) {
@@ -897,13 +797,8 @@
                 var atts = [];
 
                 atts.push({
-                    name: 'itemid',
-                    value: item.Id
-                });
-
-                atts.push({
                     name: 'serverid',
-                    value: item.ServerId
+                    value: item.ServerId || options.serverId
                 });
 
                 atts.push({
@@ -926,7 +821,7 @@
                 }
 
                 atts.push({
-                    name: 'itemtype',
+                    name: 'type',
                     value: item.Type
                 });
 
@@ -1546,7 +1441,7 @@
                 anchorCssClass += ' mediaItem';
 
                 if (options.defaultAction) {
-                    anchorCssClass += ' itemWithAction';
+                    anchorCssClass += ' itemAction';
                 }
 
                 var transition = options.transition === false || !AppInfo.enableSectionTransitions ? '' : ' data-transition="slide"';
@@ -1604,10 +1499,10 @@
                 html += '</a>';
 
                 if (options.overlayPlayButton && !item.IsPlaceHolder && (item.LocationType != 'Virtual' || !item.MediaType || item.Type == 'Program') && item.Type != 'Person' && item.PlayAccess == 'Full') {
-                    html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayPlayButton autoSize" onclick="return false;"><i class="md-icon">play_arrow</i></button></div>';
+                    html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayPlayButton itemAction autoSize" data-action="playmenu" onclick="return false;"><i class="md-icon">play_arrow</i></button></div>';
                 }
                 if (options.overlayMoreButton) {
-                    html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayMoreButton menuButton autoSize" onclick="return false;"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button></div>';
+                    html += '<div class="cardOverlayButtonContainer"><button is="paper-icon-button-light" class="cardOverlayMoreButton itemAction autoSize" data-action="menu" onclick="return false;"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button></div>';
                 }
 
                 // cardScalable
@@ -1632,7 +1527,7 @@
 
                 if (options.cardLayout) {
                     html += '<div class="cardButtonContainer">';
-                    html += '<button is="paper-icon-button-light" class="menuButton btnCardOptions autoSize"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button>';
+                    html += '<button is="paper-icon-button-light" class="itemAction btnCardOptions autoSize" data-action="menu"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button>';
                     html += "</div>";
                 }
 
@@ -1795,11 +1690,11 @@
 
                 var elemWithAttributes = elem;
 
-                while (!elemWithAttributes.getAttribute('data-itemid')) {
+                while (!elemWithAttributes.getAttribute('data-id')) {
                     elemWithAttributes = elemWithAttributes.parentNode;
                 }
 
-                var itemId = elemWithAttributes.getAttribute('data-itemid');
+                var itemId = elemWithAttributes.getAttribute('data-id');
                 var index = elemWithAttributes.getAttribute('data-index');
                 var mediaType = elemWithAttributes.getAttribute('data-mediatype');
 
@@ -2375,10 +2270,10 @@
                 if (style == 'fab') {
 
                     var tagName = 'paper-fab';
-                    return '<' + tagName + ' title="' + tooltip + '" data-itemid="' + itemId + '" icon="' + icon + '" class="' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"></' + tagName + '>';
+                    return '<' + tagName + ' title="' + tooltip + '" data-id="' + itemId + '" icon="' + icon + '" class="' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"></' + tagName + '>';
                 }
 
-                return '<button is="paper-icon-button-light" title="' + tooltip + '" data-itemid="' + itemId + '"  class="autoSize ' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"><i class="md-icon">' + icon + '</i></button>';
+                return '<button is="paper-icon-button-light" title="' + tooltip + '" data-id="' + itemId + '"  class="autoSize ' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"><i class="md-icon">' + icon + '</i></button>';
             },
 
             getUserDataIconsHtml: function (item, includePlayed, style) {
@@ -2416,7 +2311,7 @@
 
             markPlayed: function (link) {
 
-                var id = link.getAttribute('data-itemid');
+                var id = link.getAttribute('data-id');
 
                 var markAsPlayed = !link.classList.contains('btnUserItemRatingOn');
 
@@ -2431,7 +2326,7 @@
 
             markFavorite: function (link) {
 
-                var id = link.getAttribute('data-itemid');
+                var id = link.getAttribute('data-id');
 
                 var markAsFavorite = !link.classList.contains('btnUserItemRatingOn');
 

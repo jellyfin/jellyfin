@@ -282,13 +282,21 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             html += '</div>';
 
             if (enableSideMediaInfo) {
-                html += '<div class="secondary listItemMediaInfo">' + mediaInfo.getPrimaryMediaInfoHtml(item) + '</div>';
+                html += '<div class="secondary listItemMediaInfo">' + mediaInfo.getPrimaryMediaInfoHtml(item, {
+
+                    year: false,
+                    container: false
+
+                }) + '</div>';
             }
 
             if (!clickEntireItem) {
-                html += '<button is="paper-icon-button-light" class="menuButton autoSize"><i class="md-icon">&#xE5D4;</i></button>';
+                html += '<button is="paper-icon-button-light" class="itemAction autoSize" data-action="menu"><i class="md-icon">&#xE5D4;</i></button>';
                 html += '<span class="listViewUserDataButtons">';
-                html += userdataButtons.getIconsHtml(item, false);
+                html += userdataButtons.getIconsHtml({
+                    item: item,
+                    includePlayed: false
+                });
                 html += '</span>';
             }
 
