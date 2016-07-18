@@ -243,6 +243,33 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         else if (action == 'playmenu') {
             showPlayMenu(card, target);
         }
+
+        else if (action == 'edit') {
+            getItem(target).then(function (item) {
+                editItem(item, serverId);
+            });
+        }
+    }
+
+    function editItem(item, serverId) {
+
+        var apiClient = connectionManager.getApiClient(serverId);
+
+        return new Promise(function (resolve, reject) {
+
+            if (item.Type == 'Timer') {
+                require(['recordingEditor'], function (recordingEditor) {
+
+                    var serverId = apiClient.serverInfo().Id;
+                    recordingEditor.show(item.Id, serverId).then(resolve, reject);
+                });
+            } else {
+                require(['components/metadataeditor/metadataeditor'], function (metadataeditor) {
+
+                    metadataeditor.show(item.Id).then(resolve, reject);
+                });
+            }
+        });
     }
 
     function onRecordCommand(serverId, id, type, timerId, seriesTimerId) {
@@ -322,6 +349,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
     }
 
     function onClick(e) {
+
         var card = parentWithClass(e.target, 'itemAction');
 
         if (card) {
