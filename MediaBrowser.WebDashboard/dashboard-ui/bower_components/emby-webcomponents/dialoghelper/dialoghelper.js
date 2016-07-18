@@ -166,11 +166,7 @@
         // Without this, seeing some script errors in Firefox
         // Also for some reason it won't auto-focus without a delay here, still investigating that
 
-        var delay = enableAnimation() ? 300 : 300;
-
-        setTimeout(function () {
-            focusManager.autoFocus(dlg);
-        }, delay);
+        focusManager.autoFocus(dlg);
     }
 
     function safeBlur(el) {

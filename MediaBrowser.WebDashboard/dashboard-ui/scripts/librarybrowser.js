@@ -577,34 +577,6 @@
                 });
             },
 
-            deleteItems: function (itemIds) {
-
-                return new Promise(function (resolve, reject) {
-
-                    var msg = Globalize.translate('ConfirmDeleteItem');
-                    var title = Globalize.translate('HeaderDeleteItem');
-
-                    if (itemIds.length > 1) {
-                        msg = Globalize.translate('ConfirmDeleteItems');
-                        title = Globalize.translate('HeaderDeleteItems');
-                    }
-
-                    require(['confirm'], function (confirm) {
-
-                        confirm(msg, title).then(function () {
-
-                            var promises = itemIds.map(function (itemId) {
-                                ApiClient.deleteItem(itemId);
-                                Events.trigger(LibraryBrowser, 'itemdeleting', [itemId]);
-                            });
-
-                            resolve();
-                        }, reject);
-
-                    });
-                });
-            },
-
             editImages: function (itemId) {
 
                 return new Promise(function (resolve, reject) {
@@ -2263,80 +2235,6 @@
                 }
 
                 return null;
-            },
-
-            getUserDataButtonHtml: function (method, itemId, btnCssClass, icon, tooltip, style) {
-
-                if (style == 'fab') {
-
-                    var tagName = 'paper-fab';
-                    return '<' + tagName + ' title="' + tooltip + '" data-id="' + itemId + '" icon="' + icon + '" class="' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"></' + tagName + '>';
-                }
-
-                return '<button is="paper-icon-button-light" title="' + tooltip + '" data-id="' + itemId + '"  class="autoSize ' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"><i class="md-icon">' + icon + '</i></button>';
-            },
-
-            getUserDataIconsHtml: function (item, includePlayed, style) {
-
-                var html = '';
-
-                var userData = item.UserData || {};
-
-                var itemId = item.Id;
-
-                if (includePlayed !== false) {
-                    var tooltipPlayed = Globalize.translate('TooltipPlayed');
-
-                    if (item.MediaType == 'Video' || item.Type == 'Series' || item.Type == 'Season' || item.Type == 'BoxSet' || item.Type == 'Playlist') {
-                        if (item.Type != 'TvChannel') {
-                            if (userData.Played) {
-                                html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating btnUserItemRatingOn', 'check', tooltipPlayed, style);
-                            } else {
-                                html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating', 'check', tooltipPlayed, style);
-                            }
-                        }
-                    }
-                }
-
-                var tooltipFavorite = Globalize.translate('TooltipFavorite');
-                if (userData.IsFavorite) {
-
-                    html += LibraryBrowser.getUserDataButtonHtml('markFavorite', itemId, 'btnUserItemRating btnUserItemRatingOn', 'favorite', tooltipFavorite, style);
-                } else {
-                    html += LibraryBrowser.getUserDataButtonHtml('markFavorite', itemId, 'btnUserItemRating', 'favorite', tooltipFavorite, style);
-                }
-
-                return html;
-            },
-
-            markPlayed: function (link) {
-
-                var id = link.getAttribute('data-id');
-
-                var markAsPlayed = !link.classList.contains('btnUserItemRatingOn');
-
-                if (markAsPlayed) {
-                    ApiClient.markPlayed(Dashboard.getCurrentUserId(), id);
-                    link.classList.add('btnUserItemRatingOn');
-                } else {
-                    ApiClient.markUnplayed(Dashboard.getCurrentUserId(), id);
-                    link.classList.remove('btnUserItemRatingOn');
-                }
-            },
-
-            markFavorite: function (link) {
-
-                var id = link.getAttribute('data-id');
-
-                var markAsFavorite = !link.classList.contains('btnUserItemRatingOn');
-
-                ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
-
-                if (markAsFavorite) {
-                    link.classList.add('btnUserItemRatingOn');
-                } else {
-                    link.classList.remove('btnUserItemRatingOn');
-                }
             },
 
             renderDetailImage: function (elem, item, editable, preferThumb) {

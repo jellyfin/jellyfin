@@ -36,6 +36,7 @@
 
         var target = e.target;
         var card = parentWithAttribute(target, 'data-id');
+
         if (card) {
 
             //var itemSelectionPanel = card.querySelector('.itemSelectionPanel');
@@ -49,11 +50,11 @@
                 positionTo: target,
                 itemsContainer: itemsContainer
             });
-        }
 
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
     }
 
     function getShortcutOptions() {
@@ -82,13 +83,32 @@
         });
     };
 
+    ItemsContainerProtoType.enableMultiSelect = function (enabled) {
+
+        var current = this.multiSelect;
+
+        if (!enabled && current) {
+            current.destroy();
+            this.multiSelect = null;
+            return;
+        }
+
+        if (current) {
+            return;
+        }
+
+        var self = this;
+        require(['multiSelect'], function (MultiSelect) {
+            self.multiSelect = new MultiSelect(self);
+        });
+    };
+
     ItemsContainerProtoType.attachedCallback = function () {
+
         this.addEventListener('click', onClick);
 
-        // mobile safari doesn't allow contextmenu override
-        if (browser.safari && browser.mobile) {
+        if (browser.mobile) {
             this.addEventListener('contextmenu', disableEvent);
-            // todo: use tap hold
         } else {
             this.addEventListener('contextmenu', onContextMenu);
         }
@@ -97,10 +117,17 @@
             this.enableHoverMenu(true);
         }
 
+        if (layoutManager.desktop || layoutManager.mobile) {
+            this.enableMultiSelect(true);
+        }
+
         itemShortcuts.on(this, getShortcutOptions());
     };
 
     ItemsContainerProtoType.detachedCallback = function () {
+
+        this.enableHoverMenu(false);
+        this.enableMultiSelect(false);
         this.removeEventListener('click', onClick);
         this.removeEventListener('contextmenu', onContextMenu);
         this.removeEventListener('contextmenu', disableEvent);

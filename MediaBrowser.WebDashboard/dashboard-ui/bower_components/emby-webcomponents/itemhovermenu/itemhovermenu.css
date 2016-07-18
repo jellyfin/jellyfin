@@ -39,9 +39,15 @@
 }
 
     .cardOverlayButtons .fab {
-        background-color: #333;
+        background-color: #282828;
         margin-right: .25em;
     }
+
+        .cardOverlayButtons .fab i.md-icon {
+            width: auto !important;
+            height: auto !important;
+            font-size: 20px !important;
+        }
 
 @media all and (max-width: 1200px) {
 

@@ -1,8 +1,10 @@
 {
-    "EditInfo": "Editar Informa\u00e7\u00f5es",
-    "RemoveFromPlaylist": "Remover da Lista de Reprodu\u00e7\u00e3o",
-    "PlayFromBeginning": "Reproduzir do in\u00edcio",
-    "ResumeAt": "Retomar de {0}",
+    "MarkPlayed": "Mark Played",
+    "MarkUnplayed": "Mark Unplayed",
+    "GroupVersions": "Group Versions",
+    "PleaseSelectTwoItems": "Please select at least two items.",
+    "TheSelectedItemsWillBeGrouped": "The selected videos will be grouped into one virtual item. Emby apps will automatically choose which version to play based on device and network performance. Are you sure you wish to continue?",
+    "Error": "Error",
     "ValueSpecialEpisodeName": "Especial - {0}",
     "Share": "Compartilhar",
     "ServerUpdateNeeded": "Este servidor Emby precisa ser atualizado. Para baixar a \u00faltima vers\u00e3o, por favor visite {0}",
@@ -109,10 +111,15 @@
     "Shuffle": "Embaralhar",
     "Identify": "Identificar",
     "EditImages": "Editar Imagens",
+    "EditInfo": "Editar Informa\u00e7\u00f5es",
     "Sync": "Sincronizar",
     "InstantMix": "Mix Instant\u00e2neo",
     "ViewAlbum": "Visualizar \u00c1lbum",
     "ViewArtist": "Visualizar Artista",
     "QueueAllFromHere": "Enfileirar todos daqui",
-    "PlayAllFromHere": "Reproduzir todos daqui"
+    "PlayAllFromHere": "Reproduzir todos daqui",
+    "PlayFromBeginning": "Reproduzir do in\u00edcio",
+    "ResumeAt": "Retomar de {0}",
+    "RemoveFromPlaylist": "Remover da Lista de Reprodu\u00e7\u00e3o",
+    "Trailer": "Trailer"
 }

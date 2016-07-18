@@ -1030,54 +1030,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     right: 20px;
 }
 
-.selectedCharacter {
-    color: #52B54B !important;
-}
-
-.itemOverlayHtml {
-    max-height: 100px;
-    margin-top: 1.5em;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.itemSelectionPanel {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    top: 0;
-    background-color: rgba(0, 0, 0, .3);
-    z-index: 999;
-    border: 1px solid #43A047;
-}
-
-    .itemSelectionPanel #checkbox {
-        border-radius: 0 !important;
-    }
-
-.selectionCommandsPanel {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 50px;
-    background: #43A047;
-    z-index: 1000;
-    padding: 0 .75em 0 .25em;
-    display: flex;
-    align-items: center;
-    color: #fff;
-}
-
-.itemSelectionCount {
-    font-size: 28px;
-    vertical-align: middle;
-    color: #fff;
-    display: inline-block;
-    padding-top: 1px;
-}
-
 @media all and (max-height: 480px) {
 
     .alphabetPicker {

@@ -2,7 +2,6 @@
 
     var preventHover = false;
     var showOverlayTimeout;
-    var hoveringElement;
 
     function parentWithAttribute(elem, name) {
 
@@ -20,10 +19,6 @@
     function onHoverOut(e) {
 
         var elem = e.target;
-
-        if (elem != hoveringElement) {
-            return;
-        }
 
         if (showOverlayTimeout) {
             clearTimeout(showOverlayTimeout);
@@ -244,7 +239,6 @@
         }
 
         elem = parentWithAttribute(elem, 'data-id');
-        hoveringElement = elem;
 
         showOverlayTimeout = setTimeout(function () {
             onShowTimerExpired(elem);
