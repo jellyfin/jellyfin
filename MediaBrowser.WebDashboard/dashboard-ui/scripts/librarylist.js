@@ -1,172 +1,5 @@
 ﻿define(['appSettings', 'appStorage', 'libraryBrowser', 'apphost', 'itemHelper', 'mediaInfo'], function (appSettings, appStorage, LibraryBrowser, appHost, itemHelper, mediaInfo) {
 
-    var showOverlayTimeout;
-
-    function onHoverOut(e) {
-
-        var elem = e.target;
-
-        if (!elem.classList.contains('card')) {
-            return;
-        }
-
-        if (showOverlayTimeout) {
-            clearTimeout(showOverlayTimeout);
-            showOverlayTimeout = null;
-        }
-
-        elem = elem.querySelector('.cardOverlayTarget');
-
-        if (elem) {
-            slideDownToHide(elem);
-        }
-    }
-
-    function slideDownToHide(elem) {
-
-        if (elem.classList.contains('hide')) {
-            return;
-        }
-
-        if (!elem.animate) {
-            elem.classList.add('hide');
-            return;
-        }
-
-        requestAnimationFrame(function () {
-            var keyframes = [
-              { transform: 'translateY(0)', offset: 0 },
-              { transform: 'translateY(100%)', offset: 1 }];
-            var timing = { duration: 300, iterations: 1, fill: 'forwards', easing: 'ease-out' };
-
-            elem.animate(keyframes, timing).onfinish = function () {
-                elem.classList.add('hide');
-            };
-        });
-    }
-
-    function slideUpToShow(elem) {
-
-        if (!elem.classList.contains('hide')) {
-            return;
-        }
-
-        elem.classList.remove('hide');
-
-        if (!elem.animate) {
-            return;
-        }
-
-        requestAnimationFrame(function () {
-
-            var keyframes = [
-              { transform: 'translateY(100%)', offset: 0 },
-              { transform: 'translateY(0)', offset: 1 }];
-            var timing = { duration: 300, iterations: 1, fill: 'forwards', easing: 'ease-out' };
-            elem.animate(keyframes, timing);
-        });
-    }
-
-    function getOverlayHtml(item, currentUser, card) {
-
-        var html = '';
-
-        html += '<div class="cardOverlayInner">';
-
-        var className = card.className.toLowerCase();
-
-        var isMiniItem = className.indexOf('mini') != -1;
-        var isSmallItem = isMiniItem || className.indexOf('small') != -1;
-        var isPortrait = className.indexOf('portrait') != -1;
-
-        var parentName = isSmallItem || isMiniItem || isPortrait ? null : item.SeriesName;
-        var name = itemHelper.getDisplayName(item);
-
-        html += '<div style="margin-bottom:1em;">';
-        var logoHeight = isSmallItem || isMiniItem ? 20 : 26;
-        var imgUrl;
-
-        if (parentName && item.ParentLogoItemId) {
-
-            imgUrl = ApiClient.getScaledImageUrl(item.ParentLogoItemId, {
-                maxHeight: logoHeight,
-                type: 'logo',
-                tag: item.ParentLogoImageTag
-            });
-
-            html += '<img src="' + imgUrl + '" style="max-height:' + logoHeight + 'px;max-width:100%;" />';
-
-        }
-        else if (item.ImageTags.Logo) {
-
-            imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                maxHeight: logoHeight,
-                type: 'logo',
-                tag: item.ImageTags.Logo
-            });
-
-            html += '<img src="' + imgUrl + '" style="max-height:' + logoHeight + 'px;max-width:100%;" />';
-        }
-        else {
-            html += parentName || name;
-        }
-        html += '</div>';
-
-        if (parentName) {
-            html += '<p>';
-            html += name;
-            html += '</p>';
-        } else if (!isSmallItem && !isMiniItem) {
-            html += '<div class="itemMiscInfo">';
-            html += mediaInfo.getPrimaryMediaInfoHtml(item, {
-                endsAt: false
-            });
-            html += '</div>';
-        }
-
-        if (!isMiniItem) {
-            html += '<div style="margin:1em 0 .75em;">';
-
-            if (isPortrait) {
-                html += '<div class="userDataIcons" style="margin:.5em 0 0em;">';
-                html += LibraryBrowser.getUserDataIconsHtml(item);
-                html += '</div>';
-            } else {
-
-                html += '<span class="userDataIcons" style="vertical-align:middle;">';
-                html += LibraryBrowser.getUserDataIconsHtml(item);
-                html += '</span>';
-            }
-            html += '</div>';
-        }
-
-        html += '<div>';
-
-        var buttonCount = 0;
-
-        if (MediaController.canPlay(item)) {
-
-            var resumePosition = (item.UserData || {}).PlaybackPositionTicks || 0;
-
-            html += '<button is="paper-icon-button-light" class="itemAction autoSize" data-action="playmenu" data-itemid="' + item.Id + '" data-itemtype="' + item.Type + '" data-isfolder="' + item.IsFolder + '" data-mediatype="' + item.MediaType + '" data-resumeposition="' + resumePosition + '"><i class="md-icon">play_circle_outline</i></button>';
-            buttonCount++;
-        }
-
-        if (item.LocalTrailerCount) {
-            html += '<button is="paper-icon-button-light" class="itemAction autoSize" data-action="playtrailer" data-itemid="' + item.Id + '"><i class="md-icon">videocam</i></button>';
-            buttonCount++;
-        }
-
-        html += '<button is="paper-icon-button-light" class="itemAction autoSize" data-action="menu" data-playoptions="false"><i class="md-icon">more_vert</i></button>';
-        buttonCount++;
-
-        html += '</div>';
-
-        html += '</div>';
-
-        return html;
-    }
-
     function isClickable(target) {
 
         while (target != null) {
@@ -200,7 +33,7 @@
 
     function onGroupedCardClick(e, card) {
 
-        var itemId = card.getAttribute('data-itemid');
+        var itemId = card.getAttribute('data-id');
         var context = card.getAttribute('data-context');
 
         var userId = Dashboard.getCurrentUserId();
@@ -255,103 +88,8 @@
 
     LibraryBrowser.createCardMenus = function (curr, options) {
 
-        var preventHover = false;
-
-        function onShowTimerExpired(elem) {
-
-            elem = elem.querySelector('a');
-
-            if (elem.querySelector('.itemSelectionPanel')) {
-                return;
-            }
-
-            var innerElem = elem.querySelector('.cardOverlayTarget');
-
-            if (!innerElem) {
-                innerElem = document.createElement('div');
-                innerElem.classList.add('hide');
-                innerElem.classList.add('cardOverlayTarget');
-                parentWithClass(elem, 'cardContent').appendChild(innerElem);
-            }
-
-            var dataElement = elem;
-            while (dataElement && !dataElement.getAttribute('data-itemid')) {
-                dataElement = dataElement.parentNode;
-            }
-
-            var id = dataElement.getAttribute('data-itemid');
-            var type = dataElement.getAttribute('data-itemtype');
-
-            if (type == 'Timer') {
-                return;
-            }
-
-            var promise1 = ApiClient.getItem(Dashboard.getCurrentUserId(), id);
-            var promise2 = Dashboard.getCurrentUser();
-
-            Promise.all([promise1, promise2]).then(function (responses) {
-
-                var item = responses[0];
-                var user = responses[1];
-
-                var card = elem;
-
-                while (!card.classList.contains('card')) {
-                    card = card.parentNode;
-                }
-
-                innerElem.innerHTML = getOverlayHtml(item, user, card);
-            });
-
-            slideUpToShow(innerElem);
-        }
-
-        function onHoverIn(e) {
-
-            var elem = e.target;
-
-            if (!elem.classList.contains('cardImage')) {
-                return;
-            }
-
-            if (preventHover === true) {
-                preventHover = false;
-                return;
-            }
-
-            if (showOverlayTimeout) {
-                clearTimeout(showOverlayTimeout);
-                showOverlayTimeout = null;
-            }
-
-            while (!elem.classList.contains('card')) {
-                elem = elem.parentNode;
-            }
-
-            showOverlayTimeout = setTimeout(function () {
-                onShowTimerExpired(elem);
-
-            }, 1200);
-        }
-
-        function preventTouchHover() {
-            preventHover = true;
-        }
-
         curr.removeEventListener('click', onCardClick);
         curr.addEventListener('click', onCardClick);
-
-        if (!AppInfo.isTouchPreferred) {
-
-            curr.removeEventListener('mouseenter', onHoverIn);
-            curr.addEventListener('mouseenter', onHoverIn, true);
-
-            curr.removeEventListener('mouseleave', onHoverOut);
-            curr.addEventListener('mouseleave', onHoverOut, true);
-
-            curr.removeEventListener("touchstart", preventTouchHover);
-            curr.addEventListener("touchstart", preventTouchHover);
-        }
 
         //initTapHoldMenus(curr);
     };
@@ -584,7 +322,7 @@
     var selectedItems = [];
     function updateItemSelection(chkItemSelect, selected) {
 
-        var id = parentWithClass(chkItemSelect, 'card').getAttribute('data-itemid');
+        var id = parentWithClass(chkItemSelect, 'card').getAttribute('data-id');
 
         if (selected) {
 

@@ -111,7 +111,7 @@
 
             icon = item.icon || icon;
 
-            html += '<a' + onclick + ' data-itemid="' + item.Id + '" class="' + cssClass + '" href="' + href + '">';
+            html += '<a' + onclick + ' data-id="' + item.Id + '" class="' + cssClass + '" href="' + href + '">';
             html += '<div class="cardBox" style="background-color:' + backgroundColor + ';margin:4px;border-radius:4px;">';
 
             html += "<div class='cardText' style='padding:8px 10px;color:#fff;'>";

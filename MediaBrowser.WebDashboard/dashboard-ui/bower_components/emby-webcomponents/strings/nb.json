@@ -1,6 +1,8 @@
 {
     "EditInfo": "Edit Info",
     "RemoveFromPlaylist": "Remove from Playlist",
+    "PlayFromBeginning": "Play from beginning",
+    "ResumeAt": "Resume from {0}",
     "ValueSpecialEpisodeName": "Spesial - {0}",
     "Share": "Del",
     "ServerUpdateNeeded": "Denne Emby serveren trenger en oppdatering. For \u00e5 laste ned nyeste versjon, vennligst bes\u00f8k: {0}",

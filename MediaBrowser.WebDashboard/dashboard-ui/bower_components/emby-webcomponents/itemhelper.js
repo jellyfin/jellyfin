@@ -69,6 +69,20 @@ define(['apphost'], function (appHost) {
         return item.RunTimeTicks || item.IsFolder || item.Type == "Genre" || item.Type == "MusicGenre" || item.Type == "MusicArtist";
     }
 
+    function canEdit(user, itemType) {
+
+        if (itemType == "UserRootFolder" || /*itemType == "CollectionFolder" ||*/ itemType == "UserView") {
+            return false;
+        }
+
+        if (user.Policy.IsAdministrator) {
+
+            return true;
+        }
+
+        return false;
+    }
+
     return {
         getDisplayName: getDisplayName,
         supportsAddingToCollection: supportsAddingToCollection,
@@ -95,18 +109,11 @@ define(['apphost'], function (appHost) {
             return false;
         },
 
-        canEdit: function (user, itemType) {
+        canEdit: canEdit,
 
-            if (itemType == "UserRootFolder" || /*itemType == "CollectionFolder" ||*/ itemType == "UserView") {
-                return false;
-            }
+        canEditImages: function (user, itemType) {
 
-            if (user.Policy.IsAdministrator) {
-
-                return true;
-            }
-
-            return false;
+            return itemType != 'Timer' && canEdit(user, itemType);
         },
 
         canSync: function (user, item) {

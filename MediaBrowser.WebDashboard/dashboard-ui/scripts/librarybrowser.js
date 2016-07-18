@@ -797,11 +797,6 @@
                 var atts = [];
 
                 atts.push({
-                    name: 'itemid',
-                    value: item.Id
-                });
-
-                atts.push({
                     name: 'serverid',
                     value: item.ServerId || options.serverId
                 });
@@ -826,7 +821,7 @@
                 }
 
                 atts.push({
-                    name: 'itemtype',
+                    name: 'type',
                     value: item.Type
                 });
 
@@ -1695,11 +1690,11 @@
 
                 var elemWithAttributes = elem;
 
-                while (!elemWithAttributes.getAttribute('data-itemid')) {
+                while (!elemWithAttributes.getAttribute('data-id')) {
                     elemWithAttributes = elemWithAttributes.parentNode;
                 }
 
-                var itemId = elemWithAttributes.getAttribute('data-itemid');
+                var itemId = elemWithAttributes.getAttribute('data-id');
                 var index = elemWithAttributes.getAttribute('data-index');
                 var mediaType = elemWithAttributes.getAttribute('data-mediatype');
 
@@ -2275,10 +2270,10 @@
                 if (style == 'fab') {
 
                     var tagName = 'paper-fab';
-                    return '<' + tagName + ' title="' + tooltip + '" data-itemid="' + itemId + '" icon="' + icon + '" class="' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"></' + tagName + '>';
+                    return '<' + tagName + ' title="' + tooltip + '" data-id="' + itemId + '" icon="' + icon + '" class="' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"></' + tagName + '>';
                 }
 
-                return '<button is="paper-icon-button-light" title="' + tooltip + '" data-itemid="' + itemId + '"  class="autoSize ' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"><i class="md-icon">' + icon + '</i></button>';
+                return '<button is="paper-icon-button-light" title="' + tooltip + '" data-id="' + itemId + '"  class="autoSize ' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"><i class="md-icon">' + icon + '</i></button>';
             },
 
             getUserDataIconsHtml: function (item, includePlayed, style) {
@@ -2316,7 +2311,7 @@
 
             markPlayed: function (link) {
 
-                var id = link.getAttribute('data-itemid');
+                var id = link.getAttribute('data-id');
 
                 var markAsPlayed = !link.classList.contains('btnUserItemRatingOn');
 
@@ -2331,7 +2326,7 @@
 
             markFavorite: function (link) {
 
-                var id = link.getAttribute('data-itemid');
+                var id = link.getAttribute('data-id');
 
                 var markAsFavorite = !link.classList.contains('btnUserItemRatingOn');
 

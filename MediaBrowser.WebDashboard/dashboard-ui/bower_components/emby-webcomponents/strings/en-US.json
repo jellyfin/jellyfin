@@ -113,6 +113,7 @@
   "QueueAllFromHere": "Queue All from Here",
   "PlayAllFromHere": "Play All from Here",
   "PlayFromBeginning": "Play from beginning",
-  "ResumeAt": "Resume at {0}",
-  "RemoveFromPlaylist": "Remove from Playlist"
+  "ResumeAt": "Resume from {0}",
+  "RemoveFromPlaylist": "Remove from Playlist",
+  "Trailer": "Trailer"
 }

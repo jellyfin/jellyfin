@@ -25,31 +25,6 @@
         font-weight: 400 !important;
     }
 
-.cardOverlayTarget {
-    position: absolute;
-    right: 0;
-    left: 0;
-    bottom: 0;
-    top: 0;
-    background-color: rgba(0, 0, 0, .85);
-    z-index: 998;
-    line-height: initial;
-}
-
-.cardOverlayInner {
-    padding: 11px 12px 10px;
-}
-
-    .cardOverlayInner button:last-child {
-        margin-right: 0 !important;
-    }
-
-    .cardOverlayInner p {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
 .buttonCard:hover .cardBox {
     opacity: .6;
 }
@@ -237,10 +212,6 @@
     font-size: 115%;
 }
 
-.cardOverlayInner {
-    color: #fff;
-}
-
 .cardTextCentered {
     text-align: center;
 }
@@ -357,14 +328,6 @@
 
     .backdropCard {
         width: 100% !important;
-    }
-}
-
-@media all and (max-width: 1200px) {
-
-    .portraitCard .cardOverlayInner {
-        padding-left: 7px;
-        padding-right: 7px;
     }
 }
 

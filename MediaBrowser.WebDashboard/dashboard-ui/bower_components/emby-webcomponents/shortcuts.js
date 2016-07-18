@@ -99,6 +99,9 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
         var apiClient = connectionManager.getApiClient(serverId);
 
+        if (type == 'Timer') {
+            return apiClient.getLiveTvTimer(id);
+        }
         return apiClient.getItem(apiClient.getCurrentUserId(), id);
     }
 
@@ -165,6 +168,8 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
     function executeAction(card, target, action) {
 
+        target = target || card;
+
         var id = card.getAttribute('data-id');
 
         if (!id) {
@@ -217,14 +222,26 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         }
 
         else if (action == 'menu') {
-            showContextMenu(card, {
-                identify: false,
-                positionTo: target || card
-            });
+
+            var options = target.getAttribute('data-playoptions') == 'false' ?
+            {
+                shuffle: false,
+                instantMix: false,
+                play: false,
+                playAllFromHere: false,
+                queue: false,
+                queueAllFromHere: false
+            } :
+            {};
+
+            options.identify = false;
+            options.positionTo = target;
+
+            showContextMenu(card, options);
         }
 
         else if (action == 'playmenu') {
-            showPlayMenu(card, target || card);
+            showPlayMenu(card, target);
         }
     }
 
@@ -318,7 +335,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
             }
 
             if (action) {
-                executeAction(card, e.target, action);
+                executeAction(card, actionElement, action);
 
                 e.preventDefault();
                 e.stopPropagation();
@@ -332,7 +349,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         while ((value ? elem.getAttribute(name) != value : !elem.getAttribute(name))) {
             elem = elem.parentNode;
 
-            if (!elem) {
+            if (!elem || !elem.getAttribute) {
                 return null;
             }
         }
@@ -356,7 +373,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
     function onCommand(e) {
         var cmd = e.detail.command;
 
-        if (cmd == 'play' || cmd == 'record') {
+        if (cmd == 'play' || cmd == 'record' || cmd == 'menu' || cmd == 'info') {
             var card = parentWithClass(e.target, 'itemAction');
 
             if (card) {

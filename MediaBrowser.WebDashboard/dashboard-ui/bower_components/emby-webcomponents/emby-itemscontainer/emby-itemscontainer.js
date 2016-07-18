@@ -7,7 +7,7 @@
         while (!elem.getAttribute(name)) {
             elem = elem.parentNode;
 
-            if (!elem) {
+            if (!elem || !elem.getAttribute) {
                 return null;
             }
         }
@@ -62,6 +62,26 @@
         };
     }
 
+    ItemsContainerProtoType.enableHoverMenu = function (enabled) {
+
+        var current = this.hoverMenu;
+
+        if (!enabled && current) {
+            current.destroy();
+            this.hoverMenu = null;
+            return;
+        }
+
+        if (current) {
+            return;
+        }
+
+        var self = this;
+        require(['itemHoverMenu'], function (ItemHoverMenu) {
+            self.hoverMenu = new ItemHoverMenu(self);
+        });
+    };
+
     ItemsContainerProtoType.attachedCallback = function () {
         this.addEventListener('click', onClick);
 
@@ -71,6 +91,10 @@
             // todo: use tap hold
         } else {
             this.addEventListener('contextmenu', onContextMenu);
+        }
+
+        if (layoutManager.desktop) {
+            this.enableHoverMenu(true);
         }
 
         itemShortcuts.on(this, getShortcutOptions());

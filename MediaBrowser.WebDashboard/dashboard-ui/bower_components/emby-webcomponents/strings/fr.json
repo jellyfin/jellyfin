@@ -1,6 +1,8 @@
 {
     "EditInfo": "Modifier les informations",
     "RemoveFromPlaylist": "Supprimer de la liste de lecture",
+    "PlayFromBeginning": "Play from beginning",
+    "ResumeAt": "Resume from {0}",
     "ValueSpecialEpisodeName": "Sp\u00e9cial - {0}",
     "Share": "Partager",
     "ServerUpdateNeeded": "Le serveur Emby doit \u00eatre mis \u00e0 jour. Pour t\u00e9l\u00e9charger la derni\u00e8re version, veuillez visiter {0}",
