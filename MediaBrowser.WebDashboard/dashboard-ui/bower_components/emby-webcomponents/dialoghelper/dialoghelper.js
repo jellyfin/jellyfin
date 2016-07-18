@@ -1,4 +1,4 @@
-﻿define(['historyManager', 'focusManager', 'browser', 'layoutManager', 'inputManager', 'scrollHelper', 'css!./dialoghelper.css', 'scrollStyles'], function (historyManager, focusManager, browser, layoutManager, inputManager, scrollHelper) {
+﻿define(['historyManager', 'focusManager', 'browser', 'layoutManager', 'inputManager', 'scrollHelper', 'dom', 'css!./dialoghelper.css', 'scrollStyles'], function (historyManager, focusManager, browser, layoutManager, inputManager, scrollHelper, dom) {
 
     var globalOnOpenCallback;
 
@@ -128,19 +128,6 @@
         }
     }
 
-    function parentWithTag(elem, tagName) {
-
-        while (elem.tagName != tagName) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
-    }
-
     function closeOnBackdropClick(dlg) {
 
         dlg.addEventListener('click', function (event) {
@@ -149,7 +136,7 @@
               && rect.left <= event.clientX && event.clientX <= (rect.left + rect.width));
 
             if (!isInDialog) {
-                if (parentWithTag(event.target, 'SELECT')) {
+                if (dom.parentWithTag(event.target, 'SELECT')) {
                     isInDialog = true;
                 }
             }
