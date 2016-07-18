@@ -1,4 +1,4 @@
-﻿define(['browser', 'apphost', 'loading', 'connectionManager', 'globalize', 'embyRouter', 'css!./multiselect'], function (browser, appHost, loading, connectionManager, globalize, embyRouter) {
+﻿define(['browser', 'appStorage', 'apphost', 'loading', 'connectionManager', 'globalize', 'embyRouter', 'css!./multiselect'], function (browser, appStorage, appHost, loading, connectionManager, globalize, embyRouter) {
 
     var selectedItems = [];
     var selectedElements = [];
@@ -34,17 +34,17 @@
         }
     }
 
+    var initCount = 0;
     function showTapHoldHelp(element) {
 
-        return;
-        var page = parentWithClass(element, 'page');
-
-        if (!page) {
+        if (initCount >= 15) {
+            // All done
             return;
         }
 
-        // Don't do this on the home page
-        if (page.classList.contains('homePage') || page.classList.contains('itemDetailPage') || page.classList.contains('liveTvPage')) {
+        initCount++;
+
+        if (initCount < 15) {
             return;
         }
 
@@ -55,9 +55,11 @@
 
         appStorage.setItem("tapholdhelp", expectedValue);
 
-        Dashboard.alert({
-            message: globalize.translate('TryMultiSelectMessage'),
-            title: globalize.translate('HeaderTryMultiSelect')
+        require(['alert'], function (alert) {
+            alert({
+                text: globalize.translate('sharedcomponents#TryMultiSelectMessage'),
+                title: globalize.translate('sharedcomponents#TryMultiSelect')
+            });
         });
     }
 

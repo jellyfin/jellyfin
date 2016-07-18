@@ -25,7 +25,7 @@
             showOverlayTimeout = null;
         }
 
-        elem = elem.querySelector('.cardOverlayTarget');
+        elem = elem.classList.contains('cardOverlayTarget') ? elem : elem.querySelector('.cardOverlayTarget');
 
         if (elem) {
             slideDownToHide(elem);
@@ -186,10 +186,10 @@
             innerElem.classList.add('hide');
             innerElem.classList.add('cardOverlayTarget');
 
-            (elem.querySelector('.cardContent') || elem.querySelector('.cardBox')).appendChild(innerElem);
+            elem.parentNode.appendChild(innerElem);
         }
 
-        var dataElement = elem;
+        var dataElement = parentWithAttribute(elem, 'data-id');
 
         var id = dataElement.getAttribute('data-id');
         var type = dataElement.getAttribute('data-type');
@@ -209,9 +209,7 @@
             var item = responses[0];
             var user = responses[1];
 
-            var card = elem;
-
-            innerElem.innerHTML = getOverlayHtml(apiClient, item, user, card);
+            innerElem.innerHTML = getOverlayHtml(apiClient, item, user, dataElement);
         });
 
         slideUpToShow(innerElem);
@@ -220,15 +218,9 @@
     function onHoverIn(e) {
 
         var elem = e.target;
-        var card = parentWithClass(elem, 'card');
+        var card = parentWithClass(elem, 'cardImageContainer') || parentWithClass(elem, 'cardImage');
 
         if (!card) {
-            return;
-        }
-
-        elem = card.querySelector('.cardImage,.cardImageContainer');
-
-        if (!elem) {
             return;
         }
 
@@ -242,10 +234,8 @@
             showOverlayTimeout = null;
         }
 
-        elem = parentWithAttribute(elem, 'data-id');
-
         showOverlayTimeout = setTimeout(function () {
-            onShowTimerExpired(elem);
+            onShowTimerExpired(card);
 
         }, 1000);
     }
