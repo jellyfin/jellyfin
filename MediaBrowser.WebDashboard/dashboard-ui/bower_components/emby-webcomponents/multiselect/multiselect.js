@@ -131,7 +131,7 @@
             itemSelectionPanel = document.createElement('div');
             itemSelectionPanel.classList.add('itemSelectionPanel');
 
-            item.querySelector('.cardContent').appendChild(itemSelectionPanel);
+            item.querySelector('.cardContent,.cardBox').appendChild(itemSelectionPanel);
 
             var cssClass = 'chkItemSelect';
             if (isChecked && !browser.firefox) {
@@ -416,8 +416,7 @@
 
             require(['alert'], function (alert) {
                 alert({
-                    text: globalize.translate('sharedcomponents#PleaseSelectTwoItems'),
-                    title: globalize.translate('sharedcomponents#Error')
+                    text: globalize.translate('sharedcomponents#PleaseSelectTwoItems')
                 });
             });
             return;
