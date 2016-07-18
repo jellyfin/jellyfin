@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'scrollStyles', 'emby-itemscontainer'], function (layoutManager, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons) {
+﻿define(['layoutManager', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'scrollStyles', 'emby-itemscontainer'], function (layoutManager, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom) {
 
     var currentItem;
 
@@ -2038,19 +2038,6 @@
 
     window.ItemDetailPage = new itemDetailPage();
 
-    function parentWithClass(elem, className) {
-
-        while (!elem.classList || !elem.classList.contains(className)) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
-    }
-
     function onPlayClick() {
         playCurrentItem(this);
     }
@@ -2144,20 +2131,20 @@
 
         view.addEventListener('click', function (e) {
 
-            if (parentWithClass(e.target, 'moreScenes')) {
+            if (dom.parentWithClass(e.target, 'moreScenes')) {
                 Dashboard.getCurrentUser().then(function (user) {
                     renderScenes(view, currentItem, user);
                 });
             }
-            else if (parentWithClass(e.target, 'morePeople')) {
+            else if (dom.parentWithClass(e.target, 'morePeople')) {
                 renderCast(view, currentItem, params.context);
             }
-            else if (parentWithClass(e.target, 'moreSpecials')) {
+            else if (dom.parentWithClass(e.target, 'moreSpecials')) {
                 Dashboard.getCurrentUser().then(function (user) {
                     renderSpecials(view, currentItem, user);
                 });
             }
-            else if (parentWithClass(e.target, 'moreCriticReviews')) {
+            else if (dom.parentWithClass(e.target, 'moreCriticReviews')) {
                 renderCriticReviews(view, currentItem);
             }
         });

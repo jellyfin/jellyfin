@@ -179,7 +179,7 @@
 
     function onHeaderAppsButtonClick() {
 
-        require(['dialogHelper'], function (dialogHelper) {
+        require(['dialogHelper', 'dom'], function (dialogHelper, dom) {
 
             var dlg = dialogHelper.createDialog({
                 removeOnClose: true,
@@ -222,7 +222,7 @@
             document.body.appendChild(dlg);
 
             dlg.addEventListener('click', function (e) {
-                var link = parentWithTag(e.target, 'A');
+                var link = dom.parentWithTag(e.target, 'A');
                 if (link) {
                     dialogHelper.close(dlg);
                 }
@@ -389,19 +389,6 @@
         } else {
             updateDashboardMenuSelectedItem();
         }
-    }
-
-    function parentWithTag(elem, tagName) {
-
-        while (elem.tagName != tagName) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
     }
 
     function updateDashboardMenuSelectedItem() {

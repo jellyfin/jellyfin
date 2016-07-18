@@ -1,17 +1,4 @@
-﻿define(['scrollHelper', 'viewManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'itemHelper', 'mediaInfo', 'scroller', 'indicators', 'scrollStyles'], function (scrollHelper, viewManager, appSettings, appStorage, appHost, datetime, itemHelper, mediaInfo, scroller, indicators) {
-
-    function parentWithClass(elem, className) {
-
-        while (!elem.classList || !elem.classList.contains(className)) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
-    }
+﻿define(['scrollHelper', 'viewManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'itemHelper', 'mediaInfo', 'scroller', 'indicators', 'dom', 'scrollStyles'], function (scrollHelper, viewManager, appSettings, appStorage, appHost, datetime, itemHelper, mediaInfo, scroller, indicators, dom) {
 
     function fadeInRight(elem) {
 
@@ -267,7 +254,7 @@
                 tabs.addEventListener('click', function (e) {
 
                     var current = tabs.querySelector('.is-active');
-                    var link = parentWithClass(e.target, 'pageTabButton');
+                    var link = dom.parentWithClass(e.target, 'pageTabButton');
 
                     if (link && link != current) {
 
