@@ -374,7 +374,6 @@ namespace MediaBrowser.Server.Implementations.Library
             }
             else
             {
-                return;
                 if (item is Photo)
                 {
                     return;

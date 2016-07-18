@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'appStorage', 'libraryBrowser', 'apphost', 'itemHelper', 'mediaInfo'], function (appSettings, appStorage, LibraryBrowser, appHost, itemHelper, mediaInfo) {
+﻿define(['appSettings', 'appStorage', 'libraryBrowser', 'apphost', 'itemHelper'], function (appSettings, appStorage, LibraryBrowser, appHost, itemHelper) {
 
     function isClickable(target) {
 

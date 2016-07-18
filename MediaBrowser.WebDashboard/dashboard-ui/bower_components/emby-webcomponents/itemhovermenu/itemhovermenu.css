@@ -40,6 +40,7 @@
 
     .cardOverlayButtons .fab {
         background-color: #333;
+        margin-right: .25em;
     }
 
 @media all and (max-width: 1200px) {
