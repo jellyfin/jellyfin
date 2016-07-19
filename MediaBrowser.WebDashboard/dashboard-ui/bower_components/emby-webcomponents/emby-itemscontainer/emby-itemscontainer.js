@@ -1,4 +1,4 @@
-﻿define(['itemShortcuts', 'connectionManager', 'layoutManager', 'browser', 'dom', 'registerElement'], function (itemShortcuts, connectionManager, layoutManager, browser, dom) {
+﻿define(['itemShortcuts', 'connectionManager', 'layoutManager', 'browser', 'dom', 'loading', 'registerElement'], function (itemShortcuts, connectionManager, layoutManager, browser, dom, loading) {
 
     var ItemsContainerProtoType = Object.create(HTMLDivElement.prototype);
 
@@ -105,6 +105,76 @@
         });
     };
 
+    function onDrop(evt, itemsContainer) {
+
+        var playlistId = itemsContainer.getAttribute('data-playlistid');
+
+        loading.show();
+
+        var el = evt.item;
+
+        var newIndex = evt.newIndex;
+        var itemId = el.getAttribute('data-playlistitemid');
+
+        var serverId = el.getAttribute('data-serverid');
+        var apiClient = connectionManager.getApiClient(serverId);
+
+        apiClient.ajax({
+
+            url: apiClient.getUrl('Playlists/' + playlistId + '/Items/' + itemId + '/Move/' + newIndex),
+
+            type: 'POST'
+
+        }).then(function () {
+
+            el.setAttribute('data-index', newIndex);
+            loading.hide();
+
+        }, function () {
+
+            loading.hide();
+
+            itemsContainer.dispatchEvent(new CustomEvent('needsrefresh', {
+                detail: {},
+                cancelable: false,
+                bubbles: true
+            }));
+        });
+    }
+
+    ItemsContainerProtoType.enableDragReordering = function (enabled) {
+
+        var current = this.sortable;
+
+        if (!enabled) {
+            if (current) {
+                current.destroy();
+                this.sortable = null;
+            }
+            return;
+        }
+
+        if (current) {
+            return;
+        }
+
+        var self = this;
+        require(['sortable'], function (Sortable) {
+
+            self.sortable = new Sortable(self, {
+
+                draggable: ".listItem",
+                handle: '.listViewDragHandle',
+
+                // dragging ended
+                onEnd: function (/**Event*/evt) {
+
+                    onDrop(evt, self);
+                }
+            });
+        });
+    };
+
     ItemsContainerProtoType.attachedCallback = function () {
 
         this.addEventListener('click', onClick);
@@ -130,6 +200,7 @@
 
         this.enableHoverMenu(false);
         this.enableMultiSelect(false);
+        this.enableDragReordering(false);
         this.removeEventListener('click', onClick);
         this.removeEventListener('contextmenu', onContextMenu);
         this.removeEventListener('contextmenu', disableEvent);

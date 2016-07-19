@@ -76,22 +76,6 @@
             elem.setAttribute('data-playlistid', item.Id);
             elem.innerHTML = html;
 
-            var listParent = elem;
-
-            require(['sortable'], function (Sortable) {
-
-                var sortable = new Sortable(listParent, {
-
-                    draggable: ".listItem",
-                    handle: '.listViewDragHandle',
-
-                    // dragging ended
-                    onEnd: function (/**Event*/evt) {
-
-                        onDrop(evt, page, item);
-                    }
-                });
-            });
             ImageLoader.lazyChildren(elem);
 
             $('.btnNextPage', elem).on('click', function () {
@@ -108,36 +92,11 @@
         });
     }
 
-    function onDrop(evt, page, item) {
-
-        Dashboard.showLoadingMsg();
-
-        var el = evt.item;
-        
-        var newIndex = evt.newIndex;
-        var itemId = el.getAttribute('data-playlistitemid');
-
-        ApiClient.ajax({
-
-            url: ApiClient.getUrl('Playlists/' + item.Id + '/Items/' + itemId + '/Move/' + newIndex),
-
-            type: 'POST'
-
-        }).then(function () {
-
-            el.setAttribute('data-index', newIndex);
-            Dashboard.hideLoadingMsg();
-
-        }, function () {
-
-            Dashboard.hideLoadingMsg();
-            reloadItems(page, item);
-        });
-    }
-
     function init(page, item) {
 
         var elem = page.querySelector('#childrenContent .itemsContainer');
+
+        elem.enableDragReordering(true);
 
         elem.addEventListener('needsrefresh', function () {
 
