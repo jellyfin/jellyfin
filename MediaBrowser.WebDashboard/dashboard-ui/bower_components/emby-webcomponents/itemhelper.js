@@ -75,6 +75,10 @@ define(['apphost'], function (appHost) {
             return false;
         }
 
+        if (itemType == 'Program') {
+            return false;
+        }
+
         if (user.Policy.IsAdministrator) {
 
             return true;

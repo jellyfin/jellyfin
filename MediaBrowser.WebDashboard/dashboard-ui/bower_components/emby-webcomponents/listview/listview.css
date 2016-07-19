@@ -138,6 +138,10 @@ div.listItem {
         transform: scale(1.025, 1.025);
     }
 
+    .listItem > .fab:first-child {
+        margin-left: .75em;
+    }
+
 .paperList {
     padding: .5em 0;
     margin: 1em auto;
@@ -147,6 +151,10 @@ div.listItem {
     .paperList.clear {
         box-shadow: none !important;
         background-color: transparent !important;
+    }
+
+    .paperList .listItem {
+        border-bottom: 0;
     }
 
 .listItemMediaInfo {
