@@ -17,7 +17,7 @@
 
         var html = '';
 
-        html += '<div class="dialogContent smoothScrollY">';
+        html += '<div class="dialogContent smoothScrollY" style="padding-top:2em;">';
         html += '<div class="dialogContentInner centeredContent">';
         html += '<form style="margin:auto;">';
 
@@ -114,7 +114,7 @@
             var html = '';
             var title = globalize.translate('sharedcomponents#RefreshMetadata');
 
-            html += '<div class="dialogHeader" style="margin:0 0 2em;">';
+            html += '<div class="dialogHeader">';
             html += '<button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
             html += '<div class="dialogHeaderTitle">';
             html += title;

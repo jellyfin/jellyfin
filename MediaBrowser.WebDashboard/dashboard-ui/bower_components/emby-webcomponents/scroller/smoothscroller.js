@@ -911,9 +911,9 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
             } else {
 
                 if (o.horizontal) {
-                    slideeElement.scrollLeft += o.scrollBy * delta;
+                    slideeElement.scrollLeft += 12 * delta;
                 } else {
-                    slideeElement.scrollTop += o.scrollBy * delta;
+                    slideeElement.scrollTop += 12 * delta;
                 }
             }
         }

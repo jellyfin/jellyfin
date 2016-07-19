@@ -111,7 +111,7 @@ define(['dialogHelper', './voicereceiver', './voiceprocessor', 'globalize', 'emb
             dlg.classList.add('formDialog');
 
             var html = '';
-            html += '<div class="dialogHeader" style="margin:0 0 2em;">';
+            html += '<div class="dialogHeader">';
             html += '<button is="paper-icon-button-light" class="btnCancelVoiceInput autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
             html += '<div class="dialogHeaderTitle">';
             //html += title;
@@ -120,7 +120,7 @@ define(['dialogHelper', './voicereceiver', './voiceprocessor', 'globalize', 'emb
 
             html += '<div>';
 
-            html += '<div class="dialogContent smoothScrollY">';
+            html += '<div class="dialogContent smoothScrollY" style="padding-top:2em;">';
             html += '<div class="dialogContentInner centeredContent">';
             html += '<div class="voiceHelpContent">';
 

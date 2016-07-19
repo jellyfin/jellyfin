@@ -1,4 +1,4 @@
-define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter', 'playbackManager'], function (appHost, globalize, connectionManager, itemHelper, embyRouter, playbackManager) {
+define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter', 'playbackManager', 'loading'], function (appHost, globalize, connectionManager, itemHelper, embyRouter, playbackManager, loading) {
 
     var isTheater = true;
     appHost.appInfo().then(function (result) {
@@ -29,6 +29,13 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 commands.push({
                     name: globalize.translate('sharedcomponents#AddToPlaylist'),
                     id: 'addtoplaylist'
+                });
+            }
+
+            if (item.Type == 'Timer' && user.Policy.EnableLiveTvManagement) {
+                commands.push({
+                    name: globalize.translate('sharedcomponents#ButtonCancel'),
+                    id: 'canceltimer'
                 });
             }
 
@@ -445,12 +452,33 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
                     break;
                 case 'canceltimer':
-                    deleteTimer(itemId, parentWithClass(card, 'itemsContainer'));
+                    deleteTimer(apiClient, item, resolve, id);
                     break;
                 default:
                     reject();
                     break;
             }
+        });
+    }
+
+    function deleteTimer(apiClient, item, resolve, command) {
+
+        require(['confirm'], function (confirm) {
+
+            confirm(globalize.translate('sharedcomponents#MessageConfirmRecordingCancellation'), globalize.translate('sharedcomponents#HeaderConfirmRecordingCancellation')).then(function () {
+
+                loading.show();
+
+                apiClient.cancelLiveTvTimer(item.Id).then(function () {
+
+                    require(['toast'], function (toast) {
+                        toast(globalize.translate('sharedcomponents#RecordingCancelled'));
+                    });
+
+                    loading.hide();
+                    getResolveFunction(resolve, command, true)();
+                });
+            });
         });
     }
 

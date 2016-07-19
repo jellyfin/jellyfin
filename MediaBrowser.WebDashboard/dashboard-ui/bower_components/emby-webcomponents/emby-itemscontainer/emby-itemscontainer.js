@@ -62,9 +62,11 @@
 
         var current = this.hoverMenu;
 
-        if (!enabled && current) {
-            current.destroy();
-            this.hoverMenu = null;
+        if (!enabled) {
+            if (current) {
+                current.destroy();
+                this.hoverMenu = null;
+            }
             return;
         }
 
@@ -82,9 +84,11 @@
 
         var current = this.multiSelect;
 
-        if (!enabled && current) {
-            current.destroy();
-            this.multiSelect = null;
+        if (!enabled) {
+            if (current) {
+                current.destroy();
+                this.multiSelect = null;
+            }
             return;
         }
 
