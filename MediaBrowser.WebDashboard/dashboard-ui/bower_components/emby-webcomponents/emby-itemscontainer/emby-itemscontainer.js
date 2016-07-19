@@ -1,26 +1,21 @@
-﻿define(['itemShortcuts', 'connectionManager', 'layoutManager', 'browser', 'registerElement'], function (itemShortcuts, connectionManager, layoutManager, browser) {
+﻿define(['itemShortcuts', 'connectionManager', 'layoutManager', 'browser', 'dom', 'registerElement'], function (itemShortcuts, connectionManager, layoutManager, browser, dom) {
 
     var ItemsContainerProtoType = Object.create(HTMLDivElement.prototype);
-
-    function parentWithAttribute(elem, name) {
-
-        while (!elem.getAttribute(name)) {
-            elem = elem.parentNode;
-
-            if (!elem || !elem.getAttribute) {
-                return null;
-            }
-        }
-
-        return elem;
-    }
 
     function onClick(e) {
 
         var itemsContainer = this;
         var target = e.target;
 
-        itemShortcuts.onClick.call(this, e);
+        var multiSelect = itemsContainer.multiSelect;
+
+        if (multiSelect) {
+            if (multiSelect.onContainerClick.call(itemsContainer, e) === false) {
+                return;
+            }
+        }
+
+        itemShortcuts.onClick.call(itemsContainer, e);
     }
 
     function disableEvent(e) {
@@ -35,7 +30,7 @@
         var itemsContainer = this;
 
         var target = e.target;
-        var card = parentWithAttribute(target, 'data-id');
+        var card = dom.parentWithAttribute(target, 'data-id');
 
         if (card) {
 
@@ -99,7 +94,10 @@
 
         var self = this;
         require(['multiSelect'], function (MultiSelect) {
-            self.multiSelect = new MultiSelect(self);
+            self.multiSelect = new MultiSelect({
+                container: self,
+                bindOnClick: false
+            });
         });
     };
 

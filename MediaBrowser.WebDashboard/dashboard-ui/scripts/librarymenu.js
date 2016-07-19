@@ -1,4 +1,4 @@
-﻿define(['imageLoader', 'layoutManager', 'viewManager', 'navdrawer', 'paper-icon-button-light', 'material-icons'], function (imageLoader, layoutManager, viewManager, navdrawer) {
+﻿define(['imageLoader', 'layoutManager', 'viewManager', 'navdrawer', 'libraryBrowser', 'paper-icon-button-light', 'material-icons'], function (imageLoader, layoutManager, viewManager, navdrawer, libraryBrowser) {
 
     var navDrawerElement = document.querySelector('.mainDrawer');
     var navDrawerScrollContainer = navDrawerElement.querySelector('.scrollContainer');
@@ -179,7 +179,7 @@
 
     function onHeaderAppsButtonClick() {
 
-        require(['dialogHelper'], function (dialogHelper) {
+        require(['dialogHelper', 'dom'], function (dialogHelper, dom) {
 
             var dlg = dialogHelper.createDialog({
                 removeOnClose: true,
@@ -222,7 +222,7 @@
             document.body.appendChild(dlg);
 
             dlg.addEventListener('click', function (e) {
-                var link = parentWithTag(e.target, 'A');
+                var link = dom.parentWithTag(e.target, 'A');
                 if (link) {
                     dialogHelper.close(dlg);
                 }
@@ -275,7 +275,7 @@
 
     function getItemHref(item, context) {
 
-        return LibraryBrowser.getHref(item, context);
+        return libraryBrowser.getHref(item, context);
     }
 
     var requiresUserRefresh = true;
@@ -389,19 +389,6 @@
         } else {
             updateDashboardMenuSelectedItem();
         }
-    }
-
-    function parentWithTag(elem, tagName) {
-
-        while (elem.tagName != tagName) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
     }
 
     function updateDashboardMenuSelectedItem() {

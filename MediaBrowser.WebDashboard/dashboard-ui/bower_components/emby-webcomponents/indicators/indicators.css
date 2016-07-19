@@ -58,8 +58,12 @@
     height: 3.8vh;
 }
 
-    .layout-tv .playedIndicator i {
-        width: 2.6vh;
-        height: 2.6vh;
-        font-size: 2.6vh;
-    }
+.layout-tv .countIndicator {
+    font-size: 80%;
+}
+
+.layout-tv .playedIndicator i {
+    width: 2.6vh;
+    height: 2.6vh;
+    font-size: 2.6vh;
+}

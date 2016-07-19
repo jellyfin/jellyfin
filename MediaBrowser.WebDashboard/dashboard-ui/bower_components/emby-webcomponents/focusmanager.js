@@ -1,4 +1,4 @@
-define([], function () {
+define(['dom'], function (dom) {
 
     function autoFocus(view, defaultToFirst) {
 
@@ -194,7 +194,7 @@ define([], function () {
             return;
         }
 
-        var focusableContainer = parentWithClass(activeElement, 'focusable');
+        var focusableContainer = dom.parentWithClass(activeElement, 'focusable');
 
         var doc = activeElement.ownerDocument;
         var windowData = getWindowData(doc.defaultView, doc.documentElement);
@@ -273,27 +273,14 @@ define([], function () {
             var nearestElement = nearest[0].node;
 
             // See if there's a focusable container, and if so, send the focus command to that
-            var nearestElementFocusableParent = parentWithClass(nearestElement, 'focusable');
+            var nearestElementFocusableParent = dom.parentWithClass(nearestElement, 'focusable');
             if (nearestElementFocusableParent && nearestElementFocusableParent != nearestElement && activeElement) {
-                if (parentWithClass(activeElement, 'focusable') != nearestElementFocusableParent) {
+                if (dom.parentWithClass(activeElement, 'focusable') != nearestElementFocusableParent) {
                     nearestElement = nearestElementFocusableParent;
                 }
             }
             focus(nearestElement);
         }
-    }
-
-    function parentWithClass(elem, className) {
-
-        while (!elem.classList || !elem.classList.contains(className)) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
     }
 
     function intersectsInternal(a1, a2, b1, b2) {

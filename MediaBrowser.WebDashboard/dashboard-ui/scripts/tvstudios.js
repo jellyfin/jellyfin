@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['libraryBrowser'], function (libraryBrowser) {
 
     // The base query options
     var data = {};
@@ -27,7 +27,7 @@
 
     function getSavedQueryKey() {
 
-        return LibraryBrowser.getSavedQueryKey('studios');
+        return libraryBrowser.getSavedQueryKey('studios');
     }
 
     function getPromise(context, params) {
@@ -44,7 +44,7 @@
 
             var html = '';
 
-            html += LibraryBrowser.getPosterViewHtml({
+            html += libraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: "backdrop",
                 showTitle: false,

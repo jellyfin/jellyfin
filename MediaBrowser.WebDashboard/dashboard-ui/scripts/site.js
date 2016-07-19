@@ -1822,6 +1822,7 @@ var AppInfo = {};
         define("subtitleEditor", [embyWebComponentsBowerPath + "/subtitleeditor/subtitleeditor"], returnFirstDependency);
         define("mediaInfo", [embyWebComponentsBowerPath + "/mediainfo/mediainfo"], returnFirstDependency);
         define("itemContextMenu", [embyWebComponentsBowerPath + "/itemcontextmenu"], returnFirstDependency);
+        define("dom", [embyWebComponentsBowerPath + "/dom"], returnFirstDependency);
         define("playMenu", [embyWebComponentsBowerPath + "/playmenu"], returnFirstDependency);
         define("refreshDialog", [embyWebComponentsBowerPath + "/refreshdialog/refreshdialog"], returnFirstDependency);
         define("backdrop", [embyWebComponentsBowerPath + "/backdrop/backdrop"], returnFirstDependency);
@@ -3176,7 +3177,6 @@ var AppInfo = {};
             }
         }
 
-        deps.push('scripts/librarylist');
         deps.push('scripts/librarymenu');
 
         deps.push('css!css/card.css');
