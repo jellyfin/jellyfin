@@ -444,6 +444,9 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                     });
 
                     break;
+                case 'canceltimer':
+                    deleteTimer(itemId, parentWithClass(card, 'itemsContainer'));
+                    break;
                 default:
                     reject();
                     break;
@@ -455,13 +458,20 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
         var method = queue ? 'queue' : 'play';
 
+        var startPosition = 0;
+        if (resume && item.UserData && item.UserData.PlaybackPositionTicks) {
+            startPosition = item.UserData.PlaybackPositionTicks;
+        }
+
         if (item.Type == 'Program') {
             playbackManager[method]({
-                ids: [item.ChannelId]
+                ids: [item.ChannelId],
+                startPositionTicks: startPosition
             });
         } else {
             playbackManager[method]({
-                items: [item]
+                items: [item],
+                startPositionTicks: startPosition
             });
         }
     }

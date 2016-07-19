@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['libraryBrowser'], function (libraryBrowser) {
 
     function notifications() {
 
@@ -106,7 +106,7 @@
 
             var query = { StartIndex: startIndex, Limit: limit };
 
-            html += LibraryBrowser.getQueryPagingHtml({
+            html += libraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: totalRecordCount,

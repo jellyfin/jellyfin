@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'components/categorysyncbuttons', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser, categorysyncbuttons) {
 
     function getView() {
 
@@ -270,7 +270,9 @@
         var self = this;
 
         self.initTab = function () {
+
             var tabContent = view.querySelector('.pageTabContent[data-index=\'' + 0 + '\']');
+            categorysyncbuttons.init(tabContent);
             initSuggestedTab(view, tabContent);
         };
 

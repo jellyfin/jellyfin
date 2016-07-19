@@ -1,20 +1,7 @@
-﻿define(['connectionManager', 'itemHelper', 'mediaInfo', 'userdataButtons', 'playbackManager', 'globalize', 'css!./itemhovermenu', 'emby-button'], function (connectionManager, itemHelper, mediaInfo, userdataButtons, playbackManager, globalize) {
+﻿define(['connectionManager', 'itemHelper', 'mediaInfo', 'userdataButtons', 'playbackManager', 'globalize', 'dom', 'css!./itemhovermenu', 'emby-button'], function (connectionManager, itemHelper, mediaInfo, userdataButtons, playbackManager, globalize, dom) {
 
     var preventHover = false;
     var showOverlayTimeout;
-
-    function parentWithAttribute(elem, name) {
-
-        while (!elem.getAttribute(name)) {
-            elem = elem.parentNode;
-
-            if (!elem || !elem.getAttribute) {
-                return null;
-            }
-        }
-
-        return elem;
-    }
 
     function onHoverOut(e) {
 
@@ -164,18 +151,6 @@
         return html;
     }
 
-    function parentWithClass(elem, className) {
-
-        while (!elem.classList || !elem.classList.contains(className)) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
-    }
 
     function onShowTimerExpired(elem) {
 
@@ -186,10 +161,16 @@
             innerElem.classList.add('hide');
             innerElem.classList.add('cardOverlayTarget');
 
-            elem.parentNode.appendChild(innerElem);
+            var appendTo;
+            if (elem.classList.contains('cardImageContainer')) {
+                appendTo = dom.parentWithClass(elem, 'cardBox');
+            } else {
+                appendTo = elem.parentNode;
+            }
+            appendTo.appendChild(innerElem);
         }
 
-        var dataElement = parentWithAttribute(elem, 'data-id');
+        var dataElement = dom.parentWithAttribute(elem, 'data-id');
 
         var id = dataElement.getAttribute('data-id');
         var type = dataElement.getAttribute('data-type');
@@ -218,7 +199,7 @@
     function onHoverIn(e) {
 
         var elem = e.target;
-        var card = parentWithClass(elem, 'cardImageContainer') || parentWithClass(elem, 'cardImage');
+        var card = dom.parentWithClass(elem, 'cardImageContainer') || dom.parentWithClass(elem, 'cardImage');
 
         if (!card) {
             return;

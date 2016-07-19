@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'require', 'layoutManager', 'globalize', 'scrollHelper', 'appStorage', 'connectionManager', 'loading', 'focusManager', 'emby-select', 'listViewStyle', 'paper-icon-button-light', 'css!./../formdialog', 'material-icons', 'css!./subtitleeditor', 'emby-button'], function (dialogHelper, require, layoutManager, globalize, scrollHelper, appStorage, connectionManager, loading, focusManager) {
+﻿define(['dialogHelper', 'require', 'layoutManager', 'globalize', 'scrollHelper', 'appStorage', 'connectionManager', 'loading', 'focusManager', 'dom', 'emby-select', 'listViewStyle', 'paper-icon-button-light', 'css!./../formdialog', 'material-icons', 'css!./subtitleeditor', 'emby-button'], function (dialogHelper, require, layoutManager, globalize, scrollHelper, appStorage, connectionManager, loading, focusManager, dom) {
 
     var currentItem;
     var hasChanges;
@@ -326,25 +326,12 @@
         }
     }
 
-    function parentWithClass(elem, className) {
-
-        while (!elem.classList || !elem.classList.contains(className)) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
-    }
-
     function onSearchSubmit(e) {
         var form = this;
 
         var lang = form.querySelector('#selectLanguage', form).value;
 
-        searchForSubtitles(parentWithClass(form, 'dialogContent'), lang);
+        searchForSubtitles(dom.parentWithClass(form, 'dialogContent'), lang);
 
         e.preventDefault();
         return false;
@@ -352,20 +339,20 @@
 
     function onSubtitleListClick(e) {
 
-        var btnDelete = parentWithClass(e.target, 'btnDelete');
+        var btnDelete = dom.parentWithClass(e.target, 'btnDelete');
         if (btnDelete) {
             var index = btnDelete.getAttribute('data-index');
-            var context = parentWithClass(btnDelete, 'subtitleEditorDialog');
+            var context = dom.parentWithClass(btnDelete, 'subtitleEditorDialog');
             deleteLocalSubtitle(context, index);
         }
     }
 
     function onSubtitleResultsClick(e) {
 
-        var btnOptions = parentWithClass(e.target, 'btnOptions');
+        var btnOptions = dom.parentWithClass(e.target, 'btnOptions');
         if (btnOptions) {
             var subtitleId = btnOptions.getAttribute('data-subid');
-            var context = parentWithClass(btnOptions, 'subtitleEditorDialog');
+            var context = dom.parentWithClass(btnOptions, 'subtitleEditorDialog');
             showDownloadOptions(btnOptions, context, subtitleId);
         }
     }

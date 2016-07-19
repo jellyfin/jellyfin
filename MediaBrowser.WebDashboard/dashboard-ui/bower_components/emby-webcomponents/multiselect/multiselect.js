@@ -1,21 +1,8 @@
-﻿define(['browser', 'appStorage', 'apphost', 'loading', 'connectionManager', 'globalize', 'embyRouter', 'css!./multiselect'], function (browser, appStorage, appHost, loading, connectionManager, globalize, embyRouter) {
+﻿define(['browser', 'appStorage', 'apphost', 'loading', 'connectionManager', 'globalize', 'embyRouter', 'dom', 'css!./multiselect'], function (browser, appStorage, appHost, loading, connectionManager, globalize, embyRouter, dom) {
 
     var selectedItems = [];
     var selectedElements = [];
     var currentSelectionCommandsPanel;
-
-    function parentWithClass(elem, className) {
-
-        while (!elem.classList || !elem.classList.contains(className)) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
-    }
 
     function hideSelections() {
 
@@ -66,7 +53,7 @@
     function onItemSelectionPanelClick(e, itemSelectionPanel) {
 
         // toggle the checkbox, if it wasn't clicked on
-        if (!parentWithClass(e.target, 'chkItemSelect')) {
+        if (!dom.parentWithClass(e.target, 'chkItemSelect')) {
             var chkItemSelect = itemSelectionPanel.querySelector('.chkItemSelect');
 
             if (chkItemSelect) {
@@ -88,7 +75,7 @@
 
     function updateItemSelection(chkItemSelect, selected) {
 
-        var id = parentWithClass(chkItemSelect, 'card').getAttribute('data-id');
+        var id = dom.parentWithClass(chkItemSelect, 'card').getAttribute('data-id');
 
         if (selected) {
 
@@ -377,26 +364,13 @@
         });
     }
 
-    function parentWithAttribute(elem, name, value) {
-
-        while ((value ? elem.getAttribute(name) != value : !elem.getAttribute(name))) {
-            elem = elem.parentNode;
-
-            if (!elem || !elem.getAttribute) {
-                return null;
-            }
-        }
-
-        return elem;
-    }
-
     function dispatchNeedsRefresh() {
 
         var elems = [];
 
         [].forEach.call(selectedElements, function (i) {
 
-            var container = parentWithAttribute(i, 'is', 'emby-itemscontainer');
+            var container = dom.parentWithAttribute(i, 'is', 'emby-itemscontainer');
 
             if (container && elems.indexOf(container) == -1) {
                 elems.push(container);
@@ -466,7 +440,7 @@
 
         if (selectedItems.length) {
 
-            var card = parentWithClass(target, 'card');
+            var card = dom.parentWithClass(target, 'card');
             if (card) {
                 var itemSelectionPanel = card.querySelector('.itemSelectionPanel');
                 if (itemSelectionPanel) {
@@ -482,13 +456,15 @@
 
     document.addEventListener('viewbeforehide', hideSelections);
 
-    return function (container) {
+    return function (options) {
 
         var self = this;
 
+        var container = options.container;
+
         function onTapHold(e) {
 
-            var card = parentWithClass(e.target, 'card');
+            var card = dom.parentWithClass(e.target, 'card');
 
             if (card) {
 
@@ -531,7 +507,11 @@
 
         initTapHold(container);
 
-        container.addEventListener('click', onContainerClick);
+        if (options.bindOnClick !== false) {
+            container.addEventListener('click', onContainerClick);
+        }
+
+        self.onContainerClick = onContainerClick;
 
         self.destroy = function () {
 
