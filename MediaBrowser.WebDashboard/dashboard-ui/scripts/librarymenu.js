@@ -1,4 +1,4 @@
-﻿define(['imageLoader', 'layoutManager', 'viewManager', 'navdrawer', 'paper-icon-button-light', 'material-icons'], function (imageLoader, layoutManager, viewManager, navdrawer) {
+﻿define(['imageLoader', 'layoutManager', 'viewManager', 'navdrawer', 'libraryBrowser', 'paper-icon-button-light', 'material-icons'], function (imageLoader, layoutManager, viewManager, navdrawer, libraryBrowser) {
 
     var navDrawerElement = document.querySelector('.mainDrawer');
     var navDrawerScrollContainer = navDrawerElement.querySelector('.scrollContainer');
@@ -275,7 +275,7 @@
 
     function getItemHref(item, context) {
 
-        return LibraryBrowser.getHref(item, context);
+        return libraryBrowser.getHref(item, context);
     }
 
     var requiresUserRefresh = true;

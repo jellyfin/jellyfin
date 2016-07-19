@@ -153,15 +153,23 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
     function showPlayMenu(card, target) {
 
-        getItem(card).then(function (item) {
+        var item = {
+            Type: card.getAttribute('data-type'),
+            Id: card.getAttribute('data-id'),
+            ServerId: card.getAttribute('data-serverid'),
+            MediaType: card.getAttribute('data-mediatype'),
+            IsFolder: card.getAttribute('data-isfolder') == 'true',
+            UserData: {
+                PlaybackPositionTicks: parseInt(card.getAttribute('data-positionticks') || '0')
+            }
+        };
 
-            require(['playMenu'], function (playMenu) {
+        require(['playMenu'], function (playMenu) {
 
-                playMenu.show({
+            playMenu.show({
 
-                    item: item,
-                    positionTo: target
-                });
+                item: item,
+                positionTo: target
             });
         });
     }
@@ -196,7 +204,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
         else if (action == 'play') {
 
-            var startPositionTicks = parseInt(card.getAttribute('data-startpositionticks') || '0');
+            var startPositionTicks = parseInt(card.getAttribute('data-positionticks') || '0');
 
             playbackManager.play({
                 ids: [id],

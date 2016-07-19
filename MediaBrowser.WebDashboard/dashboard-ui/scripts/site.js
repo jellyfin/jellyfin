@@ -3177,7 +3177,6 @@ var AppInfo = {};
             }
         }
 
-        deps.push('scripts/librarylist');
         deps.push('scripts/librarymenu');
 
         deps.push('css!css/card.css');

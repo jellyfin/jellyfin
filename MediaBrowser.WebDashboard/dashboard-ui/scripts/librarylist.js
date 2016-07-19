@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'itemHelper'], function (libraryBrowser, itemHelper) {
+﻿define(['libraryBrowser'], function (libraryBrowser) {
 
     function isClickable(target) {
 
@@ -56,62 +56,4 @@
         e.preventDefault();
         return false;
     }
-
-    function showSyncButtonsPerUser(page) {
-
-        var apiClient = window.ApiClient;
-
-        if (!apiClient || !apiClient.getCurrentUserId()) {
-            return;
-        }
-
-        Dashboard.getCurrentUser().then(function (user) {
-
-            var item = {
-                SupportsSync: true
-            };
-
-            var categorySyncButtons = page.querySelectorAll('.categorySyncButton');
-            for (var i = 0, length = categorySyncButtons.length; i < length; i++) {
-                if (itemHelper.canSync(user, item)) {
-                    categorySyncButtons[i].classList.remove('hide');
-                } else {
-                    categorySyncButtons[i].classList.add('hide');
-                }
-            }
-        });
-    }
-
-    function onCategorySyncButtonClick(e) {
-
-        var button = this;
-        var category = button.getAttribute('data-category');
-        var parentId = LibraryMenu.getTopParentId();
-
-        require(['syncDialog'], function (syncDialog) {
-            syncDialog.showMenu({
-                ParentId: parentId,
-                Category: category
-            });
-        });
-    }
-
-    pageClassOn('pageinit', "libraryPage", function () {
-
-        var page = this;
-
-        var categorySyncButtons = page.querySelectorAll('.categorySyncButton');
-        for (var i = 0, length = categorySyncButtons.length; i < length; i++) {
-            categorySyncButtons[i].addEventListener('click', onCategorySyncButtonClick);
-        }
-    });
-
-    pageClassOn('pageshow', "libraryPage", function () {
-
-        var page = this;
-
-        if (!Dashboard.isServerlessPage()) {
-            showSyncButtonsPerUser(page);
-        }
-    });
 });

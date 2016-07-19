@@ -1,4 +1,4 @@
-﻿define(['emby-itemscontainer'], function () {
+﻿define(['components/categorysyncbuttons', 'emby-itemscontainer'], function (categorysyncbuttons) {
 
     function getNextUpPromise() {
 
@@ -49,6 +49,8 @@
 
         var self = this;
         var nextUpPromise;
+
+        categorysyncbuttons.init(view);
 
         self.preRender = function () {
             nextUpPromise = getNextUpPromise();

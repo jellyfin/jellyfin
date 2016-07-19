@@ -456,9 +456,11 @@
 
     document.addEventListener('viewbeforehide', hideSelections);
 
-    return function (container) {
+    return function (options) {
 
         var self = this;
+
+        var container = options.container;
 
         function onTapHold(e) {
 
@@ -505,7 +507,11 @@
 
         initTapHold(container);
 
-        container.addEventListener('click', onContainerClick);
+        if (options.bindOnClick !== false) {
+            container.addEventListener('click', onContainerClick);
+        }
+
+        self.onContainerClick = onContainerClick;
 
         self.destroy = function () {
 

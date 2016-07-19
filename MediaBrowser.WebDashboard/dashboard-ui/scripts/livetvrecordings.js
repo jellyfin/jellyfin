@@ -1,4 +1,4 @@
-﻿define(['scripts/livetvcomponents', 'emby-button', 'listViewStyle', 'emby-itemscontainer'], function () {
+﻿define(['components/categorysyncbuttons', 'scripts/livetvcomponents', 'emby-button', 'listViewStyle', 'emby-itemscontainer'], function (categorysyncbuttons) {
 
     function getRecordingGroupHtml(group) {
 
@@ -183,6 +183,8 @@
     return function (view, params, tabContent) {
 
         var self = this;
+
+        categorysyncbuttons.init(tabContent);
         tabContent.querySelector('#activeRecordings .recordingItems').addEventListener('timercancelled', function () {
             reload(tabContent);
         });

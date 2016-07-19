@@ -1,4 +1,4 @@
-﻿define(['datetime', 'scrollStyles', 'emby-itemscontainer'], function (datetime) {
+﻿define(['datetime', 'libraryBrowser', 'scrollStyles', 'emby-itemscontainer'], function (datetime, libraryBrowser) {
 
     function getUpcomingPromise(context, params) {
 
@@ -69,7 +69,7 @@
                     if (premiereDate.getDate() == new Date().getDate() - 1) {
                         dateText = Globalize.translate('Yesterday');
                     } else {
-                        dateText = LibraryBrowser.getFutureDateText(premiereDate, true);
+                        dateText = libraryBrowser.getFutureDateText(premiereDate, true);
                     }
 
                 } catch (err) {
@@ -107,7 +107,7 @@
                 html += '<div is="emby-itemscontainer" class="itemsContainer">';
             }
 
-            html += LibraryBrowser.getPosterViewHtml({
+            html += libraryBrowser.getPosterViewHtml({
                 items: group.items,
                 showLocationTypeIndicator: false,
                 shape: getThumbShape(),

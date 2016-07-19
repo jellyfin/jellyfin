@@ -7,7 +7,15 @@
         var itemsContainer = this;
         var target = e.target;
 
-        itemShortcuts.onClick.call(this, e);
+        var multiSelect = itemsContainer.multiSelect;
+
+        if (multiSelect) {
+            if (multiSelect.onContainerClick.call(itemsContainer, e) === false) {
+                return;
+            }
+        }
+
+        itemShortcuts.onClick.call(itemsContainer, e);
     }
 
     function disableEvent(e) {
@@ -86,7 +94,10 @@
 
         var self = this;
         require(['multiSelect'], function (MultiSelect) {
-            self.multiSelect = new MultiSelect(self);
+            self.multiSelect = new MultiSelect({
+                container: self,
+                bindOnClick: false
+            });
         });
     };
 

@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'components/categorysyncbuttons', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser, categorysyncbuttons) {
 
     return function (view, params) {
 
@@ -165,6 +165,8 @@
             } else {
                 tabContent.querySelector('#resumableItems').classList.remove('hiddenScrollX');
             }
+
+            categorysyncbuttons.init(tabContent);
         };
 
         self.renderTab = function () {

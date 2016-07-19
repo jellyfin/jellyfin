@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'libraryBrowser'], function ($, libraryBrowser) {
 
     var defaultSortBy = "SortName";
     var topItems = 5;
@@ -311,7 +311,7 @@
             $('#tabFilter', page).hide();
         }
 
-        var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+        var pagingHtml = libraryBrowser.getQueryPagingHtml({
             startIndex: query.StartIndex,
             limit: query.Limit,
             totalRecordCount: result.TotalRecordCount,

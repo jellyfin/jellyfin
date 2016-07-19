@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['components/categorysyncbuttons'], function (categorysyncbuttons) {
 
     function getView() {
 
@@ -77,7 +77,8 @@
     return function (view, params, tabContent) {
 
         var self = this;
-        var latestPromise;
+
+        categorysyncbuttons.init(tabContent);        var latestPromise;
 
         self.preRender = function () {
             latestPromise = getLatestPromise(view, params);

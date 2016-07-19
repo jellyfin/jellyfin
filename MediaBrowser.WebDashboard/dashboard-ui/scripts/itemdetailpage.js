@@ -2155,7 +2155,7 @@
         });
 
         view.querySelector('.detailImageContainer').addEventListener('click', function (e) {
-            var itemDetailGalleryLink = parentWithClass(e.target, 'itemDetailGalleryLink');
+            var itemDetailGalleryLink = dom.parentWithClass(e.target, 'itemDetailGalleryLink');
             if (itemDetailGalleryLink) {
                 LibraryBrowser.editImages(currentItem.Id).then(function () {
                     reload(view, params);

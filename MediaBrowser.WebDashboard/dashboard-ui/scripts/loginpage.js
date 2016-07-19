@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['libraryBrowser'], function (libraryBrowser) {
 
     function getApiClient() {
 
@@ -125,7 +125,7 @@
             }
             else {
 
-                var background = LibraryBrowser.getMetroColor(user.Id);
+                var background = libraryBrowser.getMetroColor(user.Id);
 
                 imgUrl = 'css/images/logindefault.png';
 

@@ -46,7 +46,7 @@ define(['connectionManager', 'globalize', 'paper-icon-button-light', 'material-i
         }
 
         if (includePlayed !== false) {
-            var tooltipPlayed = globalize.translate('sharedcomponents#Played');
+            var tooltipPlayed = globalize.translate('sharedcomponents#MarkPlayed');
 
             if (item.MediaType == 'Video' || item.Type == 'Series' || item.Type == 'Season' || item.Type == 'BoxSet' || item.Type == 'Playlist') {
                 if (item.Type != 'TvChannel') {
