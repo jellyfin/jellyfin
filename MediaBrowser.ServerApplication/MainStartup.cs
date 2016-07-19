@@ -644,14 +644,32 @@ namespace MediaBrowser.ServerApplication
 
         private static async Task InstallVcredist2013IfNeeded(ApplicationHost appHost, ILogger logger)
         {
+            // Reference 
+            // http://stackoverflow.com/questions/12206314/detect-if-visual-c-redistributable-for-visual-studio-2012-is-installed
+
             try
             {
-                var version = ImageMagickEncoder.GetVersion();
-                return;
+                var subkey = Environment.Is64BitProcess
+                    ? "SOFTWARE\\WOW6432Node\\Microsoft\\VisualStudio\\12.0\\VC\\Runtimes\\x64"
+                    : "SOFTWARE\\Microsoft\\VisualStudio\\12.0\\VC\\Runtimes\\x86";
+
+                using (RegistryKey ndpKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default)
+                    .OpenSubKey(subkey))
+                {
+                    if (ndpKey != null && ndpKey.GetValue("Version") != null)
+                    {
+                        var installedVersion = ((string)ndpKey.GetValue("Version")).TrimStart('v');
+                        if (installedVersion.StartsWith("12", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return;
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
-                logger.ErrorException("Error loading ImageMagick", ex);
+                logger.ErrorException("Error getting .NET Framework version", ex);
+                return;
             }
 
             try
