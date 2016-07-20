@@ -114,7 +114,7 @@ define(['dialogHelper', './voicereceiver', './voiceprocessor', 'globalize', 'emb
             html += '<div class="dialogHeader">';
             html += '<button is="paper-icon-button-light" class="btnCancelVoiceInput autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
             html += '<div class="dialogHeaderTitle">';
-            //html += title;
+            html += globalize.translate('sharedcomponents#VoiceInput');
             html += '</div>';
             html += '</div>';
 

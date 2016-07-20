@@ -127,5 +127,6 @@
   "TryMultiSelectMessage": "To edit multiple media items, just click and hold any poster and select the items you want to manage. Try it!",
   "HeaderConfirmRecordingCancellation": "Confirm Recording Cancellation",
   "MessageConfirmRecordingCancellation": "Are you sure you wish to cancel this recording?",
-  "Error": "Error"
+  "Error": "Error",
+  "VoiceInput": "Voice Input"
 }

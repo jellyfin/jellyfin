@@ -217,9 +217,21 @@
 
         });
 
+        var timeout;
+        if (options.timeout) {
+            timeout = setTimeout(function () {
+                dialogHelper.close(dlg);
+            }, options.timeout);
+        }
+
         return new Promise(function (resolve, reject) {
 
             dlg.addEventListener('close', function () {
+
+                if (timeout) {
+                    clearTimeout(timeout);
+                    timeout = null;
+                }
 
                 if (selectedId != null) {
                     if (options.callback) {
@@ -227,6 +239,8 @@
                     }
 
                     resolve(selectedId);
+                } else {
+                    reject();
                 }
             });
 

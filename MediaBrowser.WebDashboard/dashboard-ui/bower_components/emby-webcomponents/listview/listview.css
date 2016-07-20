@@ -1,7 +1,7 @@
 button.listItem {
     background: transparent;
-    border: 0 !important;
-    border-bottom: 1px solid #2a2a2a !important;
+    border: 0;
+    border-bottom: 1px solid #2a2a2a;
     cursor: pointer;
     outline: none !important;
     color: inherit;
@@ -138,7 +138,7 @@ div.listItem {
         transform: scale(1.025, 1.025);
     }
 
-    .listItem > .fab:first-child {
+    .listItem > .fab:first-child, .listItem > i:first-child {
         margin-left: .75em;
     }
 
