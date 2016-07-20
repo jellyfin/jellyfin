@@ -109,10 +109,8 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
         getItem(card).then(function (item) {
 
-            var itemsContainer = options.itemsContainer || dom.parentWithAttribute(card, 'is', 'emby-itemscontainer');
-
-            var playlistId = itemsContainer ? itemsContainer.getAttribute('data-playlistid') : null;
-            var collectionId = itemsContainer ? itemsContainer.getAttribute('data-collectionid') : null;
+            var playlistId = card.getAttribute('data-playlistid');
+            var collectionId = card.getAttribute('data-collectionid');
 
             if (playlistId) {
                 var elem = dom.parentWithAttribute(card, 'data-playlistitemid');
@@ -138,6 +136,8 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
                     }
                     else if (result.command == 'removefromplaylist' || result.command == 'removefromcollection') {
 
+                        var itemsContainer = options.itemsContainer || dom.parentWithAttribute(card, 'is', 'emby-itemscontainer');
+
                         if (itemsContainer) {
                             itemsContainer.dispatchEvent(new CustomEvent('needsrefresh', {
                                 detail: {},
@@ -147,6 +147,8 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
                         }
                     }
                     else if (result.command == 'canceltimer') {
+
+                        var itemsContainer = options.itemsContainer || dom.parentWithAttribute(card, 'is', 'emby-itemscontainer');
 
                         if (itemsContainer) {
                             itemsContainer.dispatchEvent(new CustomEvent('timercancelled', {

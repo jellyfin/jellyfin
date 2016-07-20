@@ -810,6 +810,13 @@
                     });
                 }
 
+                if (options.collectionId) {
+                    atts.push({
+                        name: 'collectionid',
+                        value: options.collectionId
+                    });
+                }
+
                 return atts;
             },
 

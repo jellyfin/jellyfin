@@ -68,12 +68,12 @@
                     playFromHere: true,
                     action: 'playallfromhere',
                     smallIcon: true,
-                    dragHandle: true
+                    dragHandle: true,
+                    playlistId: item.Id
                 });
             }
 
             var elem = page.querySelector('#childrenContent .itemsContainer');
-            elem.setAttribute('data-playlistid', item.Id);
             elem.innerHTML = html;
 
             ImageLoader.lazyChildren(elem);

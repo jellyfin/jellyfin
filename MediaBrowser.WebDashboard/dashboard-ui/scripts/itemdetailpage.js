@@ -1125,7 +1125,7 @@
         html += '<button class="btnAddToCollection autoSize" type="button" is="paper-icon-button-light" style="margin-left:1em;"><i class="md-icon" icon="add">add</i></button>';
         html += '</div>';
 
-        html += '<div is="emby-itemscontainer" class="detailSectionContent itemsContainer" data-collectionid="' + parentItem.Id + '">';
+        html += '<div is="emby-itemscontainer" class="detailSectionContent itemsContainer">';
 
         var shape = type.type == 'MusicAlbum' ? 'detailPageSquare' : 'detailPagePortrait';
 
@@ -1138,7 +1138,8 @@
             showDetailsMenu: true,
             overlayMoreButton: true,
             showAddToCollection: false,
-            showRemoveFromCollection: true
+            showRemoveFromCollection: true,
+            collectionId: parentItem.Id
         });
         html += '</div>';
 

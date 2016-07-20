@@ -6,6 +6,23 @@
 
     var currentRecognition = null;
 
+    function normalizeInput(text, options) {
+        
+        if (options.requireNamedIdentifier) {
+
+            var srch = 'jarvis';
+            var index = text.toLowerCase().indexOf(srch);
+
+            if (index != -1) {
+                text = text.substring(index + srch.length);
+            } else {
+                return null;
+            }
+        }
+
+        return text;
+    }
+
     /// <summary> Starts listening for voice commands </summary>
     /// <returns> . </returns>
     function listen(options) {
@@ -31,14 +48,18 @@
                     var resultInput = event.results[resultCount][0].transcript || '';
                     resultCount++;
 
-                    if (options.continuous) {
-                        events.trigger(receiver, 'input', [
-                            {
-                                text: resultInput
-                            }
-                        ]);
-                    } else {
-                        resolve(resultInput);
+                    resultInput = normalizeInput(resultInput, options);
+
+                    if (resultInput) {
+                        if (options.continuous) {
+                            events.trigger(receiver, 'input', [
+                                {
+                                    text: resultInput
+                                }
+                            ]);
+                        } else {
+                            resolve(resultInput);
+                        }
                     }
                 }
             };
