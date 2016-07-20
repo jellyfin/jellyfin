@@ -85,7 +85,6 @@ define([], function () {
             },
             command: null,
             text: text,
-            userId: Dashboard.getCurrentUserId(),
             success: false
         };
 

@@ -1,10 +1,6 @@
 {
-    "MarkPlayed": "Mark Played",
-    "MarkUnplayed": "Mark Unplayed",
-    "GroupVersions": "Group Versions",
-    "PleaseSelectTwoItems": "Please select at least two items.",
-    "TheSelectedItemsWillBeGrouped": "The selected videos will be grouped into one virtual item. Emby apps will automatically choose which version to play based on device and network performance. Are you sure you wish to continue?",
-    "Error": "Error",
+    "HeaderConfirmRecordingCancellation": "Confirm Recording Cancellation",
+    "MessageConfirmRecordingCancellation": "Are you sure you wish to cancel this recording?",
     "ValueSpecialEpisodeName": "Especial - {0}",
     "Share": "Compartilhar",
     "ServerUpdateNeeded": "Este servidor Emby precisa ser atualizado. Para baixar a \u00faltima vers\u00e3o, por favor visite {0}",
@@ -103,7 +99,6 @@
     "Favorite": "Favorito",
     "Like": "Gostei",
     "Dislike": "N\u00e3o Gostei",
-    "Played": "Reproduzido",
     "RefreshDialogHelp": "Os metadados s\u00e3o atualizados com bases nas defini\u00e7\u00f5es e nos servi\u00e7os de internet que est\u00e3o ativos no painel do Servidor Emby.",
     "Open": "Abrir",
     "Play": "Reproduzir",
@@ -121,5 +116,13 @@
     "PlayFromBeginning": "Reproduzir do in\u00edcio",
     "ResumeAt": "Retomar de {0}",
     "RemoveFromPlaylist": "Remover da Lista de Reprodu\u00e7\u00e3o",
-    "Trailer": "Trailer"
+    "Trailer": "Trailer",
+    "MarkPlayed": "Mark Played",
+    "MarkUnplayed": "Mark Unplayed",
+    "GroupVersions": "Group Versions",
+    "PleaseSelectTwoItems": "Please select at least two items.",
+    "TheSelectedItemsWillBeGrouped": "The selected videos will be grouped into one virtual item. Emby apps will automatically choose which version to play based on device and network performance. Are you sure you wish to continue?",
+    "TryMultiSelect": "Try Multi-Select",
+    "TryMultiSelectMessage": "To edit multiple media items, just click and hold any poster and select the items you want to manage. Try it!",
+    "Error": "Error"
 }

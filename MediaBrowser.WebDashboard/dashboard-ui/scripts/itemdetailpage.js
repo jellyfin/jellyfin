@@ -70,6 +70,7 @@
             queue: false,
             playAllFromHere: false,
             queueAllFromHere: false,
+            sync: false,
             positionTo: button
         };
     }

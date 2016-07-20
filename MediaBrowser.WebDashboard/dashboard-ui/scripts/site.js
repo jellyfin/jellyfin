@@ -1830,6 +1830,8 @@ var AppInfo = {};
 
         define("tvguide", [embyWebComponentsBowerPath + "/guide/guide", 'embyRouter'], returnFirstDependency);
         define("voiceDialog", [embyWebComponentsBowerPath + "/voice/voicedialog"], returnFirstDependency);
+        define("voiceReceiver", [embyWebComponentsBowerPath + "/voice/voicereceiver"], returnFirstDependency);
+        define("voiceProcessor", [embyWebComponentsBowerPath + "/voice/voiceprocessor"], returnFirstDependency);
 
         define("viewManager", [embyWebComponentsBowerPath + "/viewmanager/viewmanager"], function (viewManager) {
             window.ViewManager = viewManager;
@@ -2174,6 +2176,8 @@ var AppInfo = {};
         } else {
             define("alert", [embyWebComponentsBowerPath + "/alert/alert"], returnFirstDependency);
         }
+
+        define("dialog", [embyWebComponentsBowerPath + "/dialog/dialog"], returnFirstDependency);
 
         if (preferNativeAlerts && window.confirm) {
             define("confirm", [embyWebComponentsBowerPath + "/confirm/nativeconfirm"], returnFirstDependency);

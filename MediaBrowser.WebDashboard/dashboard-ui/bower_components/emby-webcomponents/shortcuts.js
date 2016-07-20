@@ -146,6 +146,16 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
                             }));
                         }
                     }
+                    else if (result.command == 'canceltimer') {
+
+                        if (itemsContainer) {
+                            itemsContainer.dispatchEvent(new CustomEvent('timercancelled', {
+                                detail: {},
+                                cancelable: false,
+                                bubbles: true
+                            }));
+                        }
+                    }
                 });
             });
         });

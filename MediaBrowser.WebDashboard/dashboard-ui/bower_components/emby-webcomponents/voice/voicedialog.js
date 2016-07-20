@@ -1,4 +1,4 @@
-define(['dialogHelper', './voicereceiver', './voiceprocessor', 'globalize', 'emby-button', 'css!./voice.css', 'material-icons', 'css!./../formdialog'], function (dialogHelper, voicereceiver, voiceprocessor, globalize) {
+define(['dialogHelper', 'voiceReceiver', 'voiceProcessor', 'globalize', 'emby-button', 'css!./voice.css', 'material-icons', 'css!./../formdialog'], function (dialogHelper, voicereceiver, voiceprocessor, globalize) {
 
     var lang = 'en-US';
 
@@ -111,16 +111,16 @@ define(['dialogHelper', './voicereceiver', './voiceprocessor', 'globalize', 'emb
             dlg.classList.add('formDialog');
 
             var html = '';
-            html += '<div class="dialogHeader" style="margin:0 0 2em;">';
+            html += '<div class="dialogHeader">';
             html += '<button is="paper-icon-button-light" class="btnCancelVoiceInput autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
             html += '<div class="dialogHeaderTitle">';
-            //html += title;
+            html += globalize.translate('sharedcomponents#VoiceInput');
             html += '</div>';
             html += '</div>';
 
             html += '<div>';
 
-            html += '<div class="dialogContent smoothScrollY">';
+            html += '<div class="dialogContent smoothScrollY" style="padding-top:2em;">';
             html += '<div class="dialogContentInner centeredContent">';
             html += '<div class="voiceHelpContent">';
 
@@ -244,7 +244,11 @@ define(['dialogHelper', './voicereceiver', './voiceprocessor', 'globalize', 'emb
         listen();
     }
     function listen() {
-        voicereceiver.listenForCommand(lang || "en-US").then(processInput).then(function (result) {
+        voicereceiver.listen({
+
+            lang: lang || "en-US"
+
+        }).then(processInput).then(function (result) {
 
             closeDialog();
 

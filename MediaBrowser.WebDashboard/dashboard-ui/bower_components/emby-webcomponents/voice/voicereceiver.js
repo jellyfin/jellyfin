@@ -1,10 +1,15 @@
-﻿define([], function () {
-    var currentRecognition = null;
+﻿define(['events'], function (events) {
 
+    var receiver = {
+
+    };
+
+    var currentRecognition = null;
 
     /// <summary> Starts listening for voice commands </summary>
     /// <returns> . </returns>
-    function listenForCommand(lang) {
+    function listen(options) {
+
         return new Promise(function (resolve, reject) {
             cancelListener();
 
@@ -13,13 +18,28 @@
                 window.mozSpeechRecognition ||
                 window.oSpeechRecognition ||
                 window.msSpeechRecognition)();
-            recognition.lang = lang;
+
+            recognition.lang = options.lang;
+            recognition.continuous = options.continuous || false;
+
+            var resultCount = 0;
 
             recognition.onresult = function (event) {
                 console.log(event);
                 if (event.results.length > 0) {
-                    var resultInput = event.results[0][0].transcript || '';
-                    resolve(resultInput);
+
+                    var resultInput = event.results[resultCount][0].transcript || '';
+                    resultCount++;
+
+                    if (options.continuous) {
+                        events.trigger(receiver, 'input', [
+                            {
+                                text: resultInput
+                            }
+                        ]);
+                    } else {
+                        resolve(resultInput);
+                    }
                 }
             };
 
@@ -36,7 +56,6 @@
         });
     }
 
-
     /// <summary> Cancel listener. </summary>
     /// <returns> . </returns>
     function cancelListener() {
@@ -48,10 +67,9 @@
 
     }
 
-    /// <summary> An enum constant representing the window. voice input manager option. </summary>
-    return {
-        listenForCommand: listenForCommand,
-        cancel: cancelListener
-    };
+    receiver.listen = listen;
+    receiver.cancel = cancelListener;
 
+    /// <summary> An enum constant representing the window. voice input manager option. </summary>
+    return receiver;
 });
