@@ -1,4 +1,4 @@
-define(['dialogHelper', './voicereceiver', './voiceprocessor', 'globalize', 'emby-button', 'css!./voice.css', 'material-icons', 'css!./../formdialog'], function (dialogHelper, voicereceiver, voiceprocessor, globalize) {
+define(['dialogHelper', 'voiceReceiver', 'voiceProcessor', 'globalize', 'emby-button', 'css!./voice.css', 'material-icons', 'css!./../formdialog'], function (dialogHelper, voicereceiver, voiceprocessor, globalize) {
 
     var lang = 'en-US';
 
@@ -244,7 +244,11 @@ define(['dialogHelper', './voicereceiver', './voiceprocessor', 'globalize', 'emb
         listen();
     }
     function listen() {
-        voicereceiver.listenForCommand(lang || "en-US").then(processInput).then(function (result) {
+        voicereceiver.listen({
+
+            lang: lang || "en-US"
+
+        }).then(processInput).then(function (result) {
 
             closeDialog();
 

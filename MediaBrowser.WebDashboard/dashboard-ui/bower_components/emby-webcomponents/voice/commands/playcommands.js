@@ -10,13 +10,15 @@
             items = shuffleArray(items);
         }
 
-        items = items.map(function (i) {
-            return i.Id;
-        });
-
         if (items.length) {
+            var serverId = items[0].ServerId;
+            items = items.map(function (i) {
+                return i.Id;
+            });
+
             playbackManager.play({
-                ids: items
+                ids: items,
+                serverId: serverId
             });
         }
         else {
@@ -63,6 +65,7 @@
             }
 
             var apiClient = connectionManager.currentApiClient();
+
             if (result.item.sourceid === 'nextup') {
 
                 apiClient.getNextUpEpisodes(query).then(function (queryResult) {
@@ -89,7 +92,6 @@
             if (result.item.filters.indexOf('favorite') !== -1) {
                 query.Filters = 'IsFavorite';
             }
-
 
             apiClient.getItems(apiClient.getCurrentUserId(), query).then(function (queryResult) {
 
