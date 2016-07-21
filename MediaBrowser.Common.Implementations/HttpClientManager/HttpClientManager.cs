@@ -140,7 +140,17 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
         private WebRequest GetRequest(HttpRequestOptions options, string method)
         {
-            var request = CreateWebRequest(options.Url);
+            var url = options.Url;
+
+            var uriAddress = new Uri(url);
+            var userInfo = uriAddress.UserInfo;
+            if (!string.IsNullOrWhiteSpace(userInfo))
+            {
+                _logger.Info("Found userInfo in url: {0} ... url: {1}", userInfo, url);
+                url = url.Replace(userInfo + "@", string.Empty);
+            }
+
+            var request = CreateWebRequest(url);
             var httpWebRequest = request as HttpWebRequest;
 
             if (httpWebRequest != null)
@@ -183,7 +193,25 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 }
             }
 
+            if (!string.IsNullOrWhiteSpace(userInfo))
+            {
+                var parts = userInfo.Split(':');
+                if (parts.Length == 2)
+                {
+                    request.Credentials = GetCredential(url, parts[0], parts[1]);
+                    request.PreAuthenticate = true;
+                }
+            }
+
             return request;
+        }
+
+        private CredentialCache GetCredential(string url, string username, string password)
+        {
+            //ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3;
+            CredentialCache credentialCache = new CredentialCache();
+            credentialCache.Add(new Uri(url), "Basic", new NetworkCredential(username, password));
+            return credentialCache;
         }
 
         private void AddRequestHeaders(HttpWebRequest request, HttpRequestOptions options)
