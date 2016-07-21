@@ -168,6 +168,10 @@ define(['browser'], function (browser) {
             return 10000000;
         }
 
+        if (browser.ps4) {
+            return 8000000;
+        }
+
         var userAgent = navigator.userAgent.toLowerCase();
 
         if (browser.tizen) {

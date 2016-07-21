@@ -95,7 +95,7 @@ function (dialogHelper, loading, connectionManager, globalize, actionsheet) {
 
             html += '<div class="listItem">';
 
-            html += '<button is="emby-button" type="button" class="fab autoSize mini" style="background:#52B54B;"><i class="md-icon listItemIcon">dvr</i></button>';
+            html += '<i class="md-icon listItemIcon">dvr</i>';
 
             html += '<div class="listItemBody two-line">';
             html += '<h3>';

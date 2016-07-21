@@ -173,3 +173,7 @@ h1, h1 a {
     margin-left: 5%;
     margin-right: 5%;
 }
+
+.categorySyncButton {
+    display: none !important;
+}

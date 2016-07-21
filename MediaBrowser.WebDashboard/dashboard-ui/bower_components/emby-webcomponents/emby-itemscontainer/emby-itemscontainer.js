@@ -107,7 +107,6 @@
 
     function onDrop(evt, itemsContainer) {
 
-        var playlistId = itemsContainer.getAttribute('data-playlistid');
 
         loading.show();
 
@@ -115,6 +114,7 @@
 
         var newIndex = evt.newIndex;
         var itemId = el.getAttribute('data-playlistitemid');
+        var playlistId = el.getAttribute('data-playlistid');
 
         var serverId = el.getAttribute('data-serverid');
         var apiClient = connectionManager.getApiClient(serverId);
