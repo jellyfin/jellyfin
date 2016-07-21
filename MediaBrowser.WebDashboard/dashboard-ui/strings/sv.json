@@ -1373,7 +1373,7 @@
     "HeaderUpcomingSports": "Kommande sport",
     "HeaderUpcomingPrograms": "Kommande program",
     "ButtonMoreItems": "Mer",
-    "LabelShowLibraryTileNames": "Show library tile names",
+    "LabelShowLibraryTileNames": "VIsa namn f\u00f6r biblioteksplattor",
     "LabelShowLibraryTileNamesHelp": "Determines if labels will be displayed underneath library tiles on the home page",
     "OptionEnableTranscodingThrottle": "Aktivera strypning",
     "OptionEnableTranscodingThrottleHelp": "Strypning justerar automatiskt hastigheten vid omkodning f\u00f6r att minimera cpu-anv\u00e4ndning under uppspelning.",
