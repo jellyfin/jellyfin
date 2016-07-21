@@ -117,6 +117,15 @@ define(['apphost'], function (appHost) {
 
         canEditImages: function (user, itemType) {
 
+            if (itemType == 'UserView') {
+                if (user.Policy.IsAdministrator) {
+
+                    return true;
+                }
+
+                return false;
+            }
+
             return itemType != 'Timer' && canEdit(user, itemType);
         },
 

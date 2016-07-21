@@ -1,4 +1,6 @@
-define(['actionsheet', 'datetime', 'playbackManager', 'globalize'], function (actionsheet, datetime, playbackManager, globalize) {
+define(['actionsheet', 'datetime', 'playbackManager', 'globalize', 'appSettings'], function (actionsheet, datetime, playbackManager, globalize, appSettings) {
+
+    var isMobileApp = window.Dashboard != null;
 
     function show(options) {
 
@@ -11,7 +13,9 @@ define(['actionsheet', 'datetime', 'playbackManager', 'globalize'], function (ac
         var serverId = item.ServerId;
         var resumePositionTicks = item.UserData ? item.UserData.PlaybackPositionTicks : null;
 
-        if (!resumePositionTicks && mediaType != "Audio" && !isFolder) {
+        var showExternalPlayer = isMobileApp && mediaType == 'Video' && !isFolder && appSettings.enableExternalPlayers();
+
+        if (!resumePositionTicks && mediaType != "Audio" && !isFolder && !showExternalPlayer) {
             playbackManager.play({
                 items: [item]
             });
@@ -34,6 +38,13 @@ define(['actionsheet', 'datetime', 'playbackManager', 'globalize'], function (ac
             menuItems.push({
                 name: globalize.translate('sharedcomponents#Play'),
                 id: 'play'
+            });
+        }
+
+        if (showExternalPlayer) {
+            menuItems.push({
+                name: globalize.translate('ButtonPlayExternalPlayer'),
+                id: 'externalplayer'
             });
         }
 
@@ -71,6 +82,9 @@ define(['actionsheet', 'datetime', 'playbackManager', 'globalize'], function (ac
                         ids: [itemId],
                         serverId: item.ServerId
                     });
+                    break;
+                case 'externalplayer':
+                    LibraryBrowser.playInExternalPlayer(itemId);
                     break;
                 case 'resume':
                     playbackManager.play({

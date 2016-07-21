@@ -174,7 +174,8 @@
             html += '<span class="itemSelectionCount"></span>';
             html += '</div>';
 
-            html += '<button is="paper-icon-button-light" class="btnSelectionPanelOptions autoSize" style="margin-left:auto;"><i class="md-icon">more_vert</i></button>';
+            var moreIcon = appHost.moreIcon == 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';
+            html += '<button is="paper-icon-button-light" class="btnSelectionPanelOptions autoSize" style="margin-left:auto;"><i class="md-icon">' + moreIcon + '</i></button>';
 
             selectionCommandsPanel.innerHTML = html;
 

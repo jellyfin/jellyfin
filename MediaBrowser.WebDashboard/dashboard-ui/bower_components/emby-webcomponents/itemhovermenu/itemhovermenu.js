@@ -1,4 +1,4 @@
-﻿define(['connectionManager', 'itemHelper', 'mediaInfo', 'userdataButtons', 'playbackManager', 'globalize', 'dom', 'css!./itemhovermenu', 'emby-button'], function (connectionManager, itemHelper, mediaInfo, userdataButtons, playbackManager, globalize, dom) {
+﻿define(['connectionManager', 'itemHelper', 'mediaInfo', 'userdataButtons', 'playbackManager', 'globalize', 'dom', 'apphost', 'css!./itemhovermenu', 'emby-button'], function (connectionManager, itemHelper, mediaInfo, userdataButtons, playbackManager, globalize, dom, appHost) {
 
     var preventHover = false;
     var showOverlayTimeout;
@@ -136,7 +136,8 @@
             buttonCount++;
         }
 
-        html += '<button is="emby-button" class="itemAction autoSize fab mini" data-action="menu" data-playoptions="false"><i class="md-icon">&#xE5D4;</i></button>';
+        var moreIcon = appHost.moreIcon == 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';
+        html += '<button is="emby-button" class="itemAction autoSize fab mini" data-action="menu" data-playoptions="false"><i class="md-icon">' + moreIcon + '</i></button>';
         buttonCount++;
 
         html += userdataButtons.getIconsHtml({
