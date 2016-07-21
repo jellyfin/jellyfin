@@ -465,10 +465,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             return stream;
         }
 
-        static void EndSubStream(Stream stream)
-        {
-        }
-
         public static string GetHandlerPathIfAny(string listenerUrl)
         {
             if (listenerUrl == null) return null;
