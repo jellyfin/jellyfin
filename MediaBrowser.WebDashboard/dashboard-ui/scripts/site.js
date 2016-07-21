@@ -1727,6 +1727,12 @@ var AppInfo = {};
         return bowerPath;
     }
 
+    function getLayoutManager(layoutManager) {
+
+        layoutManager.init();
+        return layoutManager;
+    }
+
     function initRequire() {
 
         var urlArgs = "v=" + (window.dashboardVersion || new Date().getDate());
@@ -1763,7 +1769,6 @@ var AppInfo = {};
             qualityoptions: embyWebComponentsBowerPath + "/qualityoptions",
             connectservice: apiClientBowerPath + '/connectservice',
             hammer: bowerPath + "/hammerjs/hammer.min",
-            layoutManager: embyWebComponentsBowerPath + "/layoutmanager",
             pageJs: embyWebComponentsBowerPath + '/page.js/page',
             focusManager: embyWebComponentsBowerPath + "/focusmanager",
             datetime: embyWebComponentsBowerPath + "/datetime",
@@ -1823,6 +1828,7 @@ var AppInfo = {};
         define("mediaInfo", [embyWebComponentsBowerPath + "/mediainfo/mediainfo"], returnFirstDependency);
         define("itemContextMenu", [embyWebComponentsBowerPath + "/itemcontextmenu"], returnFirstDependency);
         define("dom", [embyWebComponentsBowerPath + "/dom"], returnFirstDependency);
+        define("layoutManager", [embyWebComponentsBowerPath + "/layoutmanager"], getLayoutManager);
         define("playMenu", [embyWebComponentsBowerPath + "/playmenu"], returnFirstDependency);
         define("refreshDialog", [embyWebComponentsBowerPath + "/refreshdialog/refreshdialog"], returnFirstDependency);
         define("backdrop", [embyWebComponentsBowerPath + "/backdrop/backdrop"], returnFirstDependency);
@@ -3153,7 +3159,6 @@ var AppInfo = {};
 
         deps.push('imageLoader');
         deps.push('embyRouter');
-        deps.push('layoutManager');
 
         if (!(AppInfo.isNativeApp && browserInfo.android)) {
             document.documentElement.classList.add('minimumSizeTabs');
@@ -3187,13 +3192,11 @@ var AppInfo = {};
 
         console.log('onAppReady - loading dependencies');
 
-        require(deps, function (imageLoader, pageObjects, layoutManager) {
+        require(deps, function (imageLoader, pageObjects) {
 
             console.log('Loaded dependencies in onAppReady');
 
             window.ImageLoader = imageLoader;
-
-            layoutManager.init();
 
             window.Emby = {};
             window.Emby.Page = pageObjects;
