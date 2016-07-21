@@ -125,9 +125,9 @@
 
                 itemHtml += '<div class="listItemBody two-line">';
 
-                itemHtml += '<h3 class="listItemBodyText">';
+                itemHtml += '<div>';
                 itemHtml += s.DisplayTitle || '';
-                itemHtml += '</h3>';
+                itemHtml += '</div>';
 
                 if (s.Path) {
                     itemHtml += '<div class="secondary listItemBodyText">' + (s.Path) + '</div>';
@@ -241,7 +241,7 @@
 
             //html += '<a class="btnViewSubtitle" href="#" data-subid="' + result.Id + '">';
 
-            html += '<h3 class="listItemBodyText">' + (result.Name) + '</h3>';
+            html += '<div>' + (result.Name) + '</div>';
             html += '<div class="secondary listItemBodyText">' + (result.Format) + '</div>';
 
             if (result.Comment) {

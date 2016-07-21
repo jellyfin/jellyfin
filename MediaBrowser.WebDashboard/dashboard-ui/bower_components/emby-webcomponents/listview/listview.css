@@ -102,10 +102,15 @@ div.listItem {
 }
 
 .listItemIcon {
-    width: 3vh;
-    height: 3vh;
-    font-size: 3vh;
+    width: auto !important;
+    height: auto !important;
+    font-size: 120%;
+    border-radius: 500px;
+    background-color: #52B54B;
+    padding: .5em;
+    color: #fff;
 }
+
 
 .listItem.largeImage .listItemImage {
     width: 45vh;

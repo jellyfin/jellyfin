@@ -52,12 +52,12 @@ define(['layoutManager', 'globalize'], function (layoutManager, globalize) {
 
         if (options.title) {
             html += '<h2>' + options.title + '</h2>';
-        }
+        } 
 
         var text = options.html || options.text;
 
         if (text) {
-            html += '<div>' + text + '</div>';
+            html += '<div style="margin:1em 0;">' + text + '</div>';
         }
 
         html += '<div class="buttons">';
