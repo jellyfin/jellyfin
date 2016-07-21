@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using ServiceStack;
 using ServiceStack.Web;
@@ -32,53 +33,54 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             return header.Substring(ap + 1, end - ap - 1);
         }
 
-        void LoadMultiPart()
+        async Task LoadMultiPart()
         {
             string boundary = GetParameter(ContentType, "; boundary=");
             if (boundary == null)
                 return;
 
-            var input = GetSubStream(InputStream);
-
-            //DB: 30/01/11 - Hack to get around non-seekable stream and received HTTP request
-            //Not ending with \r\n?
-            var ms = new MemoryStream(32 * 1024);
-            input.CopyTo(ms);
-            input = ms;
-            ms.WriteByte((byte)'\r');
-            ms.WriteByte((byte)'\n');
-
-            input.Position = 0;
-
-            //Uncomment to debug
-            //var content = new StreamReader(ms).ReadToEnd();
-            //Console.WriteLine(boundary + "::" + content);
-            //input.Position = 0;
-
-            var multi_part = new HttpMultipart(input, boundary, ContentEncoding);
-
-            HttpMultipart.Element e;
-            while ((e = multi_part.ReadNextElement()) != null)
+            using (var requestStream = GetSubStream(InputStream))
             {
-                if (e.Filename == null)
-                {
-                    byte[] copy = new byte[e.Length];
+                //DB: 30/01/11 - Hack to get around non-seekable stream and received HTTP request
+                //Not ending with \r\n?
+                var ms = new MemoryStream(32 * 1024);
+                await requestStream.CopyToAsync(ms).ConfigureAwait(false);
 
-                    input.Position = e.Start;
-                    input.Read(copy, 0, (int)e.Length);
+                var input = ms;
+                ms.WriteByte((byte)'\r');
+                ms.WriteByte((byte)'\n');
 
-                    form.Add(e.Name, (e.Encoding ?? ContentEncoding).GetString(copy));
-                }
-                else
+                input.Position = 0;
+
+                //Uncomment to debug
+                //var content = new StreamReader(ms).ReadToEnd();
+                //Console.WriteLine(boundary + "::" + content);
+                //input.Position = 0;
+
+                var multi_part = new HttpMultipart(input, boundary, ContentEncoding);
+
+                HttpMultipart.Element e;
+                while ((e = multi_part.ReadNextElement()) != null)
                 {
-                    //
-                    // We use a substream, as in 2.x we will support large uploads streamed to disk,
-                    //
-                    HttpPostedFile sub = new HttpPostedFile(e.Filename, e.ContentType, input, e.Start, e.Length);
-                    files.AddFile(e.Name, sub);
+                    if (e.Filename == null)
+                    {
+                        byte[] copy = new byte[e.Length];
+
+                        input.Position = e.Start;
+                        input.Read(copy, 0, (int)e.Length);
+
+                        form.Add(e.Name, (e.Encoding ?? ContentEncoding).GetString(copy));
+                    }
+                    else
+                    {
+                        //
+                        // We use a substream, as in 2.x we will support large uploads streamed to disk,
+                        //
+                        HttpPostedFile sub = new HttpPostedFile(e.Filename, e.ContentType, input, e.Start, e.Length);
+                        files.AddFile(e.Name, sub);
+                    }
                 }
             }
-            EndSubStream(input);
         }
 
         public NameValueCollection Form
@@ -91,10 +93,15 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                     files = new HttpFileCollection();
 
                     if (IsContentType("multipart/form-data", true))
-                        LoadMultiPart();
-                    else if (
-                        IsContentType("application/x-www-form-urlencoded", true))
-                        LoadWwwForm();
+                    {
+                        var task = LoadMultiPart();
+                        Task.WaitAll(task);
+                    }
+                    else if (IsContentType("application/x-www-form-urlencoded", true))
+                    {
+                        var task = LoadWwwForm();
+                        Task.WaitAll(task);
+                    }
 
                     form.Protect();
                 }
@@ -220,50 +227,50 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             return String.Compare(ContentType, ct, true, Helpers.InvariantCulture) == 0;
         }
 
-
-
-
-
-        void LoadWwwForm()
+        async Task LoadWwwForm()
         {
             using (Stream input = GetSubStream(InputStream))
             {
-                using (StreamReader s = new StreamReader(input, ContentEncoding))
+                using (var ms = new MemoryStream())
                 {
-                    StringBuilder key = new StringBuilder();
-                    StringBuilder value = new StringBuilder();
-                    int c;
+                    await input.CopyToAsync(ms).ConfigureAwait(false);
+                    ms.Position = 0;
 
-                    while ((c = s.Read()) != -1)
+                    using (StreamReader s = new StreamReader(ms, ContentEncoding))
                     {
-                        if (c == '=')
+                        StringBuilder key = new StringBuilder();
+                        StringBuilder value = new StringBuilder();
+                        int c;
+
+                        while ((c = s.Read()) != -1)
                         {
-                            value.Length = 0;
-                            while ((c = s.Read()) != -1)
+                            if (c == '=')
                             {
-                                if (c == '&')
+                                value.Length = 0;
+                                while ((c = s.Read()) != -1)
+                                {
+                                    if (c == '&')
+                                    {
+                                        AddRawKeyValue(key, value);
+                                        break;
+                                    }
+                                    else
+                                        value.Append((char)c);
+                                }
+                                if (c == -1)
                                 {
                                     AddRawKeyValue(key, value);
-                                    break;
+                                    return;
                                 }
-                                else
-                                    value.Append((char)c);
                             }
-                            if (c == -1)
-                            {
+                            else if (c == '&')
                                 AddRawKeyValue(key, value);
-                                return;
-                            }
+                            else
+                                key.Append((char)c);
                         }
-                        else if (c == '&')
+                        if (c == -1)
                             AddRawKeyValue(key, value);
-                        else
-                            key.Append((char)c);
                     }
-                    if (c == -1)
-                        AddRawKeyValue(key, value);
-
-                    EndSubStream(input);
                 }
             }
         }
