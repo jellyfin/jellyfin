@@ -130,6 +130,8 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
                 return appInfo;
             });
         },
-        capabilities: getCapabilities
+        capabilities: getCapabilities,
+
+        moreIcon: browser.safari || browser.edge ? 'dots-horiz' : 'dots-vert'
     };
 });
