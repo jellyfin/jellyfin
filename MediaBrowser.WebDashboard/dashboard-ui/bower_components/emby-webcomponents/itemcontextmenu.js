@@ -1,9 +1,6 @@
-define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter', 'playbackManager', 'loading'], function (appHost, globalize, connectionManager, itemHelper, embyRouter, playbackManager, loading) {
+define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter', 'playbackManager', 'loading', 'appSettings'], function (appHost, globalize, connectionManager, itemHelper, embyRouter, playbackManager, loading, appSettings) {
 
-    var isTheater = true;
-    appHost.appInfo().then(function (result) {
-        isTheater = result.appName.toLowerCase().indexOf('theater') != -1;
-    });
+    var isMobileApp = window.Dashboard != null;
 
     function getCommands(options) {
 
@@ -48,7 +45,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
             if (itemHelper.canEdit(user, item.Type)) {
 
-                if (!isTheater) {
+                if (isMobileApp) {
                     if (options.edit !== false) {
 
                         var text = item.Type == 'Timer' ? globalize.translate('sharedcomponents#Edit') : globalize.translate('sharedcomponents#EditInfo');
@@ -63,7 +60,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
             if (itemHelper.canEditImages(user, item.Type)) {
 
-                if (!isTheater) {
+                if (isMobileApp) {
                     if (options.editImages !== false) {
                         commands.push({
                             name: globalize.translate('sharedcomponents#EditImages'),
@@ -92,7 +89,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 });
             }
 
-            if (!isTheater && options.identify !== false) {
+            if (isMobileApp && options.identify !== false) {
                 if (itemHelper.canIdentify(user, item.Type)) {
                     commands.push({
                         name: globalize.translate('sharedcomponents#Identify'),
@@ -125,6 +122,13 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                         name: globalize.translate('sharedcomponents#Play'),
                         id: 'resume'
                     });
+
+                    if (isMobileApp && appSettings.enableExternalPlayers()) {
+                        commands.push({
+                            name: globalize.translate('ButtonPlayExternalPlayer'),
+                            id: 'externalplayer'
+                        });
+                    }
                 }
 
                 if (options.playAllFromHere && item.Type != 'Program' && item.Type != 'TvChannel') {
@@ -201,7 +205,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 }
             }
 
-            if (!isTheater && options.sync !== false) {
+            if (isMobileApp && options.sync !== false) {
                 if (itemHelper.canSync(user, item)) {
                     commands.push({
                         name: globalize.translate('sharedcomponents#Sync'),
@@ -385,6 +389,10 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                         });
                         break;
                     }
+                case 'externalplayer':
+                    LibraryBrowser.playInExternalPlayer(itemId);
+                    getResolveFunction(resolve, id)();
+                    break;
                 case 'album':
                     {
                         embyRouter.showItem(item.AlbumId, item.ServerId);
