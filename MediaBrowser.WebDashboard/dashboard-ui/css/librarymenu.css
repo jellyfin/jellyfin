@@ -365,9 +365,9 @@ body:not(.dashboardDocument) .btnNotifications {
     }
 
 i.sidebarLinkIcon {
-    font-size: 24px;
-    height: 24px;
-    width: 24px;
+    font-size: 150%;
+    height: auto;
+    width: auto;
 }
 
 .darkDrawer i.sidebarLinkIcon {
@@ -441,7 +441,6 @@ body:not(.dashboardDocument) .headerAppsButton {
 
     .dashboardDocument .libraryMenuButtonText {
         font-size: 150%;
-        margin-left: 1em;
     }
 
     .dashboardDocument .mainDrawerPanelContent {
@@ -507,45 +506,3 @@ body:not(.dashboardDocument) .headerAppsButton {
 .title-separator {
     margin: 0 .5em;
 }
-
-.adminAppsMenu {
-    position: fixed;
-    top: 5vh !important;
-    left: 2vw !important;
-    padding: 1.5em 1em !important;
-    font-size: 110%;
-    margin: 0 !important;
-    color: #333;
-}
-
-.adminAppsMenuRow {
-    display: flex;
-    padding: 0 !important;
-    margin: 0 !important;
-}
-
-    .adminAppsMenuRow + .adminAppsMenuRow {
-        margin-top: 1.5em !important;
-        border-top: 1px solid #ddd;
-        padding-top: 1em !important;
-    }
-
-.adminAppsButton {
-    display: block;
-    color: inherit !important;
-    font-weight: normal !important;
-    text-align: center;
-}
-
-.adminAppsButton {
-    width: 5.3vw;
-}
-
-    .adminAppsButton + .adminAppsButton {
-        margin-left: 1.5em;
-    }
-
-    .adminAppsButton paper-icon-button {
-        width: 4.5vh;
-        height: 4.5vh;
-    }

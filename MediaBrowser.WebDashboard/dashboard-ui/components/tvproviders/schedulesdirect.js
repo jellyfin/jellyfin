@@ -197,7 +197,7 @@
                 return;
             }
 
-            Dashboard.showModalLoadingMsg();
+            Dashboard.showLoadingMsg();
 
             ApiClient.ajax({
                 type: "GET",
@@ -220,7 +220,7 @@
                     $('#selectListing', page).val(listingsId);
                 }
 
-                Dashboard.hideModalLoadingMsg();
+                Dashboard.hideLoadingMsg();
 
             }, function (result) {
 
@@ -228,7 +228,7 @@
                     message: Globalize.translate('ErrorGettingTvLineups')
                 });
                 refreshListings('');
-                Dashboard.hideModalLoadingMsg();
+                Dashboard.hideLoadingMsg();
             });
         }
 

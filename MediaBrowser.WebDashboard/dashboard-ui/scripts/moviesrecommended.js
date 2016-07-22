@@ -260,9 +260,7 @@
         loadResume(tabContent, userId, parentId);
         loadLatest(tabContent, userId, parentId);
 
-        if (AppInfo.enableMovieHomeSuggestions) {
-            loadSuggestions(tabContent, userId, parentId);
-        }
+        loadSuggestions(tabContent, userId, parentId);
     }
 
     return function (view, params) {
