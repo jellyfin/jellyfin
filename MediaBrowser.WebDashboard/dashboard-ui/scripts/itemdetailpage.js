@@ -804,7 +804,7 @@
         };
 
         if (item.Type == 'MusicAlbum' && item.AlbumArtists && item.AlbumArtists.length) {
-            options.ExcludeArtistNames = item.AlbumArtists[0].Name;
+            options.ExcludeArtistIds = item.AlbumArtists[0].Id;
         }
 
         if (enableScrollX()) {

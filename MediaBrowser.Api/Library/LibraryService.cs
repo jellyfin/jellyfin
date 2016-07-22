@@ -351,7 +351,7 @@ namespace MediaBrowser.Api.Library
                     Id = request.Id,
                     Limit = request.Limit,
                     UserId = request.UserId,
-                    ExcludeArtistNames = request.ExcludeArtistNames
+                    ExcludeArtistIds = request.ExcludeArtistIds
                 });
             }
             if (item is MusicArtist)
