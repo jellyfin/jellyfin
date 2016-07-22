@@ -404,18 +404,6 @@ div.dialogHeader {
     padding-bottom: 100px;
 }
 
-.paper-toggle-button-0 .toggle-label.paper-toggle-button {
-    color: inherit;
-}
-
-paper-toggle-button #toggleButton, paper-toggle-button[checked] #toggleBar {
-    background-color: #52B54B;
-}
-
-paper-toggle-button paper-ripple {
-    color: #52B54B;
-}
-
 .formDialog.background-theme-b {
     background-color: #181818;
 }

@@ -266,6 +266,8 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "Artists", Description = "Optional. If specified, results will be filtered based on artist. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Artists { get; set; }
 
+        public string ExcludeArtistNames { get; set; }
+
         [ApiMember(Name = "ArtistIds", Description = "Optional. If specified, results will be filtered based on artist. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string ArtistIds { get; set; }
 

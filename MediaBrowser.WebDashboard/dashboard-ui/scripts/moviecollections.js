@@ -118,7 +118,7 @@
 
                     html = libraryBrowser.getPosterViewHtml({
                         items: result.Items,
-                        shape: "portrait",
+                        shape: "auto",
                         context: 'movies',
                         showTitle: true,
                         showYear: true,
@@ -132,7 +132,7 @@
                     // Poster
                     html = libraryBrowser.getPosterViewHtml({
                         items: result.Items,
-                        shape: "portrait",
+                        shape: "auto",
                         context: 'movies',
                         centerText: true,
                         lazy: true,
