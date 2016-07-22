@@ -442,6 +442,7 @@
     function renderDetails(page, item, context, isStatic) {
 
         renderSimilarItems(page, item, context);
+        renderMoreFromItems(page, item);
 
         if (!isStatic) {
             renderSiblingLinks(page, item, context);
@@ -721,6 +722,63 @@
         return enableScrollX() ? 'overflowBackdrop' : 'detailPage169';
     }
 
+    function renderMoreFromItems(page, item) {
+        
+        var moreFromSection = page.querySelector('#moreFromSection');
+
+        if (!moreFromSection) {
+            return;
+        }
+
+        if (item.Type != 'MusicAlbum' || !item.AlbumArtists || !item.AlbumArtists.length) {
+            moreFromSection.classList.add('hide');
+            return;
+        }
+
+        ApiClient.getItems(Dashboard.getCurrentUserId(), {
+            
+            IncludeItemTypes: "MusicAlbum",
+            ArtistIds: item.AlbumArtists[0].Id,
+            Recursive: true,
+            ExcludeItemIds: item.Id
+
+        }).then(function(result) {
+            
+            if (!result.Items.length) {
+                moreFromSection.classList.add('hide');
+                return;
+            }
+            moreFromSection.classList.remove('hide');
+
+            moreFromSection.querySelector('.moreFromHeader').innerHTML = Globalize.translate('MoreFromValue', item.AlbumArtists[0].Name);
+
+            var html = '';
+
+            if (enableScrollX()) {
+                html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
+            } else {
+                html += '<div is="emby-itemscontainer" class="itemsContainer">';
+            }
+
+            var shape = item.Type == "MusicAlbum" || item.Type == "MusicArtist" ? getSquareShape() : getPortraitShape();
+
+            html += LibraryBrowser.getPosterViewHtml({
+                items: result.Items,
+                shape: shape,
+                showParentTitle: item.Type == "MusicAlbum",
+                centerText: true,
+                showTitle: item.Type == "MusicAlbum" || item.Type == "Game" || item.Type == "MusicArtist",
+                coverImage: item.Type == "MusicAlbum" || item.Type == "MusicArtist",
+                overlayPlayButton: true
+            });
+            html += '</div>';
+
+            var similarContent = page.querySelector('#moreFromItems');
+            similarContent.innerHTML = html;
+            ImageLoader.lazyChildren(similarContent);
+        });
+    }
+
     function renderSimilarItems(page, item, context) {
 
         var similarCollapsible = page.querySelector('#similarCollapsible');
@@ -751,8 +809,6 @@
 
         ApiClient.getSimilarItems(item.Id, options).then(function (result) {
 
-            var similarCollapsible = page.querySelector('#similarCollapsible');
-
             if (!result.Items.length) {
 
                 similarCollapsible.classList.add('hide');
@@ -775,7 +831,6 @@
                 showParentTitle: item.Type == "MusicAlbum",
                 centerText: true,
                 showTitle: item.Type == "MusicAlbum" || item.Type == "Game" || item.Type == "MusicArtist",
-                borderless: item.Type == "Game",
                 context: context,
                 lazy: true,
                 showDetailsMenu: true,

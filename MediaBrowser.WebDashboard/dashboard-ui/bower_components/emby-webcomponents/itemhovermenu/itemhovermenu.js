@@ -173,6 +173,10 @@
 
         var dataElement = dom.parentWithAttribute(elem, 'data-id');
 
+        if (!dataElement) {
+            return;
+        }
+
         var id = dataElement.getAttribute('data-id');
         var type = dataElement.getAttribute('data-type');
 
