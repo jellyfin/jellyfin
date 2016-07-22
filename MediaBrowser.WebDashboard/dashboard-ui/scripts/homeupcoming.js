@@ -115,7 +115,8 @@
                 showDetailsMenu: true,
                 centerText: true,
                 context: 'home-upcoming',
-                overlayMoreButton: true
+                overlayMoreButton: true,
+                showParentTitle: true
 
             });
             html += '</div>';

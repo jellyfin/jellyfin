@@ -116,7 +116,8 @@
                 lazy: true,
                 showDetailsMenu: true,
                 centerText: true,
-                overlayMoreButton: true
+                overlayMoreButton: true,
+                showParentTitle: true
 
             });
             html += '</div>';

@@ -182,7 +182,7 @@
 }
 
 .visualCardBox .outerCardFooter {
-    padding: 3px;
+    padding: .5em .3em;
     position: relative;
 }
 
@@ -230,7 +230,7 @@
 }
 
 .outerCardFooter .cardText + .cardText {
-    opacity: .8;
+    opacity: .6;
 }
 
 .outerCardFooter .cardText:first-child {
