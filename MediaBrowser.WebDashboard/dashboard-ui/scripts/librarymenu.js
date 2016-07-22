@@ -14,7 +14,7 @@
         html += '<button type="button" is="paper-icon-button-light" class="headerButton headerButtonLeft headerBackButton hide autoSize"><i class="md-icon">' + backIcon + '</i></button>';
 
         html += '<button type="button" is="paper-icon-button-light" class="headerButton mainDrawerButton barsMenuButton headerButtonLeft autoSize"><i class="md-icon">menu</i></button>';
-        html += '<button type="button" is="paper-icon-button-light" class="headerButton headerAppsButton barsMenuButton headerButtonLeft autoSize"><i class="md-icon">menu</i></button>';
+        html += '<button type="button" is="paper-icon-button-light" class="headerButton headerAppsButton barsMenuButton headerButtonLeft autoSize"><i class="md-icon">home</i></button>';
 
         html += '<div class="libraryMenuButtonText headerButton">' + Globalize.translate('ButtonHome') + '</div>';
 
@@ -179,57 +179,7 @@
 
     function onHeaderAppsButtonClick() {
 
-        require(['dialogHelper', 'dom'], function (dialogHelper, dom) {
-
-            var dlg = dialogHelper.createDialog({
-                removeOnClose: true,
-                modal: false,
-                autoFocus: false,
-                entryAnimationDuration: 160,
-                exitAnimationDuration: 160,
-                enableHistory: false
-            });
-
-            dlg.classList.add('ui-body-a');
-            dlg.classList.add('background-theme-a');
-            dlg.classList.add('adminAppsMenu');
-
-            var html = '';
-
-            html += '<div class="adminAppsMenuRow">';
-
-            html += '<a class="adminAppsButton" href="home.html">';
-            html += '<button is="paper-icon-button-light" class="autoSize"><i class="md-icon">home</i></button>';
-            html += '<div>' + Globalize.translate('ButtonHome') + '</div>';
-            html += '</a>';
-
-            html += '</div>';
-
-            html += '<div class="adminAppsMenuRow">';
-
-            html += '<a class="adminAppsButton" href="edititemmetadata.html">';
-            html += '<button is="paper-icon-button-light" class="autoSize"><i class="md-icon">mode_edit</i></button>';
-            html += '<div>' + Globalize.translate('ButtonMetadataManager') + '</div>';
-            html += '</a>';
-            html += '<a class="adminAppsButton" href="reports.html">';
-            html += '<button is="paper-icon-button-light" class="autoSize"><i class="md-icon">insert_chart</i></button>';
-            html += '<div>' + Globalize.translate('ButtonReports') + '</div>';
-            html += '</a>';
-
-            html += '</div>';
-
-            dlg.innerHTML = html;
-            document.body.appendChild(dlg);
-
-            dlg.addEventListener('click', function (e) {
-                var link = dom.parentWithTag(e.target, 'A');
-                if (link) {
-                    dialogHelper.close(dlg);
-                }
-            });
-            dialogHelper.open(dlg);
-
-        });
+        Dashboard.navigate('home.html');
     }
 
     function bindMenuEvents() {

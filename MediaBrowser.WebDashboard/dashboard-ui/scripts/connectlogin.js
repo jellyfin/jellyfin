@@ -2,16 +2,16 @@
 
     function login(page, username, password) {
 
-        Dashboard.showModalLoadingMsg();
+        Dashboard.showLoadingMsg();
 
         ConnectionManager.loginToConnect(username, password).then(function () {
 
-            Dashboard.hideModalLoadingMsg();
+            Dashboard.hideLoadingMsg();
             Dashboard.navigate('selectserver.html');
 
         }, function () {
 
-            Dashboard.hideModalLoadingMsg();
+            Dashboard.hideLoadingMsg();
 
             Dashboard.alert({
                 message: Globalize.translate('MessageInvalidUser'),
@@ -26,7 +26,7 @@
 
     function handleConnectionResult(page, result) {
 
-        Dashboard.hideModalLoadingMsg();
+        Dashboard.hideLoadingMsg();
 
         switch (result.State) {
 
@@ -75,7 +75,7 @@
 
     function loadAppConnection(page) {
 
-        Dashboard.showModalLoadingMsg();
+        Dashboard.showLoadingMsg();
 
         ConnectionManager.connect().then(function (result) {
 
@@ -167,7 +167,7 @@
             host += ':' + port;
         }
 
-        Dashboard.showModalLoadingMsg();
+        Dashboard.showLoadingMsg();
 
         ConnectionManager.connectToAddress(host).then(function (result) {
 
