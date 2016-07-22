@@ -2,16 +2,13 @@
 
 CWD=$(pwd)
 BUILDPATH="mediabrowser"
-MBGITPATH="MediaBrowser"
-LOGPATH="$CWD/$BUILDPATH/logs"
-LOGDATE=$(date +%s)
+MBGITPATH="$CWD/../.."
 
 echo "========================================"
 echo "         MediaBrowser for Mono"
 echo "            Package Creator"
 echo ""
-echo "   Logs available in $BUILDPATH/logs"
-echo "    Archive available in $BUILDPATH"
+echo "    Archive will be available in $CWD/BUILDPATH"
 echo "========================================"
 echo ""
 echo "========================================"
@@ -55,53 +52,19 @@ vercomp () {
     echo 0 # Equal
 }
 
-echo "Checking for git"
-if ! type -P git &>/dev/null; then
-    echo "Git not found. Please install."
-    exit
-fi
+for cmd in git tar gzip mono xbuild monodis mozroots; do
+	echo "Checking for $cmd"
+	if ! type -P $cmd &>/dev/null; then
+		echo "$cmd not found. Please install." 1>&2
+		exit 1
+	fi
+done
 
-echo "Checking for tar"
-if ! type -P tar &>/dev/null; then
-    echo "Tar not found. Please install."
-    exit
-fi
-
-echo "Checking for gzip"
-if ! type -P gzip &>/dev/null; then
-    echo "Gzip not found. Please install."
-    exit
-fi
-
-echo "Checking for mono"
-if ! type -P mono &>/dev/null; then
-    echo "Mono not found. Please install."
-    exit
-else
-    MONOVERSION=$(mono --version | awk '$1 == "Mono" {print $5 }')
-    compResult=$(vercomp $MONOVERSION "3.2.7")
-    if [ $compResult -eq 2 ]; then
-        echo "Require Mono version 3.2.7 and higher."
-        exit
-    fi
-fi
-
-echo "Checking for mozroots"
-if ! type -P mozroots &>/dev/null; then
-    echo "Mozroots not found. Please install."
-    exit
-fi
-
-echo "Checking for xbuild"
-if ! type -P xbuild &>/dev/null; then
-    echo "Xbuild not found. Please install."
-    exit
-fi
-
-echo "Checking for monodis"
-if ! type -P monodis &>/dev/null; then
-    echo "Monodis not found. Please install. (mono-utils package on ubuntu!)"
-    exit
+MONOVERSION=$(mono --version | awk '$1 == "Mono" {print $5 }')
+compResult=$(vercomp $MONOVERSION "4.2.3")
+if [ "$compResult" == "2" ]; then
+    echo "$compResult Require Mono version 4.2.3" 1>&2
+    exit 1
 fi
 
 echo ""
@@ -125,54 +88,26 @@ else
     done
 fi
 
-
-
-echo "Check if folder $BUILDPATH/logs exist"
-if [ ! -d "$LOGPATH" ]; then
-    echo "Creating folder: $BUILDPATH/logs"
-    mkdir $LOGPATH
-fi
-
-echo ""
-echo "========================================"
-echo "       Retrieving source from git"
-echo "========================================"
-echo ""
-
-if [ ! -d "$MBGITPATH" ]; then
-    mkdir $MBGITPATH
-    echo "Git cloning into $MBGITPATH"
-    git clone https://github.com/MediaBrowser/MediaBrowser.git $MBGITPATH > "$LOGPATH/gitclone_stdout_$LOGDATE.log" 2> "$LOGPATH/gitclone_stderr_$LOGDATE.log"
-    cd $MBGITPATH
-else
-    cd $MBGITPATH
-    echo "Folder $MBGITPATH already present, checking if it's a git repo and the correct one."
-    if ! git rev-parse; then
-        echo "Not a git repo."
-        exit
-    fi
-    MBFETCHURL=$(git remote -v | awk '$1 == "origin" && $3 == "(fetch)"  {print $2 }')
-    if [ "$MBFETCHURL" != "https://github.com/MediaBrowser/MediaBrowser.git" ]; then
-        echo "Wrong git repo."
-        exit
-    fi
-    echo "Git pull and checkout master"
-    git pull > "$LOGPATH/gitpull_stdout_$LOGDATE.log" 2> "$LOGPATH/gitpull_stderr_$LOGDATE.log"
-    git checkout master > "$LOGPATH/gitco_stdout_$LOGDATE.log" 2> "$LOGPATH/gitco_stderr_$LOGDATE.log"
-fi
-
 echo ""
 echo "========================================"
 echo "       Nuget: Restoring packages"
 echo "========================================"
 echo ""
 
+cd "$MBGITPATH"
+
+## the following section can be enabled only with most recent mono (4.4+)
+## all other tested versions crash miserably (see also http://lists.ximian.com/pipermail/mono-bugs/2011-October/113359.html)
+## removing certificates did not work with 4.2.3 and neither using 4.4's binary
+function __disabled() {
 echo "Importing trusted root certificates from Mozilla LXR"
-mozroots --import --sync > "$LOGPATH/mozroots_stdout_$LOGDATE.log" 2> "$LOGPATH/mozroots_stderr_$LOGDATE.log"
+wget -O certdata.txt 'https://hg.mozilla.org/releases/mozilla-release/raw-file/default/security/nss/lib/ckfw/builtins/certdata.txt'
+mozroots --sync --import --file certdata.txt
 echo "Updating NuGet to the latest version"
-mono .nuget/NuGet.exe update -self > "$LOGPATH/nugetupdate_stdout_$LOGDATE.log" 2> "$LOGPATH/nugetupdate_stderr_$LOGDATE.log"
-# echo "Restoring NuGet package"
-# mono .nuget/NuGet.exe restore MediaBrowser.Mono.sln > "$LOGPATH/nugetrestore_stdout_$LOGDATE.log" 2> "$LOGPATH/nugetrestore_stderr_$LOGDATE.log"
+mono Nuget/nuget.exe update -self
+}
+echo "Restoring NuGet package"
+mono Nuget/nuget.exe restore MediaBrowser.Mono.sln
 
 
 echo ""
@@ -182,10 +117,10 @@ echo "========================================"
 echo ""
 
 echo "xbuild: cleaning build folder"
-xbuild /p:Configuration="Release Mono" /p:Platform="Any CPU" /t:clean MediaBrowser.Mono.sln > "$LOGPATH/xbuildclean_stdout_$LOGDATE.log" 2> "$LOGPATH/xbuildclean_stderr_$LOGDATE.log"
+xbuild /p:Configuration="Release Mono" /p:Platform="Any CPU" /t:clean MediaBrowser.Mono.sln
 
 echo "xbuild: building..."
-xbuild /p:Configuration="Release Mono" /p:Platform="Any CPU" /t:build MediaBrowser.Mono.sln > "$LOGPATH/xbuild_stdout_$LOGDATE.log" 2> "$LOGPATH/xbuild_stderr_$LOGDATE.log"
+xbuild /p:Configuration="Release Mono" /p:Platform="Any CPU" /t:build MediaBrowser.Mono.sln
 echo "xbuild: building done"
 
 echo ""
@@ -200,20 +135,20 @@ echo "Retreiving MediaBrowser version"
 MBVERSION=$(monodis --assembly MediaBrowser.Server.Mono.exe | awk '$1 == "Version:" {print $2 }')
 
 if [ -z "$MBVERSION" ]; then
-    echo "Unable to get Mediabrowser version from monodis."
-    exit
+    echo "Unable to get Mediabrowser version via monodis." 1>&2
+    exit 1
 fi
 
 echo "Creating MediaBrowser.Mono.$MBVERSION.tar.gz"
 if [ -e "$CWD/$BUILDPATH/MediaBrowser.Mono.$MBVERSION.tar.gz" ]; then
     echo "Destination file exist: $CWD/$BUILDPATH/MediaBrowser.Mono.$MBVERSION.tar.gz"
-    exit
+    exit 1
 fi
 mkdir "$CWD/$BUILDPATH/MediaBrowser.Mono.$MBVERSION"
 cp -fR * "$CWD/$BUILDPATH/MediaBrowser.Mono.$MBVERSION/"
 cd "$CWD/$BUILDPATH"
 
-tar -czf "MediaBrowser.Mono.$MBVERSION.tar.gz" "MediaBrowser.Mono.$MBVERSION" > "$LOGPATH/tar_stdout_$LOGDATE.log" 2> "$LOGPATH/tar_stderr_$LOGDATE.log"
+tar -czf "MediaBrowser.Mono.$MBVERSION.tar.gz" "MediaBrowser.Mono.$MBVERSION"
 
 rm -rf "$CWD/$BUILDPATH/MediaBrowser.Mono.$MBVERSION"
 
@@ -223,13 +158,13 @@ echo "     Building MediaBrowser mkbundlex"
 echo "========================================"
 echo ""
 
-cd "$CWD/$BUILDPATH/$MBGITPATH"
+cd "$MBGITPATH"
 
 echo "xbuild: cleaning build folder"
-xbuild /p:Configuration="Release Mono" /p:Platform="Any CPU" /p:DefineConstants="MONOMKBUNDLE" /t:clean MediaBrowser.Mono.sln > "$LOGPATH/xbuildmkclean_stdout_$LOGDATE.log" 2> "$LOGPATH/xbuildmkclean_stderr_$LOGDATE.log"
+xbuild /p:Configuration="Release Mono" /p:Platform="Any CPU" /p:DefineConstants="MONOMKBUNDLE" /t:clean MediaBrowser.Mono.sln
 
 echo "xbuild: building..."
-xbuild /p:Configuration="Release Mono" /p:Platform="Any CPU" /p:DefineConstants="MONOMKBUNDLE" /t:build MediaBrowser.Mono.sln > "$LOGPATH/xbuildmk_stdout_$LOGDATE.log" 2> "$LOGPATH/xbuildmk_stderr_$LOGDATE.log"
+xbuild /p:Configuration="Release Mono" /p:Platform="Any CPU" /p:DefineConstants="MONOMKBUNDLE" /t:build MediaBrowser.Mono.sln
 echo "xbuild: building done"
 
 echo ""
@@ -245,19 +180,19 @@ MBVERSION=$(monodis --assembly MediaBrowser.Server.Mono.exe | awk '$1 == "Versio
 
 if [ -z "$MBVERSION" ]; then
     echo "Unable to get Mediabrowser version from monodis."
-    exit
+    exit 1
 fi
 
 echo "Creating MediaBrowser.Mono.mkbundlex.$MBVERSION.tar.gz"
 if [ -e "$CWD/$BUILDPATH/MediaBrowser.Mono.mkbundlex.$MBVERSION.tar.gz" ]; then
     echo "Destination file exist: $CWD/$BUILDPATH/MediaBrowser.Mono.mkbundlex.$MBVERSION.tar.gz"
-    exit
+    exit 1
 fi
 mkdir "$CWD/$BUILDPATH/MediaBrowser.Mono.mkbundlex.$MBVERSION"
 cp -fR * "$CWD/$BUILDPATH/MediaBrowser.Mono.mkbundlex.$MBVERSION/"
 cd "$CWD/$BUILDPATH"
 
-tar -czf "MediaBrowser.Mono.mkbundlex.$MBVERSION.tar.gz" "MediaBrowser.Mono.mkbundlex.$MBVERSION" > "$LOGPATH/tar_stdout_$LOGDATE.log" 2> "$LOGPATH/tar_stderr_$LOGDATE.log"
+tar -czf "MediaBrowser.Mono.mkbundlex.$MBVERSION.tar.gz" "MediaBrowser.Mono.mkbundlex.$MBVERSION"
 
 rm -rf "$CWD/$BUILDPATH/MediaBrowser.Mono.mkbundlex.$MBVERSION"
 
