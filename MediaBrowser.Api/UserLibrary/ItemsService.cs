@@ -368,6 +368,12 @@ namespace MediaBrowser.Api.UserLibrary
                 query.ArtistNames = request.Artists.Split('|');
             }
 
+            // ExcludeArtistNames
+            if (!string.IsNullOrEmpty(request.ExcludeArtistNames))
+            {
+                query.ExcludeArtistNames = request.ExcludeArtistNames.Split('|');
+            }
+
             // Albums
             if (!string.IsNullOrEmpty(request.Albums))
             {
