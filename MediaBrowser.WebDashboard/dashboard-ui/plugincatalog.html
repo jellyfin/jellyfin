@@ -1,4 +1,4 @@
-﻿<div id="pluginCatalogPage" data-role="page" class="page type-interior pluginConfigurationPage withTabs fullWidthContent" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Plugins" data-require="scripts/ratingdialog,scripts/plugincatalogpage,paper-toggle-button">
+﻿<div id="pluginCatalogPage" data-role="page" class="page type-interior pluginConfigurationPage withTabs fullWidthContent" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Plugins" data-require="scripts/plugincatalogpage,emby-checkbox">
     <div data-role="content">
         <div class="content-primary">
             <div style="display: flex;align-items:center;">
@@ -10,7 +10,10 @@
                     </select>
                 </div>
                 <div style="margin-left:auto;" class="optionAdultContainer">
-                    <paper-toggle-button id="chkAdult">${OptionDisplayAdultContent}</paper-toggle-button>
+                    <label style="width:auto;">
+                        <input type="checkbox" is="emby-checkbox" id="chkAdult" />
+                        <span>${OptionDisplayAdultContent}</span>
+                    </label>
                 </div>
             </div>
 

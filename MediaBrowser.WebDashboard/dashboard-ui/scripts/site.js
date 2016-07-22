@@ -1665,7 +1665,6 @@ var AppInfo = {};
 
         define("paper-button", ["html!" + bowerPath + "/paper-button/paper-button.html"]);
         define("paper-icon-button", ["html!" + bowerPath + "/paper-icon-button/paper-icon-button.html"]);
-        define("paper-toggle-button", ['webcomponentsjs', "html!" + bowerPath + "/paper-toggle-button/paper-toggle-button.html"]);
 
         define("paper-textarea", ['webcomponentsjs', "html!" + bowerPath + "/paper-input/paper-textarea.html"]);
         define("paper-item", ["html!" + bowerPath + "/paper-item/paper-item.html"]);
@@ -2481,7 +2480,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/log.html',
-            dependencies: ['paper-toggle-button'],
+            dependencies: ['emby-checkbox'],
             roles: 'admin',
             controller: 'scripts/logpage'
         });

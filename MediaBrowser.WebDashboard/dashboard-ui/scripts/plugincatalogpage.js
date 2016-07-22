@@ -208,7 +208,7 @@
             html += "<div class='cardText' style='display:flex;align-items:center;'>";
 
             if (plugin.avgRating) {
-                html += '<iron-icon icon="star" style="color:#666;height:20px;width:20px;min-height:20px;min-width:20px;margin-right:.25em;"></iron-icon>';
+                html += '<i class="md-icon" style="color:#cc3333;margin-right:.25em;">star</i>';
                 html += plugin.avgRating.toFixed(1);
             }
 
