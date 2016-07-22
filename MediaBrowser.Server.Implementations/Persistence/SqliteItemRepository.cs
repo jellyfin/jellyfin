@@ -2883,6 +2883,20 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 whereClauses.Add(clause);
             }
 
+            if (query.ExcludeArtistNames.Length > 0)
+            {
+                var clauses = new List<string>();
+                var index = 0;
+                foreach (var artist in query.ExcludeArtistNames)
+                {
+                    clauses.Add("@ExcludeArtistName" + index + " not in (select CleanValue from itemvalues where ItemId=Guid and Type <= 1)");
+                    cmd.Parameters.Add(cmd, "@ExcludeArtistName" + index, DbType.String).Value = artist.RemoveDiacritics();
+                    index++;
+                }
+                var clause = "(" + string.Join(" AND ", clauses.ToArray()) + ")";
+                whereClauses.Add(clause);
+            }
+
             if (query.GenreIds.Length > 0)
             {
                 // Todo: improve without having to do this

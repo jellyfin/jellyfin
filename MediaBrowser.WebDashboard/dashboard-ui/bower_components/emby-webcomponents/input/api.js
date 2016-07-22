@@ -1,4 +1,4 @@
-define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focusManager'], function (connectionManager, playbackManager, events, inputManager, focusManager) {
+define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focusManager', 'embyRouter'], function (connectionManager, playbackManager, events, inputManager, focusManager, embyRouter) {
 
     function displayMessage(cmd) {
 
@@ -18,7 +18,14 @@ define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focus
         }
     }
 
-    function processGeneralCommand(cmd) {
+    function displayContent(cmd, apiClient) {
+
+        apiClient.getItem(apiClient.getCurrentUserId(), cmd.ItemId).then(function (item) {
+            embyRouter.showItem(item);
+        });
+    }
+
+    function processGeneralCommand(cmd, apiClient) {
 
         // Full list
         // https://github.com/MediaBrowser/MediaBrowser/blob/master/MediaBrowser.Model/Session/GeneralCommand.cs#L23
@@ -93,7 +100,7 @@ define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focus
                 inputManager.trigger('settings');
                 break;
             case 'DisplayContent':
-                //Dashboard.onBrowseCommand(cmd.Arguments);
+                displayContent(cmd, apiClient);
                 break;
             case 'GoToSearch':
                 inputManager.trigger('search');
@@ -164,7 +171,7 @@ define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focus
         }
         else if (msg.MessageType === "GeneralCommand") {
             var cmd = msg.Data;
-            processGeneralCommand(cmd);
+            processGeneralCommand(cmd, apiClient);
         }
     }
 
@@ -174,10 +181,10 @@ define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focus
         events.on(apiClient, "websocketmessage", onWebSocketMessageReceived);
     }
 
-    //var current = connectionManager.currentApiClient();
-    //if (current) {
-    //    bindEvents(current);
-    //}
+    var current = connectionManager.currentApiClient();
+    if (current) {
+        bindEvents(current);
+    }
 
     events.on(connectionManager, 'apiclientcreated', function (e, newApiClient) {
 

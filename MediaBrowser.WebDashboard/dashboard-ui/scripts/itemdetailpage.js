@@ -723,7 +723,7 @@
     }
 
     function renderMoreFromItems(page, item) {
-        
+
         var moreFromSection = page.querySelector('#moreFromSection');
 
         if (!moreFromSection) {
@@ -736,14 +736,14 @@
         }
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), {
-            
+
             IncludeItemTypes: "MusicAlbum",
             ArtistIds: item.AlbumArtists[0].Id,
             Recursive: true,
             ExcludeItemIds: item.Id
 
-        }).then(function(result) {
-            
+        }).then(function (result) {
+
             if (!result.Items.length) {
                 moreFromSection.classList.add('hide');
                 return;
@@ -802,6 +802,10 @@
             limit: 8,
             fields: "PrimaryImageAspectRatio,UserData,SyncInfo,CanDelete"
         };
+
+        if (item.Type == 'MusicAlbum' && item.AlbumArtists && item.AlbumArtists.length) {
+            options.ExcludeArtistNames = item.AlbumArtists[0].Name;
+        }
 
         if (enableScrollX()) {
             options.limit = 12;

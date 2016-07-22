@@ -116,17 +116,13 @@ define(['playbackManager', 'focusManager', 'embyRouter'], function (playbackMana
                 // TODO
                 break;
             case 'next':
-                if (playbackManager.isPlayingVideo()) {
-                    playbackManager.nextChapter();
-                } else if (playbackManager.isPlaying()) {
+                if (playbackManager.isPlaying()) {
                     playbackManager.nextTrack();
                 }
                 break;
             case 'previous':
 
-                if (playbackManager.isPlayingVideo()) {
-                    playbackManager.previousChapter();
-                } else if (playbackManager.isPlaying()) {
+                if (playbackManager.isPlaying()) {
                     playbackManager.previousTrack();
                 }
                 break;

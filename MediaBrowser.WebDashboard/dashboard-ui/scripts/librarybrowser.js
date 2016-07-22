@@ -835,7 +835,7 @@
                 return html;
             },
 
-            shapes: ['square', 'portrait', 'banner', 'smallBackdrop', 'homePageSmallBackdrop', 'backdrop', 'overflowBackdrop', 'overflowPortrait', 'overflowSquare'],
+            shapes: ['square', 'portrait', 'banner', 'smallBackdrop', 'backdrop', 'overflowBackdrop', 'overflowPortrait', 'overflowSquare'],
 
             getPostersPerRow: function (screenWidth) {
 
@@ -874,14 +874,6 @@
                             if (screenWidth >= 420) return 2;
                             return 1;
                         case 'smallBackdrop':
-                            if (screenWidth >= 1440) return 8;
-                            if (screenWidth >= 1100) return 6;
-                            if (screenWidth >= 800) return 5;
-                            if (screenWidth >= 600) return 4;
-                            if (screenWidth >= 540) return 3;
-                            if (screenWidth >= 420) return 2;
-                            return 1;
-                        case 'homePageSmallBackdrop':
                             if (screenWidth >= 1440) return 8;
                             if (screenWidth >= 1100) return 6;
                             if (screenWidth >= 800) return 5;
@@ -1014,10 +1006,6 @@
                 }
                 else if (options.shape == 'smallBackdrop') {
                     thumbWidth = posterInfo.smallBackdropWidth;
-                }
-                else if (options.shape == 'homePageSmallBackdrop') {
-                    thumbWidth = posterInfo.homePageSmallBackdropWidth;
-                    posterWidth = posterInfo.homePageSmallBackdropWidth;
                 }
                 else if (options.shape == 'detailPagePortrait') {
                     posterWidth = 200;

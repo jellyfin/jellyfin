@@ -1,18 +1,4 @@
-﻿(function () {
-
-    function onOneDocumentClick() {
-
-        document.removeEventListener('click', onOneDocumentClick);
-
-        if (window.Notification) {
-            Notification.requestPermission();
-        }
-    }
-    document.addEventListener('click', onOneDocumentClick);
-
-})();
-
-var Dashboard = {
+﻿var Dashboard = {
 
     isConnectMode: function () {
 
@@ -69,20 +55,6 @@ var Dashboard = {
             }
             return;
             Dashboard.hideLoadingMsg();
-        }
-    },
-
-    onPopupOpen: function () {
-        Dashboard.popupCount = (Dashboard.popupCount || 0) + 1;
-        document.body.classList.add('bodyWithPopupOpen');
-    },
-
-    onPopupClose: function () {
-
-        Dashboard.popupCount = (Dashboard.popupCount || 1) - 1;
-
-        if (!Dashboard.popupCount) {
-            document.body.classList.remove('bodyWithPopupOpen');
         }
     },
 
@@ -413,32 +385,6 @@ var Dashboard = {
                 loading.hide();
             }
         });
-    },
-
-    getModalLoadingMsg: function () {
-
-        var elem = document.querySelector('.modalLoading');
-
-        if (!elem) {
-
-            elem = document.createElement('modalLoading');
-            elem.classList.add('modalLoading');
-            elem.classList.add('hide');
-            document.body.appendChild(elem);
-
-        }
-
-        return elem;
-    },
-
-    showModalLoadingMsg: function () {
-        Dashboard.getModalLoadingMsg().classList.remove('hide');
-        Dashboard.showLoadingMsg();
-    },
-
-    hideModalLoadingMsg: function () {
-        Dashboard.getModalLoadingMsg().classList.add('hide');
-        Dashboard.hideLoadingMsg();
     },
 
     processPluginConfigurationUpdateResult: function () {
@@ -784,12 +730,22 @@ var Dashboard = {
             name: Globalize.translate('TabLogs'),
             href: "log.html",
             pageIds: ['logPage'],
-            icon: 'folder-open'
+            icon: 'folder_open'
         }, {
             name: Globalize.translate('TabScheduledTasks'),
             href: "scheduledtasks.html",
             pageIds: ['scheduledTasksPage', 'scheduledTaskPage'],
             icon: 'schedule'
+        }, {
+            name: Globalize.translate('ButtonMetadataManager'),
+            href: "edititemmetadata.html",
+            pageIds: [],
+            icon: 'mode_edit'
+        }, {
+            name: Globalize.translate('ButtonReports'),
+            href: "reports.html",
+            pageIds: [],
+            icon: 'insert_chart'
         }, {
             name: Globalize.translate('TabHelp'),
             href: "about.html",
@@ -801,87 +757,11 @@ var Dashboard = {
 
     },
 
-    processGeneralCommand: function (cmd) {
-
-        // Full list
-        // https://github.com/MediaBrowser/MediaBrowser/blob/master/MediaBrowser.Model/Session/GeneralCommand.cs#L23
-
-        switch (cmd.Name) {
-
-            case 'GoHome':
-                Dashboard.navigate('home.html');
-                break;
-            case 'GoToSettings':
-                Dashboard.navigate('dashboard.html');
-                break;
-            case 'DisplayContent':
-                Dashboard.onBrowseCommand(cmd.Arguments);
-                break;
-            case 'GoToSearch':
-                Dashboard.navigate('search.html');
-                break;
-            case 'DisplayMessage':
-                {
-                    var args = cmd.Arguments;
-
-                    if (args.TimeoutMs && window.Notification && Notification.permission === "granted") {
-
-                        var notification = {
-                            title: args.Header,
-                            body: args.Text,
-                            vibrate: true,
-                            timeout: args.TimeoutMs
-                        };
-
-                        var notif = new Notification(notification.title, notification);
-
-                        if (notif.show) {
-                            notif.show();
-                        }
-
-                        if (notification.timeout) {
-                            setTimeout(function () {
-
-                                if (notif.close) {
-                                    notif.close();
-                                }
-                                else if (notif.cancel) {
-                                    notif.cancel();
-                                }
-                            }, notification.timeout);
-                        }
-                    }
-                    else {
-                        Dashboard.alert({ title: args.Header, message: args.Text });
-                    }
-
-                    break;
-                }
-            case 'VolumeUp':
-            case 'VolumeDown':
-            case 'Mute':
-            case 'Unmute':
-            case 'ToggleMute':
-            case 'SetVolume':
-            case 'SetAudioStreamIndex':
-            case 'SetSubtitleStreamIndex':
-            case 'ToggleFullscreen':
-            case 'SetRepeatMode':
-                break;
-            default:
-                console.log('Unrecognized command: ' + cmd.Name);
-                break;
-        }
-    },
-
     onWebSocketMessageReceived: function (e, data) {
 
         var msg = data;
 
-        if (msg.MessageType === "LibraryChanged") {
-            Dashboard.processLibraryUpdateNotification(msg.Data);
-        }
-        else if (msg.MessageType === "ServerShuttingDown") {
+        if (msg.MessageType === "ServerShuttingDown") {
             Dashboard.hideServerRestartWarning();
         }
         else if (msg.MessageType === "ServerRestarting") {
@@ -929,50 +809,6 @@ var Dashboard = {
                 }
             });
         }
-        else if (msg.MessageType === "GeneralCommand") {
-
-            var cmd = msg.Data;
-            // Media Controller should catch this
-            //Dashboard.processGeneralCommand(cmd);
-        }
-    },
-
-    onBrowseCommand: function (cmd) {
-
-        var url;
-
-        var type = (cmd.ItemType || "").toLowerCase();
-
-        if (type == "genre") {
-            url = "itemdetails.html?id=" + cmd.ItemId;
-        }
-        else if (type == "musicgenre") {
-            url = "itemdetails.html?id=" + cmd.ItemId;
-        }
-        else if (type == "gamegenre") {
-            url = "itemdetails.html?id=" + cmd.ItemId;
-        }
-        else if (type == "studio") {
-            url = "itemdetails.html?id=" + cmd.ItemId;
-        }
-        else if (type == "person") {
-            url = "itemdetails.html?id=" + cmd.ItemId;
-        }
-        else if (type == "musicartist") {
-            url = "itemdetails.html?id=" + cmd.ItemId;
-        }
-
-        if (url) {
-            Dashboard.navigate(url);
-            return;
-        }
-
-        ApiClient.getItem(Dashboard.getCurrentUserId(), cmd.ItemId).then(function (item) {
-
-            Dashboard.navigate(LibraryBrowser.getHref(item, null, ''));
-
-        });
-
     },
 
     showPackageInstallNotification: function (installation, status) {
@@ -1036,77 +872,6 @@ var Dashboard = {
         var allowHide = status != "progress" && status != 'cancelled';
 
         Dashboard.showFooterNotification({ html: html, id: installation.Id, timeout: timeout, forceShow: forceShow, allowHide: allowHide });
-    },
-
-    processLibraryUpdateNotification: function (data) {
-
-        var newItems = data.ItemsAdded;
-
-        if (!newItems.length || AppInfo.isNativeApp || !window.Notification || Notification.permission !== "granted") {
-            return;
-        }
-
-        ApiClient.getItems(Dashboard.getCurrentUserId(), {
-
-            Recursive: true,
-            Limit: 3,
-            Filters: "IsNotFolder",
-            SortBy: "DateCreated",
-            SortOrder: "Descending",
-            ImageTypes: "Primary",
-            Ids: newItems.join(',')
-
-        }).then(function (result) {
-
-            var items = result.Items;
-
-            for (var i = 0, length = Math.min(items.length, 2) ; i < length; i++) {
-
-                var item = items[i];
-
-                var notification = {
-                    title: "New " + item.Type,
-                    body: item.Name,
-                    timeout: 15000,
-                    vibrate: true,
-
-                    data: {
-                        options: {
-                            url: LibraryBrowser.getHref(item)
-                        }
-                    }
-                };
-
-                var imageTags = item.ImageTags || {};
-
-                if (imageTags.Primary) {
-
-                    notification.icon = ApiClient.getScaledImageUrl(item.Id, {
-                        width: 60,
-                        tag: imageTags.Primary,
-                        type: "Primary"
-                    });
-                }
-
-                var notif = new Notification(notification.title, notification);
-
-                if (notif.show) {
-                    notif.show();
-                }
-
-                if (notification.timeout) {
-                    setTimeout(function () {
-
-                        if (notif.close) {
-                            notif.close();
-                        }
-                        else if (notif.cancel) {
-                            notif.cancel();
-                        }
-                    }, notification.timeout);
-                }
-            }
-        });
     },
 
     setPageTitle: function (title, documentTitle) {
@@ -1466,8 +1231,6 @@ var AppInfo = {};
         var isCordova = Dashboard.isRunningInCordova();
 
         AppInfo.enableDetailPageChapters = true;
-        AppInfo.enableDetailsMenuImages = true;
-        AppInfo.enableMovieHomeSuggestions = true;
         AppInfo.enableSearchInTopMenu = true;
         AppInfo.enableHomeFavorites = true;
         AppInfo.enableNowPlayingBar = true;
@@ -1500,8 +1263,6 @@ var AppInfo = {};
 
             } else {
                 AppInfo.enableDetailPageChapters = false;
-                AppInfo.enableDetailsMenuImages = false;
-                AppInfo.enableMovieHomeSuggestions = false;
             }
         }
 
@@ -3256,6 +3017,12 @@ var AppInfo = {};
             if (!browserInfo.mobile && navigator.userAgent.toLowerCase().indexOf('windows') != -1) {
                 //postInitDependencies.push('opensansFont');
                 postInitDependencies.push('robotoFont');
+            }
+
+            postInitDependencies.push('bower_components/emby-webcomponents/input/api');
+
+            if (window.Notification && !AppInfo.isNativeApp) {
+                postInitDependencies.push('bower_components/emby-webcomponents/librarychangednotifications');
             }
 
             require(postInitDependencies);

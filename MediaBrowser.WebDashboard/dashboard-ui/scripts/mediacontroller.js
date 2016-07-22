@@ -801,10 +801,7 @@
                     break;
                 default:
                     {
-                        if (player.isLocalPlayer) {
-                            // Not player-related
-                            Dashboard.processGeneralCommand(cmd);
-                        } else {
+                        if (!player.isLocalPlayer) {
                             player.sendCommand(cmd);
                         }
                         break;
@@ -1070,59 +1067,11 @@
 
     function onWebSocketMessageReceived(e, msg) {
 
-        var localPlayer;
-
-        if (msg.MessageType === "Play") {
-
-            localPlayer = MediaController.getLocalPlayer();
-
-            if (msg.Data.PlayCommand == "PlayNext") {
-                localPlayer.queueNext({ ids: msg.Data.ItemIds });
-            }
-            else if (msg.Data.PlayCommand == "PlayLast") {
-                localPlayer.queue({ ids: msg.Data.ItemIds });
-            }
-            else {
-                localPlayer.play({ ids: msg.Data.ItemIds, startPositionTicks: msg.Data.StartPositionTicks });
-            }
-
-        }
-        else if (msg.MessageType === "ServerShuttingDown") {
+        if (msg.MessageType === "ServerShuttingDown") {
             MediaController.setDefaultPlayerActive();
         }
         else if (msg.MessageType === "ServerRestarting") {
             MediaController.setDefaultPlayerActive();
-        }
-        else if (msg.MessageType === "Playstate") {
-
-            localPlayer = MediaController.getLocalPlayer();
-
-            if (msg.Data.Command === 'Stop') {
-                localPlayer.stop();
-            }
-            else if (msg.Data.Command === 'Pause') {
-                localPlayer.pause();
-            }
-            else if (msg.Data.Command === 'Unpause') {
-                localPlayer.unpause();
-            }
-            else if (msg.Data.Command === 'Seek') {
-                localPlayer.seek(msg.Data.SeekPositionTicks);
-            }
-            else if (msg.Data.Command === 'NextTrack') {
-                localPlayer.nextTrack();
-            }
-            else if (msg.Data.Command === 'PreviousTrack') {
-                localPlayer.previousTrack();
-            }
-        }
-        else if (msg.MessageType === "GeneralCommand") {
-
-            var cmd = msg.Data;
-
-            localPlayer = MediaController.getLocalPlayer();
-
-            MediaController.sendCommand(cmd, localPlayer);
         }
     }
 
