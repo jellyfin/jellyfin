@@ -35,10 +35,12 @@
                 return;
             }
 
+            var currentView = ViewManager.currentView();
             // Bounce to the login screen, but not if a password entry fails, obviously
             if (url.indexOf('/password') == -1 &&
                 url.indexOf('/authenticate') == -1 &&
-                !ViewManager.currentView().classList.contains('.standalonePage')) {
+                currentView &&
+                !currentView.classList.contains('.standalonePage')) {
 
                 if (data.errorCode == "ParentalControl") {
 
