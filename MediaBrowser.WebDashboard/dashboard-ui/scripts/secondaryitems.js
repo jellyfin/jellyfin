@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'listView', 'emby-itemscontainer'], function (libraryBrowser, listView) {
 
     return function (view, params) {
 
@@ -127,10 +127,10 @@
 
                 if (query.IncludeItemTypes == "Audio") {
 
-                    html = '<div style="max-width:1000px;margin:auto;">' + libraryBrowser.getListViewHtml({
+                    html = '<div style="max-width:1000px;margin:auto;">' + listView.getListViewHtml({
                         items: result.Items,
                         playFromHere: true,
-                        defaultAction: 'playallfromhere',
+                        action: 'playallfromhere',
                         smallIcon: true
                     }) + '</div>';
 

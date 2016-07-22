@@ -13,7 +13,6 @@ namespace MediaBrowser.Controller.Entities.TV
     /// </summary>
     public class Episode : Video, IHasTrailers, IHasLookupInfo<EpisodeInfo>, IHasSeries
     {
-
         public Episode()
         {
             RemoteTrailers = new List<MediaUrl>();
@@ -25,11 +24,11 @@ namespace MediaBrowser.Controller.Entities.TV
         public List<Guid> RemoteTrailerIds { get; set; }
         public List<MediaUrl> RemoteTrailers { get; set; }
 
-    /// <summary>
-    /// Gets the season in which it aired.
-    /// </summary>
-    /// <value>The aired season.</value>
-    public int? AirsBeforeSeasonNumber { get; set; }
+        /// <summary>
+        /// Gets the season in which it aired.
+        /// </summary>
+        /// <value>The aired season.</value>
+        public int? AirsBeforeSeasonNumber { get; set; }
         public int? AirsAfterSeasonNumber { get; set; }
         public int? AirsBeforeEpisodeNumber { get; set; }
 
@@ -55,6 +54,15 @@ namespace MediaBrowser.Controller.Entities.TV
         /// </summary>
         /// <value>The index number.</value>
         public int? IndexNumberEnd { get; set; }
+
+        [IgnoreDataMember]
+        public string SeriesSortName { get; set; }
+
+        public string FindSeriesSortName()
+        {
+            var series = Series;
+            return series == null ? SeriesSortName : series.SortName;
+        }
 
         [IgnoreDataMember]
         protected override bool SupportsOwnedItems
@@ -166,13 +174,27 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
-        public string SeriesName
+        public string SeriesName { get; set; }
+
+        [IgnoreDataMember]
+        public string SeasonName { get; set; }
+
+        public string FindSeasonName()
         {
-            get
-            {
-                var series = Series;
-                return series == null ? null : series.Name;
-            }
+            var season = Season;
+            return season == null ? SeasonName : season.Name;
+        }
+
+        public string FindSeriesName()
+        {
+            var series = Series;
+            return series == null ? SeriesName : series.Name;
+        }
+
+        public Guid? FindSeasonId()
+        {
+            var season = Season;
+            return season == null ? (Guid?)null : season.Id;
         }
 
         /// <summary>
@@ -235,20 +257,14 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
-        public Guid? SeasonId
+        public Guid? SeasonId { get; set; }
+        [IgnoreDataMember]
+        public Guid? SeriesId { get; set; }
+
+        public Guid? FindSeriesId()
         {
-            get
-            {
-                // First see if the parent is a Season
-                var season = Season;
-
-                if (season != null)
-                {
-                    return season.Id;
-                }
-
-                return null;
-            }
+            var series = Series;
+            return series == null ? (Guid?)null : series.Id;
         }
 
         public override IEnumerable<Guid> GetAncestorIds()

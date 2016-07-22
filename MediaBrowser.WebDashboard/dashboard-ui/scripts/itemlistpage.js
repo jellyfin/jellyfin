@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'alphaPicker'], function (libraryBrowser, alphaPicker) {
+﻿define(['libraryBrowser', 'alphaPicker', 'listView', 'emby-itemscontainer'], function (libraryBrowser, alphaPicker, listView) {
 
     return function (view, params) {
 
@@ -114,7 +114,7 @@
                 }
                 else if (viewStyle == "List") {
 
-                    html = libraryBrowser.getListViewHtml({
+                    html = listView.getListViewHtml({
                         items: result.Items,
                         sortBy: query.SortBy
                     });

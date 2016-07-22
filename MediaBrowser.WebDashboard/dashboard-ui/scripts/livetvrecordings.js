@@ -1,4 +1,4 @@
-﻿define(['scripts/livetvcomponents', 'emby-button', 'listViewStyle'], function () {
+﻿define(['components/categorysyncbuttons', 'scripts/livetvcomponents', 'emby-button', 'listViewStyle', 'emby-itemscontainer'], function (categorysyncbuttons) {
 
     function getRecordingGroupHtml(group) {
 
@@ -149,7 +149,6 @@
             elem.querySelector('.recordingItems').innerHTML = html;
 
             ImageLoader.lazyChildren(elem);
-            LibraryBrowser.createCardMenus(elem);
         });
     }
 
@@ -184,6 +183,8 @@
     return function (view, params, tabContent) {
 
         var self = this;
+
+        categorysyncbuttons.init(tabContent);
         tabContent.querySelector('#activeRecordings .recordingItems').addEventListener('timercancelled', function () {
             reload(tabContent);
         });

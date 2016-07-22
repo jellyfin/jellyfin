@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'scrollStyles'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser) {
 
     function itemsPerRow() {
 
@@ -258,8 +258,6 @@
                 } else {
                     containers[i].classList.remove('hiddenScrollX');
                 }
-
-                LibraryBrowser.createCardMenus(containers[i]);
             }
         };
 

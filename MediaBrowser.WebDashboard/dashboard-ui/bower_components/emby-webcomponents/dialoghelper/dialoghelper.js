@@ -1,4 +1,4 @@
-﻿define(['historyManager', 'focusManager', 'browser', 'layoutManager', 'inputManager', 'scrollHelper', 'css!./dialoghelper.css', 'scrollStyles'], function (historyManager, focusManager, browser, layoutManager, inputManager, scrollHelper) {
+﻿define(['historyManager', 'focusManager', 'browser', 'layoutManager', 'inputManager', 'scrollHelper', 'dom', 'css!./dialoghelper.css', 'scrollStyles'], function (historyManager, focusManager, browser, layoutManager, inputManager, scrollHelper, dom) {
 
     var globalOnOpenCallback;
 
@@ -47,7 +47,10 @@
 
         function onDialogClosed() {
 
-            inputManager.off(dlg, onBackCommand);
+            if (!isHistoryEnabled(dlg)) {
+                inputManager.off(dlg, onBackCommand);
+            }
+
             window.removeEventListener('popstate', onHashChange);
 
             removeBackdrop(dlg);
@@ -125,19 +128,6 @@
         }
     }
 
-    function parentWithTag(elem, tagName) {
-
-        while (elem.tagName != tagName) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
-    }
-
     function closeOnBackdropClick(dlg) {
 
         dlg.addEventListener('click', function (event) {
@@ -146,7 +136,7 @@
               && rect.left <= event.clientX && event.clientX <= (rect.left + rect.width));
 
             if (!isInDialog) {
-                if (parentWithTag(event.target, 'SELECT')) {
+                if (dom.parentWithTag(event.target, 'SELECT')) {
                     isInDialog = true;
                 }
             }
@@ -163,11 +153,7 @@
         // Without this, seeing some script errors in Firefox
         // Also for some reason it won't auto-focus without a delay here, still investigating that
 
-        var delay = enableAnimation() ? 300 : 300;
-
-        setTimeout(function () {
-            focusManager.autoFocus(dlg);
-        }, delay);
+        focusManager.autoFocus(dlg);
     }
 
     function safeBlur(el) {

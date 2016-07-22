@@ -9,7 +9,7 @@
                 <a href="#" data-role="button" onclick="Dashboard.navigate('userparentalcontrol.html', true);">${TabParentalControl}</a>
                 <a href="#" data-role="button" onclick="Dashboard.navigate('userpassword.html', true);">${TabPassword}</a>
             </div>
-            <p class="lnkEditUserPreferencesContainer hide">
+            <p class="lnkEditUserPreferencesContainer">
                 <a class="lnkEditUserPreferences" href="#" target="_blank">${ButtonEditOtherUserPreferences}</a>
             </p>
             <form class="editUserProfileForm">
@@ -28,24 +28,25 @@
                 <div id="fldUserName" class="inputContainer">
                     <input is="emby-input" id="txtUserName" required type="text" label="${LabelName}" />
                 </div>
-                <ul data-role="listview" class="ulForm">
-                    <li id="fldConnectInfo" style="display: none;">
-                        <div class="paperList" style="padding: 1em; border-radius: 5px;">
-                            <div class="inputContainer">
-                                <input is="emby-input" id="txtConnectUserName" type="text" label="${LabelConnectUserName}" />
-                                <div class="fieldDescription">
-                                    <div>${LabelConnectUserNameHelp}</div>
-                                    <div style="margin-top: .75em;">
-                                        <a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a>
-                                    </div>
+                <div id="fldConnectInfo" style="display: none;">
+                    <div class="paperList" style="padding: 1em; border-radius: 5px;">
+                        <div class="inputContainer">
+                            <input is="emby-input" id="txtConnectUserName" type="text" label="${LabelConnectUserName}" />
+                            <div class="fieldDescription">
+                                <div>${LabelConnectUserNameHelp}</div>
+                                <div style="margin-top: .75em;">
+                                    <a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a>
                                 </div>
                             </div>
                         </div>
-                    </li>
-                    <li>
-                        <paper-checkbox id="chkIsAdmin">${OptionAllowUserToManageServer}</paper-checkbox>
-                    </li>
-                </ul>
+                    </div>
+                </div>
+                <br />
+                <div>
+                    <paper-checkbox id="chkIsAdmin">${OptionAllowUserToManageServer}</paper-checkbox>
+                </div>
+                <br />
+                <br />
                 <div id="featureAccessFields">
                     <div class="paperListLabel">${HeaderFeatureAccess}</div>
                     <div class="paperCheckboxList paperList" style="padding:.5em 1em;">
@@ -104,13 +105,11 @@
                     <div class="fieldDescription paperCheckboxFieldDescription">${OptionHideUserFromLoginHelp}</div>
                 </div>
                 <br />
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
+                <div>
+                    <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
 
-                        <button is="emby-button" type="button" class="raised cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></button>
-                    </li>
-                </ul>
+                    <button is="emby-button" type="button" class="raised cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></button>
+                </div>
             </form>
         </div>
     </div>

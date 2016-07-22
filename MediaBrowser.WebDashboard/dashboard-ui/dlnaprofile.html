@@ -1,4 +1,4 @@
-﻿<div id="dlnaProfilePage" data-role="page" class="page type-interior dlnaPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Dlna%20profiles" data-require="jqmcollapsible,jqmpopup,scripts/dlnaprofile,jqmcheckbox,emby-button">
+﻿<div id="dlnaProfilePage" data-role="page" class="page type-interior dlnaPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Dlna%20profiles" data-require="jQuery,jqmlistview,emby-collapse,jqmpopup,scripts/dlnaprofile,jqmcheckbox,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -46,9 +46,8 @@
 
 
                     <br />
-                    <div data-role="collapsible">
-                        <h2>${HeaderIdentification}</h2>
-                        <div>
+                    <div is="emby-collapse" title="${HeaderIdentification}">
+                        <div class="collapseContent">
                             <br />
                             <p>${HeaderIdentificationCriteriaHelp}</p>
                             <br />
@@ -110,9 +109,9 @@
                             <div class="httpHeaderIdentificationList"></div>
                         </div>
                     </div>
-                    <div data-role="collapsible">
-                        <h2>${HeaderDisplaySettings}</h2>
-                        <div>
+
+                    <div is="emby-collapse" title="${HeaderDisplaySettings}">
+                        <div class="collapseContent">
                             <br />
                             <ul data-role="listview" class="ulForm">
                                 <li>
@@ -129,9 +128,8 @@
                         </div>
                     </div>
 
-                    <div data-role="collapsible">
-                        <h2>${HeaderImageSettings}</h2>
-                        <div>
+                    <div is="emby-collapse" title="${HeaderImageSettings}">
+                        <div class="collapseContent">
                             <br />
                             <ul data-role="listview" class="ulForm">
                                 <li>
@@ -173,9 +171,8 @@
                         </div>
                     </div>
 
-                    <div data-role="collapsible">
-                        <h2>${HeaderPlaybackSettings}</h2>
-                        <div>
+                    <div is="emby-collapse" title="${HeaderPlaybackSettings}">
+                        <div class="collapseContent">
                             <br />
                             <ul data-role="listview" class="ulForm">
                                 <li>
@@ -196,9 +193,9 @@
                             </ul>
                         </div>
                     </div>
-                    <div data-role="collapsible">
-                        <h2>${HeaderServerSettings}</h2>
-                        <div>
+
+                    <div is="emby-collapse" title="${HeaderServerSettings}">
+                        <div class="collapseContent">
                             <p>${HeaderProfileServerSettingsHelp}</p>
                             <br />
                             <ul data-role="listview" class="ulForm">
@@ -258,9 +255,8 @@
                         </div>
                     </div>
 
-                    <div data-role="collapsible">
-                        <h2>${HeaderSubtitleProfiles}</h2>
-                        <div>
+                    <div is="emby-collapse" title="${HeaderSubtitleProfiles}">
+                        <div class="collapseContent">
                             <p>${HeaderSubtitleProfilesHelp}</p>
                             <p><button type="button" class="btnAddSubtitleProfile" data-icon="plus">${ButtonAdd}</button></p>
                             <div class="subtitleProfileList"></div>
@@ -268,9 +264,8 @@
                         </div>
                     </div>
 
-                    <div data-role="collapsible">
-                        <h2>${HeaderXmlSettings}</h2>
-                        <div>
+                    <div is="emby-collapse" title="${HeaderXmlSettings}">
+                        <div class="collapseContent">
                             <div>
                                 <h2 style="vertical-align:middle;display:inline-block;">${HeaderXmlDocumentAttributes}</h2>
                                 <button is="emby-button" type="button" class="raised submit mini btnAddXmlDocumentAttribute" style="margin-left:1em;">

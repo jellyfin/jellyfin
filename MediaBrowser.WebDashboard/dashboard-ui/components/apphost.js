@@ -75,6 +75,14 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
         return deviceName;
     }
 
+    function supportsVoiceInput() {
+        return window.SpeechRecognition ||
+               window.webkitSpeechRecognition ||
+               window.mozSpeechRecognition ||
+               window.oSpeechRecognition ||
+               window.msSpeechRecognition;
+    }
+
     var appInfo;
     var version = window.dashboardVersion || '3.0';
 
@@ -96,6 +104,12 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
                 'sharing'
             ];
 
+            features.push('externallinks');
+
+            if (supportsVoiceInput()) {
+                features.push('voiceinput');
+            }
+
             return features.indexOf(command.toLowerCase()) != -1;
         },
         appInfo: function () {
@@ -116,6 +130,8 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
                 return appInfo;
             });
         },
-        capabilities: getCapabilities
+        capabilities: getCapabilities,
+
+        moreIcon: browser.safari || browser.edge ? 'dots-horiz' : 'dots-vert'
     };
 });

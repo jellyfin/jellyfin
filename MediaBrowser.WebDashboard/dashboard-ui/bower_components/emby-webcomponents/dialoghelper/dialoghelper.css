@@ -3,7 +3,6 @@
     border-radius: 1px;
     z-index: 999999 !important;
     position: fixed;
-    margin: 24px 40px;
     -webkit-font-smoothing: antialiased;
     box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14), 0 6px 30px 5px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.4);
     height: auto;
@@ -71,9 +70,8 @@
 
 .dialog .buttons {
     position: relative;
-    padding: 8px 8px 0 24px;
-    margin: 0;
-    color: #3f51b5;
+    padding: 0;
+    margin: 1em;
     display: -ms-flexbox;
     display: -webkit-flex;
     display: flex;
@@ -84,6 +82,17 @@
     -webkit-justify-content: flex-end;
     justify-content: flex-end;
 }
+
+    .dialog .buttons button {
+        color: #52B54B;
+        padding: 0.35em 1em;
+        margin: 0;
+    }
+
+        .dialog .buttons button:focus {
+            color: #fff;
+            background-color: #52B54B;
+        }
 
 .dialogBackdrop {
     background-color: #000;

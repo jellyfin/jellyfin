@@ -17,16 +17,9 @@
 
     .touch-menu-la.transition {
         /*transition: transform 0.3s ease-out;*/
-        transition: -webkit-transform ease-out 260ms, left ease-out 260ms;
         transition: transform ease-out 260ms, left ease-out 260ms;
         /*transition: -webkit-transform ease-in-out 0.3s, width ease-in-out 0.3s, visibility 0.3s;
         transition: transform ease-in-out 0.3s, width ease-in-out 0.3s, visibility 0.3s;*/
-    }
-
-    .touch-menu-la .tmla-handle {
-        position: absolute;
-        top: 0;
-        height: 100%;
     }
 
 .scrollContainer {

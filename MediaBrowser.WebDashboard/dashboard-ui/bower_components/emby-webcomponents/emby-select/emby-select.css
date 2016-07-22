@@ -20,14 +20,29 @@
     cursor: pointer;
     outline: none !important;
     width: 100%;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
 
-[is="emby-select"] option {
-    color: initial;
-}
+    [is="emby-select"] option {
+        color: initial;
+    }
 
 .selectContainer {
     margin-bottom: 2em;
+    position: relative;
+}
+
+.selectArrowContainer {
+    position: absolute;
+    right: 0;
+    top: .25em;
+    color: inherit;
+}
+
+.selectArrow {
+    margin-top: .35em;
 }
 
 .selectLabel {

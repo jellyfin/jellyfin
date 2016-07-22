@@ -5,15 +5,19 @@ using MediaBrowser.Model.Entities;
 using System;
 using System.IO;
 using System.Linq;
+using CommonIO;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers
 {
     public class PhotoResolver : ItemResolver<Photo>
     {
         private readonly IImageProcessor _imageProcessor;
-        public PhotoResolver(IImageProcessor imageProcessor)
+        private readonly ILibraryManager _libraryManager;
+
+        public PhotoResolver(IImageProcessor imageProcessor, ILibraryManager libraryManager)
         {
             _imageProcessor = imageProcessor;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -23,18 +27,43 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
         /// <returns>Trailer.</returns>
         protected override Photo Resolve(ItemResolveArgs args)
         {
-            // Must be an image file within a photo collection
-            if (string.Equals(args.GetCollectionType(), CollectionType.Photos, StringComparison.OrdinalIgnoreCase) &&
-                !args.IsDirectory &&
-                IsImageFile(args.Path, _imageProcessor))
+            if (!args.IsDirectory)
             {
-                return new Photo
+                // Must be an image file within a photo collection
+                var collectionType = args.GetCollectionType();
+
+                if (string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    Path = args.Path
-                };
+                    if (IsImageFile(args.Path, _imageProcessor))
+                    {
+                        var filename = Path.GetFileNameWithoutExtension(args.Path);
+
+                        // Make sure the image doesn't belong to a video file
+                        if (args.DirectoryService.GetFiles(Path.GetDirectoryName(args.Path)).Any(i => IsOwnedByMedia(i, filename)))
+                        {
+                            return null;
+                        }
+
+                        return new Photo
+                        {
+                            Path = args.Path
+                        };
+                    }
+                }
             }
 
             return null;
+        }
+
+        private bool IsOwnedByMedia(FileSystemMetadata file, string imageFilename)
+        {
+            if (_libraryManager.IsVideoFile(file.FullName) && imageFilename.StartsWith(Path.GetFileNameWithoutExtension(file.Name), StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private static readonly string[] IgnoreFiles =
@@ -44,7 +73,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
             "landscape",
             "fanart",
             "backdrop",
-            "poster"
+            "poster",
+            "cover"
         };
 
         internal static bool IsImageFile(string path, IImageProcessor imageProcessor)

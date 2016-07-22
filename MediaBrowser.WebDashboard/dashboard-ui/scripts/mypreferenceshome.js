@@ -187,11 +187,9 @@
         });
     }
 
-    function save(page) {
+    function save(page, userId) {
 
         Dashboard.showLoadingMsg();
-
-        var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
         if (!AppInfo.enableAutoSave) {
             Dashboard.showLoadingMsg();
@@ -252,9 +250,11 @@
 
     return function (view, params) {
 
+        var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
+
         function onSubmit(e) {
 
-            save(view);
+            save(view, userId);
 
             // Disable default form submission
             e.preventDefault();
@@ -318,7 +318,7 @@
 
             Dashboard.showLoadingMsg();
 
-            var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
+            var userId = params.userId || Dashboard.getCurrentUserId();
 
             ApiClient.getUser(userId).then(function (user) {
 
@@ -334,7 +334,7 @@
             var page = this;
 
             if (AppInfo.enableAutoSave) {
-                save(page);
+                save(page, userId);
             }
         });
     };

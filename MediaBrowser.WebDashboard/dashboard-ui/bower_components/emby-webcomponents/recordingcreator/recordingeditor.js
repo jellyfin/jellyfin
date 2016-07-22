@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'scrollStyles', 'emby-button', 'emby-collapsible', 'emby-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'material-icons'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper) {
+﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'scrollStyles', 'emby-button', 'emby-collapse', 'emby-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'material-icons'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper) {
 
     var currentDialog;
     var recordingUpdated = false;
@@ -134,7 +134,10 @@
                 dlg.addEventListener('close', function () {
 
                     if (recordingUpdated) {
-                        resolve();
+                        resolve({
+                            updated: true,
+                            deleted: false
+                        });
                     } else {
                         reject();
                     }

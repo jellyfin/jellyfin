@@ -591,9 +591,6 @@
     <Compile Include="..\MediaBrowser.Model\Extensions\FloatHelper.cs">
       <Link>Extensions\FloatHelper.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Extensions\IHasPropertyChangedEvent.cs">
-      <Link>Extensions\IHasPropertyChangedEvent.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Extensions\IntHelper.cs">
       <Link>Extensions\IntHelper.cs</Link>
     </Compile>

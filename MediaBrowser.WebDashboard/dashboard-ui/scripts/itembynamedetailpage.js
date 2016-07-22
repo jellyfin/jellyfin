@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['listView', 'emby-itemscontainer'], function (listView) {
 
     function renderItems(page, item) {
 
@@ -82,7 +82,7 @@
             html += '<a href="#" class="clearLink hide" style="margin-left:1em;vertical-align:middle;"><button is="emby-button" type="button" class="raised more mini noIcon">' + Globalize.translate('ButtonMore') + '</button></a>';
             html += '</div>';
 
-            html += '<div class="itemsContainer">';
+            html += '<div is="emby-itemscontainer" class="itemsContainer">';
             html += '</div>';
 
             html += '</div>';
@@ -218,7 +218,7 @@
                     Limit: 30
                 }, {
                     playFromHere: true,
-                    defaultAction: 'playallfromhere',
+                    action: 'playallfromhere',
                     smallIcon: true
                 });
                 break;
@@ -248,7 +248,7 @@
             listOptions.items = result.Items;
 
             if (type == 'Audio') {
-                html = LibraryBrowser.getListViewHtml(listOptions);
+                html = listView.getListViewHtml(listOptions);
             } else {
                 html = LibraryBrowser.getPosterViewHtml(listOptions);
             }
@@ -256,7 +256,6 @@
             var itemsContainer = element.querySelector('.itemsContainer');
             itemsContainer.innerHTML = html;
 
-            LibraryBrowser.createCardMenus(itemsContainer);
             ImageLoader.lazyChildren(itemsContainer);
         });
     }

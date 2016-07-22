@@ -1,4 +1,4 @@
-﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker'], function (events, libraryBrowser, imageLoader, alphaPicker) {
+﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker', 'listView', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, alphaPicker, listView) {
 
     return function (view, params, tabContent) {
 
@@ -22,7 +22,7 @@
                         EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
                         Limit: LibraryBrowser.getDefaultPageSize()
                     },
-                    view: libraryBrowser.getSavedView(key) || libraryBrowser.getDefaultItemsView('Poster', 'Poster')
+                    view: libraryBrowser.getSavedView(key) || libraryBrowser.getDefaultItemsView('PosterCard', 'PosterCard')
                 };
 
                 pageData.query.ParentId = params.topParentId;
@@ -77,9 +77,8 @@
 
                 if (viewStyle == "List") {
 
-                    html = LibraryBrowser.getListViewHtml({
+                    html = listView.getListViewHtml({
                         items: result.Items,
-                        context: 'music',
                         sortBy: query.SortBy
                     });
                 }

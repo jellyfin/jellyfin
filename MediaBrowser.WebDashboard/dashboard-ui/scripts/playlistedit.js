@@ -1,4 +1,4 @@
-﻿define(['appStorage', 'jQuery'], function (appStorage, $) {
+﻿define(['appStorage', 'jQuery', 'listView'], function (appStorage, $, listView) {
 
     var data = {};
     function getPageData() {
@@ -60,47 +60,23 @@
 
             if (view == "List") {
 
-                html = LibraryBrowser.getListViewHtml({
+                html = listView.getListViewHtml({
                     items: result.Items,
                     sortBy: query.SortBy,
                     showIndex: false,
                     showRemoveFromPlaylist: true,
                     playFromHere: true,
-                    defaultAction: 'playallfromhere',
-                    smallIcon: true
-
+                    action: 'playallfromhere',
+                    smallIcon: true,
+                    dragHandle: true,
+                    playlistId: item.Id
                 });
             }
 
             var elem = page.querySelector('#childrenContent .itemsContainer');
             elem.innerHTML = html;
 
-            var listItems = [];
-            var elems = elem.querySelectorAll('.listItem');
-            for (var i = 0, length = elems.length; i < length; i++) {
-                listItems.push(elems[i]);
-            }
-
-            var listParent = elem.querySelector('.paperList');
-
-            if (!AppInfo.isTouchPreferred) {
-                require(['sortable'], function (Sortable) {
-
-                    var sortable = new Sortable(listParent, {
-
-                        draggable: ".listItem",
-
-                        // dragging ended
-                        onEnd: function (/**Event*/evt) {
-
-                            onDrop(evt, page, item);
-                        }
-                    });
-                });
-            }
-
             ImageLoader.lazyChildren(elem);
-            LibraryBrowser.createCardMenus(elem);
 
             $('.btnNextPage', elem).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -116,80 +92,11 @@
         });
     }
 
-    function onDrop(evt, page, item) {
-
-        var el = evt.item;
-        
-        var newIndex = evt.newIndex;
-
-        var itemId = el.getAttribute('data-playlistitemid');
-
-        Dashboard.showLoadingMsg();
-
-        ApiClient.ajax({
-
-            url: ApiClient.getUrl('Playlists/' + item.Id + '/Items/' + itemId + '/Move/' + newIndex),
-
-            type: 'POST'
-
-        }).then(function () {
-
-            el.setAttribute('data-index', newIndex);
-            Dashboard.hideLoadingMsg();
-
-        }, function () {
-
-            Dashboard.hideLoadingMsg();
-            reloadItems(page, item);
-        });
-    }
-
-    function removeFromPlaylist(page, item, ids) {
-
-        ApiClient.ajax({
-
-            url: ApiClient.getUrl('Playlists/' + item.Id + '/Items', {
-                EntryIds: ids.join(',')
-            }),
-
-            type: 'DELETE'
-
-        }).then(function () {
-
-            reloadItems(page, item);
-        });
-
-    }
-
-    function showDragAndDropHelp() {
-
-        if (AppInfo.isTouchPreferred) {
-            // Not implemented for mobile yet
-            return;
-        }
-
-        var expectedValue = "7";
-        if (appStorage.getItem("playlistitemdragdrophelp") == expectedValue) {
-            return;
-        }
-
-        appStorage.setItem("playlistitemdragdrophelp", expectedValue);
-
-        Dashboard.alert({
-            message: Globalize.translate('TryDragAndDropMessage'),
-            title: Globalize.translate('HeaderTryDragAndDrop')
-        });
-    }
-
     function init(page, item) {
 
         var elem = page.querySelector('#childrenContent .itemsContainer');
 
-        elem.addEventListener('removefromplaylist', function (e) {
-
-            var playlistItemId = e.detail.playlistItemId;
-            removeFromPlaylist(page, item, [playlistItemId]);
-        });
+        elem.enableDragReordering(true);
 
         elem.addEventListener('needsrefresh', function () {
 
@@ -206,7 +113,6 @@
             }
 
             reloadItems(page, item);
-            showDragAndDropHelp();
         }
     };
 

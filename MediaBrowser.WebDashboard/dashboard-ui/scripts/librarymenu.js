@@ -1,4 +1,4 @@
-﻿define(['imageLoader', 'layoutManager', 'viewManager', 'navdrawer', 'paper-icon-button-light', 'material-icons'], function (imageLoader, layoutManager, viewManager, navdrawer) {
+﻿define(['imageLoader', 'layoutManager', 'viewManager', 'navdrawer', 'libraryBrowser', 'paper-icon-button-light', 'material-icons'], function (imageLoader, layoutManager, viewManager, navdrawer, libraryBrowser) {
 
     var navDrawerElement = document.querySelector('.mainDrawer');
     var navDrawerScrollContainer = navDrawerElement.querySelector('.scrollContainer');
@@ -9,7 +9,7 @@
         var html = '';
 
         html += '<div class="primaryIcons">';
-        var backIcon = browserInfo.safari ? 'chevron_left' : 'arrow_back';
+        var backIcon = browserInfo.safari ? 'chevron_left' : '&#xE5C4;';
 
         html += '<button type="button" is="paper-icon-button-light" class="headerButton headerButtonLeft headerBackButton hide autoSize"><i class="md-icon">' + backIcon + '</i></button>';
 
@@ -40,7 +40,7 @@
         html += '</div>';
         html += '</div>';
 
-        html += '<div class="viewMenuBarTabs hiddenScrollX">';
+        html += '<div class="viewMenuBarTabs">';
         html += '</div>';
 
         var viewMenuBar = document.createElement('div');
@@ -140,9 +140,9 @@
                 }
             }
 
-            require(['voice/voice'], function (voice) {
+            require(['apphost'], function (apphost) {
 
-                if (voice.isSupported()) {
+                if (apphost.supports('voiceinput')) {
                     header.querySelector('.headerVoiceButton').classList.remove('hide');
                 } else {
                     header.querySelector('.headerVoiceButton').classList.add('hide');
@@ -164,8 +164,8 @@
     }
 
     function showVoice() {
-        require(['voice/voice'], function (voice) {
-            voice.startListening();
+        require(['voiceDialog'], function (voiceDialog) {
+            voiceDialog.showDialog();
         });
     }
 
@@ -179,7 +179,7 @@
 
     function onHeaderAppsButtonClick() {
 
-        require(['dialogHelper'], function (dialogHelper) {
+        require(['dialogHelper', 'dom'], function (dialogHelper, dom) {
 
             var dlg = dialogHelper.createDialog({
                 removeOnClose: true,
@@ -222,7 +222,7 @@
             document.body.appendChild(dlg);
 
             dlg.addEventListener('click', function (e) {
-                var link = parentWithTag(e.target, 'A');
+                var link = dom.parentWithTag(e.target, 'A');
                 if (link) {
                     dialogHelper.close(dlg);
                 }
@@ -275,7 +275,7 @@
 
     function getItemHref(item, context) {
 
-        return LibraryBrowser.getHref(item, context);
+        return libraryBrowser.getHref(item, context);
     }
 
     var requiresUserRefresh = true;
@@ -389,19 +389,6 @@
         } else {
             updateDashboardMenuSelectedItem();
         }
-    }
-
-    function parentWithTag(elem, tagName) {
-
-        while (elem.tagName != tagName) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
     }
 
     function updateDashboardMenuSelectedItem() {
@@ -710,22 +697,29 @@
 
             if (LibraryMenu.tabType != type) {
 
-                require(['paper-tabs'], function () {
+                var index = 0;
 
-                    var noInk = browserInfo.animate ? '' : ' noink';
+                viewMenuBarTabs.innerHTML = '<div class="libraryViewNav hiddenScrollX">' + builder().map(function (t) {
 
-                    viewMenuBarTabs.innerHTML = '<paper-tabs selected="' + selectedIndex + '" hidescrollbuttons ' + noInk + '>' + builder().map(function (t) {
+                    var tabClass = selectedIndex == index ? 'pageTabButton is-active' : 'pageTabButton';
 
-                        return '<paper-tab link><a class="clearLink paperTabLink" href="' + t.href + '"><div>' + t.name + '</div></a></paper-tab>';
+                    var tabHtml = '<a class="' + tabClass + '" href="' + t.href + '" data-index="' + index + '">' + t.name + '<div class="pageTabButtonSelectionBar"></div></a>';
+                    index++;
+                    return tabHtml;
 
-                    }).join('') + '</paper-tabs>';
-                    document.body.classList.add('withTallToolbar');
-                    LibraryMenu.tabType = type;
-                });
+                }).join('') + '</div>';
+
+                document.body.classList.add('withTallToolbar');
+                LibraryMenu.tabType = type;
                 return;
             }
 
-            viewMenuBarTabs.querySelector('paper-tabs').selected = selectedIndex;
+            var activeTab = viewMenuBarTabs.querySelector('.is-active');
+            var newTab = viewMenuBarTabs.querySelector('.pageTabButton[data-index="' + selectedIndex + '"]');
+            newTab.classList.add('is-active');
+            if (newTab != activeTab && activeTab) {
+                activeTab.classList.remove('is-active');
+            }
             LibraryMenu.tabType = type;
         },
 

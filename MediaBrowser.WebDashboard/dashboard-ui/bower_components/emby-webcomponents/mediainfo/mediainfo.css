@@ -3,9 +3,9 @@
 }
 
 i.mediaInfoItem {
-    width: 3vh;
-    height: 3vh;
-    font-size: 3vh;
+    width: auto;
+    height: auto;
+    font-size: 1.6em;
     margin-right: .6em;
 }
 
@@ -24,17 +24,17 @@ i.mediaInfoItem {
 
     .starRatingContainer i {
         color: #CB272A;
-        width: 3vh;
-        height: 3vh;
-        font-size: 3vh;
+        width: auto !important;
+        height: auto !important;
+        font-size: 1.4em;
     }
 
 .mediaInfoItem.criticRating {
-    padding-left: 3.15vh;
+    padding-left: 1.5em;
     background-position: left center;
     background-repeat: no-repeat;
-    background-size: auto 2.6vh;
-    min-height: 2.6vh;
+    background-size: auto 1.2em;
+    min-height: 1.2em;
     display: flex;
     align-items: center;
 }
@@ -62,16 +62,4 @@ i.mediaInfoItem {
 .layout-tv .mediaInfoProgramAttribute {
     font-size: 90%;
     padding: .1em .5em;
-}
-
-.layout-tv i.mediaInfoItem {
-    width: 4vh;
-    height: 4vh;
-    font-size: 4vh;
-}
-
-.layout-tv .starRatingContainer i {
-    width: 3.4vh;
-    height: 3.4vh;
-    font-size: 3.4vh;
 }

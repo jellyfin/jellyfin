@@ -3,7 +3,7 @@
     <div id="itemBackdrop" class="itemBackdrop noBackdrop">
         <div class="itemBackdropContent">
         </div>
-        <a href="#" id="lnkPreviousItem" class="lnkPreviousItem lnkSibling hide clearLink"><button is="emby-button" type="button" class="raised subdued notext"><i class="md-icon">arrow_back</i></button></a>
+        <a href="#" id="lnkPreviousItem" class="lnkPreviousItem lnkSibling hide clearLink"><button is="emby-button" type="button" class="raised subdued notext"><i class="md-icon">&#xE5C4;</i></button></a>
         <a href="#" id="lnkNextItem" class="lnkNextItem lnkSibling hide clearLink"><button is="emby-button" type="button" class="raised subdued notext"><i class="md-icon">arrow_forward</i></button></a>
     </div>
 
@@ -74,21 +74,21 @@
                 <h1>
                     ${HeaderNextUp}
                 </h1>
-                <div class="smallItemsContainer nextUpItems"></div>
+                <div is="emby-itemscontainer" class="smallItemsContainer nextUpItems" is="emby-itemscontainer"></div>
             </div>
             <div id="childrenCollapsible" class="hide detailSection">
                 <h1 class="childrenSectionHeader">
                     <span id="childrenTitle"></span>
                 </h1>
                 <div id="childrenContent">
-                    <div class="childrenItemsContainer itemsContainer noautoinit" style="text-align:left;"></div>
+                    <div is="emby-itemscontainer" class="childrenItemsContainer itemsContainer" style="text-align:left;"></div>
                 </div>
             </div>
             <div id="additionalPartsCollapsible" class="detailSection hide">
                 <h1>
                     ${HeaderAdditionalParts}
                 </h1>
-                <div id="additionalPartsContent" class="smallItemsContainer"></div>
+                <div id="additionalPartsContent" class="smallItemsContainer" is="emby-itemscontainer"></div>
             </div>
             <div id="castCollapsible" class="detailSection hide">
                 <h1 id="peopleHeader">
@@ -110,13 +110,17 @@
                 <h1>
                     ${HeaderSpecialFeatures}
                 </h1>
-                <div id="specialsContent" class="smallItemsContainer"></div>
+                <div id="specialsContent" class="smallItemsContainer" is="emby-itemscontainer"></div>
             </div>
             <div id="musicVideosCollapsible" class="detailSection hide">
                 <h1>
                     ${HeaderMusicVideos}
                 </h1>
-                <div id="musicVideosContent" class="smallItemsContainer"></div>
+                <div id="musicVideosContent" class="smallItemsContainer" is="emby-itemscontainer"></div>
+            </div>
+            <div id="moreFromSection" class="detailSection hide">
+                <h1 class="moreFromHeader"></h1>
+                <div id="moreFromItems"></div>
             </div>
             <div id="similarCollapsible" class="detailSection hide">
                 <h1 class="similiarHeader"></h1>
@@ -155,7 +159,7 @@
                 <h1>
                     ${HeaderThemeSongs}
                 </h1>
-                <div id="themeSongsContent"></div>
+                <div id="themeSongsContent" is="emby-itemscontainer"></div>
             </div>
             <div class="detailSection detailsSection">
                 <h1>
@@ -176,7 +180,7 @@
                 <h1>
                     ${HeaderThemeVideos}
                 </h1>
-                <div id="themeVideosContent" class="smallItemsContainer"></div>
+                <div id="themeVideosContent" class="smallItemsContainer" is="emby-itemscontainer"></div>
             </div>
 
             <div class="detailSection audioVideoMediaInfo hide">

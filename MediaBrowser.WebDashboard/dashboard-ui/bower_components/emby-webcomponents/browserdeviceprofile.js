@@ -168,6 +168,10 @@ define(['browser'], function (browser) {
             return 10000000;
         }
 
+        if (browser.ps4) {
+            return 8000000;
+        }
+
         var userAgent = navigator.userAgent.toLowerCase();
 
         if (browser.tizen) {
@@ -331,7 +335,7 @@ define(['browser'], function (browser) {
             });
         }
 
-        if (canPlayTs && options.supportsCustomSeeking && !browser.tizen) {
+        if (canPlayTs && options.supportsCustomSeeking && !browser.tizen && !browser.web0s) {
             profile.TranscodingProfiles.push({
                 Container: 'ts',
                 Type: 'Video',

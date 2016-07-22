@@ -1,14 +1,17 @@
 ﻿<div id="tvRecommendedPage" data-dom-cache="true" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs" data-backdroptype="series">
 
     <div class="libraryViewNav">
-        <button class="pageTabButton is-active" data-index="0">${TabSuggestions}</button>
-        <button class="pageTabButton" data-index="1">${TabLatest}</button>
-        <button class="pageTabButton" data-index="2">${TabUpcoming}</button>
-        <button class="pageTabButton" data-index="3">${TabShows}</button>
-        <button class="pageTabButton tvEpisodesTab" data-index="4">${TabEpisodes}</button>
-        <button class="pageTabButton" data-index="5">${TabGenres}</button>
-        <button class="pageTabButton" data-index="6">${TabNetworks}</button>
+        <div class="contentScrollSlider">
+            <button class="pageTabButton is-active" data-index="0">${TabSuggestions}</button>
+            <button class="pageTabButton" data-index="1">${TabLatest}</button>
+            <button class="pageTabButton" data-index="2">${TabUpcoming}</button>
+            <button class="pageTabButton" data-index="3">${TabShows}</button>
+            <button class="pageTabButton tvEpisodesTab" data-index="4">${TabEpisodes}</button>
+            <button class="pageTabButton" data-index="5">${TabGenres}</button>
+            <button class="pageTabButton" data-index="6">${TabNetworks}</button>
+        </div>
     </div>
+
     <div class="is-active pageTabContent ehsContent" id="suggestionsTab" data-index="0">
         <div id="resumableSection" class="homePageSection">
             <div>
@@ -19,7 +22,7 @@
                 </button>
             </div>
 
-            <div id="resumableItems" class="itemsContainer noautoinit">
+            <div is="emby-itemscontainer" id="resumableItems" class="itemsContainer">
             </div>
         </div>
 
@@ -31,7 +34,7 @@
                     <span>${ButtonSync}</span>
                 </button>
             </div>
-            <div id="nextUpItems" class="itemsContainer">
+            <div is="emby-itemscontainer" id="nextUpItems" class="itemsContainer">
             </div>
         </div>
         <p class="noNextUpItems" style="display: none;">${NoNextUpItemsMessage}</p>
@@ -45,7 +48,7 @@
                     <span>${ButtonSync}</span>
                 </button>
             </div>
-            <div id="latestEpisodes" class="itemsContainer">
+            <div is="emby-itemscontainer" id="latestEpisodes" class="itemsContainer">
             </div>
         </div>
     </div>
@@ -70,7 +73,7 @@
         <div class="alphaPicker alphabetPicker vertical">
         </div>
 
-        <div class="itemsContainer itemsContainerWithAlphaPicker">
+        <div is="emby-itemscontainer" class="itemsContainer itemsContainerWithAlphaPicker">
         </div>
         <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
             <div class="paging"></div>
@@ -83,7 +86,7 @@
             <button is="paper-icon-button-light" class="btnSort autoSize" title="${ButtonSort}"><i class="md-icon">sort_by_alpha</i></button>
             <button is="paper-icon-button-light" class="btnFilter autoSize" title="${ButtonFilter}"><i class="md-icon">filter_list</i></button>
         </div>
-        <div class="itemsContainer">
+        <div is="emby-itemscontainer" class="itemsContainer">
         </div>
         <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
             <div class="paging"></div>
@@ -93,14 +96,14 @@
         <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
             <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
         </div>
-        <div id="items" class="itemsContainer paddedItemsContainer"></div>
+        <div is="emby-itemscontainer" id="items" class="itemsContainer paddedItemsContainer"></div>
     </div>
     <div class="pageTabContent ehsContent" id="studiosTab" data-index="6">
         <div class="viewSettings">
             <div class="listTopPaging">
             </div>
         </div>
-        <div id="items" class="itemsContainer paddedItemsContainer" style="text-align: center;"></div>
+        <div is="emby-itemscontainer" id="items" class="itemsContainer paddedItemsContainer" style="text-align: center;"></div>
     </div>
 
     <div data-role="content">

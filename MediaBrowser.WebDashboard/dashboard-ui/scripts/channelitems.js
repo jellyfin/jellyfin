@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'emby-itemscontainer'], function ($) {
 
     var data = {};
 

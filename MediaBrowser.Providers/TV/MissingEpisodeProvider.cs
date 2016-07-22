@@ -429,7 +429,9 @@ namespace MediaBrowser.Providers.TV
                 IndexNumber = episodeNumber,
                 ParentIndexNumber = seasonNumber,
                 Id = _libraryManager.GetNewItemId((series.Id + seasonNumber.ToString(_usCulture) + name), typeof(Episode)),
-                IsVirtualItem = true
+                IsVirtualItem = true,
+                SeasonId = season == null ? (Guid?)null : season.Id,
+                SeriesId = series.Id
             };
 
             episode.SetParent(season);

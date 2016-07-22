@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'appSettings', 'scrollStyles', 'emby-button', 'paper-icon-button-light'], function (LibraryBrowser, appSettings) {
+﻿define(['libraryBrowser', 'appSettings', 'scrollStyles', 'emby-button', 'paper-icon-button-light', 'emby-itemscontainer'], function (LibraryBrowser, appSettings) {
 
     function getUserViews(userId) {
 
@@ -111,7 +111,7 @@
 
             icon = item.icon || icon;
 
-            html += '<a' + onclick + ' data-itemid="' + item.Id + '" class="' + cssClass + '" href="' + href + '">';
+            html += '<a' + onclick + ' data-id="' + item.Id + '" class="' + cssClass + '" href="' + href + '">';
             html += '<div class="cardBox" style="background-color:' + backgroundColor + ';margin:4px;border-radius:4px;">';
 
             html += "<div class='cardText' style='padding:8px 10px;color:#fff;'>";
@@ -302,7 +302,7 @@
 
                 html += '</div>';
 
-                html += '<div class="itemsContainer">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer">';
 
                 html += LibraryBrowser.getPosterViewHtml({
                     items: items,
@@ -322,8 +322,6 @@
 
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
-
-            LibraryBrowser.createCardMenus(elem);
         });
     }
 
@@ -347,9 +345,9 @@
             if (items.length) {
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderLatestMovies') + '</h1>';
                 if (scrollX) {
-                    html += '<div class="hiddenScrollX itemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
                 } else {
-                    html += '<div class="itemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer">';
                 }
                 html += LibraryBrowser.getPosterViewHtml({
                     items: items,
@@ -366,8 +364,6 @@
 
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
-
-            LibraryBrowser.createCardMenus(elem);
         });
     }
 
@@ -391,9 +387,9 @@
             if (items.length) {
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderLatestEpisodes') + '</h1>';
                 if (scrollX) {
-                    html += '<div class="hiddenScrollX itemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
                 } else {
-                    html += '<div class="itemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer">';
                 }
 
                 html += LibraryBrowser.getPosterViewHtml({
@@ -411,8 +407,6 @@
 
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
-
-            LibraryBrowser.createCardMenus(elem);
         });
     }
 
@@ -434,7 +428,7 @@
 
             if (result.Items.length) {
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderLatestChannelMedia') + '</h1>';
-                html += '<div class="itemsContainer">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer">';
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: 'auto',
@@ -449,8 +443,6 @@
 
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
-
-            LibraryBrowser.createCardMenus(elem);
         });
     }
 
@@ -478,9 +470,9 @@
                 var scrollX = enableScrollX() && browserInfo.safari && screenWidth > 800;
 
                 if (scrollX) {
-                    html += '<div class="hiddenScrollX itemsContainer homeTopViews">';
+                    html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer homeTopViews">';
                 } else {
-                    html += '<div class="itemsContainer homeTopViews">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer homeTopViews">';
                 }
                 html += LibraryBrowser.getPosterViewHtml({
                     items: items,
@@ -506,8 +498,6 @@
 
                 elem.innerHTML = html + infoHtml;
                 ImageLoader.lazyChildren(elem);
-
-                LibraryBrowser.createCardMenus(elem, { showDetailsMenu: false });
             });
         });
     }
@@ -539,9 +529,9 @@
             if (result.Items.length) {
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderResume') + '</h1>';
                 if (enableScrollX()) {
-                    html += '<div class="hiddenScrollX itemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
                 } else {
-                    html += '<div class="itemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer">';
                 }
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
@@ -562,7 +552,6 @@
             elem.innerHTML = html;
 
             ImageLoader.lazyChildren(elem);
-            LibraryBrowser.createCardMenus(elem);
         });
     }
 
@@ -584,9 +573,9 @@
             if (result.Items.length) {
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderNextUp') + '</h1>';
                 if (enableScrollX()) {
-                    html += '<div class="hiddenScrollX itemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
                 } else {
-                    html += '<div class="itemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer">';
                 }
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
@@ -606,7 +595,6 @@
             elem.innerHTML = html;
 
             ImageLoader.lazyChildren(elem);
-            LibraryBrowser.createCardMenus(elem);
         });
     }
 
@@ -667,7 +655,7 @@
                 html += '<a href="channelitems.html?id=' + channel.Id + '" class="clearLink" style="margin-left:2em;"><button is="emby-button" type="button" class="raised more mini"><span>' + Globalize.translate('ButtonMore') + '</span></button></a>';
                 html += '</div>';
 
-                html += '<div class="itemsContainer">';
+                html += '<div is="emby-itemscontainer" is="emby-itemscontainer" class="itemsContainer">';
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: 'autohome',
@@ -685,8 +673,6 @@
             var elem = page.querySelector('#channel' + channel.Id + '');
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
-
-            LibraryBrowser.createCardMenus(elem);
         });
     }
 
@@ -715,9 +701,9 @@
             }
 
             if (enableScrollX()) {
-                html += '<div class="hiddenScrollX itemsContainer">';
+                html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
             } else {
-                html += '<div class="itemsContainer">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer">';
             }
             html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
@@ -734,7 +720,6 @@
 
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
-            LibraryBrowser.createCardMenus(elem);
         });
     }
 

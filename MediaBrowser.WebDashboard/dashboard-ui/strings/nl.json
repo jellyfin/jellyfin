@@ -1,5 +1,5 @@
 {
-    "XmlTvPremiere": "By default, Emby will import {0} hours of guide data. Importing unlimited data requires an active Emby Premiere subscription.",
+    "XmlTvPremiere": "Standaard wordt {0} uur gids data in Emby ge\u00efmporteerd. Het importeren van onbeperkte data vereist een actieve Emby Premiere abonnement.",
     "LabelExit": "Afsluiten",
     "LabelVisitCommunity": "Bezoek Gemeenschap",
     "LabelGithub": "Github",

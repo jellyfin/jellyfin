@@ -61,7 +61,7 @@ define(['css!./indicators.css', 'material-icons'], function () {
             }
 
             if (userData.PlayedPercentage && userData.PlayedPercentage >= 100 || (userData.Played)) {
-                return '<div class="playedIndicator indicator"><i class="md-icon">check</i></div>';
+                return '<div class="playedIndicator indicator"><i class="md-icon">&#xE5CA;</i></div>';
             }
         }
 

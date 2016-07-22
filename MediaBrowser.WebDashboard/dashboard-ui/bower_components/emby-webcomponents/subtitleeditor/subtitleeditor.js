@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'require', 'layoutManager', 'globalize', 'scrollHelper', 'appStorage', 'connectionManager', 'loading', 'focusManager', 'emby-select', 'listViewStyle', 'paper-icon-button-light', 'css!./../formdialog', 'material-icons', 'css!./subtitleeditor', 'emby-button'], function (dialogHelper, require, layoutManager, globalize, scrollHelper, appStorage, connectionManager, loading, focusManager) {
+﻿define(['dialogHelper', 'require', 'layoutManager', 'globalize', 'scrollHelper', 'appStorage', 'connectionManager', 'loading', 'focusManager', 'dom', 'apphost', 'emby-select', 'listViewStyle', 'paper-icon-button-light', 'css!./../formdialog', 'material-icons', 'css!./subtitleeditor', 'emby-button'], function (dialogHelper, require, layoutManager, globalize, scrollHelper, appStorage, connectionManager, loading, focusManager, dom, appHost) {
 
     var currentItem;
     var hasChanges;
@@ -125,9 +125,9 @@
 
                 itemHtml += '<div class="listItemBody two-line">';
 
-                itemHtml += '<h3 class="listItemBodyText">';
+                itemHtml += '<div>';
                 itemHtml += s.DisplayTitle || '';
-                itemHtml += '</h3>';
+                itemHtml += '</div>';
 
                 if (s.Path) {
                     itemHtml += '<div class="secondary listItemBodyText">' + (s.Path) + '</div>';
@@ -210,6 +210,8 @@
 
         context.querySelector('.noSearchResults').classList.add('hide');
 
+        var moreIcon = appHost.moreIcon == 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';
+
         for (var i = 0, length = results.length; i < length; i++) {
 
             var result = results[i];
@@ -241,7 +243,7 @@
 
             //html += '<a class="btnViewSubtitle" href="#" data-subid="' + result.Id + '">';
 
-            html += '<h3 class="listItemBodyText">' + (result.Name) + '</h3>';
+            html += '<div>' + (result.Name) + '</div>';
             html += '<div class="secondary listItemBodyText">' + (result.Format) + '</div>';
 
             if (result.Comment) {
@@ -255,7 +257,7 @@
             html += '<div class="secondary">' + /*(result.CommunityRating || 0) + ' / ' +*/ (result.DownloadCount || 0) + '</div>';
 
             if (!layoutManager.tv) {
-                html += '<button type="button" is="paper-icon-button-light" data-subid="' + result.Id + '" class="btnOptions"><i class="md-icon">more_vert</i></button>';
+                html += '<button type="button" is="paper-icon-button-light" data-subid="' + result.Id + '" class="btnOptions"><i class="md-icon">' + moreIcon + '</i></button>';
             }
 
             html += '</' + tagName + '>';
@@ -326,25 +328,12 @@
         }
     }
 
-    function parentWithClass(elem, className) {
-
-        while (!elem.classList || !elem.classList.contains(className)) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
-    }
-
     function onSearchSubmit(e) {
         var form = this;
 
         var lang = form.querySelector('#selectLanguage', form).value;
 
-        searchForSubtitles(parentWithClass(form, 'dialogContent'), lang);
+        searchForSubtitles(dom.parentWithClass(form, 'dialogContent'), lang);
 
         e.preventDefault();
         return false;
@@ -352,20 +341,20 @@
 
     function onSubtitleListClick(e) {
 
-        var btnDelete = parentWithClass(e.target, 'btnDelete');
+        var btnDelete = dom.parentWithClass(e.target, 'btnDelete');
         if (btnDelete) {
             var index = btnDelete.getAttribute('data-index');
-            var context = parentWithClass(btnDelete, 'subtitleEditorDialog');
+            var context = dom.parentWithClass(btnDelete, 'subtitleEditorDialog');
             deleteLocalSubtitle(context, index);
         }
     }
 
     function onSubtitleResultsClick(e) {
 
-        var btnOptions = parentWithClass(e.target, 'btnOptions');
+        var btnOptions = dom.parentWithClass(e.target, 'btnOptions');
         if (btnOptions) {
             var subtitleId = btnOptions.getAttribute('data-subid');
-            var context = parentWithClass(btnOptions, 'subtitleEditorDialog');
+            var context = dom.parentWithClass(btnOptions, 'subtitleEditorDialog');
             showDownloadOptions(btnOptions, context, subtitleId);
         }
     }

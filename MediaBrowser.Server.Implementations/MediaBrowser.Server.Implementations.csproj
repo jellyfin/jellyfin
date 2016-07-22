@@ -56,8 +56,8 @@
     <Reference Include="Interfaces.IO">
       <HintPath>..\packages\Interfaces.IO.1.0.0.5\lib\portable-net45+sl4+wp71+win8+wpa81\Interfaces.IO.dll</HintPath>
     </Reference>
-    <Reference Include="MediaBrowser.Naming, Version=1.0.6012.15754, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.52\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
+    <Reference Include="MediaBrowser.Naming, Version=1.0.6046.32295, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.53\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="MoreLinq">
@@ -73,8 +73,8 @@
       <HintPath>..\packages\SimpleInjector.3.2.0\lib\net45\SimpleInjector.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="SocketHttpListener, Version=1.0.5955.1537, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SocketHttpListener.1.0.0.30\lib\net45\SocketHttpListener.dll</HintPath>
+    <Reference Include="SocketHttpListener, Version=1.0.6046.26351, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SocketHttpListener.1.0.0.35\lib\net45\SocketHttpListener.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -156,6 +156,7 @@
     <Compile Include="EntryPoints\ServerEventNotifier.cs" />
     <Compile Include="EntryPoints\UserDataChangeNotifier.cs" />
     <Compile Include="FileOrganization\OrganizerScheduledTask.cs" />
+    <Compile Include="HttpServer\AsyncStreamWriterFunc.cs" />
     <Compile Include="HttpServer\IHttpListener.cs" />
     <Compile Include="HttpServer\Security\AuthorizationContext.cs" />
     <Compile Include="HttpServer\ContainerAdapter.cs" />
@@ -757,9 +758,7 @@
     <EmbeddedResource Include="Localization\iso6392.txt" />
     <EmbeddedResource Include="Localization\Ratings\be.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="HttpServer\NetListener\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -1,21 +1,23 @@
 ﻿<div id="liveTvSuggestedPage" data-dom-cache="true" data-role="page" class="page libraryPage liveTvPage pageWithAbsoluteTabs" data-contextname="${HeaderLiveTv}" data-backdroptype="series,movie">
 
     <div class="libraryViewNav">
-        <button class="pageTabButton is-active" data-index="0">${TabSuggestions}</button>
-        <button class="pageTabButton" data-index="1">${TabGuide}</button>
-        <button class="pageTabButton" data-index="2">${TabChannels}</button>
-        <button class="pageTabButton" data-index="3">${TabRecordings}</button>
-        <button class="pageTabButton" data-index="4">${TabSeries}</button>
+        <div class="contentScrollSlider">
+            <button class="pageTabButton is-active" data-index="0">${TabSuggestions}</button>
+            <button class="pageTabButton" data-index="1">${TabGuide}</button>
+            <button class="pageTabButton" data-index="2">${TabChannels}</button>
+            <button class="pageTabButton" data-index="3">${TabRecordings}</button>
+            <button class="pageTabButton" data-index="4">${TabSeries}</button>
+        </div>
     </div>
     <div class="is-active pageTabContent ehsContent" id="suggestionsTab" data-index="0">
         <div id="activePrograms" class="homePageSection">
             <h1 class="listHeader">${HeaderWhatsOnTV}</h1>
-            <div class="activeProgramItems itemsContainer noautoinit"></div>
+            <div is="emby-itemscontainer" class="activeProgramItems itemsContainer"></div>
             <br />
         </div>
         <div id="upcomingPrograms" class="homePageSection" style="margin-top: 1em;">
             <h1 class="listHeader">${HeaderUpcomingPrograms}</h1>
-            <div class="upcomingProgramItems itemsContainer noautoinit"></div>
+            <div is="emby-itemscontainer" class="upcomingProgramItems itemsContainer"></div>
             <br />
         </div>
         <div id="upcomingTvMovies" class="homePageSection" style="margin-top: 1em;">
@@ -23,7 +25,7 @@
                 <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderUpcomingMovies}</h1>
                 <a href="livetvitems.html?type=movies" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><button is="emby-button" type="button" class="raised more mini noIcon">${ButtonMoreItems}</button></a>
             </div>
-            <div class="upcomingTvMovieItems itemsContainer noautoinit"></div>
+            <div is="emby-itemscontainer" class="upcomingTvMovieItems itemsContainer"></div>
             <br />
         </div>
         <div id="upcomingSports" class="homePageSection" style="margin-top: 1em;">
@@ -31,7 +33,7 @@
                 <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderUpcomingSports}</h1>
                 <a href="livetvitems.html?type=sports" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><button is="emby-button" type="button" class="raised more mini noIcon">${ButtonMoreItems}</button></a>
             </div>
-            <div class="upcomingSportsItems itemsContainer noautoinit"></div>
+            <div is="emby-itemscontainer" class="upcomingSportsItems itemsContainer"></div>
             <br />
         </div>
         <div id="upcomingKids" class="homePageSection" style="margin-top: 1em;">
@@ -39,7 +41,7 @@
                 <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderUpcomingForKids}</h1>
                 <a href="livetvitems.html?type=kids" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><button is="emby-button" type="button" class="raised more mini noIcon">${ButtonMoreItems}</button></a>
             </div>
-            <div class="upcomingKidsItems itemsContainer noautoinit"></div>
+            <div is="emby-itemscontainer" class="upcomingKidsItems itemsContainer"></div>
             <br />
         </div>
     </div>
@@ -50,12 +52,12 @@
             <div class="paging"></div>
             <button is="paper-icon-button-light" class="btnFilter autoSize" title="${ButtonFilter}"><i class="md-icon">filter_list</i></button>
         </div>
-        <div id="items" class="itemsContainer"></div>
+        <div is="emby-itemscontainer" id="items" class="itemsContainer"></div>
     </div>
     <div class="pageTabContent ehsContent" id="recordingsTab" data-index="3">
         <div id="activeRecordings" class="homePageSection hide">
             <h1 class="listHeader">${HeaderActiveRecordings}</h1>
-            <div class="recordingItems itemsContainer"></div>
+            <div is="emby-itemscontainer" class="recordingItems itemsContainer"></div>
             <br />
         </div>
         <div id="latestRecordings" class="homePageSection hide">
@@ -66,7 +68,7 @@
                     <span>${ButtonSync}</span>
                 </button>
             </div>
-            <div class="recordingItems itemsContainer"></div>
+            <div is="emby-itemscontainer" class="recordingItems itemsContainer"></div>
             <br />
         </div>
         <div id="upcomingRecordings" class="homePageSection hide">

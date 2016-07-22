@@ -18,7 +18,7 @@ namespace MediaBrowser.Model.Dto
     /// This holds information about a BaseItem in a format that is convenient for the client.
     /// </summary>
     [DebuggerDisplay("Name = {Name}, ID = {Id}, Type = {Type}")]
-    public class BaseItemDto : IHasProviderIds, IHasPropertyChangedEvent, IItemDto, IHasServerId, IHasSyncInfo
+    public class BaseItemDto : IHasProviderIds, IItemDto, IHasServerId, IHasSyncInfo
     {
         /// <summary>
         /// Gets or sets the name.
@@ -113,6 +113,8 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The synchronize percent.</value>
         public double? SyncPercent { get; set; }
+
+        public string Container { get; set; }
 
         /// <summary>
         /// Gets or sets the DVD season number.
@@ -955,6 +957,16 @@ namespace MediaBrowser.Model.Dto
         }
 
         /// <summary>
+        /// Gets a value indicating whether this instance has thumb.
+        /// </summary>
+        /// <value><c>true</c> if this instance has thumb; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
+        public bool HasBackdrop
+        {
+            get { return (BackdropImageTags != null && BackdropImageTags.Count > 0) || (ParentBackdropImageTags != null && ParentBackdropImageTags.Count > 0); }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance has primary image.
         /// </summary>
         /// <value><c>true</c> if this instance has primary image; otherwise, <c>false</c>.</value>
@@ -1098,11 +1110,6 @@ namespace MediaBrowser.Model.Dto
                 return IsType("Movie") || IsType("Series") || IsType("MusicAlbum") || IsType("MusicArtist") || IsType("Program") || IsType("Recording") || IsType("ChannelVideoItem") || IsType("Game");
             }
         }
-
-        /// <summary>
-        /// Occurs when [property changed].
-        /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
         /// Gets or sets the program identifier.

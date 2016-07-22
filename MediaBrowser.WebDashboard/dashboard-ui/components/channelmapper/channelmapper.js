@@ -95,7 +95,7 @@ function (dialogHelper, loading, connectionManager, globalize, actionsheet) {
 
             html += '<div class="listItem">';
 
-            html += '<button is="emby-button" type="button" class="fab autoSize mini" style="background:#52B54B;"><i class="md-icon listItemIcon">dvr</i></button>';
+            html += '<i class="md-icon listItemIcon">dvr</i>';
 
             html += '<div class="listItemBody two-line">';
             html += '<h3>';
@@ -171,7 +171,7 @@ function (dialogHelper, loading, connectionManager, globalize, actionsheet) {
             var title = globalize.translate('MapChannels');
 
             html += '<div class="dialogHeader" style="margin:0 0 2em;">';
-            html += '<button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">arrow_back</i></button>';
+            html += '<button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
             html += '<div class="dialogHeaderTitle">';
             html += title;
             html += '</div>';

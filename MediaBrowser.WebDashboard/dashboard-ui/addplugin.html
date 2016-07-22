@@ -1,4 +1,4 @@
-﻿<div id="addPluginPage" data-role="page" class="page type-interior pluginConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Plugins" data-require="jqmcollapsible,registrationservices,scripts/ratingdialog,scripts/addpluginpage">
+﻿<div id="addPluginPage" data-role="page" class="page type-interior pluginConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Plugins" data-require="emby-select,emby-collapse,registrationservices,scripts/ratingdialog,scripts/addpluginpage">
 
     <div data-role="content">
         <div class="content-primary">
@@ -9,25 +9,26 @@
 
             <div class="readOnlyContent">
 
-                <h2 class="pluginName"></h2>
+                <h1 class="pluginName"></h1>
                 <p id="tagline" style="font-style: italic;"></p>
                 <p id="pPreviewImage"></p>
 
                 <p id="overview"></p>
 
-                <div data-role="collapsible" data-collapsed="false" style="margin-top: 2em;">
-                    <h3>${HeaderInstall}</h3>
+                <div style="margin-top: 2em;">
+                    <h1>${HeaderInstall}</h1>
 
                     <div>
                         <form class="addPluginForm">
                             <p id="pCurrentVersion"></p>
-                            <p id="pSelectVersion" class="hide">
-                                <label for="selectVersion">${LabelSelectVersionToInstall}</label>
-                                <select id="selectVersion" name="selectVersion"></select>
-                            </p>
+                            <div id="pSelectVersion" class="hide selectContainer">
+                                <select id="selectVersion" name="selectVersion" is="emby-select" label="${LabelSelectVersionToInstall}"></select>
+                            </div>
 
                             <p id="btnInstallDiv" class="hide">
-                                <button id="btnInstall" type="submit" data-icon="arrow-d" data-theme="b">Install</button>
+                                <button is="emby-button" type="submit" id="btnInstall" class="raised submit block">
+                                    <iron-icon icon="check"></iron-icon><span>${Install}</span>
+                                </button>
                             </p>
                             <p id="nonServerMsg"></p>
                         </form>
@@ -75,28 +76,29 @@
                     </div>
                 </div>
             </div>
-
+            <br />
             <div class="readOnlyContent">
-                <div data-role="collapsible" data-collapsed="false" style="margin-top: 2em;">
-                    <h3>${HeaderReviews}</h3>
-                    <div>
+                <div is="emby-collapse" title="${HeaderReviews}">
+                    <div class="collapseContent">
                         <br />
                         <div id="ratingLine"></div>
                         <div id="latestReviews"></div>
                     </div>
                 </div>
 
-                <div data-role="collapsible" data-collapsed="false" style="margin-top: 2em;">
-                    <h3>${HeaderDeveloperInfo}</h3>
-                    <p id="developer"></p>
-                    <p id="pViewWebsite" style="display: none;">
-                        <a href="#" data-rel="external" target="_blank">${ButtonViewWebsite}</a>
-                    </p>
+                <div is="emby-collapse" title="${HeaderDeveloperInfo}">
+                    <div class="collapseContent">
+                        <p id="developer"></p>
+                        <p id="pViewWebsite" style="display: none;">
+                            <a href="#" data-rel="external" target="_blank">${ButtonViewWebsite}</a>
+                        </p>
+                    </div>
                 </div>
 
-                <div data-role="collapsible" style="margin-top: 2em;">
-                    <h3>${HeaderRevisionHistory}</h3>
-                    <div id="revisionHistory"></div>
+                <div is="emby-collapse" title="${HeaderRevisionHistory}">
+                    <div class="collapseContent">
+                        <div id="revisionHistory"></div>
+                    </div>
                 </div>
             </div>
         </div>

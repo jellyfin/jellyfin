@@ -135,25 +135,11 @@
 
 .libraryViewNav {
     overflow: hidden;
-    position: fixed;
-    right: 0;
-    left: 0;
-    top: 50px;
     z-index: 999;
     text-align: center;
     text-transform: uppercase;
     white-space: nowrap;
     padding: 0 0 0;
-    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),1px 5px 1px rgba(0,0,0,.12);
-}
-
-    .libraryViewNav.bottom {
-        top: auto !important;
-        bottom: 0;
-    }
-
-
-.libraryViewNav {
     display: flex;
     display: block;
     text-align: center;
@@ -161,32 +147,45 @@
     align-items: center;
 }
 
-    .libraryViewNav .pageTabButton {
-        background: transparent;
-        border: 0 !important;
-        cursor: pointer;
-        outline: none !important;
-        width: auto;
-        font-family: inherit;
-        font-size: inherit;
-        color: #aaa !important;
-        display: inline-block;
-        vertical-align: middle;
-        flex-shrink: 0;
-        margin: 0;
-        padding: 1.2em .9em;
-        transition: none !important;
-        position: relative;
-        text-transform: uppercase;
-        font-weight: bold !important;
-        height: auto;
-        min-width: initial;
-        line-height: initial;
-        border-radius: 0 !important;
-        overflow: hidden;
-    }
+.ui-body-b .libraryViewNav {
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),1px 5px 1px rgba(0,0,0,.12);
+    position: fixed;
+    right: 0;
+    left: 0;
+    top: 50px;
+}
 
-        /*.libraryViewNav .pageTabButton:hover {
+.libraryViewNav.bottom {
+    top: auto !important;
+    bottom: 0;
+}
+
+.pageTabButton {
+    background: transparent;
+    border: 0 !important;
+    cursor: pointer;
+    outline: none !important;
+    width: auto;
+    font-family: inherit;
+    font-size: inherit;
+    color: #aaa !important;
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+    margin: 0;
+    padding: 1.2em .9em;
+    transition: none !important;
+    position: relative;
+    text-transform: uppercase;
+    font-weight: bold !important;
+    height: auto;
+    min-width: initial;
+    line-height: initial;
+    border-radius: 0 !important;
+    overflow: hidden;
+}
+
+    /*.libraryViewNav .pageTabButton:hover {
             background-color: transparent;
         }
 
@@ -194,13 +193,13 @@
             background-color: rgba(100,100,100, 0.20);
         }*/
 
-        .libraryViewNav .pageTabButton:focus {
-            font-weight: bold !important;
-        }
+    .pageTabButton:focus {
+        font-weight: bold !important;
+    }
 
-        .libraryViewNav .pageTabButton.is-active {
-            color: #52B54B !important;
-        }
+    .pageTabButton.is-active {
+        color: #52B54B !important;
+    }
 
 .pageTabButtonSelectionBar {
     position: absolute;
@@ -218,7 +217,7 @@
     background: #52B54B;
 }
 
-.viewMenuBar, .libraryViewNav {
+.viewMenuBar, .ui-body-b .libraryViewNav {
     background-color: #2b2b2b;
     color: #fff;
 }
@@ -252,61 +251,13 @@
     width: 100%;
 }
 
-    .viewMenuBarTabs paper-tabs {
-        background: none;
-        box-shadow: none;
-    }
-
-    .viewMenuBarTabs .paperTabLink {
-        align-items: center;
-        justify-content: center;
-        display: flex;
-    }
-
-
-    .viewMenuBarTabs #tabsContent {
-        display: block !important;
-        width: 100%;
-    }
-
-    .viewMenuBarTabs #tabsContainer {
-        margin: auto;
-        -ms-flex: none;
-        -webkit-flex: none;
-        flex: none;
-        flex-shrink: 0;
-        flex-grow: 1;
-        touch-action: auto !important;
-    }
-
-    .viewMenuBarTabs paper-tabs {
-        overflow: visible !important;
-    }
-
     .viewMenuBarTabs .paperTabLink {
         padding-left: 1.5em;
         padding-right: 1.5em;
     }
 
-.viewMenuBar paper-icon-button.paper-tabs {
-    display: none !important;
-}
-
 .viewMenuBar.semiTransparent {
     background-color: rgba(15, 15, 15, .3);
-}
-
-.paperLibraryViewNav {
-    background-color: transparent !important;
-}
-
-.libraryViewNav iron-icon {
-    display: none;
-}
-
-.libraryViewNav::-webkit-scrollbar {
-    height: 0 !important;
-    display: none;
 }
 
 .viewMenuLink {
@@ -469,13 +420,9 @@ body:not(.dashboardDocument) .headerAppsButton {
         padding-left: 272px;
     }
 
-        .mainDrawerPanel .viewMenuBarTabs paper-tab {
-            width: auto !important;
-        }
-
-        .mainDrawerPanel .viewMenuBarTabs .tab-content {
-            display: block !important;
-        }
+    .viewMenuBarTabs .libraryViewNav {
+        text-align: left !important;
+    }
 
     .dashboardDocument .mainDrawer {
         z-index: 998 !important;

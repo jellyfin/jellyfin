@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['components/categorysyncbuttons'], function (categorysyncbuttons) {
 
     function getView() {
 
@@ -20,7 +20,7 @@
             Fields: "PrimaryImageAspectRatio,SyncInfo",
             ParentId: parentId,
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+            EnableImageTypes: "Primary,Backdrop,Thumb"
         };
 
         return ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options));
@@ -77,7 +77,8 @@
     return function (view, params, tabContent) {
 
         var self = this;
-        var latestPromise;
+
+        categorysyncbuttons.init(tabContent);        var latestPromise;
 
         self.preRender = function () {
             latestPromise = getLatestPromise(view, params);

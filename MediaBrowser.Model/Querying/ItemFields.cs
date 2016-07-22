@@ -197,6 +197,8 @@
         /// </summary>
         SeriesGenres,
 
+        SeriesPrimaryImage,
+
         /// <summary>
         /// The series studio
         /// </summary>

@@ -1,0 +1,61 @@
+﻿.cardOverlayTarget {
+    position: absolute;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    top: 0;
+    background-color: rgba(0, 0, 0, .85);
+    z-index: 998;
+    line-height: initial;
+    font-size: initial;
+}
+
+.cardOverlayInner {
+    padding: .5em;
+    color: #fff;
+    text-align: left;
+
+}
+
+    .cardOverlayInner button:last-child {
+        margin-right: 0 !important;
+    }
+
+    .cardOverlayInner p {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+.cardOverlayMediaInfo {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 1em 0;
+    color: #ddd;
+}
+
+.cardOverlayButtons {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+    .cardOverlayButtons .fab {
+        background-color: #282828;
+        margin-right: .25em;
+    }
+
+        .cardOverlayButtons .fab i.md-icon {
+            width: auto !important;
+            height: auto !important;
+            font-size: 20px !important;
+        }
+
+@media all and (max-width: 1200px) {
+
+    .cardOverlayInner {
+        padding-left: 7px;
+        padding-right: 7px;
+    }
+}

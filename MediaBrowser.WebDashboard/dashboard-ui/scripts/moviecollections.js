@@ -1,4 +1,4 @@
-﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker'], function (events, libraryBrowser, imageLoader, alphaPicker) {
+﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker', 'listView', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, alphaPicker, listView) {
 
     return function (view, params, tabContent) {
 
@@ -108,7 +108,7 @@
                 }
                 else if (viewStyle == "List") {
 
-                    html = libraryBrowser.getListViewHtml({
+                    html = listView.getListViewHtml({
                         items: result.Items,
                         context: 'movies',
                         sortBy: query.SortBy

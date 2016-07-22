@@ -40,22 +40,19 @@ body:not(.dashboardDocument) .mainDrawerButton {
     height: 50px;
 }
 
-.viewMenuBar, .libraryViewNav, paper-tabs {
+.libraryDocument .viewMenuBar, .libraryViewNav {
+    background-color: #000 !important;
+    box-shadow: none !important;
+}
+
+.viewMenuBar.semiTransparent {
     background-color: #000;
 }
 
-    .viewMenuBar.semiTransparent {
-        background-color: #000;
-    }
-
-.libraryViewNav {
-    box-shadow: none;
+.libraryViewNav .pageTabButton {
+    font-weight: 400;
+    text-transform: none;
 }
-
-    .libraryViewNav .pageTabButton {
-        font-weight: 400;
-        text-transform: none;
-    }
 
 .pageTabButton.is-active .pageTabButtonSelectionBar {
     display: none !important;
@@ -135,17 +132,8 @@ h1, h1 a {
     border-radius: 10px;
 }
 
-.bottomFab {
-    bottom: 120px !important;
-}
-
 .sidebarLinkText {
     font-weight: 400 !important;
-}
-
-#footer {
-    /* Eliminate transparency to prevent clicks from passing through to the elements underneath */
-    background-color: rgb(26,26,26);
 }
 
 .nowPlayingPageBackButton {
@@ -172,7 +160,20 @@ h1, h1 a {
     right: 5px !important;
 }
 
-.alphaPickerButton.selected {
-    background-color: transparent !important;
-    color: #52B54B !important;
+.searchBackButton {
+    display: none !important;
+}
+
+.txtSearch {
+    padding-bottom: .5em !important;
+    text-indent: 0 !important;
+}
+
+.searchInputContainer {
+    margin-left: 5%;
+    margin-right: 5%;
+}
+
+.categorySyncButton {
+    display: none !important;
 }

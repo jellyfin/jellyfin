@@ -82,7 +82,13 @@
 
         this.insertAdjacentHTML('afterbegin', html);
 
-        this.querySelector('.emby-collapsible-button').addEventListener('click', onButtonClick);
+        var button = this.querySelector('.emby-collapsible-button');
+
+        button.addEventListener('click', onButtonClick);
+
+        if (this.getAttribute('data-expanded') == 'true') {
+            onButtonClick.call(button);
+        }
     };
 
     document.registerElement('emby-collapse', {

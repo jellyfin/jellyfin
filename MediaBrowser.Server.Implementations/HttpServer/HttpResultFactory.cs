@@ -331,7 +331,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 options.ContentType = MimeTypes.GetMimeType(path);
             }
 
-            options.DateLastModified = _fileSystem.GetLastWriteTimeUtc(path);
+            if (!options.DateLastModified.HasValue)
+            {
+                options.DateLastModified = _fileSystem.GetLastWriteTimeUtc(path);
+            }
+
             var cacheKey = path + options.DateLastModified.Value.Ticks;
 
             options.CacheKey = cacheKey.GetMD5();
@@ -698,6 +702,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
 
             throw error;
+        }
+
+        public object GetAsyncStreamWriter(Func<Stream, Task> streamWriter, IDictionary<string, string> responseHeaders = null)
+        {
+            return new AsyncStreamWriterFunc(streamWriter, responseHeaders);
         }
     }
 }

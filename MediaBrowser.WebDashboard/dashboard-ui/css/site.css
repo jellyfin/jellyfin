@@ -106,6 +106,10 @@ h2 {
     font-weight: 400;
 }
 
+h3 {
+    font-weight: 500;
+}
+
 a, a:active, a:hover {
     text-decoration: none;
 }
@@ -226,14 +230,9 @@ div[data-role='page'] {
     transform: translateY(-100%);
 }
 
-.libraryViewNav:not(.paperLibraryViewNav).headroom--unpinned:not(.headroomDisabled) {
+.libraryViewNav.headroom--unpinned:not(.headroomDisabled) {
     -webkit-transform: translateY(-210%);
     transform: translateY(-210%);
-}
-
-.paperLibraryViewNav.headroom--unpinned:not(.headroomDisabled) {
-    -webkit-transform: translateY(-240%);
-    transform: translateY(-240%);
 }
 
 .checkboxContainer {
@@ -721,10 +720,6 @@ progress {
 
 .actionSheetMenuItem:hover {
     background-color: #e8e8e8;
-}
-
-emby-collapsible > .style-scope {
-    margin: .5em 0;
 }
 
 .ui-body-a .emby-collapsible-button {

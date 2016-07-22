@@ -13,12 +13,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="paper-ripple-behavior.html">
 
 <script>
-
   /** @polymerBehavior Polymer.PaperButtonBehavior */
   Polymer.PaperButtonBehaviorImpl = {
-
     properties: {
-
       /**
        * The z-depth of this element, from 0-5. Setting to 0 will remove the
        * shadow, and each increasing number greater than 0 will be "deeper"
@@ -33,7 +30,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         reflectToAttribute: true,
         readOnly: true
       }
-
     },
 
     observers: [
@@ -89,7 +85,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this._ripple.uiUpAction();
       }
     }
-
   };
 
   /** @polymerBehavior */
@@ -99,5 +94,4 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     Polymer.PaperRippleBehavior,
     Polymer.PaperButtonBehaviorImpl
   ];
-
 </script>

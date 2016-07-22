@@ -1,4 +1,4 @@
-﻿define(['datetime', 'scrollStyles'], function (datetime) {
+﻿define(['datetime', 'libraryBrowser', 'scrollStyles', 'emby-itemscontainer'], function (datetime, libraryBrowser) {
 
     function getUpcomingPromise(context, params) {
 
@@ -7,7 +7,7 @@
         var query = {
 
             Limit: 40,
-            Fields: "AirTime,UserData,SeriesStudio,SyncInfo",
+            Fields: "AirTime,UserData,SyncInfo",
             UserId: Dashboard.getCurrentUserId(),
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
@@ -69,7 +69,7 @@
                     if (premiereDate.getDate() == new Date().getDate() - 1) {
                         dateText = Globalize.translate('Yesterday');
                     } else {
-                        dateText = LibraryBrowser.getFutureDateText(premiereDate, true);
+                        dateText = libraryBrowser.getFutureDateText(premiereDate, true);
                     }
 
                 } catch (err) {
@@ -102,22 +102,22 @@
             html += '<h1 class="listHeader">' + group.name + '</h1>';
 
             if (enableScrollX()) {
-                html += '<div class="itemsContainer hiddenScrollX">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer hiddenScrollX">';
             } else {
-                html += '<div class="itemsContainer">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer">';
             }
 
-            html += LibraryBrowser.getPosterViewHtml({
+            html += libraryBrowser.getPosterViewHtml({
                 items: group.items,
                 showLocationTypeIndicator: false,
                 shape: getThumbShape(),
                 showTitle: true,
-                showPremiereDate: true,
                 preferThumb: true,
                 lazy: true,
                 showDetailsMenu: true,
                 centerText: true,
-                overlayMoreButton: true
+                overlayMoreButton: true,
+                showParentTitle: true
 
             });
             html += '</div>';
@@ -126,7 +126,6 @@
         }
 
         elem.innerHTML = html;
-        LibraryBrowser.createCardMenus(elem);
         ImageLoader.lazyChildren(elem);
     }
     return function (view, params, tabContent) {

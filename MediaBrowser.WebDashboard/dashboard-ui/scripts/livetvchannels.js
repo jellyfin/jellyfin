@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['emby-itemscontainer'], function () {
 
     return function (view, params, tabContent) {
 

@@ -155,6 +155,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             _logger.Debug("Upgrading schema for {0} items", numItems);
 
+            var list = new List<BaseItem>();
+
             foreach (var itemId in itemIds)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -166,25 +168,48 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                     if (item != null)
                     {
-                        try
-                        {
-                            await _itemRepo.SaveItem(item, cancellationToken).ConfigureAwait(false);
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            throw;
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error saving item", ex);
-                        }
+                        list.Add(item);
                     }
+                }
+
+                if (list.Count >= 1000)
+                {
+                    try
+                    {
+                        await _itemRepo.SaveItems(list, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        throw;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error saving item", ex);
+                    }
+
+                    list.Clear();
                 }
 
                 numComplete++;
                 double percent = numComplete;
                 percent /= numItems;
                 progress.Report(percent * 100);
+            }
+
+            if (list.Count > 0)
+            {
+                try
+                {
+                    await _itemRepo.SaveItems(list, cancellationToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error saving item", ex);
+                }
             }
 
             progress.Report(100);

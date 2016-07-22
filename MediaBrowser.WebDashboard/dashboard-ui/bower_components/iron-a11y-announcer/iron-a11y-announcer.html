@@ -45,15 +45,14 @@ Note: announcements are only audible if you have a screen reader enabled.
 -->
 
 <dom-module id="iron-a11y-announcer">
-  <style>
-    :host {
-      display: inline-block;
-      position: fixed;
-      clip: rect(0px,0px,0px,0px);
-    }
-  </style>
-
   <template>
+    <style>
+      :host {
+        display: inline-block;
+        position: fixed;
+        clip: rect(0px,0px,0px,0px);
+      }
+    </style>
     <div aria-live$="[[mode]]">[[_text]]</div>
   </template>
 

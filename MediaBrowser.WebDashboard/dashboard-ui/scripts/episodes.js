@@ -1,4 +1,4 @@
-﻿define(['events', 'libraryBrowser', 'imageLoader', 'jQuery'], function (events, libraryBrowser, imageLoader, $) {
+﻿define(['events', 'libraryBrowser', 'imageLoader', 'listView', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, listView) {
 
     return function (view, params, tabContent) {
 
@@ -22,7 +22,7 @@
                         IsMissing: false,
                         IsVirtualUnaired: false,
                         ImageTypeLimit: 1,
-                        EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+                        EnableImageTypes: "Primary,Backdrop,Thumb",
                         StartIndex: 0,
                         Limit: pageSize
                     },
@@ -76,9 +76,10 @@
 
                 if (viewStyle == "List") {
 
-                    html = libraryBrowser.getListViewHtml({
+                    html = listView.getListViewHtml({
                         items: result.Items,
-                        sortBy: query.SortBy
+                        sortBy: query.SortBy,
+                        showParentTitle: true
                     });
                 }
                 else if (viewStyle == "PosterCard") {
@@ -107,17 +108,31 @@
                     });
                 }
 
-                $('.paging', tabContent).html(pagingHtml);
+                var i, length;
+                var elems = tabContent.querySelectorAll('.paging');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].innerHTML = pagingHtml;
+                }
 
-                $('.btnNextPage', tabContent).on('click', function () {
+                function onNextPageClick() {
                     query.StartIndex += query.Limit;
                     reloadItems(tabContent);
-                });
+                }
 
-                $('.btnPreviousPage', tabContent).on('click', function () {
+                function onPreviousPageClick() {
                     query.StartIndex -= query.Limit;
                     reloadItems(tabContent);
-                });
+                }
+
+                elems = tabContent.querySelectorAll('.btnNextPage');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onNextPageClick);
+                }
+
+                elems = tabContent.querySelectorAll('.btnPreviousPage');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onPreviousPageClick);
+                }
 
                 var itemsContainer = tabContent.querySelector('.itemsContainer');
                 itemsContainer.innerHTML = html;

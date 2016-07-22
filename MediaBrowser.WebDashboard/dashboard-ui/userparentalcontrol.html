@@ -1,4 +1,4 @@
-﻿<div id="userParentalControlPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="jqmpopup,scripts/userparentalcontrol,paper-checkbox,emby-button">
+﻿<div id="userParentalControlPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="jqmlistview,jqmpopup,scripts/userparentalcontrol,paper-checkbox,emby-button,emby-collapse">
 
     <div data-role="content">
         <div class="content-primary">
@@ -38,10 +38,9 @@
                 </div>
                 <br />
 
-                <div class="accessScheduleSection" style="display:none;">
-                    <div data-role="collapsible">
-                        <h2>${HeaderAccessSchedule}</h2>
-                        <div>
+                <div class="accessScheduleSection" style="display: none;">
+                    <div is="emby-collapse" title="${HeaderAccessSchedule}">
+                        <div class="collapseContent">
                             <p>${HeaderAccessScheduleHelp}</p>
 
                             <button class="btnAddSchedule" type="button" data-icon="plus" data-mini="true">${ButtonAddSchedule}</button>
@@ -53,11 +52,9 @@
                     </div>
                     <br />
                 </div>
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
-                    </li>
-                </ul>
+                <div>
+                    <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
+                </div>
 
             </form>
 

@@ -1699,7 +1699,6 @@
   "MessageChromecastConnectionError": "Your Chromecast receiver is unable to connect to your Emby Server. Please check their connections and try again.",
   "MessagePleaseSelectOneItem": "Please select at least one item.",
   "MessagePleaseSelectTwoItems": "Please select at least two items.",
-  "MessageTheSelectedItemsWillBeGrouped": "The selected videos will be grouped into one virtual item. Emby apps will automatically choose which version to play based on device and network performance. Are you sure you wish to continue?",
   "HeaderLibraryFolders": "Media Folders",
   "HeaderFavoriteMovies": "Favorite Movies",
   "HeaderFavoriteShows": "Favorite Shows",
@@ -2280,13 +2279,9 @@
   "TextPleaseEnterYourEmailAddressForSubscription": "Please enter your e-mail address.",
   "LoginDisclaimer": "Emby is designed to help you manage your personal media library, such as home videos and photos. Please see our terms of use. The use of any Emby software constitutes acceptance of these terms.",
   "TermsOfUse": "Terms of use",
-  "HeaderTryMultiSelect": "Try Multi-Select",
-  "TryMultiSelectMessage": "To edit multiple media items, just click and hold any poster and select the items you want to manage. Try it!",
   "NumLocationsValue": "{0} folders",
   "ButtonAddMediaLibrary": "Add Media Library",
   "ButtonManageFolders": "Manage folders",
-  "HeaderTryDragAndDrop": "Try Drag and Drop",
-  "TryDragAndDropMessage": "To re-arrange playlist items, just drag and drop. Try it!",
   "HeaderTryMicrosoftEdge": "Try Microsoft Edge",
   "MessageTryMicrosoftEdge": "For a better experience on Windows 10, try the new Microsoft Edge Browser.",
   "HeaderTryModernBrowser": "Try a Modern Web Browser",
@@ -2384,6 +2379,7 @@
   "UnzipFFmpegFile": "Unzip the downloaded file to a folder of your choice.",
   "OptionUseSystemInstalledVersion": "Use system installed version",
   "OptionUseMyCustomVersion": "Use a custom version",
-  "FFmpegSavePathNotFound": "We're unable to locaate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again.",
-  "XmlTvPremiere": "By default, Emby will import {0} hours of guide data. Importing unlimited data requires an active Emby Premiere subscription."
+  "FFmpegSavePathNotFound": "We're unable to locate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again.",
+  "XmlTvPremiere": "By default, Emby will import {0} hours of guide data. Importing unlimited data requires an active Emby Premiere subscription.",
+  "MoreFromValue": "More from {0}"
 }

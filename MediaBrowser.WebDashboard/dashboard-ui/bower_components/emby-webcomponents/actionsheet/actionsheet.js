@@ -1,17 +1,4 @@
-﻿define(['dialogHelper', 'layoutManager', 'globalize', 'browser', 'emby-button', 'css!./actionsheet', 'material-icons', 'scrollStyles'], function (dialogHelper, layoutManager, globalize, browser) {
-
-    function parentWithClass(elem, className) {
-
-        while (!elem.classList || !elem.classList.contains(className)) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
-    }
+﻿define(['dialogHelper', 'layoutManager', 'globalize', 'browser', 'dom', 'emby-button', 'css!./actionsheet', 'material-icons', 'scrollStyles'], function (dialogHelper, layoutManager, globalize, browser, dom) {
 
     function getOffsets(elems) {
 
@@ -112,8 +99,8 @@
         } else {
 
             dialogOptions.modal = false;
-            dialogOptions.entryAnimationDuration = 160;
-            dialogOptions.exitAnimationDuration = 200;
+            dialogOptions.entryAnimationDuration = 140;
+            dialogOptions.exitAnimationDuration = 180;
             dialogOptions.autoFocus = false;
         }
 
@@ -139,6 +126,11 @@
                 html += options.title;
                 html += '</h2>';
             }
+        }
+        if (options.text) {
+            html += '<p class="actionSheetText">';
+            html += options.text;
+            html += '</p>';
         }
 
         var scrollType = layoutManager.desktop ? 'smoothScrollY' : 'hiddenScrollY';
@@ -216,7 +208,7 @@
 
         dlg.addEventListener('click', function (e) {
 
-            var actionSheetMenuItem = parentWithClass(e.target, 'actionSheetMenuItem');
+            var actionSheetMenuItem = dom.parentWithClass(e.target, 'actionSheetMenuItem');
 
             if (actionSheetMenuItem) {
                 selectedId = actionSheetMenuItem.getAttribute('data-id');
@@ -225,9 +217,21 @@
 
         });
 
+        var timeout;
+        if (options.timeout) {
+            timeout = setTimeout(function () {
+                dialogHelper.close(dlg);
+            }, options.timeout);
+        }
+
         return new Promise(function (resolve, reject) {
 
             dlg.addEventListener('close', function () {
+
+                if (timeout) {
+                    clearTimeout(timeout);
+                    timeout = null;
+                }
 
                 if (selectedId != null) {
                     if (options.callback) {
@@ -235,6 +239,8 @@
                     }
 
                     resolve(selectedId);
+                } else {
+                    reject();
                 }
             });
 

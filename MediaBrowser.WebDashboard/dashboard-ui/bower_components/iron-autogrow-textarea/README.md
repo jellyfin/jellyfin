@@ -29,9 +29,6 @@ Example:
 <iron-autogrow-textarea></iron-autogrow-textarea>
 ```
 
-Because the `textarea`'s `value` property is not observable, you should use
-this element's `bind-value` instead for imperative updates.
-
 ### Styling
 
 The following custom properties and mixins are available for styling:

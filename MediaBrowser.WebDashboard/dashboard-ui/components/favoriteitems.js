@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'scrollStyles'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser) {
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
@@ -83,9 +83,9 @@
                 html += '</div>';
 
                 if (enableScrollX()) {
-                    html += '<div class="itemsContainer hiddenScrollX">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer hiddenScrollX">';
                 } else {
-                    html += '<div class="itemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer">';
                 }
 
                 html += libraryBrowser.getPosterViewHtml({
@@ -109,7 +109,6 @@
 
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
-            libraryBrowser.createCardMenus(elem);
         });
     }
 

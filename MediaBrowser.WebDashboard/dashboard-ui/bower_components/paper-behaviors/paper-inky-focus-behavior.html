@@ -13,14 +13,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="paper-ripple-behavior.html">
 
 <script>
-
   /**
    * `Polymer.PaperInkyFocusBehavior` implements a ripple when the element has keyboard focus.
    *
    * @polymerBehavior Polymer.PaperInkyFocusBehavior
    */
   Polymer.PaperInkyFocusBehaviorImpl = {
-
     observers: [
       '_focusedChanged(receivedFocusFromKeyboard)'
     ],
@@ -41,7 +39,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       ripple.classList.add('circle');
       return ripple;
     }
-
   };
 
   /** @polymerBehavior Polymer.PaperInkyFocusBehavior */
@@ -51,5 +48,4 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     Polymer.PaperRippleBehavior,
     Polymer.PaperInkyFocusBehaviorImpl
   ];
-
 </script>

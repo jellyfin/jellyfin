@@ -743,6 +743,14 @@
             target.addEventListener(type, handler, optionsOrCapture);
         }
 
+        function removeEventListenerWithOptions(target, type, handler, options) {
+            var optionsOrCapture = options;
+            if (!supportsCaptureOption) {
+                optionsOrCapture = options.capture;
+            }
+            target.removeEventListener(type, handler, optionsOrCapture);
+        }
+
         function onTimerCreated(e, apiClient, data) {
 
             var programId = data.ProgramId;

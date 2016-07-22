@@ -1,4 +1,4 @@
-﻿define(['datetime', 'paper-icon-button-light'], function (datetime) {
+﻿define(['datetime', 'userdataButtons', 'paper-icon-button-light'], function (datetime, userdataButtons) {
 
     var currentPlayer;
 
@@ -288,14 +288,13 @@
     var nowPlayingBarElement;
     function getNowPlayingBar() {
 
+        if (nowPlayingBarElement) {
+            return Promise.resolve(nowPlayingBarElement);
+        }
+
         return new Promise(function (resolve, reject) {
 
-            if (nowPlayingBarElement) {
-                resolve(nowPlayingBarElement);
-                return;
-            }
-
-            require(['css!css/nowplayingbar.css', 'emby-slider'], function () {
+            require(['itemShortcuts', 'css!css/nowplayingbar.css', 'emby-slider'], function (itemShortcuts) {
 
                 nowPlayingBarElement = document.querySelector('.nowPlayingBar');
 
@@ -311,6 +310,8 @@
                     // Not handled well here. The wrong elements receive events, bar doesn't update quickly enough, etc.
                     nowPlayingBarElement.classList.add('noMediaProgress');
                 }
+
+                itemShortcuts.on(nowPlayingBarElement);
 
                 bindEvents(nowPlayingBarElement);
                 resolve(nowPlayingBarElement);
@@ -507,19 +508,15 @@
     var currentImgUrl;
     function updateNowPlayingInfo(state) {
 
-        var nameHtml = MediaController.getNowPlayingNameHtml(state.NowPlayingItem) || '';
+        nowPlayingTextElement.innerHTML = MediaController.getNowPlayingNames(state.NowPlayingItem).map(function (nowPlayingName) {
 
-        if (nameHtml.indexOf('<br/>') != -1) {
-            nowPlayingTextElement.classList.add('nowPlayingDoubleText');
-        } else {
-            nowPlayingTextElement.classList.remove('nowPlayingDoubleText');
-        }
+            if (nowPlayingName.item) {
+                return '<div>' + LibraryBrowser.getTextActionButton(nowPlayingName.item, nowPlayingName.text) + '</div>';
+            }
 
-        if (state.NowPlayingItem.Id) {
-            nameHtml = '<a style="color:inherit;text-decoration:none;" href="' + LibraryBrowser.getHref(state.NowPlayingItem) + '">' + nameHtml + '</a>';
-        }
+            return '<div>' + nowPlayingName.text + '</div>';
 
-        nowPlayingTextElement.innerHTML = nameHtml;
+        }).join('');
 
         var url;
         var imgHeight = 80;
@@ -572,7 +569,10 @@
 
         if (nowPlayingItem.Id) {
             ApiClient.getItem(Dashboard.getCurrentUserId(), nowPlayingItem.Id).then(function (item) {
-                nowPlayingUserData.innerHTML = LibraryBrowser.getUserDataIconsHtml(item, false);
+                nowPlayingUserData.innerHTML = userdataButtons.getIconsHtml({
+                    item: item,
+                    includePlayed: false
+                });
             });
         } else {
             nowPlayingUserData.innerHTML = '';

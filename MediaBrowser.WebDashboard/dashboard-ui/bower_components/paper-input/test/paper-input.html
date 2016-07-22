@@ -211,6 +211,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         assert.equal(ironInput.selectionEnd, 2, 'selectionEnd is preserved');
       });
 
+      test('setting autofocus to true implictly acquires focus', function(done) {
+        var input = fixture('basic');
+        var inputFocusSpy = sinon.spy(input.inputElement, 'focus');
+        window.setTimeout(function() {
+          assert(inputFocusSpy.called);
+          done();
+        }, 50);
+        input.autofocus = true;
+      });
+
+      test('autofocus doesn\'t grab focus if another element already has it', function(done) {
+        var inputs = fixture('multiple-inputs');
+        var inputFocusSpies = inputs.map(function(input) {
+          return sinon.spy(input.inputElement, 'focus');
+        });
+        window.setTimeout(function() {
+          assert(inputFocusSpies[0].called, 'first autofocus input with grabbed focus');
+          assert(!inputFocusSpies[1].called, 'second autofocus input let first input keep focus');
+          done();
+        }, 50);
+        inputs[0].autofocus = true;
+        inputs[1].autofocus = true; // Shouldn't cause focus to change
+      });
+
     });
 
     suite('focus/blur events', function() {

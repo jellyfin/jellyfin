@@ -137,7 +137,7 @@
 
         var html = '';
 
-        html += '<div class="dialogContent smoothScrollY">';
+        html += '<div class="dialogContent smoothScrollY" style="padding-top:2em;">';
         html += '<div class="dialogContentInner centeredContent">';
         html += '<form class="newCollectionForm" style="margin:auto;">';
 
@@ -240,10 +240,10 @@
             dlg.classList.add('formDialog');
 
             var html = '';
-            var title = items.length ? globalize.translate('sharedcomponents#AddToCollection') : globalize.translate('sharedcomponents#NewCollection');
+            var title = items.length ? globalize.translate('sharedcomponents#HeaderAddToCollection') : globalize.translate('sharedcomponents#NewCollection');
 
-            html += '<div class="dialogHeader" style="margin:0 0 2em;">';
-            html += '<button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">arrow_back</i></button>';
+            html += '<div class="dialogHeader">';
+            html += '<button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
             html += '<div class="dialogHeaderTitle">';
             html += title;
             html += '</div>';

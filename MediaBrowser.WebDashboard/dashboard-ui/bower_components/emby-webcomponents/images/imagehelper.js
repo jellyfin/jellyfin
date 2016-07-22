@@ -109,6 +109,14 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
         target.addEventListener(type, handler, optionsOrCapture);
     }
 
+    function removeEventListenerWithOptions(target, type, handler, options) {
+        var optionsOrCapture = options;
+        if (!supportsCaptureOption) {
+            optionsOrCapture = options.capture;
+        }
+        target.removeEventListener(type, handler, optionsOrCapture);
+    }
+
     function unveilWithIntersection(images, root) {
 
         var filledCount = 0;
@@ -124,10 +132,6 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
                 observer.unobserve(target);
                 fillImage(target);
                 filledCount++;
-            }
-
-            if (filledCount >= images.length) {
-                observer.disconnect();
             }
         },
         options
@@ -181,10 +185,22 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
             }
 
             if (!images.length) {
-                document.removeEventListener('focus', unveil, true);
-                document.removeEventListener('scroll', unveil, true);
-                document.removeEventListener(wheelEvent, unveil, true);
-                window.removeEventListener('resize', unveil, true);
+                removeEventListenerWithOptions(document, 'focus', unveil, {
+                    capture: true,
+                    passive: true
+                });
+                removeEventListenerWithOptions(document, 'scroll', unveil, {
+                    capture: true,
+                    passive: true
+                });
+                removeEventListenerWithOptions(document, wheelEvent, unveil, {
+                    capture: true,
+                    passive: true
+                });
+                removeEventListenerWithOptions(window, 'resize', unveil, {
+                    capture: true,
+                    passive: true
+                });
             }
         }
 
@@ -200,11 +216,14 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
             }, 1);
         }
 
+        addEventListenerWithOptions(document, 'focus', unveil, {
+            capture: true,
+            passive: true
+        });
         addEventListenerWithOptions(document, 'scroll', unveil, {
             capture: true,
             passive: true
         });
-        document.addEventListener('focus', unveil, true);
         addEventListenerWithOptions(document, wheelEvent, unveil, {
             capture: true,
             passive: true

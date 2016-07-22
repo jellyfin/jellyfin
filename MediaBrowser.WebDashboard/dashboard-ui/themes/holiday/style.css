@@ -23,7 +23,7 @@ paper-button[raised].more {
     border-right-color: #cc3333 !important;
 }
 
-paper-tabs #selectionBar, .playedIndicator {
+.playedIndicator {
     background-color: #cc3333 !important;
 }
 
