@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
@@ -23,5 +24,6 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The image path.</value>
         public string ImagePath { get; set; }
+        public DateTime ImageDateModified { get; set; }
     }
 }

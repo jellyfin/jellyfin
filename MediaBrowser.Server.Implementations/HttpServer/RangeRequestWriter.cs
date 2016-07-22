@@ -5,10 +5,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
+using ServiceStack;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
 {
-    public class RangeRequestWriter : IStreamWriter, IHttpResult
+    public class RangeRequestWriter : IStreamWriter, IAsyncStreamWriter, IHttpResult
     {
         /// <summary>
         /// Gets or sets the source stream.
@@ -169,16 +171,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="responseStream">The response stream.</param>
         public void WriteTo(Stream responseStream)
         {
-            WriteToInternal(responseStream);
-        }
-
-        /// <summary>
-        /// Writes to async.
-        /// </summary>
-        /// <param name="responseStream">The response stream.</param>
-        /// <returns>Task.</returns>
-        private void WriteToInternal(Stream responseStream)
-        {
             try
             {
                 // Headers only
@@ -227,6 +219,66 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 var bytesToCopy = Math.Min(count, copyLength);
 
                 destination.Write(array, 0, Convert.ToInt32(bytesToCopy));
+
+                copyLength -= bytesToCopy;
+
+                if (copyLength <= 0)
+                {
+                    break;
+                }
+            }
+        }
+
+        public async Task WriteToAsync(Stream responseStream)
+        {
+            try
+            {
+                // Headers only
+                if (IsHeadRequest)
+                {
+                    return;
+                }
+
+                using (var source = SourceStream)
+                {
+                    // If the requested range is "0-", we can optimize by just doing a stream copy
+                    if (RangeEnd >= TotalContentLength - 1)
+                    {
+                        await source.CopyToAsync(responseStream, BufferSize).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await CopyToInternalAsync(source, responseStream, RangeLength).ConfigureAwait(false);
+                    }
+                }
+            }
+            catch (IOException ex)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error in range request writer", ex);
+                throw;
+            }
+            finally
+            {
+                if (OnComplete != null)
+                {
+                    OnComplete();
+                }
+            }
+        }
+
+        private async Task CopyToInternalAsync(Stream source, Stream destination, long copyLength)
+        {
+            var array = new byte[BufferSize];
+            int count;
+            while ((count = await source.ReadAsync(array, 0, array.Length).ConfigureAwait(false)) != 0)
+            {
+                var bytesToCopy = Math.Min(count, copyLength);
+
+                await destination.WriteAsync(array, 0, Convert.ToInt32(bytesToCopy)).ConfigureAwait(false);
 
                 copyLength -= bytesToCopy;
 

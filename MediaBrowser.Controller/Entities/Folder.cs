@@ -760,11 +760,6 @@ namespace MediaBrowser.Controller.Entities
                     Logger.Debug("Query requires post-filtering due to ItemSortBy.Revenue");
                     return true;
                 }
-                if (query.SortBy.Contains(ItemSortBy.SeriesSortName, StringComparer.OrdinalIgnoreCase))
-                {
-                    Logger.Debug("Query requires post-filtering due to ItemSortBy.SeriesSortName");
-                    return true;
-                }
                 if (query.SortBy.Contains(ItemSortBy.VideoBitRate, StringComparer.OrdinalIgnoreCase))
                 {
                     Logger.Debug("Query requires post-filtering due to ItemSortBy.VideoBitRate");
@@ -856,24 +851,6 @@ namespace MediaBrowser.Controller.Entities
             if (query.MaxPlayers.HasValue)
             {
                 Logger.Debug("Query requires post-filtering due to MaxPlayers");
-                return true;
-            }
-
-            if (query.IsMissing.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to IsMissing");
-                return true;
-            }
-
-            if (query.IsUnaired.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to IsUnaired");
-                return true;
-            }
-
-            if (query.IsVirtualUnaired.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to IsVirtualUnaired");
                 return true;
             }
 

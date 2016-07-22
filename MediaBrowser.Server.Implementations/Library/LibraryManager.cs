@@ -33,6 +33,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Extensions;
@@ -353,10 +354,6 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private void RegisterItem(Guid id, BaseItem item)
         {
-            if (item.SourceType != SourceType.Library)
-            {
-                return;
-            }
             if (item is IItemByName)
             {
                 if (!(item is MusicArtist))
@@ -364,14 +361,25 @@ namespace MediaBrowser.Server.Implementations.Library
                     return;
                 }
             }
-            if (item is Photo)
+
+            if (item.IsFolder)
             {
-                return;
+                if (!(item is ICollectionFolder) && !(item is UserView) && !(item is Channel))
+                {
+                    if (item.SourceType != SourceType.Library)
+                    {
+                        return;
+                    }
+                }
             }
-            //if (!(item is Folder))
-            //{
-            //    return;
-            //}
+            else
+            {
+                if (item is Photo)
+                {
+                    return;
+                }
+            }
+
             LibraryItemsCache.AddOrUpdate(id, item, delegate { return item; });
         }
 
@@ -782,19 +790,19 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public BaseItem FindByPath(string path, bool? isFolder)
         {
-            var query = new InternalItemsQuery
-            {
-                Path = path,
-                IsFolder = isFolder
-            };
-
             // If this returns multiple items it could be tricky figuring out which one is correct. 
             // In most cases, the newest one will be and the others obsolete but not yet cleaned up
 
-            return GetItemIds(query)
-                .Select(GetItemById)
-                .Where(i => i != null)
-                .OrderByDescending(i => i.DateCreated)
+            var query = new InternalItemsQuery
+            {
+                Path = path,
+                IsFolder = isFolder,
+                SortBy = new[] { ItemSortBy.DateCreated },
+                SortOrder = SortOrder.Descending,
+                Limit = 1
+            };
+
+            return GetItemList(query)
                 .FirstOrDefault();
         }
 
@@ -1258,6 +1266,8 @@ namespace MediaBrowser.Server.Implementations.Library
 
             item = RetrieveItem(id);
 
+            //_logger.Debug("GetitemById {0}", id);
+
             if (item != null)
             {
                 RegisterItem(item);
@@ -1508,7 +1518,7 @@ namespace MediaBrowser.Server.Implementations.Library
                         UserId = user.Id.ToString("N")
 
                     }, CancellationToken.None).Result;
-                    
+
                     return channelResult.Items;
                 }
 
@@ -1921,7 +1931,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private string GetContentTypeOverride(string path, bool inherit)
         {
-            var nameValuePair = ConfigurationManager.Configuration.ContentTypes.FirstOrDefault(i => string.Equals(i.Name, path, StringComparison.OrdinalIgnoreCase) || (inherit && _fileSystem.ContainsSubPath(i.Name, path)));
+            var nameValuePair = ConfigurationManager.Configuration.ContentTypes.FirstOrDefault(i => string.Equals(i.Name, path, StringComparison.OrdinalIgnoreCase) || (inherit && !string.IsNullOrWhiteSpace(i.Name) && _fileSystem.ContainsSubPath(i.Name, path)));
             if (nameValuePair != null)
             {
                 return nameValuePair.Value;
@@ -2802,6 +2812,11 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private void RemoveContentTypeOverrides(string path)
         {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
             var removeList = new List<NameValuePair>();
 
             foreach (var contentType in ConfigurationManager.Configuration.ContentTypes)

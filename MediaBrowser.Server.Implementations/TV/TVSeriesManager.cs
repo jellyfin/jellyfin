@@ -50,6 +50,11 @@ namespace MediaBrowser.Server.Implementations.TV
                 }
             }
 
+            if (string.IsNullOrWhiteSpace(presentationUniqueKey) && limit.HasValue)
+            {
+                limit = limit.Value + 10;
+            }
+
             var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(Series).Name },
@@ -89,6 +94,11 @@ namespace MediaBrowser.Server.Implementations.TV
                 }
             }
 
+            if (string.IsNullOrWhiteSpace(presentationUniqueKey) && limit.HasValue)
+            {
+                limit = limit.Value + 10;
+            }
+
             var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(Series).Name },
@@ -115,7 +125,8 @@ namespace MediaBrowser.Server.Implementations.TV
                 .Where(i => i.Item1 != null && (!i.Item3 || !string.IsNullOrWhiteSpace(request.SeriesId)))
                 .OrderByDescending(i => i.Item2)
                 .ThenByDescending(i => i.Item1.PremiereDate ?? DateTime.MinValue)
-                .Select(i => i.Item1);
+                .Select(i => i.Item1)
+                .Take(request.Limit ?? int.MaxValue);
         }
 
         private string GetUniqueSeriesKey(BaseItem series)
@@ -143,7 +154,6 @@ namespace MediaBrowser.Server.Implementations.TV
                 SortOrder = SortOrder.Descending,
                 IsPlayed = true,
                 Limit = 1,
-                IsVirtualItem = false,
                 ParentIndexNumberNotEquals = 0
 
             }).FirstOrDefault();

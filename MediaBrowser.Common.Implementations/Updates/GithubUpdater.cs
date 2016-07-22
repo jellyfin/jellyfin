@@ -54,7 +54,9 @@ namespace MediaBrowser.Common.Implementations.Updates
         {
             if (updateLevel == PackageVersionClass.Release)
             {
-                obj = obj.Where(i => !i.prerelease).ToArray();
+                // Technically all we need to do is check that it's not pre-release
+                // But let's addititional checks for -beta and -dev to handle builds that might be temporarily tagged incorrectly.
+                obj = obj.Where(i => !i.prerelease && !i.name.EndsWith("-beta", StringComparison.OrdinalIgnoreCase) && !i.name.EndsWith("-dev", StringComparison.OrdinalIgnoreCase)).ToArray();
             }
             else if (updateLevel == PackageVersionClass.Beta)
             {
@@ -70,7 +72,7 @@ namespace MediaBrowser.Common.Implementations.Updates
                 .Where(i => i != null)
                 .OrderByDescending(i => Version.Parse(i.AvailableVersion))
                 .FirstOrDefault();
-            
+
             return availableUpdate ?? new CheckForUpdateResult
             {
                 IsUpdateAvailable = false

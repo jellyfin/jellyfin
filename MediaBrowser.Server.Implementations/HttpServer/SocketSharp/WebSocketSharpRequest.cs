@@ -134,10 +134,87 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             get
             {
                 return remoteIp ??
-                    (remoteIp = XForwardedFor ??
-                                (NormalizeIp(XRealIp) ??
+                    (remoteIp = (CheckBadChars(XForwardedFor)) ??
+                                (NormalizeIp(CheckBadChars(XRealIp)) ??
                                 (request.RemoteEndPoint != null ? NormalizeIp(request.RemoteEndPoint.Address.ToString()) : null)));
             }
+        }
+
+        private static readonly char[] HttpTrimCharacters = new char[] { (char)0x09, (char)0xA, (char)0xB, (char)0xC, (char)0xD, (char)0x20 };
+
+        //
+        // CheckBadChars - throws on invalid chars to be not found in header name/value
+        //
+        internal static string CheckBadChars(string name)
+        {
+            if (name == null || name.Length == 0)
+            {
+                return name;
+            }
+
+            // VALUE check
+            //Trim spaces from both ends
+            name = name.Trim(HttpTrimCharacters);
+
+            //First, check for correctly formed multi-line value
+            //Second, check for absenece of CTL characters
+            int crlf = 0;
+            for (int i = 0; i < name.Length; ++i)
+            {
+                char c = (char)(0x000000ff & (uint)name[i]);
+                switch (crlf)
+                {
+                    case 0:
+                        if (c == '\r')
+                        {
+                            crlf = 1;
+                        }
+                        else if (c == '\n')
+                        {
+                            // Technically this is bad HTTP.  But it would be a breaking change to throw here.
+                            // Is there an exploit?
+                            crlf = 2;
+                        }
+                        else if (c == 127 || (c < ' ' && c != '\t'))
+                        {
+                            throw new ArgumentException("net_WebHeaderInvalidControlChars");
+                        }
+                        break;
+
+                    case 1:
+                        if (c == '\n')
+                        {
+                            crlf = 2;
+                            break;
+                        }
+                        throw new ArgumentException("net_WebHeaderInvalidCRLFChars");
+
+                    case 2:
+                        if (c == ' ' || c == '\t')
+                        {
+                            crlf = 0;
+                            break;
+                        }
+                        throw new ArgumentException("net_WebHeaderInvalidCRLFChars");
+                }
+            }
+            if (crlf != 0)
+            {
+                throw new ArgumentException("net_WebHeaderInvalidCRLFChars");
+            }
+            return name;
+        }
+
+        internal static bool ContainsNonAsciiChars(string token)
+        {
+            for (int i = 0; i < token.Length; ++i)
+            {
+                if ((token[i] < 0x20) || (token[i] > 0x7e))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private string NormalizeIp(string ip)
@@ -386,10 +463,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             }
 
             return stream;
-        }
-
-        static void EndSubStream(Stream stream)
-        {
         }
 
         public static string GetHandlerPathIfAny(string listenerUrl)
