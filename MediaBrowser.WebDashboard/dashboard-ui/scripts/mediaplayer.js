@@ -1260,7 +1260,9 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
             nowPlayingItem.PremiereDate = item.PremiereDate;
             nowPlayingItem.SeriesName = item.SeriesName;
             nowPlayingItem.Album = item.Album;
+            nowPlayingItem.AlbumId = item.AlbumId;
             nowPlayingItem.Artists = item.Artists;
+            nowPlayingItem.ArtistItems = item.ArtistItems;
 
             var imageTags = item.ImageTags || {};
 
