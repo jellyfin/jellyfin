@@ -263,7 +263,8 @@ namespace MediaBrowser.Api.UserLibrary
                 ParentIndexNumber = request.ParentIndexNumber,
                 AiredDuringSeason = request.AiredDuringSeason,
                 AlbumArtistStartsWithOrGreater = request.AlbumArtistStartsWithOrGreater,
-                EnableTotalRecordCount = request.EnableTotalRecordCount
+                EnableTotalRecordCount = request.EnableTotalRecordCount,
+                ExcludeItemIds = request.GetExcludeItemIds()
             };
 
             if (!string.IsNullOrWhiteSpace(request.Ids))
