@@ -90,10 +90,6 @@
         font-size: 28px;
     }
 
-.nowPlayingDoubleText {
-    top: -3px;
-}
-
 .nowPlayingImage {
     display: inline-block;
     vertical-align: middle;
@@ -168,8 +164,8 @@
     /* Need this to make sure it's on top of nowPlayingBarPositionContainer so that buttons are fully clickable */
     z-index: 2;
     position: absolute;
-    left: 0;
-    right: 0;
+    left: 200px;
+    right: 200px;
     top: 0;
 }
 

@@ -84,7 +84,7 @@ namespace MediaBrowser.Server.Implementations.IO
             // This is an arbitraty amount of time, but delay it because file system writes often trigger events long after the file was actually written to.
             // Seeing long delays in some situations, especially over the network, sometimes up to 45 seconds
             // But if we make this delay too high, we risk missing legitimate changes, such as user adding a new file, or hand-editing metadata
-            await Task.Delay(25000).ConfigureAwait(false);
+            await Task.Delay(45000).ConfigureAwait(false);
 
             string val;
             _tempIgnoredPaths.TryRemove(path, out val);

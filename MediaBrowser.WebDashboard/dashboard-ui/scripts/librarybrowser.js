@@ -1447,7 +1447,7 @@
 
                     var footerCssClass = progressHtml ? 'cardFooter fullCardFooter' : 'cardFooter';
 
-                    html += LibraryBrowser.getCardFooterText(item, options, showTitle, imgUrl, forceName, footerCssClass, progressHtml);
+                    html += LibraryBrowser.getCardFooterText(item, options, showTitle, imgUrl, forceName, footerCssClass, progressHtml, false);
                     footerOverlayed = true;
                 }
                 else if (progressHtml) {
@@ -1475,7 +1475,7 @@
                 html += '</div>';
 
                 if (!options.overlayText && !footerOverlayed) {
-                    html += LibraryBrowser.getCardFooterText(item, options, showTitle, imgUrl, forceName, 'cardFooter outerCardFooter', progressHtml);
+                    html += LibraryBrowser.getCardFooterText(item, options, showTitle, imgUrl, forceName, 'cardFooter outerCardFooter', progressHtml, true);
                 }
 
                 // cardBox
@@ -1487,7 +1487,20 @@
                 return html;
             },
 
-            getCardFooterText: function (item, options, showTitle, imgUrl, forceName, footerClass, progressHtml) {
+            getTextActionButton: function (item, text) {
+
+                if (!text) {
+                    text = itemHelper.getDisplayName(item);
+                }
+
+                var html = '<button data-id="' + item.Id + '" data-type="' + item.Type + '" data-mediatype="' + item.MediaType + '" data-isfolder="' + item.IsFolder + '" type="button" class="itemAction textActionButton" data-action="link">';
+                html += text;
+                html += '</button>';
+
+                return html;
+            },
+
+            getCardFooterText: function (item, options, showTitle, imgUrl, forceName, footerClass, progressHtml, isOuterFooter) {
 
                 var html = '';
 
@@ -1509,14 +1522,38 @@
 
                 var lines = [];
 
-                if (options.showParentTitle) {
+                var parentTitleUnderneath = item.Type == 'MusicAlbum' || item.Type == 'Audio' || item.Type == 'MusicVideo';
+                if (options.showParentTitle && !parentTitleUnderneath) {
 
-                    lines.push(item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || ""));
+                    if (isOuterFooter && item.Type == 'Episode' && item.SeriesName && item.SeriesId) {
+
+                        lines.push(LibraryBrowser.getTextActionButton({
+                            Id: item.SeriesId,
+                            Name: item.SeriesName,
+                            Type: 'Series',
+                            IsFolder: true
+                        }));
+                    }
+                    else {
+
+                        lines.push(item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || ""));
+                    }
                 }
 
                 if (showTitle || forceName) {
 
                     lines.push(htmlEncode(name));
+                }
+
+                if (options.showParentTitle && parentTitleUnderneath) {
+
+                    if (isOuterFooter && item.AlbumArtists && item.AlbumArtists.length) {
+                        item.AlbumArtists[0].Type = 'MusicArtist';
+                        item.AlbumArtists[0].IsFolder = true;
+                        lines.push(LibraryBrowser.getTextActionButton(item.AlbumArtists[0]));
+                    } else {
+                        lines.push(item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || ""));
+                    }
                 }
 
                 if (options.showItemCounts) {

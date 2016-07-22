@@ -205,6 +205,7 @@
             var alphaPickerElement = tabContent.querySelector('.alphaPicker');
             alphaPickerElement.addEventListener('alphavaluechanged', function (e) {
                 var newValue = e.detail.value;
+                alert(newValue);
                 var query = getQuery(tabContent);
                 query.NameStartsWithOrGreater = newValue;
                 query.StartIndex = 0;

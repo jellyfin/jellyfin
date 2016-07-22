@@ -57,6 +57,24 @@
     contain: style;
 }
 
+.textActionButton {
+    border: 0 !important;
+    background: transparent;
+    border: 0 !important;
+    padding: 0 !important;
+    cursor: pointer;
+    outline: none !important;
+    color: inherit;
+    vertical-align: middle;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+    .textActionButton:hover {
+        text-decoration: underline;
+        opacity: 1;
+    }
+
 .pageWithAbsoluteTabs .pageTabContent, .libraryPage > .ui-content {
     padding-top: 10px;
 }

@@ -813,9 +813,20 @@
         };
 
         // TOOD: This doesn't really belong here
-        self.getNowPlayingNameHtml = function (nowPlayingItem, includeNonNameInfo) {
+        self.getNowPlayingNames = function (nowPlayingItem, includeNonNameInfo) {
 
+            var topItem = nowPlayingItem;
+            var bottomItem = null;
             var topText = nowPlayingItem.Name;
+
+            if (nowPlayingItem.AlbumId && nowPlayingItem.MediaType == 'Audio') {
+                topItem = {
+                    Id: nowPlayingItem.AlbumId,
+                    Name: nowPlayingItem.Album,
+                    Type: 'MusicAlbum',
+                    IsFolder: true
+                };
+            }
 
             if (nowPlayingItem.MediaType == 'Video') {
                 if (nowPlayingItem.IndexNumber != null) {
@@ -829,18 +840,69 @@
             var bottomText = '';
 
             if (nowPlayingItem.Artists && nowPlayingItem.Artists.length) {
-                bottomText = topText;
-                topText = nowPlayingItem.Artists[0];
+
+                if (nowPlayingItem.ArtistItems && nowPlayingItem.ArtistItems.length) {
+
+                    bottomItem = {
+                        Id: nowPlayingItem.ArtistItems[0].Id,
+                        Name: nowPlayingItem.ArtistItems[0].Name,
+                        Type: 'MusicArtist',
+                        IsFolder: true
+                    };
+
+                    bottomText = bottomItem.Name;
+                } else {
+                    bottomText = nowPlayingItem.Artists[0];
+                }
             }
             else if (nowPlayingItem.SeriesName || nowPlayingItem.Album) {
                 bottomText = topText;
                 topText = nowPlayingItem.SeriesName || nowPlayingItem.Album;
+
+                bottomItem = topItem;
+
+                if (nowPlayingItem.SeriesId) {
+                    topItem = {
+                        Id: nowPlayingItem.SeriesId,
+                        Name: nowPlayingItem.SeriesName,
+                        Type: 'Series',
+                        IsFolder: true
+                    };
+                } else {
+                    topItem = null;
+                }
             }
             else if (nowPlayingItem.ProductionYear && includeNonNameInfo !== false) {
                 bottomText = nowPlayingItem.ProductionYear;
             }
 
-            return bottomText ? topText + '<br/>' + bottomText : topText;
+            var list = [];
+
+            list.push({
+                text: topText,
+                item: topItem
+            });
+
+            if (bottomText) {
+                list.push({
+                    text: bottomText,
+                    item: bottomItem
+                });
+            }
+
+            return list;
+        };
+
+        // TOOD: This doesn't really belong here
+        self.getNowPlayingNameHtml = function (nowPlayingItem, includeNonNameInfo) {
+
+            var names = self.getNowPlayingNames(nowPlayingItem, includeNonNameInfo);
+
+            return names.map(function (i) {
+
+                return i.text;
+
+            }).join('<br/>');
         };
 
         self.showPlaybackInfoErrorMessage = function (errorCode) {
