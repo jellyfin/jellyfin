@@ -4,9 +4,12 @@
         <div class="content-primary">
             <div class="readOnlyContent">
                 <div style="text-align: right; display: flex; justify-content: flex-end;">
-                    <paper-toggle-button id="chkDebugLog">${LabelEnableDebugLogging}</paper-toggle-button>
+                    <label style="width:auto;">
+                        <input type="checkbox" is="emby-checkbox" id="chkDebugLog" />
+                        <span>${LabelEnableDebugLogging}</span>
+                    </label>
                 </div>
-                <br/>
+                <br />
             </div>
             <div class="serverLogs readOnlyContent">
 

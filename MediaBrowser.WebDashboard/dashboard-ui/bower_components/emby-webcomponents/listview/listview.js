@@ -105,14 +105,36 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
         return null;
     }
 
-    function getListViewHtml(items, options) {
+    function getTextLinesHtml(textlines, isLargeStyle) {
 
-        if (arguments.length == 1) {
-            options = items;
-            items = options.items;
+        var html = '';
+
+        for (var i = 0, length = textlines.length; i < length; i++) {
+
+            if (i === 0) {
+                if (isLargeStyle) {
+                    html += '<h2>';
+                } else {
+                    html += '<div>';
+                }
+            } else {
+                html += '<div class="secondary">';
+            }
+            html += (textlines[i] || '&nbsp;');
+            if (i === 0 && isLargeStyle) {
+                html += '</h2>';
+            } else {
+                html += '</div>';
+            }
         }
 
-        var index = 0;
+        return html;
+    }
+
+    function getListViewHtml(options) {
+
+        var items = options.items;
+
         var groupTitle = '';
         var action = options.action || 'link';
 
@@ -125,7 +147,9 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
         var outerHtml = '';
 
-        outerHtml += items.map(function (item) {
+        for (var i = 0, length = items.length; i < length; i++) {
+
+            var item = items[i];
 
             var html = '';
 
@@ -139,7 +163,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                         html += '</div>';
                     }
 
-                    if (index == 0) {
+                    if (i == 0) {
                         html += '<h1 class="listGroupHeader first">';
                     }
                     else {
@@ -173,7 +197,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             var collectionIdData = options.collectionId ? (' data-collectionid="' + options.collectionId + '"') : '';
             var playlistIdData = options.playlistId ? (' data-playlistid="' + options.playlistId + '"') : '';
 
-            html += '<' + outerTagName + ' class="' + cssClass + '" data-index="' + index + '"' + playlistItemId + ' data-action="' + action + '" data-isfolder="' + item.IsFolder + '" data-id="' + item.Id + '" data-serverid="' + item.ServerId + '" data-mediatype="' + item.MediaType + '" data-type="' + item.Type + '"' + positionTicksData + collectionIdData + playlistIdData + '>';
+            html += '<' + outerTagName + ' class="' + cssClass + '" data-index="' + i + '"' + playlistItemId + ' data-action="' + action + '" data-isfolder="' + item.IsFolder + '" data-id="' + item.Id + '" data-serverid="' + item.ServerId + '" data-mediatype="' + item.MediaType + '" data-type="' + item.Type + '"' + positionTicksData + collectionIdData + playlistIdData + '>';
 
             if (!clickEntireItem && options.dragHandle) {
                 html += '<button is="paper-icon-button-light" class="listViewDragHandle autoSize"><i class="md-icon">&#xE25D;</i></button>';
@@ -238,14 +262,6 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                 }
             }
 
-            var lineCount = textlines.length;
-            if (!enableSideMediaInfo) {
-                lineCount++;
-            }
-            if (enableOverview && item.Overview) {
-                lineCount++;
-            }
-
             cssClass = 'listItemBody';
             if (!clickEntireItem) {
                 cssClass += ' itemAction';
@@ -255,25 +271,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
             var moreIcon = appHost.moreIcon == 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';
 
-            for (var i = 0, textLinesLength = textlines.length; i < textLinesLength; i++) {
-
-                if (i == 0 && isLargeStyle) {
-                    html += '<h2>';
-                }
-                else if (i == 0) {
-                    html += '<div>';
-                } else {
-                    html += '<div class="secondary">';
-                }
-                html += textlines[i] || '&nbsp;';
-                if (i == 0 && isLargeStyle) {
-                    html += '</h2>';
-                } else if (i == 0) {
-                    html += '</div>';
-                } else {
-                    html += '</div>';
-                }
-            }
+            html += getTextLinesHtml(textlines, isLargeStyle);
 
             if (!enableSideMediaInfo) {
                 html += '<div class="secondary listItemMediaInfo">' + mediaInfo.getPrimaryMediaInfoHtml(item) + '</div>';
@@ -308,10 +306,8 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
             html += '</' + outerTagName + '>';
 
-            index++;
-            return html;
-
-        }).join('');
+            outerHtml += html;
+        }
 
         return outerHtml;
     }
