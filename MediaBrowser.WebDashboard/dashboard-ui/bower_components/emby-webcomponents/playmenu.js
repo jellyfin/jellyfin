@@ -10,15 +10,25 @@ define(['actionsheet', 'datetime', 'playbackManager', 'globalize', 'appSettings'
         var mediaType = item.MediaType;
         var isFolder = item.IsFolder;
         var itemId = item.Id;
+        var channelId = item.ChannelId;
         var serverId = item.ServerId;
         var resumePositionTicks = item.UserData ? item.UserData.PlaybackPositionTicks : null;
 
         var showExternalPlayer = isMobileApp && mediaType == 'Video' && !isFolder && appSettings.enableExternalPlayers();
 
+        var playableItemId = itemType == 'Program' ? channelId : itemId;
+
         if (!resumePositionTicks && mediaType != "Audio" && !isFolder && !showExternalPlayer) {
-            playbackManager.play({
-                items: [item]
-            });
+            if (itemType == 'Program') {
+                playbackManager.play({
+                    ids: [channelId],
+                    serverId: serverId
+                });
+            } else {
+                playbackManager.play({
+                    items: [item]
+                });
+            }
             return;
         }
 
@@ -79,18 +89,18 @@ define(['actionsheet', 'datetime', 'playbackManager', 'globalize', 'appSettings'
 
                 case 'play':
                     playbackManager.play({
-                        ids: [itemId],
-                        serverId: item.ServerId
+                        ids: [playableItemId],
+                        serverId: serverId
                     });
                     break;
                 case 'externalplayer':
-                    LibraryBrowser.playInExternalPlayer(itemId);
+                    LibraryBrowser.playInExternalPlayer(playableItemId);
                     break;
                 case 'resume':
                     playbackManager.play({
-                        ids: [itemId],
+                        ids: [playableItemId],
                         startPositionTicks: resumePositionTicks,
-                        serverId: item.ServerId
+                        serverId: serverId
                     });
                     break;
                 case 'queue':

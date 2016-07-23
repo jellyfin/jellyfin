@@ -59,7 +59,7 @@
     /* Above everything, except for the video player and popup overlays */
     z-index: 1097;
     color: #fff;
-    background-color: #2b2b2b;
+    background-color: #1C1C1F;
     text-align: center;
     display: flex;
     flex-direction: row;
@@ -101,12 +101,12 @@
     }
 
     .nowPlayingBar, .nowPlayingImage img {
-        height: 80px;
+        height: 70px;
     }
 
         .nowPlayingBar .nowPlayingImage {
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             background-position: center center;
             background-repeat: no-repeat;
             background-size: contain;
@@ -160,7 +160,7 @@
 .nowPlayingBarCenter {
     vertical-align: middle;
     text-align: center;
-    margin-top: 12px;
+    margin-top: 7px;
     /* Need this to make sure it's on top of nowPlayingBarPositionContainer so that buttons are fully clickable */
     z-index: 2;
     position: absolute;
@@ -171,11 +171,15 @@
 
 .nowPlayingBarPositionContainer {
     position: absolute !important;
-    left: 80px;
+    left: 70px;
     top: -8px;
     right: 0;
     z-index: 1;
 }
+
+    .nowPlayingBarPositionContainer .mdl-slider__background-upper {
+        background: #333;
+    }
 
 .noMediaProgress .nowPlayingBarPositionContainer {
     display: none;
@@ -242,19 +246,6 @@
 
     .nowPlayingBarCenter > *:not(.nowPlayingBarCurrentTime) {
         display: none !important;
-    }
-
-    .nowPlayingBar {
-        height: 70px;
-    }
-
-        .nowPlayingBar .nowPlayingImage {
-            height: 70px;
-            width: 70px;
-        }
-
-    .nowPlayingBarPositionContainer {
-        left: 70px;
     }
 
     .toggleRepeatButton {
