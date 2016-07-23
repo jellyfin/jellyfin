@@ -50,7 +50,7 @@ _:-ms-input-placeholder, :root .mdl-slider.mdl-slider {
 }
 
 .mdl-slider::-moz-range-track {
-    background: #666;
+    background: #444;
     border: none;
 }
 
@@ -77,7 +77,7 @@ _:-ms-input-placeholder, :root .mdl-slider.mdl-slider {
 
 .mdl-slider::-ms-fill-upper {
     padding: 0;
-    background: linear-gradient(to left, transparent, transparent 16px, #666 16px, #666 0);
+    background: linear-gradient(to left, transparent, transparent 16px, #444 16px, #444 0);
 }
 
 .mdl-slider::-webkit-slider-thumb {
@@ -225,7 +225,7 @@ _:-ms-input-placeholder, :root .mdl-slider.mdl-slider {
 }
 
 .mdl-slider:disabled + .mdl-slider__background-flex > .mdl-slider__background-lower {
-    background-color: #666;
+    background-color: #444;
     left: -6px;
 }
 
@@ -315,7 +315,7 @@ _:-ms-input-placeholder, :root .mdl-slider.mdl-slider {
 }
 
 .mdl-slider__background-upper {
-    background: #666;
+    background: #444;
     -webkit-flex: 0;
     -ms-flex: 0;
     flex: 0;

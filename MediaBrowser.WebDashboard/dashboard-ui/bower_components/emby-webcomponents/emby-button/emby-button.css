@@ -111,6 +111,10 @@
         margin-left: .5em;
     }
 
+    [is="emby-button"] span + i {
+        margin-left: .5em;
+    }
+
     [is="emby-button"]:not(.autoSize) i {
         font-size: 24px;
         width: 24px;

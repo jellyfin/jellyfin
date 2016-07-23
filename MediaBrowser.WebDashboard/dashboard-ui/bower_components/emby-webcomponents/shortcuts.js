@@ -168,6 +168,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         var item = {
             Type: card.getAttribute('data-type'),
             Id: card.getAttribute('data-id'),
+            ChannelId: card.getAttribute('data-channelid'),
             ServerId: card.getAttribute('data-serverid'),
             MediaType: card.getAttribute('data-mediatype'),
             IsFolder: card.getAttribute('data-isfolder') == 'true',

@@ -3,23 +3,7 @@
     text-align: left;
     position: relative;
     contain: style;
-    /*box-shadow: 0 1px 4px 0 rgba(0,0,0,0.37);*/
 }
-
-    /*.itemsContainer .card {
-    contain: layout style;
-}
-
-.itemsContainer {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-}
-
-    .itemsContainer.smoothScrollX, .itemsContainer.hiddenScrollX {
-        display: block;
-    }*/
-
     .card, .card a {
         text-decoration: none;
         font-weight: 400 !important;
@@ -128,26 +112,6 @@
     .cardContent:not(.noHoverEffect):hover .cardImage {
         opacity: .5;
     }
-
-    /*.preview-overlay-container {
-    -moz-border-radius: 2px;
-    -webkit-border-radius: 2px;
-    border-radius: 2px;
-    -moz-opacity: 0;
-    opacity: 0;
-    filter: alpha(opacity=0);
-    -webkit-transition: all .25s ease;
-    -moz-transition: all .25s ease;
-    -o-transition: all .25s ease;
-    transition: all .25s ease;
-    background: rgba(0,0,0,0.4);
-    cursor: pointer;
-    height: 100%;
-    left: 0;
-    position: absolute;
-    top: 0;
-    width: 100%;
-}*/
 
     .cardContent .cardFooter {
         position: absolute;
