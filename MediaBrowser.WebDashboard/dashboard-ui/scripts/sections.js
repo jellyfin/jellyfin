@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'appSettings', 'scrollStyles', 'emby-button', 'paper-icon-button-light', 'emby-itemscontainer'], function (LibraryBrowser, appSettings) {
+﻿define(['libraryBrowser', 'appSettings', 'components/groupedcards', 'scrollStyles', 'emby-button', 'paper-icon-button-light', 'emby-itemscontainer'], function (LibraryBrowser, appSettings, groupedcards) {
 
     function getUserViews(userId) {
 
@@ -321,6 +321,7 @@
             }
 
             elem.innerHTML = html;
+            elem.addEventListener('click', groupedcards.onItemsContainerClick);
             ImageLoader.lazyChildren(elem);
         });
     }
