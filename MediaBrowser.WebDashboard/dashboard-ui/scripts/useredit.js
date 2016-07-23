@@ -121,7 +121,9 @@
                 noActionCallback();
             }
         }
-    } function showEmbyConnectErrorMessage(username) {
+    }
+
+    function showEmbyConnectErrorMessage(username) {
 
         var html;
         var text;
@@ -145,7 +147,6 @@
             });
         });
     }
-
 
     function onSaveComplete(page, user) {
 

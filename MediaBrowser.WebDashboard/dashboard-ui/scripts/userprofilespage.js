@@ -327,25 +327,23 @@
         });
     }
 
+    function showLinkUser(page, userId) {
+        
+        require(['components/guestinviter/connectlink'], function (connectlink) {
+
+            connectlink.show().then(function () {
+                loadData(page);
+            });
+        });
+    }
+
     function showInvitePopup(page) {
 
         Dashboard.getCurrentUser().then(function (user) {
 
             if (!user.ConnectUserId) {
 
-                var msg = Globalize.translate('MessageConnectAccountRequiredToInviteGuest');
-
-                msg += '<br/>';
-                msg += '<br/>';
-                msg += '<a href="useredit.html?userId=' + user.Id + '">' + Globalize.translate('ButtonLinkMyEmbyAccount') + '</a>';
-                msg += '<br/>';
-
-                require(['alert'], function (alert) {
-                    alert({
-                        title: Globalize.translate('HeaderInviteGuest'),
-                        text: msg
-                    });
-                });
+                showLinkUser(page, user.Id);
                 return;
             }
 
