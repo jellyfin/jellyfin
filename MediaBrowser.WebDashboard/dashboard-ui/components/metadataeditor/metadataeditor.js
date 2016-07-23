@@ -113,7 +113,7 @@
         return val;
     }
 
-    function onSubmit() {
+    function onSubmit(e) {
 
         Dashboard.showLoadingMsg();
 
@@ -177,16 +177,12 @@
                 })
             };
 
-            item.ProviderIds = {};
-            for (var key in currentItem.ProviderIds) {
-                if (!currentItem.hasOwnProperty(key)) return;
-                item.ProviderIds[key] = currentItem.ProviderIds[key];
-            }
+            item.ProviderIds = Object.assign({}, currentItem.ProviderIds);
 
             var idElements = form.querySelectorAll('.txtExternalId');
-            Array.prototype.map.call(idElements, function () {
-                var providerKey = this.getAttribute('data-providerkey');
-                item.ProviderIds[providerKey] = this.value;
+            Array.prototype.map.call(idElements, function (idElem) {
+                var providerKey = idElem.getAttribute('data-providerkey');
+                item.ProviderIds[providerKey] = idElem.value;
             });
 
             item.PreferredMetadataLanguage = form.querySelector('#selectLanguage').value;
@@ -210,9 +206,13 @@
             item.Taglines = tagline ? [tagline] : [];
 
             submitUpdatedItem(form, item);
+
         } catch (err) {
             alert(err);
         }
+
+        e.preventDefault();
+        e.stopPropagation();
 
         // Disable default form submission
         return false;
@@ -367,7 +367,7 @@
         context.querySelector('#chkLockData').addEventListener('click', function (e) {
 
             if (!e.target.checked) {
-               showElement('.providerSettingsContainer');
+                showElement('.providerSettingsContainer');
             } else {
                 hideElement('.providerSettingsContainer');
             }
@@ -377,7 +377,7 @@
         context.addEventListener('click', onEditorClick);
 
         var form = context.querySelector('form');
-        form.removeEventListener('submit', onSubmit)
+        form.removeEventListener('submit', onSubmit);
         form.addEventListener('submit', onSubmit);
 
         context.querySelector("#btnAddPerson").addEventListener('click', function (event, data) {
@@ -465,7 +465,7 @@
         var buttonClass = this.getAttribute('data-buttonclass');
 
         if (this.value) {
-            document.querySelector('.' + buttonClass).setAttribute('href',formatString.replace('{0}', this.value));
+            document.querySelector('.' + buttonClass).setAttribute('href', formatString.replace('{0}', this.value));
         } else {
             document.querySelector('.' + buttonClass).setAttribute('href', '#');
         }
@@ -506,7 +506,7 @@
 
         var elem = context.querySelector('.externalIds', context);
         elem.innerHTML = html;
-        
+
         var extIdEls = elem.querySelector('.txtExternalId') || [];
         Array.prototype.forEach.call(extIdEls, function (el) {
             el.addEventListener('change', onExternalIdChange.bind(el));
