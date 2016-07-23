@@ -21,28 +21,11 @@
 
         if (data.status == 401) {
 
-            var url = data.url.toLowerCase();
+            if (data.errorCode == "ParentalControl") {
 
-            // Don't bounce to login on failures to contact our external servers
-            if (url.indexOf('emby.media') != -1 || url.indexOf('mb3admin.com') != -1) {
-                Dashboard.hideLoadingMsg();
-                return;
-            }
-
-            // Don't bounce if the failure is in a sync service
-            if (url.indexOf('/sync') != -1) {
-                Dashboard.hideLoadingMsg();
-                return;
-            }
-
-            var currentView = ViewManager.currentView();
-            // Bounce to the login screen, but not if a password entry fails, obviously
-            if (url.indexOf('/password') == -1 &&
-                url.indexOf('/authenticate') == -1 &&
-                currentView &&
-                !currentView.classList.contains('.standalonePage')) {
-
-                if (data.errorCode == "ParentalControl") {
+                var currentView = ViewManager.currentView();
+                // Bounce to the login screen, but not if a password entry fails, obviously
+                if (currentView && !currentView.classList.contains('.standalonePage')) {
 
                     Dashboard.alert({
                         message: Globalize.translate('MessageLoggedOutParentalControl'),
@@ -50,13 +33,9 @@
                             Dashboard.logout(false);
                         }
                     });
-
-                } else {
-                    Dashboard.logout(false);
                 }
+
             }
-            return;
-            Dashboard.hideLoadingMsg();
         }
     },
 
@@ -3146,32 +3125,5 @@ pageClassOn('viewshow', "page", function () {
         docElem.classList.remove('background-theme-a');
     }
 
-    var apiClient = window.ApiClient;
-
     Dashboard.ensureHeader(page);
-
-    if (apiClient && apiClient.isLoggedIn() && !apiClient.isWebSocketOpen()) {
-        Dashboard.refreshSystemInfoFromServer();
-    }
-
 });
-
-window.addEventListener("beforeunload", function () {
-
-    var apiClient = window.ApiClient;
-
-    // Close the connection gracefully when possible
-    if (apiClient && apiClient.isWebSocketOpen()) {
-
-        var localActivePlayers = MediaController.getPlayers().filter(function (p) {
-
-            return p.isLocalPlayer && p.isPlaying();
-        });
-
-        if (!localActivePlayers.length) {
-            console.log('Sending close web socket command');
-            apiClient.closeWebSocket();
-        }
-    }
-});
-
