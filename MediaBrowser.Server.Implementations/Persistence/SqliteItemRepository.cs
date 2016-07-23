@@ -2883,15 +2883,19 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 whereClauses.Add(clause);
             }
 
-            if (query.ExcludeArtistNames.Length > 0)
+            if (query.ExcludeArtistIds.Length > 0)
             {
                 var clauses = new List<string>();
                 var index = 0;
-                foreach (var artist in query.ExcludeArtistNames)
+                foreach (var artistId in query.ExcludeArtistIds)
                 {
-                    clauses.Add("@ExcludeArtistName" + index + " not in (select CleanValue from itemvalues where ItemId=Guid and Type <= 1)");
-                    cmd.Parameters.Add(cmd, "@ExcludeArtistName" + index, DbType.String).Value = artist.RemoveDiacritics();
-                    index++;
+                    var artistItem = RetrieveItem(new Guid(artistId));
+                    if (artistItem != null)
+                    {
+                        clauses.Add("@ExcludeArtistName" + index + " not in (select CleanValue from itemvalues where ItemId=Guid and Type <= 1)");
+                        cmd.Parameters.Add(cmd, "@ExcludeArtistName" + index, DbType.String).Value = artistItem.Name.RemoveDiacritics();
+                        index++;
+                    }
                 }
                 var clause = "(" + string.Join(" AND ", clauses.ToArray()) + ")";
                 whereClauses.Add(clause);
