@@ -19,13 +19,12 @@
 
     function onDialogClosed() {
 
-        $(this).remove();
         Dashboard.hideLoadingMsg();
     }
 
     function refreshDirectoryBrowser(page, path, fileOptions) {
 
-        if (path && typeof(path) !== 'string') {
+        if (path && typeof (path) !== 'string') {
             throw new Error('invalid path');
         }
         Dashboard.showLoadingMsg();
@@ -185,6 +184,20 @@
         });
     }
 
+    function getDefaultPath(options) {
+        if (options.path) {
+            return Promise.resolve(options.path);
+        }
+
+        return ApiClient.getJSON(ApiClient.getUrl("Environment/DefaultDirectoryBrowser")).then(function (result) {
+
+            return result.Path || '';
+
+        }, function () {
+            return '';
+        });
+    }
+
     function directoryBrowser() {
 
         var self = this;
@@ -206,10 +219,14 @@
                 fileOptions.includeFiles = options.includeFiles;
             }
 
-            getSystemInfo().then(function (systemInfo) {
+            Promise.all([getSystemInfo(), getDefaultPath(options)]).then(function (responses) {
+
+                var systemInfo = responses[0];
+                var initialPath = responses[1];
 
                 var dlg = dialogHelper.createDialog({
-                    size: 'medium'
+                    size: 'medium',
+                    removeOnClose: true
                 });
 
                 dlg.classList.add('ui-body-a');
@@ -249,13 +266,9 @@
 
                 currentDialog = dlg;
 
-                var txtCurrentPath = $('#txtDirectoryPickerPath', editorContent);
-
-                if (options.path) {
-                    txtCurrentPath.val(options.path);
-                }
-
-                refreshDirectoryBrowser(editorContent, txtCurrentPath.val());
+                var txtCurrentPath = editorContent.querySelector('#txtDirectoryPickerPath');
+                txtCurrentPath.value = initialPath;
+                refreshDirectoryBrowser(editorContent, txtCurrentPath.value);
 
             });
         };

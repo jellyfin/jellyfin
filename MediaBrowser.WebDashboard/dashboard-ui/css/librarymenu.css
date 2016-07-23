@@ -218,7 +218,7 @@
 }
 
 .viewMenuBar, .ui-body-b .libraryViewNav {
-    background-color: #2b2b2b;
+    background-color: #222326;
     color: #fff;
 }
 
@@ -353,7 +353,7 @@ body:not(.dashboardDocument) .btnNotifications {
 }
 
 .darkDrawer {
-    background-color: #1D1D20 !important;
+    background-color: #1C1C1F !important;
     /*background-color: rgba(40,40,40,.8) !important;
     -webkit-backdrop-filter: blur(5px);
     backdrop-filter: blur(5px);*/

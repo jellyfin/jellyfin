@@ -179,7 +179,7 @@
             html += '<div class="cardImage" style="background-image:url(\'' + displayUrl + '\');"></div>';
         } else {
 
-            html += '<div class="cardImage iconCardImage"><iron-icon icon="search"></iron-icon></div>';
+            html += '<div class="cardImage iconCardImage"><i class="md-icon">search</i></div>';
         }
         html += '</a>';
         html += '</div>';

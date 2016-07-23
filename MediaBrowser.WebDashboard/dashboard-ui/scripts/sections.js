@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'appSettings', 'scrollStyles', 'emby-button', 'paper-icon-button-light', 'emby-itemscontainer'], function (LibraryBrowser, appSettings) {
+﻿define(['libraryBrowser', 'appSettings', 'components/groupedcards', 'scrollStyles', 'emby-button', 'paper-icon-button-light', 'emby-itemscontainer'], function (LibraryBrowser, appSettings, groupedcards) {
 
     function getUserViews(userId) {
 
@@ -50,11 +50,11 @@
 
             switch (item.CollectionType) {
                 case "movies":
-                    icon = "local-movies";
+                    icon = "local_movies";
                     backgroundColor = 'rgba(176, 94, 81, 0.9)';
                     break;
                 case "music":
-                    icon = "library-music";
+                    icon = "library_music";
                     backgroundColor = 'rgba(217, 145, 67, 0.9)';
                     break;
                 case "photos":
@@ -62,11 +62,11 @@
                     backgroundColor = 'rgba(127, 0, 0, 0.9)';
                     break;
                 case "livetv":
-                    icon = "live-tv";
+                    icon = "live_tv";
                     backgroundColor = 'rgba(217, 145, 67, 0.9)';
                     break;
                 case "tvshows":
-                    icon = "live-tv";
+                    icon = "live_tv";
                     backgroundColor = 'rgba(77, 88, 164, 0.9)';
                     break;
                 case "games":
@@ -74,15 +74,15 @@
                     backgroundColor = 'rgba(183, 202, 72, 0.9)';
                     break;
                 case "trailers":
-                    icon = "local-movies";
+                    icon = "local_movies";
                     backgroundColor = 'rgba(176, 94, 81, 0.9)';
                     break;
                 case "homevideos":
-                    icon = "video-library";
+                    icon = "video_library";
                     backgroundColor = 'rgba(110, 52, 32, 0.9)';
                     break;
                 case "musicvideos":
-                    icon = "video-library";
+                    icon = "video_library";
                     backgroundColor = 'rgba(143, 54, 168, 0.9)';
                     break;
                 case "books":
@@ -115,7 +115,7 @@
             html += '<div class="cardBox" style="background-color:' + backgroundColor + ';margin:4px;border-radius:4px;">';
 
             html += "<div class='cardText' style='padding:8px 10px;color:#fff;'>";
-            html += '<iron-icon icon="' + icon + '"></iron-icon>';
+            html += '<i class="md-icon">' + icon + '</i>';
             html += '<span style="margin-left:.7em;">' + item.Name + '</span>';
             html += "</div>";
 
@@ -228,7 +228,7 @@
 
         var html = '';
         html += '<div>';
-        html += '<h1>Try Emby Theater<button is="paper-icon-button-light" style="margin-left:1em;" onclick="this.parentNode.parentNode.remove();"><iron-icon icon="close"></iron-icon></button></h1>';
+        html += '<h1>Try Emby Theater<button is="paper-icon-button-light" style="margin-left:1em;" onclick="this.parentNode.parentNode.remove();" class="autoSize"><i class="md-icon">close</i></button></h1>';
 
         var nameText = AppInfo.isNativeApp ? 'Emby Theater' : '<a href="https://emby.media/download" target="_blank">Emby Theater</a>';
         html += '<p>A beautiful app for your TV and large screen tablet. ' + nameText + ' runs on Windows, Xbox One, Google Chrome, FireFox, Microsoft Edge and Opera.</p>';
@@ -246,7 +246,7 @@
 
         var html = '';
         html += '<div>';
-        html += '<h1>Try Emby Premiere<button is="paper-icon-button-light" style="margin-left:1em;" onclick="this.parentNode.parentNode.remove();"><iron-icon icon="close"></iron-icon></button></h1>';
+        html += '<h1>Try Emby Premiere<button is="paper-icon-button-light" style="margin-left:1em;" onclick="this.parentNode.parentNode.remove();" class="autoSize"><i class="md-icon">close</i></button></h1>';
 
         var cardTarget = AppInfo.isNativeApp ? '' : 'https://emby.media/premiere';
         var learnMoreText = AppInfo.isNativeApp ? '' : '<a href="https://emby.media/premiere" target="_blank">Learn more</a>';
@@ -265,7 +265,7 @@
     function getUpgradeMobileLayoutsInfo() {
         var html = '';
         html += '<div>';
-        html += '<h1>Unlock Improved Layouts with Emby Premiere<button is="paper-icon-button-light" style="margin-left:1em;" onclick="this.parentNode.parentNode.remove();"><iron-icon icon="close"></iron-icon></button></h1>';
+        html += '<h1>Unlock Improved Layouts with Emby Premiere<button is="paper-icon-button-light" style="margin-left:1em;" onclick="this.parentNode.parentNode.remove();" class="autoSize"><i class="md-icon">close</i></button></h1>';
 
         var cardTarget = AppInfo.isNativeApp ? '' : 'https://emby.media/premiere';
         var learnMoreText = AppInfo.isNativeApp ? '' : '<a href="https://emby.media/premiere" target="_blank">Learn more</a>';
@@ -321,6 +321,7 @@
             }
 
             elem.innerHTML = html;
+            elem.addEventListener('click', groupedcards.onItemsContainerClick);
             ImageLoader.lazyChildren(elem);
         });
     }

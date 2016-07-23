@@ -11,12 +11,12 @@
                     <div>
                         <div>
                             <paper-input class="txtDevicePath" label="${LabelFileOrUrl}" required="required" style="width:85%;display:inline-block;"></paper-input>
-                            <button type="button" is="paper-icon-button-light" id="btnSelectPath" title="${ButtonSelectDirectory}"><iron-icon icon="search"></iron-icon></button>
+                            <button type="button" is="paper-icon-button-light" id="btnSelectPath" title="${ButtonSelectDirectory}" class="autoSize"><i class="md-icon">search</i></button>
                         </div>
                         <br />
                         <div>
-                            <button is="emby-button" type="submit" class="raised submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></button>
-                            <button is="emby-button" type="button" class="raised cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></button>
+                            <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
+                            <button is="emby-button" type="button" class="raised cancel block btnCancel" onclick="history.back();"><i class="md-icon">close</i><span>${ButtonCancel}</span></button>
                         </div>
                     </div>
                 </form>

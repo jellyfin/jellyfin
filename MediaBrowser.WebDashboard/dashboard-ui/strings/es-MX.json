@@ -1,5 +1,4 @@
 {
-    "XmlTvPremiere": "Por defecto, Emby importara {0} horas de datos de la gu\u00eda. Para importar datos ilimitados necesita una subscripcion activa de Emby Premiere",
     "LabelExit": "Salir",
     "LabelVisitCommunity": "Visitar la Comunidad",
     "LabelGithub": "Github",
@@ -1700,7 +1699,6 @@
     "MessageChromecastConnectionError": "Su receptor Chromecast no puede conectarse con su Servidor Emby. Por favor revise las conexiones e intent\u00e9lo nuevamente.",
     "MessagePleaseSelectOneItem": "Por favor selecciona al menos un \u00edtem.",
     "MessagePleaseSelectTwoItems": "Por favor selecciona al menos dos \u00edtems.",
-    "MessageTheSelectedItemsWillBeGrouped": "Los videos seleccionados se agruparan en un solo \u00edtem virtual. Las aplicaciones Emby elegir\u00e1n autom\u00e1ticamente cual versi\u00f3n reproducir dependiendo del dispositivo y el rendimiento de la red. \u00bfEsta seguro de que desea continuar?",
     "HeaderLibraryFolders": "Carpetas de Medios",
     "HeaderFavoriteMovies": "Pel\u00edculas Preferidas",
     "HeaderFavoriteShows": "Programas Preferidos",
@@ -2281,13 +2279,9 @@
     "TextPleaseEnterYourEmailAddressForSubscription": "Por favor ingrese su direcci\u00f3n de correo electr\u00f3nico.",
     "LoginDisclaimer": "Emby esta dise\u00f1ado para ayudarlo a administrar su biblioteca de medios personal, tales como videos caseros y fotograf\u00edas. Por favor lea nuestros t\u00e9rminos de uso. El uso de cualquier software de Emby constituye la aceptaci\u00f3n de estos t\u00e9rminos.",
     "TermsOfUse": "T\u00e9rminos de uso",
-    "HeaderTryMultiSelect": "Intente Multi-Selecci\u00f3n",
-    "TryMultiSelectMessage": "Para editar m\u00faltiples medios, solo de clic sostenido sobre cualquier p\u00f3ster y elija los items que desea administrar. \u00a1int\u00e9ntelo!",
     "NumLocationsValue": "{0} carpetas",
     "ButtonAddMediaLibrary": "Agregar Biblioteca de Medios",
     "ButtonManageFolders": "Administrar carpetas",
-    "HeaderTryDragAndDrop": "Intente Arrastrar y Soltar",
-    "TryDragAndDropMessage": "Para reacomodar items de la lista de reproducci\u00f3n, solo arrastre y suelte. \u00a1int\u00e9ntelo!",
     "HeaderTryMicrosoftEdge": "Intente Microsoft Edge",
     "MessageTryMicrosoftEdge": "Para una mejor experiencia en Windows 10, intente el nuevo navegador Microsoft Edge",
     "HeaderTryModernBrowser": "Intente con un Navegador Web moderno",
@@ -2385,5 +2379,7 @@
     "UnzipFFmpegFile": "Descomprimir el archivo descargado a una carpeta de su elecci\u00f3n.",
     "OptionUseSystemInstalledVersion": "Usar una versi\u00f3n instalada en el sistema",
     "OptionUseMyCustomVersion": "Usar una versi\u00f3n personalizada",
-    "FFmpegSavePathNotFound": "No fue posible localizar FFmpeg usando la ruta que introdujo. FFprobe tambi\u00e9n es requerido y debe de estar en la misma carpeta. Estos componentes normalmente est\u00e1n empaquetados en la misma descarga. Por favor verifique la ruta e intente de nuevo."
+    "FFmpegSavePathNotFound": "No fue posible localizar FFmpeg usando la ruta que introdujo. FFprobe tambi\u00e9n es requerido y debe de estar en la misma carpeta. Estos componentes normalmente est\u00e1n empaquetados en la misma descarga. Por favor verifique la ruta e intente de nuevo.",
+    "XmlTvPremiere": "Por defecto, Emby importara {0} horas de datos de la gu\u00eda. Para importar datos ilimitados necesita una subscripcion activa de Emby Premiere",
+    "MoreFromValue": "More from {0}"
 }

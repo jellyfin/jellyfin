@@ -1,5 +1,4 @@
 {
-    "XmlTvPremiere": "By default, Emby will import {0} hours of guide data. Importing unlimited data requires an active Emby Premiere subscription.",
     "LabelExit": "Wyj\u015bcie",
     "LabelVisitCommunity": "Odwied\u017a spo\u0142eczno\u015b\u0107",
     "LabelGithub": "Github",
@@ -1700,7 +1699,6 @@
     "MessageChromecastConnectionError": "Tw\u00f3j odbiornik Chromecast nie jest wstanie pod\u0142\u0105czy\u0107 si\u0119 do serwera Emby. Prosz\u0119 sprawd\u017a jego po\u0142\u0105czenie i spr\u00f3buj ponownie.",
     "MessagePleaseSelectOneItem": "Prosz\u0119 wybierz przynajmniej jedn\u0105 pozycje.",
     "MessagePleaseSelectTwoItems": "Prosz\u0119 wybierz przynajmniej dwie pozycje.",
-    "MessageTheSelectedItemsWillBeGrouped": "Wybrane filmy b\u0119d\u0105 pogrupowane w  jedn\u0105 virtualn\u0105 pozycj\u0119.\nAplikacje Emby b\u0119d\u0105 automatycznie wybiera\u0107 kt\u00f3r\u0105 wersj\u0119 odtwarza\u0107 na podstawie urz\u0105dzenia i wydajno\u015bci sieci. Czy jeste\u015b pewien \u017ce chcesz kontynuowa\u0107?",
     "HeaderLibraryFolders": "Foldery Medi\u00f3w",
     "HeaderFavoriteMovies": "Ulubione Filmy",
     "HeaderFavoriteShows": "Ulubione Seriale",
@@ -2281,13 +2279,9 @@
     "TextPleaseEnterYourEmailAddressForSubscription": "Prosz\u0119 wprowadzi\u0107 sw\u00f3j adres e-mail.",
     "LoginDisclaimer": "Emby jest zaprojektowane tak, aby pomaga\u0107 w zarz\u0105dzaniu bibliotek\u0105 domow\u0105 - filmami, muzyk\u0105 czy zdj\u0119ciami. Zapoznaj si\u0119 z zasadami u\u017cytkowania. U\u017cywanie oprogramowania Emby wymaga pe\u0142nego zaakceptowania zasad.",
     "TermsOfUse": "Zasady u\u017cytkowania",
-    "HeaderTryMultiSelect": "Wypr\u00f3buj multi-zaznaczanie",
-    "TryMultiSelectMessage": "Aby edytowa\u0107 kilka rzeczy naraz, po prostu kliknij i przytrzymaj jak\u0105kolwiek miniaturk\u0119 i zaznacz obiekty kt\u00f3rymi chesz zarz\u0105dza\u0107. To proste!",
     "NumLocationsValue": "{0} folder\u00f3w",
     "ButtonAddMediaLibrary": "Dodaj media do biblioteki",
     "ButtonManageFolders": "Zarz\u0105dzaj folderami",
-    "HeaderTryDragAndDrop": "Wypr\u00f3buj Podnie\u015b i Upu\u015b\u0107",
-    "TryDragAndDropMessage": "To re-arrange playlist items, just drag and drop. Try it!",
     "HeaderTryMicrosoftEdge": "Wypr\u00f3buj Microsoft Edge",
     "MessageTryMicrosoftEdge": "Dla wi\u0119kszego komportu na Windows 10 wypr\u00f3buj now\u0105 przegl\u0105dark\u0119 Microsoft Edge.",
     "HeaderTryModernBrowser": "Wypr\u00f3buj nowoczesn\u0105 przegl\u0105dark\u0119 www",
@@ -2385,5 +2379,7 @@
     "UnzipFFmpegFile": "Unzip the downloaded file to a folder of your choice.",
     "OptionUseSystemInstalledVersion": "Use system installed version",
     "OptionUseMyCustomVersion": "Use a custom version",
-    "FFmpegSavePathNotFound": "We're unable to locate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again."
+    "FFmpegSavePathNotFound": "We're unable to locate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again.",
+    "XmlTvPremiere": "By default, Emby will import {0} hours of guide data. Importing unlimited data requires an active Emby Premiere subscription.",
+    "MoreFromValue": "More from {0}"
 }

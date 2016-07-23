@@ -1,4 +1,4 @@
-﻿define(['components/categorysyncbuttons'], function (categorysyncbuttons) {
+﻿define(['components/categorysyncbuttons', 'components/groupedcards'], function (categorysyncbuttons, groupedcards) {
 
     function getView() {
 
@@ -84,9 +84,11 @@
             latestPromise = getLatestPromise(view, params);
         };
 
-        self.renderTab = function() {
+        self.renderTab = function () {
 
             loadLatest(tabContent, params, latestPromise);
         };
+
+        tabContent.querySelector('#latestEpisodes').addEventListener('click', groupedcards.onItemsContainerClick);
     };
 });

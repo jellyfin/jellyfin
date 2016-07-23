@@ -13,6 +13,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Server.Implementations.Photos
@@ -247,7 +248,7 @@ namespace MediaBrowser.Server.Implementations.Photos
                 {
                     return await CreateSquareCollage(item, itemsWithImages, outputPath).ConfigureAwait(false);
                 }
-                if (item is Playlist)
+                if (item is Playlist || item is MusicGenre)
                 {
                     return await CreateSquareCollage(item, itemsWithImages, outputPath).ConfigureAwait(false);
                 }
