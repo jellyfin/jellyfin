@@ -441,7 +441,7 @@
 
     function renderContentTypeOptions(context, metadataInfo) {
 
-        if (metadataInfo.ContentTypeOptions.length) {
+        if (!metadataInfo.ContentTypeOptions.length) {
             hideElement('#fldContentType', context);
         } else {
             showElement('#fldContentType', context);
@@ -508,37 +508,47 @@
         elem.innerHTML = html;
         
         var extIdEls = elem.querySelector('.txtExternalId') || [];
-        extIdEls.forEach(function (el) {
+        Array.prototype.forEach.call(extIdEls, function (el) {
             el.addEventListener('change', onExternalIdChange.bind(el));
-            el.dispatchEvent(new Event('change'))
-        })
+            el.dispatchEvent(new Event('change'));
+        });
     }
 
     // Function to hide the element by selector or raw element
     // Selector can be an element or a selector string
     // Context is optional and restricts the querySelector to the context
-    function hideElement(selector, context) {
+    function hideElement(selector, context, multiple) {
         context = context || document;
         if (typeof selector == 'string') {
-            Array.prototype.forEach.call(context.querySelectorAll(selector), function(el){
-                el.style.display = 'none';
-            })
+
+            var elements = multiple ? context.querySelectorAll(selector) : [context.querySelector(selector)];
+
+            Array.prototype.forEach.call(elements, function (el) {
+                if (el) {
+                    el.classList.add('hide');
+                }
+            });
         } else {
-            selector.style.display = 'none';
+            selector.classList.add('hide');
         }
     }
 
     // Function to show the element by selector or raw element
     // Selector can be an element or a selector string
     // Context is optional and restricts the querySelector to the context
-    function showElement(selector, context) {
+    function showElement(selector, context, multiple) {
         context = context || document;
         if (typeof selector == 'string') {
-            Array.prototype.forEach.call(context.querySelectorAll(selector), function(el){
-                el.style.display = '';
-            })
+
+            var elements = multiple ? context.querySelectorAll(selector) : [context.querySelector(selector)];
+
+            Array.prototype.forEach.call(elements, function (el) {
+                if (el) {
+                    el.classList.remove('hide');
+                }
+            });
         } else {
-            selector.style.display = '';
+            selector.classList.remove('hide');
         }
     }
 
@@ -1136,12 +1146,6 @@
 
             setFieldVisibilities(context, item);
             fillItemInfo(context, item, metadataEditorInfo.ParentalRatingOptions);
-
-            if (item.MediaType == 'Photo') {
-                hideElement('#btnEditImages', context);
-            } else {
-                showElement('#btnEditImages', context);
-            }
 
             if (item.MediaType == "Video" && item.Type != "Episode") {
                 showElement('#fldShortOverview', context);
