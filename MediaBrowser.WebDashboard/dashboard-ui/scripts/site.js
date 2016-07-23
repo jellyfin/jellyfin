@@ -839,7 +839,7 @@
             html += '</progress>';
 
             if (percentComplete < 100) {
-                html += '<button is="emby-button" type="button" class="raised cancelDark mini" onclick="this.disabled=\'disabled\';Dashboard.cancelInstallation(\'' + installation.Id + '\');"><iron-icon icon="cancel"></iron-icon><span>' + Globalize.translate('ButtonCancel') + '</span></button>';
+                html += '<button is="emby-button" type="button" class="raised cancelDark mini" onclick="this.disabled=\'disabled\';Dashboard.cancelInstallation(\'' + installation.Id + '\');"><i class="md-icon">cancel</i><span>' + Globalize.translate('ButtonCancel') + '</span></button>';
             }
         }
 
