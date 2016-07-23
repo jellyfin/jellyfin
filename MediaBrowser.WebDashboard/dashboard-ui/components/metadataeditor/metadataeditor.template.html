@@ -20,7 +20,7 @@
     <div class="metadataFormFields">
 
         <div style="padding: 0 0 10px;">
-            <div id="fldContentType" style="display:none;" class="selectContainer">
+            <div id="fldContentType" class="selectContainer hide">
                 <select is="emby-select" id="selectContentType" label="${LabelContentType}"></select>
             </div>
             <div id="fldPath" class="inputContainer">
@@ -35,73 +35,73 @@
             <div class="inputContainer">
                 <input is="emby-input" id="txtSortName" type="text" label="${LabelSortTitle}" />
             </div>
-            <div id="fldDateAdded" style="display: none;" class="inputContainer">
+            <div id="fldDateAdded" class="hide inputContainer">
                 <input is="emby-input" id="txtDateAdded" type="date" label="${LabelDateAdded}" />
                 <div class="fieldDescription">${ConfigureDateAdded}</div>
             </div>
-            <div id="fldStatus" style="display: none;" class="selectContainer">
+            <div id="fldStatus" class="hide selectContainer">
                 <select is="emby-select" id="selectStatus" label="${LabelStatus}"></select>
             </div>
-            <div id="fldArtist" style="display: none;" class="inputContainer">
+            <div id="fldArtist" class="hide inputContainer">
                 <input is="emby-input" id="txtArtist" type="text" label="${LabelArtists}" />
                 <div class="fieldDescription">${LabelArtistsHelp}</div>
             </div>
-            <div id="fldAlbumArtist" style="display: none;" class="inputContainer">
+            <div id="fldAlbumArtist" class="hide inputContainer">
                 <input is="emby-input" id="txtAlbumArtist" type="text" label="${LabelAlbumArtists}" />
                 <div class="fieldDescription">${LabelArtistsHelp}</div>
             </div>
-            <div id="fldAlbum" style="display: none;" class="inputContainer">
+            <div id="fldAlbum" class="hide inputContainer">
                 <input is="emby-input" id="txtAlbum" type="text" label="${LabelAlbum}" />
             </div>
-            <div id="fldParentIndexNumber" style="display: none;" class="inputContainer">
+            <div id="fldParentIndexNumber" class="hide inputContainer">
                 <input is="emby-input" id="txtParentIndexNumber" type="number" />
             </div>
-            <div id="fldIndexNumber" style="display: none;" class="inputContainer">
+            <div id="fldIndexNumber" class="hide inputContainer">
                 <input is="emby-input" id="txtIndexNumber" type="number" pattern="[0-9]*" />
             </div>
-            <div id="fldCommunityRating" style="display: none;" class="inputContainer">
+            <div id="fldCommunityRating" class="hide inputContainer">
                 <input is="emby-input" id="txtCommunityRating" type="number" step=".1" min="0" max="10" label="${LabelCommunityRating}" />
             </div>
-            <div id="fldCommunityVoteCount" style="display: none;" class="inputContainer">
+            <div id="fldCommunityVoteCount" class="hide inputContainer">
                 <input is="emby-input" id="txtCommunityVoteCount" type="number" step="1" label="${LabelVoteCount}" />
             </div>
-            <div id="fldMetascore" style="display: none;" class="inputContainer">
+            <div id="fldMetascore" class="hide inputContainer">
                 <input is="emby-input" id="txtMetascore" type="number" step="1" min="0" max="100" label="${LabelMetascore}" />
             </div>
-            <div id="fldCriticRating" style="display: none;" class="inputContainer">
+            <div id="fldCriticRating" class="hide inputContainer">
                 <input is="emby-input" id="txtCriticRating" type="number" step=".1" label="${LabelCriticRating}" />
             </div>
-            <div id="fldCriticRatingSummary" style="display: none;" class="inputContainer">
+            <div id="fldCriticRatingSummary" class="hide inputContainer">
                 <input is="emby-input" id="txtCriticRatingSummary" type="text" label="${LabelCriticRatingSummary}" />
             </div>
-            <div id="fldAwardSummary" style="display: none;" class="inputContainer">
+            <div id="fldAwardSummary" class="hide inputContainer">
                 <input is="emby-input" id="txtAwardSummary" type="text" label="${LabelAwardSummary}" />
             </div>
             <div class="inputContainer">
                 <input is="emby-input" id="txtHomePageUrl" type="text" label="${LabelWebsite}" />
             </div>
-            <div id="fldTagline" style="display: none;" class="inputContainer">
+            <div id="fldTagline" class="hide inputContainer">
                 <input is="emby-input" id="txtTagline" type="text" label="${LabelTagline}" />
             </div>
             <div class="inputContainer">
                 <textarea is="emby-textarea" id="txtOverview" label="${LabelOverview}"></textarea>
             </div>
-            <div id="fldShortOverview" style="display: none;" class="inputContainer">
+            <div id="fldShortOverview" class="hide inputContainer">
                 <input is="emby-input" id="txtShortOverview" type="text" label="${LabelShortOverview}" />
             </div>
             <div id="fldPremiereDate" class="inputContainer">
                 <input is="emby-input" id="txtPremiereDate" label="${LabelReleaseDate}" type="date" />
             </div>
-            <div id="fldYear" style="display: none;" class="inputContainer">
+            <div id="fldYear" class="hide inputContainer">
                 <input is="emby-input" id="txtProductionYear" type="number" label="${LabelYear}" />
             </div>
-            <div id="fldPlaceOfBirth" style="display: none;" class="inputContainer">
+            <div id="fldPlaceOfBirth" class="hide inputContainer">
                 <input is="emby-input" id="txtPlaceOfBirth" type="text" label="${LabelPlaceOfBirth}" />
             </div>
             <div id="fldEndDate" class="inputContainer">
                 <input is="emby-input" id="txtEndDate" label="${LabelEndDate}" type="date" />
             </div>
-            <div id="fldAirDays" style="display: none;">
+            <div id="fldAirDays" class="hide">
                 <p>${LabelAirDays}</p>
 
                 <div class="checkboxList">
@@ -137,31 +137,31 @@
                 <br />
 
             </div>
-            <div id="fldAirTime" style="display: none;" class="inputContainer">
+            <div id="fldAirTime" class="inputContainer hide">
                 <input is="emby-input" id="txtAirTime" type="text" label="${LabelAirTime}" />
             </div>
-            <div id="fldSeriesRuntime" style="display: none;" class="inputContainer">
+            <div id="fldSeriesRuntime" class="inputContainer hide">
                 <input is="emby-input" id="txtSeriesRuntime" type="number" label="${LabelRuntimeMinutes}" />
             </div>
-            <div id="fldOfficialRating" style="display: none;" class="selectContainer">
+            <div id="fldOfficialRating" class="selectContainer hide">
                 <select is="emby-select" id="selectOfficialRating" label="${LabelParentalRating}"></select>
             </div>
-            <div id="fldCustomRating" style="display: none;" class="selectContainer">
+            <div id="fldCustomRating" class="selectContainer hide">
                 <select is="emby-select" id="selectCustomRating" label="${LabelCustomRating}"></select>
             </div>
-            <div id="fldBudget" style="display: none;" class="inputContainer">
+            <div id="fldBudget" class="inputContainer hide">
                 <input is="emby-input" id="txtBudget" type="number" label="${LabelBudget}" />
             </div>
-            <div id="fldRevenue" style="display: none;" class="inputContainer">
+            <div id="fldRevenue" class="inputContainer hide">
                 <input is="emby-input" id="txtRevenue" type="number" label="${LabelRevenue}" />
             </div>
-            <div id="fldOriginalAspectRatio" style="display: none;" class="inputContainer">
+            <div id="fldOriginalAspectRatio" class="inputContainer hide">
                 <input is="emby-input" id="txtOriginalAspectRatio" type="text" label="${LabelOriginalAspectRatio}" />
             </div>
-            <div id="fldPlayers" style="display: none;" class="inputContainer">
+            <div id="fldPlayers" class="inputContainer hide">
                 <input is="emby-input" id="txtPlayers" type="number" pattern="[0-9]*" label="${LabelPlayers}" />
             </div>
-            <div id="fld3dFormat" style="display: none;" class="selectContainer">
+            <div id="fld3dFormat" class="selectContainer hide">
                 <select is="emby-select" id="select3dFormat" label="${Label3DFormat}">
                     <option value=""></option>
                     <option value="HalfSideBySide">HSBS</option>
@@ -174,7 +174,7 @@
         </div>
         <br />
 
-        <div class="detailSection" id="collapsibleDvdEpisodeInfo" style="display: none;">
+        <div class="detailSection hide" id="collapsibleDvdEpisodeInfo">
             <h1>
                 ${HeaderAlternateEpisodeNumbers}
             </h1>
@@ -189,7 +189,7 @@
             </div>
         </div>
 
-        <div class="detailSection" id="collapsibleSpecialEpisodeInfo" style="display: none;">
+        <div class="detailSection hide" id="collapsibleSpecialEpisodeInfo">
             <h1>
                 ${HeaderSpecialEpisodeInfo}
             </h1>
@@ -212,11 +212,11 @@
             </div>
         </div>
 
-        <div class="detailSection" id="collapsibleDisplaySettings" style="display:none;">
+        <div class="detailSection hide" id="collapsibleDisplaySettings">
             <h1>
                 ${HeaderDisplaySettings}
             </h1>
-            <div id="fldSourceType" style="display: none;" class="fldDisplaySetting inputContainer">
+            <div id="fldSourceType" class="hide fldDisplaySetting inputContainer">
                 <input is="emby-input" id="txtDisplayMediaType" type="text" label="${LabelTreatImageAs}" />
             </div>
             <div id="fldDisplayOrder" class="fldDisplaySetting selectContainer">
@@ -224,7 +224,7 @@
             </div>
         </div>
 
-        <div id="countriesCollapsible" class="editableListviewContainer" style="display: none; margin-top: 3em;">
+        <div id="countriesCollapsible" class="editableListviewContainer hide" style="margin-top: 3em;">
             <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                 ${HeaderCountries}
             </h1>
@@ -234,7 +234,7 @@
             </button>
             <div class="paperList" id="listCountries"></div>
         </div>
-        <div id="genresCollapsible" class="editableListviewContainer" style="display: none; margin-top: 3em;">
+        <div id="genresCollapsible" class="editableListviewContainer hide" style="margin-top: 3em;">
             <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                 ${HeaderGenres}
             </h1>
@@ -244,7 +244,7 @@
             </button>
             <div class="paperList" id="listGenres"></div>
         </div>
-        <div id="peopleCollapsible" style="display: none; margin-top: 3em;">
+        <div id="peopleCollapsible" style="margin-top: 3em;" class="hide">
             <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                 ${HeaderPeople}
             </h1>
@@ -255,7 +255,7 @@
             <div id="peopleList" class="paperList">
             </div>
         </div>
-        <div id="keywordsCollapsible" class="editableListviewContainer" style="display: none; margin-top: 3em;">
+        <div id="keywordsCollapsible" class="editableListviewContainer hide" style="margin-top: 3em;">
             <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                 ${HeaderPlotKeywords}
             </h1>
@@ -265,7 +265,7 @@
             </button>
             <div class="paperList" id="listKeywords"></div>
         </div>
-        <div id="studiosCollapsible" class="editableListviewContainer" style="display: none; margin-top: 3em;">
+        <div id="studiosCollapsible" class="editableListviewContainer hide" style="margin-top: 3em;">
             <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                 ${HeaderStudios}
             </h1>
@@ -275,7 +275,7 @@
             </button>
             <div class="paperList" id="listStudios"></div>
         </div>
-        <div id="tagsCollapsible" class="editableListviewContainer" style="display: none; margin-top: 3em;">
+        <div id="tagsCollapsible" class="editableListviewContainer hide" style="margin-top: 3em;">
             <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
                 ${HeaderTags}
             </h1>
@@ -285,7 +285,7 @@
             </button>
             <div class="paperList" id="listTags"></div>
         </div>
-        <div id="metadataSettingsCollapsible" style="display: none; margin-top: 3em;">
+        <div id="metadataSettingsCollapsible" style="margin-top: 3em;" class="hide">
             <h1>${HeaderMetadataSettings}</h1>
             <div>
                 <div class="selectContainer">
@@ -303,7 +303,7 @@
                     <span>${LabelLockItemToPreventChanges}</span>
                 </label>
 
-                <div class="providerSettingsContainer checkboxList" style="display: none">
+                <div class="providerSettingsContainer checkboxList hide">
                 </div>
             </div>
         </div>

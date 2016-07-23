@@ -14,7 +14,7 @@
         if (itemId) {
             require(['components/metadataeditor/metadataeditor'], function (metadataeditor) {
 
-                metadataeditor.embed(page.querySelector('.editPageInnerContent'), itemId);
+                metadataeditor.embed(page.querySelector('.editPageInnerContent'), itemId, ApiClient.serverInfo().Id);
             });
         } else {
             page.querySelector('.editPageInnerContent').innerHTML = '';

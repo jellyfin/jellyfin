@@ -1,4 +1,4 @@
-﻿define(['itemHelper', 'dialogHelper', 'datetime', 'jQuery', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light'], function (itemHelper, dialogHelper, datetime, $) {
+﻿define(['itemHelper', 'dialogHelper', 'datetime', 'loading', 'connectionManager', 'globalize', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light'], function (itemHelper, dialogHelper, datetime, loading, connectionManager, globalize) {
 
     var currentContext;
     var metadataEditorInfo;
@@ -20,22 +20,24 @@
         function afterContentTypeUpdated() {
 
             require(['toast'], function (toast) {
-                toast(Globalize.translate('MessageItemSaved'));
+                toast(globalize.translate('MessageItemSaved'));
             });
 
-            Dashboard.hideLoadingMsg();
+            loading.hide();
             closeDialog(true);
         }
 
-        ApiClient.updateItem(item).then(function () {
+        var apiClient = getApiClient();
 
-            var newContentType = $('#selectContentType', form).val() || '';
+        apiClient.updateItem(item).then(function () {
+
+            var newContentType = form.querySelector('#selectContentType').value || '';
 
             if ((metadataEditorInfo.ContentType || '') != newContentType) {
 
-                ApiClient.ajax({
+                apiClient.ajax({
 
-                    url: ApiClient.getUrl('Items/' + item.Id + '/ContentType', {
+                    url: apiClient.getUrl('Items/' + item.Id + '/ContentType', {
                         ContentType: newContentType
                     }),
 
@@ -53,14 +55,15 @@
     }
 
     function getSelectedAirDays(form) {
-        return $('.chkAirDay:checked', form).map(function () {
+        var checked = form.querySelectorAll('.chkAirDay:checked') || [];
+        return Array.prototype.map.call(checked, function () {
             return this.getAttribute('data-day');
-        }).get();
+        });
     }
 
     function getAlbumArtists(form) {
 
-        return $('#txtAlbumArtist', form).val().trim().split(';').filter(function (s) {
+        return form.querySelector('#txtAlbumArtist').value.trim().split(';').filter(function (s) {
 
             return s.length > 0;
 
@@ -74,7 +77,7 @@
 
     function getArtists(form) {
 
-        return $('#txtArtist', form).val().trim().split(';').filter(function (s) {
+        return form.querySelector('#txtArtist').value.trim().split(';').filter(function (s) {
 
             return s.length > 0;
 
@@ -88,7 +91,7 @@
 
     function getDateFromForm(form, element, property) {
 
-        var val = $(element, form).val();
+        var val = form.querySelector(element).value;
 
         if (!val) {
             return null;
@@ -112,85 +115,84 @@
         return val;
     }
 
-    function onSubmit() {
+    function onSubmit(e) {
 
-        Dashboard.showLoadingMsg();
+        loading.show();
 
         var form = this;
 
         try {
             var item = {
                 Id: currentItem.Id,
-                Name: $('#txtName', form).val(),
-                OriginalTitle: $('#txtOriginalName', form).val(),
-                ForcedSortName: $('#txtSortName', form).val(),
-                DisplayMediaType: $('#txtDisplayMediaType', form).val(),
-                CommunityRating: $('#txtCommunityRating', form).val(),
-                VoteCount: $('#txtCommunityVoteCount', form).val(),
-                HomePageUrl: $('#txtHomePageUrl', form).val(),
-                Budget: $('#txtBudget', form).val(),
-                Revenue: $('#txtRevenue', form).val(),
-                CriticRating: $('#txtCriticRating', form).val(),
-                CriticRatingSummary: $('#txtCriticRatingSummary', form).val(),
-                IndexNumber: $('#txtIndexNumber', form).val() || null,
-                AbsoluteEpisodeNumber: $('#txtAbsoluteEpisodeNumber', form).val(),
-                DvdEpisodeNumber: $('#txtDvdEpisodeNumber', form).val(),
-                DvdSeasonNumber: $('#txtDvdSeasonNumber', form).val(),
-                AirsBeforeSeasonNumber: $('#txtAirsBeforeSeason', form).val(),
-                AirsAfterSeasonNumber: $('#txtAirsAfterSeason', form).val(),
-                AirsBeforeEpisodeNumber: $('#txtAirsBeforeEpisode', form).val(),
-                ParentIndexNumber: $('#txtParentIndexNumber', form).val() || null,
-                DisplayOrder: $('#selectDisplayOrder', form).val(),
-                Players: $('#txtPlayers', form).val(),
-                Album: $('#txtAlbum', form).val(),
+                Name: form.querySelector('#txtName').value,
+                OriginalTitle: form.querySelector('#txtOriginalName').value,
+                ForcedSortName: form.querySelector('#txtSortName').value,
+                DisplayMediaType: form.querySelector('#txtDisplayMediaType').value,
+                CommunityRating: form.querySelector('#txtCommunityRating').value,
+                VoteCount: form.querySelector('#txtCommunityVoteCount').value,
+                HomePageUrl: form.querySelector('#txtHomePageUrl').value,
+                Budget: form.querySelector('#txtBudget').value,
+                Revenue: form.querySelector('#txtRevenue').value,
+                CriticRating: form.querySelector('#txtCriticRating').value,
+                CriticRatingSummary: form.querySelector('#txtCriticRatingSummary').value,
+                IndexNumber: form.querySelector('#txtIndexNumber').value || null,
+                AbsoluteEpisodeNumber: form.querySelector('#txtAbsoluteEpisodeNumber').value,
+                DvdEpisodeNumber: form.querySelector('#txtDvdEpisodeNumber').value,
+                DvdSeasonNumber: form.querySelector('#txtDvdSeasonNumber').value,
+                AirsBeforeSeasonNumber: form.querySelector('#txtAirsBeforeSeason').value,
+                AirsAfterSeasonNumber: form.querySelector('#txtAirsAfterSeason').value,
+                AirsBeforeEpisodeNumber: form.querySelector('#txtAirsBeforeEpisode').value,
+                ParentIndexNumber: form.querySelector('#txtParentIndexNumber').value || null,
+                DisplayOrder: form.querySelector('#selectDisplayOrder').value,
+                Players: form.querySelector('#txtPlayers').value,
+                Album: form.querySelector('#txtAlbum').value,
                 AlbumArtist: getAlbumArtists(form),
                 ArtistItems: getArtists(form),
-                Metascore: $('#txtMetascore', form).val(),
-                AwardSummary: $('#txtAwardSummary', form).val(),
-                Overview: $('#txtOverview', form).val(),
-                ShortOverview: $('#txtShortOverview', form).val(),
-                Status: $('#selectStatus', form).val(),
+                Metascore: form.querySelector('#txtMetascore').value,
+                AwardSummary: form.querySelector('#txtAwardSummary').value,
+                Overview: form.querySelector('#txtOverview').value,
+                ShortOverview: form.querySelector('#txtShortOverview').value,
+                Status: form.querySelector('#selectStatus').value,
                 AirDays: getSelectedAirDays(form),
-                AirTime: $('#txtAirTime', form).val(),
-                Genres: editableListViewValues($("#listGenres", form)),
-                ProductionLocations: editableListViewValues($("#listCountries", form)),
-                Tags: editableListViewValues($("#listTags", form)),
-                Keywords: editableListViewValues($("#listKeywords", form)),
-                Studios: editableListViewValues($("#listStudios", form)).map(function (element) { return { Name: element }; }),
+                AirTime: form.querySelector('#txtAirTime').value,
+                Genres: editableListViewValues(form.querySelector("#listGenres")),
+                ProductionLocations: editableListViewValues(form.querySelector("#listCountries")),
+                Tags: editableListViewValues(form.querySelector("#listTags")),
+                Keywords: editableListViewValues(form.querySelector("#listKeywords")),
+                Studios: editableListViewValues(form.querySelector("#listStudios")).map(function (element) { return { Name: element }; }),
 
                 PremiereDate: getDateFromForm(form, '#txtPremiereDate', 'PremiereDate'),
                 DateCreated: getDateFromForm(form, '#txtDateAdded', 'DateCreated'),
                 EndDate: getDateFromForm(form, '#txtEndDate', 'EndDate'),
-                ProductionYear: $('#txtProductionYear', form).val(),
-                AspectRatio: $('#txtOriginalAspectRatio', form).val(),
-                Video3DFormat: $('#select3dFormat', form).val(),
+                ProductionYear: form.querySelector('#txtProductionYear').value,
+                AspectRatio: form.querySelector('#txtOriginalAspectRatio').value,
+                Video3DFormat: form.querySelector('#select3dFormat').value,
 
-                OfficialRating: $('#selectOfficialRating', form).val(),
-                CustomRating: $('#selectCustomRating', form).val(),
+                OfficialRating: form.querySelector('#selectOfficialRating').value,
+                CustomRating: form.querySelector('#selectCustomRating').value,
                 People: currentItem.People,
                 LockData: form.querySelector("#chkLockData").checked,
-                LockedFields: $('.selectLockedField', form).get().filter(function (c) {
+                LockedFields: Array.prototype.filter.call(form.querySelectorAll('.selectLockedField'), function (c) {
                     return !c.checked;
                 }).map(function (c) {
                     return c.getAttribute('data-value');
                 })
             };
 
-            item.ProviderIds = $.extend({}, currentItem.ProviderIds || {});
+            item.ProviderIds = Object.assign({}, currentItem.ProviderIds);
 
-            $('.txtExternalId', form).each(function () {
-
-                var providerkey = this.getAttribute('data-providerkey');
-
-                item.ProviderIds[providerkey] = this.value;
+            var idElements = form.querySelectorAll('.txtExternalId');
+            Array.prototype.map.call(idElements, function (idElem) {
+                var providerKey = idElem.getAttribute('data-providerkey');
+                item.ProviderIds[providerKey] = idElem.value;
             });
 
-            item.PreferredMetadataLanguage = $('#selectLanguage', form).val();
-            item.PreferredMetadataCountryCode = $('#selectCountry', form).val();
+            item.PreferredMetadataLanguage = form.querySelector('#selectLanguage').value;
+            item.PreferredMetadataCountryCode = form.querySelector('#selectCountry').value;
 
             if (currentItem.Type == "Person") {
 
-                var placeOfBirth = $('#txtPlaceOfBirth', form).val();
+                var placeOfBirth = form.querySelector('#txtPlaceOfBirth').value;
 
                 item.ProductionLocations = placeOfBirth ? [placeOfBirth] : [];
             }
@@ -198,17 +200,21 @@
             if (currentItem.Type == "Series") {
 
                 // 600000000
-                var seriesRuntime = $('#txtSeriesRuntime', form).val();
+                var seriesRuntime = form.querySelector('#txtSeriesRuntime').value;
                 item.RunTimeTicks = seriesRuntime ? (seriesRuntime * 600000000) : null;
             }
 
-            var tagline = $('#txtTagline', form).val();
+            var tagline = form.querySelector('#txtTagline').value;
             item.Taglines = tagline ? [tagline] : [];
 
             submitUpdatedItem(form, item);
+
         } catch (err) {
             alert(err);
         }
+
+        e.preventDefault();
+        e.stopPropagation();
 
         // Disable default form submission
         return false;
@@ -228,26 +234,26 @@
     }
 
     function editableListViewValues(list) {
-        return list.find('.textValue').map(function () { return $(this).text(); }).get();
+        return Array.prototype.map.call(list.querySelectorAll('.textValue'), function (el) { return el.textContent; });
     }
 
     function addElementToEditableListview(source, sortCallback) {
-
         require(['prompt'], function (prompt) {
 
             prompt({
                 label: 'Value:'
             }).then(function (text) {
-                var list = $(source).parents('.editableListviewContainer').find('.paperList');
+                var list = parentWithClass(source, 'editableListviewContainer').querySelector('.paperList');
                 var items = editableListViewValues(list);
                 items.push(text);
-                populateListView(list[0], items, sortCallback);
+                populateListView(list, items, sortCallback);
             });
         });
     }
 
     function removeElementFromListview(source) {
-        $(source).parents('.listItem').remove();
+        var el = parentWithClass(source, 'listItem');
+        el.parentNode.removeChild(el);
     }
 
     function editPerson(context, person, index) {
@@ -264,16 +270,6 @@
 
                 populatePeople(context, currentItem.People);
             });
-        });
-    }
-
-    function showRefreshMenu(context, button) {
-
-        require(['refreshDialog'], function (refreshDialog) {
-            new refreshDialog({
-                itemIds: [currentItem.Id],
-                serverId: ApiClient.serverInfo().Id
-            }).show();
         });
     }
 
@@ -296,7 +292,7 @@
                     Emby.Page.goHome();
 
                 } else if (result.updated) {
-                    reload(context, currentItem.Id);
+                    reload(context, currentItem.Id, currentItem.ServerId);
                 }
             });
         });
@@ -311,19 +307,19 @@
             if (msg.Data.ItemsUpdated.indexOf(currentItem.Id) != -1) {
 
                 console.log('Item updated - reloading metadata');
-                reload(currentContext, currentItem.Id);
+                reload(currentContext, currentItem.Id, currentItem.ServerId);
             }
         }
     }
 
-    function bindItemChanged(context) {
+    function bindItemChanged(context, apiClient) {
 
-        Events.on(ApiClient, "websocketmessage", onWebSocketMessageReceived);
+        Events.on(apiClient, "websocketmessage", onWebSocketMessageReceived);
     }
 
-    function unbindItemChanged(context) {
+    function unbindItemChanged(context, apiClient) {
 
-        Events.off(ApiClient, "websocketmessage", onWebSocketMessageReceived);
+        Events.off(apiClient, "websocketmessage", onWebSocketMessageReceived);
     }
 
     function onEditorClick(e) {
@@ -340,16 +336,20 @@
         }
     }
 
-    function init(context) {
+    function getApiClient() {
+        return connectionManager.getApiClient(currentItem.ServerId);
+    }
 
-        $('.btnCancel', context).on('click', function () {
+    function init(context, apiClient) {
+
+        context.querySelector('.btnCancel').addEventListener('click', function () {
 
             closeDialog(false);
         });
 
         context.querySelector('.btnMore').addEventListener('click', function (e) {
 
-            Dashboard.getCurrentUser().then(function (user) {
+            getApiClient().getCurrentUser().then(function (user) {
                 showMoreMenu(context, e.target, user);
             });
 
@@ -363,39 +363,47 @@
         context.querySelector('#chkLockData').addEventListener('click', function (e) {
 
             if (!e.target.checked) {
-                $('.providerSettingsContainer').show();
+                showElement('.providerSettingsContainer');
             } else {
-                $('.providerSettingsContainer').hide();
+                hideElement('.providerSettingsContainer');
             }
         });
 
         context.removeEventListener('click', onEditorClick);
         context.addEventListener('click', onEditorClick);
 
-        $('form', context).off('submit', onSubmit).on('submit', onSubmit);
+        var form = context.querySelector('form');
+        form.removeEventListener('submit', onSubmit);
+        form.addEventListener('submit', onSubmit);
 
-        $("#btnAddPerson", context).on('click', function (event, data) {
+        context.querySelector("#btnAddPerson").addEventListener('click', function (event, data) {
 
             editPerson(context, {}, -1);
         });
 
         // For now this is only supported in dialog mode because we have a way of knowing when it closes
         if (isDialog()) {
-            bindItemChanged(context);
+            bindItemChanged(context, apiClient);
         }
     }
 
-    function getItem(itemId) {
+    function getItem(itemId, serverId) {
+
+        var apiClient = connectionManager.getApiClient(serverId);
+
         if (itemId) {
-            return ApiClient.getItem(Dashboard.getCurrentUserId(), itemId);
+            return apiClient.getItem(apiClient.getCurrentUserId(), itemId);
         }
 
-        return ApiClient.getRootFolder(Dashboard.getCurrentUserId());
+        return apiClient.getRootFolder(apiClient.getCurrentUserId());
     }
 
-    function getEditorConfig(itemId) {
+    function getEditorConfig(itemId, serverId) {
+
+        var apiClient = connectionManager.getApiClient(serverId);
+
         if (itemId) {
-            return ApiClient.getJSON(ApiClient.getUrl('Items/' + itemId + '/MetadataEditor'));
+            return apiClient.getJSON(apiClient.getUrl('Items/' + itemId + '/MetadataEditor'));
         }
 
         return Promise.resolve({});
@@ -435,10 +443,10 @@
 
     function renderContentTypeOptions(context, metadataInfo) {
 
-        if (metadataInfo.ContentTypeOptions.length) {
-            $('#fldContentType', context).show();
+        if (!metadataInfo.ContentTypeOptions.length) {
+            hideElement('#fldContentType', context);
         } else {
-            $('#fldContentType', context).hide();
+            showElement('#fldContentType', context);
         }
 
         var html = metadataInfo.ContentTypeOptions.map(function (i) {
@@ -448,7 +456,9 @@
 
         }).join('');
 
-        $('#selectContentType', context).html(html).val(metadataInfo.ContentType || '');
+        var selectEl = context.querySelector('#selectContentType');
+        selectEl.innerHTML = html;
+        selectEl.value = metadataInfo.ContentType || '';
     }
 
     function onExternalIdChange() {
@@ -457,9 +467,9 @@
         var buttonClass = this.getAttribute('data-buttonclass');
 
         if (this.value) {
-            $('.' + buttonClass).attr('href', formatString.replace('{0}', this.value));
+            document.querySelector('.' + buttonClass).setAttribute('href', formatString.replace('{0}', this.value));
         } else {
-            $('.' + buttonClass).attr('href', '#');
+            document.querySelector('.' + buttonClass).setAttribute('href', '#');
         }
     }
 
@@ -477,7 +487,7 @@
             var buttonId = "btnOpen1" + idInfo.Key;
             var formatString = idInfo.UrlFormatString || '';
 
-            var labelText = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
+            var labelText = globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
 
             html += '<div class="inputContainer">';
             html += '<div style="display: flex; align-items: center;">';
@@ -496,335 +506,372 @@
             html += '</div>';
         }
 
-        var elem = $('.externalIds', context).html(html);
+        var elem = context.querySelector('.externalIds', context);
+        elem.innerHTML = html;
 
-        $('.txtExternalId', elem).on('change', onExternalIdChange).trigger('change');
+        var extIdEls = elem.querySelector('.txtExternalId') || [];
+        Array.prototype.forEach.call(extIdEls, function (el) {
+            el.addEventListener('change', onExternalIdChange.bind(el));
+            el.dispatchEvent(new Event('change'));
+        });
+    }
+
+    // Function to hide the element by selector or raw element
+    // Selector can be an element or a selector string
+    // Context is optional and restricts the querySelector to the context
+    function hideElement(selector, context, multiple) {
+        context = context || document;
+        if (typeof selector == 'string') {
+
+            var elements = multiple ? context.querySelectorAll(selector) : [context.querySelector(selector)];
+
+            Array.prototype.forEach.call(elements, function (el) {
+                if (el) {
+                    el.classList.add('hide');
+                }
+            });
+        } else {
+            selector.classList.add('hide');
+        }
+    }
+
+    // Function to show the element by selector or raw element
+    // Selector can be an element or a selector string
+    // Context is optional and restricts the querySelector to the context
+    function showElement(selector, context, multiple) {
+        context = context || document;
+        if (typeof selector == 'string') {
+
+            var elements = multiple ? context.querySelectorAll(selector) : [context.querySelector(selector)];
+
+            Array.prototype.forEach.call(elements, function (el) {
+                if (el) {
+                    el.classList.remove('hide');
+                }
+            });
+        } else {
+            selector.classList.remove('hide');
+        }
     }
 
     function setFieldVisibilities(context, item) {
-
         if (item.Path && item.LocationType != 'Remote') {
-            $('#fldPath', context).show();
+            showElement('#fldPath', context);
         } else {
-            $('#fldPath', context).hide();
+            hideElement('#fldPath', context);
         }
 
         if (item.Type == "Series" || item.Type == "Movie" || item.Type == "Trailer") {
-            $('#fldOriginalName', context).show();
+            showElement('#fldOriginalName', context);
         } else {
-            $('#fldOriginalName', context).hide();
+            hideElement('#fldOriginalName', context);
         }
 
         if (item.Type == "Series") {
-            $('#fldSeriesRuntime', context).show();
+            showElement('#fldSeriesRuntime', context);
         } else {
-            $('#fldSeriesRuntime', context).hide();
+            hideElement('#fldSeriesRuntime', context);
         }
 
         if (item.Type == "Series" || item.Type == "Person") {
-            $('#fldEndDate', context).show();
+            showElement('#fldEndDate', context);
         } else {
-            $('#fldEndDate', context).hide();
+            hideElement('#fldEndDate', context);
         }
 
         if (item.Type == "Movie" || item.MediaType == "Game" || item.MediaType == "Trailer" || item.Type == "MusicVideo") {
-            $('#fldBudget', context).show();
-            $('#fldRevenue', context).show();
+            showElement('#fldBudget', context);
+            showElement('#fldRevenue', context);
         } else {
-            $('#fldBudget', context).hide();
-            $('#fldRevenue', context).hide();
+            hideElement('#fldBudget', context);
+            hideElement('#fldRevenue', context);
         }
 
         if (item.Type == "MusicAlbum") {
-            $('#albumAssociationMessage', context).show();
+            showElement('#albumAssociationMessage', context);
         } else {
-            $('#albumAssociationMessage', context).hide();
+            hideElement('#albumAssociationMessage', context)
         }
 
         if (item.MediaType == "Game") {
-            $('#fldPlayers', context).show();
+            showElement('#fldPlayers', context);
         } else {
-            $('#fldPlayers', context).hide();
+            hideElement('#fldPlayers', context);
         }
 
         if (item.Type == "Movie" || item.Type == "Trailer") {
-            $('#fldCriticRating', context).show();
-            $('#fldCriticRatingSummary', context).show();
+            showElement('#fldCriticRating', context);
+            showElement('#fldCriticRatingSummary', context);
         } else {
-            $('#fldCriticRating', context).hide();
-            $('#fldCriticRatingSummary', context).hide();
+            hideElement('#fldCriticRating', context);
+            hideElement('#fldCriticRatingSummary', context);
         }
 
         if (item.Type == "Movie") {
-            $('#fldAwardSummary', context).show();
+            showElement('#fldAwardSummary', context);
         } else {
-            $('#fldAwardSummary', context).hide();
+            hideElement('#fldAwardSummary', context);
         }
 
         if (item.Type == "Movie" || item.Type == "Trailer") {
-            $('#fldMetascore', context).show();
+            showElement('#fldMetascore', context);
         } else {
-            $('#fldMetascore', context).hide();
+            hideElement('#fldMetascore', context);
         }
 
         if (item.Type == "Series") {
-            $('#fldStatus', context).show();
-            $('#fldAirDays', context).show();
-            $('#fldAirTime', context).show();
+            showElement('#fldStatus', context);
+            showElement('#fldAirDays', context);
+            showElement('#fldAirTime', context);
         } else {
-            $('#fldStatus', context).hide();
-            $('#fldAirDays', context).hide();
-            $('#fldAirTime', context).hide();
+            hideElement('#fldStatus', context);
+            hideElement('#fldAirDays', context);
+            hideElement('#fldAirTime', context);
         }
 
         if (item.MediaType == "Video" && item.Type != "TvChannel") {
-            $('#fld3dFormat', context).show();
+            showElement('#fld3dFormat', context);
         } else {
-            $('#fld3dFormat', context).hide();
+            hideElement('#fld3dFormat', context);
         }
 
         if (item.Type == "Audio") {
-            $('#fldAlbumArtist', context).show();
+            showElement('#fldAlbumArtist', context);
         } else {
-            $('#fldAlbumArtist', context).hide();
+            hideElement('#fldAlbumArtist', context);
         }
 
         if (item.Type == "Audio" || item.Type == "MusicVideo") {
-            $('#fldArtist', context).show();
-            $('#fldAlbum', context).show();
+            showElement('#fldArtist', context);
+            showElement('#fldAlbum', context);
         } else {
-            $('#fldArtist', context).hide();
-            $('#fldAlbum', context).hide();
+            hideElement('#fldArtist', context);
+            hideElement('#fldAlbum', context);
         }
 
         if (item.Type == "Episode") {
-            $('#collapsibleDvdEpisodeInfo', context).show();
+            showElement('#collapsibleDvdEpisodeInfo', context);
         } else {
-            $('#collapsibleDvdEpisodeInfo', context).hide();
+            hideElement('#collapsibleDvdEpisodeInfo', context);
         }
 
         if (item.Type == "Episode" && item.ParentIndexNumber == 0) {
-            $('#collapsibleSpecialEpisodeInfo', context).show();
+            showElement('#collapsibleSpecialEpisodeInfo', context);
         } else {
-            $('#collapsibleSpecialEpisodeInfo', context).hide();
+            hideElement('#collapsibleSpecialEpisodeInfo', context);
         }
 
         if (item.Type == "Person" || item.Type == "Genre" || item.Type == "Studio" || item.Type == "GameGenre" || item.Type == "MusicGenre" || item.Type == "TvChannel") {
-            $('#fldCommunityRating', context).hide();
-            $('#fldCommunityVoteCount', context).hide();
-            $('#genresCollapsible', context).hide();
-            $('#peopleCollapsible', context).hide();
-            $('#studiosCollapsible', context).hide();
+            hideElement('#fldCommunityRating', context);
+            hideElement('#fldCommunityVoteCount', context);
+            hideElement('#genresCollapsible', context);
+            hideElement('#peopleCollapsible', context);
+            hideElement('#studiosCollapsible', context);
 
             if (item.Type == "TvChannel") {
-                $('#fldOfficialRating', context).show();
+                showElement('#fldOfficialRating', context);
             } else {
-                $('#fldOfficialRating', context).hide();
+                hideElement('#fldOfficialRating', context);
             }
-            $('#fldCustomRating', context).hide();
+            hideElement('#fldCustomRating', context);
         } else {
-            $('#fldCommunityRating', context).show();
-            $('#fldCommunityVoteCount', context).show();
-            $('#genresCollapsible', context).show();
-            $('#peopleCollapsible', context).show();
-            $('#studiosCollapsible', context).show();
-            $('#fldOfficialRating', context).show();
-            $('#fldCustomRating', context).show();
+            showElement('#fldCommunityRating', context);
+            showElement('#fldCommunityVoteCount', context);
+            showElement('#genresCollapsible', context);
+            showElement('#peopleCollapsible', context);
+            showElement('#studiosCollapsible', context);
+            showElement('#fldOfficialRating', context);
+            showElement('#fldCustomRating', context);
         }
 
         if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "MusicArtist") {
-            $('#countriesCollapsible', context).show();
+            showElement('#countriesCollapsible', context);
         } else {
-            $('#countriesCollapsible', context).hide();
+            hideElement('#countriesCollapsible', context);
         }
 
         if (item.Type == "TvChannel") {
-            $('#tagsCollapsible', context).hide();
-            $('#metadataSettingsCollapsible', context).hide();
-            $('#fldPremiereDate', context).hide();
-            $('#fldDateAdded', context).hide();
-            $('#fldYear', context).hide();
+            hideElement('#tagsCollapsible', context);
+            hideElement('#metadataSettingsCollapsible', context);
+            hideElement('#fldPremiereDate', context);
+            hideElement('#fldDateAdded', context);
+            hideElement('#fldYear', context);
         } else {
-            $('#tagsCollapsible', context).show();
-            $('#metadataSettingsCollapsible', context).show();
-            $('#fldPremiereDate', context).show();
-            $('#fldDateAdded', context).show();
-            $('#fldYear', context).show();
+            showElement('#tagsCollapsible', context);
+            showElement('#metadataSettingsCollapsible', context);
+            showElement('#fldPremiereDate', context);
+            showElement('#fldDateAdded', context);
+            showElement('#fldYear', context);
         }
 
         if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "BoxSet") {
-            $('#keywordsCollapsible', context).show();
+            showElement('#keywordsCollapsible', context);
         } else {
-            $('#keywordsCollapsible', context).hide();
+            hideElement('#keywordsCollapsible', context);
         }
 
         if (item.MediaType == "Video" && item.Type != "TvChannel") {
-            $('#fldSourceType', context).show();
+            showElement('#fldSourceType', context);
         } else {
-            $('#fldSourceType', context).hide();
+            hideElement('#fldSourceType', context);
         }
 
         if (item.Type == "Person") {
-            context.querySelector('#txtProductionYear').label(Globalize.translate('LabelBirthYear'));
-            context.querySelector("#txtPremiereDate").label(Globalize.translate('LabelBirthDate'));
-            context.querySelector("#txtEndDate").label(Globalize.translate('LabelDeathDate'));
-            $('#fldPlaceOfBirth', context).show();
+            //todo
+            context.querySelector('#txtProductionYear').label(globalize.translate('LabelBirthYear'));
+            context.querySelector("#txtPremiereDate").label(globalize.translate('LabelBirthDate'));
+            context.querySelector("#txtEndDate").label(globalize.translate('LabelDeathDate'));
+            showElement('#fldPlaceOfBirth');
         } else {
-            context.querySelector('#txtProductionYear').label(Globalize.translate('LabelYear'));
-            context.querySelector("#txtPremiereDate").label(Globalize.translate('LabelReleaseDate'));
-            context.querySelector("#txtEndDate").label(Globalize.translate('LabelEndDate'));
-            $('#fldPlaceOfBirth', context).hide();
+            context.querySelector('#txtProductionYear').label(globalize.translate('LabelYear'));
+            context.querySelector("#txtPremiereDate").label(globalize.translate('LabelReleaseDate'));
+            context.querySelector("#txtEndDate").label(globalize.translate('LabelEndDate'));
+            hideElement('#fldPlaceOfBirth');
         }
 
         if (item.MediaType == "Video" && item.Type != "TvChannel") {
-            $('#fldOriginalAspectRatio', context).show();
+            showElement('#fldOriginalAspectRatio');
         } else {
-            $('#fldOriginalAspectRatio', context).hide();
+            hideElement('#fldOriginalAspectRatio');
         }
 
         if (item.Type == "Audio" || item.Type == "Episode" || item.Type == "Season") {
-            $('#fldIndexNumber', context).show();
+            showElement('#fldIndexNumber');
 
             if (item.Type == "Episode") {
-                context.querySelector('#txtIndexNumber').label(Globalize.translate('LabelEpisodeNumber'));
+                context.querySelector('#txtIndexNumber').label(globalize.translate('LabelEpisodeNumber'));
             } else if (item.Type == "Season") {
-                context.querySelector('#txtIndexNumber').label(Globalize.translate('LabelSeasonNumber'));
+                context.querySelector('#txtIndexNumber').label(globalize.translate('LabelSeasonNumber'));
             } else if (item.Type == "Audio") {
-                context.querySelector('#txtIndexNumber').label(Globalize.translate('LabelTrackNumber'));
+                context.querySelector('#txtIndexNumber').label(globalize.translate('LabelTrackNumber'));
             } else {
-                context.querySelector('#txtIndexNumber').label(Globalize.translate('LabelNumber'));
+                context.querySelector('#txtIndexNumber').label(globalize.translate('LabelNumber'));
             }
         } else {
-            $('#fldIndexNumber', context).hide();
+            hideElement('#fldIndexNumber');
         }
 
         if (item.Type == "Audio" || item.Type == "Episode") {
-            $('#fldParentIndexNumber', context).show();
+            showElement('#fldParentIndexNumber');
 
             if (item.Type == "Episode") {
-                context.querySelector('#txtParentIndexNumber').label(Globalize.translate('LabelSeasonNumber'));
+                context.querySelector('#txtParentIndexNumber').label(globalize.translate('LabelSeasonNumber'));
             } else if (item.Type == "Audio") {
-                context.querySelector('#txtParentIndexNumber').label(Globalize.translate('LabelDiscNumber'));
+                context.querySelector('#txtParentIndexNumber').label(globalize.translate('LabelDiscNumber'));
             } else {
-                context.querySelector('#txtParentIndexNumber').label(Globalize.translate('LabelParentNumber'));
+                context.querySelector('#txtParentIndexNumber').label(globalize.translate('LabelParentNumber'));
             }
         } else {
-            $('#fldParentIndexNumber', context).hide();
+            hideElement('#fldParentIndexNumber', context);
         }
 
         if (item.Type == "BoxSet") {
-            $('#fldDisplayOrder', context).show();
+            showElement('#fldDisplayOrder', context);
 
-            $('#selectDisplayOrder', context).html('<option value="SortName">' + Globalize.translate('OptionSortName') + '</option><option value="PremiereDate">' + Globalize.translate('OptionReleaseDate') + '</option>');
+            context.querySelector('#selectDisplayOrder').innerHTML = '<option value="SortName">' + globalize.translate('OptionSortName') + '</option><option value="PremiereDate">' + globalize.translate('OptionReleaseDate') + '</option>';
         } else {
-            $('#selectDisplayOrder', context).html('');
-            $('#fldDisplayOrder', context).hide();
+            context.querySelector('#selectDisplayOrder').innerHTML = '';
+            hideElement('#fldDisplayOrder', context);
         }
 
-        var displaySettingFields = $('.fldDisplaySetting', context);
-        if (displaySettingFields.filter(function (index) {
+        var displaySettingFields = context.querySelectorAll('.fldDisplaySetting');
+        var hiddenDisplaySettingFields = Array.prototype.filter.call(displaySettingFields, function (field) {
+            return field.style.display != 'none';
 
-            return displaySettingFields[index].style.display != 'none';
-
-        }).length) {
-            $('#collapsibleDisplaySettings', context).show();
+        });
+        if (hiddenDisplaySettingFields.length) {
+            showElement('#collapsibleDisplaySettings', context);
         } else {
-            $('#collapsibleDisplaySettings', context).hide();
+            hideElement('#collapsibleDisplaySettings', context);
         }
     }
 
     function fillItemInfo(context, item, parentalRatingOptions) {
 
-        var select = $('#selectOfficialRating', context);
+        var select = context.querySelector('#selectOfficialRating');
 
         populateRatings(parentalRatingOptions, select, item.OfficialRating);
 
-        select.val(item.OfficialRating || "");
+        select.value = item.OfficialRating || "";
 
-        select = $('#selectCustomRating', context);
+        select = context.querySelector('#selectCustomRating');
 
         populateRatings(parentalRatingOptions, select, item.CustomRating);
 
-        select.val(item.CustomRating || "");
+        select.value = item.CustomRating || "";
 
-        var selectStatus = $('#selectStatus', context);
+        var selectStatus = context.querySelector('#selectStatus');
         populateStatus(selectStatus);
-        selectStatus.val(item.Status || "");
+        selectStatus.value = item.Status || "";
 
-        $('#select3dFormat', context).val(item.Video3DFormat || "");
+        context.querySelector('#select3dFormat', context).value = item.Video3DFormat || "";
 
-        $('.chkAirDay', context).each(function () {
-
-            this.checked = (item.AirDays || []).indexOf(this.getAttribute('data-day')) != -1;
-
+        Array.prototype.forEach.call(context.querySelectorAll('.chkAirDay', context), function (el) {
+            el.checked = (item.AirDays || []).indexOf(el.getAttribute('data-day')) != -1;
         });
 
-        populateListView($('#listCountries', context)[0], item.ProductionLocations || []);
-        populateListView($('#listGenres', context)[0], item.Genres);
+        populateListView(context.querySelector('#listCountries'), item.ProductionLocations || []);
+        populateListView(context.querySelector('#listGenres'), item.Genres);
         populatePeople(context, item.People || []);
 
-        populateListView($('#listStudios', context)[0], (item.Studios || []).map(function (element) { return element.Name || ''; }));
+        populateListView(context.querySelector('#listStudios'), (item.Studios || []).map(function (element) { return element.Name || ''; }));
 
-        populateListView($('#listTags', context)[0], item.Tags);
-        populateListView($('#listKeywords', context)[0], item.Keywords);
+        populateListView(context.querySelector('#listTags'), item.Tags);
+        populateListView(context.querySelector('#listKeywords'), item.Keywords);
 
         var lockData = (item.LockData || false);
         var chkLockData = context.querySelector("#chkLockData");
         chkLockData.checked = lockData;
         if (chkLockData.checked) {
-            $('.providerSettingsContainer', context).hide();
+            hideElement('.providerSettingsContainer', context)
         } else {
-            $('.providerSettingsContainer', context).show();
+            showElement('.providerSettingsContainer', context)
         }
         populateInternetProviderSettings(context, item, item.LockedFields);
 
-        $('#txtPath', context).val(item.Path || '');
-        $('#txtName', context).val(item.Name || "");
-        $('#txtOriginalName', context).val(item.OriginalTitle || "");
+        context.querySelector('#txtPath').value = item.Path || '';
+        context.querySelector('#txtName').value = item.Name || "";
+        context.querySelector('#txtOriginalName').value = item.OriginalTitle || "";
         context.querySelector('#txtOverview').value = item.Overview || '';
-        $('#txtShortOverview', context).val(item.ShortOverview || "");
-        $('#txtTagline', context).val((item.Taglines && item.Taglines.length ? item.Taglines[0] : ''));
-        $('#txtSortName', context).val(item.ForcedSortName || "");
-        $('#txtDisplayMediaType', context).val(item.DisplayMediaType || "");
-        $('#txtCommunityRating', context).val(item.CommunityRating || "");
-        $('#txtCommunityVoteCount', context).val(item.VoteCount || "");
-        $('#txtHomePageUrl', context).val(item.HomePageUrl || "");
+        context.querySelector('#txtShortOverview').value = item.ShortOverview || "";
+        context.querySelector('#txtTagline').value = (item.Taglines && item.Taglines.length ? item.Taglines[0] : '');
+        context.querySelector('#txtSortName').value = item.ForcedSortName || "";
+        context.querySelector('#txtDisplayMediaType').value = item.DisplayMediaType || "";
+        context.querySelector('#txtCommunityRating').value = item.CommunityRating || "";
+        context.querySelector('#txtCommunityVoteCount').value = item.VoteCount || "";
+        context.querySelector('#txtHomePageUrl').value = item.HomePageUrl || "";
 
-        $('#txtAwardSummary', context).val(item.AwardSummary || "");
-        $('#txtMetascore', context).val(item.Metascore || "");
+        context.querySelector('#txtAwardSummary').value = item.AwardSummary || "";
+        context.querySelector('#txtMetascore').value = item.Metascore || "";
 
-        $('#txtBudget', context).val(item.Budget || "");
-        $('#txtRevenue', context).val(item.Revenue || "");
+        context.querySelector('#txtBudget').value = item.Budget || "";
+        context.querySelector('#txtRevenue').value = item.Revenue || "";
 
-        $('#txtCriticRating', context).val(item.CriticRating || "");
-        $('#txtCriticRatingSummary', context).val(item.CriticRatingSummary || "");
+        context.querySelector('#txtCriticRating').value = item.CriticRating || "";
+        context.querySelector('#txtCriticRatingSummary').value = item.CriticRatingSummary || "";
 
-        $('#txtIndexNumber', context).val(('IndexNumber' in item) ? item.IndexNumber : "");
-        $('#txtParentIndexNumber', context).val(('ParentIndexNumber' in item) ? item.ParentIndexNumber : "");
-        $('#txtPlayers', context).val(item.Players || "");
+        context.querySelector('#txtIndexNumber').value = ('IndexNumber' in item) ? item.IndexNumber : "";
+        context.querySelector('#txtParentIndexNumber').value = ('ParentIndexNumber' in item) ? item.ParentIndexNumber : "";
+        context.querySelector('#txtPlayers').value = item.Players || "";
 
-        $('#txtAbsoluteEpisodeNumber', context).val(('AbsoluteEpisodeNumber' in item) ? item.AbsoluteEpisodeNumber : "");
-        $('#txtDvdEpisodeNumber', context).val(('DvdEpisodeNumber' in item) ? item.DvdEpisodeNumber : "");
-        $('#txtDvdSeasonNumber', context).val(('DvdSeasonNumber' in item) ? item.DvdSeasonNumber : "");
-        $('#txtAirsBeforeSeason', context).val(('AirsBeforeSeasonNumber' in item) ? item.AirsBeforeSeasonNumber : "");
-        $('#txtAirsAfterSeason', context).val(('AirsAfterSeasonNumber' in item) ? item.AirsAfterSeasonNumber : "");
-        $('#txtAirsBeforeEpisode', context).val(('AirsBeforeEpisodeNumber' in item) ? item.AirsBeforeEpisodeNumber : "");
+        context.querySelector('#txtAbsoluteEpisodeNumber').value = ('AbsoluteEpisodeNumber' in item) ? item.AbsoluteEpisodeNumber : "";
+        context.querySelector('#txtDvdEpisodeNumber').value = ('DvdEpisodeNumber' in item) ? item.DvdEpisodeNumber : "";
+        context.querySelector('#txtDvdSeasonNumber').value = ('DvdSeasonNumber' in item) ? item.DvdSeasonNumber : "";
+        context.querySelector('#txtAirsBeforeSeason').value = ('AirsBeforeSeasonNumber' in item) ? item.AirsBeforeSeasonNumber : "";
+        context.querySelector('#txtAirsAfterSeason').value = ('AirsAfterSeasonNumber' in item) ? item.AirsAfterSeasonNumber : "";
+        context.querySelector('#txtAirsBeforeEpisode').value = ('AirsBeforeEpisodeNumber' in item) ? item.AirsBeforeEpisodeNumber : "";
 
-        $('#txtAlbum', context).val(item.Album || "");
+        context.querySelector('#txtAlbum').value = item.Album || "";
 
-        $('#txtAlbumArtist', context).val((item.AlbumArtists || []).map(function (a) {
-
+        context.querySelector('#txtAlbumArtist').value = (item.AlbumArtists || []).map(function (a) {
             return a.Name;
+        }).join(';');
 
-        }).join(';'));
+        context.querySelector('#selectDisplayOrder').value = item.DisplayOrder;
 
-        $('#selectDisplayOrder', context).val(item.DisplayOrder);
-
-        $('#txtArtist', context).val((item.ArtistItems || []).map(function (a) {
-
+        context.querySelector('#txtArtist').value = (item.ArtistItems || []).map(function (a) {
             return a.Name;
-
-        }).join(';'));
+        }).join(';');
 
         var date;
 
@@ -832,57 +879,57 @@
             try {
                 date = datetime.parseISO8601Date(item.DateCreated, true);
 
-                $('#txtDateAdded', context).val(date.toISOString().slice(0, 10));
+                context.querySelector('#txtDateAdded').value = date.toISOString().slice(0, 10);
             } catch (e) {
-                $('#txtDateAdded', context).val('');
+                context.querySelector('#txtDateAdded').value = '';
             }
         } else {
-            $('#txtDateAdded', context).val('');
+            context.querySelector('#txtDateAdded').value = '';
         }
 
         if (item.PremiereDate) {
             try {
                 date = datetime.parseISO8601Date(item.PremiereDate, true);
 
-                $('#txtPremiereDate', context).val(date.toISOString().slice(0, 10));
+                context.querySelector('#txtPremiereDate').value = date.toISOString().slice(0, 10);
             } catch (e) {
-                $('#txtPremiereDate', context).val('');
+                context.querySelector('#txtPremiereDate').value = '';
             }
         } else {
-            $('#txtPremiereDate', context).val('');
+            context.querySelector('#txtPremiereDate').value = '';
         }
 
         if (item.EndDate) {
             try {
                 date = datetime.parseISO8601Date(item.EndDate, true);
 
-                $('#txtEndDate', context).val(date.toISOString().slice(0, 10));
+                context.querySelector('#txtEndDate').value = date.toISOString().slice(0, 10);
             } catch (e) {
-                $('#txtEndDate', context).val('');
+                context.querySelector('#txtEndDate').value = '';
             }
         } else {
-            $('#txtEndDate', context).val('');
+            context.querySelector('#txtEndDate').value = '';
         }
 
-        $('#txtProductionYear', context).val(item.ProductionYear || "");
+        context.querySelector('#txtProductionYear').value = item.ProductionYear || "";
 
-        $('#txtAirTime', context).val(item.AirTime || '');
+        context.querySelector('#txtAirTime').value = item.AirTime || '';
 
         var placeofBirth = item.ProductionLocations && item.ProductionLocations.length ? item.ProductionLocations[0] : '';
-        $('#txtPlaceOfBirth', context).val(placeofBirth);
+        context.querySelector('#txtPlaceOfBirth').value = placeofBirth;
 
-        $('#txtOriginalAspectRatio', context).val(item.AspectRatio || "");
+        context.querySelector('#txtOriginalAspectRatio').value = item.AspectRatio || "";
 
-        $('#selectLanguage', context).val(item.PreferredMetadataLanguage || "");
-        $('#selectCountry', context).val(item.PreferredMetadataCountryCode || "");
+        context.querySelector('#selectLanguage').value = item.PreferredMetadataLanguage || "";
+        context.querySelector('#selectCountry').value = item.PreferredMetadataCountryCode || "";
 
         if (item.RunTimeTicks) {
 
             var minutes = item.RunTimeTicks / 600000000;
 
-            $('#txtSeriesRuntime', context).val(Math.round(minutes));
+            context.querySelector('#txtSeriesRuntime').value = Math.round(minutes);
         } else {
-            $('#txtSeriesRuntime', context).val("");
+            context.querySelector('#txtSeriesRuntime', context).value = "";
         }
     }
 
@@ -919,16 +966,16 @@
             html += "<option value='" + rating.Value + "'>" + rating.Name + "</option>";
         }
 
-        select.html(html);
+        select.innerHTML = html;
     }
 
     function populateStatus(select) {
         var html = "";
 
         html += "<option value=''></option>";
-        html += "<option value='Continuing'>" + Globalize.translate('OptionContinuing') + "</option>";
-        html += "<option value='Ended'>" + Globalize.translate('OptionEnded') + "</option>";
-        select.html(html);
+        html += "<option value='Continuing'>" + globalize.translate('OptionContinuing') + "</option>";
+        html += "<option value='Ended'>" + globalize.translate('OptionEnded') + "</option>";
+        select.innerHTML = html;
     }
 
     function populateListView(list, items, sortCallback) {
@@ -997,20 +1044,26 @@
 
         elem.innerHTML = html;
 
-        $('.btnDeletePerson', elem).on('click', function () {
+        var deleteButton = elem.querySelector('.btnDeletePerson')
+        if (deleteButton) {
+            deleteButton.addEventListener('click', function () {
 
-            var index = parseInt(this.getAttribute('data-index'));
-            currentItem.People.splice(index, 1);
+                var index = parseInt(this.getAttribute('data-index'));
+                currentItem.People.splice(index, 1);
 
-            populatePeople(context, currentItem.People);
-        });
+                populatePeople(context, currentItem.People);
+            }.bind(deleteButton));
+        }
 
-        $('.btnEditPerson', elem).on('click', function () {
+        var editButton = elem.querySelector('.btnEditPerson')
+        if (editButton) {
+            editButton.addEventListener('click', function () {
 
-            var index = parseInt(this.getAttribute('data-index'));
+                var index = parseInt(this.getAttribute('data-index'));
 
-            editPerson(context, currentItem.People[index], index);
-        });
+                editPerson(context, currentItem.People[index], index);
+            }.bind(editButton));
+        }
     }
 
     function generateSliders(fields, currentFields) {
@@ -1031,50 +1084,50 @@
     }
 
     function populateInternetProviderSettings(context, item, lockedFields) {
-        var container = $('.providerSettingsContainer', context);
+        var container = context.querySelector('.providerSettingsContainer');
         lockedFields = lockedFields || new Array();
 
         var metadatafields = [
-            { name: Globalize.translate('OptionName'), value: "Name" },
-            { name: Globalize.translate('OptionOverview'), value: "Overview" },
-            { name: Globalize.translate('OptionGenres'), value: "Genres" },
-            { name: Globalize.translate('OptionParentalRating'), value: "OfficialRating" },
-            { name: Globalize.translate('OptionPeople'), value: "Cast" }
+            { name: globalize.translate('OptionName'), value: "Name" },
+            { name: globalize.translate('OptionOverview'), value: "Overview" },
+            { name: globalize.translate('OptionGenres'), value: "Genres" },
+            { name: globalize.translate('OptionParentalRating'), value: "OfficialRating" },
+            { name: globalize.translate('OptionPeople'), value: "Cast" }
         ];
 
         if (item.Type == "Person") {
-            metadatafields.push({ name: Globalize.translate('OptionBirthLocation'), value: "ProductionLocations" });
+            metadatafields.push({ name: globalize.translate('OptionBirthLocation'), value: "ProductionLocations" });
         } else {
-            metadatafields.push({ name: Globalize.translate('OptionProductionLocations'), value: "ProductionLocations" });
+            metadatafields.push({ name: globalize.translate('OptionProductionLocations'), value: "ProductionLocations" });
         }
 
         if (item.Type == "Series") {
-            metadatafields.push({ name: Globalize.translate('OptionRuntime'), value: "Runtime" });
+            metadatafields.push({ name: globalize.translate('OptionRuntime'), value: "Runtime" });
         }
 
-        metadatafields.push({ name: Globalize.translate('OptionStudios'), value: "Studios" });
-        metadatafields.push({ name: Globalize.translate('OptionTags'), value: "Tags" });
-        metadatafields.push({ name: Globalize.translate('OptionKeywords'), value: "Keywords" });
-        metadatafields.push({ name: Globalize.translate('OptionImages'), value: "Images" });
-        metadatafields.push({ name: Globalize.translate('OptionBackdrops'), value: "Backdrops" });
+        metadatafields.push({ name: globalize.translate('OptionStudios'), value: "Studios" });
+        metadatafields.push({ name: globalize.translate('OptionTags'), value: "Tags" });
+        metadatafields.push({ name: globalize.translate('OptionKeywords'), value: "Keywords" });
+        metadatafields.push({ name: globalize.translate('OptionImages'), value: "Images" });
+        metadatafields.push({ name: globalize.translate('OptionBackdrops'), value: "Backdrops" });
 
         if (item.Type == "Game") {
-            metadatafields.push({ name: Globalize.translate('OptionScreenshots'), value: "Screenshots" });
+            metadatafields.push({ name: globalize.translate('OptionScreenshots'), value: "Screenshots" });
         }
 
         var html = '';
 
-        html += "<h1>" + Globalize.translate('HeaderEnabledFields') + "</h1>";
-        html += "<p>" + Globalize.translate('HeaderEnabledFieldsHelp') + "</p>";
+        html += "<h1>" + globalize.translate('HeaderEnabledFields') + "</h1>";
+        html += "<p>" + globalize.translate('HeaderEnabledFieldsHelp') + "</p>";
         html += generateSliders(metadatafields, lockedFields);
-        container.html(html);
+        container.innerHTML = html;
     }
 
-    function reload(context, itemId) {
+    function reload(context, itemId, serverId) {
 
-        Dashboard.showLoadingMsg();
+        loading.show();
 
-        Promise.all([getItem(itemId), getEditorConfig(itemId)]).then(function (responses) {
+        Promise.all([getItem(itemId, serverId), getEditorConfig(itemId, serverId)]).then(function (responses) {
 
             var item = responses[0];
             metadataEditorInfo = responses[1];
@@ -1091,38 +1144,32 @@
             populateLanguages(context.querySelector('#selectLanguage'), languages);
             populateCountries(context.querySelector('#selectCountry'), countries);
 
-            LibraryBrowser.renderName(item, $('.itemName', context), true);
+            LibraryBrowser.renderName(item, document.querySelector('.itemName'), true);
 
             setFieldVisibilities(context, item);
             fillItemInfo(context, item, metadataEditorInfo.ParentalRatingOptions);
 
-            if (item.MediaType == 'Photo') {
-                $('#btnEditImages', context).hide();
+            if (item.MediaType == "Video" && item.Type != "Episode") {
+                showElement('#fldShortOverview', context);
             } else {
-                $('#btnEditImages', context).show();
+                hideElement('#fldShortOverview', context);
             }
 
             if (item.MediaType == "Video" && item.Type != "Episode") {
-                $('#fldShortOverview', context).show();
+                showElement('#fldTagline', context);
             } else {
-                $('#fldShortOverview', context).hide();
+                hideElement('#fldTagline', context);
             }
 
-            if (item.MediaType == "Video" && item.Type != "Episode") {
-                $('#fldTagline', context).show();
-            } else {
-                $('#fldTagline', context).hide();
-            }
-
-            Dashboard.hideLoadingMsg();
+            loading.hide();
         });
     }
 
     return {
-        show: function (itemId) {
+        show: function (itemId, serverId) {
             return new Promise(function (resolve, reject) {
 
-                Dashboard.showLoadingMsg();
+                loading.show();
 
                 var xhr = new XMLHttpRequest();
                 xhr.open('GET', 'components/metadataeditor/metadataeditor.template.html', true);
@@ -1142,7 +1189,7 @@
 
                     var html = '';
 
-                    html += Globalize.translateDocument(template);
+                    html += globalize.translateDocument(template);
 
                     dlg.innerHTML = html;
                     document.body.appendChild(dlg);
@@ -1150,25 +1197,25 @@
                     dialogHelper.open(dlg);
 
                     dlg.addEventListener('close', function () {
-                        unbindItemChanged(dlg);
+                        unbindItemChanged(dlg, connectionManager.getApiClient(serverId));
                         resolve();
                     });
 
                     currentContext = dlg;
 
-                    init(dlg);
+                    init(dlg, connectionManager.getApiClient(serverId));
 
-                    reload(dlg, itemId);
+                    reload(dlg, itemId, serverId);
                 }
 
                 xhr.send();
             });
         },
 
-        embed: function (elem, itemId) {
+        embed: function (elem, itemId, serverId) {
             return new Promise(function (resolve, reject) {
 
-                Dashboard.showLoadingMsg();
+                loading.show();
 
                 var xhr = new XMLHttpRequest();
                 xhr.open('GET', 'components/metadataeditor/metadataeditor.template.html', true);
@@ -1177,14 +1224,14 @@
 
                     var template = this.response;
 
-                    elem.innerHTML = Globalize.translateDocument(template);
+                    elem.innerHTML = globalize.translateDocument(template);
 
                     elem.querySelector('.btnCancel').classList.add('hide');
 
                     currentContext = elem;
 
-                    init(elem);
-                    reload(elem, itemId);
+                    init(elem, connectionManager.getApiClient(serverId));
+                    reload(elem, itemId, serverId);
                 }
 
                 xhr.send();

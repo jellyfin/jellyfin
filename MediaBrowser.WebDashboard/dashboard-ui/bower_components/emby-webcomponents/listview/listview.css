@@ -104,7 +104,7 @@ div.listItem {
 .listItemIcon {
     width: auto !important;
     height: auto !important;
-    font-size: 140%;
+    font-size: 130%;
     border-radius: 500px;
     background-color: #52B54B;
     padding: .5em;
@@ -144,8 +144,12 @@ div.listItem {
     }
 
     .listItem > .fab:first-child, .listItem > i:first-child {
-        margin-left: .65em;
+        margin-left: .3em;
     }
+
+.paperList .listItem > .fab:first-child, .paperList .listItem > i:first-child {
+    margin-left: .65em;
+}
 
 .paperList {
     padding: .5em 0;

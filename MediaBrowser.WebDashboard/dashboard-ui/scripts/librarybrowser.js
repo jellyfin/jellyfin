@@ -575,14 +575,6 @@
                 });
             },
 
-            editMetadata: function (itemId) {
-
-                require(['components/metadataeditor/metadataeditor'], function (metadataeditor) {
-
-                    metadataeditor.show(itemId);
-                });
-            },
-
             getHref: function (item, context, topParentId) {
 
                 var href = LibraryBrowser.getHrefInternal(item, context);
