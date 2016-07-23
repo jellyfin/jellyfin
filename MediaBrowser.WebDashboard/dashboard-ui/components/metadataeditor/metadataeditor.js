@@ -1,4 +1,4 @@
-﻿define(['itemHelper', 'dialogHelper', 'datetime', 'loading', 'connectionManager', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light'], function (itemHelper, dialogHelper, datetime, loading, connectionManager) {
+﻿define(['itemHelper', 'dialogHelper', 'datetime', 'loading', 'connectionManager', 'globalize', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light'], function (itemHelper, dialogHelper, datetime, loading, connectionManager, globalize) {
 
     var currentContext;
     var metadataEditorInfo;
@@ -20,7 +20,7 @@
         function afterContentTypeUpdated() {
 
             require(['toast'], function (toast) {
-                toast(Globalize.translate('MessageItemSaved'));
+                toast(globalize.translate('MessageItemSaved'));
             });
 
             loading.hide();
@@ -487,7 +487,7 @@
             var buttonId = "btnOpen1" + idInfo.Key;
             var formatString = idInfo.UrlFormatString || '';
 
-            var labelText = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
+            var labelText = globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
 
             html += '<div class="inputContainer">';
             html += '<div style="display: flex; align-items: center;">';
@@ -718,14 +718,14 @@
 
         if (item.Type == "Person") {
             //todo
-            context.querySelector('#txtProductionYear').label(Globalize.translate('LabelBirthYear'));
-            context.querySelector("#txtPremiereDate").label(Globalize.translate('LabelBirthDate'));
-            context.querySelector("#txtEndDate").label(Globalize.translate('LabelDeathDate'));
+            context.querySelector('#txtProductionYear').label(globalize.translate('LabelBirthYear'));
+            context.querySelector("#txtPremiereDate").label(globalize.translate('LabelBirthDate'));
+            context.querySelector("#txtEndDate").label(globalize.translate('LabelDeathDate'));
             showElement('#fldPlaceOfBirth');
         } else {
-            context.querySelector('#txtProductionYear').label(Globalize.translate('LabelYear'));
-            context.querySelector("#txtPremiereDate").label(Globalize.translate('LabelReleaseDate'));
-            context.querySelector("#txtEndDate").label(Globalize.translate('LabelEndDate'));
+            context.querySelector('#txtProductionYear').label(globalize.translate('LabelYear'));
+            context.querySelector("#txtPremiereDate").label(globalize.translate('LabelReleaseDate'));
+            context.querySelector("#txtEndDate").label(globalize.translate('LabelEndDate'));
             hideElement('#fldPlaceOfBirth');
         }
 
@@ -739,13 +739,13 @@
             showElement('#fldIndexNumber');
 
             if (item.Type == "Episode") {
-                context.querySelector('#txtIndexNumber').label(Globalize.translate('LabelEpisodeNumber'));
+                context.querySelector('#txtIndexNumber').label(globalize.translate('LabelEpisodeNumber'));
             } else if (item.Type == "Season") {
-                context.querySelector('#txtIndexNumber').label(Globalize.translate('LabelSeasonNumber'));
+                context.querySelector('#txtIndexNumber').label(globalize.translate('LabelSeasonNumber'));
             } else if (item.Type == "Audio") {
-                context.querySelector('#txtIndexNumber').label(Globalize.translate('LabelTrackNumber'));
+                context.querySelector('#txtIndexNumber').label(globalize.translate('LabelTrackNumber'));
             } else {
-                context.querySelector('#txtIndexNumber').label(Globalize.translate('LabelNumber'));
+                context.querySelector('#txtIndexNumber').label(globalize.translate('LabelNumber'));
             }
         } else {
             hideElement('#fldIndexNumber');
@@ -755,11 +755,11 @@
             showElement('#fldParentIndexNumber');
 
             if (item.Type == "Episode") {
-                context.querySelector('#txtParentIndexNumber').label(Globalize.translate('LabelSeasonNumber'));
+                context.querySelector('#txtParentIndexNumber').label(globalize.translate('LabelSeasonNumber'));
             } else if (item.Type == "Audio") {
-                context.querySelector('#txtParentIndexNumber').label(Globalize.translate('LabelDiscNumber'));
+                context.querySelector('#txtParentIndexNumber').label(globalize.translate('LabelDiscNumber'));
             } else {
-                context.querySelector('#txtParentIndexNumber').label(Globalize.translate('LabelParentNumber'));
+                context.querySelector('#txtParentIndexNumber').label(globalize.translate('LabelParentNumber'));
             }
         } else {
             hideElement('#fldParentIndexNumber', context);
@@ -768,7 +768,7 @@
         if (item.Type == "BoxSet") {
             showElement('#fldDisplayOrder', context);
 
-            context.querySelector('#selectDisplayOrder').innerHTML = '<option value="SortName">' + Globalize.translate('OptionSortName') + '</option><option value="PremiereDate">' + Globalize.translate('OptionReleaseDate') + '</option>';
+            context.querySelector('#selectDisplayOrder').innerHTML = '<option value="SortName">' + globalize.translate('OptionSortName') + '</option><option value="PremiereDate">' + globalize.translate('OptionReleaseDate') + '</option>';
         } else {
             context.querySelector('#selectDisplayOrder').innerHTML = '';
             hideElement('#fldDisplayOrder', context);
@@ -973,8 +973,8 @@
         var html = "";
 
         html += "<option value=''></option>";
-        html += "<option value='Continuing'>" + Globalize.translate('OptionContinuing') + "</option>";
-        html += "<option value='Ended'>" + Globalize.translate('OptionEnded') + "</option>";
+        html += "<option value='Continuing'>" + globalize.translate('OptionContinuing') + "</option>";
+        html += "<option value='Ended'>" + globalize.translate('OptionEnded') + "</option>";
         select.innerHTML = html;
     }
 
@@ -1088,37 +1088,37 @@
         lockedFields = lockedFields || new Array();
 
         var metadatafields = [
-            { name: Globalize.translate('OptionName'), value: "Name" },
-            { name: Globalize.translate('OptionOverview'), value: "Overview" },
-            { name: Globalize.translate('OptionGenres'), value: "Genres" },
-            { name: Globalize.translate('OptionParentalRating'), value: "OfficialRating" },
-            { name: Globalize.translate('OptionPeople'), value: "Cast" }
+            { name: globalize.translate('OptionName'), value: "Name" },
+            { name: globalize.translate('OptionOverview'), value: "Overview" },
+            { name: globalize.translate('OptionGenres'), value: "Genres" },
+            { name: globalize.translate('OptionParentalRating'), value: "OfficialRating" },
+            { name: globalize.translate('OptionPeople'), value: "Cast" }
         ];
 
         if (item.Type == "Person") {
-            metadatafields.push({ name: Globalize.translate('OptionBirthLocation'), value: "ProductionLocations" });
+            metadatafields.push({ name: globalize.translate('OptionBirthLocation'), value: "ProductionLocations" });
         } else {
-            metadatafields.push({ name: Globalize.translate('OptionProductionLocations'), value: "ProductionLocations" });
+            metadatafields.push({ name: globalize.translate('OptionProductionLocations'), value: "ProductionLocations" });
         }
 
         if (item.Type == "Series") {
-            metadatafields.push({ name: Globalize.translate('OptionRuntime'), value: "Runtime" });
+            metadatafields.push({ name: globalize.translate('OptionRuntime'), value: "Runtime" });
         }
 
-        metadatafields.push({ name: Globalize.translate('OptionStudios'), value: "Studios" });
-        metadatafields.push({ name: Globalize.translate('OptionTags'), value: "Tags" });
-        metadatafields.push({ name: Globalize.translate('OptionKeywords'), value: "Keywords" });
-        metadatafields.push({ name: Globalize.translate('OptionImages'), value: "Images" });
-        metadatafields.push({ name: Globalize.translate('OptionBackdrops'), value: "Backdrops" });
+        metadatafields.push({ name: globalize.translate('OptionStudios'), value: "Studios" });
+        metadatafields.push({ name: globalize.translate('OptionTags'), value: "Tags" });
+        metadatafields.push({ name: globalize.translate('OptionKeywords'), value: "Keywords" });
+        metadatafields.push({ name: globalize.translate('OptionImages'), value: "Images" });
+        metadatafields.push({ name: globalize.translate('OptionBackdrops'), value: "Backdrops" });
 
         if (item.Type == "Game") {
-            metadatafields.push({ name: Globalize.translate('OptionScreenshots'), value: "Screenshots" });
+            metadatafields.push({ name: globalize.translate('OptionScreenshots'), value: "Screenshots" });
         }
 
         var html = '';
 
-        html += "<h1>" + Globalize.translate('HeaderEnabledFields') + "</h1>";
-        html += "<p>" + Globalize.translate('HeaderEnabledFieldsHelp') + "</p>";
+        html += "<h1>" + globalize.translate('HeaderEnabledFields') + "</h1>";
+        html += "<p>" + globalize.translate('HeaderEnabledFieldsHelp') + "</p>";
         html += generateSliders(metadatafields, lockedFields);
         container.innerHTML = html;
     }
@@ -1189,7 +1189,7 @@
 
                     var html = '';
 
-                    html += Globalize.translateDocument(template);
+                    html += globalize.translateDocument(template);
 
                     dlg.innerHTML = html;
                     document.body.appendChild(dlg);
@@ -1224,7 +1224,7 @@
 
                     var template = this.response;
 
-                    elem.innerHTML = Globalize.translateDocument(template);
+                    elem.innerHTML = globalize.translateDocument(template);
 
                     elem.querySelector('.btnCancel').classList.add('hide');
 
