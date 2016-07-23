@@ -102,7 +102,7 @@
                             <div>
                                 <h2 style="vertical-align:middle;display:inline-block;">${HeaderHttpHeaders}</h2>
                                 <button is="emby-button" type="button" class="raised submit mini btnAddIdentificationHttpHeader" style="margin-left:1em;">
-                                    <iron-icon icon="add"></iron-icon>
+                                    <i class="md-icon">add</i>
                                     <span>${ButtonNew}</span>
                                 </button>
                             </div>
@@ -269,7 +269,7 @@
                             <div>
                                 <h2 style="vertical-align:middle;display:inline-block;">${HeaderXmlDocumentAttributes}</h2>
                                 <button is="emby-button" type="button" class="raised submit mini btnAddXmlDocumentAttribute" style="margin-left:1em;">
-                                    <iron-icon icon="add"></iron-icon>
+                                    <i class="md-icon">add</i>
                                     <span>${ButtonNew}</span>
                                 </button>
                             </div>
@@ -311,17 +311,15 @@
                     <div class="mediaProfiles"></div>
                 </div>
                 <br />
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <button class="btnSave" type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            ${ButtonSave}
-                        </button>
-                        <button type="button" onclick="Dashboard.navigate('dlnaprofiles.html');" data-icon="delete" data-mini="true">
-                            ${ButtonCancel}
-                        </button>
-                    </li>
+                <div>
+                    <button is="emby-button" type="submit" class="raised submit block">
+                        <i class="md-icon">check</i><span>${ButtonSave}</span>
+                    </button>
+                    <button is="emby-button" type="button" class="subdued raised block" onclick="Dashboard.navigate('dlnaprofiles.html');">
+                        <i class="md-icon">close</i><span>${ButtonCancel}</span>
+                    </button>
 
-                </ul>
+                </div>
             </form>
 
         </div>
