@@ -1,4 +1,4 @@
-﻿define(['itemHelper', 'dialogHelper', 'datetime', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light'], function (itemHelper, dialogHelper, datetime) {
+﻿define(['itemHelper', 'dialogHelper', 'datetime', 'loading', 'connectionManager', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light'], function (itemHelper, dialogHelper, datetime, loading, connectionManager) {
 
     var currentContext;
     var metadataEditorInfo;
@@ -23,19 +23,21 @@
                 toast(Globalize.translate('MessageItemSaved'));
             });
 
-            Dashboard.hideLoadingMsg();
+            loading.hide();
             closeDialog(true);
         }
 
-        ApiClient.updateItem(item).then(function () {
+        var apiClient = getApiClient();
+
+        apiClient.updateItem(item).then(function () {
 
             var newContentType = form.querySelector('#selectContentType').value || '';
 
             if ((metadataEditorInfo.ContentType || '') != newContentType) {
 
-                ApiClient.ajax({
+                apiClient.ajax({
 
-                    url: ApiClient.getUrl('Items/' + item.Id + '/ContentType', {
+                    url: apiClient.getUrl('Items/' + item.Id + '/ContentType', {
                         ContentType: newContentType
                     }),
 
@@ -115,7 +117,7 @@
 
     function onSubmit(e) {
 
-        Dashboard.showLoadingMsg();
+        loading.show();
 
         var form = this;
 
@@ -271,16 +273,6 @@
         });
     }
 
-    function showRefreshMenu(context, button) {
-
-        require(['refreshDialog'], function (refreshDialog) {
-            showElement(new refreshDialog({
-                itemIds: [currentItem.Id],
-                serverId: ApiClient.serverInfo().Id
-            }));
-        });
-    }
-
     function showMoreMenu(context, button, user) {
 
         require(['itemContextMenu'], function (itemContextMenu) {
@@ -300,7 +292,7 @@
                     Emby.Page.goHome();
 
                 } else if (result.updated) {
-                    reload(context, currentItem.Id);
+                    reload(context, currentItem.Id, currentItem.ServerId);
                 }
             });
         });
@@ -315,19 +307,19 @@
             if (msg.Data.ItemsUpdated.indexOf(currentItem.Id) != -1) {
 
                 console.log('Item updated - reloading metadata');
-                reload(currentContext, currentItem.Id);
+                reload(currentContext, currentItem.Id, currentItem.ServerId);
             }
         }
     }
 
-    function bindItemChanged(context) {
+    function bindItemChanged(context, apiClient) {
 
-        Events.on(ApiClient, "websocketmessage", onWebSocketMessageReceived);
+        Events.on(apiClient, "websocketmessage", onWebSocketMessageReceived);
     }
 
-    function unbindItemChanged(context) {
+    function unbindItemChanged(context, apiClient) {
 
-        Events.off(ApiClient, "websocketmessage", onWebSocketMessageReceived);
+        Events.off(apiClient, "websocketmessage", onWebSocketMessageReceived);
     }
 
     function onEditorClick(e) {
@@ -344,7 +336,11 @@
         }
     }
 
-    function init(context) {
+    function getApiClient() {
+        return connectionManager.getApiClient(currentItem.ServerId);
+    }
+
+    function init(context, apiClient) {
 
         context.querySelector('.btnCancel').addEventListener('click', function () {
 
@@ -353,7 +349,7 @@
 
         context.querySelector('.btnMore').addEventListener('click', function (e) {
 
-            Dashboard.getCurrentUser().then(function (user) {
+            getApiClient().getCurrentUser().then(function (user) {
                 showMoreMenu(context, e.target, user);
             });
 
@@ -387,21 +383,27 @@
 
         // For now this is only supported in dialog mode because we have a way of knowing when it closes
         if (isDialog()) {
-            bindItemChanged(context);
+            bindItemChanged(context, apiClient);
         }
     }
 
-    function getItem(itemId) {
+    function getItem(itemId, serverId) {
+
+        var apiClient = connectionManager.getApiClient(serverId);
+
         if (itemId) {
-            return ApiClient.getItem(Dashboard.getCurrentUserId(), itemId);
+            return apiClient.getItem(apiClient.getCurrentUserId(), itemId);
         }
 
-        return ApiClient.getRootFolder(Dashboard.getCurrentUserId());
+        return apiClient.getRootFolder(apiClient.getCurrentUserId());
     }
 
-    function getEditorConfig(itemId) {
+    function getEditorConfig(itemId, serverId) {
+
+        var apiClient = connectionManager.getApiClient(serverId);
+
         if (itemId) {
-            return ApiClient.getJSON(ApiClient.getUrl('Items/' + itemId + '/MetadataEditor'));
+            return apiClient.getJSON(apiClient.getUrl('Items/' + itemId + '/MetadataEditor'));
         }
 
         return Promise.resolve({});
@@ -1121,11 +1123,11 @@
         container.innerHTML = html;
     }
 
-    function reload(context, itemId) {
+    function reload(context, itemId, serverId) {
 
-        Dashboard.showLoadingMsg();
+        loading.show();
 
-        Promise.all([getItem(itemId), getEditorConfig(itemId)]).then(function (responses) {
+        Promise.all([getItem(itemId, serverId), getEditorConfig(itemId, serverId)]).then(function (responses) {
 
             var item = responses[0];
             metadataEditorInfo = responses[1];
@@ -1159,15 +1161,15 @@
                 hideElement('#fldTagline', context);
             }
 
-            Dashboard.hideLoadingMsg();
+            loading.hide();
         });
     }
 
     return {
-        show: function (itemId) {
+        show: function (itemId, serverId) {
             return new Promise(function (resolve, reject) {
 
-                Dashboard.showLoadingMsg();
+                loading.show();
 
                 var xhr = new XMLHttpRequest();
                 xhr.open('GET', 'components/metadataeditor/metadataeditor.template.html', true);
@@ -1195,25 +1197,25 @@
                     dialogHelper.open(dlg);
 
                     dlg.addEventListener('close', function () {
-                        unbindItemChanged(dlg);
+                        unbindItemChanged(dlg, connectionManager.getApiClient(serverId));
                         resolve();
                     });
 
                     currentContext = dlg;
 
-                    init(dlg);
+                    init(dlg, connectionManager.getApiClient(serverId));
 
-                    reload(dlg, itemId);
+                    reload(dlg, itemId, serverId);
                 }
 
                 xhr.send();
             });
         },
 
-        embed: function (elem, itemId) {
+        embed: function (elem, itemId, serverId) {
             return new Promise(function (resolve, reject) {
 
-                Dashboard.showLoadingMsg();
+                loading.show();
 
                 var xhr = new XMLHttpRequest();
                 xhr.open('GET', 'components/metadataeditor/metadataeditor.template.html', true);
@@ -1228,8 +1230,8 @@
 
                     currentContext = elem;
 
-                    init(elem);
-                    reload(elem, itemId);
+                    init(elem, connectionManager.getApiClient(serverId));
+                    reload(elem, itemId, serverId);
                 }
 
                 xhr.send();

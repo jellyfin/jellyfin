@@ -516,16 +516,17 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
         return new Promise(function (resolve, reject) {
 
+            var serverId = apiClient.serverInfo().Id;
+
             if (item.Type == 'Timer') {
                 require(['recordingEditor'], function (recordingEditor) {
 
-                    var serverId = apiClient.serverInfo().Id;
                     recordingEditor.show(item.Id, serverId).then(resolve, reject);
                 });
             } else {
                 require(['components/metadataeditor/metadataeditor'], function (metadataeditor) {
 
-                    metadataeditor.show(item.Id).then(resolve, reject);
+                    metadataeditor.show(item.Id, serverId).then(resolve, reject);
                 });
             }
         });
