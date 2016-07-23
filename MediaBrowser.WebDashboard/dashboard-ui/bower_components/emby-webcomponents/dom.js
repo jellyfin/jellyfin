@@ -13,9 +13,14 @@ define([], function () {
         return elem;
     }
 
-    function parentWithTag(elem, tagName) {
+    function parentWithTag(elem, tagNames) {
 
-        while (elem.tagName != tagName) {
+        // accept both string and array passed in
+        if (!Array.isArray(tagNames)) {
+            tagNames = [tagNames];
+        }
+
+        while (tagNames.indexOf(elem.tagName || '') == -1) {
             elem = elem.parentNode;
 
             if (!elem) {

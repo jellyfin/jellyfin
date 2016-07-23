@@ -31,11 +31,9 @@ namespace MediaBrowser.Api.Dlna
         public string Id { get; set; }
     }
 
-    [Route("/Dlna/Profiles/{ProfileId}", "POST", Summary = "Updates a profile")]
+    [Route("/Dlna/Profiles/{Id}", "POST", Summary = "Updates a profile")]
     public class UpdateProfile : DeviceProfile, IReturnVoid
     {
-        [ApiMember(Name = "ProfileId", Description = "Profile Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string ProfileId { get; set; }
     }
 
     [Route("/Dlna/Profiles", "POST", Summary = "Creates a profile")]
