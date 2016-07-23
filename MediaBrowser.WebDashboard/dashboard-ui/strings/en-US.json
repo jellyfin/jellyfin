@@ -2194,7 +2194,7 @@
   "HeaderUnlockSync": "Unlock Emby Sync",
   "MessageUnlockAppWithPurchaseOrSupporter": "Unlock this feature with a small one-time purchase, or with an active Emby Premiere subscription.",
   "MessageUnlockAppWithSupporter": "Unlock this feature with an active Emby Premiere subscription.",
-  "MessageToValidateSupporter": "If you have an active Emby Premiere subscription, ensure you've setup Emby Premiere in your Emby Server Dashboard under Help -> Emby Premiere.",
+  "MessageToValidateSupporter": "If you have an active Emby Premiere subscription, ensure you've setup Emby Premiere in your Emby Server Dashboard, which you can access by clicking Emby Premiere within the main menu.",
   "MessagePaymentServicesUnavailable": "Payment services are currently unavailable. Please try again later.",
   "MessagePleaseSignInLocalNetwork": "Before proceeding, please ensure that you're connected to your local network using a Wifi or LAN connection.",
   "ButtonUnlockWithPurchase": "Unlock with Purchase",

@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'paper-icon-button-light', 'emby-input', 'emby-select'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'paper-icon-button-light', 'emby-input', 'emby-select'], function (dialogHelper) {
 
     return {
         show: function (person) {
@@ -28,9 +28,9 @@
                     dlg.innerHTML = html;
                     document.body.appendChild(dlg);
 
-                    $('.txtPersonName', dlg).val(person.Name || '');
-                    $('.selectPersonType', dlg).val(person.Type || '');
-                    $('.txtPersonRole', dlg).val(person.Role || '');
+                    dlg.querySelector('.txtPersonName', dlg).value = person.Name || '';
+                    dlg.querySelector('.selectPersonType', dlg).value = person.Type || '';
+                    dlg.querySelector('.txtPersonRole', dlg).value = person.Role || '';
 
                     dialogHelper.open(dlg);
 
@@ -52,9 +52,9 @@
 
                         submitted = true;
 
-                        person.Name = $('.txtPersonName', dlg).val();
-                        person.Type = $('.selectPersonType', dlg).val();
-                        person.Role = $('.txtPersonRole', dlg).val() || null;
+                        person.Name = dlg.querySelector('.txtPersonName', dlg).value;
+                        person.Type = dlg.querySelector('.selectPersonType', dlg).value;
+                        person.Role = dlg.querySelector('.txtPersonRole', dlg).value || null;
 
                         dialogHelper.close(dlg);
 
