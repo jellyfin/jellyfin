@@ -19,7 +19,7 @@
                         Fields: "DateCreated,SyncInfo,ItemCounts",
                         StartIndex: 0
                     },
-                    view: libraryBrowser.getSavedView(key) || libraryBrowser.getDefaultItemsView('Thumb', 'Thumb')
+                    view: libraryBrowser.getSavedView(key) || libraryBrowser.getDefaultItemsView('PosterCard', 'PosterCard')
                 };
 
                 pageData.query.ParentId = params.topParentId;
@@ -65,7 +65,8 @@
                         showItemCounts: true,
                         centerText: true,
                         lazy: true,
-                        overlayMoreButton: true
+                        overlayMoreButton: true,
+                        showTitle: true
                     });
                 }
                 else if (viewStyle == "ThumbCard") {
@@ -84,7 +85,7 @@
                 else if (viewStyle == "PosterCard") {
                     html = libraryBrowser.getPosterViewHtml({
                         items: result.Items,
-                        shape: "portrait",
+                        shape: "auto",
                         context: 'music',
                         showItemCounts: true,
                         lazy: true,
@@ -95,12 +96,13 @@
                 else if (viewStyle == "Poster") {
                     html = libraryBrowser.getPosterViewHtml({
                         items: result.Items,
-                        shape: "portrait",
+                        shape: "auto",
                         context: 'music',
                         centerText: true,
                         showItemCounts: true,
                         lazy: true,
-                        overlayMoreButton: true
+                        overlayMoreButton: true,
+                        showTitle: true
                     });
                 }
 
