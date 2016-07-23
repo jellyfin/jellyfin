@@ -1,5 +1,4 @@
 {
-    "XmlTvPremiere": "By default, Emby will import {0} hours of guide data. Importing unlimited data requires an active Emby Premiere subscription.",
     "LabelExit": "\uc885\ub8cc",
     "LabelVisitCommunity": "\ucee4\ubba4\ub2c8\ud2f0 \ubc29\ubb38",
     "LabelGithub": "Github",
@@ -1700,7 +1699,6 @@
     "MessageChromecastConnectionError": "\ud06c\ub86c\uce90\uc2a4\ud2b8 \uc218\uc2e0\uae30\ub97c Emby \uc11c\ubc84\uc5d0 \uc5f0\uacb0\ud560 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4. \uc5f0\uacb0 \uc0c1\ud0dc\ub97c \ud655\uc778\ud558\uace0 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.",
     "MessagePleaseSelectOneItem": "\ucd5c\uc18c \ud55c \uac1c\uc758 \ud56d\ubaa9\uc744 \uc120\ud0dd\ud558\uc138\uc694.",
     "MessagePleaseSelectTwoItems": "\ucd5c\uc18c \ub450 \uac1c\uc758 \ud56d\ubaa9\uc744 \uc120\ud0dd\ud558\uc138\uc694.",
-    "MessageTheSelectedItemsWillBeGrouped": "\uc120\ud0dd\ud55c \ube44\ub514\uc624\ub97c \ud55c \uac1c\uc758 \uac00\uc0c1 \ud56d\ubaa9\uc73c\ub85c \ubb36\uc2b5\ub2c8\ub2e4. Emby \uc571\uc774 \uc7a5\uce58\uc640 \ub124\ud2b8\uc6cc\ud06c \uc131\ub2a5\uc744 \uae30\uc900\uc73c\ub85c \uc790\ub3d9 \uc120\ud0dd\ud558\uc5ec \uc7ac\uc0dd\ud569\ub2c8\ub2e4. \uacc4\uc18d\ud558\uaca0\uc2b5\ub2c8\uae4c?",
     "HeaderLibraryFolders": "\ubbf8\ub514\uc5b4 \ud3f4\ub354",
     "HeaderFavoriteMovies": "\uc990\uaca8\ucc3e\ub294 \uc601\ud654",
     "HeaderFavoriteShows": "\uc990\uaca8\ucc3e\ub294 \uc1fc",
@@ -2281,13 +2279,9 @@
     "TextPleaseEnterYourEmailAddressForSubscription": "Please enter your e-mail address.",
     "LoginDisclaimer": "Emby is designed to help you manage your personal media library, such as home videos and photos. Please see our terms of use. The use of any Emby software constitutes acceptance of these terms.",
     "TermsOfUse": "Terms of use",
-    "HeaderTryMultiSelect": "Try Multi-Select",
-    "TryMultiSelectMessage": "To edit multiple media items, just click and hold any poster and select the items you want to manage. Try it!",
     "NumLocationsValue": "{0} folders",
     "ButtonAddMediaLibrary": "Add Media Library",
     "ButtonManageFolders": "Manage folders",
-    "HeaderTryDragAndDrop": "Try Drag and Drop",
-    "TryDragAndDropMessage": "To re-arrange playlist items, just drag and drop. Try it!",
     "HeaderTryMicrosoftEdge": "Try Microsoft Edge",
     "MessageTryMicrosoftEdge": "For a better experience on Windows 10, try the new Microsoft Edge Browser.",
     "HeaderTryModernBrowser": "Try a Modern Web Browser",
@@ -2385,5 +2379,7 @@
     "UnzipFFmpegFile": "Unzip the downloaded file to a folder of your choice.",
     "OptionUseSystemInstalledVersion": "Use system installed version",
     "OptionUseMyCustomVersion": "Use a custom version",
-    "FFmpegSavePathNotFound": "We're unable to locate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again."
+    "FFmpegSavePathNotFound": "We're unable to locate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again.",
+    "XmlTvPremiere": "By default, Emby will import {0} hours of guide data. Importing unlimited data requires an active Emby Premiere subscription.",
+    "MoreFromValue": "More from {0}"
 }

@@ -1,5 +1,4 @@
 {
-    "XmlTvPremiere": "By default, Emby will import {0} hours of guide data. Importing unlimited data requires an active Emby Premiere subscription.",
     "LabelExit": "Sair",
     "LabelVisitCommunity": "Visitar a Comunidade",
     "LabelGithub": "Github",
@@ -1700,7 +1699,6 @@
     "MessageChromecastConnectionError": "O seu receptor Chromecast n\u00e3o pode conectar com seu Servidor Emby. Por favor, verifique as suas conex\u00f5es e tente novamente.",
     "MessagePleaseSelectOneItem": "Por favor selecione pelo menos um item.",
     "MessagePleaseSelectTwoItems": "Por favor selecione pelo menos dois itens.",
-    "MessageTheSelectedItemsWillBeGrouped": "Os v\u00eddeos selecionados ser\u00e3o agrupados dentro de um item virtual. Os apps do Emby escolher\u00e3o automaticamente qual vers\u00e3o ser\u00e1 reproduzida com base  na performance do dispositivo e da rede. Deseja realmente continuar?",
     "HeaderLibraryFolders": "Pastas multim\u00e9dia",
     "HeaderFavoriteMovies": "Filmes Favoritos",
     "HeaderFavoriteShows": "S\u00e9ries Favoritas",
@@ -2281,13 +2279,9 @@
     "TextPleaseEnterYourEmailAddressForSubscription": "Please enter your e-mail address.",
     "LoginDisclaimer": "Emby est\u00e1 desenhado para ajud\u00e1-lo a gerenciar sua biblioteca de multim\u00e9dia pessoal, como v\u00eddeos caseiros ou fotos. Por favor, leia nossos termos de uso. O uso de qualquer software Emby constitui a aceita\u00e7\u00e3o desses termos.",
     "TermsOfUse": "Terms of use",
-    "HeaderTryMultiSelect": "Try Multi-Select",
-    "TryMultiSelectMessage": "Para editar m\u00faltiplos ficheiros de multim\u00e9dia, basta clicar e segurar qualquer capa e selecionar os itens que gostaria de gerir. Experimente!",
     "NumLocationsValue": "{0} folders",
     "ButtonAddMediaLibrary": "Adicionar Biblioteca de Multim\u00e9dia",
     "ButtonManageFolders": "Manage folders",
-    "HeaderTryDragAndDrop": "Try Drag and Drop",
-    "TryDragAndDropMessage": "To re-arrange playlist items, just drag and drop. Try it!",
     "HeaderTryMicrosoftEdge": "Try Microsoft Edge",
     "MessageTryMicrosoftEdge": "For a better experience on Windows 10, try the new Microsoft Edge Browser.",
     "HeaderTryModernBrowser": "Try a Modern Web Browser",
@@ -2385,5 +2379,7 @@
     "UnzipFFmpegFile": "Unzip the downloaded file to a folder of your choice.",
     "OptionUseSystemInstalledVersion": "Use system installed version",
     "OptionUseMyCustomVersion": "Use a custom version",
-    "FFmpegSavePathNotFound": "We're unable to locate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again."
+    "FFmpegSavePathNotFound": "We're unable to locate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again.",
+    "XmlTvPremiere": "By default, Emby will import {0} hours of guide data. Importing unlimited data requires an active Emby Premiere subscription.",
+    "MoreFromValue": "More from {0}"
 }

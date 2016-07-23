@@ -1,5 +1,4 @@
 {
-    "XmlTvPremiere": "Standaard wordt {0} uur gids data in Emby ge\u00efmporteerd. Het importeren van onbeperkte data vereist een actieve Emby Premiere abonnement.",
     "LabelExit": "Afsluiten",
     "LabelVisitCommunity": "Bezoek Gemeenschap",
     "LabelGithub": "Github",
@@ -1700,7 +1699,6 @@
     "MessageChromecastConnectionError": "Uw Chromecast ontvanger kan niet met uw Emby Server verbinden. Controleer de verbindingen en probeer het opnieuw.",
     "MessagePleaseSelectOneItem": "Selecteer ten minste een item.",
     "MessagePleaseSelectTwoItems": "Selecteer ten minste twee items.",
-    "MessageTheSelectedItemsWillBeGrouped": "De geselecteerde videos worden in 1 item gegroepeerd. Emby apps zullen automatisch de juiste versie selecteren op basis van het apparaat en netwerk prestaties. Weet u zeker dat u door wilt gaan?",
     "HeaderLibraryFolders": "Media Mappen",
     "HeaderFavoriteMovies": "Favoriete Films",
     "HeaderFavoriteShows": "Favoriete Shows",
@@ -2281,13 +2279,9 @@
     "TextPleaseEnterYourEmailAddressForSubscription": "Vul alstublieft uw e-mail adres in. ",
     "LoginDisclaimer": "Emby is ontworpen om uw persoonlijke mediabibliotheek te helpen beheren, zoals home video's en foto's. Zie onze gebruiksvoorwaarden. Het gebruik van Emby software betekent acceptatie van deze voorwaarden.",
     "TermsOfUse": "Gebruiksvoorwaarden",
-    "HeaderTryMultiSelect": "Probeer multi-select",
-    "TryMultiSelectMessage": "Als u meerdere media-items wilt bewerken, klikt u er op een poster en hou even vast, selecteer nu de items die u wilt beheren. Probeer maar!",
     "NumLocationsValue": "{0} folders",
     "ButtonAddMediaLibrary": "Voeg Media Bibliotheek toe",
     "ButtonManageFolders": "Beheer mappen",
-    "HeaderTryDragAndDrop": "Probeer 'Drag and Drop'",
-    "TryDragAndDropMessage": "Gebruik 'drag and drop' om uw afspeellijst aan te passen.",
     "HeaderTryMicrosoftEdge": "Probeer Microsoft Edge",
     "MessageTryMicrosoftEdge": "Voor een betere ervaring in Windows 10 gebruikt u de nieuwe Microsoft Edge webbrowser.",
     "HeaderTryModernBrowser": "Probeer een Moderne Webbrowser",
@@ -2385,5 +2379,7 @@
     "UnzipFFmpegFile": "Pak het gedownloade bestand uit naar een map van uw keuze.",
     "OptionUseSystemInstalledVersion": "Gebruik door systeem ge\u00efnstalleerde versie",
     "OptionUseMyCustomVersion": "Gebruik een aangepaste versie",
-    "FFmpegSavePathNotFound": "We zijn niet in staat om FFmpeg te lokaliseren met behulp van het pad dat u hebt ingevoerd. FFprobe is ook nodig en moet bestaan \u200b\u200bin dezelfde map. Deze componenten worden gewoonlijk gebundeld in dezelfde download. Controleer het pad en probeer het opnieuw."
+    "FFmpegSavePathNotFound": "We zijn niet in staat om FFmpeg te lokaliseren met behulp van het pad dat u hebt ingevoerd. FFprobe is ook nodig en moet bestaan \u200b\u200bin dezelfde map. Deze componenten worden gewoonlijk gebundeld in dezelfde download. Controleer het pad en probeer het opnieuw.",
+    "XmlTvPremiere": "Standaard wordt {0} uur gids data in Emby ge\u00efmporteerd. Het importeren van onbeperkte data vereist een actieve Emby Premiere abonnement.",
+    "MoreFromValue": "More from {0}"
 }

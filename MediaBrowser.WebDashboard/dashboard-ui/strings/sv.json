@@ -1,5 +1,4 @@
 {
-    "XmlTvPremiere": "By default, Emby will import {0} hours of guide data. Importing unlimited data requires an active Emby Premiere subscription.",
     "LabelExit": "Avsluta",
     "LabelVisitCommunity": "Bes\u00f6k v\u00e5rt diskussionsforum",
     "LabelGithub": "Github",
@@ -1700,7 +1699,6 @@
     "MessageChromecastConnectionError": "Dina Chromecast kan inte ansluta till din Emby server. Kolla anslutningarna och f\u00f6rs\u00f6k igen.",
     "MessagePleaseSelectOneItem": "Var god v\u00e4lj minst ett objekt.",
     "MessagePleaseSelectTwoItems": "Var god v\u00e4lj minst tv\u00e5 objekt.",
-    "MessageTheSelectedItemsWillBeGrouped": "Markerade videos kommer att grupperas till ett virtuellt objekt. Emby appar kommer sen automatiskt v\u00e4lja den versionen som \u00e4r b\u00e4st anpassad efter enhet och n\u00e4tverksprestanda. \u00c4r du s\u00e4ker p\u00e5 att du vill forts\u00e4tta?",
     "HeaderLibraryFolders": "Mediamappar",
     "HeaderFavoriteMovies": "Favoritfilmer",
     "HeaderFavoriteShows": "Favoritserier",
@@ -2281,13 +2279,9 @@
     "TextPleaseEnterYourEmailAddressForSubscription": "V\u00e4nligen fyll i din epostadress.",
     "LoginDisclaimer": "Emby \u00e4r designat f\u00f6r att hj\u00e4lpa dig hantera ditt personliga mediabibliotek, s\u00e5som filmer och bilder. L\u00e4s igenom v\u00e5ra anv\u00e4ndarvillkor. Anv\u00e4nding av Emby-mjukvara inneb\u00e4r ett accepterande av dessa anv\u00e4ndarvillkor.",
     "TermsOfUse": "Anv\u00e4ndarvillkor",
-    "HeaderTryMultiSelect": "Pr\u00f6va flervalsmarkering",
-    "TryMultiSelectMessage": "F\u00f6r att redigera flera mediaobjekt, klicka och h\u00e5ll p\u00e5 ett omslag och markera sedan s\u00e5 m\u00e5nga du vill. Pr\u00f6va nu!",
     "NumLocationsValue": "{0} mappar",
     "ButtonAddMediaLibrary": "L\u00e4gg till mediabibliotek",
     "ButtonManageFolders": "Hantera mappar",
-    "HeaderTryDragAndDrop": "Pr\u00f6va Dra-och-Sl\u00e4ppa",
-    "TryDragAndDropMessage": "F\u00f6r att arrangera om objekt i en spellista, bara dra-och-sl\u00e4pp. Pr\u00f6va nu!",
     "HeaderTryMicrosoftEdge": "Pr\u00f6va Microsoft Edge",
     "MessageTryMicrosoftEdge": "F\u00f6r en b\u00e4ttre upplevelse i Windows 10, pr\u00f6va den nya webbl\u00e4saren Microsoft Edge.",
     "HeaderTryModernBrowser": "Pr\u00f6va en modern webbl\u00e4sare",
@@ -2385,5 +2379,7 @@
     "UnzipFFmpegFile": "Packa upp den nedladdade filen till en valfri katalog.",
     "OptionUseSystemInstalledVersion": "Use system installed version",
     "OptionUseMyCustomVersion": "Use a custom version",
-    "FFmpegSavePathNotFound": "We're unable to locate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again."
+    "FFmpegSavePathNotFound": "We're unable to locate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again.",
+    "XmlTvPremiere": "By default, Emby will import {0} hours of guide data. Importing unlimited data requires an active Emby Premiere subscription.",
+    "MoreFromValue": "More from {0}"
 }
