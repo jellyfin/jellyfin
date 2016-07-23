@@ -246,7 +246,7 @@ namespace Emby.Drawing
                     var newHeight = Convert.ToInt32(newSize.Height);
 
                     _fileSystem.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
-                    var tmpPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N"));
+                    var tmpPath = Path.ChangeExtension(Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N")), Path.GetExtension(cacheFilePath));
                     _fileSystem.CreateDirectory(Path.GetDirectoryName(tmpPath));
 
                     await _imageProcessingSemaphore.WaitAsync().ConfigureAwait(false);
@@ -433,7 +433,7 @@ namespace Emby.Drawing
             try
             {
                 _fileSystem.CreateDirectory(Path.GetDirectoryName(croppedImagePath));
-                var tmpPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N"));
+                var tmpPath = Path.ChangeExtension(Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N")), Path.GetExtension(croppedImagePath));
                 _fileSystem.CreateDirectory(Path.GetDirectoryName(tmpPath));
 
                 await _imageProcessingSemaphore.WaitAsync().ConfigureAwait(false);

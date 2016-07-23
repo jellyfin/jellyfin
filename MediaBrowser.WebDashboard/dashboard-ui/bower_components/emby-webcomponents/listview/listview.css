@@ -104,13 +104,13 @@ div.listItem {
 .listItemIcon {
     width: auto !important;
     height: auto !important;
-    font-size: 120%;
+    font-size: 140%;
     border-radius: 500px;
     background-color: #52B54B;
     padding: .5em;
     color: #fff;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
 }
-
 
 .listItem.largeImage .listItemImage {
     width: 45vh;
@@ -144,7 +144,7 @@ div.listItem {
     }
 
     .listItem > .fab:first-child, .listItem > i:first-child {
-        margin-left: .75em;
+        margin-left: .65em;
     }
 
 .paperList {
