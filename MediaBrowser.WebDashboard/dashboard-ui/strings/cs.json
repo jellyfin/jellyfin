@@ -1,5 +1,4 @@
 {
-    "XmlTvPremiere": "By default, Emby will import {0} hours of guide data. Importing unlimited data requires an active Emby Premiere subscription.",
     "LabelExit": "Zav\u0159\u00edt",
     "LabelVisitCommunity": "Nav\u0161t\u00edvit komunitu",
     "LabelGithub": "Github",
@@ -1700,7 +1699,6 @@
     "MessageChromecastConnectionError": "V\u00e1\u0161 p\u0159ij\u00edma\u010d Chromecastu se nem\u016f\u017ee p\u0159ipojit k va\u0161emu Emby serveru. Pros\u00edm, zkontrolujte sv\u00e9 p\u0159ipojen\u00ed a zkuste to znovu.",
     "MessagePleaseSelectOneItem": "Vyberte nejm\u00e9n\u011b jednu polo\u017eku, pros\u00edm.",
     "MessagePleaseSelectTwoItems": "Vyberte nejm\u00e9n\u011b dv\u011b polo\u017eky pros\u00edm.",
-    "MessageTheSelectedItemsWillBeGrouped": "Vybran\u00e9 video bude seskupeno do jedn\u00e9 virtu\u00e1ln\u00ed polo\u017eky. Emby aplikace automaticky vybere verzi, kterou chcete p\u0159ehr\u00e1t na z\u00e1klad\u011b za\u0159\u00edzen\u00ed a v\u00fdkonu s\u00edt\u011b. Jste si jisti, \u017ee chcete pokra\u010dovat?",
     "HeaderLibraryFolders": "Slo\u017eky m\u00e9di\u00ed",
     "HeaderFavoriteMovies": "Obl\u00edben\u00e9 filmy",
     "HeaderFavoriteShows": "Obl\u00edben\u00e9 seri\u00e1ly",
@@ -2281,13 +2279,9 @@
     "TextPleaseEnterYourEmailAddressForSubscription": "Vlo\u017ete e-mailovou adresu, pros\u00edm.",
     "LoginDisclaimer": "Emby je navr\u017een tak, aby v\u00e1m pomohl spravovat sv\u00e9 osobn\u00ed knihovny m\u00e9di\u00ed, jako jsou dom\u00e1c\u00ed videa a fotografie. P\u0159e\u010dt\u011bte si pros\u00edm na\u0161e podm\u00ednky pou\u017eit\u00ed. Pou\u017e\u00edv\u00e1n\u00edm jak\u00e9hokoli softwaru Emby souhlas\u00edte s t\u011bmito podm\u00ednkami.",
     "TermsOfUse": "Podm\u00ednky pou\u017eit\u00ed",
-    "HeaderTryMultiSelect": "Vyzkou\u0161ej multi-v\u00fdb\u011br",
-    "TryMultiSelectMessage": "Chcete-li upravit v\u00edce medi\u00e1ln\u00edch polo\u017eek, sta\u010d\u00ed kliknout a podr\u017eet na kter\u00e9mkoliv plak\u00e1tu. Pot\u00e9 m\u016f\u017eete vybrat v\u00edce polo\u017eek, kter\u00e9 chcete spravovat. Zkus to!",
     "NumLocationsValue": "{0} slo\u017eky",
     "ButtonAddMediaLibrary": "P\u0159idat knihovnu m\u00e9di\u00ed",
     "ButtonManageFolders": "Spr\u00e1va slo\u017eek",
-    "HeaderTryDragAndDrop": "Vyzkou\u0161ej drag'n'drop",
-    "TryDragAndDropMessage": "Chcete-li zm\u011bnit uspo\u0159\u00e1d\u00e1n\u00ed seznamu skladeb polo\u017eky, jen t\u00e1hni a pus\u0165 (drag&drop). Zkus to!",
     "HeaderTryMicrosoftEdge": "Zkuste Microsoft Edge",
     "MessageTryMicrosoftEdge": "Pro lep\u0161\u00ed z\u00e1\u017eitek na syst\u00e9mu Windows 10, zkuste nov\u00fd prohl\u00ed\u017ee\u010d Microsoft EDGE.",
     "HeaderTryModernBrowser": "Zkuste modern\u011bj\u0161\u00ed webov\u00fd prohl\u00ed\u017ee\u010d",
@@ -2385,5 +2379,7 @@
     "UnzipFFmpegFile": "Unzip the downloaded file to a folder of your choice.",
     "OptionUseSystemInstalledVersion": "Use system installed version",
     "OptionUseMyCustomVersion": "Use a custom version",
-    "FFmpegSavePathNotFound": "We're unable to locate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again."
+    "FFmpegSavePathNotFound": "We're unable to locate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again.",
+    "XmlTvPremiere": "By default, Emby will import {0} hours of guide data. Importing unlimited data requires an active Emby Premiere subscription.",
+    "MoreFromValue": "More from {0}"
 }

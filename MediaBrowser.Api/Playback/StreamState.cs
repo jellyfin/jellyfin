@@ -80,6 +80,10 @@ namespace MediaBrowser.Api.Playback
                     {
                         return 10;
                     }
+                    if (userAgent.IndexOf("cfnetwork", StringComparison.OrdinalIgnoreCase) != -1)
+                    {
+                        return 10;
+                    }
 
                     return 6;
                 }

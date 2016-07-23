@@ -1,5 +1,4 @@
 {
-    "XmlTvPremiere": "Par d\u00e9faut, Emby importera {0} heures de donn\u00e9es de guidage. L\u2019importation de donn\u00e9es illimit\u00e9 n\u00e9cessite un abonnement Emby Premiere.",
     "LabelExit": "Quitter",
     "LabelVisitCommunity": "Visiter la Communaut\u00e9",
     "LabelGithub": "Github",
@@ -1700,7 +1699,6 @@
     "MessageChromecastConnectionError": "Votre cl\u00e9 Chromecast ne peut pas se connecter \u00e0 votre serveur Emby. Veuillez v\u00e9rifier les connections et recommencer.",
     "MessagePleaseSelectOneItem": "Veuillez s\u00e9lectionner au moins un item.",
     "MessagePleaseSelectTwoItems": "Veuillez s\u00e9lectionner au moins deux items.",
-    "MessageTheSelectedItemsWillBeGrouped": "Les vid\u00e9os s\u00e9lectionn\u00e9es seront regroup\u00e9es dans un objet virtuel. L'application Emby choisra automatiquement quelle version jouer d'apr\u00e8s le p\u00e9riph\u00e9rique et la performance du r\u00e9seau. \u00cates vous s\u00fbre de vouloir continuer ?",
     "HeaderLibraryFolders": "R\u00e9pertoires de m\u00e9dias",
     "HeaderFavoriteMovies": "Films favoris",
     "HeaderFavoriteShows": "S\u00e9ries favorites",
@@ -2281,13 +2279,9 @@
     "TextPleaseEnterYourEmailAddressForSubscription": "Merci d'entrer votre adresse email.",
     "LoginDisclaimer": "Emby est con\u00e7u pour vous aider \u00e0 g\u00e9rer votre biblioth\u00e8que de m\u00e9dias personnels, tels que les vid\u00e9os et les photos. Veuillez lire nos conditions d'utilisation. L'utilisation de tout logiciel Emby implique que vous acceptiez ces conditions.",
     "TermsOfUse": "Conditions d'utilisation",
-    "HeaderTryMultiSelect": "Essayer la s\u00e9lection multiple",
-    "TryMultiSelectMessage": "Pour modifier plusieurs \u00e9l\u00e9ments m\u00e9dias, il suffit de cliquer et maintenir le clic sur n'importe quel poster et de s\u00e9lectionner les \u00e9lements que vous voulez g\u00e9rer. Essayer le !",
     "NumLocationsValue": "{0} dossiers",
     "ButtonAddMediaLibrary": "Ajouter une biblioth\u00e8que de m\u00e9dia",
     "ButtonManageFolders": "G\u00e9rer les dossiers",
-    "HeaderTryDragAndDrop": "Essayer le glisser-d\u00e9poser",
-    "TryDragAndDropMessage": "Pour r\u00e9organiser les \u00e9l\u00e9ments de la playlist, faite juste un glisser \/ d\u00e9poser. Essayez le !",
     "HeaderTryMicrosoftEdge": "Essayer Microsoft Edge",
     "MessageTryMicrosoftEdge": "Pour une meilleure exp\u00e9rience sur Windows 10, essayez le nouveau navigateur Microsoft Edge.",
     "HeaderTryModernBrowser": "Essayer avec un Navigateur Internet moderne",
@@ -2385,5 +2379,7 @@
     "UnzipFFmpegFile": "D\u00e9compresser le fichier t\u00e9l\u00e9charg\u00e9 dans un dossier de votre choix.",
     "OptionUseSystemInstalledVersion": "Utiliser la version syst\u00e8me install\u00e9",
     "OptionUseMyCustomVersion": "Utiliser une version personnalis\u00e9e",
-    "FFmpegSavePathNotFound": "Nous ne pouvons pas localiser FFmpeg en utilisant le chemin que vous avez saisi. FFprobe est \u00e9galement n\u00e9cessaire et doit exister dans le m\u00eame dossier. Ces composants sont g\u00e9n\u00e9ralement regroup\u00e9s dans le m\u00eame t\u00e9l\u00e9chargement. S'il vous pla\u00eet v\u00e9rifier le chemin et essayer \u00e0 nouveau."
+    "FFmpegSavePathNotFound": "Nous ne pouvons pas localiser FFmpeg en utilisant le chemin que vous avez saisi. FFprobe est \u00e9galement n\u00e9cessaire et doit exister dans le m\u00eame dossier. Ces composants sont g\u00e9n\u00e9ralement regroup\u00e9s dans le m\u00eame t\u00e9l\u00e9chargement. S'il vous pla\u00eet v\u00e9rifier le chemin et essayer \u00e0 nouveau.",
+    "XmlTvPremiere": "Par d\u00e9faut, Emby importera {0} heures de donn\u00e9es de guidage. L\u2019importation de donn\u00e9es illimit\u00e9 n\u00e9cessite un abonnement Emby Premiere.",
+    "MoreFromValue": "Plus de {0}"
 }

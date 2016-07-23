@@ -1,5 +1,4 @@
 {
-    "XmlTvPremiere": "Grunds\u00e4tzlich wird Emby {0} Stunden des EPGs importieren. Um unendlich Daten zu importieren ist eine aktive Emby Premiere Mitgliedschaft notwendig.",
     "LabelExit": "Beenden",
     "LabelVisitCommunity": "Besuche die Community",
     "LabelGithub": "Github",
@@ -1700,7 +1699,6 @@
     "MessageChromecastConnectionError": "Ihr Chromecast kann keine Verbindung mit dem Emby Server herstellen. Bitte \u00fcberpr\u00fcfen Sie die Verbindung und probieren Sie es erneut.",
     "MessagePleaseSelectOneItem": "Bitte w\u00e4hle mindestens eine Option aus.",
     "MessagePleaseSelectTwoItems": "Bitte w\u00e4hle mindestens zwei Optionen aus.",
-    "MessageTheSelectedItemsWillBeGrouped": "Die ausgew\u00e4hlten Videos werden in einem virtuellen Element gruppiert. Emby Anwendungen w\u00e4hlen automatisch die beste Version anhand des Ger\u00e4tes und der Netzwerkgeschwindigkeit. Sind Sie sich sicher, dass Sie fortfahren m\u00f6chten?",
     "HeaderLibraryFolders": "Medienverzeichnisse",
     "HeaderFavoriteMovies": "Lieblingsfilme",
     "HeaderFavoriteShows": "Lieblingsserien",
@@ -2281,13 +2279,9 @@
     "TextPleaseEnterYourEmailAddressForSubscription": "Bitte geben Sie Ihre E-Mail Adresse",
     "LoginDisclaimer": "Emby wurde designed um Sie bei der Verwaltung Ihrer Medienbibliothek, wie z.B Heimvideos oder Fotos, zu unterst\u00fctzen. Bitte lesen Sie unsere Nutzungsbedingungen. Die Verwendung jeglicher Emby Software bedingt die Zustimmung dieser Vereinbarung.",
     "TermsOfUse": "Nutzungsbedingungen",
-    "HeaderTryMultiSelect": "Versuche Mehrfachauswahl",
-    "TryMultiSelectMessage": "F\u00fcr eine Mehrfachauswahl klicken und halten Sie ein Poster. W\u00e4hlen Sie die Eintr\u00e4ge die Sie bearbeiten m\u00f6chten. Versuchen SIe es!",
     "NumLocationsValue": "{0} Verzeichnisse",
     "ButtonAddMediaLibrary": "F\u00fcge Medienbibliothek hinzu",
     "ButtonManageFolders": "Bearbeite Verzeichnisse",
-    "HeaderTryDragAndDrop": "Versuchen Sie Drag and Drop.",
-    "TryDragAndDropMessage": "Um Titel in der Playlist neu zu arrangieren, verwenden Sie einfach Drag an Drop. Versuchen Sie es!",
     "HeaderTryMicrosoftEdge": "Versuche Microsoft Edge",
     "MessageTryMicrosoftEdge": "F\u00fcr ein besseres Erlebnis mit Windows 10, probieren Sie den neuen Microsoft Edge Browser.",
     "HeaderTryModernBrowser": "Versuchen Sie einen modernen Browser",
@@ -2385,5 +2379,7 @@
     "UnzipFFmpegFile": "Entpacke den Download in ein Verzeichnis Deiner Wahl.",
     "OptionUseSystemInstalledVersion": "Systeminstallierte Version verwenden",
     "OptionUseMyCustomVersion": "Eigene Version verwenden",
-    "FFmpegSavePathNotFound": "Wir konnten kein FFmpeg in dem von Dir erfassten Verzeichnis finden. FFprobe wird ebenso ben\u00f6tigt und muss sich im gleichen Verzeichnis befinden. Diese Komponenten sind normalerweise in einem B\u00fcndel vorhanden um kommen zusammen mit einem Download. Bitte pr\u00fcfe das Verzeichnis und probiere es erneut."
+    "FFmpegSavePathNotFound": "Wir konnten kein FFmpeg in dem von Dir erfassten Verzeichnis finden. FFprobe wird ebenso ben\u00f6tigt und muss sich im gleichen Verzeichnis befinden. Diese Komponenten sind normalerweise in einem B\u00fcndel vorhanden um kommen zusammen mit einem Download. Bitte pr\u00fcfe das Verzeichnis und probiere es erneut.",
+    "XmlTvPremiere": "Grunds\u00e4tzlich wird Emby {0} Stunden des EPGs importieren. Um unendlich Daten zu importieren ist eine aktive Emby Premiere Mitgliedschaft notwendig.",
+    "MoreFromValue": "More from {0}"
 }
