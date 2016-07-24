@@ -1,4 +1,4 @@
-﻿define(['itemHelper', 'dialogHelper', 'datetime', 'loading', 'focusManager', 'connectionManager', 'globalize', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light'], function (itemHelper, dialogHelper, datetime, loading, focusManager, connectionManager, globalize) {
+﻿define(['itemHelper', 'dialogHelper', 'datetime', 'loading', 'focusManager', 'connectionManager', 'globalize', 'require', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light'], function (itemHelper, dialogHelper, datetime, loading, focusManager, connectionManager, globalize, require) {
 
     var currentContext;
     var metadataEditorInfo;
@@ -1169,12 +1169,8 @@
 
                 loading.show();
 
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', 'components/metadataeditor/metadataeditor.template.html', true);
+                require(['text!./metadataeditor.template.html'], function (template) {
 
-                xhr.onload = function (e) {
-
-                    var template = this.response;
                     var dlg = dialogHelper.createDialog({
                         removeOnClose: true,
                         size: 'medium'
@@ -1204,9 +1200,7 @@
                     init(dlg, connectionManager.getApiClient(serverId));
 
                     reload(dlg, itemId, serverId);
-                }
-
-                xhr.send();
+                });
             });
         },
 
@@ -1215,12 +1209,7 @@
 
                 loading.show();
 
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', 'components/metadataeditor/metadataeditor.template.html', true);
-
-                xhr.onload = function (e) {
-
-                    var template = this.response;
+                require(['text!./metadataeditor.template.html'], function (template) {
 
                     elem.innerHTML = globalize.translateDocument(template);
 
@@ -1232,9 +1221,7 @@
                     reload(elem, itemId, serverId);
 
                     focusManager.autoFocus(elem);
-                }
-
-                xhr.send();
+                });
             });
         }
     };

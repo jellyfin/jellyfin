@@ -1,6 +1,4 @@
 {
-    "HeaderConfirmRecordingCancellation": "Confirm Recording Cancellation",
-    "MessageConfirmRecordingCancellation": "Are you sure you wish to cancel this recording?",
     "ValueSpecialEpisodeName": "Sp\u00e9cial - {0}",
     "Share": "Partager",
     "ServerUpdateNeeded": "Le serveur Emby doit \u00eatre mis \u00e0 jour. Pour t\u00e9l\u00e9charger la derni\u00e8re version, veuillez visiter {0}",
@@ -60,6 +58,7 @@
     "Refresh": "Actualiser",
     "RefreshQueued": "Demande d'actualisation en file d'attente.",
     "AddToCollection": "Ajouter \u00e0 la collection",
+    "HeaderAddToCollection": "Ajouter \u00e0 la collection",
     "NewCollection": "Nouvelle collection",
     "LabelCollection": "Collection:",
     "Help": "Aide",
@@ -71,6 +70,7 @@
     "OptionNew": "Nouveau...",
     "LabelPlaylist": "Liste de lecture:",
     "AddToPlaylist": "Ajouter \u00e0 la liste de lecture",
+    "HeaderAddToPlaylist": "Ajouter \u00e0 la liste de lecture",
     "Subtitles": "Sous-titres",
     "SearchForSubtitles": "Rechercher des sous-titres",
     "LabelLanguage": "Langue:",
@@ -116,6 +116,7 @@
     "PlayFromBeginning": "Lire depuis le d\u00e9but",
     "ResumeAt": "Reprendre \u00e0 {0}",
     "RemoveFromPlaylist": "Supprimer de la liste de lecture",
+    "RemoveFromCollection": "Supprimer de la collection",
     "Trailer": "Bande-annonce",
     "MarkPlayed": "Marquer comme lu",
     "MarkUnplayed": "Marquer comme non lu",
@@ -124,5 +125,7 @@
     "TheSelectedItemsWillBeGrouped": "Les vid\u00e9os s\u00e9lectionn\u00e9es seront regroup\u00e9es dans un objet virtuel. L'application Emby choisra automatiquement quelle version jouer d'apr\u00e8s le p\u00e9riph\u00e9rique et la performance du r\u00e9seau. \u00cates vous s\u00fbre de vouloir continuer ?",
     "TryMultiSelect": "Essayer la s\u00e9lection multiple",
     "TryMultiSelectMessage": "Pour modifier plusieurs \u00e9l\u00e9ments m\u00e9dias, il suffit de cliquer et maintenir le clic sur n'importe quel poster et de s\u00e9lectionner les \u00e9l\u00e9ments que vous voulez g\u00e9rer. Essayer le !",
+    "HeaderConfirmRecordingCancellation": "Confirmer l'annulation de l'enregistrement.",
+    "MessageConfirmRecordingCancellation": "\u00cates-vous s\u00fbr de vouloir annuler cet enregistrement?",
     "Error": "Erreur"
 }
