@@ -1860,6 +1860,14 @@ var AppInfo = {};
                 Dashboard.navigate('livetv.html?tab=1');
             };
 
+            embyRouter.goHome = function () {
+                Dashboard.navigate('home.html');
+            };
+
+            embyRouter.showSearch = function () {
+                Dashboard.navigate('search.html');
+            };
+
             embyRouter.showLiveTV = function () {
                 Dashboard.navigate('livetv.html');
             };
