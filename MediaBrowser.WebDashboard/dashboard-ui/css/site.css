@@ -16,20 +16,6 @@
         color: #2E7D32 /*{b-link-active}*/;
     }
 
-/* latin */
-@font-face {
-    font-family: 'Montserrat';
-    font-style: normal;
-    font-weight: 400;
-    src: local('Montserrat-Regular'), url(fonts/Montserrat.woff) format('woff');
-    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
-}
-
-/* For some reason jquery mobile 1.4.5 wants to horitontally pad mini form fields. */
-.ui-mini {
-    margin-left: 0;
-}
-
 /* Remove IE mobile 300ms tap delay */
 html {
     -ms-touch-action: manipulation;
@@ -66,11 +52,6 @@ body {
 .mainAnimatedPage {
     /* Have to override because it breaks scrolling when dependant on window scroll */
     contain: style !important;
-}
-
-iron-icon {
-    min-width: 24px;
-    min-height: 24px;
 }
 
 /* Without this, no content will be displayed in mobile safari */
@@ -188,15 +169,6 @@ select {
         display: block;
     }
 
-.ui-body-a select {
-    background: none;
-    border-color: #757575;
-}
-
-    .ui-body-a select option {
-        color: #000;
-    }
-
 .ui-body-b select, .ui-body-b [is="emby-input"] {
     background: none;
     border-color: #454545;
@@ -308,67 +280,15 @@ textarea {
     }
 }
 
-.btnCurrentUser {
-    text-decoration: none;
-}
-
-.currentUsername {
-    margin-right: 7px;
-    color: #000;
-    position: relative;
-    top: 4px;
-    display: none;
-}
-
-h1 .imageLink {
-    margin-left: 15px;
-}
-
-    h1 .imageLink img {
-        height: 32px;
-    }
-
-.imageLink:hover {
-    opacity: .5;
-}
-
 .pageTitle {
     margin-top: 0;
     font-family: inherit;
 }
 
-.imageButton {
-    background: transparent;
-    border: 0;
-    padding: 0;
-    cursor: pointer;
-    outline: none;
-    color: inherit;
-}
-
-    .imageButton:hover {
-        opacity: .5;
-    }
-
-    .imageButton[disabled], .imageButton[disabled]:hover {
-        opacity: .3 !important;
-        cursor: default;
-    }
-
 .fieldDescription {
     padding-left: 2px;
     font-weight: normal;
     white-space: normal !important;
-}
-
-.paperCheckboxFieldDescription {
-    padding-left: 31px;
-    padding-top: 5px;
-}
-
-paper-input + .fieldDescription {
-    padding-top: 5px;
-    opacity: .9;
 }
 
 .warningFieldDescription {
@@ -429,11 +349,6 @@ paper-input + .fieldDescription {
     font-weight: 500;
 }
 
-/* Tabs (e.g. advanced metadata page) */
-.localnav {
-    margin-bottom: 30px !important;
-}
-
 .ui-content {
     border-width: 0;
     overflow: visible;
@@ -444,13 +359,6 @@ paper-input + .fieldDescription {
 .page > .ui-content, .pageWithAbsoluteTabs .pageTabContent, .absolutePageTabContent .itemsContainer {
     /* Need this so that the audio player doesn't cover content, but also for unveil lazy loading. */
     padding-bottom: 160px;
-}
-
-@media all and (min-width: 450px) {
-
-    .currentUsername {
-        display: inline;
-    }
 }
 
 @media all and (min-width: 800px) {
@@ -465,13 +373,6 @@ paper-input + .fieldDescription {
     .header {
         padding-bottom: 15px;
     }
-
-    .type-interior > .ui-content, .type-interior > .ui-panel-content-wrap > .ui-content {
-        padding-right: 0;
-        padding-left: 0;
-        padding-top: 0;
-        overflow: hidden;
-    }
 }
 
 @media all and (min-width: 900px) {
@@ -479,30 +380,6 @@ paper-input + .fieldDescription {
     .page:not(.standalonePage) .header {
         padding-top: 0;
     }
-}
-
-#ulDirectoryPickerList a {
-    padding-top: .4em;
-    padding-bottom: .4em;
-}
-
-.lblDirectoryPickerPath {
-    white-space: nowrap;
-}
-
-.directoryPickerHeadline {
-    color: #000;
-    background: #fff3a5;
-    padding: 1em;
-    border-radius: 5px;
-    margin-top: 2em;
-}
-
-.directoryPicker paper-item {
-    min-height: 36px;
-    border-bottom: 1px solid #eee;
-    outline: none;
-    cursor: pointer;
 }
 
 /* Footer */
@@ -722,25 +599,6 @@ progress {
     background-color: #e8e8e8;
 }
 
-.ui-body-a .emby-collapsible-button {
-    border: 0;
-    background-color: #e8e8e8;
-    text-transform: none;
-}
-
-.ui-body-a .emby-collapsible-title {
-    margin: .25em 0;
-    color: #000;
-    padding: 0 0 0 .5em;
-    font-weight: 500;
-}
-
-.ui-body-a .emby-collapsible-content, .ui-body-a .collapseContent {
-    border-width: 0;
-    padding: 1em 1.25em;
-    background-color: #fff;
-}
-
 .ui-body-b .emby-collapsible-button {
     border: 0;
     background-color: #333;
@@ -758,8 +616,4 @@ progress {
     border-width: 0;
     padding: 1em 1.25em;
     background-color: #222;
-}
-
-#editItemMetadataPage #txtOverview .paper-input-input {
-    max-height: 90px;
 }

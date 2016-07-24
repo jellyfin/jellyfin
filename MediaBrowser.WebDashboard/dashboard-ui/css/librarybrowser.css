@@ -96,10 +96,6 @@
     }
 }
 
-.libraryPage .currentUsername {
-    color: #fff;
-}
-
 .listHeader {
     margin: .25em 0;
     padding-left: 2px;
@@ -595,14 +591,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .detailSectionHeaderButton {
     margin-left: 1em;
-}
-
-.lblDetailTab {
-    border-color: #212121 !important;
-}
-
-.editMetadataForm {
-    max-width: 100%;
 }
 
 .detailImageProgressContainer {
@@ -1123,16 +1111,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         bottom: 200px;
     }
 }
-
-.channelHeader {
-    padding: 1em;
-    text-align: center;
-    border-bottom: 1px solid #333;
-}
-
-    .channelHeader a {
-        text-decoration: none;
-    }
 
 @media all and (max-width: 1200px) {
 

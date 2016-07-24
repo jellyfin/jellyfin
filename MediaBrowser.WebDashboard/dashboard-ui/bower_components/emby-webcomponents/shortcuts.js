@@ -299,9 +299,9 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
                     recordingEditor.show(item.Id, serverId).then(resolve, reject);
                 });
             } else {
-                require(['components/metadataeditor/metadataeditor'], function (metadataeditor) {
+                require(['metadataEditor'], function (metadataEditor) {
 
-                    metadataeditor.show(item.Id, serverId).then(resolve, reject);
+                    metadataEditor.show(item.Id, serverId).then(resolve, reject);
                 });
             }
         });

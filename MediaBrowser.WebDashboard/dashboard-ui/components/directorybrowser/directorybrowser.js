@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'paper-item', 'emby-input', 'emby-button', 'paper-item-body', 'paper-icon-button-light'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'paper-item', 'emby-input', 'emby-button', 'paper-item-body', 'paper-icon-button-light', 'css!./directorybrowser'], function (dialogHelper, $) {
 
     var systemInfo;
     function getSystemInfo() {

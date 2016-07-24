@@ -258,9 +258,9 @@
 
     function editPerson(context, person, index) {
 
-        require(['components/metadataeditor/personeditor'], function (personeditor) {
+        require(['personEditor'], function (personEditor) {
 
-            personeditor.show(person).then(function (updatedPerson) {
+            personEditor.show(person).then(function (updatedPerson) {
 
                 var isNew = index == -1;
 

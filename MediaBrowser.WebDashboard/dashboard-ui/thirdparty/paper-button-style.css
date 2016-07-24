@@ -6,7 +6,7 @@
         background: #e1f5f3;
     }
 
-button[is="emby-button"].fab.blue, paper-fab.blue {
+button[is="emby-button"].fab.blue {
     background: #03a9f4;
 }
 
@@ -135,10 +135,6 @@ button[is="emby-button"].mini:not(.fab) {
         width: 20px;
     }
 
-paper-toast {
-    z-index: 9999999;
-}
-
 button[is="emby-button"].notext {
     min-width: 2.8em;
     padding-left: .25em !important;
@@ -148,69 +144,6 @@ button[is="emby-button"].notext {
     button[is="emby-button"].notext iron-icon {
         margin-right: 0;
     }
-
-paper-icon-button paper-ripple {
-    color: inherit !important;
-}
-
-.ui-body-b paper-icon-button[disabled] {
-    color: #444 !important;
-}
-
-paper-fab {
-    vertical-align: middle;
-    display: inline-flex !important;
-}
-
-    paper-fab.mini {
-        width: 22px;
-        height: 22px;
-    }
-
-        paper-fab.mini iron-icon {
-            width: 22px;
-            height: 22px;
-        }
-
-.ui-body-a paper-fab.subdued {
-    background: #fff;
-    color: #000;
-}
-
-    .ui-body-a paper-fab.subdued paper-material.keyboard-focus {
-        background: #686868 !important;
-    }
-
-.ui-body-b paper-fab.subdued {
-    background: #404040;
-    color: #fff;
-}
-
-    .ui-body-b paper-fab.subdued paper-material.keyboard-focus {
-        background: #686868 !important;
-    }
-
-.ui-body-b paper-fab[disabled].subdued {
-    background: #222;
-}
-
-paper-fab.white {
-    background: #fff;
-    color: #000;
-}
-
-    paper-fab.white paper-material.keyboard-focus {
-        background: #01579b !important;
-        color: #fff;
-    }
-
-paper-fab.square {
-    border-radius: 5px;
-}
-
-paper-fab.accent {
-    background-color: #52B54B;
-}
 
 .fab.green {
     background-color: #81c784 !important;
@@ -224,143 +157,13 @@ paper-fab.accent {
     background-color: #e57373 !important;
 }
 
-.scrollablePaperTabs paper-icon-button {
-    display: none !important;
-}
-
-.ui-body-b paper-item-body [secondary] {
-    color: #aaa;
-}
-
-.ui-body-b paper-checkbox paper-ripple {
-    color: #fff !important;
-}
-
-.ui-body-b paper-checkbox #checkboxLabel.paper-checkbox {
-    color: inherit;
-}
-
-.ui-body-a .paperCheckboxFieldDescription {
-    color: #333;
-}
-
-.ui-body-b .paperCheckboxFieldDescription {
+.ui-body-b .paperListLabel, .ui-body-b .fieldDescription, .ui-body-b .selectLabelUnfocused, .ui-body-b .inputLabel, .ui-body-b .textareaLabel {
     color: #ccc;
-}
-
-.ui-body-b paper-checkbox #checkbox.paper-checkbox {
-    border-color: #dedede;
-}
-
-.ui-body-a paper-checkbox #checkbox.checked.paper-checkbox {
-    background-color: #52B54B;
-    border-color: #52B54B;
-}
-
-.ui-body-b paper-checkbox #checkbox.checked.paper-checkbox {
-    background-color: #52B54B;
-    border-color: #52B54B;
-}
-
-paper-checkbox #checkboxContainer {
-    width: 22px !important;
-    height: 22px !important;
-}
-
-paper-checkbox paper-ripple {
-    top: -13px !important;
-    left: -13px !important;
-}
-
-paper-checkbox #checkmark {
-    border-right-width: 4px !important;
-    border-bottom-width: 4px !important;
-}
-
-.paperCheckboxList paper-checkbox {
-    display: block;
-    padding: .5em 0;
-}
-
-paper-input label, paper-textarea label {
-    font-size: 18px !important;
-    font-family: inherit !important;
-}
-
-.paperListLabel {
-    font-size: 16px;
-    margin-bottom: .5em;
-}
-
-.ui-body-b .paper-input-container-0 .input-content.paper-input-container label, .ui-body-b .paper-input-container-0 .input-content.paper-input-container .paper-input-label, .ui-body-b paper-textarea label, .ui-body-b .paperListLabel, .ui-body-b .fieldDescription {
-    color: #ccc;
-}
-
-.ui-body-a .inputLabel, .ui-body-a .textareaLabel {
-    color: #555;
-}
-
-    .ui-body-a .inputLabel.focused:not(.blank), .ui-body-a .textareaLabel.focused:not(.blank) {
-        color: green;
-    }
-
-.ui-body-b .selectLabelUnfocused, .ui-body-b .inputLabel, .ui-body-b .textareaLabel {
-    color: #ccc;
-}
-
-.ui-body-a .paper-input-container-0 .input-content.paper-input-container label, .ui-body-a .paper-input-container-0 .input-content.paper-input-container .paper-input-label, .ui-body-a paper-textarea label, .ui-body-a .selectLabel, .ui-body-a .paperListLabel, .ui-body-a .fieldDescription {
-    color: #555;
-}
-
-.ui-body-a .paper-input-container-0 .input-content.label-is-highlighted.paper-input-container label, .ui-body-a .paper-input-container-0 .input-content.label-is-highlighted.paper-input-container .paper-input-label {
-    color: green;
-}
-
-.ui-body-b .paper-input-container-0 .input-content.label-is-highlighted.paper-input-container label, .ui-body-b .paper-input-container-0 .input-content.label-is-highlighted.paper-input-container .paper-input-label {
-    color: #52B54B;
-}
-
-.ui-body-b .paper-input-container-0 .input-content.paper-input-container input, .ui-body-b .paper-input-container-0 .input-content.paper-input-container textarea, .ui-body-b .paper-input-container-0 .input-content.paper-input-container iron-autogrow-textarea, .ui-body-b .paper-input-container-0 .input-content.paper-input-container .paper-input-input {
-    color: #fff;
-}
-
-paper-input .focused-line, paper-textarea .focused-line {
-    background-color: #52B54B !important;
-}
-
-.ui-body-b .unfocused-line.paper-input-container, .ui-body-b .unfocused-line.paper-textarea-container {
-    background: #454545;
-}
-
-paper-textarea.mono textarea {
-    font-family: monospace !important;
-}
-
-.paperList {
-    padding: .5em 0;
-    margin: 12px auto;
-    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
-    background-color: #fff;
-}
-
-.paperCheckboxList.paperList {
-    padding: .5em 1em;
 }
 
 .ui-body-b .paperList {
     background-color: #2b2b2b;
 }
-
-paper-dropdown-menu {
-    text-align: left;
-    margin: auto;
-    width: 100%;
-    display: inline-block;
-}
-
-    paper-dropdown-menu paper-item {
-        display: block;
-    }
 
 div.dialogHeader {
     padding: .35em .5em;
