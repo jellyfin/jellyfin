@@ -51,6 +51,12 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        public override bool EnableForceSaveOnDateModifiedChange
+        {
+            get { return true; }
+        }
+
         public override bool CanDownload()
         {
             return true;

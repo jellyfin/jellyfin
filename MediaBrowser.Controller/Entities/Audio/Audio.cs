@@ -46,6 +46,12 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
+        [IgnoreDataMember]
+        public override bool EnableForceSaveOnDateModifiedChange
+        {
+            get { return true; }
+        }
+
         public Audio()
         {
             Artists = new List<string>();

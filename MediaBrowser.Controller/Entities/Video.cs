@@ -58,6 +58,12 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        public override bool EnableForceSaveOnDateModifiedChange
+        {
+            get { return true; }
+        }
+
         public int? TotalBitrate { get; set; }
         public ExtraType? ExtraType { get; set; }
 
