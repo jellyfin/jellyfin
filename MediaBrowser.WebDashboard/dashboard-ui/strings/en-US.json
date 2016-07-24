@@ -2211,7 +2211,7 @@
   "HeaderYouSaid": "You Said...",
   "MessageWeDidntRecognizeCommand": "We're sorry, we didn't recognize that command.",
   "MessageIfYouBlockedVoice": "If you denied voice access to the app you'll need to reconfigure before trying again.",
-  "MessageNoItemsFound": "No items found.",
+  "NoResultsFound": "No results found.",
   "ButtonManageServer": "Manage Server",
   "ButtonEditSubtitles": "Edit subtitles",
   "ButtonPreferences": "Preferences",

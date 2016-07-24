@@ -4,6 +4,7 @@ using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -32,6 +33,12 @@ namespace MediaBrowser.Controller.Entities
                    locationType != LocationType.Virtual;
         }
 
+        [IgnoreDataMember]
+        public override bool EnableForceSaveOnDateModifiedChange
+        {
+            get { return true; }
+        }
+
         /// <summary>
         /// Gets or sets the remote trailers.
         /// </summary>
@@ -42,6 +49,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the type of the media.
         /// </summary>
         /// <value>The type of the media.</value>
+        [IgnoreDataMember]
         public override string MediaType
         {
             get { return Model.Entities.MediaType.Game; }

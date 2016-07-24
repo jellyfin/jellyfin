@@ -165,6 +165,9 @@
 
         if (isSubProfileNew) {
 
+            currentProfile.Identification = currentProfile.Identification || {};
+            currentProfile.Identification.Headers = currentProfile.Identification.Headers || [];
+
             currentProfile.Identification.Headers.push(currentSubProfile);
         }
 

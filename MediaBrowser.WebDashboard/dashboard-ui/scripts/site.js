@@ -728,9 +728,9 @@
             pageIds: [],
             icon: 'insert_chart'
         }, {
-            name: Globalize.translate('TabHelp'),
+            name: Globalize.translate('TabAbout'),
             href: "about.html",
-            icon: 'help',
+            icon: 'info',
             color: '#679C34',
             divider: true,
             pageIds: ['aboutPage']
