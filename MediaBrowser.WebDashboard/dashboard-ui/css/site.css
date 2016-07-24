@@ -529,7 +529,7 @@ progress {
 }
 
 .fullWidthContent .supporterPromotionContainer {
-    position: static!important;
+    position: static !important;
 }
 
 @media all and (min-width: 800px) {
@@ -616,4 +616,44 @@ progress {
     border-width: 0;
     padding: 1em 1.25em;
     background-color: #222;
+}
+
+.ui-body-a select {
+    background: none;
+    border-color: #757575;
+}
+
+    .ui-body-a select option {
+        color: #000;
+    }
+
+.ui-body-a .emby-collapsible-button {
+    border: 0;
+    background-color: #e8e8e8;
+    text-transform: none;
+}
+
+.ui-body-a .emby-collapsible-title {
+    margin: .25em 0;
+    color: #000;
+    padding: 0 0 0 .5em;
+    font-weight: 500;
+}
+
+.ui-body-a .emby-collapsible-content, .ui-body-a .collapseContent {
+    border-width: 0;
+    padding: 1em 1.25em;
+    background-color: #fff;
+}
+
+.ui-body-a .inputLabel, .ui-body-a .textareaLabel {
+    color: #555;
+}
+
+    .ui-body-a .inputLabel.focused:not(.blank), .ui-body-a .textareaLabel.focused:not(.blank) {
+        color: green;
+    }
+
+.ui-body-a .selectLabel, .ui-body-a .paperListLabel, .ui-body-a .fieldDescription {
+    color: #555;
 }

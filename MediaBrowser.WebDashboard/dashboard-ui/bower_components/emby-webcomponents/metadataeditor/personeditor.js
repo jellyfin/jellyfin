@@ -1,14 +1,21 @@
-﻿define(['dialogHelper', 'globalize', 'require', 'paper-icon-button-light', 'emby-input', 'emby-select'], function (dialogHelper, globalize, require) {
+﻿define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'require', 'paper-icon-button-light', 'emby-input', 'emby-select', 'css!./../formdialog'], function (dialogHelper, layoutManager, scrollHelper, globalize, require) {
 
     function show(person) {
         return new Promise(function (resolve, reject) {
 
             require(['text!./personeditor.template.html'], function (template) {
 
-                var dlg = dialogHelper.createDialog({
-                    removeOnClose: true,
-                    size: 'medium'
-                });
+                var dialogOptions = {
+                    removeOnClose: true
+                };
+
+                if (layoutManager.tv) {
+                    dialogOptions.size = 'fullscreen';
+                } else {
+                    dialogOptions.size = 'medium';
+                }
+
+                var dlg = dialogHelper.createDialog(dialogOptions);
 
                 dlg.classList.add('ui-body-b');
                 dlg.classList.add('background-theme-b');
@@ -26,6 +33,10 @@
                 dlg.querySelector('.txtPersonName', dlg).value = person.Name || '';
                 dlg.querySelector('.selectPersonType', dlg).value = person.Type || '';
                 dlg.querySelector('.txtPersonRole', dlg).value = person.Role || '';
+
+                if (layoutManager.tv) {
+                    scrollHelper.centerFocus.on(dlg.querySelector('.dialogContent'), false);
+                }
 
                 dialogHelper.open(dlg);
 

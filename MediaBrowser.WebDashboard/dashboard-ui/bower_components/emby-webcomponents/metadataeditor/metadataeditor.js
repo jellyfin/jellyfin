@@ -1,4 +1,4 @@
-﻿define(['itemHelper', 'dialogHelper', 'datetime', 'loading', 'focusManager', 'connectionManager', 'globalize', 'require', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light'], function (itemHelper, dialogHelper, datetime, loading, focusManager, connectionManager, globalize, require) {
+﻿define(['itemHelper', 'layoutManager', 'scrollHelper', 'dialogHelper', 'datetime', 'loading', 'focusManager', 'connectionManager', 'globalize', 'require', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light', 'css!./../formdialog'], function (itemHelper, layoutManager, scrollHelper, dialogHelper, datetime, loading, focusManager, connectionManager, globalize, require) {
 
     var currentContext;
     var metadataEditorInfo;
@@ -1171,10 +1171,17 @@
 
                 require(['text!./metadataeditor.template.html'], function (template) {
 
-                    var dlg = dialogHelper.createDialog({
-                        removeOnClose: true,
-                        size: 'medium'
-                    });
+                    var dialogOptions = {
+                        removeOnClose: true
+                    };
+
+                    if (layoutManager.tv) {
+                        dialogOptions.size = 'fullscreen';
+                    } else {
+                        dialogOptions.size = 'medium';
+                    }
+
+                    var dlg = dialogHelper.createDialog(dialogOptions);
 
                     dlg.classList.add('ui-body-b');
                     dlg.classList.add('background-theme-b');
@@ -1187,6 +1194,10 @@
 
                     dlg.innerHTML = html;
                     document.body.appendChild(dlg);
+
+                    if (layoutManager.tv) {
+                        scrollHelper.centerFocus.on(dlg.querySelector('.dialogContent'), false);
+                    }
 
                     dialogHelper.open(dlg);
 

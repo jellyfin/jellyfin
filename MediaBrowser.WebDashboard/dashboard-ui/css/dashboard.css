@@ -8,15 +8,6 @@ iron-icon {
     min-height: 24px;
 }
 
-.ui-body-a select {
-    background: none;
-    border-color: #757575;
-}
-
-    .ui-body-a select option {
-        color: #000;
-    }
-
 .paperCheckboxFieldDescription {
     padding-left: 31px;
     padding-top: 5px;
@@ -40,25 +31,6 @@ paper-input + .fieldDescription {
         padding-top: 0;
         overflow: hidden;
     }
-}
-
-.ui-body-a .emby-collapsible-button {
-    border: 0;
-    background-color: #e8e8e8;
-    text-transform: none;
-}
-
-.ui-body-a .emby-collapsible-title {
-    margin: .25em 0;
-    color: #000;
-    padding: 0 0 0 .5em;
-    font-weight: 500;
-}
-
-.ui-body-a .emby-collapsible-content, .ui-body-a .collapseContent {
-    border-width: 0;
-    padding: 1em 1.25em;
-    background-color: #fff;
 }
 
 .dashboardDocument .lnkMySync {
@@ -279,15 +251,7 @@ paper-textarea.mono textarea {
     border-color: #52B54B;
 }
 
-.ui-body-a .inputLabel, .ui-body-a .textareaLabel {
-    color: #555;
-}
-
-    .ui-body-a .inputLabel.focused:not(.blank), .ui-body-a .textareaLabel.focused:not(.blank) {
-        color: green;
-    }
-
-.ui-body-a .paper-input-container-0 .input-content.paper-input-container label, .ui-body-a .paper-input-container-0 .input-content.paper-input-container .paper-input-label, .ui-body-a paper-textarea label, .ui-body-a .selectLabel, .ui-body-a .paperListLabel, .ui-body-a .fieldDescription {
+.ui-body-a .paper-input-container-0 .input-content.paper-input-container label, .ui-body-a .paper-input-container-0 .input-content.paper-input-container .paper-input-label, .ui-body-a paper-textarea label {
     color: #555;
 }
 
