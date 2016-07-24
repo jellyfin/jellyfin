@@ -373,13 +373,6 @@ namespace MediaBrowser.Controller.Entities
 
                     if (currentChildren.TryGetValue(child.Id, out currentChild) && IsValidFromResolver(currentChild, child))
                     {
-                        var currentChildLocationType = currentChild.LocationType;
-                        if (currentChildLocationType != LocationType.Remote &&
-                            currentChildLocationType != LocationType.Virtual)
-                        {
-                            currentChild.DateModified = child.DateModified;
-                        }
-
                         await UpdateIsOffline(currentChild, false).ConfigureAwait(false);
                         validChildren.Add(currentChild);
 

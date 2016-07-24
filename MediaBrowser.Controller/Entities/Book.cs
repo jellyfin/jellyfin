@@ -34,6 +34,12 @@ namespace MediaBrowser.Controller.Entities
             return SeriesName;
         }
 
+        [IgnoreDataMember]
+        public override bool EnableForceSaveOnDateModifiedChange
+        {
+            get { return true; }
+        }
+
         public Guid? FindSeriesId()
         {
             return SeriesId;

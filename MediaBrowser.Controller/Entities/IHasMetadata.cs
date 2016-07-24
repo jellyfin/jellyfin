@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the date modified.
         /// </summary>
         /// <value>The date modified.</value>
-        DateTime DateModified { get; }
+        DateTime DateModified { get; set; }
 
         /// <summary>
         /// Gets or sets the date last saved.
@@ -51,5 +51,7 @@ namespace MediaBrowser.Controller.Entities
         bool SupportsPeople { get; }
 
         bool RequiresRefresh();
+
+        bool EnableForceSaveOnDateModifiedChange { get; }
     }
 }

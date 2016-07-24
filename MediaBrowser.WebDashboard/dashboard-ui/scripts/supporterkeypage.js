@@ -146,18 +146,6 @@
         }
     };
 
-    function getTabs() {
-        return [
-        {
-            href: 'about.html',
-            name: Globalize.translate('TabAbout')
-        },
-         {
-             href: 'supporterkey.html',
-             name: Globalize.translate('TabEmbyPremiere')
-         }];
-    }
-
     function onSupporterLinkClick(e) {
 
         registrationServices.showPremiereInfo();
@@ -177,8 +165,6 @@
         page.querySelector('.lnkPremiere').addEventListener('click', onSupporterLinkClick);
 
     }).on('pageshow', "#supporterKeyPage", function () {
-
-        LibraryMenu.setTabs('helpadmin', 1, getTabs);
 
         var page = this;
         loadUserInfo(page);

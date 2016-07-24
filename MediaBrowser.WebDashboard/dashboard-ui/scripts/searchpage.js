@@ -125,6 +125,10 @@
                 serverId: ApiClient.serverInfo().Id
             });
 
+            if (!hints.length) {
+                html = '<p style="text-align:center;margin-top:2em;">' + Globalize.translate('NoResultsFound') + '</p>';
+            }
+
             var itemsContainer = searchResults;
             itemsContainer.innerHTML = html;
             searchResults.classList.remove('hide');

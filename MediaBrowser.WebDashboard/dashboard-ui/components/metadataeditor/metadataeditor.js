@@ -1,4 +1,4 @@
-﻿define(['itemHelper', 'dialogHelper', 'datetime', 'loading', 'connectionManager', 'globalize', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light'], function (itemHelper, dialogHelper, datetime, loading, connectionManager, globalize) {
+﻿define(['itemHelper', 'dialogHelper', 'datetime', 'loading', 'focusManager', 'connectionManager', 'globalize', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light'], function (itemHelper, dialogHelper, datetime, loading, focusManager, connectionManager, globalize) {
 
     var currentContext;
     var metadataEditorInfo;
@@ -1144,8 +1144,6 @@
             populateLanguages(context.querySelector('#selectLanguage'), languages);
             populateCountries(context.querySelector('#selectCountry'), countries);
 
-            LibraryBrowser.renderName(item, document.querySelector('.itemName'), true);
-
             setFieldVisibilities(context, item);
             fillItemInfo(context, item, metadataEditorInfo.ParentalRatingOptions);
 
@@ -1232,6 +1230,8 @@
 
                     init(elem, connectionManager.getApiClient(serverId));
                     reload(elem, itemId, serverId);
+
+                    focusManager.autoFocus(elem);
                 }
 
                 xhr.send();

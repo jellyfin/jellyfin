@@ -347,7 +347,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                     outputHeaders[item.Key] = item.Value;
                 }
 
-                Func<Stream,Task> streamWriter = stream => new ProgressiveFileCopier(FileSystem, job, Logger).StreamFile(outputPath, stream);
+                Func<Stream,Task> streamWriter = stream => new ProgressiveFileCopier(FileSystem, job, Logger).StreamFile(outputPath, stream, CancellationToken.None);
 
                 return ResultFactory.GetAsyncStreamWriter(streamWriter, outputHeaders);
             }
