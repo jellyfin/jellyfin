@@ -1669,7 +1669,7 @@ namespace MediaBrowser.Api.Playback
                 RequestedUrl = url,
                 UserAgent = Request.UserAgent
             };
-            
+
             //if ((Request.UserAgent ?? string.Empty).IndexOf("iphone", StringComparison.OrdinalIgnoreCase) != -1 ||
             //    (Request.UserAgent ?? string.Empty).IndexOf("ipad", StringComparison.OrdinalIgnoreCase) != -1 ||
             //    (Request.UserAgent ?? string.Empty).IndexOf("ipod", StringComparison.OrdinalIgnoreCase) != -1)
@@ -1769,6 +1769,19 @@ namespace MediaBrowser.Api.Playback
             if (state.VideoStream != null && CanStreamCopyVideo(state))
             {
                 state.OutputVideoCodec = "copy";
+            }
+            else
+            {
+                // If the user doesn't have access to transcoding, then force stream copy, regardless of whether it will be compatible or not
+                var auth = AuthorizationContext.GetAuthorizationInfo(Request);
+                if (!string.IsNullOrWhiteSpace(auth.UserId))
+                {
+                    var user = UserManager.GetUserById(auth.UserId);
+                    if (!user.Policy.EnableVideoPlaybackTranscoding)
+                    {
+                        state.OutputVideoCodec = "copy";
+                    }
+                }
             }
 
             if (state.AudioStream != null && CanStreamCopyAudio(state, state.SupportedAudioCodecs))
