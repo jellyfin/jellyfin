@@ -58,7 +58,7 @@ namespace MediaBrowser.Api.Movies
 
             getItems.IncludeItemTypes = "Trailer";
 
-            return new ItemsService(_userManager, _libraryManager, _userDataRepository, _localizationManager, _dtoService, _collectionManager)
+            return new ItemsService(_userManager, _libraryManager, _localizationManager, _dtoService)
             {
                 AuthorizationContext = AuthorizationContext,
                 Logger = Logger,

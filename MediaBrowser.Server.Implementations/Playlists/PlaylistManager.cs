@@ -158,7 +158,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
             return path;
         }
 
-        private IEnumerable<BaseItem> GetPlaylistItems(IEnumerable<string> itemIds, string playlistMediaType, User user)
+        private Task<IEnumerable<BaseItem>> GetPlaylistItems(IEnumerable<string> itemIds, string playlistMediaType, User user)
         {
             var items = itemIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i != null);
 
@@ -183,7 +183,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
 
             var list = new List<LinkedChild>();
 
-            var items = GetPlaylistItems(itemIds, playlist.MediaType, user)
+            var items = (await GetPlaylistItems(itemIds, playlist.MediaType, user).ConfigureAwait(false))
                 .Where(i => i.SupportsAddingToPlaylist)
                 .ToList();
 
@@ -247,15 +247,18 @@ namespace MediaBrowser.Server.Implementations.Playlists
                 return;
             }
 
-            if (newIndex > oldIndex)
-            {
-                newIndex--;
-            }
-
             var item = playlist.LinkedChildren[oldIndex];
 
             playlist.LinkedChildren.Remove(item);
-            playlist.LinkedChildren.Insert(newIndex, item);
+
+            if (newIndex >= playlist.LinkedChildren.Count)
+            {
+                playlist.LinkedChildren.Add(item);
+            }
+            else
+            {
+                playlist.LinkedChildren.Insert(newIndex, item);
+            }
 
             await playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
         }

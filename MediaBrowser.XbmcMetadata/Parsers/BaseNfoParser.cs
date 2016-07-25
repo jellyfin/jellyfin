@@ -85,8 +85,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="cancellationToken">The cancellation token.</param>
         private void Fetch(MetadataResult<T> item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
         {
-            item.ResetPeople();
-
             if (!SupportsUrlAfterClosingXmlTag)
             {
                 using (var streamReader = BaseNfoSaver.GetStreamReader(metadataFile))
@@ -94,6 +92,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     // Use XmlReader for best performance
                     using (var reader = XmlReader.Create(streamReader, settings))
                     {
+                        item.ResetPeople();
+
                         reader.MoveToContent();
 
                         // Loop through each element
@@ -113,6 +113,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
             using (var streamReader = BaseNfoSaver.GetStreamReader(metadataFile))
             {
+                item.ResetPeople();
+
                 // Need to handle a url after the xml data
                 // http://kodi.wiki/view/NFO_files/movies
 
@@ -660,7 +662,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         {
                             if (!string.IsNullOrWhiteSpace(val))
                             {
-                                val = val.Replace("plugin://plugin.video.youtube/?action=play_video&videoid=", "http://www.youtube.com/watch?v=", StringComparison.OrdinalIgnoreCase);
+                                val = val.Replace("plugin://plugin.video.youtube/?action=play_video&videoid=", "https://www.youtube.com/watch?v=", StringComparison.OrdinalIgnoreCase);
 
                                 hasTrailer.AddTrailerUrl(val, false);
                             }
@@ -917,11 +919,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         var val = reader.ReadElementContentAsString();
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            var hasTags = item as IHasTags;
-                            if (hasTags != null)
-                            {
-                                hasTags.AddTag(val);
-                            }
+                            item.AddTag(val);
                         }
                         break;
                     }
@@ -930,13 +928,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        var hasKeywords = item as IHasKeywords;
-                        if (hasKeywords != null)
+                        if (!string.IsNullOrWhiteSpace(val))
                         {
-                            if (!string.IsNullOrWhiteSpace(val))
-                            {
-                                hasKeywords.AddKeyword(val);
-                            }
+                            item.AddKeyword(val);
                         }
                         break;
                     }

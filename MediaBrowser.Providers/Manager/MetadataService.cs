@@ -11,8 +11,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Manager
 {
@@ -23,66 +22,18 @@ namespace MediaBrowser.Providers.Manager
         protected readonly IServerConfigurationManager ServerConfigurationManager;
         protected readonly ILogger Logger;
         protected readonly IProviderManager ProviderManager;
-        protected readonly IProviderRepository ProviderRepo;
         protected readonly IFileSystem FileSystem;
         protected readonly IUserDataManager UserDataManager;
         protected readonly ILibraryManager LibraryManager;
 
-        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager)
+        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager)
         {
             ServerConfigurationManager = serverConfigurationManager;
             Logger = logger;
             ProviderManager = providerManager;
-            ProviderRepo = providerRepo;
             FileSystem = fileSystem;
             UserDataManager = userDataManager;
             LibraryManager = libraryManager;
-        }
-
-        /// <summary>
-        /// Saves the provider result.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="result">The result.</param>
-        /// <param name="directoryService">The directory service.</param>
-        /// <returns>Task.</returns>
-        protected Task SaveProviderResult(TItemType item, MetadataStatus result, IDirectoryService directoryService)
-        {
-            result.ItemId = item.Id;
-
-            //var locationType = item.LocationType;
-
-            //if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
-            //{
-            //    if (!string.IsNullOrWhiteSpace(item.Path))
-            //    {
-            //        var file = directoryService.GetFile(item.Path);
-
-            //        if ((file.Attributes & FileAttributes.Directory) != FileAttributes.Directory && file.Exists)
-            //        {
-            //            result.ItemDateModified = FileSystem.GetLastWriteTimeUtc(file);
-            //        }
-            //    }
-            //}
-
-            result.ItemDateModified = item.DateModified;
-
-            return ProviderRepo.SaveMetadataStatus(result, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Gets the last result.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>ProviderResult.</returns>
-        protected MetadataStatus GetLastResult(IHasMetadata item)
-        {
-            if (GetLastRefreshDate(item) == default(DateTime))
-            {
-                return new MetadataStatus { ItemId = item.Id };
-            }
-
-            return ProviderRepo.GetMetadataStatus(item.Id) ?? new MetadataStatus { ItemId = item.Id };
         }
 
         public async Task<ItemUpdateType> RefreshMetadata(IHasMetadata item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
@@ -91,7 +42,6 @@ namespace MediaBrowser.Providers.Manager
             var config = ProviderManager.GetMetadataOptions(item);
 
             var updateType = ItemUpdateType.None;
-            var refreshResult = GetLastResult(item);
 
             var itemImageProvider = new ItemImageProvider(Logger, ProviderManager, ServerConfigurationManager, FileSystem);
             var localImagesFailed = false;
@@ -118,13 +68,22 @@ namespace MediaBrowser.Providers.Manager
                 Item = itemOfType
             };
 
+            bool hasRefreshedMetadata = true;
+            bool hasRefreshedImages = true;
+            var requiresRefresh = false;
+
             // Next run metadata providers
             if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
             {
-                var providers = GetProviders(item, refreshResult, refreshOptions)
+                // TODO: If this returns true, should we instead just change metadata refresh mode to Full?
+                requiresRefresh = item.RequiresRefresh();
+
+                var providers = GetProviders(item, refreshOptions, requiresRefresh)
                     .ToList();
 
-                if (providers.Count > 0 || !refreshResult.DateLastMetadataRefresh.HasValue)
+                var dateLastRefresh = item.DateLastRefreshed;
+
+                if (providers.Count > 0 || dateLastRefresh == default(DateTime))
                 {
                     if (item.BeforeMetadataRefresh())
                     {
@@ -136,6 +95,11 @@ namespace MediaBrowser.Providers.Manager
                 {
                     var id = itemOfType.GetLookupInfo();
 
+                    if (refreshOptions.SearchResult != null)
+                    {
+                        ApplySearchResult(id, refreshOptions.SearchResult);
+                    }
+
                     //await FindIdentities(id, cancellationToken).ConfigureAwait(false);
                     id.IsAutomated = refreshOptions.IsAutomated;
 
@@ -144,11 +108,11 @@ namespace MediaBrowser.Providers.Manager
                     updateType = updateType | result.UpdateType;
                     if (result.Failures == 0)
                     {
-                        refreshResult.SetDateLastMetadataRefresh(DateTime.UtcNow);
+                        hasRefreshedMetadata = true;
                     }
                     else
                     {
-                        refreshResult.SetDateLastMetadataRefresh(null);
+                        hasRefreshedMetadata = false;
                     }
                 }
             }
@@ -156,7 +120,7 @@ namespace MediaBrowser.Providers.Manager
             // Next run remote image providers, but only if local image providers didn't throw an exception
             if (!localImagesFailed && refreshOptions.ImageRefreshMode != ImageRefreshMode.ValidationOnly)
             {
-                var providers = GetNonLocalImageProviders(item, allImageProviders, refreshResult, refreshOptions).ToList();
+                var providers = GetNonLocalImageProviders(item, allImageProviders, refreshOptions).ToList();
 
                 if (providers.Count > 0)
                 {
@@ -165,22 +129,38 @@ namespace MediaBrowser.Providers.Manager
                     updateType = updateType | result.UpdateType;
                     if (result.Failures == 0)
                     {
-                        refreshResult.SetDateLastImagesRefresh(DateTime.UtcNow);
+                        hasRefreshedImages = true;
                     }
                     else
                     {
-                        refreshResult.SetDateLastImagesRefresh(null);
+                        hasRefreshedImages = false;
                     }
                 }
             }
 
             var isFirstRefresh = GetLastRefreshDate(item) == default(DateTime);
 
-            var beforeSaveResult = await BeforeSave(itemOfType, isFirstRefresh || refreshOptions.ReplaceAllMetadata || refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh, updateType).ConfigureAwait(false);
+            var beforeSaveResult = await BeforeSave(itemOfType, isFirstRefresh || refreshOptions.ReplaceAllMetadata || refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || requiresRefresh, updateType).ConfigureAwait(false);
             updateType = updateType | beforeSaveResult;
 
+            if (item.LocationType == LocationType.FileSystem)
+            {
+                var file = refreshOptions.DirectoryService.GetFile(item.Path);
+                if (file != null)
+                {
+                    var fileLastWriteTime = file.LastWriteTimeUtc;
+                    if (item.EnableForceSaveOnDateModifiedChange && fileLastWriteTime != item.DateModified)
+                    {
+                        Logger.Debug("Date modified for {0}. Old date {1} new date {2} Id {3}", item.Path, item.DateModified, fileLastWriteTime, item.Id);
+                        requiresRefresh = true;
+                    }
+
+                    item.DateModified = fileLastWriteTime;
+                }
+            }
+
             // Save if changes were made, or it's never been saved before
-            if (refreshOptions.ForceSave || updateType > ItemUpdateType.None || isFirstRefresh || refreshOptions.ReplaceAllMetadata)
+            if (refreshOptions.ForceSave || updateType > ItemUpdateType.None || isFirstRefresh || refreshOptions.ReplaceAllMetadata || requiresRefresh)
             {
                 // If any of these properties are set then make sure the updateType is not None, just to force everything to save
                 if (refreshOptions.ForceSave || refreshOptions.ReplaceAllMetadata)
@@ -188,18 +168,17 @@ namespace MediaBrowser.Providers.Manager
                     updateType = updateType | ItemUpdateType.MetadataDownload;
                 }
 
-                if (refreshOptions.MetadataRefreshMode >= MetadataRefreshMode.Default && refreshOptions.ImageRefreshMode >= ImageRefreshMode.Default)
+                if (hasRefreshedMetadata && hasRefreshedImages)
                 {
                     item.DateLastRefreshed = DateTime.UtcNow;
+                }
+                else
+                {
+                    item.DateLastRefreshed = default(DateTime);
                 }
 
                 // Save to database
                 await SaveItem(metadataResult, updateType, cancellationToken).ConfigureAwait(false);
-            }
-
-            if (updateType > ItemUpdateType.None || refreshResult.IsDirty)
-            {
-                await SaveProviderResult(itemOfType, refreshResult, refreshOptions.DirectoryService).ConfigureAwait(false);
             }
 
             await AfterMetadataRefresh(itemOfType, refreshOptions, cancellationToken).ConfigureAwait(false);
@@ -207,46 +186,16 @@ namespace MediaBrowser.Providers.Manager
             return updateType;
         }
 
-        private async Task FindIdentities(TIdType id, CancellationToken cancellationToken)
+        private void ApplySearchResult(ItemLookupInfo lookupInfo, RemoteSearchResult result)
         {
-            try
-            {
-                await ItemIdentifier<TIdType>.FindIdentities(id, ProviderManager, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error in FindIdentities", ex);
-            }
+            lookupInfo.ProviderIds = result.ProviderIds;
+            lookupInfo.Name = result.Name;
+            lookupInfo.Year = result.ProductionYear;
         }
 
         private DateTime GetLastRefreshDate(IHasMetadata item)
         {
-            if (EnableDateLastRefreshed(item))
-            {
-                return item.DateLastRefreshed;
-            }
-
-            return item.DateLastSaved;
-        }
-
-        private bool EnableDateLastRefreshed(IHasMetadata item)
-        {
-            if (ServerConfigurationManager.Configuration.EnableDateLastRefresh)
-            {
-                return true;
-            }
-
-            if (item.DateLastRefreshed != default(DateTime))
-            {
-                return true;
-            }
-
-            if (item is BoxSet || (item is IItemByName && !(item is MusicArtist)))
-            {
-                return true;
-            }
-
-            return false;
+            return item.DateLastRefreshed;
         }
 
         protected async Task SaveItem(MetadataResult<TItemType> result, ItemUpdateType reason, CancellationToken cancellationToken)
@@ -326,7 +275,6 @@ namespace MediaBrowser.Providers.Manager
             return _cachedTask;
         }
 
-        private readonly Task<ItemUpdateType> _cachedResult = Task.FromResult(ItemUpdateType.None);
         /// <summary>
         /// Befores the save.
         /// </summary>
@@ -334,25 +282,75 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="isFullRefresh">if set to <c>true</c> [is full refresh].</param>
         /// <param name="currentUpdateType">Type of the current update.</param>
         /// <returns>ItemUpdateType.</returns>
-        protected virtual Task<ItemUpdateType> BeforeSave(TItemType item, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        protected virtual async Task<ItemUpdateType> BeforeSave(TItemType item, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
-            return _cachedResult;
+            var updateType = ItemUpdateType.None;
+
+            updateType |= SaveCumulativeRunTimeTicks(item, isFullRefresh, currentUpdateType);
+            updateType |= SaveDateLastMediaAdded(item, isFullRefresh, currentUpdateType);
+
+            return updateType;
+        }
+
+        private ItemUpdateType SaveCumulativeRunTimeTicks(TItemType item, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        {
+            var updateType = ItemUpdateType.None;
+
+            if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
+            {
+                var folder = item as Folder;
+                if (folder != null && folder.SupportsCumulativeRunTimeTicks)
+                {
+                    var items = folder.GetRecursiveChildren(i => !i.IsFolder).ToList();
+                    var ticks = items.Select(i => i.RunTimeTicks ?? 0).Sum();
+
+                    if (!folder.RunTimeTicks.HasValue || folder.RunTimeTicks.Value != ticks)
+                    {
+                        folder.RunTimeTicks = ticks;
+                        updateType = ItemUpdateType.MetadataEdit;
+                    }
+                }
+            }
+
+            return updateType;
+        }
+
+        private ItemUpdateType SaveDateLastMediaAdded(TItemType item, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        {
+            var updateType = ItemUpdateType.None;
+
+            if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
+            {
+                var folder = item as Folder;
+                if (folder != null && folder.SupportsDateLastMediaAdded)
+                {
+                    var items = folder.GetRecursiveChildren(i => !i.IsFolder).Select(i => i.DateCreated).ToList();
+                    var date = items.Count == 0 ? (DateTime?)null : items.Max();
+
+                    if ((!folder.DateLastMediaAdded.HasValue && date.HasValue) || folder.DateLastMediaAdded != date)
+                    {
+                        folder.DateLastMediaAdded = date;
+                        updateType = ItemUpdateType.MetadataEdit;
+                    }
+                }
+            }
+
+            return updateType;
         }
 
         /// <summary>
         /// Gets the providers.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="status">The status.</param>
-        /// <param name="options">The options.</param>
         /// <returns>IEnumerable{`0}.</returns>
-        protected IEnumerable<IMetadataProvider> GetProviders(IHasMetadata item, MetadataStatus status, MetadataRefreshOptions options)
+        protected IEnumerable<IMetadataProvider> GetProviders(IHasMetadata item, MetadataRefreshOptions options, bool requiresRefresh)
         {
             // Get providers to refresh
             var providers = ((ProviderManager)ProviderManager).GetMetadataProviders<TItemType>(item).ToList();
 
+            var dateLastRefresh = item.DateLastRefreshed;
+
             // Run all if either of these flags are true
-            var runAllProviders = options.ReplaceAllMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || !status.DateLastMetadataRefresh.HasValue;
+            var runAllProviders = options.ReplaceAllMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || dateLastRefresh == default(DateTime) || requiresRefresh;
 
             if (!runAllProviders)
             {
@@ -362,16 +360,16 @@ namespace MediaBrowser.Providers.Manager
                 var providersWithChanges = providers
                     .Where(i =>
                     {
+                        var hasFileChangeMonitor = i as IHasItemChangeMonitor;
+                        if (hasFileChangeMonitor != null)
+                        {
+                            return HasChanged(item, hasFileChangeMonitor, options.DirectoryService);
+                        }
+
                         var hasChangeMonitor = i as IHasChangeMonitor;
                         if (hasChangeMonitor != null)
                         {
                             return HasChanged(item, hasChangeMonitor, currentItem.DateLastSaved, options.DirectoryService);
-                        }
-
-                        var hasFileChangeMonitor = i as IHasItemChangeMonitor;
-                        if (hasFileChangeMonitor != null)
-                        {
-                            return HasChanged(item, hasFileChangeMonitor, status, options.DirectoryService);
                         }
 
                         return false;
@@ -411,29 +409,25 @@ namespace MediaBrowser.Providers.Manager
             return providers;
         }
 
-        protected virtual IEnumerable<IImageProvider> GetNonLocalImageProviders(IHasMetadata item, IEnumerable<IImageProvider> allImageProviders, MetadataStatus status, ImageRefreshOptions options)
+        protected virtual IEnumerable<IImageProvider> GetNonLocalImageProviders(IHasMetadata item, IEnumerable<IImageProvider> allImageProviders, ImageRefreshOptions options)
         {
             // Get providers to refresh
             var providers = allImageProviders.Where(i => !(i is ILocalImageProvider)).ToList();
 
+            var dateLastImageRefresh = item.DateLastRefreshed;
+
             // Run all if either of these flags are true
-            var runAllProviders = options.ImageRefreshMode == ImageRefreshMode.FullRefresh || !status.DateLastImagesRefresh.HasValue;
+            var runAllProviders = options.ImageRefreshMode == ImageRefreshMode.FullRefresh || dateLastImageRefresh == default(DateTime);
 
             if (!runAllProviders)
             {
                 providers = providers
                     .Where(i =>
                     {
-                        var hasChangeMonitor = i as IHasChangeMonitor;
-                        if (hasChangeMonitor != null)
-                        {
-                            return HasChanged(item, hasChangeMonitor, status.DateLastImagesRefresh.Value, options.DirectoryService);
-                        }
-
                         var hasFileChangeMonitor = i as IHasItemChangeMonitor;
                         if (hasFileChangeMonitor != null)
                         {
-                            return HasChanged(item, hasFileChangeMonitor, status, options.DirectoryService);
+                            return HasChanged(item, hasFileChangeMonitor, options.DirectoryService);
                         }
 
                         return false;
@@ -541,12 +535,6 @@ namespace MediaBrowser.Providers.Manager
 
                     // If a local provider fails, consider that a failure
                     refreshResult.ErrorMessage = ex.Message;
-
-                    if (options.MetadataRefreshMode != MetadataRefreshMode.FullRefresh)
-                    {
-                        // If the local provider fails don't continue with remote providers because the user's saved metadata could be lost
-                        return refreshResult;
-                    }
                 }
             }
 
@@ -725,11 +713,11 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private bool HasChanged(IHasMetadata item, IHasItemChangeMonitor changeMonitor, MetadataStatus status, IDirectoryService directoryService)
+        private bool HasChanged(IHasMetadata item, IHasItemChangeMonitor changeMonitor, IDirectoryService directoryService)
         {
             try
             {
-                var hasChanged = changeMonitor.HasChanged(item, status, directoryService);
+                var hasChanged = changeMonitor.HasChanged(item, directoryService);
 
                 //if (hasChanged)
                 //{

@@ -71,6 +71,8 @@
     <Compile Include="Encoder\EncodingJob.cs" />
     <Compile Include="Encoder\EncodingJobFactory.cs" />
     <Compile Include="Encoder\EncodingUtils.cs" />
+    <Compile Include="Encoder\EncoderValidator.cs" />
+    <Compile Include="Encoder\FontConfigLoader.cs" />
     <Compile Include="Encoder\JobLogger.cs" />
     <Compile Include="Encoder\MediaEncoder.cs" />
     <Compile Include="Encoder\VideoEncoder.cs" />

@@ -8,15 +8,6 @@ namespace MediaBrowser.Controller.Entities
     public class PhotoAlbum : Folder
     {
         [IgnoreDataMember]
-        public override bool SupportsLocalMetadata
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        [IgnoreDataMember]
         public override bool AlwaysScanInternalMetadataPath
         {
             get

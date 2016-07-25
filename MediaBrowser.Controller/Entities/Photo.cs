@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class Photo : BaseItem, IHasTags, IHasTaglines
+    public class Photo : BaseItem, IHasTaglines
     {
         public List<string> Taglines { get; set; }
 
@@ -49,6 +49,12 @@ namespace MediaBrowser.Controller.Entities
             {
                 return GetParents().OfType<PhotoAlbum>().FirstOrDefault();
             }
+        }
+
+        [IgnoreDataMember]
+        public override bool EnableForceSaveOnDateModifiedChange
+        {
+            get { return true; }
         }
 
         public override bool CanDownload()

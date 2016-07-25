@@ -96,20 +96,20 @@ namespace MediaBrowser.Server.Implementations.Udp
 
         private async void RespondToV1Message(string endpoint, Encoding encoding)
         {
-            var localAddress = _appHost.LocalApiUrl;
+            var localUrl = await _appHost.GetLocalApiUrl().ConfigureAwait(false);
 
-            if (!string.IsNullOrEmpty(localAddress))
+            if (!string.IsNullOrEmpty(localUrl))
             {
                 // This is how we did the old v1 search, so need to strip off the protocol
-                var index = localAddress.IndexOf("://", StringComparison.OrdinalIgnoreCase);
+                var index = localUrl.IndexOf("://", StringComparison.OrdinalIgnoreCase);
 
                 if (index != -1)
                 {
-                    localAddress = localAddress.Substring(index + 3);
+                    localUrl = localUrl.Substring(index + 3);
                 }
 
                 // Send a response back with our ip address and port
-                var response = String.Format("MediaBrowserServer|{0}", localAddress);
+                var response = String.Format("MediaBrowserServer|{0}", localUrl);
 
                 await SendAsync(Encoding.UTF8.GetBytes(response), endpoint);
             }
@@ -121,7 +121,7 @@ namespace MediaBrowser.Server.Implementations.Udp
 
         private async void RespondToV2Message(string endpoint, Encoding encoding)
         {
-            var localUrl = _appHost.LocalApiUrl;
+            var localUrl = await _appHost.GetLocalApiUrl().ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(localUrl))
             {

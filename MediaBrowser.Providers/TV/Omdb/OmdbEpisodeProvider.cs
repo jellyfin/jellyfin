@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Common.Net;
+﻿using CommonIO;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -20,13 +22,17 @@ namespace MediaBrowser.Providers.TV
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
-        private OmdbItemProvider _itemProvider;
+        private readonly OmdbItemProvider _itemProvider;
+        private readonly IFileSystem _fileSystem;
+        private readonly IServerConfigurationManager _configurationManager;
 
-        public OmdbEpisodeProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogger logger, ILibraryManager libraryManager)
+        public OmdbEpisodeProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogger logger, ILibraryManager libraryManager, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
         {
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
-            _itemProvider = new OmdbItemProvider(jsonSerializer, httpClient, logger, libraryManager);
+            _fileSystem = fileSystem;
+            _configurationManager = configurationManager;
+            _itemProvider = new OmdbItemProvider(jsonSerializer, httpClient, logger, libraryManager, fileSystem, configurationManager);
         }
 
         public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(EpisodeInfo searchInfo, CancellationToken cancellationToken)
@@ -36,33 +42,25 @@ namespace MediaBrowser.Providers.TV
 
         public async Task<MetadataResult<Episode>> GetMetadata(EpisodeInfo info, CancellationToken cancellationToken)
         {
-            var result = new MetadataResult<Episode>
+            var result = new MetadataResult<Episode>()
             {
                 Item = new Episode()
             };
 
-            var imdbId = info.GetProviderId(MetadataProviders.Imdb);
-            if (string.IsNullOrWhiteSpace(imdbId))
+            // Allowing this will dramatically increase scan times
+            if (info.IsMissingEpisode || info.IsVirtualUnaired)
             {
-                imdbId = await GetEpisodeImdbId(info, cancellationToken).ConfigureAwait(false);
+                return result;
             }
 
-            if (!string.IsNullOrEmpty(imdbId))
+            if (OmdbProvider.IsValidSeries(info.SeriesProviderIds) && info.IndexNumber.HasValue && info.ParentIndexNumber.HasValue)
             {
-                result.Item.SetProviderId(MetadataProviders.Imdb, imdbId);
-                result.HasMetadata = true;
+                var seriesImdbId = info.SeriesProviderIds[MetadataProviders.Imdb.ToString()];
 
-                await new OmdbProvider(_jsonSerializer, _httpClient).Fetch(result.Item, imdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                result.HasMetadata = await new OmdbProvider(_jsonSerializer, _httpClient, _fileSystem, _configurationManager).FetchEpisodeData(result, info.IndexNumber.Value, info.ParentIndexNumber.Value, seriesImdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
             }
 
             return result;
-        }
-
-        private async Task<string> GetEpisodeImdbId(EpisodeInfo info, CancellationToken cancellationToken)
-        {
-            var results = await GetSearchResults(info, cancellationToken).ConfigureAwait(false);
-            var first = results.FirstOrDefault();
-            return first == null ? null : first.GetProviderId(MetadataProviders.Imdb);
         }
 
         public int Order

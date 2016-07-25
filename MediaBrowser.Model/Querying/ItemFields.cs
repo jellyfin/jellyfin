@@ -130,6 +130,8 @@
         /// </summary>
         Metascore,
 
+        OriginalTitle,
+
         /// <summary>
         /// The item overview
         /// </summary>
@@ -194,6 +196,8 @@
         /// The series genres
         /// </summary>
         SeriesGenres,
+
+        SeriesPrimaryImage,
 
         /// <summary>
         /// The series studio

@@ -29,21 +29,10 @@ namespace MediaBrowser.Controller.Library
         /// <returns>Task.</returns>
         Task SaveUserData(Guid userId, IHasUserData item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Gets the user data.
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="key">The key.</param>
-        /// <returns>Task{UserItemData}.</returns>
-        UserItemData GetUserData(string userId, string key);
+        UserItemData GetUserData(IHasUserData user, IHasUserData item);
 
-        /// <summary>
-        /// Gets the user data.
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="key">The key.</param>
-        /// <returns>Task{UserItemData}.</returns>
-        UserItemData GetUserData(Guid userId, string key);
+        UserItemData GetUserData(string userId, IHasUserData item);
+        UserItemData GetUserData(Guid userId, IHasUserData item);
 
         /// <summary>
         /// Gets the user data dto.
@@ -51,7 +40,9 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <returns>UserItemDataDto.</returns>
-        UserItemDataDto GetUserDataDto(IHasUserData item, User user);
+        Task<UserItemDataDto> GetUserDataDto(IHasUserData item, User user);
+
+        Task<UserItemDataDto> GetUserDataDto(IHasUserData item, BaseItemDto itemDto, User user);
 
         /// <summary>
         /// Get all user data for the given user

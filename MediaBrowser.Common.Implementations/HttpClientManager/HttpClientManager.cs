@@ -128,11 +128,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
         private void AddIpv4Option(HttpWebRequest request, HttpRequestOptions options)
         {
-            if (!options.PreferIpv4)
-            {
-                return;
-            }
-
             request.ServicePoint.BindIPEndPointDelegate = (servicePount, remoteEndPoint, retryCount) =>
             {
                 if (remoteEndPoint.AddressFamily == AddressFamily.InterNetwork)
@@ -143,18 +138,33 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             };
         }
 
-        private WebRequest GetRequest(HttpRequestOptions options, string method, bool enableHttpCompression)
+        private WebRequest GetRequest(HttpRequestOptions options, string method)
         {
-            var request = CreateWebRequest(options.Url);
+            var url = options.Url;
+
+            var uriAddress = new Uri(url);
+            var userInfo = uriAddress.UserInfo;
+            if (!string.IsNullOrWhiteSpace(userInfo))
+            {
+                _logger.Info("Found userInfo in url: {0} ... url: {1}", userInfo, url);
+                url = url.Replace(userInfo + "@", string.Empty);
+            }
+
+            var request = CreateWebRequest(url);
             var httpWebRequest = request as HttpWebRequest;
 
             if (httpWebRequest != null)
             {
-                AddIpv4Option(httpWebRequest, options);
+                if (options.PreferIpv4)
+                {
+                    AddIpv4Option(httpWebRequest, options);
+                }
 
                 AddRequestHeaders(httpWebRequest, options);
 
-                httpWebRequest.AutomaticDecompression = enableHttpCompression ? DecompressionMethods.Deflate : DecompressionMethods.None;
+                httpWebRequest.AutomaticDecompression = options.EnableHttpCompression ? 
+                    (options.DecompressionMethod ?? DecompressionMethods.Deflate) : 
+                    DecompressionMethods.None;
             }
 
             request.CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
@@ -183,7 +193,25 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 }
             }
 
+            if (!string.IsNullOrWhiteSpace(userInfo))
+            {
+                var parts = userInfo.Split(':');
+                if (parts.Length == 2)
+                {
+                    request.Credentials = GetCredential(url, parts[0], parts[1]);
+                    request.PreAuthenticate = true;
+                }
+            }
+
             return request;
+        }
+
+        private CredentialCache GetCredential(string url, string username, string password)
+        {
+            //ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3;
+            CredentialCache credentialCache = new CredentialCache();
+            credentialCache.Add(new Uri(url), "Basic", new NetworkCredential(username, password));
+            return credentialCache;
         }
 
         private void AddRequestHeaders(HttpWebRequest request, HttpRequestOptions options)
@@ -296,6 +324,8 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
         private async Task<HttpResponseInfo> GetCachedResponse(string responseCachePath, TimeSpan cacheLength, string url)
         {
+            _logger.Info("Checking for cache file {0}", responseCachePath);
+
             try
             {
                 if (_fileSystem.GetLastWriteTimeUtc(responseCachePath).Add(cacheLength) > DateTime.UtcNow)
@@ -366,7 +396,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 };
             }
 
-            var httpWebRequest = GetRequest(options, httpMethod, options.EnableHttpCompression);
+            var httpWebRequest = GetRequest(options, httpMethod);
 
             if (options.RequestContentBytes != null ||
                 !string.IsNullOrEmpty(options.RequestContent) ||
@@ -556,7 +586,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             options.CancellationToken.ThrowIfCancellationRequested();
 
-            var httpWebRequest = GetRequest(options, "GET", options.EnableHttpCompression);
+            var httpWebRequest = GetRequest(options, "GET");
 
             if (options.ResourcePool != null)
             {

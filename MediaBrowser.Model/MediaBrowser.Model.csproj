@@ -97,8 +97,6 @@
     <Compile Include="Configuration\FanartOptions.cs" />
     <Compile Include="Configuration\MetadataConfiguration.cs" />
     <Compile Include="Configuration\PeopleMetadataOptions.cs" />
-    <Compile Include="Configuration\TheMovieDbOptions.cs" />
-    <Compile Include="Configuration\TvdbOptions.cs" />
     <Compile Include="Configuration\XbmcMetadataOptions.cs" />
     <Compile Include="Configuration\SubtitlePlaybackMode.cs" />
     <Compile Include="Connect\ConnectAuthenticationExchangeResult.cs" />
@@ -120,9 +118,8 @@
     <Compile Include="Devices\DeviceInfo.cs" />
     <Compile Include="Devices\DevicesOptions.cs" />
     <Compile Include="Dlna\EncodingContext.cs" />
-    <Compile Include="Dlna\ILocalPlayer.cs" />
+    <Compile Include="Dlna\ITranscoderSupport.cs" />
     <Compile Include="Dlna\StreamInfoSorter.cs" />
-    <Compile Include="Dlna\NullLocalPlayer.cs" />
     <Compile Include="Dlna\PlaybackErrorCode.cs" />
     <Compile Include="Dlna\PlaybackException.cs" />
     <Compile Include="Dlna\ResolutionConfiguration.cs" />
@@ -229,10 +226,8 @@
     <Compile Include="Entities\ProviderIdsExtensions.cs" />
     <Compile Include="Entities\ScrollDirection.cs" />
     <Compile Include="Entities\SortOrder.cs" />
-    <Compile Include="Entities\VideoSize.cs" />
     <Compile Include="Events\GenericEventArgs.cs" />
     <Compile Include="Extensions\DoubleHelper.cs" />
-    <Compile Include="Extensions\IHasPropertyChangedEvent.cs" />
     <Compile Include="Extensions\IntHelper.cs" />
     <Compile Include="Extensions\ListHelper.cs" />
     <Compile Include="Extensions\StringHelper.cs" />
@@ -287,7 +282,6 @@
     <Compile Include="Entities\MetadataFields.cs" />
     <Compile Include="Entities\UserDataSaveReason.cs" />
     <Compile Include="Entities\Video3DFormat.cs" />
-    <Compile Include="Games\GameSystem.cs" />
     <Compile Include="IO\IIsoManager.cs" />
     <Compile Include="IO\IIsoMount.cs" />
     <Compile Include="IO\IIsoMounter.cs" />
@@ -399,6 +393,7 @@
     <Compile Include="Sync\SyncProfileOption.cs" />
     <Compile Include="Sync\SyncQualityOption.cs" />
     <Compile Include="Sync\SyncTarget.cs" />
+    <Compile Include="System\Architecture.cs" />
     <Compile Include="System\LogFile.cs" />
     <Compile Include="System\PublicSystemInfo.cs" />
     <Compile Include="Updates\CheckForUpdateResult.cs" />

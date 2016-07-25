@@ -15,57 +15,30 @@ namespace MediaBrowser.Server.Implementations.Security
 {
     public class AuthenticationRepository : BaseSqliteRepository, IAuthenticationRepository
     {
-        private IDbConnection _connection;
         private readonly IServerApplicationPaths _appPaths;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        private IDbCommand _saveInfoCommand;
-
-        public AuthenticationRepository(ILogManager logManager, IServerApplicationPaths appPaths)
-            : base(logManager)
+        public AuthenticationRepository(ILogManager logManager, IServerApplicationPaths appPaths, IDbConnector connector)
+            : base(logManager, connector)
         {
             _appPaths = appPaths;
+            DbFilePath = Path.Combine(appPaths.DataPath, "authentication.db");
         }
 
         public async Task Initialize()
         {
-            var dbFile = Path.Combine(_appPaths.DataPath, "authentication.db");
-
-            _connection = await SqliteExtensions.ConnectToDb(dbFile, Logger).ConfigureAwait(false);
-
-            string[] queries = {
+            using (var connection = await CreateConnection().ConfigureAwait(false))
+            {
+                string[] queries = {
 
                                 "create table if not exists AccessTokens (Id GUID PRIMARY KEY, AccessToken TEXT NOT NULL, DeviceId TEXT, AppName TEXT, AppVersion TEXT, DeviceName TEXT, UserId TEXT, IsActive BIT, DateCreated DATETIME NOT NULL, DateRevoked DATETIME)",
-                                "create index if not exists idx_AccessTokens on AccessTokens(Id)",
-
-                                //pragmas
-                                "pragma temp_store = memory",
-
-                                "pragma shrink_memory"
+                                "create index if not exists idx_AccessTokens on AccessTokens(Id)"
                                };
 
-            _connection.RunQueries(queries, Logger);
+                connection.RunQueries(queries, Logger);
 
-            _connection.AddColumn(Logger, "AccessTokens", "AppVersion", "TEXT");
-
-            PrepareStatements();
-        }
-
-        private void PrepareStatements()
-        {
-            _saveInfoCommand = _connection.CreateCommand();
-            _saveInfoCommand.CommandText = "replace into AccessTokens (Id, AccessToken, DeviceId, AppName, AppVersion, DeviceName, UserId, IsActive, DateCreated, DateRevoked) values (@Id, @AccessToken, @DeviceId, @AppName, @AppVersion, @DeviceName, @UserId, @IsActive, @DateCreated, @DateRevoked)";
-
-            _saveInfoCommand.Parameters.Add(_saveInfoCommand, "@Id");
-            _saveInfoCommand.Parameters.Add(_saveInfoCommand, "@AccessToken");
-            _saveInfoCommand.Parameters.Add(_saveInfoCommand, "@DeviceId");
-            _saveInfoCommand.Parameters.Add(_saveInfoCommand, "@AppName");
-            _saveInfoCommand.Parameters.Add(_saveInfoCommand, "@AppVersion");
-            _saveInfoCommand.Parameters.Add(_saveInfoCommand, "@DeviceName");
-            _saveInfoCommand.Parameters.Add(_saveInfoCommand, "@UserId");
-            _saveInfoCommand.Parameters.Add(_saveInfoCommand, "@IsActive");
-            _saveInfoCommand.Parameters.Add(_saveInfoCommand, "@DateCreated");
-            _saveInfoCommand.Parameters.Add(_saveInfoCommand, "@DateRevoked");
+                connection.AddColumn(Logger, "AccessTokens", "AppVersion", "TEXT");
+            }
         }
 
         public Task Create(AuthenticationInfo info, CancellationToken cancellationToken)
@@ -84,61 +57,76 @@ namespace MediaBrowser.Server.Implementations.Security
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            IDbTransaction transaction = null;
-
-            try
+            using (var connection = await CreateConnection().ConfigureAwait(false))
             {
-                transaction = _connection.BeginTransaction();
-
-                var index = 0;
-
-                _saveInfoCommand.GetParameter(index++).Value = new Guid(info.Id);
-                _saveInfoCommand.GetParameter(index++).Value = info.AccessToken;
-                _saveInfoCommand.GetParameter(index++).Value = info.DeviceId;
-                _saveInfoCommand.GetParameter(index++).Value = info.AppName;
-                _saveInfoCommand.GetParameter(index++).Value = info.AppVersion;
-                _saveInfoCommand.GetParameter(index++).Value = info.DeviceName;
-                _saveInfoCommand.GetParameter(index++).Value = info.UserId;
-                _saveInfoCommand.GetParameter(index++).Value = info.IsActive;
-                _saveInfoCommand.GetParameter(index++).Value = info.DateCreated;
-                _saveInfoCommand.GetParameter(index++).Value = info.DateRevoked;
-
-                _saveInfoCommand.Transaction = transaction;
-
-                _saveInfoCommand.ExecuteNonQuery();
-
-                transaction.Commit();
-            }
-            catch (OperationCanceledException)
-            {
-                if (transaction != null)
+                using (var saveInfoCommand = connection.CreateCommand())
                 {
-                    transaction.Rollback();
+                    saveInfoCommand.CommandText = "replace into AccessTokens (Id, AccessToken, DeviceId, AppName, AppVersion, DeviceName, UserId, IsActive, DateCreated, DateRevoked) values (@Id, @AccessToken, @DeviceId, @AppName, @AppVersion, @DeviceName, @UserId, @IsActive, @DateCreated, @DateRevoked)";
+
+                    saveInfoCommand.Parameters.Add(saveInfoCommand, "@Id");
+                    saveInfoCommand.Parameters.Add(saveInfoCommand, "@AccessToken");
+                    saveInfoCommand.Parameters.Add(saveInfoCommand, "@DeviceId");
+                    saveInfoCommand.Parameters.Add(saveInfoCommand, "@AppName");
+                    saveInfoCommand.Parameters.Add(saveInfoCommand, "@AppVersion");
+                    saveInfoCommand.Parameters.Add(saveInfoCommand, "@DeviceName");
+                    saveInfoCommand.Parameters.Add(saveInfoCommand, "@UserId");
+                    saveInfoCommand.Parameters.Add(saveInfoCommand, "@IsActive");
+                    saveInfoCommand.Parameters.Add(saveInfoCommand, "@DateCreated");
+                    saveInfoCommand.Parameters.Add(saveInfoCommand, "@DateRevoked");
+
+                    IDbTransaction transaction = null;
+
+                    try
+                    {
+                        transaction = connection.BeginTransaction();
+
+                        var index = 0;
+
+                        saveInfoCommand.GetParameter(index++).Value = new Guid(info.Id);
+                        saveInfoCommand.GetParameter(index++).Value = info.AccessToken;
+                        saveInfoCommand.GetParameter(index++).Value = info.DeviceId;
+                        saveInfoCommand.GetParameter(index++).Value = info.AppName;
+                        saveInfoCommand.GetParameter(index++).Value = info.AppVersion;
+                        saveInfoCommand.GetParameter(index++).Value = info.DeviceName;
+                        saveInfoCommand.GetParameter(index++).Value = info.UserId;
+                        saveInfoCommand.GetParameter(index++).Value = info.IsActive;
+                        saveInfoCommand.GetParameter(index++).Value = info.DateCreated;
+                        saveInfoCommand.GetParameter(index++).Value = info.DateRevoked;
+
+                        saveInfoCommand.Transaction = transaction;
+
+                        saveInfoCommand.ExecuteNonQuery();
+
+                        transaction.Commit();
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        if (transaction != null)
+                        {
+                            transaction.Rollback();
+                        }
+
+                        throw;
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.ErrorException("Failed to save record:", e);
+
+                        if (transaction != null)
+                        {
+                            transaction.Rollback();
+                        }
+
+                        throw;
+                    }
+                    finally
+                    {
+                        if (transaction != null)
+                        {
+                            transaction.Dispose();
+                        }
+                    }
                 }
-
-                throw;
-            }
-            catch (Exception e)
-            {
-                Logger.ErrorException("Failed to save record:", e);
-
-                if (transaction != null)
-                {
-                    transaction.Rollback();
-                }
-
-                throw;
-            }
-            finally
-            {
-                if (transaction != null)
-                {
-                    transaction.Dispose();
-                }
-
-                WriteLock.Release();
             }
         }
 
@@ -151,101 +139,104 @@ namespace MediaBrowser.Server.Implementations.Security
                 throw new ArgumentNullException("query");
             }
 
-            using (var cmd = _connection.CreateCommand())
+            using (var connection = CreateConnection(true).Result)
             {
-                cmd.CommandText = BaseSelectText;
-
-                var whereClauses = new List<string>();
-
-                var startIndex = query.StartIndex ?? 0;
-
-                if (!string.IsNullOrWhiteSpace(query.AccessToken))
+                using (var cmd = connection.CreateCommand())
                 {
-                    whereClauses.Add("AccessToken=@AccessToken");
-                    cmd.Parameters.Add(cmd, "@AccessToken", DbType.String).Value = query.AccessToken;
-                }
+                    cmd.CommandText = BaseSelectText;
 
-                if (!string.IsNullOrWhiteSpace(query.UserId))
-                {
-                    whereClauses.Add("UserId=@UserId");
-                    cmd.Parameters.Add(cmd, "@UserId", DbType.String).Value = query.UserId;
-                }
+                    var whereClauses = new List<string>();
 
-                if (!string.IsNullOrWhiteSpace(query.DeviceId))
-                {
-                    whereClauses.Add("DeviceId=@DeviceId");
-                    cmd.Parameters.Add(cmd, "@DeviceId", DbType.String).Value = query.DeviceId;
-                }
+                    var startIndex = query.StartIndex ?? 0;
 
-                if (query.IsActive.HasValue)
-                {
-                    whereClauses.Add("IsActive=@IsActive");
-                    cmd.Parameters.Add(cmd, "@IsActive", DbType.Boolean).Value = query.IsActive.Value;
-                }
-
-                if (query.HasUser.HasValue)
-                {
-                    if (query.HasUser.Value)
+                    if (!string.IsNullOrWhiteSpace(query.AccessToken))
                     {
-                        whereClauses.Add("UserId not null");
+                        whereClauses.Add("AccessToken=@AccessToken");
+                        cmd.Parameters.Add(cmd, "@AccessToken", DbType.String).Value = query.AccessToken;
                     }
-                    else
+
+                    if (!string.IsNullOrWhiteSpace(query.UserId))
                     {
-                        whereClauses.Add("UserId is null");
+                        whereClauses.Add("UserId=@UserId");
+                        cmd.Parameters.Add(cmd, "@UserId", DbType.String).Value = query.UserId;
                     }
-                }
 
-                var whereTextWithoutPaging = whereClauses.Count == 0 ?
-                    string.Empty :
-                    " where " + string.Join(" AND ", whereClauses.ToArray());
+                    if (!string.IsNullOrWhiteSpace(query.DeviceId))
+                    {
+                        whereClauses.Add("DeviceId=@DeviceId");
+                        cmd.Parameters.Add(cmd, "@DeviceId", DbType.String).Value = query.DeviceId;
+                    }
 
-                if (startIndex > 0)
-                {
-                    var pagingWhereText = whereClauses.Count == 0 ?
+                    if (query.IsActive.HasValue)
+                    {
+                        whereClauses.Add("IsActive=@IsActive");
+                        cmd.Parameters.Add(cmd, "@IsActive", DbType.Boolean).Value = query.IsActive.Value;
+                    }
+
+                    if (query.HasUser.HasValue)
+                    {
+                        if (query.HasUser.Value)
+                        {
+                            whereClauses.Add("UserId not null");
+                        }
+                        else
+                        {
+                            whereClauses.Add("UserId is null");
+                        }
+                    }
+
+                    var whereTextWithoutPaging = whereClauses.Count == 0 ?
                         string.Empty :
                         " where " + string.Join(" AND ", whereClauses.ToArray());
 
-                    whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM AccessTokens {0} ORDER BY DateCreated LIMIT {1})",
-                        pagingWhereText,
-                        startIndex.ToString(_usCulture)));
-                }
-
-                var whereText = whereClauses.Count == 0 ?
-                    string.Empty :
-                    " where " + string.Join(" AND ", whereClauses.ToArray());
-
-                cmd.CommandText += whereText;
-
-                cmd.CommandText += " ORDER BY DateCreated";
-
-                if (query.Limit.HasValue)
-                {
-                    cmd.CommandText += " LIMIT " + query.Limit.Value.ToString(_usCulture);
-                }
-
-                cmd.CommandText += "; select count (Id) from AccessTokens" + whereTextWithoutPaging;
-
-                var list = new List<AuthenticationInfo>();
-                var count = 0;
-
-                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
-                {
-                    while (reader.Read())
+                    if (startIndex > 0)
                     {
-                        list.Add(Get(reader));
+                        var pagingWhereText = whereClauses.Count == 0 ?
+                            string.Empty :
+                            " where " + string.Join(" AND ", whereClauses.ToArray());
+
+                        whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM AccessTokens {0} ORDER BY DateCreated LIMIT {1})",
+                            pagingWhereText,
+                            startIndex.ToString(_usCulture)));
                     }
 
-                    if (reader.NextResult() && reader.Read())
-                    {
-                        count = reader.GetInt32(0);
-                    }
-                }
+                    var whereText = whereClauses.Count == 0 ?
+                        string.Empty :
+                        " where " + string.Join(" AND ", whereClauses.ToArray());
 
-                return new QueryResult<AuthenticationInfo>()
-                {
-                    Items = list.ToArray(),
-                    TotalRecordCount = count
-                };
+                    cmd.CommandText += whereText;
+
+                    cmd.CommandText += " ORDER BY DateCreated";
+
+                    if (query.Limit.HasValue)
+                    {
+                        cmd.CommandText += " LIMIT " + query.Limit.Value.ToString(_usCulture);
+                    }
+
+                    cmd.CommandText += "; select count (Id) from AccessTokens" + whereTextWithoutPaging;
+
+                    var list = new List<AuthenticationInfo>();
+                    var count = 0;
+
+                    using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
+                    {
+                        while (reader.Read())
+                        {
+                            list.Add(Get(reader));
+                        }
+
+                        if (reader.NextResult() && reader.Read())
+                        {
+                            count = reader.GetInt32(0);
+                        }
+                    }
+
+                    return new QueryResult<AuthenticationInfo>()
+                    {
+                        Items = list.ToArray(),
+                        TotalRecordCount = count
+                    };
+                }
             }
         }
 
@@ -256,24 +247,27 @@ namespace MediaBrowser.Server.Implementations.Security
                 throw new ArgumentNullException("id");
             }
 
-            var guid = new Guid(id);
-
-            using (var cmd = _connection.CreateCommand())
+            using (var connection = CreateConnection(true).Result)
             {
-                cmd.CommandText = BaseSelectText + " where Id=@Id";
+                var guid = new Guid(id);
 
-                cmd.Parameters.Add(cmd, "@Id", DbType.Guid).Value = guid;
-
-                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
+                using (var cmd = connection.CreateCommand())
                 {
-                    if (reader.Read())
+                    cmd.CommandText = BaseSelectText + " where Id=@Id";
+
+                    cmd.Parameters.Add(cmd, "@Id", DbType.Guid).Value = guid;
+
+                    using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
                     {
-                        return Get(reader);
+                        if (reader.Read())
+                        {
+                            return Get(reader);
+                        }
                     }
                 }
-            }
 
-            return null;
+                return null;
+            }
         }
 
         private AuthenticationInfo Get(IDataReader reader)
@@ -318,20 +312,6 @@ namespace MediaBrowser.Server.Implementations.Security
             }
 
             return info;
-        }
-
-        protected override void CloseConnection()
-        {
-            if (_connection != null)
-            {
-                if (_connection.IsOpen())
-                {
-                    _connection.Close();
-                }
-
-                _connection.Dispose();
-                _connection = null;
-            }
         }
     }
 }

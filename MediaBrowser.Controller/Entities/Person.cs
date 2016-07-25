@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities
@@ -18,18 +19,32 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The place of birth.</value>
         public string PlaceOfBirth { get; set; }
 
-        /// <summary>
-        /// Gets the user data key.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        protected override string CreateUserDataKey()
+        public override List<string> GetUserDataKeys()
         {
-            return "Person-" + Name;
+            var list = base.GetUserDataKeys();
+
+            list.Insert(0, GetType().Name + "-" + (Name ?? string.Empty).RemoveDiacritics());
+            return list;
+        }
+
+        public override string PresentationUniqueKey
+        {
+            get
+            {
+                return GetUserDataKeys()[0];
+            }
         }
 
         public PersonLookupInfo GetLookupInfo()
         {
             return GetItemLookupInfo<PersonLookupInfo>();
+        }
+
+        public IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query)
+        {
+            query.Person = Name;
+
+            return LibraryManager.GetItemList(query);
         }
 
         /// <summary>

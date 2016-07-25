@@ -9,15 +9,22 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using MediaBrowser.Controller.Power;
+using MediaBrowser.Model.System;
+using MediaBrowser.Server.Implementations.Persistence;
+using MediaBrowser.Server.Startup.Common.FFMpeg;
+using OperatingSystem = MediaBrowser.Server.Startup.Common.OperatingSystem;
 
 namespace MediaBrowser.Server.Mono.Native
 {
     public abstract class BaseMonoApp : INativeApp
     {
         protected StartupOptions StartupOptions { get; private set; }
-        protected BaseMonoApp(StartupOptions startupOptions)
+        protected ILogger Logger { get; private set; }
+
+        protected BaseMonoApp(StartupOptions startupOptions, ILogger logger)
         {
             StartupOptions = startupOptions;
+            Logger = logger;
         }
 
         /// <summary>
@@ -63,6 +70,11 @@ namespace MediaBrowser.Server.Mono.Native
         }
 
         public void PreventSystemStandby()
+        {
+
+        }
+
+        public void AllowSystemStandby()
         {
 
         }
@@ -165,11 +177,19 @@ namespace MediaBrowser.Server.Mono.Native
             }
             else if (string.Equals(uname.machine, "x86_64", StringComparison.OrdinalIgnoreCase))
             {
-                info.SystemArchitecture = Architecture.X86_X64;
+                info.SystemArchitecture = Architecture.X64;
             }
             else if (uname.machine.StartsWith("arm", StringComparison.OrdinalIgnoreCase))
             {
                 info.SystemArchitecture = Architecture.Arm;
+            }
+            else if (System.Environment.Is64BitOperatingSystem)
+            {
+                info.SystemArchitecture = Architecture.X64;
+            }
+            else 
+            {
+                info.SystemArchitecture = Architecture.X86;
             }
 
             info.OperatingSystemVersionString = string.IsNullOrWhiteSpace(sysName) ?
@@ -186,14 +206,21 @@ namespace MediaBrowser.Server.Mono.Native
             if (_unixName == null)
             {
                 var uname = new Uname();
-                Utsname utsname;
-                var callResult = Syscall.uname(out utsname);
-                if (callResult == 0)
+                try
                 {
-                    uname.sysname = utsname.sysname;
-                    uname.machine = utsname.machine;
-                }
+                    Utsname utsname;
+                    var callResult = Syscall.uname(out utsname);
+                    if (callResult == 0)
+                    {
+                        uname.sysname = utsname.sysname ?? string.Empty;
+                        uname.machine = utsname.machine ?? string.Empty;
+                    }
 
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error getting unix name", ex);
+                }
                 _unixName = uname;
             }
             return _unixName;
@@ -209,6 +236,69 @@ namespace MediaBrowser.Server.Mono.Native
         {
             return new NullPowerManagement();
         }
+
+        public FFMpegInstallInfo GetFfmpegInstallInfo()
+        {
+            return GetInfo(Environment);
+        }
+
+        public void LaunchUrl(string url)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IDbConnector GetDbConnector()
+        {
+            return new DbConnector(Logger);
+        }
+
+        public static FFMpegInstallInfo GetInfo(NativeEnvironment environment)
+        {
+            var info = new FFMpegInstallInfo();
+
+            // Windows builds: http://ffmpeg.zeranoe.com/builds/
+            // Linux builds: http://johnvansickle.com/ffmpeg/
+            // OS X builds: http://ffmpegmac.net/
+            // OS X x64: http://www.evermeet.cx/ffmpeg/
+
+            switch (environment.OperatingSystem)
+            {
+                case OperatingSystem.Osx:
+                case OperatingSystem.Bsd:
+                    break;
+                case OperatingSystem.Linux:
+
+                    info.ArchiveType = "7z";
+                    info.Version = "20160215";
+                    break;
+            }
+
+            info.DownloadUrls = GetDownloadUrls(environment);
+
+            return info;
+        }
+
+        private static string[] GetDownloadUrls(NativeEnvironment environment)
+        {
+            switch (environment.OperatingSystem)
+            {
+                case OperatingSystem.Linux:
+
+                    switch (environment.SystemArchitecture)
+                    {
+                        case Architecture.X64:
+                            return new[]
+                            {
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-git-20160215-64bit-static.7z"
+                            };
+                    }
+                    break;
+            }
+
+            // No version available 
+            return new string[] { };
+        }
+
     }
 
     public class NullPowerManagement : IPowerManagement

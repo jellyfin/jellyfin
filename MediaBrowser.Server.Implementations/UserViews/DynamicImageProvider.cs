@@ -86,11 +86,6 @@ namespace MediaBrowser.Server.Implementations.UserViews
                     {
                         return series;
                     }
-                    var episodeSeason = episode.Season;
-                    if (episodeSeason != null)
-                    {
-                        return episodeSeason;
-                    }
 
                     return episode;
                 }
@@ -153,7 +148,8 @@ namespace MediaBrowser.Server.Implementations.UserViews
                 CollectionType.HomeVideos,
                 CollectionType.BoxSets,
                 CollectionType.Playlists,
-                CollectionType.Photos
+                CollectionType.Photos,
+                string.Empty
             };
 
             return collectionStripViewTypes.Contains(view.ViewType ?? string.Empty);

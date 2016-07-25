@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Persistence
@@ -13,12 +14,6 @@ namespace MediaBrowser.Controller.Persistence
     /// </summary>
     public interface IItemRepository : IRepository
     {
-        /// <summary>
-        /// Opens the connection to the repository
-        /// </summary>
-        /// <returns>Task.</returns>
-        Task Initialize();
-
         /// <summary>
         /// Saves an item
         /// </summary>
@@ -87,7 +82,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="chapters">The chapters.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveChapters(Guid id, IEnumerable<ChapterInfo> chapters, CancellationToken cancellationToken);
+        Task SaveChapters(Guid id, List<ChapterInfo> chapters, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the media streams.
@@ -103,7 +98,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="streams">The streams.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveMediaStreams(Guid id, IEnumerable<MediaStream> streams, CancellationToken cancellationToken);
+        Task SaveMediaStreams(Guid id, List<MediaStream> streams, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the item ids.
@@ -159,7 +154,7 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>List&lt;BaseItem&gt;.</returns>
-        IEnumerable<BaseItem> GetItemList(InternalItemsQuery query);
+        List<BaseItem> GetItemList(InternalItemsQuery query);
 
         /// <summary>
         /// Updates the inherited values.
@@ -167,6 +162,13 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task UpdateInheritedValues(CancellationToken cancellationToken);
+
+        QueryResult<Tuple<BaseItem, ItemCounts>> GetGenres(InternalItemsQuery query);
+        QueryResult<Tuple<BaseItem, ItemCounts>> GetMusicGenres(InternalItemsQuery query);
+        QueryResult<Tuple<BaseItem, ItemCounts>> GetGameGenres(InternalItemsQuery query);
+        QueryResult<Tuple<BaseItem, ItemCounts>> GetStudios(InternalItemsQuery query);
+        QueryResult<Tuple<BaseItem, ItemCounts>> GetArtists(InternalItemsQuery query);
+        QueryResult<Tuple<BaseItem, ItemCounts>> GetAlbumArtists(InternalItemsQuery query);
     }
 }
 

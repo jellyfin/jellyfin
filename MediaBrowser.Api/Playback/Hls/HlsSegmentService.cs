@@ -5,6 +5,7 @@ using ServiceStack;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -29,25 +30,6 @@ namespace MediaBrowser.Api.Playback.Hls
         /// </summary>
         /// <value>The segment id.</value>
         public string SegmentId { get; set; }
-    }
-
-    /// <summary>
-    /// Class GetHlsVideoStream
-    /// </summary>
-    [Route("/Videos/{Id}/stream.m3u8", "GET")]
-    [Api(Description = "Gets a video stream using HTTP live streaming.")]
-    public class GetHlsVideoStreamLegacy : VideoStreamRequest
-    {
-        // TODO: Deprecate with new iOS app
-
-        [ApiMember(Name = "BaselineStreamAudioBitRate", Description = "Optional. Specify the audio bitrate for the baseline stream.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
-        public int? BaselineStreamAudioBitRate { get; set; }
-
-        [ApiMember(Name = "AppendBaselineStream", Description = "Optional. Whether or not to include a baseline audio-only stream in the master playlist.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
-        public bool AppendBaselineStream { get; set; }
-
-        [ApiMember(Name = "TimeStampOffsetMs", Description = "Optional. Alter the timestamps in the playlist by a given amount, in ms. Default is 1000.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
-        public int TimeStampOffsetMs { get; set; }
     }
 
     /// <summary>
@@ -108,7 +90,7 @@ namespace MediaBrowser.Api.Playback.Hls
             _config = config;
         }
 
-        public object Get(GetHlsPlaylistLegacy request)
+        public Task<object> Get(GetHlsPlaylistLegacy request)
         {
             var file = request.PlaylistId + Path.GetExtension(Request.PathInfo);
             file = Path.Combine(_appPaths.TranscodingTempPath, file);
@@ -126,7 +108,7 @@ namespace MediaBrowser.Api.Playback.Hls
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetHlsVideoSegmentLegacy request)
+        public Task<object> Get(GetHlsVideoSegmentLegacy request)
         {
             var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
             file = Path.Combine(_config.ApplicationPaths.TranscodingTempPath, file);
@@ -150,10 +132,10 @@ namespace MediaBrowser.Api.Playback.Hls
             var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
             file = Path.Combine(_appPaths.TranscodingTempPath, file);
 
-            return ResultFactory.GetStaticFileResult(Request, file, FileShare.ReadWrite);
+            return ResultFactory.GetStaticFileResult(Request, file, FileShare.ReadWrite).Result;
         }
 
-        private object GetFileResult(string path, string playlistPath)
+        private Task<object> GetFileResult(string path, string playlistPath)
         {
             var transcodingJob = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType.Hls);
 

@@ -11,6 +11,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Model.Tasks;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -46,14 +50,18 @@ namespace MediaBrowser.Providers.TV
 
         private async Task RunInternal(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var seriesList = _libraryManager.RootFolder
-                .GetRecursiveChildren(i => i is Series)
-                .Cast<Series>()
-                .ToList();
+            var seriesList = _libraryManager.GetItemList(new InternalItemsQuery()
+            {
+                IncludeItemTypes = new[] { typeof(Series).Name },
+                Recursive = true,
+                GroupByPresentationUniqueKey = false
+
+            }).Cast<Series>().ToList();
 
             var seriesGroups = FindSeriesGroups(seriesList).Where(g => !string.IsNullOrEmpty(g.Key)).ToList();
 
-            await new MissingEpisodeProvider(_logger, _config, _libraryManager, _localization, _fileSystem).Run(seriesGroups, cancellationToken).ConfigureAwait(false);
+            await new MissingEpisodeProvider(_logger, _config, _libraryManager, _localization, _fileSystem)
+                .Run(seriesGroups, true, cancellationToken).ConfigureAwait(false);
 
             var numComplete = 0;
 
@@ -82,7 +90,7 @@ namespace MediaBrowser.Providers.TV
             }
         }
 
-        private IEnumerable<IGrouping<string, Series>> FindSeriesGroups(List<Series> seriesList)
+        internal static IEnumerable<IGrouping<string, Series>> FindSeriesGroups(List<Series> seriesList)
         {
             var links = seriesList.ToDictionary(s => s, s => seriesList.Where(c => c != s && ShareProviderId(s, c)).ToList());
 
@@ -102,7 +110,7 @@ namespace MediaBrowser.Providers.TV
             }
         }
 
-        private void FindAllLinked(Series series, HashSet<Series> visited, IDictionary<Series, List<Series>> linksMap, List<Series> results)
+        private static void FindAllLinked(Series series, HashSet<Series> visited, IDictionary<Series, List<Series>> linksMap, List<Series> results)
         {
             results.Add(series);
             visited.Add(series);
@@ -118,7 +126,7 @@ namespace MediaBrowser.Providers.TV
             }
         }
 
-        private bool ShareProviderId(Series a, Series b)
+        private static bool ShareProviderId(Series a, Series b)
         {
             return a.ProviderIds.Any(id =>
             {
@@ -137,4 +145,116 @@ namespace MediaBrowser.Providers.TV
         }
     }
 
+    public class CleanMissingEpisodesEntryPoint : IServerEntryPoint
+    {
+        private readonly ILibraryManager _libraryManager;
+        private readonly IServerConfigurationManager _config;
+        private readonly ILogger _logger;
+        private readonly ILocalizationManager _localization;
+        private readonly IFileSystem _fileSystem;
+        private readonly object _libraryChangedSyncLock = new object();
+        private const int LibraryUpdateDuration = 180000;
+        private readonly ITaskManager _taskManager;
+
+        public CleanMissingEpisodesEntryPoint(ILibraryManager libraryManager, IServerConfigurationManager config, ILogger logger, ILocalizationManager localization, IFileSystem fileSystem, ITaskManager taskManager)
+        {
+            _libraryManager = libraryManager;
+            _config = config;
+            _logger = logger;
+            _localization = localization;
+            _fileSystem = fileSystem;
+            _taskManager = taskManager;
+        }
+
+        private Timer LibraryUpdateTimer { get; set; }
+
+        public void Run()
+        {
+            _libraryManager.ItemAdded += _libraryManager_ItemAdded;
+        }
+
+        private void _libraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
+        {
+            if (!FilterItem(e.Item))
+            {
+                return;
+            }
+
+            lock (_libraryChangedSyncLock)
+            {
+                if (LibraryUpdateTimer == null)
+                {
+                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration, Timeout.Infinite);
+                }
+                else
+                {
+                    LibraryUpdateTimer.Change(LibraryUpdateDuration, Timeout.Infinite);
+                }
+            }
+        }
+
+        private async void LibraryUpdateTimerCallback(object state)
+        {
+            try
+            {
+                if (MissingEpisodeProvider.IsRunning)
+                {
+                    return;
+                }
+
+                if (_libraryManager.IsScanRunning)
+                {
+                    return;
+                }
+
+                var seriesList = _libraryManager.GetItemList(new InternalItemsQuery()
+                {
+                    IncludeItemTypes = new[] { typeof(Series).Name },
+                    Recursive = true,
+                    GroupByPresentationUniqueKey = false
+
+                }).Cast<Series>().ToList();
+
+                var seriesGroups = SeriesPostScanTask.FindSeriesGroups(seriesList).Where(g => !string.IsNullOrEmpty(g.Key)).ToList();
+
+                await new MissingEpisodeProvider(_logger, _config, _libraryManager, _localization, _fileSystem)
+                    .Run(seriesGroups, false, CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error in SeriesPostScanTask", ex);
+            }
+        }
+
+        private bool FilterItem(BaseItem item)
+        {
+            return item is Episode && item.LocationType != LocationType.Virtual;
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                if (LibraryUpdateTimer != null)
+                {
+                    LibraryUpdateTimer.Dispose();
+                    LibraryUpdateTimer = null;
+                }
+
+                _libraryManager.ItemAdded -= _libraryManager_ItemAdded;
+            }
+        }
+    }
 }

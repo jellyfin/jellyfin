@@ -36,6 +36,8 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <RestorePackages>true</RestorePackages>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -230,12 +232,6 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\SubtitlePlaybackMode.cs">
       <Link>Configuration\SubtitlePlaybackMode.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Configuration\TheMovieDbOptions.cs">
-      <Link>Configuration\TheMovieDbOptions.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Configuration\TvdbOptions.cs">
-      <Link>Configuration\TvdbOptions.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\UnratedItem.cs">
       <Link>Configuration\UnratedItem.cs</Link>
     </Compile>
@@ -350,17 +346,14 @@
     <Compile Include="..\MediaBrowser.Model\Dlna\HttpHeaderInfo.cs">
       <Link>Dlna\HttpHeaderInfo.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Dlna\ILocalPlayer.cs">
-      <Link>Dlna\ILocalPlayer.cs</Link>
+    <Compile Include="..\MediaBrowser.Model\Dlna\ITranscoderSupport.cs">
+      <Link>Dlna\ITranscoderSupport.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\MediaFormatProfile.cs">
       <Link>Dlna\MediaFormatProfile.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\MediaFormatProfileResolver.cs">
       <Link>Dlna\MediaFormatProfileResolver.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Dlna\NullLocalPlayer.cs">
-      <Link>Dlna\NullLocalPlayer.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\PlaybackErrorCode.cs">
       <Link>Dlna\PlaybackErrorCode.cs</Link>
@@ -605,9 +598,6 @@
     <Compile Include="..\MediaBrowser.Model\Entities\Video3DFormat.cs">
       <Link>Entities\Video3DFormat.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Entities\VideoSize.cs">
-      <Link>Entities\VideoSize.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Entities\VideoType.cs">
       <Link>Entities\VideoType.cs</Link>
     </Compile>
@@ -625,9 +615,6 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Extensions\FloatHelper.cs">
       <Link>Extensions\FloatHelper.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Extensions\IHasPropertyChangedEvent.cs">
-      <Link>Extensions\IHasPropertyChangedEvent.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Extensions\IntHelper.cs">
       <Link>Extensions\IntHelper.cs</Link>
@@ -661,9 +648,6 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\FileOrganization\TvFileOrganizationOptions.cs">
       <Link>FileOrganization\TvFileOrganizationOptions.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Games\GameSystem.cs">
-      <Link>Games\GameSystem.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Globalization\CountryInfo.cs">
       <Link>Globalization\CountryInfo.cs</Link>
@@ -1148,6 +1132,9 @@
     <Compile Include="..\MediaBrowser.Model\Sync\SyncTarget.cs">
       <Link>Sync\SyncTarget.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\System\Architecture.cs">
+      <Link>System\Architecture.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\System\LogFile.cs">
       <Link>System\LogFile.cs</Link>
     </Compile>
@@ -1242,13 +1229,6 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
-  <Import Project="..\packages\Fody.1.29.2\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\packages\Fody.1.29.2\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Fody.1.29.2\build\portable-net+sl+win+wpa+wp\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.1.29.2\build\portable-net+sl+win+wpa+wp\Fody.targets'))" />
-  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

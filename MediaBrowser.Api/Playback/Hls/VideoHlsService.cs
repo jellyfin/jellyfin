@@ -27,16 +27,6 @@ namespace MediaBrowser.Api.Playback.Hls
         {
         }
 
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetHlsVideoStreamLegacy request)
-        {
-            return ProcessRequest(request, false);
-        }
-
         public object Get(GetLiveHlsStream request)
         {
             return ProcessRequest(request, true);
@@ -96,11 +86,14 @@ namespace MediaBrowser.Api.Playback.Hls
             // See if we can save come cpu cycles by avoiding encoding
             if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
             {
-                return state.VideoStream != null && IsH264(state.VideoStream) ?
-                    args + " -bsf:v h264_mp4toannexb" :
-                    args;
+                // if h264_mp4toannexb is ever added, do not use it for live tv
+                if (state.VideoStream != null && IsH264(state.VideoStream) && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
+                {
+                    args += " -bsf:v h264_mp4toannexb";
+                }
+                return args;
             }
-            
+
             var keyFrameArg = string.Format(" -force_key_frames \"expr:gte(t,n_forced*{0})\"",
                 state.SegmentLength.ToString(UsCulture));
 

@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using CommonIO;
 using MediaBrowser.Controller.Power;
+using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 {
@@ -71,6 +72,26 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
+        public void AddOrUpdate(TimerInfo item, bool resetTimer)
+        {
+            if (resetTimer)
+            {
+                AddOrUpdate(item);
+                return;
+            }
+
+            var list = GetAll().ToList();
+
+            if (!list.Any(i => EqualityComparer(i, item)))
+            {
+                base.Add(item);
+            }
+            else
+            {
+                base.Update(item);
+            }
+        }
+
         public override void Add(TimerInfo item)
         {
             if (string.IsNullOrWhiteSpace(item.Id))
@@ -85,6 +106,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private void AddTimer(TimerInfo item)
         {
+            if (item.Status == RecordingStatus.Completed)
+            {
+                return;
+            }
+
             var startDate = RecordingHelper.GetStartTime(item);
             var now = DateTime.UtcNow;
 
@@ -117,15 +143,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        public void StartTimer(TimerInfo item, TimeSpan length)
+        public void StartTimer(TimerInfo item, TimeSpan dueTime)
         {
             StopTimer(item);
 
-            var timer = new Timer(TimerCallback, item.Id, length, TimeSpan.Zero);
+            var timer = new Timer(TimerCallback, item.Id, dueTime, TimeSpan.Zero);
 
             if (_timers.TryAdd(item.Id, timer))
             {
-                _logger.Info("Creating recording timer for {0}, {1}. Timer will fire in {2} minutes", item.Id, item.Name, length.TotalMinutes.ToString(CultureInfo.InvariantCulture));
+                _logger.Info("Creating recording timer for {0}, {1}. Timer will fire in {2} minutes", item.Id, item.Name, dueTime.TotalMinutes.ToString(CultureInfo.InvariantCulture));
             }
             else
             {

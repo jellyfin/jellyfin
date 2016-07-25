@@ -69,7 +69,29 @@ namespace MediaBrowser.Api.Playback
 
         public List<string> PlayableStreamFileNames { get; set; }
 
-        public int SegmentLength = 3;
+        public int SegmentLength
+        {
+            get
+            {
+                if (string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                {
+                    var userAgent = UserAgent ?? string.Empty;
+                    if (userAgent.IndexOf("AppleTV", StringComparison.OrdinalIgnoreCase) != -1)
+                    {
+                        return 10;
+                    }
+                    if (userAgent.IndexOf("cfnetwork", StringComparison.OrdinalIgnoreCase) != -1)
+                    {
+                        return 10;
+                    }
+
+                    return 6;
+                }
+
+                return 3;
+            }
+        }
+
         public int HlsListSize
         {
             get
@@ -84,9 +106,10 @@ namespace MediaBrowser.Api.Playback
         public long? InputFileSize { get; set; }
 
         public string OutputAudioSync = "1";
-        public string OutputVideoSync = "vfr";
+        public string OutputVideoSync = "-1";
 
         public List<string> SupportedAudioCodecs { get; set; }
+        public string UserAgent { get; set; }
 
         public StreamState(IMediaSourceManager mediaSourceManager, ILogger logger)
         {
@@ -478,19 +501,6 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 return false;
-            }
-        }
-
-        public bool? IsTargetCabac
-        {
-            get
-            {
-                if (Request.Static)
-                {
-                    return VideoStream == null ? null : VideoStream.IsCabac;
-                }
-
-                return true;
             }
         }
     }

@@ -46,7 +46,7 @@ namespace MediaBrowser.Server.Startup.Common.EntryPoints
         /// </summary>
         private void LaunchStartupWizard()
         {
-            BrowserLauncher.OpenDashboardPage("wizardstart.html", _appHost, _logger);
+            BrowserLauncher.OpenDashboardPage("wizardstart.html", _appHost);
         }
 
         /// <summary>

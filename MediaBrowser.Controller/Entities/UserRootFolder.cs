@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -17,7 +18,7 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class UserRootFolder : Folder
     {
-        public override async Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
+        protected override async Task<QueryResult<BaseItem>> GetItemsInternal(InternalItemsQuery query)
         {
             if (query.Recursive)
             {
@@ -35,6 +36,11 @@ namespace MediaBrowser.Controller.Entities
             Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
             
             return PostFilterAndSort(result.Where(filter), query);
+        }
+
+        public override int GetChildCount(User user)
+        {
+            return GetChildren(user, true).Count();
         }
 
         [IgnoreDataMember]
@@ -61,15 +67,6 @@ namespace MediaBrowser.Controller.Entities
             list.AddRange(LibraryManager.RootFolder.VirtualChildren);
 
             return list;
-        }
-
-        /// <summary>
-        /// Get the children of this folder from the actual file system
-        /// </summary>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
-        {
-            return base.GetNonCachedChildren(directoryService);
         }
 
         public override bool BeforeMetadataRefresh()
@@ -100,11 +97,6 @@ namespace MediaBrowser.Controller.Entities
             {
                 LibraryManager.RegisterItem(item);
             }
-        }
-
-        public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, User user)
-        {
-            // Nothing meaninful here and will only waste resources
         }
     }
 }

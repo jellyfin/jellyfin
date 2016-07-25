@@ -138,6 +138,11 @@ namespace MediaBrowser.Dlna.Server
 
         private string GetFriendlyName()
         {
+            if (string.IsNullOrWhiteSpace(_profile.FriendlyName))
+            {
+                return "Emby - " + _serverName;
+            }
+
             var characters = _serverName.Where(c => (char.IsLetterOrDigit(c) || c == '-')).ToArray();
 
             var serverName = new string(characters);

@@ -22,7 +22,7 @@ namespace MediaBrowser.Providers.TV
 {
     public class MovieDbSeasonProvider : IRemoteMetadataProvider<Season, SeasonInfo>
     {
-        private const string GetTvInfo3 = @"http://api.themoviedb.org/3/tv/{0}/season/{1}?api_key={2}&append_to_response=images,keywords,external_ids,credits,videos";
+        private const string GetTvInfo3 = @"https://api.themoviedb.org/3/tv/{0}/season/{1}?api_key={2}&append_to_response=images,keywords,external_ids,credits,videos";
         private readonly IHttpClient _httpClient;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IJsonSerializer _jsonSerializer;
@@ -58,7 +58,7 @@ namespace MediaBrowser.Providers.TV
 
                     result.HasMetadata = true;
                     result.Item = new Season();
-                    result.Item.Name = info.Name;
+                    result.Item.Name = seasonInfo.name;
                     result.Item.IndexNumber = seasonNumber;
 
                     result.Item.Overview = seasonInfo.overview;

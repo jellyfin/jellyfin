@@ -3,6 +3,7 @@ using MediaBrowser.Model.Tasks;
 using System;
 using System.Linq;
 using System.Threading;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Common.ScheduledTasks
 {
@@ -38,7 +39,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// </summary>
         /// <param name="lastResult">The last result.</param>
         /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
-        public void Start(TaskResult lastResult, bool isApplicationStartup)
+        public void Start(TaskResult lastResult, ILogger logger, string taskName, bool isApplicationStartup)
         {
             DisposeTimer();
 
@@ -59,7 +60,15 @@ namespace MediaBrowser.Common.ScheduledTasks
                 triggerDate = DateTime.UtcNow.AddMinutes(1);
             }
 
-            Timer = new Timer(state => OnTriggered(), null, triggerDate - DateTime.UtcNow, TimeSpan.FromMilliseconds(-1));
+            var dueTime = triggerDate - DateTime.UtcNow;
+            var maxDueTime = TimeSpan.FromDays(7);
+
+            if (dueTime > maxDueTime)
+            {
+                dueTime = maxDueTime;
+            }
+
+            Timer = new Timer(state => OnTriggered(), null, dueTime, TimeSpan.FromMilliseconds(-1));
         }
 
         /// <summary>

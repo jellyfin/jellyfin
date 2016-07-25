@@ -16,19 +16,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
 {
     public class SqliteFileOrganizationRepository : BaseSqliteRepository, IFileOrganizationRepository, IDisposable
     {
-        private IDbConnection _connection;
-
-        private readonly IServerApplicationPaths _appPaths;
-
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        private IDbCommand _saveResultCommand;
-        private IDbCommand _deleteResultCommand;
-        private IDbCommand _deleteAllCommand;
-
-        public SqliteFileOrganizationRepository(ILogManager logManager, IServerApplicationPaths appPaths) : base(logManager)
+        public SqliteFileOrganizationRepository(ILogManager logManager, IServerApplicationPaths appPaths, IDbConnector connector) : base(logManager, connector)
         {
-            _appPaths = appPaths;
+            DbFilePath = Path.Combine(appPaths.DataPath, "fileorganization.db");
         }
 
         /// <summary>
@@ -37,53 +29,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <returns>Task.</returns>
         public async Task Initialize()
         {
-            var dbFile = Path.Combine(_appPaths.DataPath, "fileorganization.db");
-
-            _connection = await SqliteExtensions.ConnectToDb(dbFile, Logger).ConfigureAwait(false);
-
-            string[] queries = {
+            using (var connection = await CreateConnection().ConfigureAwait(false))
+            {
+                string[] queries = {
 
                                 "create table if not exists FileOrganizerResults (ResultId GUID PRIMARY KEY, OriginalPath TEXT, TargetPath TEXT, FileLength INT, OrganizationDate datetime, Status TEXT, OrganizationType TEXT, StatusMessage TEXT, ExtractedName TEXT, ExtractedYear int null, ExtractedSeasonNumber int null, ExtractedEpisodeNumber int null, ExtractedEndingEpisodeNumber, DuplicatePaths TEXT int null)",
-                                "create index if not exists idx_FileOrganizerResults on FileOrganizerResults(ResultId)",
-
-                                //pragmas
-                                "pragma temp_store = memory",
-
-                                "pragma shrink_memory"
+                                "create index if not exists idx_FileOrganizerResults on FileOrganizerResults(ResultId)"
                                };
 
-            _connection.RunQueries(queries, Logger);
-
-            PrepareStatements();
-        }
-
-        private void PrepareStatements()
-        {
-            _saveResultCommand = _connection.CreateCommand();
-            _saveResultCommand.CommandText = "replace into FileOrganizerResults (ResultId, OriginalPath, TargetPath, FileLength, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber, DuplicatePaths) values (@ResultId, @OriginalPath, @TargetPath, @FileLength, @OrganizationDate, @Status, @OrganizationType, @StatusMessage, @ExtractedName, @ExtractedYear, @ExtractedSeasonNumber, @ExtractedEpisodeNumber, @ExtractedEndingEpisodeNumber, @DuplicatePaths)";
-
-            _saveResultCommand.Parameters.Add(_saveResultCommand, "@ResultId");
-            _saveResultCommand.Parameters.Add(_saveResultCommand, "@OriginalPath");
-            _saveResultCommand.Parameters.Add(_saveResultCommand, "@TargetPath");
-            _saveResultCommand.Parameters.Add(_saveResultCommand, "@FileLength");
-            _saveResultCommand.Parameters.Add(_saveResultCommand, "@OrganizationDate");
-            _saveResultCommand.Parameters.Add(_saveResultCommand, "@Status");
-            _saveResultCommand.Parameters.Add(_saveResultCommand, "@OrganizationType");
-            _saveResultCommand.Parameters.Add(_saveResultCommand, "@StatusMessage");
-            _saveResultCommand.Parameters.Add(_saveResultCommand, "@ExtractedName");
-            _saveResultCommand.Parameters.Add(_saveResultCommand, "@ExtractedYear");
-            _saveResultCommand.Parameters.Add(_saveResultCommand, "@ExtractedSeasonNumber");
-            _saveResultCommand.Parameters.Add(_saveResultCommand, "@ExtractedEpisodeNumber");
-            _saveResultCommand.Parameters.Add(_saveResultCommand, "@ExtractedEndingEpisodeNumber");
-            _saveResultCommand.Parameters.Add(_saveResultCommand, "@DuplicatePaths");
-
-            _deleteResultCommand = _connection.CreateCommand();
-            _deleteResultCommand.CommandText = "delete from FileOrganizerResults where ResultId = @ResultId";
-
-            _deleteResultCommand.Parameters.Add(_saveResultCommand, "@ResultId");
-
-            _deleteAllCommand = _connection.CreateCommand();
-            _deleteAllCommand.CommandText = "delete from FileOrganizerResults";
+                connection.RunQueries(queries, Logger);
+            }
         }
 
         public async Task SaveResult(FileOrganizationResult result, CancellationToken cancellationToken)
@@ -95,65 +50,84 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            IDbTransaction transaction = null;
-
-            try
+            using (var connection = await CreateConnection().ConfigureAwait(false))
             {
-                transaction = _connection.BeginTransaction();
-
-                var index = 0;
-
-                _saveResultCommand.GetParameter(index++).Value = new Guid(result.Id);
-                _saveResultCommand.GetParameter(index++).Value = result.OriginalPath;
-                _saveResultCommand.GetParameter(index++).Value = result.TargetPath;
-                _saveResultCommand.GetParameter(index++).Value = result.FileSize;
-                _saveResultCommand.GetParameter(index++).Value = result.Date;
-                _saveResultCommand.GetParameter(index++).Value = result.Status.ToString();
-                _saveResultCommand.GetParameter(index++).Value = result.Type.ToString();
-                _saveResultCommand.GetParameter(index++).Value = result.StatusMessage;
-                _saveResultCommand.GetParameter(index++).Value = result.ExtractedName;
-                _saveResultCommand.GetParameter(index++).Value = result.ExtractedYear;
-                _saveResultCommand.GetParameter(index++).Value = result.ExtractedSeasonNumber;
-                _saveResultCommand.GetParameter(index++).Value = result.ExtractedEpisodeNumber;
-                _saveResultCommand.GetParameter(index++).Value = result.ExtractedEndingEpisodeNumber;
-                _saveResultCommand.GetParameter(index).Value = string.Join("|", result.DuplicatePaths.ToArray());
-
-                _saveResultCommand.Transaction = transaction;
-
-                _saveResultCommand.ExecuteNonQuery();
-
-                transaction.Commit();
-            }
-            catch (OperationCanceledException)
-            {
-                if (transaction != null)
+                using (var saveResultCommand = connection.CreateCommand())
                 {
-                    transaction.Rollback();
+                    saveResultCommand.CommandText = "replace into FileOrganizerResults (ResultId, OriginalPath, TargetPath, FileLength, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber, DuplicatePaths) values (@ResultId, @OriginalPath, @TargetPath, @FileLength, @OrganizationDate, @Status, @OrganizationType, @StatusMessage, @ExtractedName, @ExtractedYear, @ExtractedSeasonNumber, @ExtractedEpisodeNumber, @ExtractedEndingEpisodeNumber, @DuplicatePaths)";
+
+                    saveResultCommand.Parameters.Add(saveResultCommand, "@ResultId");
+                    saveResultCommand.Parameters.Add(saveResultCommand, "@OriginalPath");
+                    saveResultCommand.Parameters.Add(saveResultCommand, "@TargetPath");
+                    saveResultCommand.Parameters.Add(saveResultCommand, "@FileLength");
+                    saveResultCommand.Parameters.Add(saveResultCommand, "@OrganizationDate");
+                    saveResultCommand.Parameters.Add(saveResultCommand, "@Status");
+                    saveResultCommand.Parameters.Add(saveResultCommand, "@OrganizationType");
+                    saveResultCommand.Parameters.Add(saveResultCommand, "@StatusMessage");
+                    saveResultCommand.Parameters.Add(saveResultCommand, "@ExtractedName");
+                    saveResultCommand.Parameters.Add(saveResultCommand, "@ExtractedYear");
+                    saveResultCommand.Parameters.Add(saveResultCommand, "@ExtractedSeasonNumber");
+                    saveResultCommand.Parameters.Add(saveResultCommand, "@ExtractedEpisodeNumber");
+                    saveResultCommand.Parameters.Add(saveResultCommand, "@ExtractedEndingEpisodeNumber");
+                    saveResultCommand.Parameters.Add(saveResultCommand, "@DuplicatePaths");
+
+                    IDbTransaction transaction = null;
+
+                    try
+                    {
+                        transaction = connection.BeginTransaction();
+
+                        var index = 0;
+
+                        saveResultCommand.GetParameter(index++).Value = new Guid(result.Id);
+                        saveResultCommand.GetParameter(index++).Value = result.OriginalPath;
+                        saveResultCommand.GetParameter(index++).Value = result.TargetPath;
+                        saveResultCommand.GetParameter(index++).Value = result.FileSize;
+                        saveResultCommand.GetParameter(index++).Value = result.Date;
+                        saveResultCommand.GetParameter(index++).Value = result.Status.ToString();
+                        saveResultCommand.GetParameter(index++).Value = result.Type.ToString();
+                        saveResultCommand.GetParameter(index++).Value = result.StatusMessage;
+                        saveResultCommand.GetParameter(index++).Value = result.ExtractedName;
+                        saveResultCommand.GetParameter(index++).Value = result.ExtractedYear;
+                        saveResultCommand.GetParameter(index++).Value = result.ExtractedSeasonNumber;
+                        saveResultCommand.GetParameter(index++).Value = result.ExtractedEpisodeNumber;
+                        saveResultCommand.GetParameter(index++).Value = result.ExtractedEndingEpisodeNumber;
+                        saveResultCommand.GetParameter(index).Value = string.Join("|", result.DuplicatePaths.ToArray());
+
+                        saveResultCommand.Transaction = transaction;
+
+                        saveResultCommand.ExecuteNonQuery();
+
+                        transaction.Commit();
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        if (transaction != null)
+                        {
+                            transaction.Rollback();
+                        }
+
+                        throw;
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.ErrorException("Failed to save FileOrganizationResult:", e);
+
+                        if (transaction != null)
+                        {
+                            transaction.Rollback();
+                        }
+
+                        throw;
+                    }
+                    finally
+                    {
+                        if (transaction != null)
+                        {
+                            transaction.Dispose();
+                        }
+                    }
                 }
-
-                throw;
-            }
-            catch (Exception e)
-            {
-                Logger.ErrorException("Failed to save FileOrganizationResult:", e);
-
-                if (transaction != null)
-                {
-                    transaction.Rollback();
-                }
-
-                throw;
-            }
-            finally
-            {
-                if (transaction != null)
-                {
-                    transaction.Dispose();
-                }
-
-                WriteLock.Release();
             }
         }
 
@@ -164,100 +138,110 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("id");
             }
 
-            await WriteLock.WaitAsync().ConfigureAwait(false);
-
-            IDbTransaction transaction = null;
-
-            try
+            using (var connection = await CreateConnection().ConfigureAwait(false))
             {
-                transaction = _connection.BeginTransaction();
-
-                _deleteResultCommand.GetParameter(0).Value = new Guid(id);
-
-                _deleteResultCommand.Transaction = transaction;
-
-                _deleteResultCommand.ExecuteNonQuery();
-
-                transaction.Commit();
-            }
-            catch (OperationCanceledException)
-            {
-                if (transaction != null)
+                using (var deleteResultCommand = connection.CreateCommand())
                 {
-                    transaction.Rollback();
+                    deleteResultCommand.CommandText = "delete from FileOrganizerResults where ResultId = @ResultId";
+
+                    deleteResultCommand.Parameters.Add(deleteResultCommand, "@ResultId");
+
+                    IDbTransaction transaction = null;
+
+                    try
+                    {
+                        transaction = connection.BeginTransaction();
+
+                        deleteResultCommand.GetParameter(0).Value = new Guid(id);
+
+                        deleteResultCommand.Transaction = transaction;
+
+                        deleteResultCommand.ExecuteNonQuery();
+
+                        transaction.Commit();
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        if (transaction != null)
+                        {
+                            transaction.Rollback();
+                        }
+
+                        throw;
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.ErrorException("Failed to delete FileOrganizationResult:", e);
+
+                        if (transaction != null)
+                        {
+                            transaction.Rollback();
+                        }
+
+                        throw;
+                    }
+                    finally
+                    {
+                        if (transaction != null)
+                        {
+                            transaction.Dispose();
+                        }
+                    }
                 }
-
-                throw;
-            }
-            catch (Exception e)
-            {
-                Logger.ErrorException("Failed to delete FileOrganizationResult:", e);
-
-                if (transaction != null)
-                {
-                    transaction.Rollback();
-                }
-
-                throw;
-            }
-            finally
-            {
-                if (transaction != null)
-                {
-                    transaction.Dispose();
-                }
-
-                WriteLock.Release();
             }
         }
 
         public async Task DeleteAll()
         {
-            await WriteLock.WaitAsync().ConfigureAwait(false);
-
-            IDbTransaction transaction = null;
-
-            try
+            using (var connection = await CreateConnection().ConfigureAwait(false))
             {
-                transaction = _connection.BeginTransaction();
-                
-                _deleteAllCommand.Transaction = transaction;
-
-                _deleteAllCommand.ExecuteNonQuery();
-
-                transaction.Commit();
-            }
-            catch (OperationCanceledException)
-            {
-                if (transaction != null)
+                using (var cmd = connection.CreateCommand())
                 {
-                    transaction.Rollback();
+                    cmd.CommandText = "delete from FileOrganizerResults";
+
+                    IDbTransaction transaction = null;
+
+                    try
+                    {
+                        transaction = connection.BeginTransaction();
+
+                        cmd.Transaction = transaction;
+
+                        cmd.ExecuteNonQuery();
+
+                        transaction.Commit();
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        if (transaction != null)
+                        {
+                            transaction.Rollback();
+                        }
+
+                        throw;
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.ErrorException("Failed to delete results", e);
+
+                        if (transaction != null)
+                        {
+                            transaction.Rollback();
+                        }
+
+                        throw;
+                    }
+                    finally
+                    {
+                        if (transaction != null)
+                        {
+                            transaction.Dispose();
+                        }
+                    }
                 }
-
-                throw;
-            }
-            catch (Exception e)
-            {
-                Logger.ErrorException("Failed to delete results", e);
-
-                if (transaction != null)
-                {
-                    transaction.Rollback();
-                }
-
-                throw;
-            }
-            finally
-            {
-                if (transaction != null)
-                {
-                    transaction.Dispose();
-                }
-
-                WriteLock.Release();
             }
         }
-        
+
         public QueryResult<FileOrganizationResult> GetResults(FileOrganizationResultQuery query)
         {
             if (query == null)
@@ -265,46 +249,49 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("query");
             }
 
-            using (var cmd = _connection.CreateCommand())
+            using (var connection = CreateConnection(true).Result)
             {
-                cmd.CommandText = "SELECT ResultId, OriginalPath, TargetPath, FileLength, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber, DuplicatePaths from FileOrganizerResults";
-
-                if (query.StartIndex.HasValue && query.StartIndex.Value > 0)
+                using (var cmd = connection.CreateCommand())
                 {
-                    cmd.CommandText += string.Format(" WHERE ResultId NOT IN (SELECT ResultId FROM FileOrganizerResults ORDER BY OrganizationDate desc LIMIT {0})",
-                        query.StartIndex.Value.ToString(_usCulture));
-                }
+                    cmd.CommandText = "SELECT ResultId, OriginalPath, TargetPath, FileLength, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber, DuplicatePaths from FileOrganizerResults";
 
-                cmd.CommandText += " ORDER BY OrganizationDate desc";
-
-                if (query.Limit.HasValue)
-                {
-                    cmd.CommandText += " LIMIT " + query.Limit.Value.ToString(_usCulture);
-                }
-
-                cmd.CommandText += "; select count (ResultId) from FileOrganizerResults";
-
-                var list = new List<FileOrganizationResult>();
-                var count = 0;
-
-                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
-                {
-                    while (reader.Read())
+                    if (query.StartIndex.HasValue && query.StartIndex.Value > 0)
                     {
-                        list.Add(GetResult(reader));
+                        cmd.CommandText += string.Format(" WHERE ResultId NOT IN (SELECT ResultId FROM FileOrganizerResults ORDER BY OrganizationDate desc LIMIT {0})",
+                            query.StartIndex.Value.ToString(_usCulture));
                     }
 
-                    if (reader.NextResult() && reader.Read())
-                    {
-                        count = reader.GetInt32(0);
-                    }
-                }
+                    cmd.CommandText += " ORDER BY OrganizationDate desc";
 
-                return new QueryResult<FileOrganizationResult>()
-                {
-                    Items = list.ToArray(),
-                    TotalRecordCount = count
-                };
+                    if (query.Limit.HasValue)
+                    {
+                        cmd.CommandText += " LIMIT " + query.Limit.Value.ToString(_usCulture);
+                    }
+
+                    cmd.CommandText += "; select count (ResultId) from FileOrganizerResults";
+
+                    var list = new List<FileOrganizationResult>();
+                    var count = 0;
+
+                    using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
+                    {
+                        while (reader.Read())
+                        {
+                            list.Add(GetResult(reader));
+                        }
+
+                        if (reader.NextResult() && reader.Read())
+                        {
+                            count = reader.GetInt32(0);
+                        }
+                    }
+
+                    return new QueryResult<FileOrganizationResult>()
+                    {
+                        Items = list.ToArray(),
+                        TotalRecordCount = count
+                    };
+                }
             }
         }
 
@@ -315,24 +302,27 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("id");
             }
 
-            var guid = new Guid(id);
-
-            using (var cmd = _connection.CreateCommand())
+            using (var connection = CreateConnection(true).Result)
             {
-                cmd.CommandText = "select ResultId, OriginalPath, TargetPath, FileLength, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber, DuplicatePaths from FileOrganizerResults where ResultId=@Id";
+                var guid = new Guid(id);
 
-                cmd.Parameters.Add(cmd, "@Id", DbType.Guid).Value = guid;
-
-                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
+                using (var cmd = connection.CreateCommand())
                 {
-                    if (reader.Read())
+                    cmd.CommandText = "select ResultId, OriginalPath, TargetPath, FileLength, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber, DuplicatePaths from FileOrganizerResults where ResultId=@Id";
+
+                    cmd.Parameters.Add(cmd, "@Id", DbType.Guid).Value = guid;
+
+                    using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
                     {
-                        return GetResult(reader);
+                        if (reader.Read())
+                        {
+                            return GetResult(reader);
+                        }
                     }
                 }
-            }
 
-            return null;
+                return null;
+            }
         }
 
         public FileOrganizationResult GetResult(IDataReader reader)
@@ -413,20 +403,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
 
             return result;
-        }
-
-        protected override void CloseConnection()
-        {
-            if (_connection != null)
-            {
-                if (_connection.IsOpen())
-                {
-                    _connection.Close();
-                }
-
-                _connection.Dispose();
-                _connection = null;
-            }
         }
     }
 }

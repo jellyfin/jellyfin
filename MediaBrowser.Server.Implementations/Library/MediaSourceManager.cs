@@ -69,10 +69,6 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (stream.IsTextSubtitleStream)
             {
-                if (string.Equals(stream.Codec, "ass", StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
                 return true;
             }
 
@@ -175,13 +171,6 @@ namespace MediaBrowser.Server.Implementations.Library
                             source.SupportsTranscoding = false;
                         }
                     }
-                    else if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (!user.Policy.EnableVideoPlaybackTranscoding)
-                        {
-                            source.SupportsTranscoding = false;
-                        }
-                    }
                 }
             }
 
@@ -267,15 +256,17 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private void SetUserProperties(IHasUserData item, MediaSourceInfo source, User user)
         {
-            var userData = item == null ? new UserItemData() : _userDataManager.GetUserData(user.Id, item.GetUserDataKey());
+            var userData = item == null ? new UserItemData() : _userDataManager.GetUserData(user, item);
 
-            SetDefaultAudioStreamIndex(source, userData, user);
-            SetDefaultSubtitleStreamIndex(source, userData, user);
+            var allowRememberingSelection = item == null || item.EnableRememberingTrackSelections;
+
+            SetDefaultAudioStreamIndex(source, userData, user, allowRememberingSelection);
+            SetDefaultSubtitleStreamIndex(source, userData, user, allowRememberingSelection);
         }
 
-        private void SetDefaultSubtitleStreamIndex(MediaSourceInfo source, UserItemData userData, User user)
+        private void SetDefaultSubtitleStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)
         {
-            if (userData.SubtitleStreamIndex.HasValue && user.Configuration.RememberSubtitleSelections && user.Configuration.SubtitleMode != SubtitlePlaybackMode.None)
+            if (userData.SubtitleStreamIndex.HasValue && user.Configuration.RememberSubtitleSelections && user.Configuration.SubtitleMode != SubtitlePlaybackMode.None && allowRememberingSelection)
             {
                 var index = userData.SubtitleStreamIndex.Value;
                 // Make sure the saved index is still valid
@@ -304,9 +295,9 @@ namespace MediaBrowser.Server.Implementations.Library
                 user.Configuration.SubtitleMode, audioLangage);
         }
 
-        private void SetDefaultAudioStreamIndex(MediaSourceInfo source, UserItemData userData, User user)
+        private void SetDefaultAudioStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)
         {
-            if (userData.AudioStreamIndex.HasValue && user.Configuration.RememberAudioSelections)
+            if (userData.AudioStreamIndex.HasValue && user.Configuration.RememberAudioSelections && allowRememberingSelection)
             {
                 var index = userData.AudioStreamIndex.Value;
                 // Make sure the saved index is still valid

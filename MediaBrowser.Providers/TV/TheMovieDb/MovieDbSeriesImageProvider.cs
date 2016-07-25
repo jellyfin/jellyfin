@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class MovieDbSeriesImageProvider : IRemoteImageProvider, IHasOrder, IHasChangeMonitor
+    public class MovieDbSeriesImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
@@ -64,7 +64,9 @@ namespace MediaBrowser.Providers.TV
 
             var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
-            var tmdbImageUrl = tmdbSettings.images.base_url + "original";
+            var tmdbImageUrl = tmdbSettings.images.secure_base_url + "original";
+
+            var language = item.GetPreferredMetadataLanguage();
 
             list.AddRange(GetPosters(results).Select(i => new RemoteImageInfo
             {
@@ -73,7 +75,7 @@ namespace MediaBrowser.Providers.TV
                 VoteCount = i.vote_count,
                 Width = i.width,
                 Height = i.height,
-                Language = i.iso_639_1,
+                Language = MovieDbProvider.AdjustImageLanguage(i.iso_639_1, language),
                 ProviderName = Name,
                 Type = ImageType.Primary,
                 RatingType = RatingType.Score
@@ -90,8 +92,6 @@ namespace MediaBrowser.Providers.TV
                 Type = ImageType.Backdrop,
                 RatingType = RatingType.Score
             }));
-
-            var language = item.GetPreferredMetadataLanguage();
 
             var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
 
@@ -194,11 +194,6 @@ namespace MediaBrowser.Providers.TV
                 Url = url,
                 ResourcePool = MovieDbProvider.Current.MovieDbResourcePool
             });
-        }
-
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
-        {
-            return MovieDbSeriesProvider.Current.HasChanged(item, date);
         }
     }
 }

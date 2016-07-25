@@ -46,17 +46,6 @@ namespace MediaBrowser.Controller.LiveTv
         }
 
         /// <summary>
-        /// Gets the user data key.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        protected override string CreateUserDataKey()
-        {
-            var name = GetClientTypeName();
-
-            return name + "-" + Name + (EpisodeTitle ?? string.Empty);
-        }
-
-        /// <summary>
         /// Gets a value indicating whether this instance is owned item.
         /// </summary>
         /// <value><c>true</c> if this instance is owned item; otherwise, <c>false</c>.</value>

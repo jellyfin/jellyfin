@@ -43,7 +43,7 @@ namespace MediaBrowser.Api.System
         /// <returns>Task{SystemInfo}.</returns>
         protected override Task<SystemInfo> GetDataToSend(WebSocketListenerState state)
         {
-            return Task.FromResult(_appHost.GetSystemInfo());
+            return _appHost.GetSystemInfo();
         }
     }
 }

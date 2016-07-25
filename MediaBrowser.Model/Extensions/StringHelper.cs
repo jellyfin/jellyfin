@@ -125,5 +125,10 @@ namespace MediaBrowser.Model.Extensions
 
             return sb.ToString();
         }
+
+        public static string FirstToUpper(this string str)
+        {
+            return string.IsNullOrEmpty(str) ? "" : str.Substring(0, 1).ToUpper() + str.Substring(1);
+        }
     }
 }

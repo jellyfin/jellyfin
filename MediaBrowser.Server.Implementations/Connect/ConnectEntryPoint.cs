@@ -41,14 +41,15 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         public void Run()
         {
-            Task.Run(() => LoadCachedAddress());
+            LoadCachedAddress();
 
             _timer = new PeriodicTimer(TimerCallback, null, TimeSpan.FromSeconds(5), TimeSpan.FromHours(3));
+            ((ConnectManager)_connectManager).Start();
         }
 
         private readonly string[] _ipLookups =
         {
-            "http://bot.whatismyipaddress.com", 
+            "http://bot.whatismyipaddress.com",
             "https://connect.emby.media/service/ip"
         };
 
@@ -78,17 +79,18 @@ namespace MediaBrowser.Server.Implementations.Connect
             }
 
             // If this produced an ipv6 address, try again
-            if (validIpAddress == null || validIpAddress.AddressFamily == AddressFamily.InterNetworkV6)
+            if (validIpAddress != null && validIpAddress.AddressFamily == AddressFamily.InterNetworkV6)
             {
                 foreach (var ipLookupUrl in _ipLookups)
                 {
                     try
                     {
-                        validIpAddress = await GetIpAddress(ipLookupUrl, true).ConfigureAwait(false);
+                        var newAddress = await GetIpAddress(ipLookupUrl, true).ConfigureAwait(false);
 
                         // Try to find the ipv4 address, if present
-                        if (validIpAddress.AddressFamily == AddressFamily.InterNetwork)
+                        if (newAddress.AddressFamily == AddressFamily.InterNetwork)
                         {
+                            validIpAddress = newAddress;
                             break;
                         }
                     }
@@ -161,6 +163,8 @@ namespace MediaBrowser.Server.Implementations.Connect
         private void LoadCachedAddress()
         {
             var path = CacheFilePath;
+
+            _logger.Info("Loading data from {0}", path);
 
             try
             {

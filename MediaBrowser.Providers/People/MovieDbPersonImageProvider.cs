@@ -67,7 +67,7 @@ namespace MediaBrowser.Providers.People
 
                 var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
-                var tmdbImageUrl = tmdbSettings.images.base_url + "original";
+                var tmdbImageUrl = tmdbSettings.images.secure_base_url + "original";
 
                 return GetImages(images, item.GetPreferredMetadataLanguage(), tmdbImageUrl);
             }

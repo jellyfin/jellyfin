@@ -1,5 +1,6 @@
 ﻿using System;
 using MediaBrowser.Server.Startup.Common;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Server.Mac
 {
@@ -8,7 +9,12 @@ namespace MediaBrowser.Server.Mac
 	/// </summary>
 	public class NativeApp : BaseMonoApp
 	{
-		/// <summary>
+		public NativeApp(ILogger logger)
+	            : base(logger)
+	        {
+	        }
+
+        /// <summary>
 		/// Shutdowns this instance.
 		/// </summary>
 		public override void Shutdown()

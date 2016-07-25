@@ -163,7 +163,7 @@ namespace Emby.Drawing
             return _imageEncoder.SupportedOutputFormats;
         }
 
-        public async Task<Tuple<string, string>> ProcessImage(ImageProcessingOptions options)
+        public async Task<Tuple<string, string, DateTime>> ProcessImage(ImageProcessingOptions options)
         {
             if (options == null)
             {
@@ -178,13 +178,12 @@ namespace Emby.Drawing
             }
 
             var originalImagePath = originalImage.Path;
+            var dateModified = originalImage.DateModified;
 
             if (!_imageEncoder.SupportsImageEncoding)
             {
-                return new Tuple<string, string>(originalImagePath, MimeTypes.GetMimeType(originalImagePath));
+                return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             }
-
-            var dateModified = originalImage.DateModified;
 
             if (options.CropWhiteSpace && _imageEncoder.SupportsImageEncoding)
             {
@@ -211,7 +210,7 @@ namespace Emby.Drawing
             if (options.HasDefaultOptions(originalImagePath))
             {
                 // Just spit out the original file if all the options are default
-                return new Tuple<string, string>(originalImagePath, MimeTypes.GetMimeType(originalImagePath));
+                return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             }
 
             ImageSize? originalImageSize;
@@ -221,7 +220,7 @@ namespace Emby.Drawing
                 if (options.HasDefaultOptions(originalImagePath, originalImageSize.Value))
                 {
                     // Just spit out the original file if all the options are default
-                    return new Tuple<string, string>(originalImagePath, MimeTypes.GetMimeType(originalImagePath));
+                    return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
                 }
             }
             catch
@@ -235,10 +234,6 @@ namespace Emby.Drawing
             var outputFormat = GetOutputFormat(options.SupportedOutputFormats[0]);
             var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, outputFormat, options.AddPlayedIndicator, options.PercentPlayed, options.UnplayedCount, options.BackgroundColor, options.ForegroundLayer);
 
-            var semaphore = GetLock(cacheFilePath);
-
-            await semaphore.WaitAsync().ConfigureAwait(false);
-
             var imageProcessingLockTaken = false;
 
             try
@@ -251,15 +246,20 @@ namespace Emby.Drawing
                     var newHeight = Convert.ToInt32(newSize.Height);
 
                     _fileSystem.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
+                    var tmpPath = Path.ChangeExtension(Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N")), Path.GetExtension(cacheFilePath));
+                    _fileSystem.CreateDirectory(Path.GetDirectoryName(tmpPath));
 
                     await _imageProcessingSemaphore.WaitAsync().ConfigureAwait(false);
 
                     imageProcessingLockTaken = true;
 
-                    _imageEncoder.EncodeImage(originalImagePath, cacheFilePath, AutoOrient(options.Item), newWidth, newHeight, quality, options, outputFormat);
+                    _imageEncoder.EncodeImage(originalImagePath, tmpPath, AutoOrient(options.Item), newWidth, newHeight, quality, options, outputFormat);
+                    CopyFile(tmpPath, cacheFilePath);
+
+                    return new Tuple<string, string, DateTime>(tmpPath, GetMimeType(outputFormat, cacheFilePath), _fileSystem.GetLastWriteTimeUtc(tmpPath));
                 }
 
-                return new Tuple<string, string>(cacheFilePath, GetMimeType(outputFormat, cacheFilePath));
+                return new Tuple<string, string, DateTime>(cacheFilePath, GetMimeType(outputFormat, cacheFilePath), _fileSystem.GetLastWriteTimeUtc(cacheFilePath));
             }
             catch (Exception ex)
             {
@@ -267,7 +267,7 @@ namespace Emby.Drawing
                 _logger.ErrorException("Error encoding image", ex);
 
                 // Just spit out the original file if all the options are default
-                return new Tuple<string, string>(originalImagePath, MimeTypes.GetMimeType(originalImagePath));
+                return new Tuple<string, string, DateTime>(originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             }
             finally
             {
@@ -275,8 +275,18 @@ namespace Emby.Drawing
                 {
                     _imageProcessingSemaphore.Release();
                 }
+            }
+        }
 
-                semaphore.Release();
+        private void CopyFile(string src, string destination)
+        {
+            try
+            {
+                File.Copy(src, destination, true);
+            }
+            catch
+            {
+
             }
         }
 
@@ -412,14 +422,9 @@ namespace Emby.Drawing
 
             var croppedImagePath = GetCachePath(CroppedWhitespaceImageCachePath, name, Path.GetExtension(originalImagePath));
 
-            var semaphore = GetLock(croppedImagePath);
-
-            await semaphore.WaitAsync().ConfigureAwait(false);
-
             // Check again in case of contention
             if (_fileSystem.FileExists(croppedImagePath))
             {
-                semaphore.Release();
                 return GetResult(croppedImagePath);
             }
 
@@ -428,11 +433,15 @@ namespace Emby.Drawing
             try
             {
                 _fileSystem.CreateDirectory(Path.GetDirectoryName(croppedImagePath));
+                var tmpPath = Path.ChangeExtension(Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N")), Path.GetExtension(croppedImagePath));
+                _fileSystem.CreateDirectory(Path.GetDirectoryName(tmpPath));
 
                 await _imageProcessingSemaphore.WaitAsync().ConfigureAwait(false);
                 imageProcessingLockTaken = true;
 
-                _imageEncoder.CropWhiteSpace(originalImagePath, croppedImagePath);
+                _imageEncoder.CropWhiteSpace(originalImagePath, tmpPath);
+                CopyFile(tmpPath, croppedImagePath);
+                return GetResult(tmpPath);
             }
             catch (NotImplementedException)
             {
@@ -452,11 +461,7 @@ namespace Emby.Drawing
                 {
                     _imageProcessingSemaphore.Release();
                 }
-
-                semaphore.Release();
             }
-
-            return GetResult(croppedImagePath);
         }
 
         private Tuple<string, DateTime> GetResult(string path)

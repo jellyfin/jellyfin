@@ -350,7 +350,8 @@ namespace MediaBrowser.Api.Library
                     Fields = request.Fields,
                     Id = request.Id,
                     Limit = request.Limit,
-                    UserId = request.UserId
+                    UserId = request.UserId,
+                    ExcludeArtistIds = request.ExcludeArtistIds
                 });
             }
             if (item is MusicArtist)
@@ -493,7 +494,7 @@ namespace MediaBrowser.Api.Library
             }
         }
 
-        public object Get(GetDownload request)
+        public Task<object> Get(GetDownload request)
         {
             var item = _libraryManager.GetItemById(request.Id);
             var auth = _authContext.GetAuthorizationInfo(Request);
@@ -552,7 +553,7 @@ namespace MediaBrowser.Api.Library
             }
         }
 
-        public object Get(GetFile request)
+        public Task<object> Get(GetFile request)
         {
             var item = _libraryManager.GetItemById(request.Id);
             var locationType = item.LocationType;
@@ -565,7 +566,7 @@ namespace MediaBrowser.Api.Library
                 throw new ArgumentException("This command cannot be used for directories.");
             }
 
-            return ToStaticFileResult(item.Path);
+            return ResultFactory.GetStaticFileResult(Request, item.Path);
         }
 
         /// <summary>
@@ -839,6 +840,7 @@ namespace MediaBrowser.Api.Library
             var dtoOptions = GetDtoOptions(request);
 
             var dtos = GetThemeSongIds(item).Select(_libraryManager.GetItemById)
+                            .Where(i => i != null)
                             .OrderBy(i => i.SortName)
                             .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
 
@@ -882,6 +884,7 @@ namespace MediaBrowser.Api.Library
             var dtoOptions = GetDtoOptions(request);
 
             var dtos = GetThemeVideoIds(item).Select(_libraryManager.GetItemById)
+                            .Where(i => i != null)
                             .OrderBy(i => i.SortName)
                             .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
 

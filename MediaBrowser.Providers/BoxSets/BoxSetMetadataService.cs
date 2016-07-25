@@ -15,10 +15,6 @@ namespace MediaBrowser.Providers.BoxSets
 {
     public class BoxSetMetadataService : MetadataService<BoxSet, BoxSetInfo>
     {
-        public BoxSetMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager, libraryManager)
-        {
-        }
-
         protected override async Task<ItemUpdateType> BeforeSave(BoxSet item, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
             var updateType = await base.BeforeSave(item, isFullRefresh, currentUpdateType).ConfigureAwait(false);
@@ -53,6 +49,10 @@ namespace MediaBrowser.Providers.BoxSets
                 targetItem.LinkedChildren = linkedChildren;
                 targetItem.Shares = sourceItem.Shares;
             }
+        }
+
+        public BoxSetMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
+        {
         }
     }
 }

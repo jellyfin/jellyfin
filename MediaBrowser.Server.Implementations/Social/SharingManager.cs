@@ -43,7 +43,7 @@ namespace MediaBrowser.Server.Implementations.Social
                 throw new ResourceNotFoundException();
             }
 
-            var externalUrl = _appHost.GetSystemInfo().WanAddress;
+            var externalUrl = (await _appHost.GetSystemInfo().ConfigureAwait(false)).WanAddress;
 
             if (string.IsNullOrWhiteSpace(externalUrl))
             {
@@ -58,7 +58,7 @@ namespace MediaBrowser.Server.Implementations.Social
                 UserId = userId
             };
 
-            AddShareInfo(info);
+            AddShareInfo(info, externalUrl);
             
             await _repository.CreateShare(info).ConfigureAwait(false);
 
@@ -74,17 +74,15 @@ namespace MediaBrowser.Server.Implementations.Social
         {
             var info = _repository.GetShareInfo(id);
 
-            AddShareInfo(info);
+            AddShareInfo(info, _appHost.GetSystemInfo().Result.WanAddress);
 
             return info;
         }
 
-        private void AddShareInfo(SocialShareInfo info)
+        private void AddShareInfo(SocialShareInfo info, string externalUrl)
         {
-            var externalUrl = _appHost.GetSystemInfo().WanAddress;
-
             info.ImageUrl = externalUrl + "/Social/Shares/Public/" + info.Id + "/Image";
-            info.Url = externalUrl + "/web/shared.html?id=" + info.Id;
+            info.Url = externalUrl + "/emby/web/shared.html?id=" + info.Id;
 
             var item = _libraryManager.GetItemById(info.ItemId);
 

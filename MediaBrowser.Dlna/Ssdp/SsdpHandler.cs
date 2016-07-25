@@ -36,7 +36,7 @@ namespace MediaBrowser.Dlna.Ssdp
         private Timer _notificationTimer;
 
         private bool _isDisposed;
-        private readonly ConcurrentDictionary<string, List<UpnpDevice>> _devices = new ConcurrentDictionary<string, List<UpnpDevice>>();
+        private readonly Dictionary<string, List<UpnpDevice>> _devices = new Dictionary<string, List<UpnpDevice>>();
 
         private readonly IApplicationHost _appHost;
 
@@ -172,9 +172,12 @@ namespace MediaBrowser.Dlna.Ssdp
         {
             get
             {
-                var devices = _devices.ToList();
+                lock (_devices)
+                {
+                    var devices = _devices.ToList();
 
-                return devices.SelectMany(i => i.Value).ToList();
+                    return devices.SelectMany(i => i.Value).ToList();
+                }
             }
         }
 
@@ -476,32 +479,48 @@ namespace MediaBrowser.Dlna.Ssdp
 
             var msg = new SsdpMessageBuilder().BuildMessage(header, values);
 
-            SendDatagram(msg, _ssdpEndp, new IPEndPoint(dev.Address, 0), true, 1);
+            SendDatagram(msg, _ssdpEndp, new IPEndPoint(dev.Address, 0), true, 2);
             //SendUnicastRequest(msg, 1);
         }
 
         public void RegisterNotification(string uuid, Uri descriptionUri, IPAddress address, IEnumerable<string> services)
         {
-            var list = _devices.GetOrAdd(uuid, new List<UpnpDevice>());
+            lock (_devices)
+            {
+                List<UpnpDevice> list;
+                List<UpnpDevice> dl;
+                if (_devices.TryGetValue(uuid, out dl))
+                {
+                    list = dl;
+                }
+                else
+                {
+                    list = new List<UpnpDevice>();
+                    _devices[uuid] = list;
+                }
 
-            list.AddRange(services.Select(i => new UpnpDevice(uuid, i, descriptionUri, address)));
+                list.AddRange(services.Select(i => new UpnpDevice(uuid, i, descriptionUri, address)));
 
-            NotifyAll();
-            _logger.Debug("Registered mount {0} at {1}", uuid, descriptionUri);
+                NotifyAll();
+                _logger.Debug("Registered mount {0} at {1}", uuid, descriptionUri);
+            }
         }
 
         public void UnregisterNotification(string uuid)
         {
-            List<UpnpDevice> dl;
-            if (_devices.TryRemove(uuid, out dl))
+            lock (_devices)
             {
-
-                foreach (var d in dl.ToList())
+                List<UpnpDevice> dl;
+                if (_devices.TryGetValue(uuid, out dl))
                 {
-                    NotifyDevice(d, "byebye", true);
-                }
+                    _devices.Remove(uuid);
+                    foreach (var d in dl.ToList())
+                    {
+                        NotifyDevice(d, "byebye", true);
+                    }
 
-                _logger.Debug("Unregistered mount {0}", uuid);
+                    _logger.Debug("Unregistered mount {0}", uuid);
+                }
             }
         }
 

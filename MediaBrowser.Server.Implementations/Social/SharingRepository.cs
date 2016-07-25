@@ -12,14 +12,10 @@ namespace MediaBrowser.Server.Implementations.Social
 {
     public class SharingRepository : BaseSqliteRepository
     {
-        private IDbConnection _connection;
-        private IDbCommand _saveShareCommand;
-        private readonly IApplicationPaths _appPaths;
-
-        public SharingRepository(ILogManager logManager, IApplicationPaths appPaths)
-            : base(logManager)
+        public SharingRepository(ILogManager logManager, IApplicationPaths appPaths, IDbConnector dbConnector)
+            : base(logManager, dbConnector)
         {
-            _appPaths = appPaths;
+            DbFilePath = Path.Combine(appPaths.DataPath, "shares.db");
         }
 
         /// <summary>
@@ -28,38 +24,18 @@ namespace MediaBrowser.Server.Implementations.Social
         /// <returns>Task.</returns>
         public async Task Initialize()
         {
-            var dbFile = Path.Combine(_appPaths.DataPath, "shares.db");
-
-            _connection = await SqliteExtensions.ConnectToDb(dbFile, Logger).ConfigureAwait(false);
-
-            string[] queries = {
+            using (var connection = await CreateConnection().ConfigureAwait(false))
+            {
+                string[] queries = {
 
                                 "create table if not exists Shares (Id GUID, ItemId TEXT, UserId TEXT, ExpirationDate DateTime, PRIMARY KEY (Id))",
                                 "create index if not exists idx_Shares on Shares(Id)",
 
-                                //pragmas
-                                "pragma temp_store = memory",
-
                                 "pragma shrink_memory"
                                };
 
-            _connection.RunQueries(queries, Logger);
-
-            PrepareStatements();
-        }
-
-        /// <summary>
-        /// Prepares the statements.
-        /// </summary>
-        private void PrepareStatements()
-        {
-            _saveShareCommand = _connection.CreateCommand();
-            _saveShareCommand.CommandText = "replace into Shares (Id, ItemId, UserId, ExpirationDate) values (@Id, @ItemId, @UserId, @ExpirationDate)";
-
-            _saveShareCommand.Parameters.Add(_saveShareCommand, "@Id");
-            _saveShareCommand.Parameters.Add(_saveShareCommand, "@ItemId");
-            _saveShareCommand.Parameters.Add(_saveShareCommand, "@UserId");
-            _saveShareCommand.Parameters.Add(_saveShareCommand, "@ExpirationDate");
+                connection.RunQueries(queries, Logger);
+            }
         }
 
         public async Task CreateShare(SocialShareInfo info)
@@ -77,53 +53,62 @@ namespace MediaBrowser.Server.Implementations.Social
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            IDbTransaction transaction = null;
-
-            try
+            using (var connection = await CreateConnection().ConfigureAwait(false))
             {
-                transaction = _connection.BeginTransaction();
-
-                _saveShareCommand.GetParameter(0).Value = new Guid(info.Id);
-                _saveShareCommand.GetParameter(1).Value = info.ItemId;
-                _saveShareCommand.GetParameter(2).Value = info.UserId;
-                _saveShareCommand.GetParameter(3).Value = info.ExpirationDate;
-
-                _saveShareCommand.Transaction = transaction;
-
-                _saveShareCommand.ExecuteNonQuery();
-
-                transaction.Commit();
-            }
-            catch (OperationCanceledException)
-            {
-                if (transaction != null)
+                using (var saveShareCommand = connection.CreateCommand())
                 {
-                    transaction.Rollback();
+                    saveShareCommand.CommandText = "replace into Shares (Id, ItemId, UserId, ExpirationDate) values (@Id, @ItemId, @UserId, @ExpirationDate)";
+
+                    saveShareCommand.Parameters.Add(saveShareCommand, "@Id");
+                    saveShareCommand.Parameters.Add(saveShareCommand, "@ItemId");
+                    saveShareCommand.Parameters.Add(saveShareCommand, "@UserId");
+                    saveShareCommand.Parameters.Add(saveShareCommand, "@ExpirationDate");
+
+                    IDbTransaction transaction = null;
+
+                    try
+                    {
+                        transaction = connection.BeginTransaction();
+
+                        saveShareCommand.GetParameter(0).Value = new Guid(info.Id);
+                        saveShareCommand.GetParameter(1).Value = info.ItemId;
+                        saveShareCommand.GetParameter(2).Value = info.UserId;
+                        saveShareCommand.GetParameter(3).Value = info.ExpirationDate;
+
+                        saveShareCommand.Transaction = transaction;
+
+                        saveShareCommand.ExecuteNonQuery();
+
+                        transaction.Commit();
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        if (transaction != null)
+                        {
+                            transaction.Rollback();
+                        }
+
+                        throw;
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.ErrorException("Failed to save share:", e);
+
+                        if (transaction != null)
+                        {
+                            transaction.Rollback();
+                        }
+
+                        throw;
+                    }
+                    finally
+                    {
+                        if (transaction != null)
+                        {
+                            transaction.Dispose();
+                        }
+                    }
                 }
-
-                throw;
-            }
-            catch (Exception e)
-            {
-                Logger.ErrorException("Failed to save share:", e);
-
-                if (transaction != null)
-                {
-                    transaction.Rollback();
-                }
-
-                throw;
-            }
-            finally
-            {
-                if (transaction != null)
-                {
-                    transaction.Dispose();
-                }
-
-                WriteLock.Release();
             }
         }
 
@@ -134,20 +119,23 @@ namespace MediaBrowser.Server.Implementations.Social
                 throw new ArgumentNullException("id");
             }
 
-            var cmd = _connection.CreateCommand();
-            cmd.CommandText = "select Id, ItemId, UserId, ExpirationDate from Shares where id = @id";
-
-            cmd.Parameters.Add(cmd, "@id", DbType.Guid).Value = new Guid(id);
-
-            using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
+            using (var connection = CreateConnection(true).Result)
             {
-                if (reader.Read())
-                {
-                    return GetSocialShareInfo(reader);
-                }
-            }
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = "select Id, ItemId, UserId, ExpirationDate from Shares where id = @id";
 
-            return null;
+                cmd.Parameters.Add(cmd, "@id", DbType.Guid).Value = new Guid(id);
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
+                {
+                    if (reader.Read())
+                    {
+                        return GetSocialShareInfo(reader);
+                    }
+                }
+
+                return null;
+            }
         }
 
         private SocialShareInfo GetSocialShareInfo(IDataReader reader)
@@ -164,21 +152,7 @@ namespace MediaBrowser.Server.Implementations.Social
 
         public async Task DeleteShare(string id)
         {
-            
-        }
 
-        protected override void CloseConnection()
-        {
-            if (_connection != null)
-            {
-                if (_connection.IsOpen())
-                {
-                    _connection.Close();
-                }
-
-                _connection.Dispose();
-                _connection = null;
-            }
         }
     }
 }

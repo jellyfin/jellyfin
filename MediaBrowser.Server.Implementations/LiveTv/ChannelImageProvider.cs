@@ -41,7 +41,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var service = _liveTvManager.Services.FirstOrDefault(i => string.Equals(i.Name, liveTvItem.ServiceName, StringComparison.OrdinalIgnoreCase));
 
-            if (service != null)
+            if (service != null && !item.HasImage(ImageType.Primary))
             {
                 try
                 {
@@ -77,7 +77,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             get { return 0; }
         }
 
-        public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
             return GetSupportedImages(item).Any(i => !item.HasImage(i));
         }

@@ -12,12 +12,6 @@ namespace MediaBrowser.Controller.Persistence
     public interface IUserDataRepository : IRepository
     {
         /// <summary>
-        /// Opens the connection to the repository
-        /// </summary>
-        /// <returns>Task.</returns>
-        Task Initialize();
-
-        /// <summary>
         /// Saves the user data.
         /// </summary>
         /// <param name="userId">The user id.</param>
@@ -34,6 +28,8 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="key">The key.</param>
         /// <returns>Task{UserItemData}.</returns>
         UserItemData GetUserData(Guid userId, string key);
+
+        UserItemData GetUserData(Guid userId, List<string> keys);
 
         /// <summary>
         /// Return all user data associated with the given user

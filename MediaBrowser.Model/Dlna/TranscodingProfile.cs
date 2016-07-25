@@ -19,7 +19,7 @@ namespace MediaBrowser.Model.Dlna
 
         [XmlAttribute("protocol")]
         public string Protocol { get; set; }
-        
+
         [XmlAttribute("estimateContentLength")]
         public bool EstimateContentLength { get; set; }
 
@@ -34,6 +34,15 @@ namespace MediaBrowser.Model.Dlna
 
         [XmlAttribute("context")]
         public EncodingContext Context { get; set; }
+
+        [XmlAttribute("forceLiveStream")]
+        public bool ForceLiveStream { get; set; }
+
+        [XmlAttribute("enableSubtitlesInManifest")]
+        public bool EnableSubtitlesInManifest { get; set; }
+
+        [XmlAttribute("maxAudioChannels")]
+        public string MaxAudioChannels { get; set; }
 
         public List<string> GetAudioCodecs()
         {

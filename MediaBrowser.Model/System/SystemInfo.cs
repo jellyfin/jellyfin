@@ -152,6 +152,10 @@ namespace MediaBrowser.Model.System
         /// <value><c>true</c> if [supports automatic run at startup]; otherwise, <c>false</c>.</value>
         public bool SupportsAutoRunAtStartup { get; set; }
 
+        public string EncoderLocationType { get; set; }
+
+        public Architecture SystemArchitecture { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemInfo" /> class.
         /// </summary>

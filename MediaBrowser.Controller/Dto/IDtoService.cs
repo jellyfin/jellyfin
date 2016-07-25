@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Dto
 {
@@ -68,7 +69,7 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="user">The user.</param>
         /// <param name="owner">The owner.</param>
         /// <returns>IEnumerable&lt;BaseItemDto&gt;.</returns>
-        IEnumerable<BaseItemDto> GetBaseItemDtos(IEnumerable<BaseItem> items, DtoOptions options, User user = null,
+        Task<List<BaseItemDto>> GetBaseItemDtos(IEnumerable<BaseItem> items, DtoOptions options, User user = null,
             BaseItem owner = null);
         
         /// <summary>

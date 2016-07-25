@@ -106,6 +106,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             InitTriggerEvents();
         }
 
+        private bool _readFromFile = false;
         /// <summary>
         /// The _last execution result
         /// </summary>
@@ -122,31 +123,29 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         {
             get
             {
-                if (_lastExecutionResult == null)
-                {
-                    var path = GetHistoryFilePath();
+                var path = GetHistoryFilePath();
 
-                    lock (_lastExecutionResultSyncLock)
+                lock (_lastExecutionResultSyncLock)
+                {
+                    if (_lastExecutionResult == null && !_readFromFile)
                     {
-                        if (_lastExecutionResult == null)
+                        try
                         {
-                            try
-                            {
-                                return JsonSerializer.DeserializeFromFile<TaskResult>(path);
-                            }
-                            catch (DirectoryNotFoundException)
-                            {
-                                // File doesn't exist. No biggie
-                            }
-                            catch (FileNotFoundException)
-                            {
-                                // File doesn't exist. No biggie
-                            }
-                            catch (Exception ex)
-                            {
-                                Logger.ErrorException("Error deserializing {0}", ex, path);
-                            }
+                            _lastExecutionResult = JsonSerializer.DeserializeFromFile<TaskResult>(path);
                         }
+                        catch (DirectoryNotFoundException)
+                        {
+                            // File doesn't exist. No biggie
+                        }
+                        catch (FileNotFoundException)
+                        {
+                            // File doesn't exist. No biggie
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.ErrorException("Error deserializing {0}", ex, path);
+                        }
+                        _readFromFile = true;
                     }
                 }
 
@@ -311,7 +310,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
 
                 trigger.Triggered -= trigger_Triggered;
                 trigger.Triggered += trigger_Triggered;
-                trigger.Start(LastExecutionResult, isApplicationStartup);
+                trigger.Start(LastExecutionResult, Logger, Name, isApplicationStartup);
             }
         }
 
@@ -339,7 +338,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
 
             await Task.Delay(1000).ConfigureAwait(false);
 
-            trigger.Start(LastExecutionResult, false);
+            trigger.Start(LastExecutionResult, Logger, Name, false);
         }
 
         private Task _currentTask;

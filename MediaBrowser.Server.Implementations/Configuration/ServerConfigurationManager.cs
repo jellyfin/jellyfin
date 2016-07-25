@@ -95,13 +95,9 @@ namespace MediaBrowser.Server.Implementations.Configuration
             {
                 metadataPath = GetInternalMetadataPath();
             }
-            else if (Configuration.EnableCustomPathSubFolders)
-            {
-                metadataPath = Path.Combine(Configuration.MetadataPath, "metadata");
-            }
             else
             {
-                metadataPath = Configuration.MetadataPath;
+                metadataPath = Path.Combine(Configuration.MetadataPath, "metadata");
             }
 
             ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = metadataPath;
