@@ -942,17 +942,5 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             return isOutputVideo ? ".ts" : ".ts";
         }
-
-        protected override bool CanStreamCopyVideo(StreamState state)
-        {
-            var isLiveStream = IsLiveStream(state);
-
-            //if (!isLiveStream && Request.QueryString["AllowCustomSegmenting"] != "true")
-            //{
-            //    return false;
-            //}
-
-            return base.CanStreamCopyVideo(state);
-        }
     }
 }

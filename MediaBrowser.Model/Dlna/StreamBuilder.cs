@@ -11,29 +11,17 @@ namespace MediaBrowser.Model.Dlna
 {
     public class StreamBuilder
     {
-        private readonly ILocalPlayer _localPlayer;
         private readonly ILogger _logger;
         private readonly ITranscoderSupport _transcoderSupport;
 
-        public StreamBuilder(ILocalPlayer localPlayer, ITranscoderSupport transcoderSupport, ILogger logger)
+        public StreamBuilder(ITranscoderSupport transcoderSupport, ILogger logger)
         {
             _transcoderSupport = transcoderSupport;
-            _localPlayer = localPlayer;
             _logger = logger;
         }
 
-        public StreamBuilder(ITranscoderSupport transcoderSupport, ILogger logger)
-            : this(new NullLocalPlayer(), transcoderSupport, logger)
-        {
-        }
-
-        public StreamBuilder(ILocalPlayer localPlayer, ILogger logger)
-            : this(localPlayer, new FullTranscoderSupport(), logger)
-        {
-        }
-
         public StreamBuilder(ILogger logger)
-            : this(new NullLocalPlayer(), new FullTranscoderSupport(), logger)
+            : this(new FullTranscoderSupport(), logger)
         {
         }
 
@@ -127,6 +115,20 @@ namespace MediaBrowser.Model.Dlna
                 DeviceProfile = options.Profile
             };
 
+            if (options.ForceDirectPlay)
+            {
+                playlistItem.PlayMethod = PlayMethod.DirectPlay;
+                playlistItem.Container = item.Container;
+                return playlistItem;
+            }
+
+            if (options.ForceDirectStream)
+            {
+                playlistItem.PlayMethod = PlayMethod.DirectStream;
+                playlistItem.Container = item.Container;
+                return playlistItem;
+            }
+
             MediaStream audioStream = item.GetDefaultAudioStream(null);
 
             List<PlayMethod> directPlayMethods = GetAudioDirectPlayMethods(item, audioStream, options);
@@ -182,19 +184,7 @@ namespace MediaBrowser.Model.Dlna
 
                     if (all)
                     {
-                        if (item.Protocol == MediaProtocol.File &&
-                            directPlayMethods.Contains(PlayMethod.DirectPlay) &&
-                            _localPlayer.CanAccessFile(item.Path))
-                        {
-                            playlistItem.PlayMethod = PlayMethod.DirectPlay;
-                        }
-                        else if (item.Protocol == MediaProtocol.Http &&
-                            directPlayMethods.Contains(PlayMethod.DirectPlay) &&
-                            _localPlayer.CanAccessUrl(item.Path, item.RequiredHttpHeaders.Count > 0))
-                        {
-                            playlistItem.PlayMethod = PlayMethod.DirectPlay;
-                        }
-                        else if (directPlayMethods.Contains(PlayMethod.DirectStream))
+                        if (directPlayMethods.Contains(PlayMethod.DirectStream))
                         {
                             playlistItem.PlayMethod = PlayMethod.DirectStream;
                         }
@@ -413,8 +403,8 @@ namespace MediaBrowser.Model.Dlna
             MediaStream videoStream = item.VideoStream;
 
             // TODO: This doesn't accout for situation of device being able to handle media bitrate, but wifi connection not fast enough
-            bool isEligibleForDirectPlay = options.EnableDirectPlay && IsEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options), subtitleStream, options, PlayMethod.DirectPlay);
-            bool isEligibleForDirectStream = options.EnableDirectStream && IsEligibleForDirectPlay(item, options.GetMaxBitrate(), subtitleStream, options, PlayMethod.DirectStream);
+            bool isEligibleForDirectPlay = options.EnableDirectPlay && (options.ForceDirectPlay || IsEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options), subtitleStream, options, PlayMethod.DirectPlay));
+            bool isEligibleForDirectStream = options.EnableDirectStream && (options.ForceDirectStream || IsEligibleForDirectPlay(item, options.GetMaxBitrate(), subtitleStream, options, PlayMethod.DirectStream));
 
             _logger.Info("Profile: {0}, Path: {1}, isEligibleForDirectPlay: {2}, isEligibleForDirectStream: {3}",
                 options.Profile.Name ?? "Unknown Profile",
@@ -425,7 +415,7 @@ namespace MediaBrowser.Model.Dlna
             if (isEligibleForDirectPlay || isEligibleForDirectStream)
             {
                 // See if it can be direct played
-                PlayMethod? directPlay = GetVideoDirectPlayProfile(options.Profile, item, videoStream, audioStream, isEligibleForDirectPlay, isEligibleForDirectStream);
+                PlayMethod? directPlay = GetVideoDirectPlayProfile(options, item, videoStream, audioStream, isEligibleForDirectPlay, isEligibleForDirectStream);
 
                 if (directPlay != null)
                 {
@@ -645,13 +635,24 @@ namespace MediaBrowser.Model.Dlna
             return Math.Min(defaultBitrate, encoderAudioBitrateLimit);
         }
 
-        private PlayMethod? GetVideoDirectPlayProfile(DeviceProfile profile,
+        private PlayMethod? GetVideoDirectPlayProfile(VideoOptions options,
             MediaSourceInfo mediaSource,
             MediaStream videoStream,
             MediaStream audioStream,
             bool isEligibleForDirectPlay,
             bool isEligibleForDirectStream)
         {
+            DeviceProfile profile = options.Profile;
+
+            if (options.ForceDirectPlay)
+            {
+                return PlayMethod.DirectPlay;
+            }
+            if (options.ForceDirectStream)
+            {
+                return PlayMethod.DirectStream;
+            }
+
             if (videoStream == null)
             {
                 _logger.Info("Profile: {0}, Cannot direct stream with no known video stream. Path: {1}",
@@ -825,25 +826,6 @@ namespace MediaBrowser.Model.Dlna
                         LogConditionFailure(profile, "VideoAudioCodecProfile", i, mediaSource);
 
                         return null;
-                    }
-                }
-            }
-
-            if (isEligibleForDirectPlay && mediaSource.SupportsDirectPlay)
-            {
-                if (mediaSource.Protocol == MediaProtocol.Http)
-                {
-                    if (_localPlayer.CanAccessUrl(mediaSource.Path, mediaSource.RequiredHttpHeaders.Count > 0))
-                    {
-                        return PlayMethod.DirectPlay;
-                    }
-                }
-
-                else if (mediaSource.Protocol == MediaProtocol.File)
-                {
-                    if (_localPlayer.CanAccessFile(mediaSource.Path))
-                    {
-                        return PlayMethod.DirectPlay;
                     }
                 }
             }
