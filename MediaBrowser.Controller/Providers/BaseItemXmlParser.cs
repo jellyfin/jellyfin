@@ -61,16 +61,7 @@ namespace MediaBrowser.Controller.Providers
             };
 
             //Fetch(item, metadataFile, settings, Encoding.GetEncoding("ISO-8859-1"), cancellationToken);
-
-            try
-            {
-                Fetch(item, metadataFile, settings, Encoding.UTF8, cancellationToken);
-            }
-            catch
-            {
-                Logger.Error("Error parsing xml file {0}", metadataFile);
-                throw;
-            }
+            Fetch(item, metadataFile, settings, Encoding.UTF8, cancellationToken);
         }
 
         /// <summary>
@@ -812,11 +803,7 @@ namespace MediaBrowser.Controller.Providers
                     {
                         using (var subtree = reader.ReadSubtree())
                         {
-                            var hasTags = item as IHasTags;
-                            if (hasTags != null)
-                            {
-                                FetchFromTagsNode(subtree, hasTags);
-                            }
+                            FetchFromTagsNode(subtree, item);
                         }
                         break;
                     }
@@ -825,11 +812,7 @@ namespace MediaBrowser.Controller.Providers
                     {
                         using (var subtree = reader.ReadSubtree())
                         {
-                            var hasTags = item as IHasKeywords;
-                            if (hasTags != null)
-                            {
-                                FetchFromKeywordsNode(subtree, hasTags);
-                            }
+                            FetchFromKeywordsNode(subtree, item);
                         }
                         break;
                     }
@@ -1079,7 +1062,7 @@ namespace MediaBrowser.Controller.Providers
             }
         }
 
-        private void FetchFromTagsNode(XmlReader reader, IHasTags item)
+        private void FetchFromTagsNode(XmlReader reader, BaseItem item)
         {
             reader.MoveToContent();
 
@@ -1108,7 +1091,7 @@ namespace MediaBrowser.Controller.Providers
             }
         }
 
-        private void FetchFromKeywordsNode(XmlReader reader, IHasKeywords item)
+        private void FetchFromKeywordsNode(XmlReader reader, BaseItem item)
         {
             reader.MoveToContent();
 

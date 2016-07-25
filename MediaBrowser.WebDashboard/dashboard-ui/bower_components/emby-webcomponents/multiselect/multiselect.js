@@ -1,0 +1,529 @@
+﻿define(['browser', 'appStorage', 'apphost', 'loading', 'connectionManager', 'globalize', 'embyRouter', 'dom', 'css!./multiselect'], function (browser, appStorage, appHost, loading, connectionManager, globalize, embyRouter, dom) {
+
+    var selectedItems = [];
+    var selectedElements = [];
+    var currentSelectionCommandsPanel;
+
+    function hideSelections() {
+
+        var selectionCommandsPanel = currentSelectionCommandsPanel;
+        if (selectionCommandsPanel) {
+
+            selectionCommandsPanel.parentNode.removeChild(selectionCommandsPanel);
+            currentSelectionCommandsPanel = null;
+
+            selectedItems = [];
+            selectedElements = [];
+            var elems = document.querySelectorAll('.itemSelectionPanel');
+            for (var i = 0, length = elems.length; i < length; i++) {
+                elems[i].parentNode.removeChild(elems[i]);
+            }
+        }
+    }
+
+    var initCount = 0;
+    function showTapHoldHelp(element) {
+
+        if (initCount >= 15) {
+            // All done
+            return;
+        }
+
+        initCount++;
+
+        if (initCount < 15) {
+            return;
+        }
+
+        var expectedValue = "8";
+        if (appStorage.getItem("tapholdhelp") == expectedValue) {
+            return;
+        }
+
+        appStorage.setItem("tapholdhelp", expectedValue);
+
+        require(['alert'], function (alert) {
+            alert({
+                text: globalize.translate('sharedcomponents#TryMultiSelectMessage'),
+                title: globalize.translate('sharedcomponents#TryMultiSelect')
+            });
+        });
+    }
+
+    function onItemSelectionPanelClick(e, itemSelectionPanel) {
+
+        // toggle the checkbox, if it wasn't clicked on
+        if (!dom.parentWithClass(e.target, 'chkItemSelect')) {
+            var chkItemSelect = itemSelectionPanel.querySelector('.chkItemSelect');
+
+            if (chkItemSelect) {
+
+                if (chkItemSelect.classList.contains('checkedInitial')) {
+                    chkItemSelect.classList.remove('checkedInitial');
+                } else {
+                    var newValue = !chkItemSelect.checked;
+                    chkItemSelect.checked = newValue;
+                    updateItemSelection(chkItemSelect, newValue);
+                }
+            }
+        }
+
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    }
+
+    function updateItemSelection(chkItemSelect, selected) {
+
+        var id = dom.parentWithClass(chkItemSelect, 'card').getAttribute('data-id');
+
+        if (selected) {
+
+            var current = selectedItems.filter(function (i) {
+                return i == id;
+            });
+
+            if (!current.length) {
+                selectedItems.push(id);
+                selectedElements.push(chkItemSelect);
+            }
+
+        } else {
+            selectedItems = selectedItems.filter(function (i) {
+                return i != id;
+            });
+            selectedElements = selectedElements.filter(function (i) {
+                return i != chkItemSelect;
+            });
+        }
+
+        if (selectedItems.length) {
+            var itemSelectionCount = document.querySelector('.itemSelectionCount');
+            if (itemSelectionCount) {
+                itemSelectionCount.innerHTML = selectedItems.length;
+            }
+        } else {
+            hideSelections();
+        }
+    }
+
+    function onSelectionChange(e) {
+        updateItemSelection(this, this.checked);
+    }
+
+    function showSelection(item, isChecked) {
+
+        var itemSelectionPanel = item.querySelector('.itemSelectionPanel');
+
+        if (!itemSelectionPanel) {
+
+            itemSelectionPanel = document.createElement('div');
+            itemSelectionPanel.classList.add('itemSelectionPanel');
+
+            item.querySelector('.cardContent,.cardBox').appendChild(itemSelectionPanel);
+
+            var cssClass = 'chkItemSelect';
+            if (isChecked && !browser.firefox) {
+                // In firefox, the initial tap hold doesnt' get treated as a click
+                // In other browsers it does, so we need to make sure that initial click is ignored
+                cssClass += ' checkedInitial';
+            }
+            var checkedAttribute = isChecked ? ' checked' : '';
+            itemSelectionPanel.innerHTML = '<label class="checkboxContainer"><input type="checkbox" is="emby-checkbox" class="' + cssClass + '"' + checkedAttribute + '/><span></span></label>';
+            var chkItemSelect = itemSelectionPanel.querySelector('.chkItemSelect');
+            chkItemSelect.addEventListener('change', onSelectionChange);
+        }
+    }
+
+    function shake(elem, iterations) {
+        var keyframes = [
+          { transform: 'translate3d(0, 0, 0)', offset: 0 },
+          { transform: 'translate3d(-10px, 0, 0)', offset: 0.1 },
+          { transform: 'translate3d(10px, 0, 0)', offset: 0.2 },
+          { transform: 'translate3d(-10px, 0, 0)', offset: 0.3 },
+          { transform: 'translate3d(10px, 0, 0)', offset: 0.4 },
+          { transform: 'translate3d(-10px, 0, 0)', offset: 0.5 },
+          { transform: 'translate3d(10px, 0, 0)', offset: 0.6 },
+          { transform: 'translate3d(-10px, 0, 0)', offset: 0.7 },
+          { transform: 'translate3d(10px, 0, 0)', offset: 0.8 },
+          { transform: 'translate3d(-10px, 0, 0)', offset: 0.9 },
+          { transform: 'translate3d(0, 0, 0)', offset: 1 }];
+        var timing = { duration: 900, iterations: iterations };
+
+        if (elem.animate) {
+            elem.animate(keyframes, timing);
+        }
+    }
+
+    function showSelectionCommands() {
+
+        var selectionCommandsPanel = currentSelectionCommandsPanel;
+
+        if (!selectionCommandsPanel) {
+
+            selectionCommandsPanel = document.createElement('div');
+            selectionCommandsPanel.classList.add('selectionCommandsPanel');
+
+            document.body.appendChild(selectionCommandsPanel);
+            currentSelectionCommandsPanel = selectionCommandsPanel;
+
+            var html = '';
+
+            html += '<div style="float:left;">';
+            html += '<button is="paper-icon-button-light" class="btnCloseSelectionPanel autoSize"><i class="md-icon">close</i></button>';
+            html += '<span class="itemSelectionCount"></span>';
+            html += '</div>';
+
+            var moreIcon = appHost.moreIcon == 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';
+            html += '<button is="paper-icon-button-light" class="btnSelectionPanelOptions autoSize" style="margin-left:auto;"><i class="md-icon">' + moreIcon + '</i></button>';
+
+            selectionCommandsPanel.innerHTML = html;
+
+            selectionCommandsPanel.querySelector('.btnCloseSelectionPanel').addEventListener('click', hideSelections);
+
+            var btnSelectionPanelOptions = selectionCommandsPanel.querySelector('.btnSelectionPanelOptions');
+
+            btnSelectionPanelOptions.addEventListener('click', showMenuForSelectedItems);
+
+            if (!browser.mobile) {
+                shake(btnSelectionPanelOptions, 1);
+            }
+        }
+    }
+
+    function deleteItems(apiClient, itemIds) {
+
+        return new Promise(function (resolve, reject) {
+
+            var msg = globalize.translate('ConfirmDeleteItem');
+            var title = globalize.translate('HeaderDeleteItem');
+
+            if (itemIds.length > 1) {
+                msg = globalize.translate('ConfirmDeleteItems');
+                title = globalize.translate('HeaderDeleteItems');
+            }
+
+            require(['confirm'], function (confirm) {
+
+                confirm(msg, title).then(function () {
+
+                    var promises = itemIds.map(function (itemId) {
+                        apiClient.deleteItem(itemId);
+                    });
+
+                    resolve();
+                }, reject);
+
+            });
+        });
+    }
+
+    function showMenuForSelectedItems(e) {
+
+        var apiClient = connectionManager.currentApiClient();
+
+        apiClient.getCurrentUser().then(function (user) {
+
+            var menuItems = [];
+
+            menuItems.push({
+                name: globalize.translate('sharedcomponents#AddToCollection'),
+                id: 'addtocollection',
+                ironIcon: 'add'
+            });
+
+            menuItems.push({
+                name: globalize.translate('sharedcomponents#AddToPlaylist'),
+                id: 'playlist',
+                ironIcon: 'playlist-add'
+            });
+
+            if (user.Policy.EnableContentDeletion) {
+                menuItems.push({
+                    name: globalize.translate('sharedcomponents#Delete'),
+                    id: 'delete',
+                    ironIcon: 'delete'
+                });
+            }
+
+            if (user.Policy.EnableContentDownloading && appHost.supports('filedownload')) {
+                //items.push({
+                //    name: Globalize.translate('ButtonDownload'),
+                //    id: 'download',
+                //    ironIcon: 'file-download'
+                //});
+            }
+
+            menuItems.push({
+                name: globalize.translate('sharedcomponents#GroupVersions'),
+                id: 'groupvideos',
+                ironIcon: 'call-merge'
+            });
+
+            menuItems.push({
+                name: globalize.translate('sharedcomponents#MarkPlayed'),
+                id: 'markplayed'
+            });
+
+            menuItems.push({
+                name: globalize.translate('sharedcomponents#MarkUnplayed'),
+                id: 'markunplayed'
+            });
+
+            menuItems.push({
+                name: globalize.translate('sharedcomponents#Refresh'),
+                id: 'refresh',
+                ironIcon: 'refresh'
+            });
+
+            menuItems.push({
+                name: globalize.translate('sharedcomponents#Sync'),
+                id: 'sync',
+                ironIcon: 'sync'
+            });
+            dispatchNeedsRefresh();
+            require(['actionsheet'], function (actionsheet) {
+
+                actionsheet.show({
+                    items: menuItems,
+                    positionTo: e.target,
+                    callback: function (id) {
+
+                        var items = selectedItems.slice(0);
+                        var serverId = apiClient.serverInfo().Id;
+
+                        switch (id) {
+
+                            case 'addtocollection':
+                                require(['collectionEditor'], function (collectionEditor) {
+
+                                    new collectionEditor().show({
+                                        items: items,
+                                        serverId: serverId
+                                    });
+                                });
+                                hideSelections();
+                                break;
+                            case 'playlist':
+                                require(['playlistEditor'], function (playlistEditor) {
+                                    new playlistEditor().show({
+                                        items: items,
+                                        serverId: serverId
+                                    });
+                                });
+                                hideSelections();
+                                break;
+                            case 'delete':
+                                deleteItems(items).then(function () {
+                                    embyRouter.goHome();
+                                });
+                                hideSelections();
+                                break;
+                            case 'groupvideos':
+                                combineVersions(apiClient, items);
+                                break;
+                            case 'markplayed':
+                                items.forEach(function (itemId) {
+                                    apiClient.markPlayed(apiClient.getCurrentUserId(), itemId);
+                                });
+                                hideSelections();
+                                break;
+                            case 'markunplayed':
+                                items.forEach(function (itemId) {
+                                    apiClient.markUnplayed(apiClient.getCurrentUserId(), itemId);
+                                });
+                                hideSelections();
+                                break;
+                            case 'refresh':
+                                require(['refreshDialog'], function (refreshDialog) {
+                                    new refreshDialog({
+                                        itemIds: items,
+                                        serverId: serverId
+                                    }).show();
+                                });
+                                hideSelections();
+                                break;
+                            case 'sync':
+                                require(['syncDialog'], function (syncDialog) {
+                                    syncDialog.showMenu({
+                                        items: items.map(function (i) {
+                                            return {
+                                                Id: i
+                                            };
+                                        })
+                                    });
+                                });
+                                hideSelections();
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                });
+
+            });
+        });
+    }
+
+    function dispatchNeedsRefresh() {
+
+        var elems = [];
+
+        [].forEach.call(selectedElements, function (i) {
+
+            var container = dom.parentWithAttribute(i, 'is', 'emby-itemscontainer');
+
+            if (container && elems.indexOf(container) == -1) {
+                elems.push(container);
+            }
+        });
+
+        for (var i = 0, length = elems.length; i < length; i++) {
+            elems[i].dispatchEvent(new CustomEvent('needsrefresh', {
+                detail: {},
+                cancelable: false,
+                bubbles: true
+            }));
+        }
+    }
+
+    function combineVersions(apiClient, selection) {
+
+        if (selection.length < 2) {
+
+            require(['alert'], function (alert) {
+                alert({
+                    text: globalize.translate('sharedcomponents#PleaseSelectTwoItems')
+                });
+            });
+            return;
+        }
+
+        var msg = globalize.translate('sharedcomponents#TheSelectedItemsWillBeGrouped');
+
+        require(['confirm'], function (confirm) {
+
+            confirm(msg, globalize.translate('sharedcomponents#GroupVersions')).then(function () {
+
+                loading.show();
+
+                apiClient.ajax({
+
+                    type: "POST",
+                    url: apiClient.getUrl("Videos/MergeVersions", { Ids: selection.join(',') })
+
+                }).then(function () {
+
+                    loading.hide();
+                    hideSelections();
+                    dispatchNeedsRefresh();
+                });
+            });
+        });
+    }
+
+    function showSelections(initialCard) {
+
+        require(['emby-checkbox'], function () {
+            var cards = document.querySelectorAll('.card');
+            for (var i = 0, length = cards.length; i < length; i++) {
+                showSelection(cards[i], initialCard == cards[i]);
+            }
+
+            showSelectionCommands();
+            updateItemSelection(initialCard, true);
+        });
+    }
+
+    function onContainerClick(e) {
+
+        var target = e.target;
+
+        if (selectedItems.length) {
+
+            var card = dom.parentWithClass(target, 'card');
+            if (card) {
+                var itemSelectionPanel = card.querySelector('.itemSelectionPanel');
+                if (itemSelectionPanel) {
+                    return onItemSelectionPanelClick(e, itemSelectionPanel);
+                }
+            }
+
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    }
+
+    document.addEventListener('viewbeforehide', hideSelections);
+
+    return function (options) {
+
+        var self = this;
+
+        var container = options.container;
+
+        function onTapHold(e) {
+
+            var card = dom.parentWithClass(e.target, 'card');
+
+            if (card) {
+
+                showSelections(card);
+            }
+
+            e.preventDefault();
+            // It won't have this if it's a hammer event
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+            return false;
+        }
+
+        function initTapHold(element) {
+
+            // mobile safari doesn't allow contextmenu override
+            if (browser.mobile && !browser.safari) {
+                container.addEventListener('contextmenu', onTapHold);
+            } else {
+                require(['hammer'], function (Hammer) {
+
+                    var manager = new Hammer.Manager(element);
+
+                    var press = new Hammer.Press({
+                        time: 500
+                    });
+
+                    manager.add(press);
+
+                    //var hammertime = new Hammer(element);
+
+                    manager.on('press', onTapHold);
+                    self.manager = manager;
+                });
+            }
+
+            showTapHoldHelp(element);
+        }
+
+        initTapHold(container);
+
+        if (options.bindOnClick !== false) {
+            container.addEventListener('click', onContainerClick);
+        }
+
+        self.onContainerClick = onContainerClick;
+
+        self.destroy = function () {
+
+            container.removeEventListener('click', onContainerClick);
+            container.removeEventListener('contextmenu', onTapHold);
+
+            var manager = self.manager;
+            if (manager) {
+                manager.destroy();
+                self.manager = null;
+            }
+        };
+    };
+});

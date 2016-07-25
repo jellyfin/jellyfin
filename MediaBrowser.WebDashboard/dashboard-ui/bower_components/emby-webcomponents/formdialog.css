@@ -1,0 +1,53 @@
+.formDialog {
+    display: flex;
+    flex-direction: column;
+}
+
+    .formDialog .dialogHeader {
+        padding: .35em .5em;
+        display: flex;
+        align-items: center;
+        background-color: #101010;
+        flex-shrink: 0;
+    }
+
+    .formDialog .dialogHeaderTitle {
+        margin-left: .75em;
+    }
+
+    .formDialog .centeredContent {
+        margin: 0 auto;
+    }
+
+    .formDialog .dialogContent {
+        flex-grow: 1;
+    }
+
+    .formDialog .dialogContentInner {
+        padding-bottom: 10vh;
+        padding-top: .5em;
+    }
+
+.layout-tv .formDialog .dialogContentInner {
+    padding-bottom: 50vh;
+}
+
+.formDialog .centeredContent {
+    max-width: 740px;
+}
+
+.formDialog .dialogContentTitle {
+    margin-top: 1em;
+}
+
+@media all and (min-width: 1000px) {
+
+    .layout-tv .formDialog .centeredContent {
+        max-width: 70vw;
+    }
+}
+
+.layout-tv .formDialog .dialogHeader {
+    padding-top: 1.5em;
+    padding-bottom: 1.5em;
+}

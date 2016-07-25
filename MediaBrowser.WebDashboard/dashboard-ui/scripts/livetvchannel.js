@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['datetime', 'tvguide'], function (datetime) {
 
     function renderPrograms(page, result) {
 
@@ -12,10 +12,10 @@
 
             var program = result.Items[i];
 
-            var startDate = parseISO8601Date(program.StartDate, { toLocal: true });
+            var startDate = datetime.parseISO8601Date(program.StartDate, true);
             var startDateText = LibraryBrowser.getFutureDateText(startDate);
 
-            var endDate = parseISO8601Date(program.EndDate, { toLocal: true });
+            var endDate = datetime.parseISO8601Date(program.EndDate, true);
 
             if (startDateText != currentIndexValue) {
 
@@ -32,7 +32,7 @@
             }
 
             html += '<div class="' + cssClass + '">';
-            html += '<div class="tvProgramTimeSlotInner">' + LibraryBrowser.getDisplayTime(startDate) + '</div>';
+            html += '<div class="tvProgramTimeSlotInner">' + datetime.getDisplayTime(startDate) + '</div>';
             html += '</div>';
 
             cssClass = "tvProgramInfo";
@@ -59,13 +59,13 @@
             html += '<div class="tvProgramTime">';
 
             if (program.IsLive) {
-                html += '<span class="liveTvProgram">' + Globalize.translate('LabelLiveProgram') + '&nbsp;&nbsp;</span>';
+                html += '<span class="liveTvProgram">' + Globalize.translate('AttributeLive') + '&nbsp;&nbsp;</span>';
             }
             else if (program.IsPremiere) {
-                html += '<span class="premiereTvProgram">' + Globalize.translate('LabelPremiereProgram') + '&nbsp;&nbsp;</span>';
+                html += '<span class="premiereTvProgram">' + Globalize.translate('AttributePremiere') + '&nbsp;&nbsp;</span>';
             }
             else if (program.IsSeries && !program.IsRepeat) {
-                html += '<span class="newTvProgram">' + Globalize.translate('LabelNewProgram') + '&nbsp;&nbsp;</span>';
+                html += '<span class="newTvProgram">' + Globalize.translate('AttributeNew') + '&nbsp;&nbsp;</span>';
             }
 
             var minutes = program.RunTimeTicks / 600000000;
@@ -96,7 +96,7 @@
             html += '</a>';
         }
 
-        $('#childrenContent', page).html(html);
+        page.querySelector('#childrenContent').innerHTML = html;
     }
 
     function loadPrograms(page, channelId) {

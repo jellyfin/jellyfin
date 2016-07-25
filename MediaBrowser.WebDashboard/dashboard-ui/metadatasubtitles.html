@@ -1,4 +1,4 @@
-﻿<div id="metadataSubtitlesPage" data-role="page" class="page type-interior metadataConfigurationPage" data-require="scripts/metadatasubtitles,paper-input,paper-checkbox">
+﻿<div id="metadataSubtitlesPage" data-role="page" class="page type-interior metadataConfigurationPage" data-require="jqmlistview,scripts/metadatasubtitles,paper-input,paper-checkbox,emby-button">
 
     <div data-role="content">
 
@@ -10,20 +10,23 @@
                     <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete" autocomplete="address-level4" />
                 </div>
 
-                <div class="paperCheckboxListLabel">${HeaderDownloadSubtitlesFor}</div>
+                <div class="paperListLabel">${HeaderDownloadSubtitlesFor}</div>
                 <div class="paperCheckboxList">
                     <paper-checkbox id="chkSubtitlesMovies">${OptionMovies}</paper-checkbox>
                     <paper-checkbox id="chkSubtitlesEpisodes">${OptionEpisodes}</paper-checkbox>
                 </div>
                 <br />
                 <div>
-                    <div class="paperCheckboxListLabel">${LabelDownloadLanguages}</div>
+                    <div class="paperListLabel">${LabelDownloadLanguages}</div>
                     <div class="downloadLanguages paperList paperCheckboxList" style="max-height: 150px; overflow-y: auto; padding: .5em 1em;">
                     </div>
                 </div>
                 <br /><br />
 
                 <ul data-role="listview" class="ulForm">
+                    <li>
+                        <paper-checkbox id="chkRequirePerfectMatch">${OptionRequirePerfectSubtitleMatch}</paper-checkbox>
+                    </li>
                     <li>
                         <paper-checkbox id="chkSkipIfAudioTrackPresent">${LabelSkipIfAudioTrackPresent}</paper-checkbox>
                         <div class="fieldDescription paperCheckboxFieldDescription">${LabelSkipIfAudioTrackPresentHelp}</div>
@@ -33,7 +36,7 @@
                         <div class="fieldDescription paperCheckboxFieldDescription">${LabelSkipIfGraphicalSubsPresentHelp}</div>
                     </li>
                     <li>
-                        <paper-input type="text" id="txtOpenSubtitleUsername" autocomplete="off" required label="${LabelOpenSubtitlesUsername}"></paper-input>
+                        <paper-input type="text" id="txtOpenSubtitleUsername" autocomplete="off" label="${LabelOpenSubtitlesUsername}"></paper-input>
                         <div class="fieldDescription"><a target="_blank" href="http://www.opensubtitles.org/">${ButtonRegister}</a></div>
                     </li>
                     <li>
@@ -42,9 +45,7 @@
                 </ul>
                 <ul data-role="listview" class="ulForm">
                     <li>
-                        <button type="submit" data-role="none" class="clearButton">
-                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                        </button>
+                        <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
                     </li>
                 </ul>
             </form>

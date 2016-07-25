@@ -152,11 +152,12 @@ namespace MediaBrowser.Providers.Photos
             get { return "Embedded Information"; }
         }
 
-        public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
-            if (status.ItemDateModified.HasValue)
+            var file = directoryService.GetFile(item.Path);
+            if (file != null && file.LastWriteTimeUtc != item.DateModified)
             {
-                return status.ItemDateModified.Value != item.DateModified;
+                return true;
             }
 
             return false;

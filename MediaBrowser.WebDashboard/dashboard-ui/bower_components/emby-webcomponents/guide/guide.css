@@ -1,0 +1,427 @@
+.tvguide {
+    display: flex;
+    flex-direction: column;
+    align-items: initial;
+}
+
+.tvGuideHeader {
+    white-space: nowrap;
+    width: 100%;
+    flex-shrink: 0;
+}
+
+.tvProgramSectionHeader {
+    margin: 0;
+}
+
+.tvProgram {
+    display: block;
+    text-decoration: none;
+    white-space: nowrap;
+    position: relative;
+}
+
+.tvProgramTimeSlotInner {
+    padding: .5em;
+}
+
+.tvProgramInfo {
+    vertical-align: middle;
+    padding: .5em .5em;
+    border-bottom: .65vh solid #121212;
+}
+
+.tvProgramCurrentTimeSlot {
+    background-color: green;
+}
+
+.tvProgramName {
+    color: #fff;
+    margin-bottom: .5em;
+}
+
+.tvProgramTime {
+    color: #fff;
+}
+
+.newTvProgram {
+    color: yellow;
+    text-transform: uppercase;
+}
+
+.liveTvProgram {
+    color: #64A239;
+    text-transform: uppercase;
+}
+
+.premiereTvProgram {
+    color: orange;
+    text-transform: uppercase;
+}
+
+.programAccent {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+}
+
+.sportsProgramInfo .programAccent {
+    background-color: #0A7C33;
+}
+
+.newsProgramInfo .programAccent {
+    background-color: #523378;
+}
+
+.movieProgramInfo .programAccent {
+    background-color: #A43913;
+}
+
+.childProgramInfo .programAccent {
+    background-color: #0B487D;
+}
+
+.channelTimeslotHeader {
+    float: left;
+}
+
+.timeslotHeaders {
+    white-space: nowrap;
+}
+
+.programContainer {
+    white-space: nowrap;
+    position: relative;
+}
+
+.programGridContainer {
+    margin-left: 12.2vw;
+}
+
+.channelPrograms {
+    white-space: nowrap;
+    position: relative;
+}
+
+.timeslotHeadersInner {
+    position: relative;
+}
+
+.currentTimeIndicatorBar {
+    position: absolute;
+    bottom: .05em;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    display: flex;
+    margin-left: .65vh;
+    background-color: #52B54B;
+    height: 2px;
+    transform-origin: left;
+    transition: transform 500ms ease-out;
+}
+
+.currentTimeIndicatorArrowContainer {
+    position: absolute;
+    bottom: -1.3vh;
+    width: 100%;
+    color: #52B54B;
+    margin-left: .65vh;
+    transform-origin: left;
+    transition: transform 500ms ease-out;
+}
+
+.layout-tv .currentTimeIndicatorBar, .layout-tv .currentTimeIndicatorArrowContainer {
+    /* Need to account for the scrollbar not being there */
+    left: 4px;
+}
+
+.currentTimeIndicatorArrow {
+    width: 4vh;
+    height: 4vh;
+    font-size: 4vh;
+    color: #52B54B;
+    margin-left: -2vh;
+}
+
+.channelPrograms, .timeslotHeadersInner {
+    width: 1800vw;
+}
+
+@media all and (min-width: 600px) {
+
+    .channelPrograms, .timeslotHeadersInner {
+        width: 1400vw;
+    }
+}
+
+@media all and (min-width: 800px) {
+
+    .channelPrograms, .timeslotHeadersInner {
+        width: 1200vw;
+    }
+}
+
+@media all and (min-width: 1280px) {
+
+    .channelPrograms, .timeslotHeadersInner {
+        width: 660vw;
+    }
+}
+
+.timeslotHeader {
+    display: inline-flex;
+    align-items: center;
+    text-indent: .35em;
+}
+
+.channelHeaderCell, .channelTimeslotHeader {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-right: 1px solid #121212;
+    width: 24vw;
+    background: rgba(40, 40, 40, .9);
+    display: flex;
+    align-items: center;
+    color: #fff !important;
+    text-decoration: none;
+    /* Needed in firefox */
+    text-align: left;
+    contain: strict;
+}
+
+@media all and (min-width: 500px) {
+
+    .channelHeaderCell, .channelTimeslotHeader {
+        width: 16vw;
+    }
+}
+
+@media all and (min-width: 600px) {
+
+    .channelHeaderCell, .channelTimeslotHeader {
+        width: 16vw;
+    }
+}
+
+@media all and (min-width: 800px) {
+
+    .channelHeaderCell, .channelTimeslotHeader {
+        width: 14vw;
+    }
+}
+
+@media all and (min-width: 1280px) {
+
+    .channelHeaderCell, .channelTimeslotHeader {
+        width: 12vw;
+    }
+}
+
+.btnSelectDate {
+    color: #fff;
+    padding-left: .5em;
+}
+
+.channelHeaderCell {
+    border-bottom: .65vh solid #121212 !important;
+    background-size: auto 70%;
+    background-position: 90% center;
+    background-repeat: no-repeat;
+}
+
+@media all and (max-width: 800px) {
+
+    .guideCurrentDay {
+        display: none;
+    }
+
+    .newTvProgram, .liveTvProgram, .premiereTvProgram, .guideHdIcon {
+        display: none;
+    }
+}
+
+@media all and (max-width: 1200px) {
+
+    .channelHeaderCell.withImage .guideChannelNumber {
+        display: none;
+    }
+}
+
+.channelPrograms, .channelHeaderCell {
+    height: 15vh;
+}
+
+@media all and (min-height: 500px) {
+
+    .channelPrograms, .channelHeaderCell {
+        height: 10.5vh;
+    }
+}
+
+@media all and (min-height: 600px) {
+
+    .channelPrograms, .channelHeaderCell {
+        height: 9vh;
+    }
+}
+
+@media all and (min-height: 720px) {
+
+    .channelPrograms, .channelHeaderCell {
+        height: 6vh;
+    }
+
+    .layout-tv .channelPrograms, .layout-tv .channelHeaderCell {
+        height: 9vh;
+    }
+}
+
+.channelTimeslotHeader {
+    border-right-color: transparent;
+}
+
+.channelTimeslotHeader, .timeslotHeader {
+    background: transparent;
+}
+
+.timeslotHeader, .channelTimeslotHeader {
+    height: 14vh;
+}
+
+@media all and (min-height: 500px) {
+
+    .timeslotHeader, .channelTimeslotHeader {
+        height: 10vh;
+    }
+}
+
+@media all and (min-height: 600px) {
+
+    .timeslotHeader, .channelTimeslotHeader {
+        height: 8vh;
+    }
+}
+
+@media all and (min-height: 720px) {
+
+    .timeslotHeader, .channelTimeslotHeader {
+        height: 5.75vh;
+    }
+}
+
+.pointerInput .channelHeaderCell:hover {
+    background-color: #444;
+}
+
+.channelList {
+    float: left;
+}
+
+.programGrid {
+    padding-bottom: 4px;
+}
+
+.timeslotHeader {
+    width: 2.0833333333333333333333333333333%;
+}
+
+.programCell {
+    position: absolute;
+    top: 0;
+    /* Unfortunately the borders using vh get rounded while the bottom property doesn't. So this is a little hack to try and make them even*/
+    bottom: .59vh;
+    border-left: .65vh solid #121212 !important;
+    background-color: rgba(32, 32, 32, .95);
+    display: flex;
+    color: #fff !important;
+    text-decoration: none;
+    overflow: hidden;
+    align-items: center;
+    /* Needed for Firefox */
+    text-align: left;
+    contain: strict;
+}
+
+.timeslotCellInner {
+    position: absolute;
+    bottom: 0;
+    overflow: hidden;
+    width: 100%;
+    top: 0;
+    display: block;
+    text-decoration: none;
+    color: #fff !important;
+}
+
+.guideProgramName {
+    padding: 0 .5em 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.guideProgramTime {
+    padding: 0 .5em .35em;
+    color: #bbb;
+}
+
+.programCell i {
+    margin-left: auto;
+    margin-right: .5em;
+    height: 3.5vh;
+    width: 3.5vh;
+    font-size: 3.5vh;
+    color: #ddd;
+    flex-shrink: 0;
+}
+
+    .programCell i + i {
+        margin-left: .25em;
+    }
+
+.guideChannelNumber {
+    padding-left: 1em;
+    max-width: 30%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.guideChannelName {
+    margin-left: auto;
+    margin-right: 1em;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 70%;
+}
+
+@media all and (min-width: 1000px) {
+
+    .guideChannelName {
+        max-width: 40%;
+    }
+}
+
+@media all and (max-width: 1000px) {
+
+    .guideChannelNumber {
+        display: none;
+    }
+}
+
+.channelList, .programGrid {
+    height: auto !important;
+}
+
+.programCell, .channelHeaderCell, .btnSelectDate {
+    outline: none !important;
+}
+
+    .programCell:focus, .channelHeaderCell:focus, .btnSelectDate:focus {
+        background-color: #555;
+    }
+
+.timerIcon, .seriesTimerIcon {
+    color: #cc3333 !important;
+}

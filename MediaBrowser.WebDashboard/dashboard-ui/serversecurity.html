@@ -1,32 +1,30 @@
-﻿<div id="serverSecurityPage" data-role="page" class="page type-interior advancedConfigurationPage" data-require="jqmtable,scripts/serversecurity,detailtablecss">
+﻿<div id="serverSecurityPage" data-role="page" class="page type-interior advancedConfigurationPage withTabs fullWidthContent" data-require="jqmtable,scripts/serversecurity,detailtablecss,emby-button">
     <div data-role="content">
         <div class="content-primary">
-            <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                <div class="detailSectionHeader" style="margin-top:2.5em;">
-                    <h3 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
-                        ${HeaderApiKeys}
-                    </h3>
-                    <paper-button raised class="btnNewKey submit mini" style="margin-left:1em;" title="${ButtonNew}">
-                        <iron-icon icon="add"></iron-icon>
-                        <span>${ButtonAdd}</span>
-                    </paper-button>
-                </div>
-                <p>${HeaderApiKeysHelp}</p>
-                <br />
-                <table data-role="table" data-mode="reflow" class="tblApiKeys stripedTable ui-responsive table-stroke" style="display: table;">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>${HeaderApiKey}</th>
-                            <th>${HeaderApp}</th>
-                            <th>${HeaderDevice}</th>
-                            <th>${HeaderUser}</th>
-                            <th>${HeaderDateIssued}</th>
-                        </tr>
-                    </thead>
-                    <tbody class="resultBody"></tbody>
-                </table>
+            <div class="detailSectionHeader">
+                <h3 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
+                    ${HeaderApiKeys}
+                </h3>
+                <button is="emby-button" type="button" class="raised btnNewKey submit mini" style="margin-left:1em;" title="${ButtonNew}">
+                    <i class="md-icon">add</i>
+                    <span>${ButtonAdd}</span>
+                </button>
             </div>
+            <p>${HeaderApiKeysHelp}</p>
+            <br />
+            <table data-role="table" data-mode="reflow" class="tblApiKeys stripedTable ui-responsive table-stroke" style="display: table;">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>${HeaderApiKey}</th>
+                        <th>${HeaderApp}</th>
+                        <th>${HeaderDevice}</th>
+                        <th>${HeaderUser}</th>
+                        <th>${HeaderDateIssued}</th>
+                    </tr>
+                </thead>
+                <tbody class="resultBody"></tbody>
+            </table>
         </div>
     </div>
 </div>

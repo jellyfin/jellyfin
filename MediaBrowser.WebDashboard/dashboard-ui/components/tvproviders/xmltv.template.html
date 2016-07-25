@@ -1,0 +1,50 @@
+﻿<h1>Xml TV</h1>
+
+<form class="xmltvForm">
+    <div>
+        <div class="inputContainer">
+            <div style="display: flex; align-items: center;">
+                <div style="flex-grow:1;">
+                    <input is="emby-input" class="txtPath" label="${LabelFileOrUrl}" required="required" autocomplete="off" />
+                </div>
+                <button type="button" is="paper-icon-button-light" id="btnSelectPath" class="autoSize"><i class="md-icon">search</i></button>
+            </div>
+            <div class="fieldDescription">${XmlTvPathHelp}</div>
+        </div>
+        <div class="inputContainer">
+            <input is="emby-input" class="txtMovies" label="${LabelMovieCategories}" autocomplete="off" />
+            <div class="fieldDescription">${XmlTvMovieCategoriesHelp}</div>
+        </div>
+        <div class="inputContainer">
+            <input is="emby-input" class="txtKids" label="${LabelKidsCategories}" autocomplete="off" />
+            <div class="fieldDescription">${XmlTvKidsCategoriesHelp}</div>
+        </div>
+        <div class="inputContainer">
+            <input is="emby-input" class="txtNews" label="${LabelNewsCategories}" autocomplete="off" />
+            <div class="fieldDescription"></div>
+            <div class="fieldDescription">${XmlTvNewsCategoriesHelp}</div>
+        </div>
+        <div class="inputContainer">
+            <input is="emby-input" class="txtSports" label="${LabelSportsCategories}" autocomplete="off" />
+            <div class="fieldDescription">${XmlTvSportsCategoriesHelp}</div>
+        </div>
+    </div>
+    <div>
+        <paper-checkbox class="chkAllTuners">${OptionEnableForAllTuners}</paper-checkbox>
+        <div class="selectTunersSection hide">
+            <br /><br />
+            <div class="paperListLabel">${HeaderTuners}</div>
+            <div class="paperCheckboxList paperList tunerList">
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="paperList" style="padding:1em;border-radius:5px;">
+        <div class="premiereHelp"></div>
+        <a class="lnkPremiere" href="https://emby.media/premiere">${ButtonLearnMore}</a>
+    </div><br />
+    <div>
+        <button is="emby-button" type="submit" class="raised submit block btnSubmitListings hide"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
+        <button is="emby-button" type="button" class="raised cancel block btnCancel hide" onclick="history.back();"><i class="md-icon">close</i><span>${ButtonCancel}</span></button>
+    </div>
+</form>

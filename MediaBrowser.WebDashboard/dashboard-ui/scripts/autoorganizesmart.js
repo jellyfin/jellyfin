@@ -79,7 +79,7 @@
 
                 matchStringHtml += '</paper-item-body>';
 
-                matchStringHtml += '<paper-icon-button icon="delete" class="btnDeleteMatchEntry" data-index="' + i + '" data-matchindex="' + matchStringIndex + '" title="' + Globalize.translate('ButtonDelete') + '"></paper-icon-button>';
+                matchStringHtml += '<button type="button" is="paper-icon-button-light" class="btnDeleteMatchEntry" data-index="' + i + '" data-matchindex="' + matchStringIndex + '" title="' + Globalize.translate('ButtonDelete') + '"><iron-icon icon="delete"></iron-icon></button>';
 
                 matchStringHtml += '</paper-icon-item>';
                 matchStringIndex++;
@@ -96,13 +96,20 @@
         $('.divMatchInfos', page).html(html);
     }
 
-    function onApiFailure(e) {
-
-        Dashboard.hideLoadingMsg();
-
-        Dashboard.alert({
-            message: Globalize.translate('DefaultErrorMessage')
-        });
+    function getTabs() {
+        return [
+        {
+            href: 'autoorganizelog.html',
+            name: Globalize.translate('TabActivityLog')
+        },
+         {
+             href: 'autoorganizetv.html',
+             name: Globalize.translate('TabTV')
+         },
+         {
+             href: 'autoorganizesmart.html',
+             name: Globalize.translate('TabSmartMatches')
+         }];
     }
 
     $(document).on('pageinit', "#libraryFileOrganizerSmartMatchPage", function () {
@@ -126,13 +133,15 @@
 
                 reloadList(page);
 
-            }, onApiFailure);
+            }, Dashboard.processErrorResponse);
 
         });
 
     }).on('pageshow', "#libraryFileOrganizerSmartMatchPage", function () {
 
         var page = this;
+
+        LibraryMenu.setTabs('autoorganize', 2, getTabs);
 
         Dashboard.showLoadingMsg();
 

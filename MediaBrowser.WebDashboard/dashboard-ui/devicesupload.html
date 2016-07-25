@@ -1,4 +1,4 @@
-﻿<div id="devicesUploadPage" data-role="page" class="page type-interior devicesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Camera%20upload" data-require="scripts/devicesupload,paper-input,jqmcheckbox">
+﻿<div id="devicesUploadPage" data-role="page" class="page type-interior devicesPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Camera%20upload" data-require="jqmlistview,scripts/devicesupload,paper-input,paper-checkbox,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -7,34 +7,24 @@
 
                 <p>${HeaderCameraUploadHelp}</p>
 
-                <p class="noDevices" style="display:none;color:red;">${MessageNoDevicesSupportCameraUpload}</p>
+                <form class="devicesUploadForm">
 
-                <br />
-                <form class="devicesUploadForm" style="display:none;">
-
-                    <div class="devicesList">
-
-                    </div>
-
-                    <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <paper-input id="txtUploadPath" label="${LabelCameraUploadPath}" style="width:84%;display:inline-block;"></paper-input>
-                            <paper-icon-button id="btnSelectUploadPath" icon="search"></paper-icon-button>
+                            <button type="button" is="paper-icon-button-light" id="btnSelectUploadPath" title="${ButtonSelectDirectory}" class="autoSize"><i class="md-icon">search</i></button>
                             <div class="fieldDescription">${LabelCameraUploadPathHelp}</div>
                         </li>
                         <li>
-                            <label for="chkSubfolder">${LabelCreateCameraUploadSubfolder}</label>
-                            <input type="checkbox" id="chkSubfolder" data-mini="true" />
-                            <div class="fieldDescription">${LabelCreateCameraUploadSubfolderHelp}</div>
+                            <br />
+                            <paper-checkbox id="chkSubfolder">${LabelCreateCameraUploadSubfolder}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelCreateCameraUploadSubfolderHelp}</div>
                         </li>
 
                     </ul><br />
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <button type="submit" data-role="none" class="clearButton">
-                                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                            </button>
+                            <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
                         </li>
                     </ul>
 

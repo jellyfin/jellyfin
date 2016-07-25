@@ -133,7 +133,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             if (query.IsFavorite.HasValue)
             {
                 var val = query.IsFavorite.Value;
-                channels = channels.Where(i => _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).IsFavorite == val)
+                channels = channels.Where(i => _userDataManager.GetUserData(user,  i).IsFavorite == val)
                     .ToList();
             }
 
@@ -191,7 +191,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var dtoOptions = new DtoOptions();
 
-            var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
+            var returnItems = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user).ConfigureAwait(false))
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>
@@ -596,7 +596,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var dtoOptions = new DtoOptions();
 
-            var returnItems = _dtoService.GetBaseItemDtos(items, dtoOptions, user)
+            var returnItems = (await _dtoService.GetBaseItemDtos(items, dtoOptions, user).ConfigureAwait(false))
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>
@@ -863,7 +863,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var dtoOptions = new DtoOptions();
 
-            var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
+            var returnItems = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user).ConfigureAwait(false))
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>
@@ -1012,7 +1012,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var dtoOptions = new DtoOptions();
 
-            var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user)
+            var returnItems = (await _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user).ConfigureAwait(false))
                 .ToArray();
 
             var result = new QueryResult<BaseItemDto>
@@ -1172,8 +1172,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             items = ApplyFilters(items, query.Filters, user);
 
-            var sortBy = query.SortBy.Length == 0 ? new[] { ItemSortBy.SortName } : query.SortBy;
-            items = _libraryManager.Sort(items, user, sortBy, query.SortOrder ?? SortOrder.Ascending);
+            items = _libraryManager.Sort(items, user, query.SortBy, query.SortOrder ?? SortOrder.Ascending);
 
             var all = items.ToList();
             var totalCount = totalCountFromProvider ?? all.Count;
@@ -1250,9 +1249,21 @@ namespace MediaBrowser.Server.Implementations.Channels
                 {
                     item = GetItemById<MusicAlbum>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
                 }
+                else if (info.FolderType == ChannelFolderType.MusicArtist)
+                {
+                    item = GetItemById<MusicArtist>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                }
                 else if (info.FolderType == ChannelFolderType.PhotoAlbum)
                 {
                     item = GetItemById<PhotoAlbum>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                }
+                else if (info.FolderType == ChannelFolderType.Series)
+                {
+                    item = GetItemById<Series>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
+                }
+                else if (info.FolderType == ChannelFolderType.Season)
+                {
+                    item = GetItemById<Season>(info.Id, channelProvider.Name, channelProvider.DataVersion, out isNew);
                 }
                 else
                 {
@@ -1307,6 +1318,28 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.OfficialRating = info.OfficialRating;
                 item.DateCreated = info.DateCreated ?? DateTime.UtcNow;
                 item.Tags = info.Tags;
+                item.HomePageUrl = info.HomePageUrl;
+            }
+            else if (info.Type == ChannelItemType.Folder && info.FolderType == ChannelFolderType.Container)
+            {
+                // At least update names of container folders
+                if (item.Name != info.Name)
+                {
+                    item.Name = info.Name;
+                    forceUpdate = true;
+                }
+            }
+
+            var hasArtists = item as IHasArtist;
+            if (hasArtists != null)
+            {
+                hasArtists.Artists = info.Artists;
+            }
+
+            var hasAlbumArtists = item as IHasAlbumArtist;
+            if (hasAlbumArtists != null)
+            {
+                hasAlbumArtists.AlbumArtists = info.AlbumArtists;
             }
 
             var trailer = item as Trailer;
@@ -1406,7 +1439,8 @@ namespace MediaBrowser.Server.Implementations.Channels
                 throw new ArgumentNullException("channel");
             }
 
-            var result = GetAllChannels().FirstOrDefault(i => string.Equals(GetInternalChannelId(i.Name).ToString("N"), channel.ChannelId, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, channel.Name, StringComparison.OrdinalIgnoreCase));
+            var result = GetAllChannels()
+                .FirstOrDefault(i => string.Equals(GetInternalChannelId(i.Name).ToString("N"), channel.ChannelId, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, channel.Name, StringComparison.OrdinalIgnoreCase));
 
             if (result == null)
             {
@@ -1436,7 +1470,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 case ItemFilter.IsFavoriteOrLikes:
                     return items.Where(item =>
                     {
-                        var userdata = _userDataManager.GetUserData(user.Id, item.GetUserDataKey());
+                        var userdata = _userDataManager.GetUserData(user, item);
 
                         if (userdata == null)
                         {
@@ -1452,7 +1486,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 case ItemFilter.Likes:
                     return items.Where(item =>
                     {
-                        var userdata = _userDataManager.GetUserData(user.Id, item.GetUserDataKey());
+                        var userdata = _userDataManager.GetUserData(user, item);
 
                         return userdata != null && userdata.Likes.HasValue && userdata.Likes.Value;
                     });
@@ -1460,7 +1494,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 case ItemFilter.Dislikes:
                     return items.Where(item =>
                     {
-                        var userdata = _userDataManager.GetUserData(user.Id, item.GetUserDataKey());
+                        var userdata = _userDataManager.GetUserData(user, item);
 
                         return userdata != null && userdata.Likes.HasValue && !userdata.Likes.Value;
                     });
@@ -1468,7 +1502,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 case ItemFilter.IsFavorite:
                     return items.Where(item =>
                     {
-                        var userdata = _userDataManager.GetUserData(user.Id, item.GetUserDataKey());
+                        var userdata = _userDataManager.GetUserData(user, item);
 
                         return userdata != null && userdata.IsFavorite;
                     });
@@ -1476,7 +1510,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 case ItemFilter.IsResumable:
                     return items.Where(item =>
                     {
-                        var userdata = _userDataManager.GetUserData(user.Id, item.GetUserDataKey());
+                        var userdata = _userDataManager.GetUserData(user, item);
 
                         return userdata != null && userdata.PlaybackPositionTicks > 0;
                     });

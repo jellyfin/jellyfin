@@ -7,10 +7,9 @@
       <HttpHeaderInfo name="User-Agent" value="DIRECTV" match="Substring" />
     </Headers>
   </Identification>
-  <FriendlyName>Emby</FriendlyName>
   <Manufacturer>Emby</Manufacturer>
   <ManufacturerUrl>http://emby.media/</ManufacturerUrl>
-  <ModelName>Emby</ModelName>
+  <ModelName>Emby Server</ModelName>
   <ModelDescription>Emby</ModelDescription>
   <ModelNumber>Emby</ModelNumber>
   <ModelUrl>http://emby.media/</ModelUrl>
@@ -23,8 +22,8 @@
   <MaxAlbumArtHeight>480</MaxAlbumArtHeight>
   <MaxIconWidth>48</MaxIconWidth>
   <MaxIconHeight>48</MaxIconHeight>
-  <MaxStreamingBitrate>15000000</MaxStreamingBitrate>
-  <MaxStaticBitrate>15000000</MaxStaticBitrate>
+  <MaxStreamingBitrate>20000000</MaxStreamingBitrate>
+  <MaxStaticBitrate>20000000</MaxStaticBitrate>
   <MusicStreamingTranscodingBitrate>192000</MusicStreamingTranscodingBitrate>
   <MusicSyncBitrate>192000</MusicSyncBitrate>
   <XDlnaDoc>DMS-1.50</XDlnaDoc>
@@ -40,8 +39,8 @@
     <DirectPlayProfile container="jpeg,jpg" type="Photo" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
-    <TranscodingProfile container="mpeg" type="Video" videoCodec="mpeg2video" audioCodec="mp2" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" />
-    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" />
+    <TranscodingProfile container="mpeg" type="Video" videoCodec="mpeg2video" audioCodec="mp2" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" />
+    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" />
   </TranscodingProfiles>
   <ContainerProfiles />
   <CodecProfiles>

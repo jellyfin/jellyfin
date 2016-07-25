@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'jQuery'], function (libraryBrowser, $) {
+﻿define(['libraryBrowser', 'listView', 'emby-itemscontainer'], function (libraryBrowser, listView) {
 
     return function (view, params) {
 
@@ -75,17 +75,32 @@
             return libraryBrowser.getSavedQueryKey();
         }
 
+        function parentWithClass(elem, className) {
+
+            while (!elem.classList || !elem.classList.contains(className)) {
+                elem = elem.parentNode;
+
+                if (!elem) {
+                    return null;
+                }
+            }
+
+            return elem;
+        }
         function onListItemClick(e) {
 
-            var info = libraryBrowser.getListItemInfo(this);
+            var mediaItem = parentWithClass(e.target, 'mediaItem');
+            if (mediaItem) {
+                var info = libraryBrowser.getListItemInfo(mediaItem);
 
-            if (info.mediaType == 'Photo') {
-                var query = getQuery();
+                if (info.mediaType == 'Photo') {
+                    var query = getQuery();
 
-                require(['scripts/photos'], function () {
-                    Photos.startSlideshow(view, query, info.id);
-                });
-                return false;
+                    require(['scripts/photos'], function () {
+                        Photos.startSlideshow(view, query, info.id);
+                    });
+                    return false;
+                }
             }
         }
 
@@ -112,10 +127,10 @@
 
                 if (query.IncludeItemTypes == "Audio") {
 
-                    html = '<div style="max-width:1000px;margin:auto;">' + libraryBrowser.getListViewHtml({
+                    html = '<div style="max-width:1000px;margin:auto;">' + listView.getListViewHtml({
                         items: result.Items,
                         playFromHere: true,
-                        defaultAction: 'playallfromhere',
+                        action: 'playallfromhere',
                         smallIcon: true
                     }) + '</div>';
 
@@ -130,6 +145,7 @@
                     if (query.IncludeItemTypes == "MusicAlbum") {
                         posterOptions.overlayText = false;
                         posterOptions.showParentTitle = true;
+                        posterOptions.showTitle = true;
                         posterOptions.overlayPlayButton = true;
                     }
                     else if (query.IncludeItemTypes == "MusicArtist") {
@@ -151,35 +167,45 @@
                 elem.innerHTML = html + pagingHtml;
                 ImageLoader.lazyChildren(elem);
 
-                $('.btnNextPage', view).on('click', function () {
+                var i, length;
+                var elems;
+
+                function onNextPageClick() {
                     query.StartIndex += query.Limit;
-                    reloadItems(parentItem);
-                });
+                    reloadItems(view);
+                }
 
-                $('.btnPreviousPage', view).on('click', function () {
+                function onPreviousPageClick() {
                     query.StartIndex -= query.Limit;
-                    reloadItems(parentItem);
-                });
+                    reloadItems(view);
+                }
 
-                libraryBrowser.setLastRefreshed(view);
+                elems = view.querySelectorAll('.btnNextPage');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onNextPageClick);
+                }
+
+                elems = view.querySelectorAll('.btnPreviousPage');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onPreviousPageClick);
+                }
+
                 Dashboard.hideLoadingMsg();
             });
         }
 
-        $(view).on('click', '.mediaItem', onListItemClick);
+        view.addEventListener('click', onListItemClick);
 
         view.addEventListener('viewbeforeshow', function (e) {
             if (params.parentId) {
                 ApiClient.getItem(Dashboard.getCurrentUserId(), params.parentId).then(function (parent) {
                     LibraryMenu.setTitle(parent.Name);
 
-                    if (libraryBrowser.needsRefresh(view)) {
-                        reloadItems(parent);
-                    }
+                    reloadItems(parent);
                 });
             }
 
-            else if (libraryBrowser.needsRefresh(view)) {
+            else {
                 reloadItems();
             }
         });

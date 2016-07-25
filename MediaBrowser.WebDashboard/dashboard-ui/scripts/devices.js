@@ -62,7 +62,8 @@
             deviceHtml += '</a>';
             deviceHtml += '</paper-item-body>';
 
-            deviceHtml += '<paper-icon-button icon="delete" data-id="' + d.Id + '" title="' + Globalize.translate('ButtonDelete') + '" class="btnDeleteDevice"></paper-icon-button>';
+            deviceHtml += '<button type="button" is="paper-icon-button-light" class="btnDeleteDevice" data-id="' + d.Id + '" title="' + Globalize.translate('ButtonDelete') + '"><iron-icon icon="delete"></iron-icon></button>';
+
             deviceHtml += '</paper-icon-item>';
 
             return deviceHtml;

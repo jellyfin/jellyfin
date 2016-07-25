@@ -11,7 +11,15 @@ namespace MediaBrowser.Model.Dlna
         public AudioOptions()
         {
             Context = EncodingContext.Streaming;
+
+            EnableDirectPlay = true;
+            EnableDirectStream = true;
         }
+
+        public bool EnableDirectPlay { get; set; }
+        public bool EnableDirectStream { get; set; }
+        public bool ForceDirectPlay { get; set; }
+        public bool ForceDirectStream { get; set; }
 
         public string ItemId { get; set; }
         public List<MediaSourceInfo> MediaSources { get; set; }

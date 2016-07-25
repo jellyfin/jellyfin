@@ -64,6 +64,12 @@ namespace MediaBrowser.Providers.TV
         {
             var result = new MetadataResult<Episode>();
 
+            // Allowing this will dramatically increase scan times
+            if (info.IsMissingEpisode || info.IsVirtualUnaired)
+            {
+                return result;
+            }
+
             string seriesTmdbId;
             info.SeriesProviderIds.TryGetValue(MetadataProviders.Tmdb.ToString(), out seriesTmdbId);
 
@@ -107,6 +113,22 @@ namespace MediaBrowser.Providers.TV
 
                 item.CommunityRating = (float)response.vote_average;
                 item.VoteCount = response.vote_count;
+
+                if (response.videos != null && response.videos.results != null)
+                {
+                    foreach (var video in response.videos.results)
+                    {
+                        if (video.type.Equals("trailer", System.StringComparison.OrdinalIgnoreCase) 
+                            || video.type.Equals("clip", System.StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (video.site.Equals("youtube", System.StringComparison.OrdinalIgnoreCase))
+                            {
+                                var videoUrl = string.Format("http://www.youtube.com/watch?v={0}", video.key);
+                                item.AddTrailerUrl(videoUrl, true);
+                            }
+                        }
+                    }
+                }
 
                 result.ResetPeople();
 

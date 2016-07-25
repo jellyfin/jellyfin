@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['datetime', 'userdataButtons', 'paper-icon-button-light'], function (datetime, userdataButtons) {
 
     var currentPlayer;
 
@@ -9,10 +9,12 @@
     var unmuteButton;
     var muteButton;
     var volumeSlider;
-    var unpauseButton;
-    var pauseButton;
+    var volumeSliderContainer;
+    var unpauseButtons;
+    var pauseButtons;
     var positionSlider;
     var toggleRepeatButton;
+    var toggleRepeatButtonIcon;
 
     var lastPlayerState;
 
@@ -22,8 +24,8 @@
 
         html += '<div class="nowPlayingBar hide">';
 
-        html += '<div class="nowPlayingBarPositionContainer">';
-        html += '<paper-slider pin step=".1" min="0" max="100" value="0" class="nowPlayingBarPositionSlider"></paper-slider>';
+        html += '<div class="nowPlayingBarPositionContainer sliderContainer">';
+        html += '<input type="range" is="emby-slider" pin step=".1" min="0" max="100" value="0" class="nowPlayingBarPositionSlider"/>';
         html += '</div>';
 
         html += '<div class="nowPlayingBarInfoContainer">';
@@ -34,34 +36,35 @@
         // The onclicks are needed due to the return false above
         html += '<div class="nowPlayingBarCenter">';
 
-        html += '<paper-icon-button icon="skip-previous" class="previousTrackButton mediaButton"></paper-icon-button>';
+        html += '<button is="paper-icon-button-light" class="previousTrackButton mediaButton autoSize"><i class="md-icon">skip_previous</i></button>';
 
-        html += '<paper-icon-button icon="play-arrow" class="mediaButton unpauseButton"></paper-icon-button>';
-        html += '<paper-icon-button icon="pause" class="mediaButton pauseButton"></paper-icon-button>';
+        html += '<button is="paper-icon-button-light" class="unpauseButton mediaButton autoSize"><i class="md-icon">play_arrow</i></button>';
+        html += '<button is="paper-icon-button-light" class="pauseButton mediaButton autoSize"><i class="md-icon">pause</i></button>';
 
-        html += '<paper-icon-button icon="stop" class="stopButton mediaButton"></paper-icon-button>';
-
-        html += '<paper-icon-button icon="skip-next" class="nextTrackButton mediaButton"></paper-icon-button>';
+        html += '<button is="paper-icon-button-light" class="stopButton mediaButton autoSize"><i class="md-icon">stop</i></button>';
+        html += '<button is="paper-icon-button-light" class="nextTrackButton mediaButton autoSize"><i class="md-icon">skip_next</i></button>';
 
         html += '<div class="nowPlayingBarCurrentTime"></div>';
         html += '</div>';
 
         html += '<div class="nowPlayingBarRight">';
 
-        html += '<paper-icon-button icon="volume-up" class="muteButton mediaButton"></paper-icon-button>';
-        html += '<paper-icon-button icon="volume-off" class="unmuteButton mediaButton"></paper-icon-button>';
+        html += '<button is="paper-icon-button-light" class="muteButton mediaButton autoSize"><i class="md-icon">volume_up</i></button>';
+        html += '<button is="paper-icon-button-light" class="unmuteButton mediaButton autoSize"><i class="md-icon">volume_off</i></button>';
 
-        html += '<paper-slider pin step="1" min="0" max="100" value="0" class="nowPlayingBarVolumeSlider" style="width:100px;vertical-align:middle;display:inline-block;"></paper-slider>';
+        html += '<div class="sliderContainer nowPlayingBarVolumeSliderContainer hide" style="width:100px;vertical-align:middle;display:inline-flex;">';
+        html += '<input type="range" is="emby-slider" pin step="1" min="0" max="100" value="0" class="nowPlayingBarVolumeSlider"/>';
+        html += '</div>';
 
-        html += '<paper-icon-button icon="repeat" class="mediaButton toggleRepeatButton"></paper-icon-button>';
+        html += '<button is="paper-icon-button-light" class="toggleRepeatButton mediaButton autoSize"><i class="md-icon">repeat</i></button>';
 
         html += '<div class="nowPlayingBarUserDataButtons">';
         html += '</div>';
 
-        html += '<paper-icon-button icon="play-arrow" class="mediaButton unpauseButton"></paper-icon-button>';
-        html += '<paper-icon-button icon="pause" class="mediaButton pauseButton"></paper-icon-button>';
-        html += '<paper-icon-button icon="tablet-android" class="mediaButton remoteControlButton"></paper-icon-button>';
-        html += '<paper-icon-button icon="queue-music" class="mediaButton playlistButton"></paper-icon-button>';
+        html += '<button is="paper-icon-button-light" class="unpauseButton mediaButton autoSize"><i class="md-icon">play_arrow</i></button>';
+        html += '<button is="paper-icon-button-light" class="pauseButton mediaButton autoSize"><i class="md-icon">pause</i></button>';
+        html += '<button is="paper-icon-button-light" class="remoteControlButton mediaButton autoSize"><i class="md-icon">tablet_android</i></button>';
+        html += '<button is="paper-icon-button-light" class="playlistButton mediaButton autoSize"><i class="md-icon">queue_music</i></button>';
 
         html += '</div>';
 
@@ -127,6 +130,18 @@
         });
     }
 
+    function onPauseClick() {
+        if (currentPlayer) {
+            currentPlayer.pause();
+        }
+    }
+
+    function onUnpauseClick() {
+        if (currentPlayer) {
+            currentPlayer.unpause();
+        }
+    }
+
     function bindEvents(elem) {
 
         currentTimeElement = elem.querySelector('.nowPlayingBarCurrentTime');
@@ -134,49 +149,49 @@
         nowPlayingTextElement = elem.querySelector('.nowPlayingBarText');
         nowPlayingUserData = elem.querySelector('.nowPlayingBarUserDataButtons');
 
-        unmuteButton = $('.unmuteButton', elem).on('click', function () {
+        unmuteButton = elem.querySelector('.unmuteButton');
+        unmuteButton.addEventListener('click', function () {
 
             if (currentPlayer) {
                 currentPlayer.unMute();
             }
+
         });
 
-        muteButton = $('.muteButton', elem).on('click', function () {
+        muteButton = elem.querySelector('.muteButton');
+        muteButton.addEventListener('click', function () {
 
             if (currentPlayer) {
                 currentPlayer.mute();
             }
+
         });
 
-        $('.stopButton', elem).on('click', function () {
+        elem.querySelector('.stopButton').addEventListener('click', function () {
 
             if (currentPlayer) {
                 currentPlayer.stop();
             }
         });
 
-        pauseButton = $('.pauseButton', elem).on('click', function () {
+        var i, length;
+        pauseButtons = elem.querySelectorAll('.pauseButton');
+        for (i = 0, length = pauseButtons.length; i < length; i++) {
+            pauseButtons[i].addEventListener('click', onPauseClick);
+        }
+        unpauseButtons = elem.querySelectorAll('.unpauseButton');
+        for (i = 0, length = unpauseButtons.length; i < length; i++) {
+            unpauseButtons[i].addEventListener('click', onUnpauseClick);
+        }
 
-            if (currentPlayer) {
-                currentPlayer.pause();
-            }
-        });
-
-        unpauseButton = $('.unpauseButton', elem).on('click', function () {
-
-            if (currentPlayer) {
-                currentPlayer.unpause();
-            }
-        });
-
-        $('.nextTrackButton', elem).on('click', function () {
+        elem.querySelector('.nextTrackButton').addEventListener('click', function () {
 
             if (currentPlayer) {
                 currentPlayer.nextTrack();
             }
         });
 
-        $('.previousTrackButton', elem).on('click', function () {
+        elem.querySelector('.previousTrackButton').addEventListener('click', function () {
 
             if (currentPlayer) {
                 currentPlayer.previousTrack();
@@ -190,10 +205,11 @@
 
         elem.querySelector('.playlistButton').addEventListener('click', function () {
 
-            showRemoteControl('playlist');
+            showRemoteControl(2);
         });
 
-        toggleRepeatButton = $('.toggleRepeatButton', elem).on('click', function () {
+        toggleRepeatButton = elem.querySelector('.toggleRepeatButton');
+        toggleRepeatButton.addEventListener('click', function () {
 
             if (currentPlayer) {
                 var state = lastPlayerState || {};
@@ -210,52 +226,60 @@
                         break;
                 }
             }
-        })[0];
+        });
 
-        // Unfortunately this is necessary because the polymer elements might not be ready immediately and there doesn't seem to be an event-driven way to find out when
-        setTimeout(function () {
-            volumeSlider = $('.nowPlayingBarVolumeSlider', elem).on('change', function () {
+        toggleRepeatButtonIcon = toggleRepeatButton.querySelector('i');
 
-                if (currentPlayer) {
-                    currentPlayer.setVolume(this.value);
-                }
+        volumeSlider = elem.querySelector('.nowPlayingBarVolumeSlider');
+        volumeSliderContainer = elem.querySelector('.nowPlayingBarVolumeSliderContainer');
 
-            })[0];
+        if (AppInfo.hasPhysicalVolumeButtons) {
+            volumeSliderContainer.classList.add('hide');
+        } else {
+            volumeSliderContainer.classList.remove('hide');
+        }
 
-            positionSlider = $('.nowPlayingBarPositionSlider', elem).on('change', function () {
+        volumeSlider.addEventListener('change', function () {
 
-                if (currentPlayer && lastPlayerState) {
+            if (currentPlayer) {
+                currentPlayer.setVolume(this.value);
+            }
 
-                    var newPercent = parseFloat(this.value);
-                    var newPositionTicks = (newPercent / 100) * lastPlayerState.NowPlayingItem.RunTimeTicks;
+        });
 
-                    currentPlayer.seek(Math.floor(newPositionTicks));
-                }
+        positionSlider = elem.querySelector('.nowPlayingBarPositionSlider');
+        positionSlider.addEventListener('change', function () {
 
-            })[0];
+            if (currentPlayer && lastPlayerState) {
 
-            positionSlider._setPinValue = function (value) {
+                var newPercent = parseFloat(this.value);
+                var newPositionTicks = (newPercent / 100) * lastPlayerState.NowPlayingItem.RunTimeTicks;
 
-                var state = lastPlayerState;
+                currentPlayer.seek(Math.floor(newPositionTicks));
+            }
 
-                if (!state || !state.NowPlayingItem || !state.NowPlayingItem.RunTimeTicks) {
-                    this.pinValue = '--:--';
-                    return;
-                }
+        });
 
-                var ticks = state.NowPlayingItem.RunTimeTicks;
-                ticks /= 100;
-                ticks *= value;
+        positionSlider.getBubbleText = function (value) {
 
-                this.pinValue = Dashboard.getDisplayTime(ticks);
-            };
-        }, 300);
+            var state = lastPlayerState;
+
+            if (!state || !state.NowPlayingItem || !state.NowPlayingItem.RunTimeTicks) {
+                return '--:--';
+            }
+
+            var ticks = state.NowPlayingItem.RunTimeTicks;
+            ticks /= 100;
+            ticks *= value;
+
+            return datetime.getDisplayRunningTime(ticks);
+        };
     }
 
-    function showRemoteControl(tab) {
+    function showRemoteControl(tabIndex) {
 
-        if (tab) {
-            Dashboard.navigate('nowplaying.html?tab=' + tab);
+        if (tabIndex) {
+            Dashboard.navigate('nowplaying.html?tab=' + tabIndex);
         } else {
             Dashboard.navigate('nowplaying.html');
         }
@@ -264,14 +288,13 @@
     var nowPlayingBarElement;
     function getNowPlayingBar() {
 
+        if (nowPlayingBarElement) {
+            return Promise.resolve(nowPlayingBarElement);
+        }
+
         return new Promise(function (resolve, reject) {
 
-            if (nowPlayingBarElement) {
-                resolve(nowPlayingBarElement);
-                return;
-            }
-
-            require(['jQuery', 'css!css/nowplayingbar.css', 'paper-slider'], function ($) {
+            require(['itemShortcuts', 'css!css/nowplayingbar.css', 'emby-slider'], function (itemShortcuts) {
 
                 nowPlayingBarElement = document.querySelector('.nowPlayingBar');
 
@@ -280,12 +303,15 @@
                     return;
                 }
 
-                nowPlayingBarElement = $(getNowPlayingBarHtml()).appendTo(document.body)[0];
+                document.body.insertAdjacentHTML('beforeend', getNowPlayingBarHtml());
+                nowPlayingBarElement = document.querySelector('.nowPlayingBar');
 
-                if ((browserInfo.safari || !AppInfo.isNativeApp) && browserInfo.mobile) {
+                if (browserInfo.safari && browserInfo.mobile) {
                     // Not handled well here. The wrong elements receive events, bar doesn't update quickly enough, etc.
                     nowPlayingBarElement.classList.add('noMediaProgress');
                 }
+
+                itemShortcuts.on(nowPlayingBarElement);
 
                 bindEvents(nowPlayingBarElement);
                 resolve(nowPlayingBarElement);
@@ -294,11 +320,11 @@
     }
 
     function showButton(button) {
-        button.removeClass('hide');
+        button.classList.remove('hide');
     }
 
     function hideButton(button) {
-        button.addClass('hide');
+        button.classList.add('hide');
     }
 
     var lastUpdateTime = 0;
@@ -339,16 +365,25 @@
         var playerInfo = MediaController.getPlayerInfo();
 
         var playState = state.PlayState || {};
+        var i, length;
 
         if (playState.IsPaused) {
 
-            hideButton(pauseButton);
-            showButton(unpauseButton);
+            for (i = 0, length = pauseButtons.length; i < length; i++) {
+                hideButton(pauseButtons[i]);
+            }
+            for (i = 0, length = unpauseButtons.length; i < length; i++) {
+                showButton(unpauseButtons[i]);
+            }
 
         } else {
 
-            showButton(pauseButton);
-            hideButton(unpauseButton);
+            for (i = 0, length = pauseButtons.length; i < length; i++) {
+                showButton(pauseButtons[i]);
+            }
+            for (i = 0, length = unpauseButtons.length; i < length; i++) {
+                hideButton(unpauseButtons[i]);
+            }
         }
 
         updatePlayerVolumeState(state, playerInfo);
@@ -375,11 +410,11 @@
             }
         }
 
-        var timeText = Dashboard.getDisplayTime(playState.PositionTicks);
+        var timeText = datetime.getDisplayRunningTime(playState.PositionTicks);
 
         if (nowPlayingItem.RunTimeTicks) {
 
-            timeText += " / " + Dashboard.getDisplayTime(nowPlayingItem.RunTimeTicks);
+            timeText += " / " + datetime.getDisplayRunningTime(nowPlayingItem.RunTimeTicks);
 
         }
 
@@ -422,14 +457,14 @@
         }
 
         if (playState.RepeatMode == 'RepeatAll') {
-            toggleRepeatButton.icon = "repeat";
+            toggleRepeatButtonIcon.innerHTML = "repeat";
             toggleRepeatButton.classList.add('repeatActive');
         }
         else if (playState.RepeatMode == 'RepeatOne') {
-            toggleRepeatButton.icon = "repeat-one";
+            toggleRepeatButtonIcon.innerHTML = "repeat_one";
             toggleRepeatButton.classList.add('repeatActive');
         } else {
-            toggleRepeatButton.icon = "repeat";
+            toggleRepeatButtonIcon.innerHTML = "repeat";
             toggleRepeatButton.classList.remove('repeatActive');
         }
 
@@ -459,9 +494,9 @@
         if (volumeSlider) {
 
             if (showVolumeSlider) {
-                volumeSlider.classList.remove('hide');
+                volumeSliderContainer.classList.remove('hide');
             } else {
-                volumeSlider.classList.add('hide');
+                volumeSliderContainer.classList.add('hide');
             }
 
             if (!volumeSlider.dragging) {
@@ -473,19 +508,15 @@
     var currentImgUrl;
     function updateNowPlayingInfo(state) {
 
-        var nameHtml = MediaController.getNowPlayingNameHtml(state.NowPlayingItem) || '';
+        nowPlayingTextElement.innerHTML = MediaController.getNowPlayingNames(state.NowPlayingItem).map(function (nowPlayingName) {
 
-        if (nameHtml.indexOf('<br/>') != -1) {
-            nowPlayingTextElement.classList.add('nowPlayingDoubleText');
-        } else {
-            nowPlayingTextElement.classList.remove('nowPlayingDoubleText');
-        }
+            if (nowPlayingName.item) {
+                return '<div>' + LibraryBrowser.getTextActionButton(nowPlayingName.item, nowPlayingName.text) + '</div>';
+            }
 
-        if (state.NowPlayingItem.Id) {
-            nameHtml = '<a style="color:inherit;text-decoration:none;" href="' + LibraryBrowser.getHref(state.NowPlayingItem) + '">' + nameHtml + '</a>';
-        }
+            return '<div>' + nowPlayingName.text + '</div>';
 
-        nowPlayingTextElement.innerHTML = nameHtml;
+        }).join('');
 
         var url;
         var imgHeight = 80;
@@ -538,7 +569,10 @@
 
         if (nowPlayingItem.Id) {
             ApiClient.getItem(Dashboard.getCurrentUserId(), nowPlayingItem.Id).then(function (item) {
-                nowPlayingUserData.innerHTML = LibraryBrowser.getUserDataIconsHtml(item, false);
+                nowPlayingUserData.innerHTML = userdataButtons.getIconsHtml({
+                    item: item,
+                    includePlayed: false
+                });
             });
         } else {
             nowPlayingUserData.innerHTML = '';

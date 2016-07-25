@@ -42,7 +42,7 @@ namespace MediaBrowser.Providers.TV
 
         public string UrlFormatString
         {
-            get { return "http://thetvdb.com/index.php?tab=series&id={0}"; }
+            get { return "https://thetvdb.com/index.php?tab=series&id={0}"; }
         }
 
         public bool Supports(IHasProviderIds item)
@@ -88,7 +88,7 @@ namespace MediaBrowser.Providers.TV
 
         public string UrlFormatString
         {
-            get { return null; }
+            get { return "https://thetvdb.com/index.php?tab=episode&id={0}"; }
         }
 
         public bool Supports(IHasProviderIds item)

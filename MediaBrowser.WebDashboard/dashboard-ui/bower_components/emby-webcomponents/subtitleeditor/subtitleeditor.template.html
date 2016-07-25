@@ -1,0 +1,28 @@
+﻿<div class="dialogHeader">
+    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
+    <div class="dialogHeaderTitle">${Subtitles}</div>
+</div>
+<div class="dialogContent smoothScrollY">
+    <div class="dialogContentInner centeredContent">
+
+        <div class="subtitleList" style="margin-bottom:2em;"></div>
+        <h1>${SearchForSubtitles}</h1>
+
+        <p style="margin: 1.5em 0;" class="originalFile"><span class="originalFileLabel dimText"></span><span class="pathValue"></span></p>
+
+        <form class="subtitleSearchForm" style="max-width: none;">
+            <div style="display: flex; align-items: center;">
+                <div class="selectContainer" style="flex-grow: 1; margin-bottom: 0;">
+                    <select is="emby-select" id="selectLanguage" required="required" label="${LabelLanguage}"></select>
+                </div>
+                <button type="submit" is="paper-icon-button-light" title="${Search}" class="btnSearchSubtitles" style="flex-shrink: 0;"><i class="md-icon">search</i></button>
+            </div>
+            <button is="emby-button" type="submit" class="raised btnSubmit block">${Search}</button>
+        </form>
+        <br />
+        <div class="subtitleResults"></div>
+        <div class="noSearchResults hide">
+            ${NoSubtitleSearchResultsFound}
+        </div>
+    </div>
+</div>

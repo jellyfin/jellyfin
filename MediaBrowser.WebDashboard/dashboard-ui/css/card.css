@@ -1,42 +1,12 @@
 ﻿.card {
     display: inline-block;
     text-align: left;
-    -webkit-transition: all 500ms ease;
-    -moz-transition: all 500ms ease;
-    -o-transition: all 500ms ease;
-    -ms-transition: all 500ms ease;
-    transition: all 500ms ease;
     position: relative;
+    contain: style;
 }
-
     .card, .card a {
         text-decoration: none;
         font-weight: 400 !important;
-    }
-
-.cardOverlayTarget {
-    position: absolute;
-    right: 0;
-    left: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, .85);
-    z-index: 998;
-    display: none;
-    line-height: initial;
-}
-
-.cardOverlayInner {
-    padding: 11px 12px 10px;
-}
-
-    .cardOverlayInner button:last-child {
-        margin-right: 0 !important;
-    }
-
-    .cardOverlayInner p {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
 .buttonCard:hover .cardBox {
@@ -44,46 +14,33 @@
 }
 
 .cardBox {
-    margin: 4px;
+    margin: 6px;
 }
 
 @media all and (max-width: 500px) {
 
     .cardBox {
-        margin: 1px;
+        margin: 3px;
     }
-}
-
-@media all and (min-width: 500px) {
-
-    .cardImage {
-        border-radius: 3px;
-    }
-}
-
-.defaultBackground .cardImage {
-    background-color: #303030;
-}
-
-.homeTopViews .defaultBackground .cardImage {
-    background-color: #181818;
 }
 
 .cardOverlayButtonContainer {
     position: absolute;
     bottom: 0;
     right: 0;
-    padding: 1em .5em .5em 1em;
+    padding: 1em .25em .5em 1em;
 }
 
 .cardOverlayMoreButton, .cardOverlayPlayButton {
-    color: #333;
-    background-color: rgba(210,210,210,.9);
+    color: #fff !important;
+    background-color: rgba(0,0,0,.7) !important;
     border-radius: 500px;
-    padding: 5px;
-    width: 36px;
-    height: 36px;
 }
+
+    .cardOverlayMoreButton:hover, .cardOverlayPlayButton:hover {
+        background-color: rgba(0,0,0,.9) !important;
+        transition: background-color .5s ease-out;
+    }
 
 .grayscale {
     -webkit-filter: grayscale(100%);
@@ -91,7 +48,7 @@
     filter: grayscale(100%);
 }
 
-.bottomPaddedCard .cardBox {
+.bottomPaddedCard .cardBox:not(.visualCardBox) {
     margin-bottom: 24px;
 }
 
@@ -108,12 +65,14 @@
     -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     background: #fff;
-    margin: 7px;
 }
 
 .ui-body-b .visualCardBox {
-    background: rgba(56,56,56,.85);
     border-radius: 3px;
+}
+
+.defaultBackground .cardImage, .ui-body-b .visualCardBox {
+    background-color: #222326;
 }
 
 .cardScalable {
@@ -154,26 +113,6 @@
         opacity: .5;
     }
 
-    /*.preview-overlay-container {
-    -moz-border-radius: 2px;
-    -webkit-border-radius: 2px;
-    border-radius: 2px;
-    -moz-opacity: 0;
-    opacity: 0;
-    filter: alpha(opacity=0);
-    -webkit-transition: all .25s ease;
-    -moz-transition: all .25s ease;
-    -o-transition: all .25s ease;
-    transition: all .25s ease;
-    background: rgba(0,0,0,0.4);
-    cursor: pointer;
-    height: 100%;
-    left: 0;
-    position: absolute;
-    top: 0;
-    width: 100%;
-}*/
-
     .cardContent .cardFooter {
         position: absolute;
         bottom: 0;
@@ -207,7 +146,7 @@
 }
 
 .visualCardBox .outerCardFooter {
-    padding: 3px;
+    padding: .5em .3em;
     position: relative;
 }
 
@@ -237,10 +176,6 @@
     font-size: 115%;
 }
 
-.cardOverlayInner {
-    color: #fff;
-}
-
 .cardTextCentered {
     text-align: center;
 }
@@ -259,18 +194,11 @@
 }
 
 .outerCardFooter .cardText + .cardText {
-    opacity: .8;
+    opacity: .6;
 }
 
 .outerCardFooter .cardText:first-child {
     padding-top: 7px;
-}
-
-@media all and (max-width: 600px) {
-
-    .packageReviewText {
-        display: none;
-    }
 }
 
 .cardImage {
@@ -279,6 +207,7 @@
     background-position: center bottom;
     width: 100%;
     height: 100%;
+    border-radius: 2px;
 }
 
     .cardImage canvas {
@@ -363,14 +292,6 @@
 
     .backdropCard {
         width: 100% !important;
-    }
-}
-
-@media all and (max-width: 1200px) {
-
-    .portraitCard .cardOverlayInner {
-        padding-left: 7px;
-        padding-right: 7px;
     }
 }
 
@@ -616,53 +537,6 @@
         width: 25%;
     }
 }
-
-/** homePageSmallBackdropCard */
-.homePageSmallBackdropCard .cardPadder {
-    padding-bottom: 56.25%;
-}
-
-
-.homePageSmallBackdropCard {
-    width: 50%;
-}
-
-@media all and (min-width: 540px) {
-
-    .homePageSmallBackdropCard {
-        width: 33.333%;
-    }
-}
-
-@media all and (min-width: 600px) {
-
-    .homePageSmallBackdropCard {
-        width: 25%;
-    }
-}
-
-@media all and (min-width: 800px) {
-
-    .homePageSmallBackdropCard {
-        width: 20%;
-    }
-}
-
-@media all and (min-width: 1100px) {
-
-    .homePageSmallBackdropCard {
-        width: 16.66666666666667%;
-    }
-}
-
-@media all and (min-width: 1440px) {
-
-    .homePageSmallBackdropCard {
-        width: 12.5%;
-    }
-}
-
-
 
 /** horizontalBackdropCard */
 .horizontalBackdropCard .cardPadder {

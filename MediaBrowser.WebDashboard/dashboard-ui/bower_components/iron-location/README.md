@@ -2,7 +2,7 @@
 <!---
 
 This README is automatically generated from the comments in these files:
-iron-location.html
+iron-location.html  iron-query-params.html
 
 Edit those files, and our readme bot will duplicate them over here!
 Edit this file, and the bot will squash your changes :)
@@ -52,3 +52,7 @@ You can customize this behavior with the `urlSpaceRegex`.
 iron-location protects against accidental history spamming by only adding
 entries to the user's history if the URL stays unchanged for `dwellTime`
 milliseconds.
+
+
+
+<!-- No docs for <iron-query-params> found. -->

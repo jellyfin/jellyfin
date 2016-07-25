@@ -1,5 +1,7 @@
-﻿<div class="dialogHeader">
-    <paper-icon-button icon="arrow-back" class="btnCancel" tabindex="-1"></paper-icon-button>
+﻿<div class="dialogHeader" style="margin:0 0 2em;">
+    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1">
+        <i class="md-icon">&#xE5C4;</i>
+    </button>
     <div class="dialogHeaderTitle">
         ${HeaderInviteUser}
     </div>
@@ -7,22 +9,29 @@
 
 <form class="addUserForm" style="max-width: none;margin:0;">
 
-    <paper-input type="text" id="txtConnectUsername" value="" placeholder="${PlaceholderUsername}" label="${LabelConnectGuestUserName}" required></paper-input>
-    <div class="fieldDescription">
-        <div>${LabelConnectGuestUserNameHelp}</div>
-        <div style="margin-top: .25em;"><a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a></div>
+    <div class="inputContainer">
+        <input is="emby-input" type="text" id="txtConnectUsername" value="" label="${LabelConnectGuestUserName}" required />
+        <div class="fieldDescription">
+            <div>${LabelConnectGuestUserNameHelp}</div>
+            <div style="margin-top: .25em;"><a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a></div>
+        </div>
     </div>
 
-    <br />
+    <div is="emby-collapse" title="${HeaderShareMediaFolders}">
+        <div class="collapseContent">
+            <div class="librarySharingList">
 
-    <emby-collapsible title="${HeaderShareMediaFolders}">
-        <div class="librarySharingList">
-
+            </div>
         </div>
-    </emby-collapsible>
+    </div>
     <p class="fieldDescription" style="margin-top:.5em;">${MessageGuestSharingPermissionsHelp}</p>
     <br />
-    <button type="submit" data-role="none" class="clearButton">
-        <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSendInvitation}</span></paper-button>
+    <button is="emby-button" type="submit" class="raised submit block">
+        <i class="md-icon">check</i>
+        <span>${ButtonSendInvitation}</span>
     </button>
+    <br />
+    <br />
+    <br />
+    <br />
 </form>

@@ -2,20 +2,13 @@
     padding-top: 0 !important;
 }
 
-.nowPlayingPagePaperTabs.bottom {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-}
-
-.nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
-    margin: 2px 1px;
-}
-
-    .nowPlayingPage .btnCommand:not(.hide), .nowPlayingPage .btnPlayStateCommand:not(.hide) {
-        display: inline-block !important;
+    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
+        margin: 2px 1px;
     }
+
+        .nowPlayingPage .btnCommand:not(.hide), .nowPlayingPage .btnPlayStateCommand:not(.hide) {
+            display: inline-block !important;
+        }
 
 .nowPlayingPageImage {
     height: 360px;
@@ -28,7 +21,7 @@
 .nowPlayingPageTimeContainer {
     min-width: 200px;
     max-width: 280px;
-    margin: 0 auto 1em;
+    margin: 1.5em auto 1em;
 }
 
 .nowPlayingNavButtonContainer {
@@ -97,6 +90,13 @@
         width: 160px;
     }
 }
+
+.nowPlayingPage .btnCommand i, .nowPlayingPage .btnPlayStateCommand i {
+    width: 44px;
+    height: 44px;
+    font-size: 44px;
+}
+
 
 @media all and (max-width: 600px) and (orientation: portrait) {
 
@@ -174,21 +174,6 @@
 @media (orientation: landscape) and (min-width: 700px) {
     .nowPlayingInfoButtons {
         margin-left: 3em;
-    }
-}
-
-@media (orientation: landscape) and (max-height: 400px) {
-    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
-        width: 60px;
-        height: 60px;
-    }
-}
-
-@media (orientation: portrait) and (max-height: 600px) {
-
-    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
-        width: 60px;
-        height: 60px;
     }
 }
 

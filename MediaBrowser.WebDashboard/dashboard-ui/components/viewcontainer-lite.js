@@ -1,88 +1,136 @@
-define(['jQuery'], function ($) {
+define(['browser'], function (browser) {
 
-    var pageContainerCount;
-    var animationDuration = 500;
+    var mainAnimatedPages = document.querySelector('.mainAnimatedPages');
+    var allPages = [];
+    var currentUrls = [];
+    var pageContainerCount = 3;
+    var selectedPageIndex = -1;
+
+    function enableAnimation() {
+
+        if (browser.tv) {
+            return false;
+        }
+        if (browser.safari) {
+            // Right now they don't look good. Haven't figured out why yet.
+            return false;
+        }
+
+        return true;
+    }
 
     function loadView(options) {
 
+        if (options.cancel) {
+            return;
+        }
+
+        cancelActiveAnimations();
+
+        var selected = selectedPageIndex;
+        var previousAnimatable = selected == -1 ? null : allPages[selected];
+        var pageIndex = selected + 1;
+
+        if (pageIndex >= pageContainerCount) {
+            pageIndex = 0;
+        }
+
+        var newViewInfo = normalizeNewView(options);
+        var newView = newViewInfo.elem;
+
+        var dependencies = typeof (newView) == 'string' ? null : newView.getAttribute('data-require');
+        dependencies = dependencies ? dependencies.split(',') : [];
+
+        var isPluginpage = options.url.toLowerCase().indexOf('/configurationpage?') != -1;
+
+        if (isPluginpage) {
+            dependencies.push('jqmpopup');
+            dependencies.push('jqmcollapsible');
+            dependencies.push('jqmcheckbox');
+            dependencies.push('legacy/dashboard');
+            dependencies.push('legacy/selectmenu');
+            dependencies.push('jqmcontrolgroup');
+            dependencies.push('jqmlistview');
+        }
+
+        if (isPluginpage || (newView.classList && newView.classList.contains('type-interior'))) {
+            dependencies.push('scripts/notifications');
+            dependencies.push('dashboardcss');
+        }
+
         return new Promise(function (resolve, reject) {
 
-            var animatedPages = document.querySelector('.mainAnimatedPages');
-
-            if (options.cancel) {
-                return;
-            }
-
-            var selected = getSelectedIndex(animatedPages);
-            var pageIndex = selected + 1;
-
-            if (pageIndex >= pageContainerCount) {
-                pageIndex = 0;
-            }
-
-            var newViewInfo = normalizeNewView(options);
-            var newView = newViewInfo.elem;
-
-            var dependencies = typeof (newView) == 'string' ? null : newView.getAttribute('data-require');
-            dependencies = dependencies ? dependencies.split(',') : [];
-
-            var isPluginpage = options.url.toLowerCase().indexOf('/configurationpage?') != -1;
-
-            if (isPluginpage) {
-                dependencies.push('jqmpopup');
-                dependencies.push('jqmcollapsible');
-                dependencies.push('jqmcheckbox');
-                dependencies.push('legacy/dashboard');
-                dependencies.push('legacy/selectmenu');
-                dependencies.push('jqmcontrolgroup');
-            }
-
-            if (isPluginpage || (newView.classList && newView.classList.contains('type-interior'))) {
-                dependencies.push('jqmlistview');
-                dependencies.push('scripts/notifications');
-            }
-
             require(dependencies, function () {
-                var allPages = animatedPages.querySelectorAll('.mainAnimatedPage');
-                var animatable = allPages[pageIndex];
 
-                var currentPage = animatable.querySelector('.page-view');
+                var currentPage = allPages[pageIndex];
 
                 if (currentPage) {
                     triggerDestroy(currentPage);
                 }
 
-                for (var i = 0, length = allPages.length; i < length; i++) {
-                    if (pageIndex == i) {
-                        allPages[i].classList.remove('hide');
-                    } else {
-                        allPages[i].classList.add('hide');
-                    }
+                var view = newView;
+
+                if (typeof (view) == 'string') {
+                    view = document.createElement('div');
+                    view.innerHTML = newView;
                 }
 
-                if (typeof (newView) == 'string') {
-                    animatable.innerHTML = newView;
-                } else {
-                    animatable.innerHTML = '';
-                    if (newViewInfo.hasScript) {
+                view.classList.add('mainAnimatedPage');
+
+                if (currentPage) {
+                    if (newViewInfo.hasScript && window.$) {
                         // TODO: figure this out without jQuery
-                        $(newView).appendTo(animatable);
+                        view = $(view).appendTo(mainAnimatedPages)[0];
+                        mainAnimatedPages.removeChild(currentPage);
                     } else {
-                        animatable.appendChild(newView);
+                        mainAnimatedPages.replaceChild(view, currentPage);
                     }
-                    enhanceNewView(dependencies, newView);
+                } else {
+                    if (newViewInfo.hasScript && window.$) {
+                        // TODO: figure this out without jQuery
+                        view = $(view).appendTo(mainAnimatedPages)[0];
+                    } else {
+                        mainAnimatedPages.appendChild(view);
+                    }
                 }
 
-                var view = animatable.querySelector('.page-view');
+                if (typeof (newView) != 'string') {
+                    enhanceNewView(dependencies, view);
+                }
+
+                if (options.type) {
+                    view.setAttribute('data-type', options.type);
+                }
+
+                var animatable = view;
+                allPages[pageIndex] = view;
 
                 if (onBeforeChange) {
                     onBeforeChange(view, false, options);
                 }
 
-                $.mobile = $.mobile || {};
-                $.mobile.activePage = view;
+                beforeAnimate(allPages, pageIndex, selected);
+                // animate here
+                animate(animatable, previousAnimatable, options.transition, options.isBack).then(function () {
 
-                resolve(view);
+                    selectedPageIndex = pageIndex;
+                    currentUrls[pageIndex] = options.url;
+                    if (!options.cancel && previousAnimatable) {
+                        afterAnimate(allPages, pageIndex);
+                    }
+
+                    // Temporary hack
+                    // If a view renders UI in viewbeforeshow the lazy image loader will think the images aren't visible and won't load images
+                    // The views need to be updated to start loading data in beforeshow, but not render until show
+                    document.dispatchEvent(new CustomEvent('scroll', {}));
+
+                    if (window.$) {
+                        $.mobile = $.mobile || {};
+                        $.mobile.activePage = view;
+                    }
+
+                    resolve(view);
+                });
             });
         });
     }
@@ -98,7 +146,7 @@ define(['jQuery'], function ($) {
             }
         }
 
-        if (hasJqm) {
+        if (hasJqm && window.$) {
             $(newView).trigger('create');
         }
     }
@@ -123,22 +171,200 @@ define(['jQuery'], function ($) {
     function normalizeNewView(options) {
 
         if (options.view.indexOf('data-role="page"') == -1) {
-            var html = '<div class="page-view" data-type="' + (options.type || '') + '" data-url="' + options.url + '">';
-            html += options.view;
-            html += '</div>';
-            return html;
+            return options.view;
         }
 
         var hasScript = options.view.indexOf('<script') != -1;
-
         var elem = parseHtml(options.view, hasScript);
-        elem.classList.add('page-view');
-        elem.setAttribute('data-type', options.type || '');
-        elem.setAttribute('data-url', options.url);
+
+        if (hasScript) {
+            hasScript = elem.querySelector('script') != null;
+        }
+
         return {
             elem: elem,
             hasScript: hasScript
         };
+    }
+
+    function beforeAnimate(allPages, newPageIndex, oldPageIndex) {
+        for (var i = 0, length = allPages.length; i < length; i++) {
+            if (newPageIndex == i || oldPageIndex == i) {
+                //allPages[i].classList.remove('hide');
+            } else {
+                allPages[i].classList.add('hide');
+            }
+        }
+    }
+
+    function afterAnimate(allPages, newPageIndex) {
+        for (var i = 0, length = allPages.length; i < length; i++) {
+            if (newPageIndex == i) {
+                //allPages[i].classList.remove('hide');
+            } else {
+                allPages[i].classList.add('hide');
+            }
+        }
+    }
+
+    function animate(newAnimatedPage, oldAnimatedPage, transition, isBack) {
+
+        transition = transition || 'fade';
+
+        if (enableAnimation() && oldAnimatedPage && newAnimatedPage.animate) {
+            if (transition == 'slide') {
+                return slideLeft(newAnimatedPage, oldAnimatedPage, transition, isBack);
+            } else if (transition == 'slidedown') {
+                return slideDown(newAnimatedPage, oldAnimatedPage, transition, isBack);
+            } else if (transition == 'fade') {
+                return fade(newAnimatedPage, oldAnimatedPage, transition, isBack);
+            }
+        }
+
+        return Promise.resolve();
+    }
+
+    function slideLeft(newAnimatedPage, oldAnimatedPage, transition, isBack) {
+
+        return new Promise(function (resolve, reject) {
+
+            // Do not use fill: both or the ability to swipe horizontally may be affected on Chrome 50
+            var timings = {
+                duration: 450,
+                iterations: 1,
+                easing: 'ease-out'
+            }
+
+            if (!browser.chrome) {
+                timings.fill = 'both';
+            }
+
+            var animations = [];
+
+            if (oldAnimatedPage) {
+                var destination = isBack ? '100%' : '-100%';
+
+                animations.push(oldAnimatedPage.animate([
+
+                  { transform: 'none', offset: 0 },
+                  { transform: 'translate3d(' + destination + ', 0, 0)', offset: 1 }
+
+                ], timings));
+            }
+
+            var start = isBack ? '-100%' : '100%';
+
+            animations.push(newAnimatedPage.animate([
+
+              { transform: 'translate3d(' + start + ', 0, 0)', offset: 0 },
+              { transform: 'none', offset: 1 }
+
+            ], timings));
+
+            currentAnimations = animations;
+
+            animations[animations.length - 1].onfinish = resolve;
+        });
+    }
+
+    function slideDown(newAnimatedPage, oldAnimatedPage, transition, isBack) {
+
+        return new Promise(function (resolve, reject) {
+
+            // Do not use fill: both or the ability to swipe horizontally may be affected on Chrome 50
+            var timings = {
+                duration: 450,
+                iterations: 1,
+                easing: 'ease-out'
+            }
+
+            if (!browser.chrome) {
+                timings.fill = 'both';
+            }
+
+            var animations = [];
+
+            if (oldAnimatedPage) {
+                var destination = isBack ? '100%' : '-100%';
+
+                animations.push(oldAnimatedPage.animate([
+
+                  { transform: 'none', offset: 0 },
+                  { transform: 'translate3d(' + destination + ', 0, 0)', offset: 1 }
+
+                ], timings));
+            }
+
+            var start = isBack ? '100%' : '-100%';
+
+            animations.push(newAnimatedPage.animate([
+
+              { transform: 'translate3d(0, ' + start + ', 0)', offset: 0 },
+              { transform: 'none', offset: 1 }
+
+            ], timings));
+
+            currentAnimations = animations;
+
+            animations[animations.length - 1].onfinish = resolve;
+        });
+    }
+
+    function fade(newAnimatedPage, oldAnimatedPage, transition, isBack) {
+
+        return new Promise(function (resolve, reject) {
+
+            // Do not use fill: both or the ability to swipe horizontally may be affected on Chrome 50
+            var timings = {
+                duration: 160,
+                iterations: 1,
+                easing: 'ease-out'
+            }
+
+            if (!browser.chrome) {
+                timings.fill = 'both';
+            }
+
+            var animations = [];
+
+            if (oldAnimatedPage) {
+                animations.push(oldAnimatedPage.animate([
+
+                  { opacity: 1, offset: 0 },
+                  { opacity: 0, offset: 1 }
+
+                ], timings));
+            }
+
+            animations.push(newAnimatedPage.animate([
+
+                  { opacity: 0, offset: 0 },
+                  { opacity: 1, offset: 1 }
+
+            ], timings));
+
+            currentAnimations = animations;
+
+            animations[animations.length - 1].onfinish = resolve;
+        });
+    }
+
+    var currentAnimations = [];
+    function cancelActiveAnimations() {
+
+        var animations = currentAnimations;
+        for (var i = 0, length = animations.length; i < length; i++) {
+            cancelAnimation(animations[i]);
+        }
+    }
+
+    function cancelAnimation(animation) {
+
+        try {
+            animation.cancel();
+        } catch (err) {
+            console.log('Error canceling animation: ' + err);
+        }
     }
 
     var onBeforeChange;
@@ -146,81 +372,57 @@ define(['jQuery'], function ($) {
         onBeforeChange = fn;
     }
 
-    function getSelectedIndex(animatedPages) {
-        var allPages = animatedPages.querySelectorAll('.mainAnimatedPage');
-        for (var i = 0, length = allPages.length; i < length; i++) {
-            if (!allPages[i].classList.contains('hide')) {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    function replaceAnimatedPages() {
-        var elem = document.querySelector('neon-animated-pages.mainAnimatedPages');
-
-        if (elem) {
-            var div = document.createElement('div');
-            div.classList.add('mainAnimatedPages');
-            div.classList.add('skinBody');
-            div.innerHTML = '<div class="mainAnimatedPage hide"></div><div class="mainAnimatedPage hide"></div><div class="mainAnimatedPage hide"></div>';
-            elem.parentNode.replaceChild(div, elem);
-        }
-
-        pageContainerCount = document.querySelectorAll('.mainAnimatedPage').length;
-    }
-
     function tryRestoreView(options) {
-        return new Promise(function (resolve, reject) {
 
-            var url = options.url;
-            var view = document.querySelector(".page-view[data-url='" + url + "']");
-            var page = parentWithClass(view, 'mainAnimatedPage');
+        var url = options.url;
+        var index = currentUrls.indexOf(url);
+
+        if (index != -1) {
+
+            var animatable = allPages[index];
+            var view = animatable;
 
             if (view) {
 
-                var index = -1;
-                var pages = document.querySelectorAll('.mainAnimatedPage');
-                for (var i = 0, length = pages.length; i < length; i++) {
-                    if (pages[i] == page) {
-                        index = i;
-                        break;
-                    }
-                }
-                if (index != -1) {
-
-                    var animatedPages = document.querySelector('.mainAnimatedPages');
-                    if (options.cancel) {
-                        return;
-                    }
-
-                    var allPages = animatedPages.querySelectorAll('.mainAnimatedPage');
-                    var animatable = allPages[index];
-                    var view = animatable.querySelector('.page-view');
-
-                    if (onBeforeChange) {
-                        onBeforeChange(view, true, options);
-                    }
-
-                    for (var i = 0, length = allPages.length; i < length; i++) {
-                        if (index == i) {
-                            allPages[i].classList.remove('hide');
-                        } else {
-                            allPages[i].classList.add('hide');
-                        }
-                    }
-
-                    $.mobile = $.mobile || {};
-                    $.mobile.activePage = view;
-
-                    resolve(view);
+                if (options.cancel) {
                     return;
                 }
-            }
 
-            reject();
-        });
+                cancelActiveAnimations();
+
+                var selected = selectedPageIndex;
+                var previousAnimatable = selected == -1 ? null : allPages[selected];
+
+                if (onBeforeChange) {
+                    onBeforeChange(view, true, options);
+                }
+
+                beforeAnimate(allPages, index, selected);
+
+                animatable.classList.remove('hide');
+
+                return animate(animatable, previousAnimatable, options.transition, options.isBack).then(function () {
+
+                    selectedPageIndex = index;
+                    if (!options.cancel && previousAnimatable) {
+                        afterAnimate(allPages, index);
+                    }
+
+                    // Temporary hack
+                    // If a view renders UI in viewbeforeshow the lazy image loader will think the images aren't visible and won't load images
+                    // The views need to be updated to start loading data in beforeshow, but not render until show
+                    document.dispatchEvent(new CustomEvent('scroll', {}));
+
+                    if (window.$) {
+                        $.mobile = $.mobile || {};
+                        $.mobile.activePage = view;
+                    }
+                    return view;
+                });
+            }
+        }
+
+        return Promise.reject();
     }
 
     function triggerDestroy(view) {
@@ -229,30 +431,18 @@ define(['jQuery'], function ($) {
 
     function reset() {
 
-        var views = document.querySelectorAll(".mainAnimatedPage.hide .page-view");
-
-        for (var i = 0, length = views.length; i < length; i++) {
-
-            var view = views[i];
-            triggerDestroy(view);
-            view.parentNode.removeChild(view);
-        }
+        allPages = [];
+        currentUrls = [];
+        mainAnimatedPages.innerHTML = '';
+        selectedPageIndex = -1;
     }
 
-    function parentWithClass(elem, className) {
-
-        while (!elem.classList || !elem.classList.contains(className)) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
+    if (enableAnimation() && !document.documentElement.animate) {
+        require(['webAnimations']);
     }
 
-    replaceAnimatedPages();
+    reset();
+    mainAnimatedPages.classList.remove('hide');
 
     return {
         loadView: loadView,

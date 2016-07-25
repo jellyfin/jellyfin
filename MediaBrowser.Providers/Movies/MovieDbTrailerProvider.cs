@@ -33,11 +33,6 @@ namespace MediaBrowser.Providers.Movies
             get { return MovieDbProvider.Current.Name; }
         }
 
-        public bool HasChanged(IHasMetadata item, DateTime date)
-        {
-            return MovieDbProvider.Current.HasChanged(item, date);
-        }
-
         public int Order
         {
             get

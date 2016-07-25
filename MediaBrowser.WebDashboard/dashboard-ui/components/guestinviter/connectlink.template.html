@@ -1,0 +1,26 @@
+﻿<div class="dialogHeader" style="margin:0 0 2em;">
+    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1">
+        <i class="md-icon">&#xE5C4;</i>
+    </button>
+    <div class="dialogHeaderTitle">
+        Emby Connect
+    </div>
+</div>
+
+<form class="addUserForm" style="max-width: none;margin:0;">
+
+    <p style="color: orangered;">${MessageConnectAccountRequiredToInviteGuest}</p>
+
+    <div class="inputContainer">
+        <input is="emby-input" type="text" id="txtConnectUsername" value="" label="${LabelConnectUserName}" required />
+        <div class="fieldDescription">
+            <div>${LabelConnectUserNameHelp}</div>
+            <div style="margin-top: .25em;"><a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a></div>
+        </div>
+    </div>
+
+    <button is="emby-button" type="submit" class="raised submit block">
+        <i class="md-icon">check</i>
+        <span>${ButtonSendInvitation}</span>
+    </button>
+</form>

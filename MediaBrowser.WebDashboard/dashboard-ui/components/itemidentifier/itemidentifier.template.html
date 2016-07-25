@@ -1,5 +1,7 @@
-﻿<div class="dialogHeader">
-    <paper-icon-button icon="arrow-back" class="btnCancel" tabindex="-1"></paper-icon-button>
+﻿<div class="dialogHeader" style="margin:0 0 2em;">
+    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1">
+        <i class="md-icon">&#xE5C4;</i>
+    </button>
     <div class="dialogHeaderTitle">
     </div>
 </div>
@@ -7,37 +9,38 @@
 <form class="popupIdentifyForm" style="margin:auto;">
 
     <p>${HeaderIdentifyItemHelp}</p>
-
-    <div>
-        <paper-input type="text" id="txtLookupName" class="identifyField" data-lookup="Name" label="${LabelName}"></paper-input>
+    <div class="inputContainer">
+        <input is="emby-input" type="text" id="txtLookupName" class="identifyField" data-lookup="Name" label="${LabelName}" />
     </div>
-    <div class="fldLookupYear">
-        <paper-input type="number" id="txtLookupYear" class="identifyField" data-lookup="Year" pattern="[0-9]*" min="1800" label="${LabelYear}"></paper-input>
+    <div class="fldLookupYear inputContainer">
+        <input is="emby-input" type="number" id="txtLookupYear" class="identifyField" data-lookup="Year" pattern="[0-9]*" min="1800" label="${LabelYear}" />
     </div>
 
     <div class="identifyProviderIds">
     </div>
 
     <p>
-        <button type="submit" data-role="none" class="clearButton">
-            <paper-button raised class="submit block"><iron-icon icon="search"></iron-icon><span>${ButtonSearch}</span></paper-button>
+        <button is="emby-button" type="submit" class="raised submit block">
+            <i class="md-icon">search</i>
+            <span>${ButtonSearch}</span>
         </button>
     </p>
 </form>
-<div class="identificationSearchResults" style="display:none; text-align: center;">
+<div class="identificationSearchResults hide" style="text-align: center;">
 
     <div class="identificationSearchResultList"></div>
 </div>
 
-<form class="identifyOptionsForm" style="display:none;margin:auto;">
+<form class="identifyOptionsForm hide" style="margin:auto;">
 
     <div class="selectedSearchResult"></div>
     <br />
-    <div>
-        <paper-checkbox id="chkIdentifyReplaceImages" checked>${OptionReplaceExistingImages}</paper-checkbox>
-    </div>
-    <br />
-    <button type="submit" data-role="none" class="clearButton">
-        <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSubmit}</span></paper-button>
+    <label class="checkboxContainer">
+        <input type="checkbox" is="emby-checkbox" id="chkIdentifyReplaceImages" />
+        <span>${OptionReplaceExistingImages}</span>
+    </label>
+    <button is="emby-button" type="submit" class="raised submit block">
+        <i class="md-icon">check</i>
+        <span>${ButtonSubmit}</span>
     </button>
 </form>

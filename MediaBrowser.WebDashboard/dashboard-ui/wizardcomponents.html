@@ -1,0 +1,66 @@
+﻿<div id="wizardComponentsPage" data-role="page" class="page standalonePage wizardPage">
+
+    <div data-role="content">
+
+        <div class="ui-corner-all ui-shadow wizardContent" style="position:relative;">
+            <form>
+
+                <h1>
+                    ${SetupFFmpeg}
+                </h1>
+
+                <div>${SetupFFmpegHelp}</div>
+                <br />
+                <br />
+                <div style="display: flex; align-items: center;">
+                    <div style="width: 24px; height: 24px; border-radius: 1000px; background: #52B54B; color: #fff; display: flex; align-items: center; justify-content: center;">1</div>
+                    <div style="margin-left: .5em;">${DownloadFFmpeg}</div>
+                </div>
+                <div style="margin-left:34px;">
+                    <p class="suggestedLocation"></p>
+                    <div class="downloadInstructions"></div>
+                </div>
+                <br />
+                <div style="display: flex; align-items: center;">
+                    <div style="width: 24px; height: 24px; border-radius: 1000px; background: #52B54B; color: #fff; display: flex; align-items: center; justify-content: center;">2</div>
+                    <div style="margin-left:.5em;">${UnzipFFmpegFile}</div>
+                </div>
+                <br />
+                <div style="display: flex; align-items: center;">
+                    <div style="width: 24px; height: 24px; border-radius: 1000px; background: #52B54B; color: #fff; display: flex; align-items: center; justify-content: center;">3</div>
+                    <div style="margin-left:.5em;">${EnterFFmpegLocation}</div>
+                </div>
+
+                <br /><br />
+                <div class="selectContainer fldSelectEncoderPathType hide">
+                    <select is="emby-select" id="selectEncoderPath" label="${LabelffmpegVersion}">
+                        <option value="System">${OptionUseSystemInstalledVersion}</option>
+                        <option value="Custom">${OptionUseMyCustomVersion}</option>
+                    </select>
+                </div>
+                <div class="inputContainer fldEncoderPath hide">
+                    <div style="display: flex; align-items: center;">
+                        <div style="flex-grow:1;">
+                            <input is="emby-input" class="txtEncoderPath" label="${LabelffmpegPath}" autocomplete="off" required />
+                        </div>
+                        <button type="button" is="paper-icon-button-light" id="btnSelectEncoderPath" class="autoSize"><i class="md-icon">search</i></button>
+                    </div>
+                    <div class="fieldDescription">
+                        <div>${LabelffmpegPathHelp}</div>
+                    </div>
+                </div>
+
+                <div class="wizardNavigation">
+                    <button is="emby-button" type="button" onclick="history.back();" class="raised subdued">
+                        <i class="md-icon">arrow_back</i>
+                        <span>${LabelPrevious}</span>
+                    </button>
+                    <button is="emby-button" type="submit" class="raised raised accent">
+                        <span>${LabelNext}</span>
+                        <i class="md-icon">arrow_forward</i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

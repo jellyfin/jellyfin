@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using MediaBrowser.Model.Logging;
@@ -14,14 +15,17 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         private readonly ILogger _logger;
         private readonly HttpListenerResponse response;
 
-        public WebSocketSharpResponse(ILogger logger, HttpListenerResponse response)
+        public WebSocketSharpResponse(ILogger logger, HttpListenerResponse response, IRequest request)
         {
             _logger = logger;
             this.response = response;
+            Items = new Dictionary<string, object>();
+            Request = request;
         }
 
+        public IRequest Request { get; private set; }
         public bool UseBufferedStream { get; set; }
-
+        public Dictionary<string, object> Items { get; private set; }
         public object OriginalResponse
         {
             get { return response; }
@@ -56,6 +60,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             }
 
             response.AddHeader(name, value);
+        }
+
+        public string GetHeader(string name)
+        {
+            return response.Headers[name];
         }
 
         public void Redirect(string url)
@@ -142,5 +151,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         }
 
         public bool KeepAlive { get; set; }
+
+        public void ClearCookies()
+        {
+        }
     }
 }

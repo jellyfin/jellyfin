@@ -14,6 +14,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
@@ -22,11 +23,11 @@ using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class FanartArtistProvider : IRemoteImageProvider, IHasChangeMonitor, IHasOrder
+    public class FanartArtistProvider : IRemoteImageProvider, IHasOrder
     {
         internal readonly SemaphoreSlim FanArtResourcePool = new SemaphoreSlim(3, 3);
         internal const string ApiKey = "5c6b04c68e904cfed1e6cbc9a9e683d4";
-        private const string FanArtBaseUrl = "http://webservice.fanart.tv/v3.1/music/{1}?api_key={0}";
+        private const string FanArtBaseUrl = "https://webservice.fanart.tv/v3.1/music/{1}?api_key={0}";
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IServerConfigurationManager _config;
@@ -149,6 +150,7 @@ namespace MediaBrowser.Providers.Music
             PopulateImages(list, obj.musicarts, ImageType.Art, 500, 281);
         }
 
+        private Regex _regex_http = new Regex("^http://");
         private void PopulateImages(List<RemoteImageInfo> list,
             List<FanartArtistImage> images,
             ImageType type,
@@ -176,7 +178,7 @@ namespace MediaBrowser.Providers.Music
                         Width = width,
                         Height = height,
                         ProviderName = Name,
-                        Url = url,
+                        Url = _regex_http.Replace(url, "https://", 1),
                         Language = i.lang
                     };
 
@@ -205,29 +207,6 @@ namespace MediaBrowser.Providers.Music
                 Url = url,
                 ResourcePool = FanArtResourcePool
             });
-        }
-
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
-        {
-            var options = FanartSeriesProvider.Current.GetFanartOptions();
-            if (!options.EnableAutomaticUpdates)
-            {
-                return false;
-            }
-
-            var id = item.GetProviderId(MetadataProviders.MusicBrainzArtist);
-
-            if (!String.IsNullOrEmpty(id))
-            {
-                // Process images
-                var artistJsonPath = GetArtistJsonPath(_config.CommonApplicationPaths, id);
-
-                var fileInfo = _fileSystem.GetFileInfo(artistJsonPath);
-
-                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
-            }
-
-            return false;
         }
 
         private readonly Task _cachedTask = Task.FromResult(true);

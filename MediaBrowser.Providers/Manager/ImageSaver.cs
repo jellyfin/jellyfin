@@ -161,6 +161,8 @@ namespace MediaBrowser.Providers.Manager
             {
                 var currentPath = currentImage.Path;
 
+                _logger.Debug("Deleting previous image {0}", currentPath);
+
                 _libraryMonitor.ReportFileSystemChangeBeginning(currentPath);
 
                 try
@@ -276,7 +278,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>IEnumerable{System.String}.</returns>
         private string[] GetSavePaths(IHasImages item, ImageType type, int? imageIndex, string mimeType, bool saveLocally)
         {
-            if (_config.Configuration.ImageSavingConvention == ImageSavingConvention.Legacy || !saveLocally)
+            if (!saveLocally || (_config.Configuration.ImageSavingConvention == ImageSavingConvention.Legacy))
             {
                 return new[] { GetStandardSavePath(item, type, imageIndex, mimeType, saveLocally) };
             }
@@ -375,11 +377,11 @@ namespace MediaBrowser.Providers.Manager
             }
 
             string filename;
-            var folderName = item is MusicAlbum || 
-                item is MusicArtist || 
-                item is PhotoAlbum || 
-                (saveLocally && _config.Configuration.ImageSavingConvention == ImageSavingConvention.Legacy) ? 
-                "folder" : 
+            var folderName = item is MusicAlbum ||
+                item is MusicArtist ||
+                item is PhotoAlbum ||
+                (saveLocally && _config.Configuration.ImageSavingConvention == ImageSavingConvention.Legacy) ?
+                "folder" :
                 "poster";
 
             switch (type)

@@ -4,7 +4,7 @@
 
     function loadPage(page, config, users) {
 
-        var html = '<option value="" selected="selected"></option>';
+        var html = '<option value="" selected="selected">' + Globalize.translate('OptionNone') + '</option>';
 
         html += users.map(function (user) {
             return '<option value="' + user.Id + '">' + user.Name + '</option>';
@@ -34,11 +34,44 @@
             config.EnablePathSubstitution = form.querySelector('#chkEnablePathSubstitution').checked;
             config.EnableExtraThumbsDuplication = form.querySelector('#chkEnableExtraThumbs').checked;
 
-            ApiClient.updateNamedConfiguration(metadataKey, config).then(Dashboard.processServerConfigurationUpdateResult);
+            ApiClient.updateNamedConfiguration(metadataKey, config).then(function () {
+                Dashboard.processServerConfigurationUpdateResult();
+
+                showConfirmMessage(config);
+            });
         });
 
         // Disable default form submission
         return false;
+    }
+
+    function showConfirmMessage(config) {
+
+        var msg = [];
+
+        msg.push(Globalize.translate('MetadataSettingChangeHelp'));
+
+        require(['alert'], function (alert) {
+            alert({
+                text: msg.join('<br/><br/>')
+            });
+        });
+    }
+
+    function getTabs() {
+        return [
+        {
+            href: 'metadata.html',
+            name: Globalize.translate('TabSettings')
+        },
+         {
+             href: 'metadataimages.html',
+             name: Globalize.translate('TabServices')
+         },
+         {
+             href: 'metadatanfo.html',
+             name: Globalize.translate('TabNfoSettings')
+         }];
     }
 
     $(document).on('pageinit', "#metadataNfoPage", function () {
@@ -47,6 +80,7 @@
 
     }).on('pageshow', "#metadataNfoPage", function () {
 
+        LibraryMenu.setTabs('metadata', 2, getTabs);
         Dashboard.showLoadingMsg();
 
         var page = this;

@@ -64,10 +64,37 @@ namespace MediaBrowser.Controller.Entities
 
         protected override IEnumerable<FileSystemMetadata> GetFileSystemChildren(IDirectoryService directoryService)
         {
-            return CreateResolveArgs(directoryService).FileSystemChildren;
+            return CreateResolveArgs(directoryService, true).FileSystemChildren;
         }
 
-        private ItemResolveArgs CreateResolveArgs(IDirectoryService directoryService)
+        private bool _requiresRefresh;
+        public override bool RequiresRefresh()
+        {
+            var changed = base.RequiresRefresh() || _requiresRefresh;
+
+            if (!changed)
+            {
+                var locations = PhysicalLocations.ToList();
+
+                var newLocations = CreateResolveArgs(new DirectoryService(BaseItem.FileSystem), false).PhysicalLocations.ToList();
+
+                if (!locations.SequenceEqual(newLocations))
+                {
+                    changed = true;
+                }
+            }
+
+            return changed;
+        }
+
+        public override bool BeforeMetadataRefresh()
+        {
+            var changed = base.BeforeMetadataRefresh() || _requiresRefresh;
+            _requiresRefresh = false;
+            return changed;
+        }
+
+        private ItemResolveArgs CreateResolveArgs(IDirectoryService directoryService, bool setPhysicalLocations)
         {
             var path = ContainingFolderPath;
 
@@ -100,7 +127,11 @@ namespace MediaBrowser.Controller.Entities
                 args.FileSystemDictionary = fileSystemDictionary;
             }
 
-            PhysicalLocationsList = args.PhysicalLocations.ToList();
+            _requiresRefresh = _requiresRefresh || !args.PhysicalLocations.SequenceEqual(PhysicalLocations);
+            if (setPhysicalLocations)
+            {
+                PhysicalLocationsList = args.PhysicalLocations.ToList();
+            }
 
             return args;
         }

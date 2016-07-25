@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -59,7 +60,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return id;
         }
 
-        protected override async Task<IEnumerable<ChannelInfo>> GetChannelsInternal(TunerHostInfo info, CancellationToken cancellationToken)
+        public string ApplyDuration(string streamPath, TimeSpan duration)
+        {
+            streamPath += streamPath.IndexOf('?') == -1 ? "?" : "&";
+            streamPath += "duration=" + Convert.ToInt32(duration.TotalSeconds).ToString(CultureInfo.InvariantCulture);
+
+            return streamPath;
+        }
+
+        private async Task<IEnumerable<Channels>> GetLineup(TunerHostInfo info, CancellationToken cancellationToken)
         {
             var options = new HttpRequestOptions
             {
@@ -68,45 +77,61 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             };
             using (var stream = await _httpClient.Get(options))
             {
-                var root = JsonSerializer.DeserializeFromStream<List<Channels>>(stream);
+                var lineup = JsonSerializer.DeserializeFromStream<List<Channels>>(stream) ?? new List<Channels>();
 
-                if (root != null)
+                if (info.ImportFavoritesOnly)
                 {
-                    var result = root.Select(i => new ChannelInfo
-                    {
-                        Name = i.GuideName,
-                        Number = i.GuideNumber.ToString(CultureInfo.InvariantCulture),
-                        Id = GetChannelId(info, i),
-                        IsFavorite = i.Favorite,
-                        TunerHostId = info.Id
-
-                    });
-
-                    if (info.ImportFavoritesOnly)
-                    {
-                        result = result.Where(i => i.IsFavorite ?? true).ToList();
-                    }
-
-                    return result;
+                    lineup = lineup.Where(i => i.Favorite).ToList();
                 }
-                return new List<ChannelInfo>();
+
+                return lineup.Where(i => !i.DRM).ToList();
             }
+        }
+
+        protected override async Task<IEnumerable<ChannelInfo>> GetChannelsInternal(TunerHostInfo info, CancellationToken cancellationToken)
+        {
+            var lineup = await GetLineup(info, cancellationToken).ConfigureAwait(false);
+
+            return lineup.Select(i => new ChannelInfo
+            {
+                Name = i.GuideName,
+                Number = i.GuideNumber.ToString(CultureInfo.InvariantCulture),
+                Id = GetChannelId(info, i),
+                IsFavorite = i.Favorite,
+                TunerHostId = info.Id,
+                IsHD = i.HD == 1,
+                AudioCodec = i.AudioCodec,
+                VideoCodec = i.VideoCodec
+            });
         }
 
         private async Task<string> GetModelInfo(TunerHostInfo info, CancellationToken cancellationToken)
         {
-            using (var stream = await _httpClient.Get(new HttpRequestOptions()
+            try
             {
-                Url = string.Format("{0}/discover.json", GetApiUrl(info, false)),
-                CancellationToken = cancellationToken,
-                CacheLength = TimeSpan.FromDays(1),
-                CacheMode = CacheMode.Unconditional,
-                TimeoutMs = Convert.ToInt32(TimeSpan.FromSeconds(5).TotalMilliseconds)
-            }))
-            {
-                var response = JsonSerializer.DeserializeFromStream<DiscoverResponse>(stream);
+                using (var stream = await _httpClient.Get(new HttpRequestOptions()
+                {
+                    Url = string.Format("{0}/discover.json", GetApiUrl(info, false)),
+                    CancellationToken = cancellationToken,
+                    CacheLength = TimeSpan.FromDays(1),
+                    CacheMode = CacheMode.Unconditional,
+                    TimeoutMs = Convert.ToInt32(TimeSpan.FromSeconds(5).TotalMilliseconds)
+                }))
+                {
+                    var response = JsonSerializer.DeserializeFromStream<DiscoverResponse>(stream);
 
-                return response.ModelNumber;
+                    return response.ModelNumber;
+                }
+            }
+            catch (HttpException ex)
+            {
+                if (ex.StatusCode.HasValue && ex.StatusCode.Value == System.Net.HttpStatusCode.NotFound)
+                {
+                    // HDHR4 doesn't have this api
+                    return "HDHR";
+                }
+
+                throw;
             }
         }
 
@@ -226,19 +251,24 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             public string GuideNumber { get; set; }
             public string GuideName { get; set; }
+            public string VideoCodec { get; set; }
+            public string AudioCodec { get; set; }
             public string URL { get; set; }
             public bool Favorite { get; set; }
             public bool DRM { get; set; }
+            public int HD { get; set; }
         }
 
-        private MediaSourceInfo GetMediaSource(TunerHostInfo info, string channelId, string profile)
+        private async Task<MediaSourceInfo> GetMediaSource(TunerHostInfo info, string channelId, string profile)
         {
             int? width = null;
             int? height = null;
             bool isInterlaced = true;
-            var videoCodec = !string.IsNullOrWhiteSpace(GetEncodingOptions().HardwareAccelerationType) ? null : "mpeg2video";
+            string videoCodec = null;
+            string audioCodec = "ac3";
 
             int? videoBitrate = null;
+            int? audioBitrate = null;
 
             if (string.Equals(profile, "mobile", StringComparison.OrdinalIgnoreCase))
             {
@@ -256,18 +286,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 videoCodec = "h264";
                 videoBitrate = 15000000;
             }
-            else if (string.Equals(profile, "internet720", StringComparison.OrdinalIgnoreCase))
-            {
-                width = 1280;
-                height = 720;
-                isInterlaced = false;
-                videoCodec = "h264";
-                videoBitrate = 8000000;
-            }
             else if (string.Equals(profile, "internet540", StringComparison.OrdinalIgnoreCase))
             {
-                width = 1280;
-                height = 720;
+                width = 960;
+                height = 546;
                 isInterlaced = false;
                 videoCodec = "h264";
                 videoBitrate = 2500000;
@@ -297,6 +319,32 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 videoBitrate = 1000000;
             }
 
+            if (string.IsNullOrWhiteSpace(videoCodec))
+            {
+                var channels = await GetChannels(info, true, CancellationToken.None).ConfigureAwait(false);
+                var channel = channels.FirstOrDefault(i => string.Equals(i.Number, channelId, StringComparison.OrdinalIgnoreCase));
+                if (channel != null)
+                {
+                    videoCodec = channel.VideoCodec;
+                    audioCodec = channel.AudioCodec;
+
+                    videoBitrate = (channel.IsHD ?? true) ? 15000000 : 2000000;
+                    audioBitrate = (channel.IsHD ?? true) ? 448000 : 192000;
+                }
+            }
+
+            // normalize
+            if (string.Equals(videoCodec, "mpeg2", StringComparison.OrdinalIgnoreCase))
+            {
+                videoCodec = "mpeg2video";
+            }
+
+            string nal = null;
+            if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase))
+            {
+                nal = "0";
+            }
+
             var url = GetApiUrl(info, true) + "/auto/v" + channelId;
 
             if (!string.IsNullOrWhiteSpace(profile) && !string.Equals(profile, "native", StringComparison.OrdinalIgnoreCase))
@@ -319,16 +367,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                 Codec = videoCodec,
                                 Width = width,
                                 Height = height,
-                                BitRate = videoBitrate
-                                
+                                BitRate = videoBitrate,
+                                NalLengthSize = nal
+
                             },
                             new MediaStream
                             {
                                 Type = MediaStreamType.Audio,
                                 // Set the index to -1 because we don't know the exact index of the audio stream within the container
                                 Index = -1,
-                                Codec = "ac3",
-                                BitRate = 192000
+                                Codec = audioCodec,
+                                BitRate = audioBitrate
                             }
                         },
                 RequiresOpening = false,
@@ -337,7 +386,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 Container = "ts",
                 Id = profile,
                 SupportsDirectPlay = true,
-                SupportsDirectStream = true,
+                SupportsDirectStream = false,
                 SupportsTranscoding = true
             };
 
@@ -364,21 +413,22 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
             var hdhrId = GetHdHrIdFromChannelId(channelId);
 
-            list.Add(GetMediaSource(info, hdhrId, "native"));
+            list.Add(await GetMediaSource(info, hdhrId, "native").ConfigureAwait(false));
 
             try
             {
                 string model = await GetModelInfo(info, cancellationToken).ConfigureAwait(false);
                 model = model ?? string.Empty;
 
-                if (model.IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1)
+                if (info.AllowHWTranscoding && (model.IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1))
                 {
-                    list.Insert(0, GetMediaSource(info, hdhrId, "heavy"));
+                    list.Add(await GetMediaSource(info, hdhrId, "heavy").ConfigureAwait(false));
 
-                    list.Add(GetMediaSource(info, hdhrId, "internet480"));
-                    list.Add(GetMediaSource(info, hdhrId, "internet360"));
-                    list.Add(GetMediaSource(info, hdhrId, "internet240"));
-                    list.Add(GetMediaSource(info, hdhrId, "mobile"));
+                    list.Add(await GetMediaSource(info, hdhrId, "internet540").ConfigureAwait(false));
+                    list.Add(await GetMediaSource(info, hdhrId, "internet480").ConfigureAwait(false));
+                    list.Add(await GetMediaSource(info, hdhrId, "internet360").ConfigureAwait(false));
+                    list.Add(await GetMediaSource(info, hdhrId, "internet240").ConfigureAwait(false));
+                    list.Add(await GetMediaSource(info, hdhrId, "mobile").ConfigureAwait(false));
                 }
             }
             catch (Exception ex)
@@ -409,7 +459,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
             var hdhrId = GetHdHrIdFromChannelId(channelId);
 
-            return GetMediaSource(info, hdhrId, streamId);
+            return await GetMediaSource(info, hdhrId, streamId).ConfigureAwait(false);
         }
 
         public async Task Validate(TunerHostInfo info)
@@ -419,16 +469,29 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 return;
             }
 
-            // Test it by pulling down the lineup
-            using (var stream = await _httpClient.Get(new HttpRequestOptions
+            try
             {
-                Url = string.Format("{0}/discover.json", GetApiUrl(info, false)),
-                CancellationToken = CancellationToken.None
-            }))
-            {
-                var response = JsonSerializer.DeserializeFromStream<DiscoverResponse>(stream);
+                // Test it by pulling down the lineup
+                using (var stream = await _httpClient.Get(new HttpRequestOptions
+                {
+                    Url = string.Format("{0}/discover.json", GetApiUrl(info, false)),
+                    CancellationToken = CancellationToken.None
+                }))
+                {
+                    var response = JsonSerializer.DeserializeFromStream<DiscoverResponse>(stream);
 
-                info.DeviceId = response.DeviceID;
+                    info.DeviceId = response.DeviceID;
+                }
+            }
+            catch (HttpException ex)
+            {
+                if (ex.StatusCode.HasValue && ex.StatusCode.Value == System.Net.HttpStatusCode.NotFound)
+                {
+                    // HDHR4 doesn't have this api
+                    return;
+                }
+
+                throw;
             }
         }
 

@@ -258,7 +258,6 @@ namespace MediaBrowser.WebDashboard.Api
 
                     if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
                     {
-                        html = ModifyForCordova(html);
                     }
                     else if (!string.IsNullOrWhiteSpace(path) && !string.Equals(path, "index.html", StringComparison.OrdinalIgnoreCase))
                     {
@@ -274,7 +273,7 @@ namespace MediaBrowser.WebDashboard.Api
                         }
                         var mainFile = File.ReadAllText(GetDashboardResourcePath("index.html"));
 
-                        html = ReplaceFirst(mainFile, "<div class=\"mainAnimatedPage hide\"></div>", "<div class=\"mainAnimatedPage hide\">" + html + "</div>");
+                        html = ReplaceFirst(mainFile, "<div class=\"mainAnimatedPages skinBody\"></div>", "<div class=\"mainAnimatedPages skinBody hide\">" + html + "</div>");
                     }
 
                     if (!string.IsNullOrWhiteSpace(localizationCulture))
@@ -339,41 +338,6 @@ namespace MediaBrowser.WebDashboard.Api
             return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
         }
 
-        private string ModifyForCordova(string html)
-        {
-            // Replace CORDOVA_REPLACE_SUPPORTER_SUBMIT_START
-            html = ReplaceBetween(html, "<!--CORDOVA_REPLACE_SUPPORTER_SUBMIT_START-->", "<!--CORDOVA_REPLACE_SUPPORTER_SUBMIT_END-->", "<i class=\"fa fa-check\"></i><span>${ButtonPurchase}</span>");
-
-            return html;
-        }
-
-        private string ReplaceBetween(string html, string startToken, string endToken, string newHtml)
-        {
-            var start = html.IndexOf(startToken, StringComparison.OrdinalIgnoreCase);
-
-            if (start == -1)
-            {
-                return html;
-            }
-
-            var end = html.IndexOf(endToken, start, StringComparison.OrdinalIgnoreCase);
-
-            if (end == -1)
-            {
-                return html;
-            }
-
-            string result = html.Substring(start, end - start);
-            html = html.Replace(result, newHtml);
-
-            return ReplaceBetween(html, startToken, endToken, newHtml);
-        }
-
-        private string GetLocalizationToken(string phrase)
-        {
-            return "${" + phrase + "}";
-        }
-
         /// <summary>
         /// Gets the meta tags.
         /// </summary>
@@ -384,7 +348,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
             {
-                sb.Append("<meta http-equiv=\"Content-Security-Policy\" content=\"default-src * 'unsafe-inline' 'unsafe-eval' data:;\">");
+                sb.Append("<meta http-equiv=\"Content-Security-Policy\" content=\"default-src * 'unsafe-inline' 'unsafe-eval' data: filesystem:;\">");
             }
 
             sb.Append("<link rel=\"manifest\" href=\"manifest.json\">");
@@ -415,6 +379,7 @@ namespace MediaBrowser.WebDashboard.Api
             sb.Append("<link rel=\"shortcut icon\" href=\"css/images/favicon.ico\">");
             sb.Append("<meta name=\"msapplication-TileImage\" content=\"css/images/touchicon144.png\">");
             sb.Append("<meta name=\"msapplication-TileColor\" content=\"#333333\">");
+            sb.Append("<meta name=\"theme-color\" content=\"#43A047\">");
 
             return sb.ToString();
         }
@@ -475,15 +440,7 @@ namespace MediaBrowser.WebDashboard.Api
                 files.Insert(0, "cordova.js");
             }
 
-            var tags = files.Select(s =>
-            {
-                if (s.IndexOf("require", StringComparison.OrdinalIgnoreCase) == -1)
-                {
-                    return string.Format("<script src=\"{0}\" async></script>", s);
-                }
-                return string.Format("<script src=\"{0}\"></script>", s);
-
-            }).ToArray();
+            var tags = files.Select(s => string.Format("<script src=\"{0}\" defer></script>", s)).ToArray();
 
             builder.Append(string.Join(string.Empty, tags));
 

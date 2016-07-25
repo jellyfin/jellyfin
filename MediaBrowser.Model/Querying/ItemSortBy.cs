@@ -85,5 +85,6 @@ namespace MediaBrowser.Model.Querying
         public const string GameSystem = "GameSystem";
         public const string IsFavoriteOrLiked = "IsFavoriteOrLiked";
         public const string DateLastContentAdded = "DateLastContentAdded";
+        public const string SeriesDatePlayed = "SeriesDatePlayed";
     }
 }

@@ -103,6 +103,33 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
       });
 
+      test('set large step', function(done) {
+        // PolymerElements/paper-slider#135
+        range.min = 0;
+        range.max = 2625;
+        range.step = 875;
+        range.value = 875;
+        flush(function() {
+          assert.equal(range.value, 875);
+          done();
+        });
+      });
+
+      test('set step with min', function(done) {
+        range.min = -0.9;
+        range.max = 1.1;
+        range.step = 0.5;
+        range.value = -0.5;
+        flush(function() {
+          assert.equal(range.value, -0.4);
+          range.value = 0.7;
+          flush(function() {
+            assert.equal(range.value, 0.6);
+            done();
+          });
+        });
+      });
+
       test('odd values', function(done) {
         range.min = 1;
         range.max = 7;

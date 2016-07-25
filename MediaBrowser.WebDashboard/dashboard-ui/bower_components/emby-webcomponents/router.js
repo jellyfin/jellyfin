@@ -1,4 +1,4 @@
-define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'browser', 'pageJs'], function (loading, viewManager, skinManager, pluginManager, backdrop, browser, page) {
+define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'browser', 'pageJs', 'appSettings'], function (loading, viewManager, skinManager, pluginManager, backdrop, browser, page, appSettings) {
 
     var embyRouter = {
         showLocalLogin: function (apiClient, serverId, manualLogin) {
@@ -15,6 +15,24 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         },
         showSettings: function () {
             show('/settings/settings.html');
+        },
+        showSearch: function () {
+            skinManager.getCurrentSkin().search();
+        },
+        showGenre: function (options) {
+            skinManager.getCurrentSkin().showGenre(options);
+        },
+        showGuide: function () {
+            skinManager.getCurrentSkin().showGuide();
+        },
+        showLiveTV: function () {
+            skinManager.getCurrentSkin().showLiveTV();
+        },
+        showRecordedTV: function () {
+            skinManager.getCurrentSkin().showRecordedTV();
+        },
+        showFavorites: function () {
+            skinManager.getCurrentSkin().showFavorites();
         }
     };
 
@@ -26,7 +44,11 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
 
         loading.show();
 
-        connectionManager.connect().then(function (result) {
+        connectionManager.connect({
+
+            enableAutoLogin: appSettings.enableAutoLogin()
+
+        }).then(function (result) {
             handleConnectionResult(result, loading);
         });
     }
@@ -66,7 +88,12 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
             case MediaBrowser.ConnectionState.ServerUpdateNeeded:
                 {
                     require(['alert'], function (alert) {
-                        alert(Globalize.translate('core#ServerUpdateNeeded', '<a href="https://emby.media">https://emby.media</a>')).then(function () {
+                        alert({
+
+                            text: Globalize.translate('sharedcomponents#ServerUpdateNeeded', 'https://emby.media'),
+                            html: Globalize.translate('sharedcomponents#ServerUpdateNeeded', '<a href="https://emby.media">https://emby.media</a>')
+
+                        }).then(function () {
                             embyRouter.showSelectServer();
                         });
                     });
@@ -159,6 +186,11 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
     var currentViewLoadRequest;
     function sendRouteToViewManager(ctx, next, route, controllerFactory) {
 
+        if (isDummyBackToHome && route.type == 'home') {
+            isDummyBackToHome = false;
+            return;
+        }
+
         cancelCurrentLoadRequest();
 
         var isBackNav = ctx.isBack;
@@ -190,12 +222,11 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
 
         if (!isBackNav) {
             // Don't force a new view for home due to the back menu
-            if (route.type != 'home') {
-                onNewViewNeeded();
-                return;
-            }
+            //if (route.type != 'home') {
+            onNewViewNeeded();
+            return;
+            //}
         }
-
         viewManager.tryRestoreView(currentRequest).then(function () {
 
             // done
@@ -216,7 +247,11 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
 
             connectionManager = connectionManagerInstance;
 
-            connectionManager.connect().then(function (result) {
+            connectionManager.connect({
+
+                enableAutoLogin: appSettings.enableAutoLogin()
+
+            }).then(function (result) {
 
                 firstConnectionResult = result;
 
@@ -263,17 +298,17 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         var apiClient = connectionManager.currentApiClient();
         var pathname = ctx.pathname.toLowerCase();
 
-        console.log('Emby.Page - processing path request ' + pathname);
+        console.log('embyRouter - processing path request ' + pathname);
 
         if ((!apiClient || !apiClient.isLoggedIn()) && !route.anonymous) {
-            console.log('Emby.Page - route does not allow anonymous access, redirecting to login');
+            console.log('embyRouter - route does not allow anonymous access, redirecting to login');
             beginConnectionWizard();
             return;
         }
 
         if (apiClient && apiClient.isLoggedIn()) {
 
-            console.log('Emby.Page - user is authenticated');
+            console.log('embyRouter - user is authenticated');
 
             var isCurrentRouteStartup = currentRouteInfo ? currentRouteInfo.route.startup : true;
             if (ctx.isBack && (route.isDefaultRoute || route.startup) && !isCurrentRouteStartup) {
@@ -281,16 +316,21 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
                 return;
             }
             else if (route.isDefaultRoute) {
-                console.log('Emby.Page - loading skin home page');
+                console.log('embyRouter - loading skin home page');
                 skinManager.loadUserSkin();
                 return;
             } else if (route.roles) {
-                validateRoles(apiClient, route.roles, callback).then(callback, beginConnectionWizard);
+                validateRoles(apiClient, route.roles).then(function () {
+
+                    apiClient.ensureWebSocket();
+                    callback();
+
+                }, beginConnectionWizard);
                 return;
             }
         }
 
-        console.log('Emby.Page - proceeding to ' + pathname);
+        console.log('embyRouter - proceeding to ' + pathname);
         callback();
     }
 
@@ -318,21 +358,21 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
     }
 
     var isHandlingBackToDefault;
+    var isDummyBackToHome;
+
     function handleBackToDefault() {
 
+        isDummyBackToHome = true;
         skinManager.loadUserSkin();
 
         if (isHandlingBackToDefault) {
             return;
         }
 
-        isHandlingBackToDefault = true;
-
         // This must result in a call to either 
         // skinManager.loadUserSkin();
         // Logout
         // Or exit app
-
         skinManager.getCurrentSkin().showBackMenu().then(function () {
 
             isHandlingBackToDefault = false;
@@ -433,21 +473,19 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
     }
     function show(path, options) {
 
-        return new Promise(function (resolve, reject) {
+        var baseRoute = baseUrl();
+        path = path.replace(baseRoute, '');
 
-            var baseRoute = baseUrl();
-            path = path.replace(baseRoute, '');
+        if (currentRouteInfo && currentRouteInfo.path == path) {
 
-            if (currentRouteInfo && currentRouteInfo.path == path) {
-
-                // can't use this with home right now due to the back menu
-                if (currentRouteInfo.route.type != 'home') {
-                    resolve();
-                    return;
-                }
+            // can't use this with home right now due to the back menu
+            if (currentRouteInfo.route.type != 'home') {
+                return Promise.resolve();
             }
+        }
 
-            page.show(path, options);
+        page.show(path, options);
+        return new Promise(function (resolve, reject) {
             setTimeout(resolve, 500);
         });
     }
@@ -468,11 +506,15 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         return show(pluginManager.mapRoute(skin, homeRoute));
     }
 
-    function showItem(item) {
+    function showItem(item, serverId) {
 
         if (typeof (item) === 'string') {
-            Emby.Models.item(item).then(showItem);
-
+            require(['connectionManager'], function (connectionManager) {
+                var apiClient = serverId ? connectionManager.getApiClient(serverId) : connectionManager.currentApiClient();
+                apiClient.getItem(apiClient.getCurrentUserId(), item).then(function (item) {
+                    embyRouter.showItem(item);
+                });
+            });
         } else {
             skinManager.getCurrentSkin().showItem(item);
         }

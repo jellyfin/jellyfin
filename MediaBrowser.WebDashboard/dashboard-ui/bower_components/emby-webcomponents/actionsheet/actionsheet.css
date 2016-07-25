@@ -1,30 +1,58 @@
 .actionSheet {
     display: flex;
     justify-content: center;
+    padding: 0;
+    border: none;
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12);
+    max-height: 84%;
 }
 
-    .actionSheet.centered .actionSheetContent {
-        text-align: center;
-        align-items: center;
-    }
+.layout-tv .actionSheet {
+    max-height: none;
+}
+
+.actionSheet.centered .actionSheetContent {
+    text-align: center;
+    align-items: center;
+}
 
 .actionSheetContent {
     margin: 0 !important;
-    padding: 1em 1em !important;
+    padding: .4em 0 !important;
     flex-direction: column;
     display: flex;
     justify-content: center;
-    height: 100%;
+    flex-grow: 1;
+    align-items: center;
+    text-align: center;
 }
 
-.actionSheetMenuItem {
-    padding: .5em .5em;
+button.actionSheetMenuItem {
+    padding: 0 1.6em;
     margin: 0;
     text-transform: none;
     text-align: inherit;
     display: flex;
-    justify-content: center;
     font-weight: inherit;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.actionSheetItemText {
+    padding: .8em 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+.noflex .actionSheetItemText {
+    display: inline-block;
+}
+
+.layout-tv button.actionSheetMenuItem {
+    padding-top: .16em;
+    padding-bottom: .16em;
 }
 
 .actionSheetItemIcon {
@@ -32,23 +60,36 @@
 }
 
 .actionSheetScroller {
-    max-height: 60%;
-    overflow-x: hidden;
-    overflow-y: auto;
     /* Override default style being applied by polymer */
     margin-bottom: 0 !important;
-    scroll-behavior: smooth;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 }
 
-    .actionSheetScroller::-webkit-scrollbar, .actionSheetScroller::-webkit-scrollbar {
-        width: 0 !important;
-        display: none;
-    }
+.layout-tv .actionSheetScroller {
+    max-height: 60%;
+    max-width: 60%;
+    width: auto;
+}
 
 h1.actionSheetTitle {
     margin: .5em 0 1em !important;
+    padding: 0 1em;
+    flex-grow: 0;
 }
 
 h2.actionSheetTitle {
     margin: .25em 0 .55em !important;
+    padding: 0 1em;
+    flex-grow: 0;
+}
+
+.actionSheetText {
+    padding: 0 1em;
+    flex-grow: 0;
+}
+
+.actionSheet.extraSpacing {
+    font-size: 108%;
 }

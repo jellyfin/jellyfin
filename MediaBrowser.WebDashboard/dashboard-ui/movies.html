@@ -1,100 +1,111 @@
-﻿<div id="moviesPage" data-role="page" data-dom-cache="true" class="page libraryPage backdropPage pageWithAbsoluteTabs collectionEditorPage" data-backdroptype="movie" data-require="scripts/moviesrecommended,paper-tabs,paper-checkbox,paper-fab,scripts/alphapicker">
+﻿<div id="moviesPage" data-role="page" data-dom-cache="true" class="page libraryPage backdropPage collectionEditorPage pageWithAbsoluteTabs" data-backdroptype="movie">
 
-    <div class="libraryViewNav libraryViewNavWithMinHeight">
-        <paper-tabs hidescrollbuttons noink>
-            <paper-tab>${TabSuggestions}</paper-tab>
-            <paper-tab>${TabMovies}</paper-tab>
-            <paper-tab class="movieTrailersTab">${TabTrailers}</paper-tab>
-            <paper-tab>${TabCollections}</paper-tab>
-            <paper-tab>${TabGenres}</paper-tab>
-            <paper-tab class="movieStudiosTab">${TabStudios}</paper-tab>
-        </paper-tabs>
-        <div class="legacyTabs scopedLibraryViewNav">
-            <a href="movies.html">${TabSuggestions}</a>
-            <a href="movies.html?tab=1">${TabMovies}</a>
-            <a href="movies.html?tab=2" class="movieTrailersTab">${TabTrailers}</a>
-            <a href="movies.html?tab=3">${TabCollections}</a>
-            <a href="movies.html?tab=4">${TabGenres}</a>
-            <a href="movies.html?tab=5" class="movieStudiosTab">${TabStudios}</a>
+    <div class="libraryViewNav">
+        <div class="contentScrollSlider">
+            <button class="pageTabButton is-active" data-index="0">${TabSuggestions}</button>
+            <button class="pageTabButton" data-index="1">${TabMovies}</button>
+            <button class="pageTabButton movieTrailersTab" data-index="2">${TabTrailers}</button>
+            <button class="pageTabButton" data-index="3">${TabCollections}</button>
+            <button class="pageTabButton" data-index="4">${TabGenres}</button>
+            <button class="pageTabButton movieStudiosTab" data-index="5">${TabStudios}</button>
         </div>
     </div>
-
-    <div class="ehsContent fullWidth pageTabsContainer">
-        <div class="pageTabContent hide" data-index="0">
-            <div id="resumableSection" style="display: none;" class="homePageSection">
-                <div>
-                    <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderResume}</h1>
-                    <paper-button raised class="submit mini categorySyncButton" data-category="Resume"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
-                </div>
-
-                <div id="resumableItems" class="itemsContainer noautoinit">
-                </div>
+    <div class="is-active pageTabContent ehsContent" id="suggestionsTab" data-index="0">
+        <div id="resumableSection" class="homePageSection hide">
+            <div>
+                <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderResume}</h1>
+                <button is="emby-button" type="button" class="raised submit mini categorySyncButton" data-category="Resume">
+                    <i class="md-icon">sync</i>
+                    <span>${ButtonSync}</span>
+                </button>
             </div>
 
-            <div class="homePageSection">
-                <div>
-                    <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderLatestMovies}</h1>
-                    <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="sync"></iron-icon><span>${ButtonSync}</span></paper-button>
-                </div>
-
-                <div id="recentlyAddedItems" class="itemsContainer noautoinit">
-                </div>
-            </div>
-
-            <div class="recommendations homePageSection">
-            </div>
-            <div class="noItemsMessage" style="display: none;">
-                <br />
-                <p>${MessageNoMovieSuggestionsAvailable}</p>
+            <div is="emby-itemscontainer" id="resumableItems" class="itemsContainer">
             </div>
         </div>
-        <div class="pageTabContent hide" data-index="1">
-            <div class="alphabetPicker">
-            </div>
-            <div class="viewSettings">
-                <div class="listTopPaging">
-                </div>
-            </div>
-            <div class="itemsContainer" style="text-align:center;"></div>
-        </div>
-        <div class="pageTabContent hide" data-index="2">
-            <div class="alphabetPicker">
-            </div>
-            <div class="viewSettings">
-                <div class="listTopPaging">
-                </div>
-            </div>
-            <div class="itemsContainer" style="text-align:center;"></div>
-            <p class="noItemsMessage" style="display:none;text-align:center;">${MessageNoTrailersFound}</p>
-        </div>
-        <div class="pageTabContent hide" data-index="3">
-            <div class="viewSettings">
 
-                <div class="listTopPaging">
-                    &nbsp;
-                </div>
-            </div>
-            <div class="itemsContainer" style="text-align:center;"></div>
-            <div class="noItemsMessage" style="display: none; text-align: center;">
-                <p>${MessageNoCollectionsAvailable}</p>
+        <div class="homePageSection">
+            <div>
+                <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderLatestMovies}</h1>
+                <button is="emby-button" type="button" class="raised submit mini categorySyncButton" data-category="Latest">
+                    <i class="md-icon">sync</i>
+                    <span>${ButtonSync}</span>
+                </button>
             </div>
 
-            <paper-fab class="btnNewCollection bottomFab" icon="add" style="position:fixed;right:20px;background-color:#db4437;"></paper-fab>
-        </div>
-        <div class="pageTabContent hide" data-index="4">
-            <div class="viewSettings">
-                <div class="listTopPaging">
-                </div>
+            <div is="emby-itemscontainer" id="recentlyAddedItems" class="itemsContainer">
             </div>
-            <div class="itemsContainer"></div>
         </div>
-        <div class="pageTabContent hide" data-index="5">
-            <div class="viewSettings">
-                <div class="listTopPaging">
-                </div>
+
+        <div class="recommendations homePageSection">
+        </div>
+        <div class="noItemsMessage hide">
+            <br />
+            <p>${MessageNoMovieSuggestionsAvailable}</p>
+        </div>
+    </div>
+    <div class="pageTabContent ehsContent" id="moviesTab" data-index="1">
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+            <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
+            <button is="paper-icon-button-light" class="btnSort autoSize" title="${ButtonSort}"><i class="md-icon">sort_by_alpha</i></button>
+            <button is="paper-icon-button-light" class="btnFilter autoSize" title="${ButtonFilter}"><i class="md-icon">filter_list</i></button>
+        </div>
+
+        <div class="alphaPicker alphabetPicker vertical">
+        </div>
+
+        <div is="emby-itemscontainer" class="itemsContainer itemsContainerWithAlphaPicker">
+        </div>
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+        </div>
+    </div>
+    <div class="pageTabContent ehsContent" id="trailersTab" data-index="2">
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+            <button is="paper-icon-button-light" class="btnSort autoSize" title="${ButtonSort}"><i class="md-icon">sort_by_alpha</i></button>
+            <button is="paper-icon-button-light" class="btnFilter autoSize" title="${ButtonFilter}"><i class="md-icon">filter_list</i></button>
+        </div>
+
+        <div class="alphaPicker alphabetPicker vertical">
+        </div>
+
+        <div is="emby-itemscontainer" class="itemsContainer itemsContainerWithAlphaPicker">
+        </div>
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+        </div>
+    </div>
+    <div class="pageTabContent ehsContent" id="collectionsTab" data-index="3">
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+            <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
+            <button is="paper-icon-button-light" class="btnSort autoSize" title="${ButtonSort}"><i class="md-icon">sort_by_alpha</i></button>
+            <button type="button" is="paper-icon-button-light" class="btnNewCollection autoSize"><i class="md-icon">add</i></button>
+        </div>
+
+        <div class="alphaPicker alphabetPicker vertical">
+        </div>
+
+        <div is="emby-itemscontainer" class="itemsContainer itemsContainerWithAlphaPicker" style="text-align:center;">
+        </div>
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+        </div>
+    </div>
+    <div class="pageTabContent ehsContent" id="genresTab" data-index="4">
+        <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
+            <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
+        </div>
+        <div is="emby-itemscontainer" id="items" class="itemsContainer paddedItemsContainer"></div>
+    </div>
+    <div class="pageTabContent ehsContent" id="studiosTab" data-index="5">
+        <div class="viewSettings">
+            <div class="listTopPaging">
             </div>
-            <div class="itemsContainer" style="text-align:center;"></div>
         </div>
+        <div is="emby-itemscontainer" id="items" class="itemsContainer paddedItemsContainer" style="text-align: center;"></div>
     </div>
 
     <div data-role="content">

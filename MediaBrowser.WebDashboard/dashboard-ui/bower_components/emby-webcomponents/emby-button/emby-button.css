@@ -1,0 +1,273 @@
+[is="emby-button"] {
+    position: relative;
+    display: inline-block;
+    align-items: center;
+    box-sizing: border-box;
+    margin: 0 .29em;
+    background: transparent;
+    text-align: center;
+    font-size: inherit;
+    font-family: inherit;
+    color: inherit;
+    outline-width: 0;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: pointer;
+    z-index: 0;
+    padding: 0.7em 0.57em;
+    font-weight: normal;
+    vertical-align: middle;
+    border: 0;
+    vertical-align: middle;
+    border-radius: 3px;
+    /* These are getting an outline in opera tv browsers, which run chrome 30 */
+    outline: none !important;
+    position: relative;
+    overflow: hidden;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+    [is="emby-button"].raised, [is="emby-button"].fab {
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+    }
+
+    [is="emby-button"].fab {
+        display: inline-flex;
+        border-radius: 50%;
+        min-width: 56px;
+        min-height: 56px;
+        height: 5.2vh;
+        width: 5.2vh;
+        background-color: #444;
+        padding: .6em;
+        box-sizing: border-box;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: #fff !important;
+        margin: 0;
+    }
+
+        [is="emby-button"].fab i {
+            height: 40px;
+            width: 40px;
+            vertical-align: middle;
+            font-size: 40px;
+        }
+
+    [is="emby-button"].noflex {
+        display: inline-block;
+        white-space: nowrap;
+    }
+
+    [is="emby-button"].fab.mini:not(.autoSize) {
+        min-width: 40px !important;
+        min-height: 40px !important;
+        height: 3.3vh !important;
+        width: 3.3vh !important;
+    }
+
+    [is="emby-button"].fab.mini {
+        padding: 8px;
+    }
+
+        [is="emby-button"].fab.mini i {
+            height: 24px !important;
+            width: 24px !important;
+            font-size: 24px !important;
+        }
+
+    [is="emby-button"].fab iron-icon {
+        width: 100%;
+        height: 100%;
+        vertical-align: middle;
+    }
+
+    [is="emby-button"].fab i {
+        vertical-align: middle;
+    }
+
+    [is="emby-button"].block {
+        display: block;
+        align-items: center;
+        justify-content: center;
+        margin: .25em 0;
+        width: 100%;
+    }
+
+    [is="emby-button"].raised:focus {
+        box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.4);
+        transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    [is="emby-button"] iron-icon + span {
+        margin-left: .5em;
+    }
+
+    [is="emby-button"] i + span {
+        margin-left: .5em;
+    }
+
+    [is="emby-button"] span + i {
+        margin-left: .5em;
+    }
+
+    [is="emby-button"]:not(.autoSize) i {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+    }
+
+[is=emby-button].autoSize {
+    width: auto !important;
+    height: auto !important;
+    min-height: initial !important;
+    min-width: initial !important;
+}
+
+[is=emby-button].iconRight i {
+    margin-left: auto;
+    margin-right: .25em;
+}
+
+[is=emby-button].noflex.iconRight i {
+    position: absolute;
+    right: 0;
+    top: 25%;
+    margin-right: .5em;
+}
+
+[is=paper-icon-button-light] {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    margin: 0 .29em;
+    background: transparent;
+    text-align: center;
+    font-size: inherit;
+    font-family: inherit;
+    color: inherit;
+    outline-width: 0;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: pointer;
+    z-index: 0;
+    min-width: 24px;
+    min-height: 24px;
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+    font-weight: normal;
+    vertical-align: middle;
+    border: 0;
+    vertical-align: middle;
+    /* These are getting an outline in opera tv browsers, which run chrome 30 */
+    outline: none !important;
+    position: relative;
+    overflow: hidden;
+    font-weight: 500;
+    text-transform: uppercase;
+    border-radius: 50%;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    justify-content: center;
+}
+
+    [is=paper-icon-button-light].autoSize {
+        width: auto !important;
+        height: auto !important;
+    }
+
+    [is=paper-icon-button-light][disabled] {
+        opacity: .3;
+    }
+
+    [is=paper-icon-button-light] i {
+        width: 24px;
+        height: 24px;
+        font-size: 24px;
+        /* Make sure its on top of the ripple */
+        position: relative;
+        z-index: 1;
+        vertical-align: middle;
+    }
+
+.layout-tv [is=paper-icon-button-light] {
+    width: auto;
+    height: auto;
+    min-width: initial;
+    min-height: initial;
+}
+
+    .layout-tv [is=paper-icon-button-light] i {
+        width: 3.7vh;
+        height: 3.7vh;
+        font-size: 3.7vh;
+    }
+
+[is=paper-icon-button-light] iron-icon {
+    width: 100%;
+    height: 100%;
+    /* Make sure its on top of the ripple */
+    position: relative;
+    z-index: 1;
+    vertical-align: middle;
+}
+
+[is=paper-icon-button-light] img {
+    width: 100%;
+    /* Can't use 100% height or it will stretch past the boundaries in safari */
+    /*height: 100%;*/
+    max-height: 100%;
+    /* Make sure its on top of the ripple */
+    position: relative;
+    z-index: 1;
+    vertical-align: middle;
+}
+
+[is=paper-icon-button-light]:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transition: opacity .3s ease-out;
+    background: currentcolor;
+    opacity: 0;
+}
+
+[is=paper-icon-button-light]:focus:after {
+    opacity: .2;
+}
+
+.ripple-effect {
+    position: absolute;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    top: 50%;
+    left: 50%;
+    background: currentcolor;
+    animation: ripple-animation .8s;
+    opacity: 0.25;
+    -webkit-transform: translate(0, 0);
+    transform: translate3d(0, 0, 0);
+}
+
+@keyframes ripple-animation {
+    from {
+        transform: none;
+        opacity: 0.5;
+    }
+
+    to {
+        transform: scale(20);
+        opacity: 0;
+    }
+}

@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'datetime', 'paper-icon-button-light'], function ($, datetime) {
 
     var query = {
 
@@ -11,23 +11,22 @@
     function showStatusMessage(id) {
 
         var item = currentResult.Items.filter(function (i) {
-            return i.Id == id;
 
+            return i.Id == id;
         })[0];
 
         Dashboard.alert({
 
             title: getStatusText(item, false),
             message: item.StatusMessage
-
         });
     }
 
     function deleteOriginalFile(page, id) {
 
         var item = currentResult.Items.filter(function (i) {
-            return i.Id == id;
 
+            return i.Id == id;
         })[0];
 
         var message = Globalize.translate('MessageFileWillBeDeleted') + '<br/><br/>' + item.OriginalPath + '<br/><br/>' + Globalize.translate('MessageSureYouWishToProceed');
@@ -44,7 +43,7 @@
 
                     reloadItems(page);
 
-                }, onApiFailure);
+                }, Dashboard.processErrorResponse);
             });
         });
     }
@@ -67,8 +66,8 @@
     function organizeFile(page, id) {
 
         var item = currentResult.Items.filter(function (i) {
-            return i.Id == id;
 
+            return i.Id == id;
         })[0];
 
         if (!item.TargetPath) {
@@ -102,7 +101,7 @@
 
                     reloadItems(page);
 
-                }, onApiFailure);
+                }, Dashboard.processErrorResponse);
             });
         });
     }
@@ -117,8 +116,7 @@
             renderResults(page, result);
 
             Dashboard.hideLoadingMsg();
-        }, onApiFailure);
-
+        }, Dashboard.processErrorResponse);
     }
 
     function getStatusText(item, enhance) {
@@ -149,7 +147,6 @@
             }
         }
 
-
         return status;
     }
 
@@ -163,7 +160,7 @@
 
             html += '<td>';
 
-            var date = parseISO8601Date(item.Date, { toLocal: true });
+            var date = datetime.parseISO8601Date(item.Date, true);
             html += date.toLocaleDateString();
 
             html += '</td>';
@@ -193,10 +190,10 @@
 
             html += '<td class="organizerButtonCell">';
 
-
             if (item.Status != 'Success') {
-                html += '<paper-icon-button data-resultid="' + item.Id + '" icon="folder" class="btnProcessResult organizerButton" title="' + Globalize.translate('ButtonOrganizeFile') + '"></paper-icon-button>';
-                html += '<paper-icon-button data-resultid="' + item.Id + '" icon="delete" class="btnDeleteResult organizerButton" title="' + Globalize.translate('ButtonDeleteFile') + '"></paper-icon-button>';
+
+                html += '<button type="button" is="paper-icon-button-light" data-resultid="' + item.Id + '" class="btnProcessResult organizerButton autoSize" title="' + Globalize.translate('ButtonOrganizeFile') + '"><i class="md-icon">folder</i></button>';
+                html += '<button type="button" is="paper-icon-button-light" data-resultid="' + item.Id + '" class="btnDeleteResult organizerButton autoSize" title="' + Globalize.translate('ButtonDeleteFile') + '"><i class="md-icon">delete</i></button>';
             }
 
             html += '</td>';
@@ -206,7 +203,7 @@
             return html;
         }).join('');
 
-        var elem = $('.resultBody', page).html(rows).parents('.tblOrganizationResults').table("refresh").trigger('create');
+        var elem = $('.resultBody', page).html(rows).parents('.tblOrganizationResults').table('refresh').trigger('create');
 
         $('.btnShowStatusMessage', elem).on('click', function () {
 
@@ -240,25 +237,29 @@
         $(page)[0].querySelector('.listTopPaging').innerHTML = pagingHtml;
 
         if (result.TotalRecordCount > query.Limit && result.TotalRecordCount > 50) {
+
             $('.listBottomPaging', page).html(pagingHtml).trigger('create');
         } else {
+
             $('.listBottomPaging', page).empty();
         }
 
         $('.btnNextPage', page).on('click', function () {
+
             query.StartIndex += query.Limit;
             reloadItems(page);
         });
 
         $('.btnPreviousPage', page).on('click', function () {
+
             query.StartIndex -= query.Limit;
             reloadItems(page);
         });
 
         if (result.TotalRecordCount) {
-            $('.btnClearLog', page).show();
+            page.querySelector('.btnClearLog').classList.remove('hide');
         } else {
-            $('.btnClearLog', page).hide();
+            page.querySelector('.btnClearLog').classList.add('hide');
         }
     }
 
@@ -272,25 +273,20 @@
         }
     }
 
-    function onApiFailure(e) {
-
-        Dashboard.hideLoadingMsg();
-
-        var page = $.mobile.activePage;
-        $('.episodeCorrectionPopup', page).popup("close");
-
-        if (e.status == 0) {
-            Dashboard.alert({
-                title: 'Auto-Organize',
-                message: 'The operation is going to take a little longer. The view will be updated on completion.'
-            });
-        }
-        else {
-            Dashboard.alert({
-                title: Globalize.translate('AutoOrganizeError'),
-                message: Globalize.translate('ErrorOrganizingFileWithErrorCode', e.getResponseHeader("X-Application-Error-Code"))
-            });
-        }
+    function getTabs() {
+        return [
+        {
+            href: 'autoorganizelog.html',
+            name: Globalize.translate('TabActivityLog')
+        },
+         {
+             href: 'autoorganizetv.html',
+             name: Globalize.translate('TabTV')
+         },
+         {
+             href: 'autoorganizesmart.html',
+             name: Globalize.translate('TabSmartMatches')
+         }];
     }
 
     $(document).on('pageinit', "#libraryFileOrganizerLogPage", function () {
@@ -301,11 +297,12 @@
 
             ApiClient.clearOrganizationLog().then(function () {
                 reloadItems(page);
-            }, onApiFailure);
-
+            }, Dashboard.processErrorResponse);
         });
 
-    }).on('pageshow', "#libraryFileOrganizerLogPage", function () {
+    }).on('pageshow', '#libraryFileOrganizerLogPage', function () {
+
+        LibraryMenu.setTabs('autoorganize', 0, getTabs);
 
         var page = this;
 
@@ -315,13 +312,13 @@
         $('.btnOrganize', page).taskButton({
             mode: 'on',
             progressElem: page.querySelector('.organizeProgress'),
-            panel: $('.organizeTaskPanel', page),
+            panel: page.querySelector('.organizeTaskPanel'),
             taskKey: 'AutoOrganize'
         });
 
-        Events.on(ApiClient, "websocketmessage", onWebSocketMessage);
+        Events.on(ApiClient, 'websocketmessage', onWebSocketMessage);
 
-    }).on('pagebeforehide', "#libraryFileOrganizerLogPage", function () {
+    }).on('pagebeforehide', '#libraryFileOrganizerLogPage', function () {
 
         var page = this;
 
@@ -332,7 +329,7 @@
             mode: 'off'
         });
 
-        Events.off(ApiClient, "websocketmessage", onWebSocketMessage);
+        Events.off(ApiClient, 'websocketmessage', onWebSocketMessage);
     });
 
 });

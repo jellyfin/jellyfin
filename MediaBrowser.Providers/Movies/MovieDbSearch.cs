@@ -18,11 +18,11 @@ namespace MediaBrowser.Providers.Movies
     public class MovieDbSearch
     {
         private static readonly CultureInfo EnUs = new CultureInfo("en-US");
-        private const string Search3 = @"http://api.themoviedb.org/3/search/{3}?api_key={1}&query={0}&language={2}";
+        private const string Search3 = @"https://api.themoviedb.org/3/search/{3}?api_key={1}&query={0}&language={2}";
 
         internal static string ApiKey = "f6bd687ffa63cd282b6ff2c6877f2669";
         internal static string AcceptHeader = "application/json,image/*";
-        
+
         private readonly ILogger _logger;
         private readonly IJsonSerializer _json;
         private readonly ILibraryManager _libraryManager;
@@ -54,9 +54,14 @@ namespace MediaBrowser.Providers.Movies
             var name = idInfo.Name;
             var year = idInfo.Year;
 
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return new List<RemoteSearchResult>();
+            }
+
             var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
-            var tmdbImageUrl = tmdbSettings.images.base_url + "original";
+            var tmdbImageUrl = tmdbSettings.images.secure_base_url + "original";
 
             if (!string.IsNullOrWhiteSpace(name))
             {
@@ -73,7 +78,7 @@ namespace MediaBrowser.Providers.Movies
             //var searchType = item is BoxSet ? "collection" : "movie";
 
             var results = await GetSearchResults(name, searchType, year, language, tmdbImageUrl, cancellationToken).ConfigureAwait(false);
-            
+
             if (results.Count == 0)
             {
                 //try in english if wasn't before
@@ -123,19 +128,23 @@ namespace MediaBrowser.Providers.Movies
             });
         }
 
-        private async Task<List<RemoteSearchResult>> GetSearchResults(string name, string type, int? year, string language, string baseImageUrl, CancellationToken cancellationToken)
+        private Task<List<RemoteSearchResult>> GetSearchResults(string name, string type, int? year, string language, string baseImageUrl, CancellationToken cancellationToken)
         {
             switch (type)
             {
                 case "tv":
-                    return await GetSearchResultsTv(name, year, language, baseImageUrl, cancellationToken);
+                    return GetSearchResultsTv(name, year, language, baseImageUrl, cancellationToken);
                 default:
-                    return await GetSearchResultsGeneric(name, type, year, language, baseImageUrl, cancellationToken);
+                    return GetSearchResultsGeneric(name, type, year, language, baseImageUrl, cancellationToken);
             }
         }
 
         private async Task<List<RemoteSearchResult>> GetSearchResultsGeneric(string name, string type, int? year, string language, string baseImageUrl, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException("name");
+            }
 
             var url3 = string.Format(Search3, WebUtility.UrlEncode(name), ApiKey, language, type);
 
@@ -189,6 +198,11 @@ namespace MediaBrowser.Providers.Movies
 
         private async Task<List<RemoteSearchResult>> GetSearchResultsTv(string name, int? year, string language, string baseImageUrl, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException("name");
+            }
+
             var url3 = string.Format(Search3, WebUtility.UrlEncode(name), ApiKey, language, "tv");
 
             using (var json = await MovieDbProvider.Current.GetMovieDbResponse(new HttpRequestOptions

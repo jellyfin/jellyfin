@@ -1,24 +1,23 @@
-﻿<div id="mySyncActivityPage" data-role="page" class="page libraryPage syncActivityPage mySyncPage noSecondaryNavPage" data-contextname="${TitleSync}" data-require="scripts/syncactivity,scripts/taskbutton,scripts/mysync,paper-spinner,paper-fab">
+﻿<div id="mySyncActivityPage" data-role="page" class="page libraryPage syncActivityPage mySyncPage noSecondaryNavPage" data-contextname="${TitleSync}">
 
     <div data-role="content">
 
         <div class="supporterPromotionContainer" style="display:none;text-align: right;">
             <div class="customSupporterPromotion supporterPromotion inlineSupporterPromotion">
-                <paper-button raised class="accent block btnSyncSupporter">
+                <button is="emby-button" type="button" class="raised accent block btnSyncSupporter">
                     <div class="mainText">
                     </div>
                     <div class="btnLearnMore" style="font-weight: normal; margin-top: .25em;">
                         ${ButtonLearnMore}
                     </div>
-                </paper-button>
+                </button>
             </div>
         </div>
         <div class="ehsContent" style="clear:both;">
             <br />
             <div class="localSyncStatus hide" style="text-align:right;margin:0 0 1em;">
                 <span style="vertical-align: middle;margin-right:.5em;" class="labelSyncStatus"></span>
-                <paper-spinner class="syncSpinner" active style="vertical-align: middle;"></paper-spinner>
-                <paper-fab class="btnSyncNow mini accent" icon="sync" style="margin-right:.5em;"></paper-fab>
+                <button type="button" is="emby-button" class="btnSyncNow mini accent fab autoSize" style="margin-right:.5em;"><i class="md-icon">sync</i></button>
             </div>
             <div class="syncActivity">
 

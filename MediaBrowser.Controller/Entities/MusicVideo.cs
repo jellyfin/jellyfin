@@ -10,12 +10,6 @@ namespace MediaBrowser.Controller.Entities
     public class MusicVideo : Video, IHasArtist, IHasMusicGenres, IHasProductionLocations, IHasBudget, IHasLookupInfo<MusicVideoInfo>
     {
         /// <summary>
-        /// Gets or sets the album.
-        /// </summary>
-        /// <value>The album.</value>
-        public string Album { get; set; }
-
-        /// <summary>
         /// Gets or sets the budget.
         /// </summary>
         /// <value>The budget.</value>
@@ -42,15 +36,6 @@ namespace MediaBrowser.Controller.Entities
             {
                 return Artists;
             }
-        }
-
-        /// <summary>
-        /// Gets the user data key.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        protected override string CreateUserDataKey()
-        {
-            return this.GetProviderId(MetadataProviders.Tmdb) ?? this.GetProviderId(MetadataProviders.Imdb) ?? base.CreateUserDataKey();
         }
 
         public override UnratedItem GetBlockUnratedType()

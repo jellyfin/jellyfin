@@ -10,6 +10,7 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,7 +23,8 @@ namespace MediaBrowser.Server.Implementations.Library
     {
         public event EventHandler<UserDataSaveEventArgs> UserDataSaved;
 
-        private readonly ConcurrentDictionary<string, UserItemData> _userData = new ConcurrentDictionary<string, UserItemData>();
+        private readonly ConcurrentDictionary<string, UserItemData> _userData =
+            new ConcurrentDictionary<string, UserItemData>(StringComparer.OrdinalIgnoreCase);
 
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
@@ -56,27 +58,28 @@ namespace MediaBrowser.Server.Implementations.Library
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var key = item.GetUserDataKey();
+            var keys = item.GetUserDataKeys();
 
-            try
+            foreach (var key in keys)
             {
-                await Repository.SaveUserData(userId, key, userData, cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    await Repository.SaveUserData(userId, key, userData, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error saving user data", ex);
 
-                var newValue = userData;
-
-                // Once it succeeds, put it into the dictionary to make it available to everyone else
-                _userData.AddOrUpdate(GetCacheKey(userId, key), newValue, delegate { return newValue; });
+                    throw;
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error saving user data", ex);
 
-                throw;
-            }
+            var cacheKey = GetCacheKey(userId, item.Id);
+            _userData.AddOrUpdate(cacheKey, userData, (k, v) => userData);
 
             EventHelper.FireEventIfNotNull(UserDataSaved, this, new UserDataSaveEventArgs
             {
-                Key = key,
+                Keys = keys,
                 UserData = userData,
                 SaveReason = reason,
                 UserId = userId,
@@ -116,7 +119,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 throw;
             }
-            
+
         }
 
         /// <summary>
@@ -134,51 +137,86 @@ namespace MediaBrowser.Server.Implementations.Library
             return Repository.GetAllUserData(userId);
         }
 
-        /// <summary>
-        /// Gets the user data.
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="key">The key.</param>
-        /// <returns>Task{UserItemData}.</returns>
-        public UserItemData GetUserData(Guid userId, string key)
+        public UserItemData GetUserData(Guid userId, Guid itemId, List<string> keys)
         {
             if (userId == Guid.Empty)
             {
                 throw new ArgumentNullException("userId");
             }
-            if (string.IsNullOrEmpty(key))
+            if (keys == null)
             {
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException("keys");
+            }
+            if (keys.Count == 0)
+            {
+                throw new ArgumentException("UserData keys cannot be empty.");
             }
 
-            return _userData.GetOrAdd(GetCacheKey(userId, key), keyName => GetUserDataFromRepository(userId, key));
+            var cacheKey = GetCacheKey(userId, itemId);
+
+            return _userData.GetOrAdd(cacheKey, k => GetUserDataInternal(userId, keys));
         }
 
-        public UserItemData GetUserDataFromRepository(Guid userId, string key)
+        private UserItemData GetUserDataInternal(Guid userId, List<string> keys)
         {
-            var data = Repository.GetUserData(userId, key);
+            var userData = Repository.GetUserData(userId, keys);
 
-            return data;
+            if (userData != null)
+            {
+                return userData;
+            }
+
+            if (keys.Count > 0)
+            {
+                return new UserItemData
+                {
+                    UserId = userId,
+                    Key = keys[0]
+                };
+            }
+
+            return null;
         }
 
         /// <summary>
         /// Gets the internal key.
         /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="key">The key.</param>
         /// <returns>System.String.</returns>
-        private string GetCacheKey(Guid userId, string key)
+        private string GetCacheKey(Guid userId, Guid itemId)
         {
-            return userId + key;
+            return userId.ToString("N") + itemId.ToString("N");
         }
 
-        public UserItemDataDto GetUserDataDto(IHasUserData item, User user)
+        public UserItemData GetUserData(IHasUserData user, IHasUserData item)
         {
-            var userData = GetUserData(user.Id, item.GetUserDataKey());
+            return GetUserData(user.Id, item);
+        }
+
+        public UserItemData GetUserData(string userId, IHasUserData item)
+        {
+            return GetUserData(new Guid(userId), item);
+        }
+
+        public UserItemData GetUserData(Guid userId, IHasUserData item)
+        {
+            return GetUserData(userId, item.Id, item.GetUserDataKeys());
+        }
+
+        public async Task<UserItemDataDto> GetUserDataDto(IHasUserData item, User user)
+        {
+            var userData = GetUserData(user.Id, item);
             var dto = GetUserItemDataDto(userData);
 
-            item.FillUserDataDtoValues(dto, userData, user);
+            await item.FillUserDataDtoValues(dto, userData, null, user).ConfigureAwait(false);
+            return dto;
+        }
 
+        public async Task<UserItemDataDto> GetUserDataDto(IHasUserData item, BaseItemDto itemDto, User user)
+        {
+            var userData = GetUserData(user.Id, item);
+            var dto = GetUserItemDataDto(userData);
+
+            await item.FillUserDataDtoValues(dto, userData, itemDto, user).ConfigureAwait(false);
             return dto;
         }
 
@@ -260,11 +298,6 @@ namespace MediaBrowser.Server.Implementations.Library
             data.PlaybackPositionTicks = positionTicks;
 
             return playedToCompletion;
-        }
-
-        public UserItemData GetUserData(string userId, string key)
-        {
-            return GetUserData(new Guid(userId), key);
         }
     }
 }

@@ -12,9 +12,9 @@
         currentItemId = itemId;
 
         if (itemId) {
-            require(['components/metadataeditor/metadataeditor'], function (metadataeditor) {
+            require(['metadataEditor'], function (metadataEditor) {
 
-                metadataeditor.embed(page.querySelector('.editPageInnerContent'), itemId);
+                metadataEditor.embed(page.querySelector('.editPageInnerContent'), itemId, ApiClient.serverInfo().Id);
             });
         } else {
             page.querySelector('.editPageInnerContent').innerHTML = '';

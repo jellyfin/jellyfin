@@ -1,0 +1,21 @@
+﻿<div class="tvGuideHeader">
+    <div class="channelTimeslotHeader">
+        <button class="btnSelectDate clearButton" style="display:block;"></button>
+    </div>
+    <div class="timeslotHeaders smoothScrollX" style="scroll-behavior: auto;"></div>
+</div>
+
+<div class="smoothScrollY guideVerticalScroller programContainer" style="flex-grow: 1;">
+    <div class="channelList"></div>
+
+    <div class="programGridContainer programGrid smoothScrollX" style="white-space: nowrap;">
+    </div>
+</div>
+
+<div class="guideRequiresUnlock readOnlyContent hide" style="margin:1em auto;text-align:center;padding:1em;flex-shrink:0;">
+    <p class="unlockText"></p>
+    <button is="emby-button" type="button" class="raised secondary block btnUnlockGuide">
+        <i class="md-icon">check</i>
+        <span>${UnlockGuide}</span>
+    </button>
+</div>

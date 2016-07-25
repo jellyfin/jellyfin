@@ -1,4 +1,4 @@
-﻿<div id="publicSharedItemPage" data-role="page" class="page standalonePage noSecondaryNavPage" data-theme="b" data-require="scripts/shared,scripts/itemdetailpage,tileitemcss,scripts/livetvcomponents,paper-fab">
+﻿<div id="publicSharedItemPage" data-role="page" class="page standalonePage noSecondaryNavPage" data-theme="b" data-require="scripts/shared,scripts/itemdetailpage,tileitemcss,scripts/livetvcomponents">
 
     <style>
         #publicSharedItemPage .header {
@@ -11,7 +11,7 @@
             border-bottom-right-radius: 10px;
         }
     </style>
-    <div class="header"><a class="logo" href="http://emby.media" style="text-decoration:none;font-size: 22px;" target="_blank"><img class="imgLogoIcon" src="css/images/mblogoicon.png"><span class="logoLibraryMenuButtonText">EMBY</span></a></div>
+    <div class="header"><a class="logo" href="http://emby.media" style="text-decoration:none;font-size: 22px;" target="_blank"><img class="imgLogoIcon" src="css/images/logo.png"></a></div>
 
     <div id="itemBackdrop" class="itemBackdrop noBackdrop">
         <div class="itemBackdropContent">
@@ -20,18 +20,14 @@
 
     <div class="detailPageContent" style="position:relative;">
 
-        <paper-fab class="btnPlay detailFloatingButton hide" icon="play-arrow" title="${ButtonPlay}"></paper-fab>
-        <paper-fab class="btnFloatingRecord detailFloatingButton hide" icon="videocam" title="${ButtonRecord}"></paper-fab>
-
         <div class="detailImageContainer">
         </div>
         <div class="primaryDetailsContainer">
             <div class="detailNameContainer">
-                <div><span class="parentName"></span><span class="itemName inlineItemName"></span></div>
-                <div class="desktopDetails" style="margin-top:1em;">
+                <div class="parentName"></div>
+                <h1 class="itemName"></h1>
+                <div class="desktopDetails itemMiscInfo" style="margin-top:.5em;">
 
-                    <span class="itemMiscInfo"></span>
-                    <span class="itemCommunityRating" style="margin-left:1em;"></span>
                 </div>
             </div>
             <div class="desktopDetails" style="padding-top:5px;">
@@ -44,9 +40,7 @@
 
     <div class="mobileDetails" style="text-align:center;clear:both;">
         <div style="height:10px;"></div>
-        <div>
-            <span class="itemMiscInfo"></span>
-            <span class="itemCommunityRating" style="margin-left:1em;"></span>
+        <div class="itemMiscInfo">
         </div>
     </div>
 
@@ -63,7 +57,6 @@
                 <p id="itemBirthLocation"></p>
                 <p id="itemDeathDate"></p>
                 <p id="seriesAirTime"></p>
-                <p class="airDate"></p>
                 <p class="itemOverview topOverview"></p>
             </div>
             <div id="castCollapsible" style="display: none;" class="detailSection">
@@ -116,7 +109,6 @@
             <div id="scenesCollapsible" style="display: none;" class="detailSection">
                 <h1>
                     ${HeaderScenes}
-                    <a class="detailSectionHeaderButton chapterSettingsButton clearLink" style="margin-top:-8px;display:inline-block;" href="metadataadvanced.html" title="${ButtonSettings}" style="display:none;"><paper-icon-button icon="settings"></paper-icon-button></a>
                 </h1>
                 <div id="scenesContent" class="smallItemsContainer"></div>
             </div>

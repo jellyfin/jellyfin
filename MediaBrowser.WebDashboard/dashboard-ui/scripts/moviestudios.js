@@ -1,9 +1,9 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['libraryBrowser'], function (libraryBrowser) {
 
     // The base query options
     var data = {};
 
-    function getQuery() {
+    function getQuery(params) {
 
         var key = getSavedQueryKey();
         var pageData = data[key];
@@ -16,80 +16,65 @@
                     IncludeItemTypes: "Movie",
                     Recursive: true,
                     Fields: "DateCreated,ItemCounts",
-                    StartIndex: 0,
-                    Limit: LibraryBrowser.getDefaultPageSize()
+                    StartIndex: 0
                 }
             };
 
-            pageData.query.ParentId = LibraryMenu.getTopParentId();
-            LibraryBrowser.loadSavedQueryValues(key, pageData.query);
+            pageData.query.ParentId = params.topParentId;
         }
         return pageData.query;
     }
 
     function getSavedQueryKey() {
 
-        return LibraryBrowser.getSavedQueryKey('studios');
+        return libraryBrowser.getSavedQueryKey('studios');
     }
 
-    function reloadItems(page) {
+    function getPromise(context, params) {
+
+        var query = getQuery(params);
 
         Dashboard.showLoadingMsg();
 
-        var query = getQuery();
+        return ApiClient.getStudios(Dashboard.getCurrentUserId(), query);
+    }
+    function reloadItems(context, params, promise) {
 
-        ApiClient.getStudios(Dashboard.getCurrentUserId(), query).then(function (result) {
-
-            // Scroll back up so they can see the results from the beginning
-            window.scrollTo(0, 0);
+        promise.then(function (result) {
 
             var html = '';
-            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
-                startIndex: query.StartIndex,
-                limit: query.Limit,
-                totalRecordCount: result.TotalRecordCount,
-                viewButton: false,
-                updatePageSizeSetting: false,
-                showLimit: false
-            });
 
-            page.querySelector('.listTopPaging').innerHTML = pagingHtml;
-
-            html = LibraryBrowser.getPosterViewHtml({
+            html += libraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: "backdrop",
-                preferThumb: true,
+                showTitle: false,
                 context: 'movies',
+                preferThumb: true,
                 showItemCounts: true,
                 centerText: true,
                 lazy: true
+
             });
 
-            var elem = page.querySelector('.itemsContainer');
-            elem.innerHTML = html + pagingHtml;
+            var elem = context.querySelector('#items');
+            elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
-
-            $('.btnNextPage', page).on('click', function () {
-                query.StartIndex += query.Limit;
-                reloadItems(page);
-            });
-
-            $('.btnPreviousPage', page).on('click', function () {
-                query.StartIndex -= query.Limit;
-                reloadItems(page);
-            });
-
-            LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
             Dashboard.hideLoadingMsg();
         });
     }
+    return function (view, params, tabContent) {
 
-    window.MoviesPage.renderStudiosTab = function (page, tabContent) {
+        var self = this;
+        var promise;
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
-            reloadItems(tabContent);
-        }
+        self.preRender = function () {
+            promise = getPromise(view, params);
+        };
+
+        self.renderTab = function () {
+
+            reloadItems(tabContent, params, promise);
+        };
     };
-
 });

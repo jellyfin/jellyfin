@@ -1,105 +1,124 @@
-﻿<div id="musicRecommendedPage" data-dom-cache="true" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs" data-backdroptype="musicartist" data-require="scripts/musicrecommended,paper-tabs,paper-checkbox,scripts/alphapicker">
-    <div class="libraryViewNav libraryViewNavWithMinHeight">
-        <paper-tabs hidescrollbuttons noink>
-            <paper-tab>${TabSuggestions}</paper-tab>
-            <paper-tab>${TabAlbums}</paper-tab>
-            <paper-tab>${TabAlbumArtists}</paper-tab>
-            <paper-tab>${TabArtists}</paper-tab>
-            <paper-tab>${TabSongs}</paper-tab>
-            <paper-tab>${TabGenres}</paper-tab>
-            <paper-tab>${TabFolders}</paper-tab>
-        </paper-tabs>
-        <div class="legacyTabs scopedLibraryViewNav">
-            <a href="music.html">${TabSuggestions}</a>
-            <a href="music.html?tab=1">${TabAlbums}</a>
-            <a href="music.html?tab=2">${TabAlbumArtists}</a>
-            <a href="music.html?tab=3">${TabArtists}</a>
-            <a href="music.html?tab=4">${TabSongs}</a>
-            <a href="music.html?tab=5">${TabGenres}</a>
-            <a href="music.html?tab=6">${TabFolders}</a>
+﻿<div id="musicRecommendedPage" data-dom-cache="true" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs" data-backdroptype="musicartist">
+
+    <div class="libraryViewNav">
+        <div class="contentScrollSlider">
+            <button class="pageTabButton is-active" data-index="0">${TabSuggestions}</button>
+            <button class="pageTabButton" data-index="1">${TabAlbums}</button>
+            <button class="pageTabButton" data-index="2">${TabAlbumArtists}</button>
+            <button class="pageTabButton" data-index="3">${TabArtists}</button>
+            <button class="pageTabButton" data-index="4">${TabSongs}</button>
+            <button class="pageTabButton" data-index="5">${TabGenres}</button>
+            <button class="pageTabButton" data-index="6">${TabFolders}</button>
         </div>
     </div>
+    <div class="pageTabContent is-active pageTabContent ehsContent" id="suggestionsTab" data-index="0">
+        <div class="homePageSection">
+            <h1 class="listHeader">${HeaderLatestMusic}</h1>
 
-    <div class="ehsContent fullWidth pageTabsContainer">
-
-        <div class="pageTabContent hide" data-index="0">
-            <div class="homePageSection">
-                <h1 class="listHeader">${HeaderLatestMusic}</h1>
-
-                <div id="recentlyAddedSongs" class="itemsContainer noautoinit" style="text-align:left;">
-                </div>
+            <div is="emby-itemscontainer" id="recentlyAddedSongs" class="itemsContainer" style="text-align:left;">
             </div>
-
-            <div id="playlists" style="display: none;" class="homePageSection">
-                <h1 class="listHeader">${HeaderPlaylists}</h1>
-
-                <div class="itemsContainer noautoinit" style="text-align:left;">
-                </div>
-            </div>
-
-            <div id="recentlyPlayed" style="display: none;" class="homePageSection">
-                <h1 class="listHeader">${HeaderRecentlyPlayed}</h1>
-
-                <div id="recentlyPlayedSongs" class="itemsContainer noautoinit" style="text-align:left;">
-                </div>
-            </div>
-
-            <div id="topPlayed" style="display: none;" class="homePageSection">
-                <h1 class="listHeader">${HeaderFrequentlyPlayed}</h1>
-
-                <div id="topPlayedSongs" class="itemsContainer noautoinit" style="text-align: left;">
-                </div>
-            </div>
-
-            <div class="favoriteSections homePageSection"></div>
         </div>
-        <div class="pageTabContent hide" data-index="1">
-            <div class="alphabetPicker">
+
+        <div id="playlists" class="homePageSection hide">
+            <h1 class="listHeader">${HeaderPlaylists}</h1>
+
+            <div is="emby-itemscontainer" class="itemsContainer" style="text-align:left;">
             </div>
-            <div class="viewSettings">
-                <div class="listTopPaging">
-                </div>
-            </div>
-            <div id="items" class="itemsContainer paddedItemsContainer"></div>
         </div>
-        <div class="pageTabContent hide" data-index="2">
-            <div class="alphabetPicker">
+
+        <div id="recentlyPlayed" class="homePageSection hide">
+            <h1 class="listHeader">${HeaderRecentlyPlayed}</h1>
+
+            <div is="emby-itemscontainer" id="recentlyPlayedSongs" class="itemsContainer" style="text-align:left;">
             </div>
-            <div class="viewSettings">
-                <div class="listTopPaging">
-                </div>
-            </div>
-            <div id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
         </div>
-        <div class="pageTabContent hide" data-index="3">
-            <div class="alphabetPicker">
+
+        <div id="topPlayed" class="homePageSection hide">
+            <h1 class="listHeader">${HeaderFrequentlyPlayed}</h1>
+
+            <div is="emby-itemscontainer" id="topPlayedSongs" class="itemsContainer" style="text-align: left;">
             </div>
-            <div class="viewSettings">
-                <div class="listTopPaging">
-                </div>
-            </div>
-            <div id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
         </div>
-        <div class="pageTabContent hide" data-index="4">
-            <div class="viewSettings">
-                <div class="listTopPaging">
-                </div>
-            </div>
-            <div id="items" class="itemsContainer" style="max-width:1000px;margin: 0 auto;"></div>
+
+        <div class="favoriteSections homePageSection"></div>
+    </div>
+    <div class="pageTabContent pageTabContent ehsContent" id="albumsTab" data-index="1">
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+            <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
+            <button is="paper-icon-button-light" class="btnSort autoSize" title="${ButtonSort}"><i class="md-icon">sort_by_alpha</i></button>
+            <button is="paper-icon-button-light" class="btnFilter autoSize" title="${ButtonFilter}"><i class="md-icon">filter_list</i></button>
         </div>
-        <div class="pageTabContent hide" data-index="5">
-            <div class="viewSettings">
-                <div class="listTopPaging">
-                </div>
-            </div>
-            <div id="items" class="itemsContainer paddedItemsContainer"></div>
+
+        <div class="alphaPicker alphabetPicker vertical">
         </div>
-        <div class="pageTabContent hide" data-index="6">
-            <div class="viewSettings">
-                <div class="listTopPaging">
-                </div>
-            </div>
-            <div id="items" class="itemsContainer paddedItemsContainer"></div>
+
+        <div is="emby-itemscontainer" class="itemsContainer itemsContainerWithAlphaPicker">
+        </div>
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+        </div>
+    </div>
+    <div class="pageTabContent pageTabContent ehsContent" id="albumArtistsTab" data-index="2">
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+            <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
+            <button is="paper-icon-button-light" class="btnFilter autoSize" title="${ButtonFilter}"><i class="md-icon">filter_list</i></button>
+        </div>
+
+        <div class="alphaPicker alphabetPicker vertical">
+        </div>
+
+        <div is="emby-itemscontainer" class="itemsContainer itemsContainerWithAlphaPicker">
+        </div>
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+        </div>
+    </div>
+    <div class="pageTabContent pageTabContent ehsContent" id="artistsTab" data-index="3">
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+            <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
+            <button is="paper-icon-button-light" class="btnFilter autoSize" title="${ButtonFilter}"><i class="md-icon">filter_list</i></button>
+        </div>
+
+        <div class="alphaPicker alphabetPicker vertical">
+        </div>
+
+        <div is="emby-itemscontainer" class="itemsContainer itemsContainerWithAlphaPicker">
+        </div>
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+        </div>
+    </div>
+    <div class="pageTabContent pageTabContent ehsContent" id="songsTab" data-index="4">
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+            <button is="paper-icon-button-light" class="btnSort autoSize" title="${ButtonSort}"><i class="md-icon">sort_by_alpha</i></button>
+            <button is="paper-icon-button-light" class="btnFilter autoSize" title="${ButtonFilter}"><i class="md-icon">filter_list</i></button>
+        </div>
+
+        <div is="emby-itemscontainer" id="items" class="itemsContainer" style="max-width:1000px;margin: 0 auto;"></div>
+
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+        </div>
+    </div>
+    <div class="pageTabContent pageTabContent ehsContent" id="genresTab" data-index="5">
+        <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
+            <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
+        </div>
+        <div is="emby-itemscontainer" id="items" class="itemsContainer paddedItemsContainer"></div>
+    </div>
+    <div class="pageTabContent pageTabContent ehsContent" id="foldersTab" data-index="6">
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
+        </div>
+
+        <div is="emby-itemscontainer" class="itemsContainer itemsContainerWithAlphaPicker">
+        </div>
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+            <div class="paging"></div>
         </div>
     </div>
 

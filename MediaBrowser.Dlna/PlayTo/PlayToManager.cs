@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using MediaBrowser.Controller.MediaEncoding;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -32,11 +33,12 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IMediaEncoder _mediaEncoder;
 
         private readonly List<string> _nonRendererUrls = new List<string>();
         private DateTime _lastRendererClear;
 
-        public PlayToManager(ILogger logger, ISessionManager sessionManager, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager)
+        public PlayToManager(ILogger logger, ISessionManager sessionManager, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder)
         {
             _logger = logger;
             _sessionManager = sessionManager;
@@ -51,6 +53,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _userDataManager = userDataManager;
             _localization = localization;
             _mediaSourceManager = mediaSourceManager;
+            _mediaEncoder = mediaEncoder;
         }
 
         public void Start()
@@ -98,6 +101,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 }
 
                 var uri = new Uri(location);
+                _logger.Debug("Attempting to create PlayToController from location {0}", location);
                 var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger).ConfigureAwait(false);
 
                 if (device.RendererCommands == null)
@@ -109,6 +113,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     }
                 }
 
+                _logger.Debug("Logging session activity from location {0}", location);
                 var sessionInfo = await _sessionManager.LogSessionActivity(device.Properties.ClientType, _appHost.ApplicationVersion.ToString(), device.Properties.UUID, device.Properties.Name, uri.OriginalString, null)
                     .ConfigureAwait(false);
 
@@ -132,7 +137,8 @@ namespace MediaBrowser.Dlna.PlayTo
                         _userDataManager,
                         _localization,
                         _mediaSourceManager,
-                        _config);
+                        _config,
+                        _mediaEncoder);
 
                     controller.Init(device);
 

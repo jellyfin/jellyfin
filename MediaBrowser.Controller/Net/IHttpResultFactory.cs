@@ -28,6 +28,8 @@ namespace MediaBrowser.Controller.Net
         /// <returns>System.Object.</returns>
         object GetResult(object content, string contentType, IDictionary<string,string> responseHeaders = null);
 
+        object GetAsyncStreamWriter(Func<Stream,Task> streamWriter, IDictionary<string, string> responseHeaders = null);
+
         /// <summary>
         /// Gets the optimized result.
         /// </summary>
@@ -80,7 +82,7 @@ namespace MediaBrowser.Controller.Net
         /// <param name="responseHeaders">The response headers.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>System.Object.</returns>
-        object GetStaticResult(IRequest requestContext, 
+        Task<object> GetStaticResult(IRequest requestContext, 
             Guid cacheKey, 
             DateTime? lastDateModified,
             TimeSpan? cacheDuration, 
@@ -94,7 +96,7 @@ namespace MediaBrowser.Controller.Net
         /// <param name="requestContext">The request context.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.Object.</returns>
-        object GetStaticResult(IRequest requestContext, StaticResultOptions options);
+        Task<object> GetStaticResult(IRequest requestContext, StaticResultOptions options);
 
         /// <summary>
         /// Gets the static file result.
@@ -103,7 +105,7 @@ namespace MediaBrowser.Controller.Net
         /// <param name="path">The path.</param>
         /// <param name="fileShare">The file share.</param>
         /// <returns>System.Object.</returns>
-        object GetStaticFileResult(IRequest requestContext, string path, FileShare fileShare = FileShare.Read);
+        Task<object> GetStaticFileResult(IRequest requestContext, string path, FileShare fileShare = FileShare.Read);
 
         /// <summary>
         /// Gets the static file result.
@@ -111,7 +113,7 @@ namespace MediaBrowser.Controller.Net
         /// <param name="requestContext">The request context.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.Object.</returns>
-        object GetStaticFileResult(IRequest requestContext, 
+        Task<object> GetStaticFileResult(IRequest requestContext, 
             StaticFileResultOptions options);
     }
 }

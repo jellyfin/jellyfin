@@ -60,6 +60,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             state.IsInputVideo = string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
 
+            var primaryImage = item.GetImageInfo(ImageType.Primary, 0) ??
+                               item.Parents.Select(i => i.GetImageInfo(ImageType.Primary, 0)).FirstOrDefault(i => i != null);
+
+            if (primaryImage != null)
+            {
+                state.AlbumCoverPath = primaryImage.Path;
+            }
+
             var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(request.ItemId, null, false, new[] { MediaType.Audio, MediaType.Video }, cancellationToken).ConfigureAwait(false);
 
             var mediaSource = string.IsNullOrEmpty(request.MediaSourceId)
@@ -91,7 +99,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (videoRequest != null)
             {
                 state.OutputVideoCodec = state.Options.VideoCodec;
-                state.OutputVideoBitrate = GetVideoBitrateParamValue(state.Options, state.VideoStream);
+                state.OutputVideoBitrate = GetVideoBitrateParamValue(state.Options, state.VideoStream, state.OutputVideoCodec);
 
                 if (state.OutputVideoBitrate.HasValue)
                 {
@@ -388,7 +396,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return request.AudioChannels;
         }
 
-        private int? GetVideoBitrateParamValue(EncodingJobOptions request, MediaStream videoStream)
+        private int? GetVideoBitrateParamValue(EncodingJobOptions request, MediaStream videoStream, string outputVideoCodec)
         {
             var bitrate = request.VideoBitRate;
 
@@ -410,6 +418,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     {
                         bitrate = Math.Min(bitrate.Value, videoStream.BitRate.Value);
                     }
+                }
+            }
+
+            if (bitrate.HasValue)
+            {
+                var inputVideoCodec = videoStream == null ? null : videoStream.Codec;
+                bitrate = ResolutionNormalizer.ScaleBitrate(bitrate.Value, inputVideoCodec, outputVideoCodec);
+
+                // If a max bitrate was requested, don't let the scaled bitrate exceed it
+                if (request.VideoBitRate.HasValue)
+                {
+                    bitrate = Math.Min(bitrate.Value, request.VideoBitRate.Value);
                 }
             }
 
@@ -536,13 +556,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         internal static string GetH264Encoder(EncodingJob state, EncodingOptions options)
         {
-            if (string.Equals(options.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(options.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(options.HardwareAccelerationType, "h264_qsv", StringComparison.OrdinalIgnoreCase))
             {
-                // It's currently failing on live tv
-                if (state.RunTimeTicks.HasValue)
-                {
-                    return "h264_qsv";
-                }
+                return "h264_qsv";
+            }
+
+            if (string.Equals(options.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase))
+            {
+                return "h264_nvenc";
+            }
+            if (string.Equals(options.HardwareAccelerationType, "h264_omx", StringComparison.OrdinalIgnoreCase))
+            {
+                return "h264_omx";
             }
 
             return "libx264";
@@ -573,6 +599,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (!string.Equals(request.VideoCodec, videoStream.Codec, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
+            }
+
+            if (string.Equals("h264", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
+            {
+                if (videoStream.IsAVC.HasValue && !videoStream.IsAVC.Value)
+                {
+                    return false;
+                }
             }
 
             // If client is requesting a specific video profile, it must match the source
@@ -659,14 +693,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
 
                 if (videoStream.Level.Value > request.Level.Value)
-                {
-                    return false;
-                }
-            }
-
-            if (request.Cabac.HasValue && request.Cabac.Value)
-            {
-                if (videoStream.IsCabac.HasValue && !videoStream.IsCabac.Value)
                 {
                     return false;
                 }
@@ -773,7 +799,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 state.TargetPacketLength,
                 state.TargetTimestamp,
                 state.IsTargetAnamorphic,
-                state.IsTargetCabac,
                 state.TargetRefFrames,
                 state.TargetVideoStreamCount,
                 state.TargetAudioStreamCount,

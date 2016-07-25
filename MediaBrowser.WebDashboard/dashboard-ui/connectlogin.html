@@ -1,69 +1,81 @@
-﻿<div id="connectLoginPage" data-role="page" class="page standalonePage connectLoginPage" data-theme="b" data-require="scripts/connectlogin,paper-input">
+﻿<div id="connectLoginPage" data-role="page" class="page standalonePage connectLoginPage" data-theme="b">
 
     <div data-role="content">
 
-        <form class="connectLoginForm" style="margin: 0 auto;display:none;">
+        <form class="connectLoginForm hide" style="margin: 0 auto">
 
-            <div style="display: none;">
-                <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete" autocomplete="address-level4" />
-            </div>
+            <div style="height:0; overflow: hidden;"><input type="text" name="fakeusernameremembered" tabindex="-1" /><input type="password" name="fakepasswordremembered" tabindex="-1" /></div>
 
             <h1 style="text-align: left;">${HeaderSignInWithConnect}</h1>
-            <div>
-                <paper-input type="text" id="txtManualName" required="required" label="${LabelUser}" autocomplete="off"></paper-input>
+            <div class="inputContainer">
+                <input is="emby-input" type="text" id="txtManualName" required="required" label="${LabelUser}" />
                 <div class="fieldDescription" style="text-align:left;">${LabelEnterConnectUserNameHelp}</div>
             </div>
-            <div>
-                <paper-input type="password" id="txtManualPassword" required="required" label="${LabelPassword}" autocomplete="off"></paper-input>
+            <div class="inputContainer">
+                <input is="emby-input" type="password" id="txtManualPassword" required="required" label="${LabelPassword}" />
             </div>
             <br />
-            <button type="submit" data-role="none" class="clearButton">
-                <paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${ButtonSignIn}</span></paper-button>
+            <button is="emby-button" type="submit" class="raised accent block">
+                <i class="md-icon">check</i>
+                <span>${ButtonSignIn}</span>
             </button>
             <div class="forgotPassword">
                 <a href="https://emby.media/community/index.php?app=core&module=global&section=lostpass" target="_blank" class="clearLink">
-                    <paper-button raised class="cancel block"><iron-icon icon="close"></iron-icon><span>${ButtonForgotPassword}</span></paper-button>
+                    <button is="emby-button" type="button" class="raised cancel block">
+                        <i class="md-icon">close</i>
+                        <span>${ButtonForgotPassword}</span>
+                    </button>
                 </a>
             </div>
             <div class="skip">
-                <paper-button raised class="cancel block btnSkipConnect"><iron-icon icon="close"></iron-icon><span>${ButtonSkip}</span></paper-button>
+                <button is="emby-button" type="button" class="raised cancel block btnSkipConnect">
+                    <i class="md-icon">close</i>
+                    <span>${ButtonSkip}</span>
+                </button>
                 <div class="fieldDescription" style="text-align:center;">${TextConnectToServerManually}</div>
             </div>
 
             <div class="newUsers" style="margin-top: 2em;">
                 <h2 style="text-align: left;">${HeaderNewUsers}</h2>
                 <a href="https://emby.media/community/index.php?app=core&module=global&section=register" target="_blank" class="clearLink">
-                    <paper-button raised class="submit block btnSignupForConnect"><iron-icon icon="add"></iron-icon><span>${ButtonSignUp}</span></paper-button>
+                    <button is="emby-button" type="button" class="raised submit block btnSignupForConnect">
+                        <i class="md-icon">add</i>
+                        <span>${ButtonSignUp}</span>
+                    </button>
                 </a>
             </div>
             <div class="terms hide fieldDescription" style="margin-top: 2em; color: #ccc;"></div>
-            <div class="hide tvAppInfo"><br /><br /><iron-icon icon="new-releases" style="color: #52B54B"></iron-icon> Try the new <a href="//tv.emby.media" target="_blank">Emby Theater at tv.emby.media</a>, a remote-friendly app designed for your TV or large screen monitor.</div>
+            <div class="hide tvAppInfo"><br /><br /><i class="md-icon" style="color: #52B54B">new_releases</i> Try the new <a href="//tv.emby.media" target="_blank">Emby Theater at tv.emby.media</a>, a remote-friendly app designed for your TV or large screen monitor.</div>
         </form>
 
-        <form class="manualServerForm" style="margin: 0 auto;display:none;">
+        <form class="manualServerForm hide" style="margin: 0 auto;">
 
             <div style="display: none;">
                 <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete" autocomplete="address-level4" />
             </div>
 
             <h1 style="text-align: left;">${HeaderConnectToServer}</h1>
-            <div>
-                <paper-input type="text" id="txtServerHost" required="required" label="${LabelServerHost}"></paper-input>
+            <div class="inputContainer">
+                <input is="emby-input" type="text" id="txtServerHost" required="required" label="${LabelServerHost}" />
                 <div class="fieldDescription" style="text-align:left;">${LabelServerHostHelp}</div>
             </div>
             <br />
-            <div>
-                <paper-input type="number" id="txtServerPort" step="1" min="0" value="8096" label="${LabelServerPort}"></paper-input>
+            <div class="inputContainer">
+                <input is="emby-input" type="number" id="txtServerPort" step="1" min="0" value="8096" label="${LabelServerPort}" />
             </div>
             <br />
 
-            <button type="submit" data-role="none" class="clearButton">
-                <paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${ButtonConnect}</span></paper-button>
+            <button is="emby-button" type="submit" class="raised accent block">
+                <i class="md-icon">check</i>
+                <span>${ButtonConnect}</span>
             </button>
-            <paper-button raised class="cancel block btnCancelManualServer"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+            <button is="emby-button" type="button" class="raised cancel block btnCancelManualServer">
+                <i class="md-icon">close</i>
+                <span>${ButtonCancel}</span>
+            </button>
         </form>
 
-        <form class="signupForm" style="margin: 0 auto;display:none;">
+        <form class="signupForm hide" style="margin: 0 auto;">
 
             <div style="display: none;">
                 <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete" autocomplete="address-level4" />
@@ -71,29 +83,33 @@
 
             <h1 style="text-align: left;">${HeaderSignUp}</h1>
             <br />
-            <div>
-                <paper-input type="text" id="txtSignupEmail" required="required" label="${LabelEmail}"></paper-input>
+            <div class="inputContainer">
+                <input is="emby-input" type="text" id="txtSignupEmail" required="required" label="${LabelEmail}" />
             </div>
-            <div>
-                <paper-input type="text" id="txtSignupUsername" required="required" label="${LabelUsername}"></paper-input>
+            <div class="inputContainer">
+                <input is="emby-input" type="text" id="txtSignupUsername" required="required" label="${LabelUsername}" />
             </div>
-            <div>
-                <paper-input type="password" id="txtSignupPassword" required="required" label="${LabelPassword}" autocomplete="off"></paper-input>
+            <div class="inputContainer">
+                <input is="emby-input" type="password" id="txtSignupPassword" required="required" label="${LabelPassword}" autocomplete="off" />
             </div>
-            <div>
-                <paper-input type="password" id="txtSignupPasswordConfirm" required="required" label="${LabelPasswordConfirm}" autocomplete="off"></paper-input>
+            <div class="inputContainer">
+                <input is="emby-input" type="password" id="txtSignupPasswordConfirm" required="required" label="${LabelPasswordConfirm}" autocomplete="off" />
             </div>
 
             <div class="g-recaptcha" id="recaptchaWidget" data-sitekey="6Le2LAgTAAAAAK06Wvttt_yUnbISTy6q3Azqp9po" data-theme="dark"></div>
             <br />
 
-            <button type="submit" data-role="none" class="clearButton">
-                <paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${ButtonSignUp}</span></paper-button>
+            <button is="emby-button" type="submit" class="raised accent block">
+                <i class="md-icon">check</i>
+                <span>${ButtonSignUp}</span>
             </button>
-            <paper-button raised class="cancel block btnCancelSignup"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+            <button is="emby-button" type="button" class="raised cancel block btnCancelSignup">
+                <i class="md-icon">close</i>
+                <span>${ButtonCancel}</span>
+            </button>
         </form>
 
-        <div class="welcomeContainer readOnlyContent" style="text-align: center; margin: 0 auto; display: none;">
+        <div class="welcomeContainer readOnlyContent hide" style="text-align: center; margin: 0 auto;">
 
             <div style="text-align: left;">
                 <h1>${HeaderWelcomeToEmby}</h1>
@@ -101,7 +117,10 @@
                 <p style="margin: 2em 0;" class="embyIntroDownloadMessage"></p>
 
 
-                <paper-button raised class="accent block btnWelcomeNext iconRight"><iron-icon icon="arrow-forward"></iron-icon><span>${ButtonNext}</span></paper-button>
+                <button is="emby-button" type="button" class="raised accent block btnWelcomeNext iconRight">
+                    <i class="md-icon">arrow_forward</i>
+                    <span>${ButtonNext}</span>
+                </button>
             </div>
         </div>
     </div>

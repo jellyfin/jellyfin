@@ -88,6 +88,8 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The index of the subtitle stream.</value>
         public int? SubtitleStreamIndex { get; set; }
+
+        public const double MinLikeValue = 6.5;
     
         /// <summary>
         /// This is an interpreted property to indicate likes or dislikes
@@ -101,7 +103,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (Rating != null)
                 {
-                    return Rating >= 6.5;
+                    return Rating >= MinLikeValue;
                 }
 
                 return null;

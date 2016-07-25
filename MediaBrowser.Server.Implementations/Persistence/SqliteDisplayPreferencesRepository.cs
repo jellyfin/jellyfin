@@ -18,12 +18,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
     /// </summary>
     public class SqliteDisplayPreferencesRepository : BaseSqliteRepository, IDisplayPreferencesRepository
     {
-        private IDbConnection _connection;
-
-        public SqliteDisplayPreferencesRepository(ILogManager logManager, IJsonSerializer jsonSerializer, IApplicationPaths appPaths) : base(logManager)
+        public SqliteDisplayPreferencesRepository(ILogManager logManager, IJsonSerializer jsonSerializer, IApplicationPaths appPaths, IDbConnector dbConnector)
+            : base(logManager, dbConnector)
         {
             _jsonSerializer = jsonSerializer;
-            _appPaths = appPaths;
+            DbFilePath = Path.Combine(appPaths.DataPath, "displaypreferences.db");
         }
 
         /// <summary>
@@ -44,32 +43,21 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private readonly IJsonSerializer _jsonSerializer;
 
         /// <summary>
-        /// The _app paths
-        /// </summary>
-        private readonly IApplicationPaths _appPaths;
-
-        /// <summary>
         /// Opens the connection to the database
         /// </summary>
         /// <returns>Task.</returns>
         public async Task Initialize()
         {
-            var dbFile = Path.Combine(_appPaths.DataPath, "displaypreferences.db");
-
-            _connection = await SqliteExtensions.ConnectToDb(dbFile, Logger).ConfigureAwait(false);
-
-            string[] queries = {
+            using (var connection = await CreateConnection().ConfigureAwait(false))
+            {
+                string[] queries = {
 
                                 "create table if not exists userdisplaypreferences (id GUID, userId GUID, client text, data BLOB)",
-                                "create unique index if not exists userdisplaypreferencesindex on userdisplaypreferences (id, userId, client)",
-
-                                //pragmas
-                                "pragma temp_store = memory",
-
-                                "pragma shrink_memory"
+                                "create unique index if not exists userdisplaypreferencesindex on userdisplaypreferences (id, userId, client)"
                                };
 
-            _connection.RunQueries(queries, Logger);
+                connection.RunQueries(queries, Logger);
+            }
         }
 
         /// <summary>
@@ -96,58 +84,57 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             var serialized = _jsonSerializer.SerializeToBytes(displayPreferences);
 
-            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            IDbTransaction transaction = null;
-
-            try
+            using (var connection = await CreateConnection().ConfigureAwait(false))
             {
-                transaction = _connection.BeginTransaction();
+                IDbTransaction transaction = null;
 
-                using (var cmd = _connection.CreateCommand())
+                try
                 {
-                    cmd.CommandText = "replace into userdisplaypreferences (id, userid, client, data) values (@1, @2, @3, @4)";
+                    transaction = connection.BeginTransaction();
 
-                    cmd.Parameters.Add(cmd, "@1", DbType.Guid).Value = new Guid(displayPreferences.Id);
-                    cmd.Parameters.Add(cmd, "@2", DbType.Guid).Value = userId;
-                    cmd.Parameters.Add(cmd, "@3", DbType.String).Value = client;
-                    cmd.Parameters.Add(cmd, "@4", DbType.Binary).Value = serialized;
+                    using (var cmd = connection.CreateCommand())
+                    {
+                        cmd.CommandText = "replace into userdisplaypreferences (id, userid, client, data) values (@1, @2, @3, @4)";
 
-                    cmd.Transaction = transaction;
+                        cmd.Parameters.Add(cmd, "@1", DbType.Guid).Value = new Guid(displayPreferences.Id);
+                        cmd.Parameters.Add(cmd, "@2", DbType.Guid).Value = userId;
+                        cmd.Parameters.Add(cmd, "@3", DbType.String).Value = client;
+                        cmd.Parameters.Add(cmd, "@4", DbType.Binary).Value = serialized;
 
-                    cmd.ExecuteNonQuery();
+                        cmd.Transaction = transaction;
+
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    transaction.Commit();
                 }
-
-                transaction.Commit();
-            }
-            catch (OperationCanceledException)
-            {
-                if (transaction != null)
+                catch (OperationCanceledException)
                 {
-                    transaction.Rollback();
+                    if (transaction != null)
+                    {
+                        transaction.Rollback();
+                    }
+
+                    throw;
                 }
-
-                throw;
-            }
-            catch (Exception e)
-            {
-                Logger.ErrorException("Failed to save display preferences:", e);
-
-                if (transaction != null)
+                catch (Exception e)
                 {
-                    transaction.Rollback();
-                }
+                    Logger.ErrorException("Failed to save display preferences:", e);
 
-                throw;
-            }
-            finally
-            {
-                if (transaction != null)
+                    if (transaction != null)
+                    {
+                        transaction.Rollback();
+                    }
+
+                    throw;
+                }
+                finally
                 {
-                    transaction.Dispose();
+                    if (transaction != null)
+                    {
+                        transaction.Dispose();
+                    }
                 }
-
-                WriteLock.Release();
             }
         }
 
@@ -168,64 +155,63 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            IDbTransaction transaction = null;
-
-            try
+            using (var connection = await CreateConnection().ConfigureAwait(false))
             {
-                transaction = _connection.BeginTransaction();
+                IDbTransaction transaction = null;
 
-                foreach (var displayPreference in displayPreferences)
+                try
                 {
+                    transaction = connection.BeginTransaction();
 
-                    var serialized = _jsonSerializer.SerializeToBytes(displayPreference);
-
-                    using (var cmd = _connection.CreateCommand())
+                    foreach (var displayPreference in displayPreferences)
                     {
-                        cmd.CommandText = "replace into userdisplaypreferences (id, userid, client, data) values (@1, @2, @3, @4)";
 
-                        cmd.Parameters.Add(cmd, "@1", DbType.Guid).Value = new Guid(displayPreference.Id);
-                        cmd.Parameters.Add(cmd, "@2", DbType.Guid).Value = userId;
-                        cmd.Parameters.Add(cmd, "@3", DbType.String).Value = displayPreference.Client;
-                        cmd.Parameters.Add(cmd, "@4", DbType.Binary).Value = serialized;
+                        var serialized = _jsonSerializer.SerializeToBytes(displayPreference);
 
-                        cmd.Transaction = transaction;
+                        using (var cmd = connection.CreateCommand())
+                        {
+                            cmd.CommandText = "replace into userdisplaypreferences (id, userid, client, data) values (@1, @2, @3, @4)";
 
-                        cmd.ExecuteNonQuery();
+                            cmd.Parameters.Add(cmd, "@1", DbType.Guid).Value = new Guid(displayPreference.Id);
+                            cmd.Parameters.Add(cmd, "@2", DbType.Guid).Value = userId;
+                            cmd.Parameters.Add(cmd, "@3", DbType.String).Value = displayPreference.Client;
+                            cmd.Parameters.Add(cmd, "@4", DbType.Binary).Value = serialized;
+
+                            cmd.Transaction = transaction;
+
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+
+                    transaction.Commit();
+                }
+                catch (OperationCanceledException)
+                {
+                    if (transaction != null)
+                    {
+                        transaction.Rollback();
+                    }
+
+                    throw;
+                }
+                catch (Exception e)
+                {
+                    Logger.ErrorException("Failed to save display preferences:", e);
+
+                    if (transaction != null)
+                    {
+                        transaction.Rollback();
+                    }
+
+                    throw;
+                }
+                finally
+                {
+                    if (transaction != null)
+                    {
+                        transaction.Dispose();
                     }
                 }
-
-                transaction.Commit();
-            }
-            catch (OperationCanceledException)
-            {
-                if (transaction != null)
-                {
-                    transaction.Rollback();
-                }
-
-                throw;
-            }
-            catch (Exception e)
-            {
-                Logger.ErrorException("Failed to save display preferences:", e);
-
-                if (transaction != null)
-                {
-                    transaction.Rollback();
-                }
-
-                throw;
-            }
-            finally
-            {
-                if (transaction != null)
-                {
-                    transaction.Dispose();
-                }
-
-                WriteLock.Release();
             }
         }
 
@@ -246,28 +232,33 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             var guidId = displayPreferencesId.GetMD5();
 
-            var cmd = _connection.CreateCommand();
-            cmd.CommandText = "select data from userdisplaypreferences where id = @id and userId=@userId and client=@client";
-
-            cmd.Parameters.Add(cmd, "@id", DbType.Guid).Value = guidId;
-            cmd.Parameters.Add(cmd, "@userId", DbType.Guid).Value = userId;
-            cmd.Parameters.Add(cmd, "@client", DbType.String).Value = client;
-
-            using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
+            using (var connection = CreateConnection(true).Result)
             {
-                if (reader.Read())
+                using (var cmd = connection.CreateCommand())
                 {
-                    using (var stream = reader.GetMemoryStream(0))
+                    cmd.CommandText = "select data from userdisplaypreferences where id = @id and userId=@userId and client=@client";
+
+                    cmd.Parameters.Add(cmd, "@id", DbType.Guid).Value = guidId;
+                    cmd.Parameters.Add(cmd, "@userId", DbType.Guid).Value = userId;
+                    cmd.Parameters.Add(cmd, "@client", DbType.String).Value = client;
+
+                    using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
                     {
-                        return _jsonSerializer.DeserializeFromStream<DisplayPreferences>(stream);
+                        if (reader.Read())
+                        {
+                            using (var stream = reader.GetMemoryStream(0))
+                            {
+                                return _jsonSerializer.DeserializeFromStream<DisplayPreferences>(stream);
+                            }
+                        }
                     }
+
+                    return new DisplayPreferences
+                    {
+                        Id = guidId.ToString("N")
+                    };
                 }
             }
-
-            return new DisplayPreferences
-            {
-                Id = guidId.ToString("N")
-            };
         }
 
         /// <summary>
@@ -278,36 +269,30 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <exception cref="System.ArgumentNullException">item</exception>
         public IEnumerable<DisplayPreferences> GetAllDisplayPreferences(Guid userId)
         {
+            var list = new List<DisplayPreferences>();
 
-            var cmd = _connection.CreateCommand();
-            cmd.CommandText = "select data from userdisplaypreferences where userId=@userId";
-
-            cmd.Parameters.Add(cmd, "@userId", DbType.Guid).Value = userId;
-
-            using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+            using (var connection = CreateConnection(true).Result)
             {
-                while (reader.Read())
+                using (var cmd = connection.CreateCommand())
                 {
-                    using (var stream = reader.GetMemoryStream(0))
+                    cmd.CommandText = "select data from userdisplaypreferences where userId=@userId";
+
+                    cmd.Parameters.Add(cmd, "@userId", DbType.Guid).Value = userId;
+
+                    using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
                     {
-                        yield return _jsonSerializer.DeserializeFromStream<DisplayPreferences>(stream);
+                        while (reader.Read())
+                        {
+                            using (var stream = reader.GetMemoryStream(0))
+                            {
+                                list.Add(_jsonSerializer.DeserializeFromStream<DisplayPreferences>(stream));
+                            }
+                        }
                     }
                 }
             }
-        }
 
-        protected override void CloseConnection()
-        {
-            if (_connection != null)
-            {
-                if (_connection.IsOpen())
-                {
-                    _connection.Close();
-                }
-
-                _connection.Dispose();
-                _connection = null;
-            }
+            return list;
         }
 
         public Task SaveDisplayPreferences(DisplayPreferences displayPreferences, string userId, string client, CancellationToken cancellationToken)

@@ -1,0 +1,65 @@
+.mediaInfoItem {
+    margin: 0 1em 0 0;
+}
+
+i.mediaInfoItem {
+    width: auto;
+    height: auto;
+    font-size: 1.6em;
+    margin-right: .6em;
+}
+
+.mediaInfoItem:last-child {
+    margin-right: 0;
+}
+
+.starRatingContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+    .starRatingContainer i {
+        color: #CB272A;
+        width: auto !important;
+        height: auto !important;
+        font-size: 1.4em;
+    }
+
+.mediaInfoItem.criticRating {
+    padding-left: 1.5em;
+    background-position: left center;
+    background-repeat: no-repeat;
+    background-size: auto 1.2em;
+    min-height: 1.2em;
+    display: flex;
+    align-items: center;
+}
+
+.mediaInfoItem.criticRatingFresh {
+    background-image: url(fresh.png);
+}
+
+.mediaInfoItem.criticRatingRotten {
+    background-image: url(rotten.png);
+}
+
+.mediaInfoItem.timerIcon {
+    color: #CB272A;
+}
+
+.mediaInfoProgramAttribute {
+    color: #fff;
+    text-transform: uppercase;
+    background: #EF6C00;
+    padding: .25em .5em;
+    border-radius: .25em;
+}
+
+.layout-tv .mediaInfoProgramAttribute {
+    font-size: 90%;
+    padding: .1em .5em;
+}

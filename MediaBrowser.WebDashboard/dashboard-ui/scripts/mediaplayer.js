@@ -1,4 +1,4 @@
-define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, userSettings, appStorage) {
+define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appSettings, userSettings, appStorage, datetime) {
 
     function mediaPlayer() {
 
@@ -34,7 +34,7 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
 
             var targets = [{
                 name: Globalize.translate('MyDevice'),
-                id: AppInfo.deviceId,
+                id: ConnectionManager.deviceId(),
                 playerName: self.name,
                 playableMediaTypes: ['Audio', 'Video'],
                 isLocalPlayer: true,
@@ -42,182 +42,6 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
             }];
 
             return targets;
-        };
-
-        function updateDeviceProfileForAndroid(profile) {
-
-            // Just here as an easy escape out, if ever needed
-            var enableVlcVideo = true;
-            var enableVlcAudio = window.VlcAudio;
-
-            if (enableVlcVideo) {
-
-                profile.DirectPlayProfiles.push({
-                    Container: "m4v,3gp,ts,mpegts,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,m2v,avi,mpg,mpeg,mp4,webm",
-                    Type: 'Video'
-                });
-
-                profile.CodecProfiles = profile.CodecProfiles.filter(function (i) {
-                    return i.Type == 'Audio';
-                });
-
-                profile.SubtitleProfiles = [];
-                profile.SubtitleProfiles.push({
-                    Format: 'srt',
-                    Method: 'External'
-                });
-                profile.SubtitleProfiles.push({
-                    Format: 'srt',
-                    Method: 'Embed'
-                });
-                profile.SubtitleProfiles.push({
-                    Format: 'subrip',
-                    Method: 'Embed'
-                });
-                profile.SubtitleProfiles.push({
-                    Format: 'ass',
-                    Method: 'Embed'
-                });
-                profile.SubtitleProfiles.push({
-                    Format: 'ssa',
-                    Method: 'Embed'
-                });
-                profile.SubtitleProfiles.push({
-                    Format: 'pgs',
-                    Method: 'Embed'
-                });
-                profile.SubtitleProfiles.push({
-                    Format: 'pgssub',
-                    Method: 'Embed'
-                });
-                profile.SubtitleProfiles.push({
-                    Format: 'dvdsub',
-                    Method: 'Embed'
-                });
-                profile.SubtitleProfiles.push({
-                    Format: 'vtt',
-                    Method: 'Embed'
-                });
-                profile.SubtitleProfiles.push({
-                    Format: 'sub',
-                    Method: 'Embed'
-                });
-                profile.SubtitleProfiles.push({
-                    Format: 'idx',
-                    Method: 'Embed'
-                });
-                profile.SubtitleProfiles.push({
-                    Format: 'smi',
-                    Method: 'Embed'
-                });
-
-                // These don't play very well
-                profile.CodecProfiles.push({
-                    Type: 'VideoAudio',
-                    Codec: 'dca',
-                    Conditions: [
-                        {
-                            Condition: 'LessThanEqual',
-                            Property: 'AudioChannels',
-                            Value: 6
-                        }
-                    ]
-                });
-
-                profile.CodecProfiles.push({
-                    Type: 'VideoAudio',
-                    Codec: 'aac,mp3',
-                    Conditions: [
-                        {
-                            Condition: 'LessThanEqual',
-                            Property: 'AudioChannels',
-                            Value: '6'
-                        }
-                    ]
-                });
-
-                profile.CodecProfiles.push({
-                    Type: 'Video',
-                    Codec: 'h264',
-                    Conditions: [
-                    {
-                        Condition: 'EqualsAny',
-                        Property: 'VideoProfile',
-                        Value: 'high|main|baseline|constrained baseline'
-                    },
-                    {
-                        Condition: 'LessThanEqual',
-                        Property: 'VideoLevel',
-                        Value: '41'
-                    }]
-                });
-
-                profile.TranscodingProfiles.filter(function (p) {
-
-                    return p.Type == 'Video' && p.VideoCodec == 'h264';
-
-                }).forEach(function (p) {
-
-                    p.AudioCodec += ',ac3';
-                });
-            }
-
-            if (enableVlcAudio) {
-
-                profile.DirectPlayProfiles.push({
-                    Container: "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus",
-                    Type: 'Audio'
-                });
-
-                profile.CodecProfiles = profile.CodecProfiles.filter(function (i) {
-                    return i.Type != 'Audio';
-                });
-
-                profile.CodecProfiles.push({
-                    Type: 'Audio',
-                    Conditions: [{
-                        Condition: 'LessThanEqual',
-                        Property: 'AudioChannels',
-                        Value: '2'
-                    }]
-                });
-            }
-        }
-
-        function updateDeviceProfileForIOS(profile) {
-
-            profile.DirectPlayProfiles.push({
-                Container: "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus,flac",
-                Type: 'Audio'
-            });
-        }
-
-        self.getDeviceProfile = function (maxHeight) {
-
-            return new Promise(function (resolve, reject) {
-
-                require(['browserdeviceprofile', 'qualityoptions'], function (profile, qualityoptions) {
-
-                    var bitrateSetting = appSettings.maxStreamingBitrate();
-
-                    if (!maxHeight) {
-                        maxHeight = qualityoptions.getVideoQualityOptions(bitrateSetting).filter(function (q) {
-                            return q.selected;
-                        })[0].maxHeight;
-                    }
-
-                    if (AppInfo.isNativeApp && browserInfo.android) {
-                        updateDeviceProfileForAndroid(profile);
-                    }
-                    else if (AppInfo.isNativeApp && browserInfo.safari) {
-                        updateDeviceProfileForIOS(profile);
-                    }
-
-                    profile.MaxStreamingBitrate = bitrateSetting;
-
-                    resolve(profile);
-                });
-            });
         };
 
         var supportsTextTracks;
@@ -235,10 +59,12 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
         function canPlayerSeek() {
 
             var mediaRenderer = self.currentMediaRenderer;
-            var currentSrc = self.getCurrentSrc(mediaRenderer);
+            var currentSrc = (self.getCurrentSrc(mediaRenderer) || '').toLowerCase();
 
-            if ((currentSrc || '').indexOf('.m3u8') != -1) {
-                return true;
+            if (currentSrc.indexOf('.m3u8') != -1) {
+                if (currentSrc.indexOf('forcelivestream=true') == -1) {
+                    return true;
+                }
             } else {
                 var duration = mediaRenderer.duration();
                 return duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
@@ -342,7 +168,7 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
             var playSessionId = getParameterByName('PlaySessionId', currentSrc);
             var liveStreamId = getParameterByName('LiveStreamId', currentSrc);
 
-            self.getDeviceProfile().then(function (deviceProfile) {
+            Dashboard.getDeviceProfile().then(function (deviceProfile) {
 
                 var audioStreamIndex = params.AudioStreamIndex == null ? (getParameterByName('AudioStreamIndex', currentSrc) || null) : params.AudioStreamIndex;
                 if (typeof (audioStreamIndex) == 'string') {
@@ -428,7 +254,8 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
                     url: textStreamUrl,
                     language: (textStream.Language || 'und'),
                     isDefault: textStream.Index == mediaSource.DefaultSubtitleStreamIndex,
-                    index: textStream.Index
+                    index: textStream.Index,
+                    format: textStream.Codec
                 });
             }
 
@@ -444,12 +271,12 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
             // Convert to ticks
             ticks = Math.floor(ticks);
 
-            var timeText = Dashboard.getDisplayTime(ticks);
+            var timeText = datetime.getDisplayRunningTime(ticks);
             var mediaRenderer = self.currentMediaRenderer;
 
             if (self.currentDurationTicks) {
 
-                timeText += " / " + Dashboard.getDisplayTime(self.currentDurationTicks);
+                timeText += " / " + datetime.getDisplayRunningTime(self.currentDurationTicks);
 
                 if (positionSlider) {
 
@@ -466,7 +293,7 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
             }
 
             if (currentTimeElement) {
-                currentTimeElement.html(timeText);
+                currentTimeElement.innerHTML = timeText;
             }
 
             var state = self.getPlayerStateInternal(mediaRenderer, self.currentItem, self.currentMediaSource);
@@ -707,17 +534,17 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
 
                             if (mediaSource.TranscodingSubProtocol == 'hls') {
 
-                                mediaUrl += seekParam;
+                                if (mediaUrl.toLowerCase().indexOf('forcelivestream=true') != -1) {
+                                    startPositionInSeekParam = 0;
+                                    startTimeTicksOffset = startPosition || 0;
+                                }
+
                                 contentType = 'application/x-mpegURL';
 
                             } else {
 
-                                // Reports of stuttering with h264 stream copy in IE
-                                if (mediaUrl.indexOf('.mkv') == -1) {
-                                    mediaUrl += '&EnableAutoStreamCopy=false';
-                                }
-
                                 if (mediaUrl.toLowerCase().indexOf('copytimestamps=true') == -1) {
+                                    startPositionInSeekParam = 0;
                                     startTimeTicksOffset = startPosition || 0;
                                 }
 
@@ -827,7 +654,7 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
             }
 
             var onBitrateDetected = function () {
-                self.getDeviceProfile().then(function (deviceProfile) {
+                Dashboard.getDeviceProfile().then(function (deviceProfile) {
                     playOnDeviceProfileCreated(deviceProfile, item, startPosition, callback);
                 });
             };
@@ -956,10 +783,14 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
             return null;
         };
 
-        self.displayContent = function (options) {
+        self.displayContent = function (cmd) {
 
-            // Handle it the same as a remote control command
-            Dashboard.onBrowseCommand(options);
+            var apiClient = ApiClient;
+            apiClient.getItem(apiClient.getCurrentUserId(), cmd.ItemId).then(function (item) {
+                require(['embyRouter'], function (embyRouter) {
+                    embyRouter.showItem(item);
+                });
+            });
         };
 
         self.getItemsForPlayback = function (query) {
@@ -1433,7 +1264,9 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
             nowPlayingItem.PremiereDate = item.PremiereDate;
             nowPlayingItem.SeriesName = item.SeriesName;
             nowPlayingItem.Album = item.Album;
+            nowPlayingItem.AlbumId = item.AlbumId;
             nowPlayingItem.Artists = item.Artists;
+            nowPlayingItem.ArtistItems = item.ArtistItems;
 
             var imageTags = item.ImageTags || {};
 
@@ -1578,9 +1411,9 @@ define(['appSettings', 'userSettings', 'appStorage'], function (appSettings, use
 
         window.addEventListener("beforeunload", onAppClose);
 
-        if (browserInfo.safari) {
-            document.addEventListener("pause", onAppClose);
-        }
+        //if (browserInfo.safari) {
+        //    document.addEventListener("pause", onAppClose);
+        //}
 
         function sendProgressUpdate() {
 

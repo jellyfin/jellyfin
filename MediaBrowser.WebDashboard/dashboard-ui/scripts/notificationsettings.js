@@ -43,7 +43,7 @@
 
                 itemHtml += '</paper-item-body>';
 
-                itemHtml += '<paper-icon-button icon="mode-edit"></paper-icon-button>';
+                itemHtml += '<button type="button" is="paper-icon-button-light"><iron-icon icon="mode-edit"></iron-icon></button>';
 
                 itemHtml += '</paper-icon-item>';
                 itemHtml += '</a>';
@@ -62,13 +62,27 @@
         });
     }
 
-    $(document).on('pageshow', "#notificationSettingsPage", function () {
+    function getTabs() {
+        return [
+        {
+            href: 'notificationsettings.html',
+            name: Globalize.translate('TabNotifications')
+        },
+        {
+            href: 'appservices.html?context=notifications',
+            name: Globalize.translate('TabServices')
+        }];
+    }
 
-        var page = this;
+    return function (view, params) {
 
-        require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
-            reload(page);
+        view.addEventListener('viewshow', function () {
+
+            LibraryMenu.setTabs('notifications', 0, getTabs);
+
+            require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
+                reload(view);
+            });
         });
-    });
-
+    };
 });

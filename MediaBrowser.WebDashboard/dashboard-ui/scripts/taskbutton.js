@@ -1,4 +1,4 @@
-﻿define(['appStorage', 'jQuery'], function (appStorage, $) {
+﻿define(['appStorage', 'jQuery', 'emby-button'], function (appStorage, $) {
 
     $.fn.taskButton = function (options) {
 
@@ -25,9 +25,9 @@
 
             if (options.panel) {
                 if (task) {
-                    $(options.panel).show();
+                    options.panel.classList.remove('hide');
                 } else {
-                    $(options.panel).hide();
+                    options.panel.classList.add('hide');
                 }
             }
 
@@ -59,10 +59,10 @@
                 var lastResult = task.LastExecutionResult ? task.LastExecutionResult.Status : '';
 
                 if (lastResult == "Failed") {
-                    options.lastResultElem.html('<span style="color:#FF0000;">' + Globalize.translate('LabelFailed') + '</span>');
+                    options.lastResultElem.html('<span style="color:#FF0000;">(' + Globalize.translate('LabelFailed') + ')</span>');
                 }
                 else if (lastResult == "Cancelled") {
-                    options.lastResultElem.html('<span style="color:#0026FF;">' + Globalize.translate('LabelCancelled') + '</span>');
+                    options.lastResultElem.html('<span style="color:#0026FF;">(' + Globalize.translate('LabelCancelled') + ')</span>');
                 }
                 else if (lastResult == "Aborted") {
                     options.lastResultElem.html('<span style="color:#FF0000;">' + Globalize.translate('LabelAbortedByServerShutdown') + '</span>');
@@ -85,7 +85,7 @@
             var id = button.getAttribute('data-taskid');
 
             var key = 'scheduledTaskButton' + options.taskKey;
-            var expectedValue = new Date().getMonth() + '5';
+            var expectedValue = new Date().getMonth() + '6';
 
             if (appStorage.getItem(key) == expectedValue) {
                 onScheduledTaskMessageConfirmed(button, id);
@@ -94,12 +94,18 @@
                 var msg = Globalize.translate('ConfirmMessageScheduledTaskButton');
                 msg += '<br/>';
                 msg += '<div style="margin-top:1em;">';
-                msg += '<a class="clearLink" href="scheduledtasks.html"><paper-button style="color:#3f51b5!important;margin:0;">' + Globalize.translate('ButtonScheduledTasks') + '</paper-button></a>';
+                msg += '<a class="clearLink" href="scheduledtasks.html"><button is="emby-button" type="button" style="color:#3f51b5!important;margin:0;">' + Globalize.translate('ButtonScheduledTasks') + '</button></a>';
                 msg += '</div>';
 
                 require(['confirm'], function (confirm) {
 
-                    confirm(msg, Globalize.translate('HeaderConfirmation')).then(function () {
+                    confirm({
+
+                        title: Globalize.translate('HeaderConfirmation'),
+                        html: msg,
+                        text: Globalize.translate('ConfirmMessageScheduledTaskButton') + "\n\n" + Globalize.translate('ButtonScheduledTasks')
+
+                    }).then(function () {
                         appStorage.setItem(key, expectedValue);
                         onScheduledTaskMessageConfirmed(button, id);
                     });
@@ -151,7 +157,7 @@
         }
 
         if (options.panel) {
-            $(options.panel).hide();
+            options.panel.classList.add('hide');
         }
 
         if (options.mode == 'off') {

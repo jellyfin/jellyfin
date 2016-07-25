@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Movies
 {
-    class MovieDbImageProvider : IRemoteImageProvider, IHasOrder, IHasChangeMonitor
+    class MovieDbImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
@@ -63,6 +63,8 @@ namespace MediaBrowser.Providers.Movies
         {
             var list = new List<RemoteImageInfo>();
 
+            var language = item.GetPreferredMetadataLanguage();
+
             var results = await FetchImages((BaseItem)item, null, _jsonSerializer, cancellationToken).ConfigureAwait(false);
 
             if (results == null)
@@ -72,7 +74,7 @@ namespace MediaBrowser.Providers.Movies
 
             var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
-            var tmdbImageUrl = tmdbSettings.images.base_url + "original";
+            var tmdbImageUrl = tmdbSettings.images.secure_base_url + "original";
 
             var supportedImages = GetSupportedImages(item).ToList();
 
@@ -85,7 +87,7 @@ namespace MediaBrowser.Providers.Movies
                     VoteCount = i.vote_count,
                     Width = i.width,
                     Height = i.height,
-                    Language = i.iso_639_1,
+                    Language = MovieDbProvider.AdjustImageLanguage(i.iso_639_1, language),
                     ProviderName = Name,
                     Type = ImageType.Primary,
                     RatingType = RatingType.Score
@@ -106,8 +108,6 @@ namespace MediaBrowser.Providers.Movies
                     RatingType = RatingType.Score
                 }));
             }
-
-            var language = item.GetPreferredMetadataLanguage();
 
             var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
 
@@ -220,11 +220,6 @@ namespace MediaBrowser.Providers.Movies
                 Url = url,
                 ResourcePool = MovieDbProvider.Current.MovieDbResourcePool
             });
-        }
-
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
-        {
-            return MovieDbProvider.Current.HasChanged(item, date);
         }
     }
 }

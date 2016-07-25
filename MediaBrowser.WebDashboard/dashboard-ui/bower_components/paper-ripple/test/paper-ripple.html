@@ -63,6 +63,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+  <test-fixture id="NoRipple">
+    <template>
+      <div id="RippleContainer">
+      </div>
+    </template>
+  </test-fixture>
+
   <script>
     suite('<paper-ripple>', function () {
       var mouseEvent;
@@ -130,8 +137,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
       });
 
-
-
       suite('with the `center` attribute set to true', function () {
         setup(function () {
           rippleContainer = fixture('CenteringRipple');
@@ -188,6 +193,56 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               done(e);
             }
           });
+        });
+      });
+
+      suite('remove a paper ripple', function () {
+        setup(function () {
+          rippleContainer = fixture('NoRipple');
+        });
+        test('add and remove a paper-ripple', function (done) {
+          var ripple = document.createElement('paper-ripple');
+          ripple.addEventListener('transitionend', function() {
+            expect(ripple.parentNode).to.be.ok;
+            Polymer.dom(rippleContainer).removeChild(ripple);
+            done();
+          });
+          Polymer.dom(rippleContainer).appendChild(ripple);
+          ripple.downAction();
+          ripple.upAction();
+        });
+        test('reuse a paper-ripple', function (done) {
+          var ripple = document.createElement('paper-ripple');
+          Polymer.dom(rippleContainer).appendChild(ripple);
+          Polymer.dom(rippleContainer).removeChild(ripple);
+          
+          ripple.addEventListener('transitionend', function() {
+            expect(ripple.parentNode).to.be.ok;
+            Polymer.dom(document.body).removeChild(ripple);
+            done();
+          });
+          Polymer.dom(document.body).appendChild(ripple);
+          ripple.downAction();
+          ripple.upAction();
+        });
+      });
+
+      suite('avoid double transitionend event', function () {
+        setup(function () {
+          rippleContainer = fixture('NoRipple');
+        });
+        test('the transitionend event should only fire once', function (done) {
+          var ripple = document.createElement('paper-ripple');
+          var transitionedEventCount = 0;
+          ripple.addEventListener('transitionend', function() {
+            ++transitionedEventCount;
+            expect(transitionedEventCount).to.be.eql(1);
+            Polymer.dom(rippleContainer).removeChild(ripple);
+            setTimeout(function() { done(); });
+          });
+          Polymer.dom(rippleContainer).appendChild(ripple);
+          ripple.downAction();
+          ripple.upAction();
         });
       });
 

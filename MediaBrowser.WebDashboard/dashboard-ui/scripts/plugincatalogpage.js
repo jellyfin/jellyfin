@@ -35,9 +35,7 @@
         });
     }
     function populateList(options) {
-        requirejs(['scripts/ratingdialog'], function () {
-            populateListInternal(options);
-        });
+        populateListInternal(options);
     }
 
     function populateListInternal(options) {
@@ -207,13 +205,18 @@
         html += "</div>";
 
         if (!plugin.isExternal) {
-            html += "<div class='cardText packageReviewText'>";
-            html += plugin.price > 0 ? "$" + plugin.price.toFixed(2) : Globalize.translate('LabelFree');
-            html += RatingHelpers.getStoreRatingHtml(plugin.avgRating, plugin.id, plugin.name, true);
+            html += "<div class='cardText' style='display:flex;align-items:center;'>";
 
-            html += "<span class='storeReviewCount'>";
-            html += " " + Globalize.translate('LabelNumberReviews').replace("{0}", plugin.totalRatings);
-            html += "</span>";
+            if (plugin.avgRating) {
+                html += '<i class="md-icon" style="color:#cc3333;margin-right:.25em;">star</i>';
+                html += plugin.avgRating.toFixed(1);
+            }
+
+            if (plugin.totalRatings) {
+                html += "<div style='margin-left:.5em;'>";
+                html += " " + Globalize.translate('LabelNumberReviews').replace("{0}", plugin.totalRatings);
+            }
+            html += "</div>";
 
             html += "</div>";
         }
@@ -243,25 +246,25 @@
         return html;
     }
 
+    function getTabs() {
+        return [
+        {
+            href: 'plugins.html',
+            name: Globalize.translate('TabMyPlugins')
+        },
+         {
+             href: 'plugincatalog.html',
+             name: Globalize.translate('TabCatalog')
+         }];
+    }
+
     $(document).on('pageinit', "#pluginCatalogPage", function () {
 
         var page = this;
 
-        $('.chkPremiumFilter', page).on('change', function () {
+        $('#selectSystem', page).on('change', function () {
 
-            if (this.checked) {
-                query.IsPremium = false;
-            } else {
-                query.IsPremium = null;
-            }
-            reloadList(page);
-        });
-
-        $('.radioPackageTypes', page).on('change', function () {
-
-            var val = $('.radioPackageTypes:checked', page).val();
-
-            query.TargetSystems = val;
+            query.TargetSystems = this.value;
             reloadList(page);
         });
 
@@ -273,22 +276,8 @@
 
     }).on('pageshow', "#pluginCatalogPage", function () {
 
+        LibraryMenu.setTabs('plugins', 1, getTabs);
         var page = this;
-
-        $(".radioPackageTypes", page).each(function () {
-
-            this.checked = this.value == query.TargetSystems;
-
-        }).checkboxradio('refresh');
-
-        // Reset form values using the last used query
-        $('.chkPremiumFilter', page).each(function () {
-
-            var filters = query.IsPremium || false;
-
-            this.checked = filters;
-
-        }).checkboxradio('refresh');
 
         reloadList(page);
     });

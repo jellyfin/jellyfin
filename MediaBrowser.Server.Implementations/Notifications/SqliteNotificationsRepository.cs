@@ -15,73 +15,28 @@ namespace MediaBrowser.Server.Implementations.Notifications
 {
     public class SqliteNotificationsRepository : BaseSqliteRepository, INotificationsRepository
     {
-        private IDbConnection _connection;
-        private readonly IServerApplicationPaths _appPaths;
+        public SqliteNotificationsRepository(ILogManager logManager, IServerApplicationPaths appPaths, IDbConnector dbConnector) : base(logManager, dbConnector)
+        {
+            DbFilePath = Path.Combine(appPaths.DataPath, "notifications.db");
+        }
 
         public event EventHandler<NotificationUpdateEventArgs> NotificationAdded;
         public event EventHandler<NotificationReadEventArgs> NotificationsMarkedRead;
         public event EventHandler<NotificationUpdateEventArgs> NotificationUpdated;
 
-        private IDbCommand _replaceNotificationCommand;
-        private IDbCommand _markReadCommand;
-        private IDbCommand _markAllReadCommand;
-
-        public SqliteNotificationsRepository(ILogManager logManager, IServerApplicationPaths appPaths)
-            : base(logManager)
-        {
-            _appPaths = appPaths;
-        }
-
         public async Task Initialize()
         {
-            var dbFile = Path.Combine(_appPaths.DataPath, "notifications.db");
-
-            _connection = await SqliteExtensions.ConnectToDb(dbFile, Logger).ConfigureAwait(false);
-
-            string[] queries = {
+            using (var connection = await CreateConnection().ConfigureAwait(false))
+            {
+                string[] queries = {
 
                                 "create table if not exists Notifications (Id GUID NOT NULL, UserId GUID NOT NULL, Date DATETIME NOT NULL, Name TEXT NOT NULL, Description TEXT, Url TEXT, Level TEXT NOT NULL, IsRead BOOLEAN NOT NULL, Category TEXT NOT NULL, RelatedId TEXT, PRIMARY KEY (Id, UserId))",
-                                "create index if not exists idx_Notifications on Notifications(Id, UserId)",
-
-                                //pragmas
-                                "pragma temp_store = memory",
-
-                                "pragma shrink_memory"
+                                "create index if not exists idx_Notifications1 on Notifications(Id)",
+                                "create index if not exists idx_Notifications2 on Notifications(UserId)"
                                };
 
-            _connection.RunQueries(queries, Logger);
-
-            PrepareStatements();
-        }
-
-        private void PrepareStatements()
-        {
-            _replaceNotificationCommand = _connection.CreateCommand();
-            _replaceNotificationCommand.CommandText = "replace into Notifications (Id, UserId, Date, Name, Description, Url, Level, IsRead, Category, RelatedId) values (@Id, @UserId, @Date, @Name, @Description, @Url, @Level, @IsRead, @Category, @RelatedId)";
-
-            _replaceNotificationCommand.Parameters.Add(_replaceNotificationCommand, "@Id");
-            _replaceNotificationCommand.Parameters.Add(_replaceNotificationCommand, "@UserId");
-            _replaceNotificationCommand.Parameters.Add(_replaceNotificationCommand, "@Date");
-            _replaceNotificationCommand.Parameters.Add(_replaceNotificationCommand, "@Name");
-            _replaceNotificationCommand.Parameters.Add(_replaceNotificationCommand, "@Description");
-            _replaceNotificationCommand.Parameters.Add(_replaceNotificationCommand, "@Url");
-            _replaceNotificationCommand.Parameters.Add(_replaceNotificationCommand, "@Level");
-            _replaceNotificationCommand.Parameters.Add(_replaceNotificationCommand, "@IsRead");
-            _replaceNotificationCommand.Parameters.Add(_replaceNotificationCommand, "@Category");
-            _replaceNotificationCommand.Parameters.Add(_replaceNotificationCommand, "@RelatedId");
-
-            _markReadCommand = _connection.CreateCommand();
-            _markReadCommand.CommandText = "update Notifications set IsRead=@IsRead where Id=@Id and UserId=@UserId";
-
-            _markReadCommand.Parameters.Add(_replaceNotificationCommand, "@UserId");
-            _markReadCommand.Parameters.Add(_replaceNotificationCommand, "@IsRead");
-            _markReadCommand.Parameters.Add(_replaceNotificationCommand, "@Id");
-
-            _markAllReadCommand = _connection.CreateCommand();
-            _markAllReadCommand.CommandText = "update Notifications set IsRead=@IsRead where UserId=@UserId";
-
-            _markAllReadCommand.Parameters.Add(_replaceNotificationCommand, "@UserId");
-            _markAllReadCommand.Parameters.Add(_replaceNotificationCommand, "@IsRead");
+                connection.RunQueries(queries, Logger);
+            }
         }
 
         /// <summary>
@@ -93,49 +48,52 @@ namespace MediaBrowser.Server.Implementations.Notifications
         {
             var result = new NotificationResult();
 
-            using (var cmd = _connection.CreateCommand())
+            using (var connection = CreateConnection(true).Result)
             {
-                var clauses = new List<string>();
-
-                if (query.IsRead.HasValue)
+                using (var cmd = connection.CreateCommand())
                 {
-                    clauses.Add("IsRead=@IsRead");
-                    cmd.Parameters.Add(cmd, "@IsRead", DbType.Boolean).Value = query.IsRead.Value;
-                }
+                    var clauses = new List<string>();
 
-                clauses.Add("UserId=@UserId");
-                cmd.Parameters.Add(cmd, "@UserId", DbType.Guid).Value = new Guid(query.UserId);
-
-                var whereClause = " where " + string.Join(" And ", clauses.ToArray());
-
-                cmd.CommandText = string.Format("select count(Id) from Notifications{0};select Id,UserId,Date,Name,Description,Url,Level,IsRead,Category,RelatedId from Notifications{0} order by IsRead asc, Date desc", whereClause);
-
-                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
-                {
-                    if (reader.Read())
+                    if (query.IsRead.HasValue)
                     {
-                        result.TotalRecordCount = reader.GetInt32(0);
+                        clauses.Add("IsRead=@IsRead");
+                        cmd.Parameters.Add(cmd, "@IsRead", DbType.Boolean).Value = query.IsRead.Value;
                     }
 
-                    if (reader.NextResult())
+                    clauses.Add("UserId=@UserId");
+                    cmd.Parameters.Add(cmd, "@UserId", DbType.Guid).Value = new Guid(query.UserId);
+
+                    var whereClause = " where " + string.Join(" And ", clauses.ToArray());
+
+                    cmd.CommandText = string.Format("select count(Id) from Notifications{0};select Id,UserId,Date,Name,Description,Url,Level,IsRead,Category,RelatedId from Notifications{0} order by IsRead asc, Date desc", whereClause);
+
+                    using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
                     {
-                        var notifications = GetNotifications(reader);
-
-                        if (query.StartIndex.HasValue)
+                        if (reader.Read())
                         {
-                            notifications = notifications.Skip(query.StartIndex.Value);
+                            result.TotalRecordCount = reader.GetInt32(0);
                         }
 
-                        if (query.Limit.HasValue)
+                        if (reader.NextResult())
                         {
-                            notifications = notifications.Take(query.Limit.Value);
-                        }
+                            var notifications = GetNotifications(reader);
 
-                        result.Notifications = notifications.ToArray();
+                            if (query.StartIndex.HasValue)
+                            {
+                                notifications = notifications.Skip(query.StartIndex.Value);
+                            }
+
+                            if (query.Limit.HasValue)
+                            {
+                                notifications = notifications.Take(query.Limit.Value);
+                            }
+
+                            result.Notifications = notifications.ToArray();
+                        }
                     }
-                }
 
-                return result;
+                    return result;
+                }
             }
         }
 
@@ -143,31 +101,34 @@ namespace MediaBrowser.Server.Implementations.Notifications
         {
             var result = new NotificationsSummary();
 
-            using (var cmd = _connection.CreateCommand())
+            using (var connection = CreateConnection(true).Result)
             {
-                cmd.CommandText = "select Level from Notifications where UserId=@UserId and IsRead=@IsRead";
-
-                cmd.Parameters.Add(cmd, "@UserId", DbType.Guid).Value = new Guid(userId);
-                cmd.Parameters.Add(cmd, "@IsRead", DbType.Boolean).Value = false;
-
-                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
+                using (var cmd = connection.CreateCommand())
                 {
-                    var levels = new List<NotificationLevel>();
+                    cmd.CommandText = "select Level from Notifications where UserId=@UserId and IsRead=@IsRead";
 
-                    while (reader.Read())
+                    cmd.Parameters.Add(cmd, "@UserId", DbType.Guid).Value = new Guid(userId);
+                    cmd.Parameters.Add(cmd, "@IsRead", DbType.Boolean).Value = false;
+
+                    using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
                     {
-                        levels.Add(GetLevel(reader, 0));
+                        var levels = new List<NotificationLevel>();
+
+                        while (reader.Read())
+                        {
+                            levels.Add(GetLevel(reader, 0));
+                        }
+
+                        result.UnreadCount = levels.Count;
+
+                        if (levels.Count > 0)
+                        {
+                            result.MaxUnreadNotificationLevel = levels.Max();
+                        }
                     }
 
-                    result.UnreadCount = levels.Count;
-
-                    if (levels.Count > 0)
-                    {
-                        result.MaxUnreadNotificationLevel = levels.Max();
-                    }
+                    return result;
                 }
-
-                return result;
             }
         }
 
@@ -178,10 +139,14 @@ namespace MediaBrowser.Server.Implementations.Notifications
         /// <returns>IEnumerable{Notification}.</returns>
         private IEnumerable<Notification> GetNotifications(IDataReader reader)
         {
+            var list = new List<Notification>();
+
             while (reader.Read())
             {
-                yield return GetNotification(reader);
+                list.Add(GetNotification(reader));
             }
+
+            return list;
         }
 
         private Notification GetNotification(IDataReader reader)
@@ -272,59 +237,74 @@ namespace MediaBrowser.Server.Implementations.Notifications
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            IDbTransaction transaction = null;
-
-            try
+            using (var connection = await CreateConnection().ConfigureAwait(false))
             {
-                transaction = _connection.BeginTransaction();
-
-                _replaceNotificationCommand.GetParameter(0).Value = new Guid(notification.Id);
-                _replaceNotificationCommand.GetParameter(1).Value = new Guid(notification.UserId);
-                _replaceNotificationCommand.GetParameter(2).Value = notification.Date.ToUniversalTime();
-                _replaceNotificationCommand.GetParameter(3).Value = notification.Name;
-                _replaceNotificationCommand.GetParameter(4).Value = notification.Description;
-                _replaceNotificationCommand.GetParameter(5).Value = notification.Url;
-                _replaceNotificationCommand.GetParameter(6).Value = notification.Level.ToString();
-                _replaceNotificationCommand.GetParameter(7).Value = notification.IsRead;
-                _replaceNotificationCommand.GetParameter(8).Value = string.Empty;
-                _replaceNotificationCommand.GetParameter(9).Value = string.Empty;
-
-                _replaceNotificationCommand.Transaction = transaction;
-
-                _replaceNotificationCommand.ExecuteNonQuery();
-
-                transaction.Commit();
-            }
-            catch (OperationCanceledException)
-            {
-                if (transaction != null)
+                using (var replaceNotificationCommand = connection.CreateCommand())
                 {
-                    transaction.Rollback();
+                    replaceNotificationCommand.CommandText = "replace into Notifications (Id, UserId, Date, Name, Description, Url, Level, IsRead, Category, RelatedId) values (@Id, @UserId, @Date, @Name, @Description, @Url, @Level, @IsRead, @Category, @RelatedId)";
+
+                    replaceNotificationCommand.Parameters.Add(replaceNotificationCommand, "@Id");
+                    replaceNotificationCommand.Parameters.Add(replaceNotificationCommand, "@UserId");
+                    replaceNotificationCommand.Parameters.Add(replaceNotificationCommand, "@Date");
+                    replaceNotificationCommand.Parameters.Add(replaceNotificationCommand, "@Name");
+                    replaceNotificationCommand.Parameters.Add(replaceNotificationCommand, "@Description");
+                    replaceNotificationCommand.Parameters.Add(replaceNotificationCommand, "@Url");
+                    replaceNotificationCommand.Parameters.Add(replaceNotificationCommand, "@Level");
+                    replaceNotificationCommand.Parameters.Add(replaceNotificationCommand, "@IsRead");
+                    replaceNotificationCommand.Parameters.Add(replaceNotificationCommand, "@Category");
+                    replaceNotificationCommand.Parameters.Add(replaceNotificationCommand, "@RelatedId");
+
+                    IDbTransaction transaction = null;
+
+                    try
+                    {
+                        transaction = connection.BeginTransaction();
+
+                        replaceNotificationCommand.GetParameter(0).Value = new Guid(notification.Id);
+                        replaceNotificationCommand.GetParameter(1).Value = new Guid(notification.UserId);
+                        replaceNotificationCommand.GetParameter(2).Value = notification.Date.ToUniversalTime();
+                        replaceNotificationCommand.GetParameter(3).Value = notification.Name;
+                        replaceNotificationCommand.GetParameter(4).Value = notification.Description;
+                        replaceNotificationCommand.GetParameter(5).Value = notification.Url;
+                        replaceNotificationCommand.GetParameter(6).Value = notification.Level.ToString();
+                        replaceNotificationCommand.GetParameter(7).Value = notification.IsRead;
+                        replaceNotificationCommand.GetParameter(8).Value = string.Empty;
+                        replaceNotificationCommand.GetParameter(9).Value = string.Empty;
+
+                        replaceNotificationCommand.Transaction = transaction;
+
+                        replaceNotificationCommand.ExecuteNonQuery();
+
+                        transaction.Commit();
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        if (transaction != null)
+                        {
+                            transaction.Rollback();
+                        }
+
+                        throw;
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.ErrorException("Failed to save notification:", e);
+
+                        if (transaction != null)
+                        {
+                            transaction.Rollback();
+                        }
+
+                        throw;
+                    }
+                    finally
+                    {
+                        if (transaction != null)
+                        {
+                            transaction.Dispose();
+                        }
+                    }
                 }
-
-                throw;
-            }
-            catch (Exception e)
-            {
-                Logger.ErrorException("Failed to save notification:", e);
-
-                if (transaction != null)
-                {
-                    transaction.Rollback();
-                }
-
-                throw;
-            }
-            finally
-            {
-                if (transaction != null)
-                {
-                    transaction.Dispose();
-                }
-
-                WriteLock.Release();
             }
         }
 
@@ -365,51 +345,58 @@ namespace MediaBrowser.Server.Implementations.Notifications
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            IDbTransaction transaction = null;
-
-            try
+            using (var connection = await CreateConnection().ConfigureAwait(false))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                transaction = _connection.BeginTransaction();
-
-                _markAllReadCommand.GetParameter(0).Value = new Guid(userId);
-                _markAllReadCommand.GetParameter(1).Value = isRead;
-
-                _markAllReadCommand.ExecuteNonQuery();
-
-                transaction.Commit();
-            }
-            catch (OperationCanceledException)
-            {
-                if (transaction != null)
+                using (var markAllReadCommand = connection.CreateCommand())
                 {
-                    transaction.Rollback();
+                    markAllReadCommand.CommandText = "update Notifications set IsRead=@IsRead where UserId=@UserId";
+
+                    markAllReadCommand.Parameters.Add(markAllReadCommand, "@UserId");
+                    markAllReadCommand.Parameters.Add(markAllReadCommand, "@IsRead");
+
+                    IDbTransaction transaction = null;
+
+                    try
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        transaction = connection.BeginTransaction();
+
+                        markAllReadCommand.GetParameter(0).Value = new Guid(userId);
+                        markAllReadCommand.GetParameter(1).Value = isRead;
+
+                        markAllReadCommand.ExecuteNonQuery();
+
+                        transaction.Commit();
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        if (transaction != null)
+                        {
+                            transaction.Rollback();
+                        }
+
+                        throw;
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.ErrorException("Failed to save notification:", e);
+
+                        if (transaction != null)
+                        {
+                            transaction.Rollback();
+                        }
+
+                        throw;
+                    }
+                    finally
+                    {
+                        if (transaction != null)
+                        {
+                            transaction.Dispose();
+                        }
+                    }
                 }
-
-                throw;
-            }
-            catch (Exception e)
-            {
-                Logger.ErrorException("Failed to save notification:", e);
-
-                if (transaction != null)
-                {
-                    transaction.Rollback();
-                }
-
-                throw;
-            }
-            finally
-            {
-                if (transaction != null)
-                {
-                    transaction.Dispose();
-                }
-
-                WriteLock.Release();
             }
         }
 
@@ -417,72 +404,66 @@ namespace MediaBrowser.Server.Implementations.Notifications
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            IDbTransaction transaction = null;
-
-            try
+            using (var connection = await CreateConnection().ConfigureAwait(false))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                transaction = _connection.BeginTransaction();
-
-                _markReadCommand.GetParameter(0).Value = new Guid(userId);
-                _markReadCommand.GetParameter(1).Value = isRead;
-
-                foreach (var id in notificationIdList)
+                using (var markReadCommand = connection.CreateCommand())
                 {
-                    _markReadCommand.GetParameter(2).Value = id;
+                    markReadCommand.CommandText = "update Notifications set IsRead=@IsRead where Id=@Id and UserId=@UserId";
 
-                    _markReadCommand.Transaction = transaction;
+                    markReadCommand.Parameters.Add(markReadCommand, "@UserId");
+                    markReadCommand.Parameters.Add(markReadCommand, "@IsRead");
+                    markReadCommand.Parameters.Add(markReadCommand, "@Id");
 
-                    _markReadCommand.ExecuteNonQuery();
+                    IDbTransaction transaction = null;
+
+                    try
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        transaction = connection.BeginTransaction();
+
+                        markReadCommand.GetParameter(0).Value = new Guid(userId);
+                        markReadCommand.GetParameter(1).Value = isRead;
+
+                        foreach (var id in notificationIdList)
+                        {
+                            markReadCommand.GetParameter(2).Value = id;
+
+                            markReadCommand.Transaction = transaction;
+
+                            markReadCommand.ExecuteNonQuery();
+                        }
+
+                        transaction.Commit();
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        if (transaction != null)
+                        {
+                            transaction.Rollback();
+                        }
+
+                        throw;
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.ErrorException("Failed to save notification:", e);
+
+                        if (transaction != null)
+                        {
+                            transaction.Rollback();
+                        }
+
+                        throw;
+                    }
+                    finally
+                    {
+                        if (transaction != null)
+                        {
+                            transaction.Dispose();
+                        }
+                    }
                 }
-
-                transaction.Commit();
-            }
-            catch (OperationCanceledException)
-            {
-                if (transaction != null)
-                {
-                    transaction.Rollback();
-                }
-
-                throw;
-            }
-            catch (Exception e)
-            {
-                Logger.ErrorException("Failed to save notification:", e);
-
-                if (transaction != null)
-                {
-                    transaction.Rollback();
-                }
-
-                throw;
-            }
-            finally
-            {
-                if (transaction != null)
-                {
-                    transaction.Dispose();
-                }
-
-                WriteLock.Release();
-            }
-        }
-
-        protected override void CloseConnection()
-        {
-            if (_connection != null)
-            {
-                if (_connection.IsOpen())
-                {
-                    _connection.Close();
-                }
-
-                _connection.Dispose();
-                _connection = null;
             }
         }
     }

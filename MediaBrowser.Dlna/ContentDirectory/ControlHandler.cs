@@ -23,6 +23,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using MediaBrowser.Controller.MediaEncoding;
 
 namespace MediaBrowser.Dlna.ContentDirectory
 {
@@ -34,6 +35,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
         private readonly IServerConfigurationManager _config;
         private readonly User _user;
         private readonly IUserViewManager _userViewManager;
+        private readonly IMediaEncoder _mediaEncoder;
 
         private const string NS_DC = "http://purl.org/dc/elements/1.1/";
         private const string NS_DIDL = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";
@@ -47,7 +49,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private readonly DeviceProfile _profile;
 
-        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, string accessToken, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config, ILocalizationManager localization, IChannelManager channelManager, IMediaSourceManager mediaSourceManager, IUserViewManager userViewManager)
+        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, string accessToken, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config, ILocalizationManager localization, IChannelManager channelManager, IMediaSourceManager mediaSourceManager, IUserViewManager userViewManager, IMediaEncoder mediaEncoder)
             : base(config, logger)
         {
             _libraryManager = libraryManager;
@@ -56,10 +58,11 @@ namespace MediaBrowser.Dlna.ContentDirectory
             _systemUpdateId = systemUpdateId;
             _channelManager = channelManager;
             _userViewManager = userViewManager;
+            _mediaEncoder = mediaEncoder;
             _profile = profile;
             _config = config;
 
-            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, accessToken, userDataManager, localization, mediaSourceManager, Logger, libraryManager);
+            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, accessToken, userDataManager, localization, mediaSourceManager, Logger, libraryManager, _mediaEncoder);
         }
 
         protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, Headers methodParams)
@@ -108,7 +111,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
             var newbookmark = int.Parse(sparams["PosSecond"], _usCulture);
 
-            var userdata = _userDataManager.GetUserData(user.Id, item.GetUserDataKey());
+            var userdata = _userDataManager.GetUserData(user, item);
 
             userdata.PlaybackPositionTicks = TimeSpan.FromSeconds(newbookmark).Ticks;
 
@@ -398,10 +401,10 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 SortOrder = sort.SortOrder,
                 User = user,
                 Recursive = true,
-                Filter = FilterUnsupportedContent,
+                IsMissing = false,
+                ExcludeItemTypes = new[] { typeof(Game).Name, typeof(Book).Name },
                 IsFolder = isFolder,
                 MediaTypes = mediaTypes.ToArray()
-
             });
         }
 
@@ -458,8 +461,10 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 SortBy = sortOrders.ToArray(),
                 SortOrder = sort.SortOrder,
                 User = user,
-                Filter = FilterUnsupportedContent,
-                PresetViews = new[] { CollectionType.Movies, CollectionType.TvShows, CollectionType.Music }
+                IsMissing = false,
+                PresetViews = new[] { CollectionType.Movies, CollectionType.TvShows, CollectionType.Music },
+                ExcludeItemTypes = new[] { typeof(Game).Name, typeof(Book).Name },
+                IsPlaceHolder = false
 
             }).ConfigureAwait(false);
 
@@ -574,29 +579,6 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 Items = serverItems.ToArray(),
                 TotalRecordCount = serverItems.Count
             });
-        }
-
-        private bool FilterUnsupportedContent(BaseItem i)
-        {
-            // Unplayable
-            if (i.LocationType == LocationType.Virtual && !i.IsFolder)
-            {
-                return false;
-            }
-
-            // Unplayable
-            var supportsPlaceHolder = i as ISupportsPlaceHolders;
-            if (supportsPlaceHolder != null && supportsPlaceHolder.IsPlaceHolder)
-            {
-                return false;
-            }
-
-            if (i is Game || i is Book)
-            {
-                //return false;
-            }
-
-            return true;
         }
 
         private ServerItem GetItemFromObjectId(string id, User user)

@@ -1,0 +1,14 @@
+.recordingDialog .btnSubmit .md-icon {
+    color: #cc3333;
+}
+
+.layout-tv .btnHeaderSave {
+    display: none;
+}
+
+@media all and (max-height: 1400px) {
+
+    .layout-tv .recordingDialog .itemOverview {
+        display: none;
+    }
+}

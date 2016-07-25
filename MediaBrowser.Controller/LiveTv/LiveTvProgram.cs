@@ -4,36 +4,41 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.LiveTv;
 using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Controller.LiveTv
 {
     public class LiveTvProgram : BaseItem, IHasLookupInfo<LiveTvProgramLookupInfo>, IHasStartDate, IHasProgramAttributes
     {
-        /// <summary>
-        /// Gets the user data key.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        protected override string CreateUserDataKey()
+        public override List<string> GetUserDataKeys()
         {
-            if (IsMovie)
-            {
-                var key = Movie.GetMovieUserDataKey(this);
+            var list = base.GetUserDataKeys();
 
+            if (!IsSeries)
+            {
+                var key = this.GetProviderId(MetadataProviders.Imdb);
                 if (!string.IsNullOrWhiteSpace(key))
                 {
-                    return key;
+                    list.Insert(0, key);
+                }
+
+                key = this.GetProviderId(MetadataProviders.Tmdb);
+                if (!string.IsNullOrWhiteSpace(key))
+                {
+                    list.Insert(0, key);
                 }
             }
-
-            if (IsSeries && !string.IsNullOrWhiteSpace(EpisodeTitle))
+            else if (!string.IsNullOrWhiteSpace(EpisodeTitle))
             {
                 var name = GetClientTypeName();
 
-                return name + "-" + Name + (EpisodeTitle ?? string.Empty);
+                list.Insert(0, name + "-" + Name + (EpisodeTitle ?? string.Empty));
             }
 
-            return base.CreateUserDataKey();
+            return list;
         }
 
         [IgnoreDataMember]
@@ -230,6 +235,26 @@ namespace MediaBrowser.Controller.LiveTv
             {
                 return false;
             }
+        }
+
+        public override List<ExternalUrl> GetRelatedUrls()
+        {
+            var list = base.GetRelatedUrls();
+
+            var imdbId = this.GetProviderId(MetadataProviders.Imdb);
+            if (!string.IsNullOrWhiteSpace(imdbId))
+            {
+                if (IsMovie)
+                {
+                    list.Add(new ExternalUrl
+                    {
+                        Name = "Trakt",
+                        Url = string.Format("https://trakt.tv/movies/{0}", imdbId)
+                    });
+                }
+            }
+
+            return list;
         }
     }
 }

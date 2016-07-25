@@ -1,10 +1,11 @@
-﻿define(['jQuery'], function ($) {
+﻿define([], function () {
 
     var supportsTextTracks;
     var hlsPlayer;
     var requiresSettingStartTimeOnStart;
     var subtitleTrackIndexToSetOnPlaying;
     var currentTrackList;
+    var currentPlayOptions;
 
     function htmlMediaRenderer(options) {
 
@@ -12,7 +13,7 @@
         var self = this;
 
         function onEnded() {
-            destroyCustomTrack();
+            destroyCustomTrack(this);
             Events.trigger(self, 'ended');
         }
 
@@ -32,6 +33,13 @@
             //        }
             //    }
             //}
+
+            if (options.type == 'video') {
+                // Get the player position + the transcoding offset
+                var timeMs = this.currentTime * 1000;
+                timeMs += ((currentPlayOptions.startTimeTicksOffset || 0) / 10000);
+                updateSubtitleText(timeMs);
+            }
             Events.trigger(self, 'timeupdate');
         }
 
@@ -43,7 +51,7 @@
 
             var elem = e.target;
             elem.removeEventListener('playing', onOneAudioPlaying);
-            $('.mediaPlayerAudioContainer').hide();
+            document.querySelector('.mediaPlayerAudioContainer').classList.add('hide');
         }
 
         function onPlaying() {
@@ -68,7 +76,7 @@
 
         function onError(e) {
 
-            destroyCustomTrack();
+            destroyCustomTrack(this);
 
             var elem = e.target;
             var errorCode = elem.error ? elem.error.code : '';
@@ -95,25 +103,6 @@
             });
         }
 
-        function getStartTime(url) {
-
-            var src = url;
-
-            var parts = src.split('#');
-
-            if (parts.length > 1) {
-
-                parts = parts[parts.length - 1].split('=');
-
-                if (parts.length == 2) {
-
-                    return parseFloat(parts[1]);
-                }
-            }
-
-            return 0;
-        }
-
         function onOneVideoPlaying(e) {
 
             var element = e.target;
@@ -124,16 +113,15 @@
             var requiresNativeControls = !self.enableCustomVideoControls();
 
             if (requiresNativeControls) {
-                $(element).attr('controls', 'controls');
+                element.setAttribute('controls', 'controls');
             }
 
             if (requiresSettingStartTimeOnStart) {
-                var src = (self.currentSrc() || '').toLowerCase();
 
-                var startPositionInSeekParam = getStartTime(src);
+                var startPositionInSeekParam = currentPlayOptions.startPositionInSeekParam;
 
                 // Appending #t=xxx to the query string doesn't seem to work with HLS
-                if (startPositionInSeekParam && src.indexOf('.m3u8') != -1) {
+                if (startPositionInSeekParam && currentSrc.indexOf('.m3u8') != -1) {
 
                     var delay = browserInfo.safari ? 2500 : 0;
                     if (delay) {
@@ -149,9 +137,9 @@
 
         function createAudioElement() {
 
-            var elem = $('.mediaPlayerAudio');
+            var elem = document.querySelector('.mediaPlayerAudio');
 
-            if (!elem.length) {
+            if (!elem) {
                 var html = '';
 
                 var requiresControls = !MediaPlayer.canAutoPlayAudio();
@@ -159,18 +147,16 @@
                 if (requiresControls) {
                     html += '<div class="mediaPlayerAudioContainer" style="position: fixed;top: 40%;text-align: center;left: 0;right: 0;z-index:999999;"><div class="mediaPlayerAudioContainerInner">';;
                 } else {
-                    html += '<div class="mediaPlayerAudioContainer" style="display:none;padding: 1em;background: #222;"><div class="mediaPlayerAudioContainerInner">';;
+                    html += '<div class="mediaPlayerAudioContainer hide" style="padding: 1em;background: #222;"><div class="mediaPlayerAudioContainerInner">';;
                 }
 
                 html += '<audio class="mediaPlayerAudio" controls>';
                 html += '</audio></div></div>';
 
-                $(document.body).append(html);
+                document.body.insertAdjacentHTML('beforeend', html);
 
-                elem = $('.mediaPlayerAudio');
+                elem = document.querySelector('.mediaPlayerAudio');
             }
-
-            elem = elem[0];
 
             elem.addEventListener('playing', onOneAudioPlaying);
             elem.addEventListener('timeupdate', onTimeUpdate);
@@ -224,9 +210,10 @@
 
             html += '</video>';
 
-            var elem = $('#videoElement', '#videoPlayer').prepend(html);
+            var elem = document.querySelector('#videoPlayer #videoElement');
+            elem.insertAdjacentHTML('afterbegin', html);
 
-            var itemVideo = $('.itemVideo', elem)[0];
+            var itemVideo = elem.querySelector('.itemVideo');
 
             itemVideo.addEventListener('loadedmetadata', onLoadedMetadata);
 
@@ -274,7 +261,7 @@
 
         self.stop = function () {
 
-            destroyCustomTrack();
+            destroyCustomTrack(mediaElement);
 
             if (mediaElement) {
                 mediaElement.pause();
@@ -325,8 +312,11 @@
 
             if (!elem) {
                 currentSrc = null;
+                currentPlayOptions = null;
                 return;
             }
+
+            currentPlayOptions = streamInfo;
 
             if (!streamInfo) {
                 currentSrc = null;
@@ -341,7 +331,6 @@
 
                 return;
             }
-
             elem.crossOrigin = getCrossOriginValue(mediaSource);
             var val = streamInfo.url;
 
@@ -350,7 +339,7 @@
             }
 
             requiresSettingStartTimeOnStart = false;
-            var startTime = getStartTime(val);
+            var startTime = streamInfo.startPositionInSeekParam;
             var playNow = false;
 
             if (elem.tagName.toLowerCase() == 'audio') {
@@ -495,7 +484,9 @@
                 }
 
                 if (elem.tagName.toLowerCase() != 'audio') {
-                    $(elem).remove();
+                    if (elem.parentNode) {
+                        elem.parentNode.removeChild(elem);
+                    }
                 }
             }
         };
@@ -517,8 +508,20 @@
                 return false;
             }
 
+            if (browserInfo.edge || browserInfo.msie) {
+                return false;
+            }
+
             if (browserInfo.firefox) {
                 if ((currentSrc || '').toLowerCase().indexOf('.m3u8') != -1) {
+                    return false;
+                }
+            }
+
+            if (track) {
+                var format = (track.format || '').toLowerCase();
+                if (format == 'ssa' || format == 'ass') {
+                    // libjass is needed here
                     return false;
                 }
             }
@@ -526,11 +529,19 @@
             return true;
         }
 
-        function destroyCustomTrack(isPlaying) {
+        function destroyCustomTrack(videoElement, isPlaying) {
+
+            window.removeEventListener('resize', onVideoResize);
+            window.removeEventListener('orientationchange', onVideoResize);
+
+            var videoSubtitlesElem = document.querySelector('.videoSubtitles');
+            if (videoSubtitlesElem) {
+                videoSubtitlesElem.parentNode.removeChild(videoSubtitlesElem);
+            }
 
             if (isPlaying) {
 
-                var allTracks = mediaElement.textTracks; // get list of tracks
+                var allTracks = videoElement.textTracks; // get list of tracks
                 for (var i = 0; i < allTracks.length; i++) {
 
                     var currentTrack = allTracks[i];
@@ -542,6 +553,15 @@
             }
 
             customTrackIndex = -1;
+            currentSubtitlesElement = null;
+            currentTrackEvents = null;
+            currentClock = null;
+
+            var renderer = currentAssRenderer;
+            if (renderer) {
+                renderer.setEnabled(false);
+            }
+            currentAssRenderer = null;
         }
 
         function fetchSubtitles(track) {
@@ -553,12 +573,10 @@
             });
         }
 
-        var customTrackIndex = -1;
-
-        function setTrackForCustomDisplay(track) {
+        function setTrackForCustomDisplay(videoElement, track) {
 
             if (!track) {
-                destroyCustomTrack(true);
+                destroyCustomTrack(videoElement, true);
                 return;
             }
 
@@ -567,17 +585,74 @@
                 return;
             }
 
-            destroyCustomTrack(true);
+            destroyCustomTrack(videoElement, true);
             customTrackIndex = track.index;
-            renderTracksEvents(track);
+            renderTracksEvents(videoElement, track);
+            lastCustomTrackMs = 0;
         }
 
-        function renderTracksEvents(track) {
+        function renderWithLibjass(videoElement, track) {
+
+            var rendererSettings = {};
+
+            require(['libjass'], function (libjass) {
+
+                libjass.ASS.fromUrl(track.url).then(function (ass) {
+
+                    var clock = currentClock = new libjass.renderers.ManualClock();
+
+                    // Create a DefaultRenderer using the video element and the ASS object
+                    var renderer = new libjass.renderers.WebRenderer(ass, clock, videoElement.parentNode.parentNode, rendererSettings);
+
+                    currentAssRenderer = renderer;
+
+                    renderer.addEventListener("ready", function () {
+                        try {
+                            renderer.resize(videoElement.offsetWidth, videoElement.offsetHeight, 0, 0);
+                            window.removeEventListener('resize', onVideoResize);
+                            window.addEventListener('resize', onVideoResize);
+                            window.removeEventListener('orientationchange', onVideoResize);
+                            window.addEventListener('orientationchange', onVideoResize);
+                            //clock.pause();
+                        }
+                        catch (ex) {
+                        }
+                    });
+                });
+            });
+        }
+
+        function onVideoResize() {
+            var renderer = currentAssRenderer;
+            if (renderer) {
+                var videoElement = mediaElement;
+                var width = videoElement.offsetWidth;
+                var height = videoElement.offsetHeight;
+                console.log('videoElement resized: ' + width + 'x' + height);
+                renderer.resize(width, height, 0, 0);
+            }
+        }
+
+        function renderTracksEvents(videoElement, track) {
+
+            var format = (track.format || '').toLowerCase();
+            if (format == 'ssa' || format == 'ass') {
+                // libjass is needed here
+                renderWithLibjass(videoElement, track);
+                return;
+            }
+
+            if (browserInfo.edge || browserInfo.msie) {
+                fetchSubtitles(track).then(function (data) {
+                    currentTrackEvents = data.TrackEvents;
+                });
+                return;
+            }
 
             var trackElement = null;
             var expectedId = 'manualTrack' + track.index;
 
-            var allTracks = mediaElement.textTracks; // get list of tracks
+            var allTracks = videoElement.textTracks; // get list of tracks
             for (var i = 0; i < allTracks.length; i++) {
 
                 var currentTrack = allTracks[i];
@@ -591,7 +666,7 @@
             }
 
             if (!trackElement) {
-                trackElement = mediaElement.addTextTrack('subtitles', 'manualTrack' + track.index, track.language || 'und');
+                trackElement = videoElement.addTextTrack('subtitles', 'manualTrack' + track.index, track.language || 'und');
                 trackElement.label = 'manualTrack' + track.index;
 
                 // download the track json
@@ -602,13 +677,65 @@
                     // add some cues to show the text
                     // in safari, the cues need to be added before setting the track mode to showing
                     data.TrackEvents.forEach(function (trackEvent) {
-                        trackElement.addCue(new VTTCue(trackEvent.StartPositionTicks / 10000000, trackEvent.EndPositionTicks / 10000000, trackEvent.Text.replace(/\\N/gi, '\n')));
+                        trackElement.addCue(new (window.VTTCue || window.TextTrackCue)(trackEvent.StartPositionTicks / 10000000, trackEvent.EndPositionTicks / 10000000, trackEvent.Text.replace(/\\N/gi, '\n')));
                     });
                     trackElement.mode = 'showing';
                 });
             } else {
                 trackElement.mode = 'showing';
             }
+        }
+
+        var currentSubtitlesElement;
+        var currentTrackEvents;
+        var customTrackIndex = -1;
+        var lastCustomTrackMs = 0;
+        var currentClock;
+        var currentAssRenderer;
+        function updateSubtitleText(timeMs) {
+
+            var clock = currentClock;
+            if (clock) {
+                clock.seek(timeMs / 1000);
+            }
+
+            var trackEvents = currentTrackEvents;
+            if (!trackEvents) {
+                return;
+            }
+
+            if (!currentSubtitlesElement) {
+                var videoSubtitlesElem = document.querySelector('.videoSubtitles');
+                if (!videoSubtitlesElem) {
+                    videoSubtitlesElem = document.createElement('div');
+                    videoSubtitlesElem.classList.add('videoSubtitles');
+                    videoSubtitlesElem.innerHTML = '<div class="videoSubtitlesInner"></div>';
+                    document.body.appendChild(videoSubtitlesElem);
+                }
+                currentSubtitlesElement = videoSubtitlesElem.querySelector('.videoSubtitlesInner');
+            }
+
+            if (lastCustomTrackMs > 0) {
+                if (Math.abs(lastCustomTrackMs - timeMs) < 500) {
+                    return;
+                }
+            }
+
+            lastCustomTrackMs = new Date().getTime();
+
+            var positionTicks = timeMs * 10000;
+            for (var i = 0, length = trackEvents.length; i < length; i++) {
+
+                var caption = trackEvents[i];
+                if (positionTicks >= caption.StartPositionTicks && positionTicks <= caption.EndPositionTicks) {
+                    currentSubtitlesElement.innerHTML = caption.Text;
+                    currentSubtitlesElement.classList.remove('hide');
+                    return;
+                }
+            }
+
+            currentSubtitlesElement.innerHTML = '';
+            currentSubtitlesElement.classList.add('hide');
         }
 
         self.setCurrentTrackElement = function (streamIndex) {
@@ -621,9 +748,9 @@
 
             if (enableNativeTrackSupport(track)) {
 
-                setTrackForCustomDisplay(null);
+                setTrackForCustomDisplay(mediaElement, null);
             } else {
-                setTrackForCustomDisplay(track);
+                setTrackForCustomDisplay(mediaElement, track);
 
                 // null these out to disable the player's native display (handled below)
                 streamIndex = -1;
@@ -690,8 +817,8 @@
             }
 
             var allTracks = mediaElement.textTracks; // get list of tracks
-
-            for (var i = 0; i < allTracks.length; i++) {
+            var i;
+            for (i = 0; i < allTracks.length; i++) {
 
                 var track = allTracks[i];
 
@@ -706,23 +833,25 @@
                 }
             }
 
-            $('track', mediaElement).each(function () {
+            var trackElements = mediaElement.querySelectorAll('track');
+            for (i = 0; i < trackElements.length; i++) {
 
-                this.src = replaceQueryString(this.src, 'startPositionTicks', startPositionTicks);
+                var trackElement = trackElements[i];
 
-            });
+                trackElement.src = replaceQueryString(trackElement.src, 'startPositionTicks', startPositionTicks);
+            }
         };
 
         self.enableCustomVideoControls = function () {
 
             if (AppInfo.isNativeApp && browserInfo.safari) {
 
-                if (navigator.userAgent.toLowerCase().indexOf('iphone') != -1) {
-                    return true;
+                if (navigator.userAgent.toLowerCase().indexOf('ipad') != -1) {
+                    // Need to disable it in order to support picture in picture
+                    return false;
                 }
 
-                // Need to disable it in order to support picture in picture
-                return false;
+                return true;
             }
 
             return self.canAutoPlayVideo();

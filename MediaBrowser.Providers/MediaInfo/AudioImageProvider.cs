@@ -78,16 +78,22 @@ namespace MediaBrowser.Providers.MediaInfo
                         _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                         var imageStream = imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).IndexOf("front", StringComparison.OrdinalIgnoreCase) != -1) ??
-                            imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).IndexOf("cover", StringComparison.OrdinalIgnoreCase) != -1);
+                            imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).IndexOf("cover", StringComparison.OrdinalIgnoreCase) != -1) ??
+                            imageStreams.FirstOrDefault();
 
                         var imageStreamIndex = imageStream == null ? (int?)null : imageStream.Index;
 
-                        using (var stream = await _mediaEncoder.ExtractAudioImage(item.Path, imageStreamIndex, cancellationToken).ConfigureAwait(false))
+                        var tempFile = await _mediaEncoder.ExtractAudioImage(item.Path, imageStreamIndex, cancellationToken).ConfigureAwait(false);
+
+                        File.Copy(tempFile, path, true);
+
+                        try
                         {
-                            using (var fileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
-                            {
-                                await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-                            }
+                            File.Delete(tempFile);
+                        }
+                        catch
+                        {
+
                         }
                     }
                 }
@@ -159,14 +165,12 @@ namespace MediaBrowser.Providers.MediaInfo
             return item.LocationType == LocationType.FileSystem && audio != null && !audio.IsArchive;
         }
 
-        public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
-            if (status.ItemDateModified.HasValue)
+            var file = directoryService.GetFile(item.Path);
+            if (file != null && file.LastWriteTimeUtc != item.DateModified)
             {
-                if (status.ItemDateModified.Value != item.DateModified)
-                {
-                    return true;
-                }
+                return true;
             }
 
             return false;

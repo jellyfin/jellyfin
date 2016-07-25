@@ -16,7 +16,7 @@ namespace MediaBrowser.Providers.TV
 {
     public abstract class MovieDbProviderBase
     {
-        private const string EpisodeUrlPattern = @"http://api.themoviedb.org/3/tv/{0}/season/{1}/episode/{2}?api_key={3}&append_to_response=images,external_ids,credits,videos";
+        private const string EpisodeUrlPattern = @"https://api.themoviedb.org/3/tv/{0}/season/{1}/episode/{2}?api_key={3}&append_to_response=images,external_ids,credits,videos";
         private readonly IHttpClient _httpClient;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IJsonSerializer _jsonSerializer;
@@ -151,7 +151,7 @@ namespace MediaBrowser.Providers.TV
             public string file_path { get; set; }
             public int height { get; set; }
             public string id { get; set; }
-            public object iso_639_1 { get; set; }
+            public string iso_639_1 { get; set; }
             public double vote_average { get; set; }
             public int vote_count { get; set; }
             public int width { get; set; }
@@ -210,7 +210,19 @@ namespace MediaBrowser.Providers.TV
 
         public class Videos
         {
-            public List<object> results { get; set; }
+            public List<Video> results { get; set; }
+        }
+
+        public class Video
+        {
+            public string id { get; set; }
+            public string iso_639_1 { get; set; }
+            public string iso_3166_1 { get; set; }
+            public string key { get; set; }
+            public string name { get; set; }
+            public string site { get; set; }
+            public string size { get; set; }
+            public string type { get; set; }
         }
 
         public class RootObject

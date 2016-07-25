@@ -1,0 +1,35 @@
+﻿<div id="libraryDisplayPage" data-role="page" class="page type-interior librarySectionPage withTabs">
+
+    <div data-role="content">
+        <div class="content-primary">
+            <form>
+                <div>
+                    <paper-checkbox class="chkFolderView">${OptionDisplayFolderView}</paper-checkbox>
+                    <div class="fieldDescription paperCheckboxFieldDescription">${OptionDisplayFolderViewHelp}</div>
+                </div>
+                <br />
+                <div>
+                    <paper-checkbox class="chkDisplaySpecialsWithinSeasons">${LabelDisplaySpecialsWithinSeasons}</paper-checkbox>
+                </div>
+                <br /><br />
+                <div>
+                    <paper-checkbox class="chkGroupMoviesIntoCollections">${LabelGroupMoviesIntoCollections}</paper-checkbox>
+                    <div class="fieldDescription paperCheckboxFieldDescription">${LabelGroupMoviesIntoCollectionsHelp}</div>
+                </div>
+                <br />
+
+                <div>
+                    <paper-checkbox class="chkDisplayCollectionView">${LabelDisplayCollectionsView}</paper-checkbox>
+                    <div class="fieldDescription paperCheckboxFieldDescription">
+                        <div>${LabelDisplayCollectionsViewHelp}</div>
+                        <div><a href="https://github.com/MediaBrowser/Wiki/wiki/Collections" target="_blank">${ButtonLearnMore}</a></div>
+                    </div>
+                </div>
+                <br />
+                <br />
+                <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
+
+            </form>
+        </div>
+    </div>
+</div>

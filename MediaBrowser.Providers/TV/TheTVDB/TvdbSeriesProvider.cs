@@ -25,7 +25,7 @@ using CommonIO;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class TvdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IItemIdentityProvider<SeriesInfo>, IHasOrder
+    public class TvdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
     {
         private const string TvdbSeriesOffset = "TvdbSeriesOffset";
         private const string TvdbSeriesOffsetFormat = "{0}-{1}";
@@ -38,24 +38,22 @@ namespace MediaBrowser.Providers.TV
         private readonly IServerConfigurationManager _config;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly ILogger _logger;
-        private readonly ISeriesOrderManager _seriesOrder;
         private readonly ILibraryManager _libraryManager;
 
-        public TvdbSeriesProvider(IZipClient zipClient, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager config, ILogger logger, ISeriesOrderManager seriesOrder, ILibraryManager libraryManager)
+        public TvdbSeriesProvider(IZipClient zipClient, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager config, ILogger logger, ILibraryManager libraryManager)
         {
             _zipClient = zipClient;
             _httpClient = httpClient;
             _fileSystem = fileSystem;
             _config = config;
             _logger = logger;
-            _seriesOrder = seriesOrder;
             _libraryManager = libraryManager;
             Current = this;
         }
 
-        private const string SeriesSearchUrl = "http://www.thetvdb.com/api/GetSeries.php?seriesname={0}&language={1}";
-        private const string SeriesGetZip = "http://www.thetvdb.com/api/{0}/series/{1}/all/{2}.zip";
-        private const string GetSeriesByImdbId = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid={0}&language={1}";
+        private const string SeriesSearchUrl = "https://www.thetvdb.com/api/GetSeries.php?seriesname={0}&language={1}";
+        private const string SeriesGetZip = "https://www.thetvdb.com/api/{0}/series/{1}/all/{2}.zip";
+        private const string GetSeriesByImdbId = "https://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid={0}&language={1}";
 
         private string NormalizeLanguage(string language)
         {
@@ -112,21 +110,9 @@ namespace MediaBrowser.Providers.TV
                 result.HasMetadata = true;
 
                 FetchSeriesData(result, itemId.MetadataLanguage, itemId.ProviderIds, cancellationToken);
-                await FindAnimeSeriesIndex(result.Item, itemId).ConfigureAwait(false);
             }
 
             return result;
-        }
-
-        private async Task FindAnimeSeriesIndex(Series series, SeriesInfo info)
-        {
-            var index = await _seriesOrder.FindSeriesIndex(SeriesOrderTypes.Anime, series.Name);
-            if (index == null)
-                return;
-
-            var offset = info.AnimeSeriesIndex - index;
-            var id = string.Format(TvdbSeriesOffsetFormat, series.GetProviderId(MetadataProviders.Tvdb), offset);
-            series.SetProviderId(TvdbSeriesOffset, id);
         }
 
         internal static int? GetSeriesOffset(Dictionary<string, string> seriesProviderIds)
@@ -311,11 +297,6 @@ namespace MediaBrowser.Providers.TV
             return null;
         }
 
-        public TvdbOptions GetTvDbOptions()
-        {
-            return _config.GetConfiguration<TvdbOptions>("tvdb");
-        }
-
         internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)
         {
             string id;
@@ -392,27 +373,25 @@ namespace MediaBrowser.Providers.TV
 
                 var seriesXmlFilename = preferredMetadataLanguage + ".xml";
 
-                var automaticUpdatesEnabled = GetTvDbOptions().EnableAutomaticUpdates;
-
                 const int cacheDays = 1;
 
                 var seriesFile = files.FirstOrDefault(i => string.Equals(seriesXmlFilename, i.Name, StringComparison.OrdinalIgnoreCase));
                 // No need to check age if automatic updates are enabled
-                if (seriesFile == null || !seriesFile.Exists || (!automaticUpdatesEnabled && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(seriesFile)).TotalDays > cacheDays))
+                if (seriesFile == null || !seriesFile.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(seriesFile)).TotalDays > cacheDays)
                 {
                     return false;
                 }
 
                 var actorsXml = files.FirstOrDefault(i => string.Equals("actors.xml", i.Name, StringComparison.OrdinalIgnoreCase));
                 // No need to check age if automatic updates are enabled
-                if (actorsXml == null || !actorsXml.Exists || (!automaticUpdatesEnabled && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(actorsXml)).TotalDays > cacheDays))
+                if (actorsXml == null || !actorsXml.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(actorsXml)).TotalDays > cacheDays)
                 {
                     return false;
                 }
 
                 var bannersXml = files.FirstOrDefault(i => string.Equals("banners.xml", i.Name, StringComparison.OrdinalIgnoreCase));
                 // No need to check age if automatic updates are enabled
-                if (bannersXml == null || !bannersXml.Exists || (!automaticUpdatesEnabled && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(bannersXml)).TotalDays > cacheDays))
+                if (bannersXml == null || !bannersXml.Exists || (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(bannersXml)).TotalDays > cacheDays)
                 {
                     return false;
                 }
@@ -1448,21 +1427,6 @@ namespace MediaBrowser.Providers.TV
                 Url = url,
                 ResourcePool = TvDbResourcePool
             });
-        }
-    }
-
-    public class TvdbConfigStore : IConfigurationFactory
-    {
-        public IEnumerable<ConfigurationStore> GetConfigurations()
-        {
-            return new List<ConfigurationStore>
-            {
-                new ConfigurationStore
-                {
-                     Key = "tvdb",
-                     ConfigurationType = typeof(TvdbOptions)
-                }
-            };
         }
     }
 }

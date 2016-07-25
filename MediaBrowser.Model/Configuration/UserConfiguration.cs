@@ -34,24 +34,22 @@ namespace MediaBrowser.Model.Configuration
 
         public SubtitlePlaybackMode SubtitleMode { get; set; }
         public bool DisplayCollectionsView { get; set; }
-        public bool DisplayFoldersView { get; set; }
 
         public bool EnableLocalPassword { get; set; }
 
         public string[] OrderedViews { get; set; }
 
-        public bool IncludeTrailersInSuggestions { get; set; }
-
         public string[] LatestItemsExcludes { get; set; }
         public string[] PlainFolderViews { get; set; }
 
         public bool HidePlayedInLatest { get; set; }
-        public bool DisplayChannelsInline { get; set; }
+        public bool EnableChannelView { get; set; }
 
         public bool RememberAudioSelections { get; set; }
         public bool RememberSubtitleSelections { get; set; }
         public bool EnableNextEpisodeAutoPlay { get; set; }
-    
+        public bool DisplayFoldersView { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
         /// </summary>
@@ -60,7 +58,6 @@ namespace MediaBrowser.Model.Configuration
             EnableNextEpisodeAutoPlay = true;
             RememberAudioSelections = true;
             RememberSubtitleSelections = true;
-            DisplayChannelsInline = true;
 
             HidePlayedInLatest = true;
             PlayDefaultAudioTrack = true;
@@ -69,8 +66,6 @@ namespace MediaBrowser.Model.Configuration
             OrderedViews = new string[] { };
 
             PlainFolderViews = new string[] { };
-
-            IncludeTrailersInSuggestions = true;
 
             GroupedFolders = new string[] { };
         }

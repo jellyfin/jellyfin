@@ -13,11 +13,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Server.Implementations.Photos
 {
-    public abstract class BaseDynamicImageProvider<T> : IHasChangeMonitor, IForcedProvider, ICustomMetadataProvider<T>, IHasOrder
+    public abstract class BaseDynamicImageProvider<T> : IHasItemChangeMonitor, IForcedProvider, ICustomMetadataProvider<T>, IHasOrder
         where T : IHasMetadata
     {
         protected IFileSystem FileSystem { get; private set; }
@@ -109,6 +110,21 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         protected async Task<ItemUpdateType> FetchAsync(IHasImages item, ImageType imageType, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
+            var image = item.GetImageInfo(imageType, 0);
+
+            if (image != null)
+            {
+                if (!image.IsLocalFile)
+                {
+                    return ItemUpdateType.None;
+                }
+
+                if (!FileSystem.ContainsSubPath(item.GetInternalMetadataPath(), image.Path))
+                {
+                    return ItemUpdateType.None;
+                }
+            }
+
             var items = await GetItemsWithImages(item).ConfigureAwait(false);
 
             return await FetchToFileInternal(item, items, imageType, cancellationToken).ConfigureAwait(false);
@@ -232,7 +248,7 @@ namespace MediaBrowser.Server.Implementations.Photos
                 {
                     return await CreateSquareCollage(item, itemsWithImages, outputPath).ConfigureAwait(false);
                 }
-                if (item is Playlist)
+                if (item is Playlist || item is MusicGenre)
                 {
                     return await CreateSquareCollage(item, itemsWithImages, outputPath).ConfigureAwait(false);
                 }
@@ -247,7 +263,7 @@ namespace MediaBrowser.Server.Implementations.Photos
             get { return 7; }
         }
 
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
+        public bool HasChanged(IHasMetadata item, IDirectoryService directoryServicee)
         {
             if (!Supports(item))
             {

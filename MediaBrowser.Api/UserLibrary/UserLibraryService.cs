@@ -488,9 +488,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public object Post(MarkFavoriteItem request)
+        public async Task<object> Post(MarkFavoriteItem request)
         {
-            var dto = MarkFavorite(request.UserId, request.Id, true).Result;
+            var dto = await MarkFavorite(request.UserId, request.Id, true).ConfigureAwait(false);
 
             return ToOptimizedResult(dto);
         }
@@ -519,17 +519,15 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = string.IsNullOrEmpty(itemId) ? user.RootFolder : _libraryManager.GetItemById(itemId);
 
-            var key = item.GetUserDataKey();
-
             // Get the user data for this item
-            var data = _userDataRepository.GetUserData(user.Id, key);
+            var data = _userDataRepository.GetUserData(user, item);
 
             // Set favorite status
             data.IsFavorite = isFavorite;
 
             await _userDataRepository.SaveUserData(user.Id, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None).ConfigureAwait(false);
 
-            return _userDataRepository.GetUserDataDto(item, user);
+            return await _userDataRepository.GetUserDataDto(item, user).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -547,9 +545,9 @@ namespace MediaBrowser.Api.UserLibrary
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public object Post(UpdateUserItemRating request)
+        public async Task<object> Post(UpdateUserItemRating request)
         {
-            var dto = UpdateUserItemRating(request.UserId, request.Id, request.Likes).Result;
+            var dto = await UpdateUserItemRating(request.UserId, request.Id, request.Likes).ConfigureAwait(false);
 
             return ToOptimizedResult(dto);
         }
@@ -567,16 +565,14 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = string.IsNullOrEmpty(itemId) ? user.RootFolder : _libraryManager.GetItemById(itemId);
 
-            var key = item.GetUserDataKey();
-
             // Get the user data for this item
-            var data = _userDataRepository.GetUserData(user.Id, key);
+            var data = _userDataRepository.GetUserData(user, item);
 
             data.Likes = likes;
 
             await _userDataRepository.SaveUserData(user.Id, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None).ConfigureAwait(false);
 
-            return _userDataRepository.GetUserDataDto(item, user);
+            return await _userDataRepository.GetUserDataDto(item, user).ConfigureAwait(false);
         }
     }
 }

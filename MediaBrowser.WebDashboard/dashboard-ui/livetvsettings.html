@@ -1,10 +1,7 @@
-﻿<div id="liveTvSettingsPage" data-role="page" class="page type-interior liveTvPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvsettings,paper-checkbox,paper-input,emby-collapsible">
-
+﻿<div id="liveTvSettingsPage" data-role="page" class="page type-interior liveTvPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="jqmlistview,scripts/livetvsettings,paper-checkbox,paper-input,emby-collapse,emby-button">
     <div data-role="content">
         <div class="content-primary">
-
             <form class="liveTvSettingsForm">
-
                 <ul data-role="listview" class="ulForm">
                     <li>
                         <label for="selectGuideDays" class="selectLabel">${LabelNumberOfGuideDays}</label>
@@ -35,8 +32,25 @@
                 <div>
                     <br />
                     <paper-input id="txtRecordingPath" label="${LabelRecordingPath}" style="width:84%;display:inline-block;"></paper-input>
-                    <paper-icon-button id="btnSelectRecordingPath" icon="search"></paper-icon-button>
+                    <button type="button" is="paper-icon-button-light" id="btnSelectRecordingPath" title="${ButtonSelectDirectory}" class="autoSize"><i class="md-icon">search</i></button>
                     <div class="fieldDescription">${LabelRecordingPathHelp}</div>
+                </div>
+                <br />
+                <div>
+                    <paper-checkbox id="chkEnableRecordingSubfolders">${OptionEnableRecordingSubfolders}</paper-checkbox>
+                </div>
+                <div>
+                    <br />
+                    <paper-input id="txtMovieRecordingPath" label="${LabelMovieRecordingPath}" style="width:84%;display:inline-block;"></paper-input>
+                    <button type="button" is="paper-icon-button-light" id="btnSelectMovieRecordingPath" title="${ButtonSelectDirectory}" class="autoSize"><i class="md-icon">search</i></button>
+                </div>
+                <div>
+                    <paper-input id="txtSeriesRecordingPath" label="${LabelSeriesRecordingPath}" style="width:84%;display:inline-block;"></paper-input>
+                    <button type="button" is="paper-icon-button-light" id="btnSelectSeriesRecordingPath" title="${ButtonSelectDirectory}" class="autoSize"><i class="md-icon">search</i></button>
+                </div>
+                <br />
+                <div>
+                    <paper-checkbox id="chkOrganize">${OptionSendRecordingsToAutoOrganize}</paper-checkbox>
                 </div>
                 <br />
                 <br />
@@ -46,10 +60,9 @@
                     <div class="fieldDescription paperCheckboxFieldDescription btnSupporterForConverting"><a href="https://emby.media/premiere" target="_blank" class="accent">${FeatureRequiresEmbyPremiere}</a></div>
                 </div>
                 <br />
-                <br />
                 <div>
-                    <paper-checkbox id="chkOrganize">${OptionSendRecordingsToAutoOrganize}</paper-checkbox>
-                    <div class="fieldDescription paperCheckboxFieldDescription">${OptionSendRecordingsToAutoOrganizeHelp}</div>
+                    <paper-checkbox id="chkPreserveAudio">${OptionConvertRecordingPreserveAudio}</paper-checkbox>
+                    <div class="fieldDescription paperCheckboxFieldDescription">${OptionConvertRecordingPreserveAudioHelp}</div>
                 </div>
                 <br />
                 <br />
@@ -61,18 +74,14 @@
                     <div>
                         <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
                     </div>
-
                 </div>
                 <br />
                 <br />
                 <ul data-role="listview" class="ulForm">
                     <li>
-                        <button type="submit" data-role="none" class="clearButton">
-                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                        </button>
+                        <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
                     </li>
                 </ul>
-
             </form>
         </div>
     </div>

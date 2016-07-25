@@ -23,7 +23,7 @@ namespace MediaBrowser.Providers.Music
 
             if (!string.IsNullOrWhiteSpace(musicBrainzId))
             {
-                var url = string.Format("http://www.musicbrainz.org/ws/2/artist/?query=arid:{0}", musicBrainzId);
+                var url = string.Format("/ws/2/artist/?query=arid:{0}", musicBrainzId);
 
                 var doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, false, cancellationToken)
                             .ConfigureAwait(false);
@@ -35,7 +35,7 @@ namespace MediaBrowser.Providers.Music
                 // They seem to throw bad request failures on any term with a slash
                 var nameToSearch = searchInfo.Name.Replace('/', ' ');
 
-                var url = String.Format("http://www.musicbrainz.org/ws/2/artist/?query=artist:\"{0}\"", UrlEncode(nameToSearch));
+                var url = String.Format("/ws/2/artist/?query=artist:\"{0}\"", UrlEncode(nameToSearch));
 
                 var doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false);
 
@@ -49,7 +49,7 @@ namespace MediaBrowser.Providers.Music
                 if (HasDiacritics(searchInfo.Name))
                 {
                     // Try again using the search with accent characters url
-                    url = String.Format("http://www.musicbrainz.org/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
+                    url = String.Format("/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
 
                     doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false);
 
@@ -62,12 +62,22 @@ namespace MediaBrowser.Providers.Music
 
         private IEnumerable<RemoteSearchResult> GetResultsFromResponse(XmlDocument doc)
         {
-            var ns = new XmlNamespaceManager(doc.NameTable);
-            ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
-
             var list = new List<RemoteSearchResult>();
 
-            var nodes = doc.SelectNodes("//mb:artist-list/mb:artist", ns);
+            var docElem = doc.DocumentElement;
+
+            if (docElem == null)
+            {
+                return list;
+            }
+
+            var artistList = docElem.FirstChild;
+            if (artistList == null)
+            {
+                return list;
+            }
+
+            var nodes = artistList.ChildNodes;
 
             if (nodes != null)
             {
@@ -79,11 +89,13 @@ namespace MediaBrowser.Providers.Music
 
                         string mbzId = node.Attributes["id"].Value;
 
-                        var nameNode = node.SelectSingleNode("//mb:name", ns);
-
-                        if (nameNode != null)
+                        foreach (var child in node.ChildNodes.Cast<XmlNode>())
                         {
-                            name = nameNode.InnerText;
+                            if (string.Equals(child.Name, "name", StringComparison.OrdinalIgnoreCase))
+                            {
+                                name = child.InnerText;
+                                break;
+                            }
                         }
 
                         if (!string.IsNullOrWhiteSpace(mbzId) && !string.IsNullOrWhiteSpace(name))

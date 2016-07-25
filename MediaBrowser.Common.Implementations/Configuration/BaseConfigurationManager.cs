@@ -123,6 +123,7 @@ namespace MediaBrowser.Common.Implementations.Configuration
         /// </summary>
         public void SaveConfiguration()
         {
+            Logger.Info("Saving system configuration");
             var path = CommonApplicationPaths.SystemConfigurationFilePath;
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));

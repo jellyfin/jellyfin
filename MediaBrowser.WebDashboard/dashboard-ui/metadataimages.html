@@ -1,30 +1,28 @@
-﻿<div id="metadataImagesConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage" data-require="jqmcollapsible,scripts/metadataimagespage,jqmcheckbox,paper-checkbox,paper-input">
+﻿<div id="metadataImagesConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage withTabs" data-require="jqmlistview,emby-collapse,scripts/metadataimagespage,paper-checkbox,paper-input,paper-fab,paper-icon-item,paper-item-body,emby-button">
 
     <div data-role="content">
 
         <div class="content-primary">
 
             <div class="tabContent">
-                <form class="metadataImagesConfigurationForm" style="max-width: 800px;">
-                    <div style="width: 75%;">
+                <form class="metadataImagesConfigurationForm">
+                    <div>
                         <label for="selectItemType" class="selectLabel">${LabelCustomizeOptionsPerMediaType}</label>
                         <select id="selectItemType" data-mini="true"></select>
                     </div>
                     <br />
                     <br />
-                    <div class="metadataReaders" style="margin-bottom: 2em; width: 75%;">
+                    <div class="metadataReaders" style="margin-bottom: 2em;">
                     </div>
-                    <div class="metadataSavers" style="margin-bottom: 2em; width: 75%;">
+                    <div class="metadataSavers" style="margin-bottom: 2em;">
                     </div>
                     <div class="metadataFetchers" style="margin-bottom: 2em;">
                     </div>
                     <div class="imageFetchers" style="margin-bottom: 2em;">
                     </div>
 
-                    <div data-role="collapsible">
-                        <h2>${HeaderImageSettings}</h2>
-                        <div>
-                            <br />
+                    <div is="emby-collapse" title="${HeaderImageSettings}">
+                        <div class="collapseContent">
                             <div class="backdropFields" style="margin-bottom: 2em; display: none;">
                                 <div>
                                     <paper-input type="number" id="txtMaxBackdrops" pattern="[0-9]*" required="required" min="0" label="${LabelMaxBackdropsPerItem}"></paper-input>
@@ -45,7 +43,7 @@
                                 </div>
                             </div>
 
-                            <div class="paperCheckboxListLabel">${HeaderFetchImages}</div>
+                            <div class="paperListLabel">${HeaderFetchImages}</div>
                             <div class="imageSelections paperCheckboxList">
 
                                 <paper-checkbox class="imageType hide" data-imagetype="Primary">${OptionDownloadPrimaryImage}</paper-checkbox>
@@ -66,9 +64,7 @@
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <button type="submit" data-role="none" class="clearButton">
-                                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                            </button>
+                            <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
                         </li>
                     </ul>
                 </form>

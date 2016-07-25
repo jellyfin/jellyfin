@@ -24,7 +24,7 @@ namespace MediaBrowser.Providers.TV
     /// <summary>
     /// Class RemoteEpisodeProvider
     /// </summary>
-    class TvdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IItemIdentityProvider<EpisodeInfo>, IHasChangeMonitor
+    class TvdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>
     {
         private static readonly string FullIdKey = MetadataProviders.Tvdb + "-Full";
 
@@ -142,28 +142,6 @@ namespace MediaBrowser.Providers.TV
             }
 
             return result;
-        }
-
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
-        {
-            // Only enable for virtual items
-            if (item.LocationType != LocationType.Virtual)
-            {
-                return false;
-            }
-
-            var episode = (Episode)item;
-            var series = episode.Series;
-
-            if (series != null && TvdbSeriesProvider.IsValidSeries(series.ProviderIds))
-            {
-                // Process images
-				var seriesXmlPath = TvdbSeriesProvider.Current.GetSeriesXmlPath(series.ProviderIds, series.GetPreferredMetadataLanguage());
-
-				return _fileSystem.GetLastWriteTimeUtc(seriesXmlPath) > date;
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -750,7 +728,7 @@ namespace MediaBrowser.Providers.TV
         private void AddPeople<T>(MetadataResult<T> result, string val, string personType)
         {
             // Sometimes tvdb actors have leading spaces
-            foreach (var person in val.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries)
+            foreach (var person in val.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
                                             .Where(i => !string.IsNullOrWhiteSpace(i))
                                             .Select(str => new PersonInfo { Type = personType, Name = str.Trim() }))
             {
@@ -893,86 +871,6 @@ namespace MediaBrowser.Providers.TV
             });
         }
 
-        public Task Identify(EpisodeInfo info)
-        {
-            if (info.ProviderIds.ContainsKey(FullIdKey))
-            {
-                return Task.FromResult<object>(null);
-            }
-
-            string seriesTvdbId;
-            info.SeriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out seriesTvdbId);
-
-            if (string.IsNullOrEmpty(seriesTvdbId) || info.IndexNumber == null)
-            {
-                return Task.FromResult<object>(null);
-            }
-
-            var id = new Identity(seriesTvdbId, info.ParentIndexNumber, info.IndexNumber.Value, info.IndexNumberEnd);
-            info.SetProviderId(FullIdKey, id.ToString());
-
-            return Task.FromResult(id);
-        }
-
         public int Order { get { return 0; } }
-
-        public struct Identity
-        {
-            public string SeriesId { get; private set; }
-            public int? SeasonIndex { get; private set; }
-            public int EpisodeNumber { get; private set; }
-            public int? EpisodeNumberEnd { get; private set; }
-
-            public Identity(string id)
-                : this()
-            {
-                this = ParseIdentity(id).Value;
-            }
-
-            public Identity(string seriesId, int? seasonIndex, int episodeNumber, int? episodeNumberEnd)
-                : this()
-            {
-                SeriesId = seriesId;
-                SeasonIndex = seasonIndex;
-                EpisodeNumber = episodeNumber;
-                EpisodeNumberEnd = episodeNumberEnd;
-            }
-
-            public override string ToString()
-            {
-                return string.Format("{0}:{1}:{2}",
-                    SeriesId,
-                    SeasonIndex != null ? SeasonIndex.Value.ToString() : "A",
-                    EpisodeNumber + (EpisodeNumberEnd != null ? "-" + EpisodeNumberEnd.Value.ToString() : ""));
-            }
-
-            public static Identity? ParseIdentity(string id)
-            {
-                if (string.IsNullOrEmpty(id))
-                    return null;
-
-                try {
-                    var parts = id.Split(':');
-                    var series = parts[0];
-                    var season = parts[1] != "A" ? (int?)int.Parse(parts[1]) : null;
-
-                    int index;
-                    int? indexEnd;
-
-                    if (parts[2].Contains("-")) {
-                        var split = parts[2].IndexOf("-", StringComparison.OrdinalIgnoreCase);
-                        index = int.Parse(parts[2].Substring(0, split));
-                        indexEnd = int.Parse(parts[2].Substring(split + 1));
-                    } else {
-                        index = int.Parse(parts[2]);
-                        indexEnd = null;
-                    }
-
-                    return new Identity(series, season, index, indexEnd);
-                } catch {
-                    return null;
-                }
-            }
-        }
     }
 }

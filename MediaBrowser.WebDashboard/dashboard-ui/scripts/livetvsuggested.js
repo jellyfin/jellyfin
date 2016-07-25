@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['libraryBrowser', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser) {
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
@@ -6,14 +6,6 @@
 
     function getPortraitShape() {
         return enableScrollX() ? 'overflowPortrait' : 'portrait';
-    }
-
-    function getThumbShape() {
-        return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
-    }
-
-    function getSquareShape() {
-        return enableScrollX() ? 'overflowSquare' : 'square';
     }
 
     function getLimit() {
@@ -31,12 +23,12 @@
             IsAiring: true,
             limit: getLimit() * 2,
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary"
+            EnableImageTypes: "Primary",
+            EnableTotalRecordCount: false
 
         }).then(function (result) {
 
             renderItems(page, result.Items, 'activeProgramItems', 'play');
-            LibraryBrowser.setLastRefreshed(page);
             Dashboard.hideLoadingMsg();
         });
     }
@@ -54,7 +46,8 @@
             IsMovie: false,
             IsSports: false,
             IsKids: false,
-            IsSeries: true
+            IsSeries: true,
+            EnableTotalRecordCount: false
 
         }).then(function (result) {
 
@@ -67,7 +60,8 @@
             IsAiring: false,
             HasAired: false,
             limit: getLimit(),
-            IsMovie: true
+            IsMovie: true,
+            EnableTotalRecordCount: false
 
         }).then(function (result) {
 
@@ -80,7 +74,8 @@
             IsAiring: false,
             HasAired: false,
             limit: getLimit(),
-            IsSports: true
+            IsSports: true,
+            EnableTotalRecordCount: false
 
         }).then(function (result) {
 
@@ -93,7 +88,8 @@
             IsAiring: false,
             HasAired: false,
             limit: getLimit(),
-            IsKids: true
+            IsKids: true,
+            EnableTotalRecordCount: false
 
         }).then(function (result) {
 
@@ -103,9 +99,9 @@
 
     function renderItems(page, items, sectionClass, overlayButton, shape) {
 
-        var html = LibraryBrowser.getPosterViewHtml({
+        var html = libraryBrowser.getPosterViewHtml({
             items: items,
-            shape: shape || (enableScrollX() ? getSquareShape() : 'auto'),
+            shape: shape || (enableScrollX() ? 'autooverflow' : 'auto'),
             showTitle: true,
             centerText: true,
             coverImage: true,
@@ -121,95 +117,110 @@
         ImageLoader.lazyChildren(elem);
     }
 
-    function initSuggestedTab(page, tabContent) {
+    return function (view, params) {
 
-        if (enableScrollX()) {
-            $('.itemsContainer', tabContent).addClass('hiddenScrollX').createCardMenus();
-        } else {
-            $('.itemsContainer', tabContent).removeClass('hiddenScrollX').createCardMenus();
-        }
-    }
+        var self = this;
 
-    function renderSuggestedTab(page, tabContent) {
+        self.initTab = function () {
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
+            var tabContent = view.querySelector('.pageTabContent[data-index=\'' + 0 + '\']');
+
+            var containers = tabContent.querySelectorAll('.itemsContainer');
+
+            for (var i = 0, length = containers.length; i < length; i++) {
+                if (enableScrollX()) {
+                    containers[i].classList.add('hiddenScrollX');
+                } else {
+                    containers[i].classList.remove('hiddenScrollX');
+                }
+            }
+        };
+
+        self.renderTab = function () {
+            var tabContent = view.querySelector('.pageTabContent[data-index=\'' + 0 + '\']');
             reload(tabContent);
-        }
-    }
+        };
 
-    function loadTab(page, index) {
+        var tabControllers = [];
+        var renderedTabs = [];
 
-        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
-        var depends = [];
-        var scope = 'LiveTvPage';
-        var renderMethod = '';
-        var initMethod = '';
+        function loadTab(page, index) {
 
-        switch (index) {
+            var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+            var depends = [];
 
-            case 0:
-                renderMethod = 'renderSuggestedTab';
-                initMethod = 'initSuggestedTab';
-                break;
-            case 1:
-                depends.push('registrationservices');
-                depends.push('scripts/livetvguide');
-                renderMethod = 'renderGuideTab';
-                initMethod = 'initGuideTab';
-                break;
-            case 2:
-                depends.push('scripts/livetvchannels');
-                depends.push('paper-icon-item');
-                depends.push('paper-item-body');
-                renderMethod = 'renderChannelsTab';
-                break;
-            case 3:
-                depends.push('scripts/livetvrecordings');
-                renderMethod = 'renderRecordingsTab';
-                break;
-            case 4:
-                depends.push('scripts/livetvtimers');
-                renderMethod = 'renderTimersTab';
-                break;
-            case 5:
-                depends.push('scripts/livetvseriestimers');
-                renderMethod = 'renderSeriesTimersTab';
-                break;
-            default:
-                break;
-        }
+            switch (index) {
 
-        require(depends, function () {
-
-            if (initMethod && !tabContent.initComplete) {
-
-                window[scope][initMethod](page, tabContent);
-                tabContent.initComplete = true;
+                case 0:
+                    break;
+                case 1:
+                    document.body.classList.add('autoScrollY');
+                    depends.push('scripts/livetvguide');
+                    break;
+                case 2:
+                    document.body.classList.remove('autoScrollY');
+                    depends.push('scripts/livetvchannels');
+                    break;
+                case 3:
+                    document.body.classList.remove('autoScrollY');
+                    depends.push('scripts/livetvrecordings');
+                    break;
+                case 4:
+                    document.body.classList.remove('autoScrollY');
+                    depends.push('scripts/livetvseriestimers');
+                    break;
+                default:
+                    break;
             }
 
-            window[scope][renderMethod](page, tabContent);
+            require(depends, function (controllerFactory) {
 
+                if (index == 0) {
+                    self.tabContent = tabContent;
+                }
+                var controller = tabControllers[index];
+                if (!controller) {
+                    controller = index ? new controllerFactory(view, params, tabContent) : self;
+                    tabControllers[index] = controller;
+
+                    if (controller.initTab) {
+                        controller.initTab();
+                    }
+                }
+
+                if (renderedTabs.indexOf(index) == -1) {
+                    renderedTabs.push(index);
+                    controller.renderTab();
+                }
+            });
+        }
+
+        var mdlTabs = view.querySelector('.libraryViewNav');
+
+        var baseUrl = 'tv.html';
+        var topParentId = params.topParentId;
+        if (topParentId) {
+            baseUrl += '?topParentId=' + topParentId;
+        }
+
+        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'), [0, 2, 3, 4]);
+
+        mdlTabs.addEventListener('tabchange', function (e) {
+            loadTab(view, parseInt(e.detail.selectedTabIndex));
         });
-    }
 
-    pageIdOn('pageinit', "liveTvSuggestedPage", function () {
+        view.addEventListener('viewbeforehide', function (e) {
 
-        var page = this;
-
-        var tabs = page.querySelector('paper-tabs');
-        var pageTabsContainer = page.querySelector('.pageTabsContainer');
-
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pageTabsContainer, 'livetv.html');
-
-        pageTabsContainer.addEventListener('tabchange', function (e) {
-            loadTab(page, parseInt(e.detail.selectedTabIndex));
+            document.body.classList.remove('autoScrollY');
         });
 
-    });
+        view.addEventListener('viewdestroy', function (e) {
 
-    window.LiveTvPage = {
-        renderSuggestedTab: renderSuggestedTab,
-        initSuggestedTab: initSuggestedTab
+            tabControllers.forEach(function (t) {
+                if (t.destroy) {
+                    t.destroy();
+                }
+            });
+        });
     };
-
 });

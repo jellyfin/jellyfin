@@ -64,7 +64,7 @@ var ScheduledTaskPage = {
 
             html += '</paper-item-body>';
 
-            html += '<paper-icon-button icon="delete" title="' + Globalize.translate('ButtonDelete') + '" onclick="ScheduledTaskPage.confirmDeleteTrigger(' + i + ');"></paper-icon-button>';
+            html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonDelete') + '" onclick="ScheduledTaskPage.confirmDeleteTrigger(' + i + ');"><iron-icon icon="delete"></iron-icon></button>';
 
             html += '</paper-icon-item>';
         }

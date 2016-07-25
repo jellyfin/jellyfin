@@ -35,7 +35,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var items = _libraryManager.RootFolder.GetRecursiveChildren()
+            var items = _libraryManager.RootFolder.GetRecursiveChildren(i => true)
                 .SelectMany(i => i.Studios)
                 .DistinctNames()
                 .ToList();
@@ -71,28 +71,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 percent *= 100;
 
                 progress.Report(percent);
-            }
-
-            var allIds = _libraryManager.GetItemIds(new InternalItemsQuery
-            {
-                IncludeItemTypes = new[] { typeof(Studio).Name }
-            });
-
-            var invalidIds = allIds
-                .Except(validIds)
-                .ToList();
-
-            foreach (var id in invalidIds)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                
-                var item = _libraryManager.GetItemById(id);
-
-                await _libraryManager.DeleteItem(item, new DeleteOptions
-                {
-                    DeleteFileLocation = false
-
-                }).ConfigureAwait(false);
             }
 
             progress.Report(100);

@@ -2,13 +2,16 @@
 
     <div data-role="content">
         <div class="content-primary">
-            <div class="readOnlyContent" style="margin:0 auto;">
+            <div class="readOnlyContent">
                 <div style="text-align: right; display: flex; justify-content: flex-end;">
-                    <paper-toggle-button id="chkDebugLog">${LabelEnableDebugLogging}</paper-toggle-button>
+                    <label style="width:auto;">
+                        <input type="checkbox" is="emby-checkbox" id="chkDebugLog" />
+                        <span>${LabelEnableDebugLogging}</span>
+                    </label>
                 </div>
-                <br/>
+                <br />
             </div>
-            <div class="serverLogs readOnlyContent" style="margin:0 auto;">
+            <div class="serverLogs readOnlyContent">
 
             </div>
         </div>

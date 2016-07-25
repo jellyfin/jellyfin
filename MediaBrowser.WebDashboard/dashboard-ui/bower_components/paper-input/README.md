@@ -109,7 +109,7 @@ For example:
 </paper-input-container>
 ```
 
-Do not wrap <paper-input-contanter> around elements that already include it, such as <paper-input>.
+Do not wrap `<paper-input-container>` around elements that already include it, such as `<paper-input>`.
 Doing so may cause events to bounce infintely between the container and its contained element.
 
 ### Listening for input changes

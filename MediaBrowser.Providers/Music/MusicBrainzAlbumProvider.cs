@@ -14,6 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -24,12 +25,16 @@ namespace MediaBrowser.Providers.Music
         private readonly IHttpClient _httpClient;
         private readonly IApplicationHost _appHost;
         private readonly ILogger _logger;
+        private readonly IJsonSerializer _json;
 
-        public MusicBrainzAlbumProvider(IHttpClient httpClient, IApplicationHost appHost, ILogger logger)
+        public static string MusicBrainzBaseUrl = "https://www.musicbrainz.org";
+
+        public MusicBrainzAlbumProvider(IHttpClient httpClient, IApplicationHost appHost, ILogger logger, IJsonSerializer json)
         {
             _httpClient = httpClient;
             _appHost = appHost;
             _logger = logger;
+            _json = json;
             Current = this;
         }
 
@@ -42,7 +47,7 @@ namespace MediaBrowser.Providers.Music
 
             if (!string.IsNullOrEmpty(releaseId))
             {
-                url = string.Format("http://www.musicbrainz.org/ws/2/release/?query=reid:{0}", releaseId);
+                url = string.Format("/ws/2/release/?query=reid:{0}", releaseId);
             }
             else
             {
@@ -50,7 +55,7 @@ namespace MediaBrowser.Providers.Music
 
                 if (!string.IsNullOrWhiteSpace(artistMusicBrainzId))
                 {
-                    url = string.Format("http://www.musicbrainz.org/ws/2/release/?query=\"{0}\" AND arid:{1}",
+                    url = string.Format("/ws/2/release/?query=\"{0}\" AND arid:{1}",
                         WebUtility.UrlEncode(searchInfo.Name),
                         artistMusicBrainzId);
                 }
@@ -58,7 +63,7 @@ namespace MediaBrowser.Providers.Music
                 {
                     isNameSearch = true;
 
-                    url = string.Format("http://www.musicbrainz.org/ws/2/release/?query=\"{0}\" AND artist:\"{1}\"",
+                    url = string.Format("/ws/2/release/?query=\"{0}\" AND artist:\"{1}\"",
                        WebUtility.UrlEncode(searchInfo.Name),
                        WebUtility.UrlEncode(searchInfo.GetAlbumArtist()));
                 }
@@ -77,7 +82,7 @@ namespace MediaBrowser.Providers.Music
         private IEnumerable<RemoteSearchResult> GetResultsFromResponse(XmlDocument doc)
         {
             var ns = new XmlNamespaceManager(doc.NameTable);
-            ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
+            ns.AddNamespace("mb", MusicBrainzBaseUrl + "/ns/mmd-2.0#");
 
             var list = new List<RemoteSearchResult>();
 
@@ -197,57 +202,86 @@ namespace MediaBrowser.Providers.Music
 
         private async Task<ReleaseResult> GetReleaseResult(string albumName, string artistId, CancellationToken cancellationToken)
         {
-            var url = string.Format("http://www.musicbrainz.org/ws/2/release/?query=\"{0}\" AND arid:{1}",
+            var url = string.Format("/ws/2/release/?query=\"{0}\" AND arid:{1}",
                 WebUtility.UrlEncode(albumName),
                 artistId);
 
             var doc = await GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false);
 
-            return GetReleaseResult(doc);
+            return ReleaseResult.Parse(doc);
         }
 
         private async Task<ReleaseResult> GetReleaseResultByArtistName(string albumName, string artistName, CancellationToken cancellationToken)
         {
-            var url = string.Format("http://www.musicbrainz.org/ws/2/release/?query=\"{0}\" AND artist:\"{1}\"",
+            var url = string.Format("/ws/2/release/?query=\"{0}\" AND artist:\"{1}\"",
                 WebUtility.UrlEncode(albumName),
                 WebUtility.UrlEncode(artistName));
 
             var doc = await GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false);
 
-            return GetReleaseResult(doc);
-        }
-
-        private ReleaseResult GetReleaseResult(XmlDocument doc)
-        {
-            var ns = new XmlNamespaceManager(doc.NameTable);
-            ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
-
-            var result = new ReleaseResult
-            {
-
-            };
-
-            var releaseIdNode = doc.SelectSingleNode("//mb:release-list/mb:release/@id", ns);
-
-            if (releaseIdNode != null)
-            {
-                result.ReleaseId = releaseIdNode.Value;
-            }
-
-            var releaseGroupIdNode = doc.SelectSingleNode("//mb:release-list/mb:release/mb:release-group/@id", ns);
-
-            if (releaseGroupIdNode != null)
-            {
-                result.ReleaseGroupId = releaseGroupIdNode.Value;
-            }
-
-            return result;
+            return ReleaseResult.Parse(doc);
         }
 
         private class ReleaseResult
         {
             public string ReleaseId;
             public string ReleaseGroupId;
+
+            public static ReleaseResult Parse(XmlDocument doc)
+            {
+                var docElem = doc.DocumentElement;
+
+                if (docElem == null)
+                {
+                    return new ReleaseResult();
+                }
+
+                var releaseList = docElem.FirstChild;
+                if (releaseList == null)
+                {
+                    return new ReleaseResult();
+                }
+
+                var nodes = releaseList.ChildNodes;
+                string releaseId = null;
+                string releaseGroupId = null;
+
+                if (nodes != null)
+                {
+                    foreach (var node in nodes.Cast<XmlNode>())
+                    {
+                        if (string.Equals(node.Name, "release", StringComparison.OrdinalIgnoreCase))
+                        {
+                            releaseId = node.Attributes["id"].Value;
+                            releaseGroupId = GetReleaseGroupIdFromReleaseNode(node);
+                            break;
+                        }
+                    }
+                }
+
+                return new ReleaseResult
+                {
+                    ReleaseId = releaseId,
+                    ReleaseGroupId = releaseGroupId
+                };
+            }
+
+            private static string GetReleaseGroupIdFromReleaseNode(XmlNode node)
+            {
+                var subNodes = node.ChildNodes;
+                if (subNodes != null)
+                {
+                    foreach (var subNode in subNodes.Cast<XmlNode>())
+                    {
+                        if (string.Equals(subNode.Name, "release-group", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return subNode.Attributes["id"].Value;
+                        }
+                    }
+                }
+
+                return null;
+            }
         }
 
         /// <summary>
@@ -258,21 +292,102 @@ namespace MediaBrowser.Providers.Music
         /// <returns>Task{System.String}.</returns>
         private async Task<string> GetReleaseGroupId(string releaseEntryId, CancellationToken cancellationToken)
         {
-            var url = string.Format("http://www.musicbrainz.org/ws/2/release-group/?query=reid:{0}", releaseEntryId);
+            var url = string.Format("/ws/2/release-group/?query=reid:{0}", releaseEntryId);
 
             var doc = await GetMusicBrainzResponse(url, false, cancellationToken).ConfigureAwait(false);
 
-            var ns = new XmlNamespaceManager(doc.NameTable);
-            ns.AddNamespace("mb", "http://musicbrainz.org/ns/mmd-2.0#");
-            var node = doc.SelectSingleNode("//mb:release-group-list/mb:release-group/@id", ns);
+            var docElem = doc.DocumentElement;
 
-            return node != null ? node.Value : null;
+            if (docElem == null)
+            {
+                return null;
+            }
+
+            var releaseList = docElem.FirstChild;
+            if (releaseList == null)
+            {
+                return null;
+            }
+
+            var nodes = releaseList.ChildNodes;
+
+            if (nodes != null)
+            {
+                foreach (var node in nodes.Cast<XmlNode>())
+                {
+                    if (string.Equals(node.Name, "release-group", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return node.Attributes["id"].Value;
+                    }
+                }
+            }
+            return null;
         }
 
         /// <summary>
         /// The _music brainz resource pool
         /// </summary>
         private readonly SemaphoreSlim _musicBrainzResourcePool = new SemaphoreSlim(1, 1);
+
+        private long _lastMbzUrlQueryTicks = 0;
+        private List<MbzUrl> _mbzUrls = null;
+        private MbzUrl _chosenUrl;
+
+        private async Task<MbzUrl> GetMbzUrl()
+        {
+            if (_chosenUrl == null || _mbzUrls == null || (DateTime.UtcNow.Ticks - _lastMbzUrlQueryTicks) > TimeSpan.FromHours(12).Ticks)
+            {
+                var urls = await RefreshMzbUrls().ConfigureAwait(false);
+
+                if (urls.Count > 1)
+                {
+                    _chosenUrl = urls[new Random().Next(0, urls.Count)];
+                }
+                else
+                {
+                    _chosenUrl = urls[0];
+                }
+            }
+
+            return _chosenUrl;
+        }
+
+        private async Task<List<MbzUrl>> RefreshMzbUrls()
+        {
+            List<MbzUrl> list;
+
+            try
+            {
+                var options = new HttpRequestOptions
+                {
+                    Url = "https://mb3admin.com/admin/service/standards/musicBrainzUrls",
+                    UserAgent = _appHost.Name + "/" + _appHost.ApplicationVersion
+                };
+
+                using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
+                {
+                    list = _json.DeserializeFromStream<List<MbzUrl>>(stream);
+                }
+                _lastMbzUrlQueryTicks = DateTime.UtcNow.Ticks;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting music brainz info", ex);
+
+                list = new List<MbzUrl>
+                {
+                    new MbzUrl
+                    {
+                        url = MusicBrainzBaseUrl,
+                        throttleMs = 1000
+                    }
+                };
+            }
+
+            _mbzUrls = list.ToList();
+
+            return list;
+        }
 
         /// <summary>
         /// Gets the music brainz response.
@@ -283,9 +398,15 @@ namespace MediaBrowser.Providers.Music
         /// <returns>Task{XmlDocument}.</returns>
         internal async Task<XmlDocument> GetMusicBrainzResponse(string url, bool isSearch, CancellationToken cancellationToken)
         {
-            // MusicBrainz is extremely adamant about limiting to one request per second
+            var urlInfo = await GetMbzUrl().ConfigureAwait(false);
 
-            await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
+            if (urlInfo.throttleMs > 0)
+            {
+                // MusicBrainz is extremely adamant about limiting to one request per second
+                await Task.Delay(urlInfo.throttleMs, cancellationToken).ConfigureAwait(false);
+            }
+
+            url = urlInfo.url.TrimEnd('/') + url;
 
             var doc = new XmlDocument();
 
@@ -316,6 +437,12 @@ namespace MediaBrowser.Providers.Music
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
+        }
+
+        internal class MbzUrl
+        {
+            public string url { get; set; }
+            public int throttleMs { get; set; }
         }
     }
 }

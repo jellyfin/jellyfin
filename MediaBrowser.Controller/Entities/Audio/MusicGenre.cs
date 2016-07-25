@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using MediaBrowser.Common.Extensions;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -10,13 +11,20 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// </summary>
     public class MusicGenre : BaseItem, IItemByName
     {
-        /// <summary>
-        /// Gets the user data key.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        protected override string CreateUserDataKey()
+        public override List<string> GetUserDataKeys()
         {
-            return "MusicGenre-" + Name;
+            var list = base.GetUserDataKeys();
+
+            list.Insert(0, GetType().Name + "-" + (Name ?? string.Empty).RemoveDiacritics());
+            return list;
+        }
+
+        public override string PresentationUniqueKey
+        {
+            get
+            {
+                return GetUserDataKeys()[0];
+            }
         }
 
         [IgnoreDataMember]
@@ -79,6 +87,14 @@ namespace MediaBrowser.Controller.Entities.Audio
             {
                 return false;
             }
+        }
+
+        public IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query)
+        {
+            query.Genres = new[] { Name };
+            query.IncludeItemTypes = new[] { typeof(MusicVideo).Name, typeof(Audio).Name, typeof(MusicAlbum).Name, typeof(MusicArtist).Name };
+
+            return LibraryManager.GetItemList(query);
         }
     }
 }

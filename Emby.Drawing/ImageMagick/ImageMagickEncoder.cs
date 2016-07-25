@@ -111,7 +111,6 @@ namespace Emby.Drawing.ImageMagick
                 wand.CurrentImage.TrimImage(10);
                 wand.SaveImage(outputPath);
             }
-            SaveDelay();
         }
 
         public ImageSize GetImageSize(string path)
@@ -189,7 +188,6 @@ namespace Emby.Drawing.ImageMagick
                     }
                 }
             }
-            SaveDelay();
         }
 
         private void AddForegroundLayer(MagickWand wand, ImageProcessingOptions options)
@@ -284,25 +282,16 @@ namespace Emby.Drawing.ImageMagick
 
             if (ratio >= 1.4)
             {
-                new StripCollageBuilder(_appPaths, _fileSystem).BuildThumbCollage(options.InputPaths.ToList(), options.OutputPath, options.Width, options.Height, options.Text);
+                new StripCollageBuilder(_appPaths, _fileSystem).BuildThumbCollage(options.InputPaths.ToList(), options.OutputPath, options.Width, options.Height);
             }
             else if (ratio >= .9)
             {
-                new StripCollageBuilder(_appPaths, _fileSystem).BuildSquareCollage(options.InputPaths.ToList(), options.OutputPath, options.Width, options.Height, options.Text);
+                new StripCollageBuilder(_appPaths, _fileSystem).BuildSquareCollage(options.InputPaths.ToList(), options.OutputPath, options.Width, options.Height);
             }
             else
             {
-                new StripCollageBuilder(_appPaths, _fileSystem).BuildPosterCollage(options.InputPaths.ToList(), options.OutputPath, options.Width, options.Height, options.Text);
+                new StripCollageBuilder(_appPaths, _fileSystem).BuildPosterCollage(options.InputPaths.ToList(), options.OutputPath, options.Width, options.Height);
             }
-
-            SaveDelay();
-        }
-
-        private void SaveDelay()
-        {
-            // For some reason the images are not always getting released right away
-            //var task = Task.Delay(300);
-            //Task.WaitAll(task);
         }
 
         public string Name

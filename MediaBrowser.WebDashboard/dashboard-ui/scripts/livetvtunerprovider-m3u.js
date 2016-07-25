@@ -71,7 +71,7 @@
                     includeFiles: true,
                     callback: function (path) {
                         if (path) {
-                            $('#txtDevicePath', page).val(path);
+                            $('.txtDevicePath', page).val(path);
                         }
                         picker.close();
                     }

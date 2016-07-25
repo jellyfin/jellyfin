@@ -15,10 +15,6 @@ namespace MediaBrowser.Providers.Music
 {
     public class ArtistMetadataService : MetadataService<MusicArtist, ArtistInfo>
     {
-        public ArtistMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager, libraryManager)
-        {
-        }
-
         protected override async Task<ItemUpdateType> BeforeSave(MusicArtist item, bool isFullRefresh, ItemUpdateType currentUpdateType)
         {
             var updateType = await base.BeforeSave(item, isFullRefresh, currentUpdateType).ConfigureAwait(false);
@@ -27,10 +23,12 @@ namespace MediaBrowser.Providers.Music
             {
                 if (!item.IsLocked)
                 {
-                    var itemFilter = item.GetItemFilter();
-
                     var taggedItems = item.IsAccessedByName ?
-                        LibraryManager.RootFolder.GetRecursiveChildren(i => !i.IsFolder && itemFilter(i)).ToList() :
+                        item.GetTaggedItems(new Controller.Entities.InternalItemsQuery()
+                        {
+                            Recursive = true,
+                            IsFolder = false
+                        }) :
                         item.GetRecursiveChildren(i => i is IHasArtist && !i.IsFolder).ToList();
 
                     if (!item.LockedFields.Contains(MetadataFields.Genres))
@@ -55,6 +53,10 @@ namespace MediaBrowser.Providers.Music
         protected override void MergeData(MetadataResult<MusicArtist> source, MetadataResult<MusicArtist> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+        }
+
+        public ArtistMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
+        {
         }
     }
 }

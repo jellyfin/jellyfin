@@ -49,6 +49,15 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         [IgnoreDataMember]
+        public override bool SupportsCumulativeRunTimeTicks
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        [IgnoreDataMember]
         public List<string> AllArtists
         {
             get
@@ -96,36 +105,34 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public List<string> Artists { get; set; }
 
-        /// <summary>
-        /// Gets the user data key.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        protected override string CreateUserDataKey()
+        public override List<string> GetUserDataKeys()
         {
-            var id = this.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
-
-            if (!string.IsNullOrWhiteSpace(id))
-            {
-                return "MusicAlbum-MusicBrainzReleaseGroup-" + id;
-            }
-
-            id = this.GetProviderId(MetadataProviders.MusicBrainzAlbum);
-
-            if (!string.IsNullOrWhiteSpace(id))
-            {
-                return "MusicAlbum-Musicbrainz-" + id;
-            }
+            var list = base.GetUserDataKeys();
 
             if (ConfigurationManager.Configuration.EnableStandaloneMusicKeys)
             {
                 var albumArtist = AlbumArtist;
                 if (!string.IsNullOrWhiteSpace(albumArtist))
                 {
-                    return albumArtist + "-" + Name;
+                    list.Insert(0, albumArtist + "-" + Name);
                 }
             }
 
-            return base.CreateUserDataKey();
+            var id = this.GetProviderId(MetadataProviders.MusicBrainzAlbum);
+
+            if (!string.IsNullOrWhiteSpace(id))
+            {
+                list.Insert(0, "MusicAlbum-Musicbrainz-" + id);
+            }
+
+            id = this.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
+
+            if (!string.IsNullOrWhiteSpace(id))
+            {
+                list.Insert(0, "MusicAlbum-MusicBrainzReleaseGroup-" + id);
+            }
+
+            return list;
         }
 
         protected override bool GetBlockUnratedValue(UserPolicy config)
@@ -172,17 +179,13 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             var items = GetRecursiveChildren().ToList();
 
-            var songs = items.OfType<Audio>().ToList();
-
-            var others = items.Except(songs).ToList();
-
-            var totalItems = songs.Count + others.Count;
+            var totalItems = items.Count;
             var numComplete = 0;
 
             var childUpdateType = ItemUpdateType.None;
 
             // Refresh songs
-            foreach (var item in songs)
+            foreach (var item in items)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -192,7 +195,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                 numComplete++;
                 double percent = numComplete;
                 percent /= totalItems;
-                progress.Report(percent * 100);
+                progress.Report(percent * 95);
             }
 
             var parentRefreshOptions = refreshOptions;
@@ -204,19 +207,6 @@ namespace MediaBrowser.Controller.Entities.Audio
 
             // Refresh current item
             await RefreshMetadata(parentRefreshOptions, cancellationToken).ConfigureAwait(false);
-
-            // Refresh all non-songs
-            foreach (var item in others)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var updateType = await item.RefreshMetadata(parentRefreshOptions, cancellationToken).ConfigureAwait(false);
-
-                numComplete++;
-                double percent = numComplete;
-                percent /= totalItems;
-                progress.Report(percent * 100);
-            }
 
             progress.Report(100);
         }

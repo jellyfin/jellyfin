@@ -247,6 +247,7 @@ define(['connectionManager', 'userSettings', 'events'], function (connectionMana
         translateDocument: translateHtml,
         translateHtml: translateHtml,
         loadStrings: loadTranslations,
-        defaultModule: defaultModule
+        defaultModule: defaultModule,
+        getCurrentLocale: getCurrentLocale
     };
 });

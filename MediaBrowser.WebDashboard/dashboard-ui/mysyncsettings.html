@@ -1,4 +1,4 @@
-﻿<div id="syncPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${ButtonSyncSettings}" data-require="scripts/mysyncsettings,paper-checkbox,paper-input" data-backbutton="true" data-menubutton="false">
+﻿<div id="syncPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${ButtonSyncSettings}" data-backbutton="true" data-menubutton="false">
 
     <div data-role="content">
         <form class="userProfileSettingsForm" style="margin: 0 auto;">
@@ -6,36 +6,39 @@
             <h1>
                 ${HeaderSync}
             </h1>
-            <div class="detailSectionContent">
 
-                <div class="fldSyncPath hide">
-                    <paper-input type="text" id="txtSyncPath" label="${LabelSyncPath}" style="display:inline-block;width:80%;" readonly></paper-input>
-                    <paper-icon-button class="btnSelectSyncPath" icon="search"></paper-icon-button>
-                </div>
-
-                <br />
-                <div>
-                    <paper-checkbox id="chkWifi">${OptionSyncOnlyOnWifi}</paper-checkbox>
+            <br />
+            <div class="inputContainer fldSyncPath hide">
+                <div style="display: flex; align-items: center;">
+                    <div style="flex-grow:1;">
+                        <input is="emby-input" id="txtSyncPath" class="txtSyncPath" label="${LabelSyncPath}" autocomplete="off" readonly />
+                    </div>
+                    <button type="button" is="paper-icon-button-light" id="btnSelectSyncPath" class="autoSize">
+                        <i class="md-icon">search</i>
+                    </button>
                 </div>
             </div>
 
-            <br />
+            <label class="checkboxContainer">
+                <input type="checkbox" is="emby-checkbox" id="chkWifi"/>
+                <span>${OptionSyncOnlyOnWifi}</span>
+            </label>
+
             <h1>
                 ${HeaderCameraUpload}
             </h1>
-            <div class="detailSectionContent">
 
-                <p>${SelectCameraUploadServers}</p>
+            <p>${SelectCameraUploadServers}</p>
 
-                <br />
-                <div class="paperCheckboxList uploadServerList">
-                </div>
+            <br />
+            <div class="checkboxList uploadServerList">
             </div>
 
             <br />
             <br />
-            <button type="submit" data-role="none" class="clearButton">
-                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+            <button is="emby-button" type="submit" class="raised submit block">
+                <i class="md-icon">check</i>
+                <span>${ButtonSave}</span>
             </button>
         </form>
     </div>

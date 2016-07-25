@@ -1,311 +1,318 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker', 'listView', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, alphaPicker, listView) {
 
-    var data = {};
+    return function (view, params, tabContent) {
 
-    function getPageData(context) {
-        var key = getSavedQueryKey(context);
-        var pageData = data[key];
+        var self = this;
+        var pageSize = libraryBrowser.getDefaultPageSize();
 
-        if (!pageData) {
-            pageData = data[key] = {
-                query: {
-                    SortBy: "SortName",
-                    SortOrder: "Ascending",
-                    IncludeItemTypes: "Movie",
-                    Recursive: true,
-                    Fields: "PrimaryImageAspectRatio,SortName,MediaSourceCount,SyncInfo",
-                    ImageTypeLimit: 1,
-                    EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
-                    StartIndex: 0,
-                    Limit: LibraryBrowser.getDefaultPageSize()
-                },
-                view: LibraryBrowser.getSavedView(key) || LibraryBrowser.getDefaultItemsView('Poster', 'Poster')
-            };
+        var data = {};
 
-            pageData.query.ParentId = LibraryMenu.getTopParentId();
-            LibraryBrowser.loadSavedQueryValues(key, pageData.query);
+        function getPageData(context) {
+            var key = getSavedQueryKey(context);
+            var pageData = data[key];
+
+            if (!pageData) {
+                pageData = data[key] = {
+                    query: {
+                        SortBy: "SortName",
+                        SortOrder: "Ascending",
+                        IncludeItemTypes: "Movie",
+                        Recursive: true,
+                        Fields: "PrimaryImageAspectRatio,MediaSourceCount,SortName,SyncInfo",
+                        ImageTypeLimit: 1,
+                        EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+                        StartIndex: 0,
+                        Limit: pageSize
+                    },
+                    view: libraryBrowser.getSavedView(key) || libraryBrowser.getDefaultItemsView('Poster', 'Poster')
+                };
+
+                pageData.query.ParentId = params.topParentId;
+                libraryBrowser.loadSavedQueryValues(key, pageData.query);
+            }
+            return pageData;
         }
-        return pageData;
-    }
 
-    function getQuery(context) {
+        function getQuery(context) {
 
-        return getPageData(context).query;
-    }
-
-    function getSavedQueryKey(context) {
-
-        if (!context.savedQueryKey) {
-            context.savedQueryKey = LibraryBrowser.getSavedQueryKey('movies');
+            return getPageData(context).query;
         }
-        return context.savedQueryKey;
-    }
 
-    function reloadItems(context) {
+        function getSavedQueryKey(context) {
 
-        Dashboard.showLoadingMsg();
-
-        var userId = Dashboard.getCurrentUserId();
-
-        var query = getQuery(context);
-        var view = getPageData(context).view;
-
-        ApiClient.getItems(userId, query).then(function (result) {
-
-            // Scroll back up so they can see the results from the beginning
-            window.scrollTo(0, 0);
-
-            var html = '';
-
-            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
-                startIndex: query.StartIndex,
-                limit: query.Limit,
-                totalRecordCount: result.TotalRecordCount,
-                showLimit: false,
-                updatePageSizeSetting: false,
-                addLayoutButton: true,
-                sortButton: true,
-                currentLayout: view,
-                layouts: 'Banner,List,Poster,PosterCard,Thumb,ThumbCard,Timeline',
-                filterButton: true
-            });
-
-            context.querySelector('.listTopPaging').innerHTML = pagingHtml;
-
-            updateFilterControls(context);
-
-            if (view == "Thumb") {
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "backdrop",
-                    preferThumb: true,
-                    lazy: true,
-                    showDetailsMenu: true,
-                    overlayPlayButton: true
-                });
+            if (!context.savedQueryKey) {
+                context.savedQueryKey = libraryBrowser.getSavedQueryKey('movies');
             }
-            else if (view == "ThumbCard") {
+            return context.savedQueryKey;
+        }
 
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "backdrop",
-                    preferThumb: true,
-                    lazy: true,
-                    showTitle: true,
-                    cardLayout: true,
-                    showYear: true,
-                    showDetailsMenu: true
+        function reloadItems(page) {
+
+            Dashboard.showLoadingMsg();
+
+            var query = getQuery(page);
+
+            ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (result) {
+
+                // Scroll back up so they can see the results from the beginning
+                window.scrollTo(0, 0);
+
+                updateFilterControls(page);
+
+                var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+                    startIndex: query.StartIndex,
+                    limit: query.Limit,
+                    totalRecordCount: result.TotalRecordCount,
+                    showLimit: false,
+                    updatePageSizeSetting: false,
+                    addLayoutButton: false,
+                    sortButton: false,
+                    filterButton: false
                 });
-            }
-            else if (view == "Banner") {
 
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "banner",
-                    preferBanner: true,
-                    lazy: true,
-                    showDetailsMenu: true
-                });
-            }
-            else if (view == "List") {
+                var html;
+                var viewStyle = self.getCurrentViewStyle();
 
-                html = LibraryBrowser.getListViewHtml({
-                    items: result.Items,
-                    sortBy: query.SortBy
-                });
-            }
-            else if (view == "Poster") {
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "portrait",
-                    centerText: true,
-                    lazy: true,
-                    showDetailsMenu: true,
-                    overlayPlayButton: true
-                });
-            }
-            else if (view == "PosterCard") {
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "portrait",
-                    showTitle: true,
-                    showYear: true,
-                    lazy: true,
-                    cardLayout: true,
-                    showDetailsMenu: true
-                });
-            }
-            else if (view == "Timeline") {
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "portrait",
-                    showTitle: true,
-                    timeline: true,
-                    centerText: true,
-                    lazy: true,
-                    showDetailsMenu: true
-                });
-            }
+                if (viewStyle == "Thumb") {
 
-            var elem = context.querySelector('.itemsContainer');
-            elem.innerHTML = html + pagingHtml;
-            ImageLoader.lazyChildren(elem);
+                    html = libraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "backdrop",
+                        preferThumb: true,
+                        context: 'movies',
+                        lazy: true,
+                        overlayPlayButton: true
+                    });
+                }
+                else if (viewStyle == "ThumbCard") {
 
-            $('.btnNextPage', context).on('click', function () {
-                query.StartIndex += query.Limit;
-                reloadItems(context);
-            });
+                    html = libraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "backdrop",
+                        preferThumb: true,
+                        context: 'movies',
+                        lazy: true,
+                        cardLayout: true,
+                        showTitle: true,
+                        showYear: true
+                    });
+                }
+                else if (viewStyle == "Banner") {
 
-            $('.btnPreviousPage', context).on('click', function () {
-                query.StartIndex -= query.Limit;
-                reloadItems(context);
-            });
+                    html = libraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "banner",
+                        preferBanner: true,
+                        context: 'movies',
+                        lazy: true
+                    });
+                }
+                else if (viewStyle == "List") {
 
-            $('.btnChangeLayout', context).on('layoutchange', function (e, layout) {
+                    html = listView.getListViewHtml({
+                        items: result.Items,
+                        context: 'movies',
+                        sortBy: query.SortBy
+                    });
+                }
+                else if (viewStyle == "PosterCard") {
 
-                if (layout == 'Timeline') {
-                    getQuery(context).SortBy = 'ProductionYear,PremiereDate,SortName';
-                    getQuery(context).SortOrder = 'Descending';
+                    html = libraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "portrait",
+                        context: 'movies',
+                        showTitle: true,
+                        showYear: true,
+                        lazy: true,
+                        cardLayout: true
+                    });
+                }
+                else {
+
+                    // Poster
+                    html = libraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "portrait",
+                        context: 'movies',
+                        centerText: true,
+                        lazy: true,
+                        overlayPlayButton: true
+                    });
                 }
 
-                getPageData(context).view = layout;
-                LibraryBrowser.saveViewSetting(getSavedQueryKey(context), layout);
-                reloadItems(context);
+                var i, length;
+                var elems = tabContent.querySelectorAll('.paging');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].innerHTML = pagingHtml;
+                }
+
+                function onNextPageClick() {
+                    query.StartIndex += query.Limit;
+                    reloadItems(tabContent);
+                }
+
+                function onPreviousPageClick() {
+                    query.StartIndex -= query.Limit;
+                    reloadItems(tabContent);
+                }
+
+                elems = tabContent.querySelectorAll('.btnNextPage');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onNextPageClick);
+                }
+
+                elems = tabContent.querySelectorAll('.btnPreviousPage');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onPreviousPageClick);
+                }
+
+                var itemsContainer = tabContent.querySelector('.itemsContainer');
+                itemsContainer.innerHTML = html;
+                imageLoader.lazyChildren(itemsContainer);
+
+                libraryBrowser.saveQueryValues(getSavedQueryKey(page), query);
+
+                Dashboard.hideLoadingMsg();
+            });
+        }
+
+        self.showFilterMenu = function () {
+
+            require(['components/filterdialog/filterdialog'], function (filterDialogFactory) {
+
+                var filterDialog = new filterDialogFactory({
+                    query: getQuery(tabContent),
+                    mode: 'movies'
+                });
+
+                Events.on(filterDialog, 'filterchange', function () {
+                    getQuery(tabContent).StartIndex = 0;
+                    reloadItems(tabContent);
+                });
+
+                filterDialog.show();
+            });
+        }
+
+        function updateFilterControls(tabContent) {
+
+            var query = getQuery(tabContent);
+            self.alphaPicker.value(query.NameStartsWithOrGreater);
+        }
+
+        function initPage(tabContent) {
+
+            var alphaPickerElement = tabContent.querySelector('.alphaPicker');
+            alphaPickerElement.addEventListener('alphavaluechanged', function (e) {
+                var newValue = e.detail.value;
+                var query = getQuery(tabContent);
+                query.NameStartsWithOrGreater = newValue;
+                query.StartIndex = 0;
+                reloadItems(tabContent);
             });
 
-            $('.btnFilter', context).on('click', function () {
-                showFilterMenu(context);
+            self.alphaPicker = new alphaPicker({
+                element: alphaPickerElement,
+                valueChangeEvent: 'click'
             });
 
-            // On callback make sure to set StartIndex = 0
-            $('.btnSort', context).on('click', function () {
-                LibraryBrowser.showSortMenu({
+            tabContent.querySelector('.btnFilter').addEventListener('click', function () {
+                self.showFilterMenu();
+            });
+
+            tabContent.querySelector('.btnSort').addEventListener('click', function (e) {
+                libraryBrowser.showSortMenu({
                     items: [{
                         name: Globalize.translate('OptionNameSort'),
                         id: 'SortName'
                     },
-                    {
-                        name: Globalize.translate('OptionBudget'),
-                        id: 'Budget,SortName'
-                    },
-                    {
-                        name: Globalize.translate('OptionImdbRating'),
-                        id: 'CommunityRating,SortName'
-                    },
-                    {
-                        name: Globalize.translate('OptionCriticRating'),
-                        id: 'CriticRating,SortName'
-                    },
-                    {
-                        name: Globalize.translate('OptionDateAdded'),
-                        id: 'DateCreated,SortName'
-                    },
-                    {
-                        name: Globalize.translate('OptionDatePlayed'),
-                        id: 'DatePlayed,SortName'
-                    },
-                    {
-                        name: Globalize.translate('OptionMetascore'),
-                        id: 'Metascore,SortName'
-                    },
-                    {
-                        name: Globalize.translate('OptionParentalRating'),
-                        id: 'OfficialRating,SortName'
-                    },
-                    {
-                        name: Globalize.translate('OptionPlayCount'),
-                        id: 'PlayCount,SortName'
-                    },
-                    {
-                        name: Globalize.translate('OptionReleaseDate'),
-                        id: 'PremiereDate,SortName'
-                    },
-                    {
-                        name: Globalize.translate('OptionRevenue'),
-                        id: 'Revenue,SortName'
-                    },
-                    {
-                        name: Globalize.translate('OptionRuntime'),
-                        id: 'Runtime,SortName'
-                    },
-                    {
-                        name: Globalize.translate('OptionVideoBitrate'),
-                        id: 'VideoBitRate,SortName'
-                    }],
+                        {
+                            name: Globalize.translate('OptionBudget'),
+                            id: 'Budget,SortName'
+                        },
+                        {
+                            name: Globalize.translate('OptionImdbRating'),
+                            id: 'CommunityRating,SortName'
+                        },
+                        {
+                            name: Globalize.translate('OptionCriticRating'),
+                            id: 'CriticRating,SortName'
+                        },
+                        {
+                            name: Globalize.translate('OptionDateAdded'),
+                            id: 'DateCreated,SortName'
+                        },
+                        {
+                            name: Globalize.translate('OptionDatePlayed'),
+                            id: 'DatePlayed,SortName'
+                        },
+                        {
+                            name: Globalize.translate('OptionMetascore'),
+                            id: 'Metascore,SortName'
+                        },
+                        {
+                            name: Globalize.translate('OptionParentalRating'),
+                            id: 'OfficialRating,SortName'
+                        },
+                        {
+                            name: Globalize.translate('OptionPlayCount'),
+                            id: 'PlayCount,SortName'
+                        },
+                        {
+                            name: Globalize.translate('OptionReleaseDate'),
+                            id: 'PremiereDate,SortName'
+                        },
+                        {
+                            name: Globalize.translate('OptionRevenue'),
+                            id: 'Revenue,SortName'
+                        },
+                        {
+                            name: Globalize.translate('OptionRuntime'),
+                            id: 'Runtime,SortName'
+                        },
+                        {
+                            name: Globalize.translate('OptionVideoBitrate'),
+                            id: 'VideoBitRate,SortName'
+                        }],
                     callback: function () {
-                        reloadItems(context);
+                        getQuery(tabContent).StartIndex = 0;
+                        reloadItems(tabContent);
                     },
-                    query: query
+                    query: getQuery(tabContent),
+                    button: e.target
                 });
             });
 
-            LibraryBrowser.saveQueryValues(getSavedQueryKey(context), query);
+            var btnSelectView = tabContent.querySelector('.btnSelectView');
+            btnSelectView.addEventListener('click', function (e) {
 
-            LibraryBrowser.setLastRefreshed(context);
-
-            Dashboard.hideLoadingMsg();
-        });
-    }
-
-    function showFilterMenu(context) {
-
-        require(['components/filterdialog/filterdialog'], function (filterDialogFactory) {
-
-            var filterDialog = new filterDialogFactory({
-                query: getQuery(context),
-                mode: 'movies'
+                libraryBrowser.showLayoutMenu(e.target, self.getCurrentViewStyle(), 'Banner,List,Poster,PosterCard,Thumb,ThumbCard'.split(','));
             });
 
-            Events.on(filterDialog, 'filterchange', function () {
-                reloadItems(context);
+            btnSelectView.addEventListener('layoutchange', function (e) {
+
+                var viewStyle = e.detail.viewStyle;
+
+                getPageData(tabContent).view = viewStyle;
+                libraryBrowser.saveViewSetting(getSavedQueryKey(tabContent), viewStyle);
+                getQuery(tabContent).StartIndex = 0;
+                reloadItems(tabContent);
             });
+        }
 
-            filterDialog.show();
-        });
-    }
-
-    function updateFilterControls(context) {
-
-        var query = getQuery(context);
-
-        $('.alphabetPicker', context).alphaValue(query.NameStartsWithOrGreater);
-    }
-
-    function initPage(context) {
-
-        $('.alphabetPicker', context).on('alphaselect', function (e, character) {
-
-            var query = getQuery(context);
-            query.NameStartsWithOrGreater = character;
-            query.StartIndex = 0;
-
-            reloadItems(context);
-
-        }).on('alphaclear', function (e) {
-
-            var query = getQuery(context);
-            query.NameStartsWithOrGreater = '';
-
-            reloadItems(context);
-        });
-
-        $('.itemsContainer', context).on('needsrefresh', function () {
-
-            reloadItems(context);
-        });
-    }
-
-    window.MoviesPage.initMoviesTab = function (page, tabContent) {
+        self.getCurrentViewStyle = function () {
+            return getPageData(tabContent).view;
+        };
 
         initPage(tabContent);
-    };
 
-    window.MoviesPage.renderMoviesTab = function (page, tabContent) {
+        self.renderTab = function () {
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
             reloadItems(tabContent);
             updateFilterControls(tabContent);
-        }
-    };
+        };
 
+        self.destroy = function () {
+        };
+    };
 });

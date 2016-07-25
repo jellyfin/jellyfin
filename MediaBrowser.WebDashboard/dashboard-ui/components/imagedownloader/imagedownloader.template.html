@@ -1,11 +1,11 @@
-﻿<div style="text-align: center;">
-    <div style="margin: 0; display: inline-block;">
+﻿<div style="text-align: center;display:flex; align-items: center; flex-wrap: wrap; justify-content: center;margin: 0 0 1em 0;">
+    <div style="margin: 0;">
         <label for="selectImageProvider" style="display: inline-block;">${LabelSource}</label>
         <select id="selectImageProvider" style="padding-left:.5em;padding-right:0;display: inline-block;width:auto!important;">
             <option value="">${OptionAll}</option>
         </select>
     </div>
-    <div style="margin-left:.5em; display: inline-block;">
+    <div style="margin-left:1em;">
         <label for="selectBrowsableImageType" style="display: inline-block;">${LabelImage}</label>
         <select id="selectBrowsableImageType" style="padding-left:.5em;padding-right:0;display: inline-block;width:auto!important;">
             <option value="Primary">${OptionPrimary}</option>
@@ -21,10 +21,11 @@
             <option value="Thumb">${OptionThumb}</option>
         </select>
     </div>
-    <div class="availableImagesPaging" style="display: inline-block;vertical-align: middle;margin-left:.5em;"></div>
-    <div style="display: inline-block; vertical-align: middle; margin-left: .5em;">
-        <paper-checkbox id="chkAllLanguages">${LabelAllLanguages}</paper-checkbox>
-    </div>
+    <div class="availableImagesPaging" style="margin-left:1em;"></div>
+    <label style="margin: 0 0 0 1em;width:auto;">
+        <input id="chkAllLanguages" type="checkbox" is="emby-checkbox" />
+        <span>${LabelAllLanguages}</span>
+    </label>
 </div>
 
 <div class="availableImagesList" style="text-align:center;"></div>

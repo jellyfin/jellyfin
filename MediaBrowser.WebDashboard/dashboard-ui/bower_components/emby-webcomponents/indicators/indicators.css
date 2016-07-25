@@ -1,0 +1,69 @@
+.itemProgressBar {
+    background: rgba(0,0,0,.5);
+    position: relative;
+}
+
+.itemProgressBarForeground {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    background-color: #52B54B;
+}
+
+.timerIndicator {
+    color: #CB272A;
+}
+
+.indicator + .indicator {
+    margin-left: .25em;
+}
+
+.countIndicator {
+    background: rgba(82,181,75,1);
+    border-radius: 500px;
+    display: -ms-flex;
+    display: -webkit-flex;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    color: #fff;
+}
+
+.playedIndicator {
+    background: rgba(82,181,75,1);
+    border-radius: 500px;
+    display: -ms-flex;
+    display: -webkit-flex;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+}
+
+.countIndicator, .playedIndicator {
+    width: 28px;
+    height: 28px;
+}
+
+    .playedIndicator i {
+        width: 22px;
+        height: 22px;
+        font-size: 22px;
+    }
+
+.layout-tv .countIndicator, .layout-tv .playedIndicator {
+    width: 3.8vh;
+    height: 3.8vh;
+}
+
+.layout-tv .countIndicator {
+    font-size: 80%;
+}
+
+.layout-tv .playedIndicator i {
+    width: 2.6vh;
+    height: 2.6vh;
+    font-size: 2.6vh;
+}

@@ -10,7 +10,7 @@
     "tag": "v1.1.29",
     "commit": "169feb2702632459cb0eb37bf24a20e1d840f78c"
   },
-  "_source": "git://github.com/goldfire/howler.js.git",
+  "_source": "https://github.com/goldfire/howler.js.git",
   "_target": "~1.1.27",
   "_originalSource": "howler"
 }

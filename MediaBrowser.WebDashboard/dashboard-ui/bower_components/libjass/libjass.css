@@ -1,0 +1,100 @@
+/**
+ * libjass
+ *
+ * https://github.com/Arnavion/libjass
+ *
+ * Copyright 2013 Arnav Singh
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.libjass-wrapper {
+	position: relative;
+	overflow: hidden;
+}
+
+.libjass-subs {
+	position: absolute;
+	overflow: hidden;
+}
+
+.libjass-subs, .libjass-subs * {
+	pointer-events: none;
+	-webkit-animation-fill-mode: both !important;
+	animation-fill-mode: both !important;
+}
+
+.libjass-subs.paused * {
+	-webkit-animation-play-state: paused !important;
+	animation-play-state: paused !important;
+}
+
+.libjass-subs .an {
+	position: absolute;
+}
+
+.libjass-subs .an1, .libjass-subs .an2, .libjass-subs .an3 {
+	bottom: 0;
+}
+
+.libjass-subs .an4, .libjass-subs .an5, .libjass-subs .an6 {
+	display: table;
+	width: 100%;
+	height: 100%;
+}
+
+.libjass-subs .an4 > *, .libjass-subs .an5 > *, .libjass-subs .an6 > * {
+	display: table-cell;
+	vertical-align: middle;
+}
+
+.libjass-subs .an7, .libjass-subs .an8, .libjass-subs .an9 {
+	top: 0;
+}
+
+.libjass-subs .an1, .libjass-subs .an4, .libjass-subs .an7 {
+	text-align: left;
+}
+
+.libjass-subs .an2, .libjass-subs .an5, .libjass-subs .an8 {
+	text-align: center;
+}
+
+.libjass-subs .an3, .libjass-subs .an6, .libjass-subs .an9 {
+	text-align: right;
+}
+
+.libjass-subs {
+	line-height: 0;
+}
+
+/* Filter wrapper span */
+.libjass-subs div[data-dialogue-id] > span {
+	-webkit-perspective-origin: center;
+	-webkit-perspective: 400px;
+	perspective-origin: center;
+	perspective: 400px;
+}
+
+.libjass-font-measure {
+	position: absolute;
+	visibility: hidden;
+	border: 0;
+	margin: 0;
+	padding: 0;
+	line-height: normal;
+}
+
+.libjass-filters {
+	display: block;
+}

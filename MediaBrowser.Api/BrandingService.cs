@@ -10,6 +10,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Branding/Css", "GET", Summary = "Gets custom css")]
+    [Route("/Branding/Css.css", "GET", Summary = "Gets custom css")]
     public class GetBrandingCss
     {
     }

@@ -1,4 +1,4 @@
-﻿<div id="selectServerPage" data-role="page" class="page noSecondaryNavPage standalonePage" data-theme="b" data-require="scripts/selectserver,paper-fab,paper-item-body,paper-icon-item">
+﻿<div id="selectServerPage" data-role="page" class="page noSecondaryNavPage standalonePage" data-theme="b">
 
     <div data-role="content">
 
@@ -6,25 +6,40 @@
 
             <div style="margin:1em 0 .5em;padding-left:5px;">
                 <h1 style="display:inline-block;vertical-align:middle;margin: 0;">${HeaderSelectServer}</h1>
-                <a href="https://github.com/MediaBrowser/Wiki/wiki/Emby%20Connect" target="_blank" class="clearLink" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:1em;"><paper-button raised class="secondary mini"><iron-icon icon="info"></iron-icon><span>${ButtonHelp}</span></paper-button></a>
+                <a href="https://github.com/MediaBrowser/Wiki/wiki/Emby%20Connect" target="_blank" class="clearLink" style="margin-top: 0; display: inline-block; vertical-align: middle; margin-left: 1em;">
+                    <button is="emby-button" type="button" class="raised secondary mini">
+                        <i class="md-icon">info</i>
+                        <span>${ButtonHelp}</span>
+                    </button>
+                </a>
             </div>
 
             <div class="serverList paperList"></div>
             <br />
-            <div class="noServersMessage" style="display:none;padding-left:5px;">
+            <div class="noServersMessage hide" style="padding-left:5px;">
                 ${MessageNoServersAvailableToConnect}
                 <br /><br />
             </div>
 
             <div class="addServer" style="margin:0 0 1em;">
-                <a href="connectlogin.html?mode=manualserver" class="clearLink"><paper-button raised class="submit block"><iron-icon icon="add"></iron-icon><span>${ButtonAddServer}</span></paper-button></a>
+                <a href="connectlogin.html?mode=manualserver" class="clearLink">
+                    <button is="emby-button" type="button" class="raised cancel block">
+                        <i class="md-icon">add</i>
+                        <span>${ButtonAddServer}</span>
+                    </button>
+                </a>
             </div>
 
-            <div class="connectLogin" style="margin:1em 0;display:none;">
-                <a href="connectlogin.html?mode=connect" class="clearLink"><paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${ButtonSignInWithConnect}</span></paper-button></a>
+            <div class="connectLogin hide" style="margin:1em 0;">
+                <a href="connectlogin.html?mode=connect" class="clearLink">
+                    <button is="emby-button" type="button" class="raised accent block">
+                        <i class="md-icon">check</i>
+                        <span>${ButtonSignInWithConnect}</span>
+                    </button>
+                </a>
             </div>
 
-            <div class="invitationSection" style="display:none;">
+            <div class="invitationSection hide">
                 <br />
                 <h1 style="margin-bottom:.5em;padding-left:5px;">${HeaderInvitations}</h1>
 

@@ -13,29 +13,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-a11y-keys-behavior.html">
 
 <dom-module id="x-key-aware">
-  <style>
-    :host {
-      display: block;
-      position: relative;
-    }
-
-    pre {
-      color: var(--google-blue-700);
-    }
-
-    .keys {
-      line-height: 25px;
-    }
-
-    .keys span {
-      cursor: default;
-      background-color: var(--google-grey-100);
-      border: 1px solid var(--google-grey-300);
-      padding: 1px 5px;
-      border-radius: 5px;
-    }
-  </style>
   <template>
+    <style>
+      :host {
+        display: block;
+        position: relative;
+      }
+
+      pre {
+        color: var(--google-blue-700);
+      }
+
+      .keys {
+        line-height: 25px;
+      }
+
+      .keys span {
+        cursor: default;
+        background-color: var(--google-grey-100);
+        border: 1px solid var(--google-grey-300);
+        padding: 1px 5px;
+        border-radius: 5px;
+      }
+    </style>
+
     <h4>Press any of these keys</h4>
     <input type="checkbox" checked="{{preventDefault::change}}"> prevent default = {{preventDefault}}
     <p class="keys">

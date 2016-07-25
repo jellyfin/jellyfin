@@ -1,17 +1,4 @@
-﻿define(['dialogHelper', 'layoutManager', 'dialogText', 'paper-button', 'css!./actionsheet'], function (dialogHelper, layoutManager, dialogText) {
-
-    function parentWithClass(elem, className) {
-
-        while (!elem.classList || !elem.classList.contains(className)) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
-    }
+﻿define(['dialogHelper', 'layoutManager', 'globalize', 'browser', 'dom', 'emby-button', 'css!./actionsheet', 'material-icons', 'scrollStyles'], function (dialogHelper, layoutManager, globalize, browser, dom) {
 
     function getOffsets(elems) {
 
@@ -21,18 +8,6 @@
         if (!doc) {
             return results;
         }
-
-        var docElem = doc.documentElement;
-        var docElemValues = {
-            clientTop: docElem.clientTop,
-            clientLeft: docElem.clientLeft
-        };
-
-        var win = doc.defaultView;
-        var winValues = {
-            pageXOffset: win.pageXOffset,
-            pageYOffset: win.pageYOffset
-        };
 
         var box;
         var elem;
@@ -57,9 +32,10 @@
         return results;
     }
 
-    function getPosition(options) {
+    function getPosition(options, dlg) {
 
         var windowHeight = window.innerHeight;
+        var windowWidth = window.innerWidth;
 
         if (windowHeight < 540) {
             return null;
@@ -70,13 +46,23 @@
         pos.top += options.positionTo.offsetHeight / 2;
         pos.left += options.positionTo.offsetWidth / 2;
 
-        // Account for popup size - we can't predict this yet so just estimate
-        pos.top -= (45 * options.items.length) / 2;
-        pos.left -= 80;
+        var height = dlg.offsetHeight || 300;
+        var width = dlg.offsetWidth || 160;
+
+        // Account for popup size 
+        pos.top -= height / 2;
+        pos.left -= width / 2;
 
         // Avoid showing too close to the bottom
-        pos.top = Math.min(pos.top, windowHeight - 300);
-        pos.left = Math.min(pos.left, window.innerWidth - 300);
+        var overflowX = pos.left + width - windowWidth;
+        var overflowY = pos.top + height - windowHeight;
+
+        if (overflowX > 0) {
+            pos.left -= (overflowX + 20);
+        }
+        if (overflowY > 0) {
+            pos.top -= (overflowY + 20);
+        }
 
         // Do some boundary checking
         pos.top = Math.max(pos.top, 10);
@@ -94,8 +80,6 @@
 
     function show(options) {
 
-        var pos = options.positionTo ? getPosition(options) : null;
-
         // items
         // positionTo
         // showCancel
@@ -103,7 +87,7 @@
         var dialogOptions = {
             removeOnClose: true,
             enableHistory: options.enableHistory,
-            refit: pos == null
+            scrollY: false
         };
 
         var backButton = false;
@@ -115,12 +99,16 @@
         } else {
 
             dialogOptions.modal = false;
-            dialogOptions.entryAnimationDuration = 160;
-            dialogOptions.exitAnimationDuration = 200;
+            dialogOptions.entryAnimationDuration = 140;
+            dialogOptions.exitAnimationDuration = 180;
             dialogOptions.autoFocus = false;
         }
 
         var dlg = dialogHelper.createDialog(dialogOptions);
+
+        if (!layoutManager.tv) {
+            dlg.classList.add('extraSpacing');
+        }
 
         dlg.classList.add('actionSheet');
 
@@ -139,54 +127,63 @@
                 html += '</h2>';
             }
         }
+        if (options.text) {
+            html += '<p class="actionSheetText">';
+            html += options.text;
+            html += '</p>';
+        }
 
-        html += '<div class="actionSheetScroller">';
+        var scrollType = layoutManager.desktop ? 'smoothScrollY' : 'hiddenScrollY';
+        var style = (browser.noFlex || browser.firefox) ? 'max-height:400px;' : '';
 
-        var itemsWithIcons = options.items.filter(function (o) {
-            return o.ironIcon;
-        });
+        // Admittedly a hack but right now the scrollbar is being factored into the width which is causing truncation
+        if (options.items.length > 20) {
+            var minWidth = window.innerWidth >= 300 ? 240 : 200;
+            style += "min-width:" + minWidth + "px;";
+        }
+        html += '<div class="actionSheetScroller ' + scrollType + '" style="' + style + '">';
+
+        var i, length, option;
+        var renderIcon = false;
+        for (i = 0, length = options.items.length; i < length; i++) {
+
+            option = options.items[i];
+            option.icon = option.selected ? 'check' : null;
+
+            if (option.icon) {
+                renderIcon = true;
+            }
+        }
 
         // If any items have an icon, give them all an icon just to make sure they're all lined up evenly
-        var renderIcon = itemsWithIcons.length;
-        var center = options.title && (!itemsWithIcons.length /*|| itemsWithIcons.length != options.items.length*/);
+        var center = options.title && (!renderIcon /*|| itemsWithIcons.length != options.items.length*/);
 
         if (center) {
             dlg.classList.add('centered');
         }
 
-        var enablePaperMenu = !layoutManager.tv;
-        enablePaperMenu = false;
-        var itemTagName = 'paper-button';
+        var itemTagName = 'button';
 
-        if (enablePaperMenu) {
-            html += '<paper-menu>';
-            itemTagName = 'paper-menu-item';
-        }
+        for (i = 0, length = options.items.length; i < length; i++) {
 
-        for (var i = 0, length = options.items.length; i < length; i++) {
-
-            var option = options.items[i];
+            option = options.items[i];
 
             var autoFocus = option.selected ? ' autoFocus' : '';
-            html += '<' + itemTagName + autoFocus + ' noink class="actionSheetMenuItem" data-id="' + option.id + '" style="display:block;">';
+            html += '<' + itemTagName + autoFocus + ' is="emby-button" type="button" class="actionSheetMenuItem" data-id="' + (option.id || option.value) + '">';
 
-            if (option.ironIcon) {
-                html += '<iron-icon class="actionSheetItemIcon" icon="' + option.ironIcon + '"></iron-icon>';
+            if (option.icon) {
+                html += '<i class="actionSheetItemIcon md-icon">' + option.icon + '</i>';
             }
             else if (renderIcon && !center) {
-                html += '<iron-icon class="actionSheetItemIcon"></iron-icon>';
+                html += '<i class="actionSheetItemIcon md-icon" style="visibility:hidden;">check</i>';
             }
-            html += '<span>' + option.name + '</span>';
+            html += '<div class="actionSheetItemText">' + (option.name || option.textContent || option.innerText) + '</div>';
             html += '</' + itemTagName + '>';
-        }
-
-        if (enablePaperMenu) {
-            html += '</paper-menu>';
         }
 
         if (options.showCancel) {
             html += '<div class="buttons">';
-            html += '<paper-button dialog-dismiss>' + dialogText.get('Cancel') + '</paper-button>';
+            html += '<button is="emby-button" type="button" class="btnCancel">' + globalize.translate('sharedcomponents#ButtonCancel') + '</button>';
             html += '</div>';
         }
         html += '</div>';
@@ -197,39 +194,59 @@
             addCenterFocus(dlg);
         }
 
+        if (options.showCancel) {
+            dlg.querySelector('.btnCancel').addEventListener('click', function () {
+                dialogHelper.close(dlg);
+            });
+        }
+
         document.body.appendChild(dlg);
 
         // Seeing an issue in some non-chrome browsers where this is requiring a double click
         //var eventName = browser.firefox ? 'mousedown' : 'click';
-        var eventName = 'click';
+        var selectedId;
+
+        dlg.addEventListener('click', function (e) {
+
+            var actionSheetMenuItem = dom.parentWithClass(e.target, 'actionSheetMenuItem');
+
+            if (actionSheetMenuItem) {
+                selectedId = actionSheetMenuItem.getAttribute('data-id');
+                dialogHelper.close(dlg);
+            }
+
+        });
+
+        var timeout;
+        if (options.timeout) {
+            timeout = setTimeout(function () {
+                dialogHelper.close(dlg);
+            }, options.timeout);
+        }
 
         return new Promise(function (resolve, reject) {
 
-            dlg.addEventListener(eventName, function (e) {
+            dlg.addEventListener('close', function () {
 
-                var actionSheetMenuItem = parentWithClass(e.target, 'actionSheetMenuItem');
-
-                if (actionSheetMenuItem) {
-
-                    var selectedId = actionSheetMenuItem.getAttribute('data-id');
-
-                    dialogHelper.close(dlg);
-
-                    // Add a delay here to allow the click animation to finish, for nice effect
-                    setTimeout(function () {
-
-                        if (options.callback) {
-                            options.callback(selectedId);
-                        }
-
-                        resolve(selectedId);
-
-                    }, 100);
+                if (timeout) {
+                    clearTimeout(timeout);
+                    timeout = null;
                 }
 
+                if (selectedId != null) {
+                    if (options.callback) {
+                        options.callback(selectedId);
+                    }
+
+                    resolve(selectedId);
+                } else {
+                    reject();
+                }
             });
 
             dialogHelper.open(dlg);
+
+            var pos = options.positionTo ? getPosition(options, dlg) : null;
 
             if (pos) {
                 dlg.style.position = 'fixed';

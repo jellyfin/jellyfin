@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'paper-icon-button-light'], function ($) {
 
     function deleteUser(page, id) {
 
@@ -122,7 +122,7 @@
         html += '<div class="' + imageClass + '" style="background-image:url(\'' + imgUrl + '\');">';
 
         if (user.ConnectUserId && addConnectIndicator) {
-            html += '<div class="playedIndicator" title="' + Globalize.translate('TooltipLinkedToEmbyConnect') + '"><iron-icon icon="cloud"></iron-icon></div>';
+            html += '<div class="playedIndicator" title="' + Globalize.translate('TooltipLinkedToEmbyConnect') + '"><i class="md-icon">cloud</i></div>';
         }
 
         html += "</div>";
@@ -136,7 +136,7 @@
         html += '<div class="cardFooter">';
 
         html += '<div class="cardText" style="text-align:right; float:right;padding:0;">';
-        html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnUserMenu"></paper-icon-button>';
+        html += '<button type="button" is="paper-icon-button-light" class="btnUserMenu autoSize"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button>';
         html += "</div>";
 
         html += '<div class="cardText" style="padding-top:10px;padding-bottom:10px;">';
@@ -255,7 +255,7 @@
         html += '<div class="cardFooter">';
 
         html += '<div class="cardText" style="text-align:right; float:right;padding:0;">';
-        html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnUserMenu"></paper-icon-button>';
+        html += '<button type="button" is="paper-icon-button-light" class="btnUserMenu"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
         html += "</div>";
 
         html += '<div class="cardText" style="padding-top:10px;padding-bottom:10px;">';
@@ -327,25 +327,23 @@
         });
     }
 
+    function showLinkUser(page, userId) {
+        
+        require(['components/guestinviter/connectlink'], function (connectlink) {
+
+            connectlink.show().then(function () {
+                loadData(page);
+            });
+        });
+    }
+
     function showInvitePopup(page) {
 
         Dashboard.getCurrentUser().then(function (user) {
 
             if (!user.ConnectUserId) {
 
-                var msg = Globalize.translate('MessageConnectAccountRequiredToInviteGuest');
-
-                msg += '<br/>';
-                msg += '<br/>';
-                msg += '<a href="useredit.html?userId=' + user.Id + '">' + Globalize.translate('ButtonLinkMyEmbyAccount') + '</a>';
-                msg += '<br/>';
-
-                require(['alert'], function (alert) {
-                    alert({
-                        title: Globalize.translate('HeaderInviteGuest'),
-                        text: msg
-                    });
-                });
+                showLinkUser(page, user.Id);
                 return;
             }
 

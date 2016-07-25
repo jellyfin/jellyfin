@@ -1,21 +1,20 @@
-﻿<div id="notificationSettingPage" data-role="page" class="page type-interior notificationConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Notifications" data-require="scripts/notificationsetting,paper-input,jqmcheckbox">
+﻿<div id="notificationSettingPage" data-role="page" class="page type-interior notificationConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Notifications" data-require="jqmlistview,scripts/notificationsetting,paper-input,paper-checkbox,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
 
-            <h2 class="notificationType" style="margin-bottom: 0;"></h2>
+            <h1 class="notificationType" style="margin-top:0;"></h1>
 
             <form class="notificationSettingForm">
 
                 <ul data-role="listview" class="ulForm">
                     <li>
-                        <input type="checkbox" id="chkEnabled" data-mini="true" />
-                        <label for="chkEnabled">${LabelNotificationEnabled}</label>
+                        <paper-checkbox id="chkEnabled">${LabelNotificationEnabled}</paper-checkbox>
                     </li>
                 </ul>
 
                 <div class="monitorUsers" style="display: none;">
-                    <label>${LabelMonitorUsers}</label>
+                    <div class="paperListLabel">${LabelMonitorUsers}</div>
                     <div class="monitorUsersList">
                     </div>
                     <br />
@@ -60,11 +59,9 @@
                     </li>
                     <li>
                         <br />
-                        <button type="submit" data-role="none" class="clearButton">
-                            <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                        </button>
+                        <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
 
-                        <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+                        <button is="emby-button" type="button" class="raised cancel block btnCancel" onclick="history.back();"><i class="md-icon">close</i><span>${ButtonCancel}</span></button>
                     </li>
 
                 </ul>

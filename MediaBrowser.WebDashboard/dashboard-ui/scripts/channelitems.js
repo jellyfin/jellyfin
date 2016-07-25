@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'emby-itemscontainer'], function ($) {
 
     var data = {};
 
@@ -247,31 +247,7 @@
 
     function updateFilterControls(page) {
 
-        var query = getQuery(page);
-        $('.alphabetPicker', page).alphaValue(query.NameStartsWith);
     }
-
-    pageIdOn('pageinit', "channelItemsPage", function () {
-
-        var page = this;
-
-        $('.alphabetPicker', this).on('alphaselect', function (e, character) {
-
-            var query = getQuery(page);
-            query.NameStartsWithOrGreater = character;
-            query.StartIndex = 0;
-
-            reloadItems(page);
-
-        }).on('alphaclear', function (e) {
-
-            var query = getQuery(page);
-            query.NameStartsWithOrGreater = '';
-
-            reloadItems(page);
-        });
-
-    });
 
     pageIdOn('pagebeforeshow', "channelItemsPage", function () {
 

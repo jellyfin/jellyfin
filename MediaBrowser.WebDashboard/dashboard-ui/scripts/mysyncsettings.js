@@ -1,8 +1,8 @@
-﻿define(['appSettings', 'jQuery'], function (appSettings, $) {
+﻿define(['appSettings'], function (appSettings) {
 
     function loadForm(page, user) {
 
-        page.querySelector('#txtSyncPath').value = appSettings.syncPath();
+        page.querySelector('#txtSyncPath').value = appSettings.syncPath() || '';
         page.querySelector('#chkWifi').checked = appSettings.syncOnlyOnWifi();
 
         var uploadServers = appSettings.cameraUploadServers();
@@ -10,7 +10,7 @@
         page.querySelector('.uploadServerList').innerHTML = ConnectionManager.getSavedServers().map(function (s) {
 
             var checkedHtml = uploadServers.indexOf(s.Id) == -1 ? '' : ' checked';
-            var html = '<paper-checkbox' + checkedHtml + ' class="chkUploadServer" data-id="' + s.Id + '">' + s.Name + '</paper-checkbox>';
+            var html = '<label><input type="checkbox" is="emby-checkbox"' + checkedHtml + ' class="chkUploadServer" data-id="' + s.Id + '"/><span>' + s.Name + '</span></label>';
 
             return html;
 
@@ -21,75 +21,83 @@
 
     function saveUser(page, user) {
 
-        appSettings.syncPath(page.querySelector('#txtSyncPath').value);
+        var syncPath = page.querySelector('#txtSyncPath').value;
+
+        appSettings.syncPath(syncPath);
         appSettings.syncOnlyOnWifi(page.querySelector('#chkWifi').checked);
 
-        appSettings.cameraUploadServers($(".chkUploadServer", page).get().filter(function (i) {
+        var chkUploadServer = page.querySelectorAll('.chkUploadServer');
+        var cameraUploadServers = [];
 
-            return i.checked;
+        for (var i = 0, length = chkUploadServer.length; i < length; i++) {
+            if (chkUploadServer[i].checked) {
+                cameraUploadServers.push(chkUploadServer[i].getAttribute('data-id'));
+            }
+        }
 
-        }).map(function (i) {
-
-            return i.getAttribute('data-id');
-        }));
+        appSettings.cameraUploadServers(cameraUploadServers);
 
         Dashboard.hideLoadingMsg();
         require(['toast'], function (toast) {
             toast(Globalize.translate('SettingsSaved'));
         });
+
+        if (cameraUploadServers.length || syncPath) {
+            if (window.MainActivity) {
+                MainActivity.authorizeStorage();
+            }
+        }
     }
 
-    function onSubmit() {
+    return function (view, params) {
 
-        var page = $(this).parents('.page')[0];
+        view.querySelector('form').addEventListener('submit', function (e) {
 
-        Dashboard.showLoadingMsg();
+            Dashboard.showLoadingMsg();
 
-        var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
+            var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
-        ApiClient.getUser(userId).then(function (user) {
+            ApiClient.getUser(userId).then(function (user) {
 
-            saveUser(page, user);
+                saveUser(view, user);
 
+            });
+
+            // Disable default form submission
+            e.preventDefault();
+            return false;
         });
 
-        // Disable default form submission
-        return false;
-    }
-
-    $(document).on('pageinit', "#syncPreferencesPage", function () {
-
-        var page = this;
-
-        $('form', page).off('submit', onSubmit).on('submit', onSubmit);
-
-        $('.btnSelectSyncPath', page).on('click', function () {
+        view.querySelector('#btnSelectSyncPath').addEventListener('click', function () {
 
             require(['nativedirectorychooser'], function () {
                 NativeDirectoryChooser.chooseDirectory().then(function (path) {
-                    $('#txtSyncPath', page).val(path);
+
+                    if (path) {
+                        view.querySelector('#txtSyncPath').value = path;
+                    }
                 });
             });
         });
 
-    }).on('pageshow', "#syncPreferencesPage", function () {
+        view.addEventListener('viewshow', function () {
+            var page = this;
 
-        var page = this;
+            Dashboard.showLoadingMsg();
 
-        Dashboard.showLoadingMsg();
+            var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
-        var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
+            ApiClient.getUser(userId).then(function (user) {
 
-        ApiClient.getUser(userId).then(function (user) {
+                loadForm(page, user);
+            });
 
-            loadForm(page, user);
+            if (AppInfo.supportsSyncPathSetting) {
+                page.querySelector('.fldSyncPath').classList.remove('hide');
+            } else {
+                page.querySelector('.fldSyncPath').classList.add('hide');
+            }
         });
-
-        if (AppInfo.supportsSyncPathSetting) {
-            page.querySelector('.fldSyncPath').classList.remove('hide');
-        } else {
-            page.querySelector('.fldSyncPath').classList.add('hide');
-        }
-    });
+    };
 
 });

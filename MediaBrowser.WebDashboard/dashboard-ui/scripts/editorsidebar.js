@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['datetime', 'jQuery', 'material-icons'], function (datetime, $) {
 
     function getNode(item, folderState, selected) {
 
@@ -60,14 +60,10 @@
         var htmlName = "<div class='" + cssClass + "'>";
 
         if (item.LockData) {
-            htmlName += '<img src="css/images/editor/lock.png" />';
+            htmlName += '<i class="md-icon">lock</i>';
         }
 
         htmlName += name;
-
-        if (!item.LocalTrailerCount && item.Type == "Movie") {
-            htmlName += '<img src="css/images/editor/missingtrailer.png" title="' + Globalize.translate('MissingLocalTrailer') + '" />';
-        }
 
         if (!item.ImageTags || !item.ImageTags.Primary) {
             htmlName += '<img src="css/images/editor/missingprimaryimage.png" title="' + Globalize.translate('MissingPrimaryImage') + '" />';
@@ -88,7 +84,7 @@
         if (item.Type == "Episode" && item.LocationType == "Virtual") {
 
             try {
-                if (item.PremiereDate && (new Date().getTime() >= parseISO8601Date(item.PremiereDate, { toLocal: true }).getTime())) {
+                if (item.PremiereDate && (new Date().getTime() >= datetime.parseISO8601Date(item.PremiereDate, true).getTime())) {
                     htmlName += '<img src="css/images/editor/missing.png" title="' + Globalize.translate('MissingEpisode') + '" />';
                 }
             } catch (err) {
@@ -151,7 +147,12 @@
 
     function loadLiveTvChannels(service, openItems, callback) {
 
-        ApiClient.getLiveTvChannels({ ServiceName: service, AddCurrentProgram: false }).then(function (result) {
+        ApiClient.getLiveTvChannels({
+
+            ServiceName: service,
+            AddCurrentProgram: false
+
+        }).then(function (result) {
 
             var nodes = result.Items.map(function (i) {
 
@@ -248,9 +249,9 @@
 
     }
 
-    function scrollToNode(page, id) {
+    function scrollToNode(id) {
 
-        var elem = $('#' + id, page)[0];
+        var elem = $('#' + id)[0];
 
         if (elem) {
             // commenting out for now because it's causing the whole window to scroll in chrome
@@ -364,7 +365,7 @@
 
             setTimeout(function () {
 
-                scrollToNode($.mobile.activePage, selectedNodeId);
+                scrollToNode(selectedNodeId);
             }, 500);
         }
     }
@@ -398,7 +399,7 @@
 
     }).on('pagebeforeshow', ".metadataEditorPage", function () {
 
-        Dashboard.importCss('css/metadataeditor.css');
+        require(['css!css/metadataeditor.css']);
 
     }).on('pagebeforeshow', ".metadataEditorPage", function () {
 
@@ -450,7 +451,7 @@
     }
 
     window.MetadataEditor = {
-        getItemPromise: function() {
+        getItemPromise: function () {
             var currentItemId = getCurrentItemId();
 
             if (currentItemId) {

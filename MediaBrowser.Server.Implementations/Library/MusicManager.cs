@@ -30,7 +30,10 @@ namespace MediaBrowser.Server.Implementations.Library
         public IEnumerable<Audio> GetInstantMixFromArtist(MusicArtist artist, User user)
         {
             var genres = user.RootFolder
-                .GetRecursiveChildren(user, i => i is Audio)
+                .GetRecursiveChildren(user, new InternalItemsQuery(user)
+                {
+                    IncludeItemTypes = new[] { typeof(Audio).Name }
+                })
                 .Cast<Audio>()
                 .Where(i => i.HasAnyArtist(artist.Name))
                 .SelectMany(i => i.Genres)
@@ -43,7 +46,10 @@ namespace MediaBrowser.Server.Implementations.Library
         public IEnumerable<Audio> GetInstantMixFromAlbum(MusicAlbum item, User user)
         {
             var genres = item
-                .GetRecursiveChildren(user, i => i is Audio)
+                .GetRecursiveChildren(user, new InternalItemsQuery(user)
+                {
+                    IncludeItemTypes = new[] { typeof(Audio).Name }
+                })
                .Cast<Audio>()
                .SelectMany(i => i.Genres)
                .Concat(item.Genres)
@@ -55,7 +61,10 @@ namespace MediaBrowser.Server.Implementations.Library
         public IEnumerable<Audio> GetInstantMixFromFolder(Folder item, User user)
         {
             var genres = item
-                .GetRecursiveChildren(user, i => i is Audio)
+               .GetRecursiveChildren(user, new InternalItemsQuery(user)
+               {
+                   IncludeItemTypes = new[] {typeof(Audio).Name}
+               })
                .Cast<Audio>()
                .SelectMany(i => i.Genres)
                .Concat(item.Genres)
@@ -67,7 +76,10 @@ namespace MediaBrowser.Server.Implementations.Library
         public IEnumerable<Audio> GetInstantMixFromPlaylist(Playlist item, User user)
         {
             var genres = item
-               .GetRecursiveChildren(user, i => i is Audio)
+               .GetRecursiveChildren(user, new InternalItemsQuery(user)
+               {
+                   IncludeItemTypes = new[] { typeof(Audio).Name }
+               })
                .Cast<Audio>()
                .SelectMany(i => i.Genres)
                .Concat(item.Genres)
@@ -86,7 +98,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 Genres = genreList.ToArray()
 
-            }, new string[] { });
+            });
 
             var genresDictionary = genreList.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 

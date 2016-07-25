@@ -1,81 +1,72 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['loading', 'localsync'], function (loading) {
 
     function refreshSyncStatus(page) {
 
-        require(['localsync'], function () {
+        if (LocalSync.isSupported()) {
 
-            if (LocalSync.isSupported()) {
+            var status = LocalSync.getSyncStatus();
 
-                var status = LocalSync.getSyncStatus();
-
-                page.querySelector('.labelSyncStatus').innerHTML = Globalize.translate('LabelLocalSyncStatusValue', status);
-                page.querySelector('.syncSpinner').active = status == "Active";
-
-                if (status == "Active") {
-                    page.querySelector('.btnSyncNow').classList.add('hide');
-                }
-                else {
-                    page.querySelector('.btnSyncNow').classList.remove('hide');
-                }
-
+            page.querySelector('.labelSyncStatus').innerHTML = Globalize.translate('LabelLocalSyncStatusValue', status);
+            if (status == 'Active') {
+                loading.show();
+            } else {
+                loading.hide();
             }
-        });
+
+            if (status == "Active") {
+                page.querySelector('.btnSyncNow').classList.add('hide');
+            }
+            else {
+                page.querySelector('.btnSyncNow').classList.remove('hide');
+            }
+
+        }
     }
 
     function syncNow(page) {
 
-        require(['localsync'], function () {
-
-            LocalSync.sync();
-            require(['toast'], function (toast) {
-                toast(Globalize.translate('MessageSyncStarted'));
-            });
-            refreshSyncStatus(page);
+        LocalSync.sync();
+        require(['toast'], function (toast) {
+            toast(Globalize.translate('MessageSyncStarted'));
         });
+        refreshSyncStatus(page);
     }
 
-    var interval;
+    return function (view, params) {
 
-    $(document).on('pageinit', "#mySyncActivityPage", function () {
+        var interval;
 
-        var page = this;
-
-        $('.btnSyncNow', page).on('click', function () {
-            syncNow(page);
+        view.querySelector('.btnSyncNow').addEventListener('click', function () {
+            syncNow(view);
         });
 
-        require(['localsync'], function () {
+        if (LocalSync.isSupported()) {
 
-            if (LocalSync.isSupported()) {
+            view.querySelector('.localSyncStatus').classList.remove('hide');
 
-                page.querySelector('.localSyncStatus').classList.remove('hide');
+        } else {
+            view.querySelector('.localSyncStatus').classList.add('hide');
+        }
 
-            } else {
-                page.querySelector('.localSyncStatus').classList.add('hide');
-                page.querySelector('.syncSpinner').active = false;
+        view.addEventListener('viewbeforeshow', function () {
+            var page = this;
+
+            refreshSyncStatus(page);
+
+            interval = setInterval(function () {
+                refreshSyncStatus(page);
+            }, 5000);
+        });
+
+        view.addEventListener('viewbeforehide', function () {
+            var page = this;
+
+            loading.hide();
+
+            if (interval) {
+                clearInterval(interval);
+                interval = null;
             }
         });
-
-    }).on('pagebeforeshow', "#mySyncActivityPage", function () {
-
-        var page = this;
-
-        refreshSyncStatus(page);
-
-        interval = setInterval(function () {
-            refreshSyncStatus(page);
-        }, 5000);
-
-    }).on('pagebeforehide', "#mySyncActivityPage", function () {
-
-        var page = this;
-
-        page.querySelector('.syncSpinner').active = false;
-
-        if (interval) {
-            clearInterval(interval);
-            interval = null;
-        }
-    });
-
+    };
 });

@@ -17,13 +17,14 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 
 namespace MediaBrowser.Providers.TV
 {
-    public class FanartSeriesProvider : IRemoteImageProvider, IHasOrder, IHasChangeMonitor
+    public class FanartSeriesProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IServerConfigurationManager _config;
@@ -31,7 +32,7 @@ namespace MediaBrowser.Providers.TV
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _json;
 
-        private const string FanArtBaseUrl = "http://webservice.fanart.tv/v3/tv/{1}?api_key={0}";
+        private const string FanArtBaseUrl = "https://webservice.fanart.tv/v3/tv/{1}?api_key={0}";
         // &client_key=52c813aa7b8c8b3bb87f4797532a2f8c
 
         internal static FanartSeriesProvider Current { get; private set; }
@@ -162,6 +163,7 @@ namespace MediaBrowser.Providers.TV
             PopulateImages(list, obj.tvposter, ImageType.Primary, 1000, 1426);
         }
 
+        private Regex _regex_http = new Regex("^http://");
         private void PopulateImages(List<RemoteImageInfo> list,
             List<Image> images,
             ImageType type,
@@ -194,7 +196,7 @@ namespace MediaBrowser.Providers.TV
                         Width = width,
                         Height = height,
                         ProviderName = Name,
-                        Url = url,
+                        Url = _regex_http.Replace(url, "https://", 1),
                         Language = i.lang
                     };
 
@@ -339,29 +341,6 @@ namespace MediaBrowser.Providers.TV
 
                 throw;
             }
-        }
-
-        public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
-        {
-            var options = GetFanartOptions();
-            if (!options.EnableAutomaticUpdates)
-            {
-                return false;
-            }
-
-            var tvdbId = item.GetProviderId(MetadataProviders.Tvdb);
-
-            if (!String.IsNullOrEmpty(tvdbId))
-            {
-                // Process images
-                var imagesFilePath = GetFanartJsonPath(tvdbId);
-
-                var fileInfo = _fileSystem.GetFileInfo(imagesFilePath);
-
-                return !fileInfo.Exists || _fileSystem.GetLastWriteTimeUtc(fileInfo) > date;
-            }
-
-            return false;
         }
 
         public class Image

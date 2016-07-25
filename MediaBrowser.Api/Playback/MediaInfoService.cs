@@ -15,6 +15,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.MediaEncoding;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -66,14 +68,18 @@ namespace MediaBrowser.Api.Playback
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
+        private readonly IMediaEncoder _mediaEncoder;
+        private readonly IUserManager _userManager;
 
-        public MediaInfoService(IMediaSourceManager mediaSourceManager, IDeviceManager deviceManager, ILibraryManager libraryManager, IServerConfigurationManager config, INetworkManager networkManager)
+        public MediaInfoService(IMediaSourceManager mediaSourceManager, IDeviceManager deviceManager, ILibraryManager libraryManager, IServerConfigurationManager config, INetworkManager networkManager, IMediaEncoder mediaEncoder, IUserManager userManager)
         {
             _mediaSourceManager = mediaSourceManager;
             _deviceManager = deviceManager;
             _libraryManager = libraryManager;
             _config = config;
             _networkManager = networkManager;
+            _mediaEncoder = mediaEncoder;
+            _userManager = userManager;
         }
 
         public object Get(GetBitrateTestBytes request)
@@ -116,7 +122,7 @@ namespace MediaBrowser.Api.Playback
 
                 SetDeviceSpecificData(item, result.MediaSource, profile, authInfo, request.MaxStreamingBitrate,
                     request.StartTimeTicks ?? 0, result.MediaSource.Id, request.AudioStreamIndex,
-                    request.SubtitleStreamIndex, request.PlaySessionId);
+                    request.SubtitleStreamIndex, request.PlaySessionId, request.UserId);
             }
             else
             {
@@ -156,7 +162,7 @@ namespace MediaBrowser.Api.Playback
             {
                 var mediaSourceId = request.MediaSourceId;
 
-                SetDeviceSpecificData(request.Id, info, profile, authInfo, request.MaxStreamingBitrate ?? profile.MaxStreamingBitrate, request.StartTimeTicks ?? 0, mediaSourceId, request.AudioStreamIndex, request.SubtitleStreamIndex);
+                SetDeviceSpecificData(request.Id, info, profile, authInfo, request.MaxStreamingBitrate ?? profile.MaxStreamingBitrate, request.StartTimeTicks ?? 0, mediaSourceId, request.AudioStreamIndex, request.SubtitleStreamIndex, request.UserId);
             }
 
             return ToOptimizedResult(info);
@@ -218,16 +224,17 @@ namespace MediaBrowser.Api.Playback
             long startTimeTicks,
             string mediaSourceId,
             int? audioStreamIndex,
-            int? subtitleStreamIndex)
+            int? subtitleStreamIndex,
+            string userId)
         {
             var item = _libraryManager.GetItemById(itemId);
 
             foreach (var mediaSource in result.MediaSources)
             {
-                SetDeviceSpecificData(item, mediaSource, profile, auth, maxBitrate, startTimeTicks, mediaSourceId, audioStreamIndex, subtitleStreamIndex, result.PlaySessionId);
+                SetDeviceSpecificData(item, mediaSource, profile, auth, maxBitrate, startTimeTicks, mediaSourceId, audioStreamIndex, subtitleStreamIndex, result.PlaySessionId, userId);
             }
 
-            SortMediaSources(result);
+            SortMediaSources(result, maxBitrate);
         }
 
         private void SetDeviceSpecificData(BaseItem item,
@@ -239,9 +246,10 @@ namespace MediaBrowser.Api.Playback
             string mediaSourceId,
             int? audioStreamIndex,
             int? subtitleStreamIndex,
-            string playSessionId)
+            string playSessionId,
+            string userId)
         {
-            var streamBuilder = new StreamBuilder(Logger);
+            var streamBuilder = new StreamBuilder(_mediaEncoder, Logger);
 
             var options = new VideoOptions
             {
@@ -259,6 +267,8 @@ namespace MediaBrowser.Api.Playback
                 options.SubtitleStreamIndex = subtitleStreamIndex;
             }
 
+            var user = _userManager.GetUserById(userId);
+
             if (mediaSource.SupportsDirectPlay)
             {
                 var supportsDirectStream = mediaSource.SupportsDirectStream;
@@ -266,6 +276,14 @@ namespace MediaBrowser.Api.Playback
                 // Dummy this up to fool StreamBuilder
                 mediaSource.SupportsDirectStream = true;
                 options.MaxBitrate = maxBitrate;
+
+                if (item is Audio)
+                {
+                    if (!user.Policy.EnableAudioPlaybackTranscoding)
+                    {
+                        options.ForceDirectPlay = true;
+                    }
+                }
 
                 // The MediaSource supports direct stream, now test to see if the client supports it
                 var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
@@ -289,6 +307,14 @@ namespace MediaBrowser.Api.Playback
             if (mediaSource.SupportsDirectStream)
             {
                 options.MaxBitrate = GetMaxBitrate(maxBitrate);
+
+                if (item is Audio)
+                {
+                    if (!user.Policy.EnableAudioPlaybackTranscoding)
+                    {
+                        options.ForceDirectStream = true;
+                    }
+                }
 
                 // The MediaSource supports direct stream, now test to see if the client supports it
                 var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
@@ -375,7 +401,7 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        private void SortMediaSources(PlaybackInfoResponse result)
+        private void SortMediaSources(PlaybackInfoResponse result, int? maxBitrate)
         {
             var originalList = result.MediaSources.ToList();
 
@@ -408,6 +434,23 @@ namespace MediaBrowser.Api.Playback
                     default:
                         return 1;
                 }
+
+            }).ThenBy(i =>
+            {
+                if (maxBitrate.HasValue)
+                {
+                    if (i.Bitrate.HasValue)
+                    {
+                        if (i.Bitrate.Value <= maxBitrate.Value)
+                        {
+                            return 0;
+                        }
+
+                        return 2;
+                    }
+                }
+
+                return 1;
 
             }).ThenBy(originalList.IndexOf)
             .ToList();

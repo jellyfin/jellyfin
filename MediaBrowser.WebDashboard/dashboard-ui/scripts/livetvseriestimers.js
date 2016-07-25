@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['datetime', 'paper-icon-button-light', 'emby-button', 'listViewStyle'], function (datetime) {
 
     var query = {
 
@@ -6,7 +6,7 @@
         SortOrder: "Ascending"
     };
 
-    function deleteSeriesTimer(page, id) {
+    function deleteSeriesTimer(context, id) {
 
         require(['confirm'], function (confirm) {
 
@@ -20,13 +20,13 @@
                         toast(Globalize.translate('MessageSeriesCancelled'));
                     });
 
-                    reload(page);
+                    reload(context);
                 });
             });
         });
     }
 
-    function renderTimers(page, timers) {
+    function renderTimers(context, timers) {
 
         var html = '';
 
@@ -38,18 +38,17 @@
 
             var timer = timers[i];
 
-            html += '<paper-icon-item>';
+            html += '<div class="listItem">';
 
-            html += '<paper-fab mini icon="live-tv" item-icon></paper-fab>';
+            html += '<button type="button" is="emby-button" class="fab mini autoSize blue" item-icon><i class="md-icon">live_tv</i></button>';
 
-            html += '<paper-item-body three-line>';
+            html += '<div class="listItemBody three-line">';
             html += '<a class="clearLink" href="livetvseriestimer.html?id=' + timer.Id + '">';
-
-            html += '<div>';
+            html += '<h3>';
             html += timer.Name;
-            html += '</div>';
+            html += '</h3>';
 
-            html += '<div secondary>';
+            html += '<div class="secondary">';
             if (timer.DayPattern) {
                 html += timer.DayPattern;
             }
@@ -63,11 +62,11 @@
 
                 html += ' - ' + Globalize.translate('LabelAnytime');
             } else {
-                html += ' - ' + LibraryBrowser.getDisplayTime(timer.StartDate);
+                html += ' - ' + datetime.getDisplayTime(timer.StartDate);
             }
             html += '</div>';
 
-            html += '<div secondary>';
+            html += '<div class="secondary">';
             if (timer.RecordAnyChannel) {
                 html += Globalize.translate('LabelAllChannels');
             }
@@ -75,49 +74,65 @@
                 html += timer.ChannelName;
             }
             html += '</div>';
+
             html += '</a>';
+            html += '</div>';
 
-            html += '</paper-item-body>';
+            html += '<button type="button" is="paper-icon-button-light" data-seriestimerid="' + timer.Id + '" title="' + Globalize.translate('ButtonCancelSeries') + '" class="btnCancelSeries autoSize"><i class="md-icon">cancel</i></button>';
 
-            html += '<paper-icon-button icon="cancel" data-seriestimerid="' + timer.Id + '" title="' + Globalize.translate('ButtonCancelSeries') + '" class="btnCancelSeries"></paper-icon-button>';
-
-            html += '</paper-icon-item>';
+            html += '</div>';
         }
 
         if (timers.length) {
             html += '</div>';
         }
 
-        var elem = $('#items', page).html(html);
+        var elem = context.querySelector('#items');
+        elem.innerHTML = html;
 
-        $('.btnCancelSeries', elem).on('click', function () {
+        if (timers.length) {
+            elem.querySelector('.paperList').addEventListener('click', function (e) {
 
-            deleteSeriesTimer(page, this.getAttribute('data-seriestimerid'));
-
-        });
+                var btnCancelSeries = parentWithClass(e.target, 'btnCancelSeries');
+                if (btnCancelSeries) {
+                    deleteSeriesTimer(context, btnCancelSeries.getAttribute('data-seriestimerid'));
+                }
+            });
+        }
 
         Dashboard.hideLoadingMsg();
     }
 
-    function reload(page) {
+    function parentWithClass(elem, className) {
+
+        while (!elem.classList || !elem.classList.contains(className)) {
+            elem = elem.parentNode;
+
+            if (!elem) {
+                return null;
+            }
+        }
+
+        return elem;
+    }
+
+    function reload(context) {
 
         Dashboard.showLoadingMsg();
 
         ApiClient.getLiveTvSeriesTimers(query).then(function (result) {
 
-            require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
-                renderTimers(page, result.Items);
-            });
-
-            LibraryBrowser.setLastRefreshed(page);
+            renderTimers(context, result.Items);
         });
     }
 
-    window.LiveTvPage.renderSeriesTimersTab = function (page, tabContent) {
+    return function (view, params, tabContent) {
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
+        var self = this;
+        self.renderTab = function () {
+
             reload(tabContent);
-        }
+        };
     };
 
 });

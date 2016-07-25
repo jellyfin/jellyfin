@@ -273,7 +273,9 @@ namespace MediaBrowser.Api.Images
         {
             var list = new List<ImageInfo>();
 
-            foreach (var image in item.ImageInfos.Where(i => !item.AllowsMultipleImages(i.Type)))
+            var itemImages = item.ImageInfos;
+
+            foreach (var image in itemImages.Where(i => !item.AllowsMultipleImages(i.Type)))
             {
                 var info = GetImageInfo(item, image, null);
 
@@ -283,14 +285,14 @@ namespace MediaBrowser.Api.Images
                 }
             }
 
-            foreach (var imageType in item.ImageInfos.Select(i => i.Type).Distinct().Where(item.AllowsMultipleImages))
+            foreach (var imageType in itemImages.Select(i => i.Type).Distinct().Where(item.AllowsMultipleImages))
             {
                 var index = 0;
 
                 // Prevent implicitly captured closure
                 var currentImageType = imageType;
 
-                foreach (var image in item.ImageInfos.Where(i => i.Type == currentImageType))
+                foreach (var image in itemImages.Where(i => i.Type == currentImageType))
                 {
                     var info = GetImageInfo(item, image, index);
 
@@ -514,7 +516,7 @@ namespace MediaBrowser.Api.Images
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
         /// <returns>System.Object.</returns>
         /// <exception cref="ResourceNotFoundException"></exception>
-        public object GetImage(ImageRequest request, IHasImages item, bool isHeadRequest)
+        public Task<object> GetImage(ImageRequest request, IHasImages item, bool isHeadRequest)
         {
             if (request.PercentPlayed.HasValue)
             {
@@ -594,8 +596,7 @@ namespace MediaBrowser.Api.Images
                 supportedImageEnhancers,
                 cacheDuration,
                 responseHeaders,
-                isHeadRequest)
-                .Result;
+                isHeadRequest);
         }
 
         private async Task<object> GetImageResult(IHasImages item,
@@ -632,18 +633,20 @@ namespace MediaBrowser.Api.Images
 
             headers["Vary"] = "Accept";
 
-            return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
+            return await ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
             {
                 CacheDuration = cacheDuration,
                 ResponseHeaders = headers,
                 ContentType = imageResult.Item2,
+                DateLastModified = imageResult.Item3,
                 IsHeadRequest = isHeadRequest,
                 Path = imageResult.Item1,
 
                 // Sometimes imagemagick keeps a hold on the file briefly even after it's done writing to it.
                 // I'd rather do this than add a delay after saving the file
                 FileShare = FileShare.ReadWrite
-            });
+
+            }).ConfigureAwait(false);
         }
 
         private List<ImageFormat> GetOutputFormats(ImageRequest request, ItemImageInfo image, bool cropwhitespace, List<IImageEnhancer> enhancers)

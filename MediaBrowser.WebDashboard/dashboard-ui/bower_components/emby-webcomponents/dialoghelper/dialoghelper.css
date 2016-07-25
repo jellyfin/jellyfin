@@ -1,15 +1,15 @@
 .dialog {
     margin: 0;
-    border-radius: 3px;
+    border-radius: 1px;
     z-index: 999999 !important;
     position: fixed;
-    margin: 24px 40px;
-    -webkit-overflow-scrolling: touch;
     -webkit-font-smoothing: antialiased;
     box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14), 0 6px 30px 5px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.4);
     height: auto;
     border: 0;
     padding: 0;
+    will-change: transform;
+    contain: style;
 }
 
     .dialog.fixedSize {
@@ -25,19 +25,11 @@
         width: auto;
     }
 
-    .dialog.scrollY {
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        overflow-x: hidden;
-    }
-
-    .dialog.hiddenScroll::-webkit-scrollbar {
-        display: none;
-    }
-
-    .dialog.hiddenScroll {
-        -ms-overflow-style: none;
-        overflow: -moz-scrollbars-none;
+    .dialog.centeredDialog {
+        top: 50%;
+        left: 50%;
+        max-width: 70%;
+        max-height: 84%;
     }
 
 @media all and (min-width: 1280px) and (min-height: 720px) {
@@ -73,19 +65,13 @@
 }
 
 .dialog > * {
-    margin-top: 20px;
     padding: 0 24px;
 }
 
-    .dialog > *:first-child {
-        margin-top: 24px;
-    }
-
 .dialog .buttons {
     position: relative;
-    padding: 8px 8px 8px 24px;
-    margin: 0;
-    color: #3f51b5;
+    padding: 0;
+    margin: 1em;
     display: -ms-flexbox;
     display: -webkit-flex;
     display: flex;
@@ -97,6 +83,17 @@
     justify-content: flex-end;
 }
 
+    .dialog .buttons button {
+        color: #52B54B;
+        padding: 0.35em 1em;
+        margin: 0;
+    }
+
+        .dialog .buttons button:focus {
+            color: #fff;
+            background-color: #52B54B;
+        }
+
 .dialogBackdrop {
     background-color: #000;
     opacity: 0;
@@ -106,7 +103,7 @@
     left: 0 !important;
     right: 0 !important;
     margin: 0 !important;
-    z-index: 999998 !important;
+    z-index: 999999 !important;
     transition: opacity ease-out 0.2s;
 }
 
@@ -118,6 +115,10 @@
     opacity: 0;
     background-color: #000;
     transition: opacity ease-out 0.2s;
+}
+
+.mouseIdle .dialog::backdrop {
+    cursor: none !important;
 }
 
 .dialog.opened::backdrop {

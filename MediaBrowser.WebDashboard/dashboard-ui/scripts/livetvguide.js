@@ -1,24 +1,15 @@
-﻿define([], function () {
+﻿define(['tvguide'], function (tvguide) {
 
-    window.LiveTvPage.initGuideTab = function (page, tabContent) {
+    return function (view, params, tabContent) {
 
-    };
-
-    window.LiveTvPage.renderGuideTab = function (page, tabContent) {
-
-        if (page.guideInstance) {
-            if (LibraryBrowser.needsRefresh(tabContent)) {
-                page.guideInstance.refresh();
-            }
-        } else {
-            require(['tvguide'], function (tvguide) {
-
-                page.guideInstance = new tvguide({
-                    element: tabContent,
-                    enableHeadRoom: true
+        var self = this;
+        var guideInstance;
+        self.renderTab = function () {
+            if (!guideInstance) {
+                guideInstance = new tvguide({
+                    element: tabContent
                 });
-            });
-        }
+            }
+        };
     };
-
 });

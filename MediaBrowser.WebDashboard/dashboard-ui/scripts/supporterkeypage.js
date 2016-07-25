@@ -1,4 +1,4 @@
-﻿define(['fetchHelper', 'jQuery'], function (fetchHelper, $) {
+﻿define(['fetchHelper', 'jQuery', 'registrationservices'], function (fetchHelper, $, registrationServices) {
 
     function load(page) {
         Dashboard.showLoadingMsg();
@@ -40,7 +40,7 @@
         var url = "https://mb3admin.com/admin/service/supporter/retrievekey?email=" + email;
         console.log(url);
         fetchHelper.ajax({
-            
+
             url: url,
             type: 'POST',
             dataType: 'json'
@@ -146,6 +146,13 @@
         }
     };
 
+    function onSupporterLinkClick(e) {
+
+        registrationServices.showPremiereInfo();
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
     $(document).on('pageinit', "#supporterKeyPage", function () {
 
         var page = this;
@@ -153,9 +160,12 @@
         $('#lostKeyForm', this).on('submit', retrieveSupporterKey);
         $('#linkKeysForm', this).on('submit', SupporterKeyPage.linkSupporterKeys);
 
-        $('.benefits', page).html(Globalize.translate('HeaderSupporterBenefit', '<a href="http://emby.media/premiere" target="_blank">', '</a>'));
+        page.querySelector('.benefits').innerHTML = Globalize.translate('HeaderSupporterBenefit', '<a class="lnkPremiere" href="http://emby.media/premiere" target="_blank">', '</a>');
+
+        page.querySelector('.lnkPremiere').addEventListener('click', onSupporterLinkClick);
 
     }).on('pageshow', "#supporterKeyPage", function () {
+
         var page = this;
         loadUserInfo(page);
         load(page);

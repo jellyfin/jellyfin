@@ -1,4 +1,4 @@
-define(['jQuery'], function ($) {
+define(['jQuery', 'listView'], function ($, listView) {
 
     var data = {};
 
@@ -66,7 +66,7 @@ define(['jQuery'], function ($) {
 
             if (view == "List") {
 
-                html = LibraryBrowser.getListViewHtml({
+                html = listView.getListViewHtml({
                     items: result.Items,
                     context: 'games',
                     sortBy: query.SortBy

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Dlna;
+﻿using System.Linq;
+using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
@@ -58,8 +59,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
-        public bool? Cabac { get; set; }
-
         public EncodingJobOptions()
         {
             
@@ -76,7 +75,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             Level = info.VideoLevel;
             ItemId = info.ItemId;
             MediaSourceId = info.MediaSourceId;
-            AudioCodec = info.AudioCodec;
+            AudioCodec = info.TargetAudioCodec;
             MaxAudioChannels = info.MaxAudioChannels;
             AudioBitRate = info.AudioBitrate;
             AudioSampleRate = info.TargetAudioSampleRate;
@@ -87,7 +86,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             MaxRefFrames = info.MaxRefFrames;
             MaxVideoBitDepth = info.MaxVideoBitDepth;
             SubtitleMethod = info.SubtitleDeliveryMethod;
-            Cabac = info.Cabac;
             Context = info.Context;
 
             if (info.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External)

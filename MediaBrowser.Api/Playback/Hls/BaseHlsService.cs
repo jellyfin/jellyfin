@@ -63,9 +63,9 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <param name="request">The request.</param>
         /// <param name="isLive">if set to <c>true</c> [is live].</param>
         /// <returns>System.Object.</returns>
-        protected object ProcessRequest(StreamRequest request, bool isLive)
+        protected async Task<object> ProcessRequest(StreamRequest request, bool isLive)
         {
-            return ProcessRequestAsync(request, isLive).Result;
+            return await ProcessRequestAsync(request, isLive).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -82,11 +82,6 @@ namespace MediaBrowser.Api.Playback.Hls
             var cancellationTokenSource = new CancellationTokenSource();
 
             var state = await GetState(request, cancellationTokenSource.Token).ConfigureAwait(false);
-
-            if (isLive)
-            {
-                state.Request.StartTimeTicks = null;
-            }
 
             TranscodingJob job = null;
             var playlist = state.OutputFilePath;
@@ -136,13 +131,6 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var appendBaselineStream = false;
             var baselineStreamBitrate = 64000;
-
-            var hlsVideoRequest = state.VideoRequest as GetHlsVideoStreamLegacy;
-            if (hlsVideoRequest != null)
-            {
-                appendBaselineStream = hlsVideoRequest.AppendBaselineStream;
-                baselineStreamBitrate = hlsVideoRequest.BaselineStreamAudioBitRate ?? baselineStreamBitrate;
-            }
 
             var playlistText = GetMasterPlaylistFileText(playlist, videoBitrate + audioBitrate, appendBaselineStream, baselineStreamBitrate);
 
@@ -248,11 +236,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
         {
-            var hlsVideoRequest = state.VideoRequest as GetHlsVideoStreamLegacy;
-
-            var itsOffsetMs = hlsVideoRequest == null
-                                       ? 0
-                                       : hlsVideoRequest.TimeStampOffsetMs;
+            var itsOffsetMs = 0;
 
             var itsOffset = itsOffsetMs == 0 ? string.Empty : string.Format("-itsoffset {0} ", TimeSpan.FromMilliseconds(itsOffsetMs).TotalSeconds.ToString(UsCulture));
 
@@ -286,26 +270,6 @@ namespace MediaBrowser.Api.Playback.Hls
                 outputPath
                 ).Trim();
 
-            if (hlsVideoRequest != null)
-            {
-                if (hlsVideoRequest.AppendBaselineStream)
-                {
-                    var lowBitratePath = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath) + "-low.m3u8");
-
-                    var bitrate = hlsVideoRequest.BaselineStreamAudioBitRate ?? 64000;
-
-                    var lowBitrateParams = string.Format(" -threads {0} -vn -codec:a:0 libmp3lame -ac 2 -ab {1} -hls_time {2} -start_number {3} -hls_list_size {4} -y \"{5}\"",
-                        threads,
-                        bitrate / 2,
-                        state.SegmentLength.ToString(UsCulture),
-                        startNumberParam,
-                        state.HlsListSize.ToString(UsCulture),
-                        lowBitratePath);
-
-                    args += " " + lowBitrateParams;
-                }
-            }
-
             return args;
         }
 
@@ -314,9 +278,16 @@ namespace MediaBrowser.Api.Playback.Hls
             return 0;
         }
 
-        protected override bool CanStreamCopyAudio(VideoStreamRequest request, MediaStream audioStream, List<string> supportedAudioCodecs)
+        protected bool IsLiveStream(StreamState state)
         {
-            return false;
+            var isLiveStream = (state.RunTimeTicks ?? 0) == 0;
+
+            if (state.VideoRequest.ForceLiveStream)
+            {
+                return true;
+            }
+
+            return isLiveStream;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'scripts/alphapicker'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'components/categorysyncbuttons', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser, categorysyncbuttons) {
 
     return function (view, params) {
 
@@ -24,17 +24,13 @@
 
         function loadNextUp() {
 
-            var limit = AppInfo.hasLowImageBandwidth ?
-             16 :
-             24;
-
             var query = {
 
-                Limit: limit,
+                Limit: 24,
                 Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
                 UserId: Dashboard.getCurrentUserId(),
                 ImageTypeLimit: 1,
-                EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+                EnableImageTypes: "Primary,Backdrop,Thumb"
             };
 
             query.ParentId = LibraryMenu.getTopParentId();
@@ -112,7 +108,8 @@
                 ExcludeLocationTypes: "Virtual",
                 ParentId: parentId,
                 ImageTypeLimit: 1,
-                EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+                EnableImageTypes: "Primary,Backdrop,Thumb",
+                EnableTotalRecordCount: false
             };
 
             ApiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
@@ -168,7 +165,8 @@
             } else {
                 tabContent.querySelector('#resumableItems').classList.remove('hiddenScrollX');
             }
-            libraryBrowser.createCardMenus(tabContent.querySelector('#resumableItems'));
+
+            categorysyncbuttons.init(tabContent);
         };
 
         self.renderTab = function () {
@@ -178,9 +176,8 @@
         var tabControllers = [];
         var renderedTabs = [];
 
-        function loadTab(page, index) {
+        function getTabController(page, index, callback) {
 
-            var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
             var depends = [];
 
             switch (index) {
@@ -210,12 +207,14 @@
             }
 
             require(depends, function (controllerFactory) {
-
+                var tabContent;
                 if (index == 0) {
+                    tabContent = view.querySelector('.pageTabContent[data-index=\'' + index + '\']');
                     self.tabContent = tabContent;
                 }
                 var controller = tabControllers[index];
                 if (!controller) {
+                    tabContent = view.querySelector('.pageTabContent[data-index=\'' + index + '\']');
                     controller = index ? new controllerFactory(view, params, tabContent) : self;
                     tabControllers[index] = controller;
 
@@ -224,6 +223,24 @@
                     }
                 }
 
+                callback(controller);
+            });
+        }
+
+        function preLoadTab(page, index) {
+
+            getTabController(page, index, function (controller) {
+                if (renderedTabs.indexOf(index) == -1) {
+                    if (controller.preRender) {
+                        controller.preRender();
+                    }
+                }
+            });
+        }
+
+        function loadTab(page, index) {
+
+            getTabController(page, index, function (controller) {
                 if (renderedTabs.indexOf(index) == -1) {
                     renderedTabs.push(index);
                     controller.renderTab();
@@ -231,21 +248,20 @@
             });
         }
 
+        var mdlTabs = view.querySelector('.libraryViewNav');
+
         function onPlaybackStop(e, state) {
 
             if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
 
-                var pageTabsContainer = view.querySelector('.pageTabsContainer');
-
-                pageTabsContainer.dispatchEvent(new CustomEvent("tabchange", {
+                renderedTabs = [];
+                mdlTabs.dispatchEvent(new CustomEvent("tabchange", {
                     detail: {
-                        selectedTabIndex: libraryBrowser.selectedTab(pageTabsContainer)
+                        selectedTabIndex: libraryBrowser.selectedTab(mdlTabs)
                     }
                 }));
             }
         }
-
-        var pageTabsContainer = view.querySelector('.pageTabsContainer');
 
         var baseUrl = 'tv.html';
         var topParentId = params.topParentId;
@@ -258,13 +274,28 @@
         } else {
             view.querySelector('#resumableItems').classList.remove('hiddenScrollX');
         }
-        libraryBrowser.createCardMenus(view.querySelector('#resumableItems'));
+        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'), [0, 1, 2, 4, 5, 6]);
 
-        libraryBrowser.configurePaperLibraryTabs(view, view.querySelector('paper-tabs'), pageTabsContainer, baseUrl);
-
-        pageTabsContainer.addEventListener('tabchange', function (e) {
+        mdlTabs.addEventListener('beforetabchange', function (e) {
+            preLoadTab(view, parseInt(e.detail.selectedTabIndex));
+        });
+        mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));
         });
+
+        function onWebSocketMessage(e, data) {
+
+            var msg = data;
+
+            if (msg.MessageType === "UserDataChanged") {
+
+                if (msg.Data.UserId == Dashboard.getCurrentUserId()) {
+
+                    renderedTabs = [];
+                }
+            }
+
+        }
 
         view.addEventListener('viewbeforeshow', function (e) {
 
@@ -288,11 +319,22 @@
             }
 
             Events.on(MediaController, 'playbackstop', onPlaybackStop);
+            Events.on(ApiClient, "websocketmessage", onWebSocketMessage);
         });
 
         view.addEventListener('viewbeforehide', function (e) {
 
             Events.off(MediaController, 'playbackstop', onPlaybackStop);
+            Events.off(ApiClient, "websocketmessage", onWebSocketMessage);
+        });
+
+        view.addEventListener('viewdestroy', function (e) {
+
+            tabControllers.forEach(function (t) {
+                if (t.destroy) {
+                    t.destroy();
+                }
+            });
         });
     };
 });

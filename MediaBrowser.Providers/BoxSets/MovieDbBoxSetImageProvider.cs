@@ -61,7 +61,7 @@ namespace MediaBrowser.Providers.BoxSets
                 {
                     var tmdbSettings = await MovieDbProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
-                    var tmdbImageUrl = tmdbSettings.images.base_url + "original";
+                    var tmdbImageUrl = tmdbSettings.images.secure_base_url + "original";
 
                     return GetImages(mainResult, language, tmdbImageUrl);
                 }
@@ -83,7 +83,7 @@ namespace MediaBrowser.Providers.BoxSets
                 VoteCount = i.vote_count,
                 Width = i.width,
                 Height = i.height,
-                Language = i.iso_639_1,
+                Language = MovieDbProvider.AdjustImageLanguage(i.iso_639_1, language),
                 ProviderName = Name,
                 Type = ImageType.Primary,
                 RatingType = RatingType.Score

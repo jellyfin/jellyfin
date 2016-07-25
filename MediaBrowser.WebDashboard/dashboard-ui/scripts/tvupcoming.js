@@ -1,25 +1,27 @@
-﻿define([], function () {
+﻿define(['datetime', 'libraryBrowser', 'scrollStyles', 'emby-itemscontainer'], function (datetime, libraryBrowser) {
 
-    function loadUpcoming(context, params) {
+    function getUpcomingPromise(context, params) {
 
         Dashboard.showLoadingMsg();
 
-        var limit = AppInfo.hasLowImageBandwidth && !enableScrollX() ?
-           24 :
-           40;
-
         var query = {
 
-            Limit: limit,
-            Fields: "AirTime,UserData,SeriesStudio,SyncInfo",
+            Limit: 40,
+            Fields: "AirTime,UserData,SyncInfo",
             UserId: Dashboard.getCurrentUserId(),
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+            EnableTotalRecordCount: false
         };
 
         query.ParentId = params.topParentId;
 
-        ApiClient.getJSON(ApiClient.getUrl("Shows/Upcoming", query)).then(function (result) {
+        return ApiClient.getJSON(ApiClient.getUrl("Shows/Upcoming", query));
+    }
+
+    function loadUpcoming(context, params, promise) {
+
+        promise.then(function (result) {
 
             var items = result.Items;
 
@@ -62,7 +64,13 @@
             if (item.PremiereDate) {
                 try {
 
-                    dateText = LibraryBrowser.getFutureDateText(parseISO8601Date(item.PremiereDate, { toLocal: true }), true);
+                    var premiereDate = datetime.parseISO8601Date(item.PremiereDate, true);
+
+                    if (premiereDate.getDate() == new Date().getDate() - 1) {
+                        dateText = Globalize.translate('Yesterday');
+                    } else {
+                        dateText = libraryBrowser.getFutureDateText(premiereDate, true);
+                    }
 
                 } catch (err) {
                 }
@@ -94,21 +102,22 @@
             html += '<h1 class="listHeader">' + group.name + '</h1>';
 
             if (enableScrollX()) {
-                html += '<div class="itemsContainer hiddenScrollX">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer hiddenScrollX">';
             } else {
-                html += '<div class="itemsContainer">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer">';
             }
 
-            html += LibraryBrowser.getPosterViewHtml({
+            html += libraryBrowser.getPosterViewHtml({
                 items: group.items,
                 showLocationTypeIndicator: false,
                 shape: getThumbShape(),
                 showTitle: true,
-                showPremiereDate: true,
                 preferThumb: true,
                 lazy: true,
                 showDetailsMenu: true,
-                centerText: true
+                centerText: true,
+                overlayMoreButton: true,
+                showParentTitle: true
 
             });
             html += '</div>';
@@ -122,10 +131,15 @@
     return function (view, params, tabContent) {
 
         var self = this;
+        var upcomingPromise;
+
+        self.preRender = function () {
+            upcomingPromise = getUpcomingPromise(view, params);
+        };
 
         self.renderTab = function () {
 
-            loadUpcoming(tabContent, params);
+            loadUpcoming(tabContent, params, upcomingPromise);
         };
     };
 });

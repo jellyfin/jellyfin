@@ -29,6 +29,7 @@ namespace MediaBrowser.ServerApplication.Networking
         /// <returns>IEnumerable{NetworkShare}.</returns>
         public IEnumerable<NetworkShare> GetNetworkShares(string path)
         {
+            Logger.Info("Getting network shares from {0}", path);
             return new ShareCollection(path).OfType<Share>().Select(ToNetworkShare);
         }
 
@@ -88,18 +89,20 @@ namespace MediaBrowser.ServerApplication.Networking
         /// </summary>
         /// <returns>Arraylist that represents all the SV_TYPE_WORKSTATION and SV_TYPE_SERVER
         /// PC's in the Domain</returns>
-        private IEnumerable<string> GetNetworkDevicesInternal()
+        private List<string> GetNetworkDevicesInternal()
         {
             //local fields
             const int MAX_PREFERRED_LENGTH = -1;
             var SV_TYPE_WORKSTATION = 1;
             var SV_TYPE_SERVER = 2;
-            var buffer = IntPtr.Zero;
-            var tmpBuffer = IntPtr.Zero;
+            IntPtr buffer = IntPtr.Zero;
+            IntPtr tmpBuffer = IntPtr.Zero;
             var entriesRead = 0;
             var totalEntries = 0;
             var resHandle = 0;
             var sizeofINFO = Marshal.SizeOf(typeof(_SERVER_INFO_100));
+
+            var returnList = new List<string>();
 
             try
             {
@@ -117,7 +120,7 @@ namespace MediaBrowser.ServerApplication.Networking
                         //get pointer to, Pointer to the buffer that received the data from
                         //the call to NetServerEnum. Must ensure to use correct size of 
                         //STRUCTURE to ensure correct location in memory is pointed to
-                        tmpBuffer = new IntPtr((int)buffer + (i * sizeofINFO));
+                        tmpBuffer = new IntPtr((Int64)buffer + (i * sizeofINFO));
                         //Have now got a pointer to the list of SV_TYPE_WORKSTATION and 
                         //SV_TYPE_SERVER PC's, which is unmanaged memory
                         //Needs to Marshal data from an unmanaged block of memory to a 
@@ -128,7 +131,7 @@ namespace MediaBrowser.ServerApplication.Networking
                         //add the PC names to the ArrayList
                         if (!string.IsNullOrEmpty(svrInfo.sv100_name))
                         {
-                            yield return svrInfo.sv100_name;
+                            returnList.Add(svrInfo.sv100_name);
                         }
                     }
                 }
@@ -139,6 +142,8 @@ namespace MediaBrowser.ServerApplication.Networking
                 //the memory that the NetApiBufferAllocate function allocates
                 NativeMethods.NetApiBufferFree(buffer);
             }
+
+            return returnList;
         }
 
         /// <summary>

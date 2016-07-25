@@ -1,0 +1,8 @@
+
+.btnUserData {
+    color: #aaa;
+}
+
+.btnUserDataOn, .btnUserDataOn i {
+    color: #cc3333 !important;
+}

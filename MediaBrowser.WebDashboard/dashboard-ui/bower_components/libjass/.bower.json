@@ -1,0 +1,14 @@
+{
+  "name": "libjass",
+  "_cacheHeaders": {
+    "ETag": "\"fa735770625f92af7e5167367b2bce58\"",
+    "Last-Modified": "Sun, 24 Jan 2016 10:37:21 GMT",
+    "Content-Length": "260662",
+    "Content-Type": "application/octet-stream",
+    "Content-Disposition": "attachment; filename=libjass.zip"
+  },
+  "_release": "e-tag:fa7357706",
+  "_source": "https://github.com/Arnavion/libjass/releases/download/v0.11.0/libjass.zip",
+  "_target": "*",
+  "_originalSource": "https://github.com/Arnavion/libjass/releases/download/v0.11.0/libjass.zip"
+}

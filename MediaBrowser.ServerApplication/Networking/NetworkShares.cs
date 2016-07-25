@@ -390,7 +390,9 @@ namespace MediaBrowser.ServerApplication.Networking
                     Type t = (2 == level) ? typeof(SHARE_INFO_2) : typeof(SHARE_INFO_1);
                     int offset = Marshal.SizeOf(t);
 
-                    for (int i = 0, lpItem = pBuffer.ToInt32(); i < entriesRead; i++, lpItem += offset)
+                    var lpItem = pBuffer.ToInt64();
+
+                    for (int i = 0; i < entriesRead; i++, lpItem += offset)
                     {
                         IntPtr pItem = new IntPtr(lpItem);
                         if (1 == level)

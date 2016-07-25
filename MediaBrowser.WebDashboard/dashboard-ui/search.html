@@ -1,12 +1,48 @@
-﻿<div id="searchPage" data-role="page" class="page homePage libraryPage allLibraryPage noSecondaryNavPage" data-title="${ButtonSearch}" data-require="scripts/searchpage">
+﻿<div id="searchPage" data-role="page" class="page libraryPage allLibraryPage noSecondaryNavPage" data-title="${ButtonSearch}" data-backbutton="true" style="padding-top:0!important;">
 
-    <div data-role="content">
-        <div style="text-align:center;">
+    <style>
+        @media all and (max-width: 800px) {
 
-            <h1>${TabSuggestions}</h1>
+            .txtSearch {
+                text-indent: 7.5%;
+                padding-bottom: 1em;
+            }
+        }
 
-            <div class="searchSuggestions">
+        @media all and (max-width: 650px) {
+
+            .txtSearch {
+                text-indent: 10%;
+            }
+        }
+
+        @media all and (max-width: 500px) {
+
+            .txtSearch {
+                text-indent: 12.5%;
+            }
+        }
+    </style>
+
+    <button is="paper-icon-button-light" style="position: absolute; top: .6em; left: 0; z-index: 1;" tabindex="-1" class="btnBack autoSize searchBackButton">
+        <i class="md-icon">&#xE5C4;</i>
+    </button>
+
+    <div data-role="content" style="padding-top:0!important;padding-left:0!important;padding-right:0!important;">
+        <div class="readOnlyContent" style="text-align: center;margin: 0 auto;">
+
+            <div class="inputContainer searchInputContainer" style="margin-bottom:1em;">
+                <input is="emby-input" class="txtSearch" autocomplete="off" placeholder="${ButtonSearch}" autofocus />
+            </div>
+
+            <div class="textSuggestions hide">
+                <h1>${TabSuggestions}</h1>
+
+                <div class="searchSuggestions">
+                </div>
             </div>
         </div>
+
+        <div is="emby-itemscontainer" class="searchResults hide itemsContainer"></div>
     </div>
 </div>

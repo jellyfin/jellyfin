@@ -138,10 +138,14 @@ namespace MediaBrowser.MediaEncoding.Probing
                     var parts = iTunEXTC.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
                     // Example 
                     // mpaa|G|100|For crude humor
-                    if (parts.Length == 4)
+                    if (parts.Length > 1)
                     {
                         info.OfficialRating = parts[1];
-                        info.OfficialRatingDescription = parts[3];
+
+                        if (parts.Length > 3)
+                        {
+                            info.OfficialRatingDescription = parts[3];
+                        }
                     }
                 }
 
@@ -403,8 +407,22 @@ namespace MediaBrowser.MediaEncoding.Probing
                 Profile = streamInfo.profile,
                 Level = streamInfo.level,
                 Index = streamInfo.index,
-                PixelFormat = streamInfo.pix_fmt
+                PixelFormat = streamInfo.pix_fmt,
+                NalLengthSize = streamInfo.nal_length_size,
+                TimeBase = streamInfo.time_base,
+                CodecTimeBase = streamInfo.codec_time_base
             };
+
+            if (string.Equals(streamInfo.is_avc, "true", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(streamInfo.is_avc, "1", StringComparison.OrdinalIgnoreCase))
+            {
+                stream.IsAVC = true;
+            }
+            else if (string.Equals(streamInfo.is_avc, "false", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(streamInfo.is_avc, "0", StringComparison.OrdinalIgnoreCase))
+            {
+                stream.IsAVC = false;
+            }
 
             // Filter out junk
             if (!string.IsNullOrWhiteSpace(streamInfo.codec_tag_string) && streamInfo.codec_tag_string.IndexOf("[0]", StringComparison.OrdinalIgnoreCase) == -1)
@@ -416,6 +434,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 stream.Language = GetDictionaryValue(streamInfo.tags, "language");
                 stream.Comment = GetDictionaryValue(streamInfo.tags, "comment");
+                stream.Title = GetDictionaryValue(streamInfo.tags, "title");
             }
 
             if (string.Equals(streamInfo.codec_type, "audio", StringComparison.OrdinalIgnoreCase))
@@ -524,7 +543,23 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.IsForced = string.Equals(isForced, "1", StringComparison.OrdinalIgnoreCase);
             }
 
+            NormalizeStreamTitle(stream);
+
             return stream;
+        }
+
+        private void NormalizeStreamTitle(MediaStream stream)
+        {
+            if (string.Equals(stream.Title, "sdh", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(stream.Title, "cc", StringComparison.OrdinalIgnoreCase))
+            {
+                stream.Title = null;
+            }
+
+            if (stream.Type == MediaStreamType.EmbeddedImage)
+            {
+                stream.Title = null;
+            }
         }
 
         /// <summary>
@@ -789,6 +824,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
+            }
+
+            if (audio.AlbumArtists.Count == 0)
+            {
+                audio.AlbumArtists = audio.Artists.Take(1).ToList();
             }
 
             // Track number

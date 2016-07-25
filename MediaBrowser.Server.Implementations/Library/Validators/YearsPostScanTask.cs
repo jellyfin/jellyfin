@@ -20,16 +20,12 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var allYears = _libraryManager.RootFolder.GetRecursiveChildren(i => i.ProductionYear.HasValue)
-                .Select(i => i.ProductionYear ?? -1)
-                .Where(i => i > 0)
-                .Distinct()
-                .ToList();
-
-            var count = allYears.Count;
+            var yearNumber = 1900;
+            var maxYear = DateTime.UtcNow.Year + 3;
+            var count = maxYear - yearNumber + 1;
             var numComplete = 0;
 
-            foreach (var yearNumber in allYears)
+            while (yearNumber < maxYear)
             {
                 try
                 {
@@ -53,6 +49,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 percent *= 100;
 
                 progress.Report(percent);
+                yearNumber++;
             }
         }
     }

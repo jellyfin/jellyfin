@@ -1,21 +1,21 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['components/categorysyncbuttons', 'scripts/livetvcomponents', 'emby-button', 'listViewStyle', 'emby-itemscontainer'], function (categorysyncbuttons) {
 
     function getRecordingGroupHtml(group) {
 
         var html = '';
 
-        html += '<paper-icon-item>';
+        html += '<div class="listItem">';
 
-        html += '<paper-fab mini class="blue" icon="live-tv" item-icon></paper-fab>';
+        html += '<button type="button" is="emby-button" class="fab mini autoSize blue" item-icon><i class="md-icon">live_tv</i></button>';
 
-        html += '<paper-item-body two-line>';
+        html += '<div class="listItemBody two-line">';
         html += '<a href="livetvrecordinglist.html?groupid=' + group.Id + '" class="clearLink">';
 
         html += '<div>';
         html += group.Name;
         html += '</div>';
 
-        html += '<div secondary>';
+        html += '<div class="secondary">';
         if (group.RecordingCount == 1) {
             html += Globalize.translate('ValueItemCount', group.RecordingCount);
         } else {
@@ -24,18 +24,18 @@
         html += '</div>';
 
         html += '</a>';
-        html += '</paper-item-body>';
-        html += '</paper-icon-item>';
+        html += '</div>';
+        html += '</div>';
 
         return html;
     }
 
-    function renderRecordingGroups(page, groups) {
+    function renderRecordingGroups(context, groups) {
 
         if (groups.length) {
-            $('#recordingGroups', page).show();
+            context.querySelector('#recordingGroups').classList.remove('hide');
         } else {
-            $('#recordingGroups', page).hide();
+            context.querySelector('#recordingGroups').classList.add('hide');
         }
 
         var html = '';
@@ -49,9 +49,13 @@
 
         html += '</div>';
 
-        page.querySelector('#recordingGroupItems').innerHTML = html;
+        context.querySelector('#recordingGroupItems').innerHTML = html;
 
         Dashboard.hideLoadingMsg();
+    }
+
+    function enableScrollX() {
+        return browserInfo.mobile && AppInfo.enableAppLayouts;
     }
 
     function renderRecordings(elem, recordings) {
@@ -63,48 +67,108 @@
         }
 
         var recordingItems = elem.querySelector('.recordingItems');
+
+        if (enableScrollX()) {
+            recordingItems.classList.add('hiddenScrollX');
+        } else {
+            recordingItems.classList.remove('hiddenScrollX');
+        }
+
         recordingItems.innerHTML = LibraryBrowser.getPosterViewHtml({
             items: recordings,
-            shape: "auto",
+            shape: (enableScrollX() ? 'autooverflow' : 'auto'),
             showTitle: true,
             showParentTitle: true,
-            centerText: true,
             coverImage: true,
             lazy: true,
-            overlayPlayButton: true
-
+            cardLayout: true
         });
 
         ImageLoader.lazyChildren(recordingItems);
     }
 
-    function reload(page) {
+    function renderActiveRecordings(context) {
+
+        ApiClient.getLiveTvTimers({
+
+            IsActive: true
+
+        }).then(function (result) {
+
+            // The IsActive param is new, so handle older servers that don't support it
+            if (result.Items.length && result.Items[0].Status != 'InProgress') {
+                result.Items = [];
+            }
+
+            renderTimers(context.querySelector('#activeRecordings'), result.Items, {
+                indexByDate: false
+            });
+        });
+
+        //ApiClient.getLiveTvRecordings({
+
+        //    userId: Dashboard.getCurrentUserId(),
+        //    IsInProgress: true,
+        //    Fields: 'CanDelete'
+
+        //}).then(function (result) {
+
+        //    renderRecordings(context.querySelector('#activeRecordings'), result.Items);
+
+        //});
+    }
+
+    function renderLatestRecordings(context) {
+
+        ApiClient.getLiveTvRecordings({
+
+            userId: Dashboard.getCurrentUserId(),
+            limit: enableScrollX() ? 12 : 4,
+            IsInProgress: false,
+            Fields: 'CanDelete,PrimaryImageAspectRatio',
+            EnableTotalRecordCount: false
+
+        }).then(function (result) {
+
+            renderRecordings(context.querySelector('#latestRecordings'), result.Items);
+        });
+    }
+
+    function renderTimers(context, timers, options) {
+
+        LiveTvHelpers.getTimersHtml(timers, options).then(function (html) {
+
+            var elem = context;
+
+            if (html) {
+                elem.classList.remove('hide');
+            } else {
+                elem.classList.add('hide');
+            }
+
+            elem.querySelector('.recordingItems').innerHTML = html;
+
+            ImageLoader.lazyChildren(elem);
+        });
+    }
+
+    function renderUpcomingRecordings(context) {
+
+        ApiClient.getLiveTvTimers({
+            IsActive: false
+        }).then(function (result) {
+
+            renderTimers(context.querySelector('#upcomingRecordings'), result.Items);
+        });
+    }
+
+    function reload(context) {
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getLiveTvRecordings({
-
-            userId: Dashboard.getCurrentUserId(),
-            IsInProgress: true,
-            Fields: 'CanDelete'
-
-        }).then(function (result) {
-
-            renderRecordings(page.querySelector('#activeRecordings'), result.Items);
-
-        });
-
-        ApiClient.getLiveTvRecordings({
-
-            userId: Dashboard.getCurrentUserId(),
-            limit: 12,
-            IsInProgress: false,
-            Fields: 'CanDelete,PrimaryImageAspectRatio'
-
-        }).then(function (result) {
-
-            renderRecordings(page.querySelector('#latestRecordings'), result.Items);
-        });
+        renderUpcomingRecordings(context);
+        renderActiveRecordings(context);
+        renderLatestRecordings(context);
 
         ApiClient.getLiveTvRecordingGroups({
 
@@ -112,17 +176,25 @@
 
         }).then(function (result) {
 
-            require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
-                renderRecordingGroups(page, result.Items);
-            });
+            renderRecordingGroups(context, result.Items);
         });
     }
 
-    window.LiveTvPage.renderRecordingsTab = function (page, tabContent) {
+    return function (view, params, tabContent) {
 
-        if (LibraryBrowser.needsRefresh(tabContent)) {
+        var self = this;
+
+        categorysyncbuttons.init(tabContent);
+        tabContent.querySelector('#activeRecordings .recordingItems').addEventListener('timercancelled', function () {
             reload(tabContent);
-        }
+        });
+        tabContent.querySelector('#upcomingRecordings .recordingItems').addEventListener('timercancelled', function () {
+            reload(tabContent);
+        });
+
+        self.renderTab = function () {
+            reload(tabContent);
+        };
     };
 
 });

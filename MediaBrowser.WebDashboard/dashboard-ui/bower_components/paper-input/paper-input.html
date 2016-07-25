@@ -74,6 +74,10 @@ style this element.
         display: block;
       }
 
+      :host([hidden]) {
+        display: none !important;
+      }
+
       input::-webkit-input-placeholder {
         color: var(--paper-input-container-color, --secondary-text-color);
       }
@@ -95,7 +99,7 @@ style this element.
 
       <content select="[prefix]"></content>
 
-      <label hidden$="[[!label]]">[[label]]</label>
+      <label hidden$="[[!label]]" aria-hidden="true" for="input">[[label]]</label>
 
       <input is="iron-input" id="input"
         aria-labelledby$="[[_ariaLabelledBy]]"
@@ -135,7 +139,7 @@ style this element.
       <content select="[suffix]"></content>
 
       <template is="dom-if" if="[[errorMessage]]">
-        <paper-input-error>[[errorMessage]]</paper-input-error>
+        <paper-input-error aria-live="assertive">[[errorMessage]]</paper-input-error>
       </template>
 
       <template is="dom-if" if="[[charCounter]]">

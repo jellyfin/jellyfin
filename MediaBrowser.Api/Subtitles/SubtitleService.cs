@@ -98,6 +98,10 @@ namespace MediaBrowser.Api.Subtitles
 
         [ApiMember(Name = "EndPositionTicks", Description = "EndPositionTicks", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public long? EndPositionTicks { get; set; }
+
+        [ApiMember(Name = "CopyTimestamps", Description = "CopyTimestamps", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool CopyTimestamps { get; set; }
+        public bool AddVttTimeMap { get; set; }
     }
 
     [Route("/Videos/{Id}/{MediaSourceId}/Subtitles/{Index}/subtitles.m3u8", "GET", Summary = "Gets an HLS subtitle playlist.")]
@@ -159,6 +163,7 @@ namespace MediaBrowser.Api.Subtitles
             builder.AppendLine("#EXT-X-TARGETDURATION:" + request.SegmentLength.ToString(CultureInfo.InvariantCulture));
             builder.AppendLine("#EXT-X-VERSION:3");
             builder.AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
+            builder.AppendLine("#EXT-X-PLAYLIST-TYPE:VOD");
 
             long positionTicks = 0;
             var segmentLengthTicks = TimeSpan.FromSeconds(request.SegmentLength).Ticks;
@@ -170,11 +175,11 @@ namespace MediaBrowser.Api.Subtitles
                 var remaining = runtime - positionTicks;
                 var lengthTicks = Math.Min(remaining, segmentLengthTicks);
 
-                builder.AppendLine("#EXTINF:" + TimeSpan.FromTicks(lengthTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture));
+                builder.AppendLine("#EXTINF:" + TimeSpan.FromTicks(lengthTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture) + ",");
 
                 var endPositionTicks = Math.Min(runtime, positionTicks + segmentLengthTicks);
 
-                var url = string.Format("stream.vtt?StartPositionTicks={0}&EndPositionTicks={1}&api_key={2}",
+                var url = string.Format("stream.vtt?CopyTimestamps=true&AddVttTimeMap=true&StartPositionTicks={0}&EndPositionTicks={1}&api_key={2}",
                     positionTicks.ToString(CultureInfo.InvariantCulture),
                     endPositionTicks.ToString(CultureInfo.InvariantCulture),
                     accessToken);
@@ -189,7 +194,7 @@ namespace MediaBrowser.Api.Subtitles
             return ResultFactory.GetResult(builder.ToString(), MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
         }
 
-        public object Get(GetSubtitle request)
+        public async Task<object> Get(GetSubtitle request)
         {
             if (string.Equals(request.Format, "js", StringComparison.OrdinalIgnoreCase))
             {
@@ -205,23 +210,35 @@ namespace MediaBrowser.Api.Subtitles
                 var subtitleStream = mediaSource.MediaStreams
                     .First(i => i.Type == MediaStreamType.Subtitle && i.Index == request.Index);
 
-                return ToStaticFileResult(subtitleStream.Path);
+                return await ResultFactory.GetStaticFileResult(Request, subtitleStream.Path).ConfigureAwait(false);
             }
 
-            var stream = GetSubtitles(request).Result;
+            using (var stream = await GetSubtitles(request).ConfigureAwait(false))
+            {
+                using (var reader = new StreamReader(stream))
+                {
+                    var text = reader.ReadToEnd();
 
-            return ResultFactory.GetResult(stream, MimeTypes.GetMimeType("file." + request.Format));
+                    if (string.Equals(request.Format, "vtt", StringComparison.OrdinalIgnoreCase) && request.AddVttTimeMap)
+                    {
+                        text = text.Replace("WEBVTT", "WEBVTT\nX-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000");
+                    }
+
+                    return ResultFactory.GetResult(text, MimeTypes.GetMimeType("file." + request.Format));
+                }
+            }
         }
 
-        private async Task<Stream> GetSubtitles(GetSubtitle request)
+        private Task<Stream> GetSubtitles(GetSubtitle request)
         {
-            return await _subtitleEncoder.GetSubtitles(request.Id,
+            return _subtitleEncoder.GetSubtitles(request.Id,
                 request.MediaSourceId,
                 request.Index,
                 request.Format,
                 request.StartPositionTicks,
                 request.EndPositionTicks,
-                CancellationToken.None).ConfigureAwait(false);
+                request.CopyTimestamps,
+                CancellationToken.None);
         }
 
         public object Get(SearchRemoteSubtitles request)
@@ -247,9 +264,9 @@ namespace MediaBrowser.Api.Subtitles
             return ToOptimizedResult(result);
         }
 
-        public object Get(GetRemoteSubtitles request)
+        public async Task<object> Get(GetRemoteSubtitles request)
         {
-            var result = _subtitleManager.GetRemoteSubtitles(request.Id, CancellationToken.None).Result;
+            var result = await _subtitleManager.GetRemoteSubtitles(request.Id, CancellationToken.None).ConfigureAwait(false);
 
             return ResultFactory.GetResult(result.Stream, MimeTypes.GetMimeType("file." + result.Format));
         }

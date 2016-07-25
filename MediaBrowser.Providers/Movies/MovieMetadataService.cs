@@ -13,10 +13,6 @@ namespace MediaBrowser.Providers.Movies
 {
     public class MovieMetadataService : MetadataService<Movie, MovieInfo>
     {
-        public MovieMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager, libraryManager)
-        {
-        }
-
         protected override bool IsFullLocalMetadata(Movie item)
         {
             if (string.IsNullOrWhiteSpace(item.Overview))
@@ -42,15 +38,14 @@ namespace MediaBrowser.Providers.Movies
                 targetItem.CollectionName = sourceItem.CollectionName;
             }
         }
+
+        public MovieMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
+        {
+        }
     }
 
     public class TrailerMetadataService : MetadataService<Trailer, TrailerInfo>
     {
-        public TrailerMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager, libraryManager)
-        {
-        }
-
         protected override bool IsFullLocalMetadata(Trailer item)
         {
             if (string.IsNullOrWhiteSpace(item.Overview))
@@ -72,6 +67,10 @@ namespace MediaBrowser.Providers.Movies
             {
                 target.Item.TrailerTypes = source.Item.TrailerTypes;
             }
+        }
+
+        public TrailerMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
+        {
         }
     }
 

@@ -26,9 +26,9 @@
     pageIdOn('pageinit', "channelsPage", function () {
 
         var page = this;
-        var pageTabsContainer = page.querySelector('.pageTabsContainer');
+        var mdlTabs = page.querySelector('.libraryViewNav');
 
-        pageTabsContainer.addEventListener('tabchange', function (e) {
+        mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(page, parseInt(e.detail.selectedTabIndex));
         });
 

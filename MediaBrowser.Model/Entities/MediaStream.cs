@@ -1,6 +1,8 @@
-﻿using MediaBrowser.Model.Dlna;
+﻿using System.Collections.Generic;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Extensions;
 using System.Diagnostics;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Entities
 {
@@ -33,12 +35,95 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The comment.</value>
         public string Comment { get; set; }
-        
+
+        public string TimeBase { get; set; }
+        public string CodecTimeBase { get; set; }
+
+        public string Title { get; set; }
+
+        public string DisplayTitle
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(Title))
+                {
+                    return Title;
+                }
+
+                if (Type == MediaStreamType.Audio)
+                {
+                    List<string> attributes = new List<string>();
+
+                    if (!string.IsNullOrEmpty(Language))
+                    {
+                        attributes.Add(StringHelper.FirstToUpper(Language));
+                    }
+                    if (!string.IsNullOrEmpty(Codec) && !StringHelper.EqualsIgnoreCase(Codec, "dca"))
+                    {
+                        attributes.Add(AudioCodec.GetFriendlyName(Codec));
+                    } 
+                    else if (!string.IsNullOrEmpty(Profile) && !StringHelper.EqualsIgnoreCase(Profile, "lc"))
+                    {
+                        attributes.Add(Profile);
+                    }
+
+                    if (!string.IsNullOrEmpty(ChannelLayout))
+                    {
+                        attributes.Add(ChannelLayout);
+                    }
+                    else if (Channels.HasValue)
+                    {
+                        attributes.Add(StringHelper.ToStringCultureInvariant(Channels.Value) + " ch");
+                    }
+                    if (IsDefault)
+                    {
+                        attributes.Add("Default");
+                    }
+
+                    return string.Join(" ", attributes.ToArray());
+                }
+
+                if (Type == MediaStreamType.Subtitle)
+                {
+                    List<string> attributes = new List<string>();
+
+                    if (!string.IsNullOrEmpty(Language))
+                    {
+                        attributes.Add(StringHelper.FirstToUpper(Language));
+                    }
+                    if (IsDefault)
+                    {
+                        attributes.Add("Default");
+                    }
+
+                    if (IsForced)
+                    {
+                        attributes.Add("Forced");
+                    }
+
+                    string name = string.Join(" ", attributes.ToArray());
+
+                    return name;
+                }
+
+                if (Type == MediaStreamType.Video)
+                {
+
+                }
+
+                return null;
+            }
+        }
+
+        public string NalLengthSize { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is interlaced.
         /// </summary>
         /// <value><c>true</c> if this instance is interlaced; otherwise, <c>false</c>.</value>
         public bool IsInterlaced { get; set; }
+
+        public bool? IsAVC { get; set; }
 
         /// <summary>
         /// Gets or sets the channel layout.
@@ -197,6 +282,36 @@ namespace MediaBrowser.Model.Entities
                    !StringHelper.EqualsIgnoreCase(codec, "sub");
         }
 
+        public bool SupportsSubtitleConversionTo(string codec)
+        {
+            if (!IsTextSubtitleStream)
+            {
+                return false;
+            }
+
+            // Can't convert from this 
+            if (StringHelper.EqualsIgnoreCase(Codec, "ass"))
+            {
+                return false;
+            }
+            if (StringHelper.EqualsIgnoreCase(Codec, "ssa"))
+            {
+                return false;
+            }
+
+            // Can't convert to this 
+            if (StringHelper.EqualsIgnoreCase(codec, "ass"))
+            {
+                return false;
+            }
+            if (StringHelper.EqualsIgnoreCase(codec, "ssa"))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Gets or sets a value indicating whether [supports external stream].
         /// </summary>
@@ -232,11 +347,5 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value><c>true</c> if this instance is anamorphic; otherwise, <c>false</c>.</value>
         public bool? IsAnamorphic { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is cabac.
-        /// </summary>
-        /// <value><c>null</c> if [is cabac] contains no value, <c>true</c> if [is cabac]; otherwise, <c>false</c>.</value>
-        public bool? IsCabac { get; set; }
     }
 }

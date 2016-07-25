@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using System;
+using System.Collections.Generic;
 using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities
@@ -31,17 +32,15 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The game system.</value>
         public string GameSystemName { get; set; }
 
-        /// <summary>
-        /// Gets the user data key.
-        /// </summary>
-        /// <returns>System.String.</returns>
-        protected override string CreateUserDataKey()
+        public override List<string> GetUserDataKeys()
         {
+            var list = base.GetUserDataKeys();
+
             if (!string.IsNullOrEmpty(GameSystemName))
             {
-                return "GameSystem-" + GameSystemName;
+                list.Insert(0, "GameSystem-" + GameSystemName);
             }
-            return base.CreateUserDataKey();
+            return list;
         }
 
         protected override bool GetBlockUnratedValue(UserPolicy config)

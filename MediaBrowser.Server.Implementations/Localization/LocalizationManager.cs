@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using CommonIO;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Server.Implementations.Localization
 {
@@ -35,6 +36,7 @@ namespace MediaBrowser.Server.Implementations.Localization
 
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalizationManager" /> class.
@@ -42,11 +44,12 @@ namespace MediaBrowser.Server.Implementations.Localization
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
-        public LocalizationManager(IServerConfigurationManager configurationManager, IFileSystem fileSystem, IJsonSerializer jsonSerializer)
+        public LocalizationManager(IServerConfigurationManager configurationManager, IFileSystem fileSystem, IJsonSerializer jsonSerializer, ILogger logger)
         {
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
             _jsonSerializer = jsonSerializer;
+            _logger = logger;
 
             ExtractAll();
         }
@@ -75,7 +78,10 @@ namespace MediaBrowser.Server.Implementations.Localization
                 {
                     using (var stream = type.Assembly.GetManifestResourceStream(resource))
                     {
-                        using (var fs = _fileSystem.GetFileStream(Path.Combine(localizationPath, filename), FileMode.Create, FileAccess.Write, FileShare.Read))
+                        var target = Path.Combine(localizationPath, filename);
+                        _logger.Info("Extracting ratings to {0}", target);
+
+                        using (var fs = _fileSystem.GetFileStream(target, FileMode.Create, FileAccess.Write, FileShare.Read))
                         {
                             stream.CopyTo(fs);
                         }

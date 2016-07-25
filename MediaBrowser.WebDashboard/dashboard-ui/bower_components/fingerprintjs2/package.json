@@ -1,0 +1,33 @@
+{
+  "name": "fingerprintjs2",
+  "version": "1.4.1",
+  "description": "Modern & flexible browser fingerprinting library",
+  "main": "dist/fingerprint2.min.js",
+  "devDependencies": {
+    "gulp": "^3.8.11",
+    "eslint": "^0.14.1",
+    "gulp-eslint": "^0.4.2",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^1.1.0"
+  },
+  "scripts": {
+    "test": "specs/phantomjs.runner.sh specs/spec_runner.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Valve/fingerprintjs2.git"
+  },
+  "keywords": [
+    "browser",
+    "identification",
+    "fingerprint",
+    "fingerprinting",
+    "privacy"
+  ],
+  "author": "Valentin Vasilyev",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Valve/fingerprintjs2/issues"
+  },
+  "homepage": "https://github.com/Valve/fingerprintjs2"
+}

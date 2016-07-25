@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'jQuery'], function (libraryBrowser, $) {
+﻿define(['libraryBrowser'], function (libraryBrowser) {
 
     var defaultFirstSection = 'smalllibrarytiles';
 
@@ -68,10 +68,10 @@
             return Sections.loadLibraryTiles(elem, user, 'backdrop', index, false, showLibraryTileNames);
         }
         else if (section == 'smalllibrarytiles') {
-            return Sections.loadLibraryTiles(elem, user, 'homePageSmallBackdrop', index, false, showLibraryTileNames);
+            return Sections.loadLibraryTiles(elem, user, 'smallBackdrop', index, false, showLibraryTileNames);
         }
         else if (section == 'smalllibrarytiles-automobile') {
-            return Sections.loadLibraryTiles(elem, user, 'homePageSmallBackdrop', index, true, showLibraryTileNames);
+            return Sections.loadLibraryTiles(elem, user, 'smallBackdrop', index, true, showLibraryTileNames);
         }
         else if (section == 'librarytiles-automobile') {
             return Sections.loadLibraryTiles(elem, user, 'backdrop', index, true, showLibraryTileNames);
@@ -152,22 +152,23 @@
     function showWelcomeIfNeeded(page, displayPreferences) {
 
         if (displayPreferences.CustomPrefs[homePageTourKey] == homePageDismissValue) {
-            $('.welcomeMessage', page).hide();
+            page.querySelector('.welcomeMessage').classList.add('hide');
         } else {
 
             Dashboard.hideLoadingMsg();
 
-            var elem = $('.welcomeMessage', page).show();
+            var elem = page.querySelector('.welcomeMessage');
+            elem.classList.remove('hide');
 
             if (displayPreferences.CustomPrefs[homePageTourKey]) {
 
-                $('.tourHeader', elem).html(Globalize.translate('HeaderWelcomeBack'));
-                $('.tourButtonText', elem).html(Globalize.translate('ButtonTakeTheTourToSeeWhatsNew'));
+                elem.querySelector('.tourHeader').innerHTML = Globalize.translate('HeaderWelcomeBack');
+                elem.querySelector('.tourButtonText').innerHTML = Globalize.translate('ButtonTakeTheTourToSeeWhatsNew');
 
             } else {
 
-                $('.tourHeader', elem).html(Globalize.translate('HeaderWelcomeToProjectWebClient'));
-                $('.tourButtonText', elem).html(Globalize.translate('ButtonTakeTheTour'));
+                elem.querySelector('.tourHeader').innerHTML = Globalize.translate('HeaderWelcomeToProjectWebClient');
+                elem.querySelector('.tourButtonText').innerHTML = Globalize.translate('ButtonTakeTheTour');
             }
         }
     }
@@ -205,84 +206,31 @@
                 newSlideShow.show();
 
                 dismissWelcome(page, userId);
-                $('.welcomeMessage', page).hide();
+                page.querySelector('.welcomeMessage').classList.add('hide');
             });
         });
     }
 
     function loadHomeTab(page, tabContent) {
 
-        if (libraryBrowser.needsRefresh(tabContent)) {
-            if (window.ApiClient) {
-                var userId = Dashboard.getCurrentUserId();
-                Dashboard.showLoadingMsg();
+        if (window.ApiClient) {
+            var userId = Dashboard.getCurrentUserId();
+            Dashboard.showLoadingMsg();
 
-                getDisplayPreferences('home', userId).then(function (result) {
+            getDisplayPreferences('home', userId).then(function (result) {
 
-                    Dashboard.getCurrentUser().then(function (user) {
+                Dashboard.getCurrentUser().then(function (user) {
 
-                        loadSections(tabContent, user, result).then(function () {
+                    loadSections(tabContent, user, result).then(function () {
 
-                            if (!AppInfo.isNativeApp) {
-                                showWelcomeIfNeeded(page, result);
-                            }
-                            Dashboard.hideLoadingMsg();
-
-                            libraryBrowser.setLastRefreshed(tabContent);
-                        });
-
+                        if (!AppInfo.isNativeApp) {
+                            showWelcomeIfNeeded(page, result);
+                        }
+                        Dashboard.hideLoadingMsg();
                     });
+
                 });
-            }
-        }
-    }
-
-    function loadTab(page, index) {
-
-        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
-        var depends = [];
-        var scope = 'HomePage';
-        var method = '';
-
-        switch (index) {
-
-            case 0:
-                depends.push('scripts/sections');
-                method = 'renderHomeTab';
-                break;
-            case 1:
-                depends.push('scripts/homenextup');
-                method = 'renderNextUp';
-                break;
-            case 2:
-                depends.push('scripts/favorites');
-                method = 'renderFavorites';
-                break;
-            case 3:
-                depends.push('scripts/homeupcoming');
-                method = 'renderUpcoming';
-                break;
-            default:
-                return;
-                break;
-        }
-
-        require(depends, function () {
-            window[scope][method](page, tabContent);
-        });
-    }
-
-    function onPlaybackStop(e, state) {
-
-        if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
-            var page = $.mobile.activePage;
-            var pageTabsContainer = page.querySelector('.pageTabsContainer');
-
-            pageTabsContainer.dispatchEvent(new CustomEvent("tabchange", {
-                detail: {
-                    selectedTabIndex: libraryBrowser.selectedTab(pageTabsContainer)
-                }
-            }));
+            });
         }
     }
 
@@ -291,19 +239,91 @@
         return ApiClient.getDisplayPreferences(key, userId, displayPreferencesKey());
     }
 
-    window.HomePage = {
-        renderHomeTab: loadHomeTab
-    };
-
     return function (view, params) {
 
         var self = this;
 
-        var pageTabsContainer = view.querySelector('.pageTabsContainer');
+        self.renderTab = function () {
+            var tabContent = view.querySelector('.pageTabContent[data-index=\'' + 0 + '\']');
+            loadHomeTab(view, tabContent);
+        };
 
-        libraryBrowser.configurePaperLibraryTabs(view, view.querySelector('paper-tabs'), pageTabsContainer, 'home.html');
+        var mdlTabs = view.querySelector('.libraryViewNav');
 
-        pageTabsContainer.addEventListener('tabchange', function (e) {
+        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'), [0, 1, 2, 3]);
+
+        var tabControllers = [];
+        var renderedTabs = [];
+
+        function getTabController(page, index, callback) {
+
+            var depends = [];
+
+            switch (index) {
+
+                case 0:
+                    depends.push('scripts/sections');
+                    break;
+                case 1:
+                    depends.push('scripts/homenextup');
+                    break;
+                case 2:
+                    depends.push('scripts/homefavorites');
+                    break;
+                case 3:
+                    depends.push('scripts/homeupcoming');
+                    break;
+                default:
+                    return;
+            }
+
+            require(depends, function (controllerFactory) {
+                var tabContent;
+                if (index == 0) {
+                    tabContent = view.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+                    self.tabContent = tabContent;
+                }
+                var controller = tabControllers[index];
+                if (!controller) {
+                    tabContent = view.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+                    controller = index ? new controllerFactory(view, params, tabContent) : self;
+                    tabControllers[index] = controller;
+
+                    if (controller.initTab) {
+                        controller.initTab();
+                    }
+                }
+
+                callback(controller);
+            });
+        }
+
+        function preLoadTab(page, index) {
+
+            getTabController(page, index, function (controller) {
+                if (renderedTabs.indexOf(index) == -1) {
+                    if (controller.preRender) {
+                        controller.preRender();
+                    }
+                }
+            });
+        }
+
+        function loadTab(page, index) {
+
+            getTabController(page, index, function (controller) {
+                if (renderedTabs.indexOf(index) == -1) {
+                    renderedTabs.push(index);
+                    controller.renderTab();
+                }
+            });
+        }
+
+        mdlTabs.addEventListener('beforetabchange', function (e) {
+            preLoadTab(view, parseInt(e.detail.selectedTabIndex));
+        });
+
+        mdlTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));
         });
 
@@ -319,12 +339,40 @@
             view.querySelector('.libraryViewNav').classList.add('hide');
         }
 
+        function onPlaybackStop(e, state) {
+
+            if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
+
+                mdlTabs.dispatchEvent(new CustomEvent("tabchange", {
+                    detail: {
+                        selectedTabIndex: libraryBrowser.selectedTab(mdlTabs)
+                    }
+                }));
+            }
+        }
+
+        function onWebSocketMessage(e, data) {
+
+            var msg = data;
+
+            if (msg.MessageType === "UserDataChanged") {
+
+                if (msg.Data.UserId == Dashboard.getCurrentUserId()) {
+
+                    renderedTabs = [];
+                }
+            }
+
+        }
+
         view.addEventListener('viewshow', function (e) {
             Events.on(MediaController, 'playbackstop', onPlaybackStop);
+            Events.on(ApiClient, "websocketmessage", onWebSocketMessage);
         });
 
         view.addEventListener('viewbeforehide', function (e) {
             Events.off(MediaController, 'playbackstop', onPlaybackStop);
+            Events.off(ApiClient, "websocketmessage", onWebSocketMessage);
         });
     };
 });

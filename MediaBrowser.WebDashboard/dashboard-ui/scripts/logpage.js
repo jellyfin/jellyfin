@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function ($) {
+﻿define(['datetime', 'listViewStyle'], function (datetime) {
 
     return function (view, params) {
 
@@ -33,29 +33,29 @@
                     logUrl += "&api_key=" + apiClient.accessToken();
 
                     var logHtml = '';
-                    logHtml += '<paper-icon-item>';
+                    logHtml += '<div class="listItem">';
 
-                    logHtml += '<a item-icon class="clearLink" href="' + logUrl + '" target="_blank">';
-                    logHtml += '<paper-fab mini icon="schedule" class="blue" item-icon></paper-fab>';
+                    logHtml += '<a item-icon class="clearLink" href="' + logUrl + '" target="_blank" style="margin-left:1em;">';
+                    logHtml += '<i class="md-icon listItemIcon">schedule</i>';
                     logHtml += "</a>";
 
-                    logHtml += '<paper-item-body two-line>';
+                    logHtml += '<div class="listItemBody">';
                     logHtml += '<a class="clearLink" href="' + logUrl + '" target="_blank">';
 
                     logHtml += "<div>" + log.Name + "</div>";
 
-                    var date = parseISO8601Date(log.DateModified, { toLocal: true });
+                    var date = datetime.parseISO8601Date(log.DateModified, true);
 
                     var text = date.toLocaleDateString();
 
-                    text += ' ' + LibraryBrowser.getDisplayTime(date);
+                    text += ' ' + datetime.getDisplayTime(date);
 
-                    logHtml += '<div secondary>' + text + '</div>';
+                    logHtml += '<div class="secondary">' + text + '</div>';
 
                     logHtml += "</a>";
-                    logHtml += '</paper-item-body>';
+                    logHtml += '</div>';
 
-                    logHtml += '</paper-icon-item>';
+                    logHtml += '</div>';
 
                     return logHtml;
 
@@ -64,7 +64,7 @@
 
                 html += '</div>';
 
-                $('.serverLogs', view).html(html);
+                view.querySelector('.serverLogs').innerHTML = html;
                 Dashboard.hideLoadingMsg();
             });
 

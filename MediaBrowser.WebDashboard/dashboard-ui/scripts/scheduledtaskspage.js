@@ -69,15 +69,15 @@
 
             if (task.State == "Idle") {
 
-                html += '<paper-icon-button id="btnTask' + task.Id + '" icon="play-arrow" class="btnStartTask" data-taskid="' + task.Id + '" title="' + Globalize.translate('ButtonStart') + '"></paper-icon-button>';
+                html += '<button type="button" is="paper-icon-button-light" id="btnTask' + task.Id + '" class="btnStartTask" data-taskid="' + task.Id + '" title="' + Globalize.translate('ButtonStart') + '"><iron-icon icon="play-arrow"></iron-icon></button>';
             }
             else if (task.State == "Running") {
 
-                html += '<paper-icon-button id="btnTask' + task.Id + '" icon="stop" class="btnStopTask" data-taskid="' + task.Id + '" title="' + Globalize.translate('ButtonStop') + '"></paper-icon-button>';
+                html += '<button type="button" is="paper-icon-button-light" id="btnTask' + task.Id + '" class="btnStopTask" data-taskid="' + task.Id + '" title="' + Globalize.translate('ButtonStop') + '"><iron-icon icon="stop"></iron-icon></button>';
 
             } else {
 
-                html += '<paper-icon-button id="btnTask' + task.Id + '" icon="play-arrow" class="btnStartTask hide" data-taskid="' + task.Id + '" title="' + Globalize.translate('ButtonStart') + '"></paper-icon-button>';
+                html += '<button type="button" is="paper-icon-button-light" id="btnTask' + task.Id + '" class="btnStartTask hide" data-taskid="' + task.Id + '" title="' + Globalize.translate('ButtonStart') + '"><iron-icon icon="play-arrow"></iron-icon></button>';
             }
 
             html += '</paper-icon-item>';
@@ -127,10 +127,10 @@
                     .replace("{1}", humane_elapsed(task.LastExecutionResult.StartTimeUtc, task.LastExecutionResult.EndTimeUtc));
 
                 if (task.LastExecutionResult.Status == "Failed") {
-                    html += " <span style='color:#FF0000;'>" + Globalize.translate('LabelFailed') + "</span>";
+                    html += " <span style='color:#FF0000;'>(" + Globalize.translate('LabelFailed') + ")</span>";
                 }
                 else if (task.LastExecutionResult.Status == "Cancelled") {
-                    html += " <span style='color:#0026FF;'>" + Globalize.translate('LabelCancelled') + "</span>";
+                    html += " <span style='color:#0026FF;'>(" + Globalize.translate('LabelCancelled') + ")</span>";
                 }
                 else if (task.LastExecutionResult.Status == "Aborted") {
                     html += " <span style='color:#FF0000;'>" + Globalize.translate('LabelAbortedByServerShutdown') + "</span>";
@@ -186,7 +186,7 @@
             elem.classList.add('btnStartTask');
             elem.classList.remove('btnStopTask');
             elem.classList.remove('hide');
-            elem.icon = 'play-arrow';
+            elem.querySelector('iron-icon').icon = 'play-arrow';
             elem.title = Globalize.translate('ButtonStart');
         }
         else if (state == "Running") {
@@ -194,7 +194,7 @@
             elem.classList.remove('btnStartTask');
             elem.classList.add('btnStopTask');
             elem.classList.remove('hide');
-            elem.icon = 'stop';
+            elem.querySelector('iron-icon').icon = 'stop';
             elem.title = Globalize.translate('ButtonStop');
 
         } else {
@@ -202,7 +202,7 @@
             elem.classList.add('btnStartTask');
             elem.classList.remove('btnStopTask');
             elem.classList.add('hide');
-            elem.icon = 'play-arrow';
+            elem.querySelector('iron-icon').icon = 'play-arrow';
             elem.title = Globalize.translate('ButtonStart');
         }
 

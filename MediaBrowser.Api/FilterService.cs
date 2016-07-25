@@ -80,7 +80,7 @@ namespace MediaBrowser.Api
                 .OrderBy(i => i)
                 .ToArray();
 
-            result.Tags = items.OfType<IHasTags>()
+            result.Tags = items
                 .SelectMany(i => i.Tags)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderBy(i => i)
@@ -103,7 +103,8 @@ namespace MediaBrowser.Api
                 User = user,
                 MediaTypes = request.GetMediaTypes(),
                 IncludeItemTypes = request.GetIncludeItemTypes(),
-                Recursive = true
+                Recursive = true,
+                EnableTotalRecordCount = false
             };
 
             return query;
