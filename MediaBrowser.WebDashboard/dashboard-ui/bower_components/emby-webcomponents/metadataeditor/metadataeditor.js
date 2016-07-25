@@ -1,4 +1,4 @@
-﻿define(['itemHelper', 'dialogHelper', 'datetime', 'loading', 'focusManager', 'connectionManager', 'globalize', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light'], function (itemHelper, dialogHelper, datetime, loading, focusManager, connectionManager, globalize) {
+﻿define(['itemHelper', 'layoutManager', 'scrollHelper', 'dialogHelper', 'datetime', 'loading', 'focusManager', 'connectionManager', 'globalize', 'require', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light', 'css!./../formdialog'], function (itemHelper, layoutManager, scrollHelper, dialogHelper, datetime, loading, focusManager, connectionManager, globalize, require) {
 
     var currentContext;
     var metadataEditorInfo;
@@ -258,9 +258,9 @@
 
     function editPerson(context, person, index) {
 
-        require(['components/metadataeditor/personeditor'], function (personeditor) {
+        require(['personEditor'], function (personEditor) {
 
-            personeditor.show(person).then(function (updatedPerson) {
+            personEditor.show(person).then(function (updatedPerson) {
 
                 var isNew = index == -1;
 
@@ -1169,16 +1169,19 @@
 
                 loading.show();
 
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', 'components/metadataeditor/metadataeditor.template.html', true);
+                require(['text!./metadataeditor.template.html'], function (template) {
 
-                xhr.onload = function (e) {
+                    var dialogOptions = {
+                        removeOnClose: true
+                    };
 
-                    var template = this.response;
-                    var dlg = dialogHelper.createDialog({
-                        removeOnClose: true,
-                        size: 'medium'
-                    });
+                    if (layoutManager.tv) {
+                        dialogOptions.size = 'fullscreen';
+                    } else {
+                        dialogOptions.size = 'medium';
+                    }
+
+                    var dlg = dialogHelper.createDialog(dialogOptions);
 
                     dlg.classList.add('ui-body-b');
                     dlg.classList.add('background-theme-b');
@@ -1192,6 +1195,10 @@
                     dlg.innerHTML = html;
                     document.body.appendChild(dlg);
 
+                    if (layoutManager.tv) {
+                        scrollHelper.centerFocus.on(dlg.querySelector('.dialogContent'), false);
+                    }
+
                     dialogHelper.open(dlg);
 
                     dlg.addEventListener('close', function () {
@@ -1204,9 +1211,7 @@
                     init(dlg, connectionManager.getApiClient(serverId));
 
                     reload(dlg, itemId, serverId);
-                }
-
-                xhr.send();
+                });
             });
         },
 
@@ -1215,12 +1220,7 @@
 
                 loading.show();
 
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', 'components/metadataeditor/metadataeditor.template.html', true);
-
-                xhr.onload = function (e) {
-
-                    var template = this.response;
+                require(['text!./metadataeditor.template.html'], function (template) {
 
                     elem.innerHTML = globalize.translateDocument(template);
 
@@ -1232,9 +1232,7 @@
                     reload(elem, itemId, serverId);
 
                     focusManager.autoFocus(elem);
-                }
-
-                xhr.send();
+                });
             });
         }
     };

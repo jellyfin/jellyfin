@@ -545,8 +545,7 @@
 
             if (page.classList.contains('standalonePage')) {
 
-                headerHtml += '<img class="imgLogoIcon" src="css/images/mblogoicon.png" />';
-                headerHtml += '<span class="logoLibraryMenuButtonText">EMBY</span>';
+                headerHtml += '<img class="imgLogoIcon" src="css/images/logo.png" />';
             }
 
             headerHtml += '</a>';
@@ -958,7 +957,7 @@
 
                     quality -= 5;
                 } else {
-                    quality -= 15;
+                    quality -= 20;
                 }
             }
             options.quality = quality;
@@ -1488,7 +1487,6 @@ var AppInfo = {};
             velocity: bowerPath + "/velocity/velocity.min",
             ironCardList: 'components/ironcardlist/ironcardlist',
             scrollThreshold: 'components/scrollthreshold',
-            directorybrowser: 'components/directorybrowser/directorybrowser',
             playlisteditor: 'components/playlisteditor/playlisteditor',
             medialibrarycreator: 'components/medialibrarycreator/medialibrarycreator',
             medialibraryeditor: 'components/medialibraryeditor/medialibraryeditor',
@@ -1547,6 +1545,10 @@ var AppInfo = {};
         }
 
         define("libjass", [bowerPath + "/libjass/libjass.min", "css!" + bowerPath + "/libjass/libjass"], returnFirstDependency);
+
+        define("directorybrowser", ["components/directorybrowser/directorybrowser"], returnFirstDependency);
+        define("metadataEditor", [embyWebComponentsBowerPath + "/metadataeditor/metadataeditor"], returnFirstDependency);
+        define("personEditor", [embyWebComponentsBowerPath + "/metadataeditor/personeditor"], returnFirstDependency);
 
         define("emby-collapse", [embyWebComponentsBowerPath + "/emby-collapse/emby-collapse"], returnFirstDependency);
         define("emby-button", [embyWebComponentsBowerPath + "/emby-button/emby-button"], returnFirstDependency);
@@ -1856,6 +1858,14 @@ var AppInfo = {};
 
             embyRouter.showGuide = function () {
                 Dashboard.navigate('livetv.html?tab=1');
+            };
+
+            embyRouter.goHome = function () {
+                Dashboard.navigate('home.html');
+            };
+
+            embyRouter.showSearch = function () {
+                Dashboard.navigate('search.html');
             };
 
             embyRouter.showLiveTV = function () {

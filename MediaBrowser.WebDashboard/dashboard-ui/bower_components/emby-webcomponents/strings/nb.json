@@ -1,6 +1,4 @@
 {
-    "HeaderConfirmRecordingCancellation": "Confirm Recording Cancellation",
-    "MessageConfirmRecordingCancellation": "Are you sure you wish to cancel this recording?",
     "ValueSpecialEpisodeName": "Spesial - {0}",
     "Share": "Del",
     "ServerUpdateNeeded": "Denne Emby serveren trenger en oppdatering. For \u00e5 laste ned nyeste versjon, vennligst bes\u00f8k: {0}",
@@ -60,6 +58,7 @@
     "Refresh": "Oppdater",
     "RefreshQueued": "Oppdatering k\u00f8",
     "AddToCollection": "Legg til i Samling",
+    "HeaderAddToCollection": "Add to Collection",
     "NewCollection": "Ny Samling",
     "LabelCollection": "Samling:",
     "Help": "Hjelp",
@@ -71,6 +70,7 @@
     "OptionNew": "Ny",
     "LabelPlaylist": "Spilleliste:",
     "AddToPlaylist": "Legg til i Spilleliste",
+    "HeaderAddToPlaylist": "Add to Playlist",
     "Subtitles": "Undertekster",
     "SearchForSubtitles": "S\u00f8k etter undertekster",
     "LabelLanguage": "Spr\u00e5k:",
@@ -116,6 +116,7 @@
     "PlayFromBeginning": "Start fra starten",
     "ResumeAt": "Forsett fra {0}",
     "RemoveFromPlaylist": "Fjern fra spilleliste",
+    "RemoveFromCollection": "Remove from collection",
     "Trailer": "Trailer",
     "MarkPlayed": "Merker som sett",
     "MarkUnplayed": "Merker som usett",
@@ -124,5 +125,7 @@
     "TheSelectedItemsWillBeGrouped": "De valgte videoene blir gruppert i en virtuell element. Emby app vil automatisk velge hvilken versjon du vil spille basert p\u00e5 enheten og nettverksytelse . Er du sikker p\u00e5 at du vil fortsette?",
     "TryMultiSelect": "Pr\u00f8v flervalg.",
     "TryMultiSelectMessage": "Hvis du vil redigere flere medier elementer, klikker du bare og hold en plakat og velg elementene du \u00f8nsker \u00e5 administrere. Pr\u00f8v det!",
+    "HeaderConfirmRecordingCancellation": "Confirm Recording Cancellation",
+    "MessageConfirmRecordingCancellation": "Are you sure you wish to cancel this recording?",
     "Error": "Feil"
 }

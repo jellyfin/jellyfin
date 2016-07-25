@@ -1,6 +1,4 @@
 {
-    "HeaderConfirmRecordingCancellation": "Confirm Recording Cancellation",
-    "MessageConfirmRecordingCancellation": "Are you sure you wish to cancel this recording?",
     "ValueSpecialEpisodeName": "Speciaal - {0}",
     "Share": "Delen",
     "ServerUpdateNeeded": "Deze Emby Server moet worden bijgewerkt. Om de laatste versie te downloaden, gaat u naar {0}",
@@ -60,6 +58,7 @@
     "Refresh": "Vernieuwen",
     "RefreshQueued": "Vernieuwen wachtrij",
     "AddToCollection": "Toevoegen aan Collectie",
+    "HeaderAddToCollection": "Add to Collection",
     "NewCollection": "Nieuwe Collectie",
     "LabelCollection": "Collectie",
     "Help": "Hulp",
@@ -71,6 +70,7 @@
     "OptionNew": "Nieuw ...",
     "LabelPlaylist": "Afspeellijst:",
     "AddToPlaylist": "Toevoegen aan afspeellijst",
+    "HeaderAddToPlaylist": "Add to Playlist",
     "Subtitles": "Ondertiteling",
     "SearchForSubtitles": "Zoeken naar ondertitels",
     "LabelLanguage": "Taal:",
@@ -116,6 +116,7 @@
     "PlayFromBeginning": "Afspelen vanaf begin",
     "ResumeAt": "Hervatten vanaf {0}",
     "RemoveFromPlaylist": "Verwijderen uit afspeellijst",
+    "RemoveFromCollection": "Remove from collection",
     "Trailer": "Trailer",
     "MarkPlayed": "Markeren als Afgespeeld",
     "MarkUnplayed": "Markeren als Niet Afgespeeld",
@@ -124,5 +125,7 @@
     "TheSelectedItemsWillBeGrouped": "De geselecteerde videos worden in 1 item gegroepeerd. Emby apps zullen automatisch de juiste versie selecteren op basis van het apparaat en netwerk prestaties. Weet u zeker dat u door wilt gaan?",
     "TryMultiSelect": "Try Multi-Select",
     "TryMultiSelectMessage": "To edit multiple media items, just click and hold any poster and select the items you want to manage. Try it!",
+    "HeaderConfirmRecordingCancellation": "Confirm Recording Cancellation",
+    "MessageConfirmRecordingCancellation": "Are you sure you wish to cancel this recording?",
     "Error": "Fout"
 }
