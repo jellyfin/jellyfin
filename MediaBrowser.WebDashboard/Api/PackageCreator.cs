@@ -440,15 +440,7 @@ namespace MediaBrowser.WebDashboard.Api
                 files.Insert(0, "cordova.js");
             }
 
-            var tags = files.Select(s =>
-            {
-                if (s.IndexOf("require", StringComparison.OrdinalIgnoreCase) == -1 && s.IndexOf("alameda", StringComparison.OrdinalIgnoreCase) == -1)
-                {
-                    return string.Format("<script src=\"{0}\" async></script>", s);
-                }
-                return string.Format("<script src=\"{0}\"></script>", s);
-
-            }).ToArray();
+            var tags = files.Select(s => string.Format("<script src=\"{0}\" defer></script>", s)).ToArray();
 
             builder.Append(string.Join(string.Empty, tags));
 

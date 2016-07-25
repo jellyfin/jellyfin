@@ -199,7 +199,6 @@ namespace MediaBrowser.Providers.Movies
 
                 var ourRelease = releases.FirstOrDefault(c => c.iso_3166_1.Equals(preferredCountryCode, StringComparison.OrdinalIgnoreCase));
                 var usRelease = releases.FirstOrDefault(c => c.iso_3166_1.Equals("US", StringComparison.OrdinalIgnoreCase));
-                var minimunRelease = releases.OrderBy(c => c.release_date).FirstOrDefault();
 
                 if (ourRelease != null)
                 {
@@ -209,10 +208,6 @@ namespace MediaBrowser.Providers.Movies
                 else if (usRelease != null)
                 {
                     movie.OfficialRating = usRelease.certification;
-                }
-                else if (minimunRelease != null)
-                {
-                    movie.OfficialRating = minimunRelease.iso_3166_1 + "-" + minimunRelease.certification;
                 }
             }
 
