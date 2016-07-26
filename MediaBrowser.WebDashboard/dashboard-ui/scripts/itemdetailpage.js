@@ -394,7 +394,7 @@
 
         var chapters = item.Chapters || [];
 
-        if (!chapters.length || !AppInfo.enableDetailPageChapters) {
+        if (!chapters.length) {
             page.querySelector('#scenesCollapsible').classList.add('hide');
         } else {
             page.querySelector('#scenesCollapsible').classList.remove('hide');

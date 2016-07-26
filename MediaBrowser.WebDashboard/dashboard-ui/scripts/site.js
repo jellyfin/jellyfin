@@ -1196,24 +1196,12 @@ var AppInfo = {};
 
 (function () {
 
-    function isTouchDevice() {
-        return (('ontouchstart' in window)
-             || (navigator.MaxTouchPoints > 0)
-             || (navigator.msMaxTouchPoints > 0));
-    }
-
     function setAppInfo() {
-
-        if (isTouchDevice()) {
-            AppInfo.isTouchPreferred = true;
-        }
 
         var isCordova = Dashboard.isRunningInCordova();
 
-        AppInfo.enableDetailPageChapters = true;
         AppInfo.enableSearchInTopMenu = true;
         AppInfo.enableHomeFavorites = true;
-        AppInfo.enableNowPlayingBar = true;
         AppInfo.enableHomeTabs = true;
         AppInfo.enableNowPlayingPageBottomTabs = true;
         AppInfo.enableAutoSave = browserInfo.mobile;
@@ -1235,20 +1223,7 @@ var AppInfo = {};
                 AppInfo.enableHomeFavorites = false;
                 AppInfo.enableHomeTabs = false;
                 AppInfo.enableNowPlayingPageBottomTabs = false;
-
-                // Disable the now playing bar for the iphone since we already have the now playing tab at the bottom
-                if (navigator.userAgent.toString().toLowerCase().indexOf('iphone') != -1) {
-                    AppInfo.enableNowPlayingBar = false;
-                }
-
-            } else {
-                AppInfo.enableDetailPageChapters = false;
             }
-        }
-
-        if (!AppInfo.hasLowImageBandwidth) {
-            AppInfo.enableStudioTabs = true;
-            AppInfo.enableTvEpisodesTab = true;
         }
 
         AppInfo.supportsExternalPlayers = true;
@@ -1411,10 +1386,6 @@ var AppInfo = {};
 
         var elem = document.documentElement;
 
-        if (AppInfo.isTouchPreferred) {
-            elem.classList.add('touch');
-        }
-
         if (!AppInfo.enableSupporterMembership) {
             elem.classList.add('supporterMembershipDisabled');
         }
@@ -1457,15 +1428,7 @@ var AppInfo = {};
 
     function getBowerPath() {
 
-        var bowerPath = "bower_components";
-
-        // Put the version into the bower path since we can't easily put a query string param on html imports
-        // Emby server will handle this
-        if (Dashboard.isConnectMode() && !Dashboard.isRunningInCordova()) {
-            //bowerPath += window.dashboardVersion;
-        }
-
-        return bowerPath;
+        return "bower_components";
     }
 
     function getLayoutManager(layoutManager) {
@@ -2920,8 +2883,6 @@ var AppInfo = {};
             deps.push('css!devices/android/android.css');
         } else if (AppInfo.isNativeApp && browserInfo.safari) {
             deps.push('css!devices/ios/ios.css');
-        } else if (AppInfo.isNativeApp && browserInfo.edge) {
-            deps.push('css!devices/windowsphone/wp.css');
         }
 
         loadTheme();
@@ -2992,9 +2953,7 @@ var AppInfo = {};
                 postInitDependencies.push('scripts/chromecast');
             }
 
-            if (AppInfo.enableNowPlayingBar) {
-                postInitDependencies.push('scripts/nowplayingbar');
-            }
+            postInitDependencies.push('scripts/nowplayingbar');
 
             if (AppInfo.isNativeApp && browserInfo.safari) {
 

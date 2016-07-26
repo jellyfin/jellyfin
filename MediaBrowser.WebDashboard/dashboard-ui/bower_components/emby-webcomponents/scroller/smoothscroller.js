@@ -132,7 +132,6 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
             scrollSource: null, // Element for catching the mouse wheel scrolling. Default is FRAME.
             scrollBy: 0, // Pixels or items to move per one mouse scroll. 0 to disable scrolling.
             scrollHijack: 300, // Milliseconds since last wheel event after which it is acceptable to hijack global scroll.
-            scrollTrap: false, // Don't bubble scrolling when hitting scrolling limits.
 
             // Dragging
             dragSource: null, // Selector or DOM element for catching dragging events. Default is FRAME.
@@ -902,8 +901,8 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
             }
             var delta = normalizeWheelDelta(event);
             // Trap scrolling only when necessary and/or requested
-            if (o.scrollTrap || delta > 0 && pos.dest < pos.end || delta < 0 && pos.dest > pos.start) {
-                stopDefault(event, 1);
+            if (delta > 0 && pos.dest < pos.end || delta < 0 && pos.dest > pos.start) {
+                //stopDefault(event, 1);
             }
 
             if (transform) {
@@ -932,7 +931,9 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
                 passive: true
             });
 
-            scrollSource.removeEventListener(wheelEvent, scrollHandler);
+            removeEventListenerWithOptions(scrollSource, wheelEvent, scrollHandler, {
+                passive: true
+            });
 
             // Reset initialized status and return the instance
             self.initialized = 0;
@@ -1006,14 +1007,18 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
                 }
 
                 // Scrolling navigation
-                scrollSource.addEventListener(wheelEvent, scrollHandler);
+                addEventListenerWithOptions(scrollSource, wheelEvent, scrollHandler, {
+                    passive: true
+                });
 
             } else if (o.horizontal) {
 
                 // Don't bind to mouse events with vertical scroll since the mouse wheel can handle this natively
 
                 // Scrolling navigation
-                scrollSource.addEventListener(wheelEvent, scrollHandler);
+                addEventListenerWithOptions(scrollSource, wheelEvent, scrollHandler, {
+                    passive: true
+                });
             }
 
             // Mark instance as initialized

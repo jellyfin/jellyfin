@@ -103,7 +103,8 @@
                         showTitle: true,
                         centerText: true,
                         lazy: true,
-                        preferThumb: true
+                        preferThumb: true,
+                        overlayPlayButton: true
                     });
                 }
                 else if (view == "ThumbCard") {
