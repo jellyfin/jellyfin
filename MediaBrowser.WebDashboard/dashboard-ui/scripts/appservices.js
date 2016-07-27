@@ -46,8 +46,10 @@
                     return a.guid == i.Id;
                 })[0];
 
-                return catalogEntry && catalogEntry.category == category;
-
+                if (catalogEntry) {
+                    return catalogEntry.category == category;
+                }
+                return false;
             });
 
             PluginsPage.renderPlugins(page, installedPlugins);
