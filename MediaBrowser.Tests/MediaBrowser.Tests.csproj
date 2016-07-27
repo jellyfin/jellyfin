@@ -25,6 +25,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\MediaBrowser.Tests.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -36,6 +37,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.XML" />
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -50,6 +52,11 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="ConsistencyTests\StringUsageReporter.cs" />
+    <Compile Include="ConsistencyTests\TextIndexing\IndexBuilder.cs" />
+    <Compile Include="ConsistencyTests\TextIndexing\WordIndex.cs" />
+    <Compile Include="ConsistencyTests\TextIndexing\WordOccurrence.cs" />
+    <Compile Include="ConsistencyTests\TextIndexing\WordOccurrences.cs" />
     <Compile Include="MediaEncoding\Subtitles\AssParserTests.cs" />
     <Compile Include="MediaEncoding\Subtitles\SrtParserTests.cs" />
     <Compile Include="MediaEncoding\Subtitles\VttWriterTest.cs" />
@@ -97,6 +104,14 @@
     <None Include="MediaEncoding\Subtitles\TestSubtitles\unit.srt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ContentWithTargetPath Include="ConsistencyTests\Resources\StringCheck.xslt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <TargetPath>StringCheck.xslt</TargetPath>
+    </ContentWithTargetPath>
+    <None Include="ConsistencyTests\Resources\SampleTransformed.htm" />
+    <None Include="ConsistencyTests\Resources\StringCheckSample.xml" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
