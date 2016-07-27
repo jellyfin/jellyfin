@@ -1,4 +1,4 @@
-﻿define(['appStorage'], function (appStorage) {
+﻿define(['appStorage', 'events'], function (appStorage, events) {
 
     var currentDisplayInfo;
     var datetime;
@@ -32,7 +32,7 @@
 
     function monitorPlayer(player) {
 
-        Events.on(player, 'playbackstart', function (e, state) {
+        events.on(player, 'playbackstart', function (e, state) {
 
             var info = {
                 QueueableMediaTypes: state.NowPlayingItem.MediaType,
@@ -46,7 +46,7 @@
 
         });
 
-        Events.on(player, 'playbackstop', function (e, state) {
+        events.on(player, 'playbackstop', function (e, state) {
 
             var stopInfo = {
                 itemId: state.NowPlayingItem.Id,
@@ -284,16 +284,16 @@
                 monitorPlayer(player);
             }
 
-            Events.on(player, 'playbackstop', onPlaybackStop);
-            Events.on(player, 'beforeplaybackstart', onBeforePlaybackStart);
+            events.on(player, 'playbackstop', onPlaybackStop);
+            events.on(player, 'beforeplaybackstart', onBeforePlaybackStart);
         };
 
         function onBeforePlaybackStart(e, state) {
-            Events.trigger(self, 'beforeplaybackstart', [state, this]);
+            events.trigger(self, 'beforeplaybackstart', [state, this]);
         }
 
         function onPlaybackStop(e, state) {
-            Events.trigger(self, 'playbackstop', [state, this]);
+            events.trigger(self, 'playbackstop', [state, this]);
         }
 
         self.getPlayerInfo = function () {
@@ -314,7 +314,7 @@
 
         function triggerPlayerChange(newPlayer, newTarget, previousPlayer) {
 
-            Events.trigger(self, 'playerchange', [newPlayer, newTarget, previousPlayer]);
+            events.trigger(self, 'playerchange', [newPlayer, newTarget, previousPlayer]);
         }
 
         self.setActivePlayer = function (player, targetInfo) {
@@ -1076,8 +1076,8 @@
     }
 
     function initializeApiClient(apiClient) {
-        Events.off(apiClient, "websocketmessage", onWebSocketMessageReceived);
-        Events.on(apiClient, "websocketmessage", onWebSocketMessageReceived);
+        events.off(apiClient, "websocketmessage", onWebSocketMessageReceived);
+        events.on(apiClient, "websocketmessage", onWebSocketMessageReceived);
     }
 
     MediaController.init = function () {
@@ -1091,7 +1091,7 @@
             initializeApiClient(window.ApiClient);
         }
 
-        Events.on(ConnectionManager, 'apiclientcreated', function (e, apiClient) {
+        events.on(ConnectionManager, 'apiclientcreated', function (e, apiClient) {
             initializeApiClient(apiClient);
         });
     };

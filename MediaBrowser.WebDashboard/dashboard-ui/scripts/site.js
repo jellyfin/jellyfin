@@ -1,4 +1,31 @@
-﻿var Dashboard = {
+﻿function getWindowLocationSearch(win) {
+
+    var search = (win || window).location.search;
+
+    if (!search) {
+
+        var index = window.location.href.indexOf('?');
+        if (index != -1) {
+            search = window.location.href.substring(index);
+        }
+    }
+
+    return search || '';
+}
+
+function getParameterByName(name, url) {
+    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+    var regexS = "[\\?&]" + name + "=([^&#]*)";
+    var regex = new RegExp(regexS, "i");
+
+    var results = regex.exec(url || getWindowLocationSearch());
+    if (results == null)
+        return "";
+    else
+        return decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+var Dashboard = {
 
     isConnectMode: function () {
 
@@ -1306,7 +1333,8 @@ var AppInfo = {};
     var localApiClient;
     function bindConnectionManagerEvents(connectionManager, events) {
 
-        Events.on(ConnectionManager, 'apiclientcreated', onApiClientCreated);
+        window.Events = events;
+        events.on(ConnectionManager, 'apiclientcreated', onApiClientCreated);
 
         connectionManager.currentApiClient = function () {
 
@@ -1748,7 +1776,7 @@ var AppInfo = {};
                 currentPlaylistIndex: function (options) {
                     return MediaController.currentPlaylistIndex(options);
                 },
-                canQueueMediaType: function(mediaType) {
+                canQueueMediaType: function (mediaType) {
                     return MediaController.canQueueMediaType(mediaType);
                 },
                 canPlay: function (item) {
@@ -1967,13 +1995,10 @@ var AppInfo = {};
         define("buttonenabled", ["legacy/buttonenabled"]);
 
         var deps = [];
-        deps.push('events');
 
         deps.push('scripts/mediacontroller');
 
-        require(deps, function (events) {
-
-            window.Events = events;
+        require(deps, function () {
 
             initAfterDependencies();
         });
@@ -1990,7 +2015,6 @@ var AppInfo = {};
     function initAfterDependencies() {
 
         var deps = [];
-        deps.push('scripts/extensions');
 
         if (!window.fetch) {
             deps.push('fetch');
@@ -2923,7 +2947,6 @@ var AppInfo = {};
 
             postInitDependencies.push('scripts/thememediaplayer');
             postInitDependencies.push('scripts/remotecontrol');
-            postInitDependencies.push('css!css/notifications.css');
             postInitDependencies.push('css!css/chromecast.css');
             postInitDependencies.push('scripts/autobackdrops');
 

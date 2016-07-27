@@ -802,6 +802,22 @@
         }
     }
 
+    function replaceQueryString(url, param, value) {
+        var re = new RegExp("([?|&])" + param + "=.*?(&|$)", "i");
+        if (url.match(re))
+            return url.replace(re, '$1' + param + "=" + value + '$2');
+        else if (value) {
+
+            if (url.indexOf('?') == -1) {
+                return url + '?' + param + "=" + value;
+            }
+
+            return url + '&' + param + "=" + value;
+        }
+
+        return url;
+    }
+
     function updateTabLinks(page) {
 
         var elems = page.querySelectorAll('.scopedLibraryViewNav a');
