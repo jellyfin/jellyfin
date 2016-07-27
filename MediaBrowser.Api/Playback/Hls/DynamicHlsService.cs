@@ -257,8 +257,7 @@ namespace MediaBrowser.Api.Playback.Hls
             return await GetSegmentResult(state, playlistPath, segmentPath, requestedIndex, job, cancellationToken).ConfigureAwait(false);
         }
 
-        // 256k
-        private const int BufferSize = 262144;
+        private const int BufferSize = 81920;
 
         private long GetStartPositionTicks(StreamState state, int requestedIndex)
         {
@@ -941,18 +940,6 @@ namespace MediaBrowser.Api.Playback.Hls
         protected string GetSegmentFileExtension(bool isOutputVideo)
         {
             return isOutputVideo ? ".ts" : ".ts";
-        }
-
-        protected override bool CanStreamCopyVideo(StreamState state)
-        {
-            var isLiveStream = IsLiveStream(state);
-
-            //if (!isLiveStream && Request.QueryString["AllowCustomSegmenting"] != "true")
-            //{
-            //    return false;
-            //}
-
-            return base.CanStreamCopyVideo(state);
         }
     }
 }

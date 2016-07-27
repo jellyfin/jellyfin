@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>MediaBrowser.Common.Internal</id>
-        <version>3.0.652</version>
+        <version>3.0.654</version>
         <title>MediaBrowser.Common.Internal</title>
         <authors>Luke</authors>
         <owners>ebr,Luke,scottisafool</owners>
@@ -12,8 +12,8 @@
         <description>Contains common components shared by Emby Theater and Emby Server. Not intended for plugin developer consumption.</description>
         <copyright>Copyright © Emby 2013</copyright>
         <dependencies>
-            <dependency id="MediaBrowser.Common" version="3.0.652" />
-            <dependency id="NLog" version="4.3.5" />
+            <dependency id="MediaBrowser.Common" version="3.0.654" />
+            <dependency id="NLog" version="4.3.6" />
             <dependency id="SimpleInjector" version="3.2.0" />
         </dependencies>
     </metadata>

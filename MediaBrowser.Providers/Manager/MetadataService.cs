@@ -143,6 +143,22 @@ namespace MediaBrowser.Providers.Manager
             var beforeSaveResult = await BeforeSave(itemOfType, isFirstRefresh || refreshOptions.ReplaceAllMetadata || refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || requiresRefresh, updateType).ConfigureAwait(false);
             updateType = updateType | beforeSaveResult;
 
+            if (item.LocationType == LocationType.FileSystem)
+            {
+                var file = refreshOptions.DirectoryService.GetFile(item.Path);
+                if (file != null)
+                {
+                    var fileLastWriteTime = file.LastWriteTimeUtc;
+                    if (item.EnableForceSaveOnDateModifiedChange && fileLastWriteTime != item.DateModified)
+                    {
+                        Logger.Debug("Date modified for {0}. Old date {1} new date {2} Id {3}", item.Path, item.DateModified, fileLastWriteTime, item.Id);
+                        requiresRefresh = true;
+                    }
+
+                    item.DateModified = fileLastWriteTime;
+                }
+            }
+
             // Save if changes were made, or it's never been saved before
             if (refreshOptions.ForceSave || updateType > ItemUpdateType.None || isFirstRefresh || refreshOptions.ReplaceAllMetadata || requiresRefresh)
             {
@@ -155,12 +171,10 @@ namespace MediaBrowser.Providers.Manager
                 if (hasRefreshedMetadata && hasRefreshedImages)
                 {
                     item.DateLastRefreshed = DateTime.UtcNow;
-                    item.DateModifiedDuringLastRefresh = item.DateModified;
                 }
                 else
                 {
                     item.DateLastRefreshed = default(DateTime);
-                    item.DateModifiedDuringLastRefresh = null;
                 }
 
                 // Save to database

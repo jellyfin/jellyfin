@@ -44,7 +44,6 @@ namespace MediaBrowser.Server.Implementations.Library
 
             // Make sure DateCreated and DateModified have values
             var fileInfo = directoryService.GetFile(item.Path);
-            item.DateModified = fileSystem.GetLastWriteTimeUtc(fileInfo);
             SetDateCreated(item, fileSystem, fileInfo);
 
             EnsureName(item, fileInfo);
@@ -80,7 +79,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 item.GetParents().Any(i => i.IsLocked);
 
             // Make sure DateCreated and DateModified have values
-            EnsureDates(fileSystem, item, args, true);
+            EnsureDates(fileSystem, item, args);
         }
 
         /// <summary>
@@ -125,8 +124,7 @@ namespace MediaBrowser.Server.Implementations.Library
         /// <param name="fileSystem">The file system.</param>
         /// <param name="item">The item.</param>
         /// <param name="args">The args.</param>
-        /// <param name="includeCreationTime">if set to <c>true</c> [include creation time].</param>
-        private static void EnsureDates(IFileSystem fileSystem, BaseItem item, ItemResolveArgs args, bool includeCreationTime)
+        private static void EnsureDates(IFileSystem fileSystem, BaseItem item, ItemResolveArgs args)
         {
             if (fileSystem == null)
             {
@@ -148,12 +146,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 if (childData != null)
                 {
-                    if (includeCreationTime)
-                    {
-                        SetDateCreated(item, fileSystem, childData);
-                    }
-
-                    item.DateModified = fileSystem.GetLastWriteTimeUtc(childData);
+                    SetDateCreated(item, fileSystem, childData);
                 }
                 else
                 {
@@ -161,21 +154,13 @@ namespace MediaBrowser.Server.Implementations.Library
 
                     if (fileData.Exists)
                     {
-                        if (includeCreationTime)
-                        {
-                            SetDateCreated(item, fileSystem, fileData);
-                        }
-                        item.DateModified = fileSystem.GetLastWriteTimeUtc(fileData);
+                        SetDateCreated(item, fileSystem, fileData);
                     }
                 }
             }
             else
             {
-                if (includeCreationTime)
-                {
-                    SetDateCreated(item, fileSystem, args.FileInfo);
-                }
-                item.DateModified = fileSystem.GetLastWriteTimeUtc(args.FileInfo);
+                SetDateCreated(item, fileSystem, args.FileInfo);
             }
         }
 

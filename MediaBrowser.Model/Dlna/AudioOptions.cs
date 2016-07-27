@@ -18,6 +18,8 @@ namespace MediaBrowser.Model.Dlna
 
         public bool EnableDirectPlay { get; set; }
         public bool EnableDirectStream { get; set; }
+        public bool ForceDirectPlay { get; set; }
+        public bool ForceDirectStream { get; set; }
 
         public string ItemId { get; set; }
         public List<MediaSourceInfo> MediaSources { get; set; }
