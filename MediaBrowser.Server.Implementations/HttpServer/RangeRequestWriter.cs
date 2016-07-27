@@ -28,8 +28,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         public Action OnComplete { get; set; }
         private readonly ILogger _logger;
 
-        // 256k
-        private const int BufferSize = 262144;
+        private const int BufferSize = 81920;
 
         /// <summary>
         /// The _options
