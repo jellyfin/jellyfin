@@ -14,7 +14,7 @@
     </ReleaseVersion>
     <StartupObject>MediaBrowser.Server.Mac.MainClass</StartupObject>
     <Description>A personal media server</Description>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -45,7 +45,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
-    <UseSGen>false</UseSGen>
+    <UseSGen>true</UseSGen>
     <IncludeMonoRuntime>true</IncludeMonoRuntime>
     <EnablePackageSigning>false</EnablePackageSigning>
     <CodeSigningKey>Developer ID Application</CodeSigningKey>
@@ -1494,6 +1494,18 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\mediainfo\rotten.png">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\mediainfo\rotten.png</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\metadataeditor\metadataeditor.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\metadataeditor\metadataeditor.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\metadataeditor\metadataeditor.template.html">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\metadataeditor\metadataeditor.template.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\metadataeditor\personeditor.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\metadataeditor\personeditor.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\metadataeditor\personeditor.template.html">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\metadataeditor\personeditor.template.html</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\multiselect\multiselect.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\multiselect\multiselect.css</Link>
     </BundleResource>
@@ -1584,23 +1596,77 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\slideshow\style.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\slideshow\style.css</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\ar.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\ar.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\bg-BG.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\bg-BG.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\ca.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\ca.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\cs.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\cs.json</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\da.json">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\da.json</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\de.json">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\de.json</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\el.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\el.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\en-GB.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\en-GB.json</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\en-US.json">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\en-US.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\es-AR.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\es-AR.json</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\es-MX.json">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\es-MX.json</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\es.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\es.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\fi.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\fi.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\fr-CA.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\fr-CA.json</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\fr.json">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\fr.json</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\gsw.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\gsw.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\he.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\he.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\hr.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\hr.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\hu.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\hu.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\id.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\id.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\it.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\it.json</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\kk.json">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\kk.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\ko.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\ko.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\ms.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\ms.json</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\nb.json">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\nb.json</Link>
@@ -1608,17 +1674,44 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\nl.json">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\nl.json</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\pl.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\pl.json</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\pt-BR.json">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\pt-BR.json</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\pt-PT.json">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\pt-PT.json</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\ro.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\ro.json</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\ru.json">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\ru.json</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\sk.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\sk.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\sl-SI.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\sl-SI.json</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\sv.json">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\sv.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\tr.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\tr.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\uk.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\uk.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\vi.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\vi.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\zh-CN.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\zh-CN.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\zh-HK.json">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\zh-HK.json</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\strings\zh-TW.json">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\strings\zh-TW.json</Link>
@@ -2591,24 +2684,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\iron-validatable-behavior\test\test-validatable.html">
       <Link>Resources\dashboard-ui\bower_components\iron-validatable-behavior\test\test-validatable.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\isMobile\.bower.json">
-      <Link>Resources\dashboard-ui\bower_components\isMobile\.bower.json</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\isMobile\README.md">
-      <Link>Resources\dashboard-ui\bower_components\isMobile\README.md</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\isMobile\bower.json">
-      <Link>Resources\dashboard-ui\bower_components\isMobile\bower.json</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\isMobile\isMobile.js">
-      <Link>Resources\dashboard-ui\bower_components\isMobile\isMobile.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\isMobile\isMobile.min.js">
-      <Link>Resources\dashboard-ui\bower_components\isMobile\isMobile.min.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\isMobile\package.json">
-      <Link>Resources\dashboard-ui\bower_components\isMobile\package.json</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\jquery\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\jquery\.bower.json</Link>
@@ -3675,6 +3750,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\channelmapper\channelmapper.js">
       <Link>Resources\dashboard-ui\components\channelmapper\channelmapper.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\directorybrowser\directorybrowser.css">
+      <Link>Resources\dashboard-ui\components\directorybrowser\directorybrowser.css</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\directorybrowser\directorybrowser.js">
       <Link>Resources\dashboard-ui\components\directorybrowser\directorybrowser.js</Link>
     </BundleResource>
@@ -3741,18 +3819,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\medialibraryeditor\medialibraryeditor.template.html">
       <Link>Resources\dashboard-ui\components\medialibraryeditor\medialibraryeditor.template.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\metadataeditor\metadataeditor.js">
-      <Link>Resources\dashboard-ui\components\metadataeditor\metadataeditor.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\metadataeditor\metadataeditor.template.html">
-      <Link>Resources\dashboard-ui\components\metadataeditor\metadataeditor.template.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\metadataeditor\personeditor.js">
-      <Link>Resources\dashboard-ui\components\metadataeditor\personeditor.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\metadataeditor\personeditor.template.html">
-      <Link>Resources\dashboard-ui\components\metadataeditor\personeditor.template.html</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\navdrawer\navdrawer.css">
       <Link>Resources\dashboard-ui\components\navdrawer\navdrawer.css</Link>
     </BundleResource>
@@ -3812,9 +3878,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\tileitem.css">
       <Link>Resources\dashboard-ui\css\tileitem.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\fonts\Montserrat.woff">
-      <Link>Resources\dashboard-ui\css\fonts\Montserrat.woff</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\ani_equalizer_black.gif">
       <Link>Resources\dashboard-ui\css\images\ani_equalizer_black.gif</Link>
@@ -4089,9 +4152,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\devices\ios\ios.css">
       <Link>Resources\dashboard-ui\devices\ios\ios.css</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\devices\windowsphone\wp.css">
-      <Link>Resources\dashboard-ui\devices\windowsphone\wp.css</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\files\dummy.mp4">
       <Link>Resources\dashboard-ui\files\dummy.mp4</Link>
     </BundleResource>
@@ -4184,9 +4244,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\episodes.js">
       <Link>Resources\dashboard-ui\scripts\episodes.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\extensions.js">
-      <Link>Resources\dashboard-ui\scripts\extensions.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\externalplayer.js">
       <Link>Resources\dashboard-ui\scripts\externalplayer.js</Link>
