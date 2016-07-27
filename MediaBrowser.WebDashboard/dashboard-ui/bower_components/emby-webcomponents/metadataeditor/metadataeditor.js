@@ -1,4 +1,4 @@
-﻿define(['itemHelper', 'layoutManager', 'scrollHelper', 'dialogHelper', 'datetime', 'loading', 'focusManager', 'connectionManager', 'globalize', 'require', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light', 'css!./../formdialog'], function (itemHelper, layoutManager, scrollHelper, dialogHelper, datetime, loading, focusManager, connectionManager, globalize, require) {
+﻿define(['itemHelper', 'layoutManager', 'dialogHelper', 'datetime', 'loading', 'focusManager', 'connectionManager', 'globalize', 'require', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light', 'css!./../formdialog'], function (itemHelper, layoutManager, dialogHelper, datetime, loading, focusManager, connectionManager, globalize, require) {
 
     var currentContext;
     var metadataEditorInfo;
@@ -20,7 +20,7 @@
         function afterContentTypeUpdated() {
 
             require(['toast'], function (toast) {
-                toast(globalize.translate('MessageItemSaved'));
+                toast(globalize.translate('metadataeditor#MessageItemSaved'));
             });
 
             loading.hide();
@@ -121,92 +121,97 @@
 
         var form = this;
 
-        var item = {
-            Id: currentItem.Id,
-            Name: form.querySelector('#txtName').value,
-            OriginalTitle: form.querySelector('#txtOriginalName').value,
-            ForcedSortName: form.querySelector('#txtSortName').value,
-            DisplayMediaType: form.querySelector('#txtDisplayMediaType').value,
-            CommunityRating: form.querySelector('#txtCommunityRating').value,
-            VoteCount: form.querySelector('#txtCommunityVoteCount').value,
-            HomePageUrl: form.querySelector('#txtHomePageUrl').value,
-            Budget: form.querySelector('#txtBudget').value,
-            Revenue: form.querySelector('#txtRevenue').value,
-            CriticRating: form.querySelector('#txtCriticRating').value,
-            CriticRatingSummary: form.querySelector('#txtCriticRatingSummary').value,
-            IndexNumber: form.querySelector('#txtIndexNumber').value || null,
-            AbsoluteEpisodeNumber: form.querySelector('#txtAbsoluteEpisodeNumber').value,
-            DvdEpisodeNumber: form.querySelector('#txtDvdEpisodeNumber').value,
-            DvdSeasonNumber: form.querySelector('#txtDvdSeasonNumber').value,
-            AirsBeforeSeasonNumber: form.querySelector('#txtAirsBeforeSeason').value,
-            AirsAfterSeasonNumber: form.querySelector('#txtAirsAfterSeason').value,
-            AirsBeforeEpisodeNumber: form.querySelector('#txtAirsBeforeEpisode').value,
-            ParentIndexNumber: form.querySelector('#txtParentIndexNumber').value || null,
-            DisplayOrder: form.querySelector('#selectDisplayOrder').value,
-            Players: form.querySelector('#txtPlayers').value,
-            Album: form.querySelector('#txtAlbum').value,
-            AlbumArtist: getAlbumArtists(form),
-            ArtistItems: getArtists(form),
-            Metascore: form.querySelector('#txtMetascore').value,
-            AwardSummary: form.querySelector('#txtAwardSummary').value,
-            Overview: form.querySelector('#txtOverview').value,
-            ShortOverview: form.querySelector('#txtShortOverview').value,
-            Status: form.querySelector('#selectStatus').value,
-            AirDays: getSelectedAirDays(form),
-            AirTime: form.querySelector('#txtAirTime').value,
-            Genres: editableListViewValues(form.querySelector("#listGenres")),
-            ProductionLocations: editableListViewValues(form.querySelector("#listCountries")),
-            Tags: editableListViewValues(form.querySelector("#listTags")),
-            Keywords: editableListViewValues(form.querySelector("#listKeywords")),
-            Studios: editableListViewValues(form.querySelector("#listStudios")).map(function (element) { return { Name: element }; }),
+        try {
+            var item = {
+                Id: currentItem.Id,
+                Name: form.querySelector('#txtName').value,
+                OriginalTitle: form.querySelector('#txtOriginalName').value,
+                ForcedSortName: form.querySelector('#txtSortName').value,
+                DisplayMediaType: form.querySelector('#txtDisplayMediaType').value,
+                CommunityRating: form.querySelector('#txtCommunityRating').value,
+                VoteCount: form.querySelector('#txtCommunityVoteCount').value,
+                HomePageUrl: form.querySelector('#txtHomePageUrl').value,
+                Budget: form.querySelector('#txtBudget').value,
+                Revenue: form.querySelector('#txtRevenue').value,
+                CriticRating: form.querySelector('#txtCriticRating').value,
+                CriticRatingSummary: form.querySelector('#txtCriticRatingSummary').value,
+                IndexNumber: form.querySelector('#txtIndexNumber').value || null,
+                AbsoluteEpisodeNumber: form.querySelector('#txtAbsoluteEpisodeNumber').value,
+                DvdEpisodeNumber: form.querySelector('#txtDvdEpisodeNumber').value,
+                DvdSeasonNumber: form.querySelector('#txtDvdSeasonNumber').value,
+                AirsBeforeSeasonNumber: form.querySelector('#txtAirsBeforeSeason').value,
+                AirsAfterSeasonNumber: form.querySelector('#txtAirsAfterSeason').value,
+                AirsBeforeEpisodeNumber: form.querySelector('#txtAirsBeforeEpisode').value,
+                ParentIndexNumber: form.querySelector('#txtParentIndexNumber').value || null,
+                DisplayOrder: form.querySelector('#selectDisplayOrder').value,
+                Players: form.querySelector('#txtPlayers').value,
+                Album: form.querySelector('#txtAlbum').value,
+                AlbumArtist: getAlbumArtists(form),
+                ArtistItems: getArtists(form),
+                Metascore: form.querySelector('#txtMetascore').value,
+                AwardSummary: form.querySelector('#txtAwardSummary').value,
+                Overview: form.querySelector('#txtOverview').value,
+                ShortOverview: form.querySelector('#txtShortOverview').value,
+                Status: form.querySelector('#selectStatus').value,
+                AirDays: getSelectedAirDays(form),
+                AirTime: form.querySelector('#txtAirTime').value,
+                Genres: editableListViewValues(form.querySelector("#listGenres")),
+                ProductionLocations: editableListViewValues(form.querySelector("#listCountries")),
+                Tags: editableListViewValues(form.querySelector("#listTags")),
+                Keywords: editableListViewValues(form.querySelector("#listKeywords")),
+                Studios: editableListViewValues(form.querySelector("#listStudios")).map(function (element) { return { Name: element }; }),
 
-            PremiereDate: getDateFromForm(form, '#txtPremiereDate', 'PremiereDate'),
-            DateCreated: getDateFromForm(form, '#txtDateAdded', 'DateCreated'),
-            EndDate: getDateFromForm(form, '#txtEndDate', 'EndDate'),
-            ProductionYear: form.querySelector('#txtProductionYear').value,
-            AspectRatio: form.querySelector('#txtOriginalAspectRatio').value,
-            Video3DFormat: form.querySelector('#select3dFormat').value,
+                PremiereDate: getDateFromForm(form, '#txtPremiereDate', 'PremiereDate'),
+                DateCreated: getDateFromForm(form, '#txtDateAdded', 'DateCreated'),
+                EndDate: getDateFromForm(form, '#txtEndDate', 'EndDate'),
+                ProductionYear: form.querySelector('#txtProductionYear').value,
+                AspectRatio: form.querySelector('#txtOriginalAspectRatio').value,
+                Video3DFormat: form.querySelector('#select3dFormat').value,
 
-            OfficialRating: form.querySelector('#selectOfficialRating').value,
-            CustomRating: form.querySelector('#selectCustomRating').value,
-            People: currentItem.People,
-            LockData: form.querySelector("#chkLockData").checked,
-            LockedFields: Array.prototype.filter.call(form.querySelectorAll('.selectLockedField'), function (c) {
-                return !c.checked;
-            }).map(function (c) {
-                return c.getAttribute('data-value');
-            })
-        };
+                OfficialRating: form.querySelector('#selectOfficialRating').value,
+                CustomRating: form.querySelector('#selectCustomRating').value,
+                People: currentItem.People,
+                LockData: form.querySelector("#chkLockData").checked,
+                LockedFields: Array.prototype.filter.call(form.querySelectorAll('.selectLockedField'), function (c) {
+                    return !c.checked;
+                }).map(function (c) {
+                    return c.getAttribute('data-value');
+                })
+            };
 
-        item.ProviderIds = Object.assign({}, currentItem.ProviderIds);
+            item.ProviderIds = Object.assign({}, currentItem.ProviderIds);
 
-        var idElements = form.querySelectorAll('.txtExternalId');
-        Array.prototype.map.call(idElements, function (idElem) {
-            var providerKey = idElem.getAttribute('data-providerkey');
-            item.ProviderIds[providerKey] = idElem.value;
-        });
+            var idElements = form.querySelectorAll('.txtExternalId');
+            Array.prototype.map.call(idElements, function (idElem) {
+                var providerKey = idElem.getAttribute('data-providerkey');
+                item.ProviderIds[providerKey] = idElem.value;
+            });
 
-        item.PreferredMetadataLanguage = form.querySelector('#selectLanguage').value;
-        item.PreferredMetadataCountryCode = form.querySelector('#selectCountry').value;
+            item.PreferredMetadataLanguage = form.querySelector('#selectLanguage').value;
+            item.PreferredMetadataCountryCode = form.querySelector('#selectCountry').value;
 
-        if (currentItem.Type == "Person") {
+            if (currentItem.Type == "Person") {
 
-            var placeOfBirth = form.querySelector('#txtPlaceOfBirth').value;
+                var placeOfBirth = form.querySelector('#txtPlaceOfBirth').value;
 
-            item.ProductionLocations = placeOfBirth ? [placeOfBirth] : [];
+                item.ProductionLocations = placeOfBirth ? [placeOfBirth] : [];
+            }
+
+            if (currentItem.Type == "Series") {
+
+                // 600000000
+                var seriesRuntime = form.querySelector('#txtSeriesRuntime').value;
+                item.RunTimeTicks = seriesRuntime ? (seriesRuntime * 600000000) : null;
+            }
+
+            var tagline = form.querySelector('#txtTagline').value;
+            item.Taglines = tagline ? [tagline] : [];
+
+            submitUpdatedItem(form, item);
+
+        } catch (err) {
+            alert(err);
         }
-
-        if (currentItem.Type == "Series") {
-
-            // 600000000
-            var seriesRuntime = form.querySelector('#txtSeriesRuntime').value;
-            item.RunTimeTicks = seriesRuntime ? (seriesRuntime * 600000000) : null;
-        }
-
-        var tagline = form.querySelector('#txtTagline').value;
-        item.Taglines = tagline ? [tagline] : [];
-
-        submitUpdatedItem(form, item);
 
         e.preventDefault();
         e.stopPropagation();
@@ -482,7 +487,7 @@
             var buttonId = "btnOpen1" + idInfo.Key;
             var formatString = idInfo.UrlFormatString || '';
 
-            var labelText = globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
+            var labelText = globalize.translate('metadataeditor#LabelDynamicExternalId').replace('{0}', idInfo.Name);
 
             html += '<div class="inputContainer">';
             html += '<div style="display: flex; align-items: center;">';
@@ -713,14 +718,14 @@
 
         if (item.Type == "Person") {
             //todo
-            context.querySelector('#txtProductionYear').label(globalize.translate('LabelBirthYear'));
-            context.querySelector("#txtPremiereDate").label(globalize.translate('LabelBirthDate'));
-            context.querySelector("#txtEndDate").label(globalize.translate('LabelDeathDate'));
+            context.querySelector('#txtProductionYear').label(globalize.translate('metadataeditor#LabelBirthYear'));
+            context.querySelector("#txtPremiereDate").label(globalize.translate('metadataeditor#LabelBirthDate'));
+            context.querySelector("#txtEndDate").label(globalize.translate('metadataeditor#LabelDeathDate'));
             showElement('#fldPlaceOfBirth');
         } else {
-            context.querySelector('#txtProductionYear').label(globalize.translate('LabelYear'));
-            context.querySelector("#txtPremiereDate").label(globalize.translate('LabelReleaseDate'));
-            context.querySelector("#txtEndDate").label(globalize.translate('LabelEndDate'));
+            context.querySelector('#txtProductionYear').label(globalize.translate('metadataeditor#LabelYear'));
+            context.querySelector("#txtPremiereDate").label(globalize.translate('metadataeditor#LabelReleaseDate'));
+            context.querySelector("#txtEndDate").label(globalize.translate('metadataeditor#LabelEndDate'));
             hideElement('#fldPlaceOfBirth');
         }
 
@@ -734,13 +739,13 @@
             showElement('#fldIndexNumber');
 
             if (item.Type == "Episode") {
-                context.querySelector('#txtIndexNumber').label(globalize.translate('LabelEpisodeNumber'));
+                context.querySelector('#txtIndexNumber').label(globalize.translate('metadataeditor#LabelEpisodeNumber'));
             } else if (item.Type == "Season") {
-                context.querySelector('#txtIndexNumber').label(globalize.translate('LabelSeasonNumber'));
+                context.querySelector('#txtIndexNumber').label(globalize.translate('metadataeditor#LabelSeasonNumber'));
             } else if (item.Type == "Audio") {
-                context.querySelector('#txtIndexNumber').label(globalize.translate('LabelTrackNumber'));
+                context.querySelector('#txtIndexNumber').label(globalize.translate('metadataeditor#LabelTrackNumber'));
             } else {
-                context.querySelector('#txtIndexNumber').label(globalize.translate('LabelNumber'));
+                context.querySelector('#txtIndexNumber').label(globalize.translate('metadataeditor#LabelNumber'));
             }
         } else {
             hideElement('#fldIndexNumber');
@@ -763,7 +768,7 @@
         if (item.Type == "BoxSet") {
             showElement('#fldDisplayOrder', context);
 
-            context.querySelector('#selectDisplayOrder').innerHTML = '<option value="SortName">' + globalize.translate('OptionSortName') + '</option><option value="PremiereDate">' + globalize.translate('OptionReleaseDate') + '</option>';
+            context.querySelector('#selectDisplayOrder').innerHTML = '<option value="SortName">' + globalize.translate('metadataeditor#OptionSortName') + '</option><option value="PremiereDate">' + globalize.translate('metadataeditor#OptionReleaseDate') + '</option>';
         } else {
             context.querySelector('#selectDisplayOrder').innerHTML = '';
             hideElement('#fldDisplayOrder', context);
@@ -968,8 +973,8 @@
         var html = "";
 
         html += "<option value=''></option>";
-        html += "<option value='Continuing'>" + globalize.translate('OptionContinuing') + "</option>";
-        html += "<option value='Ended'>" + globalize.translate('OptionEnded') + "</option>";
+        html += "<option value='Continuing'>" + globalize.translate('metadataeditor#OptionContinuing') + "</option>";
+        html += "<option value='Ended'>" + globalize.translate('metadataeditor#OptionEnded') + "</option>";
         select.innerHTML = html;
     }
 
@@ -1039,7 +1044,7 @@
 
         elem.innerHTML = html;
 
-        var deleteButton = elem.querySelector('.btnDeletePerson');
+        var deleteButton = elem.querySelector('.btnDeletePerson')
         if (deleteButton) {
             deleteButton.addEventListener('click', function () {
 
@@ -1050,7 +1055,7 @@
             }.bind(deleteButton));
         }
 
-        var editButton = elem.querySelector('.btnEditPerson');
+        var editButton = elem.querySelector('.btnEditPerson')
         if (editButton) {
             editButton.addEventListener('click', function () {
 
@@ -1083,37 +1088,37 @@
         lockedFields = lockedFields || new Array();
 
         var metadatafields = [
-            { name: globalize.translate('OptionName'), value: "Name" },
-            { name: globalize.translate('OptionOverview'), value: "Overview" },
-            { name: globalize.translate('OptionGenres'), value: "Genres" },
-            { name: globalize.translate('OptionParentalRating'), value: "OfficialRating" },
-            { name: globalize.translate('OptionPeople'), value: "Cast" }
+            { name: globalize.translate('metadataeditor#OptionName'), value: "Name" },
+            { name: globalize.translate('metadataeditor#OptionOverview'), value: "Overview" },
+            { name: globalize.translate('metadataeditor#OptionGenres'), value: "Genres" },
+            { name: globalize.translate('metadataeditor#OptionParentalRating'), value: "OfficialRating" },
+            { name: globalize.translate('metadataeditor#OptionPeople'), value: "Cast" }
         ];
 
         if (item.Type == "Person") {
-            metadatafields.push({ name: globalize.translate('OptionBirthLocation'), value: "ProductionLocations" });
+            metadatafields.push({ name: globalize.translate('metadataeditor#OptionBirthLocation'), value: "ProductionLocations" });
         } else {
-            metadatafields.push({ name: globalize.translate('OptionProductionLocations'), value: "ProductionLocations" });
+            metadatafields.push({ name: globalize.translate('metadataeditor#OptionProductionLocations'), value: "ProductionLocations" });
         }
 
         if (item.Type == "Series") {
             metadatafields.push({ name: globalize.translate('OptionRuntime'), value: "Runtime" });
         }
 
-        metadatafields.push({ name: globalize.translate('OptionStudios'), value: "Studios" });
-        metadatafields.push({ name: globalize.translate('OptionTags'), value: "Tags" });
-        metadatafields.push({ name: globalize.translate('OptionKeywords'), value: "Keywords" });
-        metadatafields.push({ name: globalize.translate('OptionImages'), value: "Images" });
-        metadatafields.push({ name: globalize.translate('OptionBackdrops'), value: "Backdrops" });
+        metadatafields.push({ name: globalize.translate('metadataeditor#OptionStudios'), value: "Studios" });
+        metadatafields.push({ name: globalize.translate('metadataeditor#OptionTags'), value: "Tags" });
+        metadatafields.push({ name: globalize.translate('metadataeditor#OptionKeywords'), value: "Keywords" });
+        metadatafields.push({ name: globalize.translate('metadataeditor#OptionImages'), value: "Images" });
+        metadatafields.push({ name: globalize.translate('metadataeditor#OptionBackdrops'), value: "Backdrops" });
 
         if (item.Type == "Game") {
-            metadatafields.push({ name: globalize.translate('OptionScreenshots'), value: "Screenshots" });
+            metadatafields.push({ name: globalize.translate('metadataeditor#OptionScreenshots'), value: "Screenshots" });
         }
 
         var html = '';
 
-        html += "<h1>" + globalize.translate('HeaderEnabledFields') + "</h1>";
-        html += "<p>" + globalize.translate('HeaderEnabledFieldsHelp') + "</p>";
+        html += "<h1>" + globalize.translate('metadataeditor#HeaderEnabledFields') + "</h1>";
+        html += "<p>" + globalize.translate('metadataeditor#HeaderEnabledFieldsHelp') + "</p>";
         html += generateSliders(metadatafields, lockedFields);
         container.innerHTML = html;
     }
@@ -1158,54 +1163,92 @@
         });
     }
 
+    function registerDictionary() {
+
+        var baseUrl = require.toUrl('.').split('?')[0] + '/strings/';
+
+        var languages = ['en-US'];
+
+        var strings = languages.map(function (i) {
+            return {
+                lang: i,
+                path: baseUrl + i + '.json'
+            };
+        });
+
+        globalize.loadStrings({
+            name: 'metadataeditor',
+            strings: strings
+        });
+    }
+
+    registerDictionary();
+
+    function centerFocus(elem, horiz, on) {
+        require(['scrollHelper'], function (scrollHelper) {
+            var fn = on ? 'on' : 'off';
+            scrollHelper.centerFocus[fn](elem, horiz);
+        });
+    }
+
+    function show(itemId, serverId, resolve, reject) {
+        loading.show();
+
+        require(['text!./metadataeditor.template.html'], function (template) {
+
+            var dialogOptions = {
+                removeOnClose: true,
+                scrollY: false
+            };
+
+            if (layoutManager.tv) {
+                dialogOptions.size = 'fullscreen';
+            } else {
+                dialogOptions.size = 'medium';
+            }
+
+            var dlg = dialogHelper.createDialog(dialogOptions);
+
+            dlg.classList.add('ui-body-b');
+            dlg.classList.add('background-theme-b');
+
+            dlg.classList.add('formDialog');
+
+            var html = '';
+
+            html += globalize.translateDocument(template, 'metadataeditor');
+
+            dlg.innerHTML = html;
+            document.body.appendChild(dlg);
+
+            if (layoutManager.tv) {
+                centerFocus(dlg.querySelector('.dialogContent'), false, true);
+            }
+
+            dialogHelper.open(dlg);
+
+            dlg.addEventListener('close', function () {
+                if (layoutManager.tv) {
+                    centerFocus(dlg.querySelector('.dialogContent'), false, false);
+                }
+
+                unbindItemChanged(dlg, connectionManager.getApiClient(serverId));
+                resolve();
+            });
+
+            currentContext = dlg;
+
+            init(dlg, connectionManager.getApiClient(serverId));
+
+            reload(dlg, itemId, serverId);
+        });
+    }
+
     return {
         show: function (itemId, serverId) {
             return new Promise(function (resolve, reject) {
-
-                loading.show();
-
-                require(['text!./metadataeditor.template.html'], function (template) {
-
-                    var dialogOptions = {
-                        removeOnClose: true
-                    };
-
-                    if (layoutManager.tv) {
-                        dialogOptions.size = 'fullscreen';
-                    } else {
-                        dialogOptions.size = 'medium';
-                    }
-
-                    var dlg = dialogHelper.createDialog(dialogOptions);
-
-                    dlg.classList.add('ui-body-b');
-                    dlg.classList.add('background-theme-b');
-
-                    dlg.classList.add('formDialog');
-
-                    var html = '';
-
-                    html += globalize.translateDocument(template);
-
-                    dlg.innerHTML = html;
-                    document.body.appendChild(dlg);
-
-                    if (layoutManager.tv) {
-                        scrollHelper.centerFocus.on(dlg.querySelector('.dialogContent'), false);
-                    }
-
-                    dialogHelper.open(dlg);
-
-                    dlg.addEventListener('close', function () {
-                        unbindItemChanged(dlg, connectionManager.getApiClient(serverId));
-                        resolve();
-                    });
-
-                    currentContext = dlg;
-
-                    init(dlg, connectionManager.getApiClient(serverId));
-
-                    reload(dlg, itemId, serverId);
+                return globalize.loadStrings('metadataeditor').then(function () {
+                    return show(itemId, serverId, resolve, reject);
                 });
             });
         },
@@ -1217,7 +1260,7 @@
 
                 require(['text!./metadataeditor.template.html'], function (template) {
 
-                    elem.innerHTML = globalize.translateDocument(template);
+                    elem.innerHTML = globalize.translateDocument(template, 'metadataeditor');
 
                     elem.querySelector('.btnCancel').classList.add('hide');
 

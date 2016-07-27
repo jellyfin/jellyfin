@@ -1,4 +1,4 @@
-﻿define(['events', 'apiclient', 'appStorage'], function (Events, apiClientFactory, appStorage) {
+﻿define(['events', 'apiclient', 'appStorage'], function (events, apiClientFactory, appStorage) {
 
     var ConnectionState = {
         Unavailable: 0,
@@ -321,7 +321,7 @@
                 credentialProvider.credentials(credentials);
             }
 
-            Events.trigger(self, 'apiclientcreated', [apiClient]);
+            events.trigger(self, 'apiclientcreated', [apiClient]);
 
             if (existingServer.Id) {
                 return;
@@ -353,7 +353,7 @@
         function onConnectUserSignIn(user) {
 
             connectUser = user;
-            Events.trigger(self, 'connectusersignedin', [user]);
+            events.trigger(self, 'connectusersignedin', [user]);
         }
 
         function getOrAddApiClient(server, connectionMode) {
@@ -374,7 +374,7 @@
                     onAuthenticated(instance, result, {}, true);
                 };
 
-                Events.trigger(self, 'apiclientcreated', [apiClient]);
+                events.trigger(self, 'apiclientcreated', [apiClient]);
             }
 
             console.log('returning instance from getOrAddApiClient');
@@ -462,7 +462,7 @@
             // Ensure this is created so that listeners of the event can get the apiClient instance
             getOrAddApiClient(server, connectionMode);
 
-            Events.trigger(self, 'localusersignedin', [user]);
+            events.trigger(self, 'localusersignedin', [user]);
         }
 
         function ensureConnectUser(credentials) {
@@ -729,7 +729,7 @@
 
                 if (connectUser) {
                     connectUser = null;
-                    Events.trigger(self, 'connectusersignedout');
+                    events.trigger(self, 'connectusersignedout');
                 }
             });
         };
@@ -744,10 +744,10 @@
 
             return apiClient.logout().then(function () {
 
-                Events.trigger(self, 'localusersignedout', [logoutInfo]);
+                events.trigger(self, 'localusersignedout', [logoutInfo]);
             }, function () {
 
-                Events.trigger(self, 'localusersignedout', [logoutInfo]);
+                events.trigger(self, 'localusersignedout', [logoutInfo]);
             });
         }
 
@@ -1189,7 +1189,7 @@
 
             resolve(result);
 
-            Events.trigger(self, 'connected', [result]);
+            events.trigger(self, 'connected', [result]);
         }
 
         function replaceAll(originalString, strReplace, strWith) {

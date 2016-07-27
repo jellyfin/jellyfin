@@ -1,4 +1,4 @@
-﻿define(['events'], function (Events) {
+﻿define(['events'], function (events) {
 
     /**
      * Creates a new api client instance
@@ -38,7 +38,7 @@
                 serverAddress = val;
 
                 if (changed) {
-                    Events.trigger(this, 'serveraddresschanged');
+                    events.trigger(this, 'serveraddresschanged');
                 }
             }
 
@@ -50,6 +50,10 @@
             serverInfo = info || serverInfo;
 
             return serverInfo;
+        };
+
+        self.serverId = function () {
+            return self.serverInfo().Id;
         };
 
         var currentUser;
@@ -74,7 +78,7 @@
             });
         };
 
-        self.isLoggedIn = function() {
+        self.isLoggedIn = function () {
 
             var info = self.serverInfo();
             if (info) {
@@ -137,7 +141,7 @@
 
         function onFetchFail(url, response) {
 
-            Events.trigger(self, 'requestfail', [
+            events.trigger(self, 'requestfail', [
             {
                 url: url,
                 status: response.status,
@@ -526,7 +530,7 @@
             }
         };
 
-        self.ensureWebSocket = function() {
+        self.ensureWebSocket = function () {
             if (self.isWebSocketOpenOrConnecting() || !self.isWebSocketSupported()) {
                 return;
             }
@@ -567,15 +571,15 @@
 
                 console.log('web socket connection opened');
                 setTimeout(function () {
-                    Events.trigger(self, 'websocketopen');
+                    events.trigger(self, 'websocketopen');
                 }, 0);
             };
             webSocket.onerror = function () {
-                Events.trigger(self, 'websocketerror');
+                events.trigger(self, 'websocketerror');
             };
             webSocket.onclose = function () {
                 setTimeout(function () {
-                    Events.trigger(self, 'websocketclose');
+                    events.trigger(self, 'websocketclose');
                 }, 0);
             };
         };
@@ -600,7 +604,7 @@
                 }
             }
 
-            Events.trigger(self, 'websocketmessage', [msg]);
+            events.trigger(self, 'websocketmessage', [msg]);
         }
 
         self.sendWebSocketMessage = function (name, data) {
@@ -2842,6 +2846,16 @@
             }
 
             return self.getJSON(url);
+        };
+
+        self.getMovieRecommendations = function (options) {
+
+            return self.getJSON(self.getUrl('Movies/Recommendations', options));
+        };
+
+        self.getUpcomingEpisodes = function (options) {
+
+            return self.getJSON(self.getUrl('Shows/Upcoming', options));
         };
 
         self.getChannels = function (query) {

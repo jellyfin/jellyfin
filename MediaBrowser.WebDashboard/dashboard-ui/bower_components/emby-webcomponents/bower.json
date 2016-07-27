@@ -10,8 +10,7 @@
   "license": "https://github.com/MediaBrowser/emby-webcomponents/blob/master/LICENSE",
   "homepage": "https://github.com/MediaBrowser/emby-webcomponents",
   "dependencies": {
-    "requirejs": "requirejs#^2.1.22",
-    "isMobile": "isMobile#^0.3.9"
+    "requirejs": "requirejs#^2.1.22"
   },
   "devDependencies": {
     

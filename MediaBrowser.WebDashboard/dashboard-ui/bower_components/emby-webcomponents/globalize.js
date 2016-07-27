@@ -99,16 +99,24 @@ define(['connectionManager', 'userSettings', 'events'], function (connectionMana
         return translations.dictionaries[getCurrentLocale()];
     }
 
-    function loadTranslations(options) {
+    function register(options) {
 
         allTranslations[options.name] = {
-            translations: options.translations,
+            translations: options.strings || options.translations,
             dictionaries: {}
         };
+    }
+
+    function loadStrings(options) {
 
         var locale = getCurrentLocale();
 
-        return ensureTranslation(allTranslations[options.name], locale);
+        if (typeof options === 'string') {
+            return ensureTranslation(allTranslations[options], locale);
+        } else {
+            register(options);
+            return ensureTranslation(allTranslations[options.name], locale);
+        }
     }
 
     var cacheParam = new Date().getTime();
@@ -246,8 +254,9 @@ define(['connectionManager', 'userSettings', 'events'], function (connectionMana
         translate: translate,
         translateDocument: translateHtml,
         translateHtml: translateHtml,
-        loadStrings: loadTranslations,
+        loadStrings: loadStrings,
         defaultModule: defaultModule,
-        getCurrentLocale: getCurrentLocale
+        getCurrentLocale: getCurrentLocale,
+        register: register
     };
 });
