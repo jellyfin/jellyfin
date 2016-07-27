@@ -1,4 +1,4 @@
-﻿define(['itemHelper', 'layoutManager', 'dialogHelper', 'datetime', 'loading', 'focusManager', 'connectionManager', 'globalize', 'require', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light', 'css!./../formdialog'], function (itemHelper, layoutManager, dialogHelper, datetime, loading, focusManager, connectionManager, globalize, require) {
+﻿define(['itemHelper', 'dom', 'layoutManager', 'dialogHelper', 'datetime', 'loading', 'focusManager', 'connectionManager', 'globalize', 'require', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light', 'css!./../formdialog'], function (itemHelper, dom, layoutManager, dialogHelper, datetime, loading, focusManager, connectionManager, globalize, require) {
 
     var currentContext;
     var metadataEditorInfo;
@@ -220,19 +220,6 @@
         return false;
     }
 
-    function parentWithClass(elem, className) {
-
-        while (!elem.classList || !elem.classList.contains(className)) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
-        }
-
-        return elem;
-    }
-
     function editableListViewValues(list) {
         return Array.prototype.map.call(list.querySelectorAll('.textValue'), function (el) { return el.textContent; });
     }
@@ -243,7 +230,7 @@
             prompt({
                 label: 'Value:'
             }).then(function (text) {
-                var list = parentWithClass(source, 'editableListviewContainer').querySelector('.paperList');
+                var list = dom.parentWithClass(source, 'editableListviewContainer').querySelector('.paperList');
                 var items = editableListViewValues(list);
                 items.push(text);
                 populateListView(list, items, sortCallback);
@@ -252,7 +239,7 @@
     }
 
     function removeElementFromListview(source) {
-        var el = parentWithClass(source, 'listItem');
+        var el = dom.parentWithClass(source, 'listItem');
         el.parentNode.removeChild(el);
     }
 
@@ -324,13 +311,13 @@
 
     function onEditorClick(e) {
 
-        var btnRemoveFromEditorList = parentWithClass(e.target, 'btnRemoveFromEditorList');
+        var btnRemoveFromEditorList = dom.parentWithClass(e.target, 'btnRemoveFromEditorList');
         if (btnRemoveFromEditorList) {
             removeElementFromListview(btnRemoveFromEditorList);
             return;
         }
 
-        var btnAddTextItem = parentWithClass(e.target, 'btnAddTextItem');
+        var btnAddTextItem = dom.parentWithClass(e.target, 'btnAddTextItem');
         if (btnAddTextItem) {
             addElementToEditableListview(btnAddTextItem);
         }
@@ -379,6 +366,22 @@
         context.querySelector("#btnAddPerson").addEventListener('click', function (event, data) {
 
             editPerson(context, {}, -1);
+        });
+
+        context.querySelector('#peopleList').addEventListener('click', function(e) {
+
+            var btnDeletePerson = dom.parentWithClass(e.target, 'btnDeletePerson');
+            if (btnDeletePerson) {
+                var index = parseInt(btnDeletePerson.getAttribute('data-index'));
+                currentItem.People.splice(index, 1);
+                populatePeople(context, currentItem.People);
+            }
+
+            var btnEditPerson = dom.parentWithClass(e.target, 'btnEditPerson');
+            if (btnEditPerson) {
+                var index = parseInt(btnEditPerson.getAttribute('data-index'));
+                editPerson(context, currentItem.People[index], index);
+            }
         });
 
         // For now this is only supported in dialog mode because we have a way of knowing when it closes
@@ -990,7 +993,7 @@
         for (var i = 0; i < items.length; i++) {
             html += '<div class="listItem">';
 
-            html += '<button type="button" is="emby-button" data-index="' + i + '" class="fab autoSize mini"><i class="md-icon">live_tv</i></button>';
+            html += '<i class="md-icon listItemIcon" style="background-color:#333;">live_tv</i>';
 
             html += '<div class="listItemBody">';
 
@@ -1021,7 +1024,7 @@
 
             html += '<div class="listItem">';
 
-            html += '<button type="button" is="emby-button" data-index="' + i + '" class="btnEditPerson fab autoSize mini"><i class="md-icon">person</i></button>';
+            html += '<i class="md-icon listItemIcon" style="background-color:#333;">person</i>';
 
             html += '<div class="listItemBody">';
             html += '<a class="btnEditPerson clearLink" href="#" data-index="' + i + '">';
@@ -1043,27 +1046,6 @@
         }
 
         elem.innerHTML = html;
-
-        var deleteButton = elem.querySelector('.btnDeletePerson')
-        if (deleteButton) {
-            deleteButton.addEventListener('click', function () {
-
-                var index = parseInt(this.getAttribute('data-index'));
-                currentItem.People.splice(index, 1);
-
-                populatePeople(context, currentItem.People);
-            }.bind(deleteButton));
-        }
-
-        var editButton = elem.querySelector('.btnEditPerson')
-        if (editButton) {
-            editButton.addEventListener('click', function () {
-
-                var index = parseInt(this.getAttribute('data-index'));
-
-                editPerson(context, currentItem.People[index], index);
-            }.bind(editButton));
-        }
     }
 
     function generateSliders(fields, currentFields) {
@@ -1163,27 +1145,6 @@
         });
     }
 
-    function registerDictionary() {
-
-        var baseUrl = require.toUrl('.').split('?')[0] + '/strings/';
-
-        var languages = ['en-US'];
-
-        var strings = languages.map(function (i) {
-            return {
-                lang: i,
-                path: baseUrl + i + '.json'
-            };
-        });
-
-        globalize.loadStrings({
-            name: 'metadataeditor',
-            strings: strings
-        });
-    }
-
-    registerDictionary();
-
     function centerFocus(elem, horiz, on) {
         require(['scrollHelper'], function (scrollHelper) {
             var fn = on ? 'on' : 'off';
@@ -1258,7 +1219,7 @@
 
                 require(['text!./metadataeditor.template.html'], function (template) {
 
-                    elem.innerHTML = globalize.translateDocument(template, 'metadataeditor');
+                    elem.innerHTML = globalize.translateDocument(template, 'sharedcomponents');
 
                     elem.querySelector('.btnCancel').classList.add('hide');
 
