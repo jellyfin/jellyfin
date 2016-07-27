@@ -257,8 +257,7 @@ namespace MediaBrowser.Api.Playback.Hls
             return await GetSegmentResult(state, playlistPath, segmentPath, requestedIndex, job, cancellationToken).ConfigureAwait(false);
         }
 
-        // 256k
-        private const int BufferSize = 262144;
+        private const int BufferSize = 81920;
 
         private long GetStartPositionTicks(StreamState state, int requestedIndex)
         {

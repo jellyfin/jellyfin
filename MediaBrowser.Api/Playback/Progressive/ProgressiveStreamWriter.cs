@@ -16,7 +16,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         private readonly ILogger _logger;
 
         // 256k
-        private const int BufferSize = 262144;
+        private const int BufferSize = 81920;
 
         private long _bytesWritten = 0;
 
