@@ -1,4 +1,4 @@
-﻿define(['appStorage', 'jQuery', 'listView'], function (appStorage, $, listView) {
+﻿define(['jQuery', 'listView'], function ($, listView) {
 
     var data = {};
     function getPageData() {
@@ -56,22 +56,17 @@
 
             });
 
-            var view = getPageData().view;
-
-            if (view == "List") {
-
-                html = listView.getListViewHtml({
-                    items: result.Items,
-                    sortBy: query.SortBy,
-                    showIndex: false,
-                    showRemoveFromPlaylist: true,
-                    playFromHere: true,
-                    action: 'playallfromhere',
-                    smallIcon: true,
-                    dragHandle: true,
-                    playlistId: item.Id
-                });
-            }
+            html += listView.getListViewHtml({
+                items: result.Items,
+                sortBy: query.SortBy,
+                showIndex: false,
+                showRemoveFromPlaylist: true,
+                playFromHere: true,
+                action: 'playallfromhere',
+                smallIcon: true,
+                dragHandle: true,
+                playlistId: item.Id
+            });
 
             var elem = page.querySelector('#childrenContent .itemsContainer');
             elem.innerHTML = html;
