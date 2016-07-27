@@ -1,4 +1,13 @@
-﻿/* Links */
+﻿.backgroundContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    contain: layout style;
+}
+
+/* Links */
 .ui-body-b a {
     color: #52B54B /*{b-link-color}*/;
     font-weight: 500;

@@ -1,4 +1,31 @@
-﻿var Dashboard = {
+﻿function getWindowLocationSearch(win) {
+
+    var search = (win || window).location.search;
+
+    if (!search) {
+
+        var index = window.location.href.indexOf('?');
+        if (index != -1) {
+            search = window.location.href.substring(index);
+        }
+    }
+
+    return search || '';
+}
+
+function getParameterByName(name, url) {
+    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+    var regexS = "[\\?&]" + name + "=([^&#]*)";
+    var regex = new RegExp(regexS, "i");
+
+    var results = regex.exec(url || getWindowLocationSearch());
+    if (results == null)
+        return "";
+    else
+        return decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+var Dashboard = {
 
     isConnectMode: function () {
 
@@ -1196,24 +1223,12 @@ var AppInfo = {};
 
 (function () {
 
-    function isTouchDevice() {
-        return (('ontouchstart' in window)
-             || (navigator.MaxTouchPoints > 0)
-             || (navigator.msMaxTouchPoints > 0));
-    }
-
     function setAppInfo() {
-
-        if (isTouchDevice()) {
-            AppInfo.isTouchPreferred = true;
-        }
 
         var isCordova = Dashboard.isRunningInCordova();
 
-        AppInfo.enableDetailPageChapters = true;
         AppInfo.enableSearchInTopMenu = true;
         AppInfo.enableHomeFavorites = true;
-        AppInfo.enableNowPlayingBar = true;
         AppInfo.enableHomeTabs = true;
         AppInfo.enableNowPlayingPageBottomTabs = true;
         AppInfo.enableAutoSave = browserInfo.mobile;
@@ -1235,20 +1250,7 @@ var AppInfo = {};
                 AppInfo.enableHomeFavorites = false;
                 AppInfo.enableHomeTabs = false;
                 AppInfo.enableNowPlayingPageBottomTabs = false;
-
-                // Disable the now playing bar for the iphone since we already have the now playing tab at the bottom
-                if (navigator.userAgent.toString().toLowerCase().indexOf('iphone') != -1) {
-                    AppInfo.enableNowPlayingBar = false;
-                }
-
-            } else {
-                AppInfo.enableDetailPageChapters = false;
             }
-        }
-
-        if (!AppInfo.hasLowImageBandwidth) {
-            AppInfo.enableStudioTabs = true;
-            AppInfo.enableTvEpisodesTab = true;
         }
 
         AppInfo.supportsExternalPlayers = true;
@@ -1331,7 +1333,8 @@ var AppInfo = {};
     var localApiClient;
     function bindConnectionManagerEvents(connectionManager, events) {
 
-        Events.on(ConnectionManager, 'apiclientcreated', onApiClientCreated);
+        window.Events = events;
+        events.on(ConnectionManager, 'apiclientcreated', onApiClientCreated);
 
         connectionManager.currentApiClient = function () {
 
@@ -1411,10 +1414,6 @@ var AppInfo = {};
 
         var elem = document.documentElement;
 
-        if (AppInfo.isTouchPreferred) {
-            elem.classList.add('touch');
-        }
-
         if (!AppInfo.enableSupporterMembership) {
             elem.classList.add('supporterMembershipDisabled');
         }
@@ -1457,15 +1456,7 @@ var AppInfo = {};
 
     function getBowerPath() {
 
-        var bowerPath = "bower_components";
-
-        // Put the version into the bower path since we can't easily put a query string param on html imports
-        // Emby server will handle this
-        if (Dashboard.isConnectMode() && !Dashboard.isRunningInCordova()) {
-            //bowerPath += window.dashboardVersion;
-        }
-
-        return bowerPath;
+        return "bower_components";
     }
 
     function getLayoutManager(layoutManager) {
@@ -1785,7 +1776,7 @@ var AppInfo = {};
                 currentPlaylistIndex: function (options) {
                     return MediaController.currentPlaylistIndex(options);
                 },
-                canQueueMediaType: function(mediaType) {
+                canQueueMediaType: function (mediaType) {
                     return MediaController.canQueueMediaType(mediaType);
                 },
                 canPlay: function (item) {
@@ -2004,13 +1995,10 @@ var AppInfo = {};
         define("buttonenabled", ["legacy/buttonenabled"]);
 
         var deps = [];
-        deps.push('events');
 
         deps.push('scripts/mediacontroller');
 
-        require(deps, function (events) {
-
-            window.Events = events;
+        require(deps, function () {
 
             initAfterDependencies();
         });
@@ -2027,7 +2015,6 @@ var AppInfo = {};
     function initAfterDependencies() {
 
         var deps = [];
-        deps.push('scripts/extensions');
 
         if (!window.fetch) {
             deps.push('fetch');
@@ -2920,8 +2907,6 @@ var AppInfo = {};
             deps.push('css!devices/android/android.css');
         } else if (AppInfo.isNativeApp && browserInfo.safari) {
             deps.push('css!devices/ios/ios.css');
-        } else if (AppInfo.isNativeApp && browserInfo.edge) {
-            deps.push('css!devices/windowsphone/wp.css');
         }
 
         loadTheme();
@@ -2962,7 +2947,6 @@ var AppInfo = {};
 
             postInitDependencies.push('scripts/thememediaplayer');
             postInitDependencies.push('scripts/remotecontrol');
-            postInitDependencies.push('css!css/notifications.css');
             postInitDependencies.push('css!css/chromecast.css');
             postInitDependencies.push('scripts/autobackdrops');
 
@@ -2992,9 +2976,7 @@ var AppInfo = {};
                 postInitDependencies.push('scripts/chromecast');
             }
 
-            if (AppInfo.enableNowPlayingBar) {
-                postInitDependencies.push('scripts/nowplayingbar');
-            }
+            postInitDependencies.push('scripts/nowplayingbar');
 
             if (AppInfo.isNativeApp && browserInfo.safari) {
 

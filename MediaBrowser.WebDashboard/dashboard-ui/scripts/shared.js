@@ -40,7 +40,7 @@
 
         var chapters = item.Chapters || [];
 
-        if (!chapters.length || !AppInfo.enableDetailPageChapters) {
+        if (!chapters.length) {
             $('#scenesCollapsible', page).hide();
         } else {
             $('#scenesCollapsible', page).show();

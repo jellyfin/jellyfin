@@ -1,4 +1,4 @@
-﻿define(['itemHelper', 'layoutManager', 'scrollHelper', 'dialogHelper', 'datetime', 'loading', 'focusManager', 'connectionManager', 'globalize', 'require', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light', 'css!./../formdialog'], function (itemHelper, layoutManager, scrollHelper, dialogHelper, datetime, loading, focusManager, connectionManager, globalize, require) {
+﻿define(['itemHelper', 'layoutManager', 'dialogHelper', 'datetime', 'loading', 'focusManager', 'connectionManager', 'globalize', 'require', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light', 'css!./../formdialog'], function (itemHelper, layoutManager, dialogHelper, datetime, loading, focusManager, connectionManager, globalize, require) {
 
     var currentContext;
     var metadataEditorInfo;
@@ -20,7 +20,7 @@
         function afterContentTypeUpdated() {
 
             require(['toast'], function (toast) {
-                toast(globalize.translate('MessageItemSaved'));
+                toast(globalize.translate('sharedcomponents#MessageItemSaved'));
             });
 
             loading.hide();
@@ -55,9 +55,9 @@
     }
 
     function getSelectedAirDays(form) {
-        var checked = form.querySelectorAll('.chkAirDay:checked') || [];
-        return Array.prototype.map.call(checked, function () {
-            return this.getAttribute('data-day');
+        var checkedItems = form.querySelectorAll('.chkAirDay:checked') || [];
+        return Array.prototype.map.call(checkedItems, function (c) {
+            return c.getAttribute('data-day');
         });
     }
 
@@ -487,7 +487,7 @@
             var buttonId = "btnOpen1" + idInfo.Key;
             var formatString = idInfo.UrlFormatString || '';
 
-            var labelText = globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
+            var labelText = globalize.translate('sharedcomponents#LabelDynamicExternalId').replace('{0}', idInfo.Name);
 
             html += '<div class="inputContainer">';
             html += '<div style="display: flex; align-items: center;">';
@@ -718,14 +718,14 @@
 
         if (item.Type == "Person") {
             //todo
-            context.querySelector('#txtProductionYear').label(globalize.translate('LabelBirthYear'));
-            context.querySelector("#txtPremiereDate").label(globalize.translate('LabelBirthDate'));
-            context.querySelector("#txtEndDate").label(globalize.translate('LabelDeathDate'));
+            context.querySelector('#txtProductionYear').label(globalize.translate('sharedcomponents#LabelBirthYear'));
+            context.querySelector("#txtPremiereDate").label(globalize.translate('sharedcomponents#LabelBirthDate'));
+            context.querySelector("#txtEndDate").label(globalize.translate('sharedcomponents#LabelDeathDate'));
             showElement('#fldPlaceOfBirth');
         } else {
-            context.querySelector('#txtProductionYear').label(globalize.translate('LabelYear'));
-            context.querySelector("#txtPremiereDate").label(globalize.translate('LabelReleaseDate'));
-            context.querySelector("#txtEndDate").label(globalize.translate('LabelEndDate'));
+            context.querySelector('#txtProductionYear').label(globalize.translate('sharedcomponents#LabelYear'));
+            context.querySelector("#txtPremiereDate").label(globalize.translate('sharedcomponents#LabelReleaseDate'));
+            context.querySelector("#txtEndDate").label(globalize.translate('sharedcomponents#LabelEndDate'));
             hideElement('#fldPlaceOfBirth');
         }
 
@@ -739,13 +739,13 @@
             showElement('#fldIndexNumber');
 
             if (item.Type == "Episode") {
-                context.querySelector('#txtIndexNumber').label(globalize.translate('LabelEpisodeNumber'));
+                context.querySelector('#txtIndexNumber').label(globalize.translate('sharedcomponents#LabelEpisodeNumber'));
             } else if (item.Type == "Season") {
-                context.querySelector('#txtIndexNumber').label(globalize.translate('LabelSeasonNumber'));
+                context.querySelector('#txtIndexNumber').label(globalize.translate('sharedcomponents#LabelSeasonNumber'));
             } else if (item.Type == "Audio") {
-                context.querySelector('#txtIndexNumber').label(globalize.translate('LabelTrackNumber'));
+                context.querySelector('#txtIndexNumber').label(globalize.translate('sharedcomponents#LabelTrackNumber'));
             } else {
-                context.querySelector('#txtIndexNumber').label(globalize.translate('LabelNumber'));
+                context.querySelector('#txtIndexNumber').label(globalize.translate('sharedcomponents#LabelNumber'));
             }
         } else {
             hideElement('#fldIndexNumber');
@@ -768,7 +768,7 @@
         if (item.Type == "BoxSet") {
             showElement('#fldDisplayOrder', context);
 
-            context.querySelector('#selectDisplayOrder').innerHTML = '<option value="SortName">' + globalize.translate('OptionSortName') + '</option><option value="PremiereDate">' + globalize.translate('OptionReleaseDate') + '</option>';
+            context.querySelector('#selectDisplayOrder').innerHTML = '<option value="SortName">' + globalize.translate('sharedcomponents#SortName') + '</option><option value="PremiereDate">' + globalize.translate('sharedcomponents#ReleaseDate') + '</option>';
         } else {
             context.querySelector('#selectDisplayOrder').innerHTML = '';
             hideElement('#fldDisplayOrder', context);
@@ -973,8 +973,8 @@
         var html = "";
 
         html += "<option value=''></option>";
-        html += "<option value='Continuing'>" + globalize.translate('OptionContinuing') + "</option>";
-        html += "<option value='Ended'>" + globalize.translate('OptionEnded') + "</option>";
+        html += "<option value='Continuing'>" + globalize.translate('sharedcomponents#Continuing') + "</option>";
+        html += "<option value='Ended'>" + globalize.translate('sharedcomponents#Ended') + "</option>";
         select.innerHTML = html;
     }
 
@@ -1088,37 +1088,37 @@
         lockedFields = lockedFields || new Array();
 
         var metadatafields = [
-            { name: globalize.translate('OptionName'), value: "Name" },
-            { name: globalize.translate('OptionOverview'), value: "Overview" },
-            { name: globalize.translate('OptionGenres'), value: "Genres" },
-            { name: globalize.translate('OptionParentalRating'), value: "OfficialRating" },
-            { name: globalize.translate('OptionPeople'), value: "Cast" }
+            { name: globalize.translate('sharedcomponents#Name'), value: "Name" },
+            { name: globalize.translate('sharedcomponents#Overview'), value: "Overview" },
+            { name: globalize.translate('sharedcomponents#Genres'), value: "Genres" },
+            { name: globalize.translate('sharedcomponents#ParentalRating'), value: "OfficialRating" },
+            { name: globalize.translate('sharedcomponents#People'), value: "Cast" }
         ];
 
         if (item.Type == "Person") {
-            metadatafields.push({ name: globalize.translate('OptionBirthLocation'), value: "ProductionLocations" });
+            metadatafields.push({ name: globalize.translate('sharedcomponents#BirthLocation'), value: "ProductionLocations" });
         } else {
-            metadatafields.push({ name: globalize.translate('OptionProductionLocations'), value: "ProductionLocations" });
+            metadatafields.push({ name: globalize.translate('sharedcomponents#ProductionLocations'), value: "ProductionLocations" });
         }
 
         if (item.Type == "Series") {
-            metadatafields.push({ name: globalize.translate('OptionRuntime'), value: "Runtime" });
+            metadatafields.push({ name: globalize.translate('Runtime'), value: "Runtime" });
         }
 
-        metadatafields.push({ name: globalize.translate('OptionStudios'), value: "Studios" });
-        metadatafields.push({ name: globalize.translate('OptionTags'), value: "Tags" });
-        metadatafields.push({ name: globalize.translate('OptionKeywords'), value: "Keywords" });
-        metadatafields.push({ name: globalize.translate('OptionImages'), value: "Images" });
-        metadatafields.push({ name: globalize.translate('OptionBackdrops'), value: "Backdrops" });
+        metadatafields.push({ name: globalize.translate('sharedcomponents#Studios'), value: "Studios" });
+        metadatafields.push({ name: globalize.translate('sharedcomponents#Tags'), value: "Tags" });
+        metadatafields.push({ name: globalize.translate('sharedcomponents#Keywords'), value: "Keywords" });
+        metadatafields.push({ name: globalize.translate('sharedcomponents#Images'), value: "Images" });
+        metadatafields.push({ name: globalize.translate('sharedcomponents#Backdrops'), value: "Backdrops" });
 
         if (item.Type == "Game") {
-            metadatafields.push({ name: globalize.translate('OptionScreenshots'), value: "Screenshots" });
+            metadatafields.push({ name: globalize.translate('sharedcomponents#Screenshots'), value: "Screenshots" });
         }
 
         var html = '';
 
-        html += "<h1>" + globalize.translate('HeaderEnabledFields') + "</h1>";
-        html += "<p>" + globalize.translate('HeaderEnabledFieldsHelp') + "</p>";
+        html += "<h1>" + globalize.translate('sharedcomponents#HeaderEnabledFields') + "</h1>";
+        html += "<p>" + globalize.translate('sharedcomponents#HeaderEnabledFieldsHelp') + "</p>";
         html += generateSliders(metadatafields, lockedFields);
         container.innerHTML = html;
     }
@@ -1163,55 +1163,91 @@
         });
     }
 
+    function registerDictionary() {
+
+        var baseUrl = require.toUrl('.').split('?')[0] + '/strings/';
+
+        var languages = ['en-US'];
+
+        var strings = languages.map(function (i) {
+            return {
+                lang: i,
+                path: baseUrl + i + '.json'
+            };
+        });
+
+        globalize.loadStrings({
+            name: 'metadataeditor',
+            strings: strings
+        });
+    }
+
+    registerDictionary();
+
+    function centerFocus(elem, horiz, on) {
+        require(['scrollHelper'], function (scrollHelper) {
+            var fn = on ? 'on' : 'off';
+            scrollHelper.centerFocus[fn](elem, horiz);
+        });
+    }
+
+    function show(itemId, serverId, resolve, reject) {
+        loading.show();
+
+        require(['text!./metadataeditor.template.html'], function (template) {
+
+            var dialogOptions = {
+                removeOnClose: true,
+                scrollY: false
+            };
+
+            if (layoutManager.tv) {
+                dialogOptions.size = 'fullscreen';
+            } else {
+                dialogOptions.size = 'medium';
+            }
+
+            var dlg = dialogHelper.createDialog(dialogOptions);
+
+            dlg.classList.add('ui-body-b');
+            dlg.classList.add('background-theme-b');
+
+            dlg.classList.add('formDialog');
+
+            var html = '';
+
+            html += globalize.translateDocument(template, 'sharedcomponents');
+
+            dlg.innerHTML = html;
+            document.body.appendChild(dlg);
+
+            if (layoutManager.tv) {
+                centerFocus(dlg.querySelector('.dialogContent'), false, true);
+            }
+
+            dialogHelper.open(dlg);
+
+            dlg.addEventListener('close', function () {
+                if (layoutManager.tv) {
+                    centerFocus(dlg.querySelector('.dialogContent'), false, false);
+                }
+
+                unbindItemChanged(dlg, connectionManager.getApiClient(serverId));
+                resolve();
+            });
+
+            currentContext = dlg;
+
+            init(dlg, connectionManager.getApiClient(serverId));
+
+            reload(dlg, itemId, serverId);
+        });
+    }
+
     return {
         show: function (itemId, serverId) {
             return new Promise(function (resolve, reject) {
-
-                loading.show();
-
-                require(['text!./metadataeditor.template.html'], function (template) {
-
-                    var dialogOptions = {
-                        removeOnClose: true
-                    };
-
-                    if (layoutManager.tv) {
-                        dialogOptions.size = 'fullscreen';
-                    } else {
-                        dialogOptions.size = 'medium';
-                    }
-
-                    var dlg = dialogHelper.createDialog(dialogOptions);
-
-                    dlg.classList.add('ui-body-b');
-                    dlg.classList.add('background-theme-b');
-
-                    dlg.classList.add('formDialog');
-
-                    var html = '';
-
-                    html += globalize.translateDocument(template);
-
-                    dlg.innerHTML = html;
-                    document.body.appendChild(dlg);
-
-                    if (layoutManager.tv) {
-                        scrollHelper.centerFocus.on(dlg.querySelector('.dialogContent'), false);
-                    }
-
-                    dialogHelper.open(dlg);
-
-                    dlg.addEventListener('close', function () {
-                        unbindItemChanged(dlg, connectionManager.getApiClient(serverId));
-                        resolve();
-                    });
-
-                    currentContext = dlg;
-
-                    init(dlg, connectionManager.getApiClient(serverId));
-
-                    reload(dlg, itemId, serverId);
-                });
+                return show(itemId, serverId, resolve, reject);
             });
         },
 
@@ -1222,7 +1258,7 @@
 
                 require(['text!./metadataeditor.template.html'], function (template) {
 
-                    elem.innerHTML = globalize.translateDocument(template);
+                    elem.innerHTML = globalize.translateDocument(template, 'metadataeditor');
 
                     elem.querySelector('.btnCancel').classList.add('hide');
 

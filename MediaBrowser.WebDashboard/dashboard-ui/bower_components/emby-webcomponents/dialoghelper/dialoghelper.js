@@ -1,4 +1,4 @@
-﻿define(['historyManager', 'focusManager', 'browser', 'layoutManager', 'inputManager', 'scrollHelper', 'dom', 'css!./dialoghelper.css', 'scrollStyles'], function (historyManager, focusManager, browser, layoutManager, inputManager, scrollHelper, dom) {
+﻿define(['historyManager', 'focusManager', 'browser', 'layoutManager', 'inputManager', 'dom', 'css!./dialoghelper.css', 'scrollStyles'], function (historyManager, focusManager, browser, layoutManager, inputManager, dom) {
 
     var globalOnOpenCallback;
 
@@ -13,6 +13,18 @@
         }
 
         return false;
+    }
+
+    function removeCenterFocus(dlg) {
+
+        if (layoutManager.tv) {
+            if (dlg.classList.contains('smoothScrollX')) {
+                centerFocus(dlg, true, false);
+            }
+            else if (dlg.classList.contains('smoothScrollY')) {
+                centerFocus(dlg, false, false);
+            }
+        }
     }
 
     function dialogHashHandler(dlg, hash, resolve) {
@@ -70,6 +82,7 @@
             activeElement.focus();
 
             if (dlg.getAttribute('data-removeonclose') == 'true') {
+                removeCenterFocus(dlg);
                 dlg.parentNode.removeChild(dlg);
             }
 
@@ -358,6 +371,13 @@
         }
     }
 
+    function centerFocus(elem, horiz, on) {
+        require(['scrollHelper'], function (scrollHelper) {
+            var fn = on ? 'on' : 'off';
+            scrollHelper.centerFocus[fn](elem, horiz);
+        });
+    }
+
     function createDialog(options) {
 
         options = options || {};
@@ -438,14 +458,14 @@
             dlg.classList.add('smoothScrollX');
 
             if (layoutManager.tv) {
-                scrollHelper.centerFocus.on(dlg, true);
+                centerFocus(dlg, true, true);
             }
         }
         else if (options.scrollY !== false) {
             dlg.classList.add('smoothScrollY');
 
             if (layoutManager.tv) {
-                scrollHelper.centerFocus.on(dlg, false);
+                centerFocus(dlg, false, true);
             }
         }
 

@@ -1,4 +1,4 @@
-﻿define(['require', 'browser', 'globalize', 'connectionManager', 'serverNotifications', 'loading', 'scrollHelper', 'datetime', 'focusManager', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationservices', 'clearButtonStyle', 'css!./guide.css', 'material-icons', 'scrollStyles', 'emby-button'], function (require, browser, globalize, connectionManager, serverNotifications, loading, scrollHelper, datetime, focusManager, imageLoader, events, layoutManager, itemShortcuts, registrationServices) {
+﻿define(['require', 'browser', 'globalize', 'connectionManager', 'serverNotifications', 'loading', 'datetime', 'focusManager', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationservices', 'clearButtonStyle', 'css!./guide.css', 'material-icons', 'scrollStyles', 'emby-button'], function (require, browser, globalize, connectionManager, serverNotifications, loading, datetime, focusManager, imageLoader, events, layoutManager, itemShortcuts, registrationServices) {
 
     function Guide(options) {
 
@@ -37,6 +37,7 @@
             events.off(serverNotifications, 'SeriesTimerCancelled', onSeriesTimerCancelled);
 
             clearCurrentTimeUpdateInterval();
+            setScrollEvents(options.element, false);
             itemShortcuts.off(options.element);
             items = {};
         };
@@ -669,14 +670,15 @@
             });
         }
 
-        function createVerticalScroller(view, pageInstance) {
+        function setScrollEvents(view, enabled) {
 
             if (layoutManager.tv) {
-                scrollHelper.centerFocus.on(view.querySelector('.smoothScrollY'), false);
+                require(['scrollHelper'], function (scrollHelper) {
 
-                var programGrid = view.querySelector('.programGrid');
-
-                scrollHelper.centerFocus.on(programGrid, true);
+                    var fn = enabled ? 'on' : 'off';
+                    scrollHelper.centerFocus[fn](view.querySelector('.smoothScrollY'), false);
+                    scrollHelper.centerFocus[fn](view.querySelector('.programGrid'), true);
+                });
             }
         }
 
@@ -835,7 +837,7 @@
 
             context.classList.add('tvguide');
 
-            createVerticalScroller(context, self);
+            setScrollEvents(context, true);
             itemShortcuts.on(context);
 
             events.trigger(self, 'load');
