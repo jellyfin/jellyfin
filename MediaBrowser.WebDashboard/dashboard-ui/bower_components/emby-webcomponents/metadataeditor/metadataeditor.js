@@ -55,9 +55,9 @@
     }
 
     function getSelectedAirDays(form) {
-        var checked = form.querySelectorAll('.chkAirDay:checked') || [];
-        return Array.prototype.map.call(checked, function () {
-            return this.getAttribute('data-day');
+        var checkedItems = form.querySelectorAll('.chkAirDay:checked') || [];
+        return Array.prototype.map.call(checkedItems, function (c) {
+            return c.getAttribute('data-day');
         });
     }
 
@@ -121,97 +121,92 @@
 
         var form = this;
 
-        try {
-            var item = {
-                Id: currentItem.Id,
-                Name: form.querySelector('#txtName').value,
-                OriginalTitle: form.querySelector('#txtOriginalName').value,
-                ForcedSortName: form.querySelector('#txtSortName').value,
-                DisplayMediaType: form.querySelector('#txtDisplayMediaType').value,
-                CommunityRating: form.querySelector('#txtCommunityRating').value,
-                VoteCount: form.querySelector('#txtCommunityVoteCount').value,
-                HomePageUrl: form.querySelector('#txtHomePageUrl').value,
-                Budget: form.querySelector('#txtBudget').value,
-                Revenue: form.querySelector('#txtRevenue').value,
-                CriticRating: form.querySelector('#txtCriticRating').value,
-                CriticRatingSummary: form.querySelector('#txtCriticRatingSummary').value,
-                IndexNumber: form.querySelector('#txtIndexNumber').value || null,
-                AbsoluteEpisodeNumber: form.querySelector('#txtAbsoluteEpisodeNumber').value,
-                DvdEpisodeNumber: form.querySelector('#txtDvdEpisodeNumber').value,
-                DvdSeasonNumber: form.querySelector('#txtDvdSeasonNumber').value,
-                AirsBeforeSeasonNumber: form.querySelector('#txtAirsBeforeSeason').value,
-                AirsAfterSeasonNumber: form.querySelector('#txtAirsAfterSeason').value,
-                AirsBeforeEpisodeNumber: form.querySelector('#txtAirsBeforeEpisode').value,
-                ParentIndexNumber: form.querySelector('#txtParentIndexNumber').value || null,
-                DisplayOrder: form.querySelector('#selectDisplayOrder').value,
-                Players: form.querySelector('#txtPlayers').value,
-                Album: form.querySelector('#txtAlbum').value,
-                AlbumArtist: getAlbumArtists(form),
-                ArtistItems: getArtists(form),
-                Metascore: form.querySelector('#txtMetascore').value,
-                AwardSummary: form.querySelector('#txtAwardSummary').value,
-                Overview: form.querySelector('#txtOverview').value,
-                ShortOverview: form.querySelector('#txtShortOverview').value,
-                Status: form.querySelector('#selectStatus').value,
-                AirDays: getSelectedAirDays(form),
-                AirTime: form.querySelector('#txtAirTime').value,
-                Genres: editableListViewValues(form.querySelector("#listGenres")),
-                ProductionLocations: editableListViewValues(form.querySelector("#listCountries")),
-                Tags: editableListViewValues(form.querySelector("#listTags")),
-                Keywords: editableListViewValues(form.querySelector("#listKeywords")),
-                Studios: editableListViewValues(form.querySelector("#listStudios")).map(function (element) { return { Name: element }; }),
+        var item = {
+            Id: currentItem.Id,
+            Name: form.querySelector('#txtName').value,
+            OriginalTitle: form.querySelector('#txtOriginalName').value,
+            ForcedSortName: form.querySelector('#txtSortName').value,
+            DisplayMediaType: form.querySelector('#txtDisplayMediaType').value,
+            CommunityRating: form.querySelector('#txtCommunityRating').value,
+            VoteCount: form.querySelector('#txtCommunityVoteCount').value,
+            HomePageUrl: form.querySelector('#txtHomePageUrl').value,
+            Budget: form.querySelector('#txtBudget').value,
+            Revenue: form.querySelector('#txtRevenue').value,
+            CriticRating: form.querySelector('#txtCriticRating').value,
+            CriticRatingSummary: form.querySelector('#txtCriticRatingSummary').value,
+            IndexNumber: form.querySelector('#txtIndexNumber').value || null,
+            AbsoluteEpisodeNumber: form.querySelector('#txtAbsoluteEpisodeNumber').value,
+            DvdEpisodeNumber: form.querySelector('#txtDvdEpisodeNumber').value,
+            DvdSeasonNumber: form.querySelector('#txtDvdSeasonNumber').value,
+            AirsBeforeSeasonNumber: form.querySelector('#txtAirsBeforeSeason').value,
+            AirsAfterSeasonNumber: form.querySelector('#txtAirsAfterSeason').value,
+            AirsBeforeEpisodeNumber: form.querySelector('#txtAirsBeforeEpisode').value,
+            ParentIndexNumber: form.querySelector('#txtParentIndexNumber').value || null,
+            DisplayOrder: form.querySelector('#selectDisplayOrder').value,
+            Players: form.querySelector('#txtPlayers').value,
+            Album: form.querySelector('#txtAlbum').value,
+            AlbumArtist: getAlbumArtists(form),
+            ArtistItems: getArtists(form),
+            Metascore: form.querySelector('#txtMetascore').value,
+            AwardSummary: form.querySelector('#txtAwardSummary').value,
+            Overview: form.querySelector('#txtOverview').value,
+            ShortOverview: form.querySelector('#txtShortOverview').value,
+            Status: form.querySelector('#selectStatus').value,
+            AirDays: getSelectedAirDays(form),
+            AirTime: form.querySelector('#txtAirTime').value,
+            Genres: editableListViewValues(form.querySelector("#listGenres")),
+            ProductionLocations: editableListViewValues(form.querySelector("#listCountries")),
+            Tags: editableListViewValues(form.querySelector("#listTags")),
+            Keywords: editableListViewValues(form.querySelector("#listKeywords")),
+            Studios: editableListViewValues(form.querySelector("#listStudios")).map(function (element) { return { Name: element }; }),
 
-                PremiereDate: getDateFromForm(form, '#txtPremiereDate', 'PremiereDate'),
-                DateCreated: getDateFromForm(form, '#txtDateAdded', 'DateCreated'),
-                EndDate: getDateFromForm(form, '#txtEndDate', 'EndDate'),
-                ProductionYear: form.querySelector('#txtProductionYear').value,
-                AspectRatio: form.querySelector('#txtOriginalAspectRatio').value,
-                Video3DFormat: form.querySelector('#select3dFormat').value,
+            PremiereDate: getDateFromForm(form, '#txtPremiereDate', 'PremiereDate'),
+            DateCreated: getDateFromForm(form, '#txtDateAdded', 'DateCreated'),
+            EndDate: getDateFromForm(form, '#txtEndDate', 'EndDate'),
+            ProductionYear: form.querySelector('#txtProductionYear').value,
+            AspectRatio: form.querySelector('#txtOriginalAspectRatio').value,
+            Video3DFormat: form.querySelector('#select3dFormat').value,
 
-                OfficialRating: form.querySelector('#selectOfficialRating').value,
-                CustomRating: form.querySelector('#selectCustomRating').value,
-                People: currentItem.People,
-                LockData: form.querySelector("#chkLockData").checked,
-                LockedFields: Array.prototype.filter.call(form.querySelectorAll('.selectLockedField'), function (c) {
-                    return !c.checked;
-                }).map(function (c) {
-                    return c.getAttribute('data-value');
-                })
-            };
+            OfficialRating: form.querySelector('#selectOfficialRating').value,
+            CustomRating: form.querySelector('#selectCustomRating').value,
+            People: currentItem.People,
+            LockData: form.querySelector("#chkLockData").checked,
+            LockedFields: Array.prototype.filter.call(form.querySelectorAll('.selectLockedField'), function (c) {
+                return !c.checked;
+            }).map(function (c) {
+                return c.getAttribute('data-value');
+            })
+        };
 
-            item.ProviderIds = Object.assign({}, currentItem.ProviderIds);
+        item.ProviderIds = Object.assign({}, currentItem.ProviderIds);
 
-            var idElements = form.querySelectorAll('.txtExternalId');
-            Array.prototype.map.call(idElements, function (idElem) {
-                var providerKey = idElem.getAttribute('data-providerkey');
-                item.ProviderIds[providerKey] = idElem.value;
-            });
+        var idElements = form.querySelectorAll('.txtExternalId');
+        Array.prototype.map.call(idElements, function (idElem) {
+            var providerKey = idElem.getAttribute('data-providerkey');
+            item.ProviderIds[providerKey] = idElem.value;
+        });
 
-            item.PreferredMetadataLanguage = form.querySelector('#selectLanguage').value;
-            item.PreferredMetadataCountryCode = form.querySelector('#selectCountry').value;
+        item.PreferredMetadataLanguage = form.querySelector('#selectLanguage').value;
+        item.PreferredMetadataCountryCode = form.querySelector('#selectCountry').value;
 
-            if (currentItem.Type == "Person") {
+        if (currentItem.Type == "Person") {
 
-                var placeOfBirth = form.querySelector('#txtPlaceOfBirth').value;
+            var placeOfBirth = form.querySelector('#txtPlaceOfBirth').value;
 
-                item.ProductionLocations = placeOfBirth ? [placeOfBirth] : [];
-            }
-
-            if (currentItem.Type == "Series") {
-
-                // 600000000
-                var seriesRuntime = form.querySelector('#txtSeriesRuntime').value;
-                item.RunTimeTicks = seriesRuntime ? (seriesRuntime * 600000000) : null;
-            }
-
-            var tagline = form.querySelector('#txtTagline').value;
-            item.Taglines = tagline ? [tagline] : [];
-
-            submitUpdatedItem(form, item);
-
-        } catch (err) {
-            alert(err);
+            item.ProductionLocations = placeOfBirth ? [placeOfBirth] : [];
         }
+
+        if (currentItem.Type == "Series") {
+
+            // 600000000
+            var seriesRuntime = form.querySelector('#txtSeriesRuntime').value;
+            item.RunTimeTicks = seriesRuntime ? (seriesRuntime * 600000000) : null;
+        }
+
+        var tagline = form.querySelector('#txtTagline').value;
+        item.Taglines = tagline ? [tagline] : [];
+
+        submitUpdatedItem(form, item);
 
         e.preventDefault();
         e.stopPropagation();
@@ -1044,7 +1039,7 @@
 
         elem.innerHTML = html;
 
-        var deleteButton = elem.querySelector('.btnDeletePerson')
+        var deleteButton = elem.querySelector('.btnDeletePerson');
         if (deleteButton) {
             deleteButton.addEventListener('click', function () {
 
@@ -1055,7 +1050,7 @@
             }.bind(deleteButton));
         }
 
-        var editButton = elem.querySelector('.btnEditPerson')
+        var editButton = elem.querySelector('.btnEditPerson');
         if (editButton) {
             editButton.addEventListener('click', function () {
 
