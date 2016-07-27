@@ -71,10 +71,10 @@
         return pos;
     }
 
-    function addCenterFocus(dlg) {
-
+    function centerFocus(elem, horiz, on) {
         require(['scrollHelper'], function (scrollHelper) {
-            scrollHelper.centerFocus.on(dlg.querySelector('.actionSheetScroller'), false);
+            var fn = on ? 'on' : 'off';
+            scrollHelper.centerFocus[fn](elem, horiz);
         });
     }
 
@@ -191,7 +191,7 @@
         dlg.innerHTML = html;
 
         if (layoutManager.tv) {
-            addCenterFocus(dlg);
+            centerFocus(dlg.querySelector('.actionSheetScroller'), false, true);
         }
 
         if (options.showCancel) {
@@ -227,6 +227,10 @@
         return new Promise(function (resolve, reject) {
 
             dlg.addEventListener('close', function () {
+
+                if (layoutManager.tv) {
+                    centerFocus(dlg.querySelector('.actionSheetScroller'), false, false);
+                }
 
                 if (timeout) {
                     clearTimeout(timeout);

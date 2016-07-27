@@ -35,7 +35,7 @@
 
     .inputLabel.blank:not(.nofloat) {
         transform-origin: left top;
-        transform: scale(1.4,1.4) translateY(80%);
+        transform: scale(1.3,1.3) translateY(86%);
     }
 
 .inputLabel.focused:not(.blank) {

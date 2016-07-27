@@ -10,17 +10,16 @@
   "license": "https://github.com/MediaBrowser/emby-webcomponents/blob/master/LICENSE",
   "homepage": "https://github.com/MediaBrowser/emby-webcomponents",
   "dependencies": {
-    "requirejs": "requirejs#^2.1.22",
-    "isMobile": "isMobile#^0.3.9"
+    "requirejs": "requirejs#^2.1.22"
   },
   "devDependencies": {},
   "ignore": [],
-  "version": "1.4.115",
-  "_release": "1.4.115",
+  "version": "1.4.123",
+  "_release": "1.4.123",
   "_resolution": {
     "type": "version",
-    "tag": "1.4.115",
-    "commit": "eaab061d672e114a94c94afcd5e5b3cb9b2e5c13"
+    "tag": "1.4.123",
+    "commit": "9939e23191c1f45c2ea59e41a4e55c22c2839bb7"
   },
   "_source": "https://github.com/MediaBrowser/emby-webcomponents.git",
   "_target": "^1.2.0",

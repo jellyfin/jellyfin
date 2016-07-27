@@ -30,19 +30,8 @@
     z-index: -1;
 }
 
-.pageBackground {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: -1;
-}
-
-.withBackdrop .pageBackground {
+.withBackdrop {
     background-color: rgba(6, 6,6, .9);
-    display: block;
 }
 
 .pageWithAbsoluteTabs neon-animatable {
@@ -94,10 +83,6 @@
         padding-left: .5em !important;
         padding-right: .5em !important;
     }
-}
-
-.libraryPage .currentUsername {
-    color: #fff;
 }
 
 .listHeader {
@@ -296,7 +281,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-top: 0 !important;
 }
 
-.withBackdrop .noBackdrop {
+.withBackdrop + .mainDrawerPanel .noBackdrop {
     background-color: transparent;
 }
 
@@ -595,14 +580,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .detailSectionHeaderButton {
     margin-left: 1em;
-}
-
-.lblDetailTab {
-    border-color: #212121 !important;
-}
-
-.editMetadataForm {
-    max-width: 100%;
 }
 
 .detailImageProgressContainer {
@@ -1123,16 +1100,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         bottom: 200px;
     }
 }
-
-.channelHeader {
-    padding: 1em;
-    text-align: center;
-    border-bottom: 1px solid #333;
-}
-
-    .channelHeader a {
-        text-decoration: none;
-    }
 
 @media all and (max-width: 1200px) {
 

@@ -1,8 +1,8 @@
-﻿define(['scrollHelper', 'viewManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'itemHelper', 'mediaInfo', 'scroller', 'indicators', 'dom', 'scrollStyles'], function (scrollHelper, viewManager, appSettings, appStorage, appHost, datetime, itemHelper, mediaInfo, scroller, indicators, dom) {
+﻿define(['viewManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'itemHelper', 'mediaInfo', 'scroller', 'indicators', 'dom', 'scrollStyles'], function (viewManager, appSettings, appStorage, appHost, datetime, itemHelper, mediaInfo, scroller, indicators, dom) {
 
     function fadeInRight(elem) {
 
-        var pct = browserInfo.mobile ? '3%' : '0.5%';
+        var pct = browserInfo.mobile ? '3.5%' : '0.5%';
 
         var keyframes = [
           { opacity: '0', transform: 'translate3d(' + pct + ', 0, 0)', offset: 0 },
@@ -572,14 +572,6 @@
 
                         ImageEditor.show(itemId).then(resolve, reject);
                     });
-                });
-            },
-
-            editMetadata: function (itemId) {
-
-                require(['components/metadataeditor/metadataeditor'], function (metadataeditor) {
-
-                    metadataeditor.show(itemId);
                 });
             },
 

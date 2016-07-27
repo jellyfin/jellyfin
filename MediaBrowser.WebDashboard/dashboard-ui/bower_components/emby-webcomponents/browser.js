@@ -1,4 +1,4 @@
-﻿define(['isMobile'], function (isMobile) {
+﻿define([], function () {
 
     function isTv() {
 
@@ -128,7 +128,7 @@
         browser.tv = true;
     }
 
-    if (isMobile.any) {
+    if (userAgent.toLowerCase().indexOf("mobi") != -1) {
         browser.mobile = true;
     }
 

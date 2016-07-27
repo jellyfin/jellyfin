@@ -1,0 +1,35 @@
+﻿<div class="dialogHeader">
+    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
+    <div class="dialogHeaderTitle">
+        ${Edit}
+    </div>
+</div>
+
+<div class="dialogContent smoothScrollY" style="padding-top:2em;">
+    <form class="popupEditPersonForm dialogContentInner centeredContent">
+
+        <div class="inputContainer">
+            <input type="text" is="emby-input" class="txtPersonName" required="required" label="${LabelName}" />
+        </div>
+
+        <div class="selectContainer">
+            <select is="emby-select" id="selectPersonType" class="selectPersonType" label="${LabelType}">
+                <option value=""></option>
+                <option value="Actor">${Actor}</option>
+                <option value="Composer">${Composer}</option>
+                <option value="Director">${Director}</option>
+                <option value="GuestStar">${GuestStar}</option>
+                <option value="Producer">${Producer}</option>
+                <option value="Writer">${Writer}</option>
+            </select>
+        </div>
+        <div class="inputContainer">
+            <input is="emby-input" type="text" class="txtPersonRole" label="${LabelPersonRole}" />
+            <div class="fieldDescription">${LabelPersonRoleHelp}</div>
+        </div>
+        <button is="emby-button" type="submit" class="raised submit block">
+            <i class="md-icon">check</i>
+            <span>${Save}</span>
+        </button>
+    </form>
+</div>

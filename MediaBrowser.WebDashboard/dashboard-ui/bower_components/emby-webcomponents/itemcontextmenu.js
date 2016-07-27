@@ -45,16 +45,14 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
             if (itemHelper.canEdit(user, item.Type)) {
 
-                if (isMobileApp) {
-                    if (options.edit !== false) {
+                if (options.edit !== false) {
 
-                        var text = item.Type == 'Timer' ? globalize.translate('sharedcomponents#Edit') : globalize.translate('sharedcomponents#EditInfo');
+                    var text = item.Type == 'Timer' ? globalize.translate('sharedcomponents#Edit') : globalize.translate('sharedcomponents#EditInfo');
 
-                        commands.push({
-                            name: text,
-                            id: 'edit'
-                        });
-                    }
+                    commands.push({
+                        name: text,
+                        id: 'edit'
+                    });
                 }
             }
 
@@ -516,16 +514,17 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
         return new Promise(function (resolve, reject) {
 
+            var serverId = apiClient.serverInfo().Id;
+
             if (item.Type == 'Timer') {
                 require(['recordingEditor'], function (recordingEditor) {
 
-                    var serverId = apiClient.serverInfo().Id;
                     recordingEditor.show(item.Id, serverId).then(resolve, reject);
                 });
             } else {
-                require(['components/metadataeditor/metadataeditor'], function (metadataeditor) {
+                require(['metadataEditor'], function (metadataEditor) {
 
-                    metadataeditor.show(item.Id).then(resolve, reject);
+                    metadataEditor.show(item.Id, serverId).then(resolve, reject);
                 });
             }
         });

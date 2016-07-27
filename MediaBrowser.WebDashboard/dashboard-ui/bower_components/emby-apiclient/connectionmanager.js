@@ -1,4 +1,4 @@
-﻿define(['events', 'apiclient', 'appStorage'], function (Events, apiClientFactory, appStorage) {
+﻿define(['events', 'apiclient', 'appStorage'], function (events, apiClientFactory, appStorage) {
 
     var ConnectionState = {
         Unavailable: 0,
@@ -321,7 +321,7 @@
                 credentialProvider.credentials(credentials);
             }
 
-            Events.trigger(self, 'apiclientcreated', [apiClient]);
+            events.trigger(self, 'apiclientcreated', [apiClient]);
 
             if (existingServer.Id) {
                 return;
@@ -353,7 +353,7 @@
         function onConnectUserSignIn(user) {
 
             connectUser = user;
-            Events.trigger(self, 'connectusersignedin', [user]);
+            events.trigger(self, 'connectusersignedin', [user]);
         }
 
         function getOrAddApiClient(server, connectionMode) {
@@ -374,7 +374,7 @@
                     onAuthenticated(instance, result, {}, true);
                 };
 
-                Events.trigger(self, 'apiclientcreated', [apiClient]);
+                events.trigger(self, 'apiclientcreated', [apiClient]);
             }
 
             console.log('returning instance from getOrAddApiClient');
@@ -462,7 +462,7 @@
             // Ensure this is created so that listeners of the event can get the apiClient instance
             getOrAddApiClient(server, connectionMode);
 
-            Events.trigger(self, 'localusersignedin', [user]);
+            events.trigger(self, 'localusersignedin', [user]);
         }
 
         function ensureConnectUser(credentials) {
@@ -729,7 +729,7 @@
 
                 if (connectUser) {
                     connectUser = null;
-                    Events.trigger(self, 'connectusersignedout');
+                    events.trigger(self, 'connectusersignedout');
                 }
             });
         };
@@ -744,10 +744,10 @@
 
             return apiClient.logout().then(function () {
 
-                Events.trigger(self, 'localusersignedout', [logoutInfo]);
+                events.trigger(self, 'localusersignedout', [logoutInfo]);
             }, function () {
 
-                Events.trigger(self, 'localusersignedout', [logoutInfo]);
+                events.trigger(self, 'localusersignedout', [logoutInfo]);
             });
         }
 
@@ -904,15 +904,9 @@
 
             console.log('Begin connect');
 
-            return new Promise(function (resolve, reject) {
+            return self.getAvailableServers().then(function (servers) {
 
-                self.getAvailableServers().then(function (servers) {
-
-                    self.connectToServers(servers, options).then(function (result) {
-
-                        resolve(result);
-                    });
-                });
+                return self.connectToServers(servers, options);
             });
         };
 
@@ -925,58 +919,51 @@
 
             console.log('Begin connectToServers, with ' + servers.length + ' servers');
 
-            return new Promise(function (resolve, reject) {
+            if (servers.length == 1) {
 
-                if (servers.length == 1) {
+                return self.connectToServer(servers[0], options).then(function (result) {
 
-                    self.connectToServer(servers[0], options).then(function (result) {
+                    if (result.State == ConnectionState.Unavailable) {
 
-                        if (result.State == ConnectionState.Unavailable) {
-
-                            result.State = result.ConnectUser == null ?
-                                ConnectionState.ConnectSignIn :
-                                ConnectionState.ServerSelection;
-                        }
-
-                        console.log('resolving connectToServers with result.State: ' + result.State);
-                        resolve(result);
-
-                    });
-
-                } else {
-
-                    var firstServer = servers.length ? servers[0] : null;
-                    // See if we have any saved credentials and can auto sign in
-                    if (firstServer) {
-                        self.connectToServer(firstServer, options).then(function (result) {
-
-                            if (result.State == ConnectionState.SignedIn) {
-
-                                resolve(result);
-
-                            } else {
-                                resolve({
-                                    Servers: servers,
-                                    State: (!servers.length && !self.connectUser()) ? ConnectionState.ConnectSignIn : ConnectionState.ServerSelection,
-                                    ConnectUser: self.connectUser()
-                                });
-                            }
-
-                        });
-                    } else {
-
-                        resolve({
-                            Servers: servers,
-                            State: (!servers.length && !self.connectUser()) ? ConnectionState.ConnectSignIn : ConnectionState.ServerSelection,
-                            ConnectUser: self.connectUser()
-                        });
+                        result.State = result.ConnectUser == null ?
+                            ConnectionState.ConnectSignIn :
+                            ConnectionState.ServerSelection;
                     }
-                }
 
+                    console.log('resolving connectToServers with result.State: ' + result.State);
+                    return result;
+                });
+            }
+
+            var firstServer = servers.length ? servers[0] : null;
+            // See if we have any saved credentials and can auto sign in
+            if (firstServer) {
+                return self.connectToServer(firstServer, options).then(function (result) {
+
+                    if (result.State == ConnectionState.SignedIn) {
+
+                        return result;
+
+                    }
+
+                    return {
+                        Servers: servers,
+                        State: (!servers.length && !self.connectUser()) ? ConnectionState.ConnectSignIn : ConnectionState.ServerSelection,
+                        ConnectUser: self.connectUser()
+                    };
+                });
+            }
+
+            return Promise.resolve({
+                Servers: servers,
+                State: (!servers.length && !self.connectUser()) ? ConnectionState.ConnectSignIn : ConnectionState.ServerSelection,
+                ConnectUser: self.connectUser()
             });
         };
 
         function beginWakeServer(server) {
+
+            console.log('beginWakeServer');
 
             require(['wakeonlan'], function (wakeonlan) {
                 var infos = server.WakeOnLanInfos || [];
@@ -985,10 +972,13 @@
 
                     wakeonlan.send(infos[i]);
                 }
+                console.log('beginWakeServer complete');
             });
         }
 
         self.connectToServer = function (server, options) {
+
+            console.log('begin connectToServer');
 
             return new Promise(function (resolve, reject) {
 
@@ -1001,12 +991,12 @@
                 if (tests.indexOf(ConnectionMode.Local) == -1) { tests.push(ConnectionMode.Local); }
                 if (tests.indexOf(ConnectionMode.Remote) == -1) { tests.push(ConnectionMode.Remote); }
 
-                beginWakeServer(server);
-
-                var wakeOnLanSendTime = new Date().getTime();
+                //beginWakeServer(server);
 
                 options = options || {};
-                testNextConnectionMode(tests, 0, server, wakeOnLanSendTime, options, resolve);
+
+                console.log('beginning connection tests');
+                testNextConnectionMode(tests, 0, server, options, resolve);
             });
         };
 
@@ -1039,7 +1029,7 @@
             return 0;
         }
 
-        function testNextConnectionMode(tests, index, server, wakeOnLanSendTime, options, resolve) {
+        function testNextConnectionMode(tests, index, server, options, resolve) {
 
             if (index >= tests.length) {
 
@@ -1060,6 +1050,7 @@
                 timeout = 8000;
 
                 if (stringEqualsIgnoreCase(address, server.ManualAddress)) {
+                    console.log('skipping LocalAddress test because it is the same as ManualAddress');
                     skipTest = true;
                 }
             }
@@ -1073,7 +1064,8 @@
             }
 
             if (skipTest || !address) {
-                testNextConnectionMode(tests, index + 1, server, wakeOnLanSendTime, options, resolve);
+                console.log('skipping test at index ' + index);
+                testNextConnectionMode(tests, index + 1, server, options, resolve);
                 return;
             }
 
@@ -1100,14 +1092,12 @@
 
                 if (enableRetry) {
 
-                    var sleepTime = 10000 - (new Date().getTime() - wakeOnLanSendTime);
+                    // TODO: wake on lan and retry
 
-                    // TODO: Implement delay and retry
-
-                    testNextConnectionMode(tests, index + 1, server, wakeOnLanSendTime, options, resolve);
+                    testNextConnectionMode(tests, index + 1, server, options, resolve);
 
                 } else {
-                    testNextConnectionMode(tests, index + 1, server, wakeOnLanSendTime, options, resolve);
+                    testNextConnectionMode(tests, index + 1, server, options, resolve);
 
                 }
             });
@@ -1189,7 +1179,7 @@
 
             resolve(result);
 
-            Events.trigger(self, 'connected', [result]);
+            events.trigger(self, 'connected', [result]);
         }
 
         function replaceAll(originalString, strReplace, strWith) {

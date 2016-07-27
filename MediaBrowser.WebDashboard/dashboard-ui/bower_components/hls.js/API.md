@@ -202,7 +202,14 @@ configuration parameters could be provided to hls.js upon instantiation of Hls O
       xhrSetup : XMLHttpRequestSetupCallback,
       abrController : customAbrController,
       timelineController: TimelineController,
-      enableCEA708Captions: true
+      enableCEA708Captions: true,
+      abrEwmaFastLive: 5.0,
+      abrEwmaSlowLive: 9.0,
+      abrEwmaFastVoD: 4.0,
+      abrEwmaSlowVoD: 15.0,
+      abrEwmaDefaultEstimate: 500000,
+      abrBandWidthFactor: 0.8,
+      abrBandWidthUpFactor: 0.7
     };
 
 
@@ -485,7 +492,7 @@ parameter should be a boolean
 #### ```abrEwmaFastLive```
 (default : 5.0)
 
-Fast bitrate Exponential moving average half-life, used to compute average bitrate for Live streams
+Fast bitrate Exponential moving average half-life, used to compute average bitrate for Live streams.
 Half of the estimate is based on the last abrEwmaFastLive seconds of sample history.
 Each of the sample is weighted by the fragment loading duration.
 
@@ -494,7 +501,7 @@ parameter should be a float greater than 0
 #### ```abrEwmaSlowLive```
 (default : 9.0)
 
-Slow bitrate Exponential moving average half-life, used to compute average bitrate for Live streams
+Slow bitrate Exponential moving average half-life, used to compute average bitrate for Live streams.
 Half of the estimate is based on the last abrEwmaSlowLive seconds of sample history.
 Each of the sample is weighted by the fragment loading duration.
 
@@ -503,7 +510,7 @@ parameter should be a float greater than abrEwmaFastLive
 #### ```abrEwmaFastVoD```
 (default : 4.0)
 
-Fast bitrate Exponential moving average half-life, used to compute average bitrate for VoD streams 
+Fast bitrate Exponential moving average half-life, used to compute average bitrate for VoD streams.
 Half of the estimate is based on the last abrEwmaFastVoD seconds of sample history.
 Each of the sample is weighted by the fragment loading duration.
 
@@ -512,7 +519,7 @@ parameter should be a float greater than 0
 #### ```abrEwmaSlowVoD```
 (default : 15.0)
 
-Slow bitrate Exponential moving average half-life, used to compute average bitrate for VoD streams 
+Slow bitrate Exponential moving average half-life, used to compute average bitrate for VoD streams.
 Half of the estimate is based on the last abrEwmaSlowVoD seconds of sample history.
 Each of the sample is weighted by the fragment loading duration.
 
@@ -529,14 +536,14 @@ parameter should be a float
 #### ```abrBandWidthFactor```
 (default : 0.8)
 
-scale factor to be applied against measured bandwidth average, to determine whether we can stay on current or lower quality level
-If ``` abrBandWidthFactor * bandwidth average < level.bitrate ``` then ABR can switch to that level providing that it is equal or less than current level
+Scale factor to be applied against measured bandwidth average, to determine whether we can stay on current or lower quality level.
+If ```abrBandWidthFactor * bandwidth average < level.bitrate``` then ABR can switch to that level providing that it is equal or less than current level.
 
 #### ```abrBandWidthUpFactor```
 (default : 0.7)
 
-scale factor to be applied against measured bandwidth average, to determine whether  we can switch up to a higher quality level
-If ``` abrBandWidthUpFactor * bandwidth average < level.bitrate ``` then ABR can switch up to that quality level
+Scale factor to be applied against measured bandwidth average, to determine whether  we can switch up to a higher quality level.
+If ```abrBandWidthUpFactor * bandwidth average < level.bitrate``` then ABR can switch up to that quality level.
 
 ## Video Binding/Unbinding API
 
@@ -764,6 +771,8 @@ url is an array, that might contains several items if failover/redundant streams
 
 level detailed infos contains level details retrieved after level playlist parsing, they are specified below :
 
+* protocol version
+* playlist type
 * start sequence number
 * end sequence number
 * level total duration
@@ -775,6 +784,8 @@ see sample object below, available after corresponding LEVEL_LOADED event has be
 
 ```js
 {
+  version: 3,
+  type: 'VOD', // null if EXT-X-PLAYLIST-TYPE not present
   startSN: 0,
   endSN: 50,
   totalduration: 510,

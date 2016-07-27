@@ -1,4 +1,278 @@
-﻿/* Swatches */
+﻿/* For some reason jquery mobile 1.4.5 wants to horitontally pad mini form fields. */
+.ui-mini {
+    margin-left: 0;
+}
+
+iron-icon {
+    min-width: 24px;
+    min-height: 24px;
+}
+
+.paperCheckboxFieldDescription {
+    padding-left: 31px;
+    padding-top: 5px;
+}
+
+paper-input + .fieldDescription {
+    padding-top: 5px;
+    opacity: .9;
+}
+
+/* Tabs (e.g. advanced metadata page) */
+.localnav {
+    margin-bottom: 30px !important;
+}
+
+@media all and (min-width: 800px) {
+
+    .type-interior > .ui-content, .type-interior > .ui-panel-content-wrap > .ui-content {
+        padding-right: 0;
+        padding-left: 0;
+        padding-top: 0;
+        overflow: hidden;
+    }
+}
+
+.dashboardDocument .lnkMySync {
+    display: none !important;
+}
+
+.dashboardDocument .dashboardEntryHeaderButton {
+    display: none !important;
+}
+
+.dashboardDocument .lnkManageServer {
+    display: none !important;
+}
+
+.dashboardDocument .headerVoiceButton {
+    display: none !important;
+}
+
+.dashboardDocument .btnCast, .dashboardDocument .headerSelectedPlayer {
+    display: none !important;
+}
+
+.adminDrawer {
+    background: #fff !important;
+}
+
+.dashboardDocument .mainDrawerPanelContent {
+    transition: left ease-in-out 0.3s, padding ease-in-out 0.3s;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.adminDrawer {
+    background: #fff !important;
+}
+
+.dashboardDocument .mainDrawerPanelContent {
+    transition: left ease-in-out 0.3s, padding ease-in-out 0.3s;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+@media all and (min-width: 640px) {
+
+    .dashboardDocument .mainDrawer {
+        z-index: 998 !important;
+        top: 65px !important;
+        left: 0 !important;
+        transform: none !important;
+    }
+
+    .dashboardDocument .tmla-mask {
+        display: none !important;
+    }
+
+    .dashboardDocument .mainDrawerButton {
+        display: none !important;
+    }
+
+    .dashboardDocument .libraryMenuButtonText {
+        font-size: 150%;
+    }
+
+    .dashboardDocument .mainDrawerPanelContent {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 270px;
+    }
+
+    .dashboardDocument .adminDrawerLogo {
+        display: none;
+    }
+}
+
+.adminDrawer .sidebarLink {
+    color: #333 !important;
+    font-weight: 400 !important;
+    padding: .7em 0 .7em 1.5em;
+}
+
+.adminDrawer .sidebarHeader {
+    color: #666 !important;
+    font-weight: 500 !important;
+}
+
+.adminDrawer .sidebarLinkIcon {
+    color: #666;
+    margin-right: 1em;
+}
+
+.adminDrawer .sidebarLink:hover {
+    color: #00897B !important;
+}
+
+.adminDrawer .sidebarLink.selectedSidebarLink {
+    background: #52B54B !important;
+    color: #fff !important;
+}
+
+    .adminDrawer .sidebarLink.selectedSidebarLink .sidebarLinkIcon {
+        color: #fff !important;
+    }
+
+.adminDrawerLogo {
+    padding: 1.5em 1em 1.2em;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 1em;
+    display: block;
+}
+
+    .adminDrawerLogo img {
+        height: 30px;
+    }
+
+@media all and (max-width: 640px) {
+
+    .dashboardDocument .headerAppsButton {
+        display: none;
+    }
+}
+
+/* Swatches */
+
+paper-fab.blue {
+    background: #03a9f4;
+}
+
+paper-checkbox #checkboxContainer {
+    width: 22px !important;
+    height: 22px !important;
+}
+
+paper-checkbox paper-ripple {
+    top: -13px !important;
+    left: -13px !important;
+}
+
+paper-checkbox #checkmark {
+    border-right-width: 4px !important;
+    border-bottom-width: 4px !important;
+}
+
+.paperCheckboxList paper-checkbox {
+    display: block;
+    padding: .5em 0;
+}
+
+paper-input label, paper-textarea label {
+    font-size: 18px !important;
+    font-family: inherit !important;
+}
+
+.paperListLabel {
+    font-size: 16px;
+    margin-bottom: .5em;
+}
+
+paper-fab {
+    vertical-align: middle;
+    display: inline-flex !important;
+}
+
+    paper-fab.mini {
+        width: 22px;
+        height: 22px;
+    }
+
+        paper-fab.mini iron-icon {
+            width: 22px;
+            height: 22px;
+        }
+
+.ui-body-a paper-fab.subdued {
+    background: #fff;
+    color: #000;
+}
+
+    .ui-body-a paper-fab.subdued paper-material.keyboard-focus {
+        background: #686868 !important;
+    }
+
+paper-fab.white {
+    background: #fff;
+    color: #000;
+}
+
+    paper-fab.white paper-material.keyboard-focus {
+        background: #01579b !important;
+        color: #fff;
+    }
+
+paper-fab.square {
+    border-radius: 5px;
+}
+
+paper-fab.accent {
+    background-color: #52B54B;
+}
+
+paper-textarea.mono textarea {
+    font-family: monospace !important;
+}
+
+.ui-body-a .paperCheckboxFieldDescription {
+    color: #333;
+}
+
+.ui-body-a paper-checkbox #checkbox.checked.paper-checkbox {
+    background-color: #52B54B;
+    border-color: #52B54B;
+}
+
+.ui-body-a .paper-input-container-0 .input-content.paper-input-container label, .ui-body-a .paper-input-container-0 .input-content.paper-input-container .paper-input-label, .ui-body-a paper-textarea label {
+    color: #555;
+}
+
+.ui-body-a .paper-input-container-0 .input-content.label-is-highlighted.paper-input-container label, .ui-body-a .paper-input-container-0 .input-content.label-is-highlighted.paper-input-container .paper-input-label {
+    color: green;
+}
+
+paper-input .focused-line, paper-textarea .focused-line {
+    background-color: #52B54B !important;
+}
+
+.paperList {
+    padding: .5em 0;
+    margin: 12px auto;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+    background-color: #fff;
+}
+
+.paperCheckboxList.paperList {
+    padding: .5em 1em;
+}
 
 /* A
 -----------------------------------------------------------------------------------------------------------*/

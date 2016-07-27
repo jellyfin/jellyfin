@@ -274,7 +274,7 @@
         var homeHref = window.ApiClient ? 'home.html' : 'selectserver.html?showuser=1';
 
         html += '<a class="lnkMediaFolder sidebarLink" href="' + homeHref + '" onclick="return LibraryMenu.onLinkClicked(event, this);">';
-        html += '<div style="background-image:url(\'css/images/mblogoicon.png\');width:' + 28 + 'px;height:' + 28 + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin:0 1.85em 0 1.55em;display:inline-block;"></div>';
+        html += '<div style="background-image:url(\'css/images/mblogoicon.png\');width:' + 28 + 'px;height:' + 28 + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin:0 1.25em 0 1.55em;display:inline-block;"></div>';
         html += Globalize.translate('ButtonHome');
         html += '</a>';
 
@@ -800,6 +800,22 @@
                 lnkMediaFolder.classList.remove('selectedMediaFolder');
             }
         }
+    }
+
+    function replaceQueryString(url, param, value) {
+        var re = new RegExp("([?|&])" + param + "=.*?(&|$)", "i");
+        if (url.match(re))
+            return url.replace(re, '$1' + param + "=" + value + '$2');
+        else if (value) {
+
+            if (url.indexOf('?') == -1) {
+                return url + '?' + param + "=" + value;
+            }
+
+            return url + '&' + param + "=" + value;
+        }
+
+        return url;
     }
 
     function updateTabLinks(page) {

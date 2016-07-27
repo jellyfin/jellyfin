@@ -55,6 +55,7 @@ define(['browser'], function (browser) {
 
         if (isPluginpage || (newView.classList && newView.classList.contains('type-interior'))) {
             dependencies.push('scripts/notifications');
+            dependencies.push('css!css/notifications.css');
             dependencies.push('dashboardcss');
         }
 

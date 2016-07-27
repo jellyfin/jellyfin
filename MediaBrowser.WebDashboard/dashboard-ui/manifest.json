@@ -5,22 +5,24 @@
   "related_applications": [
     {
       "platform": "android",
-      "location": "https://play.google.com/store/apps/details?id=com.mb.android",
+      "location": "https://play.google.com/store/apps/details?id=com.mb.android"
     },
     {
       "platform": "ios",
-      "location": "https://itunes.apple.com/us/app/emby/id992180193?ls=1&mt=8",
+      "location": "https://itunes.apple.com/us/app/emby/id992180193?ls=1&mt=8"
     },
     {
       "platform": "web"
     }
   ],
-  "icons": [ {
-    "src": "css/images/touchicon144.png",
-    "sizes": "144x144",
-    "type": "image/png",
-    "density": "3.0"
-  }],
+  "icons": [
+    {
+      "src": "css/images/touchicon144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "density": "3.0"
+    }
+  ],
   "display": "standalone",
   "theme_color": "#52B54B"
 }

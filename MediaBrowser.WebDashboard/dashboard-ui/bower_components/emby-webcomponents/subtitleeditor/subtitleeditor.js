@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'require', 'layoutManager', 'globalize', 'scrollHelper', 'appStorage', 'connectionManager', 'loading', 'focusManager', 'dom', 'apphost', 'emby-select', 'listViewStyle', 'paper-icon-button-light', 'css!./../formdialog', 'material-icons', 'css!./subtitleeditor', 'emby-button'], function (dialogHelper, require, layoutManager, globalize, scrollHelper, appStorage, connectionManager, loading, focusManager, dom, appHost) {
+﻿define(['dialogHelper', 'require', 'layoutManager', 'globalize', 'appStorage', 'connectionManager', 'loading', 'focusManager', 'dom', 'apphost', 'emby-select', 'listViewStyle', 'paper-icon-button-light', 'css!./../formdialog', 'material-icons', 'css!./subtitleeditor', 'emby-button'], function (dialogHelper, require, layoutManager, globalize, appStorage, connectionManager, loading, focusManager, dom, appHost) {
 
     var currentItem;
     var hasChanges;
@@ -389,6 +389,13 @@
         });
     }
 
+    function centerFocus(elem, horiz, on) {
+        require(['scrollHelper'], function (scrollHelper) {
+            var fn = on ? 'on' : 'off';
+            scrollHelper.centerFocus[fn](elem, horiz);
+        });
+    }
+
     function showEditorInternal(itemId, serverId, template) {
 
         hasChanges = false;
@@ -397,7 +404,8 @@
         return apiClient.getItem(apiClient.getCurrentUserId(), itemId).then(function (item) {
 
             var dialogOptions = {
-                removeOnClose: true
+                removeOnClose: true,
+                scrollY: false
             };
 
             if (layoutManager.tv) {
@@ -421,7 +429,11 @@
             var btnSubmit = dlg.querySelector('.btnSubmit');
 
             if (layoutManager.tv) {
-                scrollHelper.centerFocus.on(dlg.querySelector('.dialogContent'), false);
+                centerFocus(dlg.querySelector('.dialogContent'), false, true);
+            }
+
+            if (layoutManager.tv) {
+                centerFocus(dlg.querySelector('.dialogContent'), false, true);
                 dlg.querySelector('.btnSearchSubtitles').classList.add('hide');
             } else {
                 btnSubmit.classList.add('hide');
@@ -445,6 +457,10 @@
             return new Promise(function (resolve, reject) {
 
                 dlg.addEventListener('close', function () {
+
+                    if (layoutManager.tv) {
+                        centerFocus(dlg.querySelector('.dialogContent'), false, false);
+                    }
 
                     if (hasChanges) {
                         resolve();

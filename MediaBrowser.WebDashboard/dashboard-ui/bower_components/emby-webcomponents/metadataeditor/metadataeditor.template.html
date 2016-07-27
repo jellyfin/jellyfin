@@ -1,0 +1,319 @@
+﻿<div class="dialogHeader">
+    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
+    <div class="dialogHeaderTitle">
+        ${Edit}
+    </div>
+    <div style="margin-left: auto; display: flex; align-items: center; justify-content: center;">
+        <button is="emby-button" type="button" class="btnHeaderSave accent autoSize" tabindex="-1">
+            <i class="md-icon">check</i>
+            <span>${Save}</span>
+        </button>
+        <button is="paper-icon-button-light" class="btnMore autoSize" tabindex="-1">
+            <i class="md-icon">more_vert</i>
+        </button>
+    </div>
+</div>
+
+<div class="dialogContent smoothScrollY" style="padding-top:2em;">
+
+    <form class="editItemMetadataForm editMetadataForm dialogContentInner centeredContent">
+        <div class="metadataFormFields">
+
+            <div style="padding: 0 0 10px;">
+                <div id="fldContentType" class="selectContainer hide">
+                    <select is="emby-select" id="selectContentType" label="${LabelContentType}"></select>
+                </div>
+                <div id="fldPath" class="inputContainer">
+                    <input is="emby-input" id="txtPath" type="text" label="${LabelPath}" readonly />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" id="txtName" type="text" label="${LabelTitle}" required="required" />
+                </div>
+                <div id="fldOriginalName" class="inputContainer">
+                    <input is="emby-input" id="txtOriginalName" type="text" label="${LabelOriginalTitle}" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" id="txtSortName" type="text" label="${LabelSortTitle}" />
+                </div>
+                <div id="fldDateAdded" class="hide inputContainer">
+                    <input is="emby-input" id="txtDateAdded" type="date" label="${LabelDateAdded}" />
+                    <div class="fieldDescription">${ConfigureDateAdded}</div>
+                </div>
+                <div id="fldStatus" class="hide selectContainer">
+                    <select is="emby-select" id="selectStatus" label="${LabelStatus}"></select>
+                </div>
+                <div id="fldArtist" class="hide inputContainer">
+                    <input is="emby-input" id="txtArtist" type="text" label="${LabelArtists}" />
+                    <div class="fieldDescription">${LabelArtistsHelp}</div>
+                </div>
+                <div id="fldAlbumArtist" class="hide inputContainer">
+                    <input is="emby-input" id="txtAlbumArtist" type="text" label="${LabelAlbumArtists}" />
+                    <div class="fieldDescription">${LabelArtistsHelp}</div>
+                </div>
+                <div id="fldAlbum" class="hide inputContainer">
+                    <input is="emby-input" id="txtAlbum" type="text" label="${LabelAlbum}" />
+                </div>
+                <div id="fldParentIndexNumber" class="hide inputContainer">
+                    <input is="emby-input" id="txtParentIndexNumber" type="number" />
+                </div>
+                <div id="fldIndexNumber" class="hide inputContainer">
+                    <input is="emby-input" id="txtIndexNumber" type="number" pattern="[0-9]*" />
+                </div>
+                <div id="fldCommunityRating" class="hide inputContainer">
+                    <input is="emby-input" id="txtCommunityRating" type="number" step=".1" min="0" max="10" label="${LabelCommunityRating}" />
+                </div>
+                <div id="fldCommunityVoteCount" class="hide inputContainer">
+                    <input is="emby-input" id="txtCommunityVoteCount" type="number" step="1" label="${LabelVoteCount}" />
+                </div>
+                <div id="fldMetascore" class="hide inputContainer">
+                    <input is="emby-input" id="txtMetascore" type="number" step="1" min="0" max="100" label="${LabelMetascore}" />
+                </div>
+                <div id="fldCriticRating" class="hide inputContainer">
+                    <input is="emby-input" id="txtCriticRating" type="number" step=".1" label="${LabelCriticRating}" />
+                </div>
+                <div id="fldCriticRatingSummary" class="hide inputContainer">
+                    <input is="emby-input" id="txtCriticRatingSummary" type="text" label="${LabelCriticRatingSummary}" />
+                </div>
+                <div id="fldAwardSummary" class="hide inputContainer">
+                    <input is="emby-input" id="txtAwardSummary" type="text" label="${LabelAwardSummary}" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" id="txtHomePageUrl" type="text" label="${LabelWebsite}" />
+                </div>
+                <div id="fldTagline" class="hide inputContainer">
+                    <input is="emby-input" id="txtTagline" type="text" label="${LabelTagline}" />
+                </div>
+                <div class="inputContainer">
+                    <textarea is="emby-textarea" id="txtOverview" label="${LabelOverview}"></textarea>
+                </div>
+                <div id="fldShortOverview" class="hide inputContainer">
+                    <input is="emby-input" id="txtShortOverview" type="text" label="${LabelShortOverview}" />
+                </div>
+                <div id="fldPremiereDate" class="inputContainer">
+                    <input is="emby-input" id="txtPremiereDate" label="${LabelReleaseDate}" type="date" />
+                </div>
+                <div id="fldYear" class="hide inputContainer">
+                    <input is="emby-input" id="txtProductionYear" type="number" label="${LabelYear}" />
+                </div>
+                <div id="fldPlaceOfBirth" class="hide inputContainer">
+                    <input is="emby-input" id="txtPlaceOfBirth" type="text" label="${LabelPlaceOfBirth}" />
+                </div>
+                <div id="fldEndDate" class="inputContainer">
+                    <input is="emby-input" id="txtEndDate" label="${LabelEndDate}" type="date" />
+                </div>
+                <div id="fldAirDays" class="hide">
+                    <p>${LabelAirDays}</p>
+
+                    <div class="checkboxList">
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" class="chkAirDay" data-day="Sunday" />
+                            <span>${Sunday}</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" class="chkAirDay" data-day="Monday" />
+                            <span>${Monday}</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" class="chkAirDay" data-day="Tuesday" />
+                            <span>${Tuesday}</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" class="chkAirDay" data-day="Wednesday" />
+                            <span>${Wednesday}</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" class="chkAirDay" data-day="Thursday" />
+                            <span>${Thursday}</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" class="chkAirDay" data-day="Friday" />
+                            <span>${Friday}</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" class="chkAirDay" data-day="Saturday" />
+                            <span>${Saturday}</span>
+                        </label>
+                    </div>
+                    <br />
+
+                </div>
+                <div id="fldAirTime" class="inputContainer hide">
+                    <input is="emby-input" id="txtAirTime" type="text" label="${LabelAirTime}" />
+                </div>
+                <div id="fldSeriesRuntime" class="inputContainer hide">
+                    <input is="emby-input" id="txtSeriesRuntime" type="number" label="${LabelRuntimeMinutes}" />
+                </div>
+                <div id="fldOfficialRating" class="selectContainer hide">
+                    <select is="emby-select" id="selectOfficialRating" label="${LabelParentalRating}"></select>
+                </div>
+                <div id="fldCustomRating" class="selectContainer hide">
+                    <select is="emby-select" id="selectCustomRating" label="${LabelCustomRating}"></select>
+                </div>
+                <div id="fldBudget" class="inputContainer hide">
+                    <input is="emby-input" id="txtBudget" type="number" label="${LabelBudget}" />
+                </div>
+                <div id="fldRevenue" class="inputContainer hide">
+                    <input is="emby-input" id="txtRevenue" type="number" label="${LabelRevenue}" />
+                </div>
+                <div id="fldOriginalAspectRatio" class="inputContainer hide">
+                    <input is="emby-input" id="txtOriginalAspectRatio" type="text" label="${LabelOriginalAspectRatio}" />
+                </div>
+                <div id="fldPlayers" class="inputContainer hide">
+                    <input is="emby-input" id="txtPlayers" type="number" pattern="[0-9]*" label="${LabelPlayers}" />
+                </div>
+                <div id="fld3dFormat" class="selectContainer hide">
+                    <select is="emby-select" id="select3dFormat" label="${Label3DFormat}">
+                        <option value=""></option>
+                        <option value="HalfSideBySide">HSBS</option>
+                        <option value="HalfTopAndBottom">HTAB</option>
+                        <option value="FullSideBySide">FSBS</option>
+                        <option value="FullTopAndBottom">FTAB</option>
+                        <option value="MVC">MVC</option>
+                    </select>
+                </div>
+            </div>
+            <br />
+
+            <div class="detailSection hide" id="collapsibleDvdEpisodeInfo">
+                <h1>
+                    ${HeaderAlternateEpisodeNumbers}
+                </h1>
+                <div class="inputContainer">
+                    <input is="emby-input" id="txtDvdSeasonNumber" type="number" pattern="[0-9]*" label="${LabelDvdSeasonNumber}" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" id="txtDvdEpisodeNumber" type="number" pattern="[0-9]*" label="${LabelDvdEpisodeNumber}" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" id="txtAbsoluteEpisodeNumber" type="number" pattern="[0-9]*" label="${LabelAbsoluteEpisodeNumber}" />
+                </div>
+            </div>
+
+            <div class="detailSection hide" id="collapsibleSpecialEpisodeInfo">
+                <h1>
+                    ${HeaderSpecialEpisodeInfo}
+                </h1>
+                <div class="inputContainer">
+                    <input is="emby-input" id="txtAirsBeforeSeason" type="number" pattern="[0-9]*" label="${LabelAirsBeforeSeason}" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" id="txtAirsAfterSeason" type="number" pattern="[0-9]*" label="${LabelAirsAfterSeason}" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" id="txtAirsBeforeEpisode" type="number" pattern="[0-9]*" label="${LabelAirsBeforeEpisode}" />
+                </div>
+            </div>
+
+            <div class="detailSection">
+                <h1>
+                    ${HeaderExternalIds}
+                </h1>
+                <div class="externalIds editorFieldset">
+                </div>
+            </div>
+
+            <div class="detailSection hide" id="collapsibleDisplaySettings">
+                <h1>
+                    ${HeaderDisplaySettings}
+                </h1>
+                <div id="fldSourceType" class="hide fldDisplaySetting inputContainer">
+                    <input is="emby-input" id="txtDisplayMediaType" type="text" label="${LabelTreatImageAs}" />
+                </div>
+                <div id="fldDisplayOrder" class="fldDisplaySetting selectContainer">
+                    <select is="emby-select" id="selectDisplayOrder" label="${LabelDisplayOrder}"></select>
+                </div>
+            </div>
+
+            <div id="countriesCollapsible" class="editableListviewContainer hide" style="margin-top: 3em;">
+                <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
+                    ${Countries}
+                </h1>
+                <button is="emby-button" type="button" class="raised btnAddTextItem submit mini" style="margin-left:1em;" title="${Add}">
+                    <i class="md-icon">add</i>
+                    <span>${Add}</span>
+                </button>
+                <div class="paperList" id="listCountries"></div>
+            </div>
+            <div id="genresCollapsible" class="editableListviewContainer hide" style="margin-top: 3em;">
+                <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
+                    ${Genres}
+                </h1>
+                <button is="emby-button" type="button" class="raised btnAddTextItem submit mini" style="margin-left:1em;" title="${Add}">
+                    <i class="md-icon">add</i>
+                    <span>${Add}</span>
+                </button>
+                <div class="paperList" id="listGenres"></div>
+            </div>
+            <div id="peopleCollapsible" style="margin-top: 3em;" class="hide">
+                <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
+                    ${People}
+                </h1>
+                <button is="emby-button" type="button" id="btnAddPerson" class="raised btnAddPerson submit mini" style="margin-left:1em;" title="${Add}">
+                    <i class="md-icon">add</i>
+                    <span>${Add}</span>
+                </button>
+                <div id="peopleList" class="paperList">
+                </div>
+            </div>
+            <div id="keywordsCollapsible" class="editableListviewContainer hide" style="margin-top: 3em;">
+                <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
+                    ${HeaderPlotKeywords}
+                </h1>
+                <button is="emby-button" type="button" class="raised btnAddTextItem submit mini" style="margin-left:1em;" title="${Add}">
+                    <i class="md-icon">add</i>
+                    <span>${Add}</span>
+                </button>
+                <div class="paperList" id="listKeywords"></div>
+            </div>
+            <div id="studiosCollapsible" class="editableListviewContainer hide" style="margin-top: 3em;">
+                <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
+                    ${Studios}
+                </h1>
+                <button is="emby-button" type="button" class="raised btnAddTextItem submit mini" style="margin-left:1em;" title="${Add}">
+                    <i class="md-icon">add</i>
+                    <span>${Add}</span>
+                </button>
+                <div class="paperList" id="listStudios"></div>
+            </div>
+            <div id="tagsCollapsible" class="editableListviewContainer hide" style="margin-top: 3em;">
+                <h1 style="margin:.6em 0;vertical-align:middle;display:inline-block;">
+                    ${Tags}
+                </h1>
+                <button is="emby-button" type="button" class="raised btnAddTextItem submit mini" style="margin-left:1em;" title="${Add}">
+                    <i class="md-icon">add</i>
+                    <span>${Add}</span>
+                </button>
+                <div class="paperList" id="listTags"></div>
+            </div>
+            <div id="metadataSettingsCollapsible" style="margin-top: 3em;" class="hide">
+                <h1>${HeaderMetadataSettings}</h1>
+                <div>
+                    <div class="selectContainer">
+                        <select is="emby-select" id="selectLanguage" label="${LabelMetadataDownloadLanguage}"></select>
+                        <div class="fieldDescription editorfieldDescription">${MessageLeaveEmptyToInherit}</div>
+                    </div>
+                    <div class="selectContainer">
+                        <select is="emby-select" id="selectCountry" label="${LabelCountry}"></select>
+                    </div>
+                    <div class="fieldDescription editorfieldDescription">${MessageLeaveEmptyToInherit}</div>
+
+                    <br /><br />
+                    <label class="checkboxContainer">
+                        <input type="checkbox" is="emby-checkbox" id="chkLockData" />
+                        <span>${LabelLockItemToPreventChanges}</span>
+                    </label>
+
+                    <div class="providerSettingsContainer checkboxList hide">
+                    </div>
+                </div>
+            </div>
+            <br />
+            <button is="emby-button" type="submit" class="raised submit block btnSave">
+                <span>${Save}</span>
+            </button>
+        </div>
+        <br />
+        <br />
+    </form>
+</div>
+

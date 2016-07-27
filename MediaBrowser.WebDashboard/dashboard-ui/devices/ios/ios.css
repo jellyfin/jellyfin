@@ -27,7 +27,7 @@ body:not(.dashboardDocument) .mainDrawerButton {
     background: #181818;
 }
 
-.backdropContainer .pageBackground {
+.backgroundContainer {
     background-color: rgba(28,28,28,.92) !important;
 }
 
@@ -115,18 +115,6 @@ h1, h1 a {
 .noSecondaryNavPage .itemBackdrop {
     margin-top: 0;
 }
-
-.visualCardBox {
-    background: none !important;
-    -moz-box-shadow: none;
-    -ms-box-shadow: none;
-    -webkit-box-shadow: none;
-    box-shadow: none;
-}
-
-    .visualCardBox .outerCardFooter {
-        padding: 0;
-    }
 
 .cardImage {
     border-radius: 10px;

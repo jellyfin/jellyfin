@@ -102,6 +102,12 @@ namespace MediaBrowser.Controller.Providers
         {
             var directory = Path.GetDirectoryName(path);
 
+            if (string.IsNullOrWhiteSpace(directory))
+            {
+                _logger.Debug("Parent path is null for {0}", path);
+                return null;
+            }
+
             var dict = GetFileSystemDictionary(directory, false);
 
             FileSystemMetadata entry;

@@ -1,4 +1,4 @@
-﻿define(['shell', 'dialogHelper', 'loading', 'layoutManager', 'connectionManager', 'scrollHelper', 'embyRouter', 'globalize', 'emby-input', 'paper-icon-button-light', 'emby-select', 'material-icons', 'css!./../formdialog', 'emby-button'], function (shell, dialogHelper, loading, layoutManager, connectionManager, scrollHelper, embyRouter, globalize) {
+﻿define(['shell', 'dialogHelper', 'loading', 'layoutManager', 'connectionManager', 'embyRouter', 'globalize', 'emby-input', 'paper-icon-button-light', 'emby-select', 'material-icons', 'css!./../formdialog', 'emby-button'], function (shell, dialogHelper, loading, layoutManager, connectionManager, embyRouter, globalize) {
 
     var lastPlaylistId = '';
     var currentServerId;
@@ -196,6 +196,13 @@
         }
     }
 
+    function centerFocus(elem, horiz, on) {
+        require(['scrollHelper'], function (scrollHelper) {
+            var fn = on ? 'on' : 'off';
+            scrollHelper.centerFocus[fn](elem, horiz);
+        });
+    }
+
     function playlisteditor() {
 
         var self = this;
@@ -244,10 +251,14 @@
             });
 
             if (layoutManager.tv) {
-                scrollHelper.centerFocus.on(dlg.querySelector('.dialogContent'), false);
+                centerFocus(dlg.querySelector('.dialogContent'), false, true);
             }
 
             return new Promise(function (resolve, reject) {
+
+                if (layoutManager.tv) {
+                    centerFocus(dlg.querySelector('.dialogContent'), false, false);
+                }
 
                 dlg.addEventListener('close', resolve);
                 dialogHelper.open(dlg);

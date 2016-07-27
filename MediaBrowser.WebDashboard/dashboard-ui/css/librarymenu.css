@@ -107,15 +107,6 @@
     align-items: center;
 }
 
-.logoLibraryMenuButtonText {
-    font-family: Montserrat;
-    color: #333;
-}
-
-.ui-body-b .logoLibraryMenuButtonText, .ui-bar-b .logoLibraryMenuButtonText {
-    color: #fff;
-}
-
 .viewMenuBar {
     font-weight: bold;
     position: fixed;
@@ -310,44 +301,6 @@
     }
 }
 
-.drawerUserPanel {
-    color: #fff;
-    padding: 1em 1.2em;
-    display: flex;
-    align-items: center;
-}
-
-.drawerUserPanelUserImage {
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center center;
-    border-radius: 1000px;
-}
-
-.drawerUserPanelUserName {
-    padding-left: 1em;
-}
-
-.dashboardDocument .lnkMySync {
-    display: none !important;
-}
-
-.dashboardDocument .dashboardEntryHeaderButton {
-    display: none !important;
-}
-
-.dashboardDocument .lnkManageServer {
-    display: none !important;
-}
-
-.dashboardDocument .headerVoiceButton {
-    display: none !important;
-}
-
-.dashboardDocument .btnCast, .dashboardDocument .headerSelectedPlayer {
-    display: none !important;
-}
-
 body:not(.dashboardDocument) .btnNotifications {
     display: none !important;
 }
@@ -400,19 +353,6 @@ body:not(.dashboardDocument) .headerAppsButton {
     display: none;
 }
 
-.adminDrawer {
-    background: #fff !important;
-}
-
-.dashboardDocument .mainDrawerPanelContent {
-    transition: left ease-in-out 0.3s, padding ease-in-out 0.3s;
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-}
-
 @media all and (min-width: 640px) {
 
     .mainDrawerPanel .viewMenuBarTabs {
@@ -423,86 +363,4 @@ body:not(.dashboardDocument) .headerAppsButton {
     .viewMenuBarTabs .libraryViewNav {
         text-align: left !important;
     }
-
-    .dashboardDocument .mainDrawer {
-        z-index: 998 !important;
-        top: 65px !important;
-        left: 0 !important;
-        transform: none !important;
-    }
-
-    .dashboardDocument .tmla-mask {
-        display: none !important;
-    }
-
-    .dashboardDocument .mainDrawerButton {
-        display: none !important;
-    }
-
-    .dashboardDocument .libraryMenuButtonText {
-        font-size: 150%;
-    }
-
-    .dashboardDocument .mainDrawerPanelContent {
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 270px;
-    }
-
-    .dashboardDocument .adminDrawerLogo {
-        display: none;
-    }
-}
-
-.adminDrawer .sidebarLink {
-    color: #333 !important;
-    font-weight: 400 !important;
-    padding: .7em 0 .7em 1.5em;
-}
-
-.adminDrawer .sidebarHeader {
-    color: #666 !important;
-    font-weight: 500 !important;
-}
-
-.adminDrawer .sidebarLinkIcon {
-    color: #666;
-    margin-right: 1em;
-}
-
-.adminDrawer .sidebarLink:hover {
-    color: #00897B !important;
-}
-
-.adminDrawer .sidebarLink.selectedSidebarLink {
-    background: #52B54B !important;
-    color: #fff !important;
-}
-
-    .adminDrawer .sidebarLink.selectedSidebarLink .sidebarLinkIcon {
-        color: #fff !important;
-    }
-
-.adminDrawerLogo {
-    padding: 1.5em 1em 1.2em;
-    border-bottom: 1px solid #e0e0e0;
-    margin-bottom: 1em;
-    display: block;
-}
-
-    .adminDrawerLogo img {
-        height: 30px;
-    }
-
-@media all and (max-width: 640px) {
-
-    .dashboardDocument .headerAppsButton {
-        display: none;
-    }
-}
-
-.title-separator {
-    margin: 0 .5em;
 }
