@@ -33,7 +33,7 @@
                 var html = '';
                 var submitted = false;
 
-                html += globalize.translateDocument(template, 'metadataeditor');
+                html += globalize.translateDocument(template, 'sharedcomponents');
 
                 dlg.innerHTML = html;
                 document.body.appendChild(dlg);
@@ -84,12 +84,6 @@
     }
 
     return {
-        show: function (person) {
-            return new Promise(function (resolve, reject) {
-                return globalize.loadStrings('metadataeditor').then(function () {
-                    return show(person);
-                });
-            });
-        },
+        show: show
     };
 });

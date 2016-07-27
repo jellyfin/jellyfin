@@ -20,7 +20,7 @@
         function afterContentTypeUpdated() {
 
             require(['toast'], function (toast) {
-                toast(globalize.translate('metadataeditor#MessageItemSaved'));
+                toast(globalize.translate('sharedcomponents#MessageItemSaved'));
             });
 
             loading.hide();
@@ -487,7 +487,7 @@
             var buttonId = "btnOpen1" + idInfo.Key;
             var formatString = idInfo.UrlFormatString || '';
 
-            var labelText = globalize.translate('metadataeditor#LabelDynamicExternalId').replace('{0}', idInfo.Name);
+            var labelText = globalize.translate('sharedcomponents#LabelDynamicExternalId').replace('{0}', idInfo.Name);
 
             html += '<div class="inputContainer">';
             html += '<div style="display: flex; align-items: center;">';
@@ -718,14 +718,14 @@
 
         if (item.Type == "Person") {
             //todo
-            context.querySelector('#txtProductionYear').label(globalize.translate('metadataeditor#LabelBirthYear'));
-            context.querySelector("#txtPremiereDate").label(globalize.translate('metadataeditor#LabelBirthDate'));
-            context.querySelector("#txtEndDate").label(globalize.translate('metadataeditor#LabelDeathDate'));
+            context.querySelector('#txtProductionYear').label(globalize.translate('sharedcomponents#LabelBirthYear'));
+            context.querySelector("#txtPremiereDate").label(globalize.translate('sharedcomponents#LabelBirthDate'));
+            context.querySelector("#txtEndDate").label(globalize.translate('sharedcomponents#LabelDeathDate'));
             showElement('#fldPlaceOfBirth');
         } else {
-            context.querySelector('#txtProductionYear').label(globalize.translate('metadataeditor#LabelYear'));
-            context.querySelector("#txtPremiereDate").label(globalize.translate('metadataeditor#LabelReleaseDate'));
-            context.querySelector("#txtEndDate").label(globalize.translate('metadataeditor#LabelEndDate'));
+            context.querySelector('#txtProductionYear').label(globalize.translate('sharedcomponents#LabelYear'));
+            context.querySelector("#txtPremiereDate").label(globalize.translate('sharedcomponents#LabelReleaseDate'));
+            context.querySelector("#txtEndDate").label(globalize.translate('sharedcomponents#LabelEndDate'));
             hideElement('#fldPlaceOfBirth');
         }
 
@@ -739,13 +739,13 @@
             showElement('#fldIndexNumber');
 
             if (item.Type == "Episode") {
-                context.querySelector('#txtIndexNumber').label(globalize.translate('metadataeditor#LabelEpisodeNumber'));
+                context.querySelector('#txtIndexNumber').label(globalize.translate('sharedcomponents#LabelEpisodeNumber'));
             } else if (item.Type == "Season") {
-                context.querySelector('#txtIndexNumber').label(globalize.translate('metadataeditor#LabelSeasonNumber'));
+                context.querySelector('#txtIndexNumber').label(globalize.translate('sharedcomponents#LabelSeasonNumber'));
             } else if (item.Type == "Audio") {
-                context.querySelector('#txtIndexNumber').label(globalize.translate('metadataeditor#LabelTrackNumber'));
+                context.querySelector('#txtIndexNumber').label(globalize.translate('sharedcomponents#LabelTrackNumber'));
             } else {
-                context.querySelector('#txtIndexNumber').label(globalize.translate('metadataeditor#LabelNumber'));
+                context.querySelector('#txtIndexNumber').label(globalize.translate('sharedcomponents#LabelNumber'));
             }
         } else {
             hideElement('#fldIndexNumber');
@@ -768,7 +768,7 @@
         if (item.Type == "BoxSet") {
             showElement('#fldDisplayOrder', context);
 
-            context.querySelector('#selectDisplayOrder').innerHTML = '<option value="SortName">' + globalize.translate('metadataeditor#OptionSortName') + '</option><option value="PremiereDate">' + globalize.translate('metadataeditor#OptionReleaseDate') + '</option>';
+            context.querySelector('#selectDisplayOrder').innerHTML = '<option value="SortName">' + globalize.translate('sharedcomponents#SortName') + '</option><option value="PremiereDate">' + globalize.translate('sharedcomponents#ReleaseDate') + '</option>';
         } else {
             context.querySelector('#selectDisplayOrder').innerHTML = '';
             hideElement('#fldDisplayOrder', context);
@@ -973,8 +973,8 @@
         var html = "";
 
         html += "<option value=''></option>";
-        html += "<option value='Continuing'>" + globalize.translate('metadataeditor#OptionContinuing') + "</option>";
-        html += "<option value='Ended'>" + globalize.translate('metadataeditor#OptionEnded') + "</option>";
+        html += "<option value='Continuing'>" + globalize.translate('sharedcomponents#Continuing') + "</option>";
+        html += "<option value='Ended'>" + globalize.translate('sharedcomponents#Ended') + "</option>";
         select.innerHTML = html;
     }
 
@@ -1088,37 +1088,37 @@
         lockedFields = lockedFields || new Array();
 
         var metadatafields = [
-            { name: globalize.translate('metadataeditor#OptionName'), value: "Name" },
-            { name: globalize.translate('metadataeditor#OptionOverview'), value: "Overview" },
-            { name: globalize.translate('metadataeditor#OptionGenres'), value: "Genres" },
-            { name: globalize.translate('metadataeditor#OptionParentalRating'), value: "OfficialRating" },
-            { name: globalize.translate('metadataeditor#OptionPeople'), value: "Cast" }
+            { name: globalize.translate('sharedcomponents#Name'), value: "Name" },
+            { name: globalize.translate('sharedcomponents#Overview'), value: "Overview" },
+            { name: globalize.translate('sharedcomponents#Genres'), value: "Genres" },
+            { name: globalize.translate('sharedcomponents#ParentalRating'), value: "OfficialRating" },
+            { name: globalize.translate('sharedcomponents#People'), value: "Cast" }
         ];
 
         if (item.Type == "Person") {
-            metadatafields.push({ name: globalize.translate('metadataeditor#OptionBirthLocation'), value: "ProductionLocations" });
+            metadatafields.push({ name: globalize.translate('sharedcomponents#BirthLocation'), value: "ProductionLocations" });
         } else {
-            metadatafields.push({ name: globalize.translate('metadataeditor#OptionProductionLocations'), value: "ProductionLocations" });
+            metadatafields.push({ name: globalize.translate('sharedcomponents#ProductionLocations'), value: "ProductionLocations" });
         }
 
         if (item.Type == "Series") {
-            metadatafields.push({ name: globalize.translate('OptionRuntime'), value: "Runtime" });
+            metadatafields.push({ name: globalize.translate('Runtime'), value: "Runtime" });
         }
 
-        metadatafields.push({ name: globalize.translate('metadataeditor#OptionStudios'), value: "Studios" });
-        metadatafields.push({ name: globalize.translate('metadataeditor#OptionTags'), value: "Tags" });
-        metadatafields.push({ name: globalize.translate('metadataeditor#OptionKeywords'), value: "Keywords" });
-        metadatafields.push({ name: globalize.translate('metadataeditor#OptionImages'), value: "Images" });
-        metadatafields.push({ name: globalize.translate('metadataeditor#OptionBackdrops'), value: "Backdrops" });
+        metadatafields.push({ name: globalize.translate('sharedcomponents#Studios'), value: "Studios" });
+        metadatafields.push({ name: globalize.translate('sharedcomponents#Tags'), value: "Tags" });
+        metadatafields.push({ name: globalize.translate('sharedcomponents#Keywords'), value: "Keywords" });
+        metadatafields.push({ name: globalize.translate('sharedcomponents#Images'), value: "Images" });
+        metadatafields.push({ name: globalize.translate('sharedcomponents#Backdrops'), value: "Backdrops" });
 
         if (item.Type == "Game") {
-            metadatafields.push({ name: globalize.translate('metadataeditor#OptionScreenshots'), value: "Screenshots" });
+            metadatafields.push({ name: globalize.translate('sharedcomponents#Screenshots'), value: "Screenshots" });
         }
 
         var html = '';
 
-        html += "<h1>" + globalize.translate('metadataeditor#HeaderEnabledFields') + "</h1>";
-        html += "<p>" + globalize.translate('metadataeditor#HeaderEnabledFieldsHelp') + "</p>";
+        html += "<h1>" + globalize.translate('sharedcomponents#HeaderEnabledFields') + "</h1>";
+        html += "<p>" + globalize.translate('sharedcomponents#HeaderEnabledFieldsHelp') + "</p>";
         html += generateSliders(metadatafields, lockedFields);
         container.innerHTML = html;
     }
@@ -1216,7 +1216,7 @@
 
             var html = '';
 
-            html += globalize.translateDocument(template, 'metadataeditor');
+            html += globalize.translateDocument(template, 'sharedcomponents');
 
             dlg.innerHTML = html;
             document.body.appendChild(dlg);
@@ -1247,9 +1247,7 @@
     return {
         show: function (itemId, serverId) {
             return new Promise(function (resolve, reject) {
-                return globalize.loadStrings('metadataeditor').then(function () {
-                    return show(itemId, serverId, resolve, reject);
-                });
+                return show(itemId, serverId, resolve, reject);
             });
         },
 
