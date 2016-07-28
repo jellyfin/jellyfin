@@ -223,6 +223,10 @@
   "GuestStar": "Guest star",
   "Producer": "Producer",
   "Writer": "Writer",
+  "InstallingPackage": "Installing {0}",
+  "PackageInstallCompleted": "{0} installation completed.",
+  "PackageInstallFailed": "{0} installation failed.",
+  "PackageInstallCancelled": "{0} installation cancelled.",
   "MessageItemSaved": "Item saved."
 
 }

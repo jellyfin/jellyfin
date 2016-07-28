@@ -1,4 +1,8 @@
 {
+    "PackageInstallCompleted": "{0} installation completed.",
+    "InstallingPackage": "Installing {0}",
+    "PackageInstallFailed": "{0} installation failed.",
+    "PackageInstallCancelled": "{0} installation cancelled.",
     "ValueSpecialEpisodeName": "Specialavsnitt - {0}",
     "Share": "Dela",
     "Add": "L\u00e4gg till",

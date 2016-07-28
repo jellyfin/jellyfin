@@ -1249,9 +1249,9 @@
                     return;
                 }
 
-                require(['connectservice', 'cryptojs-md5'], function (connectservice) {
+                require(['cryptojs-md5'], function () {
 
-                    var md5 = getConnectPasswordHash(connectservice, password);
+                    var md5 = getConnectPasswordHash(password);
 
                     ajax({
                         type: "POST",
@@ -1284,7 +1284,12 @@
             });
         };
 
-        self.signupForConnect = function (email, username, password, passwordConfirm) {
+        self.signupForConnect = function (options) {
+
+            var email = options.email;
+            var username = options.username;
+            var password = options.password;
+            var passwordConfirm = options.passwordConfirm;
 
             return new Promise(function (resolve, reject) {
 
@@ -1309,18 +1314,24 @@
                     return;
                 }
 
-                require(['connectservice', 'cryptojs-md5'], function (connectservice) {
+                require(['cryptojs-md5'], function () {
 
-                    var md5 = getConnectPasswordHash(connectservice, password);
+                    var md5 = getConnectPasswordHash(password);
+
+                    var data = {
+                        email: email,
+                        userName: username,
+                        password: md5
+                    };
+
+                    if (options.grecaptcha) {
+                        data.grecaptcha = options.grecaptcha;
+                    }
 
                     ajax({
                         type: "POST",
                         url: "https://connect.emby.media/service/register",
-                        data: {
-                            email: email,
-                            userName: username,
-                            password: md5
-                        },
+                        data: data,
                         dataType: "json",
                         contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
                         headers: {
@@ -1348,9 +1359,25 @@
             });
         };
 
-        function getConnectPasswordHash(connectService, password) {
+        function cleanConnectPassword(password) {
 
-            password = connectService.cleanPassword(password);
+            password = password || '';
+
+            password = replaceAll(password, "&", "&amp;");
+            password = replaceAll(password, "/", "&#092;");
+            password = replaceAll(password, "!", "&#33;");
+            password = replaceAll(password, "$", "&#036;");
+            password = replaceAll(password, "\"", "&quot;");
+            password = replaceAll(password, "<", "&lt;");
+            password = replaceAll(password, ">", "&gt;");
+            password = replaceAll(password, "'", "&#39;");
+
+            return password;
+        }
+
+        function getConnectPasswordHash(password) {
+
+            password = cleanConnectPassword(password);
 
             return CryptoJS.MD5(password).toString();
         }
