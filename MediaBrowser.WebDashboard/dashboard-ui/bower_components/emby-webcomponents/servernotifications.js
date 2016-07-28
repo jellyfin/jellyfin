@@ -6,18 +6,7 @@ define(['connectionManager', 'events'], function (connectionManager, events) {
 
         var apiClient = this;
 
-        if (msg.MessageType === "LibraryChanged") {
-        }
-        else if (msg.MessageType === "ServerShuttingDown") {
-            events.trigger(serverNotifications, 'ServerShuttingDown', [apiClient]);
-        }
-        else if (msg.MessageType === "ServerRestarting") {
-            events.trigger(serverNotifications, 'ServerRestarting', [apiClient]);
-        }
-        else if (msg.MessageType === "RestartRequired") {
-            events.trigger(serverNotifications, 'RestartRequired', [apiClient]);
-        }
-        else if (msg.MessageType === "UserDataChanged") {
+        if (msg.MessageType === "UserDataChanged") {
 
             if (msg.Data.UserId == apiClient.getCurrentUserId()) {
 
@@ -26,7 +15,7 @@ define(['connectionManager', 'events'], function (connectionManager, events) {
                 }
             }
         }
-        else if (msg.MessageType === "TimerCreated" || msg.MessageType === "SeriesTimerCreated" || msg.MessageType === "TimerCancelled" || msg.MessageType === "SeriesTimerCancelled") {
+        else {
 
             events.trigger(serverNotifications, msg.MessageType, [apiClient, msg.Data]);
         }
@@ -38,10 +27,10 @@ define(['connectionManager', 'events'], function (connectionManager, events) {
         events.on(apiClient, "websocketmessage", onWebSocketMessageReceived);
     }
 
-    //var current = connectionManager.currentApiClient();
-    //if (current) {
-    //    bindEvents(current);
-    //}
+    var current = connectionManager.currentApiClient();
+    if (current) {
+        bindEvents(current);
+    }
 
     events.on(connectionManager, 'apiclientcreated', function (e, newApiClient) {
 

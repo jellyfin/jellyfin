@@ -53,10 +53,16 @@ define(['browser'], function (browser) {
             if (browser.tizen) {
                 return true;
             }
+            if (isEdgeUniversal()) {
+                return true;
+            }
         }
 
         else if (format == 'wma') {
             if (browser.tizen) {
+                return true;
+            }
+            if (isEdgeUniversal()) {
                 return true;
             }
         }
@@ -84,12 +90,30 @@ define(['browser'], function (browser) {
         return false;
     }
 
-    function testCanPlayMkv() {
+    function isEdgeUniversal() {
+
+        if (browser.edge) {
+
+            var userAgent = navigator.userAgent.toLowerCase();
+            if (userAgent.indexOf('msapphost') != -1) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function testCanPlayMkv(videoTestElement) {
+
+        if (videoTestElement.canPlayType('video/x-matroska') ||
+            videoTestElement.canPlayType('video/mkv')) {
+            return true;
+        }
+
+        var userAgent = navigator.userAgent.toLowerCase();
 
         // Unfortunately there's no real way to detect mkv support
         if (browser.chrome) {
-
-            var userAgent = navigator.userAgent.toLowerCase();
 
             // Not supported on opera tv
             if (browser.operaTv) {
@@ -108,6 +132,11 @@ define(['browser'], function (browser) {
             return true;
         }
 
+        if (isEdgeUniversal()) {
+
+            return true;
+        }
+
         return false;
     }
 
@@ -122,9 +151,11 @@ define(['browser'], function (browser) {
 
         switch (container) {
 
+            case 'asf':
+                supported = browser.tizen || isEdgeUniversal();
+                break;
             case '3gp':
             case 'avi':
-            case 'asf':
             case 'flv':
             case 'mpg':
             case 'mpeg':
@@ -135,8 +166,10 @@ define(['browser'], function (browser) {
                 supported = browser.tizen;
                 break;
             case 'm2ts':
-            case 'wmv':
                 supported = browser.tizen || browser.web0s;
+                break;
+            case 'wmv':
+                supported = browser.tizen || browser.web0s || isEdgeUniversal();
                 break;
             case 'ts':
                 supported = browser.tizen || browser.web0s;
@@ -199,7 +232,7 @@ define(['browser'], function (browser) {
 
         var canPlayWebm = videoTestElement.canPlayType('video/webm').replace(/no/, '');
 
-        var canPlayMkv = testCanPlayMkv();
+        var canPlayMkv = testCanPlayMkv(videoTestElement);
         var canPlayTs = testCanPlayTs();
 
         var profile = {};
@@ -218,7 +251,7 @@ define(['browser'], function (browser) {
 
         // Only put mp3 first if mkv support is there
         // Otherwise with HLS and mp3 audio we're seeing some browsers
-        if (videoTestElement.canPlayType('audio/mp4; codecs="ac-3"').replace(/no/, '')) {
+        if (videoTestElement.canPlayType('audio/mp4; codecs="ac-3"').replace(/no/, '') || isEdgeUniversal()) {
             // safari is lying
             if (!browser.safari) {
                 videoAudioCodecs.push('ac3');
@@ -266,7 +299,7 @@ define(['browser'], function (browser) {
         }
 
         // These are formats we can't test for but some devices will support
-        ['m2ts', 'wmv', 'ts'].map(getDirectPlayProfileForVideoContainer).filter(function (i) {
+        ['m2ts', 'wmv', 'ts', 'asf'].map(getDirectPlayProfileForVideoContainer).filter(function (i) {
             return i != null;
 
         }).forEach(function (i) {

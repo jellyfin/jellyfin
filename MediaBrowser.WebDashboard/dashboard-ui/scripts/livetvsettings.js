@@ -169,7 +169,6 @@
         ApiClient.getNamedConfiguration("livetv").then(function (config) {
 
             loadPage(page, config);
-
         });
 
         if (AppInfo.enableSupporterMembership) {

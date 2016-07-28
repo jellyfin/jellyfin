@@ -172,58 +172,6 @@ var Dashboard = {
                 Dashboard.showDashboardRefreshNotification();
             }
         }
-
-        Dashboard.showInProgressInstallations(info.InProgressInstallations);
-    },
-
-    showInProgressInstallations: function (installations) {
-
-        installations = installations || [];
-
-        for (var i = 0, length = installations.length; i < length; i++) {
-
-            var installation = installations[i];
-
-            var percent = installation.PercentComplete || 0;
-
-            if (percent < 100) {
-                Dashboard.showPackageInstallNotification(installation, "progress");
-            }
-        }
-
-        if (installations.length) {
-
-            Dashboard.ensureInstallRefreshInterval();
-        } else {
-            Dashboard.stopInstallRefreshInterval();
-        }
-    },
-
-    ensureInstallRefreshInterval: function () {
-
-        if (!Dashboard.installRefreshInterval) {
-
-            if (ApiClient.isWebSocketOpen()) {
-                ApiClient.sendWebSocketMessage("SystemInfoStart", "0,500");
-            }
-            Dashboard.installRefreshInterval = 1;
-        }
-    },
-
-    stopInstallRefreshInterval: function () {
-
-        if (Dashboard.installRefreshInterval) {
-            if (ApiClient.isWebSocketOpen()) {
-                ApiClient.sendWebSocketMessage("SystemInfoStop");
-            }
-            Dashboard.installRefreshInterval = null;
-        }
-    },
-
-    cancelInstallation: function (id) {
-
-        ApiClient.cancelPackageInstallation(id).then(Dashboard.refreshSystemInfoFromServer, Dashboard.refreshSystemInfoFromServer);
-
     },
 
     showServerRestartWarning: function (systemInfo) {
@@ -780,105 +728,6 @@ var Dashboard = {
         else if (msg.MessageType === "RestartRequired") {
             Dashboard.updateSystemInfo(msg.Data);
         }
-        else if (msg.MessageType === "PackageInstallationCompleted") {
-            Dashboard.getCurrentUser().then(function (currentUser) {
-
-                if (currentUser.Policy.IsAdministrator) {
-                    Dashboard.showPackageInstallNotification(msg.Data, "completed");
-                    Dashboard.refreshSystemInfoFromServer();
-                }
-            });
-        }
-        else if (msg.MessageType === "PackageInstallationFailed") {
-            Dashboard.getCurrentUser().then(function (currentUser) {
-
-                if (currentUser.Policy.IsAdministrator) {
-                    Dashboard.showPackageInstallNotification(msg.Data, "failed");
-                    Dashboard.refreshSystemInfoFromServer();
-                }
-            });
-        }
-        else if (msg.MessageType === "PackageInstallationCancelled") {
-            Dashboard.getCurrentUser().then(function (currentUser) {
-
-                if (currentUser.Policy.IsAdministrator) {
-                    Dashboard.showPackageInstallNotification(msg.Data, "cancelled");
-                    Dashboard.refreshSystemInfoFromServer();
-                }
-            });
-        }
-        else if (msg.MessaapiclientcgeType === "PackageInstalling") {
-            Dashboard.getCurrentUser().then(function (currentUser) {
-
-                if (currentUser.Policy.IsAdministrator) {
-                    Dashboard.showPackageInstallNotification(msg.Data, "progress");
-                    Dashboard.refreshSystemInfoFromServer();
-                }
-            });
-        }
-    },
-
-    showPackageInstallNotification: function (installation, status) {
-
-        if (AppInfo.isNativeApp) {
-            return;
-        }
-
-        var html = '';
-
-        if (status == 'completed') {
-            html += '<img src="css/images/notifications/done.png" class="notificationIcon" />';
-        }
-        else if (status == 'cancelled') {
-            html += '<img src="css/images/notifications/info.png" class="notificationIcon" />';
-        }
-        else if (status == 'failed') {
-            html += '<img src="css/images/notifications/error.png" class="notificationIcon" />';
-        }
-        else if (status == 'progress') {
-            html += '<img src="css/images/notifications/download.png" class="notificationIcon" />';
-        }
-
-        html += '<span style="margin-right: 1em;">';
-
-        if (status == 'completed') {
-            html += Globalize.translate('LabelPackageInstallCompleted').replace('{0}', installation.Name + ' ' + installation.Version);
-        }
-        else if (status == 'cancelled') {
-            html += Globalize.translate('LabelPackageInstallCancelled').replace('{0}', installation.Name + ' ' + installation.Version);
-        }
-        else if (status == 'failed') {
-            html += Globalize.translate('LabelPackageInstallFailed').replace('{0}', installation.Name + ' ' + installation.Version);
-        }
-        else if (status == 'progress') {
-            html += Globalize.translate('LabelInstallingPackage').replace('{0}', installation.Name + ' ' + installation.Version);
-        }
-
-        html += '</span>';
-
-        if (status == 'progress') {
-
-            var percentComplete = Math.round(installation.PercentComplete || 0);
-
-            html += '<progress style="margin-right: 1em;" max="100" value="' + percentComplete + '" title="' + percentComplete + '%">';
-            html += '' + percentComplete + '%';
-            html += '</progress>';
-
-            if (percentComplete < 100) {
-                html += '<button is="emby-button" type="button" class="raised cancelDark mini" onclick="this.disabled=\'disabled\';Dashboard.cancelInstallation(\'' + installation.Id + '\');"><i class="md-icon">cancel</i><span>' + Globalize.translate('ButtonCancel') + '</span></button>';
-            }
-        }
-
-        var timeout = 0;
-
-        if (status == 'cancelled') {
-            timeout = 2000;
-        }
-
-        var forceShow = status != "progress";
-        var allowHide = status != "progress" && status != 'cancelled';
-
-        Dashboard.showFooterNotification({ html: html, id: installation.Id, timeout: timeout, forceShow: forceShow, allowHide: allowHide });
     },
 
     setPageTitle: function (title, documentTitle) {
@@ -2994,7 +2843,7 @@ var AppInfo = {};
             postInitDependencies.push('bower_components/emby-webcomponents/input/api');
 
             if (window.Notification && !AppInfo.isNativeApp) {
-                postInitDependencies.push('bower_components/emby-webcomponents/librarychangednotifications');
+                postInitDependencies.push('bower_components/emby-webcomponents/notifications/notifications');
             }
 
             require(postInitDependencies);
