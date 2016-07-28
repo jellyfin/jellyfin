@@ -2842,6 +2842,10 @@ var AppInfo = {};
 
             postInitDependencies.push('bower_components/emby-webcomponents/input/api');
 
+            if (navigator.serviceWorker && !AppInfo.isNativeApp) {
+                navigator.serviceWorker.register('serviceworker.js');
+            }
+
             if (window.Notification && !AppInfo.isNativeApp) {
                 postInitDependencies.push('bower_components/emby-webcomponents/notifications/notifications');
             }

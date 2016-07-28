@@ -12,6 +12,8 @@ define(['serverNotifications', 'playbackManager', 'events', 'globalize', 'requir
     document.addEventListener('click', onOneDocumentClick);
     document.addEventListener('keydown', onOneDocumentClick);
 
+    var serviceWorkerRegistration;
+
     function closeAfter(notification, timeoutMs) {
 
         setTimeout(function () {
@@ -25,7 +27,22 @@ define(['serverNotifications', 'playbackManager', 'events', 'globalize', 'requir
         }, timeoutMs);
     }
 
+    function resetRegistration() {
+        navigator.serviceWorker.ready.then(function (registration) {
+            serviceWorkerRegistration = registration;
+        });
+    }
+
+    resetRegistration();
+
     function show(title, options, timeoutMs) {
+
+        resetRegistration();
+
+        if (serviceWorkerRegistration && !timeoutMs) {
+            serviceWorkerRegistration.showNotification(title, options);
+            return;
+        }
 
         try {
             var notif = new Notification(title, options);
@@ -140,10 +157,10 @@ define(['serverNotifications', 'playbackManager', 'events', 'globalize', 'requir
             else if (status == 'progress') {
                 notification.title = globalize.translate('LabelInstallingPackage').replace('{0}', installation.Name + ' ' + installation.Version);
 
-                notification.actions =
-                [
-                    { action: 'cancel', title: globalize.translate('ButtonCancel')/*, icon: 'https://example/like.png'*/ }
-                ];
+                //notification.actions =
+                //[
+                //    { action: 'cancel', title: globalize.translate('ButtonCancel')/*, icon: 'https://example/like.png'*/ }
+                //];
             }
 
             if (status == 'progress') {
