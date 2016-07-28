@@ -1318,14 +1318,20 @@
 
                     var md5 = getConnectPasswordHash(password);
 
+                    var data = {
+                        email: email,
+                        userName: username,
+                        password: md5
+                    };
+
+                    if (options.grecaptcha) {
+                        data.grecaptcha = options.grecaptcha;
+                    }
+
                     ajax({
                         type: "POST",
                         url: "https://connect.emby.media/service/register",
-                        data: {
-                            email: email,
-                            userName: username,
-                            password: md5
-                        },
+                        data: data,
                         dataType: "json",
                         contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
                         headers: {

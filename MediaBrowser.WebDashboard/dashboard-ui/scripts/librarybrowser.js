@@ -802,6 +802,13 @@
                     });
                 }
 
+                if (item.SeriesId) {
+                    atts.push({
+                        name: 'seriesid',
+                        value: item.SeriesId
+                    });
+                }
+
                 if (options.collectionId) {
                     atts.push({
                         name: 'collectionid',

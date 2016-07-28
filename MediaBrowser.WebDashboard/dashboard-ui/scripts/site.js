@@ -416,10 +416,16 @@ var Dashboard = {
 
     restartServer: function () {
 
+        var apiClient = window.ApiClient;
+
+        if (!apiClient) {
+            return;
+        }
+
         Dashboard.suppressAjaxErrors = true;
         Dashboard.showLoadingMsg();
 
-        ApiClient.restartServer().then(function () {
+        apiClient.restartServer().then(function () {
 
             setTimeout(function () {
                 Dashboard.reloadPageWhenServerAvailable();
@@ -432,8 +438,14 @@ var Dashboard = {
 
     reloadPageWhenServerAvailable: function (retryCount) {
 
+        var apiClient = window.ApiClient;
+
+        if (!apiClient) {
+            return;
+        }
+
         // Don't use apiclient method because we don't want it reporting authentication under the old version
-        ApiClient.getJSON(ApiClient.getUrl("System/Info")).then(function (info) {
+        apiClient.getJSON(apiClient.getUrl("System/Info")).then(function (info) {
 
             // If this is back to false, the restart completed
             if (!info.HasPendingRestart) {
@@ -468,7 +480,7 @@ var Dashboard = {
 
     getPluginSecurityInfo: function () {
 
-        var apiClient = ApiClient;
+        var apiClient = window.ApiClient;
 
         if (!apiClient) {
 

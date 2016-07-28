@@ -5,18 +5,6 @@ define(['layoutManager', 'globalize'], function (layoutManager, globalize) {
 
             require(['actionsheet'], function (actionSheet) {
 
-                var items = [];
-
-                items.push({
-                    name: globalize.translate('sharedcomponents#ButtonOk'),
-                    id: 'ok'
-                });
-
-                items.push({
-                    name: globalize.translate('sharedcomponents#ButtonCancel'),
-                    id: 'cancel'
-                });
-
                 actionSheet.show({
 
                     title: options.text,

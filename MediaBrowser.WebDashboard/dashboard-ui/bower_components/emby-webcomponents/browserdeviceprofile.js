@@ -145,40 +145,45 @@ define(['browser'], function (browser) {
         return browser.tizen || browser.web0s;
     }
 
-    function getDirectPlayProfileForVideoContainer(container) {
+    function getDirectPlayProfileForVideoContainer(container, videoAudioCodecs) {
 
         var supported = false;
+        var profileContainer = container;
 
         switch (container) {
 
             case 'asf':
                 supported = browser.tizen || isEdgeUniversal();
+                videoAudioCodecs = [];
                 break;
-            case '3gp':
             case 'avi':
-            case 'flv':
+                supported = isEdgeUniversal();
+                break;
             case 'mpg':
             case 'mpeg':
+                supported = isEdgeUniversal();
+                break;
+            case '3gp':
+            case 'flv':
             case 'mts':
             case 'trp':
             case 'vob':
             case 'vro':
                 supported = browser.tizen;
                 break;
+            case 'mov':
+                supported = browser.chrome || isEdgeUniversal();
+                break;
             case 'm2ts':
-                supported = browser.tizen || browser.web0s;
+                supported = browser.tizen || browser.web0s || isEdgeUniversal();
                 break;
             case 'wmv':
                 supported = browser.tizen || browser.web0s || isEdgeUniversal();
+                videoAudioCodecs = [];
                 break;
             case 'ts':
-                supported = browser.tizen || browser.web0s;
-                if (supported) {
-                    return {
-                        Container: 'ts,mpegts',
-                        Type: 'Video'
-                    };
-                }
+                supported = browser.tizen || browser.web0s || isEdgeUniversal();
+                profileContainer = 'ts,mpegts';
                 break;
             default:
                 break;
@@ -189,8 +194,9 @@ define(['browser'], function (browser) {
         }
 
         return {
-            Container: container,
-            Type: 'Video'
+            Container: profileContainer,
+            Type: 'Video',
+            AudioCodec: videoAudioCodecs.join(',')
         };
     }
 
@@ -291,7 +297,7 @@ define(['browser'], function (browser) {
 
         if (canPlayMkv) {
             profile.DirectPlayProfiles.push({
-                Container: 'mkv,mov',
+                Container: 'mkv',
                 Type: 'Video',
                 VideoCodec: 'h264',
                 AudioCodec: videoAudioCodecs.join(',')
@@ -299,15 +305,15 @@ define(['browser'], function (browser) {
         }
 
         // These are formats we can't test for but some devices will support
-        ['m2ts', 'wmv', 'ts', 'asf'].map(getDirectPlayProfileForVideoContainer).filter(function (i) {
+        ['m2ts', 'mov', 'wmv', 'ts', 'asf', 'avi', 'mpg', 'mpeg'].map(function (container) {
+            return getDirectPlayProfileForVideoContainer(container, videoAudioCodecs);
+        }).filter(function (i) {
             return i != null;
-
         }).forEach(function (i) {
-
             profile.DirectPlayProfiles.push(i);
         });
 
-        ['opus', 'mp3', 'aac', 'flac', 'webma', 'wma'].filter(canPlayAudioFormat).forEach(function (audioFormat) {
+        ['opus', 'mp3', 'aac', 'flac', 'webma', 'wma', 'wav'].filter(canPlayAudioFormat).forEach(function (audioFormat) {
 
             profile.DirectPlayProfiles.push({
                 Container: audioFormat == 'webma' ? 'webma,webm' : audioFormat,
@@ -564,11 +570,13 @@ define(['browser'], function (browser) {
             MimeType: 'video/mp4'
         });
 
-        profile.ResponseProfiles.push({
-            Type: 'Video',
-            Container: 'mov',
-            MimeType: 'video/webm'
-        });
+        if (browser.chrome) {
+            profile.ResponseProfiles.push({
+                Type: 'Video',
+                Container: 'mov',
+                MimeType: 'video/webm'
+            });
+        }
 
         return profile;
     };

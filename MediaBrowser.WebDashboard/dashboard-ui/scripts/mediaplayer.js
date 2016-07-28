@@ -352,7 +352,7 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
 
                 promise = ApiClient.getCurrentUser().then(function (user) {
 
-                    if (!user.Configuration.EnableNextEpisodeAutoPlay) {
+                    if (!user.Configuration.EnableNextEpisodeAutoPlay || !firstItem.SeriesId) {
                         return null;
                     }
 
