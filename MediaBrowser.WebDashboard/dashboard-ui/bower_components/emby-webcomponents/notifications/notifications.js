@@ -144,22 +144,22 @@ define(['serverNotifications', 'playbackManager', 'events', 'globalize', 'requir
             };
 
             if (status == 'completed') {
-                notification.title = globalize.translate('LabelPackageInstallCompleted').replace('{0}', installation.Name + ' ' + installation.Version);
+                notification.title = globalize.translate('sharedcomponents#PackageInstallCompleted').replace('{0}', installation.Name + ' ' + installation.Version);
                 notification.vibrate = true;
             }
             else if (status == 'cancelled') {
-                notification.title = globalize.translate('LabelPackageInstallCancelled').replace('{0}', installation.Name + ' ' + installation.Version);
+                notification.title = globalize.translate('sharedcomponents#PackageInstallCancelled').replace('{0}', installation.Name + ' ' + installation.Version);
             }
             else if (status == 'failed') {
-                notification.title = globalize.translate('LabelPackageInstallFailed').replace('{0}', installation.Name + ' ' + installation.Version);
+                notification.title = globalize.translate('sharedcomponents#PackageInstallFailed').replace('{0}', installation.Name + ' ' + installation.Version);
                 notification.vibrate = true;
             }
             else if (status == 'progress') {
-                notification.title = globalize.translate('LabelInstallingPackage').replace('{0}', installation.Name + ' ' + installation.Version);
+                notification.title = globalize.translate('sharedcomponents#InstallingPackage').replace('{0}', installation.Name + ' ' + installation.Version);
 
                 //notification.actions =
                 //[
-                //    { action: 'cancel', title: globalize.translate('ButtonCancel')/*, icon: 'https://example/like.png'*/ }
+                //    { action: 'cancel', title: globalize.translate('sharedcomponents#ButtonCancel')/*, icon: 'https://example/like.png'*/ }
                 //];
             }
 
