@@ -1,9 +1,42 @@
-define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo', 'focusManager', 'indicators', 'globalize', 'browser', 'layoutManager', 'emby-button', 'css!./card', 'paper-icon-button-light', 'clearButtonStyle'],
-    function (datetime, imageLoader, connectionManager, itemHelper, mediaInfo, focusManager, indicators, globalize, browser, layoutManager) {
+define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo', 'focusManager', 'indicators', 'globalize', 'browser', 'layoutManager', 'apphost', 'emby-button', 'css!./card', 'paper-icon-button-light', 'clearButtonStyle'],
+    function (datetime, imageLoader, connectionManager, itemHelper, mediaInfo, focusManager, indicators, globalize, browser, layoutManager, appHost) {
+
+        // Regular Expressions for parsing tags and attributes
+        var SURROGATE_PAIR_REGEXP = /[\uD800-\uDBFF][\uDC00-\uDFFF]/g,
+          // Match everything outside of normal chars and " (quote character)
+          NON_ALPHANUMERIC_REGEXP = /([^\#-~| |!])/g;
+
+        /**
+         * Escapes all potentially dangerous characters, so that the
+         * resulting string can be safely inserted into attribute or
+         * element text.
+         * @param value
+         * @returns {string} escaped text
+         */
+        function htmlEncode(value) {
+            return value.
+              replace(/&/g, '&amp;').
+              replace(SURROGATE_PAIR_REGEXP, function (value) {
+                  var hi = value.charCodeAt(0);
+                  var low = value.charCodeAt(1);
+                  return '&#' + (((hi - 0xD800) * 0x400) + (low - 0xDC00) + 0x10000) + ';';
+              }).
+              replace(NON_ALPHANUMERIC_REGEXP, function (value) {
+                  return '&#' + value.charCodeAt(0) + ';';
+              }).
+              replace(/</g, '&lt;').
+              replace(/>/g, '&gt;');
+        }
 
         function getCardsHtml(items, options) {
 
             var apiClient = connectionManager.currentApiClient();
+
+            if (arguments.length == 1) {
+
+                options = arguments[0];
+                items = options.items;
+            }
 
             var html = buildCardsHtmlInternal(items, apiClient, options);
 
@@ -394,7 +427,37 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             var imgUrl = null;
             var coverImage = false;
 
-            if (options.preferThumb && item.ImageTags && item.ImageTags.Thumb) {
+            if (options.autoThumb && item.ImageTags && item.ImageTags.Primary && item.PrimaryImageAspectRatio && item.PrimaryImageAspectRatio >= 1.34) {
+
+                width = posterWidth;
+                height = primaryImageAspectRatio ? Math.round(posterWidth / primaryImageAspectRatio) : null;
+
+                imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                    type: "Primary",
+                    maxHeight: height,
+                    maxWidth: width,
+                    tag: item.ImageTags.Primary,
+                    enableImageEnhancers: enableImageEnhancers
+                });
+
+                if (primaryImageAspectRatio) {
+                    if (uiAspect) {
+                        if (Math.abs(primaryImageAspectRatio - uiAspect) <= .2) {
+                            coverImage = true;
+                        }
+                    }
+                }
+
+            } else if (options.autoThumb && item.ImageTags && item.ImageTags.Thumb) {
+
+                imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+                    type: "Thumb",
+                    maxWidth: thumbWidth,
+                    tag: item.ImageTags.Thumb,
+                    enableImageEnhancers: enableImageEnhancers
+                });
+
+            } else if (options.preferThumb && item.ImageTags && item.ImageTags.Thumb) {
 
                 imgUrl = apiClient.getScaledImageUrl(item.Id, {
                     type: "Thumb",
@@ -560,15 +623,347 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
+        function getCardTextLines(lines, cssClass, forceLines) {
+
+            var html = '';
+
+            var valid = 0;
+            var i, length;
+
+            for (i = 0, length = lines.length; i < length; i++) {
+
+                var text = lines[i];
+
+                if (text) {
+                    html += "<div class='" + cssClass + "'>";
+                    html += text;
+                    html += "</div>";
+                    valid++;
+                }
+            }
+
+            if (forceLines) {
+                while (valid < length) {
+                    html += "<div class='" + cssClass + "'>&nbsp;</div>";
+                    valid++;
+                }
+            }
+
+            return html;
+        }
+
+        function getCardFooterText(item, options, showTitle, imgUrl, footerClass, progressHtml, isOuterFooter) {
+
+            var html = '';
+
+            var showOtherText = isOuterFooter ? !options.overlayText : options.overlayText;
+
+            if (isOuterFooter && options.cardLayout && !layoutManager.tv) {
+                var moreIcon = appHost.moreIcon == 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';
+                html += '<button is="paper-icon-button-light" class="itemAction btnCardOptions autoSize" data-action="menu"><i class="md-icon">' + moreIcon + '</i></button>';
+            }
+
+            var cssClass = options.centerText && !options.cardLayout ? "cardText cardTextCentered" : "cardText";
+
+            var lines = [];
+
+            if (showOtherText) {
+                var parentTitleUnderneath = item.Type == 'MusicAlbum' || item.Type == 'Audio' || item.Type == 'MusicVideo';
+                if (options.showParentTitle && !parentTitleUnderneath) {
+
+                    if (isOuterFooter && item.Type == 'Episode' && item.SeriesName && item.SeriesId) {
+
+                        lines.push(getTextActionButton({
+                            Id: item.SeriesId,
+                            Name: item.SeriesName,
+                            Type: 'Series',
+                            IsFolder: true
+                        }));
+                    }
+                    else {
+
+                        lines.push(item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || ""));
+                    }
+                }
+            }
+
+            if (showTitle) {
+
+                var name = options.showTitle == 'auto' && !item.IsFolder && item.MediaType == 'Photo' ? '' : itemHelper.getDisplayName(item);
+
+                lines.push(htmlEncode(name));
+            }
+
+            if (showOtherText) {
+                if (options.showParentTitle && parentTitleUnderneath) {
+
+                    if (isOuterFooter && item.AlbumArtists && item.AlbumArtists.length) {
+                        item.AlbumArtists[0].Type = 'MusicArtist';
+                        item.AlbumArtists[0].IsFolder = true;
+                        lines.push(getTextActionButton(item.AlbumArtists[0]));
+                    } else {
+                        lines.push(item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || ""));
+                    }
+                }
+
+                if (options.showItemCounts) {
+
+                    var itemCountHtml = getItemCountsHtml(options, item);
+
+                    lines.push(itemCountHtml);
+                }
+
+                if (options.textLines) {
+                    var additionalLines = options.textLines(item);
+                    for (var i = 0, length = additionalLines.length; i < length; i++) {
+                        lines.push(additionalLines[i]);
+                    }
+                }
+
+                if (options.showSongCount) {
+
+                    var songLine = '';
+
+                    if (item.SongCount) {
+                        songLine = item.SongCount == 1 ?
+                        globalize.translate('ValueOneSong') :
+                        globalize.translate('ValueSongCount', item.SongCount);
+                    }
+
+                    lines.push(songLine);
+                }
+
+                if (options.showPremiereDate) {
+
+                    if (item.PremiereDate) {
+                        try {
+
+                            lines.push(getPremiereDateText(item));
+
+                        } catch (err) {
+                            lines.push('');
+
+                        }
+                    } else {
+                        lines.push('');
+                    }
+                }
+
+                if (options.showYear) {
+
+                    lines.push(item.ProductionYear || '');
+                }
+
+                if (options.showChannelName) {
+
+                    lines.push(item.ChannelName || '');
+                }
+
+                if (options.showAirTime) {
+
+                    var airTimeText;
+                    if (item.StartDate) {
+
+                        try {
+                            var date = datetime.parseISO8601Date(item.StartDate);
+
+                            airTimeText = date.toLocaleDateString();
+
+                            airTimeText += ', ' + datetime.getDisplayTime(date);
+
+                            if (item.EndDate) {
+                                date = datetime.parseISO8601Date(item.EndDate);
+                                airTimeText += ' - ' + datetime.getDisplayTime(date);
+                            }
+                        }
+                        catch (e) {
+                            console.log("Error parsing date: " + item.PremiereDate);
+                        }
+                    }
+
+                    lines.push(airTimeText || '');
+                }
+
+                if (item.Type == 'TvChannel') {
+
+                    if (item.CurrentProgram) {
+                        lines.push(itemHelper.getDisplayName(item.CurrentProgram));
+                    } else {
+                        lines.push('');
+                    }
+                }
+
+                if (options.showSeriesYear) {
+
+                    if (item.Status == "Continuing") {
+
+                        lines.push(globalize.translate('ValueSeriesYearToPresent', item.ProductionYear || ''));
+
+                    } else {
+                        lines.push(item.ProductionYear || '');
+                    }
+
+                }
+
+                if (options.showProgramAirInfo) {
+
+                    var date = datetime.parseISO8601Date(item.StartDate, true);
+
+                    var text = item.StartDate ?
+                        date.toLocaleString() :
+                        '';
+
+                    lines.push(text || '&nbsp;');
+
+                    lines.push(item.ChannelName || '&nbsp;');
+                }
+            }
+
+            html += getCardTextLines(lines, cssClass, !options.overlayText);
+
+            if (progressHtml) {
+                html += progressHtml;
+            }
+
+            if (html) {
+                html = '<div class="' + footerClass + '">' + html;
+
+                //cardFooter
+                html += "</div>";
+            }
+
+            return html;
+        }
+
+        function getTextActionButton(item, text) {
+
+            if (!text) {
+                text = itemHelper.getDisplayName(item);
+            }
+
+            var html = '<button data-id="' + item.Id + '" data-type="' + item.Type + '" data-mediatype="' + item.MediaType + '" data-channelid="' + item.ChannelId + '" data-isfolder="' + item.IsFolder + '" type="button" class="itemAction textActionButton" data-action="link">';
+            html += text;
+            html += '</button>';
+
+            return html;
+        }
+
+        function getItemCountsHtml(options, item) {
+
+            var counts = [];
+
+            var childText;
+
+            if (item.Type == 'Playlist') {
+
+                childText = '';
+
+                if (item.CumulativeRunTimeTicks) {
+
+                    var minutes = item.CumulativeRunTimeTicks / 600000000;
+
+                    minutes = minutes || 1;
+
+                    childText += globalize.translate('ValueMinutes', Math.round(minutes));
+
+                } else {
+                    childText += globalize.translate('ValueMinutes', 0);
+                }
+
+                counts.push(childText);
+
+            }
+            else if (item.Type == 'Genre' || item.Type == 'Studio') {
+
+                if (item.MovieCount) {
+
+                    childText = item.MovieCount == 1 ?
+                    globalize.translate('ValueOneMovie') :
+                    globalize.translate('ValueMovieCount', item.MovieCount);
+
+                    counts.push(childText);
+                }
+                if (item.TrailerCount) {
+
+                    childText = item.TrailerCount == 1 ?
+                    globalize.translate('ValueOneTrailer') :
+                    globalize.translate('ValueTrailerCount', item.TrailerCount);
+
+                    counts.push(childText);
+                }
+
+                if (item.SeriesCount) {
+
+                    childText = item.SeriesCount == 1 ?
+                    globalize.translate('ValueOneSeries') :
+                    globalize.translate('ValueSeriesCount', item.SeriesCount);
+
+                    counts.push(childText);
+                }
+                if (item.EpisodeCount) {
+
+                    childText = item.EpisodeCount == 1 ?
+                    globalize.translate('ValueOneEpisode') :
+                    globalize.translate('ValueEpisodeCount', item.EpisodeCount);
+
+                    counts.push(childText);
+                }
+                if (item.GameCount) {
+
+                    childText = item.GameCount == 1 ?
+                    globalize.translate('ValueOneGame') :
+                    globalize.translate('ValueGameCount', item.GameCount);
+
+                    counts.push(childText);
+                }
+
+            } else if (item.Type == 'GameGenre') {
+
+                if (item.GameCount) {
+
+                    childText = item.GameCount == 1 ?
+                    globalize.translate('ValueOneGame') :
+                    globalize.translate('ValueGameCount', item.GameCount);
+
+                    counts.push(childText);
+                }
+            } else if (item.Type == 'MusicGenre' || options.context == "MusicArtist") {
+
+                if (item.AlbumCount) {
+
+                    childText = item.AlbumCount == 1 ?
+                    globalize.translate('ValueOneAlbum') :
+                    globalize.translate('ValueAlbumCount', item.AlbumCount);
+
+                    counts.push(childText);
+                }
+                if (item.SongCount) {
+
+                    childText = item.SongCount == 1 ?
+                    globalize.translate('ValueOneSong') :
+                    globalize.translate('ValueSongCount', item.SongCount);
+
+                    counts.push(childText);
+                }
+                if (item.MusicVideoCount) {
+
+                    childText = item.MusicVideoCount == 1 ?
+                    globalize.translate('ValueOneMusicVideo') :
+                    globalize.translate('ValueMusicVideoCount', item.MusicVideoCount);
+
+                    counts.push(childText);
+                }
+            }
+
+            return counts.join(' • ');
+        }
+
         function buildCard(index, item, apiClient, options, className) {
 
             var action = options.action || 'link';
 
-            if (layoutManager.tv) {
-                className += " itemAction";
-            }
-
-            if (options.scalable) {
+            var scalable = options.scalable !== false;
+            if (scalable) {
                 className += " scalableCard";
             }
 
@@ -588,7 +983,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 cardImageContainerClass += ' emptyCardImageContainer defaultCardColor' + getRandomInt(1, 5);
             }
 
-            var separateCardBox = options.scalable;
+            var separateCardBox = scalable;
 
             if (!separateCardBox) {
                 cardImageContainerClass += " cardBox";
@@ -635,63 +1030,60 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 cardImageContainerOpen += '<div class="indicators">' + indicatorsHtml + '</div>';
             }
 
-            var showTitle = options.showTitle || imgInfo.forceName || item.Type == 'PhotoAlbum';
-            var showParentTitle = options.showParentTitle || (imgInfo.forceName && item.Type == 'Episode');
+            var forceName = imgInfo.forceName;
+
+            var showTitle = options.showTitle == 'auto' ? true : (options.showTitle || item.Type == 'PhotoAlbum' || item.Type == 'Folder');
+
+            if (forceName && !options.cardLayout) {
+                showTitle = false;
+            }
 
             if (!imgUrl) {
                 var defaultName = item.EpisodeTitle ? item.Name : itemHelper.getDisplayName(item);
                 cardImageContainerOpen += '<div class="cardText cardCenteredText">' + defaultName + '</div>';
             }
 
-            var enableOuterFooter = options.overlayText === false;
-            var nameHtml = '';
-
-            if (showParentTitle) {
-                nameHtml += '<div class="cardText">' + (item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || "")) + '</div>';
-            }
-
-            if (showTitle) {
-                var nameClass = 'cardText';
-                nameHtml += '<div class="' + nameClass + '">' + itemHelper.getDisplayName(item) + '</div>';
-            }
-
             var innerCardFooterClass = 'innerCardFooter';
             var progressHtml = indicators.getProgressBarHtml(item);
 
-            if (progressHtml) {
-                innerCardFooterClass += " fullInnerCardFooter";
-            }
-
             var innerCardFooter = '';
 
-            if (imgUrl && (progressHtml || (nameHtml && !enableOuterFooter))) {
-                innerCardFooter += '<div class="' + innerCardFooterClass + '">';
+            var footerOverlayed = false;
 
-                if (!enableOuterFooter) {
-                    innerCardFooter += nameHtml;
-                }
+            if (options.overlayText) {
+
+                var footerCssClass = progressHtml ? 'innerCardFooter fullInnerCardFooter' : 'innerCardFooter';
+                innerCardFooter += getCardFooterText(item, options, showTitle, imgUrl, footerCssClass, progressHtml, false);
+                footerOverlayed = true;
+            }
+            else if (progressHtml) {
+                innerCardFooter += '<div class="innerCardFooter fullInnerCardFooter">';
                 innerCardFooter += progressHtml;
                 innerCardFooter += '</div>';
+
+                progressHtml = '';
             }
 
             var outerCardFooter = '';
-            if (nameHtml && enableOuterFooter) {
-                outerCardFooter += '<div class="cardFooter">';
-                outerCardFooter += nameHtml;
-                outerCardFooter += '</div>';
+            if (!options.overlayText && !footerOverlayed) {
+                var footerCssClass = options.cardLayout ? 'cardFooter' : 'cardFooter transparent';
+                outerCardFooter = getCardFooterText(item, options, showTitle, imgUrl, footerCssClass, progressHtml, true);
             }
 
             var overlayButtons = '';
-            if (!layoutManager.tv) {
+            if (!layoutManager.tv && scalable) {
                 if (options.overlayPlayButton && !item.IsPlaceHolder && (item.LocationType != 'Virtual' || !item.MediaType || item.Type == 'Program') && item.Type != 'Person' && item.PlayAccess == 'Full') {
                     overlayButtons += '<button is="paper-icon-button-light" class="cardOverlayButton itemAction autoSize" data-action="playmenu" onclick="return false;"><i class="md-icon">play_arrow</i></button>';
                 }
                 if (options.overlayMoreButton) {
-                    overlayButtons += '<button is="paper-icon-button-light" class="cardOverlayButton itemAction autoSize" data-action="menu" onclick="return false;"><i class="md-icon">more_vert</i></button>';
+
+                    var moreIcon = appHost.moreIcon == 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';
+
+                    overlayButtons += '<button is="paper-icon-button-light" class="cardOverlayButton itemAction autoSize" data-action="menu" onclick="return false;"><i class="md-icon">' + moreIcon + '</i></button>';
                 }
             }
 
-            var tagName = layoutManager.tv ? 'button' : 'div';
+            var tagName = layoutManager.tv || !scalable ? 'button' : 'div';
 
             var prefix = (item.SortName || item.Name || '')[0];
 
@@ -711,7 +1103,18 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             var collectionIdData = options.collectionId ? (' data-collectionid="' + options.collectionId + '"') : '';
             var playlistIdData = options.playlistId ? (' data-playlistid="' + options.playlistId + '"') : '';
 
-            var actionAttribute = layoutManager.tv ? (' data-action="' + action + '"') : '';
+            var actionAttribute;
+
+            if (tagName == 'button') {
+                className += " itemAction";
+                actionAttribute = ' data-action="' + action + '"';
+            } else {
+                actionAttribute = '';
+            }
+
+            if (outerCardFooter && !options.cardLayout) {
+                className += ' bottomPaddedCard';
+            }
 
             return '\
 <' + tagName + ' data-index="' + index + '"' + timerAttributes + actionAttribute + ' data-isfolder="' + (item.IsFolder || false) + '" data-serverid="' + (item.ServerId) + '" data-id="' + (item.Id || item.ItemId) + '" data-type="' + item.Type + '" data-mediatype="' + item.MediaType + '"' + positionTicksData + collectionIdData + playlistIdData + ' data-prefix="' + prefix + '" class="' + className + '"> \

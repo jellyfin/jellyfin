@@ -103,6 +103,21 @@ button.cardContent {
     transform: scale(1.34, 1.34);
 }
 
+.bottomPaddedCard .cardBox:not(.visualCardBox) {
+    margin-bottom: 1em;
+}
+
+.hiddenScrollX .bottomPaddedCard .cardBox, .smoothScrollX .bottomPaddedCard .cardBox {
+    margin-bottom: 0;
+}
+
+.btnCardOptions {
+    text-align: right;
+    float: right;
+    padding: 5px 0 2px;
+    margin: 0 !important;
+}
+
 /*.card[focused]:not(.noScale) .cardBox, .card:focus:not(.noScale) .cardBox {
     animation:SHW .2s;
     animation-fill-mode: both;
@@ -123,7 +138,7 @@ button.cardContent {
 .cardImageContainer {
     background-size: contain;
     background-repeat: no-repeat;
-    background-position: center bottom;
+    background-position: center center;
     display: -ms-flex;
     display: -webkit-flex;
     display: flex;
@@ -164,7 +179,7 @@ button.cardContent {
         opacity: .6;
     }
 
-.card:not(.round) .cardFooter {
+.card:not(.round) .cardFooter:not(.transparent) {
     -moz-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     -ms-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -202,6 +217,10 @@ button.cardContent {
 
 .innerCardFooter .cardText, .cardImageContainer .cardText {
     color: #fff;
+}
+
+.cardTextCentered {
+    text-align: center;
 }
 
 .cardCenteredText {
@@ -244,6 +263,7 @@ button.cardContent {
     bottom: 0;
     right: 0;
     margin: 0 .25em .25em 0;
+    z-index: 1;
 }
 
     .cardOverlayButton:hover {
@@ -253,6 +273,26 @@ button.cardContent {
 
 .emptyCardImageContainer {
     font-size: 90%;
+}
+
+.defaultCardColor1 {
+    background-color: #009688;
+}
+
+.defaultCardColor2 {
+    background-color: #D32F2F;
+}
+
+.defaultCardColor3 {
+    background-color: #0288D1;
+}
+
+.defaultCardColor4 {
+    background-color: #388E3C;
+}
+
+.defaultCardColor5 {
+    background-color: #F57F17;
 }
 
 .scalableCard.personCard {
