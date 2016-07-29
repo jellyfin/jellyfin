@@ -1,0 +1,220 @@
+.card {
+    text-transform: none;
+    background-color: transparent !important;
+    background: none !important;
+    margin: 0;
+    padding: 0;
+    display: block;
+    color: inherit !important;
+    box-shadow: none !important;
+    outline: none !important;
+    cursor: pointer;
+    contain: style;
+}
+
+.verticalItemsContainer .card {
+    contain: layout style;
+}
+
+.card, .card:focus {
+    font-weight: inherit !important;
+}
+
+button.card {
+    border: 0 !important;
+    font-size: inherit !important;
+    font-family: inherit !important;
+}
+
+.cardScalable {
+    position: relative;
+}
+
+.backdropCard .cardPadder, .smallBackdropCard .cardPadder, .overflowBackdropCard .cardPadder {
+    padding-bottom: 56.25%;
+}
+
+.squareCard .cardPadder {
+    padding-bottom: 100%;
+}
+
+.letterBoxCard .cardPadder {
+    padding-bottom: 75%;
+}
+
+.portraitCard .cardPadder {
+    padding-bottom: 150%;
+}
+
+.bannerCard .cardPadder {
+    padding-bottom: 18.5%;
+}
+
+.card .cardBox {
+    padding: 0 !important;
+    margin: 0;
+    transition: none !important;
+    border-radius: 0 !important;
+    border: 3px solid transparent;
+    will-change: transform;
+    /* Needed to keep the cardOverlayTarget from showing outside the bounds while it animates */
+    overflow: hidden;
+}
+
+.round .cardBox {
+    border: .7em solid transparent;
+}
+
+.round .cardImageContainer {
+    border: .15em solid transparent;
+}
+
+.card:focus {
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+    .card:focus .cardBox {
+        border-color: transparent;
+    }
+
+.cardImageContainer, .round:focus .cardImageContainer {
+    border-color: #fff;
+}
+
+.round .cardBox {
+    transition: transform 180ms ease-out !important;
+    -webkit-transform-origin: center center;
+    transform-origin: center center;
+}
+
+.layout-tv .round:focus .cardBox {
+    transform: scale(1.34, 1.34);
+}
+
+/*.card[focused]:not(.noScale) .cardBox, .card:focus:not(.noScale) .cardBox {
+    animation:SHW .2s;
+    animation-fill-mode: both;
+}*/
+
+.dimunselected .card .cardImageContainer {
+    -webkit-filter: brightness(50%);
+    filter: brightness(50%);
+    transition: filter, -webkit-filter 600ms ease-out !important;
+}
+
+.dimunselected .card:focus .cardImageContainer {
+    -webkit-filter: initial;
+    filter: initial;
+    transition: filter, -webkit-filter 600ms ease-out !important;
+}
+
+.cardImageContainer {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center bottom;
+    display: -ms-flex;
+    display: -webkit-flex;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background-clip: content-box !important;
+}
+
+.scalableCard .cardImageContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto !important;
+    height: auto !important;
+}
+
+.round .cardImageContainer, .round .cardImage {
+    border-radius: 1000px;
+}
+
+.cardImage.coveredImage, .cardImageContainer.coveredImage, .coveredImage .cardImage {
+    background-size: 100% 100%;
+    background-position: center center;
+}
+
+.coveredImage.noScale, .coveredImage.noScale .cardImage {
+    background-size: cover;
+}
+
+.cardFooter {
+    padding: .25em .25em;
+}
+
+.innerCardFooter {
+    background: rgba(0,0,0,.7);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    text-align: left;
+    z-index: 1;
+    overflow: hidden;
+    max-width: 100%;
+}
+
+.fullInnerCardFooter {
+    right: 0;
+}
+
+.cardText {
+    padding: .25em .35em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+    .cardText + .cardText {
+        padding-top: .1em;
+    }
+
+.cardText {
+    color: inherit;
+}
+
+.innerCardFooter .cardText, .cardImageContainer .cardText {
+    color: #fff;
+}
+
+.cardCenteredText {
+    white-space: normal;
+}
+
+.cardImage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center bottom;
+}
+
+.cardImageIcon {
+    width: 12vh;
+    height: 12vh;
+    font-size: 12vh;
+    color: #fff;
+    position: relative;
+    top: -8%;
+}
+
+.card .indicators {
+    right: .5vh;
+    top: .5vh;
+    position: absolute;
+    display: flex;
+    align-items: center;
+}
+
+.emptyCardImageContainer {
+    font-size: 90%;
+}

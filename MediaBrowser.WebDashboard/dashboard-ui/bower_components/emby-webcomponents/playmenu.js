@@ -15,20 +15,13 @@ define(['actionsheet', 'datetime', 'playbackManager', 'globalize', 'appSettings'
         var resumePositionTicks = item.UserData ? item.UserData.PlaybackPositionTicks : null;
 
         var showExternalPlayer = isMobileApp && mediaType == 'Video' && !isFolder && appSettings.enableExternalPlayers();
-
         var playableItemId = itemType == 'Program' ? channelId : itemId;
 
         if (!resumePositionTicks && mediaType != "Audio" && !isFolder && !showExternalPlayer) {
-            if (itemType == 'Program') {
-                playbackManager.play({
-                    ids: [channelId],
-                    serverId: serverId
-                });
-            } else {
-                playbackManager.play({
-                    items: [item]
-                });
-            }
+            playbackManager.play({
+                ids: [playableItemId],
+                serverId: serverId
+            });
             return;
         }
 
