@@ -619,6 +619,12 @@ namespace MediaBrowser.ServerApplication
 
         private static void ShutdownWindowsApplication()
         {
+            if (_serverNotifyIcon != null)
+            {
+                _serverNotifyIcon.Dispose();
+                _serverNotifyIcon = null;
+            }
+
             //_logger.Info("Calling Application.Exit");
             //Application.Exit();
 
