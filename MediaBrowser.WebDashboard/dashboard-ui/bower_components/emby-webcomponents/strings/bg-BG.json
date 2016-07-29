@@ -1,4 +1,8 @@
 {
+    "PackageInstallCompleted": "{0} installation completed.",
+    "InstallingPackage": "Installing {0}",
+    "PackageInstallFailed": "{0} installation failed.",
+    "PackageInstallCancelled": "{0} installation cancelled.",
     "ValueSpecialEpisodeName": "Special - {0}",
     "Share": "Share",
     "Add": "\u0414\u043e\u0431\u0430\u0432\u0438",

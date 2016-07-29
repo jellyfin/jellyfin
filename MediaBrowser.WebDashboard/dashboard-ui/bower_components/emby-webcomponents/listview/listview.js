@@ -196,8 +196,9 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             var positionTicksData = item.UserData && item.UserData.PlaybackPositionTicks ? (' data-positionticks="' + item.UserData.PlaybackPositionTicks + '"') : '';
             var collectionIdData = options.collectionId ? (' data-collectionid="' + options.collectionId + '"') : '';
             var playlistIdData = options.playlistId ? (' data-playlistid="' + options.playlistId + '"') : '';
+            var seriesIdData = item.SeriesId ? (' data-seriesid="' + item.SeriesId + '"') : '';
 
-            html += '<' + outerTagName + ' class="' + cssClass + '" data-index="' + i + '"' + playlistItemId + ' data-action="' + action + '" data-isfolder="' + item.IsFolder + '" data-id="' + item.Id + '" data-serverid="' + item.ServerId + '" data-mediatype="' + item.MediaType + '" data-type="' + item.Type + '"' + positionTicksData + collectionIdData + playlistIdData + '>';
+            html += '<' + outerTagName + ' class="' + cssClass + '" data-index="' + i + '"' + playlistItemId + ' data-action="' + action + '" data-isfolder="' + item.IsFolder + '" data-id="' + item.Id + '" data-serverid="' + item.ServerId + '" data-mediatype="' + item.MediaType + '" data-type="' + item.Type + '"' + positionTicksData + collectionIdData + playlistIdData + seriesIdData + '>';
 
             if (!clickEntireItem && options.dragHandle) {
                 html += '<button is="paper-icon-button-light" class="listViewDragHandle autoSize"><i class="md-icon">&#xE25D;</i></button>';

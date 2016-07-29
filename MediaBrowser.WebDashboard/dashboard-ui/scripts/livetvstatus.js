@@ -263,6 +263,12 @@
 
             loadPage(page, liveTvInfo);
 
+        }, function () {
+
+            loadPage(page, {
+                Services: [],
+                IsEnabled: true
+            });
         });
     }
 

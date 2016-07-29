@@ -53,10 +53,16 @@ define(['browser'], function (browser) {
             if (browser.tizen) {
                 return true;
             }
+            if (isEdgeUniversal()) {
+                return true;
+            }
         }
 
         else if (format == 'wma') {
             if (browser.tizen) {
+                return true;
+            }
+            if (isEdgeUniversal()) {
                 return true;
             }
         }
@@ -84,12 +90,30 @@ define(['browser'], function (browser) {
         return false;
     }
 
-    function testCanPlayMkv() {
+    function isEdgeUniversal() {
+
+        if (browser.edge) {
+
+            var userAgent = navigator.userAgent.toLowerCase();
+            if (userAgent.indexOf('msapphost') != -1) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function testCanPlayMkv(videoTestElement) {
+
+        if (videoTestElement.canPlayType('video/x-matroska') ||
+            videoTestElement.canPlayType('video/mkv')) {
+            return true;
+        }
+
+        var userAgent = navigator.userAgent.toLowerCase();
 
         // Unfortunately there's no real way to detect mkv support
         if (browser.chrome) {
-
-            var userAgent = navigator.userAgent.toLowerCase();
 
             // Not supported on opera tv
             if (browser.operaTv) {
@@ -108,6 +132,11 @@ define(['browser'], function (browser) {
             return true;
         }
 
+        if (isEdgeUniversal()) {
+
+            return true;
+        }
+
         return false;
     }
 
@@ -116,36 +145,45 @@ define(['browser'], function (browser) {
         return browser.tizen || browser.web0s;
     }
 
-    function getDirectPlayProfileForVideoContainer(container) {
+    function getDirectPlayProfileForVideoContainer(container, videoAudioCodecs) {
 
         var supported = false;
+        var profileContainer = container;
 
         switch (container) {
 
-            case '3gp':
-            case 'avi':
             case 'asf':
-            case 'flv':
+                supported = browser.tizen || isEdgeUniversal();
+                videoAudioCodecs = [];
+                break;
+            case 'avi':
+                supported = isEdgeUniversal();
+                break;
             case 'mpg':
             case 'mpeg':
+                supported = isEdgeUniversal();
+                break;
+            case '3gp':
+            case 'flv':
             case 'mts':
             case 'trp':
             case 'vob':
             case 'vro':
                 supported = browser.tizen;
                 break;
+            case 'mov':
+                supported = browser.chrome || isEdgeUniversal();
+                break;
             case 'm2ts':
+                supported = browser.tizen || browser.web0s || isEdgeUniversal();
+                break;
             case 'wmv':
-                supported = browser.tizen || browser.web0s;
+                supported = browser.tizen || browser.web0s || isEdgeUniversal();
+                videoAudioCodecs = [];
                 break;
             case 'ts':
-                supported = browser.tizen || browser.web0s;
-                if (supported) {
-                    return {
-                        Container: 'ts,mpegts',
-                        Type: 'Video'
-                    };
-                }
+                supported = browser.tizen || browser.web0s || isEdgeUniversal();
+                profileContainer = 'ts,mpegts';
                 break;
             default:
                 break;
@@ -156,8 +194,9 @@ define(['browser'], function (browser) {
         }
 
         return {
-            Container: container,
-            Type: 'Video'
+            Container: profileContainer,
+            Type: 'Video',
+            AudioCodec: videoAudioCodecs.join(',')
         };
     }
 
@@ -199,7 +238,7 @@ define(['browser'], function (browser) {
 
         var canPlayWebm = videoTestElement.canPlayType('video/webm').replace(/no/, '');
 
-        var canPlayMkv = testCanPlayMkv();
+        var canPlayMkv = testCanPlayMkv(videoTestElement);
         var canPlayTs = testCanPlayTs();
 
         var profile = {};
@@ -218,7 +257,7 @@ define(['browser'], function (browser) {
 
         // Only put mp3 first if mkv support is there
         // Otherwise with HLS and mp3 audio we're seeing some browsers
-        if (videoTestElement.canPlayType('audio/mp4; codecs="ac-3"').replace(/no/, '')) {
+        if (videoTestElement.canPlayType('audio/mp4; codecs="ac-3"').replace(/no/, '') || isEdgeUniversal()) {
             // safari is lying
             if (!browser.safari) {
                 videoAudioCodecs.push('ac3');
@@ -258,7 +297,7 @@ define(['browser'], function (browser) {
 
         if (canPlayMkv) {
             profile.DirectPlayProfiles.push({
-                Container: 'mkv,mov',
+                Container: 'mkv',
                 Type: 'Video',
                 VideoCodec: 'h264',
                 AudioCodec: videoAudioCodecs.join(',')
@@ -266,15 +305,15 @@ define(['browser'], function (browser) {
         }
 
         // These are formats we can't test for but some devices will support
-        ['m2ts', 'wmv', 'ts'].map(getDirectPlayProfileForVideoContainer).filter(function (i) {
+        ['m2ts', 'mov', 'wmv', 'ts', 'asf', 'avi', 'mpg', 'mpeg'].map(function (container) {
+            return getDirectPlayProfileForVideoContainer(container, videoAudioCodecs);
+        }).filter(function (i) {
             return i != null;
-
         }).forEach(function (i) {
-
             profile.DirectPlayProfiles.push(i);
         });
 
-        ['opus', 'mp3', 'aac', 'flac', 'webma', 'wma'].filter(canPlayAudioFormat).forEach(function (audioFormat) {
+        ['opus', 'mp3', 'aac', 'flac', 'webma', 'wma', 'wav'].filter(canPlayAudioFormat).forEach(function (audioFormat) {
 
             profile.DirectPlayProfiles.push({
                 Container: audioFormat == 'webma' ? 'webma,webm' : audioFormat,
@@ -531,11 +570,13 @@ define(['browser'], function (browser) {
             MimeType: 'video/mp4'
         });
 
-        profile.ResponseProfiles.push({
-            Type: 'Video',
-            Container: 'mov',
-            MimeType: 'video/webm'
-        });
+        if (browser.chrome) {
+            profile.ResponseProfiles.push({
+                Type: 'Video',
+                Container: 'mov',
+                MimeType: 'video/webm'
+            });
+        }
 
         return profile;
     };
