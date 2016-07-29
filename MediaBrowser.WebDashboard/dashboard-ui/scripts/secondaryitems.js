@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'listView', 'emby-itemscontainer'], function (libraryBrowser, listView) {
+﻿define(['libraryBrowser', 'listView', 'cardBuilder', 'emby-itemscontainer'], function (libraryBrowser, listView, cardBuilder) {
 
     return function (view, params) {
 
@@ -160,7 +160,7 @@
                     }
 
                     // Poster
-                    html = libraryBrowser.getPosterViewHtml(posterOptions);
+                    html = cardBuilder.getCardsHtml(posterOptions);
                 }
 
                 var elem = view.querySelector('#items');

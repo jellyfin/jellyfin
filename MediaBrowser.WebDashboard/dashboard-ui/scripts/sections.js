@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'appSettings', 'components/groupedcards', 'scrollStyles', 'emby-button', 'paper-icon-button-light', 'emby-itemscontainer'], function (LibraryBrowser, appSettings, groupedcards) {
+﻿define(['libraryBrowser', 'cardBuilder', 'appSettings', 'components/groupedcards', 'scrollStyles', 'emby-button', 'paper-icon-button-light', 'emby-itemscontainer'], function (LibraryBrowser, cardBuilder, appSettings, groupedcards) {
 
     function getUserViews(userId) {
 
@@ -302,9 +302,9 @@
 
                 html += '</div>';
 
-                html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer verticalItemsContainer">';
 
-                html += LibraryBrowser.getPosterViewHtml({
+                html += cardBuilder.getCardsHtml({
                     items: items,
                     preferThumb: true,
                     shape: 'backdrop',
@@ -348,9 +348,9 @@
                 if (scrollX) {
                     html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
                 } else {
-                    html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer verticalItemsContainer">';
                 }
-                html += LibraryBrowser.getPosterViewHtml({
+                html += cardBuilder.getCardsHtml({
                     items: items,
                     shape: getPortraitShape(),
                     showUnplayedIndicator: false,
@@ -390,10 +390,10 @@
                 if (scrollX) {
                     html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
                 } else {
-                    html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer verticalItemsContainer">';
                 }
 
-                html += LibraryBrowser.getPosterViewHtml({
+                html += cardBuilder.getCardsHtml({
                     items: items,
                     preferThumb: true,
                     shape: getThumbShape(),
@@ -429,8 +429,9 @@
 
             if (result.Items.length) {
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderLatestChannelMedia') + '</h1>';
-                html += '<div is="emby-itemscontainer" class="itemsContainer">';
-                html += LibraryBrowser.getPosterViewHtml({
+                html += '<div is="emby-itemscontainer" class="itemsContainer verticalItemsContainer">';
+
+                html += cardBuilder.getCardsHtml({
                     items: result.Items,
                     shape: 'auto',
                     showTitle: true,
@@ -473,9 +474,9 @@
                 if (scrollX) {
                     html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer homeTopViews">';
                 } else {
-                    html += '<div is="emby-itemscontainer" class="itemsContainer homeTopViews">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer homeTopViews verticalItemsContainer">';
                 }
-                html += LibraryBrowser.getPosterViewHtml({
+                html += cardBuilder.getCardsHtml({
                     items: items,
                     shape: scrollX ? 'overflowBackdrop' : shape,
                     showTitle: showTitles,
@@ -532,9 +533,9 @@
                 if (enableScrollX()) {
                     html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
                 } else {
-                    html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer verticalItemsContainer">';
                 }
-                html += LibraryBrowser.getPosterViewHtml({
+                html += cardBuilder.getCardsHtml({
                     items: result.Items,
                     preferThumb: true,
                     shape: getThumbShape(),
@@ -576,9 +577,9 @@
                 if (enableScrollX()) {
                     html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
                 } else {
-                    html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer verticalItemsContainer">';
                 }
-                html += LibraryBrowser.getPosterViewHtml({
+                html += cardBuilder.getCardsHtml({
                     items: result.Items,
                     preferThumb: true,
                     shape: getThumbShape(),
@@ -656,8 +657,8 @@
                 html += '<a href="channelitems.html?id=' + channel.Id + '" class="clearLink" style="margin-left:2em;"><button is="emby-button" type="button" class="raised more mini"><span>' + Globalize.translate('ButtonMore') + '</span></button></a>';
                 html += '</div>';
 
-                html += '<div is="emby-itemscontainer" is="emby-itemscontainer" class="itemsContainer">';
-                html += LibraryBrowser.getPosterViewHtml({
+                html += '<div is="emby-itemscontainer" is="emby-itemscontainer" class="itemsContainer verticalItemsContainer">';
+                html += cardBuilder.getCardsHtml({
                     items: result.Items,
                     shape: 'autohome',
                     defaultShape: 'square',
@@ -704,9 +705,9 @@
             if (enableScrollX()) {
                 html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
             } else {
-                html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer verticalItemsContainer">';
             }
-            html += LibraryBrowser.getPosterViewHtml({
+            html += cardBuilder.getCardsHtml({
                 items: result.Items,
                 shape: enableScrollX() ? 'autooverflow' : 'auto',
                 showTitle: true,

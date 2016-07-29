@@ -1,4 +1,4 @@
-﻿define(['events', 'libraryBrowser', 'imageLoader', 'listView', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, listView) {
+﻿define(['events', 'libraryBrowser', 'imageLoader', 'listView', 'cardBuilder', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, listView, cardBuilder) {
 
     return function (view, params, tabContent) {
 
@@ -83,27 +83,25 @@
                     });
                 }
                 else if (viewStyle == "PosterCard") {
-                    html = libraryBrowser.getPosterViewHtml({
+                    html = cardBuilder.getCardsHtml({
                         items: result.Items,
                         shape: "backdrop",
                         showTitle: true,
                         showParentTitle: true,
-                        lazy: true,
-                        cardLayout: true,
-                        showDetailsMenu: true
+                        scalable: true,
+                        cardLayout: true
                     });
                 }
                 else {
 
                     // poster
-                    html = libraryBrowser.getPosterViewHtml({
+                    html = cardBuilder.getCardsHtml({
                         items: result.Items,
                         shape: "backdrop",
                         showTitle: true,
                         showParentTitle: true,
                         overlayText: true,
-                        lazy: true,
-                        showDetailsMenu: true,
+                        scalable: true,
                         overlayPlayButton: true
                     });
                 }

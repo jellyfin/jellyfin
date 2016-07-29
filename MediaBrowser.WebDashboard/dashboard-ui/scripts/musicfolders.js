@@ -1,4 +1,4 @@
-﻿define(['events', 'libraryBrowser', 'imageLoader'], function (events, libraryBrowser, imageLoader) {
+﻿define(['events', 'libraryBrowser', 'imageLoader', 'cardBuilder'], function (events, libraryBrowser, imageLoader, cardBuilder) {
 
     return function (view, params, tabContent) {
 
@@ -65,7 +65,7 @@
                     filterButton: false
                 });
 
-                var html = LibraryBrowser.getPosterViewHtml({
+                var html = cardBuilder.getCardsHtml({
                     items: result.Items,
                     shape: "square",
                     context: 'folders',

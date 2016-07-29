@@ -1,4 +1,4 @@
-﻿define(['datetime', 'libraryBrowser', 'scrollStyles', 'emby-itemscontainer'], function (datetime, libraryBrowser) {
+﻿define(['datetime', 'libraryBrowser', 'cardBuilder', 'scrollStyles', 'emby-itemscontainer'], function (datetime, libraryBrowser, cardBuilder) {
 
     function getUpcomingPromise(context, params) {
 
@@ -104,10 +104,10 @@
             if (enableScrollX()) {
                 html += '<div is="emby-itemscontainer" class="itemsContainer hiddenScrollX">';
             } else {
-                html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer verticalItemsContainer">';
             }
 
-            html += libraryBrowser.getPosterViewHtml({
+            html += cardBuilder.getCardsHtml({
                 items: group.items,
                 showLocationTypeIndicator: false,
                 shape: getThumbShape(),

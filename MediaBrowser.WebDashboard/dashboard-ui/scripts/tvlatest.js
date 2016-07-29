@@ -1,4 +1,4 @@
-﻿define(['components/categorysyncbuttons', 'components/groupedcards'], function (categorysyncbuttons, groupedcards) {
+﻿define(['components/categorysyncbuttons', 'components/groupedcards', 'cardBuilder'], function (categorysyncbuttons, groupedcards, cardBuilder) {
 
     function getView() {
 
@@ -35,7 +35,7 @@
 
             if (view == 'ThumbCard') {
 
-                html += LibraryBrowser.getPosterViewHtml({
+                html += cardBuilder.getCardsHtml({
                     items: items,
                     shape: "backdrop",
                     preferThumb: true,
@@ -51,7 +51,7 @@
 
             } else if (view == 'Thumb') {
 
-                html += LibraryBrowser.getPosterViewHtml({
+                html += cardBuilder.getCardsHtml({
                     items: items,
                     shape: "backdrop",
                     preferThumb: true,

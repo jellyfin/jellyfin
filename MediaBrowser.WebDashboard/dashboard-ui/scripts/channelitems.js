@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'emby-itemscontainer'], function ($) {
+﻿define(['jQuery', 'cardBuilder', 'emby-itemscontainer'], function ($, cardBuilder) {
 
     var data = {};
 
@@ -129,7 +129,7 @@
 
             updateFilterControls(page);
 
-            html = LibraryBrowser.getPosterViewHtml({
+            html = cardBuilder.getCardsHtml({
                 items: result.Items,
                 shape: "auto",
                 defaultShape: 'square',

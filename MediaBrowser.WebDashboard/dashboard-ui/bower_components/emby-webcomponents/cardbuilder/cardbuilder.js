@@ -429,15 +429,13 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
             if (options.autoThumb && item.ImageTags && item.ImageTags.Primary && item.PrimaryImageAspectRatio && item.PrimaryImageAspectRatio >= 1.34) {
 
-                width = posterWidth;
-                height = primaryImageAspectRatio ? Math.round(posterWidth / primaryImageAspectRatio) : null;
+                height = primaryImageAspectRatio ? Math.round(width / primaryImageAspectRatio) : null;
 
                 imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                     type: "Primary",
                     maxHeight: height,
                     maxWidth: width,
-                    tag: item.ImageTags.Primary,
-                    enableImageEnhancers: enableImageEnhancers
+                    tag: item.ImageTags.Primary
                 });
 
                 if (primaryImageAspectRatio) {
@@ -452,9 +450,8 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
                 imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                     type: "Thumb",
-                    maxWidth: thumbWidth,
-                    tag: item.ImageTags.Thumb,
-                    enableImageEnhancers: enableImageEnhancers
+                    maxWidth: width,
+                    tag: item.ImageTags.Thumb
                 });
 
             } else if (options.preferThumb && item.ImageTags && item.ImageTags.Thumb) {

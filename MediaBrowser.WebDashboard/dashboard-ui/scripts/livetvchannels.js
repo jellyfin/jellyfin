@@ -1,4 +1,4 @@
-﻿define(['emby-itemscontainer'], function () {
+﻿define(['cardBuilder', 'emby-itemscontainer'], function (cardBuilder) {
 
     return function (view, params, tabContent) {
 
@@ -38,7 +38,7 @@
 
         function getChannelsHtml(channels) {
 
-            return LibraryBrowser.getPosterViewHtml({
+            return cardBuilder.getCardsHtml({
                 items: channels,
                 shape: "square",
                 showTitle: true,

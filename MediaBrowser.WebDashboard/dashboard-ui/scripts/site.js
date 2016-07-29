@@ -2789,8 +2789,6 @@ var AppInfo = {};
 
         deps.push('scripts/librarymenu');
 
-        deps.push('css!css/card.css');
-
         console.log('onAppReady - loading dependencies');
 
         require(deps, function (imageLoader, pageObjects) {

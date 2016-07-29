@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'cardBuilder', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser, cardBuilder) {
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
@@ -85,23 +85,20 @@
                 if (enableScrollX()) {
                     html += '<div is="emby-itemscontainer" class="itemsContainer hiddenScrollX">';
                 } else {
-                    html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer verticalItemsContainer">';
                 }
 
-                html += libraryBrowser.getPosterViewHtml({
-                    items: result.Items,
+                html += cardBuilder.getCardsHtml(result.Items, {
                     preferThumb: section.preferThumb,
                     shape: section.shape,
+                    centerText: section.centerText,
                     overlayText: section.overlayText !== false,
                     showTitle: section.showTitle,
                     showParentTitle: section.showParentTitle,
-                    lazy: true,
-                    showDetailsMenu: true,
-                    centerText: section.centerText,
+                    scalable: true,
                     overlayPlayButton: section.overlayPlayButton,
                     overlayMoreButton: section.overlayMoreButton,
-                    context: 'home-favorites',
-                    defaultAction: section.defaultAction
+                    action: section.defaultAction
                 });
 
                 html += '</div>';

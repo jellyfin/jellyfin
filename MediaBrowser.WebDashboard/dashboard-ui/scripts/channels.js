@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'emby-itemscontainer'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'cardBuilder', 'emby-itemscontainer'], function (libraryBrowser, cardBuilder) {
 
     // The base query options
     var query = {
@@ -23,7 +23,7 @@
 
             if (view == "Thumb") {
 
-                html = libraryBrowser.getPosterViewHtml({
+                html = cardBuilder.getCardsHtml({
                     items: result.Items,
                     shape: "backdrop",
                     context: 'channels',
@@ -36,7 +36,7 @@
             }
             else if (view == "ThumbCard") {
 
-                html = libraryBrowser.getPosterViewHtml({
+                html = cardBuilder.getCardsHtml({
                     items: result.Items,
                     shape: "backdrop",
                     preferThumb: true,
