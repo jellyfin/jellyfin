@@ -14,10 +14,8 @@ using MediaBrowser.Dlna.Ssdp;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Dlna.Channels;
 
 namespace MediaBrowser.Dlna.Main
 {
