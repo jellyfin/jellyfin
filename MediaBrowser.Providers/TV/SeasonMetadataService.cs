@@ -49,6 +49,13 @@ namespace MediaBrowser.Providers.TV
                     updateType |= ItemUpdateType.MetadataImport;
                 }
             }
+            if (updateType <= ItemUpdateType.None)
+            {
+                if (item.SeriesId != item.FindSeriesId())
+                {
+                    updateType |= ItemUpdateType.MetadataImport;
+                }
+            }
 
             return updateType;
         }

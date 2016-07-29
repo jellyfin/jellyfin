@@ -126,9 +126,10 @@ namespace MediaBrowser.Api
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool dispose)
         {
-            var jobCount = _activeTranscodingJobs.Count;
+            var list = _activeTranscodingJobs.ToList();
+            var jobCount = list.Count;
 
-            Parallel.ForEach(_activeTranscodingJobs.ToList(), j => KillTranscodingJob(j, false, path => true));
+            Parallel.ForEach(list, j => KillTranscodingJob(j, false, path => true));
 
             // Try to allow for some time to kill the ffmpeg processes and delete the partial stream files
             if (jobCount > 0)

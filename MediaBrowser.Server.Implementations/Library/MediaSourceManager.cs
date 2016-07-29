@@ -446,8 +446,31 @@ namespace MediaBrowser.Server.Implementations.Library
             }
         }
 
+        private async Task CloseLiveStreamWithProvider(IMediaSourceProvider provider, string streamId, CancellationToken cancellationToken)
+        {
+            _logger.Info("Closing live stream {0} with provider {1}", streamId, provider.GetType().Name);
+
+            try
+            {
+                await provider.CloseMediaSource(streamId, cancellationToken).ConfigureAwait(false);
+            }
+            catch (NotImplementedException)
+            {
+
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error closing live stream {0}", ex, streamId);
+            }
+        }
+
         public async Task CloseLiveStream(string id, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
             await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
@@ -459,7 +482,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     {
                         var tuple = GetProvider(id);
 
-                        await tuple.Item1.CloseMediaSource(tuple.Item2, cancellationToken).ConfigureAwait(false);
+                        await CloseLiveStreamWithProvider(tuple.Item1, tuple.Item2, cancellationToken).ConfigureAwait(false);
                     }
                 }
 
