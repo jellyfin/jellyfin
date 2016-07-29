@@ -1,82 +1,7 @@
-define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo', 'focusManager', 'indicators', 'globalize', 'emby-button', 'css!./card'],
-    function (datetime, imageLoader, connectionManager, itemHelper, mediaInfo, focusManager, indicators, globalize) {
+define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo', 'focusManager', 'indicators', 'globalize', 'browser', 'layoutManager', 'emby-button', 'css!./card', 'paper-icon-button-light', 'clearButtonStyle'],
+    function (datetime, imageLoader, connectionManager, itemHelper, mediaInfo, focusManager, indicators, globalize, browser, layoutManager) {
 
-        function setShapeHorizontal(items, options) {
-
-            var primaryImageAspectRatio = imageLoader.getPrimaryImageAspectRatio(items) || 0;
-
-            if (primaryImageAspectRatio && primaryImageAspectRatio < .85) {
-                options.shape = 'portraitCard';
-
-                if (options.rows !== 0) {
-                    options.rows = 2;
-                }
-            }
-            else if (primaryImageAspectRatio && primaryImageAspectRatio > 1.34) {
-                options.shape = 'backdropCard';
-
-                if (options.rows !== 0) {
-                    options.rows = 3;
-                }
-            }
-            else {
-                options.shape = 'squareCard';
-
-                if (options.rows !== 0) {
-                    options.rows = 3;
-                }
-            }
-        }
-
-        function setShapeVertical(items, options) {
-
-            var primaryImageAspectRatio = imageLoader.getPrimaryImageAspectRatio(items) || 0;
-
-            if (options.preferThumb) {
-                options.shape = 'backdropCard';
-            }
-            else if (primaryImageAspectRatio && primaryImageAspectRatio < .85) {
-                options.shape = 'portraitCard';
-            }
-            else if (primaryImageAspectRatio && primaryImageAspectRatio > 1.34) {
-                options.shape = 'backdropCard';
-            }
-            else {
-                options.shape = 'squareCard';
-            }
-        }
-
-        function setWidth(isVertical, options) {
-
-            if (options.width) {
-                return;
-            }
-
-            if (isVertical) {
-                if (options.shape == 'backdropCard') {
-                    options.width = options.thumbWidth;
-                }
-                else if (options.shape == 'portraitCard') {
-                    options.width = options.portraitWidth;
-                }
-                else if (options.shape == 'squareCard') {
-                    options.width = options.squareWidth;
-                }
-            }
-            else {
-                if (options.shape == 'backdropCard') {
-                    options.width = 500;
-                }
-                else if (options.shape == 'portraitCard') {
-                    options.width = 243;
-                }
-                else if (options.shape == 'squareCard') {
-                    options.width = 242;
-                }
-            }
-        }
-
-        function buildCardsHtml(items, options) {
+        function getCardsHtml(items, options) {
 
             var apiClient = connectionManager.currentApiClient();
 
@@ -85,19 +10,136 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             return html;
         }
 
+        function getPostersPerRow(shape, screenWidth) {
+
+            switch (shape) {
+
+                case 'portrait':
+                    if (screenWidth >= 2200) return 10;
+                    if (screenWidth >= 2100) return 9;
+                    if (screenWidth >= 1600) return 8;
+                    if (screenWidth >= 1400) return 7;
+                    if (screenWidth >= 1200) return 6;
+                    if (screenWidth >= 800) return 5;
+                    if (screenWidth >= 640) return 4;
+                    return 3;
+                case 'square':
+                    if (screenWidth >= 2100) return 9;
+                    if (screenWidth >= 1800) return 8;
+                    if (screenWidth >= 1400) return 7;
+                    if (screenWidth >= 1200) return 6;
+                    if (screenWidth >= 900) return 5;
+                    if (screenWidth >= 700) return 4;
+                    if (screenWidth >= 500) return 3;
+                    return 2;
+                case 'banner':
+                    if (screenWidth >= 2200) return 4;
+                    if (screenWidth >= 1200) return 3;
+                    if (screenWidth >= 800) return 2;
+                    return 1;
+                case 'backdrop':
+                    if (screenWidth >= 2500) return 6;
+                    if (screenWidth >= 2100) return 5;
+                    if (screenWidth >= 1200) return 4;
+                    if (screenWidth >= 770) return 3;
+                    if (screenWidth >= 420) return 2;
+                    return 1;
+                case 'smallBackdrop':
+                    if (screenWidth >= 1440) return 8;
+                    if (screenWidth >= 1100) return 6;
+                    if (screenWidth >= 800) return 5;
+                    if (screenWidth >= 600) return 4;
+                    if (screenWidth >= 540) return 3;
+                    if (screenWidth >= 420) return 2;
+                    return 1;
+                case 'overflowPortrait':
+                    if (screenWidth >= 1000) return 100 / 23;
+                    if (screenWidth >= 640) return 100 / 36;
+                    return 2.5;
+                case 'overflowSquare':
+                    if (screenWidth >= 1000) return 100 / 22;
+                    if (screenWidth >= 640) return 100 / 30;
+                    return 100 / 42;
+                case 'overflowBackdrop':
+                    if (screenWidth >= 1000) return 100 / 40;
+                    if (screenWidth >= 640) return 100 / 60;
+                    return 100 / 84;
+                default:
+                    return 4;
+            }
+        }
+
+        var shapes = ['square', 'portrait', 'banner', 'smallBackdrop', 'backdrop', 'overflowBackdrop', 'overflowPortrait', 'overflowSquare'];
+        function getImageWidth(shape) {
+
+            var screenWidth = window.innerWidth;
+            var imagesPerRow = getPostersPerRow(shape, screenWidth);
+
+            var shapeWidth = screenWidth / imagesPerRow;
+
+            return Math.round(shapeWidth);
+        }
+
+        function setCardData(items, options) {
+
+            options.shape = options.shape || "auto";
+
+            var primaryImageAspectRatio = imageLoader.getPrimaryImageAspectRatio(items);
+
+            var isThumbAspectRatio = primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.777777778) < .3;
+            var isSquareAspectRatio = primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1) < .33 ||
+                primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.3333334) < .01;
+
+            if (options.shape == 'auto' || options.shape == 'autohome' || options.shape == 'autooverflow' || options.shape == 'autoVertical') {
+
+                if (options.preferThumb || isThumbAspectRatio) {
+                    options.shape = options.shape == 'autooverflow' ? 'overflowBackdrop' : 'backdrop';
+                } else if (isSquareAspectRatio) {
+                    options.coverImage = true;
+                    options.shape = options.shape == 'autooverflow' ? 'overflowSquare' : 'square';
+                } else if (primaryImageAspectRatio && primaryImageAspectRatio > 1.9) {
+                    options.shape = 'banner';
+                    options.coverImage = true;
+                } else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 0.6666667) < .2) {
+                    options.shape = options.shape == 'autooverflow' ? 'overflowPortrait' : 'portrait';
+                } else {
+                    options.shape = options.defaultShape || (options.shape == 'autooverflow' ? 'overflowSquare' : 'square');
+                }
+            }
+
+            options.uiAspect = getDesiredAspect(options.shape);
+            options.primaryImageAspectRatio = primaryImageAspectRatio;
+
+            if (!options.width && options.widths) {
+                options.width = options.widths[options.shape];
+            }
+
+            if (options.rows && typeof (options.rows) !== 'number') {
+                options.rows = options.rows[options.shape];
+            }
+
+            if (options.shape == 'backdrop') {
+                options.width = options.width || 500;
+            }
+            else if (options.shape == 'portrait') {
+                options.width = options.width || 243;
+            }
+            else if (options.shape == 'square') {
+                options.width = options.width || 243;
+            }
+
+            options.width = options.width || getImageWidth(options.shape);
+        }
+
         function buildCardsHtmlInternal(items, apiClient, options) {
 
             var isVertical;
 
             if (options.shape == 'autoVertical') {
                 isVertical = true;
-                setShapeVertical(items, options);
-            }
-            else if (options.shape == 'auto') {
-                setShapeHorizontal(items, options);
             }
 
-            setWidth(isVertical, options);
+            setCardData(items, options);
 
             if (options.indexBy == 'Genres') {
                 return buildCardsByGenreHtmlInternal(items, apiClient, options);
@@ -106,7 +148,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             var className = 'card';
 
             if (options.shape) {
-                className += ' ' + options.shape;
+                className += ' ' + options.shape + 'Card';
             }
 
             var html = '';
@@ -115,6 +157,8 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             var currentIndexValue;
             var hasOpenRow;
             var hasOpenSection;
+
+            var sectionTitleTagName = options.sectionTitleTagName || 'div';
 
             for (var i = 0, length = items.length; i < length; i++) {
 
@@ -169,11 +213,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                         } else {
                             html += '<div class="horizontalSection">';
                         }
-                        if (isVertical) {
-                            html += '<h2>' + newIndexValue + '</h2>';
-                        } else {
-                            html += '<div class="sectionTitle">' + newIndexValue + '</div>';
-                        }
+                        html += '<' + sectionTitleTagName + ' class="sectionTitle">' + newIndexValue + '</' + sectionTitleTagName + '>';
                         if (isVertical) {
                             html += '<div class="itemsContainer verticalItemsContainer">';
                         }
@@ -225,7 +265,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             var className = 'card';
 
             if (options.shape) {
-                className += ' ' + options.shape;
+                className += ' ' + options.shape + 'Card';
             }
 
             var html = '';
@@ -522,7 +562,11 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
         function buildCard(index, item, apiClient, options, className) {
 
-            className += " itemAction";
+            var action = options.action || 'link';
+
+            if (layoutManager.tv) {
+                className += " itemAction";
+            }
 
             if (options.scalable) {
                 className += " scalableCard";
@@ -552,11 +596,25 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
             // cardBox can be it's own separate element if an outer footer is ever needed
             var cardImageContainerOpen = imgUrl ? ('<div class="' + cardImageContainerClass + ' lazy" data-src="' + imgUrl + '">') : ('<div class="' + cardImageContainerClass + '">');
-            var cardImageContainerClose = '</div>';
+            var cardImageContainerClose = '';
+            var cardBoxClose = '</div>';
+            var cardContentClose = '';
+            var cardScalableClose = '';
 
             if (separateCardBox) {
-                cardImageContainerOpen = '<div class="cardBox"><div class="cardScalable"><div class="cardPadder"></div><div class="cardContent">' + cardImageContainerOpen;
-                cardImageContainerClose += '</div></div></div>';
+                var cardContentOpen;
+
+                if (layoutManager.tv) {
+                    cardContentOpen = '<div class="cardContent">';
+                    cardContentClose = '</div>';
+                } else {
+                    cardContentOpen = '<button type="button" class="clearButton cardContent itemAction" data-action="' + action + '">';
+                    cardContentClose = '</button>';
+                }
+                cardImageContainerOpen = '<div class="cardBox"><div class="cardScalable"><div class="cardPadder"></div>' + cardContentOpen + cardImageContainerOpen;
+                cardBoxClose = '</div>';
+                cardScalableClose = '</div>';
+                cardImageContainerClose = '</div>';
             }
 
             var indicatorsHtml = '';
@@ -585,6 +643,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 cardImageContainerOpen += '<div class="cardText cardCenteredText">' + defaultName + '</div>';
             }
 
+            var enableOuterFooter = options.overlayText === false;
             var nameHtml = '';
 
             if (showParentTitle) {
@@ -600,23 +659,39 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             var progressHtml = indicators.getProgressBarHtml(item);
 
             if (progressHtml) {
-                nameHtml += progressHtml;
                 innerCardFooterClass += " fullInnerCardFooter";
             }
 
             var innerCardFooter = '';
 
-            if (nameHtml && imgUrl) {
+            if (imgUrl && (progressHtml || (nameHtml && !enableOuterFooter))) {
                 innerCardFooter += '<div class="' + innerCardFooterClass + '">';
-                innerCardFooter += nameHtml;
+
+                if (!enableOuterFooter) {
+                    innerCardFooter += nameHtml;
+                }
+                innerCardFooter += progressHtml;
                 innerCardFooter += '</div>';
             }
 
-            var data = '';
+            var outerCardFooter = '';
+            if (nameHtml && enableOuterFooter) {
+                outerCardFooter += '<div class="cardFooter">';
+                outerCardFooter += nameHtml;
+                outerCardFooter += '</div>';
+            }
 
-            var action = options.action || 'link';
+            var overlayButtons = '';
+            if (!layoutManager.tv) {
+                if (options.overlayPlayButton && !item.IsPlaceHolder && (item.LocationType != 'Virtual' || !item.MediaType || item.Type == 'Program') && item.Type != 'Person' && item.PlayAccess == 'Full') {
+                    overlayButtons += '<button is="paper-icon-button-light" class="cardOverlayButton itemAction autoSize" data-action="playmenu" onclick="return false;"><i class="md-icon">play_arrow</i></button>';
+                }
+                if (options.overlayMoreButton) {
+                    overlayButtons += '<button is="paper-icon-button-light" class="cardOverlayButton itemAction autoSize" data-action="menu" onclick="return false;"><i class="md-icon">more_vert</i></button>';
+                }
+            }
 
-            var tagName = 'button';
+            var tagName = layoutManager.tv ? 'button' : 'div';
 
             var prefix = (item.SortName || item.Name || '')[0];
 
@@ -636,9 +711,11 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             var collectionIdData = options.collectionId ? (' data-collectionid="' + options.collectionId + '"') : '';
             var playlistIdData = options.playlistId ? (' data-playlistid="' + options.playlistId + '"') : '';
 
+            var actionAttribute = layoutManager.tv ? (' data-action="' + action + '"') : '';
+
             return '\
-<' + tagName + ' data-index="' + index + '"' + timerAttributes + ' data-action="' + action + '" data-isfolder="' + (item.IsFolder || false) + '" data-serverid="' + (item.ServerId) + '" data-id="' + (item.Id || item.ItemId) + '" data-type="' + item.Type + '" data-mediatype="' + item.MediaType + '"' + positionTicksData + collectionIdData + playlistIdData + ' data-prefix="' + prefix + '" class="' + className + '"> \
-' + cardImageContainerOpen + innerCardFooter + data + cardImageContainerClose + '\
+<' + tagName + ' data-index="' + index + '"' + timerAttributes + actionAttribute + ' data-isfolder="' + (item.IsFolder || false) + '" data-serverid="' + (item.ServerId) + '" data-id="' + (item.Id || item.ItemId) + '" data-type="' + item.Type + '" data-mediatype="' + item.MediaType + '"' + positionTicksData + collectionIdData + playlistIdData + ' data-prefix="' + prefix + '" class="' + className + '"> \
+' + cardImageContainerOpen + cardImageContainerClose + innerCardFooter + cardContentClose + overlayButtons + cardScalableClose + outerCardFooter + cardBoxClose + '\
 </' + tagName + '>';
         }
 
@@ -829,7 +906,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
         }
 
         return {
-            buildCardsHtml: buildCardsHtml,
+            getCardsHtml: getCardsHtml,
             buildCards: buildCards,
             onUserDataChanged: onUserDataChanged
         };

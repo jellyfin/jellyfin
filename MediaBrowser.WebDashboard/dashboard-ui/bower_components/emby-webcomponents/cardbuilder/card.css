@@ -10,11 +10,22 @@
     outline: none !important;
     cursor: pointer;
     contain: style;
+    flex-shrink: 0;
 }
 
-.verticalItemsContainer .card {
-    contain: layout style;
+.itemsContainer {
+    display: flex;
 }
+
+.verticalItemsContainer {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+    .verticalItemsContainer .card {
+        contain: layout style;
+    }
 
 .card, .card:focus {
     font-weight: inherit !important;
@@ -34,15 +45,11 @@ button.card {
     padding-bottom: 56.25%;
 }
 
-.squareCard .cardPadder {
+.squareCard .cardPadder, .overflowSquareCard .cardPadder {
     padding-bottom: 100%;
 }
 
-.letterBoxCard .cardPadder {
-    padding-bottom: 75%;
-}
-
-.portraitCard .cardPadder {
+.portraitCard .cardPadder, .overflowPortraitCard .cardPadder {
     padding-bottom: 150%;
 }
 
@@ -59,6 +66,10 @@ button.card {
     will-change: transform;
     /* Needed to keep the cardOverlayTarget from showing outside the bounds while it animates */
     overflow: hidden;
+}
+
+button.cardContent {
+    display: block;
 }
 
 .round .cardBox {
@@ -146,7 +157,21 @@ button.card {
 }
 
 .cardFooter {
-    padding: .25em .25em;
+    padding: .5em .3em;
+}
+
+    .cardFooter .cardText + .cardText {
+        opacity: .6;
+    }
+
+.card:not(.round) .cardFooter {
+    -moz-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    -ms-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    background-color: #222326;
 }
 
 .innerCardFooter {
@@ -165,15 +190,11 @@ button.card {
 }
 
 .cardText {
-    padding: .25em .35em;
+    padding: .35em .35em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
-    .cardText + .cardText {
-        padding-top: .1em;
-    }
 
 .cardText {
     color: inherit;
@@ -215,6 +236,250 @@ button.card {
     align-items: center;
 }
 
+.cardOverlayButton {
+    color: #fff !important;
+    background-color: rgba(0,0,0,.7) !important;
+    border-radius: 500px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    margin: 0 .25em .25em 0;
+}
+
+    .cardOverlayButton:hover {
+        background-color: rgba(0,0,0,.9) !important;
+        transition: background-color .5s ease-out;
+    }
+
 .emptyCardImageContainer {
     font-size: 90%;
+}
+
+.scalableCard.personCard {
+    width: 14.285714285714285714285714285714%;
+}
+
+.scalableCard.backdropCard {
+    width: 100%;
+}
+
+.scalableCard.squareCard {
+    width: 50%;
+}
+
+.scalableCard.portraitCard {
+    width: 33.333333333333333333333333333333%;
+}
+
+.scalableCard.overflowPortraitCard {
+    width: 40%;
+    max-width: 200px;
+}
+
+.scalableCard.overflowBackdropCard {
+    width: 84%;
+    max-width: 400px;
+}
+
+.scalableCard.overflowSquareCard {
+    width: 42%;
+}
+
+@media all and (max-width: 420px) {
+
+    .scalableCard.backdropCard {
+        width: 100% !important;
+    }
+}
+
+@media all and (min-width: 500px) {
+
+    .scalableCard.smallBackdropCard {
+        width: 33.333333333333333333333333333333%;
+    }
+
+    .scalableCard.squareCard {
+        width: 33.333333333333333333333333333333%;
+    }
+}
+
+@media all and (min-width: 640px) {
+
+    .scalableCard.portraitCard {
+        width: 25%;
+    }
+
+    .scalableCard.overflowPortraitCard {
+        width: 36%;
+    }
+
+    .scalableCard.overflowBackdropCard {
+        width: 60%;
+    }
+
+    .scalableCard.overflowSquareCard {
+        width: 30%;
+    }
+}
+
+@media all and (min-width: 700px) {
+    .scalableCard.squareCard {
+        width: 25%;
+    }
+}
+
+@media all and (min-width: 770px) {
+    .scalableCard.backdropCard {
+        width: 33.333333333333333333333333333333%;
+    }
+}
+
+@media all and (min-width: 800px) {
+
+    .scalableCard.bannerCard {
+        width: 50%;
+    }
+
+    .scalableCard.portraitCard {
+        width: 20%;
+    }
+
+    .scalableCard.smallBackdropCard {
+        width: 25%;
+    }
+}
+
+
+@media all and (min-width: 900px) {
+
+    .scalableCard.squareCard {
+        width: 20%;
+    }
+}
+
+@media all and (min-width: 1000px) {
+
+
+    .scalableCard.smallBackdropCard {
+        width: 20%;
+    }
+
+    .scalableCard.overflowPortraitCard {
+        width: 23%;
+    }
+
+    .scalableCard.overflowBackdropCard {
+        width: 40%;
+    }
+
+    .scalableCard.overflowSquareCard {
+        width: 22%;
+    }
+}
+
+@media all and (min-width: 1200px) {
+
+    .scalableCard.backdropCard {
+        width: 25%;
+    }
+
+    .scalableCard.squareCard {
+        width: 16.666666666666666666666666666667%;
+    }
+
+    .scalableCard.bannerCard {
+        width: 33.333333333333333333333333333333%;
+    }
+
+    .scalableCard.portraitCard {
+        width: 16.666666666666666666666666666667%;
+    }
+
+    .scalableCard.smallBackdropCard {
+        width: 16.666666666666666666666666666667%;
+    }
+}
+
+
+@media all and (min-width: 1400px) {
+
+    .scalableCard.squareCard {
+        width: 14.285714285714285714285714285714%;
+    }
+
+    .scalableCard.portraitCard {
+        width: 14.285714285714285714285714285714%;
+    }
+
+    .scalableCard.smallBackdropCard {
+        width: 14.285714285714285714285714285714%;
+    }
+}
+
+
+@media all and (min-width: 1600px) {
+
+    .scalableCard.scalableCard.portraitCard {
+        width: 12.5%;
+    }
+
+    .scalableCard.scalableCard.smallBackdropCard {
+        width: 12.5%;
+    }
+}
+
+@media all and (min-width: 1800px) {
+
+    .scalableCard.squareCard {
+        width: 12.5%;
+    }
+
+    .scalableCard.smallBackdropCard {
+        width: 10%;
+    }
+}
+
+@media all and (min-width: 2100px) {
+
+    .scalableCard.squareCard {
+        width: 11.111111111111111111111111111111%;
+    }
+
+    .scalableCard.backdropCard {
+        width: 20%;
+    }
+
+    .scalableCard.portraitCard {
+        width: 11.111111111111111111111111111111%;
+    }
+}
+
+@media all and (min-width: 2200px) {
+
+    .scalableCard.bannerCard {
+        width: 25%;
+    }
+
+    .scalableCard.portraitCard {
+        width: 10%;
+    }
+}
+
+@media all and (min-width: 2500px) {
+
+    .scalableCard.backdropCard {
+        width: 16.666666666666666666666666666667%;
+    }
+}
+
+.layout-tv .scalableCard.backdropCard {
+    width: 25%;
+}
+
+.layout-tv .scalableCard.squareCard {
+    width: 16.66666666666666667%;
+}
+
+.layout-tv .scalableCard.portraitCard {
+    width: 16.66666666666666667%;
 }
