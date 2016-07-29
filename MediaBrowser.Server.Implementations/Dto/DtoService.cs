@@ -11,7 +11,6 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Drawing;
@@ -102,8 +101,8 @@ namespace MediaBrowser.Server.Implementations.Dto
             var syncDictionary = GetSyncedItemProgressDictionary(syncJobItems);
 
             var list = new List<BaseItemDto>();
-            var programTuples = new List<Tuple<BaseItem, BaseItemDto>> { };
-            var channelTuples = new List<Tuple<BaseItemDto, LiveTvChannel>> { };
+            var programTuples = new List<Tuple<BaseItem, BaseItemDto>>();
+            var channelTuples = new List<Tuple<BaseItemDto, LiveTvChannel>>();
 
             foreach (var item in items)
             {

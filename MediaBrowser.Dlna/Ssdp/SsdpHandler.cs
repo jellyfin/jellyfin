@@ -6,7 +6,6 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.Model.Logging;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;

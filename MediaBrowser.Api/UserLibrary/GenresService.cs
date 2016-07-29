@@ -8,7 +8,6 @@ using MediaBrowser.Model.Entities;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Api.UserLibrary

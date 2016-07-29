@@ -278,8 +278,7 @@ namespace MediaBrowser.Server.Implementations.Library
             }
             
             var preferredSubs = string.IsNullOrEmpty(user.Configuration.SubtitleLanguagePreference)
-                ? new List<string> { }
-                : new List<string> { user.Configuration.SubtitleLanguagePreference };
+                ? new List<string>() : new List<string> { user.Configuration.SubtitleLanguagePreference };
 
             var defaultAudioIndex = source.DefaultAudioStreamIndex;
             var audioLangage = defaultAudioIndex == null

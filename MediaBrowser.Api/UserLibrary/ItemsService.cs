@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Collections;
-using MediaBrowser.Controller.Dto;
+﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
