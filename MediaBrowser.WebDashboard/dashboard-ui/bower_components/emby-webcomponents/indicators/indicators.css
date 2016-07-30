@@ -1,7 +1,7 @@
 .itemProgressBar {
     background: rgba(0,0,0,.5);
     position: relative;
-    height: .7vh;
+    height: .75vh;
 }
 
 .itemProgressBarForeground {

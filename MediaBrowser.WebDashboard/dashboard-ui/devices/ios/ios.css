@@ -31,10 +31,6 @@ body:not(.dashboardDocument) .mainDrawerButton {
     background-color: rgba(28,28,28,.92) !important;
 }
 
-.homeTopViews .defaultBackground .cardImage {
-    background-color: #303030;
-}
-
 .viewMenuBar {
     /* It needs this in order to retain height since we're positioning the contents absolutely */
     height: 50px;

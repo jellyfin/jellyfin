@@ -472,9 +472,9 @@
                 var scrollX = enableScrollX() && browserInfo.safari && screenWidth > 800;
 
                 if (scrollX) {
-                    html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer homeTopViews">';
+                    html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
                 } else {
-                    html += '<div is="emby-itemscontainer" class="itemsContainer homeTopViews verticalItemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer verticalItemsContainer">';
                 }
                 html += cardBuilder.getCardsHtml({
                     items: items,

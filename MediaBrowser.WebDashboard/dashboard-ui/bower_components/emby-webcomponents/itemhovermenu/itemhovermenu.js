@@ -162,12 +162,7 @@
             innerElem.classList.add('hide');
             innerElem.classList.add('cardOverlayTarget');
 
-            var appendTo;
-            if (elem.classList.contains('cardImageContainer')) {
-                appendTo = dom.parentWithClass(elem, 'cardBox');
-            } else {
-                appendTo = elem.parentNode;
-            }
+            var appendTo = dom.parentWithClass(elem, 'cardContent') || elem;
             appendTo.appendChild(innerElem);
         }
 
@@ -204,7 +199,7 @@
     function onHoverIn(e) {
 
         var elem = e.target;
-        var card = dom.parentWithClass(elem, 'cardImageContainer') || dom.parentWithClass(elem, 'cardImage');
+        var card = dom.parentWithClass(elem, 'cardImageContainer');
 
         if (!card) {
             return;

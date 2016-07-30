@@ -63,9 +63,12 @@ button.card {
     transition: none !important;
     border-radius: 0 !important;
     border: 3px solid transparent;
-    will-change: transform;
     /* Needed to keep the cardOverlayTarget from showing outside the bounds while it animates */
     overflow: hidden;
+}
+
+.layout-tv .card .cardBox {
+    will-change: transform;
 }
 
 button.cardContent {
@@ -148,14 +151,20 @@ button.cardContent {
     background-clip: content-box !important;
 }
 
-.scalableCard .cardImageContainer {
+.cardContent {
+    overflow: hidden;
+}
+
+.scalableCard .cardContent {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    width: auto !important;
-    height: auto !important;
+}
+
+.scalableCard .cardImageContainer {
+    height: 100%;
 }
 
 .round .cardImageContainer, .round .cardImage {
@@ -262,7 +271,7 @@ button.cardContent {
     position: absolute;
     bottom: 0;
     right: 0;
-    margin: 0 .25em .25em 0;
+    margin: 0 .35em .5em 0;
     z-index: 1;
 }
 
@@ -299,7 +308,7 @@ button.cardContent {
     width: 14.285714285714285714285714285714%;
 }
 
-.scalableCard.backdropCard {
+.scalableCard.backdropCard, .scalableCard.smallBackdropCard {
     width: 100%;
 }
 
@@ -325,10 +334,10 @@ button.cardContent {
     width: 42%;
 }
 
-@media all and (max-width: 420px) {
+@media all and (min-width: 420px) {
 
-    .scalableCard.backdropCard {
-        width: 100% !important;
+    .scalableCard.backdropCard, .scalableCard.smallBackdropCard {
+        width: 50%;
     }
 }
 

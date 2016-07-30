@@ -125,8 +125,6 @@
                 filterButton: true
             });
 
-            page.querySelector('.listTopPaging').innerHTML = pagingHtml;
-
             updateFilterControls(page);
 
             html = cardBuilder.getCardsHtml({
@@ -141,8 +139,14 @@
                 centerText: true
             });
 
+            var i, length;
+            var elems = page.querySelectorAll('.paging');
+            for (i = 0, length = elems.length; i < length; i++) {
+                elems[i].innerHTML = pagingHtml;
+            }
+
             var elem = page.querySelector('#items');
-            elem.innerHTML = html + pagingHtml;
+            elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
 
             $('.btnNextPage', page).on('click', function () {
