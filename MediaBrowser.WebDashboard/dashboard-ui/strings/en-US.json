@@ -2,6 +2,7 @@
   "LabelExit": "Exit",
   "LabelVisitCommunity": "Visit Community",
   "LabelGithub": "Github",
+  "HeaderIdentifyItemHelp": "Enter one or more search criteria. Remove criteria to increase search results.",
   "LabelSwagger": "Swagger",
   "LabelStandard": "Standard",
   "LabelApiDocumentation": "Api Documentation",

@@ -59,7 +59,7 @@ define(['imageLoader', 'itemShortcuts'], function (imageLoader, itemShortcuts) {
 
         var html = '\
 <button type="button" data-isfolder="' + person.IsFolder + '" data-type="' + person.Type + '" data-action="link" data-id="' + person.Id + '" data-serverid="' + serverId + '" raised class="' + className + '"> \
-<div class="cardBox">\
+<div class="visualCardBox cardBox">\
 <div class="cardScalable">\
 <div class="cardPadder"></div>\
 <div class="cardContent">\

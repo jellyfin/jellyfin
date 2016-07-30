@@ -167,9 +167,6 @@ button.cardContent {
 
 .cardContent {
     overflow: hidden;
-}
-
-.scalableCard .cardContent {
     position: absolute;
     top: 0;
     left: 0;
@@ -202,7 +199,11 @@ button.cardContent {
         opacity: .6;
     }
 
-.card:not(.round) .cardFooter:not(.transparent) {
+.visualCardBox .cardScalable {
+    background-color: #222326;
+}
+
+.visualCardBox .cardFooter {
     -moz-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     -ms-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.1);

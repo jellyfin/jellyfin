@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'loading', 'emby-input', 'emby-checkbox', 'paper-icon-button-light'], function (dialogHelper, loading) {
+﻿define(['dialogHelper', 'loading', 'cardBuilder', 'emby-input', 'emby-checkbox', 'paper-icon-button-light'], function (dialogHelper, loading, cardBuilder) {
 
     var currentItem;
     var currentItemType;
@@ -154,7 +154,7 @@
     function getSearchResultHtml(result, index) {
 
         var html = '';
-        var cssClass = "card";
+        var cssClass = "card scalableCard";
 
         if (currentItemType == "Episode") {
             cssClass += " backdropCard";
@@ -176,10 +176,10 @@
         if (result.ImageUrl) {
             var displayUrl = getSearchImageDisplayUrl(result.ImageUrl, result.SearchProviderName);
 
-            html += '<div class="cardImage" style="background-image:url(\'' + displayUrl + '\');"></div>';
+            html += '<div class="cardImageContainer coveredImage" style="background-image:url(\'' + displayUrl + '\');"></div>';
         } else {
 
-            html += '<div class="cardImage iconCardImage"><i class="md-icon">search</i></div>';
+            html += '<div class="cardImageContainer coveredImage ' + cardBuilder.getDefaultColorClass(result.Name) + '"><div class="cardText cardCenteredText">' + result.Name + '</div></div>';
         }
         html += '</a>';
         html += '</div>';

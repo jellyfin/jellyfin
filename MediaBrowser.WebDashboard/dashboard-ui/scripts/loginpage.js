@@ -146,7 +146,7 @@
                     type: "Primary"
                 });
 
-                html += '<div class="cardImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
+                html += '<div class="cardImageContainer coveredImage noScale" style="background-image:url(\'' + imgUrl + '\');"></div>';
             }
             else {
 
@@ -154,7 +154,7 @@
 
                 imgUrl = 'css/images/logindefault.png';
 
-                html += '<div class="cardImage" style="background-image:url(\'' + imgUrl + '\');background-color:' + background + ';"></div>';
+                html += '<div class="cardImageContainer coveredImage noScale" style="background-image:url(\'' + imgUrl + '\');background-color:' + background + ';"></div>';
             }
 
             html += '</a>';
