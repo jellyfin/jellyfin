@@ -10,7 +10,7 @@ namespace MediaBrowser.Model.Extensions
         {
             if (value == null)
             {
-                throw new ArgumentNullException(nameof(value));
+                throw new ArgumentNullException("value");
             }
 
             return list.Contains(value, StringComparer.OrdinalIgnoreCase);
