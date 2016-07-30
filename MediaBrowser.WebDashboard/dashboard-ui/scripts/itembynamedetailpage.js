@@ -1,4 +1,4 @@
-﻿define(['listView', 'emby-itemscontainer'], function (listView) {
+﻿define(['listView', 'cardBuilder', 'emby-itemscontainer'], function (listView, cardBuilder) {
 
     function renderItems(page, item) {
 
@@ -246,14 +246,18 @@
             }
 
             listOptions.items = result.Items;
+            var itemsContainer = element.querySelector('.itemsContainer');
 
             if (type == 'Audio') {
                 html = listView.getListViewHtml(listOptions);
+                itemsContainer.classList.remove('vertical-wrap');
+                itemsContainer.classList.add('vertical-list');
             } else {
-                html = LibraryBrowser.getPosterViewHtml(listOptions);
+                html = cardBuilder.getCardsHtml(listOptions);
+                itemsContainer.classList.add('vertical-wrap');
+                itemsContainer.classList.remove('vertical-list');
             }
 
-            var itemsContainer = element.querySelector('.itemsContainer');
             itemsContainer.innerHTML = html;
 
             ImageLoader.lazyChildren(itemsContainer);

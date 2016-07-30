@@ -314,8 +314,12 @@ button.cardContent {
     width: 14.285714285714285714285714285714%;
 }
 
-.scalableCard.backdropCard, .scalableCard.smallBackdropCard {
+.scalableCard.backdropCard {
     width: 100%;
+}
+
+.scalableCard.smallBackdropCard {
+    width: 50%;
 }
 
 .scalableCard.squareCard {
@@ -342,7 +346,7 @@ button.cardContent {
 
 @media all and (min-width: 420px) {
 
-    .scalableCard.backdropCard, .scalableCard.smallBackdropCard {
+    .scalableCard.backdropCard {
         width: 50%;
     }
 }

@@ -1,4 +1,4 @@
-﻿define(['components/categorysyncbuttons', 'scripts/livetvcomponents', 'emby-button', 'listViewStyle', 'emby-itemscontainer'], function (categorysyncbuttons) {
+﻿define(['components/categorysyncbuttons', 'cardBuilder', 'scripts/livetvcomponents', 'emby-button', 'listViewStyle', 'emby-itemscontainer'], function (categorysyncbuttons, cardBuilder) {
 
     function getRecordingGroupHtml(group) {
 
@@ -70,11 +70,13 @@
 
         if (enableScrollX()) {
             recordingItems.classList.add('hiddenScrollX');
+            recordingItems.classList.remove('vertical-wrap');
         } else {
             recordingItems.classList.remove('hiddenScrollX');
+            recordingItems.classList.add('vertical-wrap');
         }
 
-        recordingItems.innerHTML = LibraryBrowser.getPosterViewHtml({
+        recordingItems.innerHTML = cardBuilder.getCardsHtml({
             items: recordings,
             shape: (enableScrollX() ? 'autooverflow' : 'auto'),
             showTitle: true,
