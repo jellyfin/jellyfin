@@ -891,24 +891,6 @@
                 });
             },
 
-            getItemProgressBarHtml: function (item) {
-
-
-                if (item.Type == "Recording" && item.CompletionPercentage) {
-
-                    return '<progress class="itemProgressBar recordingProgressBar" min="0" max="100" value="' + item.CompletionPercentage + '"></progress>';
-                }
-
-                var pct = item.PlayedPercentage;
-
-                if (pct && pct < 100) {
-
-                    return '<progress class="itemProgressBar" min="0" max="100" value="' + pct + '"></progress>';
-                }
-
-                return null;
-            },
-
             renderDetailImage: function (elem, item, editable, preferThumb) {
 
                 var imageTags = item.ImageTags || {};
@@ -1025,7 +1007,7 @@
                     html += "</a>";
                 }
 
-                var progressHtml = item.IsFolder || !item.UserData ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
+                var progressHtml = item.IsFolder || !item.UserData ? '' : indicators.getProgressBarHtml(item);
 
                 html += '<div class="detailImageProgressContainer">';
                 if (progressHtml) {

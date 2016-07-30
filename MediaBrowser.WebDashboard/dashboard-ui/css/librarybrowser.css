@@ -584,17 +584,11 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .detailImageProgressContainer {
     position: absolute;
-    bottom: 2px;
-    right: 0;
-    left: 0;
+    bottom: 4px;
+    right: 1px;
+    left: 1px;
     text-align: center;
 }
-
-    .detailImageProgressContainer progress {
-        width: 100%;
-        margin: 0 auto;
-        height: 6px;
-    }
 
 .viewControls, .listTopPaging {
     display: inline-block;
@@ -1062,3 +1056,19 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         vertical-align: top;
         margin: 0 4px 0 0;
     }
+
+
+@media all and (min-width: 1000px) {
+
+    .itemDetailPage .scalableCard.portraitCard {
+        width: 25% !important;
+    }
+
+    .itemDetailPage .scalableCard.squareCard {
+        width: 25% !important;
+    }
+
+    .itemDetailPage .scalableCard.backdropCard, .itemDetailPage .scalableCard.smallBackdropCard {
+        width: 33.3333333333333333% !important;
+    }
+}
