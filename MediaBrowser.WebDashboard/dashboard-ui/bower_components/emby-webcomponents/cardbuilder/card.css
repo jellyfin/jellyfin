@@ -17,13 +17,19 @@
     display: flex;
 }
 
-.verticalItemsContainer {
+.vertical-list {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+}
+
+.vertical-wrap {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
 }
 
-    .verticalItemsContainer .card {
+    .vertical-wrap .card {
         contain: strict;
     }
 

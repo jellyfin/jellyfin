@@ -86,7 +86,7 @@
                 shape: getSquareShape(),
                 showTitle: true,
                 showParentTitle: true,
-                defaultAction: 'instantmix',
+                action: 'instantmix',
                 lazy: true,
                 centerText: true,
                 overlayMoreButton: true
@@ -132,7 +132,7 @@
                 shape: getSquareShape(),
                 showTitle: true,
                 showParentTitle: true,
-                defaultAction: 'instantmix',
+                action: 'instantmix',
                 lazy: true,
                 centerText: true,
                 overlayMoreButton: true
@@ -255,10 +255,10 @@
             for (var i = 0, length = containers.length; i < length; i++) {
                 if (enableScrollX()) {
                     containers[i].classList.add('hiddenScrollX');
-                    containers[i].classList.remove('verticalItemsContainer');
+                    containers[i].classList.remove('vertical-wrap');
                 } else {
                     containers[i].classList.remove('hiddenScrollX');
-                    containers[i].classList.add('verticalItemsContainer');
+                    containers[i].classList.add('vertical-wrap');
                 }
             }
         };

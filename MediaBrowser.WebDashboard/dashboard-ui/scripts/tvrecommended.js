@@ -111,10 +111,10 @@
 
             if (enableScrollX()) {
                 resumableItemsContainer.classList.add('hiddenScrollX');
-                resumableItemsContainer.classList.remove('verticalItemsContainer');
+                resumableItemsContainer.classList.remove('vertical-wrap');
             } else {
                 resumableItemsContainer.classList.remove('hiddenScrollX');
-                resumableItemsContainer.classList.add('verticalItemsContainer');
+                resumableItemsContainer.classList.add('vertical-wrap');
             }
 
             categorysyncbuttons.init(tabContent);

@@ -85,7 +85,7 @@
                 if (enableScrollX()) {
                     html += '<div is="emby-itemscontainer" class="itemsContainer hiddenScrollX">';
                 } else {
-                    html += '<div is="emby-itemscontainer" class="itemsContainer verticalItemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
                 }
 
                 html += cardBuilder.getCardsHtml(result.Items, {

@@ -248,7 +248,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                         }
                         html += '<' + sectionTitleTagName + ' class="sectionTitle">' + newIndexValue + '</' + sectionTitleTagName + '>';
                         if (isVertical) {
-                            html += '<div class="itemsContainer verticalItemsContainer">';
+                            html += '<div class="itemsContainer vertical-wrap">';
                         }
                         currentIndexValue = newIndexValue;
                         hasOpenSection = true;

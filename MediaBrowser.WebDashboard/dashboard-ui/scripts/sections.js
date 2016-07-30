@@ -302,7 +302,7 @@
 
                 html += '</div>';
 
-                html += '<div is="emby-itemscontainer" class="itemsContainer verticalItemsContainer">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
 
                 html += cardBuilder.getCardsHtml({
                     items: items,
@@ -348,7 +348,7 @@
                 if (scrollX) {
                     html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
                 } else {
-                    html += '<div is="emby-itemscontainer" class="itemsContainer verticalItemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
                 }
                 html += cardBuilder.getCardsHtml({
                     items: items,
@@ -390,7 +390,7 @@
                 if (scrollX) {
                     html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
                 } else {
-                    html += '<div is="emby-itemscontainer" class="itemsContainer verticalItemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
                 }
 
                 html += cardBuilder.getCardsHtml({
@@ -429,7 +429,7 @@
 
             if (result.Items.length) {
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderLatestChannelMedia') + '</h1>';
-                html += '<div is="emby-itemscontainer" class="itemsContainer verticalItemsContainer">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
 
                 html += cardBuilder.getCardsHtml({
                     items: result.Items,
@@ -474,7 +474,7 @@
                 if (scrollX) {
                     html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
                 } else {
-                    html += '<div is="emby-itemscontainer" class="itemsContainer verticalItemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
                 }
                 html += cardBuilder.getCardsHtml({
                     items: items,
@@ -533,7 +533,7 @@
                 if (enableScrollX()) {
                     html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
                 } else {
-                    html += '<div is="emby-itemscontainer" class="itemsContainer verticalItemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
                 }
                 html += cardBuilder.getCardsHtml({
                     items: result.Items,
@@ -577,7 +577,7 @@
                 if (enableScrollX()) {
                     html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
                 } else {
-                    html += '<div is="emby-itemscontainer" class="itemsContainer verticalItemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
                 }
                 html += cardBuilder.getCardsHtml({
                     items: result.Items,
@@ -657,7 +657,7 @@
                 html += '<a href="channelitems.html?id=' + channel.Id + '" class="clearLink" style="margin-left:2em;"><button is="emby-button" type="button" class="raised more mini"><span>' + Globalize.translate('ButtonMore') + '</span></button></a>';
                 html += '</div>';
 
-                html += '<div is="emby-itemscontainer" is="emby-itemscontainer" class="itemsContainer verticalItemsContainer">';
+                html += '<div is="emby-itemscontainer" is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
                 html += cardBuilder.getCardsHtml({
                     items: result.Items,
                     shape: 'autohome',
@@ -705,7 +705,7 @@
             if (enableScrollX()) {
                 html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
             } else {
-                html += '<div is="emby-itemscontainer" class="itemsContainer verticalItemsContainer">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
             }
             html += cardBuilder.getCardsHtml({
                 items: result.Items,
