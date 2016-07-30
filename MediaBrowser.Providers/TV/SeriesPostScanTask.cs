@@ -14,7 +14,6 @@ using CommonIO;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Model.Tasks;
 
 namespace MediaBrowser.Providers.TV
 {

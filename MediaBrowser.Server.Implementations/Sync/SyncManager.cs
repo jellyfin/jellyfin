@@ -152,7 +152,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 UserId = request.UserId,
                 UnwatchedOnly = request.UnwatchedOnly,
                 ItemLimit = request.ItemLimit,
-                RequestedItemIds = request.ItemIds ?? new List<string> { },
+                RequestedItemIds = request.ItemIds ?? new List<string>(),
                 DateCreated = DateTime.UtcNow,
                 DateLastModified = DateTime.UtcNow,
                 SyncNewContent = request.SyncNewContent,
